@@ -3,12 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.Inference;
@@ -21,8 +19,9 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>An <see cref="IChatClient"/> for an Azure AI Inference <see cref="ChatCompletionsClient"/>.</summary>
-public sealed partial class AzureAIInferenceChatClient : IChatClient
+public sealed class AzureAIInferenceChatClient : IChatClient
 {
+    /// <summary>A default schema to use when a parameter lacks a pre-defined schema.</summary>
     private static readonly JsonElement _defaultParameterSchema = JsonDocument.Parse("{}").RootElement;
 
     /// <summary>The underlying <see cref="ChatCompletionsClient" />.</summary>
@@ -78,42 +77,32 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
         List<ChatMessage> returnMessages = [];
 
         // Populate its content from those in the response content.
-        ChatFinishReason? finishReason = null;
-        foreach (var choice in response.Choices)
+        ChatMessage message = new()
         {
-            ChatMessage returnMessage = new()
-            {
-                RawRepresentation = choice,
-                Role = ToChatRole(choice.Message.Role),
-                AdditionalProperties = new() { [nameof(choice.Index)] = choice.Index },
-            };
+            RawRepresentation = response,
+            Role = ToChatRole(response.Role),
+        };
 
-            finishReason ??= ToFinishReason(choice.FinishReason);
+        if (response.Content is string content)
+        {
+            message.Text = content;
+        }
 
-            if (choice.Message.ToolCalls is { Count: > 0 } toolCalls)
+        if (response.ToolCalls is { Count: > 0 } toolCalls)
+        {
+            foreach (var toolCall in toolCalls)
             {
-                foreach (var toolCall in toolCalls)
+                if (toolCall is ChatCompletionsToolCall ftc && !string.IsNullOrWhiteSpace(ftc.Name))
                 {
-                    if (toolCall is ChatCompletionsFunctionToolCall ftc && !string.IsNullOrWhiteSpace(ftc.Name))
-                    {
-                        FunctionCallContent callContent = ParseCallContentFromJsonString(ftc.Arguments, toolCall.Id, ftc.Name);
-                        callContent.RawRepresentation = toolCall;
+                    FunctionCallContent callContent = ParseCallContentFromJsonString(ftc.Arguments, toolCall.Id, ftc.Name);
+                    callContent.RawRepresentation = toolCall;
 
-                        returnMessage.Contents.Add(callContent);
-                    }
+                    message.Contents.Add(callContent);
                 }
             }
-
-            if (!string.IsNullOrEmpty(choice.Message.Content))
-            {
-                returnMessage.Contents.Add(new TextContent(choice.Message.Content)
-                {
-                    RawRepresentation = choice.Message
-                });
-            }
-
-            returnMessages.Add(returnMessage);
         }
+
+        returnMessages.Add(message);
 
         UsageDetails? usage = null;
         if (response.Usage is CompletionsUsage completionsUsage)
@@ -129,11 +118,11 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
         // Wrap the content in a ChatCompletion to return.
         return new ChatCompletion(returnMessages)
         {
-            RawRepresentation = response,
             CompletionId = response.Id,
             CreatedAt = response.Created,
             ModelId = response.Model,
-            FinishReason = finishReason,
+            FinishReason = ToFinishReason(response.FinishReason),
+            RawRepresentation = response,
             Usage = usage,
         };
     }
@@ -144,13 +133,13 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
     {
         _ = Throw.IfNull(chatMessages);
 
-        Dictionary<int, FunctionCallInfo>? functionCallInfos = null;
+        Dictionary<string, FunctionCallInfo>? functionCallInfos = null;
         ChatRole? streamedRole = default;
         ChatFinishReason? finishReason = default;
         string? completionId = null;
         DateTimeOffset? createdAt = null;
         string? modelId = null;
-        string? authorName = null;
+        string lastCallId = string.Empty;
 
         // Process each update as it arrives
         var updates = await _chatCompletionsClient.CompleteStreamingAsync(ToAzureAIOptions(chatMessages, options), cancellationToken).ConfigureAwait(false);
@@ -162,12 +151,10 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
             completionId ??= chatCompletionUpdate.Id;
             createdAt ??= chatCompletionUpdate.Created;
             modelId ??= chatCompletionUpdate.Model;
-            authorName ??= chatCompletionUpdate.AuthorName;
 
             // Create the response content object.
             StreamingChatCompletionUpdate completionUpdate = new()
             {
-                AuthorName = authorName,
                 CompletionId = chatCompletionUpdate.Id,
                 CreatedAt = chatCompletionUpdate.Created,
                 FinishReason = finishReason,
@@ -183,34 +170,52 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
             }
 
             // Transfer over tool call updates.
-            if (chatCompletionUpdate.ToolCallUpdate is StreamingFunctionToolCallUpdate toolCallUpdate)
+            if (chatCompletionUpdate.ToolCallUpdate is { } toolCallUpdate)
             {
-                functionCallInfos ??= [];
-                if (!functionCallInfos.TryGetValue(toolCallUpdate.ToolCallIndex, out FunctionCallInfo? existing))
+                // TODO https://github.com/Azure/azure-sdk-for-net/issues/46830: Azure.AI.Inference
+                // has removed the Index property from ToolCallUpdate. It's now impossible via the
+                // exposed APIs to correctly handle multiple parallel tool calls, as the CallId is
+                // often null for anything other than the first update for a given call, and Index
+                // isn't available to correlate which updates are for which call. This is a temporary
+                // workaround to at least make a single tool call work and also make work multiple
+                // tool calls when their updates aren't interleaved.
+                if (toolCallUpdate.Id is not null)
                 {
-                    functionCallInfos[toolCallUpdate.ToolCallIndex] = existing = new();
+                    lastCallId = toolCallUpdate.Id;
                 }
 
-                existing.CallId ??= toolCallUpdate.Id;
-                existing.Name ??= toolCallUpdate.Name;
-                if (toolCallUpdate.ArgumentsUpdate is not null)
+                functionCallInfos ??= [];
+                if (!functionCallInfos.TryGetValue(lastCallId, out FunctionCallInfo? existing))
                 {
-                    _ = (existing.Arguments ??= new()).Append(toolCallUpdate.ArgumentsUpdate);
+                    functionCallInfos[lastCallId] = existing = new();
                 }
+
+                existing.Name ??= toolCallUpdate.Function.Name;
+                if (toolCallUpdate.Function.Arguments is { } arguments)
+                {
+                    _ = (existing.Arguments ??= new()).Append(arguments);
+                }
+            }
+
+            if (chatCompletionUpdate.Usage is { } usage)
+            {
+                completionUpdate.Contents.Add(new UsageContent(new()
+                {
+                    InputTokenCount = usage.PromptTokens,
+                    OutputTokenCount = usage.CompletionTokens,
+                    TotalTokenCount = usage.TotalTokens,
+                }));
             }
 
             // Now yield the item.
             yield return completionUpdate;
         }
 
-        // TODO: Add usage as content when it's exposed by Azure.AI.Inference.
-
         // Now that we've received all updates, combine any for function calls into a single item to yield.
         if (functionCallInfos is not null)
         {
             var completionUpdate = new StreamingChatCompletionUpdate
             {
-                AuthorName = authorName,
                 CompletionId = completionId,
                 CreatedAt = createdAt,
                 FinishReason = finishReason,
@@ -225,7 +230,7 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
                 {
                     FunctionCallContent callContent = ParseCallContentFromJsonString(
                         fci.Arguments?.ToString() ?? string.Empty,
-                        fci.CallId!,
+                        entry.Key,
                         fci.Name!);
                     completionUpdate.Contents.Add(callContent);
                 }
@@ -244,7 +249,6 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
     /// <summary>POCO representing function calling info. Used to concatenation information for a single function call from across multiple streaming updates.</summary>
     private sealed class FunctionCallInfo
     {
-        public string? CallId;
         public string? Name;
         public StringBuilder? Arguments;
     }
@@ -293,7 +297,7 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
             // These properties are strongly-typed on ChatOptions but not on ChatCompletionsOptions.
             if (options.TopK is int topK)
             {
-                result.AdditionalProperties["top_k"] = BinaryData.FromObjectAsJson(topK, JsonContext.Default.Options);
+                result.AdditionalProperties["top_k"] = new BinaryData(JsonSerializer.SerializeToUtf8Bytes(topK, JsonContext.Default.Int32));
             }
 
             if (options.AdditionalProperties is { } props)
@@ -311,7 +315,8 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
                         default:
                             if (prop.Value is not null)
                             {
-                                result.AdditionalProperties[prop.Key] = BinaryData.FromObjectAsJson(prop.Value, ToolCallJsonSerializerOptions);
+                                byte[] data = JsonSerializer.SerializeToUtf8Bytes(prop.Value, JsonContext.GetTypeInfo(prop.Value.GetType(), ToolCallJsonSerializerOptions));
+                                result.AdditionalProperties[prop.Key] = new BinaryData(data);
                             }
 
                             break;
@@ -357,7 +362,7 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
     }
 
     /// <summary>Converts an Extensions function to an AzureAI chat tool.</summary>
-    private static ChatCompletionsFunctionToolDefinition ToAzureAIChatTool(AIFunction aiFunction)
+    private static ChatCompletionsToolDefinition ToAzureAIChatTool(AIFunction aiFunction)
     {
         BinaryData resultParameters = AzureAIChatToolJson.ZeroFunctionParametersSchema;
 
@@ -382,41 +387,24 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
                 JsonSerializer.SerializeToUtf8Bytes(tool, JsonContext.Default.AzureAIChatToolJson));
         }
 
-        return new()
+        return new(new FunctionDefinition(aiFunction.Metadata.Name)
         {
-            Name = aiFunction.Metadata.Name,
             Description = aiFunction.Metadata.Description,
             Parameters = resultParameters,
-        };
-    }
-
-    /// <summary>Used to create the JSON payload for an AzureAI chat tool description.</summary>
-    private sealed class AzureAIChatToolJson
-    {
-        /// <summary>Gets a singleton JSON data for empty parameters. Optimization for the reasonably common case of a parameterless function.</summary>
-        public static BinaryData ZeroFunctionParametersSchema { get; } = new("""{"type":"object","required":[],"properties":{}}"""u8.ToArray());
-
-        [JsonPropertyName("type")]
-        public string Type { get; set; } = "object";
-
-        [JsonPropertyName("required")]
-        public List<string> Required { get; set; } = [];
-
-        [JsonPropertyName("properties")]
-        public Dictionary<string, JsonElement> Properties { get; set; } = [];
+        });
     }
 
     /// <summary>Converts an Extensions chat message enumerable to an AzureAI chat message enumerable.</summary>
     private IEnumerable<ChatRequestMessage> ToAzureAIInferenceChatMessages(IEnumerable<ChatMessage> inputs)
     {
         // Maps all of the M.E.AI types to the corresponding AzureAI types.
-        // Unrecognized content is ignored.
+        // Unrecognized or non-processable content is ignored.
 
         foreach (ChatMessage input in inputs)
         {
             if (input.Role == ChatRole.System)
             {
-                yield return new ChatRequestSystemMessage(input.Text);
+                yield return new ChatRequestSystemMessage(input.Text ?? string.Empty);
             }
             else if (input.Role == ChatRole.Tool)
             {
@@ -427,10 +415,9 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
                         string? result = resultContent.Result as string;
                         if (result is null && resultContent.Result is not null)
                         {
-                            JsonSerializerOptions options = ToolCallJsonSerializerOptions ?? JsonContext.Default.Options;
                             try
                             {
-                                result = JsonSerializer.Serialize(resultContent.Result, options.GetTypeInfo(typeof(object)));
+                                result = JsonSerializer.Serialize(resultContent.Result, JsonContext.GetTypeInfo(typeof(object), ToolCallJsonSerializerOptions));
                             }
                             catch (NotSupportedException)
                             {
@@ -444,45 +431,24 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
             }
             else if (input.Role == ChatRole.User)
             {
-                yield return new ChatRequestUserMessage(input.Contents.Select(static (AIContent item) => item switch
-                {
-                    TextContent textContent => new ChatMessageTextContentItem(textContent.Text),
-                    ImageContent imageContent => imageContent.Data is { IsEmpty: false } data ? new ChatMessageImageContentItem(BinaryData.FromBytes(data), imageContent.MediaType) :
-                                                 imageContent.Uri is string uri ? new ChatMessageImageContentItem(new Uri(uri)) :
-                                                 (ChatMessageContentItem?)null,
-                    _ => null,
-                }).Where(c => c is not null));
+                yield return new ChatRequestUserMessage(GetContentParts(input.Contents));
             }
             else if (input.Role == ChatRole.Assistant)
             {
-                Dictionary<string, ChatCompletionsToolCall>? toolCalls = null;
+                // TODO: ChatRequestAssistantMessage only enables text content currently.
+                // Update it with other content types when it supports that.
+                ChatRequestAssistantMessage message = new(input.Text ?? string.Empty);
 
                 foreach (var content in input.Contents)
                 {
-                    if (content is FunctionCallContent callRequest && callRequest.CallId is not null && toolCalls?.ContainsKey(callRequest.CallId) is not true)
+                    if (content is FunctionCallContent { CallId: not null } callRequest)
                     {
-                        JsonSerializerOptions serializerOptions = ToolCallJsonSerializerOptions ?? JsonContext.Default.Options;
-                        string jsonArguments = JsonSerializer.Serialize(callRequest.Arguments, serializerOptions.GetTypeInfo(typeof(IDictionary<string, object>)));
-                        (toolCalls ??= []).Add(
-                            callRequest.CallId,
-                            new ChatCompletionsFunctionToolCall(
-                                callRequest.CallId,
-                                callRequest.Name,
-                                jsonArguments));
+                        message.ToolCalls.Add(new ChatCompletionsToolCall(
+                             callRequest.CallId,
+                             new FunctionCall(
+                                 callRequest.Name,
+                                 JsonSerializer.Serialize(callRequest.Arguments, JsonContext.GetTypeInfo(typeof(IDictionary<string, object>), ToolCallJsonSerializerOptions)))));
                     }
-                }
-
-                ChatRequestAssistantMessage message = new();
-                if (toolCalls is not null)
-                {
-                    foreach (var entry in toolCalls)
-                    {
-                        message.ToolCalls.Add(entry.Value);
-                    }
-                }
-                else
-                {
-                    message.Content = input.Text;
                 }
 
                 yield return message;
@@ -490,14 +456,37 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
         }
     }
 
+    /// <summary>Converts a list of <see cref="AIContent"/> to a list of <see cref="ChatMessageContentItem"/>.</summary>
+    private static List<ChatMessageContentItem> GetContentParts(IList<AIContent> contents)
+    {
+        List<ChatMessageContentItem> parts = [];
+        foreach (var content in contents)
+        {
+            switch (content)
+            {
+                case TextContent textContent:
+                    parts.Add(new ChatMessageTextContentItem(textContent.Text));
+                    break;
+
+                case ImageContent imageContent when imageContent.Data is { IsEmpty: false } data:
+                    parts.Add(new ChatMessageImageContentItem(BinaryData.FromBytes(data), imageContent.MediaType));
+                    break;
+
+                case ImageContent imageContent when imageContent.Uri is string uri:
+                    parts.Add(new ChatMessageImageContentItem(new Uri(uri)));
+                    break;
+            }
+        }
+
+        if (parts.Count == 0)
+        {
+            parts.Add(new ChatMessageTextContentItem(string.Empty));
+        }
+
+        return parts;
+    }
+
     private static FunctionCallContent ParseCallContentFromJsonString(string json, string callId, string name) =>
         FunctionCallContent.CreateFromParsedArguments(json, callId, name,
             argumentParser: static json => JsonSerializer.Deserialize(json, JsonContext.Default.IDictionaryStringObject)!);
-
-    /// <summary>Source-generated JSON type information.</summary>
-    [JsonSerializable(typeof(AzureAIChatToolJson))]
-    [JsonSerializable(typeof(IDictionary<string, object?>))]
-    [JsonSerializable(typeof(JsonElement))]
-    [JsonSerializable(typeof(int))]
-    private sealed partial class JsonContext : JsonSerializerContext;
 }

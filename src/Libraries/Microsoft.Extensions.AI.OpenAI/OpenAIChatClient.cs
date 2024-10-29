@@ -1,14 +1,15 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -18,6 +19,7 @@ using OpenAI.Chat;
 #pragma warning disable S1135 // Track uses of "TODO" tags
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 #pragma warning disable SA1204 // Static elements should appear before instance elements
+#pragma warning disable SA1108 // Block statements should not contain embedded comments
 
 namespace Microsoft.Extensions.AI;
 
@@ -265,9 +267,9 @@ public sealed partial class OpenAIChatClient : IChatClient
 
                     existing.CallId ??= toolCallUpdate.ToolCallId;
                     existing.Name ??= toolCallUpdate.FunctionName;
-                    if (toolCallUpdate.FunctionArgumentsUpdate is not null)
+                    if (toolCallUpdate.FunctionArgumentsUpdate is { } update && !update.ToMemory().IsEmpty)
                     {
-                        _ = (existing.Arguments ??= new()).Append(toolCallUpdate.FunctionArgumentsUpdate);
+                        _ = (existing.Arguments ??= new()).Append(update.ToString());
                     }
                 }
             }
@@ -531,8 +533,6 @@ public sealed partial class OpenAIChatClient : IChatClient
     {
         AIContent? aiContent = null;
 
-        AdditionalPropertiesDictionary? additionalProperties = null;
-
         if (contentPart.Kind == ChatMessageContentPartKind.Text)
         {
             aiContent = new TextContent(contentPart.Text);
@@ -547,7 +547,7 @@ public sealed partial class OpenAIChatClient : IChatClient
 
             if (imageContent is not null && contentPart.ImageDetailLevel?.ToString() is string detail)
             {
-                (additionalProperties ??= [])[nameof(contentPart.ImageDetailLevel)] = detail;
+                (imageContent.AdditionalProperties ??= [])[nameof(contentPart.ImageDetailLevel)] = detail;
             }
         }
 
@@ -555,10 +555,9 @@ public sealed partial class OpenAIChatClient : IChatClient
         {
             if (contentPart.Refusal is string refusal)
             {
-                (additionalProperties ??= [])[nameof(contentPart.Refusal)] = refusal;
+                (aiContent.AdditionalProperties ??= [])[nameof(contentPart.Refusal)] = refusal;
             }
 
-            aiContent.AdditionalProperties = additionalProperties;
             aiContent.RawRepresentation = contentPart;
         }
 
@@ -569,13 +568,16 @@ public sealed partial class OpenAIChatClient : IChatClient
     private IEnumerable<OpenAI.Chat.ChatMessage> ToOpenAIChatMessages(IEnumerable<ChatMessage> inputs)
     {
         // Maps all of the M.E.AI types to the corresponding OpenAI types.
-        // Unrecognized content is ignored.
+        // Unrecognized or non-processable content is ignored.
 
         foreach (ChatMessage input in inputs)
         {
-            if (input.Role == ChatRole.System)
+            if (input.Role == ChatRole.System || input.Role == ChatRole.User)
             {
-                yield return new SystemChatMessage(input.Text) { ParticipantName = input.AuthorName };
+                var parts = GetContentParts(input.Contents);
+                yield return input.Role == ChatRole.System ?
+                    new SystemChatMessage(parts) { ParticipantName = input.AuthorName } :
+                    new UserChatMessage(parts) { ParticipantName = input.AuthorName };
             }
             else if (input.Role == ChatRole.Tool)
             {
@@ -586,10 +588,9 @@ public sealed partial class OpenAIChatClient : IChatClient
                         string? result = resultContent.Result as string;
                         if (result is null && resultContent.Result is not null)
                         {
-                            JsonSerializerOptions options = ToolCallJsonSerializerOptions ?? JsonContext.Default.Options;
                             try
                             {
-                                result = JsonSerializer.Serialize(resultContent.Result, options.GetTypeInfo(typeof(object)));
+                                result = JsonSerializer.Serialize(resultContent.Result, JsonContext.GetTypeInfo(typeof(object), ToolCallJsonSerializerOptions));
                             }
                             catch (NotSupportedException)
                             {
@@ -601,38 +602,26 @@ public sealed partial class OpenAIChatClient : IChatClient
                     }
                 }
             }
-            else if (input.Role == ChatRole.User)
-            {
-                yield return new UserChatMessage(input.Contents.Select(static (AIContent item) => item switch
-                {
-                    TextContent textContent => ChatMessageContentPart.CreateTextPart(textContent.Text),
-                    ImageContent imageContent => imageContent.Data is { IsEmpty: false } data ? ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(data), imageContent.MediaType) :
-                                                 imageContent.Uri is string uri ? ChatMessageContentPart.CreateImagePart(new Uri(uri)) :
-                                                 null,
-                    _ => null,
-                }).Where(c => c is not null))
-                { ParticipantName = input.AuthorName };
-            }
             else if (input.Role == ChatRole.Assistant)
             {
-                Dictionary<string, ChatToolCall>? toolCalls = null;
+                AssistantChatMessage message = new(GetContentParts(input.Contents))
+                {
+                    ParticipantName = input.AuthorName
+                };
 
                 foreach (var content in input.Contents)
                 {
-                    if (content is FunctionCallContent callRequest && callRequest.CallId is not null && toolCalls?.ContainsKey(callRequest.CallId) is not true)
+                    if (content is FunctionCallContent { CallId: not null } callRequest)
                     {
-                        (toolCalls ??= []).Add(
-                            callRequest.CallId,
+                        message.ToolCalls.Add(
                             ChatToolCall.CreateFunctionToolCall(
                                 callRequest.CallId,
                                 callRequest.Name,
-                                BinaryData.FromObjectAsJson(callRequest.Arguments, ToolCallJsonSerializerOptions)));
+                                new(JsonSerializer.SerializeToUtf8Bytes(
+                                    callRequest.Arguments,
+                                    JsonContext.GetTypeInfo(typeof(IDictionary<string, object?>), ToolCallJsonSerializerOptions)))));
                     }
                 }
-
-                AssistantChatMessage message = toolCalls is not null ?
-                    new(toolCalls.Values) { ParticipantName = input.AuthorName } :
-                    new(input.Text) { ParticipantName = input.AuthorName };
 
                 if (input.AdditionalProperties?.TryGetValue(nameof(message.Refusal), out string? refusal) is true)
                 {
@@ -644,6 +633,36 @@ public sealed partial class OpenAIChatClient : IChatClient
         }
     }
 
+    /// <summary>Converts a list of <see cref="AIContent"/> to a list of <see cref="ChatMessageContentPart"/>.</summary>
+    private static List<ChatMessageContentPart> GetContentParts(IList<AIContent> contents)
+    {
+        List<ChatMessageContentPart> parts = [];
+        foreach (var content in contents)
+        {
+            switch (content)
+            {
+                case TextContent textContent:
+                    parts.Add(ChatMessageContentPart.CreateTextPart(textContent.Text));
+                    break;
+
+                case ImageContent imageContent when imageContent.Data is { IsEmpty: false } data:
+                    parts.Add(ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(data), imageContent.MediaType));
+                    break;
+
+                case ImageContent imageContent when imageContent.Uri is string uri:
+                    parts.Add(ChatMessageContentPart.CreateImagePart(new Uri(uri)));
+                    break;
+            }
+        }
+
+        if (parts.Count == 0)
+        {
+            parts.Add(ChatMessageContentPart.CreateTextPart(string.Empty));
+        }
+
+        return parts;
+    }
+
     private static FunctionCallContent ParseCallContentFromJsonString(string json, string callId, string name) =>
         FunctionCallContent.CreateFromParsedArguments(json, callId, name,
             argumentParser: static json => JsonSerializer.Deserialize(json, JsonContext.Default.IDictionaryStringObject)!);
@@ -653,8 +672,53 @@ public sealed partial class OpenAIChatClient : IChatClient
             argumentParser: static json => JsonSerializer.Deserialize(json, JsonContext.Default.IDictionaryStringObject)!);
 
     /// <summary>Source-generated JSON type information.</summary>
+    [JsonSourceGenerationOptions(JsonSerializerDefaults.Web,
+        UseStringEnumConverter = true,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        WriteIndented = true)]
     [JsonSerializable(typeof(OpenAIChatToolJson))]
     [JsonSerializable(typeof(IDictionary<string, object?>))]
     [JsonSerializable(typeof(JsonElement))]
-    private sealed partial class JsonContext : JsonSerializerContext;
+    private sealed partial class JsonContext : JsonSerializerContext
+    {
+        /// <summary>Gets the <see cref="JsonSerializerOptions"/> singleton used as the default in JSON serialization operations.</summary>
+        private static readonly JsonSerializerOptions _defaultToolJsonOptions = CreateDefaultToolJsonOptions();
+
+        /// <summary>Gets JSON type information for the specified type.</summary>
+        /// <remarks>
+        /// This first tries to get the type information from <paramref name="firstOptions"/>,
+        /// falling back to <see cref="_defaultToolJsonOptions"/> if it can't.
+        /// </remarks>
+        public static JsonTypeInfo GetTypeInfo(Type type, JsonSerializerOptions? firstOptions) =>
+            firstOptions?.TryGetTypeInfo(type, out JsonTypeInfo? info) is true ?
+                info :
+                _defaultToolJsonOptions.GetTypeInfo(type);
+
+        /// <summary>Creates the default <see cref="JsonSerializerOptions"/> to use for serialization-related operations.</summary>
+        [UnconditionalSuppressMessage("AotAnalysis", "IL3050", Justification = "DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled")]
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026", Justification = "DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled")]
+        private static JsonSerializerOptions CreateDefaultToolJsonOptions()
+        {
+            // If reflection-based serialization is enabled by default, use it, as it's the most permissive in terms of what it can serialize,
+            // and we want to be flexible in terms of what can be put into the various collections in the object model.
+            // Otherwise, use the source-generated options to enable trimming and Native AOT.
+
+            if (JsonSerializer.IsReflectionEnabledByDefault)
+            {
+                // Keep in sync with the JsonSourceGenerationOptions attribute on JsonContext above.
+                JsonSerializerOptions options = new(JsonSerializerDefaults.Web)
+                {
+                    TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+                    Converters = { new JsonStringEnumConverter() },
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                    WriteIndented = true,
+                };
+
+                options.MakeReadOnly();
+                return options;
+            }
+
+            return Default.Options;
+        }
+    }
 }

@@ -231,6 +231,7 @@ public static partial class AIJsonUtilities
             const string DescriptionPropertyName = "description";
             const string NotPropertyName = "not";
             const string TypePropertyName = "type";
+            const string PatternPropertyName = "pattern";
             const string EnumPropertyName = "enum";
             const string PropertiesPropertyName = "properties";
             const string AdditionalPropertiesPropertyName = "additionalProperties";
@@ -281,7 +282,20 @@ public static partial class AIJsonUtilities
 
             if (ctx.Path.IsEmpty)
             {
-                // We are at the root-level schema node, append parameter-specific metadata
+                // We are at the root-level schema node, update/append parameter-specific metadata
+
+                // Some consumers of the JSON schema, including Ollama as of v0.3.13, don't understand
+                // schemas with "type": [...], and only understand "type" being a single value.
+                // STJ represents .NET integer types as ["string", "integer"], which will then lead to an error.
+                if (TypeIsArrayContainingInteger(schema))
+                {
+                    // We don't want to emit any array for "type". In this case we know it contains "integer"
+                    // so reduce the type to that alone, assuming it's the most specific type.
+                    // This makes schemas for Int32 (etc) work with Ollama
+                    JsonObject obj = ConvertSchemaToObject(ref schema);
+                    obj[TypePropertyName] = "integer";
+                    _ = obj.Remove(PatternPropertyName);
+                }
 
                 if (!string.IsNullOrWhiteSpace(key.Description))
                 {
@@ -338,6 +352,22 @@ public static partial class AIJsonUtilities
                 }
             }
         }
+    }
+
+    private static bool TypeIsArrayContainingInteger(JsonNode schema)
+    {
+        if (schema["type"] is JsonArray typeArray)
+        {
+            foreach (var entry in typeArray)
+            {
+                if (entry?.GetValueKind() == JsonValueKind.String && entry.GetValue<string>() == "integer")
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private static JsonElement ParseJsonElement(ReadOnlySpan<byte> utf8Json)

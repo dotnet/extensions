@@ -127,10 +127,26 @@ public static class AIJsonUtilitiesTests
         JsonElement resolvedSchema;
         resolvedSchema = AIJsonUtilities.ResolveParameterJsonSchema(param, metadata, options);
         Assert.True(JsonElement.DeepEquals(generatedSchema, resolvedSchema));
+    }
 
-        options = new(options) { NumberHandling = JsonNumberHandling.AllowReadingFromString };
-        resolvedSchema = AIJsonUtilities.ResolveParameterJsonSchema(param, metadata, options);
-        Assert.False(JsonElement.DeepEquals(generatedSchema, resolvedSchema));
+    [Fact]
+    public static void ResolveParameterJsonSchema_TreatsIntegralTypesAsInteger_EvenWithAllowReadingFromString()
+    {
+        JsonElement expected = JsonDocument.Parse("""
+            {
+              "type": "integer"
+            }
+            """).RootElement;
+
+        JsonSerializerOptions options = new(JsonSerializerOptions.Default) { NumberHandling = JsonNumberHandling.AllowReadingFromString };
+        AIFunction func = AIFunctionFactory.Create((int a, int? b, long c, short d) => { }, serializerOptions: options);
+
+        AIFunctionMetadata metadata = func.Metadata;
+        foreach (var param in metadata.Parameters)
+        {
+            JsonElement actualSchema = Assert.IsType<JsonElement>(param.Schema);
+            Assert.True(JsonElement.DeepEquals(expected, actualSchema));
+        }
     }
 
     [Description("The type")]

@@ -87,10 +87,10 @@ public abstract class EmbeddingGeneratorIntegrationTests : IDisposable
             .Use(CreateEmbeddingGenerator()!);
 
         string input = "Red, White, and Blue";
-        var embedding1 = await generator.GenerateAsync(input);
-        var embedding2 = await generator.GenerateAsync(input);
-        var embedding3 = await generator.GenerateAsync(input + "... and Green");
-        var embedding4 = await generator.GenerateAsync(input);
+        var embedding1 = await generator.GenerateEmbeddingAsync(input);
+        var embedding2 = await generator.GenerateEmbeddingAsync(input);
+        var embedding3 = await generator.GenerateEmbeddingAsync(input + "... and Green");
+        var embedding4 = await generator.GenerateEmbeddingAsync(input);
 
         var callCounter = generator.GetService<CallCountingEmbeddingGenerator>();
         Assert.NotNull(callCounter);
@@ -114,7 +114,7 @@ public abstract class EmbeddingGeneratorIntegrationTests : IDisposable
             .UseOpenTelemetry(sourceName: sourceName)
             .Use(CreateEmbeddingGenerator()!);
 
-        _ = await embeddingGenerator.GenerateAsync("Hello, world!");
+        _ = await embeddingGenerator.GenerateEmbeddingAsync("Hello, world!");
 
         Assert.Single(activities);
         var activity = activities.Single();

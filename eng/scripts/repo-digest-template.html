@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>dotnet/extensions weekly digest</title>
+  <style>
+    body {
+      font-family: Segoe UI, SegoeUI, Arial, sans-serif;
+    }
+
+    table,
+    th,
+    td {
+      border: 1px solid silver;
+      border-collapse: collapse;
+    }
+
+    th {
+      background-color: rgb(240, 240, 240);
+    }
+
+    td {
+      display: table-cell;
+      vertical-align: inherit;
+      unicode-bidi: isolate;
+    }
+
+    .markdown-body table th,
+    .markdown-body table td {
+      padding: 6px 13px;
+      border: 1px solid silver;
+    }
+
+    td.col-700 {
+      width: 700px;
+    }
+
+    td.col-150 {
+      width: 150px;
+    }
+
+    td.col-70 {
+      width: 70px;
+    }
+
+    a {
+      color: #0969da;
+      text-decoration: none;
+    }
+
+    .avatar-user {
+      border-radius: 50% !important;
+    }
+
+    .avatar {
+      display: inline-block;
+      flex-shrink: 0;
+      line-height: 1;
+      overflow: hidden;
+      vertical-align: middle;
+    }
+
+    img {
+      overflow-clip-margin: content-box;
+      overflow: clip;
+    }
+
+    g-emoji {
+      display: inline-block;
+      min-width: 1ch;
+      font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+      font-size: 1em;
+      font-style: normal !important;
+      font-weight: var(--base-text-weight-normal, 400);
+      line-height: 1;
+      vertical-align: -0.075em;
+    }
+
+    .IssueLabel {
+      display: inline-block;
+      padding: 0 7px;
+      font-size: 12px;
+      font-weight: var(--base-text-weight-medium, 500);
+      line-height: 18px;
+      white-space: nowrap;
+      border: 1px solid transparent;
+      border-radius: 2em;
+    }
+
+    :root .hx_IssueLabel,
+    [data-color-mode=light][data-light-theme*=light] .hx_IssueLabel,
+    [data-color-mode=dark][data-dark-theme*=light] .hx_IssueLabel {
+      --lightness-threshold: 0.453;
+      --border-threshold: 0.96;
+      --border-alpha: max(0, min(calc((var(--perceived-lightness) - var(--border-threshold))* 100), 1));
+      color: hsl(0deg, 0%, calc(max(0, min(calc((1/(0.453 - calc(((var(--label-r) * 0.2126) + (var(--label-r) * 0.7152) + (var(--label-r) * 0.0722)) / 255)))), 1)) * 100%));
+      background: rgb(var(--label-r), var(--label-g), var(--label-b));
+      border-color: hsla(38, calc(92 * 1%), calc((50 - 25) * 1%), max(0, min(calc((calc(((var(--label-b) * 0.2126) + (var(--label-b) * 0.7152) + (var(--label-b) * 0.0722)) / 255) - 0.96) * 100), 1)));
+    }
+
+    
+    .hx_IssueLabel {
+      --perceived-lightness: calc(((var(--label-r)* 0.2126) +(var(--label-g)* 0.7152) +(var(--label-b)* 0.0722)) / 255);
+      --lightness-switch: max(0, min(calc((1 /(var(--lightness-threshold) - var(--perceived-lightness)))), 1));
+    }
+  </style>
+</head>
+
+<body>
+  <div>
+    Hi.
+    <br /><br />
+    <div id="header">
+      Below is the weekly report for the <a href='https://github.com/dotnet/extensions/'>dotnet/extensions</a> repo.
+      Please little-"r" me if you have any questions or feedback.
+      <p style="font-size: 10"><em>The report was generated on ##DATE##.</em></p>
+    </div>
+  </div>
+
+  <p>
+    <br />
+    <hr noshade style="color: #c0c0c0" />
+    <br />
+  </p>
+
+  <div class="markdown-body issues-untriaged">
+    <p><font size="+2"><strong>REQUIRED ACTION</strong>: <a href="https://github.com/dotnet/extensions/wiki/Maintainers-guide#triage-rules">Triage issues</a> which belong to
+      your area path and remove <a href="https://github.com/dotnet/extensions/labels/untriaged" style="--label-r:245;--label-g:162;--label-b:12;--label-h:38;--label-s:92;--label-l:50;" class="IssueLabel hx_IssueLabel">untriaged</a> label.<br/>
+      Refer to the <strong><a href="https://github.com/dotnet/extensions/wiki/Maintainers-guide#triage-rules">Maintainers guide</a></strong> for more information.
+    </font>
+    </p>
+
+    ##ISSUES-UNTRIAGED##
+  </div>
+
+  <p>
+    <br />
+    <hr noshade style="color: #c0c0c0" />
+    <br />
+  </p>
+
+  <div class="markdown-body issues-by-area">
+    <p><font size="+2"><strong>REQUIRED ACTION</strong>: Consider providing an update for each issue in your area with an expected
+      ETA.<br />
+      Alternatively, consider closing issues which you don't expect to be working on at all.<br/>
+      Refer to the <strong><a href="https://github.com/dotnet/extensions/wiki/Maintainers-guide#triage-rules">Maintainers guide</a></strong> for more information.
+    </font>
+    </p>
+
+    ##ISSUES-BY-AREA##
+  </div>
+</body>
+
+</html>

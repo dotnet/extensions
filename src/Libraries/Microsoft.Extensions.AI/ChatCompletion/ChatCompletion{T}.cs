@@ -57,6 +57,7 @@ public class ChatCompletion<T> : ChatCompletion
             {
                 FailureReason.ResultDidNotContainJson => throw new InvalidOperationException("The response did not contain text to be deserialized"),
                 FailureReason.DeserializationProducedNull => throw new InvalidOperationException("The deserialized response is null"),
+                FailureReason.ResultDidNotContainDataProperty => throw new InvalidOperationException("The response did not contain the expected 'data' property"),
                 _ => result!,
             };
         }
@@ -103,6 +104,12 @@ public class ChatCompletion<T> : ChatCompletion
         }
     }
 
+    /// <summary>
+    /// Gets or sets a value indicating whether the JSON schema has an extra object wrapper.
+    /// This is required for any non-JSON-object-typed values such as numbers, enum values, or arrays.
+    /// </summary>
+    internal bool IsWrappedInObject { get; set; }
+
     private string? GetResultAsJson()
     {
         var choice = Choices.Count == 1 ? Choices[0] : null;
@@ -125,8 +132,25 @@ public class ChatCompletion<T> : ChatCompletion
             return default;
         }
 
+        T? deserialized = default;
+
         // If there's an exception here, we want it to propagate, since the Result property is meant to throw directly
-        var deserialized = DeserializeFirstTopLevelObject(json!, (JsonTypeInfo<T>)_serializerOptions.GetTypeInfo(typeof(T)));
+
+        if (IsWrappedInObject)
+        {
+            if (JsonDocument.Parse(json!).RootElement.TryGetProperty("data", out var data))
+            {
+                json = data.GetRawText();
+            }
+            else
+            {
+                failureReason = FailureReason.ResultDidNotContainDataProperty;
+                return default;
+            }
+        }
+
+        deserialized = DeserializeFirstTopLevelObject(json!, (JsonTypeInfo<T>)_serializerOptions.GetTypeInfo(typeof(T)));
+
         if (deserialized is null)
         {
             failureReason = FailureReason.DeserializationProducedNull;
@@ -143,5 +167,6 @@ public class ChatCompletion<T> : ChatCompletion
     {
         ResultDidNotContainJson,
         DeserializationProducedNull,
+        ResultDidNotContainDataProperty,
     }
 }
