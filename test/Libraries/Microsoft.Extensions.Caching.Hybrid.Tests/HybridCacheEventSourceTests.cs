@@ -2,15 +2,26 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.Tracing;
-#if !NETFRAMEWORK
 using Microsoft.Extensions.Caching.Hybrid.Internal;
-#endif
+using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
 
-public class HybridCacheEventSourceTests(TestEventListener listener) : IClassFixture<TestEventListener>
+public class HybridCacheEventSourceTests(ITestOutputHelper log, TestEventListener listener) : IClassFixture<TestEventListener>
 {
     // see notes in TestEventListener for context on fixture usage
+
+    private bool IsEnabled()
+    {
+        if (!listener.Source.IsEnabled())
+        {
+            // inconclusive; note testability on netfx is ... ungreat
+            log.WriteLine("Event source not enabled; inconclusive (netfx?)");
+            return false;
+        }
+
+        return true;
+    }
 
     [Fact]
     public void MatchesNameAndGuid()
@@ -20,10 +31,14 @@ public class HybridCacheEventSourceTests(TestEventListener listener) : IClassFix
         Assert.Equal(Guid.Parse("b3aca39e-5dc9-5e21-f669-b72225b66cfc"), listener.Source.Guid); // from name
     }
 
-#if !NETFRAMEWORK // testability on netfx is ... ungreat
     [Fact]
     public async Task LocalCacheHit()
     {
+        if (!IsEnabled())
+        {
+            return;
+        }
+
         listener.Reset().Source.LocalCacheHit();
         listener.AssertSingleEvent(HybridCacheEventSource.EventIdLocalCacheHit, "LocalCacheHit", EventLevel.Verbose);
 
@@ -35,6 +50,11 @@ public class HybridCacheEventSourceTests(TestEventListener listener) : IClassFix
     [Fact]
     public async Task LocalCacheMiss()
     {
+        if (!IsEnabled())
+        {
+            return;
+        }
+
         listener.Reset().Source.LocalCacheMiss();
         listener.AssertSingleEvent(HybridCacheEventSource.EventIdLocalCacheMiss, "LocalCacheMiss", EventLevel.Verbose);
 
@@ -46,6 +66,11 @@ public class HybridCacheEventSourceTests(TestEventListener listener) : IClassFix
     [Fact]
     public async Task DistributedCacheGet()
     {
+        if (!IsEnabled())
+        {
+            return;
+        }
+
         listener.Reset().Source.DistributedCacheGet();
         listener.AssertSingleEvent(HybridCacheEventSource.EventIdDistributedCacheGet, "DistributedCacheGet", EventLevel.Verbose);
 
@@ -57,6 +82,11 @@ public class HybridCacheEventSourceTests(TestEventListener listener) : IClassFix
     [Fact]
     public async Task DistributedCacheHit()
     {
+        if (!IsEnabled())
+        {
+            return;
+        }
+
         listener.Reset().Source.DistributedCacheGet();
         listener.Reset(resetCounters: false).Source.DistributedCacheHit();
         listener.AssertSingleEvent(HybridCacheEventSource.EventIdDistributedCacheHit, "DistributedCacheHit", EventLevel.Verbose);
@@ -69,6 +99,11 @@ public class HybridCacheEventSourceTests(TestEventListener listener) : IClassFix
     [Fact]
     public async Task DistributedCacheMiss()
     {
+        if (!IsEnabled())
+        {
+            return;
+        }
+
         listener.Reset().Source.DistributedCacheGet();
         listener.Reset(resetCounters: false).Source.DistributedCacheMiss();
         listener.AssertSingleEvent(HybridCacheEventSource.EventIdDistributedCacheMiss, "DistributedCacheMiss", EventLevel.Verbose);
@@ -81,6 +116,11 @@ public class HybridCacheEventSourceTests(TestEventListener listener) : IClassFix
     [Fact]
     public async Task DistributedCacheFailed()
     {
+        if (!IsEnabled())
+        {
+            return;
+        }
+
         listener.Reset().Source.DistributedCacheGet();
         listener.Reset(resetCounters: false).Source.DistributedCacheFailed();
         listener.AssertSingleEvent(HybridCacheEventSource.EventIdDistributedCacheFailed, "DistributedCacheFailed", EventLevel.Error);
@@ -92,6 +132,11 @@ public class HybridCacheEventSourceTests(TestEventListener listener) : IClassFix
     [Fact]
     public async Task UnderlyingDataQueryStart()
     {
+        if (!IsEnabled())
+        {
+            return;
+        }
+
         listener.Reset().Source.UnderlyingDataQueryStart();
         listener.AssertSingleEvent(HybridCacheEventSource.EventIdUnderlyingDataQueryStart, "UnderlyingDataQueryStart", EventLevel.Verbose);
 
@@ -104,6 +149,11 @@ public class HybridCacheEventSourceTests(TestEventListener listener) : IClassFix
     [Fact]
     public async Task UnderlyingDataQueryComplete()
     {
+        if (!IsEnabled())
+        {
+            return;
+        }
+
         listener.Reset().Source.UnderlyingDataQueryStart();
         listener.Reset(resetCounters: false).Source.UnderlyingDataQueryComplete();
         listener.AssertSingleEvent(HybridCacheEventSource.EventIdUnderlyingDataQueryComplete, "UnderlyingDataQueryComplete", EventLevel.Verbose);
@@ -116,6 +166,11 @@ public class HybridCacheEventSourceTests(TestEventListener listener) : IClassFix
     [Fact]
     public async Task UnderlyingDataQueryFailed()
     {
+        if (!IsEnabled())
+        {
+            return;
+        }
+
         listener.Reset().Source.UnderlyingDataQueryStart();
         listener.Reset(resetCounters: false).Source.UnderlyingDataQueryFailed();
         listener.AssertSingleEvent(HybridCacheEventSource.EventIdUnderlyingDataQueryFailed, "UnderlyingDataQueryFailed", EventLevel.Error);
@@ -128,6 +183,11 @@ public class HybridCacheEventSourceTests(TestEventListener listener) : IClassFix
     [Fact]
     public async Task LocalCacheWrite()
     {
+        if (!IsEnabled())
+        {
+            return;
+        }
+
         listener.Reset().Source.LocalCacheWrite();
         listener.AssertSingleEvent(HybridCacheEventSource.EventIdLocalCacheWrite, "LocalCacheWrite", EventLevel.Verbose);
 
@@ -139,6 +199,11 @@ public class HybridCacheEventSourceTests(TestEventListener listener) : IClassFix
     [Fact]
     public async Task DistributedCacheWrite()
     {
+        if (!IsEnabled())
+        {
+            return;
+        }
+
         listener.Reset().Source.DistributedCacheWrite();
         listener.AssertSingleEvent(HybridCacheEventSource.EventIdDistributedCacheWrite, "DistributedCacheWrite", EventLevel.Verbose);
 
@@ -150,6 +215,11 @@ public class HybridCacheEventSourceTests(TestEventListener listener) : IClassFix
     [Fact]
     public async Task StampedeJoin()
     {
+        if (!IsEnabled())
+        {
+            return;
+        }
+
         listener.Reset().Source.StampedeJoin();
         listener.AssertSingleEvent(HybridCacheEventSource.EventIdStampedeJoin, "StampedeJoin", EventLevel.Verbose);
 
@@ -157,5 +227,4 @@ public class HybridCacheEventSourceTests(TestEventListener listener) : IClassFix
         listener.AssertCounter("total-stampede-joins", "Total Stampede Joins", 1);
         listener.AssertRemainingCountersZero();
     }
-#endif
 }
