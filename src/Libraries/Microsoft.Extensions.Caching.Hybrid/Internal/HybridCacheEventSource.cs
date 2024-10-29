@@ -13,18 +13,18 @@ internal sealed class HybridCacheEventSource : EventSource
 {
     public static readonly HybridCacheEventSource Log = new();
 
-    private const int EventIdLocalCacheHit = 1;
-    private const int EventIdLocalCacheMiss = 2;
-    private const int EventIdDistributedCacheGet = 3;
-    private const int EventIdDistributedCacheHit = 4;
-    private const int EventIdDistributedCacheMiss = 5;
-    private const int EventIdDistributedCacheFailed = 6;
-    private const int EventIdUnderlyingDataQueryStart = 7;
-    private const int EventIdUnderlyingDataQueryComplete = 8;
-    private const int EventIdUnderlyingDataQueryFailed = 9;
-    private const int EventIdLocalCacheWrite = 10;
-    private const int EventIdDistributedCacheWrite = 11;
-    private const int EventIdStampedeJoin = 12;
+    internal const int EventIdLocalCacheHit = 1;
+    internal const int EventIdLocalCacheMiss = 2;
+    internal const int EventIdDistributedCacheGet = 3;
+    internal const int EventIdDistributedCacheHit = 4;
+    internal const int EventIdDistributedCacheMiss = 5;
+    internal const int EventIdDistributedCacheFailed = 6;
+    internal const int EventIdUnderlyingDataQueryStart = 7;
+    internal const int EventIdUnderlyingDataQueryComplete = 8;
+    internal const int EventIdUnderlyingDataQueryFailed = 9;
+    internal const int EventIdLocalCacheWrite = 10;
+    internal const int EventIdDistributedCacheWrite = 11;
+    internal const int EventIdStampedeJoin = 12;
 
     // fast local counters
     private long _totalLocalCacheHit;
@@ -40,12 +40,14 @@ internal sealed class HybridCacheEventSource : EventSource
 
 #if !(NETSTANDARD2_0 || NET462)
     // full Counter infrastructure
-    private PollingCounter[]? _counters;
+    private DiagnosticCounter[]? _counters;
 #endif
 
     [NonEvent]
     public void ResetCounters()
     {
+        Debug.WriteLine($"{nameof(HybridCacheEventSource)} counters reset!");
+
         Volatile.Write(ref _totalLocalCacheHit, 0);
         Volatile.Write(ref _totalLocalCacheMiss, 0);
         Volatile.Write(ref _totalDistributedCacheHit, 0);
@@ -174,18 +176,20 @@ internal sealed class HybridCacheEventSource : EventSource
         {
             // lazily create counters on first Enable
             _counters ??= [
-                new("total-local-cache-hits", this, () => Volatile.Read(ref _totalLocalCacheHit)) { DisplayName = "Total Local Cache Hits" },
-                new("total-local-cache-misses", this, () => Volatile.Read(ref _totalLocalCacheMiss)) { DisplayName = "Total Local Cache Misses" },
-                new("total-distributed-cache-hits", this, () => Volatile.Read(ref _totalDistributedCacheHit)) { DisplayName = "Total Distributed Cache Hits" },
-                new("total-distributed-cache-misses", this, () => Volatile.Read(ref _totalDistributedCacheMiss)) { DisplayName = "Total Distributed Cache Misses" },
-                new("total-data-execute", this, () => Volatile.Read(ref _totalUnderlyingDataQuery)) { DisplayName = "Total Data Executions" },
-                new("current-data-execute", this, () => Volatile.Read(ref _currentUnderlyingDataQuery)) { DisplayName = "Current Data Executions" },
-                new("current-distributed-cache-fetches", this, () => Volatile.Read(ref _currentDistributedFetch)) { DisplayName = "Current Distributed Cache Fetches" },
-                new("total-local-cache-writes", this, () => Volatile.Read(ref _totalLocalCacheWrite)) { DisplayName = "Total Local Cache Writes" },
-                new("total-distributed-cache-writes", this, () => Volatile.Read(ref _totalDistributedCacheWrite)) { DisplayName = "Total Distributed Cache Writes" },
-                new("total-stampede-joins", this, () => Volatile.Read(ref _totalStampedeJoin)) { DisplayName = "Total Stampede Joins" },
+                new PollingCounter("total-local-cache-hits", this, () => Volatile.Read(ref _totalLocalCacheHit)) { DisplayName = "Total Local Cache Hits" },
+                new PollingCounter("total-local-cache-misses", this, () => Volatile.Read(ref _totalLocalCacheMiss)) { DisplayName = "Total Local Cache Misses" },
+                new PollingCounter("total-distributed-cache-hits", this, () => Volatile.Read(ref _totalDistributedCacheHit)) { DisplayName = "Total Distributed Cache Hits" },
+                new PollingCounter("total-distributed-cache-misses", this, () => Volatile.Read(ref _totalDistributedCacheMiss)) { DisplayName = "Total Distributed Cache Misses" },
+                new PollingCounter("total-data-query", this, () => Volatile.Read(ref _totalUnderlyingDataQuery)) { DisplayName = "Total Data Queries" },
+                new PollingCounter("current-data-query", this, () => Volatile.Read(ref _currentUnderlyingDataQuery)) { DisplayName = "Current Data Queries" },
+                new PollingCounter("current-distributed-cache-fetches", this, () => Volatile.Read(ref _currentDistributedFetch)) { DisplayName = "Current Distributed Cache Fetches" },
+                new PollingCounter("total-local-cache-writes", this, () => Volatile.Read(ref _totalLocalCacheWrite)) { DisplayName = "Total Local Cache Writes" },
+                new PollingCounter("total-distributed-cache-writes", this, () => Volatile.Read(ref _totalDistributedCacheWrite)) { DisplayName = "Total Distributed Cache Writes" },
+                new PollingCounter("total-stampede-joins", this, () => Volatile.Read(ref _totalStampedeJoin)) { DisplayName = "Total Stampede Joins" },
             ];
         }
+
+        base.OnEventCommand(command);
     }
 #endif
 
@@ -194,5 +198,6 @@ internal sealed class HybridCacheEventSource : EventSource
     private void DebugAssertEnabled([CallerMemberName] string caller = "")
     {
         Debug.Assert(IsEnabled(), $"Missing check to {nameof(HybridCacheEventSource)}.{nameof(Log)}.{nameof(IsEnabled)} from {caller}");
+        Debug.WriteLine($"{nameof(HybridCacheEventSource)}: {caller}"); // also log all event calls, for visibility
     }
 }
