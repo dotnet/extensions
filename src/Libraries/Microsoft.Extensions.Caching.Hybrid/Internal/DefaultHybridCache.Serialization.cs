@@ -74,6 +74,11 @@ internal partial class DefaultHybridCache
         catch (Exception ex)
         {
             bool knownCause = false;
+
+            // ^^^ if we know what happened, we can record directly via cause-specific events
+            // and treat as a handled failure (i.e. return false) - otherwise, we'll bubble
+            // the fault up a few layers *in addition to* logging in a failure event
+
             if (writer is not null)
             {
                 if (writer.QuotaExceeded)
