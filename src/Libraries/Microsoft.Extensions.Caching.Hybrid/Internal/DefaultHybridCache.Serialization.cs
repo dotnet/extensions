@@ -55,6 +55,9 @@ internal partial class DefaultHybridCache
     [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentional for logged failure mode")]
     private bool TrySerialize<T>(T value, out BufferChunk buffer, out IHybridCacheSerializer<T>? serializer)
     {
+        // note: also returns the serializer we resolved, because most-any time we want to serialize, we'll also want
+        // to make sure we use that same instance later (without needing to re-resolve and/or store the entire HC machinery)
+
         RecyclableArrayBufferWriter<byte>? writer = null;
         buffer = default;
         try
