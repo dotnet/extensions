@@ -22,6 +22,9 @@ public class SizeTests(ITestOutputHelper log)
     [InlineData("abc", 1024L, true, null, null)] // reasonable size limit
     [InlineData("abc", 1024L, true, 8L, null, Log.IdMaximumPayloadBytesExceeded)] // reasonable size limit, small HC quota
     [InlineData("abc", null, false, null, 2, Log.IdMaximumKeyLengthExceeded, Log.IdMaximumKeyLengthExceeded)] // key limit exceeded
+    [InlineData("a\u0000c", null, false, null, null, Log.IdKeyInvalidContent, Log.IdKeyInvalidContent)] // invalid key
+    [InlineData("a\u001Fc", null, false, null, null, Log.IdKeyInvalidContent, Log.IdKeyInvalidContent)] // invalid key
+    [InlineData("a\u0020c", null, true, null, null)] // fine (this is just space)
     public async Task ValidateSizeLimit_Immutable(string? key, long? sizeLimit, bool expectFromL1, long? maximumPayloadBytes, int? maximumKeyLength,
         params int[] errorIds)
     {

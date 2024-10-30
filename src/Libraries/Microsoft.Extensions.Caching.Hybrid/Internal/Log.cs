@@ -15,6 +15,7 @@ internal static partial class Log
     internal const int IdMaximumKeyLengthExceeded = 5;
     internal const int IdCacheBackendReadFailure = 6;
     internal const int IdCacheBackendWriteFailure = 7;
+    internal const int IdKeyInvalidContent = 8;
 
     [LoggerMessage(LogLevel.Error, "Cache MaximumPayloadBytes ({Bytes}) exceeded.", EventName = "MaximumPayloadBytesExceeded", EventId = IdMaximumPayloadBytesExceeded, SkipEnabledCheck = false)]
     internal static partial void MaximumPayloadBytesExceeded(this ILogger logger, Exception e, int bytes);
@@ -42,4 +43,7 @@ internal static partial class Log
 
     [LoggerMessage(LogLevel.Error, "Cache backend write failure.", EventName = "CacheBackendWriteFailure", EventId = IdCacheBackendWriteFailure, SkipEnabledCheck = false)]
     internal static partial void CacheBackendWriteFailure(this ILogger logger, Exception ex);
+
+    [LoggerMessage(LogLevel.Error, "Cache key contains invalid content.", EventName = "KeyInvalidContent", EventId = IdKeyInvalidContent, SkipEnabledCheck = false)]
+    internal static partial void KeyInvalidContent(this ILogger logger); // for PII etc reasons, we won't include the actual key
 }

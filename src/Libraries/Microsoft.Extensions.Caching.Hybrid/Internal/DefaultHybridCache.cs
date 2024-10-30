@@ -22,6 +22,9 @@ namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 /// </summary>
 internal sealed partial class DefaultHybridCache : HybridCache
 {
+    // reserve non-printable characters from keys, to prevent potential L2 abuse
+    private static readonly char[] _keyReservedCharacters = Enumerable.Range(0, 32).Select(i => (char)i).ToArray();
+
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0032:Use auto property", Justification = "Keep usage explicit")]
     private readonly IDistributedCache? _backendCache;
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0032:Use auto property", Justification = "Keep usage explicit")]
@@ -219,6 +222,12 @@ internal sealed partial class DefaultHybridCache : HybridCache
         if (key.Length > _maximumKeyLength)
         {
             _logger.MaximumKeyLengthExceeded(_maximumKeyLength, key.Length);
+            return false;
+        }
+
+        if (key.IndexOfAny(_keyReservedCharacters) >= 0)
+        {
+            _logger.KeyInvalidContent();
             return false;
         }
 
