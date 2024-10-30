@@ -30,6 +30,8 @@ public class OllamaChatClientIntegrationTests : ChatClientIntegrationTests
     public override Task FunctionInvocation_RequireSpecific() =>
         throw new SkipTestException("Ollama does not currently support requiring function invocation.");
 
+    protected override string? GetModel_MultiModal_DescribeImage() => "llava";
+
     [ConditionalFact]
     public async Task PromptBasedFunctionCalling_NoArgs()
     {
