@@ -138,8 +138,6 @@ public static partial class AIJsonUtilities
         JsonSerializerOptions? serializerOptions = null,
         AIJsonSchemaCreateOptions? inferenceOptions = null)
     {
-        _ = Throw.IfNull(serializerOptions);
-
         serializerOptions ??= DefaultOptions;
         inferenceOptions ??= AIJsonSchemaCreateOptions.Default;
 
@@ -278,24 +276,24 @@ public static partial class AIJsonUtilities
                 {
                     objSchema.Add(AdditionalPropertiesPropertyName, (JsonNode)false);
                 }
+
+                // Some consumers of the JSON schema, including Ollama as of v0.3.13, don't understand
+                // schemas with "type": [...], and only understand "type" being a single value.
+                // STJ represents .NET integer types as ["string", "integer"], which will then lead to an error.
+                if (TypeIsArrayContainingInteger(objSchema))
+                {
+                    // We don't want to emit any array for "type". In this case we know it contains "integer"
+                    // so reduce the type to that alone, assuming it's the most specific type.
+                    // This makes schemas for Int32 (etc) work with Ollama.
+                    JsonObject obj = ConvertSchemaToObject(ref schema);
+                    obj[TypePropertyName] = "integer";
+                    _ = obj.Remove(PatternPropertyName);
+                }
             }
 
             if (ctx.Path.IsEmpty)
             {
                 // We are at the root-level schema node, update/append parameter-specific metadata
-
-                // Some consumers of the JSON schema, including Ollama as of v0.3.13, don't understand
-                // schemas with "type": [...], and only understand "type" being a single value.
-                // STJ represents .NET integer types as ["string", "integer"], which will then lead to an error.
-                if (TypeIsArrayContainingInteger(schema))
-                {
-                    // We don't want to emit any array for "type". In this case we know it contains "integer"
-                    // so reduce the type to that alone, assuming it's the most specific type.
-                    // This makes schemas for Int32 (etc) work with Ollama
-                    JsonObject obj = ConvertSchemaToObject(ref schema);
-                    obj[TypePropertyName] = "integer";
-                    _ = obj.Remove(PatternPropertyName);
-                }
 
                 if (!string.IsNullOrWhiteSpace(key.Description))
                 {
@@ -354,7 +352,7 @@ public static partial class AIJsonUtilities
         }
     }
 
-    private static bool TypeIsArrayContainingInteger(JsonNode schema)
+    private static bool TypeIsArrayContainingInteger(JsonObject schema)
     {
         if (schema["type"] is JsonArray typeArray)
         {

@@ -158,4 +158,11 @@ public static class AIJsonUtilitiesTests
         A = 1,
         B = 2
     }
+
+    [Fact]
+    public static void ResolveJsonSchema_CanBeBoolean()
+    {
+        JsonElement schema = AIJsonUtilities.CreateJsonSchema(typeof(object));
+        Assert.Equal(JsonValueKind.True, schema.ValueKind);
+    }
 }
