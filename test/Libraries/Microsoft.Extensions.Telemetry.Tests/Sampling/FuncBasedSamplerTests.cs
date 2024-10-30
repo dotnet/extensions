@@ -17,7 +17,7 @@ public class FuncBasedSamplerTests
         var sampler = new FuncBasedSampler((_) => configuredDecision);
 
         // Act
-        var actualDecision = sampler.ShouldSample(new SamplingParameters(null, null, null));
+        var actualDecision = sampler.ShouldSample(new SamplingParameters(LogLevel.Trace, nameof(SamplesAsConfigured), 0));
 
         // Assert
         Assert.Equal(configuredDecision, actualDecision);

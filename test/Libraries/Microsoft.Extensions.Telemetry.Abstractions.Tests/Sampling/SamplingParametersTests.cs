@@ -10,8 +10,8 @@ public class SamplingParametersTests
     [Fact]
     public void EqualsOperators()
     {
-        var testInstance = new SamplingParameters(null, null, null);
-        var testInstance2 = new SamplingParameters(null, null, null);
+        var testInstance = new SamplingParameters(LogLevel.Trace, nameof(SamplingParameters), 0);
+        var testInstance2 = new SamplingParameters(LogLevel.Trace, nameof(SamplingParameters), 0);
         testInstance.Equals(testInstance2).Should().BeTrue();
         testInstance.GetHashCode().Should().Be(testInstance2.GetHashCode());
         testInstance.Equals(new object()).Should().BeFalse();
@@ -22,8 +22,8 @@ public class SamplingParametersTests
     [Fact]
     public void EqualAndNotEqualOperators()
     {
-        var testInstance = new SamplingParameters(null, null, null);
-        var testInstance2 = new SamplingParameters(null, null, null);
+        var testInstance = new SamplingParameters(LogLevel.Trace, nameof(SamplingParameters), 0);
+        var testInstance2 = new SamplingParameters(LogLevel.Trace, nameof(SamplingParameters), 0);
         (testInstance == testInstance2).Should().BeTrue();
         (testInstance != testInstance2).Should().BeFalse();
     }

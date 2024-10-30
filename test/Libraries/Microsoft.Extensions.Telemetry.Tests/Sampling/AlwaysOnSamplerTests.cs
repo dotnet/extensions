@@ -16,7 +16,7 @@ public class AlwaysOnSamplerTests
         var sampler = new AlwaysOnSampler();
 
         // Act
-        var shouldSample = sampler.ShouldSample(new SamplingParameters(null, null, null));
+        var shouldSample = sampler.ShouldSample(new SamplingParameters(LogLevel.Trace, nameof(AlwaysOnSamplerTests), 0));
 
         // Assert
         Assert.True(shouldSample);

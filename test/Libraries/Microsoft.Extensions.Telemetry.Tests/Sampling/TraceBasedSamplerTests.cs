@@ -10,6 +10,19 @@ namespace Microsoft.Extensions.Telemetry.Sampling;
 public class TraceBasedSamplerTests
 {
     [Fact]
+    public void WhenNoActivity_SamplesIn()
+    {
+        // Arrange
+        var sampler = new TraceBasedSampler();
+
+        // Act
+        var shouldSample = sampler.ShouldSample(new SamplingParameters(LogLevel.Trace, nameof(WhenNoActivity_SamplesIn), 0));
+
+        // Assert
+        Assert.True(shouldSample);
+    }
+
+    [Fact]
     public void WhenActivityIsRecorded_SamplesIn()
     {
         // Arrange
@@ -20,7 +33,7 @@ public class TraceBasedSamplerTests
         activity.ActivityTraceFlags |= ActivityTraceFlags.Recorded;
         activity.Start();
 
-        var shouldSample = sampler.ShouldSample(new SamplingParameters(null, null, null));
+        var shouldSample = sampler.ShouldSample(new SamplingParameters(LogLevel.Trace, nameof(WhenActivityIsRecorded_SamplesIn), 0));
 
         // Assert
         Assert.True(shouldSample);
@@ -39,7 +52,7 @@ public class TraceBasedSamplerTests
         activity.ActivityTraceFlags &= ~ActivityTraceFlags.Recorded;
         activity.Start();
 
-        var shouldSample = sampler.ShouldSample(new SamplingParameters(null, null, null));
+        var shouldSample = sampler.ShouldSample(new SamplingParameters(LogLevel.Trace, nameof(WhenActivityIsNotRecorded_SamplesOut), 0));
 
         // Assert
         Assert.False(shouldSample);

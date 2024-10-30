@@ -48,7 +48,7 @@ internal sealed partial class ExtendedLogger : ILogger
             }
         }
 
-        LegacyPath<TState>(logLevel, eventId, state, exception, formatter);
+        LegacyPath(logLevel, eventId, state, exception, formatter);
     }
 
     public IDisposable? BeginScope<TState>(TState state)
@@ -265,7 +265,7 @@ internal sealed partial class ExtendedLogger : ILogger
             ref readonly MessageLogger loggerInfo = ref loggers[i];
             if (loggerInfo.IsNotFilteredOut(logLevel))
             {
-                if (!config.Sampler.ShouldSample(new SamplingParameters(logLevel, loggerInfo.Category!, eventId)))
+                if (!config.Sampler.ShouldSample(new SamplingParameters(logLevel, loggerInfo.Category, eventId)))
                 {
                     // the record was not selected for being sampled, so we drop it.
                     continue;

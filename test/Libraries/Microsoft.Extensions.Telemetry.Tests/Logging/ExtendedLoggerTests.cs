@@ -130,12 +130,11 @@ public static class ExtendedLoggerTests
              builder =>
              {
                  builder.AddProvider(provider);
-                 builder.AddRatioBasedSampler(0, LogLevel.Warning, null, null);
+                 builder.AddRatioBasedSampler(0, LogLevel.Warning);
              });
 
         var logger = factory.CreateLogger(Category);
         logger.LogWarning("MSG0");
-
         logger.Log(LogLevel.Warning, new EventId(2, "ID2"), "some state", null, (_, _) => "MSG2");
 
         Assert.Equal(0, provider.Logger!.Collector.Count);

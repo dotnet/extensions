@@ -16,7 +16,7 @@ public class SamplingLoggerBuilderExtensionsTests
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging(builder =>
         {
-            builder.AddTraceBasedSampling();
+            builder.AddTraceBasedSampler();
         });
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
@@ -94,7 +94,7 @@ public class SamplingLoggerBuilderExtensionsTests
     {
         var builder = null as ILoggingBuilder;
 
-        var action = () => SamplingLoggerBuilderExtensions.AddTraceBasedSampling(builder!);
+        var action = () => SamplingLoggerBuilderExtensions.AddTraceBasedSampler(builder!);
         Assert.Throws<ArgumentNullException>(action);
 
         var action2 = () => SamplingLoggerBuilderExtensions.AddRatioBasedSampler(builder!, 1.0);

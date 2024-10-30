@@ -12,14 +12,12 @@ namespace Microsoft.Extensions.Diagnostics.Sampling;
 /// </summary>
 internal sealed class RatioBasedSampler : LoggerSampler
 {
-    private const int Hundred = 100;
-
 #if !NET6_0_OR_GREATER
     private static readonly System.Threading.ThreadLocal<Random> _randomInstance = new(() => new Random());
 #endif
 
     private readonly int _sampleRate;
-    private readonly SamplingParameters _parameters;
+    private readonly LogLevel? _logLevel;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RatioBasedSampler"/> class.
@@ -28,12 +26,10 @@ internal sealed class RatioBasedSampler : LoggerSampler
     /// Higher the value, higher is the probability of a given log record to be sampled in.
     /// </param>
     /// <param name="logLevel">Apply sampling to the provided log level or below.</param>
-    /// <param name="category">Log category to apply sampling to.</param>
-    /// <param name="eventId">Log event ID to apply sampling to.</param>
-    public RatioBasedSampler(double probability, LogLevel? logLevel, string? category, EventId? eventId)
+    public RatioBasedSampler(double probability, LogLevel? logLevel)
     {
-        _sampleRate = (int)(probability * Hundred);
-        _parameters = new SamplingParameters(logLevel, category, eventId);
+        _sampleRate = (int)probability * int.MaxValue;
+        _logLevel = logLevel;
     }
 
     /// <inheritdoc/>
@@ -45,29 +41,14 @@ internal sealed class RatioBasedSampler : LoggerSampler
         }
 
 #if NET6_0_OR_GREATER
-        return Random.Shared.Next(Hundred) < _sampleRate;
+        return Random.Shared.Next(int.MaxValue) < _sampleRate;
 #else
-        return _randomInstance.Value!.Next(Hundred) < _sampleRate;
+        return _randomInstance.Value!.Next(int.MaxValue) < _sampleRate;
 #endif
     }
 
     private bool IsApplicable(SamplingParameters parameters)
     {
-        if (_parameters.LogLevel is not null && parameters.LogLevel > _parameters.LogLevel)
-        {
-            return false;
-        }
-
-        if (_parameters.Category is not null && parameters.Category != _parameters.Category)
-        {
-            return false;
-        }
-
-        if (_parameters.EventId is not null && parameters.EventId != _parameters.EventId)
-        {
-            return false;
-        }
-
-        return true;
+        return _logLevel is null || parameters.LogLevel <= _logLevel;
     }
 }

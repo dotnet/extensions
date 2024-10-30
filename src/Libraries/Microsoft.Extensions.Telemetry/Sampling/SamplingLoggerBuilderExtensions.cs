@@ -18,14 +18,14 @@ namespace Microsoft.Extensions.Diagnostics.Sampling;
 public static class SamplingLoggerBuilderExtensions
 {
     /// <summary>
-    /// Adds Trace-based logging sampling to the logging infrastructure. Sampling decisions
+    /// Adds Trace-based logging sampler to the logging infrastructure. Sampling decisions
     /// for logs match exactly the sampling decisions for the underlying <see cref="System.Diagnostics.Activity"/>.
     /// </summary>
     /// <param name="builder">The dependency injection container to add logging to.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <remarks>Please configure Tracing Sampling separately as part of OpenTelemetry .NET.</remarks>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
-    public static ILoggingBuilder AddTraceBasedSampling(this ILoggingBuilder builder)
+    public static ILoggingBuilder AddTraceBasedSampler(this ILoggingBuilder builder)
     {
         _ = Throw.IfNull(builder);
 
@@ -40,21 +40,14 @@ public static class SamplingLoggerBuilderExtensions
     /// <param name="builder">The dependency injection container to add logging to.</param>
     /// <param name="probability">Probability from 0.0 to 1.0.</param>
     /// <param name="level">The log level (and below) to apply the sampler to.</param>
-    /// <param name="category">The log category to apply the sampler to.</param>
-    /// <param name="eventId">The event ID to apply the sampler to.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
-    public static ILoggingBuilder AddRatioBasedSampler(
-        this ILoggingBuilder builder,
-        double probability,
-        LogLevel? level = null,
-        string? category = null,
-        EventId? eventId = null)
+    public static ILoggingBuilder AddRatioBasedSampler(this ILoggingBuilder builder, double probability, LogLevel? level = null)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfOutOfRange(probability, 0, 1, nameof(probability));
 
-        return builder.AddSampler(new RatioBasedSampler(probability, level, category, eventId));
+        return builder.AddSampler(new RatioBasedSampler(probability, level));
     }
 
     /// <summary>

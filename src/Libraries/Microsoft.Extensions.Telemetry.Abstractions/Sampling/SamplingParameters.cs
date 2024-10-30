@@ -19,7 +19,7 @@ public readonly struct SamplingParameters : IEquatable<SamplingParameters>
     /// <param name="logLevel"><see cref="Microsoft.Extensions.Logging.LogLevel"/> of the log record.</param>
     /// <param name="category">Category of the log record.</param>
     /// <param name="eventId"><see cref="Microsoft.Extensions.Logging.EventId"/> of the log record.</param>
-    public SamplingParameters(LogLevel? logLevel, string? category, EventId? eventId)
+    public SamplingParameters(LogLevel logLevel, string category, EventId eventId)
     {
         LogLevel = logLevel;
         Category = category;
@@ -29,17 +29,17 @@ public readonly struct SamplingParameters : IEquatable<SamplingParameters>
     /// <summary>
     /// Gets the log category.
     /// </summary>
-    public string? Category { get; }
+    public string Category { get; }
 
     /// <summary>
     /// Gets the event ID.
     /// </summary>
-    public EventId? EventId { get; }
+    public EventId EventId { get; }
 
     /// <summary>
     /// Gets the log level.
     /// </summary>
-    public LogLevel? LogLevel { get; }
+    public LogLevel LogLevel { get; }
 
     /// <inheritdoc/>
     public override bool Equals(object? obj) =>
@@ -59,9 +59,9 @@ public readonly struct SamplingParameters : IEquatable<SamplingParameters>
         HashCode.Combine(
             LogLevel.GetHashCode(),
 #if NETFRAMEWORK
-            Category?.GetHashCode(),
+            Category.GetHashCode(),
 #else
-            Category?.GetHashCode(StringComparison.Ordinal),
+            Category.GetHashCode(StringComparison.Ordinal),
 #endif
             EventId.GetHashCode());
 
