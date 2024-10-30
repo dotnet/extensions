@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -130,6 +131,27 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.True(usage.Details.InputTokenCount > 1);
         Assert.True(usage.Details.OutputTokenCount > 1);
         Assert.Equal(usage.Details.InputTokenCount + usage.Details.OutputTokenCount, usage.Details.TotalTokenCount);
+    }
+
+    protected virtual string? GetModel_MultiModal_DescribeImage() => null;
+
+    [ConditionalFact]
+    public virtual async Task MultiModal_DescribeImage()
+    {
+        SkipIfNotEnabled();
+
+        var response = await _chatClient.CompleteAsync(
+            [
+                new(ChatRole.User,
+                [
+                    new TextContent("What does this logo say?"),
+                    new ImageContent(GetImageDataUri()),
+                ])
+            ],
+            new() { ModelId = GetModel_MultiModal_DescribeImage() });
+
+        Assert.Single(response.Choices);
+        Assert.True(response.Message.Text?.IndexOf("net", StringComparison.OrdinalIgnoreCase) >= 0, response.Message.Text);
     }
 
     [ConditionalFact]
@@ -712,6 +734,15 @@ public abstract class ChatClientIntegrationTests : IDisposable
         PopStar,
         Programmer,
         Unknown,
+    }
+
+    private static Uri GetImageDataUri()
+    {
+        using Stream? s = typeof(ChatClientIntegrationTests).Assembly.GetManifestResourceStream("Microsoft.Extensions.AI.dotnet.png");
+        Assert.NotNull(s);
+        MemoryStream ms = new();
+        s.CopyTo(ms);
+        return new Uri($"data:image/png;base64,{Convert.ToBase64String(ms.ToArray())}");
     }
 
     [MemberNotNull(nameof(_chatClient))]
