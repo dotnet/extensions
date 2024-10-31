@@ -13,7 +13,7 @@ public class HybridCacheEventSourceTests(ITestOutputHelper log, TestEventListene
 
     private bool IsEnabled()
     {
-        // including this data for tracability when tests fail - ETW subsystem can be ... weird
+        // including this data for visibility when tests fail - ETW subsystem can be ... weird
         log.WriteLine($".NET {Environment.Version} on {Environment.OSVersion}, {IntPtr.Size * 8}-bit");
 
         if (!listener.Source.IsEnabled())
