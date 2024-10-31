@@ -8,5 +8,5 @@ namespace Microsoft.Extensions.Diagnostics.Sampling;
 internal sealed class TraceBasedSampler : LoggerSampler
 {
     public override bool ShouldSample(SamplingParameters _) =>
-        Activity.Current is null || Activity.Current.Recorded;
+        Activity.Current?.Recorded ?? true;
 }

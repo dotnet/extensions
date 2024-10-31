@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Logging;
 //       redactor code calls recursively back into the logger. Don't do that.
 //
 // NOTE: Unlike the original logger in dotnet/runtime, this logger eats exceptions thrown from invoked loggers, enrichers,
-//       and redactors, rather than forwarding the exceptions to the caller. The fact an exception occured is recorded in
+//       and redactors, rather than forwarding the exceptions to the caller. The fact an exception occurred is recorded in
 //       the event log instead. The idea is that failures in the telemetry stack should not lead to failures in the
 //       application. It's better to keep running with missing telemetry rather than crashing the process completely.
 
@@ -38,6 +38,12 @@ internal sealed partial class ExtendedLogger : ILogger
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
+        if (MessageLoggers.Length == 0 || !_factory.Config.Sampler.ShouldSample(new SamplingParameters(logLevel, MessageLoggers[0].Category, eventId)))
+        {
+            // the record was not selected for being sampled in, so we drop it.
+            return;
+        }
+
         if (typeof(TState) == typeof(LoggerMessageState))
         {
             var msgState = (LoggerMessageState?)(object?)state;
@@ -265,12 +271,6 @@ internal sealed partial class ExtendedLogger : ILogger
             ref readonly MessageLogger loggerInfo = ref loggers[i];
             if (loggerInfo.IsNotFilteredOut(logLevel))
             {
-                if (!config.Sampler.ShouldSample(new SamplingParameters(logLevel, loggerInfo.Category, eventId)))
-                {
-                    // the record was not selected for being sampled, so we drop it.
-                    continue;
-                }
-
                 try
                 {
                     loggerInfo.LoggerLog(logLevel, eventId, joiner, exception, static (s, e) =>
@@ -355,12 +355,6 @@ internal sealed partial class ExtendedLogger : ILogger
             ref readonly MessageLogger loggerInfo = ref loggers[i];
             if (loggerInfo.IsNotFilteredOut(logLevel))
             {
-                if (!config.Sampler.ShouldSample(new SamplingParameters(logLevel, loggerInfo.Category!, eventId)))
-                {
-                    // the record was not selected for being sampled, so we drop it.
-                    continue;
-                }
-
                 try
                 {
                     loggerInfo.Logger.Log(logLevel, eventId, joiner, exception, static (s, e) =>
