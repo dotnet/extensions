@@ -2,6 +2,7 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Shared.Test</RootNamespace>
     <Description>Unit tests for Microsoft.Shared</Description>
+    <DefineConstants>$(DefineConstants);TESTS_JSON_SCHEMA_EXPORTER_POLYFILL</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -22,6 +23,5 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="JsonSchema.Net" />
-    <PackageReference Include="JsonSchema.Net.Generation" />
   </ItemGroup>
 </Project>
