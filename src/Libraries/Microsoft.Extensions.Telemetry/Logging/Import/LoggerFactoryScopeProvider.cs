@@ -236,7 +236,7 @@ namespace Microsoft.Extensions.Logging
             }
         }
 
-        private sealed class ActivityBaggageLogScopeWrapper : IEnumerable<KeyValuePair<string, string?>>
+        private sealed class ActivityBaggageLogScopeWrapper : IEnumerable<KeyValuePair<string, string?>>, IEnumerable<KeyValuePair<string, object?>>
         {
             private readonly IEnumerable<KeyValuePair<string, string?>> _items;
 
@@ -250,6 +250,11 @@ namespace Microsoft.Extensions.Logging
             public IEnumerator<KeyValuePair<string, string?>> GetEnumerator()
             {
                 return _items.GetEnumerator();
+            }
+
+            IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator()
+            {
+                return _items.Select(x => KeyValuePair.Create<string, object?>(x.Key, x.Value)).GetEnumerator();
             }
 
             IEnumerator IEnumerable.GetEnumerator()
