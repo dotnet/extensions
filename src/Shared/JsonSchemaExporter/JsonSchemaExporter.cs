@@ -263,7 +263,7 @@ internal static partial class JsonSchemaExporter
                     }
                 }
 
-                Func<JsonPropertyInfo, ParameterInfo?>? parameterInfoMapper = ResolveJsonConstructorParameterMapper(typeInfo);
+                Func<JsonPropertyInfo, ParameterInfo?>? parameterInfoMapper = ResolveJsonConstructorParameterMapper(typeInfo.Type, typeInfo);
 
                 state.PushSchemaNode(JsonSchemaConstants.PropertiesPropertyName);
                 foreach (JsonPropertyInfo property in typeInfo.Properties)
@@ -347,7 +347,7 @@ internal static partial class JsonSchemaExporter
                 });
 
             case JsonTypeInfoKind.Enumerable:
-                Type elementType = GetElementType(typeInfo);
+                Type elementType = StjReflectionProxy.GetElementType(typeInfo);
                 JsonTypeInfo elementTypeInfo = typeInfo.Options.GetTypeInfo(elementType);
 
                 if (typeDiscriminator is null)
@@ -398,7 +398,7 @@ internal static partial class JsonSchemaExporter
                 }
 
             case JsonTypeInfoKind.Dictionary:
-                Type valueType = GetElementType(typeInfo);
+                Type valueType = StjReflectionProxy.GetElementType(typeInfo);
                 JsonTypeInfo valueTypeInfo = typeInfo.Options.GetTypeInfo(valueType);
 
                 List<KeyValuePair<string, JsonSchema>>? dictProps = null;
@@ -660,23 +660,14 @@ internal static partial class JsonSchemaExporter
         return new JsonSchema { Type = schemaType, Pattern = pattern };
     }
 
-    // Uses reflection to determine the element type of an enumerable or dictionary type
-    // Workaround for https://github.com/dotnet/runtime/issues/77306#issuecomment-2007887560
-    private static Type GetElementType(JsonTypeInfo typeInfo)
-    {
-        Debug.Assert(typeInfo.Kind is JsonTypeInfoKind.Enumerable or JsonTypeInfoKind.Dictionary, "TypeInfo must be of collection type");
-        _elementTypeProperty ??= typeof(JsonTypeInfo).GetProperty("ElementType", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        return (Type)_elementTypeProperty?.GetValue(typeInfo)!;
-    }
-
-    private static PropertyInfo? _elementTypeProperty;
-
     // The .NET 8 source generator doesn't populate attribute providers for properties
     // cf. https://github.com/dotnet/runtime/issues/100095
     // Work around the issue by running a query for the relevant MemberInfo using the internal MemberName property
     // https://github.com/dotnet/runtime/blob/de774ff9ee1a2c06663ab35be34b755cd8d29731/src/libraries/System.Text.Json/src/System/Text/Json/Serialization/Metadata/JsonPropertyInfo.cs#L206
-    [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
-    private static ICustomAttributeProvider? ResolveAttributeProvider(Type? declaringType, JsonPropertyInfo? propertyInfo)
+    private static ICustomAttributeProvider? ResolveAttributeProvider(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+        Type? declaringType,
+        JsonPropertyInfo? propertyInfo)
     {
         if (declaringType is null || propertyInfo is null)
         {
@@ -688,8 +679,7 @@ internal static partial class JsonSchemaExporter
             return provider;
         }
 
-        _memberNameProperty ??= typeof(JsonPropertyInfo).GetProperty("MemberName", BindingFlags.Instance | BindingFlags.NonPublic)!;
-        var memberName = (string?)_memberNameProperty.GetValue(propertyInfo);
+        var memberName = StjReflectionProxy.GetMemberName(propertyInfo);
         if (memberName is not null)
         {
             return declaringType.GetMember(memberName, MemberTypes.Property | MemberTypes.Field, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).FirstOrDefault();
@@ -698,24 +688,16 @@ internal static partial class JsonSchemaExporter
         return null;
     }
 
-    private static PropertyInfo? _memberNameProperty;
-
-    // Uses reflection to determine any custom converters specified for the element of a nullable type.
-    [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
     private static JsonConverter? ExtractCustomNullableConverter(JsonConverter? converter)
     {
         Debug.Assert(converter is null || IsBuiltInConverter(converter), "If specified the converter must be built-in.");
 
-        // There is unfortunately no way in which we can obtain the element converter from a nullable converter without resorting to private reflection
-        // https://github.com/dotnet/runtime/blob/release/8.0/src/libraries/System.Text.Json/src/System/Text/Json/Serialization/Converters/Value/NullableConverter.cs#L15-L17
-        Type? converterType = converter?.GetType();
-        if (converterType?.Name == "NullableConverter`1")
+        if (converter is null)
         {
-            FieldInfo elementConverterField = converterType.GetPrivateFieldWithPotentiallyTrimmedMetadata("_elementConverter");
-            return (JsonConverter)elementConverterField!.GetValue(converter)!;
+            return null;
         }
 
-        return null;
+        return StjReflectionProxy.GetElementConverter(converter);
     }
 
     private static void ValidateOptions(JsonSerializerOptions options)
@@ -758,9 +740,7 @@ internal static partial class JsonSchemaExporter
         }
     }
 
-    // Uses reflection to determine schema for enum types
     // Adapted from https://github.com/dotnet/runtime/blob/release/9.0/src/libraries/System.Text.Json/src/System/Text/Json/Serialization/Converters/Value/EnumConverter.cs#L498-L521
-    [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
     private static JsonSchema GetEnumConverterSchema(JsonTypeInfo typeInfo, JsonConverter converter)
     {
         Debug.Assert(typeInfo.Type.IsEnum && IsBuiltInConverter(converter), "must be using a built-in enum converter.");
@@ -770,13 +750,9 @@ internal static partial class JsonSchemaExporter
             converter = factory.CreateConverter(typeInfo.Type, typeInfo.Options)!;
         }
 
-        Type converterType = converter.GetType();
-        FieldInfo converterOptionsField = converterType.GetPrivateFieldWithPotentiallyTrimmedMetadata("_converterOptions");
-        FieldInfo namingPolicyField = converterType.GetPrivateFieldWithPotentiallyTrimmedMetadata("_namingPolicy");
+        StjReflectionProxy.GetEnumConverterConfig(converter, out JsonNamingPolicy? namingPolicy, out bool allowString);
 
-        const int EnumConverterOptionsAllowStrings = 1;
-        var converterOptions = (int)converterOptionsField!.GetValue(converter)!;
-        if ((converterOptions & EnumConverterOptionsAllowStrings) != 0)
+        if (allowString)
         {
             // This explicitly ignores the integer component in converters configured as AllowNumbers | AllowStrings
             // which is the default for JsonStringEnumConverter. This sacrifices some precision in the schema for simplicity.
@@ -787,7 +763,6 @@ internal static partial class JsonSchemaExporter
                 return new() { Type = JsonSchemaType.String };
             }
 
-            var namingPolicy = (JsonNamingPolicy?)namingPolicyField!.GetValue(converter)!;
             JsonArray enumValues = new();
             foreach (string name in Enum.GetNames(typeInfo.Type))
             {
@@ -896,7 +871,7 @@ internal static partial class JsonSchemaExporter
                     BindingFlags.Public | BindingFlags.NonPublic;
 
                 return member.DeclaringType.GetGenericTypeDefinition()
-                    .GetMember(member.Name, AllMemberFlags)
+                    .GetMember(member.Name, member.MemberType, AllMemberFlags)
                     .First(m => m.MetadataToken == member.MetadataToken);
             }
 
@@ -943,29 +918,18 @@ internal static partial class JsonSchemaExporter
         return defaultValue;
     }
 
-    [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
-    private static FieldInfo GetPrivateFieldWithPotentiallyTrimmedMetadata(this Type type, string fieldName)
-    {
-        FieldInfo? field = type.GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
-        if (field is null)
-        {
-            throw new InvalidOperationException(
-                $"Could not resolve metadata for field '{fieldName}' in type '{type}'. " +
-                "If running Native AOT ensure that the 'IlcTrimMetadata' property has been disabled.");
-        }
-
-        return field;
-    }
-
     // Resolves the parameters of the deserialization constructor for a type, if they exist.
-    [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
-    private static Func<JsonPropertyInfo, ParameterInfo?>? ResolveJsonConstructorParameterMapper(JsonTypeInfo typeInfo)
+    private static Func<JsonPropertyInfo, ParameterInfo?>? ResolveJsonConstructorParameterMapper(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)]
+        Type type,
+        JsonTypeInfo typeInfo)
     {
+        Debug.Assert(type == typeInfo.Type, "The declaring type must match the typeInfo type.");
         Debug.Assert(typeInfo.Kind is JsonTypeInfoKind.Object, "Should only be passed object JSON kinds.");
 
         if (typeInfo.Properties.Count > 0 &&
             typeInfo.CreateObject is null && // Ensure that a default constructor isn't being used
-            typeInfo.Type.TryGetDeserializationConstructor(useDefaultCtorInAnnotatedStructs: true, out ConstructorInfo? ctor))
+            type.TryGetDeserializationConstructor(useDefaultCtorInAnnotatedStructs: true, out ConstructorInfo? ctor))
         {
             ParameterInfo[]? parameters = ctor?.GetParameters();
             if (parameters?.Length > 0)
@@ -1008,8 +972,8 @@ internal static partial class JsonSchemaExporter
 
     // Resolves the deserialization constructor for a type using logic copied from
     // https://github.com/dotnet/runtime/blob/e12e2fa6cbdd1f4b0c8ad1b1e2d960a480c21703/src/libraries/System.Text.Json/Common/ReflectionExtensions.cs#L227-L286
-    [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
     private static bool TryGetDeserializationConstructor(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)]
         this Type type,
         bool useDefaultCtorInAnnotatedStructs,
         out ConstructorInfo? deserializationCtor)
@@ -1087,6 +1051,101 @@ internal static partial class JsonSchemaExporter
 
     private static bool CanBeNull(Type type) => !type.IsValueType || Nullable.GetUnderlyingType(type) is not null;
 
+    private static class StjReflectionProxy
+    {
+        private const BindingFlags InstanceBindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+        private static PropertyInfo? _jsonTypeInfo_ElementType;
+        private static PropertyInfo? _jsonPropertyInfo_MemberName;
+        private static FieldInfo? _nullableConverter_ElementConverter_Generic;
+        private static FieldInfo? _enumConverter_Options_Generic;
+        private static FieldInfo? _enumConverter_NamingPolicy_Generic;
+
+        public static Type GetElementType(JsonTypeInfo typeInfo)
+        {
+            Debug.Assert(typeInfo.Kind is JsonTypeInfoKind.Enumerable or JsonTypeInfoKind.Dictionary, "TypeInfo must be of collection type");
+
+            // Uses reflection to access the element type encapsulated by a JsonTypeInfo.
+            if (_jsonTypeInfo_ElementType is null)
+            {
+                PropertyInfo? elementTypeProperty = typeof(JsonTypeInfo).GetProperty("ElementType", InstanceBindingFlags);
+                _jsonTypeInfo_ElementType = Throw.IfNull(elementTypeProperty);
+            }
+
+            return (Type)_jsonTypeInfo_ElementType.GetValue(typeInfo)!;
+        }
+
+        public static string? GetMemberName(JsonPropertyInfo propertyInfo)
+        {
+            // Uses reflection to the member name encapsulated by a JsonPropertyInfo.
+            if (_jsonPropertyInfo_MemberName is null)
+            {
+                PropertyInfo? memberName = typeof(JsonPropertyInfo).GetProperty("MemberName", InstanceBindingFlags);
+                _jsonPropertyInfo_MemberName = Throw.IfNull(memberName);
+            }
+
+            return (string?)_jsonPropertyInfo_MemberName.GetValue(propertyInfo);
+        }
+
+        public static JsonConverter GetElementConverter(JsonConverter nullableConverter)
+        {
+            // Uses reflection to access the element converter encapsulated by a nullable converter.
+            if (_nullableConverter_ElementConverter_Generic is null)
+            {
+                FieldInfo? genericFieldInfo = Type
+                    .GetType("System.Text.Json.Serialization.Converters.NullableConverter`1, System.Text.Json")!
+                    .GetField("_elementConverter", InstanceBindingFlags);
+
+                _nullableConverter_ElementConverter_Generic = Throw.IfNull(genericFieldInfo);
+            }
+
+            Type converterType = nullableConverter.GetType();
+            var thisFieldInfo = (FieldInfo)GetMemberWithSameMetadataDefinitionAs(converterType, _nullableConverter_ElementConverter_Generic);
+            return (JsonConverter)thisFieldInfo.GetValue(nullableConverter)!;
+        }
+
+        public static void GetEnumConverterConfig(JsonConverter enumConverter, out JsonNamingPolicy? namingPolicy, out bool allowString)
+        {
+            // Uses reflection to access configuration encapsulated by an enum converter.
+            if (_enumConverter_Options_Generic is null)
+            {
+                FieldInfo? genericFieldInfo = Type
+                    .GetType("System.Text.Json.Serialization.Converters.EnumConverter`1, System.Text.Json")!
+                    .GetField("_converterOptions", InstanceBindingFlags);
+
+                _enumConverter_Options_Generic = Throw.IfNull(genericFieldInfo);
+            }
+
+            if (_enumConverter_NamingPolicy_Generic is null)
+            {
+                FieldInfo? genericFieldInfo = Type
+                    .GetType("System.Text.Json.Serialization.Converters.EnumConverter`1, System.Text.Json")!
+                    .GetField("_namingPolicy", InstanceBindingFlags);
+
+                _enumConverter_NamingPolicy_Generic = Throw.IfNull(genericFieldInfo);
+            }
+
+            const int EnumConverterOptionsAllowStrings = 1;
+            Type converterType = enumConverter.GetType();
+            var converterOptionsField = (FieldInfo)GetMemberWithSameMetadataDefinitionAs(converterType, _enumConverter_Options_Generic);
+            var namingPolicyField = (FieldInfo)GetMemberWithSameMetadataDefinitionAs(converterType, _enumConverter_NamingPolicy_Generic);
+
+            namingPolicy = (JsonNamingPolicy?)namingPolicyField.GetValue(enumConverter);
+            int converterOptions = (int)converterOptionsField.GetValue(enumConverter)!;
+            allowString = (converterOptions & EnumConverterOptionsAllowStrings) != 0;
+        }
+
+        private static MemberInfo GetMemberWithSameMetadataDefinitionAs(Type specializedType, MemberInfo member)
+        {
+            Debug.Assert(specializedType.IsGenericType && specializedType.GetGenericTypeDefinition() == member.DeclaringType, "generic member definition doesn't match type.");
+#if NET
+            return specializedType.GetMemberWithSameMetadataDefinitionAs(member);
+#else
+            const BindingFlags All = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance;
+            return specializedType.GetMember(member.Name, member.MemberType, All).First(m => m.MetadataToken == member.MetadataToken);
+#endif
+        }
+    }
+
     private static class JsonSchemaConstants
     {
         public const string SchemaPropertyName = "$schema";
@@ -1115,10 +1174,6 @@ internal static partial class JsonSchemaExporter
         [DoesNotReturn]
         public static void ThrowInvalidOperationException_MaxDepthReached() =>
             throw new InvalidOperationException("The depth of the generated JSON schema exceeds the JsonSerializerOptions.MaxDepth setting.");
-
-        [DoesNotReturn]
-        public static void ThrowInvalidOperationException_TrimmedMethodParameters(MethodBase method) =>
-            throw new InvalidOperationException($"The parameters for method '{method}' have been trimmed away.");
 
         [DoesNotReturn]
         public static void ThrowNotSupportedException_ReferenceHandlerPreserveNotSupported() =>
