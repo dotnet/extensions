@@ -186,8 +186,8 @@ public static class AIJsonUtilitiesTests
 
         if (testData.Value is null || testData.WritesNumbersAsStrings)
         {
-            // Our generated schema does not accept null root values
-            // or numbers formatted as strings, so we skip this test.
+            // By design, our generated schema does not accept null root values
+            // or numbers formatted as strings, so we skip schema validation.
             return;
         }
 
