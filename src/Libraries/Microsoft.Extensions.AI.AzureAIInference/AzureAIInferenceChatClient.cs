@@ -285,6 +285,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
             result.NucleusSamplingFactor = options.TopP;
             result.PresencePenalty = options.PresencePenalty;
             result.Temperature = options.Temperature;
+            result.Seed = options.Seed;
 
             if (options.StopSequences is { Count: > 0 } stopSequences)
             {
@@ -306,11 +307,6 @@ public sealed class AzureAIInferenceChatClient : IChatClient
                 {
                     switch (prop.Key)
                     {
-                        // These properties are strongly-typed on the ChatCompletionsOptions class but not on the ChatOptions class.
-                        case nameof(result.Seed) when prop.Value is long seed:
-                            result.Seed = seed;
-                            break;
-
                         // Propagate everything else to the ChatCompletionOptions' AdditionalProperties.
                         default:
                             if (prop.Value is not null)
