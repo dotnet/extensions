@@ -49,7 +49,7 @@ public class OllamaChatClientIntegrationTests : ChatClientIntegrationTests
             ModelId = "llama3:8b",
             Tools = [AIFunctionFactory.Create(() => secretNumber, "GetSecretNumber")],
             Temperature = 0,
-            AdditionalProperties = new() { ["seed"] = 0L },
+            Seed = 0,
         });
 
         Assert.Single(response.Choices);
@@ -83,7 +83,7 @@ public class OllamaChatClientIntegrationTests : ChatClientIntegrationTests
         {
             Tools = [stockPriceTool, irrelevantTool],
             Temperature = 0,
-            AdditionalProperties = new() { ["seed"] = 0L },
+            Seed = 0,
         });
 
         Assert.Single(response.Choices);
