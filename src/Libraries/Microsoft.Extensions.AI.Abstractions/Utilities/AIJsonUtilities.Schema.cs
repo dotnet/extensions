@@ -14,6 +14,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Schema;
+using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable S1121 // Assignments should not be made from within sub-expressions
@@ -282,7 +283,7 @@ public static partial class AIJsonUtilities
                 // Some consumers of the JSON schema, including Ollama as of v0.3.13, don't understand
                 // schemas with "type": [...], and only understand "type" being a single value.
                 // STJ represents .NET integer types as ["string", "integer"], which will then lead to an error.
-                if (TypeIsArrayContainingInteger(objSchema))
+                if (TypeIsIntegerWithStringNumberHandling(ctx, objSchema))
                 {
                     // We don't want to emit any array for "type". In this case we know it contains "integer"
                     // so reduce the type to that alone, assuming it's the most specific type.
@@ -351,17 +352,21 @@ public static partial class AIJsonUtilities
         }
     }
 
-    private static bool TypeIsArrayContainingInteger(JsonObject schema)
+    private static bool TypeIsIntegerWithStringNumberHandling(JsonSchemaExporterContext ctx, JsonObject schema)
     {
-        if (schema["type"] is JsonArray typeArray)
+        if (ctx.TypeInfo.NumberHandling is not JsonNumberHandling.Strict && schema["type"] is JsonArray typeArray)
         {
-            foreach (var entry in typeArray)
+            int count = 0;
+            foreach (JsonNode? entry in typeArray)
             {
-                if (entry?.GetValueKind() == JsonValueKind.String && entry.GetValue<string>() == "integer")
+                if (entry?.GetValueKind() is JsonValueKind.String &&
+                    entry.GetValue<string>() is "integer" or "string")
                 {
-                    return true;
+                    count++;
                 }
             }
+
+            return count == typeArray.Count;
         }
 
         return false;

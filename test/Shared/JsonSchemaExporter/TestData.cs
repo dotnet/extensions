@@ -5,25 +5,39 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Schema;
 
 namespace Microsoft.Extensions.AI.JsonSchemaExporter;
 
 internal sealed record TestData<T>(
     T? Value,
+    [StringSyntax(StringSyntaxAttribute.Json)] string ExpectedJsonSchema,
     IEnumerable<T?>? AdditionalValues = null,
-    [StringSyntax("Json")] string? ExpectedJsonSchema = null,
     JsonSchemaExporterOptions? ExporterOptions = null,
-    JsonSerializerOptions? Options = null)
+    JsonSerializerOptions? Options = null,
+    bool WritesNumbersAsStrings = false)
     : ITestData
 {
+    private static readonly JsonDocumentOptions _schemaParseOptions = new() { CommentHandling = JsonCommentHandling.Skip };
+
     public Type Type => typeof(T);
     object? ITestData.Value => Value;
     object? ITestData.ExporterOptions => ExporterOptions;
+    JsonNode ITestData.ExpectedJsonSchema { get; } =
+        JsonNode.Parse(ExpectedJsonSchema, documentOptions: _schemaParseOptions)
+        ?? throw new ArgumentNullException("schema must not be null");
 
     IEnumerable<ITestData> ITestData.GetTestDataForAllValues()
     {
         yield return this;
+
+        if (default(T) is null &&
+            ExporterOptions is { TreatNullObliviousAsNonNullable: false } &&
+            Value is not null)
+        {
+            yield return this with { Value = default };
+        }
 
         if (AdditionalValues != null)
         {
@@ -41,15 +55,13 @@ public interface ITestData
 
     object? Value { get; }
 
-    /// <summary>
-    /// Gets the expected JSON schema for the value.
-    /// Fall back to JsonSchemaGenerator as the source of truth if null.
-    /// </summary>
-    string? ExpectedJsonSchema { get; }
+    JsonNode ExpectedJsonSchema { get; }
 
     object? ExporterOptions { get; }
 
     JsonSerializerOptions? Options { get; }
+
+    bool WritesNumbersAsStrings { get; }
 
     IEnumerable<ITestData> GetTestDataForAllValues();
 }
