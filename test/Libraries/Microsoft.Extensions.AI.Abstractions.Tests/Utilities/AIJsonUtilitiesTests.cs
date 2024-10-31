@@ -3,7 +3,9 @@
 
 using System.ComponentModel;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.AI.JsonSchemaExporter;
 using Xunit;
 
 namespace Microsoft.Extensions.AI;
@@ -130,7 +132,7 @@ public static class AIJsonUtilitiesTests
     }
 
     [Fact]
-    public static void ResolveParameterJsonSchema_TreatsIntegralTypesAsInteger_EvenWithAllowReadingFromString()
+    public static void CreateParameterJsonSchema_TreatsIntegralTypesAsInteger_EvenWithAllowReadingFromString()
     {
         JsonElement expected = JsonDocument.Parse("""
             {
@@ -160,9 +162,36 @@ public static class AIJsonUtilitiesTests
     }
 
     [Fact]
-    public static void ResolveJsonSchema_CanBeBoolean()
+    public static void CreateJsonSchema_CanBeBoolean()
     {
         JsonElement schema = AIJsonUtilities.CreateJsonSchema(typeof(object));
         Assert.Equal(JsonValueKind.True, schema.ValueKind);
+    }
+
+    [Theory]
+    [MemberData(nameof(TestTypes.GetTestDataUsingAllValues), MemberType = typeof(TestTypes))]
+    public static void CreateJsonSchema_ValidateWithTestData(ITestData testData)
+    {
+        // Stress tests the schema generation method using types from the JsonSchemaExporter test battery.
+
+        JsonSerializerOptions options = testData.Options is { } opts
+            ? new(opts) { TypeInfoResolver = TestTypes.TestTypesContext.Default }
+            : TestTypes.TestTypesContext.Default.Options;
+
+        JsonElement schema = AIJsonUtilities.CreateJsonSchema(testData.Type, serializerOptions: options);
+        JsonNode? schemaAsNode = JsonSerializer.SerializeToNode(schema, options);
+
+        Assert.NotNull(schemaAsNode);
+        Assert.Equal(testData.ExpectedJsonSchema.GetValueKind(), schemaAsNode.GetValueKind());
+
+        if (testData.Value is null || testData.WritesNumbersAsStrings)
+        {
+            // Our generated schema does not accept null root values
+            // or numbers formatted as strings, so we skip this test.
+            return;
+        }
+
+        JsonNode? serializedValue = JsonSerializer.SerializeToNode(testData.Value, testData.Type, options);
+        SchemaTestHelpers.AssertDocumentMatchesSchema(schemaAsNode, serializedValue);
     }
 }
