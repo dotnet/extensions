@@ -679,7 +679,7 @@ internal static partial class JsonSchemaExporter
             return provider;
         }
 
-        var memberName = StjReflectionProxy.GetMemberName(propertyInfo);
+        string? memberName = StjReflectionProxy.GetMemberName(propertyInfo);
         if (memberName is not null)
         {
             return declaringType.GetMember(memberName, MemberTypes.Property | MemberTypes.Field, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).FirstOrDefault();
