@@ -187,6 +187,7 @@ public static partial class AIJsonUtilities
     private static JsonElement GetJsonSchemaCore(JsonSerializerOptions options, FunctionParameterKey key)
     {
         _ = Throw.IfNull(options);
+        options.MakeReadOnly();
 
         if (key.Type is null)
         {
