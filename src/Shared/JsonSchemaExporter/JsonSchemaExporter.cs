@@ -665,7 +665,9 @@ internal static partial class JsonSchemaExporter
     // Work around the issue by running a query for the relevant MemberInfo using the internal MemberName property
     // https://github.com/dotnet/runtime/blob/de774ff9ee1a2c06663ab35be34b755cd8d29731/src/libraries/System.Text.Json/src/System/Text/Json/Serialization/Metadata/JsonPropertyInfo.cs#L206
     private static ICustomAttributeProvider? ResolveAttributeProvider(
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+        [DynamicallyAccessedMembers(
+            DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties |
+            DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.NonPublicFields)]
         Type? declaringType,
         JsonPropertyInfo? propertyInfo)
     {
@@ -682,7 +684,9 @@ internal static partial class JsonSchemaExporter
         string? memberName = StjReflectionProxy.GetMemberName(propertyInfo);
         if (memberName is not null)
         {
-            return declaringType.GetMember(memberName, MemberTypes.Property | MemberTypes.Field, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).FirstOrDefault();
+            const BindingFlags AllInstance = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+            return (MemberInfo?)declaringType.GetProperty(memberName, AllInstance) ??
+                                declaringType.GetField(memberName, AllInstance);
         }
 
         return null;
