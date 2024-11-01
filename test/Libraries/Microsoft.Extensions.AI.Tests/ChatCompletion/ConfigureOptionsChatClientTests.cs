@@ -26,11 +26,13 @@ public class ConfigureOptionsChatClientTests
         Assert.Throws<ArgumentNullException>("configureOptions", () => builder.UseChatOptions(null!));
     }
 
-    [Fact]
-    public async Task ConfigureOptions_ReturnedInstancePassedToNextClient()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ConfigureOptions_ReturnedInstancePassedToNextClient(bool nullReturned)
     {
         ChatOptions providedOptions = new();
-        ChatOptions returnedOptions = new();
+        ChatOptions? returnedOptions = nullReturned ? null : new();
         ChatCompletion expectedCompletion = new(Array.Empty<ChatMessage>());
         var expectedUpdates = Enumerable.Range(0, 3).Select(i => new StreamingChatCompletionUpdate()).ToArray();
         using CancellationTokenSource cts = new();
