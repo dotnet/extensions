@@ -9,13 +9,10 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Schema;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
-#if !NET9_0_OR_GREATER
 using System.Xml.Linq;
-#endif
 using Xunit;
 
 #pragma warning disable SA1402 // File may only contain a single type
-#pragma warning disable xUnit1000 // Test classes must be public
 
 namespace Microsoft.Extensions.AI.JsonSchemaExporter;
 
