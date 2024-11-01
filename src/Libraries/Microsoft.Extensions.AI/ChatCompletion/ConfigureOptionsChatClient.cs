@@ -39,7 +39,7 @@ namespace Microsoft.Extensions.AI;
 public sealed class ConfigureOptionsChatClient : DelegatingChatClient
 {
     /// <summary>The callback delegate used to configure options.</summary>
-    private readonly Func<ChatOptions?, ChatOptions> _configureOptions;
+    private readonly Func<ChatOptions?, ChatOptions?> _configureOptions;
 
     /// <summary>Initializes a new instance of the <see cref="ConfigureOptionsChatClient"/> class with the specified <paramref name="configureOptions"/> callback.</summary>
     /// <param name="innerClient">The inner client.</param>
@@ -47,7 +47,7 @@ public sealed class ConfigureOptionsChatClient : DelegatingChatClient
     /// The delegate to invoke to configure the <see cref="ChatOptions"/> instance. It is passed the caller-supplied <see cref="ChatOptions"/>
     /// instance and should return the configured <see cref="ChatOptions"/> instance to use.
     /// </param>
-    public ConfigureOptionsChatClient(IChatClient innerClient, Func<ChatOptions?, ChatOptions> configureOptions)
+    public ConfigureOptionsChatClient(IChatClient innerClient, Func<ChatOptions?, ChatOptions?> configureOptions)
         : base(innerClient)
     {
         _configureOptions = Throw.IfNull(configureOptions);

@@ -37,7 +37,7 @@ public static class ConfigureOptionsChatClientBuilderExtensions
     /// </c>
     /// </remarks>
     public static ChatClientBuilder UseChatOptions(
-        this ChatClientBuilder builder, Func<ChatOptions?, ChatOptions> configureOptions)
+        this ChatClientBuilder builder, Func<ChatOptions?, ChatOptions?> configureOptions)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configureOptions);
