@@ -3,15 +3,26 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using OpenTelemetry.Trace;
 using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
 public class FunctionInvokingChatClientTests
 {
+    [Fact]
+    public void InvalidArgs_Throws()
+    {
+        Assert.Throws<ArgumentNullException>("innerClient", () => new FunctionInvokingChatClient(null!));
+        Assert.Throws<ArgumentNullException>("builder", () => ((ChatClientBuilder)null!).UseFunctionInvocation());
+    }
+
     [Fact]
     public void Ctor_HasExpectedDefaults()
     {
@@ -292,6 +303,87 @@ public class FunctionInvokingChatClientTests
 
         Assert.Contains("only accepts a single choice", ex.Message);
         Assert.Single(chat); // It didn't add anything to the chat history
+    }
+
+    [Theory]
+    [InlineData(LogLevel.Trace)]
+    [InlineData(LogLevel.Debug)]
+    [InlineData(LogLevel.Information)]
+    public async Task FunctionInvocationsLogged(LogLevel level)
+    {
+        using CapturingLoggerProvider clp = new();
+
+        ServiceCollection c = new();
+        c.AddLogging(b => b.AddProvider(clp).SetMinimumLevel(level));
+        var services = c.BuildServiceProvider();
+
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result 1", "Func1")]
+        };
+
+        await InvokeAndAssertAsync(options, [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1", new Dictionary<string, object?> { ["arg1"] = "value1" })]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", "Func1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ], configurePipeline: b => b.Use(c => new FunctionInvokingChatClient(c, services.GetRequiredService<ILogger<FunctionInvokingChatClient>>())));
+
+        if (level is LogLevel.Trace)
+        {
+            Assert.Collection(clp.Logger.Entries,
+                entry => Assert.True(entry.Message.Contains("Invoking Func1({") && entry.Message.Contains("\"arg1\": \"value1\"")),
+                entry => Assert.True(entry.Message.Contains("Func1 invocation completed. Duration:") && entry.Message.Contains("Result: \"Result 1\"")));
+        }
+        else if (level is LogLevel.Debug)
+        {
+            Assert.Collection(clp.Logger.Entries,
+                entry => Assert.True(entry.Message.Contains("Invoking Func1") && !entry.Message.Contains("arg1")),
+                entry => Assert.True(entry.Message.Contains("Func1 invocation completed. Duration:") && !entry.Message.Contains("Result")));
+        }
+        else
+        {
+            Assert.Empty(clp.Logger.Entries);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FunctionInvocationTrackedWithActivity(bool enableTelemetry)
+    {
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource("Microsoft.Extensions.AI.*")
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result 1", "Func1")]
+        };
+
+        await InvokeAndAssertAsync(options, [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1", new Dictionary<string, object?> { ["arg1"] = "value1" })]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", "Func1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ], configurePipeline: b => b.Use(c =>
+            new FunctionInvokingChatClient(c) { EnableTelemetry = enableTelemetry }));
+
+        if (enableTelemetry)
+        {
+            var activity = Assert.Single(activities);
+
+            Assert.NotNull(activity.Id);
+            Assert.NotEmpty(activity.Id);
+
+            Assert.Equal("Func1", activity.DisplayName);
+        }
+        else
+        {
+            Assert.Empty(activities);
+        }
     }
 
     private static async Task<List<ChatMessage>> InvokeAndAssertAsync(

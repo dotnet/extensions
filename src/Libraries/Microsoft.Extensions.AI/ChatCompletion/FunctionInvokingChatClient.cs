@@ -8,6 +8,8 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -34,8 +36,14 @@ namespace Microsoft.Extensions.AI;
 /// invocation requests to that same function.
 /// </para>
 /// </remarks>
-public class FunctionInvokingChatClient : DelegatingChatClient
+public partial class FunctionInvokingChatClient : DelegatingChatClient
 {
+    /// <summary><see cref="ActivitySource"/> used for tracking function invocations.</summary>
+    private static readonly ActivitySource _activitySource = new(typeof(FunctionInvokingChatClient).FullName!);
+
+    /// <summary>The logger to use for logging information about function invocation.</summary>
+    private readonly ILogger _logger;
+
     /// <summary>Maximum number of roundtrips allowed to the inner client.</summary>
     private int? _maximumIterationsPerRequest;
 
@@ -43,9 +51,11 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     /// Initializes a new instance of the <see cref="FunctionInvokingChatClient"/> class.
     /// </summary>
     /// <param name="innerClient">The underlying <see cref="IChatClient"/>, or the next instance in a chain of clients.</param>
-    public FunctionInvokingChatClient(IChatClient innerClient)
+    /// <param name="logger">An <see cref="ILogger"/> to use for logging information about function invocation.</param>
+    public FunctionInvokingChatClient(IChatClient innerClient, ILogger? logger = null)
         : base(innerClient)
     {
+        _logger = logger ?? NullLogger.Instance;
     }
 
     /// <summary>
@@ -167,6 +177,15 @@ public class FunctionInvokingChatClient : DelegatingChatClient
             _maximumIterationsPerRequest = value;
         }
     }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether <see cref="Activity"/>s should be used to
+    /// provide telemetry for function invocation.
+    /// </summary>
+    /// <remarks>
+    /// The default value is <see langword="true"/>.
+    /// </remarks>
+    public bool EnableTelemetry { get; set; } = true;
 
     /// <inheritdoc/>
     public override async Task<ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
@@ -562,12 +581,94 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     /// </param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function invocation. This may be null if the function invocation returned null.</returns>
-    protected virtual Task<object?> InvokeFunctionAsync(FunctionInvocationContext context, CancellationToken cancellationToken)
+    protected virtual async Task<object?> InvokeFunctionAsync(FunctionInvocationContext context, CancellationToken cancellationToken)
     {
         _ = Throw.IfNull(context);
 
-        return context.Function.InvokeAsync(context.CallContent.Arguments, cancellationToken);
+        using Activity? activity = EnableTelemetry ? _activitySource.StartActivity(context.Function.Metadata.Name) : null;
+
+        long startingTimestamp = 0;
+        if (_logger.IsEnabled(LogLevel.Debug))
+        {
+            startingTimestamp = Stopwatch.GetTimestamp();
+            if (_logger.IsEnabled(LogLevel.Trace))
+            {
+                LogInvokingSensitive(context.Function.Metadata.Name, LoggingHelpers.AsJson(context.CallContent.Arguments, context.Function.Metadata.JsonSerializerOptions));
+            }
+            else
+            {
+                LogInvoking(context.Function.Metadata.Name);
+            }
+        }
+
+        object? result = null;
+        try
+        {
+            result = await context.Function.InvokeAsync(context.CallContent.Arguments, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception e)
+        {
+            if (activity is not null)
+            {
+                _ = activity.SetTag("error.type", e.GetType().FullName)
+                            .SetStatus(ActivityStatusCode.Error, e.Message);
+            }
+
+            if (e is OperationCanceledException)
+            {
+                LogInvocationCanceled(context.Function.Metadata.Name);
+            }
+            else
+            {
+                LogInvocationFailed(context.Function.Metadata.Name, e);
+            }
+
+            throw;
+        }
+        finally
+        {
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                TimeSpan elapsed = GetElapsedTime(startingTimestamp);
+
+                if (result is not null && _logger.IsEnabled(LogLevel.Trace))
+                {
+                    LogInvocationCompletedSensitive(context.Function.Metadata.Name, elapsed, LoggingHelpers.AsJson(result, context.Function.Metadata.JsonSerializerOptions));
+                }
+                else
+                {
+                    LogInvocationCompleted(context.Function.Metadata.Name, elapsed);
+                }
+            }
+        }
+
+        return result;
     }
+
+    private static TimeSpan GetElapsedTime(long startingTimestamp) =>
+#if NET
+        Stopwatch.GetElapsedTime(startingTimestamp);
+#else
+        new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * ((double)TimeSpan.TicksPerSecond / Stopwatch.Frequency)));
+#endif
+
+    [LoggerMessage(LogLevel.Debug, "Invoking {MethodName}.", SkipEnabledCheck = true)]
+    private partial void LogInvoking(string methodName);
+
+    [LoggerMessage(LogLevel.Trace, "Invoking {MethodName}({Arguments}).", SkipEnabledCheck = true)]
+    private partial void LogInvokingSensitive(string methodName, string arguments);
+
+    [LoggerMessage(LogLevel.Debug, "{MethodName} invocation completed. Duration: {Duration}", SkipEnabledCheck = true)]
+    private partial void LogInvocationCompleted(string methodName, TimeSpan duration);
+
+    [LoggerMessage(LogLevel.Trace, "{MethodName} invocation completed. Duration: {Duration}. Result: {Result}", SkipEnabledCheck = true)]
+    private partial void LogInvocationCompletedSensitive(string methodName, TimeSpan duration, string result);
+
+    [LoggerMessage(LogLevel.Debug, "{MethodName} invocation canceled.")]
+    private partial void LogInvocationCanceled(string methodName);
+
+    [LoggerMessage(LogLevel.Error, "{MethodName} invocation failed.")]
+    private partial void LogInvocationFailed(string methodName, Exception error);
 
     /// <summary>Provides context for a function invocation.</summary>
     public sealed class FunctionInvocationContext
