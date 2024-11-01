@@ -190,6 +190,7 @@ public sealed class TestEventListener : EventListener
                     break;
                 }
             }
+
             await Task.Delay(TimeSpan.FromSeconds(EventCounterIntervalSec));
         }
     }
