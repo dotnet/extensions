@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.AI;
 /// <para>
 /// The configuration callback is invoked with the caller-supplied <see cref="EmbeddingGenerationOptions"/> instance. To override the caller-supplied options
 /// with a new instance, the callback may simply return that new instance, for example <c>_ => new EmbeddingGenerationOptions() { Dimensions = 100 }</c>. To provide
-/// a new instance only if the caller-supplied instance is `null`, the callback may conditionally return a new instance, for example
+/// a new instance only if the caller-supplied instance is <see langword="null"/>, the callback may conditionally return a new instance, for example
 /// <c>options => options ?? new EmbeddingGenerationOptions() { Dimensions = 100 }</c>. Any changes to the caller-provided options instance will persist on the
 /// original instance, so the callback must take care to only do so when such mutations are acceptable, such as by cloning the original instance
 /// and mutating the clone, for example:
@@ -31,6 +31,9 @@ namespace Microsoft.Extensions.AI;
 ///     return newOptions;
 /// }
 /// </c>
+/// </para>
+/// <para>
+/// The callback may return <see langword="null"/>, in which case a <see langword="null"/> options will be passed to the next generator in the pipeline.
 /// </para>
 /// <para>
 /// The provided implementation of <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> is thread-safe for concurrent use so long as the employed configuration

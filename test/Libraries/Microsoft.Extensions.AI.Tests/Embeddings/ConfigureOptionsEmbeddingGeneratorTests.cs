@@ -24,11 +24,13 @@ public class ConfigureOptionsEmbeddingGeneratorTests
         Assert.Throws<ArgumentNullException>("configureOptions", () => builder.UseEmbeddingGenerationOptions(null!));
     }
 
-    [Fact]
-    public async Task ConfigureOptions_ReturnedInstancePassedToNextClient()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ConfigureOptions_ReturnedInstancePassedToNextClient(bool nullReturned)
     {
         EmbeddingGenerationOptions providedOptions = new();
-        EmbeddingGenerationOptions returnedOptions = new();
+        EmbeddingGenerationOptions? returnedOptions = nullReturned ? null : new();
         GeneratedEmbeddings<Embedding<float>> expectedEmbeddings = [];
         using CancellationTokenSource cts = new();
 
