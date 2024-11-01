@@ -236,7 +236,7 @@ namespace Microsoft.Extensions.Logging
             }
         }
 
-        private sealed class ActivityBaggageLogScopeWrapper : IEnumerable<KeyValuePair<string, string?>>, IEnumerable<KeyValuePair<string, object?>>
+        private sealed class ActivityBaggageLogScopeWrapper : IEnumerable<KeyValuePair<string, object?>>
         {
             private readonly IEnumerable<KeyValuePair<string, string?>> _items;
 
@@ -247,20 +247,10 @@ namespace Microsoft.Extensions.Logging
                 _items = items;
             }
 
-            public IEnumerator<KeyValuePair<string, string?>> GetEnumerator()
-            {
-                return _items.GetEnumerator();
-            }
+            public IEnumerator<KeyValuePair<string, object?>> GetEnumerator() =>
+                new BaggageEnumerator(_items.GetEnumerator());
 
-            IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator()
-            {
-                return _items.Select(x => KeyValuePair.Create<string, object?>(x.Key, x.Value)).GetEnumerator();
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return _items.GetEnumerator();
-            }
+            IEnumerator IEnumerable.GetEnumerator() => new BaggageEnumerator(_items.GetEnumerator());
 
             public override string ToString()
             {
@@ -289,6 +279,27 @@ namespace Microsoft.Extensions.Logging
                     _stringBuilder.Clear();
                     return result;
                 }
+            }
+
+            private readonly struct BaggageEnumerator : IEnumerator<KeyValuePair<string, object?>>
+            {
+                private readonly IEnumerator<KeyValuePair<string, string?>> _enumerator;
+
+                public BaggageEnumerator(IEnumerator<KeyValuePair<string, string?>> enumerator)
+                {
+                    _enumerator = enumerator;
+                }
+
+                public KeyValuePair<string, object?> Current =>
+                    new KeyValuePair<string, object?>(_enumerator.Current.Key, _enumerator.Current.Value);
+
+                object? IEnumerator.Current => Current;
+
+                public void Dispose() => _enumerator.Dispose();
+
+                public bool MoveNext() => _enumerator.MoveNext();
+
+                public void Reset() => _enumerator.Reset();
             }
         }
     }
