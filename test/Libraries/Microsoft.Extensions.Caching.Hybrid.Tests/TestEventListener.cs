@@ -174,5 +174,23 @@ public sealed class TestEventListener : EventListener
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Clarity and usability")]
-    public Task TimeForCounters() => Task.Delay(TimeSpan.FromSeconds(EventCounterIntervalSec * 2));
+    public async Task TimeForCounters()
+    {
+        await Task.Delay(TimeSpan.FromSeconds(EventCounterIntervalSec * 2));
+
+        // and allow a little longer if nothing has arrived
+        const int MAX_LOOP = 5;
+
+        for (int i = 0; i < MAX_LOOP; i++)
+        {
+            lock (SyncLock)
+            {
+                if (_counters.Count != 0)
+                {
+                    break;
+                }
+            }
+            await Task.Delay(TimeSpan.FromSeconds(EventCounterIntervalSec));
+        }
+    }
 }
