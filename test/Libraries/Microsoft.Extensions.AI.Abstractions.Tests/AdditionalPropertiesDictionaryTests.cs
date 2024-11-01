@@ -90,4 +90,45 @@ public class AdditionalPropertiesDictionaryTests
             Assert.Equal(default(T2), value);
         }
     }
+
+    [Fact]
+    public void TryAdd_AddsOnlyIfNonExistent()
+    {
+        AdditionalPropertiesDictionary d = [];
+
+        Assert.False(d.ContainsKey("key"));
+        Assert.True(d.TryAdd("key", "value"));
+        Assert.True(d.ContainsKey("key"));
+        Assert.Equal("value", d["key"]);
+
+        Assert.False(d.TryAdd("key", "value2"));
+        Assert.True(d.ContainsKey("key"));
+        Assert.Equal("value", d["key"]);
+    }
+
+    [Fact]
+    public void Enumerator_EnumeratesAllItems()
+    {
+        AdditionalPropertiesDictionary d = [];
+
+        const int NumProperties = 10;
+        for (int i = 0; i < NumProperties; i++)
+        {
+            d.Add($"key{i}", $"value{i}");
+        }
+
+        Assert.Equal(NumProperties, d.Count);
+
+        // This depends on an implementation detail of the ordering in which the dictionary
+        // enumerates items. If that ever changes, this test will need to be updated.
+        int count = 0;
+        foreach (KeyValuePair<string, object?> item in d)
+        {
+            Assert.Equal($"key{count}", item.Key);
+            Assert.Equal($"value{count}", item.Value);
+            count++;
+        }
+
+        Assert.Equal(NumProperties, count);
+    }
 }
