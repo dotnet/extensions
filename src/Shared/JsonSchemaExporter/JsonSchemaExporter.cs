@@ -780,8 +780,10 @@ internal static partial class JsonSchemaExporter
 
     private static NullabilityState GetParameterNullability(this NullabilityInfoContext context, ParameterInfo parameterInfo)
     {
-#if !NET9_0_OR_GREATER
+#if NET8_0
         // Workaround for https://github.com/dotnet/runtime/issues/92487
+        // The fix has been incorporated into .NET 9 (and the polyfilled implementations in netfx).
+        // Should be removed once .NET 8 support is dropped.
         if (GetGenericParameterDefinition(parameterInfo) is { ParameterType: { IsGenericParameter: true } typeParam })
         {
             // Step 1. Look for nullable annotations on the type parameter.
@@ -805,32 +807,47 @@ internal static partial class JsonSchemaExporter
             // Default to nullable.
             return NullabilityState.Nullable;
 
-#if NETCOREAPP
-            [UnconditionalSuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method.",
-                Justification = "We're resolving private fields of the built-in enum converter which cannot have been trimmed away.")]
-#endif
             static byte[]? GetNullableFlags(MemberInfo member)
             {
-                Attribute? attr = member.GetCustomAttributes().FirstOrDefault(attr =>
+                foreach (CustomAttributeData attr in member.GetCustomAttributesData())
                 {
-                    Type attrType = attr.GetType();
-                    return attrType.Namespace == "System.Runtime.CompilerServices" && attrType.Name == "NullableAttribute";
-                });
+                    Type attrType = attr.AttributeType;
+                    if (attrType.Name == "NullableAttribute" && attrType.Namespace == "System.Runtime.CompilerServices")
+                    {
+                        foreach (CustomAttributeTypedArgument ctorArg in attr.ConstructorArguments)
+                        {
+                            switch (ctorArg.Value)
+                            {
+                                case byte flag:
+                                    return [flag];
+                                case byte[] flags:
+                                    return flags;
+                            }
+                        }
+                    }
+                }
 
-                return (byte[])attr?.GetType().GetField("NullableFlags")?.GetValue(attr)!;
+                return null;
             }
 
-            [UnconditionalSuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method.",
-                Justification = "We're resolving private fields of the built-in enum converter which cannot have been trimmed away.")]
             static byte? GetNullableContextFlag(MemberInfo member)
             {
-                Attribute? attr = member.GetCustomAttributes().FirstOrDefault(attr =>
+                foreach (CustomAttributeData attr in member.GetCustomAttributesData())
                 {
-                    Type attrType = attr.GetType();
-                    return attrType.Namespace == "System.Runtime.CompilerServices" && attrType.Name == "NullableContextAttribute";
-                });
+                    Type attrType = attr.AttributeType;
+                    if (attrType.Name == "NullableContextAttribute" && attrType.Namespace == "System.Runtime.CompilerServices")
+                    {
+                        foreach (CustomAttributeTypedArgument ctorArg in attr.ConstructorArguments)
+                        {
+                            if (ctorArg.Value is byte flag)
+                            {
+                                return flag;
+                            }
+                        }
+                    }
+                }
 
-                return (byte?)attr?.GetType().GetField("Flag")?.GetValue(attr)!;
+                return null;
             }
 
 #pragma warning disable S109 // Magic numbers should not be used
@@ -855,8 +872,6 @@ internal static partial class JsonSchemaExporter
             return parameter;
         }
 
-        [UnconditionalSuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method.",
-            Justification = "Looking up the generic member definition of the provided member.")]
         static MemberInfo GetGenericMemberDefinition(MemberInfo member)
         {
             if (member is Type type)
@@ -864,15 +879,9 @@ internal static partial class JsonSchemaExporter
                 return type.IsConstructedGenericType ? type.GetGenericTypeDefinition() : type;
             }
 
-            if (member.DeclaringType!.IsConstructedGenericType)
+            if (member.DeclaringType?.IsConstructedGenericType is true)
             {
-                const BindingFlags AllMemberFlags =
-                    BindingFlags.Static | BindingFlags.Instance |
-                    BindingFlags.Public | BindingFlags.NonPublic;
-
-                return member.DeclaringType.GetGenericTypeDefinition()
-                    .GetMember(member.Name, member.MemberType, AllMemberFlags)
-                    .First(m => m.MetadataToken == member.MetadataToken);
+                return member.DeclaringType.GetGenericTypeDefinition().GetMemberWithSameMetadataDefinitionAs(member);
             }
 
             if (member is MethodInfo { IsGenericMethod: true, IsGenericMethodDefinition: false } method)
@@ -1099,7 +1108,7 @@ internal static partial class JsonSchemaExporter
             }
 
             Type converterType = nullableConverter.GetType();
-            var thisFieldInfo = (FieldInfo)GetMemberWithSameMetadataDefinitionAs(converterType, _nullableConverter_ElementConverter_Generic);
+            var thisFieldInfo = (FieldInfo)converterType.GetMemberWithSameMetadataDefinitionAs(_nullableConverter_ElementConverter_Generic);
             return (JsonConverter)thisFieldInfo.GetValue(nullableConverter)!;
         }
 
@@ -1126,25 +1135,22 @@ internal static partial class JsonSchemaExporter
 
             const int EnumConverterOptionsAllowStrings = 1;
             Type converterType = enumConverter.GetType();
-            var converterOptionsField = (FieldInfo)GetMemberWithSameMetadataDefinitionAs(converterType, _enumConverter_Options_Generic);
-            var namingPolicyField = (FieldInfo)GetMemberWithSameMetadataDefinitionAs(converterType, _enumConverter_NamingPolicy_Generic);
+            var converterOptionsField = (FieldInfo)converterType.GetMemberWithSameMetadataDefinitionAs(_enumConverter_Options_Generic);
+            var namingPolicyField = (FieldInfo)converterType.GetMemberWithSameMetadataDefinitionAs(_enumConverter_NamingPolicy_Generic);
 
             namingPolicy = (JsonNamingPolicy?)namingPolicyField.GetValue(enumConverter);
             int converterOptions = (int)converterOptionsField.GetValue(enumConverter)!;
             allowString = (converterOptions & EnumConverterOptionsAllowStrings) != 0;
         }
-
-        private static MemberInfo GetMemberWithSameMetadataDefinitionAs(Type specializedType, MemberInfo member)
-        {
-            Debug.Assert(specializedType.IsGenericType && specializedType.GetGenericTypeDefinition() == member.DeclaringType, "generic member definition doesn't match type.");
-#if NET
-            return specializedType.GetMemberWithSameMetadataDefinitionAs(member);
-#else
-            const BindingFlags All = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance;
-            return specializedType.GetMember(member.Name, member.MemberType, All).First(m => m.MetadataToken == member.MetadataToken);
-#endif
-        }
     }
+
+#if !NET
+    private static MemberInfo GetMemberWithSameMetadataDefinitionAs(this Type specializedType, MemberInfo member)
+    {
+        const BindingFlags All = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance;
+        return specializedType.GetMember(member.Name, member.MemberType, All).First(m => m.MetadataToken == member.MetadataToken);
+    }
+#endif
 
     private static class JsonSchemaConstants
     {
