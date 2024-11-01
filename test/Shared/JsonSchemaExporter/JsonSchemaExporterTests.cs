@@ -15,7 +15,6 @@ using System.Xml.Linq;
 using Xunit;
 
 #pragma warning disable SA1402 // File may only contain a single type
-#pragma warning disable xUnit1000 // Test classes must be public
 
 namespace Microsoft.Extensions.AI.JsonSchemaExporter;
 

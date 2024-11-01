@@ -27,7 +27,6 @@ using System.Xml.Linq;
 #pragma warning disable CA1052 // Static holder types should be Static or NotInheritable
 #pragma warning disable S1121 // Assignments should not be made from within sub-expressions
 #pragma warning disable IDE0073 // The file header is missing or not located at the top of the file
-#pragma warning disable SA1402 // File may only contain a single type
 
 namespace Microsoft.Extensions.AI.JsonSchemaExporter;
 
@@ -511,7 +510,6 @@ public static partial class TestTypes
             }
             """);
 
-#if !NET9_0 // Disable until https://github.com/dotnet/runtime/pull/107545 gets backported
         // Global JsonUnmappedMemberHandling.Disallow setting
         yield return new TestData<SimplePoco>(
             Value: new() { String = "string", StringNullable = "string", Int = 42, Double = 3.14, Boolean = true },
@@ -530,7 +528,6 @@ public static partial class TestTypes
             }
             """,
             Options: new() { UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow });
-#endif
 
         yield return new TestData<PocoWithNullableAnnotationAttributes>(
             Value: new() { MaybeNull = null!, AllowNull = null, NotNull = null, DisallowNull = null!, NotNullDisallowNull = "str" },
