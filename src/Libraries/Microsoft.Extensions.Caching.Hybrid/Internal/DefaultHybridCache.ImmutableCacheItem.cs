@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
@@ -38,7 +39,7 @@ internal partial class DefaultHybridCache
             Size = size;
         }
 
-        public override bool TryGetValue(out T value)
+        public override bool TryGetValue(ILogger log, out T value)
         {
             value = _value;
             return true; // always available
