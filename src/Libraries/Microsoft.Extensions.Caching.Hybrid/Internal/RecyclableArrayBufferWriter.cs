@@ -46,20 +46,20 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
     public int CommittedBytes => _index;
     public int FreeCapacity => _buffer.Length - _index;
 
+    public bool QuotaExceeded { get; private set; }
+
     private static RecyclableArrayBufferWriter<T>? _spare;
+
     public static RecyclableArrayBufferWriter<T> Create(int maxLength)
     {
         var obj = Interlocked.Exchange(ref _spare, null) ?? new();
-        Debug.Assert(obj._index == 0, "index should be zero initially");
-        obj._maxLength = maxLength;
+        obj.Initialize(maxLength);
         return obj;
     }
 
     private RecyclableArrayBufferWriter()
     {
         _buffer = [];
-        _index = 0;
-        _maxLength = int.MaxValue;
     }
 
     public void Dispose()
@@ -91,6 +91,7 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
 
         if (_index + count > _maxLength)
         {
+            QuotaExceeded = true;
             ThrowQuota();
         }
 
@@ -198,5 +199,13 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
         Debug.Assert(FreeCapacity > 0 && FreeCapacity >= sizeHint, "should be space");
 
         static void ThrowOutOfMemoryException() => throw new InvalidOperationException("Unable to grow buffer as requested");
+    }
+
+    private void Initialize(int maxLength)
+    {
+        // think .ctor, but with pooled object re-use
+        _index = 0;
+        _maxLength = maxLength;
+        QuotaExceeded = false;
     }
 }

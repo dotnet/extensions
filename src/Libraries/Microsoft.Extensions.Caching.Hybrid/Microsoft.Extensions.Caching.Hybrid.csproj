@@ -4,7 +4,7 @@
     <Description>Multi-level caching implementation building on and extending IDistributedCache</Description>
     <TargetFrameworks>$(NetCoreTargetFrameworks)$(ConditionalNet462);netstandard2.0;netstandard2.1</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PackageTags>cache;distributedcache;hybrid</PackageTags>
+    <PackageTags>cache;distributedcache;hybridcache</PackageTags>
     <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
     <InjectIsExternalInitOnLegacy>true</InjectIsExternalInitOnLegacy>
     <InjectCallerAttributesOnLegacy>true</InjectCallerAttributesOnLegacy>
@@ -20,6 +20,11 @@
     <!-- This package needs to reference the dotnet9 versions of Microsoft.Extensions packages as it depends on
     surface area that was added in .NET 9. -->
     <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <UseLoggingGenerator>true</UseLoggingGenerator>
+
+    <!-- prefer the dotnet/runtime logging generator; we don't use the extra features, so: don't take the ref -->
+    <DisableMicrosoftExtensionsLoggingSourceGenerator>false</DisableMicrosoftExtensionsLoggingSourceGenerator>
   </PropertyGroup>
 
   <ItemGroup>
