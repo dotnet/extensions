@@ -247,8 +247,8 @@ public class AzureAIInferenceChatClientTests
                 ],
                 "presence_penalty": 0.5,
                 "frequency_penalty": 0.75,
-                "model": "gpt-4o-mini",
-                "seed": 42
+                "seed": 42,
+                "model": "gpt-4o-mini"
             }
             """;
 
@@ -303,7 +303,7 @@ public class AzureAIInferenceChatClientTests
             FrequencyPenalty = 0.75f,
             PresencePenalty = 0.5f,
             StopSequences = ["great"],
-            AdditionalProperties = new() { ["seed"] = 42L },
+            Seed = 42,
         });
         Assert.NotNull(response);
 
