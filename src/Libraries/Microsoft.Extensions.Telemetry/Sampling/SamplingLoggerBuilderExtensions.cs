@@ -3,11 +3,14 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
+using static System.Collections.Specialized.BitVector32;
 
 namespace Microsoft.Extensions.Diagnostics.Sampling;
 
@@ -42,12 +45,62 @@ public static class SamplingLoggerBuilderExtensions
     /// <param name="level">The log level (and below) to apply the sampler to.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
-    public static ILoggingBuilder AddRatioBasedSampler(this ILoggingBuilder builder, double probability, LogLevel? level = null)
+    public static ILoggingBuilder AddRatioBasedSampler(this ILoggingBuilder builder, IConfigurationSection section)
     {
         _ = Throw.IfNull(builder);
-        _ = Throw.IfOutOfRange(probability, 0, 1, nameof(probability));
+        _ = Throw.IfNull(section);
 
-        return builder.AddSampler(new RatioBasedSampler(probability, level));
+        _ = builder.Services.AddOptions<RatioBasedSamplerOptions>().Bind(section);
+
+        return builder.AddSampler<RatioBasedSampler>();
+    }
+
+    /// <summary>
+    /// Adds Ratio-based sampler to the logging infrastructure. Matched logs will be sampled
+    /// according to the provided <paramref name="probability"/>.
+    /// Higher the probability value, higher is the probability of a given log record to be sampled in.
+    /// </summary>
+    /// <param name="builder">The dependency injection container to add logging to.</param>
+    /// <returns>The value of <paramref name="builder"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
+    public static ILoggingBuilder AddRatioBasedSampler(
+        this ILoggingBuilder builder,
+        double probability,
+        Func<string?, LogLevel, EventId?, bool>? filter)
+    {
+        _ = Throw.IfNull(builder);
+        _ = Throw.IfNull(filter);
+
+        _ = builder.ConfigureRatioBasedSamplerOptions(options => options.AddRule(probability, filter));
+
+        return builder.AddSampler<RatioBasedSampler>();
+    }
+
+    public static RatioBasedSamplerOptions AddRule(
+        this RatioBasedSamplerOptions options,
+        double probability,
+        Func<string?, LogLevel, EventId?, bool> filter)
+    {
+        return AddRule(options, probability, filter: filter);
+    }
+
+    private static ILoggingBuilder ConfigureRatioBasedSamplerOptions(
+        this ILoggingBuilder builder,
+        Action<RatioBasedSamplerOptions> configureOptions)
+    {
+        _ = builder.Services.Configure(configureOptions);
+        return builder;
+    }
+
+    private static RatioBasedSamplerOptions AddRule(RatioBasedSamplerOptions options,
+        double probability,
+        string? category = null,
+        LogLevel? level = null,
+        EventId? eventId = null,
+        Func<string?, LogLevel, EventId?, bool>? filter = null)
+    {
+        options.Rules.Add(new RatioBasedSamplerFilterRule(probability, category, level, eventId, filter));
+        return options;
     }
 
     /// <summary>

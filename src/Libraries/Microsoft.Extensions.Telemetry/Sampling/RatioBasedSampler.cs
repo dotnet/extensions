@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Diagnostics.Sampling;
 
@@ -18,6 +19,7 @@ internal sealed class RatioBasedSampler : LoggerSampler
 
     private readonly int _sampleRate;
     private readonly LogLevel? _logLevel;
+    private readonly IOptionsMonitor<RatioBasedSamplerOptions> _options;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RatioBasedSampler"/> class.
@@ -32,23 +34,38 @@ internal sealed class RatioBasedSampler : LoggerSampler
         _logLevel = logLevel;
     }
 
+    public RatioBasedSampler(IOptionsMonitor<RatioBasedSamplerOptions> options)
+    {
+        _options = options;
+    }
+
     /// <inheritdoc/>
     public override bool ShouldSample(SamplingParameters parameters)
     {
-        if (!IsApplicable(parameters))
+        if (!TryApply(parameters, out var probability))
         {
             return true;
         }
 
 #if NET6_0_OR_GREATER
-        return Random.Shared.Next(int.MaxValue) < _sampleRate;
+        return Random.Shared.Next(int.MaxValue) < probability;
 #else
-        return _randomInstance.Value!.Next(int.MaxValue) < _sampleRate;
+        return _randomInstance.Value!.Next(int.MaxValue) < probability;
 #endif
     }
 
-    private bool IsApplicable(SamplingParameters parameters)
+    private bool TryApply(SamplingParameters parameters, out double probability)
     {
-        return _logLevel is null || parameters.LogLevel <= _logLevel;
+        probability = 0.0;
+
+        //TODO: have a rule selector!
+        // pseudo code:
+        if (_options.CurrentValue.Rules[0].Filter(parameters.Category, parameters.LogLevel, parameters.EventId))
+        {
+            probability = _options.CurrentValue.Rules[0].Probability;
+            return true;
+        }
+
+        return false;
     }
 }
