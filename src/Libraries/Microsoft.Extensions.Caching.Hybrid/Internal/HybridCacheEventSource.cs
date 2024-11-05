@@ -25,6 +25,8 @@ internal sealed class HybridCacheEventSource : EventSource
     internal const int EventIdLocalCacheWrite = 10;
     internal const int EventIdDistributedCacheWrite = 11;
     internal const int EventIdStampedeJoin = 12;
+    internal const int EventIdUnderlyingDataQueryCanceled = 13;
+    internal const int EventIdDistributedCacheCanceled = 14;
 
     // fast local counters
     private long _totalLocalCacheHit;
@@ -117,6 +119,14 @@ internal sealed class HybridCacheEventSource : EventSource
         WriteEvent(EventIdDistributedCacheFailed);
     }
 
+    [Event(EventIdDistributedCacheCanceled, Level = EventLevel.Verbose)]
+    public void DistributedCacheCanceled()
+    {
+        DebugAssertEnabled();
+        _ = Interlocked.Decrement(ref _currentDistributedFetch);
+        WriteEvent(EventIdDistributedCacheCanceled);
+    }
+
     [Event(EventIdUnderlyingDataQueryStart, Level = EventLevel.Verbose)]
     public void UnderlyingDataQueryStart()
     {
@@ -141,6 +151,14 @@ internal sealed class HybridCacheEventSource : EventSource
         DebugAssertEnabled();
         _ = Interlocked.Decrement(ref _currentUnderlyingDataQuery);
         WriteEvent(EventIdUnderlyingDataQueryFailed);
+    }
+
+    [Event(EventIdUnderlyingDataQueryCanceled, Level = EventLevel.Verbose)]
+    public void UnderlyingDataQueryCanceled()
+    {
+        DebugAssertEnabled();
+        _ = Interlocked.Decrement(ref _currentUnderlyingDataQuery);
+        WriteEvent(EventIdUnderlyingDataQueryCanceled);
     }
 
     [Event(EventIdLocalCacheWrite, Level = EventLevel.Verbose)]

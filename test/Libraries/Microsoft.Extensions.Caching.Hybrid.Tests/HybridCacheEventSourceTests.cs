@@ -100,6 +100,19 @@ public class HybridCacheEventSourceTests(ITestOutputHelper log, TestEventListene
     }
 
     [SkippableFact]
+    public async Task DistributedCacheCanceled()
+    {
+        AssertEnabled();
+
+        listener.Reset().Source.DistributedCacheGet();
+        listener.Reset(resetCounters: false).Source.DistributedCacheCanceled();
+        listener.AssertSingleEvent(HybridCacheEventSource.EventIdDistributedCacheCanceled, "DistributedCacheCanceled", EventLevel.Verbose);
+
+        await AssertCountersAsync();
+        listener.AssertRemainingCountersZero();
+    }
+
+    [SkippableFact]
     public async Task UnderlyingDataQueryStart()
     {
         AssertEnabled();
@@ -135,6 +148,20 @@ public class HybridCacheEventSourceTests(ITestOutputHelper log, TestEventListene
         listener.Reset().Source.UnderlyingDataQueryStart();
         listener.Reset(resetCounters: false).Source.UnderlyingDataQueryFailed();
         listener.AssertSingleEvent(HybridCacheEventSource.EventIdUnderlyingDataQueryFailed, "UnderlyingDataQueryFailed", EventLevel.Error);
+
+        await AssertCountersAsync();
+        listener.AssertCounter("total-data-query", "Total Data Queries", 1);
+        listener.AssertRemainingCountersZero();
+    }
+
+    [SkippableFact]
+    public async Task UnderlyingDataQueryCanceled()
+    {
+        AssertEnabled();
+
+        listener.Reset().Source.UnderlyingDataQueryStart();
+        listener.Reset(resetCounters: false).Source.UnderlyingDataQueryCanceled();
+        listener.AssertSingleEvent(HybridCacheEventSource.EventIdUnderlyingDataQueryCanceled, "UnderlyingDataQueryCanceled", EventLevel.Verbose);
 
         await AssertCountersAsync();
         listener.AssertCounter("total-data-query", "Total Data Queries", 1);
