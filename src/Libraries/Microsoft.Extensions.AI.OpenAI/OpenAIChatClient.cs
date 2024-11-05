@@ -392,6 +392,9 @@ public sealed partial class OpenAIChatClient : IChatClient
             result.TopP = options.TopP;
             result.PresencePenalty = options.PresencePenalty;
             result.Temperature = options.Temperature;
+#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+            result.Seed = options.Seed;
+#pragma warning restore OPENAI001
 
             if (options.StopSequences is { Count: > 0 } stopSequences)
             {
@@ -425,13 +428,6 @@ public sealed partial class OpenAIChatClient : IChatClient
                 {
                     result.AllowParallelToolCalls = allowParallelToolCalls;
                 }
-
-#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-                if (additionalProperties.TryGetValue(nameof(result.Seed), out long seed))
-                {
-                    result.Seed = seed;
-                }
-#pragma warning restore OPENAI001
 
                 if (additionalProperties.TryGetValue(nameof(result.TopLogProbabilityCount), out int topLogProbabilityCountInt))
                 {

@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.AI;
 /// <para>
 /// The configuration callback is invoked with the caller-supplied <see cref="ChatOptions"/> instance. To override the caller-supplied options
 /// with a new instance, the callback may simply return that new instance, for example <c>_ => new ChatOptions() { MaxTokens = 1000 }</c>. To provide
-/// a new instance only if the caller-supplied instance is `null`, the callback may conditionally return a new instance, for example
+/// a new instance only if the caller-supplied instance is <see langword="null"/>, the callback may conditionally return a new instance, for example
 /// <c>options => options ?? new ChatOptions() { MaxTokens = 1000 }</c>. Any changes to the caller-provided options instance will persist on the
 /// original instance, so the callback must take care to only do so when such mutations are acceptable, such as by cloning the original instance
 /// and mutating the clone, for example:
@@ -31,6 +31,9 @@ namespace Microsoft.Extensions.AI;
 /// </c>
 /// </para>
 /// <para>
+/// The callback may return <see langword="null"/>, in which case a <see langword="null"/> options will be passed to the next client in the pipeline.
+/// </para>
+/// <para>
 /// The provided implementation of <see cref="IChatClient"/> is thread-safe for concurrent use so long as the employed configuration
 /// callback is also thread-safe for concurrent requests. If callers employ a shared options instance, care should be taken in the
 /// configuration callback, as multiple calls to it may end up running in parallel with the same options instance.
@@ -39,7 +42,7 @@ namespace Microsoft.Extensions.AI;
 public sealed class ConfigureOptionsChatClient : DelegatingChatClient
 {
     /// <summary>The callback delegate used to configure options.</summary>
-    private readonly Func<ChatOptions?, ChatOptions> _configureOptions;
+    private readonly Func<ChatOptions?, ChatOptions?> _configureOptions;
 
     /// <summary>Initializes a new instance of the <see cref="ConfigureOptionsChatClient"/> class with the specified <paramref name="configureOptions"/> callback.</summary>
     /// <param name="innerClient">The inner client.</param>
@@ -47,7 +50,7 @@ public sealed class ConfigureOptionsChatClient : DelegatingChatClient
     /// The delegate to invoke to configure the <see cref="ChatOptions"/> instance. It is passed the caller-supplied <see cref="ChatOptions"/>
     /// instance and should return the configured <see cref="ChatOptions"/> instance to use.
     /// </param>
-    public ConfigureOptionsChatClient(IChatClient innerClient, Func<ChatOptions?, ChatOptions> configureOptions)
+    public ConfigureOptionsChatClient(IChatClient innerClient, Func<ChatOptions?, ChatOptions?> configureOptions)
         : base(innerClient)
     {
         _configureOptions = Throw.IfNull(configureOptions);

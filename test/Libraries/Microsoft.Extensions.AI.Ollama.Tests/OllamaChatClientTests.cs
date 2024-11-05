@@ -254,7 +254,7 @@ public class OllamaChatClientTests
             FrequencyPenalty = 0.75f,
             PresencePenalty = 0.5f,
             StopSequences = ["great"],
-            AdditionalProperties = new() { ["seed"] = 42 },
+            Seed = 42,
         });
         Assert.NotNull(response);
 
