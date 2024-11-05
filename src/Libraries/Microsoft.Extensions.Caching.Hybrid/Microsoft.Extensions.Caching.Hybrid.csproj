@@ -12,11 +12,7 @@
     <InjectTrimAttributesOnLegacy>true</InjectTrimAttributesOnLegacy>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <IsPackable>true</IsPackable>
-    <Stage>dev</Stage>
-    <StageDevDiagnosticId>EXTEXP0018</StageDevDiagnosticId>
-    <MinCodeCoverage>75</MinCodeCoverage>
-    <MinMutationScore>50</MinMutationScore>
-    <Workstream>Fundamentals</Workstream>
+    <Workstream>CachingHybrid</Workstream>
     <!-- This package needs to reference the dotnet9 versions of Microsoft.Extensions packages as it depends on
     surface area that was added in .NET 9. -->
     <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
@@ -25,6 +21,13 @@
 
     <!-- prefer the dotnet/runtime logging generator; we don't use the extra features, so: don't take the ref -->
     <DisableMicrosoftExtensionsLoggingSourceGenerator>false</DisableMicrosoftExtensionsLoggingSourceGenerator>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Stage>dev</Stage>
+    <StageDevDiagnosticId>EXTEXP0018</StageDevDiagnosticId>
+    <MinCodeCoverage>75</MinCodeCoverage>
+    <MinMutationScore>50</MinMutationScore>
   </PropertyGroup>
 
   <ItemGroup>
