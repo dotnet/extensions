@@ -5,17 +5,22 @@ using System;
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Diagnostics;
+#if !NET9_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+#endif
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Schema;
+using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable S1121 // Assignments should not be made from within sub-expressions
 #pragma warning disable S107 // Methods should not have too many parameters
 #pragma warning disable S1075 // URIs should not be hardcoded
+#pragma warning disable SA1118 // Parameter should not span multiple lines
 
 using FunctionParameterKey = (
     System.Type? Type,
@@ -138,8 +143,6 @@ public static partial class AIJsonUtilities
         JsonSerializerOptions? serializerOptions = null,
         AIJsonSchemaCreateOptions? inferenceOptions = null)
     {
-        _ = Throw.IfNull(serializerOptions);
-
         serializerOptions ??= DefaultOptions;
         inferenceOptions ??= AIJsonSchemaCreateOptions.Default;
 
@@ -176,6 +179,11 @@ public static partial class AIJsonUtilities
 #endif
     }
 
+#if !NET9_0_OR_GREATER
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access",
+        Justification = "Pre STJ-9 schema extraction can fail with a runtime exception if certain reflection metadata have been trimmed. " +
+                        "The exception message will guide users to turn off 'IlcTrimMetadata' which resolves all issues.")]
+#endif
     private static JsonElement GetJsonSchemaCore(JsonSerializerOptions options, FunctionParameterKey key)
     {
         _ = Throw.IfNull(options);
@@ -238,16 +246,9 @@ public static partial class AIJsonUtilities
             const string DefaultPropertyName = "default";
             const string RefPropertyName = "$ref";
 
-            // Find the first DescriptionAttribute, starting first from the property, then the parameter, and finally the type itself.
-            Type descAttrType = typeof(DescriptionAttribute);
-            var descriptionAttribute =
-                GetAttrs(descAttrType, ctx.PropertyInfo?.AttributeProvider)?.FirstOrDefault() ??
-                GetAttrs(descAttrType, ctx.PropertyInfo?.AssociatedParameter?.AttributeProvider)?.FirstOrDefault() ??
-                GetAttrs(descAttrType, ctx.TypeInfo.Type)?.FirstOrDefault();
-
-            if (descriptionAttribute is DescriptionAttribute attr)
+            if (ctx.ResolveAttribute<DescriptionAttribute>() is { } attr)
             {
-                ConvertSchemaToObject(ref schema).Insert(0, DescriptionPropertyName, (JsonNode)attr.Description);
+                ConvertSchemaToObject(ref schema).InsertAtStart(DescriptionPropertyName, (JsonNode)attr.Description);
             }
 
             if (schema is JsonObject objSchema)
@@ -270,7 +271,7 @@ public static partial class AIJsonUtilities
                 // Include the type keyword in enum types
                 if (key.IncludeTypeInEnumSchemas && ctx.TypeInfo.Type.IsEnum && objSchema.ContainsKey(EnumPropertyName) && !objSchema.ContainsKey(TypePropertyName))
                 {
-                    objSchema.Insert(0, TypePropertyName, "string");
+                    objSchema.InsertAtStart(TypePropertyName, "string");
                 }
 
                 // Disallow additional properties in object schemas
@@ -278,24 +279,24 @@ public static partial class AIJsonUtilities
                 {
                     objSchema.Add(AdditionalPropertiesPropertyName, (JsonNode)false);
                 }
+
+                // Some consumers of the JSON schema, including Ollama as of v0.3.13, don't understand
+                // schemas with "type": [...], and only understand "type" being a single value.
+                // STJ represents .NET integer types as ["string", "integer"], which will then lead to an error.
+                if (TypeIsIntegerWithStringNumberHandling(ctx, objSchema))
+                {
+                    // We don't want to emit any array for "type". In this case we know it contains "integer"
+                    // so reduce the type to that alone, assuming it's the most specific type.
+                    // This makes schemas for Int32 (etc) work with Ollama.
+                    JsonObject obj = ConvertSchemaToObject(ref schema);
+                    obj[TypePropertyName] = "integer";
+                    _ = obj.Remove(PatternPropertyName);
+                }
             }
 
             if (ctx.Path.IsEmpty)
             {
                 // We are at the root-level schema node, update/append parameter-specific metadata
-
-                // Some consumers of the JSON schema, including Ollama as of v0.3.13, don't understand
-                // schemas with "type": [...], and only understand "type" being a single value.
-                // STJ represents .NET integer types as ["string", "integer"], which will then lead to an error.
-                if (TypeIsArrayContainingInteger(schema))
-                {
-                    // We don't want to emit any array for "type". In this case we know it contains "integer"
-                    // so reduce the type to that alone, assuming it's the most specific type.
-                    // This makes schemas for Int32 (etc) work with Ollama
-                    JsonObject obj = ConvertSchemaToObject(ref schema);
-                    obj[TypePropertyName] = "integer";
-                    _ = obj.Remove(PatternPropertyName);
-                }
 
                 if (!string.IsNullOrWhiteSpace(key.Description))
                 {
@@ -305,7 +306,7 @@ public static partial class AIJsonUtilities
                     if (index < 0)
                     {
                         // If there's no description property, insert it at the beginning of the doc.
-                        obj.Insert(0, DescriptionPropertyName, (JsonNode)key.Description!);
+                        obj.InsertAtStart(DescriptionPropertyName, (JsonNode)key.Description!);
                     }
                     else
                     {
@@ -323,14 +324,11 @@ public static partial class AIJsonUtilities
                 if (key.IncludeSchemaUri)
                 {
                     // The $schema property must be the first keyword in the object
-                    ConvertSchemaToObject(ref schema).Insert(0, SchemaPropertyName, (JsonNode)SchemaKeywordUri);
+                    ConvertSchemaToObject(ref schema).InsertAtStart(SchemaPropertyName, (JsonNode)SchemaKeywordUri);
                 }
             }
 
             return schema;
-
-            static object[]? GetAttrs(Type attrType, ICustomAttributeProvider? provider) =>
-                provider?.GetCustomAttributes(attrType, inherit: false);
 
             static JsonObject ConvertSchemaToObject(ref JsonNode schema)
             {
@@ -354,20 +352,80 @@ public static partial class AIJsonUtilities
         }
     }
 
-    private static bool TypeIsArrayContainingInteger(JsonNode schema)
+    private static bool TypeIsIntegerWithStringNumberHandling(JsonSchemaExporterContext ctx, JsonObject schema)
     {
-        if (schema["type"] is JsonArray typeArray)
+        if (ctx.TypeInfo.NumberHandling is not JsonNumberHandling.Strict && schema["type"] is JsonArray typeArray)
         {
-            foreach (var entry in typeArray)
+            int count = 0;
+            foreach (JsonNode? entry in typeArray)
             {
-                if (entry?.GetValueKind() == JsonValueKind.String && entry.GetValue<string>() == "integer")
+                if (entry?.GetValueKind() is JsonValueKind.String &&
+                    entry.GetValue<string>() is "integer" or "string")
                 {
-                    return true;
+                    count++;
                 }
             }
+
+            return count == typeArray.Count;
         }
 
         return false;
+    }
+
+    private static void InsertAtStart(this JsonObject jsonObject, string key, JsonNode value)
+    {
+#if NET9_0_OR_GREATER
+        jsonObject.Insert(0, key, value);
+#else
+        jsonObject.Remove(key);
+        var copiedEntries = jsonObject.ToArray();
+        jsonObject.Clear();
+
+        jsonObject.Add(key, value);
+        foreach (var entry in copiedEntries)
+        {
+            jsonObject[entry.Key] = entry.Value;
+        }
+#endif
+    }
+
+#if !NET9_0_OR_GREATER
+    private static int IndexOf(this JsonObject jsonObject, string key)
+    {
+        int i = 0;
+        foreach (var entry in jsonObject)
+        {
+            if (string.Equals(entry.Key, key, StringComparison.Ordinal))
+            {
+                return i;
+            }
+
+            i++;
+        }
+
+        return -1;
+    }
+#endif
+
+    private static TAttribute? ResolveAttribute<TAttribute>(this JsonSchemaExporterContext ctx)
+        where TAttribute : Attribute
+    {
+        // Resolve attributes from locations in the following order:
+        // 1. Property-level attributes
+        // 2. Parameter-level attributes and
+        // 3. Type-level attributes.
+        return
+#if NET9_0_OR_GREATER
+            GetAttrs(ctx.PropertyInfo?.AttributeProvider) ??
+            GetAttrs(ctx.PropertyInfo?.AssociatedParameter?.AttributeProvider) ??
+#else
+            GetAttrs(ctx.PropertyAttributeProvider) ??
+            GetAttrs(ctx.ParameterInfo) ??
+#endif
+            GetAttrs(ctx.TypeInfo.Type);
+
+        static TAttribute? GetAttrs(ICustomAttributeProvider? provider) =>
+            (TAttribute?)provider?.GetCustomAttributes(typeof(TAttribute), inherit: false).FirstOrDefault();
     }
 
     private static JsonElement ParseJsonElement(ReadOnlySpan<byte> utf8Json)

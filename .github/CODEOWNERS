@@ -1,28 +1,101 @@
 # These owners will be the default owners for everything in the repo. Unless a later match takes precedence,
 # @dotnet/dotnet-extensions-fundamentals will be requested for review when someone opens a pull request.
 
-*.cmd                                                   @dotnet/dotnet-extensions-infra
-*.sh                                                    @dotnet/dotnet-extensions-infra
-*.ps1                                                   @dotnet/dotnet-extensions-infra
-*.yml                                                   @dotnet/dotnet-extensions-infra
-*.props                                                 @dotnet/dotnet-extensions-infra
-*.targets                                               @dotnet/dotnet-extensions-infra
-/global.json                                            @dotnet/dotnet-extensions-infra
-/.azure/                                                @dotnet/dotnet-extensions-infra
-/.azuredevops/                                          @dotnet/dotnet-extensions-infra
-/.config/                                               @dotnet/dotnet-extensions-infra
-/.devcontainer/                                         @dotnet/dotnet-extensions-infra
-/.vscode/                                               @dotnet/dotnet-extensions-infra
-/.github/                                               @dotnet/dotnet-extensions-infra
-/docs/                                                  @dotnet/dotnet-extensions-infra
-/eng/                                                   @dotnet/dotnet-extensions-infra
+*.cmd                                                                       @dotnet/dotnet-extensions-infra
+*.sh                                                                        @dotnet/dotnet-extensions-infra
+*.ps1                                                                       @dotnet/dotnet-extensions-infra
+*.yml                                                                       @dotnet/dotnet-extensions-infra
+*.props                                                                     @dotnet/dotnet-extensions-infra
+*.targets                                                                   @dotnet/dotnet-extensions-infra
+/global.json                                                                @dotnet/dotnet-extensions-infra
+/.azure/                                                                    @dotnet/dotnet-extensions-infra
+/.azuredevops/                                                              @dotnet/dotnet-extensions-infra
+/.config/                                                                   @dotnet/dotnet-extensions-infra
+/.devcontainer/                                                             @dotnet/dotnet-extensions-infra
+/.vscode/                                                                   @dotnet/dotnet-extensions-infra
+/.github/                                                                   @dotnet/dotnet-extensions-infra
+/docs/                                                                      @dotnet/dotnet-extensions-infra
+/eng/                                                                       @dotnet/dotnet-extensions-infra
 
-/src/Libraries/Microsoft.Extensions.AI                  @dotnet/dotnet-extensions-ai
-/src/Libraries/Microsoft.Extensions.AI.*                @dotnet/dotnet-extensions-ai
-/test/Libraries/Microsoft.Extensions.AI                 @dotnet/dotnet-extensions-ai
-/test/Libraries/Microsoft.Extensions.AI.*               @dotnet/dotnet-extensions-ai
+/src/Libraries/Microsoft.Extensions.AI                                      @dotnet/dotnet-extensions-ai
+/src/Libraries/Microsoft.Extensions.AI.*                                    @dotnet/dotnet-extensions-ai
+/test/Libraries/Microsoft.Extensions.AI                                     @dotnet/dotnet-extensions-ai
+/test/Libraries/Microsoft.Extensions.AI.*                                   @dotnet/dotnet-extensions-ai
 
-/src/Libraries/Microsoft.Extensions.Caching.Hybrid      @dotnet/dotnet-extensions-caching-hybrid
-/src/Libraries/Microsoft.Extensions.Caching.Hybrid.*    @dotnet/dotnet-extensions-caching-hybrid
-/test/Libraries/Microsoft.Extensions.Caching.Hybrid     @dotnet/dotnet-extensions-caching-hybrid
-/test/Libraries/Microsoft.Extensions.Caching.Hybrid.*   @dotnet/dotnet-extensions-caching-hybrid
+/src/Libraries/Microsoft.Extensions.Caching.Hybrid                          @dotnet/dotnet-extensions-caching-hybrid
+/src/Libraries/Microsoft.Extensions.Caching.Hybrid.*                        @dotnet/dotnet-extensions-caching-hybrid
+/test/Libraries/Microsoft.Extensions.Caching.Hybrid                         @dotnet/dotnet-extensions-caching-hybrid
+/test/Libraries/Microsoft.Extensions.Caching.Hybrid.*                       @dotnet/dotnet-extensions-caching-hybrid
+
+/src/Analyzers/Microsoft.Analyzers.Extra                                    @dotnet/dotnet-extensions-analyzers
+/src/Analyzers/Microsoft.Analyzers.Local                                    @dotnet/dotnet-extensions-analyzers
+/src/Packages/Microsoft.Extensions.StaticAnalysis                           @dotnet/dotnet-extensions-analyzers
+/test/Analyzers/Microsoft.Analyzers.Extra.*                                 @dotnet/dotnet-extensions-analyzers
+/test/Analyzers/Microsoft.Analyzers.Local.*                                 @dotnet/dotnet-extensions-analyzers
+
+/src/Generators/Microsoft.Gen.ComplianceReports                             @dotnet/dotnet-extensions-compliance
+/src/Libraries/Microsoft.Extensions.Compliance.Abstractions                 @dotnet/dotnet-extensions-compliance
+/src/Libraries/Microsoft.Extensions.Compliance.Redaction                    @dotnet/dotnet-extensions-compliance
+/src/Libraries/Microsoft.Extensions.Compliance.Testing                      @dotnet/dotnet-extensions-compliance
+/src/Packages/Microsoft.Extensions.AuditReports                             @dotnet/dotnet-extensions-compliance
+/test/Generators/Microsoft.Gen.ComplianceReports                            @dotnet/dotnet-extensions-compliance
+/test/Libraries/Microsoft.Extensions.Compliance.Abstractions.*              @dotnet/dotnet-extensions-compliance
+/test/Libraries/Microsoft.Extensions.Compliance.Redaction.*                 @dotnet/dotnet-extensions-compliance
+/test/Libraries/Microsoft.Extensions.Compliance.Testing.*                   @dotnet/dotnet-extensions-compliance
+
+/src/Generators/Microsoft.Gen.ContextualOptions                             @dotnet/dotnet-extensions-configuration
+/src/Libraries/Microsoft.Extensions.Options.Contextual                      @dotnet/dotnet-extensions-configuration
+/test/Generators/Microsoft.Gen.ContextualOptions                            @dotnet/dotnet-extensions-configuration
+/test/Libraries/Microsoft.Extensions.Options.Contextual.*                   @dotnet/dotnet-extensions-configuration
+
+/src/Libraries/Microsoft.AspNetCore.AsyncState                              @dotnet/dotnet-extensions-fundamentals
+/src/Libraries/Microsoft.AspNetCore.HeaderParsing                           @dotnet/dotnet-extensions-fundamentals
+/src/Libraries/Microsoft.Extensions.AsyncState                              @dotnet/dotnet-extensions-fundamentals
+/src/Libraries/Microsoft.Extensions.DependencyInjection.AutoActivation      @dotnet/dotnet-extensions-fundamentals
+/src/Libraries/Microsoft.Extensions.ObjectPool.DependencyInjection          @dotnet/dotnet-extensions-fundamentals
+/src/Libraries/Microsoft.Extensions.TimeProvider.Testing                    @dotnet/dotnet-extensions-fundamentals
+/src/Shared                                                                 @dotnet/dotnet-extensions-fundamentals
+/test/Libraries/Microsoft.AspNetCore.AsyncState.*                           @dotnet/dotnet-extensions-fundamentals
+/test/Libraries/Microsoft.AspNetCore.HeaderParsing.*                        @dotnet/dotnet-extensions-fundamentals
+/test/Libraries/Microsoft.Extensions.AsyncState.*                           @dotnet/dotnet-extensions-fundamentals
+/test/Libraries/Microsoft.Extensions.DependencyInjection.AutoActivation.*   @dotnet/dotnet-extensions-fundamentals
+/test/Libraries/Microsoft.Extensions.ObjectPool.DependencyInjection.*       @dotnet/dotnet-extensions-fundamentals
+/test/Libraries/Microsoft.Extensions.TimeProvider.Testing.*                 @dotnet/dotnet-extensions-fundamentals
+/test/Shared.*                                                              @dotnet/dotnet-extensions-fundamentals
+
+/src/Libraries/Microsoft.AspNetCore.Testing                                 @dotnet/dotnet-extensions-hosting
+/src/Libraries/Microsoft.Extensions.Hosting.Testing                         @dotnet/dotnet-extensions-hosting
+/test/Libraries/Microsoft.AspNetCore.Testing.*                              @dotnet/dotnet-extensions-hosting
+/test/Libraries/Microsoft.Extensions.Hosting.Testing.*                      @dotnet/dotnet-extensions-hosting
+
+/src/Libraries/Microsoft.Extensions.Diagnostics.Probes                      @dotnet/dotnet-extensions-resilience
+/src/Libraries/Microsoft.Extensions.Http.Resilience                         @dotnet/dotnet-extensions-resilience
+/src/Libraries/Microsoft.Extensions.Resilience                              @dotnet/dotnet-extensions-resilience
+/test/Libraries/Microsoft.Extensions.Diagnostics.Probes.*                   @dotnet/dotnet-extensions-resilience
+/test/Libraries/Microsoft.Extensions.Http.Resilience.*                      @dotnet/dotnet-extensions-resilience
+/test/Libraries/Microsoft.Extensions.Resilience.*                           @dotnet/dotnet-extensions-resilience
+
+/src/Libraries/Microsoft.Extensions.Diagnostics.HealthChecks.*              @dotnet/dotnet-extensions-resourcemonitoring
+/src/Libraries/Microsoft.Extensions.Diagnostics.ResourceMonitoring          @dotnet/dotnet-extensions-resourcemonitoring
+/test/Libraries/Microsoft.Extensions.Diagnostics.HealthChecks.*             @dotnet/dotnet-extensions-resourcemonitoring
+/test/Libraries/Microsoft.Extensions.Diagnostics.ResourceMonitoring.*       @dotnet/dotnet-extensions-resourcemonitoring
+
+/src/Generators/Microsoft.Gen.Logging                                       @dotnet/dotnet-extensions-telemetry
+/src/Generators/Microsoft.Gen.Metrics                                       @dotnet/dotnet-extensions-telemetry
+/src/Generators/Microsoft.Gen.MetricsReports                                @dotnet/dotnet-extensions-telemetry
+/src/Libraries/Microsoft.AspNetCore.Diagnostics.Middleware                  @dotnet/dotnet-extensions-telemetry
+/src/Libraries/Microsoft.Extensions.AmbientMetadata.Application             @dotnet/dotnet-extensions-telemetry
+/src/Libraries/Microsoft.Extensions.Diagnostics.ExceptionSummarization      @dotnet/dotnet-extensions-telemetry
+/src/Libraries/Microsoft.Extensions.Diagnostics.Testing                     @dotnet/dotnet-extensions-telemetry
+/src/Libraries/Microsoft.Extensions.Http.Diagnostics                        @dotnet/dotnet-extensions-telemetry
+/src/Libraries/Microsoft.Extensions.Telemetry.*                             @dotnet/dotnet-extensions-telemetry
+/src/Libraries/Microsoft.Extensions.Telemetry                               @dotnet/dotnet-extensions-telemetry
+/test/Generators/Microsoft.Gen.Logging                                      @dotnet/dotnet-extensions-telemetry
+/test/Generators/Microsoft.Gen.Metrics                                      @dotnet/dotnet-extensions-telemetry
+/test/Generators/Microsoft.Gen.MetricsReports                               @dotnet/dotnet-extensions-telemetry
+/test/Libraries/Microsoft.AspNetCore.Diagnostics.Middleware.*               @dotnet/dotnet-extensions-telemetry
+/test/Libraries/Microsoft.Extensions.AmbientMetadata.Application.*          @dotnet/dotnet-extensions-telemetry
+/test/Libraries/Microsoft.Extensions.Diagnostics.ExceptionSummarization.*   @dotnet/dotnet-extensions-telemetry
+/test/Libraries/Microsoft.Extensions.Diagnostics.Testing.*                  @dotnet/dotnet-extensions-telemetry
+/test/Libraries/Microsoft.Extensions.Http.Diagnostics.*                     @dotnet/dotnet-extensions-telemetry
+/test/Libraries/Microsoft.Extensions.Telemetry.*                            @dotnet/dotnet-extensions-telemetry

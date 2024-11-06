@@ -4,13 +4,21 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using Microsoft.Shared.Diagnostics;
+
+#pragma warning disable S1144 // Unused private types or members should be removed
+#pragma warning disable S2365 // Properties should not make collection or array copies
+#pragma warning disable S3604 // Member initializer values should not be redundant
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides a dictionary used as the AdditionalProperties dictionary on Microsoft.Extensions.AI objects.</summary>
+[DebuggerTypeProxy(typeof(DebugView))]
+[DebuggerDisplay("Count = {Count}")]
 public sealed class AdditionalPropertiesDictionary : IDictionary<string, object?>, IReadOnlyDictionary<string, object?>
 {
     /// <summary>The underlying dictionary.</summary>
@@ -77,6 +85,25 @@ public sealed class AdditionalPropertiesDictionary : IDictionary<string, object?
     /// <inheritdoc />
     public void Add(string key, object? value) => _dictionary.Add(key, value);
 
+    /// <summary>Attempts to add the specified key and value to the dictionary.</summary>
+    /// <param name="key">The key of the element to add.</param>
+    /// <param name="value">The value of the element to add.</param>
+    /// <returns><see langword="true"/> if the key/value pair was added to the dictionary successfully; otherwise, <see langword="false"/>.</returns>
+    public bool TryAdd(string key, object? value)
+    {
+#if NET
+        return _dictionary.TryAdd(key, value);
+#else
+        if (!_dictionary.ContainsKey(key))
+        {
+            _dictionary.Add(key, value);
+            return true;
+        }
+
+        return false;
+#endif
+    }
+
     /// <inheritdoc />
     void ICollection<KeyValuePair<string, object?>>.Add(KeyValuePair<string, object?> item) => ((ICollection<KeyValuePair<string, object?>>)_dictionary).Add(item);
 
@@ -93,11 +120,17 @@ public sealed class AdditionalPropertiesDictionary : IDictionary<string, object?
     void ICollection<KeyValuePair<string, object?>>.CopyTo(KeyValuePair<string, object?>[] array, int arrayIndex) =>
         ((ICollection<KeyValuePair<string, object?>>)_dictionary).CopyTo(array, arrayIndex);
 
-    /// <inheritdoc />
-    public IEnumerator<KeyValuePair<string, object?>> GetEnumerator() => _dictionary.GetEnumerator();
+    /// <summary>
+    /// Returns an enumerator that iterates through the <see cref="AdditionalPropertiesDictionary"/>.
+    /// </summary>
+    /// <returns>An <see cref="AdditionalPropertiesDictionary.Enumerator"/> that enumerates the contents of the <see cref="AdditionalPropertiesDictionary"/>.</returns>
+    public Enumerator GetEnumerator() => new(_dictionary.GetEnumerator());
 
     /// <inheritdoc />
-    IEnumerator IEnumerable.GetEnumerator() => _dictionary.GetEnumerator();
+    IEnumerator<KeyValuePair<string, object?>> IEnumerable<KeyValuePair<string, object?>>.GetEnumerator() => GetEnumerator();
+
+    /// <inheritdoc />
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     /// <inheritdoc />
     public bool Remove(string key) => _dictionary.Remove(key);
@@ -155,5 +188,60 @@ public sealed class AdditionalPropertiesDictionary : IDictionary<string, object?
         // Unable to find the value or convert it to the requested type.
         value = default;
         return false;
+    }
+
+    /// <summary>Enumerates the elements of an <see cref="AdditionalPropertiesDictionary"/>.</summary>
+    public struct Enumerator : IEnumerator<KeyValuePair<string, object?>>
+    {
+        /// <summary>The wrapped dictionary enumerator.</summary>
+        private Dictionary<string, object?>.Enumerator _dictionaryEnumerator;
+
+        /// <summary>Initializes a new instance of the <see cref="Enumerator"/> struct with the dictionary enumerator to wrap.</summary>
+        /// <param name="dictionaryEnumerator">The dictionary enumerator to wrap.</param>
+        internal Enumerator(Dictionary<string, object?>.Enumerator dictionaryEnumerator)
+        {
+            _dictionaryEnumerator = dictionaryEnumerator;
+        }
+
+        /// <inheritdoc />
+        public KeyValuePair<string, object?> Current => _dictionaryEnumerator.Current;
+
+        /// <inheritdoc />
+        object IEnumerator.Current => Current;
+
+        /// <inheritdoc />
+        public void Dispose() => _dictionaryEnumerator.Dispose();
+
+        /// <inheritdoc />
+        public bool MoveNext() => _dictionaryEnumerator.MoveNext();
+
+        /// <inheritdoc />
+        public void Reset() => Reset(ref _dictionaryEnumerator);
+
+        /// <summary>Calls <see cref="IEnumerator.Reset"/> on an enumerator.</summary>
+        private static void Reset<TEnumerator>(ref TEnumerator enumerator)
+            where TEnumerator : struct, IEnumerator
+        {
+            enumerator.Reset();
+        }
+    }
+
+    /// <summary>Provides a debugger view for the collection.</summary>
+    private sealed class DebugView(AdditionalPropertiesDictionary properties)
+    {
+        private readonly AdditionalPropertiesDictionary _properties = Throw.IfNull(properties);
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public AdditionalProperty[] Items => (from p in _properties select new AdditionalProperty(p.Key, p.Value)).ToArray();
+
+        [DebuggerDisplay("{Value}", Name = "[{Key}]")]
+        public readonly struct AdditionalProperty(string key, object? value)
+        {
+            [DebuggerBrowsable(DebuggerBrowsableState.Collapsed)]
+            public string Key { get; } = key;
+
+            [DebuggerBrowsable(DebuggerBrowsableState.Collapsed)]
+            public object? Value { get; } = value;
+        }
     }
 }
