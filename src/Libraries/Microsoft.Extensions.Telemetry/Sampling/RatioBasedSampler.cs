@@ -46,7 +46,7 @@ internal sealed class RatioBasedSampler : LoggerSampler
     {
         probability = 0.0;
 
-        // TODO: check if we can optimize this. It is a hot-path and
+        // TO DO: check if we can optimize this. It is a hot path and
         // we should be able to minimize number of rule selections on every log record.
         SamplerRuleSelector.Select(_options.CurrentValue.Rules, parameters.Category, parameters.LogLevel, parameters.EventId, out RatioBasedSamplerFilterRule? rule);
         if (rule is not null)
