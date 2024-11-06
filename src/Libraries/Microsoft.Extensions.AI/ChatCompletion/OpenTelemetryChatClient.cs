@@ -322,7 +322,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                             _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.PerProvider(_system, "response_format"), responseFormat);
                         }
 
-                        if (options.AdditionalProperties?.TryGetValue("seed", out long seed) is true)
+                        if (options.Seed is long seed)
                         {
                             _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.PerProvider(_system, "seed"), seed);
                         }

@@ -16,6 +16,7 @@
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
     <NoWarn>$(NoWarn);CA1063;CA1508;CA2227;SA1316;S1121;S3358;EA0002</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DisableNETStandardCompatErrors>true</DisableNETStandardCompatErrors>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -25,6 +26,7 @@
 
   <ItemGroup>
     <PackageReference Include="OpenAI" />
+    <PackageReference Include="System.Memory.Data" />
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 

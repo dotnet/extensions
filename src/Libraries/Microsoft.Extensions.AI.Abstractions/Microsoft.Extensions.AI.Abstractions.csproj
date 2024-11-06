@@ -16,9 +16,11 @@
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
     <NoWarn>$(NoWarn);CA2227;CA1034;SA1316;S3253</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DisableNETStandardCompatErrors>true</DisableNETStandardCompatErrors>
   </PropertyGroup>
 
   <PropertyGroup>
+    <InjectJsonSchemaExporterOnLegacy>true</InjectJsonSchemaExporterOnLegacy>
     <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
     <InjectStringHashOnLegacy>true</InjectStringHashOnLegacy>
     <InjectStringSyntaxAttributeOnLegacy>true</InjectStringSyntaxAttributeOnLegacy>

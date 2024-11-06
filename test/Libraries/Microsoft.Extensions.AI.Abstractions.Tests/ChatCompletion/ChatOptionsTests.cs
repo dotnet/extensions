@@ -19,6 +19,7 @@ public class ChatOptionsTests
         Assert.Null(options.TopK);
         Assert.Null(options.FrequencyPenalty);
         Assert.Null(options.PresencePenalty);
+        Assert.Null(options.Seed);
         Assert.Null(options.ResponseFormat);
         Assert.Null(options.ModelId);
         Assert.Null(options.StopSequences);
@@ -33,6 +34,7 @@ public class ChatOptionsTests
         Assert.Null(clone.TopK);
         Assert.Null(clone.FrequencyPenalty);
         Assert.Null(clone.PresencePenalty);
+        Assert.Null(options.Seed);
         Assert.Null(clone.ResponseFormat);
         Assert.Null(clone.ModelId);
         Assert.Null(clone.StopSequences);
@@ -69,6 +71,7 @@ public class ChatOptionsTests
         options.TopK = 42;
         options.FrequencyPenalty = 0.4f;
         options.PresencePenalty = 0.5f;
+        options.Seed = 12345;
         options.ResponseFormat = ChatResponseFormat.Json;
         options.ModelId = "modelId";
         options.StopSequences = stopSequences;
@@ -82,6 +85,7 @@ public class ChatOptionsTests
         Assert.Equal(42, options.TopK);
         Assert.Equal(0.4f, options.FrequencyPenalty);
         Assert.Equal(0.5f, options.PresencePenalty);
+        Assert.Equal(12345, options.Seed);
         Assert.Same(ChatResponseFormat.Json, options.ResponseFormat);
         Assert.Equal("modelId", options.ModelId);
         Assert.Same(stopSequences, options.StopSequences);
@@ -96,6 +100,7 @@ public class ChatOptionsTests
         Assert.Equal(42, clone.TopK);
         Assert.Equal(0.4f, clone.FrequencyPenalty);
         Assert.Equal(0.5f, clone.PresencePenalty);
+        Assert.Equal(12345, options.Seed);
         Assert.Same(ChatResponseFormat.Json, clone.ResponseFormat);
         Assert.Equal("modelId", clone.ModelId);
         Assert.Equal(stopSequences, clone.StopSequences);
@@ -126,6 +131,7 @@ public class ChatOptionsTests
         options.TopK = 42;
         options.FrequencyPenalty = 0.4f;
         options.PresencePenalty = 0.5f;
+        options.Seed = 12345;
         options.ResponseFormat = ChatResponseFormat.Json;
         options.ModelId = "modelId";
         options.StopSequences = stopSequences;
@@ -148,6 +154,7 @@ public class ChatOptionsTests
         Assert.Equal(42, deserialized.TopK);
         Assert.Equal(0.4f, deserialized.FrequencyPenalty);
         Assert.Equal(0.5f, deserialized.PresencePenalty);
+        Assert.Equal(12345, deserialized.Seed);
         Assert.Equal(ChatResponseFormat.Json, deserialized.ResponseFormat);
         Assert.NotSame(ChatResponseFormat.Json, deserialized.ResponseFormat);
         Assert.Equal("modelId", deserialized.ModelId);
