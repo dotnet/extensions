@@ -125,6 +125,10 @@ public static class ExtendedLoggerTests
     {
         const string Category = "C1";
 
+        RatioBasedSamplerOptions options = new();
+        options.Rules.Add(new RatioBasedSamplerFilterRule(0, null, LogLevel.Warning, null, null));
+        var sampler = new RatioBasedSampler(new StaticOptionsMonitor<RatioBasedSamplerOptions>(options));
+
         using var provider = new Provider();
         using var factory = Utils.CreateLoggerFactory(
              builder =>
@@ -967,7 +971,7 @@ public static class ExtendedLoggerTests
         }
     }
 
-    private sealed class StaticOptionsMonitor<T> : IOptionsMonitor<T>
+    public sealed class StaticOptionsMonitor<T> : IOptionsMonitor<T>
     {
         public StaticOptionsMonitor(T currentValue)
         {

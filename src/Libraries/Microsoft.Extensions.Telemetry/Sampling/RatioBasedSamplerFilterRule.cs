@@ -14,6 +14,14 @@ public class RatioBasedSamplerFilterRule : ILoggerSamplerFilterRule
     /// <summary>
     /// Initializes a new instance of the <see cref="RatioBasedSamplerFilterRule"/> class.
     /// </summary>
+    public RatioBasedSamplerFilterRule()
+        : this(1.0, null, null, null, null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RatioBasedSamplerFilterRule"/> class.
+    /// </summary>
     /// <param name="probability">The probability for sampling in if this rule applies.</param>
     /// <param name="categoryName">The category name to use in this filter rule.</param>
     /// <param name="logLevel">The <see cref="LogLevel"/> to use in this filter rule.</param>
@@ -23,38 +31,30 @@ public class RatioBasedSamplerFilterRule : ILoggerSamplerFilterRule
         double probability,
         string? categoryName,
         LogLevel? logLevel,
-        EventId? eventId,
-        Func<string?, LogLevel, EventId?, bool>? filter)
+        int? eventId,
+        Func<string?, LogLevel?, int?, bool>? filter)
     {
         Probability = probability;
-        CategoryName = categoryName;
+        Category = categoryName;
         LogLevel = logLevel;
         EventId = eventId;
         Filter = filter;
     }
 
-    /// <summary>
-    /// Gets the logger category this rule applies to.
-    /// </summary>
-    public string? CategoryName { get; }
+    /// <inheritdoc/>
+    public string? Category { get; set; }
+
+    /// <inheritdoc/>
+    public LogLevel? LogLevel { get; set; }
+
+    /// <inheritdoc/>
+    public int? EventId { get; set; }
 
     /// <summary>
-    /// Gets the maximum <see cref="LogLevel"/> of messages.
+    /// Gets or sets the probability for sampling in if this rule applies.
     /// </summary>
-    public LogLevel? LogLevel { get; }
+    public double Probability { get; set; }
 
-    /// <summary>
-    /// Gets the <see cref="EventId"/> of messages this rule applies to.
-    /// </summary>
-    public EventId? EventId { get; }
-
-    /// <summary>
-    /// Gets the probability for sampling in if this rule applies.
-    /// </summary>
-    public double Probability { get; }
-
-    /// <summary>
-    /// Gets the filter delegate that would be applied to messages that passed the <see cref="LogLevel"/>.
-    /// </summary>
-    public Func<string?, LogLevel, EventId?, bool>? Filter { get; }
+    /// <inheritdoc/>
+    public Func<string?, LogLevel?, int?, bool>? Filter { get; }
 }

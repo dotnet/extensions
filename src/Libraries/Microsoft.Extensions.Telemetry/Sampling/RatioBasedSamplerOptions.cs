@@ -11,10 +11,11 @@ namespace Microsoft.Extensions.Diagnostics.Sampling;
 public class RatioBasedSamplerOptions
 {
     /// <summary>
-    /// Gets the collection of <see cref="RatioBasedSamplerFilterRule"/> used for filtering log messages.
+    /// Gets or sets the collection of <see cref="RatioBasedSamplerFilterRule"/> used for filtering log messages.
     /// </summary>
-    public IList<RatioBasedSamplerFilterRule> Rules => RulesInternal;
-
-    // Concrete representation of the rule list
-    internal List<RatioBasedSamplerFilterRule> RulesInternal { get; } = [];
+#pragma warning disable CA1002 // Do not expose generic lists - List is necessary to be able to call .AddRange()
+#pragma warning disable CA2227 // Collection properties should be read only - setter is necessary for options pattern
+    public List<RatioBasedSamplerFilterRule> Rules { get; set; } = [];
+#pragma warning restore CA2227 // Collection properties should be read only
+#pragma warning restore CA1002 // Do not expose generic lists
 }

@@ -4,6 +4,7 @@
 using Microsoft.Extensions.Diagnostics.Sampling;
 using Microsoft.Extensions.Logging;
 using Xunit;
+using static Microsoft.Extensions.Logging.Test.ExtendedLoggerTests;
 
 namespace Microsoft.Extensions.Telemetry.Sampling;
 
@@ -15,7 +16,9 @@ public class RatioBasedSamplerTests
     public void SamplesAsConfigured(double probability, bool expectedSamplingDecision)
     {
         // Arrange
-        var sampler = new RatioBasedSampler(probability, LogLevel.Trace);
+        RatioBasedSamplerOptions options = new();
+        options.Rules.Add(new RatioBasedSamplerFilterRule(probability, null, LogLevel.Trace, null, null));
+        var sampler = new RatioBasedSampler(new StaticOptionsMonitor<RatioBasedSamplerOptions>(options));
 
         // Act
         var actualDecision = sampler.ShouldSample(new SamplingParameters(LogLevel.Trace, nameof(SamplesAsConfigured), 0));
@@ -27,11 +30,12 @@ public class RatioBasedSamplerTests
     [Fact]
     public void WhenParametersNotMatch_AlwaysSamples()
     {
+        // Arrange
         const double Probability = 0.0;
         var logRecordParameters = new SamplingParameters(LogLevel.Warning, nameof(WhenParametersNotMatch_AlwaysSamples), 0);
-
-        // Arrange
-        var sampler = new RatioBasedSampler(Probability, LogLevel.Information);
+        RatioBasedSamplerOptions options = new();
+        options.Rules.Add(new RatioBasedSamplerFilterRule(Probability, null, LogLevel.Information, null, null));
+        var sampler = new RatioBasedSampler(new StaticOptionsMonitor<RatioBasedSamplerOptions>(options));
 
         // Act
         var actualDecision = sampler.ShouldSample(logRecordParameters);
@@ -43,16 +47,17 @@ public class RatioBasedSamplerTests
     [Fact]
     public void WhenParametersMatch_UsesProvidedProbability()
     {
-        const double Probability = 1.0;
-        var logRecordParameters = new SamplingParameters(LogLevel.Information, nameof(WhenParametersMatch_UsesProvidedProbability), 0);
-
         // Arrange
-        var sampler = new RatioBasedSampler(Probability, LogLevel.Information);
+        const double Probability = 0.0;
+        var logRecordParameters = new SamplingParameters(LogLevel.Information, nameof(WhenParametersMatch_UsesProvidedProbability), 0);
+        RatioBasedSamplerOptions options = new();
+        options.Rules.Add(new RatioBasedSamplerFilterRule(Probability, null, LogLevel.Information, null, null));
+        var sampler = new RatioBasedSampler(new StaticOptionsMonitor<RatioBasedSamplerOptions>(options));
 
         // Act
         var actualDecision = sampler.ShouldSample(logRecordParameters);
 
         // Assert
-        Assert.True(actualDecision);
+        Assert.False(actualDecision);
     }
 }

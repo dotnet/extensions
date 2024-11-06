@@ -17,23 +17,11 @@ internal sealed class RatioBasedSampler : LoggerSampler
     private static readonly System.Threading.ThreadLocal<Random> _randomInstance = new(() => new Random());
 #endif
 
-    private readonly int _sampleRate;
-    private readonly LogLevel? _logLevel;
     private readonly IOptionsMonitor<RatioBasedSamplerOptions> _options;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RatioBasedSampler"/> class.
     /// </summary>
-    /// <param name="probability">The desired probability of sampling. This must be between 0.0 and 1.0.
-    /// Higher the value, higher is the probability of a given log record to be sampled in.
-    /// </param>
-    /// <param name="logLevel">Apply sampling to the provided log level or below.</param>
-    public RatioBasedSampler(double probability, LogLevel? logLevel)
-    {
-        _sampleRate = (int)probability * int.MaxValue;
-        _logLevel = logLevel;
-    }
-
     public RatioBasedSampler(IOptionsMonitor<RatioBasedSamplerOptions> options)
     {
         _options = options;
@@ -48,9 +36,9 @@ internal sealed class RatioBasedSampler : LoggerSampler
         }
 
 #if NET6_0_OR_GREATER
-        return Random.Shared.Next(int.MaxValue) < probability;
+        return Random.Shared.Next(int.MaxValue) < int.MaxValue * probability;
 #else
-        return _randomInstance.Value!.Next(int.MaxValue) < probability;
+        return _randomInstance.Value!.Next(int.MaxValue) < int.MaxValue * probability;
 #endif
     }
 
@@ -58,11 +46,12 @@ internal sealed class RatioBasedSampler : LoggerSampler
     {
         probability = 0.0;
 
-        //TODO: have a rule selector!
-        // pseudo code:
-        if (_options.CurrentValue.Rules[0].Filter(parameters.Category, parameters.LogLevel, parameters.EventId))
+        // TODO: check if we can optimize this. It is a hot-path and
+        // we should be able to minimize number of rule selections on every log record.
+        SamplerRuleSelector.Select(_options.CurrentValue.Rules, parameters.Category, parameters.LogLevel, parameters.EventId, out RatioBasedSamplerFilterRule? rule);
+        if (rule is not null)
         {
-            probability = _options.CurrentValue.Rules[0].Probability;
+            probability = rule.Probability;
             return true;
         }
 

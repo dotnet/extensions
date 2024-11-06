@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Diagnostics.Sampling;
@@ -13,7 +14,7 @@ public interface ILoggerSamplerFilterRule
     /// <summary>
     /// Gets the logger category this rule applies to.
     /// </summary>
-    public string? CategoryName { get; }
+    public string? Category { get; }
 
     /// <summary>
     /// Gets the maximum <see cref="LogLevel"/> of messages.
@@ -21,7 +22,12 @@ public interface ILoggerSamplerFilterRule
     public LogLevel? LogLevel { get; }
 
     /// <summary>
-    /// Gets the <see cref="EventId"/> of messages this rule applies to.
+    /// Gets the maximum <see cref="LogLevel"/> of messages where this rule applies to.
     /// </summary>
-    public EventId? EventId { get; }
+    public int? EventId { get; }
+
+    /// <summary>
+    /// Gets the filter delegate that would be applied to messages that passed the <see cref="LogLevel"/>.
+    /// </summary>
+    public Func<string?, LogLevel?, int?, bool>? Filter { get; }
 }
