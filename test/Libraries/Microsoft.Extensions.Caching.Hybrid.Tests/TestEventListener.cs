@@ -50,7 +50,7 @@ public sealed class TestEventListener : EventListener
             {
                 ["EventCounterIntervalSec"] = EventCounterIntervalSec.ToString("G", CultureInfo.InvariantCulture),
             };
-            EnableEvents(Source, EventLevel.Verbose, EventKeywords.All, args);
+            EnableEvents(Source, EventLevel.LogAlways, EventKeywords.All, args);
         }
 
         base.OnEventSourceCreated(eventSource);

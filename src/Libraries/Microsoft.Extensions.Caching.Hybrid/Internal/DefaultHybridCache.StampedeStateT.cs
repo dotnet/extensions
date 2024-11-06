@@ -190,6 +190,15 @@ internal partial class DefaultHybridCache
                             }
                         }
                     }
+                    catch (OperationCanceledException) when (SharedToken.IsCancellationRequested)
+                    {
+                        if (eventSourceEnabled)
+                        {
+                            HybridCacheEventSource.Log.DistributedCacheCanceled();
+                        }
+
+                        throw; // don't just treat as miss - exit ASAP
+                    }
                     catch (Exception ex)
                     {
                         if (eventSourceEnabled)
@@ -227,11 +236,18 @@ internal partial class DefaultHybridCache
                             HybridCacheEventSource.Log.UnderlyingDataQueryComplete();
                         }
                     }
-                    catch
+                    catch (Exception ex)
                     {
                         if (eventSourceEnabled)
                         {
-                            HybridCacheEventSource.Log.UnderlyingDataQueryFailed();
+                            if (ex is OperationCanceledException && SharedToken.IsCancellationRequested)
+                            {
+                                HybridCacheEventSource.Log.UnderlyingDataQueryCanceled();
+                            }
+                            else
+                            {
+                                HybridCacheEventSource.Log.UnderlyingDataQueryFailed();
+                            }
                         }
 
                         throw;
