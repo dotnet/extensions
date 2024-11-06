@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Compliance</RootNamespace>
+    <TargetFrameworks>$(NetCoreTargetFrameworks);netstandard2.0;</TargetFrameworks>
     <Description>Abstractions to help ensure compliant data management.</Description>
     <Workstream>Fundamentals</Workstream>
   </PropertyGroup>

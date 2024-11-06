@@ -17,6 +17,7 @@
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
     <NoWarn>$(NoWarn);CA1063;CA2227;SA1316;S1067;S1121;S3358</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DisableNETStandardCompatErrors>true</DisableNETStandardCompatErrors>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -29,6 +30,7 @@
   <ItemGroup>
     <PackageReference Include="Azure.AI.Inference" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+    <PackageReference Include="System.Memory.Data" />
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
