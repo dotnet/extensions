@@ -18,6 +18,7 @@
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
     <NoWarn>$(NoWarn);CA2227;CA1034;SA1316;S1067;S1121;S1994;S3253</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DisableNETStandardCompatErrors>true</DisableNETStandardCompatErrors>
   </PropertyGroup>
 
   <PropertyGroup>
