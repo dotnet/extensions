@@ -12,6 +12,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Diagnostics;
 
+#pragma warning disable CA2213 // Disposable fields should be disposed
+
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
@@ -38,11 +40,12 @@ namespace Microsoft.Extensions.AI;
 /// </remarks>
 public partial class FunctionInvokingChatClient : DelegatingChatClient
 {
-    /// <summary><see cref="ActivitySource"/> used for tracking function invocations.</summary>
-    private static readonly ActivitySource _activitySource = new(typeof(FunctionInvokingChatClient).FullName!);
-
     /// <summary>The logger to use for logging information about function invocation.</summary>
     private readonly ILogger _logger;
+
+    /// <summary>The <see cref="ActivitySource"/> to use for telemetry.</summary>
+    /// <remarks>This component does not own the instance and should not dispose it.</remarks>
+    private readonly ActivitySource? _activitySource;
 
     /// <summary>Maximum number of roundtrips allowed to the inner client.</summary>
     private int? _maximumIterationsPerRequest;
@@ -56,6 +59,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         : base(innerClient)
     {
         _logger = logger ?? NullLogger.Instance;
+        _activitySource = innerClient.GetService<ActivitySource>();
     }
 
     /// <summary>
@@ -177,15 +181,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             _maximumIterationsPerRequest = value;
         }
     }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether <see cref="Activity"/>s should be used to
-    /// provide telemetry for function invocation.
-    /// </summary>
-    /// <remarks>
-    /// The default value is <see langword="true"/>.
-    /// </remarks>
-    public bool EnableTelemetry { get; set; } = true;
 
     /// <inheritdoc/>
     public override async Task<ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
@@ -585,7 +580,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     {
         _ = Throw.IfNull(context);
 
-        using Activity? activity = EnableTelemetry ? _activitySource.StartActivity(context.Function.Metadata.Name) : null;
+        using Activity? activity = _activitySource?.StartActivity(context.Function.Metadata.Name);
 
         long startingTimestamp = 0;
         if (_logger.IsEnabled(LogLevel.Debug))

@@ -352,11 +352,14 @@ public class FunctionInvokingChatClientTests
     [InlineData(true)]
     public async Task FunctionInvocationTrackedWithActivity(bool enableTelemetry)
     {
+        string sourceName = Guid.NewGuid().ToString();
         var activities = new List<Activity>();
-        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
-            .AddSource("Microsoft.Extensions.AI.*")
+        using TracerProvider? tracerProvider = enableTelemetry ?
+            OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
             .AddInMemoryExporter(activities)
-            .Build();
+            .Build() :
+            null;
 
         var options = new ChatOptions
         {
@@ -369,16 +372,15 @@ public class FunctionInvokingChatClientTests
             new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", "Func1", result: "Result 1")]),
             new ChatMessage(ChatRole.Assistant, "world"),
         ], configurePipeline: b => b.Use(c =>
-            new FunctionInvokingChatClient(c) { EnableTelemetry = enableTelemetry }));
+            new FunctionInvokingChatClient(
+                new OpenTelemetryChatClient(c, sourceName: sourceName))));
 
         if (enableTelemetry)
         {
-            var activity = Assert.Single(activities);
-
-            Assert.NotNull(activity.Id);
-            Assert.NotEmpty(activity.Id);
-
-            Assert.Equal("Func1", activity.DisplayName);
+            Assert.Collection(activities,
+                activity => Assert.Equal("chat", activity.DisplayName),
+                activity => Assert.Equal("Func1", activity.DisplayName),
+                activity => Assert.Equal("chat", activity.DisplayName));
         }
         else
         {
