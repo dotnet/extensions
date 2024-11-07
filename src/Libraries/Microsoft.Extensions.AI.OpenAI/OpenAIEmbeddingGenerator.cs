@@ -11,6 +11,7 @@ using Microsoft.Shared.Diagnostics;
 using OpenAI;
 using OpenAI.Embeddings;
 
+#pragma warning disable S1067 // Expressions should not be too complex
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 
 namespace Microsoft.Extensions.AI;
@@ -95,12 +96,17 @@ public sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Embed
     public EmbeddingGeneratorMetadata Metadata { get; }
 
     /// <inheritdoc />
-    public TService? GetService<TService>(object? key = null)
-        where TService : class
-        =>
-        typeof(TService) == typeof(OpenAIClient) ? (TService?)(object?)_openAIClient :
-        typeof(TService) == typeof(EmbeddingClient) ? (TService)(object)_embeddingClient :
-        this as TService;
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        _ = Throw.IfNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(OpenAIClient) ? _openAIClient :
+            serviceType == typeof(EmbeddingClient) ? _embeddingClient :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
+    }
 
     /// <inheritdoc />
     public async Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(IEnumerable<string> values, EmbeddingGenerationOptions? options = null, CancellationToken cancellationToken = default)

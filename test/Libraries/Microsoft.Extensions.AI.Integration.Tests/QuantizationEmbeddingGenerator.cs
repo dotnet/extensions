@@ -29,10 +29,9 @@ internal sealed class QuantizationEmbeddingGenerator :
 
     void IDisposable.Dispose() => _floatService.Dispose();
 
-    public TService? GetService<TService>(object? key = null)
-        where TService : class =>
-        key is null && this is TService ? (TService?)(object)this :
-        _floatService.GetService<TService>(key);
+    public object? GetService(Type serviceType, object? serviceKey = null) =>
+        serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+        _floatService.GetService(serviceType, serviceKey);
 
     async Task<GeneratedEmbeddings<BinaryEmbedding>> IEmbeddingGenerator<string, BinaryEmbedding>.GenerateAsync(
         IEnumerable<string> values, EmbeddingGenerationOptions? options, CancellationToken cancellationToken)

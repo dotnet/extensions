@@ -97,6 +97,14 @@ public class DelegatingChatClientTests
     }
 
     [Fact]
+    public void GetServiceThrowsForNullType()
+    {
+        using var inner = new TestChatClient();
+        using var delegating = new NoOpDelegatingChatClient(inner);
+        Assert.Throws<ArgumentNullException>("serviceType", () => delegating.GetService(null!));
+    }
+
+    [Fact]
     public void GetServiceReturnsSelfIfCompatibleWithRequestAndKeyIsNull()
     {
         // Arrange
