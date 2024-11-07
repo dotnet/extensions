@@ -17,6 +17,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Diagnostics;
 
+#pragma warning disable S3358 // Ternary operators should not be nested
+
 namespace Microsoft.Extensions.AI;
 
 /// <summary>A delegating chat client that implements the OpenTelemetry Semantic Conventions for Generative AI systems.</summary>
@@ -105,6 +107,11 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     /// and outputs such as message content, function call arguments, and function call results.
     /// </remarks>
     public bool EnableSensitiveData { get; set; }
+
+    /// <inheritdoc/>
+    public override object? GetService(Type serviceType, object? serviceKey = null) =>
+        serviceType == typeof(ActivitySource) ? _activitySource :
+        base.GetService(serviceType, serviceKey);
 
     /// <inheritdoc/>
     public override async Task<ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
@@ -254,7 +261,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
             string? modelId = options?.ModelId ?? _modelId;
 
             activity = _activitySource.StartActivity(
-                $"{OpenTelemetryConsts.GenAI.Chat} {modelId}",
+                string.IsNullOrWhiteSpace(modelId) ? OpenTelemetryConsts.GenAI.Chat : $"{OpenTelemetryConsts.GenAI.Chat} {modelId}",
                 ActivityKind.Client);
 
             if (activity is not null)
