@@ -15,24 +15,24 @@ public class ConfigureOptionsChatClientTests
     [Fact]
     public void ConfigureOptionsChatClient_InvalidArgs_Throws()
     {
-        Assert.Throws<ArgumentNullException>("innerClient", () => new ConfigureOptionsChatClient(null!, _ => new ChatOptions()));
-        Assert.Throws<ArgumentNullException>("configureOptions", () => new ConfigureOptionsChatClient(new TestChatClient(), null!));
+        Assert.Throws<ArgumentNullException>("innerClient", () => new ConfigureOptionsChatClient(null!, _ => { }));
+        Assert.Throws<ArgumentNullException>("configure", () => new ConfigureOptionsChatClient(new TestChatClient(), null!));
     }
 
     [Fact]
-    public void UseChatOptions_InvalidArgs_Throws()
+    public void ConfigureOptions_InvalidArgs_Throws()
     {
         var builder = new ChatClientBuilder();
-        Assert.Throws<ArgumentNullException>("configureOptions", () => builder.UseChatOptions(null!));
+        Assert.Throws<ArgumentNullException>("configure", () => builder.ConfigureOptions(null!));
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task ConfigureOptions_ReturnedInstancePassedToNextClient(bool nullReturned)
+    public async Task ConfigureOptions_ReturnedInstancePassedToNextClient(bool nullProvidedOptions)
     {
-        ChatOptions providedOptions = new();
-        ChatOptions? returnedOptions = nullReturned ? null : new();
+        ChatOptions? providedOptions = nullProvidedOptions ? null : new() { ModelId = "test" };
+        ChatOptions? returnedOptions = null;
         ChatCompletion expectedCompletion = new(Array.Empty<ChatMessage>());
         var expectedUpdates = Enumerable.Range(0, 3).Select(i => new StreamingChatCompletionUpdate()).ToArray();
         using CancellationTokenSource cts = new();
@@ -55,10 +55,19 @@ public class ConfigureOptionsChatClientTests
         };
 
         using var client = new ChatClientBuilder()
-            .UseChatOptions(options =>
+            .ConfigureOptions(options =>
             {
-                Assert.Same(providedOptions, options);
-                return returnedOptions;
+                Assert.NotSame(providedOptions, options);
+                if (nullProvidedOptions)
+                {
+                    Assert.Null(options.ModelId);
+                }
+                else
+                {
+                    Assert.Equal(providedOptions!.ModelId, options.ModelId);
+                }
+
+                returnedOptions = options;
             })
             .Use(innerClient);
 

@@ -216,24 +216,12 @@ Console.WriteLine((await client.CompleteAsync("What is AI?")).Message);
 
 Every call to `CompleteAsync` or `CompleteStreamingAsync` may optionally supply a `ChatOptions` instance containing additional parameters for the operation. The most common parameters that are common amongst AI models and services show up as strongly-typed properties on the type, such as `ChatOptions.Temperature`. Other parameters may be supplied by name in a weakly-typed manner via the `ChatOptions.AdditionalProperties` dictionary.
 
-Options may also be baked into an `IChatClient` via the `UseChatOptions` extension method on `ChatClientBuilder`. This delegating client wraps another client and invokes the supplied delegate to populate a `ChatOptions` instance for every call. For example, to ensure that the `ChatOptions.ModelId` property defaults to a particular model name, code like the following may be used:
+Options may also be baked into an `IChatClient` via the `ConfigureOptions` extension method on `ChatClientBuilder`. This delegating client wraps another client and invokes the supplied delegate to populate a `ChatOptions` instance for every call. For example, to ensure that the `ChatOptions.ModelId` property defaults to a particular model name, code like the following may be used:
 ```csharp
 using Microsoft.Extensions.AI;
 
 IChatClient client = new ChatClientBuilder()
-    .UseChatOptions(options =>
-    {
-        // If no model was specified...
-        if (options?.ModelId is null)
-        {
-            // Clone the options to avoid mutating the original instance, or create a new
-            // one if no options were provided. Then set the desired model name.
-            options = options?.Clone() ?? new();
-            options.ModelId = "phi3";
-        }
-
-        return options;
-    })
+    .ConfigureOptions(options => options.ModelId ??= "phi3")
     .Use(new OllamaChatClient(new Uri("http://localhost:11434")));
 
 Console.WriteLine(await client.CompleteAsync("What is AI?")); // will request "phi3"
