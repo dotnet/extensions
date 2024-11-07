@@ -56,14 +56,13 @@ public interface IChatClient : IDisposable
     /// <summary>Gets metadata that describes the <see cref="IChatClient"/>.</summary>
     ChatClientMetadata Metadata { get; }
 
-    /// <summary>Asks the <see cref="IChatClient"/> for an object of type <typeparamref name="TService"/>.</summary>
-    /// <typeparam name="TService">The type of the object to be retrieved.</typeparam>
-    /// <param name="key">An optional key that may be used to help identify the target service.</param>
+    /// <summary>Asks the <see cref="IChatClient"/> for an object of the specified type <paramref name="serviceType"/>.</summary>
+    /// <param name="serviceType">The type of object being requested.</param>
+    /// <param name="serviceKey">An optional key that may be used to help identify the target service.</param>
     /// <returns>The found object, otherwise <see langword="null"/>.</returns>
     /// <remarks>
     /// The purpose of this method is to allow for the retrieval of strongly-typed services that may be provided by the <see cref="IChatClient"/>,
     /// including itself or any services it might be wrapping.
     /// </remarks>
-    TService? GetService<TService>(object? key = null)
-        where TService : class;
+    object? GetService(Type serviceType, object? serviceKey = null);
 }

@@ -166,9 +166,14 @@ public sealed class OllamaChatClient : IChatClient
     }
 
     /// <inheritdoc />
-    public TService? GetService<TService>(object? key = null)
-        where TService : class
-        => key is null ? this as TService : null;
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        _ = Throw.IfNull(serviceType);
+
+        return
+            serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+            null;
+    }
 
     /// <inheritdoc />
     public void Dispose()

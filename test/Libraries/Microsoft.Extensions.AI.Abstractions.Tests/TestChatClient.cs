@@ -26,9 +26,8 @@ public sealed class TestChatClient : IChatClient
     public IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
         => CompleteStreamingAsyncCallback!.Invoke(chatMessages, options, cancellationToken);
 
-    public TService? GetService<TService>(object? key = null)
-        where TService : class
-        => (TService?)GetServiceCallback!(typeof(TService), key);
+    public object? GetService(Type serviceType, object? serviceKey = null)
+        => GetServiceCallback!(serviceType, serviceKey);
 
     void IDisposable.Dispose()
     {
