@@ -50,9 +50,9 @@ public class SamplingLoggerBuilderExtensionsTests
     {
         List<RatioBasedSamplerFilterRule> expectedData =
         [
-            new RatioBasedSamplerFilterRule(1.0, "Program.MyLogger", LogLevel.Information, 1, null),
-            new RatioBasedSamplerFilterRule(0.01, null, LogLevel.Information, null, null),
-            new RatioBasedSamplerFilterRule(0.1, null, LogLevel.Warning, null, null)
+            new RatioBasedSamplerFilterRule(1.0, "Program.MyLogger", LogLevel.Information, 1),
+            new RatioBasedSamplerFilterRule(0.01, null, LogLevel.Information, null),
+            new RatioBasedSamplerFilterRule(0.1, null, LogLevel.Warning, null)
         ];
         ConfigurationBuilder configBuilder = new ConfigurationBuilder();
         configBuilder.AddJsonFile("appsettings.json");

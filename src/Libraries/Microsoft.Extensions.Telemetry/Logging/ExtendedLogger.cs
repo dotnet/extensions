@@ -38,12 +38,6 @@ internal sealed partial class ExtendedLogger : ILogger
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
-        if (MessageLoggers.Length == 0 || !_factory.Config.Sampler.ShouldSample(new SamplingParameters(logLevel, MessageLoggers[0].Category, eventId)))
-        {
-            // the record was not selected for being sampled in, so we drop it.
-            return;
-        }
-
         if (typeof(TState) == typeof(LoggerMessageState))
         {
             var msgState = (LoggerMessageState?)(object?)state;
@@ -266,11 +260,20 @@ internal sealed partial class ExtendedLogger : ILogger
             RecordException(exception, joiner.EnrichmentTagCollector, config);
         }
 
+        bool? samplingDecision = null;
         for (int i = 0; i < loggers.Length; i++)
         {
             ref readonly MessageLogger loggerInfo = ref loggers[i];
             if (loggerInfo.IsNotFilteredOut(logLevel))
             {
+                samplingDecision ??= config.Sampler.ShouldSample(new SamplingParameters(logLevel, loggerInfo.Category, eventId));
+
+                if (samplingDecision is false)
+                {
+                    // the record was not selected for being sampled in, so we drop it.
+                    break;
+                }
+
                 try
                 {
                     loggerInfo.LoggerLog(logLevel, eventId, joiner, exception, static (s, e) =>
@@ -350,11 +353,20 @@ internal sealed partial class ExtendedLogger : ILogger
             RecordException(exception, joiner.EnrichmentTagCollector, config);
         }
 
+        bool? samplingDecision = null;
         for (int i = 0; i < loggers.Length; i++)
         {
             ref readonly MessageLogger loggerInfo = ref loggers[i];
             if (loggerInfo.IsNotFilteredOut(logLevel))
             {
+                samplingDecision ??= config.Sampler.ShouldSample(new SamplingParameters(logLevel, loggerInfo.Category, eventId));
+
+                if (samplingDecision is false)
+                {
+                    // the record was not selected for being sampled in, so we drop it.
+                    break;
+                }
+
                 try
                 {
                     loggerInfo.Logger.Log(logLevel, eventId, joiner, exception, static (s, e) =>

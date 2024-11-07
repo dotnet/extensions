@@ -17,7 +17,7 @@ public class RatioBasedSamplerTests
     {
         // Arrange
         RatioBasedSamplerOptions options = new();
-        options.Rules.Add(new RatioBasedSamplerFilterRule(probability, null, LogLevel.Trace, null, null));
+        options.Rules.Add(new RatioBasedSamplerFilterRule(probability, null, LogLevel.Trace, null));
         var sampler = new RatioBasedSampler(new StaticOptionsMonitor<RatioBasedSamplerOptions>(options));
 
         // Act
@@ -34,7 +34,7 @@ public class RatioBasedSamplerTests
         const double Probability = 0.0;
         var logRecordParameters = new SamplingParameters(LogLevel.Warning, nameof(WhenParametersNotMatch_AlwaysSamples), 0);
         RatioBasedSamplerOptions options = new();
-        options.Rules.Add(new RatioBasedSamplerFilterRule(Probability, null, LogLevel.Information, null, null));
+        options.Rules.Add(new RatioBasedSamplerFilterRule(Probability, null, LogLevel.Information, null));
         var sampler = new RatioBasedSampler(new StaticOptionsMonitor<RatioBasedSamplerOptions>(options));
 
         // Act
@@ -51,7 +51,7 @@ public class RatioBasedSamplerTests
         const double Probability = 0.0;
         var logRecordParameters = new SamplingParameters(LogLevel.Information, nameof(WhenParametersMatch_UsesProvidedProbability), 0);
         RatioBasedSamplerOptions options = new();
-        options.Rules.Add(new RatioBasedSamplerFilterRule(Probability, null, LogLevel.Information, null, null));
+        options.Rules.Add(new RatioBasedSamplerFilterRule(Probability, null, LogLevel.Information, null));
         var sampler = new RatioBasedSampler(new StaticOptionsMonitor<RatioBasedSamplerOptions>(options));
 
         // Act

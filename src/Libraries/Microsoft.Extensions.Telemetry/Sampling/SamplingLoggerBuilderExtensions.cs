@@ -85,7 +85,7 @@ public static class SamplingLoggerBuilderExtensions
         _ = Throw.IfOutOfRange(probability, 0, 1, nameof(probability));
 
         _ = builder.Services.Configure<RatioBasedSamplerOptions>(options =>
-                options.Rules.Add(new RatioBasedSamplerFilterRule(probability, null, level, null, null)));
+                options.Rules.Add(new RatioBasedSamplerFilterRule(probability, null, level, null)));
 
         return builder.AddSampler<RatioBasedSampler>();
     }
