@@ -18,7 +18,7 @@ public sealed class TestChatClient : IChatClient
 
     public Func<IList<ChatMessage>, ChatOptions?, CancellationToken, IAsyncEnumerable<StreamingChatCompletionUpdate>>? CompleteStreamingAsyncCallback { get; set; }
 
-    public Func<Type, object?, object?>? GetServiceCallback { get; set; }
+    public Func<Type, object?, object?> GetServiceCallback { get; set; } = (_, _) => null;
 
     public Task<ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
         => CompleteAsyncCallback!.Invoke(chatMessages, options, cancellationToken);
@@ -27,7 +27,7 @@ public sealed class TestChatClient : IChatClient
         => CompleteStreamingAsyncCallback!.Invoke(chatMessages, options, cancellationToken);
 
     public object? GetService(Type serviceType, object? serviceKey = null)
-        => GetServiceCallback!(serviceType, serviceKey);
+        => GetServiceCallback(serviceType, serviceKey);
 
     void IDisposable.Dispose()
     {
