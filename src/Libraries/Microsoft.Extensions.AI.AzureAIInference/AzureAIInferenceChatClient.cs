@@ -57,10 +57,16 @@ public sealed class AzureAIInferenceChatClient : IChatClient
     public ChatClientMetadata Metadata { get; }
 
     /// <inheritdoc />
-    public TService? GetService<TService>(object? key = null)
-        where TService : class =>
-        typeof(TService) == typeof(ChatCompletionsClient) ? (TService?)(object?)_chatCompletionsClient :
-        this as TService;
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        _ = Throw.IfNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(ChatCompletionsClient) ? _chatCompletionsClient :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
+    }
 
     /// <inheritdoc />
     public async Task<ChatCompletion> CompleteAsync(

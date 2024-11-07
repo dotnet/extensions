@@ -12,6 +12,12 @@ namespace Microsoft.Extensions.AI;
 public class ChatClientExtensionsTests
 {
     [Fact]
+    public void GetService_InvalidArgs_Throws()
+    {
+        Assert.Throws<ArgumentNullException>("client", () => ChatClientExtensions.GetService<object>(null!));
+    }
+
+    [Fact]
     public void CompleteAsync_InvalidArgs_Throws()
     {
         Assert.Throws<ArgumentNullException>("client", () =>

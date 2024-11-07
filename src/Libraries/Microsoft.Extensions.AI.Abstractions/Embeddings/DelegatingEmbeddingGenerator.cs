@@ -59,12 +59,13 @@ public class DelegatingEmbeddingGenerator<TInput, TEmbedding> : IEmbeddingGenera
         InnerGenerator.GenerateAsync(values, options, cancellationToken);
 
     /// <inheritdoc />
-    public virtual TService? GetService<TService>(object? key = null)
-        where TService : class
+    public virtual object? GetService(Type serviceType, object? serviceKey = null)
     {
-#pragma warning disable S3060 // "is" should not be used with "this"
-        // If the key is non-null, we don't know what it means so pass through to the inner service
-        return key is null && this is TService service ? service : InnerGenerator.GetService<TService>(key);
-#pragma warning restore S3060
+        _ = Throw.IfNull(serviceType);
+
+        // If the key is non-null, we don't know what it means so pass through to the inner service.
+        return
+            serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+            InnerGenerator.GetService(serviceType, serviceKey);
     }
 }

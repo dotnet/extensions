@@ -70,10 +70,16 @@ public sealed class AzureAIInferenceEmbeddingGenerator :
     public EmbeddingGeneratorMetadata Metadata { get; }
 
     /// <inheritdoc />
-    public TService? GetService<TService>(object? key = null)
-        where TService : class =>
-        typeof(TService) == typeof(EmbeddingsClient) ? (TService)(object)_embeddingsClient :
-        this as TService;
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        _ = Throw.IfNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(EmbeddingsClient) ? _embeddingsClient :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
+    }
 
     /// <inheritdoc />
     public async Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(
