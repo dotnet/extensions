@@ -19,12 +19,12 @@ namespace Microsoft.Extensions.Logging
         {
             bestRule = null;
 
+            // TO DO: update the comment and logic 
             // Filter rule selection:
             // 1. Select rules with longest matching categories
-            // 2. If there nothing matched by category take all rules without category
-            // 3. If there is only one rule use it's level and filter
+            // 2. If there is nothing matched by category take all rules without category
+            // 3. If there is only one rule use it
             // 4. If there are multiple rules use last
-            // 5. If there are no applicable rules use global minimal level
 
             T? current = null;
             foreach (T rule in rules)
@@ -44,17 +44,19 @@ namespace Microsoft.Extensions.Logging
         private static bool IsBetter<T>(T rule, T? current, string category, LogLevel logLevel, EventId eventId)
             where T : class, ILoggerSamplerFilterRule
         {
-            // Skip rules with inapplicable log level or event ID
+            // Skip rules with inapplicable log level
             if (rule.LogLevel != null && rule.LogLevel < logLevel)
             {
                 return false;
             }
 
+            // Skip rules with inapplicable event id
             if (rule.EventId != null && rule.EventId != eventId)
             {
                 return false;
             }
 
+            // Skip rules with inapplicable category
             string? categoryName = rule.Category;
             if (categoryName != null)
             {
@@ -86,6 +88,7 @@ namespace Microsoft.Extensions.Logging
                 }
             }
 
+            // Decide whose category is better - rule vs current
             if (current?.Category != null)
             {
                 if (rule.Category == null)
@@ -94,6 +97,29 @@ namespace Microsoft.Extensions.Logging
                 }
 
                 if (current.Category.Length > rule.Category.Length)
+                {
+                    return false;
+                }
+            }
+
+            // Decide whose log level is better - rule vs current
+            if (current?.LogLevel != null)
+            {
+                if (rule.LogLevel == null)
+                {
+                    return false;
+                }
+
+                if (current.LogLevel < rule.LogLevel)
+                {
+                    return false;
+                }
+            }
+
+            // Decide whose event id is better - rule vs current
+            if (rule.EventId is null)
+            {
+                if (current?.EventId != null)
                 {
                     return false;
                 }

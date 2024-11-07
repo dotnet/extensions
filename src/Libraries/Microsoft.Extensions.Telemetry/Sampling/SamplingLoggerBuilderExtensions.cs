@@ -35,22 +35,6 @@ public static class SamplingLoggerBuilderExtensions
     }
 
     /// <summary>
-    /// Configures <see cref="RatioBasedSamplerOptions" /> from an instance of <see cref="IConfiguration" />.
-    /// </summary>
-    /// <param name="builder">The <see cref="ILoggingBuilder"/> to use.</param>
-    /// <param name="configuration">The <see cref="IConfiguration" /> to add.</param>
-    /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
-    public static ILoggingBuilder AddRatioBasedSamplerConfiguration(this ILoggingBuilder builder, IConfiguration configuration)
-    {
-        _ = Throw.IfNull(builder);
-
-        _ = builder.Services.AddSingleton<IConfigureOptions<RatioBasedSamplerOptions>>(new RatioBasedSamplerConfigureOptions(configuration));
-
-        return builder;
-    }
-
-    /// <summary>
     /// Adds Ratio-based sampler to the logging infrastructure. Matched logs will be sampled
     /// according to the provided probability./>.
     /// Higher the probability value, higher is the probability of a given log record to be sampled in.
@@ -138,6 +122,22 @@ public static class SamplingLoggerBuilderExtensions
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerFactory, ExtendedLoggerFactory>());
         _ = builder.Services.AddSingleton(sampler);
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Configures <see cref="RatioBasedSamplerOptions" /> from an instance of <see cref="IConfiguration" />.
+    /// </summary>
+    /// <param name="builder">The <see cref="ILoggingBuilder"/> to use.</param>
+    /// <param name="configuration">The <see cref="IConfiguration" /> to add.</param>
+    /// <returns>The value of <paramref name="builder"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
+    internal static ILoggingBuilder AddRatioBasedSamplerConfiguration(this ILoggingBuilder builder, IConfiguration configuration)
+    {
+        _ = Throw.IfNull(builder);
+
+        _ = builder.Services.AddSingleton<IConfigureOptions<RatioBasedSamplerOptions>>(new RatioBasedSamplerConfigureOptions(configuration));
 
         return builder;
     }

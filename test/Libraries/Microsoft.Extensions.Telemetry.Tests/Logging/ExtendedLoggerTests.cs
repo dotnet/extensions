@@ -126,7 +126,7 @@ public static class ExtendedLoggerTests
         const string Category = "C1";
 
         RatioBasedSamplerOptions options = new();
-        options.Rules.Add(new RatioBasedSamplerFilterRule(0, null, LogLevel.Warning, null, null));
+        options.Rules.Add(new RatioBasedSamplerFilterRule(0, null, LogLevel.Warning, null));
         var sampler = new RatioBasedSampler(new StaticOptionsMonitor<RatioBasedSamplerOptions>(options));
 
         using var provider = new Provider();
