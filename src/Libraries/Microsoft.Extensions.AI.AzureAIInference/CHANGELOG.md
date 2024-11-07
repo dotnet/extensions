@@ -1,5 +1,9 @@
 # Release History
 
+## 9.0.0-preview.9.24556.5
+
+- Fixed `AzureAIInferenceEmbeddingGenerator` to respect `EmbeddingGenerationOptions.Dimensions`.
+
 ## 9.0.0-preview.9.24525.1
 
 - Lowered the required version of System.Text.Json to 8.0.5 when targeting net8.0 or older.
