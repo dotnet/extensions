@@ -10,7 +10,7 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>A delegating chat client that configures a <see cref="ChatOptions"/> instance used by the remainder of the pipeline.</summary>
+/// <summary>Represents a delegating chat client that configures a <see cref="ChatOptions"/> instance used by the remainder of the pipeline.</summary>
 public sealed class ConfigureOptionsChatClient : DelegatingChatClient
 {
     /// <summary>The callback delegate used to configure options.</summary>
