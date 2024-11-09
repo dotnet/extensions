@@ -19,7 +19,7 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>An <see cref="IChatClient"/> for Ollama.</summary>
+/// <summary>Represents an <see cref="IChatClient"/> for Ollama.</summary>
 public sealed class OllamaChatClient : IChatClient
 {
     private static readonly JsonElement _defaultParameterSchema = JsonDocument.Parse("{}").RootElement;
@@ -33,8 +33,8 @@ public sealed class OllamaChatClient : IChatClient
     /// <summary>Initializes a new instance of the <see cref="OllamaChatClient"/> class.</summary>
     /// <param name="endpoint">The endpoint URI where Ollama is hosted.</param>
     /// <param name="modelId">
-    /// The id of the model to use. This may also be overridden per request via <see cref="ChatOptions.ModelId"/>.
-    /// Either this parameter or <see cref="ChatOptions.ModelId"/> must provide a valid model id.
+    /// The ID of the model to use. This ID can also be overridden per request via <see cref="ChatOptions.ModelId"/>.
+    /// Either this parameter or <see cref="ChatOptions.ModelId"/> must provide a valid model ID.
     /// </param>
     /// <param name="httpClient">An <see cref="HttpClient"/> instance to use for HTTP operations.</param>
     public OllamaChatClient(string endpoint, string? modelId = null, HttpClient? httpClient = null)
@@ -45,8 +45,8 @@ public sealed class OllamaChatClient : IChatClient
     /// <summary>Initializes a new instance of the <see cref="OllamaChatClient"/> class.</summary>
     /// <param name="endpoint">The endpoint URI where Ollama is hosted.</param>
     /// <param name="modelId">
-    /// The id of the model to use. This may also be overridden per request via <see cref="ChatOptions.ModelId"/>.
-    /// Either this parameter or <see cref="ChatOptions.ModelId"/> must provide a valid model id.
+    /// The ID of the model to use. This ID can also be overridden per request via <see cref="ChatOptions.ModelId"/>.
+    /// Either this parameter or <see cref="ChatOptions.ModelId"/> must provide a valid model ID.
     /// </param>
     /// <param name="httpClient">An <see cref="HttpClient"/> instance to use for HTTP operations.</param>
     public OllamaChatClient(Uri endpoint, string? modelId = null, HttpClient? httpClient = null)

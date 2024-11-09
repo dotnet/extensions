@@ -45,9 +45,11 @@ public class ChatCompletion<T> : ChatCompletion
 
     /// <summary>
     /// Gets the result of the chat completion as an instance of <typeparamref name="T"/>.
+    /// </summary>
+    /// <remarks>
     /// If the response did not contain JSON, or if deserialization fails, this property will throw.
     /// To avoid exceptions, use <see cref="TryGetResult(out T)"/> instead.
-    /// </summary>
+    /// </remarks>
     public T Result
     {
         get
@@ -66,7 +68,7 @@ public class ChatCompletion<T> : ChatCompletion
     /// <summary>
     /// Attempts to deserialize the result to produce an instance of <typeparamref name="T"/>.
     /// </summary>
-    /// <param name="result">The result.</param>
+    /// <param name="result">When this method returns, contains the result.</param>
     /// <returns><see langword="true"/> if the result was produced, otherwise <see langword="false"/>.</returns>
     public bool TryGetResult([NotNullWhen(true)] out T? result)
     {
@@ -106,8 +108,10 @@ public class ChatCompletion<T> : ChatCompletion
 
     /// <summary>
     /// Gets or sets a value indicating whether the JSON schema has an extra object wrapper.
-    /// This is required for any non-JSON-object-typed values such as numbers, enum values, or arrays.
     /// </summary>
+    /// <remarks>
+    /// The wrapper is required for any non-JSON-object-typed values such as numbers, enum values, and arrays.
+    /// </remarks>
     internal bool IsWrappedInObject { get; set; }
 
     private string? GetResultAsJson()

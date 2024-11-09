@@ -73,7 +73,7 @@ public sealed class AIFunctionMetadata
     }
 
     /// <summary>Gets the metadata for the parameters to the function.</summary>
-    /// <remarks>If the function has no parameters, the returned list will be empty.</remarks>
+    /// <remarks>If the function has no parameters, the returned list is empty.</remarks>
     public IReadOnlyList<AIFunctionParameterMetadata> Parameters
     {
         get => _parameters;
@@ -93,7 +93,7 @@ public sealed class AIFunctionMetadata
     }
 
     /// <summary>Gets parameter metadata for the return parameter.</summary>
-    /// <remarks>If the function has no return parameter, the returned value will be a default instance of a <see cref="AIFunctionReturnParameterMetadata"/>.</remarks>
+    /// <remarks>If the function has no return parameter, the value is a default instance of an <see cref="AIFunctionReturnParameterMetadata"/>.</remarks>
     public AIFunctionReturnParameterMetadata ReturnParameter
     {
         get => _returnParameter;
@@ -107,6 +107,6 @@ public sealed class AIFunctionMetadata
         init => _additionalProperties = Throw.IfNull(value);
     }
 
-    /// <summary>Gets a <see cref="JsonSerializerOptions"/> that may be used to marshal function parameters.</summary>
+    /// <summary>Gets a <see cref="JsonSerializerOptions"/> that can be used to marshal function parameters.</summary>
     public JsonSerializerOptions? JsonSerializerOptions { get; init; }
 }

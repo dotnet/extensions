@@ -20,7 +20,7 @@ public sealed class ConfigureOptionsChatClient : DelegatingChatClient
     /// <param name="innerClient">The inner client.</param>
     /// <param name="configure">
     /// The delegate to invoke to configure the <see cref="ChatOptions"/> instance. It is passed a clone of the caller-supplied <see cref="ChatOptions"/> instance
-    /// (or a newly-constructed instance if the caller-supplied instance is <see langword="null"/>).
+    /// (or a newly constructed instance if the caller-supplied instance is <see langword="null"/>).
     /// </param>
     /// <remarks>
     /// The <paramref name="configure"/> delegate is passed either a new instance of <see cref="ChatOptions"/> if

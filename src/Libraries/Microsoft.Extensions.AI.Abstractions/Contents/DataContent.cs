@@ -34,7 +34,7 @@ public class DataContent : AIContent
     /// <summary>The string-based representation of the URI, including any data in the instance.</summary>
     private string? _uri;
 
-    /// <summary>The data, lazily-initialized if the data is provided in a data URI.</summary>
+    /// <summary>The data, lazily initialized if the data is provided in a data URI.</summary>
     private ReadOnlyMemory<byte>? _data;
 
     /// <summary>Parsed data URI information.</summary>
@@ -43,7 +43,7 @@ public class DataContent : AIContent
     /// <summary>
     /// Initializes a new instance of the <see cref="DataContent"/> class.
     /// </summary>
-    /// <param name="uri">The URI of the content. This may be a data URI.</param>
+    /// <param name="uri">The URI of the content. This can be a data URI.</param>
     /// <param name="mediaType">The media type (also known as MIME type) represented by the content.</param>
     public DataContent(Uri uri, string? mediaType = null)
         : this(Throw.IfNull(uri).ToString(), mediaType)
@@ -53,7 +53,7 @@ public class DataContent : AIContent
     /// <summary>
     /// Initializes a new instance of the <see cref="DataContent"/> class.
     /// </summary>
-    /// <param name="uri">The URI of the content. This may be a data URI.</param>
+    /// <param name="uri">The URI of the content. This can be a data URI.</param>
     /// <param name="mediaType">The media type (also known as MIME type) represented by the content.</param>
     [JsonConstructor]
     public DataContent([StringSyntax(StringSyntaxAttribute.Uri)] string uri, string? mediaType = null)
@@ -116,7 +116,7 @@ public class DataContent : AIContent
     /// <summary>Gets the URI for this <see cref="DataContent"/>.</summary>
     /// <remarks>
     /// The returned URI is always a valid URI string, even if the instance was constructed from a <see cref="ReadOnlyMemory{Byte}"/>
-    /// or from a <see cref="System.Uri"/>. In the case of a <see cref="ReadOnlyMemory{T}"/>, this will return a data URI containing
+    /// or from a <see cref="System.Uri"/>. In the case of a <see cref="ReadOnlyMemory{T}"/>, this property returns a data URI containing
     /// that data.
     /// </remarks>
     [StringSyntax(StringSyntaxAttribute.Uri)]
@@ -155,10 +155,10 @@ public class DataContent : AIContent
 
     /// <summary>Gets the media type (also known as MIME type) of the content.</summary>
     /// <remarks>
-    /// If the media type was explicitly specified, this property will return that value.
+    /// If the media type was explicitly specified, this property returns that value.
     /// If the media type was not explicitly specified, but a data URI was supplied and that data URI contained a non-default
-    /// media type, that media type will be returned.
-    /// Otherwise, this will return null.
+    /// media type, that media type is returned.
+    /// Otherwise, this property returns null.
     /// </remarks>
     [JsonPropertyOrder(1)]
     public string? MediaType { get; private set; }
@@ -167,17 +167,17 @@ public class DataContent : AIContent
     /// Gets a value indicating whether the content contains data rather than only being a reference to data.
     /// </summary>
     /// <remarks>
-    /// If the instance is constructed from a <see cref="ReadOnlyMemory{Byte}"/> or from a data URI, this property will return <see langword="true"/>,
+    /// If the instance is constructed from a <see cref="ReadOnlyMemory{Byte}"/> or from a data URI, this property returns <see langword="true"/>,
     /// as the instance actually contains all of the data it represents. If, however, the instance was constructed from another form of URI, one
-    /// that simply references where the data can be found but doesn't actually contain the data, this property will return <see langword="false"/>.
+    /// that simply references where the data can be found but doesn't actually contain the data, this property returns <see langword="false"/>.
     /// </remarks>
     [JsonIgnore]
     public bool ContainsData => _dataUri is not null || _data is not null;
 
     /// <summary>Gets the data represented by this instance.</summary>
     /// <remarks>
-    /// If <see cref="ContainsData"/> is <see langword="true" />, this property will return the represented data.
-    /// If <see cref="ContainsData"/> is <see langword="false" />, this property will return <see langword="null" />.
+    /// If <see cref="ContainsData"/> is <see langword="true" />, this property returns the represented data.
+    /// If <see cref="ContainsData"/> is <see langword="false" />, this property returns <see langword="null" />.
     /// </remarks>
     [MemberNotNullWhen(true, nameof(ContainsData))]
     [JsonIgnore]

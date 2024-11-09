@@ -19,7 +19,7 @@ public static class ConfigureOptionsEmbeddingGeneratorBuilderExtensions
     /// <param name="builder">The <see cref="EmbeddingGeneratorBuilder{TInput, TEmbedding}"/>.</param>
     /// <param name="configure">
     /// The delegate to invoke to configure the <see cref="EmbeddingGenerationOptions"/> instance. It is passed a clone of the caller-supplied
-    /// <see cref="EmbeddingGenerationOptions"/> instance (or a newly-constructed instance if the caller-supplied instance is <see langword="null"/>).
+    /// <see cref="EmbeddingGenerationOptions"/> instance (or a new constructed instance if the caller-supplied instance is <see langword="null"/>).
     /// </param>
     /// <remarks>
     /// This can be used to set default options. The <paramref name="configure"/> delegate is passed either a new instance of

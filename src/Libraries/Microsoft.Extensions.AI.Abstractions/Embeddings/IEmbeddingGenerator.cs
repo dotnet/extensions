@@ -42,10 +42,10 @@ public interface IEmbeddingGenerator<TInput, TEmbedding> : IDisposable
 
     /// <summary>Asks the <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> for an object of the specified type <paramref name="serviceType"/>.</summary>
     /// <param name="serviceType">The type of object being requested.</param>
-    /// <param name="serviceKey">An optional key that may be used to help identify the target service.</param>
+    /// <param name="serviceKey">An optional key that can be used to help identify the target service.</param>
     /// <returns>The found object, otherwise <see langword="null"/>.</returns>
     /// <remarks>
-    /// The purpose of this method is to allow for the retrieval of strongly-typed services that may be provided by the
+    /// The purpose of this method is to allow for the retrieval of strongly typed services that might be provided by the
     /// <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/>, including itself or any services it might be wrapping.
     /// </remarks>
     object? GetService(Type serviceType, object? serviceKey = null);

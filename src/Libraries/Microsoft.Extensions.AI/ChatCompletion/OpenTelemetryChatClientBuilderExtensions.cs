@@ -15,7 +15,7 @@ public static class OpenTelemetryChatClientBuilderExtensions
     /// Adds OpenTelemetry support to the chat client pipeline, following the OpenTelemetry Semantic Conventions for Generative AI systems.
     /// </summary>
     /// <remarks>
-    /// The draft specification this follows is available at https://opentelemetry.io/docs/specs/semconv/gen-ai/.
+    /// The draft specification this follows is available at <https://opentelemetry.io/docs/specs/semconv/gen-ai/>.
     /// The specification is still experimental and subject to change; as such, the telemetry output by this client is also subject to change.
     /// </remarks>
     /// <param name="builder">The <see cref="ChatClientBuilder"/>.</param>
