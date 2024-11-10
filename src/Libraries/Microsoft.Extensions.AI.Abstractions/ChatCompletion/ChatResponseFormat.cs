@@ -29,7 +29,7 @@ public class ChatResponseFormat
 
     /// <summary>Creates a <see cref="ChatResponseFormatJson"/> representing structured JSON data with the specified schema.</summary>
     /// <param name="schema">The JSON schema.</param>
-    /// <param name="schemaName">An optional name of the schema, e.g. if the schema represents a particular class, this could be the name of the class.</param>
+    /// <param name="schemaName">An optional name of the schema. For example, if the schema represents a particular class, this could be the name of the class.</param>
     /// <param name="schemaDescription">An optional description of the schema.</param>
     /// <returns>The <see cref="ChatResponseFormatJson"/> instance.</returns>
     public static ChatResponseFormatJson ForJsonSchema(

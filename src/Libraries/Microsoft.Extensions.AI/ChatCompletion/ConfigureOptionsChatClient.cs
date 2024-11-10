@@ -10,7 +10,7 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>A delegating chat client that configures a <see cref="ChatOptions"/> instance used by the remainder of the pipeline.</summary>
+/// <summary>Represents a delegating chat client that configures a <see cref="ChatOptions"/> instance used by the remainder of the pipeline.</summary>
 public sealed class ConfigureOptionsChatClient : DelegatingChatClient
 {
     /// <summary>The callback delegate used to configure options.</summary>
@@ -20,7 +20,7 @@ public sealed class ConfigureOptionsChatClient : DelegatingChatClient
     /// <param name="innerClient">The inner client.</param>
     /// <param name="configure">
     /// The delegate to invoke to configure the <see cref="ChatOptions"/> instance. It is passed a clone of the caller-supplied <see cref="ChatOptions"/> instance
-    /// (or a newly-constructed instance if the caller-supplied instance is <see langword="null"/>).
+    /// (or a newly constructed instance if the caller-supplied instance is <see langword="null"/>).
     /// </param>
     /// <remarks>
     /// The <paramref name="configure"/> delegate is passed either a new instance of <see cref="ChatOptions"/> if

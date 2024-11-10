@@ -18,7 +18,7 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>An <see cref="IChatClient"/> for an Azure AI Inference <see cref="ChatCompletionsClient"/>.</summary>
+/// <summary>Represents an <see cref="IChatClient"/> for an Azure AI Inference <see cref="ChatCompletionsClient"/>.</summary>
 public sealed class AzureAIInferenceChatClient : IChatClient
 {
     /// <summary>A default schema to use when a parameter lacks a pre-defined schema.</summary>
@@ -29,7 +29,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
 
     /// <summary>Initializes a new instance of the <see cref="AzureAIInferenceChatClient"/> class for the specified <see cref="ChatCompletionsClient"/>.</summary>
     /// <param name="chatCompletionsClient">The underlying client.</param>
-    /// <param name="modelId">The id of the model to use. If null, it may be provided per request via <see cref="ChatOptions.ModelId"/>.</param>
+    /// <param name="modelId">The ID of the model to use. If null, it can be provided per request via <see cref="ChatOptions.ModelId"/>.</param>
     public AzureAIInferenceChatClient(ChatCompletionsClient chatCompletionsClient, string? modelId = null)
     {
         _ = Throw.IfNull(chatCompletionsClient);
@@ -301,7 +301,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
                 }
             }
 
-            // These properties are strongly-typed on ChatOptions but not on ChatCompletionsOptions.
+            // These properties are strongly typed on ChatOptions but not on ChatCompletionsOptions.
             if (options.TopK is int topK)
             {
                 result.AdditionalProperties["top_k"] = new BinaryData(JsonSerializer.SerializeToUtf8Bytes(topK, JsonContext.Default.Int32));
