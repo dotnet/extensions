@@ -105,6 +105,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <para>
     /// Changing the value of this property while the client is in use might result in inconsistencies
     /// as to whether detailed errors are provided during an in-flight request.
+    /// </para>
     /// </remarks>
     public bool DetailedErrors { get; set; }
 
@@ -578,7 +579,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// The function invocation context detailing the function to be invoked and its arguments along with additional request information.
     /// </param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The result of the function invocation, or null if the function invocation returned null.</returns>
+    /// <returns>The result of the function invocation, or <see langword="null"/> if the function invocation returned <see langword="null"/>.</returns>
     protected virtual async Task<object?> InvokeFunctionAsync(FunctionInvocationContext context, CancellationToken cancellationToken)
     {
         _ = Throw.IfNull(context);

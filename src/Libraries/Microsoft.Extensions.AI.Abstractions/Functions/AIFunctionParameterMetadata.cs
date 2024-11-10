@@ -24,7 +24,7 @@ public sealed class AIFunctionParameterMetadata
 
     /// <summary>Initializes a new instance of the <see cref="AIFunctionParameterMetadata"/> class as a copy of another <see cref="AIFunctionParameterMetadata"/>.</summary>
     /// <exception cref="ArgumentNullException">The <paramref name="metadata"/> was null.</exception>
-    /// <remarks>This method creates a shallow clone of <paramref name="metadata"/>.</remarks>
+    /// <remarks>This constructor creates a shallow clone of <paramref name="metadata"/>.</remarks>
     public AIFunctionParameterMetadata(AIFunctionParameterMetadata metadata)
     {
         _ = Throw.IfNull(metadata);
