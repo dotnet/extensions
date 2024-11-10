@@ -21,7 +21,7 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>An <see cref="IEmbeddingGenerator{String, Embedding}"/> for an Azure.AI.Inference <see cref="EmbeddingsClient"/>.</summary>
+/// <summary>Represents an <see cref="IEmbeddingGenerator{String, Embedding}"/> for an Azure.AI.Inference <see cref="EmbeddingsClient"/>.</summary>
 public sealed class AzureAIInferenceEmbeddingGenerator :
     IEmbeddingGenerator<string, Embedding<float>>
 {
@@ -34,8 +34,8 @@ public sealed class AzureAIInferenceEmbeddingGenerator :
     /// <summary>Initializes a new instance of the <see cref="AzureAIInferenceEmbeddingGenerator"/> class.</summary>
     /// <param name="embeddingsClient">The underlying client.</param>
     /// <param name="modelId">
-    /// The id of the model to use. This may also be overridden per request via <see cref="EmbeddingGenerationOptions.ModelId"/>.
-    /// Either this parameter or <see cref="EmbeddingGenerationOptions.ModelId"/> must provide a valid model id.
+    /// The ID of the model to use. This can also be overridden per request via <see cref="EmbeddingGenerationOptions.ModelId"/>.
+    /// Either this parameter or <see cref="EmbeddingGenerationOptions.ModelId"/> must provide a valid model ID.
     /// </param>
     /// <param name="dimensions">The number of dimensions to generate in each embedding.</param>
     public AzureAIInferenceEmbeddingGenerator(

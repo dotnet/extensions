@@ -21,9 +21,9 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>A delegating chat client that implements the OpenTelemetry Semantic Conventions for Generative AI systems.</summary>
+/// <summary>Represents a delegating chat client that implements the OpenTelemetry Semantic Conventions for Generative AI systems.</summary>
 /// <remarks>
-/// The draft specification this follows is available at https://opentelemetry.io/docs/specs/semconv/gen-ai/.
+/// The draft specification this follows is available at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
 /// The specification is still experimental and subject to change; as such, the telemetry output by this client is also subject to change.
 /// </remarks>
 public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
@@ -102,9 +102,14 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     /// <summary>
     /// Gets or sets a value indicating whether potentially sensitive information should be included in telemetry.
     /// </summary>
+    /// <value>
+    /// <see langword="true"/> if potentially sensitive information should be included in telemetry;
+    /// <see langword="false"/> if telemetry shouldn't include raw inputs and outputs.
+    /// The default value is <see langword="false"/>.
+    /// </value>
     /// <remarks>
-    /// The value is <see langword="false"/> by default, meaning that telemetry will include metadata such as token counts but not raw inputs
-    /// and outputs such as message content, function call arguments, and function call results.
+    /// By default, telemetry includes metadata, such as token counts, but not raw inputs
+    /// and outputs, such as message content, function call arguments, and function call results.
     /// </remarks>
     public bool EnableSensitiveData { get; set; }
 

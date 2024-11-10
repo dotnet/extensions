@@ -11,7 +11,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// A delegating embedding generator that caches the results of embedding generation calls,
+/// Represents a delegating embedding generator that caches the results of embedding generation calls,
 /// storing them as JSON in an <see cref="IDistributedCache"/>.
 /// </summary>
 /// <typeparam name="TInput">The type from which embeddings will be generated.</typeparam>

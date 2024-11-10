@@ -11,7 +11,7 @@ public class ChatClientMetadata
     /// <summary>Initializes a new instance of the <see cref="ChatClientMetadata"/> class.</summary>
     /// <param name="providerName">The name of the chat completion provider, if applicable.</param>
     /// <param name="providerUri">The URL for accessing the chat completion provider, if applicable.</param>
-    /// <param name="modelId">The id of the chat completion model used, if applicable.</param>
+    /// <param name="modelId">The ID of the chat completion model used, if applicable.</param>
     public ChatClientMetadata(string? providerName = null, Uri? providerUri = null, string? modelId = null)
     {
         ModelId = modelId;
@@ -25,7 +25,7 @@ public class ChatClientMetadata
     /// <summary>Gets the URL for accessing the chat completion provider.</summary>
     public Uri? ProviderUri { get; }
 
-    /// <summary>Gets the id of the model used by this chat completion provider.</summary>
-    /// <remarks>This may be null if either the name is unknown or there are multiple possible models associated with this instance.</remarks>
+    /// <summary>Gets the ID of the model used by this chat completion provider.</summary>
+    /// <remarks>This value can be null if either the name is unknown or there are multiple possible models associated with this instance.</remarks>
     public string? ModelId { get; }
 }

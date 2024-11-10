@@ -15,7 +15,7 @@ public class AudioContent : DataContent
     /// <summary>
     /// Initializes a new instance of the <see cref="AudioContent"/> class.
     /// </summary>
-    /// <param name="uri">The URI of the content. This may be a data URI.</param>
+    /// <param name="uri">The URI of the content. This can be a data URI.</param>
     /// <param name="mediaType">The media type (also known as MIME type) represented by the content.</param>
     public AudioContent(Uri uri, string? mediaType = null)
         : base(uri, mediaType)
@@ -25,7 +25,7 @@ public class AudioContent : DataContent
     /// <summary>
     /// Initializes a new instance of the <see cref="AudioContent"/> class.
     /// </summary>
-    /// <param name="uri">The URI of the content. This may be a data URI.</param>
+    /// <param name="uri">The URI of the content. This can be a data URI.</param>
     /// <param name="mediaType">The media type (also known as MIME type) represented by the content.</param>
     [JsonConstructor]
     public AudioContent([StringSyntax(StringSyntaxAttribute.Uri)] string uri, string? mediaType = null)

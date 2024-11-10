@@ -38,7 +38,7 @@ public class DelegatingChatClient : IChatClient
     protected IChatClient InnerClient { get; }
 
     /// <summary>Provides a mechanism for releasing unmanaged resources.</summary>
-    /// <param name="disposing">true if being called from <see cref="Dispose()"/>; otherwise, false.</param>
+    /// <param name="disposing"><see langword="true"/> if being called from <see cref="Dispose()"/>; otherwise, <see langword="false"/>.</param>
     protected virtual void Dispose(bool disposing)
     {
         if (disposing)
