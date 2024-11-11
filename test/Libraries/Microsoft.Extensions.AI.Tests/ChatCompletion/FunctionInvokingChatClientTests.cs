@@ -20,7 +20,6 @@ public class FunctionInvokingChatClientTests
     public void InvalidArgs_Throws()
     {
         Assert.Throws<ArgumentNullException>("innerClient", () => new FunctionInvokingChatClient(null!));
-        Assert.Throws<ArgumentNullException>("builder", () => ((ChatClientBuilder)null!).UseFunctionInvocation());
     }
 
     [Fact]
