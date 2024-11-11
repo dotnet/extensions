@@ -16,9 +16,9 @@
     <PackageReference Remove="ReferenceTrimmer" />
 
     <LibraryProjects Include="$(RepoRoot)\src\Libraries\**\*.csproj" />
-    <!-- Azure.AI.Inference produces many warnings -->
+    <!-- https://github.com/Azure/azure-sdk-for-net/issues/47069 -->
     <LibraryProjects Remove="$(RepoRoot)\src\Libraries\Microsoft.Extensions.AI.AzureAIInference\Microsoft.Extensions.AI.AzureAIInference.csproj" />
-    <!-- OpenAI produces a few warnings-->
+    <!-- https://github.com/openai/openai-dotnet/issues/20 -->
     <LibraryProjects Remove="$(RepoRoot)\src\Libraries\Microsoft.Extensions.AI.OpenAI\Microsoft.Extensions.AI.OpenAI.csproj" />
     <!-- https://github.com/dotnet/extensions/issues/5624 -->
     <LibraryProjects Remove="$(RepoRoot)\src\Libraries\Microsoft.Extensions.Caching.Hybrid\Microsoft.Extensions.Caching.Hybrid.csproj" />
