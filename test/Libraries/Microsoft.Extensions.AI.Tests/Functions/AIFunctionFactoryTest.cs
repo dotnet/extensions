@@ -182,4 +182,17 @@ public class AIFunctionFactoryTest
         Assert.Equal(returnParameterMetadata, func.Metadata.ReturnParameter);
         Assert.Equal(metadata, func.Metadata.AdditionalProperties);
     }
+
+    [Fact]
+    public void AIFunctionFactoryCreateOptions_SchemaOptions_HasExpectedDefaults()
+    {
+        var options = new AIFunctionFactoryCreateOptions();
+        var schemaOptions = options.SchemaCreateOptions;
+
+        Assert.NotNull(schemaOptions);
+        Assert.True(schemaOptions.IncludeTypeInEnumSchemas);
+        Assert.True(schemaOptions.FilterDisallowedKeywords);
+        Assert.True(schemaOptions.RequireAllProperties);
+        Assert.True(schemaOptions.DisallowAdditionalProperties);
+    }
 }
