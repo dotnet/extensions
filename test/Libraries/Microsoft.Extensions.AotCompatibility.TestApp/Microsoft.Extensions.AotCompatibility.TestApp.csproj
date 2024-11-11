@@ -9,6 +9,8 @@
     <PublishAot>true</PublishAot>
     <TrimmerSingleWarn>false</TrimmerSingleWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Always clean before building/publishing so we get warnings/errors every time. -->
+    <PrepareForBuildDependsOn>Clean;$(PrepareForBuildDependsOn)</PrepareForBuildDependsOn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -32,11 +34,14 @@
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
-  <!-- Override VSTest so 'dotnet test' publishes this app and fails if there are any warnings/errors -->
-  <!-- VSTest needs to be defined after importing the Sdk.targets -->
-  <Target Name="VSTest">
+  <Target Name="PublishProject">
     <Exec Command="$(DOTNET_HOST_PATH) publish"
           WorkingDirectory="$(MSBuildProjectDirectory)" />
   </Target>
+
+  <!-- Override Test and VSTest so testing publishes this app and fails if there are any warnings/errors -->
+  <!-- Needs to be defined after importing the Sdk.targets -->
+  <Target Name="Test" DependsOnTargets="PublishProject" />
+  <Target Name="VSTest" DependsOnTargets="Test" />
 
 </Project>
