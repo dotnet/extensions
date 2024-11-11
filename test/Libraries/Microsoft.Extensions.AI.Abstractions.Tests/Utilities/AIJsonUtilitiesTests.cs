@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.ComponentModel;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -41,6 +42,8 @@ public static class AIJsonUtilitiesTests
         Assert.False(options.IncludeTypeInEnumSchemas);
         Assert.False(options.DisallowAdditionalProperties);
         Assert.False(options.IncludeSchemaKeyword);
+        Assert.False(options.RequireAllProperties);
+        Assert.False(options.FilterDisallowedKeywords);
     }
 
     [Fact]
@@ -114,6 +117,89 @@ public static class AIJsonUtilitiesTests
             inferenceOptions);
 
         Assert.True(JsonElement.DeepEquals(expected, actual));
+    }
+
+    [Fact]
+    public static void CreateJsonSchema_FilterDisallowedKeywords_GeneratesExpectedJsonSchema()
+    {
+        JsonElement expected = JsonDocument.Parse("""
+            {
+                "type": "object",
+                "properties": {
+                    "Date": {
+                        "type": "string"
+                    },
+                    "TimeSpan": {
+                        "$comment": "Represents a System.TimeSpan value.",
+                        "type": "string"
+                    },
+                    "Char" : {
+                        "type": "string"
+                    }
+                }
+            }
+            """).RootElement;
+
+        AIJsonSchemaCreateOptions inferenceOptions = new()
+        {
+            FilterDisallowedKeywords = true
+        };
+
+        JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(PocoWithTypesWithOpenAIUnsupportedKeywords),
+            serializerOptions: JsonSerializerOptions.Default,
+            inferenceOptions: inferenceOptions);
+
+        Assert.True(JsonElement.DeepEquals(expected, actual));
+    }
+
+    [Fact]
+    public static void CreateJsonSchema_RequireAllProperties_ReportsAllPropertiesAsRequired()
+    {
+        JsonElement expected = JsonDocument.Parse("""
+            {
+                "type": "object",
+                "properties": {
+                    "Date": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "TimeSpan": {
+                        "$comment": "Represents a System.TimeSpan value.",
+                        "type": "string",
+                        "pattern": "^-?(\\d+\\.)?\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,7})?$"
+                    },
+                    "Char" : {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1
+                    }
+                },
+                "required": ["Date","TimeSpan","Char"]
+            }
+            """).RootElement;
+
+        AIJsonSchemaCreateOptions inferenceOptions = new()
+        {
+            RequireAllProperties = true
+        };
+
+        JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(PocoWithTypesWithOpenAIUnsupportedKeywords),
+            serializerOptions: JsonSerializerOptions.Default,
+            inferenceOptions: inferenceOptions);
+
+        Assert.True(JsonElement.DeepEquals(expected, actual));
+    }
+
+    public class PocoWithTypesWithOpenAIUnsupportedKeywords
+    {
+        // Uses the unsupported "format" keyword
+        public DateTimeOffset Date { get; init; }
+
+        // Uses the unsupported "pattern" keyword
+        public TimeSpan TimeSpan { get; init; }
+
+        // Uses the unsupported "minLength" and "maxLength" keywords
+        public char Char { get; init; }
     }
 
     [Fact]

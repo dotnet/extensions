@@ -16,6 +16,13 @@ namespace Microsoft.Extensions.AI;
 public sealed class AIFunctionFactoryCreateOptions
 {
     private JsonSerializerOptions _options = AIJsonUtilities.DefaultOptions;
+    private AIJsonSchemaCreateOptions _schemaCreateOptions = new()
+    {
+        IncludeTypeInEnumSchemas = true,
+        RequireAllProperties = true,
+        DisallowAdditionalProperties = true,
+        FilterDisallowedKeywords = true,
+    };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AIFunctionFactoryCreateOptions"/> class.
@@ -29,6 +36,15 @@ public sealed class AIFunctionFactoryCreateOptions
     {
         get => _options;
         set => _options = Throw.IfNull(value);
+    }
+
+    /// <summary>
+    /// Gets or sets the <see cref="AIJsonSchemaCreateOptions"/> governing the generation of JSON schemas for the function.
+    /// </summary>
+    public AIJsonSchemaCreateOptions SchemaCreateOptions
+    {
+        get => _schemaCreateOptions;
+        set => _schemaCreateOptions = Throw.IfNull(value);
     }
 
     /// <summary>Gets or sets the name to use for the function.</summary>
