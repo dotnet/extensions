@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
 
@@ -85,8 +86,26 @@ public class ChatCompletion
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
 
     /// <inheritdoc />
-    public override string ToString() =>
-        string.Join(Environment.NewLine, Choices);
+    public override string ToString()
+    {
+        if (Choices.Count == 1)
+        {
+            return Choices[0].ToString();
+        }
+
+        StringBuilder sb = new();
+        for (int i = 0; i < Choices.Count; i++)
+        {
+            if (i > 0)
+            {
+                _ = sb.AppendLine().AppendLine();
+            }
+
+            _ = sb.Append("Choice ").Append(i).AppendLine(":").Append(Choices[i]);
+        }
+
+        return sb.ToString();
+    }
 
     /// <summary>Creates an array of <see cref="StreamingChatCompletionUpdate" /> instances that represent this <see cref="ChatCompletion" />.</summary>
     /// <returns>An array of <see cref="StreamingChatCompletionUpdate" /> instances that may be used to represent this <see cref="ChatCompletion" />.</returns>
