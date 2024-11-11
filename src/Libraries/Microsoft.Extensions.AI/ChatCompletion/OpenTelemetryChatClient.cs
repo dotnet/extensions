@@ -201,60 +201,10 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         }
         finally
         {
-            TraceCompletion(activity, requestModelId, ComposeStreamingUpdatesIntoChatCompletion(trackedUpdates), error, stopwatch);
+            TraceCompletion(activity, requestModelId, trackedUpdates.ToChatCompletion(), error, stopwatch);
 
             await responseEnumerator.DisposeAsync();
         }
-    }
-
-    /// <summary>Creates a <see cref="ChatCompletion"/> from a collection of <see cref="StreamingChatCompletionUpdate"/> instances.</summary>
-    /// <remarks>
-    /// This only propagates information that's later used by the telemetry. If additional information from the <see cref="ChatCompletion"/>
-    /// is needed, this implementation should be updated to include it.
-    /// </remarks>
-    private static ChatCompletion ComposeStreamingUpdatesIntoChatCompletion(
-        List<StreamingChatCompletionUpdate> updates)
-    {
-        // Group updates by choice index.
-        Dictionary<int, List<StreamingChatCompletionUpdate>> choices = [];
-        foreach (var update in updates)
-        {
-            if (!choices.TryGetValue(update.ChoiceIndex, out var choiceContents))
-            {
-                choices[update.ChoiceIndex] = choiceContents = [];
-            }
-
-            choiceContents.Add(update);
-        }
-
-        // Add a ChatMessage for each choice.
-        string? id = null;
-        ChatFinishReason? finishReason = null;
-        string? modelId = null;
-        List<ChatMessage> messages = new(choices.Count);
-        foreach (var choice in choices.OrderBy(c => c.Key))
-        {
-            ChatRole? role = null;
-            List<AIContent> items = [];
-            foreach (var update in choice.Value)
-            {
-                id ??= update.CompletionId;
-                finishReason ??= update.FinishReason;
-                role ??= update.Role;
-                items.AddRange(update.Contents);
-                modelId ??= update.ModelId;
-            }
-
-            messages.Add(new ChatMessage(role ?? ChatRole.Assistant, items));
-        }
-
-        return new(messages)
-        {
-            CompletionId = id,
-            FinishReason = finishReason,
-            ModelId = modelId,
-            Usage = updates.SelectMany(c => c.Contents).OfType<UsageContent>().LastOrDefault()?.Details,
-        };
     }
 
     /// <summary>Creates an activity for a chat completion request, or returns null if not enabled.</summary>
