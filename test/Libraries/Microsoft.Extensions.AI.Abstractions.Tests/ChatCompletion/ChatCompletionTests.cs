@@ -169,6 +169,40 @@ public class ChatCompletionTests
     }
 
     [Fact]
+    public void ToString_OneChoice_OutputsChatMessageToString()
+    {
+        ChatCompletion completion = new(
+        [
+            new ChatMessage(ChatRole.Assistant, "This is a test." + Environment.NewLine + "It's multiple lines.")
+        ]);
+
+        Assert.Equal(completion.Choices[0].Text, completion.ToString());
+    }
+
+    [Fact]
+    public void ToString_MultipleChoices_OutputsAllChoicesWithPrefix()
+    {
+        ChatCompletion completion = new(
+        [
+            new ChatMessage(ChatRole.Assistant, "This is a test." + Environment.NewLine + "It's multiple lines."),
+            new ChatMessage(ChatRole.Assistant, "So is" + Environment.NewLine + " this."),
+            new ChatMessage(ChatRole.Assistant, "And this."),
+        ]);
+
+        Assert.Equal(
+            "Choice 0:" + Environment.NewLine +
+            completion.Choices[0] + Environment.NewLine + Environment.NewLine +
+
+            "Choice 1:" + Environment.NewLine +
+            completion.Choices[1] + Environment.NewLine + Environment.NewLine +
+
+            "Choice 2:" + Environment.NewLine +
+            completion.Choices[2],
+
+            completion.ToString());
+    }
+
+    [Fact]
     public void ToStreamingChatCompletionUpdates_SingleChoice()
     {
         ChatCompletion completion = new(new ChatMessage(new ChatRole("customRole"), "Text"))
