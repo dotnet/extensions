@@ -9,32 +9,35 @@
     <PublishAot>true</PublishAot>
     <TrimmerSingleWarn>false</TrimmerSingleWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <!-- Always clean before building/publishing so we get warnings/errors every time. -->
-    <PrepareForBuildDependsOn>Clean;$(PrepareForBuildDependsOn)</PrepareForBuildDependsOn>
   </PropertyGroup>
 
   <ItemGroup>
     <!-- Remove the ReferenceTrimmer analyzer. We explicitly want to reference every assembly so the AOT compiler sees it. -->
     <PackageReference Remove="ReferenceTrimmer" />
 
-    <TrimmerRootAssembly Include="Microsoft.Extensions.AI" />
-    <TrimmerRootAssembly Include="Microsoft.Extensions.AI.Abstractions" />
-    <TrimmerRootAssembly Include="Microsoft.Extensions.AI.Ollama" />
-    <TrimmerRootAssembly Include="Microsoft.Extensions.AI.AzureAIInference" />
-    <!-- Azure.AI.Inference produces many warnings
-    <TrimmerRootAssembly Include="Microsoft.Extensions.AI.AzureAIInference" />
-    -->
-    <!-- OpenAI produces a few warnings
-    <TrimmerRootAssembly Include="Microsoft.Extensions.AI.OpenAI" />
-    -->
-
-    <TrimmerRootAssembly Update="@(TrimmerRootAssembly)" Path="$(RepoRoot)\src\Libraries\%(Identity)\%(Identity).csproj" />
-    <ProjectReference Include="@(TrimmerRootAssembly->'%(Path)')" />
+    <LibraryProjects Include="$(RepoRoot)\src\Libraries\**\*.csproj" />
+    <!-- Azure.AI.Inference produces many warnings -->
+    <LibraryProjects Remove="$(RepoRoot)\src\Libraries\Microsoft.Extensions.AI.AzureAIInference\Microsoft.Extensions.AI.AzureAIInference.csproj" />
+    <!-- OpenAI produces a few warnings-->
+    <LibraryProjects Remove="$(RepoRoot)\src\Libraries\Microsoft.Extensions.AI.OpenAI\Microsoft.Extensions.AI.OpenAI.csproj" />
+    <!-- TODO - log issue -->
+    <LibraryProjects Remove="$(RepoRoot)\src\Libraries\Microsoft.Extensions.Http.Resilience\Microsoft.Extensions.Http.Resilience.csproj" />
+    <!-- TODO - log issue -->
+    <LibraryProjects Remove="$(RepoRoot)\src\Libraries\Microsoft.Extensions.Caching.Hybrid\Microsoft.Extensions.Caching.Hybrid.csproj" />
+    <!-- TODO - log issue -->
+    <!-- <LibraryProjects Remove="$(RepoRoot)\src\Libraries\Microsoft.Extensions.Compliance.Redaction\Microsoft.Extensions.Compliance.Redaction.csproj" /> -->
+    
+    <TrimmerRootAssembly Include="@(LibraryProjects->'%(Identity)')" />
+    <ProjectReference Include="@(LibraryProjects)" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
   <Target Name="PublishProject">
+    <!-- Always clean before publishing so we get warnings/errors every time. -->
+    <Exec Command="$(DOTNET_HOST_PATH) clean"
+          WorkingDirectory="$(MSBuildProjectDirectory)" />
+
     <Exec Command="$(DOTNET_HOST_PATH) publish"
           WorkingDirectory="$(MSBuildProjectDirectory)" />
   </Target>
