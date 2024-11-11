@@ -189,6 +189,26 @@ public class StreamingChatCompletionUpdateExtensionsTests
         }
     }
 
+    [Fact]
+    public async Task ToChatCompletion_UsageContentExtractedFromContents()
+    {
+        StreamingChatCompletionUpdate[] updates =
+        {
+            new() { Text = "Hello, " },
+            new() { Text = "world!" },
+            new() { Contents = [new UsageContent(new() { TotalTokenCount = 42 })] },
+        };
+
+        ChatCompletion completion = await YieldAsync(updates).ToChatCompletionAsync();
+
+        Assert.NotNull(completion);
+
+        Assert.NotNull(completion.Usage);
+        Assert.Equal(42, completion.Usage.TotalTokenCount);
+
+        Assert.Equal("Hello, world!", Assert.IsType<TextContent>(Assert.Single(completion.Message.Contents)).Text);
+    }
+
     private static async IAsyncEnumerable<StreamingChatCompletionUpdate> YieldAsync(IEnumerable<StreamingChatCompletionUpdate> updates)
     {
         foreach (StreamingChatCompletionUpdate update in updates)
