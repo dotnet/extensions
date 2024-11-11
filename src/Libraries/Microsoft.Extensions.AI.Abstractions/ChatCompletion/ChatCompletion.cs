@@ -107,7 +107,7 @@ public class ChatCompletion
         }
 
         int choicesCount = Choices.Count;
-        var updates = new StreamingChatCompletionUpdate[choicesCount + Convert.ToInt32(extra is not null)];
+        var updates = new StreamingChatCompletionUpdate[choicesCount + (extra is null ? 0 : 1)];
 
         for (int choiceIndex = 0; choiceIndex < choicesCount; choiceIndex++)
         {
