@@ -86,5 +86,5 @@ public class ChatCompletion
 
     /// <inheritdoc />
     public override string ToString() =>
-        Choices is { Count: > 0 } choices ? string.Join(Environment.NewLine, choices) : string.Empty;
+        string.Join(Environment.NewLine, Choices);
 }
