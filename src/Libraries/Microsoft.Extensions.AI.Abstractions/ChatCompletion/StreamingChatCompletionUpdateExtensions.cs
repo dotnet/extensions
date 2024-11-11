@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using System.Linq;
 #if NET
 using System.Runtime.InteropServices;
 #endif
@@ -133,7 +134,22 @@ public static class StreamingChatCompletionUpdateExtensions
     /// <param name="coalesceContent">The corresponding option value provided to <see cref="ToChatCompletion"/> or <see cref="ToChatCompletionAsync"/>.</param>
     private static void AddMessagesToCompletion(Dictionary<int, ChatMessage> messages, ChatCompletion completion, bool coalesceContent)
     {
-        foreach (var entry in messages)
+        if (messages.Count <= 1)
+        {
+            foreach (var entry in messages)
+            {
+                AddMessage(completion, coalesceContent, entry);
+            }
+        }
+        else
+        {
+            foreach (var entry in messages.OrderBy(entry => entry.Key))
+            {
+                AddMessage(completion, coalesceContent, entry);
+            }
+        }
+
+        static void AddMessage(ChatCompletion completion, bool coalesceContent, KeyValuePair<int, ChatMessage> entry)
         {
             if (entry.Value.Role == default)
             {
@@ -154,6 +170,8 @@ public static class StreamingChatCompletionUpdateExtensions
                     if (content is UsageContent c)
                     {
                         completion.Usage = c.Details;
+                        entry.Value.Contents = entry.Value.Contents.ToList();
+                        _ = entry.Value.Contents.Remove(c);
                         break;
                     }
                 }

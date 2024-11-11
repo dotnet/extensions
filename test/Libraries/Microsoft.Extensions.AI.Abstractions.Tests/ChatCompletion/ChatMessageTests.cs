@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using Xunit;
 
@@ -91,7 +92,7 @@ public class ChatMessageTests
             }
 
             Assert.Equal("text-0", message.Text);
-            Assert.Equal("text-0", message.ToString());
+            Assert.Equal(string.Concat(Enumerable.Range(0, messageCount).Select(i => $"text-{i}")), message.ToString());
         }
 
         Assert.Null(message.AuthorName);
@@ -134,13 +135,13 @@ public class ChatMessageTests
         TextContent textContent = Assert.IsType<TextContent>(message.Contents[3]);
         Assert.Equal("text-1", textContent.Text);
         Assert.Equal("text-1", message.Text);
-        Assert.Equal("text-1", message.ToString());
+        Assert.Equal("text-1text-2", message.ToString());
 
         message.Text = "text-3";
         Assert.Equal("text-3", message.Text);
         Assert.Equal("text-3", message.Text);
         Assert.Same(textContent, message.Contents[3]);
-        Assert.Equal("text-3", message.ToString());
+        Assert.Equal("text-3text-2", message.ToString());
     }
 
     [Fact]
