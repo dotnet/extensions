@@ -87,4 +87,53 @@ public class ChatCompletion
     /// <inheritdoc />
     public override string ToString() =>
         string.Join(Environment.NewLine, Choices);
+
+    /// <summary>Creates an array of <see cref="StreamingChatCompletionUpdate" /> instances that represent this <see cref="ChatCompletion" />.</summary>
+    /// <returns>An array of <see cref="StreamingChatCompletionUpdate" /> instances that may be used to represent this <see cref="ChatCompletion" />.</returns>
+    public StreamingChatCompletionUpdate[] ToStreamingChatCompletionUpdates()
+    {
+        StreamingChatCompletionUpdate? extra = null;
+        if (AdditionalProperties is not null || Usage is not null)
+        {
+            extra = new StreamingChatCompletionUpdate
+            {
+                AdditionalProperties = AdditionalProperties
+            };
+
+            if (Usage is { } usage)
+            {
+                extra.Contents.Add(new UsageContent(usage));
+            }
+        }
+
+        int choicesCount = Choices.Count;
+        var updates = new StreamingChatCompletionUpdate[choicesCount + (extra is null ? 0 : 1)];
+
+        for (int choiceIndex = 0; choiceIndex < choicesCount; choiceIndex++)
+        {
+            ChatMessage choice = Choices[choiceIndex];
+            updates[choiceIndex] = new StreamingChatCompletionUpdate
+            {
+                ChoiceIndex = choiceIndex,
+
+                AdditionalProperties = choice.AdditionalProperties,
+                AuthorName = choice.AuthorName,
+                Contents = choice.Contents,
+                RawRepresentation = choice.RawRepresentation,
+                Role = choice.Role,
+
+                CompletionId = CompletionId,
+                CreatedAt = CreatedAt,
+                FinishReason = FinishReason,
+                ModelId = ModelId
+            };
+        }
+
+        if (extra is not null)
+        {
+            updates[choicesCount] = extra;
+        }
+
+        return updates;
+    }
 }

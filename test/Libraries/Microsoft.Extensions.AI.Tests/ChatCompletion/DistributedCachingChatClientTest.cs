@@ -214,19 +214,18 @@ public class DistributedCachingChatClientTest
 
         // Verify that all the expected properties will round-trip through the cache,
         // even if this involves serialization
-        List<StreamingChatCompletionUpdate> expectedCompletion =
+        List<StreamingChatCompletionUpdate> actualCompletion =
         [
             new()
             {
                 Role = new ChatRole("fakeRole1"),
-                ChoiceIndex = 3,
+                ChoiceIndex = 1,
                 AdditionalProperties = new() { ["a"] = "b" },
                 Contents = [new TextContent("Chunk1")]
             },
             new()
             {
                 Role = new ChatRole("fakeRole2"),
-                Text = "Chunk2",
                 Contents =
                 [
                     new FunctionCallContent("someCallId", "someFn", new Dictionary<string, object?> { ["arg1"] = "value1" }),
@@ -235,13 +234,33 @@ public class DistributedCachingChatClientTest
             }
         ];
 
+        List<StreamingChatCompletionUpdate> expectedCachedCompletion =
+        [
+            new()
+            {
+                Role = new ChatRole("fakeRole2"),
+                Contents = [new FunctionCallContent("someCallId", "someFn", new Dictionary<string, object?> { ["arg1"] = "value1" })],
+            },
+            new()
+            {
+                Role = new ChatRole("fakeRole1"),
+                ChoiceIndex = 1,
+                AdditionalProperties = new() { ["a"] = "b" },
+                Contents = [new TextContent("Chunk1")]
+            },
+            new()
+            {
+                Contents = [new UsageContent(new() { InputTokenCount = 123, OutputTokenCount = 456, TotalTokenCount = 99999 })],
+            },
+        ];
+
         var innerCallCount = 0;
         using var testClient = new TestChatClient
         {
             CompleteStreamingAsyncCallback = delegate
             {
                 innerCallCount++;
-                return ToAsyncEnumerableAsync(expectedCompletion);
+                return ToAsyncEnumerableAsync(actualCompletion);
             }
         };
         using var outer = new DistributedCachingChatClient(testClient, _storage)
@@ -251,7 +270,7 @@ public class DistributedCachingChatClientTest
 
         // Make the initial request and do a quick sanity check
         var result1 = outer.CompleteStreamingAsync([new ChatMessage(ChatRole.User, "some input")]);
-        await AssertCompletionsEqualAsync(expectedCompletion, result1);
+        await AssertCompletionsEqualAsync(actualCompletion, result1);
         Assert.Equal(1, innerCallCount);
 
         // Act
@@ -259,7 +278,7 @@ public class DistributedCachingChatClientTest
 
         // Assert
         Assert.Equal(1, innerCallCount);
-        await AssertCompletionsEqualAsync(expectedCompletion, result2);
+        await AssertCompletionsEqualAsync(expectedCachedCompletion, result2);
 
         // Act/Assert 2: Cache misses do not return cached results
         await ToListAsync(outer.CompleteStreamingAsync([new ChatMessage(ChatRole.User, "some modified input")]));
@@ -306,10 +325,11 @@ public class DistributedCachingChatClientTest
         // Assert
         if (coalesce is null or true)
         {
-            Assert.Collection(await ToListAsync(result2),
-                c => Assert.Equal("This becomes one chunk", c.Text),
-                c => Assert.IsType<FunctionCallContent>(Assert.Single(c.Contents)),
-                c => Assert.Equal("... and this becomes another one.", c.Text));
+            StreamingChatCompletionUpdate update = Assert.Single(await ToListAsync(result2));
+            Assert.Collection(update.Contents,
+                c => Assert.Equal("This becomes one chunk", Assert.IsType<TextContent>(c).Text),
+                c => Assert.IsType<FunctionCallContent>(c),
+                c => Assert.Equal("... and this becomes another one.", Assert.IsType<TextContent>(c).Text));
         }
         else
         {
@@ -396,7 +416,6 @@ public class DistributedCachingChatClientTest
         List<StreamingChatCompletionUpdate> expectedCompletion =
         [
             new() { Role = ChatRole.Assistant, Text = "Chunk 1" },
-            new() { Role = ChatRole.System, Text = "Chunk 2" },
         ];
         using var testClient = new TestChatClient
         {
