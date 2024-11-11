@@ -2,13 +2,18 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>$(LatestTargetFramework)</TargetFrameworks>
+    <TargetFramework>$(LatestTargetFramework)</TargetFramework>
+    <!-- clear TargetFrameworks because it is set in ..\Directory.Build.props -->
+    <TargetFrameworks></TargetFrameworks>
     <PublishAot>true</PublishAot>
     <TrimmerSingleWarn>false</TrimmerSingleWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Remove the ReferenceTrimmer analyzer. We explicitly want to reference every assembly so the AOT compiler sees it. -->
+    <PackageReference Remove="ReferenceTrimmer" />
+
     <TrimmerRootAssembly Include="Microsoft.Extensions.AI" />
     <TrimmerRootAssembly Include="Microsoft.Extensions.AI.Abstractions" />
     <TrimmerRootAssembly Include="Microsoft.Extensions.AI.Ollama" />
