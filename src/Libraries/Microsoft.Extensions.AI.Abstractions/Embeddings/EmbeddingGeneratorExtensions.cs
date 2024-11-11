@@ -20,10 +20,10 @@ public static class EmbeddingGeneratorExtensions
     /// <typeparam name="TEmbedding">The numeric type of the embedding data.</typeparam>
     /// <typeparam name="TService">The type of the object to be retrieved.</typeparam>
     /// <param name="generator">The generator.</param>
-    /// <param name="serviceKey">An optional key that may be used to help identify the target service.</param>
+    /// <param name="serviceKey">An optional key that can be used to help identify the target service.</param>
     /// <returns>The found object, otherwise <see langword="null"/>.</returns>
     /// <remarks>
-    /// The purpose of this method is to allow for the retrieval of strongly-typed services that may be provided by the
+    /// The purpose of this method is to allow for the retrieval of strongly typed services that may be provided by the
     /// <see cref="IEmbeddingGenerator{TInput,TEmbedding}"/>, including itself or any services it might be wrapping.
     /// </remarks>
     public static TService? GetService<TInput, TEmbedding, TService>(this IEmbeddingGenerator<TInput, TEmbedding> generator, object? serviceKey = null)
@@ -43,10 +43,10 @@ public static class EmbeddingGeneratorExtensions
     /// <summary>Asks the <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> for an object of type <typeparamref name="TService"/>.</summary>
     /// <typeparam name="TService">The type of the object to be retrieved.</typeparam>
     /// <param name="generator">The generator.</param>
-    /// <param name="serviceKey">An optional key that may be used to help identify the target service.</param>
+    /// <param name="serviceKey">An optional key that can be used to help identify the target service.</param>
     /// <returns>The found object, otherwise <see langword="null"/>.</returns>
     /// <remarks>
-    /// The purpose of this method is to allow for the retrieval of strongly-typed services that may be provided by the
+    /// The purpose of this method is to allow for the retrieval of strongly typed services that may be provided by the
     /// <see cref="IEmbeddingGenerator{TInput,TEmbedding}"/>, including itself or any services it might be wrapping.
     /// </remarks>
     public static TService? GetService<TService>(this IEmbeddingGenerator<string, Embedding<float>> generator, object? serviceKey = null) =>

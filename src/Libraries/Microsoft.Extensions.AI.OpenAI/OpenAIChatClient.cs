@@ -24,7 +24,7 @@ using OpenAI.Chat;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>An <see cref="IChatClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="OpenAI.Chat.ChatClient"/>.</summary>
+/// <summary>Represents an <see cref="IChatClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="OpenAI.Chat.ChatClient"/>.</summary>
 public sealed partial class OpenAIChatClient : IChatClient
 {
     private static readonly JsonElement _defaultParameterSchema = JsonDocument.Parse("{}").RootElement;

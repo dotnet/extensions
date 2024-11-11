@@ -40,7 +40,7 @@ public class ChatCompletion
     /// <summary>Gets the chat completion message.</summary>
     /// <remarks>
     /// If there are multiple choices, this property returns the first choice.
-    /// If <see cref="Choices"/> is empty, this will throw. Use <see cref="Choices"/> to access all choices directly."/>.
+    /// If <see cref="Choices"/> is empty, this property will throw. Use <see cref="Choices"/> to access all choices directly.
     /// </remarks>
     [JsonIgnore]
     public ChatMessage Message
