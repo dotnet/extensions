@@ -3,9 +3,11 @@
 
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.AI.JsonSchemaExporter;
 using Xunit;
 
@@ -39,11 +41,11 @@ public static class AIJsonUtilitiesTests
     public static void AIJsonSchemaCreateOptions_DefaultInstance_ReturnsExpectedValues(bool useSingleton)
     {
         AIJsonSchemaCreateOptions options = useSingleton ? AIJsonSchemaCreateOptions.Default : new AIJsonSchemaCreateOptions();
-        Assert.False(options.IncludeTypeInEnumSchemas);
-        Assert.False(options.DisallowAdditionalProperties);
+        Assert.True(options.IncludeTypeInEnumSchemas);
+        Assert.True(options.DisallowAdditionalProperties);
         Assert.False(options.IncludeSchemaKeyword);
-        Assert.False(options.RequireAllProperties);
-        Assert.False(options.FilterDisallowedKeywords);
+        Assert.True(options.RequireAllProperties);
+        Assert.True(options.FilterDisallowedKeywords);
     }
 
     [Fact]
@@ -59,6 +61,7 @@ public static class AIJsonUtilitiesTests
                         "type": "integer"
                     },
                     "EnumValue": {
+                        "type": "string",
                         "enum": ["A", "B"]
                     },
                     "Value": {
@@ -66,11 +69,13 @@ public static class AIJsonUtilitiesTests
                         "default": null
                     }
                 },
-                "required": ["Key", "EnumValue"]
+                "required": ["Key", "EnumValue", "Value"],
+                "additionalProperties": false
             }
             """).RootElement;
 
         JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(MyPoco), serializerOptions: JsonSerializerOptions.Default);
+
         Assert.True(JsonElement.DeepEquals(expected, actual));
     }
 
@@ -88,7 +93,6 @@ public static class AIJsonUtilitiesTests
                         "type": "integer"
                     },
                     "EnumValue": {
-                        "type": "string",
                         "enum": ["A", "B"]
                     },
                     "Value": {
@@ -97,30 +101,31 @@ public static class AIJsonUtilitiesTests
                     }
                 },
                 "required": ["Key", "EnumValue"],
-                "additionalProperties": false,
                 "default": "42"
             }
             """).RootElement;
 
         AIJsonSchemaCreateOptions inferenceOptions = new AIJsonSchemaCreateOptions
         {
-            IncludeTypeInEnumSchemas = true,
-            DisallowAdditionalProperties = true,
-            IncludeSchemaKeyword = true
+            IncludeTypeInEnumSchemas = false,
+            DisallowAdditionalProperties = false,
+            IncludeSchemaKeyword = true,
+            RequireAllProperties = false,
         };
 
-        JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(MyPoco),
+        JsonElement actual = AIJsonUtilities.CreateJsonSchema(
+            typeof(MyPoco),
             description: "alternative description",
             hasDefaultValue: true,
             defaultValue: 42,
-            JsonSerializerOptions.Default,
-            inferenceOptions);
+            serializerOptions: JsonSerializerOptions.Default,
+            inferenceOptions: inferenceOptions);
 
         Assert.True(JsonElement.DeepEquals(expected, actual));
     }
 
     [Fact]
-    public static void CreateJsonSchema_FilterDisallowedKeywords_GeneratesExpectedJsonSchema()
+    public static void CreateJsonSchema_FiltersDisallowedKeywords()
     {
         JsonElement expected = JsonDocument.Parse("""
             {
@@ -136,24 +141,19 @@ public static class AIJsonUtilitiesTests
                     "Char" : {
                         "type": "string"
                     }
-                }
+                },
+                "required": ["Date","TimeSpan","Char"],
+                "additionalProperties": false
             }
             """).RootElement;
 
-        AIJsonSchemaCreateOptions inferenceOptions = new()
-        {
-            FilterDisallowedKeywords = true
-        };
-
-        JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(PocoWithTypesWithOpenAIUnsupportedKeywords),
-            serializerOptions: JsonSerializerOptions.Default,
-            inferenceOptions: inferenceOptions);
+        JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(PocoWithTypesWithOpenAIUnsupportedKeywords), serializerOptions: JsonSerializerOptions.Default);
 
         Assert.True(JsonElement.DeepEquals(expected, actual));
     }
 
     [Fact]
-    public static void CreateJsonSchema_RequireAllProperties_ReportsAllPropertiesAsRequired()
+    public static void CreateJsonSchema_FilterDisallowedKeywords_Disabled()
     {
         JsonElement expected = JsonDocument.Parse("""
             {
@@ -174,16 +174,18 @@ public static class AIJsonUtilitiesTests
                         "maxLength": 1
                     }
                 },
-                "required": ["Date","TimeSpan","Char"]
+                "required": ["Date","TimeSpan","Char"],
+                "additionalProperties": false
             }
             """).RootElement;
 
         AIJsonSchemaCreateOptions inferenceOptions = new()
         {
-            RequireAllProperties = true
+            FilterDisallowedKeywords = false
         };
 
-        JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(PocoWithTypesWithOpenAIUnsupportedKeywords),
+        JsonElement actual = AIJsonUtilities.CreateJsonSchema(
+            typeof(PocoWithTypesWithOpenAIUnsupportedKeywords),
             serializerOptions: JsonSerializerOptions.Default,
             inferenceOptions: inferenceOptions);
 
@@ -264,7 +266,12 @@ public static class AIJsonUtilitiesTests
             ? new(opts) { TypeInfoResolver = TestTypes.TestTypesContext.Default }
             : TestTypes.TestTypesContext.Default.Options;
 
-        JsonElement schema = AIJsonUtilities.CreateJsonSchema(testData.Type, serializerOptions: options);
+        JsonTypeInfo typeInfo = options.GetTypeInfo(testData.Type);
+        AIJsonSchemaCreateOptions? createOptions = typeInfo.Properties.Any(prop => prop.IsExtensionData)
+            ? new() { DisallowAdditionalProperties = false } // Do not append additionalProperties: false to the schema if the type has extension data.
+            : null;
+
+        JsonElement schema = AIJsonUtilities.CreateJsonSchema(testData.Type, serializerOptions: options, inferenceOptions: createOptions);
         JsonNode? schemaAsNode = JsonSerializer.SerializeToNode(schema, options);
 
         Assert.NotNull(schemaAsNode);

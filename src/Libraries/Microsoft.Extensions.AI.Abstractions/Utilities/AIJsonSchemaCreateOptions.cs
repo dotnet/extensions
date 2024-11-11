@@ -16,12 +16,12 @@ public sealed class AIJsonSchemaCreateOptions
     /// <summary>
     /// Gets a value indicating whether to include the type keyword in inferred schemas for .NET enums.
     /// </summary>
-    public bool IncludeTypeInEnumSchemas { get; init; }
+    public bool IncludeTypeInEnumSchemas { get; init; } = true;
 
     /// <summary>
     /// Gets a value indicating whether to generate schemas with the additionalProperties set to false for .NET objects.
     /// </summary>
-    public bool DisallowAdditionalProperties { get; init; }
+    public bool DisallowAdditionalProperties { get; init; } = true;
 
     /// <summary>
     /// Gets a value indicating whether to include the $schema keyword in inferred schemas.
@@ -31,7 +31,7 @@ public sealed class AIJsonSchemaCreateOptions
     /// <summary>
     /// Gets a value indicating whether to mark all properties as required in the schema.
     /// </summary>
-    public bool RequireAllProperties { get; init; }
+    public bool RequireAllProperties { get; init; } = true;
 
     /// <summary>
     /// Gets a value indicating whether to filter keywords that are disallowed by certain AI vendors.
@@ -47,5 +47,5 @@ public sealed class AIJsonSchemaCreateOptions
     /// </list>
     /// See also https://platform.openai.com/docs/guides/structured-outputs#some-type-specific-keywords-are-not-yet-supported.
     /// </remarks>
-    public bool FilterDisallowedKeywords { get; init; }
+    public bool FilterDisallowedKeywords { get; init; } = true;
 }
