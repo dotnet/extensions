@@ -1,4 +1,5 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -17,6 +18,7 @@
     <TrimmerRootAssembly Include="Microsoft.Extensions.AI" />
     <TrimmerRootAssembly Include="Microsoft.Extensions.AI.Abstractions" />
     <TrimmerRootAssembly Include="Microsoft.Extensions.AI.Ollama" />
+    <TrimmerRootAssembly Include="Microsoft.Extensions.AI.AzureAIInference" />
     <!-- Azure.AI.Inference produces many warnings
     <TrimmerRootAssembly Include="Microsoft.Extensions.AI.AzureAIInference" />
     -->
@@ -27,5 +29,14 @@
     <TrimmerRootAssembly Update="@(TrimmerRootAssembly)" Path="$(RepoRoot)\src\Libraries\%(Identity)\%(Identity).csproj" />
     <ProjectReference Include="@(TrimmerRootAssembly->'%(Path)')" />
   </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <!-- Override VSTest so 'dotnet test' publishes this app and fails if there are any warnings/errors -->
+  <!-- VSTest needs to be defined after importing the Sdk.targets -->
+  <Target Name="VSTest">
+    <Exec Command="$(DOTNET_HOST_PATH) publish"
+          WorkingDirectory="$(MSBuildProjectDirectory)" />
+  </Target>
 
 </Project>
