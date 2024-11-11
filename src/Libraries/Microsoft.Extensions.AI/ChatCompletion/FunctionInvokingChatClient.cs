@@ -8,7 +8,11 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Diagnostics;
+
+#pragma warning disable CA2213 // Disposable fields should be disposed
 
 namespace Microsoft.Extensions.AI;
 
@@ -25,7 +29,7 @@ namespace Microsoft.Extensions.AI;
 /// <para>
 /// The provided implementation of <see cref="IChatClient"/> is thread-safe for concurrent use so long as the
 /// <see cref="AIFunction"/> instances employed as part of the supplied <see cref="ChatOptions"/> are also safe.
-/// The <see cref="ConcurrentInvocation"/> property may be used to control whether multiple function invocation
+/// The <see cref="ConcurrentInvocation"/> property can be used to control whether multiple function invocation
 /// requests as part of the same request are invocable concurrently, but even with that set to <see langword="false"/>
 /// (the default), multiple concurrent requests to this same instance and using the same tools could result in those
 /// tools being used concurrently (one per request). For example, a function that accesses the HttpContext of a specific
@@ -34,8 +38,15 @@ namespace Microsoft.Extensions.AI;
 /// invocation requests to that same function.
 /// </para>
 /// </remarks>
-public class FunctionInvokingChatClient : DelegatingChatClient
+public partial class FunctionInvokingChatClient : DelegatingChatClient
 {
+    /// <summary>The logger to use for logging information about function invocation.</summary>
+    private readonly ILogger _logger;
+
+    /// <summary>The <see cref="ActivitySource"/> to use for telemetry.</summary>
+    /// <remarks>This component does not own the instance and should not dispose it.</remarks>
+    private readonly ActivitySource? _activitySource;
+
     /// <summary>Maximum number of roundtrips allowed to the inner client.</summary>
     private int? _maximumIterationsPerRequest;
 
@@ -43,31 +54,28 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     /// Initializes a new instance of the <see cref="FunctionInvokingChatClient"/> class.
     /// </summary>
     /// <param name="innerClient">The underlying <see cref="IChatClient"/>, or the next instance in a chain of clients.</param>
-    public FunctionInvokingChatClient(IChatClient innerClient)
+    /// <param name="logger">An <see cref="ILogger"/> to use for logging information about function invocation.</param>
+    public FunctionInvokingChatClient(IChatClient innerClient, ILogger? logger = null)
         : base(innerClient)
     {
+        _logger = logger ?? NullLogger.Instance;
+        _activitySource = innerClient.GetService<ActivitySource>();
     }
 
     /// <summary>
     /// Gets or sets a value indicating whether to handle exceptions that occur during function calls.
     /// </summary>
-    /// <remarks>
-    /// <para>
-    /// If the value is <see langword="false"/>, then if a function call fails with an exception, the
+    /// <value>
+    /// <see langword="false"/> if the
     /// underlying <see cref="IChatClient"/> will be instructed to give a response without invoking
-    /// any further functions.
-    /// </para>
-    /// <para>
-    /// If the value is <see langword="true"/>, the underlying <see cref="IChatClient"/> will be allowed
+    /// any further functions if a function call fails with an exception.
+    /// <see langword="true"/> if the underlying <see cref="IChatClient"/> is allowed
     /// to continue attempting function calls until <see cref="MaximumIterationsPerRequest"/> is reached.
-    /// </para>
-    /// <para>
-    /// Changing the value of this property while the client is in use may result in inconsistencies
-    /// as to whether errors are retried during an in-flight request.
-    /// </para>
-    /// <para>
     /// The default value is <see langword="false"/>.
-    /// </para>
+    /// </value>
+    /// <remarks>
+    /// Changing the value of this property while the client is in use might result in inconsistencies
+    /// as to whether errors are retried during an in-flight request.
     /// </remarks>
     public bool RetryOnError { get; set; }
 
@@ -75,23 +83,27 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     /// Gets or sets a value indicating whether detailed exception information should be included
     /// in the chat history when calling the underlying <see cref="IChatClient"/>.
     /// </summary>
+    /// <value>
+    /// <see langword="true"/> if the full exception message is added to the chat history
+    /// when calling the underlying <see cref="IChatClient"/>.
+    /// <see langword="false"/> if a generic error message is included in the chat history.
+    /// The default value is <see langword="false"/>.
+    /// </value>
     /// <remarks>
     /// <para>
-    /// The default value is <see langword="false"/>, meaning that only a generic error message will
-    /// be included in the chat history. This prevents the underlying language model from disclosing
-    /// raw exception details to the end user, since it does not receive that information. Even in this
+    /// Setting the value to <see langword="false"/> prevents the underlying language model from disclosing
+    /// raw exception details to the end user, since it doesn't receive that information. Even in this
     /// case, the raw <see cref="Exception"/> object is available to application code by inspecting
     /// the <see cref="FunctionResultContent.Exception"/> property.
     /// </para>
     /// <para>
-    /// If set to <see langword="true"/>, the full exception message will be added to the chat history
-    /// when calling the underlying <see cref="IChatClient"/>. This can help it to bypass problems on
-    /// its own, for example by retrying the function call with different arguments. However it may
-    /// result in disclosing the raw exception information to external users, which may be a security
+    /// Setting the value to <see langword="true"/> can help the underlying <see cref="IChatClient"/> bypass problems on
+    /// its own, for example by retrying the function call with different arguments. However it might
+    /// result in disclosing the raw exception information to external users, which can be a security
     /// concern depending on the application scenario.
     /// </para>
     /// <para>
-    /// Changing the value of this property while the client is in use may result in inconsistencies
+    /// Changing the value of this property while the client is in use might result in inconsistencies
     /// as to whether detailed errors are provided during an in-flight request.
     /// </para>
     /// </remarks>
@@ -100,21 +112,27 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     /// <summary>
     /// Gets or sets a value indicating whether to allow concurrent invocation of functions.
     /// </summary>
-    /// <remarks>
-    /// <para>
-    /// An individual response from the inner client may contain multiple function call requests.
-    /// By default, such function calls are processed serially. Set <see cref="ConcurrentInvocation"/> to
-    /// <see langword="true"/> to enable concurrent invocation such that multiple function calls may execute in parallel.
-    /// </para>
-    /// <para>
+    /// <value>
+    /// <see langword="true"/> if multiple function calls can execute in parallel.
+    /// <see langword="false"/> if function calls are processed serially.
     /// The default value is <see langword="false"/>.
-    /// </para>
+    /// </value>
+    /// <remarks>
+    /// An individual response from the inner client might contain multiple function call requests.
+    /// By default, such function calls are processed serially. Set <see cref="ConcurrentInvocation"/> to
+    /// <see langword="true"/> to enable concurrent invocation such that multiple function calls can execute in parallel.
     /// </remarks>
     public bool ConcurrentInvocation { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether to keep intermediate messages in the chat history.
     /// </summary>
+    /// <value>
+    /// <see langword="true"/> if intermediate messages persist in the <see cref="IList{ChatMessage}"/> list provided
+    /// to <see cref="CompleteAsync"/> and <see cref="CompleteStreamingAsync"/> by the caller.
+    /// <see langword="false"/> if intermediate messages are removed prior to completing the operation.
+    /// The default value is <see langword="true"/>.
+    /// </value>
     /// <remarks>
     /// <para>
     /// When the inner <see cref="IChatClient"/> returns <see cref="FunctionCallContent"/> to the
@@ -122,13 +140,12 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     /// those messages to the list of messages, along with <see cref="FunctionResultContent"/> instances
     /// it creates with the results of invoking the requested functions. The resulting augmented
     /// list of messages is then passed to the inner client in order to send the results back.
-    /// By default, <see cref="KeepFunctionCallingMessages"/> is <see langword="true"/>, and those
-    /// messages will persist in the <see cref="IList{ChatMessage}"/> list provided to <see cref="CompleteAsync"/>
+    /// By default, those messages persist in the <see cref="IList{ChatMessage}"/> list provided to <see cref="CompleteAsync"/>
     /// and <see cref="CompleteStreamingAsync"/> by the caller. Set <see cref="KeepFunctionCallingMessages"/>
     /// to <see langword="false"/> to remove those messages prior to completing the operation.
     /// </para>
     /// <para>
-    /// Changing the value of this property while the client is in use may result in inconsistencies
+    /// Changing the value of this property while the client is in use might result in inconsistencies
     /// as to whether function calling messages are kept during an in-flight request.
     /// </para>
     /// </remarks>
@@ -137,21 +154,22 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     /// <summary>
     /// Gets or sets the maximum number of iterations per request.
     /// </summary>
+    /// <value>
+    /// The maximum number of iterations per request.
+    /// The default value is <see langword="null"/>.
+    /// </value>
     /// <remarks>
     /// <para>
-    /// Each request to this <see cref="FunctionInvokingChatClient"/> may end up making
+    /// Each request to this <see cref="FunctionInvokingChatClient"/> might end up making
     /// multiple requests to the inner client. Each time the inner client responds with
-    /// a function call request, this client may perform that invocation and send the results
+    /// a function call request, this client might perform that invocation and send the results
     /// back to the inner client in a new request. This property limits the number of times
     /// such a roundtrip is performed. If null, there is no limit applied. If set, the value
     /// must be at least one, as it includes the initial request.
     /// </para>
     /// <para>
-    /// Changing the value of this property while the client is in use may result in inconsistencies
+    /// Changing the value of this property while the client is in use might result in inconsistencies
     /// as to how many iterations are allowed for an in-flight request.
-    /// </para>
-    /// <para>
-    /// The default value is <see langword="null"/>.
     /// </para>
     /// </remarks>
     public int? MaximumIterationsPerRequest
@@ -561,13 +579,95 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     /// The function invocation context detailing the function to be invoked and its arguments along with additional request information.
     /// </param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The result of the function invocation. This may be null if the function invocation returned null.</returns>
-    protected virtual Task<object?> InvokeFunctionAsync(FunctionInvocationContext context, CancellationToken cancellationToken)
+    /// <returns>The result of the function invocation, or <see langword="null"/> if the function invocation returned <see langword="null"/>.</returns>
+    protected virtual async Task<object?> InvokeFunctionAsync(FunctionInvocationContext context, CancellationToken cancellationToken)
     {
         _ = Throw.IfNull(context);
 
-        return context.Function.InvokeAsync(context.CallContent.Arguments, cancellationToken);
+        using Activity? activity = _activitySource?.StartActivity(context.Function.Metadata.Name);
+
+        long startingTimestamp = 0;
+        if (_logger.IsEnabled(LogLevel.Debug))
+        {
+            startingTimestamp = Stopwatch.GetTimestamp();
+            if (_logger.IsEnabled(LogLevel.Trace))
+            {
+                LogInvokingSensitive(context.Function.Metadata.Name, LoggingHelpers.AsJson(context.CallContent.Arguments, context.Function.Metadata.JsonSerializerOptions));
+            }
+            else
+            {
+                LogInvoking(context.Function.Metadata.Name);
+            }
+        }
+
+        object? result = null;
+        try
+        {
+            result = await context.Function.InvokeAsync(context.CallContent.Arguments, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception e)
+        {
+            if (activity is not null)
+            {
+                _ = activity.SetTag("error.type", e.GetType().FullName)
+                            .SetStatus(ActivityStatusCode.Error, e.Message);
+            }
+
+            if (e is OperationCanceledException)
+            {
+                LogInvocationCanceled(context.Function.Metadata.Name);
+            }
+            else
+            {
+                LogInvocationFailed(context.Function.Metadata.Name, e);
+            }
+
+            throw;
+        }
+        finally
+        {
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                TimeSpan elapsed = GetElapsedTime(startingTimestamp);
+
+                if (result is not null && _logger.IsEnabled(LogLevel.Trace))
+                {
+                    LogInvocationCompletedSensitive(context.Function.Metadata.Name, elapsed, LoggingHelpers.AsJson(result, context.Function.Metadata.JsonSerializerOptions));
+                }
+                else
+                {
+                    LogInvocationCompleted(context.Function.Metadata.Name, elapsed);
+                }
+            }
+        }
+
+        return result;
     }
+
+    private static TimeSpan GetElapsedTime(long startingTimestamp) =>
+#if NET
+        Stopwatch.GetElapsedTime(startingTimestamp);
+#else
+        new((long)((Stopwatch.GetTimestamp() - startingTimestamp) * ((double)TimeSpan.TicksPerSecond / Stopwatch.Frequency)));
+#endif
+
+    [LoggerMessage(LogLevel.Debug, "Invoking {MethodName}.", SkipEnabledCheck = true)]
+    private partial void LogInvoking(string methodName);
+
+    [LoggerMessage(LogLevel.Trace, "Invoking {MethodName}({Arguments}).", SkipEnabledCheck = true)]
+    private partial void LogInvokingSensitive(string methodName, string arguments);
+
+    [LoggerMessage(LogLevel.Debug, "{MethodName} invocation completed. Duration: {Duration}", SkipEnabledCheck = true)]
+    private partial void LogInvocationCompleted(string methodName, TimeSpan duration);
+
+    [LoggerMessage(LogLevel.Trace, "{MethodName} invocation completed. Duration: {Duration}. Result: {Result}", SkipEnabledCheck = true)]
+    private partial void LogInvocationCompletedSensitive(string methodName, TimeSpan duration, string result);
+
+    [LoggerMessage(LogLevel.Debug, "{MethodName} invocation canceled.")]
+    private partial void LogInvocationCanceled(string methodName);
+
+    [LoggerMessage(LogLevel.Error, "{MethodName} invocation failed.")]
+    private partial void LogInvocationFailed(string methodName, Exception error);
 
     /// <summary>Provides context for a function invocation.</summary>
     public sealed class FunctionInvocationContext
@@ -611,15 +711,15 @@ public class FunctionInvokingChatClient : DelegatingChatClient
 
         /// <summary>Gets or sets the total number of function call requests within the iteration.</summary>
         /// <remarks>
-        /// The response from the underlying client may include multiple function call requests.
+        /// The response from the underlying client might include multiple function call requests.
         /// This count indicates how many there were.
         /// </remarks>
         public int FunctionCount { get; set; }
 
         /// <summary>Gets or sets a value indicating whether to terminate the request.</summary>
         /// <remarks>
-        /// In response to a function call request, the function may be invoked, its result added to the chat contents,
-        /// and a new request issued to the wrapped client. If this property is set to true, that subsequent request
+        /// In response to a function call request, the function might be invoked, its result added to the chat contents,
+        /// and a new request issued to the wrapped client. If this property is set to <see langword="true"/>, that subsequent request
         /// will not be issued and instead the loop immediately terminated rather than continuing until there are no
         /// more function call requests in responses.
         /// </remarks>

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>Produces reports about the code being compiled which are useful during privacy and telemetry audits.</Description>
-    <Workstream>Fundamentals</Workstream>
+    <Workstream>Compliance</Workstream>
   </PropertyGroup>
 
   <PropertyGroup>

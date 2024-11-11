@@ -4,7 +4,7 @@
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// An options class for configuring the behavior of <see cref="AIJsonUtilities"/> JSON schema creation functionality.
+/// Provides options for configuring the behavior of <see cref="AIJsonUtilities"/> JSON schema creation functionality.
 /// </summary>
 public sealed class AIJsonSchemaCreateOptions
 {

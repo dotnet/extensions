@@ -1,5 +1,11 @@
 # Release History
 
+## 9.0.0-preview.9.24556.5
+
+- Added a strongly-typed `ChatOptions.Seed` property.
+- Improved `AdditionalPropertiesDictionary` with a `TryAdd` method, a strongly-typed `Enumerator`, and debugger-related attributes for improved debuggability.
+- Fixed `AIJsonUtilities` schema generation for Boolean schemas.
+
 ## 9.0.0-preview.9.24525.1
 
 - Lowered the required version of System.Text.Json to 8.0.5 when targeting net8.0 or older.

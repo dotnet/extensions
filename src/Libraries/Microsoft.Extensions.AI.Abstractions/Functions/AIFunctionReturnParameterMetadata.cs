@@ -7,7 +7,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// Provides read-only metadata for a <see cref="AIFunction"/>'s return parameter.
+/// Provides read-only metadata for an <see cref="AIFunction"/>'s return parameter.
 /// </summary>
 public sealed class AIFunctionReturnParameterMetadata
 {

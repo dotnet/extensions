@@ -2,7 +2,7 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Hosting</RootNamespace>
     <Description>Tools for integration testing of apps built with Microsoft.Extensions.Hosting</Description>
-    <Workstream>Fundamentals</Workstream>
+    <Workstream>Hosting</Workstream>
     <PackageTags>$(PackageTags);Testing</PackageTags>
   </PropertyGroup>
 

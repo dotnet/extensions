@@ -95,7 +95,7 @@ public static partial class AIJsonUtilities
     /// <param name="type">The type of the parameter.</param>
     /// <param name="parameterName">The name of the parameter.</param>
     /// <param name="description">The description of the parameter.</param>
-    /// <param name="hasDefaultValue">Whether the parameter is optional.</param>
+    /// <param name="hasDefaultValue"><see langword="true"/> if the parameter is optional; otherwise, <see langword="false"/>.</param>
     /// <param name="defaultValue">The default value of the optional parameter, if applicable.</param>
     /// <param name="serializerOptions">The options used to extract the schema from the specified type.</param>
     /// <param name="inferenceOptions">The options controlling schema inference.</param>
@@ -130,7 +130,7 @@ public static partial class AIJsonUtilities
     /// <summary>Creates a JSON schema for the specified type.</summary>
     /// <param name="type">The type for which to generate the schema.</param>
     /// <param name="description">The description of the parameter.</param>
-    /// <param name="hasDefaultValue">Whether the parameter is optional.</param>
+    /// <param name="hasDefaultValue"><see langword="true"/> if the parameter is optional; otherwise, <see langword="false"/>.</param>
     /// <param name="defaultValue">The default value of the optional parameter, if applicable.</param>
     /// <param name="serializerOptions">The options used to extract the schema from the specified type.</param>
     /// <param name="inferenceOptions">The options controlling schema inference.</param>

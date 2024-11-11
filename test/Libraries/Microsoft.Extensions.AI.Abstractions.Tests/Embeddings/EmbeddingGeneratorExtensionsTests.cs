@@ -11,6 +11,13 @@ namespace Microsoft.Extensions.AI;
 public class EmbeddingGeneratorExtensionsTests
 {
     [Fact]
+    public void GetService_InvalidArgs_Throws()
+    {
+        Assert.Throws<ArgumentNullException>("generator", () => EmbeddingGeneratorExtensions.GetService<object>(null!));
+        Assert.Throws<ArgumentNullException>("generator", () => EmbeddingGeneratorExtensions.GetService<string, Embedding<double>, object>(null!));
+    }
+
+    [Fact]
     public async Task GenerateAsync_InvalidArgs_ThrowsAsync()
     {
         await Assert.ThrowsAsync<ArgumentNullException>("generator", () => ((TestEmbeddingGenerator)null!).GenerateEmbeddingAsync("hello"));

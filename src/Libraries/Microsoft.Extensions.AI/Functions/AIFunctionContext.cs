@@ -8,9 +8,9 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides additional context to the invocation of an <see cref="AIFunction"/> created by <see cref="AIFunctionFactory"/>.</summary>
 /// <remarks>
-/// A delegate or <see cref="MethodInfo"/> passed to <see cref="AIFunctionFactory"/> methods may represent a method that has a parameter
+/// A delegate or <see cref="MethodInfo"/> passed to <see cref="AIFunctionFactory"/> methods can represent a method that has a parameter
 /// of type <see cref="AIFunctionContext"/>. Whereas all other parameters are passed by name from the supplied collection of arguments,
-/// a <see cref="AIFunctionContext"/> parameter is passed specially by the <see cref="AIFunction"/> implementation, in order to pass relevant
+/// an <see cref="AIFunctionContext"/> parameter is passed specially by the <see cref="AIFunction"/> implementation to pass relevant
 /// context into the method's invocation. For example, any <see cref="CancellationToken"/> passed to the <see cref="AIFunction.InvokeAsync"/>
 /// method is available from the <see cref="AIFunctionContext.CancellationToken"/> property.
 /// </remarks>

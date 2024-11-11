@@ -2,7 +2,7 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Compliance.Testing</RootNamespace>
     <Description>Implementation of data classification and redaction designed for testing.</Description>
-    <Workstream>Fundamentals</Workstream>
+    <Workstream>Compliance</Workstream>
     <PackageTags>$(PackageTags);Testing</PackageTags>
   </PropertyGroup>
 

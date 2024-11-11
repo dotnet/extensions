@@ -12,10 +12,10 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Provides an optional base class for an <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> that passes through calls to another instance.
 /// </summary>
-/// <typeparam name="TInput">Specifies the type of the input passed to the generator.</typeparam>
-/// <typeparam name="TEmbedding">Specifies the type of the embedding instance produced by the generator.</typeparam>
+/// <typeparam name="TInput">The type of the input passed to the generator.</typeparam>
+/// <typeparam name="TEmbedding">The type of the embedding instance produced by the generator.</typeparam>
 /// <remarks>
-/// This is recommended as a base type when building generators that can be chained in any order around an underlying <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/>.
+/// This type is recommended as a base type when building generators that can be chained in any order around an underlying <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/>.
 /// The default implementation simply passes each call to the inner generator instance.
 /// </remarks>
 public class DelegatingEmbeddingGenerator<TInput, TEmbedding> : IEmbeddingGenerator<TInput, TEmbedding>
@@ -41,7 +41,7 @@ public class DelegatingEmbeddingGenerator<TInput, TEmbedding> : IEmbeddingGenera
     }
 
     /// <summary>Provides a mechanism for releasing unmanaged resources.</summary>
-    /// <param name="disposing">true if being called from <see cref="Dispose()"/>; otherwise, false.</param>
+    /// <param name="disposing"><see langword="true"/> if being called from <see cref="Dispose()"/>; otherwise, <see langword="false"/>.</param>
     protected virtual void Dispose(bool disposing)
     {
         if (disposing)
@@ -59,12 +59,13 @@ public class DelegatingEmbeddingGenerator<TInput, TEmbedding> : IEmbeddingGenera
         InnerGenerator.GenerateAsync(values, options, cancellationToken);
 
     /// <inheritdoc />
-    public virtual TService? GetService<TService>(object? key = null)
-        where TService : class
+    public virtual object? GetService(Type serviceType, object? serviceKey = null)
     {
-#pragma warning disable S3060 // "is" should not be used with "this"
-        // If the key is non-null, we don't know what it means so pass through to the inner service
-        return key is null && this is TService service ? service : InnerGenerator.GetService<TService>(key);
-#pragma warning restore S3060
+        _ = Throw.IfNull(serviceType);
+
+        // If the key is non-null, we don't know what it means so pass through to the inner service.
+        return
+            serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+            InnerGenerator.GetService(serviceType, serviceKey);
     }
 }
