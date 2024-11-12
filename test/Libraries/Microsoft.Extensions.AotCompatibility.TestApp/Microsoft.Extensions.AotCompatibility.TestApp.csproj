@@ -37,11 +37,7 @@
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
   <Target Name="PublishProject">
-    <!-- Always clean before publishing so we get warnings/errors every time. -->
-    <Exec Command="$(DOTNET_HOST_PATH) clean -c Release"
-          WorkingDirectory="$(MSBuildProjectDirectory)" />
-
-    <Exec Command="$(DOTNET_HOST_PATH) publish -c Release"
+    <Exec Command="$(DOTNET_HOST_PATH) publish"
           WorkingDirectory="$(MSBuildProjectDirectory)" />
   </Target>
 
