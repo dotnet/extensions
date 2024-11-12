@@ -116,5 +116,6 @@ public class StreamingChatCompletionUpdate
     public string? ModelId { get; set; }
 
     /// <inheritdoc/>
-    public override string ToString() => Text ?? string.Empty;
+    public override string ToString() =>
+        string.Concat(Contents.OfType<TextContent>());
 }
