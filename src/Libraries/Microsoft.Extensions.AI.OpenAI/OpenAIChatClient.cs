@@ -3,13 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -80,7 +78,7 @@ public sealed partial class OpenAIChatClient : IChatClient
     }
 
     /// <summary>Gets or sets <see cref="JsonSerializerOptions"/> to use for any serialization activities related to tool call arguments and results.</summary>
-    public JsonSerializerOptions? ToolCallJsonSerializerOptions { get; set; }
+    public JsonSerializerOptions ToolCallJsonSerializerOptions { get; set; } = AIJsonUtilities.DefaultOptions;
 
     /// <inheritdoc />
     public ChatClientMetadata Metadata { get; }
@@ -593,7 +591,7 @@ public sealed partial class OpenAIChatClient : IChatClient
                         {
                             try
                             {
-                                result = JsonSerializer.Serialize(resultContent.Result, JsonContext.GetTypeInfo(typeof(object), ToolCallJsonSerializerOptions));
+                                result = JsonSerializer.Serialize(resultContent.Result, ToolCallJsonSerializerOptions.GetTypeInfo(typeof(object)));
                             }
                             catch (NotSupportedException)
                             {
@@ -622,7 +620,7 @@ public sealed partial class OpenAIChatClient : IChatClient
                                 callRequest.Name,
                                 new(JsonSerializer.SerializeToUtf8Bytes(
                                     callRequest.Arguments,
-                                    JsonContext.GetTypeInfo(typeof(IDictionary<string, object?>), ToolCallJsonSerializerOptions)))));
+                                    ToolCallJsonSerializerOptions.GetTypeInfo(typeof(IDictionary<string, object?>))))));
                     }
                 }
 
@@ -668,11 +666,11 @@ public sealed partial class OpenAIChatClient : IChatClient
 
     private static FunctionCallContent ParseCallContentFromJsonString(string json, string callId, string name) =>
         FunctionCallContent.CreateFromParsedArguments(json, callId, name,
-            argumentParser: static json => JsonSerializer.Deserialize(json, JsonContext.Default.IDictionaryStringObject)!);
+            argumentParser: static json => JsonSerializer.Deserialize(json, AIJsonUtilities.DefaultOptions.GetTypeInfo<IDictionary<string, object>>())!);
 
     private static FunctionCallContent ParseCallContentFromBinaryData(BinaryData ut8Json, string callId, string name) =>
         FunctionCallContent.CreateFromParsedArguments(ut8Json, callId, name,
-            argumentParser: static json => JsonSerializer.Deserialize(json, JsonContext.Default.IDictionaryStringObject)!);
+            argumentParser: static json => JsonSerializer.Deserialize(json, AIJsonUtilities.DefaultOptions.GetTypeInfo<IDictionary<string, object>>())!);
 
     /// <summary>Source-generated JSON type information.</summary>
     [JsonSourceGenerationOptions(JsonSerializerDefaults.Web,
@@ -680,48 +678,5 @@ public sealed partial class OpenAIChatClient : IChatClient
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         WriteIndented = true)]
     [JsonSerializable(typeof(OpenAIChatToolJson))]
-    [JsonSerializable(typeof(IDictionary<string, object?>))]
-    [JsonSerializable(typeof(JsonElement))]
-    private sealed partial class JsonContext : JsonSerializerContext
-    {
-        /// <summary>Gets the <see cref="JsonSerializerOptions"/> singleton used as the default in JSON serialization operations.</summary>
-        private static readonly JsonSerializerOptions _defaultToolJsonOptions = CreateDefaultToolJsonOptions();
-
-        /// <summary>Gets JSON type information for the specified type.</summary>
-        /// <remarks>
-        /// This first tries to get the type information from <paramref name="firstOptions"/>,
-        /// falling back to <see cref="_defaultToolJsonOptions"/> if it can't.
-        /// </remarks>
-        public static JsonTypeInfo GetTypeInfo(Type type, JsonSerializerOptions? firstOptions) =>
-            firstOptions?.TryGetTypeInfo(type, out JsonTypeInfo? info) is true ?
-                info :
-                _defaultToolJsonOptions.GetTypeInfo(type);
-
-        /// <summary>Creates the default <see cref="JsonSerializerOptions"/> to use for serialization-related operations.</summary>
-        [UnconditionalSuppressMessage("AotAnalysis", "IL3050", Justification = "DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled")]
-        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026", Justification = "DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled")]
-        private static JsonSerializerOptions CreateDefaultToolJsonOptions()
-        {
-            // If reflection-based serialization is enabled by default, use it, as it's the most permissive in terms of what it can serialize,
-            // and we want to be flexible in terms of what can be put into the various collections in the object model.
-            // Otherwise, use the source-generated options to enable trimming and Native AOT.
-
-            if (JsonSerializer.IsReflectionEnabledByDefault)
-            {
-                // Keep in sync with the JsonSourceGenerationOptions attribute on JsonContext above.
-                JsonSerializerOptions options = new(JsonSerializerDefaults.Web)
-                {
-                    TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
-                    Converters = { new JsonStringEnumConverter() },
-                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                    WriteIndented = true,
-                };
-
-                options.MakeReadOnly();
-                return options;
-            }
-
-            return Default.Options;
-        }
-    }
+    private sealed partial class JsonContext : JsonSerializerContext;
 }
