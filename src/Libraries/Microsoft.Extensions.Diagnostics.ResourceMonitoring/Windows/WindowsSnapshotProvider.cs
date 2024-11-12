@@ -109,8 +109,7 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
 
     internal static long GetMemoryUsageInBytes()
     {
-        using var process = Process.GetCurrentProcess();
-        return process.WorkingSet64;
+        return Environment.WorkingSet;
     }
 
     internal static ulong GetTotalMemoryInBytes()
