@@ -40,7 +40,7 @@
 
   <!-- Override Test and VSTest so testing publishes this app and fails if there are any warnings/errors -->
   <!-- Needs to be defined after importing the Sdk.targets -->
-  <!-- <Target Name="Test" DependsOnTargets="PublishProject" />
-  <Target Name="VSTest" DependsOnTargets="Test" /> -->
+  <Target Name="Test" DependsOnTargets="PublishProject" />
+  <Target Name="VSTest" DependsOnTargets="Test" />
 
 </Project>
