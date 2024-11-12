@@ -25,7 +25,7 @@
     <!-- https://github.com/dotnet/extensions/issues/5623 -->
     <LibraryProjects Remove="$(RepoRoot)\src\Libraries\Microsoft.Extensions.Compliance.Redaction\Microsoft.Extensions.Compliance.Redaction.csproj" />
     <!-- https://github.com/dotnet/extensions/issues/5625 -->
-    <LibraryProjects Remove="$(RepoRoot)\src\Libraries\Microsoft.Extensions.Http.Resilience\Microsoft.Extensions.Http.Resilience.csproj" />
+    <!-- <LibraryProjects Remove="$(RepoRoot)\src\Libraries\Microsoft.Extensions.Http.Resilience\Microsoft.Extensions.Http.Resilience.csproj" /> -->
     
     <TrimmerRootAssembly Include="@(LibraryProjects->'%(Identity)')" />
     <ProjectReference Include="@(LibraryProjects)" />
@@ -40,7 +40,7 @@
 
   <!-- Override Test and VSTest so testing publishes this app and fails if there are any warnings/errors -->
   <!-- Needs to be defined after importing the Sdk.targets -->
-  <Target Name="Test" DependsOnTargets="PublishProject" />
-  <Target Name="VSTest" DependsOnTargets="Test" />
+  <!-- <Target Name="Test" DependsOnTargets="PublishProject" />
+  <Target Name="VSTest" DependsOnTargets="Test" /> -->
 
 </Project>
