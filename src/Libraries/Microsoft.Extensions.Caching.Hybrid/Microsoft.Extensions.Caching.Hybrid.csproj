@@ -13,6 +13,7 @@
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <IsPackable>true</IsPackable>
     <Stage>dev</Stage>
+    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
     <StageDevDiagnosticId>EXTEXP0018</StageDevDiagnosticId>
     <MinCodeCoverage>75</MinCodeCoverage>
     <MinMutationScore>50</MinMutationScore>
