@@ -14,14 +14,13 @@ public sealed class TestEmbeddingGenerator : IEmbeddingGenerator<string, Embeddi
 
     public Func<IEnumerable<string>, EmbeddingGenerationOptions?, CancellationToken, Task<GeneratedEmbeddings<Embedding<float>>>>? GenerateAsyncCallback { get; set; }
 
-    public Func<Type, object?, object?>? GetServiceCallback { get; set; }
+    public Func<Type, object?, object?> GetServiceCallback { get; set; } = (_, _) => null;
 
     public Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(IEnumerable<string> values, EmbeddingGenerationOptions? options = null, CancellationToken cancellationToken = default)
         => GenerateAsyncCallback!.Invoke(values, options, cancellationToken);
 
-    public TService? GetService<TService>(object? key = null)
-        where TService : class
-        => (TService?)GetServiceCallback!(typeof(TService), key);
+    public object? GetService(Type serviceType, object? serviceKey = null)
+        => GetServiceCallback(serviceType, serviceKey);
 
     void IDisposable.Dispose()
     {

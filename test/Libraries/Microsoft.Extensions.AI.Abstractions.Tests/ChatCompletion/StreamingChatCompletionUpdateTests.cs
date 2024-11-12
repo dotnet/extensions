@@ -103,13 +103,13 @@ public class StreamingChatCompletionUpdateTests
         TextContent textContent = Assert.IsType<TextContent>(update.Contents[3]);
         Assert.Equal("text-1", textContent.Text);
         Assert.Equal("text-1", update.Text);
-        Assert.Equal("text-1", update.ToString());
+        Assert.Equal("text-1text-2", update.ToString());
 
         update.Text = "text-3";
         Assert.Equal("text-3", update.Text);
         Assert.Equal("text-3", update.Text);
         Assert.Same(textContent, update.Contents[3]);
-        Assert.Equal("text-3", update.ToString());
+        Assert.Equal("text-3text-2", update.ToString());
     }
 
     [Fact]

@@ -9,14 +9,35 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.Extensions.AI;
 
-// Conceptually this combines the roles of ChatCompletion and ChatMessage in streaming output.
-// For ease of consumption, it also flattens the nested structure you see on streaming chunks in
-// the OpenAI/Gemini APIs, so instead of a dictionary of choices, each update represents a single
-// choice (and hence has its own role, choice ID, etc.).
-
 /// <summary>
-/// Represents a single response chunk from an <see cref="IChatClient"/>.
+/// Represents a single streaming response chunk from an <see cref="IChatClient"/>.
 /// </summary>
+/// <remarks>
+/// <para>
+/// Conceptually, this combines the roles of <see cref="ChatCompletion"/> and <see cref="ChatMessage"/>
+/// in streaming output. For ease of consumption, it also flattens the nested structure you see on
+/// streaming chunks in some AI service, so instead of a dictionary of choices, each update represents a
+/// single choice (and hence has its own role, choice ID, etc.).
+/// </para>
+/// <para>
+/// <see cref="StreamingChatCompletionUpdate"/> is so named because it represents streaming updates
+/// to a single chat completion. As such, it is considered erroneous for multiple updates that are part
+/// of the same completion to contain competing values. For example, some updates that are part of
+/// the same completion may have a <see langword="null"/> <see cref="StreamingChatCompletionUpdate.Role"/>
+/// value, and others may have a non-<see langword="null"/> value, but all of those with a non-<see langword="null"/>
+/// value must have the same value (e.g. <see cref="ChatRole.Assistant"/>. It should never be the case, for example,
+/// that one <see cref="StreamingChatCompletionUpdate"/> in a completion has a role of <see cref="ChatRole.Assistant"/>
+/// while another has a role of "AI".
+/// </para>
+/// <para>
+/// The relationship between <see cref="ChatCompletion"/> and <see cref="StreamingChatCompletionUpdate"/> is
+/// codified in the <see cref="StreamingChatCompletionUpdateExtensions.ToChatCompletionAsync"/> and
+/// <see cref="ChatCompletion.ToStreamingChatCompletionUpdates"/>, which enable bidirectional conversions
+/// between the two. Note, however, that the conversion may be slightly lossy, for example if multiple updates
+/// all have different <see cref="StreamingChatCompletionUpdate.RawRepresentation"/> objects whereas there's
+/// only one slot for such an object available in <see cref="ChatCompletion.RawRepresentation"/>.
+/// </para>
+/// </remarks>
 public class StreamingChatCompletionUpdate
 {
     /// <summary>The completion update content items.</summary>
@@ -95,5 +116,6 @@ public class StreamingChatCompletionUpdate
     public string? ModelId { get; set; }
 
     /// <inheritdoc/>
-    public override string ToString() => Text ?? string.Empty;
+    public override string ToString() =>
+        string.Concat(Contents.OfType<TextContent>());
 }

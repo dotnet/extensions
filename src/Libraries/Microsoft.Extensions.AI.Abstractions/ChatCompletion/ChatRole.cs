@@ -32,7 +32,7 @@ public readonly struct ChatRole : IEquatable<ChatRole>
     /// Gets the value associated with this <see cref="ChatRole"/>.
     /// </summary>
     /// <remarks>
-    /// The value is what will be serialized into the "role" message field of the Chat Message format.
+    /// The value will be serialized into the "role" message field of the Chat Message format.
     /// </remarks>
     public string Value { get; }
 
@@ -50,9 +50,9 @@ public readonly struct ChatRole : IEquatable<ChatRole>
     /// Returns a value indicating whether two <see cref="ChatRole"/> instances are equivalent, as determined by a
     /// case-insensitive comparison of their values.
     /// </summary>
-    /// <param name="left"> the first <see cref="ChatRole"/> instance to compare.</param>
-    /// <param name="right"> the second <see cref="ChatRole"/> instance to compare.</param>
-    /// <returns> true if left and right are both null or have equivalent values; false otherwise. </returns>
+    /// <param name="left">The first <see cref="ChatRole"/> instance to compare.</param>
+    /// <param name="right">The second <see cref="ChatRole"/> instance to compare.</param>
+    /// <returns><see langword="true"/> if left and right are both null or have equivalent values; otherwise, <see langword="false"/>.</returns>
     public static bool operator ==(ChatRole left, ChatRole right)
     {
         return left.Equals(right);
@@ -62,9 +62,9 @@ public readonly struct ChatRole : IEquatable<ChatRole>
     /// Returns a value indicating whether two <see cref="ChatRole"/> instances are not equivalent, as determined by a
     /// case-insensitive comparison of their values.
     /// </summary>
-    /// <param name="left"> the first <see cref="ChatRole"/> instance to compare. </param>
-    /// <param name="right"> the second <see cref="ChatRole"/> instance to compare. </param>
-    /// <returns> false if left and right are both null or have equivalent values; true otherwise. </returns>
+    /// <param name="left">The first <see cref="ChatRole"/> instance to compare. </param>
+    /// <param name="right">The second <see cref="ChatRole"/> instance to compare. </param>
+    /// <returns><see langword="true"/> if left and right have different values; <see langword="false"/> if they have equivalent values or are both null.</returns>
     public static bool operator !=(ChatRole left, ChatRole right)
     {
         return !(left == right);

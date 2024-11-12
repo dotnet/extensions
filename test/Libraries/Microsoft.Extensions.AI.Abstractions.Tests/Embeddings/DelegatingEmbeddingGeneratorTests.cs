@@ -58,6 +58,14 @@ public class DelegatingEmbeddingGeneratorTests
     }
 
     [Fact]
+    public void GetServiceThrowsForNullType()
+    {
+        using var inner = new TestEmbeddingGenerator();
+        using var delegating = new NoOpDelegatingEmbeddingGenerator(inner);
+        Assert.Throws<ArgumentNullException>("serviceType", () => delegating.GetService(null!));
+    }
+
+    [Fact]
     public void GetServiceReturnsSelfIfCompatibleWithRequestAndKeyIsNull()
     {
         // Arrange

@@ -12,41 +12,25 @@ namespace Microsoft.Extensions.AI;
 public static class ConfigureOptionsChatClientBuilderExtensions
 {
     /// <summary>
-    /// Adds a callback that updates or replaces <see cref="ChatOptions"/>. This can be used to set default options.
+    /// Adds a callback that configures a <see cref="ChatOptions"/> to be passed to the next client in the pipeline.
     /// </summary>
     /// <param name="builder">The <see cref="ChatClientBuilder"/>.</param>
-    /// <param name="configureOptions">
-    /// The delegate to invoke to configure the <see cref="ChatOptions"/> instance. It is passed the caller-supplied <see cref="ChatOptions"/>
-    /// instance and should return the configured <see cref="ChatOptions"/> instance to use.
+    /// <param name="configure">
+    /// The delegate to invoke to configure the <see cref="ChatOptions"/> instance.
+    /// It is passed a clone of the caller-supplied <see cref="ChatOptions"/> instance (or a newly constructed instance if the caller-supplied instance is <see langword="null"/>).
     /// </param>
-    /// <returns>The <paramref name="builder"/>.</returns>
     /// <remarks>
-    /// <para>
-    /// The configuration callback is invoked with the caller-supplied <see cref="ChatOptions"/> instance. To override the caller-supplied options
-    /// with a new instance, the callback may simply return that new instance, for example <c>_ => new ChatOptions() { MaxTokens = 1000 }</c>. To provide
-    /// a new instance only if the caller-supplied instance is <see langword="null"/>, the callback may conditionally return a new instance, for example
-    /// <c>options => options ?? new ChatOptions() { MaxTokens = 1000 }</c>. Any changes to the caller-provided options instance will persist on the
-    /// original instance, so the callback must take care to only do so when such mutations are acceptable, such as by cloning the original instance
-    /// and mutating the clone, for example:
-    /// <c>
-    /// options =>
-    /// {
-    ///     var newOptions = options?.Clone() ?? new();
-    ///     newOptions.MaxTokens = 1000;
-    ///     return newOptions;
-    /// }
-    /// </c>
-    /// </para>
-    /// <para>
-    /// The callback may return <see langword="null"/>, in which case a <see langword="null"/> options will be passed to the next client in the pipeline.
-    /// </para>
+    /// This can be used to set default options. The <paramref name="configure"/> delegate is passed either a new instance of
+    /// <see cref="ChatOptions"/> if the caller didn't supply a <see cref="ChatOptions"/> instance, or a clone (via <see cref="ChatOptions.Clone"/>
+    /// of the caller-supplied instance if one was supplied.
     /// </remarks>
-    public static ChatClientBuilder UseChatOptions(
-        this ChatClientBuilder builder, Func<ChatOptions?, ChatOptions?> configureOptions)
+    /// <returns>The <paramref name="builder"/>.</returns>
+    public static ChatClientBuilder ConfigureOptions(
+        this ChatClientBuilder builder, Action<ChatOptions> configure)
     {
         _ = Throw.IfNull(builder);
-        _ = Throw.IfNull(configureOptions);
+        _ = Throw.IfNull(configure);
 
-        return builder.Use(innerClient => new ConfigureOptionsChatClient(innerClient, configureOptions));
+        return builder.Use(innerClient => new ConfigureOptionsChatClient(innerClient, configure));
     }
 }

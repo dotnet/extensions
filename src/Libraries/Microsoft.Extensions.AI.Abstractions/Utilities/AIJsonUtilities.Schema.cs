@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 #if !NET9_0_OR_GREATER
@@ -30,7 +31,9 @@ using FunctionParameterKey = (
     object? DefaultValue,
     bool IncludeSchemaUri,
     bool DisallowAdditionalProperties,
-    bool IncludeTypeInEnumSchemas);
+    bool IncludeTypeInEnumSchemas,
+    bool RequireAllProperties,
+    bool FilterDisallowedKeywords);
 
 namespace Microsoft.Extensions.AI;
 
@@ -51,6 +54,10 @@ public static partial class AIJsonUtilities
 
     /// <summary>Gets a JSON schema only accepting null values.</summary>
     private static readonly JsonElement _nullJsonSchema = ParseJsonElement("""{"type":"null"}"""u8);
+
+    // List of keywords used by JsonSchemaExporter but explicitly disallowed by some AI vendors.
+    // cf. https://platform.openai.com/docs/guides/structured-outputs#some-type-specific-keywords-are-not-yet-supported
+    private static readonly string[] _schemaKeywordsDisallowedByAIVendors = ["minLength", "maxLength", "pattern", "format"];
 
     /// <summary>
     /// Determines a JSON schema for the provided parameter metadata.
@@ -95,7 +102,7 @@ public static partial class AIJsonUtilities
     /// <param name="type">The type of the parameter.</param>
     /// <param name="parameterName">The name of the parameter.</param>
     /// <param name="description">The description of the parameter.</param>
-    /// <param name="hasDefaultValue">Whether the parameter is optional.</param>
+    /// <param name="hasDefaultValue"><see langword="true"/> if the parameter is optional; otherwise, <see langword="false"/>.</param>
     /// <param name="defaultValue">The default value of the optional parameter, if applicable.</param>
     /// <param name="serializerOptions">The options used to extract the schema from the specified type.</param>
     /// <param name="inferenceOptions">The options controlling schema inference.</param>
@@ -122,7 +129,9 @@ public static partial class AIJsonUtilities
             defaultValue,
             IncludeSchemaUri: false,
             inferenceOptions.DisallowAdditionalProperties,
-            inferenceOptions.IncludeTypeInEnumSchemas);
+            inferenceOptions.IncludeTypeInEnumSchemas,
+            inferenceOptions.RequireAllProperties,
+            inferenceOptions.FilterDisallowedKeywords);
 
         return GetJsonSchemaCached(serializerOptions, key);
     }
@@ -130,7 +139,7 @@ public static partial class AIJsonUtilities
     /// <summary>Creates a JSON schema for the specified type.</summary>
     /// <param name="type">The type for which to generate the schema.</param>
     /// <param name="description">The description of the parameter.</param>
-    /// <param name="hasDefaultValue">Whether the parameter is optional.</param>
+    /// <param name="hasDefaultValue"><see langword="true"/> if the parameter is optional; otherwise, <see langword="false"/>.</param>
     /// <param name="defaultValue">The default value of the optional parameter, if applicable.</param>
     /// <param name="serializerOptions">The options used to extract the schema from the specified type.</param>
     /// <param name="inferenceOptions">The options controlling schema inference.</param>
@@ -154,7 +163,9 @@ public static partial class AIJsonUtilities
             defaultValue,
             inferenceOptions.IncludeSchemaKeyword,
             inferenceOptions.DisallowAdditionalProperties,
-            inferenceOptions.IncludeTypeInEnumSchemas);
+            inferenceOptions.IncludeTypeInEnumSchemas,
+            inferenceOptions.RequireAllProperties,
+            inferenceOptions.FilterDisallowedKeywords);
 
         return GetJsonSchemaCached(serializerOptions, key);
     }
@@ -242,6 +253,7 @@ public static partial class AIJsonUtilities
             const string PatternPropertyName = "pattern";
             const string EnumPropertyName = "enum";
             const string PropertiesPropertyName = "properties";
+            const string RequiredPropertyName = "required";
             const string AdditionalPropertiesPropertyName = "additionalProperties";
             const string DefaultPropertyName = "default";
             const string RefPropertyName = "$ref";
@@ -275,9 +287,33 @@ public static partial class AIJsonUtilities
                 }
 
                 // Disallow additional properties in object schemas
-                if (key.DisallowAdditionalProperties && objSchema.ContainsKey(PropertiesPropertyName) && !objSchema.ContainsKey(AdditionalPropertiesPropertyName))
+                if (key.DisallowAdditionalProperties &&
+                    objSchema.ContainsKey(PropertiesPropertyName) &&
+                    !objSchema.ContainsKey(AdditionalPropertiesPropertyName))
                 {
                     objSchema.Add(AdditionalPropertiesPropertyName, (JsonNode)false);
+                }
+
+                // Mark all properties as required
+                if (key.RequireAllProperties &&
+                    objSchema.TryGetPropertyValue(PropertiesPropertyName, out JsonNode? properties) &&
+                    properties is JsonObject propertiesObj)
+                {
+                    _ = objSchema.TryGetPropertyValue(RequiredPropertyName, out JsonNode? required);
+                    if (required is not JsonArray { } requiredArray || requiredArray.Count != propertiesObj.Count)
+                    {
+                        requiredArray = [.. propertiesObj.Select(prop => prop.Key)];
+                        objSchema[RequiredPropertyName] = requiredArray;
+                    }
+                }
+
+                // Filter potentially disallowed keywords.
+                if (key.FilterDisallowedKeywords)
+                {
+                    foreach (string keyword in _schemaKeywordsDisallowedByAIVendors)
+                    {
+                        _ = objSchema.Remove(keyword);
+                    }
                 }
 
                 // Some consumers of the JSON schema, including Ollama as of v0.3.13, don't understand

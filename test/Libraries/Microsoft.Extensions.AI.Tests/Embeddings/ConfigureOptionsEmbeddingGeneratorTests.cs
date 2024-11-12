@@ -13,24 +13,24 @@ public class ConfigureOptionsEmbeddingGeneratorTests
     [Fact]
     public void ConfigureOptionsEmbeddingGenerator_InvalidArgs_Throws()
     {
-        Assert.Throws<ArgumentNullException>("innerGenerator", () => new ConfigureOptionsEmbeddingGenerator<string, Embedding<float>>(null!, _ => new EmbeddingGenerationOptions()));
-        Assert.Throws<ArgumentNullException>("configureOptions", () => new ConfigureOptionsEmbeddingGenerator<string, Embedding<float>>(new TestEmbeddingGenerator(), null!));
+        Assert.Throws<ArgumentNullException>("innerGenerator", () => new ConfigureOptionsEmbeddingGenerator<string, Embedding<float>>(null!, _ => { }));
+        Assert.Throws<ArgumentNullException>("configure", () => new ConfigureOptionsEmbeddingGenerator<string, Embedding<float>>(new TestEmbeddingGenerator(), null!));
     }
 
     [Fact]
-    public void UseEmbeddingGenerationOptions_InvalidArgs_Throws()
+    public void ConfigureOptions_InvalidArgs_Throws()
     {
         var builder = new EmbeddingGeneratorBuilder<string, Embedding<float>>();
-        Assert.Throws<ArgumentNullException>("configureOptions", () => builder.UseEmbeddingGenerationOptions(null!));
+        Assert.Throws<ArgumentNullException>("configure", () => builder.ConfigureOptions(null!));
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task ConfigureOptions_ReturnedInstancePassedToNextClient(bool nullReturned)
+    public async Task ConfigureOptions_ReturnedInstancePassedToNextClient(bool nullProvidedOptions)
     {
-        EmbeddingGenerationOptions providedOptions = new();
-        EmbeddingGenerationOptions? returnedOptions = nullReturned ? null : new();
+        EmbeddingGenerationOptions? providedOptions = nullProvidedOptions ? null : new() { ModelId = "test" };
+        EmbeddingGenerationOptions? returnedOptions = null;
         GeneratedEmbeddings<Embedding<float>> expectedEmbeddings = [];
         using CancellationTokenSource cts = new();
 
@@ -45,10 +45,19 @@ public class ConfigureOptionsEmbeddingGeneratorTests
         };
 
         using var generator = new EmbeddingGeneratorBuilder<string, Embedding<float>>()
-            .UseEmbeddingGenerationOptions(options =>
+            .ConfigureOptions(options =>
             {
-                Assert.Same(providedOptions, options);
-                return returnedOptions;
+                Assert.NotSame(providedOptions, options);
+                if (nullProvidedOptions)
+                {
+                    Assert.Null(options.ModelId);
+                }
+                else
+                {
+                    Assert.Equal(providedOptions!.ModelId, options.ModelId);
+                }
+
+                returnedOptions = options;
             })
             .Use(innerGenerator);
 

@@ -15,7 +15,7 @@ public class ImageContent : DataContent
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageContent"/> class.
     /// </summary>
-    /// <param name="uri">The URI of the content. This may be a data URI.</param>
+    /// <param name="uri">The URI of the content. This can be a data URI.</param>
     /// <param name="mediaType">The media type (also known as MIME type) represented by the content.</param>
     public ImageContent(Uri uri, string? mediaType = null)
         : base(uri, mediaType)
@@ -25,7 +25,7 @@ public class ImageContent : DataContent
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageContent"/> class.
     /// </summary>
-    /// <param name="uri">The URI of the content. This may be a data URI.</param>
+    /// <param name="uri">The URI of the content. This can be a data URI.</param>
     /// <param name="mediaType">The media type (also known as MIME type) represented by the content.</param>
     [JsonConstructor]
     public ImageContent([StringSyntax(StringSyntaxAttribute.Uri)] string uri, string? mediaType = null)

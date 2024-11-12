@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
 
@@ -40,7 +41,7 @@ public class ChatCompletion
     /// <summary>Gets the chat completion message.</summary>
     /// <remarks>
     /// If there are multiple choices, this property returns the first choice.
-    /// If <see cref="Choices"/> is empty, this will throw. Use <see cref="Choices"/> to access all choices directly."/>.
+    /// If <see cref="Choices"/> is empty, this property will throw. Use <see cref="Choices"/> to access all choices directly.
     /// </remarks>
     [JsonIgnore]
     public ChatMessage Message
@@ -85,6 +86,73 @@ public class ChatCompletion
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
 
     /// <inheritdoc />
-    public override string ToString() =>
-        Choices is { Count: > 0 } choices ? string.Join(Environment.NewLine, choices) : string.Empty;
+    public override string ToString()
+    {
+        if (Choices.Count == 1)
+        {
+            return Choices[0].ToString();
+        }
+
+        StringBuilder sb = new();
+        for (int i = 0; i < Choices.Count; i++)
+        {
+            if (i > 0)
+            {
+                _ = sb.AppendLine().AppendLine();
+            }
+
+            _ = sb.Append("Choice ").Append(i).AppendLine(":").Append(Choices[i]);
+        }
+
+        return sb.ToString();
+    }
+
+    /// <summary>Creates an array of <see cref="StreamingChatCompletionUpdate" /> instances that represent this <see cref="ChatCompletion" />.</summary>
+    /// <returns>An array of <see cref="StreamingChatCompletionUpdate" /> instances that may be used to represent this <see cref="ChatCompletion" />.</returns>
+    public StreamingChatCompletionUpdate[] ToStreamingChatCompletionUpdates()
+    {
+        StreamingChatCompletionUpdate? extra = null;
+        if (AdditionalProperties is not null || Usage is not null)
+        {
+            extra = new StreamingChatCompletionUpdate
+            {
+                AdditionalProperties = AdditionalProperties
+            };
+
+            if (Usage is { } usage)
+            {
+                extra.Contents.Add(new UsageContent(usage));
+            }
+        }
+
+        int choicesCount = Choices.Count;
+        var updates = new StreamingChatCompletionUpdate[choicesCount + (extra is null ? 0 : 1)];
+
+        for (int choiceIndex = 0; choiceIndex < choicesCount; choiceIndex++)
+        {
+            ChatMessage choice = Choices[choiceIndex];
+            updates[choiceIndex] = new StreamingChatCompletionUpdate
+            {
+                ChoiceIndex = choiceIndex,
+
+                AdditionalProperties = choice.AdditionalProperties,
+                AuthorName = choice.AuthorName,
+                Contents = choice.Contents,
+                RawRepresentation = choice.RawRepresentation,
+                Role = choice.Role,
+
+                CompletionId = CompletionId,
+                CreatedAt = CreatedAt,
+                FinishReason = FinishReason,
+                ModelId = ModelId
+            };
+        }
+
+        if (extra is not null)
+        {
+            updates[choicesCount] = extra;
+        }
+
+        return updates;
+    }
 }

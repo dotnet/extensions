@@ -16,6 +16,7 @@ using Microsoft.Shared.Diagnostics;
 using OpenAI;
 using OpenAI.Chat;
 
+#pragma warning disable S1067 // Expressions should not be too complex
 #pragma warning disable S1135 // Track uses of "TODO" tags
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 #pragma warning disable SA1204 // Static elements should appear before instance elements
@@ -23,7 +24,7 @@ using OpenAI.Chat;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>An <see cref="IChatClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="OpenAI.Chat.ChatClient"/>.</summary>
+/// <summary>Represents an <see cref="IChatClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="OpenAI.Chat.ChatClient"/>.</summary>
 public sealed partial class OpenAIChatClient : IChatClient
 {
     private static readonly JsonElement _defaultParameterSchema = JsonDocument.Parse("{}").RootElement;
@@ -85,11 +86,17 @@ public sealed partial class OpenAIChatClient : IChatClient
     public ChatClientMetadata Metadata { get; }
 
     /// <inheritdoc />
-    public TService? GetService<TService>(object? key = null)
-        where TService : class =>
-        typeof(TService) == typeof(OpenAIClient) ? (TService?)(object?)_openAIClient :
-        typeof(TService) == typeof(ChatClient) ? (TService)(object)_chatClient :
-        this as TService;
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        _ = Throw.IfNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(OpenAIClient) ? _openAIClient :
+            serviceType == typeof(ChatClient) ? _chatClient :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
+    }
 
     /// <inheritdoc />
     public async Task<ChatCompletion> CompleteAsync(

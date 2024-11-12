@@ -18,7 +18,7 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Provides factory methods for creating commonly-used implementations of <see cref="AIFunction"/>.</summary>
+/// <summary>Provides factory methods for creating commonly used implementations of <see cref="AIFunction"/>.</summary>
 public static partial class AIFunctionFactory
 {
     /// <summary>Holds the default options instance used when creating function.</summary>
@@ -189,7 +189,7 @@ public static partial class AIFunctionFactory
             bool sawAIContextParameter = false;
             for (int i = 0; i < parameters.Length; i++)
             {
-                if (GetParameterMarshaller(options.SerializerOptions, parameters[i], ref sawAIContextParameter, out _parameterMarshallers[i]) is AIFunctionParameterMetadata parameterView)
+                if (GetParameterMarshaller(options, parameters[i], ref sawAIContextParameter, out _parameterMarshallers[i]) is AIFunctionParameterMetadata parameterView)
                 {
                     parameterMetadata?.Add(parameterView);
                 }
@@ -209,7 +209,7 @@ public static partial class AIFunctionFactory
                 {
                     ParameterType = returnType,
                     Description = method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
-                    Schema = AIJsonUtilities.CreateJsonSchema(returnType, serializerOptions: options.SerializerOptions),
+                    Schema = AIJsonUtilities.CreateJsonSchema(returnType, serializerOptions: options.SerializerOptions, inferenceOptions: options.SchemaCreateOptions),
                 },
                 AdditionalProperties = options.AdditionalProperties ?? EmptyReadOnlyDictionary<string, object?>.Instance,
                 JsonSerializerOptions = options.SerializerOptions,
@@ -272,7 +272,7 @@ public static partial class AIFunctionFactory
         /// Gets a delegate for handling the marshaling of a parameter.
         /// </summary>
         private static AIFunctionParameterMetadata? GetParameterMarshaller(
-            JsonSerializerOptions options,
+            AIFunctionFactoryCreateOptions options,
             ParameterInfo parameter,
             ref bool sawAIFunctionContext,
             out Func<IReadOnlyDictionary<string, object?>, AIFunctionContext?, object?> marshaller)
@@ -302,7 +302,7 @@ public static partial class AIFunctionFactory
 
             // Resolve the contract used to marshal the value from JSON -- can throw if not supported or not found.
             Type parameterType = parameter.ParameterType;
-            JsonTypeInfo typeInfo = options.GetTypeInfo(parameterType);
+            JsonTypeInfo typeInfo = options.SerializerOptions.GetTypeInfo(parameterType);
 
             // Create a marshaller that simply looks up the parameter by name in the arguments dictionary.
             marshaller = (IReadOnlyDictionary<string, object?> arguments, AIFunctionContext? _) =>
@@ -325,7 +325,7 @@ public static partial class AIFunctionFactory
 #pragma warning disable CA1031 // Do not catch general exception types
                         try
                         {
-                            string json = JsonSerializer.Serialize(value, options.GetTypeInfo(value.GetType()));
+                            string json = JsonSerializer.Serialize(value, options.SerializerOptions.GetTypeInfo(value.GetType()));
                             return JsonSerializer.Deserialize(json, typeInfo);
                         }
                         catch
@@ -361,7 +361,8 @@ public static partial class AIFunctionFactory
                     description,
                     parameter.HasDefaultValue,
                     parameter.DefaultValue,
-                    options)
+                    options.SerializerOptions,
+                    options.SchemaCreateOptions)
             };
         }
 
