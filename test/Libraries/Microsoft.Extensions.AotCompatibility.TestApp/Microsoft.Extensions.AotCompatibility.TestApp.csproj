@@ -18,6 +18,7 @@
     <LibraryProjects Include="$(RepoRoot)\src\Libraries\**\*.csproj" />
     <!-- https://github.com/dotnet/extensions/issues/5626 -->
     <LibraryProjects Remove="$(RepoRoot)\src\Libraries\Microsoft.Extensions.AI.Abstractions\Microsoft.Extensions.AI.Abstractions.csproj" />
+    <LibraryProjects Remove="$(RepoRoot)\src\Libraries\Microsoft.Extensions.AI\Microsoft.Extensions.AI.csproj" />
     <!-- https://github.com/Azure/azure-sdk-for-net/issues/47069 -->
     <LibraryProjects Remove="$(RepoRoot)\src\Libraries\Microsoft.Extensions.AI.AzureAIInference\Microsoft.Extensions.AI.AzureAIInference.csproj" />
     <!-- https://github.com/openai/openai-dotnet/issues/20 -->
