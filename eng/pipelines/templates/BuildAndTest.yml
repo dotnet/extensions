@@ -68,6 +68,10 @@ steps:
       condition: always()
       continueOnError: true
 
+    - script: $(Build.SourcesDirectory)/.dotnet/dotnet publish
+      workingDirectory: $(Build.SourcesDirectory)/test/Libraries/Microsoft.Extensions.AotCompatibility.TestApp
+      displayName: Publish AOT Test
+      
     - ${{ if ne(parameters.skipQualityGates, 'true') }}:
       - ${{ if eq(parameters.runAsPublic, 'true') }}:
         - task: PublishPipelineArtifact@1
