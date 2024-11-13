@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Azure;
 using Azure.AI.Inference;
@@ -27,6 +28,19 @@ public class AzureAIInferenceChatClientTests
 
         ChatCompletionsClient client = new(new("http://somewhere"), new AzureKeyCredential("key"));
         Assert.Throws<ArgumentException>("modelId", () => new AzureAIInferenceChatClient(client, "   "));
+    }
+
+    [Fact]
+    public void ToolCallJsonSerializerOptions_HasExpectedValue()
+    {
+        using AzureAIInferenceChatClient client = new(new(new("http://somewhere"), new AzureKeyCredential("key")), "mode");
+
+        Assert.Same(client.ToolCallJsonSerializerOptions, AIJsonUtilities.DefaultOptions);
+        Assert.Throws<ArgumentNullException>("value", () => client.ToolCallJsonSerializerOptions = null!);
+
+        JsonSerializerOptions options = new();
+        client.ToolCallJsonSerializerOptions = options;
+        Assert.Same(options, client.ToolCallJsonSerializerOptions);
     }
 
     [Fact]

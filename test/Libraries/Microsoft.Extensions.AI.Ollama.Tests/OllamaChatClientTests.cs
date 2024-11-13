@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,6 +25,19 @@ public class OllamaChatClientTests
     {
         Assert.Throws<ArgumentNullException>("endpoint", () => new OllamaChatClient((Uri)null!));
         Assert.Throws<ArgumentException>("modelId", () => new OllamaChatClient("http://localhost", "   "));
+    }
+
+    [Fact]
+    public void ToolCallJsonSerializerOptions_HasExpectedValue()
+    {
+        using OllamaChatClient client = new("http://localhost", "model");
+
+        Assert.Same(client.ToolCallJsonSerializerOptions, AIJsonUtilities.DefaultOptions);
+        Assert.Throws<ArgumentNullException>("value", () => client.ToolCallJsonSerializerOptions = null!);
+
+        JsonSerializerOptions options = new();
+        client.ToolCallJsonSerializerOptions = options;
+        Assert.Same(options, client.ToolCallJsonSerializerOptions);
     }
 
     [Fact]
