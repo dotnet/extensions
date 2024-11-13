@@ -27,6 +27,9 @@ public sealed class AzureAIInferenceChatClient : IChatClient
     /// <summary>The underlying <see cref="ChatCompletionsClient" />.</summary>
     private readonly ChatCompletionsClient _chatCompletionsClient;
 
+    /// <summary>The <see cref="JsonSerializerOptions"/> use for any serialization activities related to tool call arguments and results.</summary>
+    private JsonSerializerOptions _toolCallJsonSerializerOptions = AIJsonUtilities.DefaultOptions;
+
     /// <summary>Initializes a new instance of the <see cref="AzureAIInferenceChatClient"/> class for the specified <see cref="ChatCompletionsClient"/>.</summary>
     /// <param name="chatCompletionsClient">The underlying client.</param>
     /// <param name="modelId">The ID of the model to use. If null, it can be provided per request via <see cref="ChatOptions.ModelId"/>.</param>
@@ -51,7 +54,11 @@ public sealed class AzureAIInferenceChatClient : IChatClient
     }
 
     /// <summary>Gets or sets <see cref="JsonSerializerOptions"/> to use for any serialization activities related to tool call arguments and results.</summary>
-    public JsonSerializerOptions ToolCallJsonSerializerOptions { get; set; } = AIJsonUtilities.DefaultOptions;
+    public JsonSerializerOptions ToolCallJsonSerializerOptions
+    {
+        get => _toolCallJsonSerializerOptions;
+        set => _toolCallJsonSerializerOptions = Throw.IfNull(value);
+    }
 
     /// <inheritdoc />
     public ChatClientMetadata Metadata { get; }

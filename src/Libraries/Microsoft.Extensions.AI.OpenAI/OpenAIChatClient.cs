@@ -36,6 +36,9 @@ public sealed partial class OpenAIChatClient : IChatClient
     /// <summary>The underlying <see cref="ChatClient" />.</summary>
     private readonly ChatClient _chatClient;
 
+    /// <summary>The <see cref="JsonSerializerOptions"/> use for any serialization activities related to tool call arguments and results.</summary>
+    private JsonSerializerOptions _toolCallJsonSerializerOptions = AIJsonUtilities.DefaultOptions;
+
     /// <summary>Initializes a new instance of the <see cref="OpenAIChatClient"/> class for the specified <see cref="OpenAIClient"/>.</summary>
     /// <param name="openAIClient">The underlying client.</param>
     /// <param name="modelId">The model to use.</param>
@@ -78,7 +81,11 @@ public sealed partial class OpenAIChatClient : IChatClient
     }
 
     /// <summary>Gets or sets <see cref="JsonSerializerOptions"/> to use for any serialization activities related to tool call arguments and results.</summary>
-    public JsonSerializerOptions ToolCallJsonSerializerOptions { get; set; } = AIJsonUtilities.DefaultOptions;
+    public JsonSerializerOptions ToolCallJsonSerializerOptions
+    {
+        get => _toolCallJsonSerializerOptions;
+        set => _toolCallJsonSerializerOptions = Throw.IfNull(value);
+    }
 
     /// <inheritdoc />
     public ChatClientMetadata Metadata { get; }

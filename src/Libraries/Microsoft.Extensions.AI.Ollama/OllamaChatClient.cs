@@ -30,6 +30,9 @@ public sealed class OllamaChatClient : IChatClient
     /// <summary>The <see cref="HttpClient"/> to use for sending requests.</summary>
     private readonly HttpClient _httpClient;
 
+    /// <summary>The <see cref="JsonSerializerOptions"/> use for any serialization activities related to tool call arguments and results.</summary>
+    private JsonSerializerOptions _toolCallJsonSerializerOptions = AIJsonUtilities.DefaultOptions;
+
     /// <summary>Initializes a new instance of the <see cref="OllamaChatClient"/> class.</summary>
     /// <param name="endpoint">The endpoint URI where Ollama is hosted.</param>
     /// <param name="modelId">
@@ -66,7 +69,11 @@ public sealed class OllamaChatClient : IChatClient
     public ChatClientMetadata Metadata { get; }
 
     /// <summary>Gets or sets <see cref="JsonSerializerOptions"/> to use for any serialization activities related to tool call arguments and results.</summary>
-    public JsonSerializerOptions ToolCallJsonSerializerOptions { get; set; } = AIJsonUtilities.DefaultOptions;
+    public JsonSerializerOptions ToolCallJsonSerializerOptions
+    {
+        get => _toolCallJsonSerializerOptions;
+        set => _toolCallJsonSerializerOptions = Throw.IfNull(value);
+    }
 
     /// <inheritdoc />
     public async Task<ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
