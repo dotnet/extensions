@@ -173,7 +173,7 @@ public sealed class AzureAIInferenceEmbeddingGenerator :
             {
                 if (prop.Value is not null)
                 {
-                    byte[] data = JsonSerializer.SerializeToUtf8Bytes(prop.Value, JsonContext.GetTypeInfo(prop.Value.GetType(), null));
+                    byte[] data = JsonSerializer.SerializeToUtf8Bytes(prop.Value, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(object)));
                     result.AdditionalProperties[prop.Key] = new BinaryData(data);
                 }
             }
