@@ -12,7 +12,6 @@ using AutoFixture;
 using FluentAssertions;
 using Microsoft.Extensions.Http.Logging.Internal;
 using Microsoft.Extensions.Http.Logging.Test.Internal;
-using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
 using Moq;
 using Xunit;
@@ -186,7 +185,7 @@ public class HttpResponseBodyReaderTest
 
         using var cts = new CancellationTokenSource();
 
-        var responseBody = await httpResponseBodyReader.ReadAsync(httpResponse, cts.Token).ConfigureAwait(false);
+        var responseBody = await httpResponseBodyReader.ReadAsync(httpResponse, cts.Token);
 
         responseBody.Should().HaveLength(1);
 
@@ -225,7 +224,7 @@ public class HttpResponseBodyReaderTest
 
         httpResponse.Content.Headers.Add("Content-type", TextPlain);
 
-        var responseBody = await httpResponseBodyReader.ReadAsync(httpResponse, CancellationToken.None).ConfigureAwait(false);
+        var responseBody = await httpResponseBodyReader.ReadAsync(httpResponse, CancellationToken.None);
 
         responseBody.Should().Be(Constants.ReadCancelled);
     }

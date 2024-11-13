@@ -654,7 +654,7 @@ public class AcceptanceTests
     [InlineData(315_883)]
     public async Task HttpClientLoggingHandler_LogsBodyDataUpToSpecifiedLimit(int limit)
     {
-        const int LengthOfContentInTextFile = 64_753;
+        const int LengthOfContentInTextFile = 64_751;
 
         await using var provider = new ServiceCollection()
              .AddFakeLogging()
