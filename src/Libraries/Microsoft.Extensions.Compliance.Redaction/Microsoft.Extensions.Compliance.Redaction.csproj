@@ -2,7 +2,7 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Compliance.Redaction</RootNamespace>
     <Description>Redaction engine and canonical redactors.</Description>
-    <Workstream>Fundamentals</Workstream>
+    <Workstream>Compliance</Workstream>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -13,6 +13,10 @@
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>
     <InjectSharedDataValidation>true</InjectSharedDataValidation>
+
+    <!-- https://github.com/dotnet/extensions/issues/5623 -->
+    <IsAotCompatible>false</IsAotCompatible>
+    <NoWarn>$(NoWarn);IL2026</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>

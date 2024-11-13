@@ -37,9 +37,9 @@ public static class CoalesceAnalyzerTests
         var d = await RoslynTestUtils.RunAnalyzer(
             new CoalesceAnalyzer(),
             null,
-            new[] { Source }).ConfigureAwait(false);
+            new[] { Source });
 
-        Assert.Equal(0, d.Count);
+        Assert.Empty(d);
     }
 
     [Fact]
@@ -92,7 +92,7 @@ public static class CoalesceAnalyzerTests
         var d = await RoslynTestUtils.RunAnalyzer(
             new CoalesceAnalyzer(),
             null,
-            new[] { Source }).ConfigureAwait(false);
+            new[] { Source });
 
         Assert.Equal(4, d.Count);
         for (int i = 0; i < d.Count; i++)
@@ -160,7 +160,7 @@ public static class CoalesceAnalyzerTests
         var d = await RoslynTestUtils.RunAnalyzer(
             new CoalesceAnalyzer(),
             null,
-            new[] { Source }).ConfigureAwait(false);
+            new[] { Source });
 
         Assert.Equal(5, d.Count);
         for (int i = 0; i < d.Count; i++)

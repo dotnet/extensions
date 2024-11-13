@@ -73,9 +73,9 @@ public class AcceptanceTests
                         });
                     });
                 }))
-            .StartAsync().ConfigureAwait(false);
+            .StartAsync();
 
-        _ = await host.GetTestClient().GetAsync("/").ConfigureAwait(false);
+        _ = await host.GetTestClient().GetAsync("/");
         await host.StopAsync();
 
         Assert.True(isInLambda);
