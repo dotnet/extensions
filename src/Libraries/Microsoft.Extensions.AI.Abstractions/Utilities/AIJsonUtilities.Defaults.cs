@@ -17,19 +17,6 @@ public static partial class AIJsonUtilities
     /// <summary>Gets the <see cref="JsonSerializerOptions"/> singleton used as the default in JSON serialization operations.</summary>
     public static JsonSerializerOptions DefaultOptions { get; } = CreateDefaultOptions();
 
-    /// <summary>
-    /// Gets a strongly typed <see cref="JsonTypeInfo{T}"/> instance for the specified <typeparamref name="T"/>.
-    /// </summary>
-    /// <typeparam name="T">The type for which to resolve the JSON contract.</typeparam>
-    /// <param name="options">The options from which to resolve the JSON metadata.</param>
-    /// <returns>A <see cref="JsonTypeInfo{T}"/> instance for the specified type.</returns>
-    public static JsonTypeInfo<T> GetTypeInfo<T>(this JsonSerializerOptions options)
-    {
-        _ = Throw.IfNull(options);
-        options.MakeReadOnly();
-        return (JsonTypeInfo<T>)options.GetTypeInfo(typeof(T));
-    }
-
     /// <summary>Creates the default <see cref="JsonSerializerOptions"/> to use for serialization-related operations.</summary>
     [UnconditionalSuppressMessage("AotAnalysis", "IL3050", Justification = "DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled")]
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026", Justification = "DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled")]

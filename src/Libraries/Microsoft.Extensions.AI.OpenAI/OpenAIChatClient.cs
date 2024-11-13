@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -673,11 +674,13 @@ public sealed partial class OpenAIChatClient : IChatClient
 
     private static FunctionCallContent ParseCallContentFromJsonString(string json, string callId, string name) =>
         FunctionCallContent.CreateFromParsedArguments(json, callId, name,
-            argumentParser: static json => JsonSerializer.Deserialize(json, AIJsonUtilities.DefaultOptions.GetTypeInfo<IDictionary<string, object>>())!);
+            argumentParser: static json => JsonSerializer.Deserialize(json,
+                (JsonTypeInfo<IDictionary<string, object>>)AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object>)))!);
 
     private static FunctionCallContent ParseCallContentFromBinaryData(BinaryData ut8Json, string callId, string name) =>
         FunctionCallContent.CreateFromParsedArguments(ut8Json, callId, name,
-            argumentParser: static json => JsonSerializer.Deserialize(json, AIJsonUtilities.DefaultOptions.GetTypeInfo<IDictionary<string, object>>())!);
+            argumentParser: static json => JsonSerializer.Deserialize(json,
+                (JsonTypeInfo<IDictionary<string, object>>)AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object>)))!);
 
     /// <summary>Source-generated JSON type information.</summary>
     [JsonSourceGenerationOptions(JsonSerializerDefaults.Web,

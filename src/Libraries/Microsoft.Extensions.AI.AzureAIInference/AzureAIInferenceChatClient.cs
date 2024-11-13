@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.Inference;
@@ -311,7 +312,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
             // These properties are strongly typed on ChatOptions but not on ChatCompletionsOptions.
             if (options.TopK is int topK)
             {
-                result.AdditionalProperties["top_k"] = new BinaryData(JsonSerializer.SerializeToUtf8Bytes(topK, AIJsonUtilities.DefaultOptions.GetTypeInfo<int>()));
+                result.AdditionalProperties["top_k"] = new BinaryData(JsonSerializer.SerializeToUtf8Bytes(topK, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(int))));
             }
 
             if (options.AdditionalProperties is { } props)
@@ -497,5 +498,6 @@ public sealed class AzureAIInferenceChatClient : IChatClient
 
     private static FunctionCallContent ParseCallContentFromJsonString(string json, string callId, string name) =>
         FunctionCallContent.CreateFromParsedArguments(json, callId, name,
-            argumentParser: static json => JsonSerializer.Deserialize(json, AIJsonUtilities.DefaultOptions.GetTypeInfo<IDictionary<string, object>>())!);
+            argumentParser: static json => JsonSerializer.Deserialize(json,
+                (JsonTypeInfo<IDictionary<string, object>>)AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object>)))!);
 }
