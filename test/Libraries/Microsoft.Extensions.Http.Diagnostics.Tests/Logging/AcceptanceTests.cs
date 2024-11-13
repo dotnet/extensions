@@ -171,9 +171,9 @@ public class AcceptanceTests
         var collector = provider.GetFakeLogCollector();
         var logRecord = collector.GetSnapshot().Single(l => l.Category == LoggingCategory);
         var state = logRecord.StructuredState;
-        state.Should().Contain(kvp => kvp.Value == responseString);
-        state.Should().Contain(kvp => kvp.Value == "Request Value");
-        state.Should().Contain(kvp => kvp.Value == "Request Value 2,Request Value 3");
+        state.Should().ContainValue(responseString);
+        state.Should().ContainValue("Request Value");
+        state.Should().ContainValue("Request Value 2,Request Value 3");
 
         using var httpRequestMessage2 = new HttpRequestMessage
         {
@@ -187,9 +187,9 @@ public class AcceptanceTests
         responseString = await SendRequest(namedClient2, httpRequestMessage2);
         logRecord = collector.GetSnapshot().Single(l => l.Category == LoggingCategory);
         state = logRecord.StructuredState;
-        state.Should().Contain(kvp => kvp.Value == responseString);
-        state.Should().Contain(kvp => kvp.Value == "Request Value");
-        state.Should().Contain(kvp => kvp.Value == "Request Value 2,Request Value 3");
+        state.Should().ContainValue(responseString);
+        state.Should().ContainValue("Request Value");
+        state.Should().ContainValue("Request Value 2,Request Value 3");
     }
 
     private static async Task<string> SendRequest(HttpClient httpClient, HttpRequestMessage httpRequestMessage)
@@ -258,9 +258,9 @@ public class AcceptanceTests
         var logRecord = collector.GetSnapshot().Single(l => l.Category == LoggingCategory);
         var state = logRecord.StructuredState;
         state.Should().NotBeNull();
-        state.Should().Contain(kvp => kvp.Value == responseString);
-        state.Should().Contain(kvp => kvp.Value == "Request Value");
-        state.Should().Contain(kvp => kvp.Value == "Request Value 2,Request Value 3");
+        state.Should().ContainValue(responseString);
+        state.Should().ContainValue("Request Value");
+        state.Should().ContainValue("Request Value 2,Request Value 3");
 
         using var httpRequestMessage2 = new HttpRequestMessage
         {
@@ -279,9 +279,9 @@ public class AcceptanceTests
 
         logRecord = collector.GetSnapshot().Single(l => l.Category == LoggingCategory);
         state = logRecord.StructuredState;
-        state.Should().Contain(kvp => kvp.Value == responseString);
-        state.Should().Contain(kvp => kvp.Value == "Request Value");
-        state.Should().Contain(kvp => kvp.Value == "Request Value 2,Request Value 3");
+        state.Should().ContainValue(responseString);
+        state.Should().ContainValue("Request Value");
+        state.Should().ContainValue("Request Value 2,Request Value 3");
     }
 
     [Theory]
