@@ -9,6 +9,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
+#if NET9_0_OR_GREATER
+using Microsoft.Extensions.Time.Testing;
+#endif
 using Moq;
 using Xunit;
 
@@ -118,6 +121,58 @@ public static class ExtendedLoggerTests
             Assert.Null(snap[1].GetStructuredStateValue("EK1"));
         }
     }
+
+#if NET9_0_OR_GREATER
+    [Fact]
+    public static void GlobalBuffering()
+    {
+        const string Category = "B1";
+        var clock = new FakeTimeProvider(TimeProvider.System.GetUtcNow());
+
+        GlobalBufferOptions options = new()
+        {
+            Duration = TimeSpan.FromSeconds(60),
+            SuspendAfterFlushDuration = TimeSpan.FromSeconds(0),
+            Rules = new List<BufferFilterRule>
+            {
+                new(null, LogLevel.Warning, null),
+            }
+        };
+        using var buffer = new GlobalBuffer(new StaticOptionsMonitor<GlobalBufferOptions>(options), clock);
+
+        using var provider = new Provider();
+        using var factory = Utils.CreateLoggerFactory(
+             builder =>
+             {
+                 builder.AddProvider(provider);
+                 builder.Services.AddSingleton(buffer);
+                 builder.AddGlobalBufferProvider();
+             });
+
+        var logger = factory.CreateLogger(Category);
+        logger.LogWarning("MSG0");
+        logger.Log(LogLevel.Warning, new EventId(2, "ID2"), "some state", null, (_, _) => "MSG2");
+
+        // nothing is logged because the buffer is not flushed
+        Assert.Equal(0, provider.Logger!.Collector.Count);
+
+        buffer.Flush();
+
+        // 2 log records emitted because the buffer was flushed
+        Assert.Equal(2, provider.Logger!.Collector.Count);
+
+        logger.LogWarning("MSG0");
+        logger.Log(LogLevel.Warning, new EventId(2, "ID2"), "some state", null, (_, _) => "MSG2");
+
+        clock.Advance(options.Duration);
+
+        // forcefully clear buffer instead of async waiting for it to be done on its own which is inherently racy.
+        buffer.RemoveExpiredItems();
+
+        // still 2 because the buffer is cleared after Duration time elapses
+        Assert.Equal(2, provider.Logger!.Collector.Count);
+    }
+#endif
 
     [Theory]
     [CombinatorialData]

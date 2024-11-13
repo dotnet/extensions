@@ -6,6 +6,12 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
+#if NET9_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Shared.DiagnosticIds;
+
+#endif
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Logging.Testing;
@@ -17,7 +23,11 @@ namespace Microsoft.Extensions.Logging.Testing;
 /// This type is intended for use in unit tests. It captures all the log state to memory and lets you inspect it
 /// to validate that your code is logging what it should.
 /// </remarks>
+#if NET9_0_OR_GREATER
+public class FakeLogger : ILogger, IBufferedLogger
+#else
 public class FakeLogger : ILogger
+#endif
 {
     private readonly ConcurrentDictionary<LogLevel, bool> _disabledLevels = new();  // used as a set, the value is ignored
 
@@ -104,6 +114,27 @@ public class FakeLogger : ILogger
     /// Gets this logger's category, as specified when the logger was created.
     /// </summary>
     public string? Category { get; }
+
+#if NET9_0_OR_GREATER
+    /// <inheritdoc/>
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
+    public void LogRecords(IEnumerable<BufferedLogRecord> records)
+    {
+        _ = Throw.IfNull(records);
+
+        var l = new List<object?>();
+        ScopeProvider.ForEachScope((scopeState, list) => list.Add(scopeState), l);
+
+        foreach (var rec in records)
+        {
+#pragma warning disable CA2201 // TO DO: Remove suppression and implement propert Exception deserialization
+            var record = new FakeLogRecord(rec.LogLevel, rec.EventId, ConsumeTState(rec.Attributes), new Exception(rec.Exception), rec.FormattedMessage ?? string.Empty,
+    l.ToArray(), Category, !_disabledLevels.ContainsKey(rec.LogLevel), rec.Timestamp);
+#pragma warning restore CA2201
+            Collector.AddRecord(record);
+        }
+    }
+#endif
 
     internal IExternalScopeProvider ScopeProvider { get; set; } = new LoggerExternalScopeProvider();
 

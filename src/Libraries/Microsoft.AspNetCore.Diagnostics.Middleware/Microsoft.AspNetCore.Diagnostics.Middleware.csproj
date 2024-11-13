@@ -17,7 +17,6 @@
     <InjectSharedPools>false</InjectSharedPools>
     <InjectSharedBufferWriterPool>true</InjectSharedBufferWriterPool>
     <InjectSharedNumericExtensions>false</InjectSharedNumericExtensions>
-    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
   </PropertyGroup>
 

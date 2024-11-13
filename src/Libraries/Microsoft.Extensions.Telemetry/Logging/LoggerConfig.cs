@@ -20,7 +20,12 @@ internal sealed class LoggerConfig
         bool includeExceptionMessage,
         int maxStackTraceLength,
         Func<DataClassificationSet, Redactor> getRedactor,
+#if NET9_0_OR_GREATER
+        bool addRedactionDiscriminator,
+        ILoggingBufferProvider? bufferProvider)
+#else
         bool addRedactionDiscriminator)
+#endif
     {
 #pragma warning restore S107 // Methods should not have too many parameters
         StaticTags = staticTags;
@@ -31,6 +36,9 @@ internal sealed class LoggerConfig
         IncludeExceptionMessage = includeExceptionMessage;
         GetRedactor = getRedactor;
         AddRedactionDiscriminator = addRedactionDiscriminator;
+#if NET9_0_OR_GREATER
+        BufferProvider = bufferProvider;
+#endif
     }
 
     public KeyValuePair<string, object?>[] StaticTags { get; }
@@ -41,4 +49,7 @@ internal sealed class LoggerConfig
     public int MaxStackTraceLength { get; }
     public Func<DataClassificationSet, Redactor> GetRedactor { get; }
     public bool AddRedactionDiscriminator { get; }
+#if NET9_0_OR_GREATER
+    public ILoggingBufferProvider? BufferProvider { get; }
+#endif
 }
