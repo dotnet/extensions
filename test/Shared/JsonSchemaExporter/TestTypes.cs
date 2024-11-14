@@ -27,7 +27,6 @@ using System.Xml.Linq;
 #pragma warning disable CA1052 // Static holder types should be Static or NotInheritable
 #pragma warning disable S1121 // Assignments should not be made from within sub-expressions
 #pragma warning disable IDE0073 // The file header is missing or not located at the top of the file
-#pragma warning disable SA1402 // File may only contain a single type
 
 namespace Microsoft.Extensions.AI.JsonSchemaExporter;
 
@@ -45,40 +44,41 @@ public static partial class TestTypes
         // Primitives and built-in types
         yield return new TestData<object>(
             Value: new(),
-            AdditionalValues: [null, 42, false, 3.14, 3.14M, new int[] { 1, 2, 3 }, new SimpleRecord(1, "str", false, 3.14)],
+            AdditionalValues: [42, false, 3.14, 3.14M, new int[] { 1, 2, 3 }, new SimpleRecord(1, "str", false, 3.14)],
             ExpectedJsonSchema: "true");
 
-        yield return new TestData<bool>(true);
-        yield return new TestData<byte>(42);
-        yield return new TestData<ushort>(42);
-        yield return new TestData<uint>(42);
-        yield return new TestData<ulong>(42);
-        yield return new TestData<sbyte>(42, ExpectedJsonSchema: """{"type":"integer"}""");
-        yield return new TestData<short>(42);
-        yield return new TestData<int>(42);
-        yield return new TestData<long>(42);
-        yield return new TestData<float>(1.2f);
-        yield return new TestData<double>(3.14159d);
-        yield return new TestData<decimal>(3.14159M);
+        yield return new TestData<bool>(true, """{"type":"boolean"}""");
+        yield return new TestData<byte>(42, """{"type":"integer"}""");
+        yield return new TestData<ushort>(42, """{"type":"integer"}""");
+        yield return new TestData<uint>(42, """{"type":"integer"}""");
+        yield return new TestData<ulong>(42, """{"type":"integer"}""");
+        yield return new TestData<sbyte>(42, """{"type":"integer"}""");
+        yield return new TestData<short>(42, """{"type":"integer"}""");
+        yield return new TestData<int>(42, """{"type":"integer"}""");
+        yield return new TestData<long>(42, """{"type":"integer"}""");
+        yield return new TestData<float>(1.2f, """{"type":"number"}""");
+        yield return new TestData<double>(3.14159d, """{"type":"number"}""");
+        yield return new TestData<decimal>(3.14159M, """{"type":"number"}""");
 #if NET7_0_OR_GREATER
-        yield return new TestData<UInt128>(42, ExpectedJsonSchema: """{"type":"integer"}""");
-        yield return new TestData<Int128>(42, ExpectedJsonSchema: """{"type":"integer"}""");
+        yield return new TestData<UInt128>(42, """{"type":"integer"}""");
+        yield return new TestData<Int128>(42, """{"type":"integer"}""");
 #endif
 #if NET6_0_OR_GREATER
-        yield return new TestData<Half>((Half)3.141, ExpectedJsonSchema: """{"type":"number"}""");
+        yield return new TestData<Half>((Half)3.141, """{"type":"number"}""");
 #endif
-        yield return new TestData<string>("I am a string", ExpectedJsonSchema: """{"type":["string","null"]}""");
-        yield return new TestData<char>('c', ExpectedJsonSchema: """{"type":"string","minLength":1,"maxLength":1}""");
+        yield return new TestData<string>("I am a string", """{"type":["string","null"]}""");
+        yield return new TestData<char>('c', """{"type":"string","minLength":1,"maxLength":1}""");
         yield return new TestData<byte[]>(
             Value: [1, 2, 3],
             AdditionalValues: [[]],
             ExpectedJsonSchema: """{"type":["string","null"]}""");
 
-        yield return new TestData<Memory<byte>>(new byte[] { 1, 2, 3 }, ExpectedJsonSchema: """{"type":"string"}""");
-        yield return new TestData<ReadOnlyMemory<byte>>(new byte[] { 1, 2, 3 }, ExpectedJsonSchema: """{"type":"string"}""");
+        yield return new TestData<Memory<byte>>(new byte[] { 1, 2, 3 }, """{"type":"string"}""");
+        yield return new TestData<ReadOnlyMemory<byte>>(new byte[] { 1, 2, 3 }, """{"type":"string"}""");
         yield return new TestData<DateTime>(
             Value: new(2021, 1, 1),
-            AdditionalValues: [DateTime.MinValue, DateTime.MaxValue]);
+            AdditionalValues: [DateTime.MinValue, DateTime.MaxValue],
+            ExpectedJsonSchema: """{"type":"string","format": "date-time"}""");
 
         yield return new TestData<DateTimeOffset>(
             Value: new(new DateTime(2021, 1, 1), TimeSpan.Zero),
@@ -91,35 +91,34 @@ public static partial class TestTypes
             ExpectedJsonSchema: """{"$comment": "Represents a System.TimeSpan value.", "type":"string", "pattern": "^-?(\\d+\\.)?\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,7})?$"}""");
 
 #if NET6_0_OR_GREATER
-        yield return new TestData<DateOnly>(new(2021, 1, 1), ExpectedJsonSchema: """{"type":"string","format": "date"}""");
-        yield return new TestData<TimeOnly>(new(hour: 22, minute: 30, second: 33, millisecond: 100), ExpectedJsonSchema: """{"type":"string","format": "time"}""");
+        yield return new TestData<DateOnly>(new(2021, 1, 1), """{"type":"string","format": "date"}""");
+        yield return new TestData<TimeOnly>(new(hour: 22, minute: 30, second: 33, millisecond: 100), """{"type":"string","format": "time"}""");
 #endif
-        yield return new TestData<Guid>(Guid.Empty);
-        yield return new TestData<Uri>(new("http://example.com"), ExpectedJsonSchema: """{"type":["string","null"], "format":"uri"}""");
-        yield return new TestData<Version>(new(1, 2, 3, 4), ExpectedJsonSchema: """{"$comment":"Represents a version string.", "type":["string","null"],"pattern":"^\\d+(\\.\\d+){1,3}$"}""");
-        yield return new TestData<JsonDocument>(JsonDocument.Parse("""[{ "x" : 42 }]"""), ExpectedJsonSchema: "true");
-        yield return new TestData<JsonElement>(JsonDocument.Parse("""[{ "x" : 42 }]""").RootElement, ExpectedJsonSchema: "true");
-        yield return new TestData<JsonNode>(JsonNode.Parse("""[{ "x" : 42 }]"""), ExpectedJsonSchema: "true");
-        yield return new TestData<JsonValue>((JsonValue)42, ExpectedJsonSchema: "true");
-        yield return new TestData<JsonObject>(new() { ["x"] = 42 }, ExpectedJsonSchema: """{"type":["object","null"]}""");
-        yield return new TestData<JsonArray>([1, 2, 3], ExpectedJsonSchema: """{"type":["array","null"]}""");
+        yield return new TestData<Guid>(Guid.Empty, """{"type":"string","format":"uuid"}""");
+        yield return new TestData<Uri>(new("http://example.com"), """{"type":["string","null"], "format":"uri"}""");
+        yield return new TestData<Version>(new(1, 2, 3, 4), """{"$comment":"Represents a version string.", "type":["string","null"],"pattern":"^\\d+(\\.\\d+){1,3}$"}""");
+        yield return new TestData<JsonDocument>(JsonDocument.Parse("""[{ "x" : 42 }]"""), "true");
+        yield return new TestData<JsonElement>(JsonDocument.Parse("""[{ "x" : 42 }]""").RootElement, "true");
+        yield return new TestData<JsonNode>(JsonNode.Parse("""[{ "x" : 42 }]"""), "true");
+        yield return new TestData<JsonValue>((JsonValue)42, "true");
+        yield return new TestData<JsonObject>(new() { ["x"] = 42 }, """{"type":["object","null"]}""");
+        yield return new TestData<JsonArray>([1, 2, 3], """{"type":["array","null"]}""");
 
         // Enum types
-        yield return new TestData<IntEnum>(IntEnum.A, ExpectedJsonSchema: """{"type":"integer"}""");
-        yield return new TestData<StringEnum>(StringEnum.A, ExpectedJsonSchema: """{"enum": ["A","B","C"]}""");
-        yield return new TestData<FlagsStringEnum>(FlagsStringEnum.A, ExpectedJsonSchema: """{"type":"string"}""");
+        yield return new TestData<IntEnum>(IntEnum.A, """{"type":"integer"}""");
+        yield return new TestData<StringEnum>(StringEnum.A, """{"enum": ["A","B","C"]}""");
+        yield return new TestData<FlagsStringEnum>(FlagsStringEnum.A, """{"type":"string"}""");
 
         // Nullable<T> types
-        yield return new TestData<bool?>(true, AdditionalValues: [null], ExpectedJsonSchema: """{"type":["boolean","null"]}""");
-        yield return new TestData<int?>(42, AdditionalValues: [null], ExpectedJsonSchema: """{"type":["integer","null"]}""");
-        yield return new TestData<double?>(3.14, AdditionalValues: [null], ExpectedJsonSchema: """{"type":["number","null"]}""");
-        yield return new TestData<Guid?>(Guid.Empty, AdditionalValues: [null], ExpectedJsonSchema: """{"type":["string","null"],"format":"uuid"}""");
-        yield return new TestData<JsonElement?>(JsonDocument.Parse("{}").RootElement, AdditionalValues: [null], ExpectedJsonSchema: "true");
-        yield return new TestData<IntEnum?>(IntEnum.A, AdditionalValues: [null], ExpectedJsonSchema: """{"type":["integer","null"]}""");
-        yield return new TestData<StringEnum?>(StringEnum.A, AdditionalValues: [null], ExpectedJsonSchema: """{"enum":["A","B","C",null]}""");
+        yield return new TestData<bool?>(true, """{"type":["boolean","null"]}""");
+        yield return new TestData<int?>(42, """{"type":["integer","null"]}""");
+        yield return new TestData<double?>(3.14, """{"type":["number","null"]}""");
+        yield return new TestData<Guid?>(Guid.Empty, """{"type":["string","null"],"format":"uuid"}""");
+        yield return new TestData<JsonElement?>(JsonDocument.Parse("{}").RootElement, "true");
+        yield return new TestData<IntEnum?>(IntEnum.A, """{"type":["integer","null"]}""");
+        yield return new TestData<StringEnum?>(StringEnum.A, """{"enum":["A","B","C",null]}""");
         yield return new TestData<SimpleRecordStruct?>(
             new(1, "two", true, 3.14),
-            AdditionalValues: [null],
             ExpectedJsonSchema: """
             {
                 "type":["object","null"],
@@ -135,7 +134,7 @@ public static partial class TestTypes
         // User-defined POCOs
         yield return new TestData<SimplePoco>(
             Value: new() { String = "string", StringNullable = "string", Int = 42, Double = 3.14, Boolean = true },
-            AdditionalValues: [new() { String = "str", StringNullable = null }, null],
+            AdditionalValues: [new() { String = "str", StringNullable = null }],
             ExpectedJsonSchema: """
             {
                 "type": ["object","null"],
@@ -269,6 +268,7 @@ public static partial class TestTypes
                 new() { X = 1, Y = double.PositiveInfinity, Z = 3 },
                 new() { X = 1, Y = double.NegativeInfinity, Z = 3 },
             ],
+            WritesNumbersAsStrings: true,
             ExpectedJsonSchema: """
             {
               "type": ["object","null"],
@@ -288,7 +288,7 @@ public static partial class TestTypes
 
         yield return new TestData<PocoWithRecursiveMembers>(
             Value: new() { Value = 1, Next = new() { Value = 2, Next = new() { Value = 3 } } },
-            AdditionalValues: [null, new() { Value = 1, Next = null }],
+            AdditionalValues: [new() { Value = 1, Next = null }],
             ExpectedJsonSchema: """
             {
                 "type": ["object","null"],
@@ -397,8 +397,8 @@ public static partial class TestTypes
             }
             """);
 
-        yield return new TestData<PocoWithCustomConverter>(new() { Value = 42 }, ExpectedJsonSchema: "true");
-        yield return new TestData<PocoWithCustomPropertyConverter>(new() { Value = 42 }, ExpectedJsonSchema: """{"type":["object","null"],"properties":{"Value":true}}""");
+        yield return new TestData<PocoWithCustomConverter>(new() { Value = 42 }, "true");
+        yield return new TestData<PocoWithCustomPropertyConverter>(new() { Value = 42 }, """{"type":["object","null"],"properties":{"Value":true}}""");
         yield return new TestData<PocoWithEnums>(
             Value: new()
             {
@@ -495,7 +495,7 @@ public static partial class TestTypes
 
         yield return new TestData<PocoWithExtensionDataProperty>(
             Value: new() { Name = "name", ExtensionData = new() { ["x"] = 42 } },
-            ExpectedJsonSchema: """{"type":["object","null"],"properties":{"Name":{"type":["string","null"]}}}""");
+            """{"type":["object","null"],"properties":{"Name":{"type":["string","null"]}}}""");
 
         yield return new TestData<PocoDisallowingUnmappedMembers>(
             Value: new() { Name = "name", Age = 42 },
@@ -510,11 +510,10 @@ public static partial class TestTypes
             }
             """);
 
-#if !NET9_0 // Disable until https://github.com/dotnet/runtime/pull/107545 gets backported
         // Global JsonUnmappedMemberHandling.Disallow setting
         yield return new TestData<SimplePoco>(
             Value: new() { String = "string", StringNullable = "string", Int = 42, Double = 3.14, Boolean = true },
-            AdditionalValues: [new() { String = "str", StringNullable = null }, null],
+            AdditionalValues: [new() { String = "str", StringNullable = null }],
             ExpectedJsonSchema: """
             {
                 "type": ["object","null"],
@@ -529,7 +528,6 @@ public static partial class TestTypes
             }
             """,
             Options: new() { UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow });
-#endif
 
         yield return new TestData<PocoWithNullableAnnotationAttributes>(
             Value: new() { MaybeNull = null!, AllowNull = null, NotNull = null, DisallowNull = null!, NotNullDisallowNull = "str" },
@@ -793,16 +791,16 @@ public static partial class TestTypes
             });
 
         // Collection types
-        yield return new TestData<int[]>([1, 2, 3], ExpectedJsonSchema: """{"type":["array","null"],"items":{"type":"integer"}}""");
-        yield return new TestData<List<bool>>([false, true, false], ExpectedJsonSchema: """{"type":["array","null"],"items":{"type":"boolean"}}""");
-        yield return new TestData<HashSet<string>>(["one", "two", "three"], ExpectedJsonSchema: """{"type":["array","null"],"items":{"type":["string","null"]}}""");
-        yield return new TestData<Queue<double>>(new([1.1, 2.2, 3.3]), ExpectedJsonSchema: """{"type":["array","null"],"items":{"type":"number"}}""");
-        yield return new TestData<Stack<char>>(new(['x', '2', '+']), ExpectedJsonSchema: """{"type":["array","null"],"items":{"type":"string","minLength":1,"maxLength":1}}""");
-        yield return new TestData<ImmutableArray<int>>(ImmutableArray.Create(1, 2, 3), ExpectedJsonSchema: """{"type":"array","items":{"type":"integer"}}""");
-        yield return new TestData<ImmutableList<string>>(ImmutableList.Create("one", "two", "three"), ExpectedJsonSchema: """{"type":["array","null"],"items":{"type":["string","null"]}}""");
-        yield return new TestData<ImmutableQueue<bool>>(ImmutableQueue.Create(false, false, true), ExpectedJsonSchema: """{"type":["array","null"],"items":{"type":"boolean"}}""");
-        yield return new TestData<object[]>([1, "two", 3.14], ExpectedJsonSchema: """{"type":["array","null"]}""");
-        yield return new TestData<System.Collections.ArrayList>([1, "two", 3.14], ExpectedJsonSchema: """{"type":["array","null"]}""");
+        yield return new TestData<int[]>([1, 2, 3], """{"type":["array","null"],"items":{"type":"integer"}}""");
+        yield return new TestData<List<bool>>([false, true, false], """{"type":["array","null"],"items":{"type":"boolean"}}""");
+        yield return new TestData<HashSet<string>>(["one", "two", "three"], """{"type":["array","null"],"items":{"type":["string","null"]}}""");
+        yield return new TestData<Queue<double>>(new([1.1, 2.2, 3.3]), """{"type":["array","null"],"items":{"type":"number"}}""");
+        yield return new TestData<Stack<char>>(new(['x', '2', '+']), """{"type":["array","null"],"items":{"type":"string","minLength":1,"maxLength":1}}""");
+        yield return new TestData<ImmutableArray<int>>(ImmutableArray.Create(1, 2, 3), """{"type":"array","items":{"type":"integer"}}""");
+        yield return new TestData<ImmutableList<string>>(ImmutableList.Create("one", "two", "three"), """{"type":["array","null"],"items":{"type":["string","null"]}}""");
+        yield return new TestData<ImmutableQueue<bool>>(ImmutableQueue.Create(false, false, true), """{"type":["array","null"],"items":{"type":"boolean"}}""");
+        yield return new TestData<object[]>([1, "two", 3.14], """{"type":["array","null"]}""");
+        yield return new TestData<System.Collections.ArrayList>([1, "two", 3.14], """{"type":["array","null"]}""");
 
         // Dictionary types
         yield return new TestData<Dictionary<string, int>>(
@@ -1278,7 +1276,7 @@ public static partial class TestTypes
         // 2. Parameter-level attributes and
         // 3. Type-level attributes.
         return
-#if NET9_0_OR_GREATER
+#if NET9_0_OR_GREATER || !TESTS_JSON_SCHEMA_EXPORTER_POLYFILL
             GetAttrs(ctx.PropertyInfo?.AttributeProvider) ??
             GetAttrs(ctx.PropertyInfo?.AssociatedParameter?.AttributeProvider) ??
 #else

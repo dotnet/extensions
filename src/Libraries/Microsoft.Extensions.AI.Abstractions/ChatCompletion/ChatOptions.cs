@@ -27,7 +27,7 @@ public class ChatOptions
     /// <summary>Gets or sets the presence penalty for generating chat responses.</summary>
     public float? PresencePenalty { get; set; }
 
-    /// <summary>Gets or sets a seed value used by a service to control the reproducability of results.</summary>
+    /// <summary>Gets or sets a seed value used by a service to control the reproducibility of results.</summary>
     public long? Seed { get; set; }
 
     /// <summary>
@@ -35,12 +35,12 @@ public class ChatOptions
     /// </summary>
     /// <remarks>
     /// If null, no response format is specified and the client will use its default.
-    /// This may be set to <see cref="ChatResponseFormat.Text"/> to specify that the response should be unstructured text,
+    /// This property can be set to <see cref="ChatResponseFormat.Text"/> to specify that the response should be unstructured text,
     /// to <see cref="ChatResponseFormat.Json"/> to specify that the response should be structured JSON data, or
     /// an instance of <see cref="ChatResponseFormatJson"/> constructed with a specific JSON schema to request that the
     /// response be structured JSON data according to that schema. It is up to the client implementation if or how
     /// to honor the request. If the client implementation doesn't recognize the specific kind of <see cref="ChatResponseFormat"/>,
-    /// it may be ignored.
+    /// it can be ignored.
     /// </remarks>
     public ChatResponseFormat? ResponseFormat { get; set; }
 

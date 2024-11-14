@@ -212,6 +212,22 @@ IChatClient client = new ChatClientBuilder()
 Console.WriteLine((await client.CompleteAsync("What is AI?")).Message);
 ```
 
+#### Options
+
+Every call to `CompleteAsync` or `CompleteStreamingAsync` may optionally supply a `ChatOptions` instance containing additional parameters for the operation. The most common parameters that are common amongst AI models and services show up as strongly-typed properties on the type, such as `ChatOptions.Temperature`. Other parameters may be supplied by name in a weakly-typed manner via the `ChatOptions.AdditionalProperties` dictionary.
+
+Options may also be baked into an `IChatClient` via the `ConfigureOptions` extension method on `ChatClientBuilder`. This delegating client wraps another client and invokes the supplied delegate to populate a `ChatOptions` instance for every call. For example, to ensure that the `ChatOptions.ModelId` property defaults to a particular model name, code like the following may be used:
+```csharp
+using Microsoft.Extensions.AI;
+
+IChatClient client = new ChatClientBuilder()
+    .ConfigureOptions(options => options.ModelId ??= "phi3")
+    .Use(new OllamaChatClient(new Uri("http://localhost:11434")));
+
+Console.WriteLine(await client.CompleteAsync("What is AI?")); // will request "phi3"
+Console.WriteLine(await client.CompleteAsync("What is AI?", new() { ModelId = "llama3.1" })); // will request "llama3.1"
+```
+
 #### Pipelines of Functionality
 
 All of these `IChatClient`s may be layered, creating a pipeline of any number of components that all add additional functionality. Such components may come from `Microsoft.Extensions.AI`, may come from other NuGet packages, or may be your own custom implementations that augment the behavior in whatever ways you need.

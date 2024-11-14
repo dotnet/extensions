@@ -17,11 +17,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Diagnostics;
 
+#pragma warning disable S3358 // Ternary operators should not be nested
+
 namespace Microsoft.Extensions.AI;
 
-/// <summary>A delegating chat client that implements the OpenTelemetry Semantic Conventions for Generative AI systems.</summary>
+/// <summary>Represents a delegating chat client that implements the OpenTelemetry Semantic Conventions for Generative AI systems.</summary>
 /// <remarks>
-/// The draft specification this follows is available at https://opentelemetry.io/docs/specs/semconv/gen-ai/.
+/// The draft specification this follows is available at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
 /// The specification is still experimental and subject to change; as such, the telemetry output by this client is also subject to change.
 /// </remarks>
 public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
@@ -100,11 +102,21 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     /// <summary>
     /// Gets or sets a value indicating whether potentially sensitive information should be included in telemetry.
     /// </summary>
+    /// <value>
+    /// <see langword="true"/> if potentially sensitive information should be included in telemetry;
+    /// <see langword="false"/> if telemetry shouldn't include raw inputs and outputs.
+    /// The default value is <see langword="false"/>.
+    /// </value>
     /// <remarks>
-    /// The value is <see langword="false"/> by default, meaning that telemetry will include metadata such as token counts but not raw inputs
-    /// and outputs such as message content, function call arguments, and function call results.
+    /// By default, telemetry includes metadata, such as token counts, but not raw inputs
+    /// and outputs, such as message content, function call arguments, and function call results.
     /// </remarks>
     public bool EnableSensitiveData { get; set; }
+
+    /// <inheritdoc/>
+    public override object? GetService(Type serviceType, object? serviceKey = null) =>
+        serviceType == typeof(ActivitySource) ? _activitySource :
+        base.GetService(serviceType, serviceKey);
 
     /// <inheritdoc/>
     public override async Task<ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
@@ -189,60 +201,10 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         }
         finally
         {
-            TraceCompletion(activity, requestModelId, ComposeStreamingUpdatesIntoChatCompletion(trackedUpdates), error, stopwatch);
+            TraceCompletion(activity, requestModelId, trackedUpdates.ToChatCompletion(), error, stopwatch);
 
             await responseEnumerator.DisposeAsync();
         }
-    }
-
-    /// <summary>Creates a <see cref="ChatCompletion"/> from a collection of <see cref="StreamingChatCompletionUpdate"/> instances.</summary>
-    /// <remarks>
-    /// This only propagates information that's later used by the telemetry. If additional information from the <see cref="ChatCompletion"/>
-    /// is needed, this implementation should be updated to include it.
-    /// </remarks>
-    private static ChatCompletion ComposeStreamingUpdatesIntoChatCompletion(
-        List<StreamingChatCompletionUpdate> updates)
-    {
-        // Group updates by choice index.
-        Dictionary<int, List<StreamingChatCompletionUpdate>> choices = [];
-        foreach (var update in updates)
-        {
-            if (!choices.TryGetValue(update.ChoiceIndex, out var choiceContents))
-            {
-                choices[update.ChoiceIndex] = choiceContents = [];
-            }
-
-            choiceContents.Add(update);
-        }
-
-        // Add a ChatMessage for each choice.
-        string? id = null;
-        ChatFinishReason? finishReason = null;
-        string? modelId = null;
-        List<ChatMessage> messages = new(choices.Count);
-        foreach (var choice in choices.OrderBy(c => c.Key))
-        {
-            ChatRole? role = null;
-            List<AIContent> items = [];
-            foreach (var update in choice.Value)
-            {
-                id ??= update.CompletionId;
-                finishReason ??= update.FinishReason;
-                role ??= update.Role;
-                items.AddRange(update.Contents);
-                modelId ??= update.ModelId;
-            }
-
-            messages.Add(new ChatMessage(role ?? ChatRole.Assistant, items));
-        }
-
-        return new(messages)
-        {
-            CompletionId = id,
-            FinishReason = finishReason,
-            ModelId = modelId,
-            Usage = updates.SelectMany(c => c.Contents).OfType<UsageContent>().LastOrDefault()?.Details,
-        };
     }
 
     /// <summary>Creates an activity for a chat completion request, or returns null if not enabled.</summary>
@@ -254,7 +216,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
             string? modelId = options?.ModelId ?? _modelId;
 
             activity = _activitySource.StartActivity(
-                $"{OpenTelemetryConsts.GenAI.Chat} {modelId}",
+                string.IsNullOrWhiteSpace(modelId) ? OpenTelemetryConsts.GenAI.Chat : $"{OpenTelemetryConsts.GenAI.Chat} {modelId}",
                 ActivityKind.Client);
 
             if (activity is not null)

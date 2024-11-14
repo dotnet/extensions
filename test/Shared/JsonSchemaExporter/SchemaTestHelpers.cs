@@ -8,29 +8,20 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Json.Schema;
-using Json.Schema.Generation;
 using Xunit.Sdk;
 
 namespace Microsoft.Extensions.AI.JsonSchemaExporter;
 
-internal static partial class Helpers
+internal static partial class SchemaTestHelpers
 {
-    public static void AssertValidJsonSchema(Type type, string? expectedJsonSchema, JsonNode actualJsonSchema)
+    public static void AssertEqualJsonSchema(JsonNode expectedJsonSchema, JsonNode actualJsonSchema)
     {
-        // If an expected schema is provided, use that. Otherwise, generate a schema from the type.
-        JsonNode? expectedJsonSchemaNode = expectedJsonSchema != null
-            ? JsonNode.Parse(expectedJsonSchema, documentOptions: new() { CommentHandling = JsonCommentHandling.Skip })
-            : JsonSerializer.SerializeToNode(new JsonSchemaBuilder().FromType(type), Context.Default.JsonSchema);
-
-        // Trim the $schema property from actual schema since it's not included by the generator.
-        (actualJsonSchema as JsonObject)?.Remove("$schema");
-
-        if (!JsonNode.DeepEquals(expectedJsonSchemaNode, actualJsonSchema))
+        if (!JsonNode.DeepEquals(expectedJsonSchema, actualJsonSchema))
         {
             throw new XunitException($"""
                 Generated schema does not match the expected specification.
                 Expected:
-                {FormatJson(expectedJsonSchemaNode)}
+                {FormatJson(expectedJsonSchema)}
                 Actual:
                 {FormatJson(actualJsonSchema)}
                 """);

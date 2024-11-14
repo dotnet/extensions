@@ -29,14 +29,14 @@ public class ChatToolMode
     /// Gets a predefined <see cref="ChatToolMode"/> indicating that tool usage is optional.
     /// </summary>
     /// <remarks>
-    /// <see cref="ChatOptions.Tools"/> may contain zero or more <see cref="AITool"/>
+    /// <see cref="ChatOptions.Tools"/> can contain zero or more <see cref="AITool"/>
     /// instances, and the <see cref="IChatClient"/> is free to invoke zero or more of them.
     /// </remarks>
     public static AutoChatToolMode Auto { get; } = new AutoChatToolMode();
 
     /// <summary>
     /// Gets a predefined <see cref="ChatToolMode"/> indicating that tool usage is required,
-    /// but that any tool may be selected. At least one tool must be provided in <see cref="ChatOptions.Tools"/>.
+    /// but that any tool can be selected. At least one tool must be provided in <see cref="ChatOptions.Tools"/>.
     /// </summary>
     public static RequiredChatToolMode RequireAny { get; } = new(requiredFunctionName: null);
 

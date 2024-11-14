@@ -55,7 +55,7 @@ public class ChatMessage
     /// </summary>
     /// <remarks>
     /// If there is no <see cref="TextContent"/> instance in <see cref="Contents" />, then the getter returns <see langword="null" />,
-    /// and the setter will add a new <see cref="TextContent"/> instance with the provided value.
+    /// and the setter adds a new <see cref="TextContent"/> instance with the provided value.
     /// </remarks>
     [JsonIgnore]
     public string? Text
@@ -95,5 +95,6 @@ public class ChatMessage
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
 
     /// <inheritdoc/>
-    public override string ToString() => Text ?? string.Empty;
+    public override string ToString() =>
+        string.Concat(Contents.OfType<TextContent>());
 }

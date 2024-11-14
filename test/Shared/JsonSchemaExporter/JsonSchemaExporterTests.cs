@@ -15,7 +15,6 @@ using System.Xml.Linq;
 using Xunit;
 
 #pragma warning disable SA1402 // File may only contain a single type
-#pragma warning disable xUnit1000 // Test classes must be public
 
 namespace Microsoft.Extensions.AI.JsonSchemaExporter;
 
@@ -32,7 +31,7 @@ public abstract class JsonSchemaExporterTests
             : Options;
 
         JsonNode schema = options.GetJsonSchemaAsNode(testData.Type, (JsonSchemaExporterOptions?)testData.ExporterOptions);
-        Helpers.AssertValidJsonSchema(testData.Type, testData.ExpectedJsonSchema, schema);
+        SchemaTestHelpers.AssertEqualJsonSchema(testData.ExpectedJsonSchema, schema);
     }
 
     [Theory]
@@ -45,7 +44,7 @@ public abstract class JsonSchemaExporterTests
 
         JsonNode schema = options.GetJsonSchemaAsNode(testData.Type, (JsonSchemaExporterOptions?)testData.ExporterOptions);
         JsonNode? instance = JsonSerializer.SerializeToNode(testData.Value, testData.Type, options);
-        Helpers.AssertDocumentMatchesSchema(schema, instance);
+        SchemaTestHelpers.AssertDocumentMatchesSchema(schema, instance);
     }
 
     [Theory]
@@ -100,7 +99,7 @@ public abstract class JsonSchemaExporterTests
     {
         JsonNode schema = Options.GetJsonSchemaAsNode(typeof(TestTypes.PocoDisallowingUnmappedMembers));
         JsonNode? jsonWithUnmappedProperties = JsonNode.Parse("""{ "UnmappedProperty" : {} }""");
-        Helpers.AssertDoesNotMatchSchema(schema, jsonWithUnmappedProperties);
+        SchemaTestHelpers.AssertDoesNotMatchSchema(schema, jsonWithUnmappedProperties);
     }
 
     [Fact]

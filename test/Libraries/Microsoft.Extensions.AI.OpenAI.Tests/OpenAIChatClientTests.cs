@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.Caching.Distributed;
@@ -32,6 +33,19 @@ public class OpenAIChatClientTests
         Assert.Throws<ArgumentNullException>("modelId", () => new OpenAIChatClient(openAIClient, null!));
         Assert.Throws<ArgumentException>("modelId", () => new OpenAIChatClient(openAIClient, ""));
         Assert.Throws<ArgumentException>("modelId", () => new OpenAIChatClient(openAIClient, "   "));
+    }
+
+    [Fact]
+    public void ToolCallJsonSerializerOptions_HasExpectedValue()
+    {
+        using OpenAIChatClient client = new(new("key"), "model");
+
+        Assert.Same(client.ToolCallJsonSerializerOptions, AIJsonUtilities.DefaultOptions);
+        Assert.Throws<ArgumentNullException>("value", () => client.ToolCallJsonSerializerOptions = null!);
+
+        JsonSerializerOptions options = new();
+        client.ToolCallJsonSerializerOptions = options;
+        Assert.Same(options, client.ToolCallJsonSerializerOptions);
     }
 
     [Fact]

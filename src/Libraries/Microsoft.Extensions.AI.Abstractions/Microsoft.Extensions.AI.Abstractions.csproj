@@ -8,6 +8,7 @@
 
   <PropertyGroup>
     <Stage>preview</Stage>
+    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
     <MinCodeCoverage>0</MinCodeCoverage>
     <MinMutationScore>0</MinMutationScore>
   </PropertyGroup>
@@ -16,6 +17,7 @@
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
     <NoWarn>$(NoWarn);CA2227;CA1034;SA1316;S3253</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DisableNETStandardCompatErrors>true</DisableNETStandardCompatErrors>
   </PropertyGroup>
 
   <PropertyGroup>

@@ -42,9 +42,9 @@ public readonly struct ChatFinishReason : IEquatable<ChatFinishReason>
     /// <summary>
     /// Compares two instances.
     /// </summary>
-    /// <param name="left">Left argument of the comparison.</param>
-    /// <param name="right">Right argument of the comparison.</param>
-    /// <returns><see langword="true" /> when equal, <see langword="false" /> otherwise.</returns>
+    /// <param name="left">The left argument of the comparison.</param>
+    /// <param name="right">The right argument of the comparison.</param>
+    /// <returns><see langword="true" /> if the two instances are equal; <see langword="false" /> if they aren't equal.</returns>
     public static bool operator ==(ChatFinishReason left, ChatFinishReason right)
     {
         return left.Equals(right);
@@ -53,9 +53,9 @@ public readonly struct ChatFinishReason : IEquatable<ChatFinishReason>
     /// <summary>
     /// Compares two instances.
     /// </summary>
-    /// <param name="left">Left argument of the comparison.</param>
-    /// <param name="right">Right argument of the comparison.</param>
-    /// <returns><see langword="true" /> when not equal, <see langword="false" /> otherwise.</returns>
+    /// <param name="left">The left argument of the comparison.</param>
+    /// <param name="right">The right argument of the comparison.</param>
+    /// <returns><see langword="true" /> if the two instances aren't equal; <see langword="false" /> if they are equal.</returns>
     public static bool operator !=(ChatFinishReason left, ChatFinishReason right)
     {
         return !(left == right);

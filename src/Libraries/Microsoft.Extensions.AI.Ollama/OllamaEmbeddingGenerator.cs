@@ -12,7 +12,7 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>An <see cref="IEmbeddingGenerator{String, Embedding}"/> for Ollama.</summary>
+/// <summary>Represents an <see cref="IEmbeddingGenerator{String, Embedding}"/> for Ollama.</summary>
 public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>
 {
     /// <summary>The api/embeddings endpoint URI.</summary>
@@ -24,8 +24,8 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator<string, Embed
     /// <summary>Initializes a new instance of the <see cref="OllamaEmbeddingGenerator"/> class.</summary>
     /// <param name="endpoint">The endpoint URI where Ollama is hosted.</param>
     /// <param name="modelId">
-    /// The id of the model to use. This may also be overridden per request via <see cref="ChatOptions.ModelId"/>.
-    /// Either this parameter or <see cref="ChatOptions.ModelId"/> must provide a valid model id.
+    /// The ID of the model to use. This ID can also be overridden per request via <see cref="ChatOptions.ModelId"/>.
+    /// Either this parameter or <see cref="ChatOptions.ModelId"/> must provide a valid model ID.
     /// </param>
     /// <param name="httpClient">An <see cref="HttpClient"/> instance to use for HTTP operations.</param>
     public OllamaEmbeddingGenerator(string endpoint, string? modelId = null, HttpClient? httpClient = null)
@@ -36,8 +36,8 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator<string, Embed
     /// <summary>Initializes a new instance of the <see cref="OllamaEmbeddingGenerator"/> class.</summary>
     /// <param name="endpoint">The endpoint URI where Ollama is hosted.</param>
     /// <param name="modelId">
-    /// The id of the model to use. This may also be overridden per request via <see cref="ChatOptions.ModelId"/>.
-    /// Either this parameter or <see cref="ChatOptions.ModelId"/> must provide a valid model id.
+    /// The ID of the model to use. This ID can also be overridden per request via <see cref="ChatOptions.ModelId"/>.
+    /// Either this parameter or <see cref="ChatOptions.ModelId"/> must provide a valid model ID.
     /// </param>
     /// <param name="httpClient">An <see cref="HttpClient"/> instance to use for HTTP operations.</param>
     public OllamaEmbeddingGenerator(Uri endpoint, string? modelId = null, HttpClient? httpClient = null)
@@ -57,9 +57,14 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator<string, Embed
     public EmbeddingGeneratorMetadata Metadata { get; }
 
     /// <inheritdoc />
-    public TService? GetService<TService>(object? key = null)
-        where TService : class
-        => key is null ? this as TService : null;
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        _ = Throw.IfNull(serviceType);
+
+        return
+            serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+            null;
+    }
 
     /// <inheritdoc />
     public void Dispose()

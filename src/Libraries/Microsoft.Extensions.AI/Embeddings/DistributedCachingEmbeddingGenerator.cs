@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading;
@@ -11,7 +12,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// A delegating embedding generator that caches the results of embedding generation calls,
+/// Represents a delegating embedding generator that caches the results of embedding generation calls,
 /// storing them as JSON in an <see cref="IDistributedCache"/>.
 /// </summary>
 /// <typeparam name="TInput">The type from which embeddings will be generated.</typeparam>
@@ -74,12 +75,16 @@ public class DistributedCachingEmbeddingGenerator<TInput, TEmbedding> : CachingE
     }
 
     /// <inheritdoc />
-    protected override string GetCacheKey(TInput value, EmbeddingGenerationOptions? options)
+    protected override string GetCacheKey(TInput value, EmbeddingGenerationOptions? options) =>
+        GetCacheKey([value, options]);
+
+    /// <summary>Gets a cache key based on the supplied values.</summary>
+    /// <param name="values">The values to inform the key.</param>
+    /// <returns>The computed key.</returns>
+    /// <remarks>This provides the default implementation for <see cref="GetCacheKey(TInput, EmbeddingGenerationOptions?)"/>.</remarks>
+    protected string GetCacheKey(ReadOnlySpan<object?> values)
     {
-        // While it might be desirable to include options in the cache key, it's not always possible,
-        // since options can contain types that are not guaranteed to be serializable or have a stable
-        // hashcode across multiple calls. So the default cache key is simply the JSON representation of
-        // the value. Developers may subclass and override this to provide custom rules.
-        return CachingHelpers.GetCacheKey(value, _jsonSerializerOptions);
+        _jsonSerializerOptions.MakeReadOnly();
+        return CachingHelpers.GetCacheKey(values, _jsonSerializerOptions);
     }
 }

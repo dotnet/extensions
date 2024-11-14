@@ -2,7 +2,7 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Diagnostics.ResourceMonitoring</RootNamespace>
     <Description>Measures processor and memory usage.</Description>
-    <Workstream>Fundamentals</Workstream>
+    <Workstream>ResourceMonitoring</Workstream>
   </PropertyGroup>
 
   <PropertyGroup>

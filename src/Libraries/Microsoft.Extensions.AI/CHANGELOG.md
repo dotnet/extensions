@@ -1,5 +1,9 @@
 # Release History
 
+## 9.0.0-preview.9.24556.5
+
+- Added `UseEmbeddingGenerationOptions` and corresponding `ConfigureOptionsEmbeddingGenerator`.
+
 ## 9.0.0-preview.9.24525.1
 
 - Added new `AIJsonUtilities` and `AIJsonSchemaCreateOptions` classes.

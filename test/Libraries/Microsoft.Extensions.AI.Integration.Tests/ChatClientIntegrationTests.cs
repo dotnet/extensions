@@ -378,7 +378,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         // First call executes the function and calls the LLM
         using var chatClient = new ChatClientBuilder()
-            .UseChatOptions(_ => new() { Tools = [getTemperature] })
+            .ConfigureOptions(options => options.Tools = [getTemperature])
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))
             .UseFunctionInvocation()
             .UseCallCounting()
@@ -416,7 +416,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         // First call executes the function and calls the LLM
         using var chatClient = new ChatClientBuilder()
-            .UseChatOptions(_ => new() { Tools = [getTemperature] })
+            .ConfigureOptions(options => options.Tools = [getTemperature])
             .UseFunctionInvocation()
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))
             .UseCallCounting()
@@ -455,7 +455,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         // First call executes the function and calls the LLM
         using var chatClient = new ChatClientBuilder()
-            .UseChatOptions(_ => new() { Tools = [getTemperature] })
+            .ConfigureOptions(options => options.Tools = [getTemperature])
             .UseFunctionInvocation()
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))
             .UseCallCounting()
