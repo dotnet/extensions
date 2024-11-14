@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Frozen;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,7 +42,7 @@ internal sealed class HttpResponseBodyReader
 
     public ValueTask<string> ReadAsync(HttpResponseMessage response, CancellationToken cancellationToken)
     {
-        var contentType = response.Content.Headers.ContentType;
+        MediaTypeHeaderValue? contentType = response.Content.Headers.ContentType;
         if (contentType == null)
         {
             return new(Constants.NoContent);
@@ -78,21 +80,21 @@ internal sealed class HttpResponseBodyReader
         // when readTimeout occurred: joined token source is cancelled and cancellationToken is not
         catch (OperationCanceledException) when (joinedTokenSource.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
         {
-            return Constants.ReadCancelled;
+            return Constants.ReadCancelledByTimeout;
         }
     }
 
     private static async ValueTask<string> ReadFromStreamAsync(HttpResponseMessage response, int readSizeLimit, CancellationToken cancellationToken)
     {
 #if NET6_0_OR_GREATER
-        var streamToReadFrom = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        Stream streamToReadFrom = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 #else
-        var streamToReadFrom = await response.Content.ReadAsStreamAsync().WaitAsync(cancellationToken).ConfigureAwait(false);
+        Stream streamToReadFrom = await response.Content.ReadAsStreamAsync().WaitAsync(cancellationToken).ConfigureAwait(false);
 #endif
 
         var pipe = new Pipe();
 
-        var bufferedString = await BufferStreamAndWriteToPipeAsync(streamToReadFrom, pipe.Writer, readSizeLimit, cancellationToken).ConfigureAwait(false);
+        string bufferedString = await BufferStreamAndWriteToPipeAsync(streamToReadFrom, pipe.Writer, readSizeLimit, cancellationToken).ConfigureAwait(false);
 
         // if stream is seekable we can just rewind it and return the buffered string
         if (streamToReadFrom.CanSeek)
@@ -109,11 +111,11 @@ internal sealed class HttpResponseBodyReader
         _ = Task.Run(async () =>
         {
             await WriteStreamToPipeAsync(streamToReadFrom, pipe.Writer, cancellationToken).ConfigureAwait(false);
-        }, CancellationToken.None).ConfigureAwait(false);
+        }, CancellationToken.None);
 
         // use the pipe reader as stream for the new content
         var newContent = new StreamContent(pipe.Reader.AsStream());
-        foreach (var header in response.Content.Headers)
+        foreach (KeyValuePair<string, IEnumerable<string>> header in response.Content.Headers)
         {
             _ = newContent.Headers.TryAddWithoutValidation(header.Key, header.Value);
         }
@@ -126,7 +128,7 @@ internal sealed class HttpResponseBodyReader
 #if NET6_0_OR_GREATER
     private static async Task<string> BufferStreamAndWriteToPipeAsync(Stream stream, PipeWriter writer, int bufferSize, CancellationToken cancellationToken)
     {
-        var memory = writer.GetMemory(bufferSize)[..bufferSize];
+        Memory<byte> memory = writer.GetMemory(bufferSize)[..bufferSize];
 
 #if NET8_0_OR_GREATER
         int bytesRead = await stream.ReadAtLeastAsync(memory, bufferSize, false, cancellationToken).ConfigureAwait(false);
@@ -186,9 +188,9 @@ internal sealed class HttpResponseBodyReader
 
         while (bytesRead < bufferSize)
         {
-            var chunkSize = Math.Min(ChunkSize, bufferSize - bytesRead);
+            int chunkSize = Math.Min(ChunkSize, bufferSize - bytesRead);
 
-            var memory = writer.GetMemory(chunkSize).Slice(0, chunkSize);
+            Memory<byte> memory = writer.GetMemory(chunkSize).Slice(0, chunkSize);
 
             byte[] buffer = memory.ToArray();
 

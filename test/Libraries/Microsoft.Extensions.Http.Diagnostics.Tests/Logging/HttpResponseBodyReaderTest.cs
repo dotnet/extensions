@@ -226,7 +226,7 @@ public class HttpResponseBodyReaderTest
 
         var responseBody = await httpResponseBodyReader.ReadAsync(httpResponse, CancellationToken.None);
 
-        responseBody.Should().Be(Constants.ReadCancelled);
+        responseBody.Should().Be(Constants.ReadCancelledByTimeout);
     }
 
     [Fact]

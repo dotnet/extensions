@@ -193,7 +193,7 @@ public class HttpRequestBodyReaderTest
         var requestBody = await httpRequestBodyReader.ReadAsync(httpRequest, CancellationToken.None);
 
         var returnedValue = requestBody;
-        var expectedValue = Constants.ReadCancelled;
+        var expectedValue = Constants.ReadCancelledByTimeout;
 
         returnedValue.Should().BeEquivalentTo(expectedValue);
     }
