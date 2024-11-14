@@ -85,9 +85,9 @@ IChatClient azureClient =
         new AzureKeyCredential(Environment.GetEnvironmentVariable("GH_TOKEN")!))
     .AsChatClient("gpt-4o-mini");
 
-IChatClient client = new ChatClientBuilder()
+IChatClient client = new ChatClientBuilder(azureClient)
     .UseFunctionInvocation()
-    .Use(azureClient);
+    .Build();
 
 ChatOptions chatOptions = new()
 {
@@ -120,9 +120,9 @@ IChatClient azureClient =
         new AzureKeyCredential(Environment.GetEnvironmentVariable("GH_TOKEN")!))
     .AsChatClient("gpt-4o-mini");
 
-IChatClient client = new ChatClientBuilder()
+IChatClient client = new ChatClientBuilder(azureClient)
     .UseDistributedCache(cache)
-    .Use(azureClient);
+    .Build();
 
 for (int i = 0; i < 3; i++)
 {
@@ -156,9 +156,9 @@ IChatClient azureClient =
         new AzureKeyCredential(Environment.GetEnvironmentVariable("GH_TOKEN")!))
     .AsChatClient("gpt-4o-mini");
 
-IChatClient client = new ChatClientBuilder()
+IChatClient client = new ChatClientBuilder(azureClient)
     .UseOpenTelemetry(sourceName, c => c.EnableSensitiveData = true)
-    .Use(azureClient);
+    .Build();
 
 Console.WriteLine(await client.CompleteAsync("What is AI?"));
 ```
@@ -196,11 +196,11 @@ IChatClient azureClient =
         new AzureKeyCredential(Environment.GetEnvironmentVariable("GH_TOKEN")!))
     .AsChatClient("gpt-4o-mini");
 
-IChatClient client = new ChatClientBuilder()
+IChatClient client = new ChatClientBuilder(azureClient)
     .UseDistributedCache(cache)
     .UseFunctionInvocation()
     .UseOpenTelemetry(sourceName, c => c.EnableSensitiveData = true)
-    .Use(azureClient);
+    .Build();
 
 for (int i = 0; i < 3; i++)
 {
@@ -236,10 +236,9 @@ builder.Services.AddSingleton(
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddLogging(b => b.AddConsole().SetMinimumLevel(LogLevel.Trace));
 
-builder.Services.AddChatClient(b => b
+builder.Services.AddChatClient(services => services.GetRequiredService<ChatCompletionsClient>().AsChatClient("gpt-4o-mini"))
     .UseDistributedCache()
-    .UseLogging()
-    .Use(b.Services.GetRequiredService<ChatCompletionsClient>().AsChatClient("gpt-4o-mini")));
+    .UseLogging();
 
 var app = builder.Build();
 
@@ -261,8 +260,8 @@ builder.Services.AddSingleton(new ChatCompletionsClient(
         new("https://models.inference.ai.azure.com"),
         new AzureKeyCredential(builder.Configuration["GH_TOKEN"]!)));
 
-builder.Services.AddChatClient(b =>
-    b.Use(b.Services.GetRequiredService<ChatCompletionsClient>().AsChatClient("gpt-4o-mini")));
+builder.Services.AddChatClient(services =>
+    services.GetRequiredService<ChatCompletionsClient>().AsChatClient("gpt-4o-mini"));
 
 var app = builder.Build();
 
