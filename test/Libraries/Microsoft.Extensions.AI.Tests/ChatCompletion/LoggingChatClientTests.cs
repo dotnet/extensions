@@ -40,9 +40,9 @@ public class LoggingChatClientTests
             },
         };
 
-        using IChatClient client = new ChatClientBuilder(services)
+        using IChatClient client = new ChatClientBuilder(innerClient)
             .UseLogging()
-            .Use(innerClient);
+            .Build(services);
 
         await client.CompleteAsync(
             [new(ChatRole.User, "What's the biggest animal?")],
@@ -86,9 +86,9 @@ public class LoggingChatClientTests
             yield return new StreamingChatCompletionUpdate { Role = ChatRole.Assistant, Text = "whale" };
         }
 
-        using IChatClient client = new ChatClientBuilder()
+        using IChatClient client = new ChatClientBuilder(innerClient)
             .UseLogging(logger)
-            .Use(innerClient);
+            .Build();
 
         await foreach (var update in client.CompleteStreamingAsync(
             [new(ChatRole.User, "What's the biggest animal?")],

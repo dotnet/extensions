@@ -377,12 +377,12 @@ public abstract class ChatClientIntegrationTests : IDisposable
         }, "GetTemperature");
 
         // First call executes the function and calls the LLM
-        using var chatClient = new ChatClientBuilder()
+        using var chatClient = new ChatClientBuilder(CreateChatClient()!)
             .ConfigureOptions(options => options.Tools = [getTemperature])
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))
             .UseFunctionInvocation()
             .UseCallCounting()
-            .Use(CreateChatClient()!);
+            .Build();
 
         var llmCallCount = chatClient.GetService<CallCountingChatClient>();
         var message = new ChatMessage(ChatRole.User, "What is the temperature?");
@@ -415,12 +415,12 @@ public abstract class ChatClientIntegrationTests : IDisposable
         }, "GetTemperature");
 
         // First call executes the function and calls the LLM
-        using var chatClient = new ChatClientBuilder()
+        using var chatClient = new ChatClientBuilder(CreateChatClient()!)
             .ConfigureOptions(options => options.Tools = [getTemperature])
             .UseFunctionInvocation()
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))
             .UseCallCounting()
-            .Use(CreateChatClient()!);
+            .Build();
 
         var llmCallCount = chatClient.GetService<CallCountingChatClient>();
         var message = new ChatMessage(ChatRole.User, "What is the temperature?");
@@ -454,12 +454,12 @@ public abstract class ChatClientIntegrationTests : IDisposable
         }, "GetTemperature");
 
         // First call executes the function and calls the LLM
-        using var chatClient = new ChatClientBuilder()
+        using var chatClient = new ChatClientBuilder(CreateChatClient()!)
             .ConfigureOptions(options => options.Tools = [getTemperature])
             .UseFunctionInvocation()
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))
             .UseCallCounting()
-            .Use(CreateChatClient()!);
+            .Build();
 
         var llmCallCount = chatClient.GetService<CallCountingChatClient>();
         var message = new ChatMessage(ChatRole.User, "What is the temperature?");
@@ -573,9 +573,9 @@ public abstract class ChatClientIntegrationTests : IDisposable
             .AddInMemoryExporter(activities)
             .Build();
 
-        var chatClient = new ChatClientBuilder()
+        var chatClient = new ChatClientBuilder(CreateChatClient()!)
             .UseOpenTelemetry(sourceName: sourceName)
-            .Use(CreateChatClient()!);
+            .Build();
 
         var response = await chatClient.CompleteAsync([new(ChatRole.User, "What's the biggest animal?")]);
 

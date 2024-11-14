@@ -22,7 +22,8 @@ public class ConfigureOptionsChatClientTests
     [Fact]
     public void ConfigureOptions_InvalidArgs_Throws()
     {
-        var builder = new ChatClientBuilder();
+        using var innerClient = new TestChatClient();
+        var builder = new ChatClientBuilder(innerClient);
         Assert.Throws<ArgumentNullException>("configure", () => builder.ConfigureOptions(null!));
     }
 
@@ -54,7 +55,7 @@ public class ConfigureOptionsChatClientTests
             },
         };
 
-        using var client = new ChatClientBuilder()
+        using var client = new ChatClientBuilder(innerClient)
             .ConfigureOptions(options =>
             {
                 Assert.NotSame(providedOptions, options);
@@ -69,7 +70,7 @@ public class ConfigureOptionsChatClientTests
 
                 returnedOptions = options;
             })
-            .Use(innerClient);
+            .Build();
 
         var completion = await client.CompleteAsync(Array.Empty<ChatMessage>(), providedOptions, cts.Token);
         Assert.Same(expectedCompletion, completion);
