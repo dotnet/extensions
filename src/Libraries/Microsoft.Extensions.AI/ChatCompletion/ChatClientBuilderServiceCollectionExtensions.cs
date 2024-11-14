@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>Provides extension methods for registering <see cref="IChatClient"/> with a <see cref="IServiceCollection"/>.</summary>
 public static class ChatClientBuilderServiceCollectionExtensions
 {
-    /// <summary>Adds a chat client to the <see cref="IServiceCollection"/>.</summary>
+    /// <summary>Registers a singleton <see cref="IChatClient"/> in the <see cref="IServiceCollection"/>.</summary>
     /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the client should be added.</param>
     /// <param name="innerClient">The inner <see cref="IChatClient"/> that represents the underlying backend.</param>
     /// <returns>A <see cref="ChatClientBuilder"/> that can be used to build a pipeline around the inner client.</returns>
@@ -20,7 +20,7 @@ public static class ChatClientBuilderServiceCollectionExtensions
         IChatClient innerClient)
         => AddChatClient(serviceCollection, _ => innerClient);
 
-    /// <summary>Adds a chat client to the <see cref="IServiceCollection"/>.</summary>
+    /// <summary>Registers a singleton <see cref="IChatClient"/> in the <see cref="IServiceCollection"/>.</summary>
     /// <typeparam name="T">The type of the inner <see cref="IChatClient"/> that represents the underlying backend. This will be resolved from the service provider.</typeparam>
     /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the client should be added.</param>
     /// <returns>A <see cref="ChatClientBuilder"/> that can be used to build a pipeline around the inner client.</returns>
@@ -30,7 +30,7 @@ public static class ChatClientBuilderServiceCollectionExtensions
         where T : IChatClient
         => AddChatClient(serviceCollection, services => services.GetRequiredService<T>());
 
-    /// <summary>Adds a chat client to the <see cref="IServiceCollection"/>.</summary>
+    /// <summary>Registers a singleton <see cref="IChatClient"/> in the <see cref="IServiceCollection"/>.</summary>
     /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the client should be added.</param>
     /// <param name="innerClientFactory">A callback that produces the inner <see cref="IChatClient"/> that represents the underlying backend.</param>
     /// <returns>A <see cref="ChatClientBuilder"/> that can be used to build a pipeline around the inner client.</returns>
@@ -47,7 +47,7 @@ public static class ChatClientBuilderServiceCollectionExtensions
         return builder;
     }
 
-    /// <summary>Adds a chat client to the <see cref="IServiceCollection"/>.</summary>
+    /// <summary>Registers a singleton <see cref="IChatClient"/> in the <see cref="IServiceCollection"/>.</summary>
     /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the client should be added.</param>
     /// <param name="serviceKey">The key with which to associate the client.</param>
     /// <param name="innerClient">The inner <see cref="IChatClient"/> that represents the underlying backend.</param>
@@ -59,7 +59,7 @@ public static class ChatClientBuilderServiceCollectionExtensions
         IChatClient innerClient)
         => AddKeyedChatClient(serviceCollection, serviceKey, _ => innerClient);
 
-    /// <summary>Adds a chat client to the <see cref="IServiceCollection"/>.</summary>
+    /// <summary>Registers a singleton <see cref="IChatClient"/> in the <see cref="IServiceCollection"/>.</summary>
     /// <typeparam name="T">The type of the inner <see cref="IChatClient"/> that represents the underlying backend. This will be resolved from the service provider.</typeparam>
     /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the client should be added.</param>
     /// <param name="serviceKey">The key with which to associate the client.</param>
@@ -71,7 +71,7 @@ public static class ChatClientBuilderServiceCollectionExtensions
         where T : IChatClient
         => AddKeyedChatClient(serviceCollection, serviceKey, services => services.GetRequiredService<T>());
 
-    /// <summary>Adds a chat client to the <see cref="IServiceCollection"/>.</summary>
+    /// <summary>Registers a singleton <see cref="IChatClient"/> in the <see cref="IServiceCollection"/>.</summary>
     /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the client should be added.</param>
     /// <param name="serviceKey">The key with which to associate the client.</param>
     /// <param name="innerClientFactory">A callback that produces the inner <see cref="IChatClient"/> that represents the underlying backend.</param>
