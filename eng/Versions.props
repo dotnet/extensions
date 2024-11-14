@@ -8,13 +8,21 @@
     <VersionPrefix>$(MajorVersion).$(MinorVersion).$(PatchVersion)</VersionPrefix>
     <ValidateBaseline>true</ValidateBaseline>
     <AssemblyVersion>$(MajorVersion).$(MinorVersion).0.0</AssemblyVersion>
-    <!--
-        When DotNetFinalVersionKind is set to 'release', this branch will produce stable outputs for 'Shipping' packages
-    -->
-    <DotNetFinalVersionKind />
+    <DotNetFinalVersionKind>release</DotNetFinalVersionKind>
+
     <!-- Enabling this rule will cause build failures on undocumented public APIs. -->
     <SkipArcadeNoWarnCS1591>true</SkipArcadeNoWarnCS1591>
   </PropertyGroup>
+  
+  <PropertyGroup>
+    <!--
+      Makes it such that the package version won't be stabilized even when the rest of the repo is going stable.
+      https://github.com/dotnet/arcade/blob/main/Documentation/CorePackages/Versioning.md#package-version
+     -->
+    <SuppressFinalPackageVersion />
+    <SuppressFinalPackageVersion Condition="'$(Stage)' == 'dev' or '$(Stage)' == 'preview'">true</SuppressFinalPackageVersion>
+  </PropertyGroup>
+
   <!--
 
     These versions should ONLY be updated by automation.

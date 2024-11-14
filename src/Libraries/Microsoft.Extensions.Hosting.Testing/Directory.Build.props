@@ -3,7 +3,6 @@
   importing the root level Directory.Build.props file. This property should be kept in here, as opposed to moving it to
   the project itself. -->
   <PropertyGroup>
-    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
     <Stage>dev</Stage>
     <StageDevDiagnosticId>EXTEXP0016</StageDevDiagnosticId>
   </PropertyGroup>

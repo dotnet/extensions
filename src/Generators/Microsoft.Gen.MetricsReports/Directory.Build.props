@@ -4,7 +4,6 @@
   the project itself. -->
   <PropertyGroup>
     <Stage>dev</Stage>
-    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
   </PropertyGroup>
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 </Project>
