@@ -666,12 +666,12 @@ public class DistributedCachingChatClientTest
                     new(ChatRole.Assistant, [new TextContent("Hey")])]));
             }
         };
-        using var outer = new ChatClientBuilder(services)
+        using var outer = new ChatClientBuilder(testClient)
             .UseDistributedCache(configure: options =>
             {
                 options.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
             })
-            .Use(testClient);
+            .Build(services);
 
         // Act: Make a request that should populate the cache
         Assert.Empty(_storage.Keys);
