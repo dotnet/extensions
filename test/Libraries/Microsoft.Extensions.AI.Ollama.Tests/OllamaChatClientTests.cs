@@ -48,11 +48,11 @@ public class OllamaChatClientTests
         Assert.Same(client, client.GetService<OllamaChatClient>());
         Assert.Same(client, client.GetService<IChatClient>());
 
-        using IChatClient pipeline = new ChatClientBuilder()
+        using IChatClient pipeline = new ChatClientBuilder(client)
             .UseFunctionInvocation()
             .UseOpenTelemetry()
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))
-            .Use(client);
+            .Build();
 
         Assert.NotNull(pipeline.GetService<FunctionInvokingChatClient>());
         Assert.NotNull(pipeline.GetService<DistributedCachingChatClient>());

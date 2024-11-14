@@ -77,11 +77,11 @@ public class AzureAIInferenceChatClientTests
 
         Assert.Same(client, chatClient.GetService<ChatCompletionsClient>());
 
-        using IChatClient pipeline = new ChatClientBuilder()
+        using IChatClient pipeline = new ChatClientBuilder(chatClient)
             .UseFunctionInvocation()
             .UseOpenTelemetry()
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))
-            .Use(chatClient);
+            .Build();
 
         Assert.NotNull(pipeline.GetService<FunctionInvokingChatClient>());
         Assert.NotNull(pipeline.GetService<DistributedCachingChatClient>());
