@@ -9,9 +9,9 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>A delegating embedding generator that configures a <see cref="EmbeddingGenerationOptions"/> instance used by the remainder of the pipeline.</summary>
-/// <typeparam name="TInput">Specifies the type of the input passed to the generator.</typeparam>
-/// <typeparam name="TEmbedding">Specifies the type of the embedding instance produced by the generator.</typeparam>
+/// <summary>Represents a delegating embedding generator that configures a <see cref="EmbeddingGenerationOptions"/> instance used by the remainder of the pipeline.</summary>
+/// <typeparam name="TInput">The type of the input passed to the generator.</typeparam>
+/// <typeparam name="TEmbedding">The type of the embedding instance produced by the generator.</typeparam>
 public sealed class ConfigureOptionsEmbeddingGenerator<TInput, TEmbedding> : DelegatingEmbeddingGenerator<TInput, TEmbedding>
     where TEmbedding : Embedding
 {

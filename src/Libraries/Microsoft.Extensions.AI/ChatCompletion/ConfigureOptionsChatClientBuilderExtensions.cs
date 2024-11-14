@@ -20,8 +20,8 @@ public static class ConfigureOptionsChatClientBuilderExtensions
     /// It is passed a clone of the caller-supplied <see cref="ChatOptions"/> instance (or a newly constructed instance if the caller-supplied instance is <see langword="null"/>).
     /// </param>
     /// <remarks>
-    /// This can be used to set default options. The <paramref name="configure"/> delegate is passed either a new instance of
-    /// <see cref="ChatOptions"/> if the caller didn't supply a <see cref="ChatOptions"/> instance, or a clone (via <see cref="ChatOptions.Clone"/>
+    /// This method can be used to set default options. The <paramref name="configure"/> delegate is passed either a new instance of
+    /// <see cref="ChatOptions"/> if the caller didn't supply a <see cref="ChatOptions"/> instance, or a clone (via <see cref="ChatOptions.Clone"/>)
     /// of the caller-supplied instance if one was supplied.
     /// </remarks>
     /// <returns>The <paramref name="builder"/>.</returns>
