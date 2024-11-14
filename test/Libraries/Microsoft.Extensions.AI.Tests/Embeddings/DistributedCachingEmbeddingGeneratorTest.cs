@@ -265,7 +265,7 @@ public class DistributedCachingEmbeddingGeneratorTest
             AdditionalProperties = new() { ["someKey"] = "value 2" }
         });
 
-        // Assert: Same result
+        // Assert: Different result
         Assert.Equal(2, innerCallCount);
         AssertEmbeddingsEqual(new("value 1".Select(c => (float)c).ToArray()), result3);
         AssertEmbeddingsEqual(new("value 2".Select(c => (float)c).ToArray()), result4);
