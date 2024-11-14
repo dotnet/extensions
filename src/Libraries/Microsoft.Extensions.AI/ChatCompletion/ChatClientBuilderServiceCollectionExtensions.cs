@@ -60,6 +60,18 @@ public static class ChatClientBuilderServiceCollectionExtensions
         => AddKeyedChatClient(serviceCollection, serviceKey, _ => innerClient);
 
     /// <summary>Adds a chat client to the <see cref="IServiceCollection"/>.</summary>
+    /// <typeparam name="T">The type of the inner <see cref="IChatClient"/> that represents the underlying backend. This will be resolved from the service provider.</typeparam>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the client should be added.</param>
+    /// <param name="serviceKey">The key with which to associate the client.</param>
+    /// <returns>A <see cref="ChatClientBuilder"/> that can be used to build a pipeline around the inner client.</returns>
+    /// <remarks>The client is registered as a scoped service.</remarks>
+    public static ChatClientBuilder AddKeyedChatClient<T>(
+        this IServiceCollection serviceCollection,
+        object serviceKey)
+        where T : IChatClient
+        => AddKeyedChatClient(serviceCollection, serviceKey, services => services.GetRequiredService<T>());
+
+    /// <summary>Adds a chat client to the <see cref="IServiceCollection"/>.</summary>
     /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the client should be added.</param>
     /// <param name="serviceKey">The key with which to associate the client.</param>
     /// <param name="innerClientFactory">A callback that produces the inner <see cref="IChatClient"/> that represents the underlying backend.</param>
@@ -75,7 +87,7 @@ public static class ChatClientBuilderServiceCollectionExtensions
         _ = Throw.IfNull(innerClientFactory);
 
         var builder = new ChatClientBuilder(innerClientFactory);
-        _ = serviceCollection.AddKeyedSingleton(serviceKey, builder.Build);
+        _ = serviceCollection.AddKeyedSingleton(serviceKey, (services, _) => builder.Build(services));
         return builder;
     }
 }

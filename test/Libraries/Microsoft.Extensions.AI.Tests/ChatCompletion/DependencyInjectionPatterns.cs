@@ -82,6 +82,83 @@ public class DependencyInjectionPatterns
         Assert.IsType<TestChatClient>(instance.InnerClient);
     }
 
+    [Fact]
+    public void CanRegisterKeyedSingletonUsingGenericType()
+    {
+        // Arrange/Act
+        ServiceCollection.AddSingleton(services => new TestChatClient { Services = services });
+        ServiceCollection.AddKeyedChatClient<TestChatClient>("mykey")
+            .UseSingletonMiddleware();
+
+        // Assert
+        var services = ServiceCollection.BuildServiceProvider();
+        using var scope1 = services.CreateScope();
+        using var scope2 = services.CreateScope();
+
+        Assert.Null(services.GetService<IChatClient>());
+
+        var instance1 = scope1.ServiceProvider.GetRequiredKeyedService<IChatClient>("mykey");
+        var instance1Copy = scope1.ServiceProvider.GetRequiredKeyedService<IChatClient>("mykey");
+        var instance2 = scope2.ServiceProvider.GetRequiredKeyedService<IChatClient>("mykey");
+
+        // Each scope gets the same instance, because it's singleton
+        var instance = Assert.IsType<SingletonMiddleware>(instance1);
+        Assert.Same(instance, instance1Copy);
+        Assert.Same(instance, instance2);
+        Assert.IsType<TestChatClient>(instance.InnerClient);
+    }
+
+    [Fact]
+    public void CanRegisterKeyedSingletonUsingFactory()
+    {
+        // Arrange/Act
+        ServiceCollection.AddKeyedChatClient("mykey", services => new TestChatClient { Services = services })
+            .UseSingletonMiddleware();
+
+        // Assert
+        var services = ServiceCollection.BuildServiceProvider();
+        using var scope1 = services.CreateScope();
+        using var scope2 = services.CreateScope();
+
+        Assert.Null(services.GetService<IChatClient>());
+
+        var instance1 = scope1.ServiceProvider.GetRequiredKeyedService<IChatClient>("mykey");
+        var instance1Copy = scope1.ServiceProvider.GetRequiredKeyedService<IChatClient>("mykey");
+        var instance2 = scope2.ServiceProvider.GetRequiredKeyedService<IChatClient>("mykey");
+
+        // Each scope gets the same instance, because it's singleton
+        var instance = Assert.IsType<SingletonMiddleware>(instance1);
+        Assert.Same(instance, instance1Copy);
+        Assert.Same(instance, instance2);
+        Assert.IsType<TestChatClient>(instance.InnerClient);
+    }
+
+    [Fact]
+    public void CanRegisterKeyedSingletonUsingSharedInstance()
+    {
+        // Arrange/Act
+        using var singleton = new TestChatClient();
+        ServiceCollection.AddKeyedChatClient("mykey", singleton)
+            .UseSingletonMiddleware();
+
+        // Assert
+        var services = ServiceCollection.BuildServiceProvider();
+        using var scope1 = services.CreateScope();
+        using var scope2 = services.CreateScope();
+
+        Assert.Null(services.GetService<IChatClient>());
+
+        var instance1 = scope1.ServiceProvider.GetRequiredKeyedService<IChatClient>("mykey");
+        var instance1Copy = scope1.ServiceProvider.GetRequiredKeyedService<IChatClient>("mykey");
+        var instance2 = scope2.ServiceProvider.GetRequiredKeyedService<IChatClient>("mykey");
+
+        // Each scope gets the same instance, because it's singleton
+        var instance = Assert.IsType<SingletonMiddleware>(instance1);
+        Assert.Same(instance, instance1Copy);
+        Assert.Same(instance, instance2);
+        Assert.IsType<TestChatClient>(instance.InnerClient);
+    }
+
     public class SingletonMiddleware(IServiceProvider services, IChatClient inner) : DelegatingChatClient(inner)
     {
         public new IChatClient InnerClient => base.InnerClient;
