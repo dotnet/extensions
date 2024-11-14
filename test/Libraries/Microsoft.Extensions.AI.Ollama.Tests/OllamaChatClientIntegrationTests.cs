@@ -37,11 +37,11 @@ public class OllamaChatClientIntegrationTests : ChatClientIntegrationTests
     {
         SkipIfNotEnabled();
 
-        using var chatClient = new ChatClientBuilder()
+        using var chatClient = new ChatClientBuilder(CreateChatClient()!)
             .UseFunctionInvocation()
             .UsePromptBasedFunctionCalling()
             .Use(innerClient => new AssertNoToolsDefinedChatClient(innerClient))
-            .Use(CreateChatClient()!);
+            .Build();
 
         var secretNumber = 42;
         var response = await chatClient.CompleteAsync("What is the current secret number? Answer with digits only.", new ChatOptions
@@ -61,11 +61,11 @@ public class OllamaChatClientIntegrationTests : ChatClientIntegrationTests
     {
         SkipIfNotEnabled();
 
-        using var chatClient = new ChatClientBuilder()
+        using var chatClient = new ChatClientBuilder(CreateChatClient()!)
             .UseFunctionInvocation()
             .UsePromptBasedFunctionCalling()
             .Use(innerClient => new AssertNoToolsDefinedChatClient(innerClient))
-            .Use(CreateChatClient()!);
+            .Build();
 
         var stockPriceTool = AIFunctionFactory.Create([Description("Returns the stock price for a given ticker symbol")] (
             [Description("The ticker symbol")] string symbol,

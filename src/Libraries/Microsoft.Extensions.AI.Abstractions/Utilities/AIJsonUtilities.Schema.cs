@@ -302,7 +302,7 @@ public static partial class AIJsonUtilities
                     _ = objSchema.TryGetPropertyValue(RequiredPropertyName, out JsonNode? required);
                     if (required is not JsonArray { } requiredArray || requiredArray.Count != propertiesObj.Count)
                     {
-                        requiredArray = [.. propertiesObj.Select(prop => prop.Key)];
+                        requiredArray = [.. propertiesObj.Select(prop => (JsonNode)prop.Key)];
                         objSchema[RequiredPropertyName] = requiredArray;
                     }
                 }

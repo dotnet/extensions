@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.Caching.Distributed;
@@ -32,6 +33,19 @@ public class OpenAIChatClientTests
         Assert.Throws<ArgumentNullException>("modelId", () => new OpenAIChatClient(openAIClient, null!));
         Assert.Throws<ArgumentException>("modelId", () => new OpenAIChatClient(openAIClient, ""));
         Assert.Throws<ArgumentException>("modelId", () => new OpenAIChatClient(openAIClient, "   "));
+    }
+
+    [Fact]
+    public void ToolCallJsonSerializerOptions_HasExpectedValue()
+    {
+        using OpenAIChatClient client = new(new("key"), "model");
+
+        Assert.Same(client.ToolCallJsonSerializerOptions, AIJsonUtilities.DefaultOptions);
+        Assert.Throws<ArgumentNullException>("value", () => client.ToolCallJsonSerializerOptions = null!);
+
+        JsonSerializerOptions options = new();
+        client.ToolCallJsonSerializerOptions = options;
+        Assert.Same(options, client.ToolCallJsonSerializerOptions);
     }
 
     [Fact]
@@ -81,11 +95,11 @@ public class OpenAIChatClientTests
 
         Assert.NotNull(chatClient.GetService<ChatClient>());
 
-        using IChatClient pipeline = new ChatClientBuilder()
+        using IChatClient pipeline = new ChatClientBuilder(chatClient)
             .UseFunctionInvocation()
             .UseOpenTelemetry()
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))
-            .Use(chatClient);
+            .Build();
 
         Assert.NotNull(pipeline.GetService<FunctionInvokingChatClient>());
         Assert.NotNull(pipeline.GetService<DistributedCachingChatClient>());
@@ -105,11 +119,11 @@ public class OpenAIChatClientTests
         Assert.Same(chatClient, chatClient.GetService<IChatClient>());
         Assert.Same(openAIClient, chatClient.GetService<ChatClient>());
 
-        using IChatClient pipeline = new ChatClientBuilder()
+        using IChatClient pipeline = new ChatClientBuilder(chatClient)
             .UseFunctionInvocation()
             .UseOpenTelemetry()
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))
-            .Use(chatClient);
+            .Build();
 
         Assert.NotNull(pipeline.GetService<FunctionInvokingChatClient>());
         Assert.NotNull(pipeline.GetService<DistributedCachingChatClient>());
