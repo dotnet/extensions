@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>A builder for creating pipelines of <see cref="IChatClient"/>.</summary>
 public sealed class ChatClientBuilder
 {
-    private Func<IServiceProvider, IChatClient> _innerClientFactory;
+    private readonly Func<IServiceProvider, IChatClient> _innerClientFactory;
 
     /// <summary>The registered client factory instances.</summary>
     private List<Func<IServiceProvider, IChatClient, IChatClient>>? _clientFactories;
@@ -30,7 +30,7 @@ public sealed class ChatClientBuilder
         _innerClientFactory = Throw.IfNull(innerClientFactory);
     }
 
-    /// <summary>Returns an <see cref="IChatClient"/> that represents the entire pipeline. Calls to this instance will pass through each of the pipeline stages in turn.</summary>
+    /// <summary>Builds an <see cref="IChatClient"/> that represents the entire pipeline. Calls to this instance will pass through each of the pipeline stages in turn.</summary>
     /// <param name="services">
     /// The <see cref="IServiceProvider"/> that should provide services to the <see cref="IChatClient"/> instances.
     /// If null, an empty <see cref="IServiceProvider"/> will be used.

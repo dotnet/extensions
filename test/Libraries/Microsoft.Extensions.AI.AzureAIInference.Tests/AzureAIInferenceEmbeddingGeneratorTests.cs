@@ -63,10 +63,10 @@ public class AzureAIInferenceEmbeddingGeneratorTests
         Assert.Same(embeddingGenerator, embeddingGenerator.GetService<IEmbeddingGenerator<string, Embedding<float>>>());
         Assert.Same(client, embeddingGenerator.GetService<EmbeddingsClient>());
 
-        using IEmbeddingGenerator<string, Embedding<float>> pipeline = new EmbeddingGeneratorBuilder<string, Embedding<float>>()
+        using IEmbeddingGenerator<string, Embedding<float>> pipeline = new EmbeddingGeneratorBuilder<string, Embedding<float>>(embeddingGenerator)
             .UseOpenTelemetry()
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))
-            .Use(embeddingGenerator);
+            .Build();
 
         Assert.NotNull(pipeline.GetService<DistributedCachingEmbeddingGenerator<string, Embedding<float>>>());
         Assert.NotNull(pipeline.GetService<CachingEmbeddingGenerator<string, Embedding<float>>>());

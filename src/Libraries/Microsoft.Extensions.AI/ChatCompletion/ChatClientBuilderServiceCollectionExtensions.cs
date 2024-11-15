@@ -37,7 +37,7 @@ public static class ChatClientBuilderServiceCollectionExtensions
         return builder;
     }
 
-    /// <summary>Registers a singleton <see cref="IChatClient"/> in the <see cref="IServiceCollection"/>.</summary>
+    /// <summary>Registers a keyed singleton <see cref="IChatClient"/> in the <see cref="IServiceCollection"/>.</summary>
     /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the client should be added.</param>
     /// <param name="serviceKey">The key with which to associate the client.</param>
     /// <param name="innerClient">The inner <see cref="IChatClient"/> that represents the underlying backend.</param>
@@ -49,7 +49,7 @@ public static class ChatClientBuilderServiceCollectionExtensions
         IChatClient innerClient)
         => AddKeyedChatClient(serviceCollection, serviceKey, _ => innerClient);
 
-    /// <summary>Registers a singleton <see cref="IChatClient"/> in the <see cref="IServiceCollection"/>.</summary>
+    /// <summary>Registers a keyed singleton <see cref="IChatClient"/> in the <see cref="IServiceCollection"/>.</summary>
     /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the client should be added.</param>
     /// <param name="serviceKey">The key with which to associate the client.</param>
     /// <param name="innerClientFactory">A callback that produces the inner <see cref="IChatClient"/> that represents the underlying backend.</param>

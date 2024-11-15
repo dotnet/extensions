@@ -39,9 +39,9 @@ public class LoggingEmbeddingGeneratorTests
             },
         };
 
-        using IEmbeddingGenerator<string, Embedding<float>> generator = new EmbeddingGeneratorBuilder<string, Embedding<float>>(services)
+        using IEmbeddingGenerator<string, Embedding<float>> generator = new EmbeddingGeneratorBuilder<string, Embedding<float>>(innerGenerator)
             .UseLogging()
-            .Use(innerGenerator);
+            .Build(services);
 
         await generator.GenerateEmbeddingAsync("Blue whale");
 
