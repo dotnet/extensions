@@ -210,9 +210,9 @@ IDistributedCache cache = new MemoryDistributedCache(Options.Create(new MemoryDi
 IEmbeddingGenerator<string, Embedding<float>> ollamaGenerator =
     new OllamaEmbeddingGenerator(new Uri("http://localhost:11434/"), "all-minilm");
 
-IEmbeddingGenerator<string, Embedding<float>> generator = new EmbeddingGeneratorBuilder<string, Embedding<float>>()
+IEmbeddingGenerator<string, Embedding<float>> generator = new EmbeddingGeneratorBuilder<string, Embedding<float>>(ollamaGenerator)
     .UseDistributedCache(cache)
-    .Use(ollamaGenerator);
+    .Build();
 
 foreach (var prompt in new[] { "What is AI?", "What is .NET?", "What is AI?" })
 {
@@ -256,8 +256,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddChatClient(
     new OllamaChatClient(new Uri("http://localhost:11434/"), "llama3.1"));
 
-builder.Services.AddEmbeddingGenerator<string,Embedding<float>>(g =>
-    g.Use(new OllamaEmbeddingGenerator(endpoint, "all-minilm")));
+builder.Services.AddEmbeddingGenerator(new OllamaEmbeddingGenerator(endpoint, "all-minilm"));
 
 var app = builder.Build();
 

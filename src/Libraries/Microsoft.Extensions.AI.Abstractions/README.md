@@ -432,10 +432,11 @@ var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
 
 // Explore changing the order of the intermediate "Use" calls to see that impact
 // that has on what gets cached, traced, etc.
-IEmbeddingGenerator<string, Embedding<float>> generator = new EmbeddingGeneratorBuilder<string, Embedding<float>>()
+var generator = new EmbeddingGeneratorBuilder<string, Embedding<float>>(
+        new SampleEmbeddingGenerator(new Uri("http://coolsite.ai"), "my-custom-model"))
     .UseDistributedCache(new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions())))
     .UseOpenTelemetry(sourceName)
-    .Use(new SampleEmbeddingGenerator(new Uri("http://coolsite.ai"), "my-custom-model"));
+    .Build();
 
 var embeddings = await generator.GenerateAsync(
 [

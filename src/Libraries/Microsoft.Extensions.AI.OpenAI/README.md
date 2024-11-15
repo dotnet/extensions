@@ -233,9 +233,9 @@ IEmbeddingGenerator<string, Embedding<float>> openAIGenerator =
     new OpenAIClient(Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
         .AsEmbeddingGenerator("text-embedding-3-small");
 
-IEmbeddingGenerator<string, Embedding<float>> generator = new EmbeddingGeneratorBuilder<string, Embedding<float>>()
+IEmbeddingGenerator<string, Embedding<float>> generator = new EmbeddingGeneratorBuilder<string, Embedding<float>>(openAIGenerator)
     .UseDistributedCache(cache)
-    .Use(openAIGenerator);
+    .Build();
 
 foreach (var prompt in new[] { "What is AI?", "What is .NET?", "What is AI?" })
 {
@@ -284,8 +284,8 @@ builder.Services.AddSingleton(new OpenAIClient(builder.Configuration["OPENAI_API
 builder.Services.AddChatClient(services =>
     services.GetRequiredService<OpenAIClient>().AsChatClient("gpt-4o-mini"));
 
-builder.Services.AddEmbeddingGenerator<string, Embedding<float>>(g =>
-    g.Use(g.Services.GetRequiredService<OpenAIClient>().AsEmbeddingGenerator("text-embedding-3-small")));
+builder.Services.AddEmbeddingGenerator(services =>
+    services.GetRequiredService<OpenAIClient>().AsEmbeddingGenerator("text-embedding-3-small"));
 
 var app = builder.Build();
 
