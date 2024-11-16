@@ -75,14 +75,7 @@ public class DistributedCachingEmbeddingGenerator<TInput, TEmbedding> : CachingE
     }
 
     /// <inheritdoc />
-    protected override string GetCacheKey(TInput value, EmbeddingGenerationOptions? options) =>
-        GetCacheKey([value, options]);
-
-    /// <summary>Gets a cache key based on the supplied values.</summary>
-    /// <param name="values">The values to inform the key.</param>
-    /// <returns>The computed key.</returns>
-    /// <remarks>This provides the default implementation for <see cref="GetCacheKey(TInput, EmbeddingGenerationOptions?)"/>.</remarks>
-    protected string GetCacheKey(ReadOnlySpan<object?> values)
+    protected override string GetCacheKey(params ReadOnlySpan<object?> values)
     {
         _jsonSerializerOptions.MakeReadOnly();
         return CachingHelpers.GetCacheKey(values, _jsonSerializerOptions);

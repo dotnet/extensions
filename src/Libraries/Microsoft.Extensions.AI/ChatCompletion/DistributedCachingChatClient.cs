@@ -20,12 +20,6 @@ namespace Microsoft.Extensions.AI;
 /// </remarks>
 public class DistributedCachingChatClient : CachingChatClient
 {
-    /// <summary>A boxed <see langword="true"/> value.</summary>
-    private static readonly object _boxedTrue = true;
-
-    /// <summary>A boxed <see langword="false"/> value.</summary>
-    private static readonly object _boxedFalse = false;
-
     /// <summary>The <see cref="IDistributedCache"/> instance that will be used as the backing store for the cache.</summary>
     private readonly IDistributedCache _storage;
 
@@ -99,14 +93,7 @@ public class DistributedCachingChatClient : CachingChatClient
     }
 
     /// <inheritdoc />
-    protected override string GetCacheKey(bool streaming, IList<ChatMessage> chatMessages, ChatOptions? options) =>
-        GetCacheKey([streaming ? _boxedTrue : _boxedFalse, chatMessages, options]);
-
-    /// <summary>Gets a cache key based on the supplied values.</summary>
-    /// <param name="values">The values to inform the key.</param>
-    /// <returns>The computed key.</returns>
-    /// <remarks>This provides the default implementation for <see cref="GetCacheKey(bool, IList{ChatMessage}, ChatOptions?)"/>.</remarks>
-    protected string GetCacheKey(ReadOnlySpan<object?> values)
+    protected override string GetCacheKey(params ReadOnlySpan<object?> values)
     {
         _jsonSerializerOptions.MakeReadOnly();
         return CachingHelpers.GetCacheKey(values, _jsonSerializerOptions);
