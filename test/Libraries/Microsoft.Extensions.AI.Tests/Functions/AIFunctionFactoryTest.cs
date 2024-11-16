@@ -15,11 +15,11 @@ public class AIFunctionFactoryTest
     [Fact]
     public void InvalidArguments_Throw()
     {
-        Assert.Throws<ArgumentNullException>(() => AIFunctionFactory.Create(method: null!));
-        Assert.Throws<ArgumentNullException>(() => AIFunctionFactory.Create(method: null!, target: new object()));
-        Assert.Throws<ArgumentNullException>(() => AIFunctionFactory.Create(method: null!, target: new object(), name: "myAiFunk"));
-        Assert.Throws<ArgumentNullException>(() => AIFunctionFactory.Create(typeof(AIFunctionFactoryTest).GetMethod(nameof(InvalidArguments_Throw))!, null));
-        Assert.Throws<ArgumentException>(() => AIFunctionFactory.Create(typeof(List<>).GetMethod("Add")!, new List<int>()));
+        Assert.Throws<ArgumentNullException>("method", () => AIFunctionFactory.Create(method: null!));
+        Assert.Throws<ArgumentNullException>("method", () => AIFunctionFactory.Create(method: null!, target: new object()));
+        Assert.Throws<ArgumentNullException>("method", () => AIFunctionFactory.Create(method: null!, target: new object(), name: "myAiFunk"));
+        Assert.Throws<ArgumentNullException>("target", () => AIFunctionFactory.Create(typeof(AIFunctionFactoryTest).GetMethod(nameof(InvalidArguments_Throw))!, null));
+        Assert.Throws<ArgumentException>("method", () => AIFunctionFactory.Create(typeof(List<>).GetMethod("Add")!, new List<int>()));
     }
 
     [Fact]
