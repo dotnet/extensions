@@ -36,19 +36,41 @@ internal static class CachingHelpers
         // invalidating any existing cache entries that may exist in whatever IDistributedCache was in use.
 
 #if NET
-        IncrementalHashStream? stream = IncrementalHashStream.ThreadStaticInstance ?? new();
-        IncrementalHashStream.ThreadStaticInstance = null;
-
-        foreach (object? value in values)
+        IncrementalHashStream? stream = IncrementalHashStream.ThreadStaticInstance;
+        if (stream is not null)
         {
-            JsonSerializer.Serialize(stream, value, serializerOptions.GetTypeInfo(typeof(object)));
+            // We need to ensure that the value in ThreadStaticInstance is always ready to use.
+            // If we start using an instance, write to it, and then fail, we will have left it
+            // in an inconsistent state. So, when renting it, we null it out, and we only put
+            // it back upon successful completion after resetting it.
+            IncrementalHashStream.ThreadStaticInstance = null;
+        }
+        else
+        {
+            stream = new();
         }
 
-        Span<byte> hashData = stackalloc byte[SHA256.HashSizeInBytes];
-        stream.GetHashAndReset(hashData);
-        IncrementalHashStream.ThreadStaticInstance = stream;
+        string result;
+        try
+        {
+            foreach (object? value in values)
+            {
+                JsonSerializer.Serialize(stream, value, serializerOptions.GetTypeInfo(typeof(object)));
+            }
 
-        return Convert.ToHexString(hashData);
+            Span<byte> hashData = stackalloc byte[SHA256.HashSizeInBytes];
+            stream.GetHashAndReset(hashData);
+
+            result = Convert.ToHexString(hashData);
+        }
+        catch
+        {
+            stream.Dispose();
+            throw;
+        }
+
+        IncrementalHashStream.ThreadStaticInstance = stream;
+        return result;
 #else
         MemoryStream stream = new();
         foreach (object? value in values)
@@ -57,7 +79,6 @@ internal static class CachingHelpers
         }
 
         using var sha256 = SHA256.Create();
-        stream.Position = 0;
         var hashData = sha256.ComputeHash(stream.GetBuffer(), 0, (int)stream.Length);
 
         var chars = new char[hashData.Length * 2];
