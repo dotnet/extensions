@@ -321,7 +321,8 @@ public class DistributedCachingEmbeddingGeneratorTest
                 return Task.FromResult<GeneratedEmbeddings<Embedding<float>>>([_expectedEmbedding]);
             },
         };
-        using var outer = new EmbeddingGeneratorBuilder<string, Embedding<float>>(testGenerator)
+        using var outer = testGenerator
+            .ToBuilder()
             .UseDistributedCache(configure: instance =>
             {
                 instance.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;

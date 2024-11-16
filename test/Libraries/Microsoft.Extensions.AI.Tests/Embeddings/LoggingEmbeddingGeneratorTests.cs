@@ -39,7 +39,8 @@ public class LoggingEmbeddingGeneratorTests
             },
         };
 
-        using IEmbeddingGenerator<string, Embedding<float>> generator = new EmbeddingGeneratorBuilder<string, Embedding<float>>(innerGenerator)
+        using IEmbeddingGenerator<string, Embedding<float>> generator = innerGenerator
+            .ToBuilder()
             .UseLogging()
             .Build(services);
 

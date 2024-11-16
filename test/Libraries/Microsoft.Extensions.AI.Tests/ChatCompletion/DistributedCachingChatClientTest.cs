@@ -681,7 +681,8 @@ public class DistributedCachingChatClientTest
                     new(ChatRole.Assistant, [new TextContent("Hey")])]));
             }
         };
-        using var outer = new ChatClientBuilder(testClient)
+        using var outer = testClient
+            .ToBuilder()
             .UseDistributedCache(configure: options =>
             {
                 options.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;

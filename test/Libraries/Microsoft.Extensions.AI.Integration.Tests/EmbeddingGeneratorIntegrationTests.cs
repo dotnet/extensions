@@ -81,7 +81,8 @@ public abstract class EmbeddingGeneratorIntegrationTests : IDisposable
     {
         SkipIfNotEnabled();
 
-        using var generator = new EmbeddingGeneratorBuilder<string, Embedding<float>>(CreateEmbeddingGenerator()!)
+        using var generator = CreateEmbeddingGenerator()!
+            .ToBuilder()
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))
             .UseCallCounting()
             .Build();
@@ -110,7 +111,8 @@ public abstract class EmbeddingGeneratorIntegrationTests : IDisposable
             .AddInMemoryExporter(activities)
             .Build();
 
-        var embeddingGenerator = new EmbeddingGeneratorBuilder<string, Embedding<float>>(CreateEmbeddingGenerator()!)
+        var embeddingGenerator = CreateEmbeddingGenerator()!
+            .ToBuilder()
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
 

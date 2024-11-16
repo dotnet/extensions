@@ -377,7 +377,8 @@ public abstract class ChatClientIntegrationTests : IDisposable
         }, "GetTemperature");
 
         // First call executes the function and calls the LLM
-        using var chatClient = new ChatClientBuilder(CreateChatClient()!)
+        using var chatClient = CreateChatClient()!
+            .ToBuilder()
             .ConfigureOptions(options => options.Tools = [getTemperature])
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))
             .UseFunctionInvocation()
@@ -415,7 +416,8 @@ public abstract class ChatClientIntegrationTests : IDisposable
         }, "GetTemperature");
 
         // First call executes the function and calls the LLM
-        using var chatClient = new ChatClientBuilder(CreateChatClient()!)
+        using var chatClient = CreateChatClient()!
+            .ToBuilder()
             .ConfigureOptions(options => options.Tools = [getTemperature])
             .UseFunctionInvocation()
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))
@@ -454,7 +456,8 @@ public abstract class ChatClientIntegrationTests : IDisposable
         }, "GetTemperature");
 
         // First call executes the function and calls the LLM
-        using var chatClient = new ChatClientBuilder(CreateChatClient()!)
+        using var chatClient = CreateChatClient()!
+            .ToBuilder()
             .ConfigureOptions(options => options.Tools = [getTemperature])
             .UseFunctionInvocation()
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))
@@ -573,7 +576,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
             .AddInMemoryExporter(activities)
             .Build();
 
-        var chatClient = new ChatClientBuilder(CreateChatClient()!)
+        var chatClient = CreateChatClient()!.ToBuilder()
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
 

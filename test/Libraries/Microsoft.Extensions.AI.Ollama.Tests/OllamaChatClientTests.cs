@@ -48,7 +48,8 @@ public class OllamaChatClientTests
         Assert.Same(client, client.GetService<OllamaChatClient>());
         Assert.Same(client, client.GetService<IChatClient>());
 
-        using IChatClient pipeline = new ChatClientBuilder(client)
+        using IChatClient pipeline = client
+            .ToBuilder()
             .UseFunctionInvocation()
             .UseOpenTelemetry()
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))

@@ -58,7 +58,8 @@ public class ChatClientBuilderTest
     [Fact]
     public void DoesNotAcceptNullInnerService()
     {
-        Assert.Throws<ArgumentNullException>(() => new ChatClientBuilder((IChatClient)null!));
+        Assert.Throws<ArgumentNullException>("innerClient", () => new ChatClientBuilder((IChatClient)null!));
+        Assert.Throws<ArgumentNullException>("innerClient", () => ((IChatClient)null!).ToBuilder());
     }
 
     [Fact]
