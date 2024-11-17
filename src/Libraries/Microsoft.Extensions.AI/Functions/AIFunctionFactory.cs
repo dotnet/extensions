@@ -28,6 +28,12 @@ public static partial class AIFunctionFactory
     /// <param name="method">The method to be represented via the created <see cref="AIFunction"/>.</param>
     /// <param name="options">Metadata to use to override defaults inferred from <paramref name="method"/>.</param>
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
+    /// <remarks>
+    /// The resulting <see cref="AIFunction"/> exposes metadata about the function via <see cref="AIFunction.Metadata"/>.
+    /// This metadata includes the function's name, description, and parameters. All of that information may be specified
+    /// explicitly via <paramref name="options"/>; however, if not specified, defaults are inferred by examining
+    /// <paramref name="method"/>. That includes examining the method and its parameters for <see cref="DescriptionAttribute"/>s.
+    /// </remarks>
     public static AIFunction Create(Delegate method, AIFunctionFactoryCreateOptions? options)
     {
         _ = Throw.IfNull(method);
@@ -41,6 +47,13 @@ public static partial class AIFunctionFactory
     /// <param name="description">The description to use for the <see cref="AIFunction"/>.</param>
     /// <param name="serializerOptions">The <see cref="JsonSerializerOptions"/> used to marshal function parameters and any return value.</param>
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
+    /// <remarks>
+    /// The resulting <see cref="AIFunction"/> exposes metadata about the function via <see cref="AIFunction.Metadata"/>.
+    /// This metadata includes the function's name, description, and parameters. The function's name and description may
+    /// be specified explicitly via <paramref name="name"/> and <paramref name="description"/>, but if they're not, this method
+    /// will infer values from examining <paramref name="method"/>. That includes looking for <see cref="DescriptionAttribute"/>
+    /// attributes on the method itself and on its parameters.
+    /// </remarks>
     public static AIFunction Create(Delegate method, string? name = null, string? description = null, JsonSerializerOptions? serializerOptions = null)
     {
         _ = Throw.IfNull(method);
@@ -68,6 +81,12 @@ public static partial class AIFunctionFactory
     /// </param>
     /// <param name="options">Metadata to use to override defaults inferred from <paramref name="method"/>.</param>
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
+    /// <remarks>
+    /// The resulting <see cref="AIFunction"/> exposes metadata about the function via <see cref="AIFunction.Metadata"/>.
+    /// This metadata includes the function's name, description, and parameters. All of that information may be specified
+    /// explicitly via <paramref name="options"/>; however, if not specified, defaults are inferred by examining
+    /// <paramref name="method"/>. That includes examining the method and its parameters for <see cref="DescriptionAttribute"/>s.
+    /// </remarks>
     public static AIFunction Create(MethodInfo method, object? target, AIFunctionFactoryCreateOptions? options)
     {
         _ = Throw.IfNull(method);
@@ -87,6 +106,13 @@ public static partial class AIFunctionFactory
     /// <param name="description">The description to use for the <see cref="AIFunction"/>.</param>
     /// <param name="serializerOptions">The <see cref="JsonSerializerOptions"/> used to marshal function parameters and return value.</param>
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
+    /// <remarks>
+    /// The resulting <see cref="AIFunction"/> exposes metadata about the function via <see cref="AIFunction.Metadata"/>.
+    /// This metadata includes the function's name, description, and parameters. The function's name and description may
+    /// be specified explicitly via <paramref name="name"/> and <paramref name="description"/>, but if they're not, this method
+    /// will infer values from examining <paramref name="method"/>. That includes looking for <see cref="DescriptionAttribute"/>
+    /// attributes on the method itself and on its parameters.
+    /// </remarks>
     public static AIFunction Create(MethodInfo method, object? target, string? name = null, string? description = null, JsonSerializerOptions? serializerOptions = null)
     {
         _ = Throw.IfNull(method);
