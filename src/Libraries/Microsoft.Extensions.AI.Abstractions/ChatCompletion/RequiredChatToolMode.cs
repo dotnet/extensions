@@ -47,6 +47,7 @@ public sealed class RequiredChatToolMode : ChatToolMode
     // Equals/GetHashCode as well, which they likely won't.
 
     /// <summary>Gets a string representing this instance to display in the debugger.</summary>
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => $"Required: {RequiredFunctionName ?? "Any"}";
 
     /// <inheritdoc/>
