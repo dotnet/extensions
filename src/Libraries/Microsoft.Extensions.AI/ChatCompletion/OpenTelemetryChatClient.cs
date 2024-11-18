@@ -502,7 +502,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     {
         if (EnableSensitiveData)
         {
-            string content = string.Concat(message.Contents.OfType<TextContent>().Select(c => c.Text));
+            string content = string.Concat(message.Contents.OfType<TextContent>());
             if (content.Length > 0)
             {
                 return content;
