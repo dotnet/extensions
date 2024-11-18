@@ -29,10 +29,20 @@ public static partial class AIFunctionFactory
     /// <param name="options">Metadata to use to override defaults inferred from <paramref name="method"/>.</param>
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
     /// <remarks>
+    /// <para>
     /// The resulting <see cref="AIFunction"/> exposes metadata about the function via <see cref="AIFunction.Metadata"/>.
     /// This metadata includes the function's name, description, and parameters. All of that information may be specified
     /// explicitly via <paramref name="options"/>; however, if not specified, defaults are inferred by examining
     /// <paramref name="method"/>. That includes examining the method and its parameters for <see cref="DescriptionAttribute"/>s.
+    /// </para>
+    /// <para>
+    /// Return values are serialized to <see cref="JsonElement"/> using <paramref name="options"/>'s
+    /// <see cref="AIFunctionFactoryCreateOptions.SerializerOptions"/>. Arguments that are not already of the expected type are
+    /// marshaled to the expected type via JSON and using <paramref name="options"/>'s
+    /// <see cref="AIFunctionFactoryCreateOptions.SerializerOptions"/>. If the argument is a <see cref="JsonElement"/>,
+    /// <see cref="JsonDocument"/>, or <see cref="JsonNode"/>, it is deserialized directly. If the argument is anything else unknown,
+    /// it is round-tripped through JSON, serializing the object as JSON and then deserializing it to the expected type.
+    /// </para>
     /// </remarks>
     public static AIFunction Create(Delegate method, AIFunctionFactoryCreateOptions? options)
     {
@@ -48,11 +58,20 @@ public static partial class AIFunctionFactory
     /// <param name="serializerOptions">The <see cref="JsonSerializerOptions"/> used to marshal function parameters and any return value.</param>
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
     /// <remarks>
+    /// <para>
     /// The resulting <see cref="AIFunction"/> exposes metadata about the function via <see cref="AIFunction.Metadata"/>.
     /// This metadata includes the function's name, description, and parameters. The function's name and description may
     /// be specified explicitly via <paramref name="name"/> and <paramref name="description"/>, but if they're not, this method
     /// will infer values from examining <paramref name="method"/>. That includes looking for <see cref="DescriptionAttribute"/>
     /// attributes on the method itself and on its parameters.
+    /// </para>
+    /// <para>
+    /// Return values are serialized to <see cref="JsonElement"/> using <paramref name="serializerOptions"/>.
+    /// Arguments that are not already of the expected type are marshaled to the expected type via JSON and using
+    /// <paramref name="serializerOptions"/>. If the argument is a <see cref="JsonElement"/>, <see cref="JsonDocument"/>,
+    /// or <see cref="JsonNode"/>, it is deserialized directly. If the argument is anything else unknown, it is
+    /// round-tripped through JSON, serializing the object as JSON and then deserializing it to the expected type.
+    /// </para>
     /// </remarks>
     public static AIFunction Create(Delegate method, string? name = null, string? description = null, JsonSerializerOptions? serializerOptions = null)
     {
@@ -82,10 +101,20 @@ public static partial class AIFunctionFactory
     /// <param name="options">Metadata to use to override defaults inferred from <paramref name="method"/>.</param>
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
     /// <remarks>
+    /// <para>
     /// The resulting <see cref="AIFunction"/> exposes metadata about the function via <see cref="AIFunction.Metadata"/>.
     /// This metadata includes the function's name, description, and parameters. All of that information may be specified
     /// explicitly via <paramref name="options"/>; however, if not specified, defaults are inferred by examining
     /// <paramref name="method"/>. That includes examining the method and its parameters for <see cref="DescriptionAttribute"/>s.
+    /// </para>
+    /// <para>
+    /// Return values are serialized to <see cref="JsonElement"/> using <paramref name="options"/>'s
+    /// <see cref="AIFunctionFactoryCreateOptions.SerializerOptions"/>. Arguments that are not already of the expected type are
+    /// marshaled to the expected type via JSON and using <paramref name="options"/>'s
+    /// <see cref="AIFunctionFactoryCreateOptions.SerializerOptions"/>. If the argument is a <see cref="JsonElement"/>,
+    /// <see cref="JsonDocument"/>, or <see cref="JsonNode"/>, it is deserialized directly. If the argument is anything else unknown,
+    /// it is round-tripped through JSON, serializing the object as JSON and then deserializing it to the expected type.
+    /// </para>
     /// </remarks>
     public static AIFunction Create(MethodInfo method, object? target, AIFunctionFactoryCreateOptions? options)
     {
@@ -107,11 +136,20 @@ public static partial class AIFunctionFactory
     /// <param name="serializerOptions">The <see cref="JsonSerializerOptions"/> used to marshal function parameters and return value.</param>
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
     /// <remarks>
+    /// <para>
     /// The resulting <see cref="AIFunction"/> exposes metadata about the function via <see cref="AIFunction.Metadata"/>.
     /// This metadata includes the function's name, description, and parameters. The function's name and description may
     /// be specified explicitly via <paramref name="name"/> and <paramref name="description"/>, but if they're not, this method
     /// will infer values from examining <paramref name="method"/>. That includes looking for <see cref="DescriptionAttribute"/>
     /// attributes on the method itself and on its parameters.
+    /// </para>
+    /// <para>
+    /// Return values are serialized to <see cref="JsonElement"/> using <paramref name="serializerOptions"/>.
+    /// Arguments that are not already of the expected type are marshaled to the expected type via JSON and using
+    /// <paramref name="serializerOptions"/>. If the argument is a <see cref="JsonElement"/>, <see cref="JsonDocument"/>,
+    /// or <see cref="JsonNode"/>, it is deserialized directly. If the argument is anything else unknown, it is
+    /// round-tripped through JSON, serializing the object as JSON and then deserializing it to the expected type.
+    /// </para>
     /// </remarks>
     public static AIFunction Create(MethodInfo method, object? target, string? name = null, string? description = null, JsonSerializerOptions? serializerOptions = null)
     {
