@@ -96,7 +96,7 @@ public class OpenAIChatClientTests
         Assert.NotNull(chatClient.GetService<ChatClient>());
 
         using IChatClient pipeline = chatClient
-            .ToBuilder()
+            .AsBuilder()
             .UseFunctionInvocation()
             .UseOpenTelemetry()
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))
@@ -121,7 +121,7 @@ public class OpenAIChatClientTests
         Assert.Same(openAIClient, chatClient.GetService<ChatClient>());
 
         using IChatClient pipeline = chatClient
-            .ToBuilder()
+            .AsBuilder()
             .UseFunctionInvocation()
             .UseOpenTelemetry()
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))

@@ -82,7 +82,7 @@ public abstract class EmbeddingGeneratorIntegrationTests : IDisposable
         SkipIfNotEnabled();
 
         using var generator = CreateEmbeddingGenerator()!
-            .ToBuilder()
+            .AsBuilder()
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))
             .UseCallCounting()
             .Build();
@@ -112,7 +112,7 @@ public abstract class EmbeddingGeneratorIntegrationTests : IDisposable
             .Build();
 
         var embeddingGenerator = CreateEmbeddingGenerator()!
-            .ToBuilder()
+            .AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
 

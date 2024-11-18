@@ -22,7 +22,7 @@ public static class EmbeddingGeneratorBuilderEmbeddingGeneratorExtensions
     /// This method is equivalent to using the <see cref="EmbeddingGeneratorBuilder{TInput, TEmbedding}"/>
     /// constructor directly, specifying <paramref name="innerGenerator"/> as the inner generator.
     /// </remarks>
-    public static EmbeddingGeneratorBuilder<TInput, TEmbedding> ToBuilder<TInput, TEmbedding>(
+    public static EmbeddingGeneratorBuilder<TInput, TEmbedding> AsBuilder<TInput, TEmbedding>(
         this IEmbeddingGenerator<TInput, TEmbedding> innerGenerator)
         where TEmbedding : Embedding
     {

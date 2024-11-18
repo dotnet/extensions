@@ -322,7 +322,7 @@ public class DistributedCachingEmbeddingGeneratorTest
             },
         };
         using var outer = testGenerator
-            .ToBuilder()
+            .AsBuilder()
             .UseDistributedCache(configure: instance =>
             {
                 instance.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;

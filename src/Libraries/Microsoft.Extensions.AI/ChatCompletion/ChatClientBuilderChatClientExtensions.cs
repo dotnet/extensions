@@ -16,7 +16,7 @@ public static class ChatClientBuilderChatClientExtensions
     /// This method is equivalent to using the <see cref="ChatClientBuilder"/> constructor directly,
     /// specifying <paramref name="innerClient"/> as the inner client.
     /// </remarks>
-    public static ChatClientBuilder ToBuilder(this IChatClient innerClient)
+    public static ChatClientBuilder AsBuilder(this IChatClient innerClient)
     {
         _ = Throw.IfNull(innerClient);
 

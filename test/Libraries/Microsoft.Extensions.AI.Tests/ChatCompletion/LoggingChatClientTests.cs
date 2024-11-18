@@ -41,7 +41,7 @@ public class LoggingChatClientTests
         };
 
         using IChatClient client = innerClient
-            .ToBuilder()
+            .AsBuilder()
             .UseLogging()
             .Build(services);
 
@@ -88,7 +88,7 @@ public class LoggingChatClientTests
         }
 
         using IChatClient client = innerClient
-            .ToBuilder()
+            .AsBuilder()
             .UseLogging(logger)
             .Build();
 

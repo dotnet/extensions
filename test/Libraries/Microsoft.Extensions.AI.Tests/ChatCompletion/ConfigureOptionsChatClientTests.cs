@@ -23,7 +23,7 @@ public class ConfigureOptionsChatClientTests
     public void ConfigureOptions_InvalidArgs_Throws()
     {
         using var innerClient = new TestChatClient();
-        var builder = innerClient.ToBuilder();
+        var builder = innerClient.AsBuilder();
         Assert.Throws<ArgumentNullException>("configure", () => builder.ConfigureOptions(null!));
     }
 
@@ -56,7 +56,7 @@ public class ConfigureOptionsChatClientTests
         };
 
         using var client = innerClient
-            .ToBuilder()
+            .AsBuilder()
             .ConfigureOptions(options =>
             {
                 Assert.NotSame(providedOptions, options);

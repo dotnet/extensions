@@ -30,7 +30,7 @@ public class OllamaEmbeddingGeneratorTests
         Assert.Same(generator, generator.GetService<IEmbeddingGenerator<string, Embedding<float>>>());
 
         using IEmbeddingGenerator<string, Embedding<float>> pipeline = generator
-            .ToBuilder()
+            .AsBuilder()
             .UseOpenTelemetry()
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))
             .Build();

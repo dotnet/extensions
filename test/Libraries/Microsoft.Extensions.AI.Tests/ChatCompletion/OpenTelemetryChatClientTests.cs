@@ -87,7 +87,7 @@ public class OpenTelemetryChatClientTests
         }
 
         var chatClient = innerClient
-            .ToBuilder()
+            .AsBuilder()
             .UseOpenTelemetry(loggerFactory, sourceName, configure: instance =>
             {
                 instance.EnableSensitiveData = enableSensitiveData;

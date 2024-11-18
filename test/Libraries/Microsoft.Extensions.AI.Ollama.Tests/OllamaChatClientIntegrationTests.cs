@@ -38,7 +38,7 @@ public class OllamaChatClientIntegrationTests : ChatClientIntegrationTests
         SkipIfNotEnabled();
 
         using var chatClient = CreateChatClient()!
-            .ToBuilder()
+            .AsBuilder()
             .UseFunctionInvocation()
             .UsePromptBasedFunctionCalling()
             .Use(innerClient => new AssertNoToolsDefinedChatClient(innerClient))
@@ -63,7 +63,7 @@ public class OllamaChatClientIntegrationTests : ChatClientIntegrationTests
         SkipIfNotEnabled();
 
         using var chatClient = CreateChatClient()!
-            .ToBuilder()
+            .AsBuilder()
             .UseFunctionInvocation()
             .UsePromptBasedFunctionCalling()
             .Use(innerClient => new AssertNoToolsDefinedChatClient(innerClient))

@@ -78,7 +78,7 @@ public class AzureAIInferenceChatClientTests
         Assert.Same(client, chatClient.GetService<ChatCompletionsClient>());
 
         using IChatClient pipeline = chatClient
-            .ToBuilder()
+            .AsBuilder()
             .UseFunctionInvocation()
             .UseOpenTelemetry()
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))

@@ -295,7 +295,7 @@ public class FunctionInvokingChatClientTests
             }
         };
 
-        IChatClient service = innerClient.ToBuilder().UseFunctionInvocation().Build();
+        IChatClient service = innerClient.AsBuilder().UseFunctionInvocation().Build();
 
         List<ChatMessage> chat = [new ChatMessage(ChatRole.User, "hello")];
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -415,7 +415,7 @@ public class FunctionInvokingChatClientTests
             }
         };
 
-        IChatClient service = configurePipeline(innerClient.ToBuilder()).Build();
+        IChatClient service = configurePipeline(innerClient.AsBuilder()).Build();
 
         var result = await service.CompleteAsync(chat, options, cts.Token);
         chat.Add(result.Message);

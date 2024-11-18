@@ -378,7 +378,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         // First call executes the function and calls the LLM
         using var chatClient = CreateChatClient()!
-            .ToBuilder()
+            .AsBuilder()
             .ConfigureOptions(options => options.Tools = [getTemperature])
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))
             .UseFunctionInvocation()
@@ -417,7 +417,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         // First call executes the function and calls the LLM
         using var chatClient = CreateChatClient()!
-            .ToBuilder()
+            .AsBuilder()
             .ConfigureOptions(options => options.Tools = [getTemperature])
             .UseFunctionInvocation()
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))
@@ -457,7 +457,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         // First call executes the function and calls the LLM
         using var chatClient = CreateChatClient()!
-            .ToBuilder()
+            .AsBuilder()
             .ConfigureOptions(options => options.Tools = [getTemperature])
             .UseFunctionInvocation()
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))
@@ -576,7 +576,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
             .AddInMemoryExporter(activities)
             .Build();
 
-        var chatClient = CreateChatClient()!.ToBuilder()
+        var chatClient = CreateChatClient()!.AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
 

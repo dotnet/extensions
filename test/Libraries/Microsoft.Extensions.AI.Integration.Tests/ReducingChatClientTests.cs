@@ -38,7 +38,7 @@ public class ReducingChatClientTests
         };
 
         using var client = innerClient
-            .ToBuilder()
+            .AsBuilder()
             .UseChatReducer(new TokenCountingChatReducer(_gpt4oTokenizer, 40))
             .Build();
 

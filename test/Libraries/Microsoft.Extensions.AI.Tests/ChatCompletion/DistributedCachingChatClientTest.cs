@@ -682,7 +682,7 @@ public class DistributedCachingChatClientTest
             }
         };
         using var outer = testClient
-            .ToBuilder()
+            .AsBuilder()
             .UseDistributedCache(configure: options =>
             {
                 options.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
