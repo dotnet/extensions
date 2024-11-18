@@ -22,7 +22,11 @@ internal sealed class HttpResponseBodyReader
     /// </summary>
     internal readonly TimeSpan ResponseReadTimeout;
 
+    // The chunk size of 8192 bytes (8 KB) is chosen as a balance between memory usage and performance.
+    // It is large enough to efficiently handle typical HTTP response sizes without excessive memory allocation,
+    // while still being small enough to avoid large object heap allocations and reduce memory fragmentation.
     private const int ChunkSize = 8 * 1024;
+
     private readonly FrozenSet<string> _readableResponseContentTypes;
     private readonly int _responseReadLimit;
 
