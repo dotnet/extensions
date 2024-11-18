@@ -22,7 +22,7 @@ public class EmbeddingGeneratorBuilderTests
             return expectedInnerGenerator;
         });
 
-        builder.Use((services, innerClient) =>
+        builder.Use((innerClient, services) =>
         {
             Assert.Same(expectedServiceProvider, services);
             return expectedOuterGenerator;
