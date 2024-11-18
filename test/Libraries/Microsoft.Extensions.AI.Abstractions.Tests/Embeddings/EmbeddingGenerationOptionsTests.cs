@@ -27,8 +27,8 @@ public class EmbeddingGenerationOptionsTests
     public void InvalidArgs_Throws()
     {
         EmbeddingGenerationOptions options = new();
-        Assert.Throws<ArgumentOutOfRangeException>(() => options.Dimensions = 0);
-        Assert.Throws<ArgumentOutOfRangeException>(() => options.Dimensions = -1);
+        Assert.Throws<ArgumentOutOfRangeException>("value", () => options.Dimensions = 0);
+        Assert.Throws<ArgumentOutOfRangeException>("value", () => options.Dimensions = -1);
     }
 
     [Fact]
