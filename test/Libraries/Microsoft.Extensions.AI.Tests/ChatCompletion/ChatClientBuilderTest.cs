@@ -22,7 +22,7 @@ public class ChatClientBuilderTest
             return expectedInnerClient;
         });
 
-        builder.Use((serviceProvider, innerClient) =>
+        builder.Use((innerClient, serviceProvider) =>
         {
             Assert.Same(expectedServiceProvider, serviceProvider);
             Assert.Same(expectedInnerClient, innerClient);
