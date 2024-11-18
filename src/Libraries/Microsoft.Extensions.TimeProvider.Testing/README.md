@@ -42,18 +42,18 @@ timeProvider.Advance(TimeSpan.FromSeconds(5));
 myComponent.CheckState();
 ```
 
-## Use ConfigureAwait(true) with FakeTimeProvider.Advance
+## SynchronizationContext in Tests
 
-The Advance method is used to simulate the passage of time. This can be useful in tests where you need to control the timing of asynchronous operations.
-When awaiting a task in a test that uses `FakeTimeProvider`, it's important to use `ConfigureAwait(true)`.
+### xUnit v2
 
-Here's an example:
+Some testing libraries such as xUnit v2 provide custom `SynchronizationContext` for running tests. xUnit v2, for instance, provides `AsyncTestSyncContext` that allows to properly manage asynchronous operations withing the test execution. However, it brings an issue when we test asynchronous code that uses `ConfigureAwait(false)` in combination with class like `FakeTimeProvider`. In such cases, the xUnit context may lose track of the continuation, causing the test to hang unexpectedly, whether the test itself is asynchronous or not.
 
-```cs
-await provider.Delay(TimeSpan.FromSeconds(delay)).ConfigureAwait(true);
+To prevent this issue, remove the xUnit context for tests dependent on `FakeTimeProvider` by setting the synchronization context to `null`:
+```
+SynchronizationContext.SetSynchronizationContext(null)
 ```
 
-This ensures that the continuation of the awaited task (i.e., the code that comes after the await statement) runs in the original context.
+The `Advance` method is used to simulate the passage of time. Below is an example how to create a test for a code that uses `ConfigureAwait(false)` that ensures that the continuation of the awaited task (i.e., the code that comes after the await statement) works correctly.
 
 For a more realistic example, consider the following test using Polly:
 
@@ -79,35 +79,21 @@ public class SomeService(TimeProvider timeProvider)
 
     public async Task<int> PollyRetry(double taskDelay, double cancellationSeconds)
     {
-        CancellationTokenSource cts = new(TimeSpan.FromSeconds(cancellationSeconds), timeProvider);
         Tries = 0;
-
-        // get a context from the pool and return it when done
-        var context = ResilienceContextPool.Shared.Get(
-            // ensure execution continues on captured context 
-            continueOnCapturedContext: true, 
-            cancellationToken: cts.Token);
-
-        var result = await _retryPipeline.ExecuteAsync(
+        return await _retryPipeline.ExecuteAsync(
             async _ =>
             {
                 Tries++;
-
                 // Simulate a task that takes some time to complete
-                await Task.Delay(TimeSpan.FromSeconds(taskDelay), timeProvider).ConfigureAwait(true);
-
-                if (Tries <= 2)
+                // With xUnit Context this would fail.
+                await timeProvider.Delay(TimeSpan.FromSeconds(taskDelay)).ConfigureAwait(false);
+                if (Tries < 2)
                 {
                     throw new InvalidOperationException();
                 }
-
                 return Tries;
             },
-            context);
-
-        ResilienceContextPool.Shared.Return(context);
-
-        return result;
+            CancellationToken.None);
     }
 }
 
@@ -118,6 +104,9 @@ public class SomeServiceTests
     [Fact]
     public void PollyRetry_ShouldHave2Tries()
     {
+        // Arrange
+        // Remove xUnit Context for this test
+        SynchronizationContext.SetSynchronizationContext(null);
         var timeProvider = new FakeTimeProvider();
         var someService = new SomeService(timeProvider);
 
@@ -137,6 +126,10 @@ public class SomeServiceTests
     }
 }
 ```
+
+### xUnit v3 
+
+`AsyncTestSyncContext` has been removed more [here](https://xunit.net/docs/getting-started/v3/migration) so described issue is no longer a problem.
 
 ## Feedback & Contributing
 

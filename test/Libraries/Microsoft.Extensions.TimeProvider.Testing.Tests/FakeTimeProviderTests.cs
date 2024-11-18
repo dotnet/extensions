@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Time.Testing;
 using Xunit;
 
 namespace Microsoft.Extensions.Time.Testing.Test;
@@ -441,6 +440,7 @@ public class FakeTimeProviderTests
     [Fact]
     public void SimulateRetryPolicy()
     {
+        SynchronizationContext.SetSynchronizationContext(null);
         // Arrange
         var retries = 42;
         var tries = 0;
@@ -469,7 +469,7 @@ public class FakeTimeProviderTests
                 catch (InvalidOperationException)
                 {
                     // ConfigureAwait(true) is required to ensure that tasks continue on the captured context
-                    await provider.Delay(TimeSpan.FromSeconds(delay)).ConfigureAwait(true);
+                    await provider.Delay(TimeSpan.FromSeconds(delay)).ConfigureAwait(false);
                 }
             }
         }
