@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -74,12 +76,30 @@ public sealed class EmbeddingGeneratorBuilder<TInput, TEmbedding>
     /// <summary>Adds a factory for an intermediate embedding generator to the embedding generator pipeline.</summary>
     /// <param name="generatorFactory">The generator factory function.</param>
     /// <returns>The updated <see cref="EmbeddingGeneratorBuilder{TInput, TEmbedding}"/> instance.</returns>
-    public EmbeddingGeneratorBuilder<TInput, TEmbedding> Use(Func<IEmbeddingGenerator<TInput, TEmbedding>, IServiceProvider, IEmbeddingGenerator<TInput, TEmbedding>> generatorFactory)
+    public EmbeddingGeneratorBuilder<TInput, TEmbedding> Use(
+        Func<IEmbeddingGenerator<TInput, TEmbedding>, IServiceProvider, IEmbeddingGenerator<TInput, TEmbedding>> generatorFactory)
     {
         _ = Throw.IfNull(generatorFactory);
 
         _generatorFactories ??= [];
         _generatorFactories.Add(generatorFactory);
         return this;
+    }
+
+    /// <summary>
+    /// Adds to the embedding generator pipeline an anonymous delegating embedding generator based on a delegate that provides
+    /// an implementation for <see cref="IEmbeddingGenerator{TInput, TEmbedding}.GenerateAsync"/>.
+    /// </summary>
+    /// <param name="generateFunc">
+    /// A delegate that provides the implementation for <see cref="IEmbeddingGenerator{TInput, TEmbedding}.GenerateAsync"/>.
+    /// </param>
+    /// <returns>The updated <see cref="EmbeddingGeneratorBuilder{TInput, TEmbedding}"/> instance.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="generateFunc"/> is <see langword="null"/>.</exception>
+    public EmbeddingGeneratorBuilder<TInput, TEmbedding> Use(
+        Func<IEnumerable<TInput>, EmbeddingGenerationOptions?, IEmbeddingGenerator<TInput, TEmbedding>, CancellationToken, Task<GeneratedEmbeddings<TEmbedding>>>? generateFunc)
+    {
+        _ = Throw.IfNull(generateFunc);
+
+        return Use((innerGenerator, _) => new AnonymousDelegatingEmbeddingGenerator<TInput, TEmbedding>(innerGenerator, generateFunc));
     }
 }
