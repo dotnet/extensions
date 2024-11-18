@@ -329,6 +329,80 @@ var client = new RateLimitingChatClient(
 await client.CompleteAsync("What color is the sky?");
 ```
 
+To make it easier to compose such components with others, the author of the component is recommended to create a "Use" extension method for registering this component into a pipeline, e.g.
+```csharp
+public static class RateLimitingChatClientExtensions
+{
+    public static ChatClientBuilder UseRateLimiting(this ChatClientBuilder builder, RateLimiter rateLimiter) =>
+        builder.Use(innerClient => new RateLimitingChatClient(innerClient, rateLimiter));
+}
+```
+
+Such extensions may also query for relevant services from the DI container; the `IServiceProvider` used by the pipeline is passed in as an optional parameter:
+```csharp
+public static class RateLimitingChatClientExtensions
+{
+    public static ChatClientBuilder UseRateLimiting(this ChatClientBuilder builder, RateLimiter? rateLimiter = null) =>
+        builder.Use((innerClient, services) => new RateLimitingChatClient(innerClient, services.GetRequiredService<RateLimiter>()));
+}
+```
+
+The consumer can then easily use this in their pipeline, e.g.
+```csharp
+var client = new SampleChatClient(new Uri("http://localhost"), "test")
+    .AsBuilder()
+    .UseDistributedCache()
+    .UseRateLimiting()
+    .UseOpenTelemetry()
+    .Build(services);
+```
+
+The above extension methods demonstrate using a `Use` method on `ChatClientBuilder`. `ChatClientBuilder` also provides `Use` overloads that make it easier to
+write such delegating handlers. For example, in the earlier `RateLimitingChatClient` example, the overrides of `CompleteAsync` and `CompleteStreamingAsync` only
+need to do work before and after delegating to the next client in the pipeline. To achieve the same thing without writing a custom class, an overload of `Use` may
+be used that accepts a delegate which is used for both `CompleteAsync` and `CompleteStreamingAsync`, reducing the boilderplate required:
+```csharp
+RateLimiter rateLimiter = ...;
+var client = new SampleChatClient(new Uri("http://localhost"), "test")
+    .AsBuilder()
+    .UseDistributedCache()
+    .Use(async (chatMessages, options, nextAsync, cancellationToken) =>
+    {
+        using var lease = await rateLimiter.AcquireAsync(permitCount: 1, cancellationToken).ConfigureAwait(false);
+        if (!lease.IsAcquired)
+            throw new InvalidOperationException("Unable to acquire lease.");
+
+        await nextAsync(chatMessages, options, cancellationToken);
+    })
+    .UseOpenTelemetry()
+    .Build();
+```
+This overload internally uses a public `AnonymousDelegatingChatClient`, which enables more complicated patterns with only a little additional code.
+For example, to achieve the same as above but with the `RateLimiter` retrieved from DI:
+```csharp
+var client = new SampleChatClient(new Uri("http://localhost"), "test")
+    .AsBuilder()
+    .UseDistributedCache()
+    .Use((innerClient, services) =>
+    {
+        RateLimiter rateLimiter = services.GetRequiredService<RateLimiter>();
+        return new AnonymousDelegatingChatClient(innerClient, async (chatMessages, options, next, cancellationToken) =>
+        {
+            using var lease = await rateLimiter.AcquireAsync(permitCount: 1, cancellationToken).ConfigureAwait(false);
+            if (!lease.IsAcquired)
+                throw new InvalidOperationException("Unable to acquire lease.");
+
+            await next(chatMessages, options, cancellationToken);
+        });
+    })
+    .UseOpenTelemetry()
+    .Build();
+```
+
+For scenarios where the developer would like to specify delegating implementations of `CompleteAsync` and `CompleteStreamingAsync` inline,
+and where it's important to be able to write a different implementation for each in order to handle their unique return types specially,
+another overload of `Use` exists that accepts a delegate for each.
+
 #### Dependency Injection
 
 `IChatClient` implementations will typically be provided to an application via dependency injection (DI). In this example, an `IDistributedCache` is added into the DI container, as is an `IChatClient`. The registration for the `IChatClient` employs a builder that creates a pipeline containing a caching client (which will then use an `IDistributedCache` retrieved from DI) and the sample client. Elsewhere in the app, the injected `IChatClient` may be retrieved and used.

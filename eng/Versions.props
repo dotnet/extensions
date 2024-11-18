@@ -66,6 +66,7 @@
     <SystemTextEncodingsWebVersion>9.0.0</SystemTextEncodingsWebVersion>
     <SystemNumericsTensorsVersion>9.0.0</SystemNumericsTensorsVersion>
     <SystemTextJsonVersion>9.0.0</SystemTextJsonVersion>
+    <SystemThreadingChannelsVersion>9.0.0</SystemThreadingChannelsVersion>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
     <MicrosoftAspNetCoreAppRefVersion>9.0.0</MicrosoftAspNetCoreAppRefVersion>
     <MicrosoftAspNetCoreAppRuntimewinx64Version>9.0.0</MicrosoftAspNetCoreAppRuntimewinx64Version>
@@ -115,6 +116,7 @@
     <SystemTextEncodingsWebLTSVersion>8.0.0</SystemTextEncodingsWebLTSVersion>
     <SystemNumericsTensorsLTSVersion>8.0.0</SystemNumericsTensorsLTSVersion>
     <SystemTextJsonLTSVersion>8.0.5</SystemTextJsonLTSVersion>
+    <SystemThreadingChannelsLTSVersion>8.0.0</SystemThreadingChannelsLTSVersion>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
     <MicrosoftAspNetCoreAppRefLTSVersion>8.0.11</MicrosoftAspNetCoreAppRefLTSVersion>
     <MicrosoftAspNetCoreAppRuntimewinx64LTSVersion>8.0.11</MicrosoftAspNetCoreAppRuntimewinx64LTSVersion>
