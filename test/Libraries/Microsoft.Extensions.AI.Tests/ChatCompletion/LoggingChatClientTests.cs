@@ -40,7 +40,8 @@ public class LoggingChatClientTests
             },
         };
 
-        using IChatClient client = new ChatClientBuilder(innerClient)
+        using IChatClient client = innerClient
+            .AsBuilder()
             .UseLogging()
             .Build(services);
 
@@ -86,7 +87,8 @@ public class LoggingChatClientTests
             yield return new StreamingChatCompletionUpdate { Role = ChatRole.Assistant, Text = "whale" };
         }
 
-        using IChatClient client = new ChatClientBuilder(innerClient)
+        using IChatClient client = innerClient
+            .AsBuilder()
             .UseLogging(logger)
             .Build();
 
