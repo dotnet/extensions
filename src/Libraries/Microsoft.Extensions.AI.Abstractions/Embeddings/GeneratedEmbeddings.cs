@@ -3,12 +3,14 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents the result of an operation to generate embeddings.</summary>
 /// <typeparam name="TEmbedding">Specifies the type of the generated embeddings.</typeparam>
+[DebuggerDisplay("Count = {Count}")]
 public sealed class GeneratedEmbeddings<TEmbedding> : IList<TEmbedding>, IReadOnlyList<TEmbedding>
     where TEmbedding : Embedding
 {
