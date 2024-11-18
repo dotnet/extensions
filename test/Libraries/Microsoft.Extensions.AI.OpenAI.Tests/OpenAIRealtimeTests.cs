@@ -3,6 +3,8 @@
 
 using System;
 using System.ComponentModel;
+using System.Threading.Tasks;
+using OpenAI.RealtimeConversation;
 using Xunit;
 
 namespace Microsoft.Extensions.AI;
@@ -60,6 +62,15 @@ public class OpenAIRealtimeTests
             """, result.Parameters.ToString());
     }
 
+    [Fact]
+    public async Task HandleToolCallsAsync_RejectsNulls()
+    {
+        var conversationSession = (RealtimeConversationSession)default!;
+
+        await Assert.ThrowsAsync<ArgumentNullException>(() => conversationSession.HandleToolCallsAsync(
+            new TestConversationUpdate(), []));
+    }
+
     [Description("This is a description")]
     private MyType MyFunction(int a, [Description("Another param")] string b, MyType? c = null)
         => throw new NotSupportedException();
@@ -67,5 +78,13 @@ public class OpenAIRealtimeTests
     public class MyType
     {
         public int A { get; set; }
+    }
+
+    private class TestConversationUpdate : ConversationUpdate
+    {
+        public TestConversationUpdate()
+            : base("eventId")
+        {
+        }
     }
 }
