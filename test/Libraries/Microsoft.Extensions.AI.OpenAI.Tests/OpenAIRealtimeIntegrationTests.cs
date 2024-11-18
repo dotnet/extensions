@@ -23,7 +23,7 @@ public class OpenAIRealtimeIntegrationTests
         _conversationClient = CreateConversationClient();
     }
 
-    [Fact]
+    [ConditionalFact]
     public async Task CanPerformFunctionCall()
     {
         SkipIfNotEnabled();
