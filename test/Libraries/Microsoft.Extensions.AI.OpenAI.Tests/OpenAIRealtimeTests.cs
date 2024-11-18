@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.ClientModel;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using OpenAI.RealtimeConversation;
@@ -67,8 +68,18 @@ public class OpenAIRealtimeTests
     {
         var conversationSession = (RealtimeConversationSession)default!;
 
+        // Null RealtimeConversationSession
         await Assert.ThrowsAsync<ArgumentNullException>(() => conversationSession.HandleToolCallsAsync(
             new TestConversationUpdate(), []));
+
+        // Null ConversationUpdate
+        using var session = TestRealtimeConversationSession.CreateTestInstance();
+        await Assert.ThrowsAsync<ArgumentNullException>(() => conversationSession.HandleToolCallsAsync(
+            null!, []));
+
+        // Null tools
+        await Assert.ThrowsAsync<ArgumentNullException>(() => conversationSession.HandleToolCallsAsync(
+            new TestConversationUpdate(), null!));
     }
 
     [Description("This is a description")]
@@ -78,6 +89,22 @@ public class OpenAIRealtimeTests
     public class MyType
     {
         public int A { get; set; }
+    }
+
+    private class TestRealtimeConversationSession : RealtimeConversationSession
+    {
+        protected internal TestRealtimeConversationSession(RealtimeConversationClient parentClient, Uri endpoint, ApiKeyCredential credential)
+            : base(parentClient, endpoint, credential)
+        {
+        }
+
+        public static TestRealtimeConversationSession CreateTestInstance()
+        {
+            var credential = new ApiKeyCredential("key");
+            return new TestRealtimeConversationSession(
+                new RealtimeConversationClient("model", credential),
+                new Uri("http://endpoint"), credential);
+        }
     }
 
     private class TestConversationUpdate : ConversationUpdate
