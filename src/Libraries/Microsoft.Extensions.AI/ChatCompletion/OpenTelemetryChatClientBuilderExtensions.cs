@@ -28,7 +28,7 @@ public static class OpenTelemetryChatClientBuilderExtensions
         ILoggerFactory? loggerFactory = null,
         string? sourceName = null,
         Action<OpenTelemetryChatClient>? configure = null) =>
-        Throw.IfNull(builder).Use((services, innerClient) =>
+        Throw.IfNull(builder).Use((innerClient, services) =>
         {
             loggerFactory ??= services.GetService<ILoggerFactory>();
 

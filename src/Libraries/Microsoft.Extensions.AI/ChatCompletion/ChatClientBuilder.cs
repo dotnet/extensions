@@ -13,7 +13,7 @@ public sealed class ChatClientBuilder
     private readonly Func<IServiceProvider, IChatClient> _innerClientFactory;
 
     /// <summary>The registered client factory instances.</summary>
-    private List<Func<IServiceProvider, IChatClient, IChatClient>>? _clientFactories;
+    private List<Func<IChatClient, IServiceProvider, IChatClient>>? _clientFactories;
 
     /// <summary>Initializes a new instance of the <see cref="ChatClientBuilder"/> class.</summary>
     /// <param name="innerClient">The inner <see cref="IChatClient"/> that represents the underlying backend.</param>
@@ -46,7 +46,7 @@ public sealed class ChatClientBuilder
         {
             for (var i = _clientFactories.Count - 1; i >= 0; i--)
             {
-                chatClient = _clientFactories[i](services, chatClient) ??
+                chatClient = _clientFactories[i](chatClient, services) ??
                     throw new InvalidOperationException(
                         $"The {nameof(ChatClientBuilder)} entry at index {i} returned null. " +
                         $"Ensure that the callbacks passed to {nameof(Use)} return non-null {nameof(IChatClient)} instances.");
@@ -63,13 +63,13 @@ public sealed class ChatClientBuilder
     {
         _ = Throw.IfNull(clientFactory);
 
-        return Use((_, innerClient) => clientFactory(innerClient));
+        return Use((innerClient, _) => clientFactory(innerClient));
     }
 
     /// <summary>Adds a factory for an intermediate chat client to the chat client pipeline.</summary>
     /// <param name="clientFactory">The client factory function.</param>
     /// <returns>The updated <see cref="ChatClientBuilder"/> instance.</returns>
-    public ChatClientBuilder Use(Func<IServiceProvider, IChatClient, IChatClient> clientFactory)
+    public ChatClientBuilder Use(Func<IChatClient, IServiceProvider, IChatClient> clientFactory)
     {
         _ = Throw.IfNull(clientFactory);
 

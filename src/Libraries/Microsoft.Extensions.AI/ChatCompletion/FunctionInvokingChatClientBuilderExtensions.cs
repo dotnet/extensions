@@ -28,7 +28,7 @@ public static class FunctionInvokingChatClientBuilderExtensions
     {
         _ = Throw.IfNull(builder);
 
-        return builder.Use((services, innerClient) =>
+        return builder.Use((innerClient, services) =>
         {
             loggerFactory ??= services.GetService<ILoggerFactory>();
 

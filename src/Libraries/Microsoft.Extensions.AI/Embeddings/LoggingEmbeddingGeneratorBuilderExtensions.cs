@@ -26,7 +26,7 @@ public static class LoggingEmbeddingGeneratorBuilderExtensions
     {
         _ = Throw.IfNull(builder);
 
-        return builder.Use((services, innerGenerator) =>
+        return builder.Use((innerGenerator, services) =>
         {
             logger ??= services.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(LoggingEmbeddingGenerator<TInput, TEmbedding>));
             var generator = new LoggingEmbeddingGenerator<TInput, TEmbedding>(innerGenerator, logger);
