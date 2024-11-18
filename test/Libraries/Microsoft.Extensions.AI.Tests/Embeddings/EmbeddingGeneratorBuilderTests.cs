@@ -64,7 +64,8 @@ public class EmbeddingGeneratorBuilderTests
     [Fact]
     public void DoesNotAcceptNullFactories()
     {
-        Assert.Throws<ArgumentNullException>(() => new EmbeddingGeneratorBuilder<string, Embedding<float>>((Func<IServiceProvider, IEmbeddingGenerator<string, Embedding<float>>>)null!));
+        Assert.Throws<ArgumentNullException>("innerGeneratorFactory",
+            () => new EmbeddingGeneratorBuilder<string, Embedding<float>>((Func<IServiceProvider, IEmbeddingGenerator<string, Embedding<float>>>)null!));
     }
 
     [Fact]

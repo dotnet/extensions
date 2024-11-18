@@ -65,7 +65,7 @@ public class ChatClientBuilderTest
     [Fact]
     public void DoesNotAcceptNullFactories()
     {
-        Assert.Throws<ArgumentNullException>(() => new ChatClientBuilder((Func<IServiceProvider, IChatClient>)null!));
+        Assert.Throws<ArgumentNullException>("innerClientFactory", () => new ChatClientBuilder((Func<IServiceProvider, IChatClient>)null!));
     }
 
     [Fact]
