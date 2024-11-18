@@ -19,9 +19,9 @@ public class ChatResponseFormatTests
     [Fact]
     public void Constructor_InvalidArgs_Throws()
     {
-        Assert.Throws<ArgumentException>(() => new ChatResponseFormatJson(null, "name"));
-        Assert.Throws<ArgumentException>(() => new ChatResponseFormatJson(null, null, "description"));
-        Assert.Throws<ArgumentException>(() => new ChatResponseFormatJson(null, "name", "description"));
+        Assert.Throws<ArgumentException>("schemaName", () => new ChatResponseFormatJson(null, "name"));
+        Assert.Throws<ArgumentException>("schemaDescription", () => new ChatResponseFormatJson(null, null, "description"));
+        Assert.Throws<ArgumentException>("schemaName", () => new ChatResponseFormatJson(null, "name", "description"));
     }
 
     [Fact]

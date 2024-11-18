@@ -18,8 +18,8 @@ public class ChatFinishReasonTests
     [Fact]
     public void Constructor_NullOrWhiteSpace_Throws()
     {
-        Assert.Throws<ArgumentNullException>(() => new ChatFinishReason(null!));
-        Assert.Throws<ArgumentException>(() => new ChatFinishReason("  "));
+        Assert.Throws<ArgumentNullException>("value", () => new ChatFinishReason(null!));
+        Assert.Throws<ArgumentException>("value", () => new ChatFinishReason("  "));
     }
 
     [Fact]

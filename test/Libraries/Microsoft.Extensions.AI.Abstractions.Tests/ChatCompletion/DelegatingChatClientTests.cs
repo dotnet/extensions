@@ -14,7 +14,7 @@ public class DelegatingChatClientTests
     [Fact]
     public void RequiresInnerChatClient()
     {
-        Assert.Throws<ArgumentNullException>(() => new NoOpDelegatingChatClient(null!));
+        Assert.Throws<ArgumentNullException>("innerClient", () => new NoOpDelegatingChatClient(null!));
     }
 
     [Fact]
