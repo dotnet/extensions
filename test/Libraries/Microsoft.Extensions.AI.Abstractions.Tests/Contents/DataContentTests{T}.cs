@@ -68,9 +68,9 @@ public abstract class DataContentTests<T>
     [InlineData("type/subtype;key=")]
     [InlineData("type/subtype;=value")]
     [InlineData("type/subtype;key=value;another=")]
-    public void Ctor_InvalidMediaType_Throws(string mediaType)
+    public void Ctor_InvalidMediaType_Throws(string type)
     {
-        Assert.Throws<ArgumentException>(() => CreateDataContent("http://localhost/test", mediaType));
+        Assert.Throws<ArgumentException>("mediaType", () => CreateDataContent("http://localhost/test", type));
     }
 
     [Theory]
@@ -151,7 +151,7 @@ public abstract class DataContentTests<T>
     [InlineData("""{ "mediaType":"text/plain" }""")]
     public void Deserialize_MissingUriString_Throws(string json)
     {
-        Assert.Throws<ArgumentNullException>(() => JsonSerializer.Deserialize<DataContent>(json, TestJsonSerializerContext.Default.Options)!);
+        Assert.Throws<ArgumentNullException>("uri", () => JsonSerializer.Deserialize<DataContent>(json, TestJsonSerializerContext.Default.Options)!);
     }
 
     [Fact]
