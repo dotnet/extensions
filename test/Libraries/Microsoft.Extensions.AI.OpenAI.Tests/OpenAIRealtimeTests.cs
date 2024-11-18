@@ -10,6 +10,10 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
+// Note that we're limited on ability to unit-test OpenAIRealtimeExtension, because some of the
+// OpenAI types it uses (e.g., ConversationItemStreamingFinishedUpdate) can't be instantiated or
+// subclassed from outside. We will mostly have to rely on integration tests for now.
+
 public class OpenAIRealtimeTests
 {
     [Fact]

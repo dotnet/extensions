@@ -7,6 +7,7 @@
 
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <InjectDiagnosticAttributesOnLegacy>true</InjectDiagnosticAttributesOnLegacy>
   </PropertyGroup>
 
   <ItemGroup>
