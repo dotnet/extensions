@@ -226,15 +226,18 @@ public class TimerTests
 
         timer1.Dispose();
 
+        var waitersCountAfterDispose = timeProvider.Waiters.Count;
+
         timeProvider.Advance(TimeSpan.FromMilliseconds(1));
 
-        var waitersCountAfter = timeProvider.Waiters.Count;
+        var waitersCountOnFinish = timeProvider.Waiters.Count;
 
         Assert.Equal(0, waitersCountStart);
         Assert.Equal(2, waitersCountDuring);
+        Assert.Equal(1, waitersCountAfterDispose);
+        Assert.Equal(1, waitersCountOnFinish);
         Assert.Equal(1, timer1Counter);
         Assert.Equal(2, timer2Counter);
-        Assert.Equal(1, waitersCountAfter);
     }
 
 #if RELEASE // In Release only since this might not work if the timer reference being tracked by the debugger

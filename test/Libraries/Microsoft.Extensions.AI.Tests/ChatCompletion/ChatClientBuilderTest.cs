@@ -13,17 +13,23 @@ public class ChatClientBuilderTest
     public void PassesServiceProviderToFactories()
     {
         var expectedServiceProvider = new ServiceCollection().BuildServiceProvider();
-        using TestChatClient expectedResult = new();
-        var builder = new ChatClientBuilder(expectedServiceProvider);
+        using TestChatClient expectedInnerClient = new();
+        using TestChatClient expectedOuterClient = new();
+
+        var builder = new ChatClientBuilder(services =>
+        {
+            Assert.Same(expectedServiceProvider, services);
+            return expectedInnerClient;
+        });
 
         builder.Use((serviceProvider, innerClient) =>
         {
             Assert.Same(expectedServiceProvider, serviceProvider);
-            return expectedResult;
+            Assert.Same(expectedInnerClient, innerClient);
+            return expectedOuterClient;
         });
 
-        using TestChatClient innerClient = new();
-        Assert.Equal(expectedResult, builder.Use(innerClient: innerClient));
+        Assert.Same(expectedOuterClient, builder.Build(expectedServiceProvider));
     }
 
     [Fact]
@@ -31,14 +37,14 @@ public class ChatClientBuilderTest
     {
         // Arrange
         using TestChatClient expectedInnerClient = new();
-        var builder = new ChatClientBuilder();
+        var builder = new ChatClientBuilder(expectedInnerClient);
 
         builder.Use(next => new InnerClientCapturingChatClient("First", next));
         builder.Use(next => new InnerClientCapturingChatClient("Second", next));
         builder.Use(next => new InnerClientCapturingChatClient("Third", next));
 
         // Act
-        var first = (InnerClientCapturingChatClient)builder.Use(expectedInnerClient);
+        var first = (InnerClientCapturingChatClient)builder.Build();
 
         // Assert
         Assert.Equal("First", first.Name);
@@ -52,23 +58,22 @@ public class ChatClientBuilderTest
     [Fact]
     public void DoesNotAcceptNullInnerService()
     {
-        Assert.Throws<ArgumentNullException>(() => new ChatClientBuilder().Use((IChatClient)null!));
+        Assert.Throws<ArgumentNullException>("innerClient", () => new ChatClientBuilder((IChatClient)null!));
     }
 
     [Fact]
     public void DoesNotAcceptNullFactories()
     {
-        ChatClientBuilder builder = new();
-        Assert.Throws<ArgumentNullException>(() => builder.Use((Func<IChatClient, IChatClient>)null!));
-        Assert.Throws<ArgumentNullException>(() => builder.Use((Func<IServiceProvider, IChatClient, IChatClient>)null!));
+        Assert.Throws<ArgumentNullException>("innerClientFactory", () => new ChatClientBuilder((Func<IServiceProvider, IChatClient>)null!));
     }
 
     [Fact]
     public void DoesNotAllowFactoriesToReturnNull()
     {
-        ChatClientBuilder builder = new();
+        using var innerClient = new TestChatClient();
+        ChatClientBuilder builder = new(innerClient);
         builder.Use(_ => null!);
-        var ex = Assert.Throws<InvalidOperationException>(() => builder.Use(new TestChatClient()));
+        var ex = Assert.Throws<InvalidOperationException>(() => builder.Build());
         Assert.Contains("entry at index 0", ex.Message);
     }
 

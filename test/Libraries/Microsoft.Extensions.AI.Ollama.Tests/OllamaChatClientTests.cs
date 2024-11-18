@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,6 +28,19 @@ public class OllamaChatClientTests
     }
 
     [Fact]
+    public void ToolCallJsonSerializerOptions_HasExpectedValue()
+    {
+        using OllamaChatClient client = new("http://localhost", "model");
+
+        Assert.Same(client.ToolCallJsonSerializerOptions, AIJsonUtilities.DefaultOptions);
+        Assert.Throws<ArgumentNullException>("value", () => client.ToolCallJsonSerializerOptions = null!);
+
+        JsonSerializerOptions options = new();
+        client.ToolCallJsonSerializerOptions = options;
+        Assert.Same(options, client.ToolCallJsonSerializerOptions);
+    }
+
+    [Fact]
     public void GetService_SuccessfullyReturnsUnderlyingClient()
     {
         using OllamaChatClient client = new("http://localhost");
@@ -34,11 +48,11 @@ public class OllamaChatClientTests
         Assert.Same(client, client.GetService<OllamaChatClient>());
         Assert.Same(client, client.GetService<IChatClient>());
 
-        using IChatClient pipeline = new ChatClientBuilder()
+        using IChatClient pipeline = new ChatClientBuilder(client)
             .UseFunctionInvocation()
             .UseOpenTelemetry()
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))
-            .Use(client);
+            .Build();
 
         Assert.NotNull(pipeline.GetService<FunctionInvokingChatClient>());
         Assert.NotNull(pipeline.GetService<DistributedCachingChatClient>());

@@ -18,7 +18,7 @@ public class EmbeddingGenerationOptions
         {
             if (value is not null)
             {
-                _ = Throw.IfLessThan(value.Value, 1);
+                _ = Throw.IfLessThan(value.Value, 1, nameof(value));
             }
 
             _dimensions = value;

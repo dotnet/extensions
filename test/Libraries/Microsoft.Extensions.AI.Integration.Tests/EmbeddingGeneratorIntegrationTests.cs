@@ -81,10 +81,10 @@ public abstract class EmbeddingGeneratorIntegrationTests : IDisposable
     {
         SkipIfNotEnabled();
 
-        using var generator = new EmbeddingGeneratorBuilder<string, Embedding<float>>()
+        using var generator = new EmbeddingGeneratorBuilder<string, Embedding<float>>(CreateEmbeddingGenerator()!)
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))
             .UseCallCounting()
-            .Use(CreateEmbeddingGenerator()!);
+            .Build();
 
         string input = "Red, White, and Blue";
         var embedding1 = await generator.GenerateEmbeddingAsync(input);
@@ -110,9 +110,9 @@ public abstract class EmbeddingGeneratorIntegrationTests : IDisposable
             .AddInMemoryExporter(activities)
             .Build();
 
-        var embeddingGenerator = new EmbeddingGeneratorBuilder<string, Embedding<float>>()
+        var embeddingGenerator = new EmbeddingGeneratorBuilder<string, Embedding<float>>(CreateEmbeddingGenerator()!)
             .UseOpenTelemetry(sourceName: sourceName)
-            .Use(CreateEmbeddingGenerator()!);
+            .Build();
 
         _ = await embeddingGenerator.GenerateEmbeddingAsync("Hello, world!");
 

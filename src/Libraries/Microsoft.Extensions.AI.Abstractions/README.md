@@ -150,9 +150,9 @@ using Microsoft.Extensions.AI;
 [Description("Gets the current weather")]
 string GetCurrentWeather() => Random.Shared.NextDouble() > 0.5 ? "It's sunny" : "It's raining";
 
-IChatClient client = new ChatClientBuilder()
+IChatClient client = new ChatClientBuilder(new OllamaChatClient(new Uri("http://localhost:11434"), "llama3.1"))
     .UseFunctionInvocation()
-    .Use(new OllamaChatClient(new Uri("http://localhost:11434"), "llama3.1"));
+    .Build();
 
 var response = client.CompleteStreamingAsync(
     "Should I wear a rain coat?",
@@ -174,9 +174,9 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 
-IChatClient client = new ChatClientBuilder()
+IChatClient client = new ChatClientBuilder(new SampleChatClient(new Uri("http://coolsite.ai"), "my-custom-model"))
     .UseDistributedCache(new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions())))
-    .Use(new SampleChatClient(new Uri("http://coolsite.ai"), "my-custom-model"));
+    .Build();
 
 string[] prompts = ["What is AI?", "What is .NET?", "What is AI?"];
 
@@ -205,9 +205,9 @@ var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
     .AddConsoleExporter()
     .Build();
 
-IChatClient client = new ChatClientBuilder()
+IChatClient client = new ChatClientBuilder(new SampleChatClient(new Uri("http://coolsite.ai"), "my-custom-model"))
     .UseOpenTelemetry(sourceName, c => c.EnableSensitiveData = true)
-    .Use(new SampleChatClient(new Uri("http://coolsite.ai"), "my-custom-model"));
+    .Build();
 
 Console.WriteLine((await client.CompleteAsync("What is AI?")).Message);
 ```
@@ -220,9 +220,9 @@ Options may also be baked into an `IChatClient` via the `ConfigureOptions` exten
 ```csharp
 using Microsoft.Extensions.AI;
 
-IChatClient client = new ChatClientBuilder()
+IChatClient client = new ChatClientBuilder(new OllamaChatClient(new Uri("http://localhost:11434")))
     .ConfigureOptions(options => options.ModelId ??= "phi3")
-    .Use(new OllamaChatClient(new Uri("http://localhost:11434")));
+    .Build();
 
 Console.WriteLine(await client.CompleteAsync("What is AI?")); // will request "phi3"
 Console.WriteLine(await client.CompleteAsync("What is AI?", new() { ModelId = "llama3.1" })); // will request "llama3.1"
@@ -248,11 +248,11 @@ var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
 
 // Explore changing the order of the intermediate "Use" calls to see that impact
 // that has on what gets cached, traced, etc.
-IChatClient client = new ChatClientBuilder()
+IChatClient client = new ChatClientBuilder(new OllamaChatClient(new Uri("http://localhost:11434"), "llama3.1"))
     .UseDistributedCache(new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions())))
     .UseFunctionInvocation()
     .UseOpenTelemetry(sourceName, c => c.EnableSensitiveData = true)
-    .Use(new OllamaChatClient(new Uri("http://localhost:11434"), "llama3.1"));
+    .Build();
 
 ChatOptions options = new()
 {
@@ -341,9 +341,8 @@ using Microsoft.Extensions.Hosting;
 // App Setup
 var builder = Host.CreateApplicationBuilder();
 builder.Services.AddDistributedMemoryCache();
-builder.Services.AddChatClient(b => b
-    .UseDistributedCache()
-    .Use(new SampleChatClient(new Uri("http://coolsite.ai"), "my-custom-model")));
+builder.Services.AddChatClient(new SampleChatClient(new Uri("http://coolsite.ai"), "my-custom-model"))
+    .UseDistributedCache();
 var host = builder.Build();
 
 // Elsewhere in the app
@@ -433,10 +432,11 @@ var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
 
 // Explore changing the order of the intermediate "Use" calls to see that impact
 // that has on what gets cached, traced, etc.
-IEmbeddingGenerator<string, Embedding<float>> generator = new EmbeddingGeneratorBuilder<string, Embedding<float>>()
+var generator = new EmbeddingGeneratorBuilder<string, Embedding<float>>(
+        new SampleEmbeddingGenerator(new Uri("http://coolsite.ai"), "my-custom-model"))
     .UseDistributedCache(new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions())))
     .UseOpenTelemetry(sourceName)
-    .Use(new SampleEmbeddingGenerator(new Uri("http://coolsite.ai"), "my-custom-model"));
+    .Build();
 
 var embeddings = await generator.GenerateAsync(
 [

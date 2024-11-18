@@ -78,10 +78,10 @@ public class OpenAIEmbeddingGeneratorTests
 
         Assert.NotNull(embeddingGenerator.GetService<EmbeddingClient>());
 
-        using IEmbeddingGenerator<string, Embedding<float>> pipeline = new EmbeddingGeneratorBuilder<string, Embedding<float>>()
+        using IEmbeddingGenerator<string, Embedding<float>> pipeline = new EmbeddingGeneratorBuilder<string, Embedding<float>>(embeddingGenerator)
             .UseOpenTelemetry()
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))
-            .Use(embeddingGenerator);
+            .Build();
 
         Assert.NotNull(pipeline.GetService<DistributedCachingEmbeddingGenerator<string, Embedding<float>>>());
         Assert.NotNull(pipeline.GetService<CachingEmbeddingGenerator<string, Embedding<float>>>());
@@ -100,10 +100,10 @@ public class OpenAIEmbeddingGeneratorTests
         Assert.Same(embeddingGenerator, embeddingGenerator.GetService<IEmbeddingGenerator<string, Embedding<float>>>());
         Assert.Same(openAIClient, embeddingGenerator.GetService<EmbeddingClient>());
 
-        using IEmbeddingGenerator<string, Embedding<float>> pipeline = new EmbeddingGeneratorBuilder<string, Embedding<float>>()
+        using IEmbeddingGenerator<string, Embedding<float>> pipeline = new EmbeddingGeneratorBuilder<string, Embedding<float>>(embeddingGenerator)
             .UseOpenTelemetry()
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))
-            .Use(embeddingGenerator);
+            .Build();
 
         Assert.NotNull(pipeline.GetService<DistributedCachingEmbeddingGenerator<string, Embedding<float>>>());
         Assert.NotNull(pipeline.GetService<CachingEmbeddingGenerator<string, Embedding<float>>>());

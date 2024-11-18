@@ -221,7 +221,7 @@ public class DistributedCachingEmbeddingGeneratorTest
     }
 
     [Fact]
-    public async Task CacheKeyDoesNotVaryByEmbeddingOptionsAsync()
+    public async Task CacheKeyVariesByEmbeddingOptionsAsync()
     {
         // Arrange
         var innerCallCount = 0;
@@ -232,7 +232,7 @@ public class DistributedCachingEmbeddingGeneratorTest
             {
                 innerCallCount++;
                 await Task.Yield();
-                return [_expectedEmbedding];
+                return [new(((string)options!.AdditionalProperties!["someKey"]!).Select(c => (float)c).ToArray())];
             }
         };
         using var outer = new DistributedCachingEmbeddingGenerator<string, Embedding<float>>(innerGenerator, _storage)
@@ -240,20 +240,35 @@ public class DistributedCachingEmbeddingGeneratorTest
             JsonSerializerOptions = TestJsonSerializerContext.Default.Options,
         };
 
-        // Act: Call with two different options
+        // Act: Call with two different EmbeddingGenerationOptions that have the same values
         var result1 = await outer.GenerateEmbeddingAsync("abc", new EmbeddingGenerationOptions
         {
             AdditionalProperties = new() { ["someKey"] = "value 1" }
         });
         var result2 = await outer.GenerateEmbeddingAsync("abc", new EmbeddingGenerationOptions
         {
-            AdditionalProperties = new() { ["someKey"] = "value 2" }
+            AdditionalProperties = new() { ["someKey"] = "value 1" }
         });
 
         // Assert: Same result
         Assert.Equal(1, innerCallCount);
-        AssertEmbeddingsEqual(_expectedEmbedding, result1);
-        AssertEmbeddingsEqual(_expectedEmbedding, result2);
+        AssertEmbeddingsEqual(new("value 1".Select(c => (float)c).ToArray()), result1);
+        AssertEmbeddingsEqual(new("value 1".Select(c => (float)c).ToArray()), result2);
+
+        // Act: Call with two different EmbeddingGenerationOptions that have different values
+        var result3 = await outer.GenerateEmbeddingAsync("abc", new EmbeddingGenerationOptions
+        {
+            AdditionalProperties = new() { ["someKey"] = "value 1" }
+        });
+        var result4 = await outer.GenerateEmbeddingAsync("abc", new EmbeddingGenerationOptions
+        {
+            AdditionalProperties = new() { ["someKey"] = "value 2" }
+        });
+
+        // Assert: Different result
+        Assert.Equal(2, innerCallCount);
+        AssertEmbeddingsEqual(new("value 1".Select(c => (float)c).ToArray()), result3);
+        AssertEmbeddingsEqual(new("value 2".Select(c => (float)c).ToArray()), result4);
     }
 
     [Fact]
@@ -306,12 +321,12 @@ public class DistributedCachingEmbeddingGeneratorTest
                 return Task.FromResult<GeneratedEmbeddings<Embedding<float>>>([_expectedEmbedding]);
             },
         };
-        using var outer = new EmbeddingGeneratorBuilder<string, Embedding<float>>(services)
+        using var outer = new EmbeddingGeneratorBuilder<string, Embedding<float>>(testGenerator)
             .UseDistributedCache(configure: instance =>
             {
                 instance.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
             })
-            .Use(testGenerator);
+            .Build(services);
 
         // Act: Make a request that should populate the cache
         Assert.Empty(_storage.Keys);
