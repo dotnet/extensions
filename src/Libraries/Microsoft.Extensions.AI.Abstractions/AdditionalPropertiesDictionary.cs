@@ -111,7 +111,8 @@ public sealed class AdditionalPropertiesDictionary : IDictionary<string, object?
     public void Clear() => _dictionary.Clear();
 
     /// <inheritdoc />
-    bool ICollection<KeyValuePair<string, object?>>.Contains(KeyValuePair<string, object?> item) => _dictionary.Contains(item);
+    bool ICollection<KeyValuePair<string, object?>>.Contains(KeyValuePair<string, object?> item) =>
+        ((ICollection<KeyValuePair<string, object?>>)_dictionary).Contains(item);
 
     /// <inheritdoc />
     public bool ContainsKey(string key) => _dictionary.ContainsKey(key);
