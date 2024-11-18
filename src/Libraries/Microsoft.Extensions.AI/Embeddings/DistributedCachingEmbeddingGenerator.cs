@@ -74,15 +74,11 @@ public class DistributedCachingEmbeddingGenerator<TInput, TEmbedding> : CachingE
         await _storage.SetAsync(key, newJson, cancellationToken).ConfigureAwait(false);
     }
 
-    /// <inheritdoc />
-    protected override string GetCacheKey(TInput value, EmbeddingGenerationOptions? options) =>
-        GetCacheKey([value, options]);
-
-    /// <summary>Gets a cache key based on the supplied values.</summary>
+    /// <summary>Computes a cache key for the specified values.</summary>
     /// <param name="values">The values to inform the key.</param>
     /// <returns>The computed key.</returns>
-    /// <remarks>This provides the default implementation for <see cref="GetCacheKey(TInput, EmbeddingGenerationOptions?)"/>.</remarks>
-    protected string GetCacheKey(ReadOnlySpan<object?> values)
+    /// <remarks>The <paramref name="values"/> are serialized to JSON using <see cref="JsonSerializerOptions"/> in order to compute the key.</remarks>
+    protected override string GetCacheKey(params ReadOnlySpan<object?> values)
     {
         _jsonSerializerOptions.MakeReadOnly();
         return CachingHelpers.GetCacheKey(values, _jsonSerializerOptions);
