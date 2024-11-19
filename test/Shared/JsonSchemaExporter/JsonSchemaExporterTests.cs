@@ -13,6 +13,7 @@ using System.Text.Json.Serialization.Metadata;
 using System.Xml.Linq;
 #endif
 using Xunit;
+using static Microsoft.Extensions.AI.JsonSchemaExporter.TestTypes;
 
 #pragma warning disable SA1402 // File may only contain a single type
 
@@ -83,6 +84,38 @@ public abstract class JsonSchemaExporterTests
     {
         JsonNode schema = Options.GetJsonSchemaAsNode(typeof(XElement));
         Assert.True(schema.ToJsonString().Length < 100_000);
+    }
+#endif
+
+#if !NET9_0 // Disable until https://github.com/dotnet/runtime/pull/109954 gets backported
+    [Fact]
+    public void TransformSchemaNode_PropertiesWithCustomConverters()
+    {
+        // Regression test for https://github.com/dotnet/runtime/issues/109868
+        List<(Type? parentType, string? propertyName, Type type)> visitedNodes = new();
+        JsonSchemaExporterOptions exporterOptions = new()
+        {
+            TransformSchemaNode = (ctx, schema) =>
+            {
+#if NET9_0_OR_GREATER
+                visitedNodes.Add((ctx.PropertyInfo?.DeclaringType, ctx.PropertyInfo?.Name, ctx.TypeInfo.Type));
+#else
+                visitedNodes.Add((ctx.DeclaringType, ctx.PropertyInfo?.Name, ctx.TypeInfo.Type));
+#endif
+                return schema;
+            }
+        };
+
+        List<(Type? parentType, string? propertyName, Type type)> expectedNodes =
+        [
+            (typeof(ClassWithPropertiesUsingCustomConverters), "Prop1", typeof(ClassWithPropertiesUsingCustomConverters.ClassWithCustomConverter1)),
+                (typeof(ClassWithPropertiesUsingCustomConverters), "Prop2", typeof(ClassWithPropertiesUsingCustomConverters.ClassWithCustomConverter2)),
+                (null, null, typeof(ClassWithPropertiesUsingCustomConverters)),
+            ];
+
+        Options.GetJsonSchemaAsNode(typeof(ClassWithPropertiesUsingCustomConverters), exporterOptions);
+
+        Assert.Equal(expectedNodes, visitedNodes);
     }
 #endif
 
