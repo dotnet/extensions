@@ -24,7 +24,7 @@ using OpenAI.Chat;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="IChatClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="OpenAI.Chat.ChatClient"/>.</summary>
-public sealed partial class OpenAIChatClient : IChatClient
+public sealed class OpenAIChatClient : IChatClient
 {
     private static readonly JsonElement _defaultParameterSchema = JsonDocument.Parse("{}").RootElement;
 
@@ -513,14 +513,14 @@ public sealed partial class OpenAIChatClient : IChatClient
             }
 
             resultParameters = BinaryData.FromBytes(
-                JsonSerializer.SerializeToUtf8Bytes(tool, JsonContext.Default.OpenAIChatToolJson));
+                JsonSerializer.SerializeToUtf8Bytes(tool, OpenAIJsonContext.Default.OpenAIChatToolJson));
         }
 
         return ChatTool.CreateFunctionTool(aiFunction.Metadata.Name, aiFunction.Metadata.Description, resultParameters, strict);
     }
 
     /// <summary>Used to create the JSON payload for an OpenAI chat tool description.</summary>
-    private sealed class OpenAIChatToolJson
+    internal sealed class OpenAIChatToolJson
     {
         /// <summary>Gets a singleton JSON data for empty parameters. Optimization for the reasonably common case of a parameterless function.</summary>
         public static BinaryData ZeroFunctionParametersSchema { get; } = new("""{"type":"object","required":[],"properties":{}}"""u8.ToArray());
@@ -681,12 +681,4 @@ public sealed partial class OpenAIChatClient : IChatClient
         FunctionCallContent.CreateFromParsedArguments(ut8Json, callId, name,
             argumentParser: static json => JsonSerializer.Deserialize(json,
                 (JsonTypeInfo<IDictionary<string, object>>)AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object>)))!);
-
-    /// <summary>Source-generated JSON type information.</summary>
-    [JsonSourceGenerationOptions(JsonSerializerDefaults.Web,
-        UseStringEnumConverter = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        WriteIndented = true)]
-    [JsonSerializable(typeof(OpenAIChatToolJson))]
-    private sealed partial class JsonContext : JsonSerializerContext;
 }
