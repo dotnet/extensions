@@ -42,11 +42,11 @@ timeProvider.Advance(TimeSpan.FromSeconds(5));
 myComponent.CheckState();
 ```
 
-## SynchronizationContext in Tests
+## SynchronizationContext in xUnit Tests
 
 ### xUnit v2
 
-Some testing libraries such as xUnit v2 provide custom `SynchronizationContext` for running tests. xUnit v2, for instance, provides `AsyncTestSyncContext` that allows to properly manage asynchronous operations withing the test execution. However, it brings an issue when we test asynchronous code that uses `ConfigureAwait(false)` in combination with class like `FakeTimeProvider`. In such cases, the xUnit context may lose track of the continuation, causing the test to hang unexpectedly, whether the test itself is asynchronous or not.
+Some testing libraries such as xUnit v2 provide custom `SynchronizationContext` for running tests. xUnit v2, for instance, provides `AsyncTestSyncContext` that allows to properly manage asynchronous operations withing the test execution. However, it brings an issue when we test asynchronous code that uses `ConfigureAwait(false)` in combination with class like `FakeTimeProvider`. In such cases, the xUnit context may lose track of the continuation, causing the test to become unresponsive, whether the test itself is asynchronous or not.
 
 To prevent this issue, remove the xUnit context for tests dependent on `FakeTimeProvider` by setting the synchronization context to `null`:
 ```
