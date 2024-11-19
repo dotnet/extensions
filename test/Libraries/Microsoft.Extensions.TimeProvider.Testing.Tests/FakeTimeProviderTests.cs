@@ -440,8 +440,8 @@ public class FakeTimeProviderTests
     [Fact]
     public void SimulateRetryPolicy()
     {
-        SynchronizationContext.SetSynchronizationContext(null);
         // Arrange
+        SynchronizationContext.SetSynchronizationContext(null);
         var retries = 42;
         var tries = 0;
         var taskDelay = 0.5;
