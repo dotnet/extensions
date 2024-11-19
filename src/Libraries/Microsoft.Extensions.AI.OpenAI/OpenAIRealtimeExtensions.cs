@@ -18,6 +18,8 @@ namespace Microsoft.Extensions.AI;
 /// </summary>
 public static class OpenAIRealtimeExtensions
 {
+    private static readonly JsonElement _defaultParameterSchema = JsonDocument.Parse("{}").RootElement;
+
     /// <summary>
     /// Converts a <see cref="AIFunction"/> into a <see cref="ConversationFunctionTool"/> so that
     /// it can be used with <see cref="RealtimeConversationClient"/>.
@@ -31,8 +33,7 @@ public static class OpenAIRealtimeExtensions
         {
             Type = "object",
             Properties = aiFunction.Metadata.Parameters
-                .Where(p => p.Schema is JsonElement)
-                .ToDictionary(p => p.Name, p => (JsonElement)p.Schema!),
+                .ToDictionary(p => p.Name, GetParameterSchema),
             Required = aiFunction.Metadata.Parameters
                 .Where(p => p.IsRequired)
                 .Select(p => p.Name),
@@ -92,6 +93,15 @@ public static class OpenAIRealtimeExtensions
                 await session!.StartResponseAsync(cancellationToken).ConfigureAwait(false);
             }
         }
+    }
+
+    private static JsonElement GetParameterSchema(AIFunctionParameterMetadata parameterMetadata)
+    {
+        return parameterMetadata switch
+        {
+            { Schema: JsonElement jsonElement } => jsonElement,
+            _ => _defaultParameterSchema,
+        };
     }
 
     private static async Task<ConversationItem?> GetFunctionCallOutputAsync(
