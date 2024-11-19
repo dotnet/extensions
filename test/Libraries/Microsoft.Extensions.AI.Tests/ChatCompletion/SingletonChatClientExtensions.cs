@@ -6,6 +6,6 @@ namespace Microsoft.Extensions.AI;
 public static class SingletonChatClientExtensions
 {
     public static ChatClientBuilder UseSingletonMiddleware(this ChatClientBuilder builder)
-        => builder.Use((services, inner)
-            => new DependencyInjectionPatterns.SingletonMiddleware(services, inner));
+        => builder.Use((inner, services)
+            => new DependencyInjectionPatterns.SingletonMiddleware(inner, services));
 }

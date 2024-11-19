@@ -22,7 +22,7 @@ public class ChatClientBuilderTest
             return expectedInnerClient;
         });
 
-        builder.Use((serviceProvider, innerClient) =>
+        builder.Use((innerClient, serviceProvider) =>
         {
             Assert.Same(expectedServiceProvider, serviceProvider);
             Assert.Same(expectedInnerClient, innerClient);
@@ -58,13 +58,14 @@ public class ChatClientBuilderTest
     [Fact]
     public void DoesNotAcceptNullInnerService()
     {
-        Assert.Throws<ArgumentNullException>(() => new ChatClientBuilder((IChatClient)null!));
+        Assert.Throws<ArgumentNullException>("innerClient", () => new ChatClientBuilder((IChatClient)null!));
+        Assert.Throws<ArgumentNullException>("innerClient", () => ((IChatClient)null!).AsBuilder());
     }
 
     [Fact]
     public void DoesNotAcceptNullFactories()
     {
-        Assert.Throws<ArgumentNullException>(() => new ChatClientBuilder((Func<IServiceProvider, IChatClient>)null!));
+        Assert.Throws<ArgumentNullException>("innerClientFactory", () => new ChatClientBuilder((Func<IServiceProvider, IChatClient>)null!));
     }
 
     [Fact]

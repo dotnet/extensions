@@ -22,7 +22,7 @@ public class EmbeddingGeneratorBuilderTests
             return expectedInnerGenerator;
         });
 
-        builder.Use((services, innerClient) =>
+        builder.Use((innerClient, services) =>
         {
             Assert.Same(expectedServiceProvider, services);
             return expectedOuterGenerator;
@@ -36,7 +36,7 @@ public class EmbeddingGeneratorBuilderTests
     {
         // Arrange
         using var expectedInnerGenerator = new TestEmbeddingGenerator();
-        var builder = new EmbeddingGeneratorBuilder<string, Embedding<float>>(expectedInnerGenerator);
+        var builder = expectedInnerGenerator.AsBuilder();
 
         builder.Use(next => new InnerServiceCapturingEmbeddingGenerator("First", next));
         builder.Use(next => new InnerServiceCapturingEmbeddingGenerator("Second", next));
@@ -57,20 +57,22 @@ public class EmbeddingGeneratorBuilderTests
     [Fact]
     public void DoesNotAcceptNullInnerService()
     {
-        Assert.Throws<ArgumentNullException>(() => new EmbeddingGeneratorBuilder<string, Embedding<float>>((IEmbeddingGenerator<string, Embedding<float>>)null!));
+        Assert.Throws<ArgumentNullException>("innerGenerator", () => new EmbeddingGeneratorBuilder<string, Embedding<float>>((IEmbeddingGenerator<string, Embedding<float>>)null!));
+        Assert.Throws<ArgumentNullException>("innerGenerator", () => ((IEmbeddingGenerator<string, Embedding<float>>)null!).AsBuilder());
     }
 
     [Fact]
     public void DoesNotAcceptNullFactories()
     {
-        Assert.Throws<ArgumentNullException>(() => new EmbeddingGeneratorBuilder<string, Embedding<float>>((Func<IServiceProvider, IEmbeddingGenerator<string, Embedding<float>>>)null!));
+        Assert.Throws<ArgumentNullException>("innerGeneratorFactory",
+            () => new EmbeddingGeneratorBuilder<string, Embedding<float>>((Func<IServiceProvider, IEmbeddingGenerator<string, Embedding<float>>>)null!));
     }
 
     [Fact]
     public void DoesNotAllowFactoriesToReturnNull()
     {
         using var innerGenerator = new TestEmbeddingGenerator();
-        var builder = new EmbeddingGeneratorBuilder<string, Embedding<float>>(innerGenerator);
+        var builder = innerGenerator.AsBuilder();
         builder.Use(_ => null!);
         var ex = Assert.Throws<InvalidOperationException>(() => builder.Build());
         Assert.Contains("entry at index 0", ex.Message);

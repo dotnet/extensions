@@ -1164,6 +1164,29 @@ public static partial class TestTypes
         IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)_dictionary).GetEnumerator();
     }
 
+    public class ClassWithPropertiesUsingCustomConverters
+    {
+        [JsonPropertyOrder(0)]
+        public ClassWithCustomConverter1? Prop1 { get; set; }
+        [JsonPropertyOrder(1)]
+        public ClassWithCustomConverter2? Prop2 { get; set; }
+
+        [JsonConverter(typeof(CustomConverter<ClassWithCustomConverter1>))]
+        public class ClassWithCustomConverter1;
+
+        [JsonConverter(typeof(CustomConverter<ClassWithCustomConverter2>))]
+        public class ClassWithCustomConverter2;
+
+        public sealed class CustomConverter<T> : JsonConverter<T>
+        {
+            public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+                => default;
+
+            public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+                => writer.WriteNullValue();
+        }
+    }
+
     [JsonSerializable(typeof(object))]
     [JsonSerializable(typeof(bool))]
     [JsonSerializable(typeof(byte))]
@@ -1248,6 +1271,7 @@ public static partial class TestTypes
     [JsonSerializable(typeof(PocoCombiningPolymorphicTypeAndDerivedTypes))]
     [JsonSerializable(typeof(ClassWithComponentModelAttributes))]
     [JsonSerializable(typeof(ClassWithOptionalObjectParameter))]
+    [JsonSerializable(typeof(ClassWithPropertiesUsingCustomConverters))]
     // Collection types
     [JsonSerializable(typeof(int[]))]
     [JsonSerializable(typeof(List<bool>))]

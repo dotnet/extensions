@@ -109,7 +109,7 @@ public class DependencyInjectionPatterns
         Assert.IsType<TestChatClient>(instance.InnerClient);
     }
 
-    public class SingletonMiddleware(IServiceProvider services, IChatClient inner) : DelegatingChatClient(inner)
+    public class SingletonMiddleware(IChatClient inner, IServiceProvider services) : DelegatingChatClient(inner)
     {
         public new IChatClient InnerClient => base.InnerClient;
         public IServiceProvider Services => services;

@@ -31,7 +31,7 @@ public static class OpenTelemetryEmbeddingGeneratorBuilderExtensions
         string? sourceName = null,
         Action<OpenTelemetryEmbeddingGenerator<TInput, TEmbedding>>? configure = null)
         where TEmbedding : Embedding =>
-        Throw.IfNull(builder).Use((services, innerGenerator) =>
+        Throw.IfNull(builder).Use((innerGenerator, services) =>
         {
             loggerFactory ??= services.GetService<ILoggerFactory>();
 

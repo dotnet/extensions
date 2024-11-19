@@ -681,7 +681,8 @@ public class DistributedCachingChatClientTest
                     new(ChatRole.Assistant, [new TextContent("Hey")])]));
             }
         };
-        using var outer = new ChatClientBuilder(testClient)
+        using var outer = testClient
+            .AsBuilder()
             .UseDistributedCache(configure: options =>
             {
                 options.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
@@ -815,10 +816,18 @@ public class DistributedCachingChatClientTest
     private sealed class CachingChatClientWithCustomKey(IChatClient innerClient, IDistributedCache storage)
         : DistributedCachingChatClient(innerClient, storage)
     {
-        protected override string GetCacheKey(bool streaming, IList<ChatMessage> chatMessages, ChatOptions? options)
+        protected override string GetCacheKey(params ReadOnlySpan<object?> values)
         {
-            var baseKey = base.GetCacheKey(streaming, chatMessages, options);
-            return baseKey + options?.AdditionalProperties?["someKey"]?.ToString();
+            var baseKey = base.GetCacheKey(values);
+            foreach (var value in values)
+            {
+                if (value is ChatOptions options)
+                {
+                    return baseKey + options.AdditionalProperties?["someKey"]?.ToString();
+                }
+            }
+
+            return baseKey;
         }
     }
 

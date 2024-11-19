@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -16,7 +18,7 @@ public sealed class EmbeddingGeneratorBuilder<TInput, TEmbedding>
     private readonly Func<IServiceProvider, IEmbeddingGenerator<TInput, TEmbedding>> _innerGeneratorFactory;
 
     /// <summary>The registered client factory instances.</summary>
-    private List<Func<IServiceProvider, IEmbeddingGenerator<TInput, TEmbedding>, IEmbeddingGenerator<TInput, TEmbedding>>>? _generatorFactories;
+    private List<Func<IEmbeddingGenerator<TInput, TEmbedding>, IServiceProvider, IEmbeddingGenerator<TInput, TEmbedding>>>? _generatorFactories;
 
     /// <summary>Initializes a new instance of the <see cref="EmbeddingGeneratorBuilder{TInput, TEmbedding}"/> class.</summary>
     /// <param name="innerGenerator">The inner <see cref="EmbeddingGeneratorBuilder{TInput, TEmbedding}"/> that represents the underlying backend.</param>
@@ -51,7 +53,7 @@ public sealed class EmbeddingGeneratorBuilder<TInput, TEmbedding>
         {
             for (var i = _generatorFactories.Count - 1; i >= 0; i--)
             {
-                embeddingGenerator = _generatorFactories[i](services, embeddingGenerator) ??
+                embeddingGenerator = _generatorFactories[i](embeddingGenerator, services) ??
                     throw new InvalidOperationException(
                         $"The {nameof(IEmbeddingGenerator<TInput, TEmbedding>)} entry at index {i} returned null. " +
                         $"Ensure that the callbacks passed to {nameof(Use)} return non-null {nameof(IEmbeddingGenerator<TInput, TEmbedding>)} instances.");
@@ -68,18 +70,36 @@ public sealed class EmbeddingGeneratorBuilder<TInput, TEmbedding>
     {
         _ = Throw.IfNull(generatorFactory);
 
-        return Use((_, innerGenerator) => generatorFactory(innerGenerator));
+        return Use((innerGenerator, _) => generatorFactory(innerGenerator));
     }
 
     /// <summary>Adds a factory for an intermediate embedding generator to the embedding generator pipeline.</summary>
     /// <param name="generatorFactory">The generator factory function.</param>
     /// <returns>The updated <see cref="EmbeddingGeneratorBuilder{TInput, TEmbedding}"/> instance.</returns>
-    public EmbeddingGeneratorBuilder<TInput, TEmbedding> Use(Func<IServiceProvider, IEmbeddingGenerator<TInput, TEmbedding>, IEmbeddingGenerator<TInput, TEmbedding>> generatorFactory)
+    public EmbeddingGeneratorBuilder<TInput, TEmbedding> Use(
+        Func<IEmbeddingGenerator<TInput, TEmbedding>, IServiceProvider, IEmbeddingGenerator<TInput, TEmbedding>> generatorFactory)
     {
         _ = Throw.IfNull(generatorFactory);
 
         _generatorFactories ??= [];
         _generatorFactories.Add(generatorFactory);
         return this;
+    }
+
+    /// <summary>
+    /// Adds to the embedding generator pipeline an anonymous delegating embedding generator based on a delegate that provides
+    /// an implementation for <see cref="IEmbeddingGenerator{TInput, TEmbedding}.GenerateAsync"/>.
+    /// </summary>
+    /// <param name="generateFunc">
+    /// A delegate that provides the implementation for <see cref="IEmbeddingGenerator{TInput, TEmbedding}.GenerateAsync"/>.
+    /// </param>
+    /// <returns>The updated <see cref="EmbeddingGeneratorBuilder{TInput, TEmbedding}"/> instance.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="generateFunc"/> is <see langword="null"/>.</exception>
+    public EmbeddingGeneratorBuilder<TInput, TEmbedding> Use(
+        Func<IEnumerable<TInput>, EmbeddingGenerationOptions?, IEmbeddingGenerator<TInput, TEmbedding>, CancellationToken, Task<GeneratedEmbeddings<TEmbedding>>>? generateFunc)
+    {
+        _ = Throw.IfNull(generateFunc);
+
+        return Use((innerGenerator, _) => new AnonymousDelegatingEmbeddingGenerator<TInput, TEmbedding>(innerGenerator, generateFunc));
     }
 }
