@@ -17,8 +17,8 @@ internal static partial class JsonSchemaExporter
     // https://github.com/dotnet/runtime/blob/50d6cad649aad2bfa4069268eddd16fd51ec5cf3/src/libraries/System.Text.Json/src/System/Text/Json/Schema/JsonSchema.cs
     private sealed class JsonSchema
     {
-        public static JsonSchema False => new(false);
-        public static JsonSchema True => new(true);
+        public static JsonSchema CreateFalseSchema() => new(false);
+        public static JsonSchema CreateTrueSchema() => new(true);
 
         public JsonSchema()
         {
@@ -467,7 +467,7 @@ internal static partial class JsonSchemaExporter
             switch (schema._trueOrFalse)
             {
                 case false:
-                    schema = new JsonSchema { Not = JsonSchema.True };
+                    schema = new JsonSchema { Not = JsonSchema.CreateTrueSchema() };
                     break;
                 case true:
                     schema = new JsonSchema();
