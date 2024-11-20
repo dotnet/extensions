@@ -45,7 +45,6 @@ public static class AIJsonUtilitiesTests
         Assert.True(options.DisallowAdditionalProperties);
         Assert.False(options.IncludeSchemaKeyword);
         Assert.True(options.RequireAllProperties);
-        Assert.True(options.FilterDisallowedKeywords);
         Assert.Null(options.TransformSchemaNode);
     }
 
@@ -194,46 +193,6 @@ public static class AIJsonUtilitiesTests
             """).RootElement;
 
         JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(PocoWithTypesWithOpenAIUnsupportedKeywords), serializerOptions: JsonSerializerOptions.Default);
-
-        Assert.True(JsonElement.DeepEquals(expected, actual));
-    }
-
-    [Fact]
-    public static void CreateJsonSchema_FilterDisallowedKeywords_Disabled()
-    {
-        JsonElement expected = JsonDocument.Parse("""
-            {
-                "type": "object",
-                "properties": {
-                    "Date": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "TimeSpan": {
-                        "$comment": "Represents a System.TimeSpan value.",
-                        "type": "string",
-                        "pattern": "^-?(\\d+\\.)?\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,7})?$"
-                    },
-                    "Char" : {
-                        "type": "string",
-                        "minLength": 1,
-                        "maxLength": 1
-                    }
-                },
-                "required": ["Date","TimeSpan","Char"],
-                "additionalProperties": false
-            }
-            """).RootElement;
-
-        AIJsonSchemaCreateOptions inferenceOptions = new()
-        {
-            FilterDisallowedKeywords = false
-        };
-
-        JsonElement actual = AIJsonUtilities.CreateJsonSchema(
-            typeof(PocoWithTypesWithOpenAIUnsupportedKeywords),
-            serializerOptions: JsonSerializerOptions.Default,
-            inferenceOptions: inferenceOptions);
 
         Assert.True(JsonElement.DeepEquals(expected, actual));
     }

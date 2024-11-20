@@ -289,12 +289,9 @@ public static partial class AIJsonUtilities
                 }
 
                 // Filter potentially disallowed keywords.
-                if (key.FilterDisallowedKeywords)
+                foreach (string keyword in _schemaKeywordsDisallowedByAIVendors)
                 {
-                    foreach (string keyword in _schemaKeywordsDisallowedByAIVendors)
-                    {
-                        _ = objSchema.Remove(keyword);
-                    }
+                    _ = objSchema.Remove(keyword);
                 }
 
                 // Some consumers of the JSON schema, including Ollama as of v0.3.13, don't understand
@@ -456,7 +453,6 @@ public static partial class AIJsonUtilities
             DisallowAdditionalProperties = options.DisallowAdditionalProperties;
             IncludeTypeInEnumSchemas = options.IncludeTypeInEnumSchemas;
             RequireAllProperties = options.RequireAllProperties;
-            FilterDisallowedKeywords = options.FilterDisallowedKeywords;
             TransformSchemaNode = options.TransformSchemaNode;
         }
 
@@ -469,7 +465,6 @@ public static partial class AIJsonUtilities
         public bool DisallowAdditionalProperties { get; }
         public bool IncludeTypeInEnumSchemas { get; }
         public bool RequireAllProperties { get; }
-        public bool FilterDisallowedKeywords { get; }
         public Func<AIJsonSchemaCreateContext, JsonNode, JsonNode>? TransformSchemaNode { get; }
     }
 }
