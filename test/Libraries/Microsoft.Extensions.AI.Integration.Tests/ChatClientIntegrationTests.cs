@@ -163,13 +163,25 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         int secretNumber = 42;
 
-        var response = await chatClient.CompleteAsync("What is the current secret number?", new()
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.User, "What is the current secret number?")
+        ];
+
+        var response = await chatClient.CompleteAsync(messages, new()
         {
             Tools = [AIFunctionFactory.Create(() => secretNumber, "GetSecretNumber")]
         });
 
         Assert.Single(response.Choices);
         Assert.Contains(secretNumber.ToString(), response.Message.Text);
+
+        if (response.Usage is { } finalUsage)
+        {
+            UsageContent? intermediate = messages.SelectMany(m => m.Contents).OfType<UsageContent>().FirstOrDefault();
+            Assert.NotNull(intermediate);
+            Assert.True(finalUsage.TotalTokenCount > intermediate.Details.TotalTokenCount);
+        }
     }
 
     [ConditionalFact]
