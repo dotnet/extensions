@@ -10,7 +10,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 #endif
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -22,18 +21,6 @@ using Microsoft.Shared.Diagnostics;
 #pragma warning disable S107 // Methods should not have too many parameters
 #pragma warning disable S1075 // URIs should not be hardcoded
 #pragma warning disable SA1118 // Parameter should not span multiple lines
-
-using FunctionParameterKey = (
-    System.Type? Type,
-    string? ParameterName,
-    string? Description,
-    bool HasDefaultValue,
-    object? DefaultValue,
-    bool IncludeSchemaUri,
-    bool DisallowAdditionalProperties,
-    bool IncludeTypeInEnumSchemas,
-    bool RequireAllProperties,
-    bool FilterDisallowedKeywords);
 
 namespace Microsoft.Extensions.AI;
 
@@ -47,7 +34,7 @@ public static partial class AIJsonUtilities
     private const int CacheSoftLimit = 4096;
 
     /// <summary>Caches of generated schemas for each <see cref="JsonSerializerOptions"/> that's employed.</summary>
-    private static readonly ConditionalWeakTable<JsonSerializerOptions, ConcurrentDictionary<FunctionParameterKey, JsonElement>> _schemaCaches = new();
+    private static readonly ConditionalWeakTable<JsonSerializerOptions, ConcurrentDictionary<SchemaGenerationKey, JsonElement>> _schemaCaches = new();
 
     /// <summary>Gets a JSON schema accepting all values.</summary>
     private static readonly JsonElement _trueJsonSchema = ParseJsonElement("true"u8);
@@ -121,17 +108,13 @@ public static partial class AIJsonUtilities
         serializerOptions ??= DefaultOptions;
         inferenceOptions ??= AIJsonSchemaCreateOptions.Default;
 
-        FunctionParameterKey key = (
+        SchemaGenerationKey key = new(
             type,
             parameterName,
             description,
             hasDefaultValue,
             defaultValue,
-            IncludeSchemaUri: false,
-            inferenceOptions.DisallowAdditionalProperties,
-            inferenceOptions.IncludeTypeInEnumSchemas,
-            inferenceOptions.RequireAllProperties,
-            inferenceOptions.FilterDisallowedKeywords);
+            inferenceOptions);
 
         return GetJsonSchemaCached(serializerOptions, key);
     }
@@ -155,25 +138,21 @@ public static partial class AIJsonUtilities
         serializerOptions ??= DefaultOptions;
         inferenceOptions ??= AIJsonSchemaCreateOptions.Default;
 
-        FunctionParameterKey key = (
+        SchemaGenerationKey key = new(
             type,
-            ParameterName: null,
+            parameterName: null,
             description,
             hasDefaultValue,
             defaultValue,
-            inferenceOptions.IncludeSchemaKeyword,
-            inferenceOptions.DisallowAdditionalProperties,
-            inferenceOptions.IncludeTypeInEnumSchemas,
-            inferenceOptions.RequireAllProperties,
-            inferenceOptions.FilterDisallowedKeywords);
+            inferenceOptions);
 
         return GetJsonSchemaCached(serializerOptions, key);
     }
 
-    private static JsonElement GetJsonSchemaCached(JsonSerializerOptions options, FunctionParameterKey key)
+    private static JsonElement GetJsonSchemaCached(JsonSerializerOptions options, SchemaGenerationKey key)
     {
         options.MakeReadOnly();
-        ConcurrentDictionary<FunctionParameterKey, JsonElement> cache = _schemaCaches.GetOrCreateValue(options);
+        ConcurrentDictionary<SchemaGenerationKey, JsonElement> cache = _schemaCaches.GetOrCreateValue(options);
 
         if (cache.Count >= CacheSoftLimit)
         {
@@ -195,7 +174,7 @@ public static partial class AIJsonUtilities
         Justification = "Pre STJ-9 schema extraction can fail with a runtime exception if certain reflection metadata have been trimmed. " +
                         "The exception message will guide users to turn off 'IlcTrimMetadata' which resolves all issues.")]
 #endif
-    private static JsonElement GetJsonSchemaCore(JsonSerializerOptions options, FunctionParameterKey key)
+    private static JsonElement GetJsonSchemaCore(JsonSerializerOptions options, SchemaGenerationKey key)
     {
         _ = Throw.IfNull(options);
         options.MakeReadOnly();
@@ -206,7 +185,7 @@ public static partial class AIJsonUtilities
 
             JsonObject? schemaObj = null;
 
-            if (key.IncludeSchemaUri)
+            if (key.IncludeSchemaKeyword)
             {
                 (schemaObj = [])["$schema"] = SchemaKeywordUri;
             }
@@ -244,7 +223,7 @@ public static partial class AIJsonUtilities
         JsonNode node = options.GetJsonSchemaAsNode(key.Type, exporterOptions);
         return JsonSerializer.SerializeToElement(node, JsonContext.Default.JsonNode);
 
-        JsonNode TransformSchemaNode(JsonSchemaExporterContext ctx, JsonNode schema)
+        JsonNode TransformSchemaNode(JsonSchemaExporterContext schemaExporterContext, JsonNode schema)
         {
             const string SchemaPropertyName = "$schema";
             const string DescriptionPropertyName = "description";
@@ -258,7 +237,9 @@ public static partial class AIJsonUtilities
             const string DefaultPropertyName = "default";
             const string RefPropertyName = "$ref";
 
-            if (ctx.ResolveAttribute<DescriptionAttribute>() is { } attr)
+            AIJsonSchemaCreateContext ctx = new(schemaExporterContext);
+
+            if (ctx.GetCustomAttribute<DescriptionAttribute>() is { } attr)
             {
                 ConvertSchemaToObject(ref schema).InsertAtStart(DescriptionPropertyName, (JsonNode)attr.Description);
             }
@@ -357,11 +338,17 @@ public static partial class AIJsonUtilities
                     ConvertSchemaToObject(ref schema)[DefaultPropertyName] = defaultValue;
                 }
 
-                if (key.IncludeSchemaUri)
+                if (key.IncludeSchemaKeyword)
                 {
                     // The $schema property must be the first keyword in the object
                     ConvertSchemaToObject(ref schema).InsertAtStart(SchemaPropertyName, (JsonNode)SchemaKeywordUri);
                 }
+            }
+
+            // Finally, apply any user-defined transformations if specified.
+            if (key.TransformSchemaNode is { } transformer)
+            {
+                schema = transformer(ctx, schema);
             }
 
             return schema;
@@ -388,7 +375,7 @@ public static partial class AIJsonUtilities
         }
     }
 
-    private static bool TypeIsIntegerWithStringNumberHandling(JsonSchemaExporterContext ctx, JsonObject schema)
+    private static bool TypeIsIntegerWithStringNumberHandling(AIJsonSchemaCreateContext ctx, JsonObject schema)
     {
         if (ctx.TypeInfo.NumberHandling is not JsonNumberHandling.Strict && schema["type"] is JsonArray typeArray)
         {
@@ -443,30 +430,46 @@ public static partial class AIJsonUtilities
     }
 #endif
 
-    private static TAttribute? ResolveAttribute<TAttribute>(this JsonSchemaExporterContext ctx)
-        where TAttribute : Attribute
-    {
-        // Resolve attributes from locations in the following order:
-        // 1. Property-level attributes
-        // 2. Parameter-level attributes and
-        // 3. Type-level attributes.
-        return
-#if NET9_0_OR_GREATER
-            GetAttrs(ctx.PropertyInfo?.AttributeProvider) ??
-            GetAttrs(ctx.PropertyInfo?.AssociatedParameter?.AttributeProvider) ??
-#else
-            GetAttrs(ctx.PropertyAttributeProvider) ??
-            GetAttrs(ctx.ParameterInfo) ??
-#endif
-            GetAttrs(ctx.TypeInfo.Type);
-
-        static TAttribute? GetAttrs(ICustomAttributeProvider? provider) =>
-            (TAttribute?)provider?.GetCustomAttributes(typeof(TAttribute), inherit: false).FirstOrDefault();
-    }
-
     private static JsonElement ParseJsonElement(ReadOnlySpan<byte> utf8Json)
     {
         Utf8JsonReader reader = new(utf8Json);
         return JsonElement.ParseValue(ref reader);
+    }
+
+    /// <summary>The equatable key used to look up cached schemas.</summary>
+    private readonly record struct SchemaGenerationKey
+    {
+        public SchemaGenerationKey(
+            Type? type,
+            string? parameterName,
+            string? description,
+            bool hasDefaultValue,
+            object? defaultValue,
+            AIJsonSchemaCreateOptions options)
+        {
+            Type = type;
+            ParameterName = parameterName;
+            Description = description;
+            HasDefaultValue = hasDefaultValue;
+            DefaultValue = defaultValue;
+            IncludeSchemaKeyword = options.IncludeSchemaKeyword;
+            DisallowAdditionalProperties = options.DisallowAdditionalProperties;
+            IncludeTypeInEnumSchemas = options.IncludeTypeInEnumSchemas;
+            RequireAllProperties = options.RequireAllProperties;
+            FilterDisallowedKeywords = options.FilterDisallowedKeywords;
+            TransformSchemaNode = options.TransformSchemaNode;
+        }
+
+        public Type? Type { get; }
+        public string? ParameterName { get; }
+        public string? Description { get; }
+        public bool HasDefaultValue { get; }
+        public object? DefaultValue { get; }
+        public bool IncludeSchemaKeyword { get; }
+        public bool DisallowAdditionalProperties { get; }
+        public bool IncludeTypeInEnumSchemas { get; }
+        public bool RequireAllProperties { get; }
+        public bool FilterDisallowedKeywords { get; }
+        public Func<AIJsonSchemaCreateContext, JsonNode, JsonNode>? TransformSchemaNode { get; }
     }
 }
