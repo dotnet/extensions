@@ -191,7 +191,6 @@ public class AIFunctionFactoryTest
 
         Assert.NotNull(schemaOptions);
         Assert.True(schemaOptions.IncludeTypeInEnumSchemas);
-        Assert.True(schemaOptions.FilterDisallowedKeywords);
         Assert.True(schemaOptions.RequireAllProperties);
         Assert.True(schemaOptions.DisallowAdditionalProperties);
     }

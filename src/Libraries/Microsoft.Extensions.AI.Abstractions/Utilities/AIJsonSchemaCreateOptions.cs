@@ -1,6 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Text.Json.Nodes;
+
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
@@ -12,6 +15,11 @@ public sealed class AIJsonSchemaCreateOptions
     /// Gets the default options instance.
     /// </summary>
     public static AIJsonSchemaCreateOptions Default { get; } = new AIJsonSchemaCreateOptions();
+
+    /// <summary>
+    /// Gets a callback that is invoked for every schema that is generated within the type graph.
+    /// </summary>
+    public Func<AIJsonSchemaCreateContext, JsonNode, JsonNode>? TransformSchemaNode { get; init; }
 
     /// <summary>
     /// Gets a value indicating whether to include the type keyword in inferred schemas for .NET enums.
@@ -32,20 +40,4 @@ public sealed class AIJsonSchemaCreateOptions
     /// Gets a value indicating whether to mark all properties as required in the schema.
     /// </summary>
     public bool RequireAllProperties { get; init; } = true;
-
-    /// <summary>
-    /// Gets a value indicating whether to filter keywords that are disallowed by certain AI vendors.
-    /// </summary>
-    /// <remarks>
-    /// Filters a number of non-essential schema keywords that are not yet supported by some AI vendors.
-    /// These include:
-    /// <list type="bullet">
-    /// <item>The "minLength", "maxLength", "pattern", and "format" keywords.</item>
-    /// <item>The "minimum", "maximum", and "multipleOf" keywords.</item>
-    /// <item>The "patternProperties", "unevaluatedProperties", "propertyNames", "minProperties", and "maxProperties" keywords.</item>
-    /// <item>The "unevaluatedItems", "contains", "minContains", "maxContains", "minItems", "maxItems", and "uniqueItems" keywords.</item>
-    /// </list>
-    /// See also https://platform.openai.com/docs/guides/structured-outputs#some-type-specific-keywords-are-not-yet-supported.
-    /// </remarks>
-    public bool FilterDisallowedKeywords { get; init; } = true;
 }
