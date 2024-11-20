@@ -252,6 +252,13 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     }
                 }
 
+                // If the original chat completion included usage data,
+                // add that into the message so it's available in the history.
+                if (KeepFunctionCallingMessages && response.Usage is { } usage)
+                {
+                    response.Message.Contents = [.. response.Message.Contents, new UsageContent(usage)];
+                }
+
                 // Add the responses from the function calls into the history.
                 var modeAndMessages = await ProcessFunctionCallsAsync(chatMessages, options, functionCallContents, iteration, cancellationToken).ConfigureAwait(false);
                 if (modeAndMessages.MessagesAdded is not null)
