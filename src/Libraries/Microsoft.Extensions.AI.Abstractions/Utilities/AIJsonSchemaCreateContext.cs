@@ -14,6 +14,10 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Defines the context in which a JSON schema within a type graph is being generated.
 /// </summary>
+/// <remarks>
+/// This struct is being passed to the user-provided <see cref="AIJsonSchemaCreateOptions.TransformSchemaNode"/> 
+/// callback by the <see cref="AIJsonUtilities.CreateJsonSchema"/> method and cannot be instantiated directly.
+/// </remarks>
 public readonly struct AIJsonSchemaCreateContext
 {
     private readonly JsonSchemaExporterContext _exporterContext;
