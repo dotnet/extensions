@@ -321,7 +321,8 @@ public class DistributedCachingEmbeddingGeneratorTest
                 return Task.FromResult<GeneratedEmbeddings<Embedding<float>>>([_expectedEmbedding]);
             },
         };
-        using var outer = new EmbeddingGeneratorBuilder<string, Embedding<float>>(testGenerator)
+        using var outer = testGenerator
+            .AsBuilder()
             .UseDistributedCache(configure: instance =>
             {
                 instance.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
@@ -350,7 +351,18 @@ public class DistributedCachingEmbeddingGeneratorTest
     private sealed class CachingEmbeddingGeneratorWithCustomKey(IEmbeddingGenerator<string, Embedding<float>> innerGenerator, IDistributedCache storage)
         : DistributedCachingEmbeddingGenerator<string, Embedding<float>>(innerGenerator, storage)
     {
-        protected override string GetCacheKey(string value, EmbeddingGenerationOptions? options) =>
-            base.GetCacheKey(value, options) + options?.AdditionalProperties?["someKey"]?.ToString();
+        protected override string GetCacheKey(params ReadOnlySpan<object?> values)
+        {
+            var baseKey = base.GetCacheKey(values);
+            foreach (var value in values)
+            {
+                if (value is EmbeddingGenerationOptions options)
+                {
+                    return baseKey + options.AdditionalProperties?["someKey"]?.ToString();
+                }
+            }
+
+            return baseKey;
+        }
     }
 }

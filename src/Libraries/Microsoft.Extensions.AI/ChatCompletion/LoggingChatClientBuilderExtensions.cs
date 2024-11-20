@@ -23,7 +23,7 @@ public static class LoggingChatClientBuilderExtensions
     {
         _ = Throw.IfNull(builder);
 
-        return builder.Use((services, innerClient) =>
+        return builder.Use((innerClient, services) =>
         {
             logger ??= services.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(LoggingChatClient));
             var chatClient = new LoggingChatClient(innerClient, logger);

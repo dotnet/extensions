@@ -36,6 +36,7 @@
     <PackageVersion Include="System.Net.Http.Json" Version="$(SystemNetHttpJsonLTSVersion)" />
     <PackageVersion Include="System.Text.Encodings.Web" Version="$(SystemTextEncodingsWebLTSVersion)" />
     <PackageVersion Include="System.Text.Json" Version="$(SystemTextJsonLTSVersion)" />
+    <PackageVersion Include="System.Threading.Channels" Version="$(SystemThreadingChannelsLTSVersion)" />
   </ItemGroup>
 
 </Project>

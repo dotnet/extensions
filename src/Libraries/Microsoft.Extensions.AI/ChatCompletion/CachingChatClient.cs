@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -16,6 +17,12 @@ namespace Microsoft.Extensions.AI;
 /// </summary>
 public abstract class CachingChatClient : DelegatingChatClient
 {
+    /// <summary>A boxed <see langword="true"/> value.</summary>
+    private static readonly object _boxedTrue = true;
+
+    /// <summary>A boxed <see langword="false"/> value.</summary>
+    private static readonly object _boxedFalse = false;
+
     /// <summary>Initializes a new instance of the <see cref="CachingChatClient"/> class.</summary>
     /// <param name="innerClient">The underlying <see cref="IChatClient"/>.</param>
     protected CachingChatClient(IChatClient innerClient)
@@ -45,7 +52,7 @@ public abstract class CachingChatClient : DelegatingChatClient
         // We're only storing the final result, not the in-flight task, so that we can avoid caching failures
         // or having problems when one of the callers cancels but others don't. This has the drawback that
         // concurrent callers might trigger duplicate requests, but that's acceptable.
-        var cacheKey = GetCacheKey(false, chatMessages, options);
+        var cacheKey = GetCacheKey(_boxedFalse, chatMessages, options);
 
         if (await ReadCacheAsync(cacheKey, cancellationToken).ConfigureAwait(false) is not { } result)
         {
@@ -68,7 +75,7 @@ public abstract class CachingChatClient : DelegatingChatClient
             // we make a streaming request, yielding those results, but then convert those into a non-streaming
             // result and cache it. When we get a cache hit, we yield the non-streaming result as a streaming one.
 
-            var cacheKey = GetCacheKey(true, chatMessages, options);
+            var cacheKey = GetCacheKey(_boxedTrue, chatMessages, options);
             if (await ReadCacheAsync(cacheKey, cancellationToken).ConfigureAwait(false) is { } chatCompletion)
             {
                 // Yield all of the cached items.
@@ -93,7 +100,7 @@ public abstract class CachingChatClient : DelegatingChatClient
         }
         else
         {
-            var cacheKey = GetCacheKey(true, chatMessages, options);
+            var cacheKey = GetCacheKey(_boxedTrue, chatMessages, options);
             if (await ReadCacheStreamingAsync(cacheKey, cancellationToken).ConfigureAwait(false) is { } existingChunks)
             {
                 // Yield all of the cached items.
@@ -118,14 +125,10 @@ public abstract class CachingChatClient : DelegatingChatClient
         }
     }
 
-    /// <summary>
-    /// Computes a cache key for the specified call parameters.
-    /// </summary>
-    /// <param name="streaming">A flag to indicate if this is a streaming call.</param>
-    /// <param name="chatMessages">The chat content.</param>
-    /// <param name="options">The chat options to configure the request.</param>
-    /// <returns>A string that will be used as a cache key.</returns>
-    protected abstract string GetCacheKey(bool streaming, IList<ChatMessage> chatMessages, ChatOptions? options);
+    /// <summary>Computes a cache key for the specified values.</summary>
+    /// <param name="values">The values to inform the key.</param>
+    /// <returns>The computed key.</returns>
+    protected abstract string GetCacheKey(params ReadOnlySpan<object?> values);
 
     /// <summary>
     /// Returns a previously cached <see cref="ChatCompletion"/>, if available.
