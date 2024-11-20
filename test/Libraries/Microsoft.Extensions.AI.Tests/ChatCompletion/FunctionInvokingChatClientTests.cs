@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using OpenTelemetry.Trace;
 using Xunit;
 
@@ -412,28 +413,29 @@ public class FunctionInvokingChatClientTests
 
         async Task InvokeAsync(Func<IServiceProvider, Task> work)
         {
-            using CapturingLoggerProvider clp = new();
+            var collector = new FakeLogCollector();
 
             ServiceCollection c = new();
-            c.AddLogging(b => b.AddProvider(clp).SetMinimumLevel(level));
+            c.AddLogging(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(level));
 
             await work(c.BuildServiceProvider());
 
+            var logs = collector.GetSnapshot();
             if (level is LogLevel.Trace)
             {
-                Assert.Collection(clp.Logger.Entries,
+                Assert.Collection(logs,
                     entry => Assert.True(entry.Message.Contains("Invoking Func1({") && entry.Message.Contains("\"arg1\": \"value1\"")),
                     entry => Assert.True(entry.Message.Contains("Func1 invocation completed. Duration:") && entry.Message.Contains("Result: \"Result 1\"")));
             }
             else if (level is LogLevel.Debug)
             {
-                Assert.Collection(clp.Logger.Entries,
+                Assert.Collection(logs,
                     entry => Assert.True(entry.Message.Contains("Invoking Func1") && !entry.Message.Contains("arg1")),
                     entry => Assert.True(entry.Message.Contains("Func1 invocation completed. Duration:") && !entry.Message.Contains("Result")));
             }
             else
             {
-                Assert.Empty(clp.Logger.Entries);
+                Assert.Empty(logs);
             }
         }
     }
