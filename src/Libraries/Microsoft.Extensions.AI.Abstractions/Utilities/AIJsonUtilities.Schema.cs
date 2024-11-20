@@ -154,7 +154,7 @@ public static partial class AIJsonUtilities
         options.MakeReadOnly();
         ConcurrentDictionary<SchemaGenerationKey, JsonElement> cache = _schemaCaches.GetOrCreateValue(options);
 
-        if (cache.Count >= CacheSoftLimit)
+        if (cache.Count >= CacheSoftLimit || key.TransformSchemaNode is not null)
         {
             return GetJsonSchemaCore(options, key);
         }
