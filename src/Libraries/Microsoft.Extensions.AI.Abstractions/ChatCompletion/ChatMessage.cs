@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
 
@@ -55,15 +54,15 @@ public class ChatMessage
     /// </summary>
     /// <remarks>
     /// If there is no <see cref="TextContent"/> instance in <see cref="Contents" />, then the getter returns <see langword="null" />,
-    /// and the setter will add a new <see cref="TextContent"/> instance with the provided value.
+    /// and the setter adds a new <see cref="TextContent"/> instance with the provided value.
     /// </remarks>
     [JsonIgnore]
     public string? Text
     {
-        get => Contents.OfType<TextContent>().FirstOrDefault()?.Text;
+        get => Contents.FindFirst<TextContent>()?.Text;
         set
         {
-            if (Contents.OfType<TextContent>().FirstOrDefault() is { } textContent)
+            if (Contents.FindFirst<TextContent>() is { } textContent)
             {
                 textContent.Text = value;
             }
@@ -95,5 +94,5 @@ public class ChatMessage
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
 
     /// <inheritdoc/>
-    public override string ToString() => Text ?? string.Empty;
+    public override string ToString() => Contents.ConcatText();
 }

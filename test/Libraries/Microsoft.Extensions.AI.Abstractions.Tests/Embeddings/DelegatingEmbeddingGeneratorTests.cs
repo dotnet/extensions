@@ -14,7 +14,7 @@ public class DelegatingEmbeddingGeneratorTests
     [Fact]
     public void RequiresInnerService()
     {
-        Assert.Throws<ArgumentNullException>(() => new NoOpDelegatingEmbeddingGenerator(null!));
+        Assert.Throws<ArgumentNullException>("innerGenerator", () => new NoOpDelegatingEmbeddingGenerator(null!));
     }
 
     [Fact]
@@ -55,6 +55,14 @@ public class DelegatingEmbeddingGeneratorTests
         expectedResult.SetResult(expectedEmbedding);
         Assert.True(resultTask.IsCompleted);
         Assert.Same(expectedEmbedding, await resultTask);
+    }
+
+    [Fact]
+    public void GetServiceThrowsForNullType()
+    {
+        using var inner = new TestEmbeddingGenerator();
+        using var delegating = new NoOpDelegatingEmbeddingGenerator(inner);
+        Assert.Throws<ArgumentNullException>("serviceType", () => delegating.GetService(null!));
     }
 
     [Fact]

@@ -331,9 +331,9 @@ public class FunctionCallContentTests
     [Fact]
     public static void CreateFromParsedArguments_NullInput_ThrowsArgumentNullException()
     {
-        Assert.Throws<ArgumentNullException>(() => FunctionCallContent.CreateFromParsedArguments((string)null!, "callId", "functionName", _ => null));
-        Assert.Throws<ArgumentNullException>(() => FunctionCallContent.CreateFromParsedArguments("{}", null!, "functionName", _ => null));
-        Assert.Throws<ArgumentNullException>(() => FunctionCallContent.CreateFromParsedArguments("{}", "callId", null!, _ => null));
-        Assert.Throws<ArgumentNullException>(() => FunctionCallContent.CreateFromParsedArguments("{}", "callId", "functionName", null!));
+        Assert.Throws<ArgumentNullException>("encodedArguments", () => FunctionCallContent.CreateFromParsedArguments((string)null!, "callId", "functionName", _ => null));
+        Assert.Throws<ArgumentNullException>("callId", () => FunctionCallContent.CreateFromParsedArguments("{}", null!, "functionName", _ => null));
+        Assert.Throws<ArgumentNullException>("name", () => FunctionCallContent.CreateFromParsedArguments("{}", "callId", null!, _ => null));
+        Assert.Throws<ArgumentNullException>("argumentParser", () => FunctionCallContent.CreateFromParsedArguments("{}", "callId", "functionName", null!));
     }
 }

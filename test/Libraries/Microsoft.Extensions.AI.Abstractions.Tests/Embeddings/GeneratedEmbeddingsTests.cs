@@ -46,8 +46,8 @@ public class GeneratedEmbeddingsTests
 
             instance.CopyTo(Array.Empty<Embedding<float>>(), 0);
 
-            Assert.Throws<ArgumentOutOfRangeException>(() => instance[0]);
-            Assert.Throws<ArgumentOutOfRangeException>(() => instance[-1]);
+            Assert.Throws<ArgumentOutOfRangeException>("index", () => instance[0]);
+            Assert.Throws<ArgumentOutOfRangeException>("index", () => instance[-1]);
         }
     }
 
@@ -77,8 +77,8 @@ public class GeneratedEmbeddingsTests
         Assert.False(generatedEmbeddings.Contains(null!));
         Assert.Equal(-1, generatedEmbeddings.IndexOf(null!));
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => generatedEmbeddings[-1]);
-        Assert.Throws<ArgumentOutOfRangeException>(() => generatedEmbeddings[2]);
+        Assert.Throws<ArgumentOutOfRangeException>("index", () => generatedEmbeddings[-1]);
+        Assert.Throws<ArgumentOutOfRangeException>("index", () => generatedEmbeddings[2]);
 
         Assert.True(embeddings.SequenceEqual(generatedEmbeddings));
 
@@ -240,7 +240,7 @@ public class GeneratedEmbeddingsTests
         embeddings.AddRange(new[] { e1, e2 });
         Assert.Equal(2, embeddings.Count);
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => embeddings[-1]);
-        Assert.Throws<ArgumentOutOfRangeException>(() => embeddings[2]);
+        Assert.Throws<ArgumentOutOfRangeException>("index", () => embeddings[-1]);
+        Assert.Throws<ArgumentOutOfRangeException>("index", () => embeddings[2]);
     }
 }

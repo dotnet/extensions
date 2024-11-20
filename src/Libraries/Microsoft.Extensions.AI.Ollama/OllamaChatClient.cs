@@ -19,7 +19,7 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>An <see cref="IChatClient"/> for Ollama.</summary>
+/// <summary>Represents an <see cref="IChatClient"/> for Ollama.</summary>
 public sealed class OllamaChatClient : IChatClient
 {
     private static readonly JsonElement _defaultParameterSchema = JsonDocument.Parse("{}").RootElement;
@@ -30,11 +30,14 @@ public sealed class OllamaChatClient : IChatClient
     /// <summary>The <see cref="HttpClient"/> to use for sending requests.</summary>
     private readonly HttpClient _httpClient;
 
+    /// <summary>The <see cref="JsonSerializerOptions"/> use for any serialization activities related to tool call arguments and results.</summary>
+    private JsonSerializerOptions _toolCallJsonSerializerOptions = AIJsonUtilities.DefaultOptions;
+
     /// <summary>Initializes a new instance of the <see cref="OllamaChatClient"/> class.</summary>
     /// <param name="endpoint">The endpoint URI where Ollama is hosted.</param>
     /// <param name="modelId">
-    /// The id of the model to use. This may also be overridden per request via <see cref="ChatOptions.ModelId"/>.
-    /// Either this parameter or <see cref="ChatOptions.ModelId"/> must provide a valid model id.
+    /// The ID of the model to use. This ID can also be overridden per request via <see cref="ChatOptions.ModelId"/>.
+    /// Either this parameter or <see cref="ChatOptions.ModelId"/> must provide a valid model ID.
     /// </param>
     /// <param name="httpClient">An <see cref="HttpClient"/> instance to use for HTTP operations.</param>
     public OllamaChatClient(string endpoint, string? modelId = null, HttpClient? httpClient = null)
@@ -45,8 +48,8 @@ public sealed class OllamaChatClient : IChatClient
     /// <summary>Initializes a new instance of the <see cref="OllamaChatClient"/> class.</summary>
     /// <param name="endpoint">The endpoint URI where Ollama is hosted.</param>
     /// <param name="modelId">
-    /// The id of the model to use. This may also be overridden per request via <see cref="ChatOptions.ModelId"/>.
-    /// Either this parameter or <see cref="ChatOptions.ModelId"/> must provide a valid model id.
+    /// The ID of the model to use. This ID can also be overridden per request via <see cref="ChatOptions.ModelId"/>.
+    /// Either this parameter or <see cref="ChatOptions.ModelId"/> must provide a valid model ID.
     /// </param>
     /// <param name="httpClient">An <see cref="HttpClient"/> instance to use for HTTP operations.</param>
     public OllamaChatClient(Uri endpoint, string? modelId = null, HttpClient? httpClient = null)
@@ -66,7 +69,11 @@ public sealed class OllamaChatClient : IChatClient
     public ChatClientMetadata Metadata { get; }
 
     /// <summary>Gets or sets <see cref="JsonSerializerOptions"/> to use for any serialization activities related to tool call arguments and results.</summary>
-    public JsonSerializerOptions? ToolCallJsonSerializerOptions { get; set; }
+    public JsonSerializerOptions ToolCallJsonSerializerOptions
+    {
+        get => _toolCallJsonSerializerOptions;
+        set => _toolCallJsonSerializerOptions = Throw.IfNull(value);
+    }
 
     /// <inheritdoc />
     public async Task<ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
@@ -166,9 +173,14 @@ public sealed class OllamaChatClient : IChatClient
     }
 
     /// <inheritdoc />
-    public TService? GetService<TService>(object? key = null)
-        where TService : class
-        => key is null ? this as TService : null;
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        _ = Throw.IfNull(serviceType);
+
+        return
+            serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+            null;
+    }
 
     /// <inheritdoc />
     public void Dispose()
@@ -383,7 +395,6 @@ public sealed class OllamaChatClient : IChatClient
 
                 case FunctionCallContent fcc:
                 {
-                    JsonSerializerOptions serializerOptions = ToolCallJsonSerializerOptions ?? JsonContext.Default.Options;
                     yield return new OllamaChatRequestMessage
                     {
                         Role = "assistant",
@@ -391,7 +402,7 @@ public sealed class OllamaChatClient : IChatClient
                         {
                             CallId = fcc.CallId,
                             Name = fcc.Name,
-                            Arguments = JsonSerializer.SerializeToElement(fcc.Arguments, serializerOptions.GetTypeInfo(typeof(IDictionary<string, object?>))),
+                            Arguments = JsonSerializer.SerializeToElement(fcc.Arguments, ToolCallJsonSerializerOptions.GetTypeInfo(typeof(IDictionary<string, object?>))),
                         }, JsonContext.Default.OllamaFunctionCallContent)
                     };
                     break;
@@ -399,8 +410,7 @@ public sealed class OllamaChatClient : IChatClient
 
                 case FunctionResultContent frc:
                 {
-                    JsonSerializerOptions serializerOptions = ToolCallJsonSerializerOptions ?? JsonContext.Default.Options;
-                    JsonElement jsonResult = JsonSerializer.SerializeToElement(frc.Result, serializerOptions.GetTypeInfo(typeof(object)));
+                    JsonElement jsonResult = JsonSerializer.SerializeToElement(frc.Result, ToolCallJsonSerializerOptions.GetTypeInfo(typeof(object)));
                     yield return new OllamaChatRequestMessage
                     {
                         Role = "tool",

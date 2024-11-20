@@ -2,7 +2,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <PackageVersion Include="AutoFixture.AutoMoq" Version="4.17.0" />
-    <PackageVersion Include="Azure.AI.OpenAI" Version="2.0.0" />
+    <PackageVersion Include="Azure.AI.OpenAI" Version="2.1.0-beta.2" />
     <PackageVersion Include="autofixture" Version="4.17.0" />
     <PackageVersion Include="BenchmarkDotNet" Version="0.13.5" />
     <PackageVersion Include="FluentAssertions" Version="6.11.0" />

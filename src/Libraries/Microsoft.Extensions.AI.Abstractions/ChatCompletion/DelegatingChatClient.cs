@@ -38,7 +38,7 @@ public class DelegatingChatClient : IChatClient
     protected IChatClient InnerClient { get; }
 
     /// <summary>Provides a mechanism for releasing unmanaged resources.</summary>
-    /// <param name="disposing">true if being called from <see cref="Dispose()"/>; otherwise, false.</param>
+    /// <param name="disposing"><see langword="true"/> if being called from <see cref="Dispose()"/>; otherwise, <see langword="false"/>.</param>
     protected virtual void Dispose(bool disposing)
     {
         if (disposing)
@@ -63,12 +63,13 @@ public class DelegatingChatClient : IChatClient
     }
 
     /// <inheritdoc />
-    public virtual TService? GetService<TService>(object? key = null)
-        where TService : class
+    public virtual object? GetService(Type serviceType, object? serviceKey = null)
     {
-#pragma warning disable S3060 // "is" should not be used with "this"
-        // If the key is non-null, we don't know what it means so pass through to the inner service
-        return key is null && this is TService service ? service : InnerClient.GetService<TService>(key);
-#pragma warning restore S3060
+        _ = Throw.IfNull(serviceType);
+
+        // If the key is non-null, we don't know what it means so pass through to the inner service.
+        return
+            serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+            InnerClient.GetService(serviceType, serviceKey);
     }
 }

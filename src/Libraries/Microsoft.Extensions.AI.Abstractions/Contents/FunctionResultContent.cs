@@ -21,8 +21,8 @@ public sealed class FunctionResultContent : AIContent
     /// <param name="callId">The function call ID for which this is the result.</param>
     /// <param name="name">The function name that produced the result.</param>
     /// <param name="result">
-    /// This may be <see langword="null"/> if the function returned <see langword="null"/>, if the function was void-returning
-    /// and thus had no result, or if the function call failed. Typically, however, in order to provide meaningfully representative
+    /// <see langword="null"/> if the function returned <see langword="null"/> or was void-returning
+    /// and thus had no result, or if the function call failed. Typically, however, to provide meaningfully representative
     /// information to an AI service, a human-readable representation of those conditions should be supplied.
     /// </param>
     [JsonConstructor]
@@ -37,7 +37,7 @@ public sealed class FunctionResultContent : AIContent
     /// Gets or sets the ID of the function call for which this is the result.
     /// </summary>
     /// <remarks>
-    /// If this is the result for a <see cref="FunctionCallContent"/>, this should contain the same
+    /// If this is the result for a <see cref="FunctionCallContent"/>, this property should contain the same
     /// <see cref="FunctionCallContent.CallId"/> value.
     /// </remarks>
     public string CallId { get; set; }
@@ -51,8 +51,8 @@ public sealed class FunctionResultContent : AIContent
     /// Gets or sets the result of the function call, or a generic error message if the function call failed.
     /// </summary>
     /// <remarks>
-    /// This may be <see langword="null"/> if the function returned <see langword="null"/>, if the function was void-returning
-    /// and thus had no result, or if the function call failed. Typically, however, in order to provide meaningfully representative
+    /// <see langword="null"/> if the function returned <see langword="null"/> or was void-returning
+    /// and thus had no result, or if the function call failed. Typically, however, to provide meaningfully representative
     /// information to an AI service, a human-readable representation of those conditions should be supplied.
     /// </remarks>
     public object? Result { get; set; }
@@ -61,14 +61,15 @@ public sealed class FunctionResultContent : AIContent
     /// Gets or sets an exception that occurred if the function call failed.
     /// </summary>
     /// <remarks>
-    /// This property is for information purposes only. The <see cref="Exception"/> is not serialized as part of serializing
-    /// instances of this class with <see cref="JsonSerializer"/>; as such, upon deserialization, this property will be <see langword="null"/>.
-    /// Consumers should not rely on <see langword="null"/> indicating success. 
+    /// This property is for informational purposes only. The <see cref="Exception"/> is not serialized as part of serializing
+    /// instances of this class with <see cref="JsonSerializer"/>. As such, upon deserialization, this property will be <see langword="null"/>.
+    /// Consumers should not rely on <see langword="null"/> indicating success.
     /// </remarks>
     [JsonIgnore]
     public Exception? Exception { get; set; }
 
     /// <summary>Gets a string representing this instance to display in the debugger.</summary>
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay
     {
         get

@@ -14,7 +14,7 @@ public class DelegatingChatClientTests
     [Fact]
     public void RequiresInnerChatClient()
     {
-        Assert.Throws<ArgumentNullException>(() => new NoOpDelegatingChatClient(null!));
+        Assert.Throws<ArgumentNullException>("innerClient", () => new NoOpDelegatingChatClient(null!));
     }
 
     [Fact]
@@ -94,6 +94,14 @@ public class DelegatingChatClientTests
         Assert.True(await enumerator.MoveNextAsync());
         Assert.Same(expectedResults[1], enumerator.Current);
         Assert.False(await enumerator.MoveNextAsync());
+    }
+
+    [Fact]
+    public void GetServiceThrowsForNullType()
+    {
+        using var inner = new TestChatClient();
+        using var delegating = new NoOpDelegatingChatClient(inner);
+        Assert.Throws<ArgumentNullException>("serviceType", () => delegating.GetService(null!));
     }
 
     [Fact]

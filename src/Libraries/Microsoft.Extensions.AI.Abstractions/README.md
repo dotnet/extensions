@@ -150,9 +150,9 @@ using Microsoft.Extensions.AI;
 [Description("Gets the current weather")]
 string GetCurrentWeather() => Random.Shared.NextDouble() > 0.5 ? "It's sunny" : "It's raining";
 
-IChatClient client = new ChatClientBuilder()
+IChatClient client = new ChatClientBuilder(new OllamaChatClient(new Uri("http://localhost:11434"), "llama3.1"))
     .UseFunctionInvocation()
-    .Use(new OllamaChatClient(new Uri("http://localhost:11434"), "llama3.1"));
+    .Build();
 
 var response = client.CompleteStreamingAsync(
     "Should I wear a rain coat?",
@@ -174,9 +174,9 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 
-IChatClient client = new ChatClientBuilder()
+IChatClient client = new ChatClientBuilder(new SampleChatClient(new Uri("http://coolsite.ai"), "my-custom-model"))
     .UseDistributedCache(new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions())))
-    .Use(new SampleChatClient(new Uri("http://coolsite.ai"), "my-custom-model"));
+    .Build();
 
 string[] prompts = ["What is AI?", "What is .NET?", "What is AI?"];
 
@@ -205,11 +205,27 @@ var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
     .AddConsoleExporter()
     .Build();
 
-IChatClient client = new ChatClientBuilder()
+IChatClient client = new ChatClientBuilder(new SampleChatClient(new Uri("http://coolsite.ai"), "my-custom-model"))
     .UseOpenTelemetry(sourceName, c => c.EnableSensitiveData = true)
-    .Use(new SampleChatClient(new Uri("http://coolsite.ai"), "my-custom-model"));
+    .Build();
 
 Console.WriteLine((await client.CompleteAsync("What is AI?")).Message);
+```
+
+#### Options
+
+Every call to `CompleteAsync` or `CompleteStreamingAsync` may optionally supply a `ChatOptions` instance containing additional parameters for the operation. The most common parameters that are common amongst AI models and services show up as strongly-typed properties on the type, such as `ChatOptions.Temperature`. Other parameters may be supplied by name in a weakly-typed manner via the `ChatOptions.AdditionalProperties` dictionary.
+
+Options may also be baked into an `IChatClient` via the `ConfigureOptions` extension method on `ChatClientBuilder`. This delegating client wraps another client and invokes the supplied delegate to populate a `ChatOptions` instance for every call. For example, to ensure that the `ChatOptions.ModelId` property defaults to a particular model name, code like the following may be used:
+```csharp
+using Microsoft.Extensions.AI;
+
+IChatClient client = new ChatClientBuilder(new OllamaChatClient(new Uri("http://localhost:11434")))
+    .ConfigureOptions(options => options.ModelId ??= "phi3")
+    .Build();
+
+Console.WriteLine(await client.CompleteAsync("What is AI?")); // will request "phi3"
+Console.WriteLine(await client.CompleteAsync("What is AI?", new() { ModelId = "llama3.1" })); // will request "llama3.1"
 ```
 
 #### Pipelines of Functionality
@@ -232,11 +248,11 @@ var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
 
 // Explore changing the order of the intermediate "Use" calls to see that impact
 // that has on what gets cached, traced, etc.
-IChatClient client = new ChatClientBuilder()
+IChatClient client = new ChatClientBuilder(new OllamaChatClient(new Uri("http://localhost:11434"), "llama3.1"))
     .UseDistributedCache(new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions())))
     .UseFunctionInvocation()
     .UseOpenTelemetry(sourceName, c => c.EnableSensitiveData = true)
-    .Use(new OllamaChatClient(new Uri("http://localhost:11434"), "llama3.1"));
+    .Build();
 
 ChatOptions options = new()
 {
@@ -313,6 +329,80 @@ var client = new RateLimitingChatClient(
 await client.CompleteAsync("What color is the sky?");
 ```
 
+To make it easier to compose such components with others, the author of the component is recommended to create a "Use" extension method for registering this component into a pipeline, e.g.
+```csharp
+public static class RateLimitingChatClientExtensions
+{
+    public static ChatClientBuilder UseRateLimiting(this ChatClientBuilder builder, RateLimiter rateLimiter) =>
+        builder.Use(innerClient => new RateLimitingChatClient(innerClient, rateLimiter));
+}
+```
+
+Such extensions may also query for relevant services from the DI container; the `IServiceProvider` used by the pipeline is passed in as an optional parameter:
+```csharp
+public static class RateLimitingChatClientExtensions
+{
+    public static ChatClientBuilder UseRateLimiting(this ChatClientBuilder builder, RateLimiter? rateLimiter = null) =>
+        builder.Use((innerClient, services) => new RateLimitingChatClient(innerClient, services.GetRequiredService<RateLimiter>()));
+}
+```
+
+The consumer can then easily use this in their pipeline, e.g.
+```csharp
+var client = new SampleChatClient(new Uri("http://localhost"), "test")
+    .AsBuilder()
+    .UseDistributedCache()
+    .UseRateLimiting()
+    .UseOpenTelemetry()
+    .Build(services);
+```
+
+The above extension methods demonstrate using a `Use` method on `ChatClientBuilder`. `ChatClientBuilder` also provides `Use` overloads that make it easier to
+write such delegating handlers. For example, in the earlier `RateLimitingChatClient` example, the overrides of `CompleteAsync` and `CompleteStreamingAsync` only
+need to do work before and after delegating to the next client in the pipeline. To achieve the same thing without writing a custom class, an overload of `Use` may
+be used that accepts a delegate which is used for both `CompleteAsync` and `CompleteStreamingAsync`, reducing the boilderplate required:
+```csharp
+RateLimiter rateLimiter = ...;
+var client = new SampleChatClient(new Uri("http://localhost"), "test")
+    .AsBuilder()
+    .UseDistributedCache()
+    .Use(async (chatMessages, options, nextAsync, cancellationToken) =>
+    {
+        using var lease = await rateLimiter.AcquireAsync(permitCount: 1, cancellationToken).ConfigureAwait(false);
+        if (!lease.IsAcquired)
+            throw new InvalidOperationException("Unable to acquire lease.");
+
+        await nextAsync(chatMessages, options, cancellationToken);
+    })
+    .UseOpenTelemetry()
+    .Build();
+```
+This overload internally uses a public `AnonymousDelegatingChatClient`, which enables more complicated patterns with only a little additional code.
+For example, to achieve the same as above but with the `RateLimiter` retrieved from DI:
+```csharp
+var client = new SampleChatClient(new Uri("http://localhost"), "test")
+    .AsBuilder()
+    .UseDistributedCache()
+    .Use((innerClient, services) =>
+    {
+        RateLimiter rateLimiter = services.GetRequiredService<RateLimiter>();
+        return new AnonymousDelegatingChatClient(innerClient, async (chatMessages, options, next, cancellationToken) =>
+        {
+            using var lease = await rateLimiter.AcquireAsync(permitCount: 1, cancellationToken).ConfigureAwait(false);
+            if (!lease.IsAcquired)
+                throw new InvalidOperationException("Unable to acquire lease.");
+
+            await next(chatMessages, options, cancellationToken);
+        });
+    })
+    .UseOpenTelemetry()
+    .Build();
+```
+
+For scenarios where the developer would like to specify delegating implementations of `CompleteAsync` and `CompleteStreamingAsync` inline,
+and where it's important to be able to write a different implementation for each in order to handle their unique return types specially,
+another overload of `Use` exists that accepts a delegate for each.
+
 #### Dependency Injection
 
 `IChatClient` implementations will typically be provided to an application via dependency injection (DI). In this example, an `IDistributedCache` is added into the DI container, as is an `IChatClient`. The registration for the `IChatClient` employs a builder that creates a pipeline containing a caching client (which will then use an `IDistributedCache` retrieved from DI) and the sample client. Elsewhere in the app, the injected `IChatClient` may be retrieved and used.
@@ -325,9 +415,8 @@ using Microsoft.Extensions.Hosting;
 // App Setup
 var builder = Host.CreateApplicationBuilder();
 builder.Services.AddDistributedMemoryCache();
-builder.Services.AddChatClient(b => b
-    .UseDistributedCache()
-    .Use(new SampleChatClient(new Uri("http://coolsite.ai"), "my-custom-model")));
+builder.Services.AddChatClient(new SampleChatClient(new Uri("http://coolsite.ai"), "my-custom-model"))
+    .UseDistributedCache();
 var host = builder.Build();
 
 // Elsewhere in the app
@@ -417,10 +506,11 @@ var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
 
 // Explore changing the order of the intermediate "Use" calls to see that impact
 // that has on what gets cached, traced, etc.
-IEmbeddingGenerator<string, Embedding<float>> generator = new EmbeddingGeneratorBuilder<string, Embedding<float>>()
+var generator = new EmbeddingGeneratorBuilder<string, Embedding<float>>(
+        new SampleEmbeddingGenerator(new Uri("http://coolsite.ai"), "my-custom-model"))
     .UseDistributedCache(new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions())))
     .UseOpenTelemetry(sourceName)
-    .Use(new SampleEmbeddingGenerator(new Uri("http://coolsite.ai"), "my-custom-model"));
+    .Build();
 
 var embeddings = await generator.GenerateAsync(
 [

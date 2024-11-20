@@ -167,4 +167,131 @@ public class ChatCompletionTests
         Assert.IsType<JsonElement>(value);
         Assert.Equal("value", ((JsonElement)value!).GetString());
     }
+
+    [Fact]
+    public void ToString_OneChoice_OutputsChatMessageToString()
+    {
+        ChatCompletion completion = new(
+        [
+            new ChatMessage(ChatRole.Assistant, "This is a test." + Environment.NewLine + "It's multiple lines.")
+        ]);
+
+        Assert.Equal(completion.Choices[0].Text, completion.ToString());
+    }
+
+    [Fact]
+    public void ToString_MultipleChoices_OutputsAllChoicesWithPrefix()
+    {
+        ChatCompletion completion = new(
+        [
+            new ChatMessage(ChatRole.Assistant, "This is a test." + Environment.NewLine + "It's multiple lines."),
+            new ChatMessage(ChatRole.Assistant, "So is" + Environment.NewLine + " this."),
+            new ChatMessage(ChatRole.Assistant, "And this."),
+        ]);
+
+        Assert.Equal(
+            "Choice 0:" + Environment.NewLine +
+            completion.Choices[0] + Environment.NewLine + Environment.NewLine +
+
+            "Choice 1:" + Environment.NewLine +
+            completion.Choices[1] + Environment.NewLine + Environment.NewLine +
+
+            "Choice 2:" + Environment.NewLine +
+            completion.Choices[2],
+
+            completion.ToString());
+    }
+
+    [Fact]
+    public void ToStreamingChatCompletionUpdates_SingleChoice()
+    {
+        ChatCompletion completion = new(new ChatMessage(new ChatRole("customRole"), "Text"))
+        {
+            CompletionId = "12345",
+            ModelId = "someModel",
+            FinishReason = ChatFinishReason.ContentFilter,
+            CreatedAt = new DateTimeOffset(2024, 11, 10, 9, 20, 0, TimeSpan.Zero),
+            AdditionalProperties = new() { ["key1"] = "value1", ["key2"] = 42 },
+        };
+
+        StreamingChatCompletionUpdate[] updates = completion.ToStreamingChatCompletionUpdates();
+        Assert.NotNull(updates);
+        Assert.Equal(2, updates.Length);
+
+        StreamingChatCompletionUpdate update0 = updates[0];
+        Assert.Equal("12345", update0.CompletionId);
+        Assert.Equal("someModel", update0.ModelId);
+        Assert.Equal(ChatFinishReason.ContentFilter, update0.FinishReason);
+        Assert.Equal(new DateTimeOffset(2024, 11, 10, 9, 20, 0, TimeSpan.Zero), update0.CreatedAt);
+        Assert.Equal("customRole", update0.Role?.Value);
+        Assert.Equal("Text", update0.Text);
+
+        StreamingChatCompletionUpdate update1 = updates[1];
+        Assert.Equal("value1", update1.AdditionalProperties?["key1"]);
+        Assert.Equal(42, update1.AdditionalProperties?["key2"]);
+    }
+
+    [Fact]
+    public void ToStreamingChatCompletionUpdates_MultiChoice()
+    {
+        ChatCompletion completion = new(
+        [
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new TextContent("Hello, "),
+                new ImageContent("http://localhost/image.png"),
+                new TextContent("world!"),
+            ])
+            {
+                AdditionalProperties = new() { ["choice1Key"] = "choice1Value" },
+            },
+
+            new ChatMessage(ChatRole.System,
+            [
+                new FunctionCallContent("call123", "name"),
+                new FunctionResultContent("call123", "name", 42),
+            ])
+            {
+                AdditionalProperties = new() { ["choice2Key"] = "choice2Value" },
+            },
+        ])
+        {
+            CompletionId = "12345",
+            ModelId = "someModel",
+            FinishReason = ChatFinishReason.ContentFilter,
+            CreatedAt = new DateTimeOffset(2024, 11, 10, 9, 20, 0, TimeSpan.Zero),
+            AdditionalProperties = new() { ["key1"] = "value1", ["key2"] = 42 },
+            Usage = new UsageDetails { TotalTokenCount = 123 },
+        };
+
+        StreamingChatCompletionUpdate[] updates = completion.ToStreamingChatCompletionUpdates();
+        Assert.NotNull(updates);
+        Assert.Equal(3, updates.Length);
+
+        StreamingChatCompletionUpdate update0 = updates[0];
+        Assert.Equal("12345", update0.CompletionId);
+        Assert.Equal("someModel", update0.ModelId);
+        Assert.Equal(ChatFinishReason.ContentFilter, update0.FinishReason);
+        Assert.Equal(new DateTimeOffset(2024, 11, 10, 9, 20, 0, TimeSpan.Zero), update0.CreatedAt);
+        Assert.Equal("assistant", update0.Role?.Value);
+        Assert.Equal("Hello, ", Assert.IsType<TextContent>(update0.Contents[0]).Text);
+        Assert.IsType<ImageContent>(update0.Contents[1]);
+        Assert.Equal("world!", Assert.IsType<TextContent>(update0.Contents[2]).Text);
+        Assert.Equal("choice1Value", update0.AdditionalProperties?["choice1Key"]);
+
+        StreamingChatCompletionUpdate update1 = updates[1];
+        Assert.Equal("12345", update1.CompletionId);
+        Assert.Equal("someModel", update1.ModelId);
+        Assert.Equal(ChatFinishReason.ContentFilter, update1.FinishReason);
+        Assert.Equal(new DateTimeOffset(2024, 11, 10, 9, 20, 0, TimeSpan.Zero), update1.CreatedAt);
+        Assert.Equal("system", update1.Role?.Value);
+        Assert.IsType<FunctionCallContent>(update1.Contents[0]);
+        Assert.IsType<FunctionResultContent>(update1.Contents[1]);
+        Assert.Equal("choice2Value", update1.AdditionalProperties?["choice2Key"]);
+
+        StreamingChatCompletionUpdate update2 = updates[2];
+        Assert.Equal("value1", update2.AdditionalProperties?["key1"]);
+        Assert.Equal(42, update2.AdditionalProperties?["key2"]);
+        Assert.Equal(123, Assert.IsType<UsageContent>(Assert.Single(update2.Contents)).Details.TotalTokenCount);
+    }
 }

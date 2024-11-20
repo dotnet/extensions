@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -16,6 +15,7 @@ using Microsoft.Shared.Diagnostics;
 using OpenAI;
 using OpenAI.Chat;
 
+#pragma warning disable S1067 // Expressions should not be too complex
 #pragma warning disable S1135 // Track uses of "TODO" tags
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 #pragma warning disable SA1204 // Static elements should appear before instance elements
@@ -23,8 +23,8 @@ using OpenAI.Chat;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>An <see cref="IChatClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="OpenAI.Chat.ChatClient"/>.</summary>
-public sealed partial class OpenAIChatClient : IChatClient
+/// <summary>Represents an <see cref="IChatClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="OpenAI.Chat.ChatClient"/>.</summary>
+public sealed class OpenAIChatClient : IChatClient
 {
     private static readonly JsonElement _defaultParameterSchema = JsonDocument.Parse("{}").RootElement;
 
@@ -36,6 +36,9 @@ public sealed partial class OpenAIChatClient : IChatClient
 
     /// <summary>The underlying <see cref="ChatClient" />.</summary>
     private readonly ChatClient _chatClient;
+
+    /// <summary>The <see cref="JsonSerializerOptions"/> use for any serialization activities related to tool call arguments and results.</summary>
+    private JsonSerializerOptions _toolCallJsonSerializerOptions = AIJsonUtilities.DefaultOptions;
 
     /// <summary>Initializes a new instance of the <see cref="OpenAIChatClient"/> class for the specified <see cref="OpenAIClient"/>.</summary>
     /// <param name="openAIClient">The underlying client.</param>
@@ -79,17 +82,27 @@ public sealed partial class OpenAIChatClient : IChatClient
     }
 
     /// <summary>Gets or sets <see cref="JsonSerializerOptions"/> to use for any serialization activities related to tool call arguments and results.</summary>
-    public JsonSerializerOptions? ToolCallJsonSerializerOptions { get; set; }
+    public JsonSerializerOptions ToolCallJsonSerializerOptions
+    {
+        get => _toolCallJsonSerializerOptions;
+        set => _toolCallJsonSerializerOptions = Throw.IfNull(value);
+    }
 
     /// <inheritdoc />
     public ChatClientMetadata Metadata { get; }
 
     /// <inheritdoc />
-    public TService? GetService<TService>(object? key = null)
-        where TService : class =>
-        typeof(TService) == typeof(OpenAIClient) ? (TService?)(object?)_openAIClient :
-        typeof(TService) == typeof(ChatClient) ? (TService)(object)_chatClient :
-        this as TService;
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        _ = Throw.IfNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(OpenAIClient) ? _openAIClient :
+            serviceType == typeof(ChatClient) ? _chatClient :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
+    }
 
     /// <inheritdoc />
     public async Task<ChatCompletion> CompleteAsync(
@@ -500,14 +513,14 @@ public sealed partial class OpenAIChatClient : IChatClient
             }
 
             resultParameters = BinaryData.FromBytes(
-                JsonSerializer.SerializeToUtf8Bytes(tool, JsonContext.Default.OpenAIChatToolJson));
+                JsonSerializer.SerializeToUtf8Bytes(tool, OpenAIJsonContext.Default.OpenAIChatToolJson));
         }
 
         return ChatTool.CreateFunctionTool(aiFunction.Metadata.Name, aiFunction.Metadata.Description, resultParameters, strict);
     }
 
     /// <summary>Used to create the JSON payload for an OpenAI chat tool description.</summary>
-    private sealed class OpenAIChatToolJson
+    internal sealed class OpenAIChatToolJson
     {
         /// <summary>Gets a singleton JSON data for empty parameters. Optimization for the reasonably common case of a parameterless function.</summary>
         public static BinaryData ZeroFunctionParametersSchema { get; } = new("""{"type":"object","required":[],"properties":{}}"""u8.ToArray());
@@ -586,7 +599,7 @@ public sealed partial class OpenAIChatClient : IChatClient
                         {
                             try
                             {
-                                result = JsonSerializer.Serialize(resultContent.Result, JsonContext.GetTypeInfo(typeof(object), ToolCallJsonSerializerOptions));
+                                result = JsonSerializer.Serialize(resultContent.Result, ToolCallJsonSerializerOptions.GetTypeInfo(typeof(object)));
                             }
                             catch (NotSupportedException)
                             {
@@ -615,7 +628,7 @@ public sealed partial class OpenAIChatClient : IChatClient
                                 callRequest.Name,
                                 new(JsonSerializer.SerializeToUtf8Bytes(
                                     callRequest.Arguments,
-                                    JsonContext.GetTypeInfo(typeof(IDictionary<string, object?>), ToolCallJsonSerializerOptions)))));
+                                    ToolCallJsonSerializerOptions.GetTypeInfo(typeof(IDictionary<string, object?>))))));
                     }
                 }
 
@@ -661,60 +674,11 @@ public sealed partial class OpenAIChatClient : IChatClient
 
     private static FunctionCallContent ParseCallContentFromJsonString(string json, string callId, string name) =>
         FunctionCallContent.CreateFromParsedArguments(json, callId, name,
-            argumentParser: static json => JsonSerializer.Deserialize(json, JsonContext.Default.IDictionaryStringObject)!);
+            argumentParser: static json => JsonSerializer.Deserialize(json,
+                (JsonTypeInfo<IDictionary<string, object>>)AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object>)))!);
 
     private static FunctionCallContent ParseCallContentFromBinaryData(BinaryData ut8Json, string callId, string name) =>
         FunctionCallContent.CreateFromParsedArguments(ut8Json, callId, name,
-            argumentParser: static json => JsonSerializer.Deserialize(json, JsonContext.Default.IDictionaryStringObject)!);
-
-    /// <summary>Source-generated JSON type information.</summary>
-    [JsonSourceGenerationOptions(JsonSerializerDefaults.Web,
-        UseStringEnumConverter = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        WriteIndented = true)]
-    [JsonSerializable(typeof(OpenAIChatToolJson))]
-    [JsonSerializable(typeof(IDictionary<string, object?>))]
-    [JsonSerializable(typeof(JsonElement))]
-    private sealed partial class JsonContext : JsonSerializerContext
-    {
-        /// <summary>Gets the <see cref="JsonSerializerOptions"/> singleton used as the default in JSON serialization operations.</summary>
-        private static readonly JsonSerializerOptions _defaultToolJsonOptions = CreateDefaultToolJsonOptions();
-
-        /// <summary>Gets JSON type information for the specified type.</summary>
-        /// <remarks>
-        /// This first tries to get the type information from <paramref name="firstOptions"/>,
-        /// falling back to <see cref="_defaultToolJsonOptions"/> if it can't.
-        /// </remarks>
-        public static JsonTypeInfo GetTypeInfo(Type type, JsonSerializerOptions? firstOptions) =>
-            firstOptions?.TryGetTypeInfo(type, out JsonTypeInfo? info) is true ?
-                info :
-                _defaultToolJsonOptions.GetTypeInfo(type);
-
-        /// <summary>Creates the default <see cref="JsonSerializerOptions"/> to use for serialization-related operations.</summary>
-        [UnconditionalSuppressMessage("AotAnalysis", "IL3050", Justification = "DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled")]
-        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026", Justification = "DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled")]
-        private static JsonSerializerOptions CreateDefaultToolJsonOptions()
-        {
-            // If reflection-based serialization is enabled by default, use it, as it's the most permissive in terms of what it can serialize,
-            // and we want to be flexible in terms of what can be put into the various collections in the object model.
-            // Otherwise, use the source-generated options to enable trimming and Native AOT.
-
-            if (JsonSerializer.IsReflectionEnabledByDefault)
-            {
-                // Keep in sync with the JsonSourceGenerationOptions attribute on JsonContext above.
-                JsonSerializerOptions options = new(JsonSerializerDefaults.Web)
-                {
-                    TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
-                    Converters = { new JsonStringEnumConverter() },
-                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                    WriteIndented = true,
-                };
-
-                options.MakeReadOnly();
-                return options;
-            }
-
-            return Default.Options;
-        }
-    }
+            argumentParser: static json => JsonSerializer.Deserialize(json,
+                (JsonTypeInfo<IDictionary<string, object>>)AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object>)))!);
 }

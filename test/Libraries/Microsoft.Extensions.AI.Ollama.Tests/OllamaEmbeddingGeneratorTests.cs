@@ -29,10 +29,11 @@ public class OllamaEmbeddingGeneratorTests
         Assert.Same(generator, generator.GetService<OllamaEmbeddingGenerator>());
         Assert.Same(generator, generator.GetService<IEmbeddingGenerator<string, Embedding<float>>>());
 
-        using IEmbeddingGenerator<string, Embedding<float>> pipeline = new EmbeddingGeneratorBuilder<string, Embedding<float>>()
+        using IEmbeddingGenerator<string, Embedding<float>> pipeline = generator
+            .AsBuilder()
             .UseOpenTelemetry()
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))
-            .Use(generator);
+            .Build();
 
         Assert.NotNull(pipeline.GetService<DistributedCachingEmbeddingGenerator<string, Embedding<float>>>());
         Assert.NotNull(pipeline.GetService<CachingEmbeddingGenerator<string, Embedding<float>>>());

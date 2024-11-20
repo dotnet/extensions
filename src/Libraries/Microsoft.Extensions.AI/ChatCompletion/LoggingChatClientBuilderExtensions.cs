@@ -13,20 +13,23 @@ public static class LoggingChatClientBuilderExtensions
 {
     /// <summary>Adds logging to the chat client pipeline.</summary>
     /// <param name="builder">The <see cref="ChatClientBuilder"/>.</param>
-    /// <param name="logger">
-    /// An optional <see cref="ILogger"/> with which logging should be performed. If not supplied, an instance will be resolved from the service provider.
+    /// <param name="loggerFactory">
+    /// An optional <see cref="ILoggerFactory"/> used to create a logger with which logging should be performed.
+    /// If not supplied, a required instance will be resolved from the service provider.
     /// </param>
     /// <param name="configure">An optional callback that can be used to configure the <see cref="LoggingChatClient"/> instance.</param>
     /// <returns>The <paramref name="builder"/>.</returns>
     public static ChatClientBuilder UseLogging(
-        this ChatClientBuilder builder, ILogger? logger = null, Action<LoggingChatClient>? configure = null)
+        this ChatClientBuilder builder,
+        ILoggerFactory? loggerFactory = null,
+        Action<LoggingChatClient>? configure = null)
     {
         _ = Throw.IfNull(builder);
 
-        return builder.Use((services, innerClient) =>
+        return builder.Use((innerClient, services) =>
         {
-            logger ??= services.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(LoggingChatClient));
-            var chatClient = new LoggingChatClient(innerClient, logger);
+            loggerFactory ??= services.GetRequiredService<ILoggerFactory>();
+            var chatClient = new LoggingChatClient(innerClient, loggerFactory.CreateLogger(typeof(LoggingChatClient)));
             configure?.Invoke(chatClient);
             return chatClient;
         });

@@ -8,8 +8,8 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// Indicates that a chat tool must be called. It may optionally nominate a specific function,
-/// or if not, indicates that any of them may be selected.
+/// Represents a mode where a chat tool must be called. This class can optionally nominate a specific function
+/// or indicate that any of the functions can be selected.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class RequiredChatToolMode : ChatToolMode
@@ -18,7 +18,7 @@ public sealed class RequiredChatToolMode : ChatToolMode
     /// Gets the name of a specific <see cref="AIFunction"/> that must be called.
     /// </summary>
     /// <remarks>
-    /// If the value is <see langword="null"/>, any available function may be selected (but at least one must be).
+    /// If the value is <see langword="null"/>, any available function can be selected (but at least one must be).
     /// </remarks>
     public string? RequiredFunctionName { get; }
 
@@ -27,8 +27,8 @@ public sealed class RequiredChatToolMode : ChatToolMode
     /// </summary>
     /// <param name="requiredFunctionName">The name of the function that must be called.</param>
     /// <remarks>
-    /// <paramref name="requiredFunctionName"/> may be <see langword="null"/>. However, it is preferable to use
-    /// <see cref="ChatToolMode.RequireAny"/> when any function may be selected.
+    /// <paramref name="requiredFunctionName"/> can be <see langword="null"/>. However, it's preferable to use
+    /// <see cref="ChatToolMode.RequireAny"/> when any function can be selected.
     /// </remarks>
     public RequiredChatToolMode(string? requiredFunctionName)
     {
@@ -47,6 +47,7 @@ public sealed class RequiredChatToolMode : ChatToolMode
     // Equals/GetHashCode as well, which they likely won't.
 
     /// <summary>Gets a string representing this instance to display in the debugger.</summary>
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => $"Required: {RequiredFunctionName ?? "Any"}";
 
     /// <inheritdoc/>

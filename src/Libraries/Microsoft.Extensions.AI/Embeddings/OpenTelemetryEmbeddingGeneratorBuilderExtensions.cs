@@ -15,7 +15,7 @@ public static class OpenTelemetryEmbeddingGeneratorBuilderExtensions
     /// Adds OpenTelemetry support to the embedding generator pipeline, following the OpenTelemetry Semantic Conventions for Generative AI systems.
     /// </summary>
     /// <remarks>
-    /// The draft specification this follows is available at https://opentelemetry.io/docs/specs/semconv/gen-ai/.
+    /// The draft specification this follows is available at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
     /// The specification is still experimental and subject to change; as such, the telemetry output by this generator is also subject to change.
     /// </remarks>
     /// <typeparam name="TInput">The type of input used to produce embeddings.</typeparam>
@@ -31,7 +31,7 @@ public static class OpenTelemetryEmbeddingGeneratorBuilderExtensions
         string? sourceName = null,
         Action<OpenTelemetryEmbeddingGenerator<TInput, TEmbedding>>? configure = null)
         where TEmbedding : Embedding =>
-        Throw.IfNull(builder).Use((services, innerGenerator) =>
+        Throw.IfNull(builder).Use((innerGenerator, services) =>
         {
             loggerFactory ??= services.GetService<ILoggerFactory>();
 

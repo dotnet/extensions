@@ -86,13 +86,14 @@ public class OpenTelemetryChatClientTests
             };
         }
 
-        var chatClient = new ChatClientBuilder()
+        var chatClient = innerClient
+            .AsBuilder()
             .UseOpenTelemetry(loggerFactory, sourceName, configure: instance =>
             {
                 instance.EnableSensitiveData = enableSensitiveData;
                 instance.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
             })
-            .Use(innerClient);
+            .Build();
 
         List<ChatMessage> chatMessages =
         [

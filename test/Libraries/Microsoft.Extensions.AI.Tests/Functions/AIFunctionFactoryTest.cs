@@ -15,11 +15,11 @@ public class AIFunctionFactoryTest
     [Fact]
     public void InvalidArguments_Throw()
     {
-        Assert.Throws<ArgumentNullException>(() => AIFunctionFactory.Create(method: null!));
-        Assert.Throws<ArgumentNullException>(() => AIFunctionFactory.Create(method: null!, target: new object()));
-        Assert.Throws<ArgumentNullException>(() => AIFunctionFactory.Create(method: null!, target: new object(), name: "myAiFunk"));
-        Assert.Throws<ArgumentNullException>(() => AIFunctionFactory.Create(typeof(AIFunctionFactoryTest).GetMethod(nameof(InvalidArguments_Throw))!, null));
-        Assert.Throws<ArgumentException>(() => AIFunctionFactory.Create(typeof(List<>).GetMethod("Add")!, new List<int>()));
+        Assert.Throws<ArgumentNullException>("method", () => AIFunctionFactory.Create(method: null!));
+        Assert.Throws<ArgumentNullException>("method", () => AIFunctionFactory.Create(method: null!, target: new object()));
+        Assert.Throws<ArgumentNullException>("method", () => AIFunctionFactory.Create(method: null!, target: new object(), name: "myAiFunk"));
+        Assert.Throws<ArgumentNullException>("target", () => AIFunctionFactory.Create(typeof(AIFunctionFactoryTest).GetMethod(nameof(InvalidArguments_Throw))!, null));
+        Assert.Throws<ArgumentException>("method", () => AIFunctionFactory.Create(typeof(List<>).GetMethod("Add")!, new List<int>()));
     }
 
     [Fact]
@@ -181,5 +181,17 @@ public class AIFunctionFactoryTest
         Assert.Equal(parameterMetadata, func.Metadata.Parameters);
         Assert.Equal(returnParameterMetadata, func.Metadata.ReturnParameter);
         Assert.Equal(metadata, func.Metadata.AdditionalProperties);
+    }
+
+    [Fact]
+    public void AIFunctionFactoryCreateOptions_SchemaOptions_HasExpectedDefaults()
+    {
+        var options = new AIFunctionFactoryCreateOptions();
+        var schemaOptions = options.SchemaCreateOptions;
+
+        Assert.NotNull(schemaOptions);
+        Assert.True(schemaOptions.IncludeTypeInEnumSchemas);
+        Assert.True(schemaOptions.RequireAllProperties);
+        Assert.True(schemaOptions.DisallowAdditionalProperties);
     }
 }
