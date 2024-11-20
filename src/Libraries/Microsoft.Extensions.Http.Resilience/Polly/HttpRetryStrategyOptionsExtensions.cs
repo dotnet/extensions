@@ -44,10 +44,9 @@ public static class HttpRetryStrategyOptionsExtensions
     /// <param name="methods">The list of HTTP methods.</param>
     public static void DisableFor(this HttpRetryStrategyOptions options, params HttpMethod[] methods)
     {
-        _ = Throw.IfNull(options);
         _ = Throw.IfNullOrEmpty(methods);
 
-        var shouldHandle = options.ShouldHandle;
+        var shouldHandle = Throw.IfNullOrMemberNull(options, options?.ShouldHandle);
 
         options.ShouldHandle = async args =>
         {

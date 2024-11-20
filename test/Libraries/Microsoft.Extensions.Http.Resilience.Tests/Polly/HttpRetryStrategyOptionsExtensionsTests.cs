@@ -30,6 +30,13 @@ public class HttpRetryStrategyOptionsExtensionsTests
         Assert.Throws<ArgumentException>(() => new HttpRetryStrategyOptions().DisableFor([]));
     }
 
+    [Fact]
+    public void DisableFor_ShouldHandleIsNull_Throws()
+    {
+        var options = new HttpRetryStrategyOptions { ShouldHandle = null! };
+        Assert.Throws<ArgumentException>(() => options.DisableFor(HttpMethod.Get));
+    }
+
     [Theory]
     [InlineData("POST", false)]
     [InlineData("DELETE", false)]
