@@ -94,6 +94,10 @@ public static partial class AIJsonUtilities
     /// <param name="serializerOptions">The options used to extract the schema from the specified type.</param>
     /// <param name="inferenceOptions">The options controlling schema inference.</param>
     /// <returns>A JSON schema document encoded as a <see cref="JsonElement"/>.</returns>
+    /// <remarks>
+    /// Uses a cache keyed on the <paramref name="serializerOptions"/> to store schema result,
+    /// unless a <see cref="AIJsonSchemaCreateOptions.TransformSchemaNode" /> delegate has been specified.
+    /// </remarks>
     public static JsonElement CreateParameterJsonSchema(
         Type? type,
         string parameterName,
@@ -127,6 +131,10 @@ public static partial class AIJsonUtilities
     /// <param name="serializerOptions">The options used to extract the schema from the specified type.</param>
     /// <param name="inferenceOptions">The options controlling schema inference.</param>
     /// <returns>A <see cref="JsonElement"/> representing the schema.</returns>
+    /// <remarks>
+    /// Uses a cache keyed on the <paramref name="serializerOptions"/> to store schema result,
+    /// unless a <see cref="AIJsonSchemaCreateOptions.TransformSchemaNode" /> delegate has been specified.
+    /// </remarks>
     public static JsonElement CreateJsonSchema(
         Type? type,
         string? description = null,
