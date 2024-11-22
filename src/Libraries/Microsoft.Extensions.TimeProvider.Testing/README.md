@@ -33,7 +33,7 @@ public void Advance(TimeSpan delta)
 public void SetLocalTimeZone(TimeZoneInfo localTimeZone)
 ```
 
-### ExpiryCache with TimeProvider
+### `ExpiryCache` with `TimeProvider`
 
 The example below demonstrates the `ExpiryCache` class and how it can be tested using `FakeTimeProvider` in `ExpiryCacheTests`. 
 
@@ -65,7 +65,7 @@ public class ExpiryCache<TKey, TValue>
     public bool TryGetValue(TKey key, out TValue value)
     {
         value = default;
-        if (_cache.TryGetValue(key, out var cacheItem))
+        if (_cache.TryGetValue(key, out TValue cacheItem))
         {
             if (cacheItem.ExpirationTime > _timeProvider.GetUtcNow())
             {
@@ -108,7 +108,7 @@ public class ExpiryCacheTests
         timeProvider.SetUtcNow(timeProvider.GetUtcNow() + TimeSpan.FromSeconds(2));
 
         // The item should still be in the cache
-        bool found = cache.TryGetValue("key1", out var value);
+        bool found = cache.TryGetValue("key1", out string value);
         Assert.True(found);
         Assert.Equal("value1", value);
 
@@ -122,7 +122,7 @@ public class ExpiryCacheTests
 }
 ```
 
-## SynchronizationContext in xUnit Tests
+## `SynchronizationContext` in xUnit Tests
 
 ### xUnit v2
 
