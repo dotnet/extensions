@@ -60,15 +60,15 @@
     <SystemTextEncodingsWebVersion>10.0.0-alpha.1.24569.15</SystemTextEncodingsWebVersion>
     <SystemTextJsonVersion>10.0.0-alpha.1.24569.15</SystemTextJsonVersion>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
-    <MicrosoftAspNetCoreAppRefVersion>10.0.0-alpha.2.24570.6</MicrosoftAspNetCoreAppRefVersion>
-    <MicrosoftAspNetCoreAppRuntimewinx64Version>10.0.0-alpha.2.24570.6</MicrosoftAspNetCoreAppRuntimewinx64Version>
-    <MicrosoftAspNetCoreMvcTestingVersion>10.0.0-alpha.2.24570.6</MicrosoftAspNetCoreMvcTestingVersion>
-    <MicrosoftAspNetCoreTestHostVersion>10.0.0-alpha.2.24570.6</MicrosoftAspNetCoreTestHostVersion>
-    <MicrosoftExtensionsCachingSqlServerVersion>10.0.0-alpha.2.24570.6</MicrosoftExtensionsCachingSqlServerVersion>
-    <MicrosoftExtensionsCachingStackExchangeRedisVersion>10.0.0-alpha.2.24570.6</MicrosoftExtensionsCachingStackExchangeRedisVersion>
-    <MicrosoftExtensionsDiagnosticsHealthChecksVersion>10.0.0-alpha.2.24570.6</MicrosoftExtensionsDiagnosticsHealthChecksVersion>
-    <MicrosoftExtensionsHttpPollyVersion>10.0.0-alpha.2.24570.6</MicrosoftExtensionsHttpPollyVersion>
-    <MicrosoftExtensionsObjectPoolVersion>10.0.0-alpha.2.24570.6</MicrosoftExtensionsObjectPoolVersion>
+    <MicrosoftAspNetCoreAppRefVersion>10.0.0-alpha.2.24572.1</MicrosoftAspNetCoreAppRefVersion>
+    <MicrosoftAspNetCoreAppRuntimewinx64Version>10.0.0-alpha.2.24572.1</MicrosoftAspNetCoreAppRuntimewinx64Version>
+    <MicrosoftAspNetCoreMvcTestingVersion>10.0.0-alpha.2.24572.1</MicrosoftAspNetCoreMvcTestingVersion>
+    <MicrosoftAspNetCoreTestHostVersion>10.0.0-alpha.2.24572.1</MicrosoftAspNetCoreTestHostVersion>
+    <MicrosoftExtensionsCachingSqlServerVersion>10.0.0-alpha.2.24572.1</MicrosoftExtensionsCachingSqlServerVersion>
+    <MicrosoftExtensionsCachingStackExchangeRedisVersion>10.0.0-alpha.2.24572.1</MicrosoftExtensionsCachingStackExchangeRedisVersion>
+    <MicrosoftExtensionsDiagnosticsHealthChecksVersion>10.0.0-alpha.2.24572.1</MicrosoftExtensionsDiagnosticsHealthChecksVersion>
+    <MicrosoftExtensionsHttpPollyVersion>10.0.0-alpha.2.24572.1</MicrosoftExtensionsHttpPollyVersion>
+    <MicrosoftExtensionsObjectPoolVersion>10.0.0-alpha.2.24572.1</MicrosoftExtensionsObjectPoolVersion>
   </PropertyGroup>
   <!--
 
