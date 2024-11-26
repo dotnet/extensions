@@ -150,49 +150,49 @@
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Ref" Version="9.0.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>be19faf14ebebb49e22deec138db0133990cf3ef</Sha>
+      <Sha>0a5f4deafc371a78e89eea7bfaa615404c52cd6a</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Runtime.win-x64" Version="9.0.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>be19faf14ebebb49e22deec138db0133990cf3ef</Sha>
+      <Sha>0a5f4deafc371a78e89eea7bfaa615404c52cd6a</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>be19faf14ebebb49e22deec138db0133990cf3ef</Sha>
+      <Sha>0a5f4deafc371a78e89eea7bfaa615404c52cd6a</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.TestHost" Version="9.0.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>be19faf14ebebb49e22deec138db0133990cf3ef</Sha>
+      <Sha>0a5f4deafc371a78e89eea7bfaa615404c52cd6a</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Caching.SqlServer" Version="9.0.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>be19faf14ebebb49e22deec138db0133990cf3ef</Sha>
+      <Sha>0a5f4deafc371a78e89eea7bfaa615404c52cd6a</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>be19faf14ebebb49e22deec138db0133990cf3ef</Sha>
+      <Sha>0a5f4deafc371a78e89eea7bfaa615404c52cd6a</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Diagnostics.HealthChecks" Version="9.0.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>be19faf14ebebb49e22deec138db0133990cf3ef</Sha>
+      <Sha>0a5f4deafc371a78e89eea7bfaa615404c52cd6a</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Http.Polly" Version="9.0.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>be19faf14ebebb49e22deec138db0133990cf3ef</Sha>
+      <Sha>0a5f4deafc371a78e89eea7bfaa615404c52cd6a</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.ObjectPool" Version="9.0.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>be19faf14ebebb49e22deec138db0133990cf3ef</Sha>
+      <Sha>0a5f4deafc371a78e89eea7bfaa615404c52cd6a</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="9.0.0-beta.24562.13">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="9.0.0-beta.24572.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>1c7e09a8d9c9c9b15ba574cd6a496553505559de</Sha>
+      <Sha>b41381d5cd633471265e9cd72e933a7048e03062</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="9.0.0-beta.24562.13">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="9.0.0-beta.24572.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>1c7e09a8d9c9c9b15ba574cd6a496553505559de</Sha>
+      <Sha>b41381d5cd633471265e9cd72e933a7048e03062</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
