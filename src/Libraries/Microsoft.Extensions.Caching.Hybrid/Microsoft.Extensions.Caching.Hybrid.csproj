@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Multi-level caching implementation building on and extending IDistributedCache</Description>
@@ -24,9 +24,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Stage>dev</Stage>
-    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
-    <StageDevDiagnosticId>EXTEXP0018</StageDevDiagnosticId>
     <MinCodeCoverage>75</MinCodeCoverage>
     <MinMutationScore>50</MinMutationScore>
   </PropertyGroup>

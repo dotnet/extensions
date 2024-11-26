@@ -3,8 +3,7 @@
   importing the root level Directory.Build.props file. This property should be kept in here, as opposed to moving it to
   the project itself. -->
   <PropertyGroup>
-    <Stage>dev</Stage>
-    <StageDevDiagnosticId>EXTEXP0015</StageDevDiagnosticId>
+    <Stage>preview</Stage>
   </PropertyGroup>
 
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
