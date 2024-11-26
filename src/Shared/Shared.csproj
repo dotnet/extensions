@@ -42,4 +42,8 @@
     <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
     <InternalsVisibleToDynamicProxyGenAssembly2 Include="*" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="ServerSentEvents\" />
+  </ItemGroup>
 </Project>
