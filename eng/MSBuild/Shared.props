@@ -14,6 +14,10 @@
   <ItemGroup Condition="'$(InjectSharedRentedSpan)' == 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\RentedSpan\*.cs" LinkBase="Shared\RentedSpan" />
   </ItemGroup>
+  
+  <ItemGroup Condition="'$(InjectSharedServerSentEvents)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\ServerSentEvents\*.cs" LinkBase="Shared\ServerSentEvents" />
+  </ItemGroup>
 
   <ItemGroup Condition="'$(InjectSharedNumericExtensions)' == 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\NumericExtensions\*.cs" LinkBase="Shared\NumericExtensions" />
