@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using OpenAI.Chat;
 
@@ -13,6 +14,89 @@ namespace Microsoft.Extensions.AI;
 
 internal static partial class OpenAIModelMappers
 {
+    internal static IEnumerable<ChatMessage> FromOpenAIChatMessages(IEnumerable<OpenAI.Chat.ChatMessage> inputs, JsonSerializerOptions options)
+    {
+        // Maps all of the OpenAI types to the corresponding M.E.AI types.
+        // Unrecognized or non-processable content is ignored.
+
+        foreach (OpenAI.Chat.ChatMessage input in inputs)
+        {
+            switch (input)
+            {
+                case SystemChatMessage systemMessage:
+                    yield return new ChatMessage
+                    {
+                        Role = ChatRole.System,
+                        AuthorName = systemMessage.ParticipantName,
+                        Contents = FromOpenAIChatContent(systemMessage.Content),
+                    };
+                    break;
+
+                case UserChatMessage userMessage:
+                    yield return new ChatMessage
+                    {
+                        Role = ChatRole.User,
+                        AuthorName = userMessage.ParticipantName,
+                        Contents = FromOpenAIChatContent(userMessage.Content),
+                    };
+                    break;
+
+                case ToolChatMessage toolMessage:
+                    string textContent = string.Join(string.Empty, toolMessage.Content.Where(part => part.Kind is ChatMessageContentPartKind.Text).Select(part => part.Text));
+                    object? result = textContent;
+                    if (!string.IsNullOrEmpty(textContent))
+                    {
+#pragma warning disable CA1031 // Do not catch general exception types
+                        try
+                        {
+                            result = JsonSerializer.Deserialize(textContent, options.GetTypeInfo(typeof(object)));
+                        }
+                        catch
+                        {
+                            // If the content can't be deserialized, leave it as a string.
+                        }
+#pragma warning restore CA1031 // Do not catch general exception types
+                    }
+
+                    yield return new ChatMessage
+                    {
+                        Role = ChatRole.Tool,
+                        Contents = new AIContent[] { new FunctionResultContent(toolMessage.ToolCallId, name: string.Empty, result) },
+                    };
+                    break;
+
+                case AssistantChatMessage assistantMessage:
+
+                    ChatMessage message = new()
+                    {
+                        Role = ChatRole.Assistant,
+                        AuthorName = assistantMessage.ParticipantName,
+                        Contents = FromOpenAIChatContent(assistantMessage.Content),
+                    };
+
+                    foreach (ChatToolCall toolCall in assistantMessage.ToolCalls)
+                    {
+                        if (!string.IsNullOrWhiteSpace(toolCall.FunctionName))
+                        {
+                            var callContent = ParseCallContentFromBinaryData(toolCall.FunctionArguments, toolCall.Id, toolCall.FunctionName);
+                            callContent.RawRepresentation = toolCall;
+
+                            message.Contents.Add(callContent);
+                        }
+                    }
+
+                    if (assistantMessage.Refusal is not null)
+                    {
+                        message.AdditionalProperties ??= new();
+                        message.AdditionalProperties.Add(nameof(assistantMessage.Refusal), assistantMessage.Refusal);
+                    }
+
+                    yield return message;
+                    break;
+            }
+        }
+    }
+
     /// <summary>Converts an Extensions chat message enumerable to an OpenAI chat message enumerable.</summary>
     internal static IEnumerable<OpenAI.Chat.ChatMessage> ToOpenAIChatMessages(IEnumerable<ChatMessage> inputs, JsonSerializerOptions options)
     {
@@ -60,7 +144,7 @@ internal static partial class OpenAIModelMappers
 
                 foreach (var content in input.Contents)
                 {
-                    if (content is FunctionCallContent { CallId: not null } callRequest)
+                    if (content is FunctionCallContent callRequest)
                     {
                         message.ToolCalls.Add(
                             ChatToolCall.CreateFunctionToolCall(
@@ -80,6 +164,31 @@ internal static partial class OpenAIModelMappers
                 yield return message;
             }
         }
+    }
+
+    private static List<AIContent> FromOpenAIChatContent(IList<ChatMessageContentPart> openAiMessageContentParts)
+    {
+        List<AIContent> contents = new();
+        foreach (var openAiContentPart in openAiMessageContentParts)
+        {
+            switch (openAiContentPart.Kind)
+            {
+                case ChatMessageContentPartKind.Text:
+                    contents.Add(new TextContent(openAiContentPart.Text));
+                    break;
+
+                case ChatMessageContentPartKind.Image when (openAiContentPart.ImageBytes is { } bytes):
+                    contents.Add(new ImageContent(bytes.ToArray(), openAiContentPart.ImageBytesMediaType));
+                    break;
+
+                case ChatMessageContentPartKind.Image:
+                    contents.Add(new ImageContent(openAiContentPart.ImageUri?.ToString() ?? string.Empty));
+                    break;
+
+            }
+        }
+
+        return contents;
     }
 
     /// <summary>Converts a list of <see cref="AIContent"/> to a list of <see cref="ChatMessageContentPart"/>.</summary>
