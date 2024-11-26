@@ -18,11 +18,13 @@
     <NoWarn>$(NoWarn);CA1063;CA1508;CA2227;SA1316;S1121;S3358;EA0002;OPENAI002</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DisableNETStandardCompatErrors>true</DisableNETStandardCompatErrors>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup>
     <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
     <InjectStringHashOnLegacy>true</InjectStringHashOnLegacy>
+    <InjectSharedServerSentEvents>true</InjectSharedServerSentEvents>
   </PropertyGroup>
 
   <ItemGroup>
