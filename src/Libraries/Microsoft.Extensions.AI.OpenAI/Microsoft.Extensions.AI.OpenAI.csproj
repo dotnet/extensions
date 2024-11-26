@@ -9,7 +9,7 @@
   <PropertyGroup>
     <Stage>preview</Stage>
     <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
-    <MinCodeCoverage>60</MinCodeCoverage>
+    <MinCodeCoverage>66</MinCodeCoverage>
     <MinMutationScore>0</MinMutationScore>
   </PropertyGroup>
 
