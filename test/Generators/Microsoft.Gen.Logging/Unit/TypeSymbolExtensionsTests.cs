@@ -155,6 +155,7 @@ public class TypeSymbolExtensionsTests
         (IReadOnlyList<Diagnostic> diagnostics, ImmutableArray<GeneratedSourceResult> generatedSources) =
             RoslynTestUtils.RunGenerator(compilation, generator);
         var classSymbol = compilation.GetTypeByMetadataName("Test.ShouldFormat");
+        //classSymbol is Microsoft.Extensions.Logging.ILogger
         SymbolHolder? symbolHolder = SymbolLoader.LoadSymbols(compilation, _diagCallback);
         Assert.True(classSymbol.ImplementsIFormattable(symbolHolder));
     }
