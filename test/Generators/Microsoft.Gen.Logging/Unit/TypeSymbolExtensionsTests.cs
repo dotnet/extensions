@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Reflection.Metadata;
 using Microsoft.CodeAnalysis;
 using Microsoft.Gen.Logging.Parsing;
 using Microsoft.Gen.Shared;
@@ -16,147 +17,89 @@ public class TypeSymbolExtensionsTests
     private readonly Action<DiagnosticDescriptor, Location?, object
         ?[]?> _diagCallback = (_, __, ___) => { };
 
-    [Fact]
-    public void ValidateIsEnumerableArray()
+    [Theory]
+    [InlineData("TestEnumerableInt : List<int>", "TestEnumerableInt", true)]
+    [InlineData("TestEnumerable<T> : List<T>", "TestEnumerable<object>", true)]
+    [InlineData("NotUsed", "IEnumerable<string>", true)]
+    [InlineData("TestClass", "NonEnumerable", false)]
+    [InlineData("TestClassDerived : NonEnumerable", "TestClassDerived", false)]
+    [InlineData("NotUsed", "bool", false)]
+    public void ValidateIsEnumerable(string classDefinition, string typeReference, bool expectedResult)
     {
-        var referencedSource = @"
-                namespace Microsoft.Extensions.Logging
-                {
-                    internal class LoggerMessageAttribute { }
-                }
-                namespace Microsoft.Extensions.Logging
-                {
-                    internal interface ILogger { }
-                    internal enum LogLevel { }
-                }";
-
-        // Compile the referenced assembly first.
-        Compilation referencedCompilation = CompilationHelper.CreateCompilation(referencedSource);
-
-        // Obtain the image of the referenced assembly.
-        byte[] referencedImage = CompilationHelper.CreateAssemblyImage(referencedCompilation);
-
         // Generate the code
-        string source = @"
+        string source = $@"
                 namespace Test
-                {
+                {{
+                    using System.Collections.Generic;
                     using Microsoft.Extensions.Logging;
+
+                    class {classDefinition} {{ }}
+
+                    class NonEnumerable {{ }}
 
                     partial class C
-                    {
+                    {{
                         [LoggerMessage(EventId = 1, Level = LogLevel.Debug, Message = ""M1"")]
-                        static partial void M1(ILogger logger);
-                    }
-                }";
+                        static partial void M1(ILogger logger, {typeReference} property);
+                    }}
+                }}";
 
-        MetadataReference[] additionalReferences = [MetadataReference.CreateFromImage(referencedImage)];
-
-        Compilation compilation = CompilationHelper.CreateCompilation(source, additionalReferences);
-        LoggingGenerator generator = new LoggingGenerator();
-
-        (IReadOnlyList<Diagnostic> diagnostics, ImmutableArray<GeneratedSourceResult> generatedSources) =
-            RoslynTestUtils.RunGenerator(compilation, generator);
-
-        INamedTypeSymbol symbol = compilation.GetSpecialType(SpecialType.System_Array);
+        // Create compilation and extract symbols
+        Compilation compilation = CompilationHelper.CreateCompilation(source);
         SymbolHolder? symbolHolder = SymbolLoader.LoadSymbols(compilation, _diagCallback);
-        Assert.True(symbol.IsEnumerable(symbolHolder));
+
+        IEnumerable<ISymbol> methodSymbols = compilation.GetSymbolsWithName("M1", SymbolFilter.Member);
+
+        // Assert
+        Assert.NotNull(symbolHolder);
+        ISymbol symbol = Assert.Single(methodSymbols);
+        var methodSymbol = Assert.IsAssignableFrom<IMethodSymbol>(symbol);
+        var parameterSymbol = Assert.Single(methodSymbol.Parameters, p => p.Name == "property");
+
+        Assert.Equal(expectedResult, parameterSymbol.Type.IsEnumerable(symbolHolder));
     }
 
-    [Fact]
-    public void ValidateIsEnumerableBoolean()
+    [Theory]
+    [InlineData("TestFormattable", "TestFormattable", true)]
+    [InlineData("TestFormattable : IFormattable", "TestFormattable", true)]
+    [InlineData("TestFormattable", "NonFormattable", false)]
+    public void ValidateImplementsIFormattable(string classDefinition, string typeReference, bool expectedResult)
     {
-        var referencedSource = @"
-                namespace Microsoft.Extensions.Logging
-                {
-                    internal class LoggerMessageAttribute { }
-                }
-                namespace Microsoft.Extensions.Logging
-                {
-                    internal interface ILogger { }
-                    internal enum LogLevel { }
-                }";
-
-        // Compile the referenced assembly first.
-        Compilation referencedCompilation = CompilationHelper.CreateCompilation(referencedSource);
-
-        // Obtain the image of the referenced assembly.
-        byte[] referencedImage = CompilationHelper.CreateAssemblyImage(referencedCompilation);
-
         // Generate the code
-        string source = @"
+        string source = $@"
                 namespace Test
-                {
+                {{
+                    using System;
                     using Microsoft.Extensions.Logging;
+
+                    class {classDefinition} 
+                    {{
+                        public string ToString(string? format, IFormatProvider? formatProvider)
+                        {{
+                            throw new NotImplementedException();
+                        }}
+                    }}
+
+                    class NonFormattable {{ }}
 
                     partial class C
-                    {
+                    {{
                         [LoggerMessage(EventId = 1, Level = LogLevel.Debug, Message = ""M1"")]
-                        static partial void M1(ILogger logger);
-                    }
-                }";
+                        static partial void M1(ILogger logger, {typeReference} property);
+                    }}
+                }}";
 
-        MetadataReference[] additionalReferences = [MetadataReference.CreateFromImage(referencedImage)];
-
-        Compilation compilation = CompilationHelper.CreateCompilation(source, additionalReferences);
-        LoggingGenerator generator = new LoggingGenerator();
-
-        (IReadOnlyList<Diagnostic> diagnostics, ImmutableArray<GeneratedSourceResult> generatedSources) =
-            RoslynTestUtils.RunGenerator(compilation, generator);
-
-        INamedTypeSymbol symbol = compilation.GetSpecialType(SpecialType.System_Boolean);
+        // Create compilation and extract symbols
+        Compilation compilation = CompilationHelper.CreateCompilation(source);
         SymbolHolder? symbolHolder = SymbolLoader.LoadSymbols(compilation, _diagCallback);
-        Assert.False(symbol.IsEnumerable(symbolHolder));
-    }
+        IEnumerable<ISymbol> methodSymbols = compilation.GetSymbolsWithName("M1", SymbolFilter.Member);
 
-    [Fact]
-    public void ImplementsIFormattable()
-    {
-        var referencedSource = @"
-                namespace Microsoft.Extensions.Logging
-                {
-                    internal class LoggerMessageAttribute { }
-                }
-                namespace Microsoft.Extensions.Logging
-                {
-                    internal interface ILogger { }
-                    internal enum LogLevel { }
-                }";
+        // Assert
+        Assert.NotNull(symbolHolder);
+        ISymbol symbol = Assert.Single(methodSymbols);
+        var methodSymbol = Assert.IsAssignableFrom<IMethodSymbol>(symbol);
+        var parameterSymbol = Assert.Single(methodSymbol.Parameters, p => p.Name == "property");
 
-        // Compile the referenced assembly first.
-        Compilation referencedCompilation = CompilationHelper.CreateCompilation(referencedSource);
-
-        // Obtain the image of the referenced assembly.
-        byte[] referencedImage = CompilationHelper.CreateAssemblyImage(referencedCompilation);
-
-        // Generate the code
-        string source = @"
-                namespace Test
-                {
-                    using Microsoft.Extensions.Logging;
-
-                    partial class ShouldFormat : IFormattable
-                    {
-                        [LoggerMessage(EventId = 1, Level = LogLevel.Debug, Message = ""M1"")]
-                        static partial void M1(ILogger logger);
-
-                        public string toString(string? format, IFormatProvider? provider) 
-                        {
-                            return ""formatted"";
-                        }
-                    }
-
-                }";
-
-        MetadataReference[] additionalReferences = [MetadataReference.CreateFromImage(referencedImage)];
-
-        Compilation compilation = CompilationHelper.CreateCompilation(source, additionalReferences);
-        LoggingGenerator generator = new LoggingGenerator();
-
-        (IReadOnlyList<Diagnostic> diagnostics, ImmutableArray<GeneratedSourceResult> generatedSources) =
-            RoslynTestUtils.RunGenerator(compilation, generator);
-        var classSymbol = compilation.GetTypeByMetadataName("Test.ShouldFormat");
-        //classSymbol is Microsoft.Extensions.Logging.ILogger
-        SymbolHolder? symbolHolder = SymbolLoader.LoadSymbols(compilation, _diagCallback);
-        Assert.True(classSymbol.ImplementsIFormattable(symbolHolder));
+        Assert.Equal(expectedResult, parameterSymbol.Type.ImplementsIFormattable(symbolHolder));
     }
 }
