@@ -6,6 +6,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -14,6 +16,7 @@ namespace Microsoft.Extensions.AI;
 /// A key-value store for usage values. Values may be of the following types:
 /// <see cref="int"/>, <see cref="long"/>, <see cref="float"/>, <see cref="double"/>, <see cref="decimal"/>.
 /// </summary>
+[JsonConverter(typeof(AdditionalUsageValuesJsonConverter))]
 public class AdditionalUsageValues : IEnumerable<KeyValuePair<string, object>>
 {
     private readonly Dictionary<string, Entry> _dictionary = new();
@@ -252,5 +255,95 @@ public class AdditionalUsageValues : IEnumerable<KeyValuePair<string, object>>
         Float,
         Double,
         Decimal
+    }
+
+    /// <summary>
+    /// A JSON converter for <see cref="AdditionalUsageValues"/>.
+    /// </summary>
+    public class AdditionalUsageValuesJsonConverter : JsonConverter<AdditionalUsageValues>
+    {
+        /// <inheritdoc />
+        public override AdditionalUsageValues Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            _ = Throw.IfNull(options);
+
+            // Deserialize the dictionary based on the format written below
+            var result = new AdditionalUsageValues();
+            while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
+            {
+                var key = reader.GetString()!;
+                _ = reader.Read(); // StartArray
+
+                _ = reader.Read(); // ValueType
+                var type = Enum.Parse(typeof(EntryType), reader.GetString()!);
+
+                _ = reader.Read(); // Value
+                switch (type)
+                {
+                    case EntryType.Int:
+                        result.Set(key, reader.GetInt32());
+                        break;
+                    case EntryType.Long:
+                        result.Set(key, reader.GetInt64());
+                        break;
+                    case EntryType.Float:
+                        result.Set(key, reader.GetSingle());
+                        break;
+                    case EntryType.Double:
+                        result.Set(key, reader.GetDouble());
+                        break;
+                    case EntryType.Decimal:
+                        result.Set(key, reader.GetDecimal());
+                        break;
+                    default:
+                        throw new JsonException("Unknown entry type.");
+                }
+
+                _ = reader.Read(); // EndArray
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc />
+        public override void Write(Utf8JsonWriter writer, AdditionalUsageValues value, JsonSerializerOptions options)
+        {
+            _ = Throw.IfNull(writer);
+            _ = Throw.IfNull(value);
+            _ = Throw.IfNull(options);
+
+            writer.WriteStartObject();
+
+            foreach (var kvp in value._dictionary)
+            {
+                var val = kvp.Value;
+                writer.WritePropertyName(kvp.Key);
+                writer.WriteStartArray();
+                writer.WriteStringValue(val.Type.ToString());
+
+                switch (val.Type)
+                {
+                    case EntryType.Int:
+                        writer.WriteNumberValue(val.IntValue);
+                        break;
+                    case EntryType.Long:
+                        writer.WriteNumberValue(val.LongValue);
+                        break;
+                    case EntryType.Float:
+                        writer.WriteNumberValue(val.FloatValue);
+                        break;
+                    case EntryType.Double:
+                        writer.WriteNumberValue(val.DoubleValue);
+                        break;
+                    case EntryType.Decimal:
+                        writer.WriteNumberValue(val.DecimalValue);
+                        break;
+                }
+
+                writer.WriteEndArray();
+            }
+
+            writer.WriteEndObject();
+        }
     }
 }
