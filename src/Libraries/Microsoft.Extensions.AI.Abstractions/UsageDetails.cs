@@ -28,9 +28,9 @@ public class UsageDetails
     public void Add(UsageDetails usage)
     {
         _ = Throw.IfNull(usage);
-        InputTokenCount += usage.InputTokenCount;
-        OutputTokenCount += usage.OutputTokenCount;
-        TotalTokenCount += usage.TotalTokenCount;
+        InputTokenCount = NullableSum(InputTokenCount, usage.InputTokenCount);
+        OutputTokenCount = NullableSum(OutputTokenCount, usage.OutputTokenCount);
+        TotalTokenCount = NullableSum(TotalTokenCount, usage.TotalTokenCount);
 
         if (usage.AdditionalValues is not null)
         {
@@ -73,4 +73,6 @@ public class UsageDetails
             return string.Join(", ", parts);
         }
     }
+
+    private static int? NullableSum(int? a, int? b) => (a.HasValue || b.HasValue) ? (a ?? 0) + (b ?? 0) : null;
 }

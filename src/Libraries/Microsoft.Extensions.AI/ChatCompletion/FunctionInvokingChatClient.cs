@@ -190,11 +190,11 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     public override async Task<ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(chatMessages);
-        ChatCompletion? response;
 
+        ChatCompletion? response = null;
         HashSet<ChatMessage>? messagesToRemove = null;
         HashSet<AIContent>? contentsToRemove = null;
-        UsageDetails? totalUsageSoFar = null;
+        UsageDetails? totalUsage = null;
 
         try
         {
@@ -203,15 +203,12 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 // Make the call to the handler.
                 response = await base.CompleteAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
 
-                // If we had and usage data from prior iterations, merge it into the current response in case
-                // this is the one we finally return.
-                if (totalUsageSoFar is not null)
+                // Aggregate usage data over all calls
+                if (response.Usage is not null)
                 {
-                    response.Usage ??= new();
-                    response.Usage.Add(totalUsageSoFar);
+                    totalUsage ??= new();
+                    totalUsage.Add(response.Usage);
                 }
-
-                totalUsageSoFar = response.Usage;
 
                 // If there are no tools to call, or for any other reason we should stop, return the response.
                 if (options is null
@@ -291,11 +288,16 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 }
             }
 
-            return response!;
+            return response;
         }
         finally
         {
             RemoveMessagesAndContentFromList(messagesToRemove, contentsToRemove, chatMessages);
+
+            if (response is not null)
+            {
+                response.Usage = totalUsage;
+            }
         }
     }
 
