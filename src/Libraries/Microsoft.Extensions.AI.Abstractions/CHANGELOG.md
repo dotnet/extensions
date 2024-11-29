@@ -1,5 +1,17 @@
 # Release History
 
+## 9.0.1-preview.1.24570.5
+
+- Changed `IChatClient`/`IEmbeddingGenerator`.`GetService` to be non-generic.
+- Added `ToChatCompletion` / `ToChatCompletionUpdate` extension methods for `IEnumerable<StreamingChatCompletionUpdate>` / `IAsyncEnumerable<StreamingChatCompletionUpdate>`, respectively.
+- Added `ToStreamingChatCompletionUpdates` instance method to `ChatCompletion`.
+- Added `IncludeTypeInEnumSchemas`, `DisallowAdditionalProperties`, `RequireAllProperties`, and `TransformSchemaNode` options to `AIJsonSchemaCreateOptions`.
+- Fixed a Native AOT warning in `AIFunctionFactory.Create`.
+- Fixed a bug in `AIJsonUtilities` in the handling of Boolean schemas.
+- Improved the `ToString` override of `ChatMessage` and `StreamingChatCompletionUpdate` to include all `TextContent`, and of `ChatCompletion` to include all choices.
+- Added `DebuggerDisplay` attributes to `DataContent` and `GeneratedEmbeddings`.
+- Improved the documentation.
+ 
 ## 9.0.0-preview.9.24556.5
 
 - Added a strongly-typed `ChatOptions.Seed` property.
