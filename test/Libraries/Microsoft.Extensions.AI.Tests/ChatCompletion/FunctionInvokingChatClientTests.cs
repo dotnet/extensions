@@ -507,6 +507,8 @@ public class FunctionInvokingChatClientTests
 
         using CancellationTokenSource cts = new();
         List<ChatMessage> chat = [plan[0]];
+        var expectedTotalTokenCounts = 0;
+        var rng = new Random();
 
         using var innerClient = new TestChatClient
         {
@@ -517,7 +519,9 @@ public class FunctionInvokingChatClientTests
 
                 await Task.Yield();
 
-                return new ChatCompletion(new ChatMessage(ChatRole.Assistant, [.. plan[contents.Count].Contents]));
+                var usage = CreateRandomUsage();
+                expectedTotalTokenCounts += usage.InputTokenCount!.Value;
+                return new ChatCompletion(new ChatMessage(ChatRole.Assistant, [.. plan[contents.Count].Contents])) { Usage = usage };
             }
         };
 
@@ -560,7 +564,39 @@ public class FunctionInvokingChatClientTests
             }
         }
 
+        // Usage should be aggregated over all responses, including AdditionalUsage
+        var actualUsage = result.Usage!;
+        Assert.Equal(expectedTotalTokenCounts, actualUsage.InputTokenCount);
+        Assert.Equal(expectedTotalTokenCounts, actualUsage.OutputTokenCount);
+        Assert.Equal(expectedTotalTokenCounts, actualUsage.TotalTokenCount);
+        Assert.Equal(expectedTotalTokenCounts, actualUsage.AdditionalValues!.GetInt32("someInt"));
+        Assert.Equal(expectedTotalTokenCounts, actualUsage.AdditionalValues!.GetInt64("someLong"));
+        Assert.Equal(expectedTotalTokenCounts, actualUsage.AdditionalValues!.GetSingle("someFloat"));
+        Assert.Equal(expectedTotalTokenCounts, actualUsage.AdditionalValues!.GetDouble("someDouble"));
+        Assert.Equal(expectedTotalTokenCounts, actualUsage.AdditionalValues!.GetDecimal("someDecimal"));
+
         return chat;
+    }
+
+    private static UsageDetails CreateRandomUsage()
+    {
+        // We'll set the same random number on all the properties so that, when determining the
+        // correct sum in tests, we only have to total the values once
+        var value = new Random().Next(100);
+        return new UsageDetails
+        {
+            InputTokenCount = value,
+            OutputTokenCount = value,
+            TotalTokenCount = value,
+            AdditionalValues = new()
+            {
+                { "someInt", value },
+                { "someLong", (long)value },
+                { "someFloat", (float)value },
+                { "someDouble", (double)value },
+                { "someDecimal", (decimal)value },
+            }
+        };
     }
 
     private static async Task<List<ChatMessage>> InvokeAndAssertStreamingAsync(
