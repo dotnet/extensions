@@ -194,12 +194,24 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
         HashSet<ChatMessage>? messagesToRemove = null;
         HashSet<AIContent>? contentsToRemove = null;
+        UsageDetails? totalUsageSoFar = null;
+
         try
         {
             for (int iteration = 0; ; iteration++)
             {
                 // Make the call to the handler.
                 response = await base.CompleteAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
+
+                // If we had and usage data from prior iterations, merge it into the current response in case
+                // this is the one we finally return.
+                if (totalUsageSoFar is not null)
+                {
+                    response.Usage ??= new();
+                    response.Usage.Add(totalUsageSoFar);
+                }
+
+                totalUsageSoFar = response.Usage;
 
                 // If there are no tools to call, or for any other reason we should stop, return the response.
                 if (options is null
@@ -250,13 +262,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                         // the non-function calling content by removing the whole message. So we track the content directly.
                         (contentsToRemove ??= []).UnionWith(functionCallContents);
                     }
-                }
-
-                // If the original chat completion included usage data,
-                // add that into the message so it's available in the history.
-                if (KeepFunctionCallingMessages && response.Usage is { } usage)
-                {
-                    response.Message.Contents = [.. response.Message.Contents, new UsageContent(usage)];
                 }
 
                 // Add the responses from the function calls into the history.

@@ -1,8 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
@@ -21,6 +23,21 @@ public class UsageDetails
 
     /// <summary>Gets or sets additional usage values.</summary>
     public AdditionalUsageValues? AdditionalValues { get; set; }
+
+    /// <summary>Adds usage data from another <see cref="UsageDetails"/> into this instance.</summary>
+    public void Add(UsageDetails usage)
+    {
+        _ = Throw.IfNull(usage);
+        InputTokenCount += usage.InputTokenCount;
+        OutputTokenCount += usage.OutputTokenCount;
+        TotalTokenCount += usage.TotalTokenCount;
+
+        if (usage.AdditionalValues is not null)
+        {
+            AdditionalValues ??= new();
+            AdditionalValues.AddFrom(usage.AdditionalValues);
+        }
+    }
 
     /// <summary>Gets a string representing this instance to display in the debugger.</summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]

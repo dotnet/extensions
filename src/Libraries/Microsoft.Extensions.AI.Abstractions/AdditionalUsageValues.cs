@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
@@ -138,6 +139,35 @@ public class AdditionalUsageValues : IEnumerable<KeyValuePair<string, object>>
     /// <param name="amountToAdd">The amount by which to increment the entry. If no stored value already exists, a new one is created with this value.</param>
     public void Add(string key, decimal amountToAdd) =>
         _dictionary[key] = _dictionary.TryGetValue(key, out var existingValue) ? existingValue.Add(amountToAdd) : new(amountToAdd);
+
+    /// <summary>Adds all the entries from <paramref name="source"/> to this instance.</summary>
+    /// <param name="source">The values to add.</param>
+    public void AddFrom(AdditionalUsageValues source)
+    {
+        foreach (var keyValuePair in Throw.IfNull(source)._dictionary)
+        {
+            switch (keyValuePair.Value.Type)
+            {
+                case EntryType.Int:
+                    Add(keyValuePair.Key, keyValuePair.Value.IntValue);
+                    break;
+                case EntryType.Long:
+                    Add(keyValuePair.Key, keyValuePair.Value.LongValue);
+                    break;
+                case EntryType.Float:
+                    Add(keyValuePair.Key, keyValuePair.Value.FloatValue);
+                    break;
+                case EntryType.Double:
+                    Add(keyValuePair.Key, keyValuePair.Value.DoubleValue);
+                    break;
+                case EntryType.Decimal:
+                    Add(keyValuePair.Key, keyValuePair.Value.DecimalValue);
+                    break;
+                default:
+                    throw new InvalidOperationException("Unknown entry type.");
+            }
+        }
+    }
 
     [StructLayout(LayoutKind.Explicit)]
     private readonly struct Entry
