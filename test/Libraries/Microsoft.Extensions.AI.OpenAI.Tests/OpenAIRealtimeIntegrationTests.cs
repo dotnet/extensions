@@ -102,7 +102,7 @@ public class OpenAIRealtimeIntegrationTests
 
     private static RealtimeConversationClient? CreateConversationClient()
     {
-        var realtimeModel = Environment.GetEnvironmentVariable("OPENAI_REALTIME_MODEL");
+        var realtimeModel = TestRunnerConfiguration.Instance["OpenAI:RealtimeModel"];
         if (string.IsNullOrEmpty(realtimeModel))
         {
             return null;
