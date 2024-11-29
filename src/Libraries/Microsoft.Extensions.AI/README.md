@@ -69,6 +69,8 @@ Your account must have models matching these names.
 
 ### Configuring Azure AI Inference tests
 
+Run commands like the following. The settings will be saved in your user profile.
+
 ```
 cd test/Libraries/Microsoft.Extensions.AI.Integration.Tests
 dotnet user-secrets set AzureAIInference:Endpoint https://YOUR_DEPLOYMENT.azure.com/
