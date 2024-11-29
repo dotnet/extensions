@@ -19,8 +19,8 @@ public class UsageDetails
     /// <summary>Gets or sets the total number of tokens used to produce the response.</summary>
     public int? TotalTokenCount { get; set; }
 
-    /// <summary>Gets or sets additional properties for the usage details.</summary>
-    public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
+    /// <summary>Gets or sets additional usage values.</summary>
+    public AdditionalUsageValues? AdditionalValues { get; set; }
 
     /// <summary>Gets a string representing this instance to display in the debugger.</summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -45,9 +45,9 @@ public class UsageDetails
                 parts.Add($"{nameof(TotalTokenCount)} = {total}");
             }
 
-            if (AdditionalProperties is { } additionalProperties)
+            if (AdditionalValues is { } additionalValues)
             {
-                foreach (var entry in additionalProperties)
+                foreach (var entry in additionalValues)
                 {
                     parts.Add($"{entry.Key} = {entry.Value}");
                 }

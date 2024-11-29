@@ -199,7 +199,7 @@ public class OpenAIChatClientTests
         Assert.Equal(8, response.Usage.InputTokenCount);
         Assert.Equal(9, response.Usage.OutputTokenCount);
         Assert.Equal(17, response.Usage.TotalTokenCount);
-        Assert.NotNull(response.Usage.AdditionalProperties);
+        Assert.NotNull(response.Usage.AdditionalValues);
 
         Assert.NotNull(response.AdditionalProperties);
         Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(OpenAI.Chat.ChatCompletion.SystemFingerprint)]);
@@ -275,8 +275,11 @@ public class OpenAIChatClientTests
         Assert.Equal(8, usage.Details.InputTokenCount);
         Assert.Equal(9, usage.Details.OutputTokenCount);
         Assert.Equal(17, usage.Details.TotalTokenCount);
-        Assert.NotNull(usage.Details.AdditionalProperties);
-        Assert.Equal(new Dictionary<string, object> { [nameof(ChatOutputTokenUsageDetails.ReasoningTokenCount)] = 0 }, usage.Details.AdditionalProperties[nameof(ChatTokenUsage.OutputTokenDetails)]);
+
+        var additionalUsageValues = usage.Details.AdditionalValues;
+        Assert.NotNull(additionalUsageValues);
+        Assert.Equal(1, additionalUsageValues.Count);
+        Assert.Equal(0, additionalUsageValues[$"{nameof(ChatTokenUsage.OutputTokenDetails)}.{nameof(ChatOutputTokenUsageDetails.ReasoningTokenCount)}"]);
     }
 
     [Fact]
@@ -380,7 +383,7 @@ public class OpenAIChatClientTests
         Assert.Equal(42, response.Usage.InputTokenCount);
         Assert.Equal(15, response.Usage.OutputTokenCount);
         Assert.Equal(57, response.Usage.TotalTokenCount);
-        Assert.NotNull(response.Usage.AdditionalProperties);
+        Assert.NotNull(response.Usage.AdditionalValues);
 
         Assert.NotNull(response.AdditionalProperties);
         Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(OpenAI.Chat.ChatCompletion.SystemFingerprint)]);
@@ -472,7 +475,7 @@ public class OpenAIChatClientTests
         Assert.Equal(42, response.Usage.InputTokenCount);
         Assert.Equal(15, response.Usage.OutputTokenCount);
         Assert.Equal(57, response.Usage.TotalTokenCount);
-        Assert.NotNull(response.Usage.AdditionalProperties);
+        Assert.NotNull(response.Usage.AdditionalValues);
 
         Assert.NotNull(response.AdditionalProperties);
         Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(OpenAI.Chat.ChatCompletion.SystemFingerprint)]);
@@ -565,7 +568,7 @@ public class OpenAIChatClientTests
         Assert.Equal(42, response.Usage.InputTokenCount);
         Assert.Equal(15, response.Usage.OutputTokenCount);
         Assert.Equal(57, response.Usage.TotalTokenCount);
-        Assert.NotNull(response.Usage.AdditionalProperties);
+        Assert.NotNull(response.Usage.AdditionalValues);
 
         Assert.NotNull(response.AdditionalProperties);
         Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(OpenAI.Chat.ChatCompletion.SystemFingerprint)]);
@@ -782,8 +785,11 @@ public class OpenAIChatClientTests
         Assert.Equal(61, usage.Details.InputTokenCount);
         Assert.Equal(16, usage.Details.OutputTokenCount);
         Assert.Equal(77, usage.Details.TotalTokenCount);
-        Assert.NotNull(usage.Details.AdditionalProperties);
-        Assert.Equal(new Dictionary<string, object> { [nameof(ChatOutputTokenUsageDetails.ReasoningTokenCount)] = 0 }, usage.Details.AdditionalProperties[nameof(ChatTokenUsage.OutputTokenDetails)]);
+
+        var additionalUsageValues = usage.Details.AdditionalValues;
+        Assert.NotNull(additionalUsageValues);
+        Assert.Equal(1, additionalUsageValues.Count);
+        Assert.Equal(0, additionalUsageValues[$"{nameof(ChatTokenUsage.OutputTokenDetails)}.{nameof(ChatOutputTokenUsageDetails.ReasoningTokenCount)}"]);
     }
 
     [Fact]
@@ -916,7 +922,7 @@ public class OpenAIChatClientTests
         Assert.Equal(42, response.Usage.InputTokenCount);
         Assert.Equal(15, response.Usage.OutputTokenCount);
         Assert.Equal(57, response.Usage.TotalTokenCount);
-        Assert.NotNull(response.Usage.AdditionalProperties);
+        Assert.NotNull(response.Usage.AdditionalValues);
 
         Assert.NotNull(response.AdditionalProperties);
         Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(OpenAI.Chat.ChatCompletion.SystemFingerprint)]);

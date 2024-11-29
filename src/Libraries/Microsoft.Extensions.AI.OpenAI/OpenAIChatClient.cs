@@ -26,6 +26,8 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents an <see cref="IChatClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="OpenAI.Chat.ChatClient"/>.</summary>
 public sealed class OpenAIChatClient : IChatClient
 {
+    private const string OutputTokenDetailsReasoningTokenCountKey = $"{nameof(ChatTokenUsage.OutputTokenDetails)}.{nameof(ChatOutputTokenUsageDetails.ReasoningTokenCount)}";
+
     private static readonly JsonElement _defaultParameterSchema = JsonDocument.Parse("{}").RootElement;
 
     /// <summary>Default OpenAI endpoint.</summary>
@@ -168,7 +170,10 @@ public sealed class OpenAIChatClient : IChatClient
 
             if (tokenUsage.OutputTokenDetails is ChatOutputTokenUsageDetails details)
             {
-                completion.Usage.AdditionalProperties = new() { [nameof(details.ReasoningTokenCount)] = details.ReasoningTokenCount };
+                completion.Usage.AdditionalValues = new()
+                {
+                    { OutputTokenDetailsReasoningTokenCountKey, details.ReasoningTokenCount },
+                };
             }
         }
 
@@ -299,9 +304,9 @@ public sealed class OpenAIChatClient : IChatClient
 
                 if (tokenUsage.OutputTokenDetails is ChatOutputTokenUsageDetails details)
                 {
-                    (usageDetails.AdditionalProperties = [])[nameof(tokenUsage.OutputTokenDetails)] = new Dictionary<string, object?>
+                    usageDetails.AdditionalValues = new()
                     {
-                        [nameof(details.ReasoningTokenCount)] = details.ReasoningTokenCount,
+                        { OutputTokenDetailsReasoningTokenCountKey, details.ReasoningTokenCount },
                     };
                 }
 
