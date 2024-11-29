@@ -508,7 +508,6 @@ public class FunctionInvokingChatClientTests
         using CancellationTokenSource cts = new();
         List<ChatMessage> chat = [plan[0]];
         var expectedTotalTokenCounts = 0;
-        var rng = new Random();
 
         using var innerClient = new TestChatClient
         {
