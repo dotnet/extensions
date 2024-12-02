@@ -166,9 +166,27 @@ public sealed class OpenAIChatClient : IChatClient
                 TotalTokenCount = tokenUsage.TotalTokenCount,
             };
 
-            if (tokenUsage.OutputTokenDetails is ChatOutputTokenUsageDetails details)
+            if (tokenUsage.InputTokenDetails is ChatInputTokenUsageDetails inputDetails)
             {
-                completion.Usage.AdditionalProperties = new() { [nameof(details.ReasoningTokenCount)] = details.ReasoningTokenCount };
+                if (inputDetails.AudioTokenCount is int audioTokenCount)
+                {
+                    (completion.Usage.AdditionalProperties ??= [])[nameof(inputDetails.AudioTokenCount)] = audioTokenCount;
+                }
+
+                if (inputDetails.CachedTokenCount is int cachedTokenCount)
+                {
+                    (completion.Usage.AdditionalProperties ??= [])[nameof(inputDetails.CachedTokenCount)] = cachedTokenCount;
+                }
+            }
+
+            if (tokenUsage.OutputTokenDetails is ChatOutputTokenUsageDetails outputDetails)
+            {
+                if (outputDetails.AudioTokenCount is int audioTokenCount)
+                {
+                    (completion.Usage.AdditionalProperties ??= [])[nameof(outputDetails.AudioTokenCount)] = audioTokenCount;
+                }
+
+                (completion.Usage.AdditionalProperties ??= [])[nameof(outputDetails.ReasoningTokenCount)] = outputDetails.ReasoningTokenCount;
             }
         }
 
