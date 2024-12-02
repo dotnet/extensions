@@ -451,7 +451,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
             {
                 // TODO: ChatRequestAssistantMessage only enables text content currently.
                 // Update it with other content types when it supports that.
-                ChatRequestAssistantMessage message = new(input.Text ?? string.Empty);
+                ChatRequestAssistantMessage message = new(string.Concat(input.Contents.Where(c => c is TextContent)));
 
                 foreach (var content in input.Contents)
                 {
