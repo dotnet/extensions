@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -405,7 +407,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
     }
 
     /// <summary>Converts an Extensions chat message enumerable to an AzureAI chat message enumerable.</summary>
-    private IEnumerable<ChatRequestMessage> ToAzureAIInferenceChatMessages(IEnumerable<ChatMessage> inputs)
+    private IEnumerable<ChatRequestMessage> ToAzureAIInferenceChatMessages(IList<ChatMessage> inputs)
     {
         // Maps all of the M.E.AI types to the corresponding AzureAI types.
         // Unrecognized or non-processable content is ignored.
@@ -441,7 +443,9 @@ public sealed class AzureAIInferenceChatClient : IChatClient
             }
             else if (input.Role == ChatRole.User)
             {
-                yield return new ChatRequestUserMessage(GetContentParts(input.Contents));
+                yield return input.Contents.All(c => c is TextContent) ?
+                    new ChatRequestUserMessage(string.Concat(input.Contents)) :
+                    new ChatRequestUserMessage(GetContentParts(input.Contents));
             }
             else if (input.Role == ChatRole.Assistant)
             {
@@ -469,6 +473,8 @@ public sealed class AzureAIInferenceChatClient : IChatClient
     /// <summary>Converts a list of <see cref="AIContent"/> to a list of <see cref="ChatMessageContentItem"/>.</summary>
     private static List<ChatMessageContentItem> GetContentParts(IList<AIContent> contents)
     {
+        Debug.Assert(contents is { Count: > 0 }, "Expected non-empty contents");
+
         List<ChatMessageContentItem> parts = [];
         foreach (var content in contents)
         {
@@ -486,11 +492,6 @@ public sealed class AzureAIInferenceChatClient : IChatClient
                     parts.Add(new ChatMessageImageContentItem(new Uri(uri)));
                     break;
             }
-        }
-
-        if (parts.Count == 0)
-        {
-            parts.Add(new ChatMessageTextContentItem(string.Empty));
         }
 
         return parts;
