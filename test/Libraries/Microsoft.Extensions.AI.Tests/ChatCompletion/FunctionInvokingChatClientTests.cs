@@ -568,11 +568,9 @@ public class FunctionInvokingChatClientTests
         Assert.Equal(expectedTotalTokenCounts, actualUsage.InputTokenCount);
         Assert.Equal(expectedTotalTokenCounts, actualUsage.OutputTokenCount);
         Assert.Equal(expectedTotalTokenCounts, actualUsage.TotalTokenCount);
-        Assert.Equal(expectedTotalTokenCounts, actualUsage.AdditionalValues!.GetInt32("someInt"));
-        Assert.Equal(expectedTotalTokenCounts, actualUsage.AdditionalValues!.GetInt64("someLong"));
-        Assert.Equal(expectedTotalTokenCounts, actualUsage.AdditionalValues!.GetSingle("someFloat"));
-        Assert.Equal(expectedTotalTokenCounts, actualUsage.AdditionalValues!.GetDouble("someDouble"));
-        Assert.Equal(expectedTotalTokenCounts, actualUsage.AdditionalValues!.GetDecimal("someDecimal"));
+        Assert.Equal(2, actualUsage.AdditionalCounts.Count);
+        Assert.Equal(expectedTotalTokenCounts, actualUsage.AdditionalCounts["firstValue"]);
+        Assert.Equal(expectedTotalTokenCounts, actualUsage.AdditionalCounts["secondValue"]);
 
         return chat;
     }
@@ -587,14 +585,7 @@ public class FunctionInvokingChatClientTests
             InputTokenCount = value,
             OutputTokenCount = value,
             TotalTokenCount = value,
-            AdditionalValues = new()
-            {
-                { "someInt", value },
-                { "someLong", (long)value },
-                { "someFloat", (float)value },
-                { "someDouble", (double)value },
-                { "someDecimal", (decimal)value },
-            }
+            AdditionalCounts = { ["firstValue"] = value, ["secondValue"] = value },
         };
     }
 

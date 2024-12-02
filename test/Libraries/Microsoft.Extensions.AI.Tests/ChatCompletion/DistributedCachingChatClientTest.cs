@@ -61,14 +61,7 @@ public class DistributedCachingChatClientTest
                 InputTokenCount = 123,
                 OutputTokenCount = 456,
                 TotalTokenCount = 99999,
-                AdditionalValues = new()
-                {
-                    { "intVal", 1 },
-                    { "longVal", 2L },
-                    { "floatVal", 3.4f },
-                    { "doubleVal", 5.6 },
-                    { "decimalVal", 6.7m },
-                }
+                AdditionalCounts = { ["someValue"] = 1_234_567 }
             },
             CreatedAt = DateTimeOffset.UtcNow,
             ModelId = "someModel",
@@ -740,7 +733,7 @@ public class DistributedCachingChatClientTest
         Assert.Equal(expected.Usage?.InputTokenCount, actual.Usage?.InputTokenCount);
         Assert.Equal(expected.Usage?.OutputTokenCount, actual.Usage?.OutputTokenCount);
         Assert.Equal(expected.Usage?.TotalTokenCount, actual.Usage?.TotalTokenCount);
-        AssertUsageValuesEqual(expected.Usage?.AdditionalValues, actual.Usage?.AdditionalValues);
+        Assert.Equal(expected.Usage?.AdditionalCounts, actual.Usage?.AdditionalCounts);
         Assert.Equal(expected.CreatedAt, actual.CreatedAt);
         Assert.Equal(expected.ModelId, actual.ModelId);
         Assert.Equal(
@@ -773,19 +766,6 @@ public class DistributedCachingChatClientTest
                         JsonSerializer.Serialize(expectedFcc.Arguments, TestJsonSerializerContext.Default.Options),
                         JsonSerializer.Serialize(actualFcc.Arguments, TestJsonSerializerContext.Default.Options));
                 }
-            }
-        }
-    }
-
-    private static void AssertUsageValuesEqual(AdditionalUsageValues? a, AdditionalUsageValues? b)
-    {
-        Assert.Equal(a is null, b is null);
-        if (a is not null)
-        {
-            Assert.Equal(a.Count, b!.Count);
-            foreach (var key in a.Keys)
-            {
-                Assert.Equal(a[key], b[key]);
             }
         }
     }

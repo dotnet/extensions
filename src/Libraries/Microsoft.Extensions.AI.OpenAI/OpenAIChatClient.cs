@@ -170,10 +170,7 @@ public sealed class OpenAIChatClient : IChatClient
 
             if (tokenUsage.OutputTokenDetails is ChatOutputTokenUsageDetails details)
             {
-                completion.Usage.AdditionalValues = new()
-                {
-                    { OutputTokenDetailsReasoningTokenCountKey, details.ReasoningTokenCount },
-                };
+                completion.Usage.AdditionalCounts.Add(OutputTokenDetailsReasoningTokenCountKey, details.ReasoningTokenCount);
             }
         }
 
@@ -304,10 +301,7 @@ public sealed class OpenAIChatClient : IChatClient
 
                 if (tokenUsage.OutputTokenDetails is ChatOutputTokenUsageDetails details)
                 {
-                    usageDetails.AdditionalValues = new()
-                    {
-                        { OutputTokenDetailsReasoningTokenCountKey, details.ReasoningTokenCount },
-                    };
+                    usageDetails.AdditionalCounts.Add(OutputTokenDetailsReasoningTokenCountKey, details.ReasoningTokenCount);
                 }
 
                 // TODO: Add support for prompt token details (e.g. cached tokens) once it's exposed in OpenAI library.

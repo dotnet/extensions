@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -21,8 +22,9 @@ public class UsageDetails
     /// <summary>Gets or sets the total number of tokens used to produce the response.</summary>
     public int? TotalTokenCount { get; set; }
 
-    /// <summary>Gets or sets additional usage values.</summary>
-    public AdditionalUsageValues? AdditionalValues { get; set; }
+    /// <summary>Gets additional usage counts.</summary>
+    [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
+    public IDictionary<string, long> AdditionalCounts { get; } = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>Adds usage data from another <see cref="UsageDetails"/> into this instance.</summary>
     public void Add(UsageDetails usage)
@@ -32,10 +34,11 @@ public class UsageDetails
         OutputTokenCount = NullableSum(OutputTokenCount, usage.OutputTokenCount);
         TotalTokenCount = NullableSum(TotalTokenCount, usage.TotalTokenCount);
 
-        if (usage.AdditionalValues is not null)
+        foreach (var kvp in usage.AdditionalCounts)
         {
-            AdditionalValues ??= new();
-            AdditionalValues.AddFrom(usage.AdditionalValues);
+            AdditionalCounts[kvp.Key] = AdditionalCounts.TryGetValue(kvp.Key, out var existingValue) ?
+                kvp.Value + existingValue :
+                kvp.Value;
         }
     }
 
@@ -62,9 +65,9 @@ public class UsageDetails
                 parts.Add($"{nameof(TotalTokenCount)} = {total}");
             }
 
-            if (AdditionalValues is { } additionalValues)
+            if (AdditionalCounts is { } additionalCounts)
             {
-                foreach (var entry in additionalValues)
+                foreach (var entry in additionalCounts)
                 {
                     parts.Add($"{entry.Key} = {entry.Value}");
                 }
