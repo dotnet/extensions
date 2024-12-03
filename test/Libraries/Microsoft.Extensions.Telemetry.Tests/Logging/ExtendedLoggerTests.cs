@@ -136,10 +136,17 @@ public static class ExtendedLoggerTests
                  builder.AddProvider(provider);
                  builder.AddProbabilitySampler(0, LogLevel.Warning);
              });
-
         var logger = factory.CreateLogger(Category);
+
+        // Act
+        // 1, no state (legacy path)
         logger.LogWarning("MSG0");
-        logger.Log(LogLevel.Warning, new EventId(2, "ID2"), "some state", null, (_, _) => "MSG2");
+
+        // 2, with Modern state
+        var lms = LoggerMessageHelper.ThreadLocalState;
+        var index = lms.ReserveTagSpace(1);
+        lms.TagArray[index] = new("PK2", "PV2");
+        logger.Log(LogLevel.Warning, new EventId(2, "ID2"), lms, null, (_, _) => "MSG2");
 
         Assert.Equal(0, provider.Logger!.Collector.Count);
     }
