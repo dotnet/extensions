@@ -14,6 +14,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.TestUtilities;
 using OpenTelemetry.Trace;
 using Xunit;
@@ -163,13 +165,25 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         int secretNumber = 42;
 
-        var response = await chatClient.CompleteAsync("What is the current secret number?", new()
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.User, "What is the current secret number?")
+        ];
+
+        var response = await chatClient.CompleteAsync(messages, new()
         {
             Tools = [AIFunctionFactory.Create(() => secretNumber, "GetSecretNumber")]
         });
 
         Assert.Single(response.Choices);
         Assert.Contains(secretNumber.ToString(), response.Message.Text);
+
+        if (response.Usage is { } finalUsage)
+        {
+            UsageContent? intermediate = messages.SelectMany(m => m.Contents).OfType<UsageContent>().FirstOrDefault();
+            Assert.NotNull(intermediate);
+            Assert.True(finalUsage.TotalTokenCount > intermediate.Details.TotalTokenCount);
+        }
     }
 
     [ConditionalFact]
@@ -486,14 +500,16 @@ public abstract class ChatClientIntegrationTests : IDisposable
     {
         SkipIfNotEnabled();
 
-        CapturingLogger logger = new();
+        var collector = new FakeLogCollector();
+        using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(LogLevel.Trace));
 
-        using var chatClient =
-            new LoggingChatClient(CreateChatClient()!, logger);
+        using var chatClient = CreateChatClient()!.AsBuilder()
+            .UseLogging(loggerFactory)
+            .Build();
 
         await chatClient.CompleteAsync([new(ChatRole.User, "What's the biggest animal?")]);
 
-        Assert.Collection(logger.Entries,
+        Assert.Collection(collector.GetSnapshot(),
             entry => Assert.Contains("What\\u0027s the biggest animal?", entry.Message),
             entry => Assert.Contains("whale", entry.Message));
     }
@@ -503,18 +519,21 @@ public abstract class ChatClientIntegrationTests : IDisposable
     {
         SkipIfNotEnabled();
 
-        CapturingLogger logger = new();
+        var collector = new FakeLogCollector();
+        using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(LogLevel.Trace));
 
-        using var chatClient =
-            new LoggingChatClient(CreateChatClient()!, logger);
+        using var chatClient = CreateChatClient()!.AsBuilder()
+            .UseLogging(loggerFactory)
+            .Build();
 
         await foreach (var update in chatClient.CompleteStreamingAsync("What's the biggest animal?"))
         {
             // Do nothing with the updates
         }
 
-        Assert.Contains(logger.Entries, e => e.Message.Contains("What\\u0027s the biggest animal?"));
-        Assert.Contains(logger.Entries, e => e.Message.Contains("whale"));
+        var logs = collector.GetSnapshot();
+        Assert.Contains(logs, e => e.Message.Contains("What\\u0027s the biggest animal?"));
+        Assert.Contains(logs, e => e.Message.Contains("whale"));
     }
 
     [ConditionalFact]
@@ -522,18 +541,21 @@ public abstract class ChatClientIntegrationTests : IDisposable
     {
         SkipIfNotEnabled();
 
-        CapturingLogger logger = new();
+        var collector = new FakeLogCollector();
+        using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(LogLevel.Trace));
 
-        using var chatClient =
-            new FunctionInvokingChatClient(
-                new LoggingChatClient(CreateChatClient()!, logger));
+        using var chatClient = CreateChatClient()!
+            .AsBuilder()
+            .UseFunctionInvocation()
+            .UseLogging(loggerFactory)
+            .Build();
 
         int secretNumber = 42;
         await chatClient.CompleteAsync(
             "What is the current secret number?",
             new ChatOptions { Tools = [AIFunctionFactory.Create(() => secretNumber, "GetSecretNumber")] });
 
-        Assert.Collection(logger.Entries,
+        Assert.Collection(collector.GetSnapshot(),
             entry => Assert.Contains("What is the current secret number?", entry.Message),
             entry => Assert.Contains("\"name\": \"GetSecretNumber\"", entry.Message),
             entry => Assert.Contains($"\"result\": {secretNumber}", entry.Message),
@@ -545,11 +567,14 @@ public abstract class ChatClientIntegrationTests : IDisposable
     {
         SkipIfNotEnabled();
 
-        CapturingLogger logger = new();
+        var collector = new FakeLogCollector();
+        using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(LogLevel.Trace));
 
-        using var chatClient =
-            new FunctionInvokingChatClient(
-                new LoggingChatClient(CreateChatClient()!, logger));
+        using var chatClient = CreateChatClient()!
+            .AsBuilder()
+            .UseFunctionInvocation()
+            .UseLogging(loggerFactory)
+            .Build();
 
         int secretNumber = 42;
         await foreach (var update in chatClient.CompleteStreamingAsync(
@@ -559,9 +584,10 @@ public abstract class ChatClientIntegrationTests : IDisposable
             // Do nothing with the updates
         }
 
-        Assert.Contains(logger.Entries, e => e.Message.Contains("What is the current secret number?"));
-        Assert.Contains(logger.Entries, e => e.Message.Contains("\"name\": \"GetSecretNumber\""));
-        Assert.Contains(logger.Entries, e => e.Message.Contains($"\"result\": {secretNumber}"));
+        var logs = collector.GetSnapshot();
+        Assert.Contains(logs, e => e.Message.Contains("What is the current secret number?"));
+        Assert.Contains(logs, e => e.Message.Contains("\"name\": \"GetSecretNumber\""));
+        Assert.Contains(logs, e => e.Message.Contains($"\"result\": {secretNumber}"));
     }
 
     [ConditionalFact]

@@ -119,7 +119,7 @@ internal static partial class JsonSchemaExporter
         if (!ReflectionHelpers.IsBuiltInConverter(effectiveConverter))
         {
             // Return a `true` schema for types with user-defined converters.
-            return CompleteSchema(ref state, JsonSchema.True);
+            return CompleteSchema(ref state, JsonSchema.CreateTrueSchema());
         }
 
         if (parentPolymorphicTypeInfo is null && typeInfo.PolymorphismOptions is { DerivedTypes.Count: > 0 } polyOptions)
@@ -245,7 +245,7 @@ internal static partial class JsonSchemaExporter
                 if (effectiveUnmappedMemberHandling is JsonUnmappedMemberHandling.Disallow)
                 {
                     // Disallow unspecified properties.
-                    additionalProperties = JsonSchema.False;
+                    additionalProperties = JsonSchema.CreateFalseSchema();
                 }
 
                 if (typeDiscriminator is { } typeDiscriminatorPair)
@@ -435,7 +435,7 @@ internal static partial class JsonSchemaExporter
                 }
                 else
                 {
-                    schema = JsonSchema.True;
+                    schema = JsonSchema.CreateTrueSchema();
                 }
 
                 return CompleteSchema(ref state, schema);
@@ -578,7 +578,7 @@ internal static partial class JsonSchemaExporter
 
     private static readonly Dictionary<Type, Func<JsonNumberHandling, JsonSchema>> _simpleTypeSchemaFactories = new()
     {
-        [typeof(object)] = _ => JsonSchema.True,
+        [typeof(object)] = _ => JsonSchema.CreateTrueSchema(),
         [typeof(bool)] = _ => new JsonSchema { Type = JsonSchemaType.Boolean },
         [typeof(byte)] = numberHandling => GetSchemaForNumericType(JsonSchemaType.Integer, numberHandling),
         [typeof(ushort)] = numberHandling => GetSchemaForNumericType(JsonSchemaType.Integer, numberHandling),
@@ -625,10 +625,10 @@ internal static partial class JsonSchemaExporter
             Pattern = @"^\d+(\.\d+){1,3}$",
         },
 
-        [typeof(JsonDocument)] = _ => JsonSchema.True,
-        [typeof(JsonElement)] = _ => JsonSchema.True,
-        [typeof(JsonNode)] = _ => JsonSchema.True,
-        [typeof(JsonValue)] = _ => JsonSchema.True,
+        [typeof(JsonDocument)] = _ => JsonSchema.CreateTrueSchema(),
+        [typeof(JsonElement)] = _ => JsonSchema.CreateTrueSchema(),
+        [typeof(JsonNode)] = _ => JsonSchema.CreateTrueSchema(),
+        [typeof(JsonValue)] = _ => JsonSchema.CreateTrueSchema(),
         [typeof(JsonObject)] = _ => new JsonSchema { Type = JsonSchemaType.Object },
         [typeof(JsonArray)] = _ => new JsonSchema { Type = JsonSchemaType.Array },
     };

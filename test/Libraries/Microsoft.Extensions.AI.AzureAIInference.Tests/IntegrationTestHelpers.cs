@@ -11,11 +11,11 @@ namespace Microsoft.Extensions.AI;
 internal static class IntegrationTestHelpers
 {
     private static readonly string? _apiKey =
-        Environment.GetEnvironmentVariable("AZURE_AI_INFERENCE_APIKEY") ??
-        Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+        TestRunnerConfiguration.Instance["AzureAIInference:Key"] ??
+        TestRunnerConfiguration.Instance["OpenAI:Key"];
 
     private static readonly string _endpoint =
-        Environment.GetEnvironmentVariable("AZURE_AI_INFERENCE_ENDPOINT") ??
+        TestRunnerConfiguration.Instance["AzureAIInference:Endpoint"] ??
         "https://api.openai.com/v1";
 
     /// <summary>Gets an <see cref="ChatCompletionsClient"/> to use for testing, or null if the associated tests should be disabled.</summary>
