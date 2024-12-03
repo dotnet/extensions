@@ -495,7 +495,7 @@ public class FunctionInvokingChatClientTests
     }
 
     [Fact]
-    public async Task SupportsMultipleCallsInSameStreamingUpdate()
+    public async Task SupportsConsecutiveStreamingUpdatesWithFunctionCalls()
     {
         var options = new ChatOptions
         {
@@ -511,7 +511,7 @@ public class FunctionInvokingChatClientTests
         {
             CompleteStreamingAsyncCallback = (chatContents, chatOptions, cancellationToken) =>
             {
-                // If the conversation is just starting, issue two calls in a single streaming update
+                // If the conversation is just starting, issue two consecutive updates with function calls
                 // Otherwise just end the conversation
                 return chatContents.Last().Text == "Hello"
                     ? YieldAsync(
