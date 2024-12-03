@@ -26,11 +26,6 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents an <see cref="IChatClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="OpenAI.Chat.ChatClient"/>.</summary>
 public sealed class OpenAIChatClient : IChatClient
 {
-    private const string InputTokenDetailsAudioTokenCountKey = $"{nameof(ChatTokenUsage.InputTokenDetails)}.{nameof(ChatInputTokenUsageDetails.AudioTokenCount)}";
-    private const string InputTokenDetailsCachedTokenCountKey = $"{nameof(ChatTokenUsage.InputTokenDetails)}.{nameof(ChatInputTokenUsageDetails.CachedTokenCount)}";
-    private const string OutputTokenDetailsAudioTokenCountKey = $"{nameof(ChatTokenUsage.OutputTokenDetails)}.{nameof(ChatOutputTokenUsageDetails.AudioTokenCount)}";
-    private const string OutputTokenDetailsReasoningTokenCountKey = $"{nameof(ChatTokenUsage.OutputTokenDetails)}.{nameof(ChatOutputTokenUsageDetails.ReasoningTokenCount)}";
-
     private static readonly JsonElement _defaultParameterSchema = JsonDocument.Parse("{}").RootElement;
 
     /// <summary>Default OpenAI endpoint.</summary>
@@ -164,35 +159,7 @@ public sealed class OpenAIChatClient : IChatClient
 
         if (response.Usage is ChatTokenUsage tokenUsage)
         {
-            completion.Usage = new()
-            {
-                InputTokenCount = tokenUsage.InputTokenCount,
-                OutputTokenCount = tokenUsage.OutputTokenCount,
-                TotalTokenCount = tokenUsage.TotalTokenCount,
-            };
-
-            if (tokenUsage.InputTokenDetails is ChatInputTokenUsageDetails inputDetails)
-            {
-                if (inputDetails.AudioTokenCount is int audioTokenCount)
-                {
-                    completion.Usage.AdditionalCounts.Add(InputTokenDetailsAudioTokenCountKey, audioTokenCount);
-                }
-
-                if (inputDetails.CachedTokenCount is int cachedTokenCount)
-                {
-                    completion.Usage.AdditionalCounts.Add(InputTokenDetailsCachedTokenCountKey, cachedTokenCount);
-                }
-            }
-
-            if (tokenUsage.OutputTokenDetails is ChatOutputTokenUsageDetails outputDetails)
-            {
-                if (outputDetails.AudioTokenCount is int audioTokenCount)
-                {
-                    completion.Usage.AdditionalCounts.Add(OutputTokenDetailsAudioTokenCountKey, audioTokenCount);
-                }
-
-                completion.Usage.AdditionalCounts.Add(OutputTokenDetailsReasoningTokenCountKey, outputDetails.ReasoningTokenCount);
-            }
+            completion.Usage = ToUsageDetails(tokenUsage);
         }
 
         if (response.ContentTokenLogProbabilities is { Count: > 0 } contentTokenLogProbs)
@@ -313,20 +280,7 @@ public sealed class OpenAIChatClient : IChatClient
             // Transfer over usage updates.
             if (chatCompletionUpdate.Usage is ChatTokenUsage tokenUsage)
             {
-                UsageDetails usageDetails = new()
-                {
-                    InputTokenCount = tokenUsage.InputTokenCount,
-                    OutputTokenCount = tokenUsage.OutputTokenCount,
-                    TotalTokenCount = tokenUsage.TotalTokenCount,
-                };
-
-                if (tokenUsage.OutputTokenDetails is ChatOutputTokenUsageDetails details)
-                {
-                    usageDetails.AdditionalCounts.Add(OutputTokenDetailsReasoningTokenCountKey, details.ReasoningTokenCount);
-                }
-
-                // TODO: Add support for prompt token details (e.g. cached tokens) once it's exposed in OpenAI library.
-
+                var usageDetails = ToUsageDetails(tokenUsage);
                 completionUpdate.Contents.Add(new UsageContent(usageDetails));
             }
 
@@ -388,6 +342,49 @@ public sealed class OpenAIChatClient : IChatClient
         public string? CallId;
         public string? Name;
         public StringBuilder? Arguments;
+    }
+
+    private static UsageDetails ToUsageDetails(ChatTokenUsage tokenUsage)
+    {
+        var destination = new UsageDetails
+        {
+            InputTokenCount = tokenUsage.InputTokenCount,
+            OutputTokenCount = tokenUsage.OutputTokenCount,
+            TotalTokenCount = tokenUsage.TotalTokenCount,
+        };
+
+        if (tokenUsage.InputTokenDetails is ChatInputTokenUsageDetails inputDetails)
+        {
+            if (inputDetails.AudioTokenCount is int audioTokenCount)
+            {
+                destination.AdditionalCounts.Add(
+                    $"{nameof(ChatTokenUsage.InputTokenDetails)}.{nameof(ChatInputTokenUsageDetails.AudioTokenCount)}",
+                    audioTokenCount);
+            }
+
+            if (inputDetails.CachedTokenCount is int cachedTokenCount)
+            {
+                destination.AdditionalCounts.Add(
+                    $"{nameof(ChatTokenUsage.InputTokenDetails)}.{nameof(ChatInputTokenUsageDetails.CachedTokenCount)}",
+                    cachedTokenCount);
+            }
+        }
+
+        if (tokenUsage.OutputTokenDetails is ChatOutputTokenUsageDetails outputDetails)
+        {
+            if (outputDetails.AudioTokenCount is int audioTokenCount)
+            {
+                destination.AdditionalCounts.Add(
+                    $"{nameof(ChatTokenUsage.OutputTokenDetails)}.{nameof(ChatOutputTokenUsageDetails.AudioTokenCount)}",
+                    audioTokenCount);
+            }
+
+            destination.AdditionalCounts.Add(
+                $"{nameof(ChatTokenUsage.OutputTokenDetails)}.{nameof(ChatOutputTokenUsageDetails.ReasoningTokenCount)}",
+                outputDetails.ReasoningTokenCount);
+        }
+
+        return destination;
     }
 
     /// <summary>Converts an OpenAI role to an Extensions role.</summary>

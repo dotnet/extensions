@@ -239,7 +239,7 @@ public class OpenAIChatClientTests
 
             data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{},"logprobs":null,"finish_reason":"stop"}],"usage":null}
 
-            data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[],"usage":{"prompt_tokens":8,"completion_tokens":9,"total_tokens":17,"prompt_tokens_details":{"cached_tokens":0},"completion_tokens_details":{"reasoning_tokens":90}}}
+            data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[],"usage":{"prompt_tokens":8,"completion_tokens":9,"total_tokens":17,"prompt_tokens_details":{"cached_tokens":5,"audio_tokens":123},"completion_tokens_details":{"reasoning_tokens":90,"audio_tokens":456}}}
 
             data: [DONE]
 
@@ -282,7 +282,10 @@ public class OpenAIChatClientTests
 
         Assert.Equal(new Dictionary<string, long>
         {
-            { "OutputTokenDetails.ReasoningTokenCount", 90 }
+            { "InputTokenDetails.CachedTokenCount", 5 },
+            { "InputTokenDetails.AudioTokenCount", 123 },
+            { "OutputTokenDetails.ReasoningTokenCount", 90 },
+            { "OutputTokenDetails.AudioTokenCount", 456 },
         }, usage.Details.AdditionalCounts);
     }
 
@@ -814,6 +817,7 @@ public class OpenAIChatClientTests
 
         Assert.Equal(new Dictionary<string, long>
         {
+            { "InputTokenDetails.CachedTokenCount", 0 },
             { "OutputTokenDetails.ReasoningTokenCount", 90 }
         }, usage.Details.AdditionalCounts);
     }
