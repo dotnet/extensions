@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
@@ -20,11 +21,13 @@ public readonly struct SamplingParameters : IEquatable<SamplingParameters>
     /// <param name="logLevel"><see cref="Microsoft.Extensions.Logging.LogLevel"/> of the log record.</param>
     /// <param name="category">Category of the log record.</param>
     /// <param name="eventId"><see cref="Microsoft.Extensions.Logging.EventId"/> of the log record.</param>
-    public SamplingParameters(LogLevel logLevel, string category, EventId eventId)
+    /// <param name="state">The type of the log message state.</param>
+    public SamplingParameters(LogLevel logLevel, string category, EventId eventId, IReadOnlyList<KeyValuePair<string, object?>>? state = null)
     {
         LogLevel = logLevel;
         Category = Throw.IfNull(category);
         EventId = eventId;
+        State = state;
     }
 
     /// <summary>
@@ -41,6 +44,11 @@ public readonly struct SamplingParameters : IEquatable<SamplingParameters>
     /// Gets the log level.
     /// </summary>
     public LogLevel LogLevel { get; }
+
+    /// <summary>
+    /// Gets the log message state.
+    /// </summary>
+    public IReadOnlyList<KeyValuePair<string, object?>>? State { get; }
 
     /// <inheritdoc/>
     public override bool Equals(object? obj) =>

@@ -268,7 +268,7 @@ internal sealed partial class ExtendedLogger : ILogger
             {
                 if (samplingDecision is null && config.Sampler is not null)
                 {
-                    samplingDecision = config.Sampler.ShouldSample(new SamplingParameters(logLevel, loggerInfo.Category, eventId));
+                    samplingDecision = config.Sampler.ShouldSample(new SamplingParameters(logLevel, loggerInfo.Category, eventId, joiner));
                 }
 
                 if (samplingDecision is false)
@@ -364,7 +364,7 @@ internal sealed partial class ExtendedLogger : ILogger
             {
                 if (samplingDecision is null && config.Sampler is not null)
                 {
-                    samplingDecision = config.Sampler.ShouldSample(new SamplingParameters(logLevel, loggerInfo.Category, eventId));
+                    samplingDecision = config.Sampler.ShouldSample(new SamplingParameters(logLevel, loggerInfo.Category, eventId, joiner));
                 }
 
                 if (samplingDecision is false)
