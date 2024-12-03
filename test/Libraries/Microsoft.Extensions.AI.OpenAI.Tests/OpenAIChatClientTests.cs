@@ -201,6 +201,7 @@ public class OpenAIChatClientTests
         Assert.Equal(17, response.Usage.TotalTokenCount);
         Assert.Equal(new Dictionary<string, long>
         {
+            { "InputTokenDetails.CachedTokenCount", 13 },
             { "OutputTokenDetails.ReasoningTokenCount", 90 }
         }, response.Usage.AdditionalCounts);
 
@@ -342,10 +343,12 @@ public class OpenAIChatClientTests
                 "completion_tokens": 15,
                 "total_tokens": 57,
                 "prompt_tokens_details": {
-                  "cached_tokens": 13
+                  "cached_tokens": 13,
+                  "audio_tokens": 123
                 },
                 "completion_tokens_details": {
-                  "reasoning_tokens": 90
+                  "reasoning_tokens": 90,
+                  "audio_tokens": 456
                 }
               },
               "system_fingerprint": "fp_f85bea6784"
@@ -388,7 +391,10 @@ public class OpenAIChatClientTests
         Assert.Equal(57, response.Usage.TotalTokenCount);
         Assert.Equal(new Dictionary<string, long>
         {
-            { "OutputTokenDetails.ReasoningTokenCount", 90 }
+            { "InputTokenDetails.CachedTokenCount", 13 },
+            { "InputTokenDetails.AudioTokenCount", 123 },
+            { "OutputTokenDetails.ReasoningTokenCount", 90 },
+            { "OutputTokenDetails.AudioTokenCount", 456 },
         }, response.Usage.AdditionalCounts);
 
         Assert.NotNull(response.AdditionalProperties);
@@ -483,6 +489,7 @@ public class OpenAIChatClientTests
         Assert.Equal(57, response.Usage.TotalTokenCount);
         Assert.Equal(new Dictionary<string, long>
         {
+            { "InputTokenDetails.CachedTokenCount", 13 },
             { "OutputTokenDetails.ReasoningTokenCount", 90 }
         }, response.Usage.AdditionalCounts);
 
@@ -579,6 +586,7 @@ public class OpenAIChatClientTests
         Assert.Equal(57, response.Usage.TotalTokenCount);
         Assert.Equal(new Dictionary<string, long>
         {
+            { "InputTokenDetails.CachedTokenCount", 13 },
             { "OutputTokenDetails.ReasoningTokenCount", 90 }
         }, response.Usage.AdditionalCounts);
 
@@ -688,6 +696,7 @@ public class OpenAIChatClientTests
 
         Assert.Equal(new Dictionary<string, long>
         {
+            { "InputTokenDetails.CachedTokenCount", 13 },
             { "OutputTokenDetails.ReasoningTokenCount", 90 }
         }, response.Usage.AdditionalCounts);
 
@@ -941,6 +950,7 @@ public class OpenAIChatClientTests
         Assert.Equal(57, response.Usage.TotalTokenCount);
         Assert.Equal(new Dictionary<string, long>
         {
+            { "InputTokenDetails.CachedTokenCount", 20 },
             { "OutputTokenDetails.ReasoningTokenCount", 90 }
         }, response.Usage.AdditionalCounts);
 

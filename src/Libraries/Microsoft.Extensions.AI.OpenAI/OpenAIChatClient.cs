@@ -26,6 +26,9 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents an <see cref="IChatClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="OpenAI.Chat.ChatClient"/>.</summary>
 public sealed class OpenAIChatClient : IChatClient
 {
+    private const string InputTokenDetailsAudioTokenCountKey = $"{nameof(ChatTokenUsage.InputTokenDetails)}.{nameof(ChatInputTokenUsageDetails.AudioTokenCount)}";
+    private const string InputTokenDetailsCachedTokenCountKey = $"{nameof(ChatTokenUsage.InputTokenDetails)}.{nameof(ChatInputTokenUsageDetails.CachedTokenCount)}";
+    private const string OutputTokenDetailsAudioTokenCountKey = $"{nameof(ChatTokenUsage.OutputTokenDetails)}.{nameof(ChatOutputTokenUsageDetails.AudioTokenCount)}";
     private const string OutputTokenDetailsReasoningTokenCountKey = $"{nameof(ChatTokenUsage.OutputTokenDetails)}.{nameof(ChatOutputTokenUsageDetails.ReasoningTokenCount)}";
 
     private static readonly JsonElement _defaultParameterSchema = JsonDocument.Parse("{}").RootElement;
@@ -168,9 +171,27 @@ public sealed class OpenAIChatClient : IChatClient
                 TotalTokenCount = tokenUsage.TotalTokenCount,
             };
 
-            if (tokenUsage.OutputTokenDetails is ChatOutputTokenUsageDetails details)
+            if (tokenUsage.InputTokenDetails is ChatInputTokenUsageDetails inputDetails)
             {
-                completion.Usage.AdditionalCounts.Add(OutputTokenDetailsReasoningTokenCountKey, details.ReasoningTokenCount);
+                if (inputDetails.AudioTokenCount is int audioTokenCount)
+                {
+                    completion.Usage.AdditionalCounts.Add(InputTokenDetailsAudioTokenCountKey, audioTokenCount);
+                }
+
+                if (inputDetails.CachedTokenCount is int cachedTokenCount)
+                {
+                    completion.Usage.AdditionalCounts.Add(InputTokenDetailsCachedTokenCountKey, cachedTokenCount);
+                }
+            }
+
+            if (tokenUsage.OutputTokenDetails is ChatOutputTokenUsageDetails outputDetails)
+            {
+                if (outputDetails.AudioTokenCount is int audioTokenCount)
+                {
+                    completion.Usage.AdditionalCounts.Add(OutputTokenDetailsAudioTokenCountKey, audioTokenCount);
+                }
+
+                completion.Usage.AdditionalCounts.Add(OutputTokenDetailsReasoningTokenCountKey, outputDetails.ReasoningTokenCount);
             }
         }
 
