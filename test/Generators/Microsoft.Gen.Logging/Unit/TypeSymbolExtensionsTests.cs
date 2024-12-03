@@ -170,7 +170,7 @@ public class TypeSymbolExtensionsTests
                         }}
                     }}
 
-                    class NonConvertible {{ }}
+                    class NonSpanFormattable {{ }}
 
                     partial class C
                     {{
