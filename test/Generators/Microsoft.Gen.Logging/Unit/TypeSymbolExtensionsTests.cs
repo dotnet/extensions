@@ -235,4 +235,52 @@ public class TypeSymbolExtensionsTests
         Assert.Equal(expectedResult, parameterSymbol.Type.IsSpecialType(symbolHolder));
     }
 
+    [Theory]
+    [InlineData("ToString", "Test", true)]
+    [InlineData("RandomMethod", "Test", false)]
+    public void ValidateHasCustomToString(string methodName, string typeReference, bool expectedResult)
+    {
+        // Generate the code
+        string source = $@"
+                namespace Test
+                {{
+                    using System;
+                    using Microsoft.Extensions.Logging;
+
+                    class Test 
+                    {{
+                        public override string {methodName}()
+                        {{
+                            throw new NotImplementedException();
+                        }}
+                    }}
+
+                    class NonConvertible {{ }}
+
+                    partial class C
+                    {{
+                        [LoggerMessage(EventId = 1, Level = LogLevel.Debug, Message = ""M1"")]
+                        static partial void M1(ILogger logger, {typeReference} property);
+
+                        public override string {methodName}()
+                        {{
+                            throw new NotImplementedException();
+                        }}
+                    }}
+                }}";
+
+        // Create compilation and extract symbols
+        Compilation compilation = CompilationHelper.CreateCompilation(source);
+        SymbolHolder? symbolHolder = SymbolLoader.LoadSymbols(compilation, _diagCallback);
+        IEnumerable<ISymbol> methodSymbols = compilation.GetSymbolsWithName("M1", SymbolFilter.Member);
+
+        // Assert
+        Assert.NotNull(symbolHolder);
+        ISymbol symbol = Assert.Single(methodSymbols);
+        var methodSymbol = Assert.IsAssignableFrom<IMethodSymbol>(symbol);
+        var parameterSymbol = Assert.Single(methodSymbol.Parameters, p => p.Name == "property");
+
+        Assert.Equal(expectedResult, parameterSymbol.Type.HasCustomToString());
+    }
+
 }
