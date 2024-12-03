@@ -237,10 +237,10 @@ public class TypeSymbolExtensionsTests
     }
 
     [Theory]
-    [InlineData("ToString", "Test", true)]
-    [InlineData("RandomMethod", "Test", false)]
-    [InlineData("ToooooString", "Test", false)]
-    public void ValidateHasCustomToString(string methodName, string typeReference, bool expectedResult)
+    [InlineData("ToString", true)]
+    [InlineData("RandomMethod", false)]
+    [InlineData("ToooooString", false)]
+    public void ValidateHasCustomToString(string methodName, bool expectedResult)
     {
         // Generate the code
         string source = $@"
@@ -249,7 +249,7 @@ public class TypeSymbolExtensionsTests
                     using System;
                     using Microsoft.Extensions.Logging;
 
-                    class {typeReference} 
+                    class Test
                     {{
                         public override string {methodName}()
                         {{
@@ -262,7 +262,7 @@ public class TypeSymbolExtensionsTests
                     partial class C
                     {{
                         [LoggerMessage(EventId = 1, Level = LogLevel.Debug, Message = ""M1"")]
-                        static partial void M1(ILogger logger, {typeReference} property);
+                        static partial void M1(ILogger logger, Test property);
 
                         public override string {methodName}()
                         {{
