@@ -325,7 +325,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     // If there were any, remove them from the update. We do this before yielding the update so
                     // that we're not modifying an instance already provided back to the caller.
                     int addedFccs = functionCallContents.Count - preFccCount;
-                    if (addedFccs > preFccCount)
+                    if (addedFccs > 0)
                     {
                         update.Contents = addedFccs == update.Contents.Count ?
                             [] : update.Contents.Where(c => c is not FunctionCallContent).ToList();
