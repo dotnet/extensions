@@ -193,13 +193,14 @@ public class TypeSymbolExtensionsTests
     }
 
     [Theory]
-    [InlineData("TestSpecialObject : object", "TestSpecialObject", true)]
-    [InlineData("TestEnumerable<T> : List<T>", "TestEnumerable<object>", true)]
-    [InlineData("NotUsed", "IEnumerable<string>", true)]
-    [InlineData("TestClass", "NonSpecialType", false)]
-    [InlineData("TestClassDerived : NonSpecialType", "TestClassDerived", false)]
-    [InlineData("NotUsed", "bool", false)]
-    public void ValidateIsSpecialType(string classDefinition, string typeReference, bool expectedResult)
+    [InlineData("string", true)]
+    [InlineData("bool", true)]
+    [InlineData("int", true)]
+    [InlineData("NonSpecialType", false)]
+    [InlineData("TestClassDerived", false)]
+    [InlineData("TimeSpan", false)]
+    [InlineData("Uri", false)]
+    public void ValidateIsSpecialType(string typeReference, bool expectedResult)
     {
         // Generate the code
         string source = $@"
@@ -208,9 +209,9 @@ public class TypeSymbolExtensionsTests
                     using System.Collections.Generic;
                     using Microsoft.Extensions.Logging;
 
-                    class {classDefinition} {{ }}
-
                     class NonSpecialType {{ }}
+
+                    class TestClassDerived: NonSpecialType {{ }}
 
                     partial class C
                     {{
