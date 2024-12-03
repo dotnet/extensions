@@ -125,16 +125,16 @@ public static class ExtendedLoggerTests
     {
         const string Category = "C1";
 
-        RatioBasedSamplerOptions options = new();
-        options.Rules.Add(new RatioBasedSamplerFilterRule(0, null, LogLevel.Warning, null));
-        var sampler = new RatioBasedSampler(new StaticOptionsMonitor<RatioBasedSamplerOptions>(options));
+        ProbabilitySamplerOptions options = new();
+        options.Rules.Add(new ProbabilitySamplerFilterRule(0, null, LogLevel.Warning, null));
+        var sampler = new ProbabilitySampler(new StaticOptionsMonitor<ProbabilitySamplerOptions>(options));
 
         using var provider = new Provider();
         using var factory = Utils.CreateLoggerFactory(
              builder =>
              {
                  builder.AddProvider(provider);
-                 builder.AddRatioBasedSampler(0, LogLevel.Warning);
+                 builder.AddProbabilitySampler(0, LogLevel.Warning);
              });
 
         var logger = factory.CreateLogger(Category);

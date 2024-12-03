@@ -11,18 +11,18 @@ namespace Microsoft.Extensions.Diagnostics.Sampling;
 /// <summary>
 /// Samples logs according to the specified probability.
 /// </summary>
-internal sealed class RatioBasedSampler : LoggerSampler
+internal sealed class ProbabilitySampler : LoggerSampler
 {
 #if !NET6_0_OR_GREATER
     private static readonly System.Threading.ThreadLocal<Random> _randomInstance = new(() => new Random());
 #endif
 
-    private readonly IOptionsMonitor<RatioBasedSamplerOptions> _options;
+    private readonly IOptionsMonitor<ProbabilitySamplerOptions> _options;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="RatioBasedSampler"/> class.
+    /// Initializes a new instance of the <see cref="ProbabilitySampler"/> class.
     /// </summary>
-    public RatioBasedSampler(IOptionsMonitor<RatioBasedSamplerOptions> options)
+    public ProbabilitySampler(IOptionsMonitor<ProbabilitySamplerOptions> options)
     {
         _options = options;
     }
@@ -48,7 +48,7 @@ internal sealed class RatioBasedSampler : LoggerSampler
 
         // TO DO: check if we can optimize this. It is a hot path and
         // we should be able to minimize number of rule selections on every log record.
-        SamplerRuleSelector.Select(_options.CurrentValue.Rules, parameters.Category, parameters.LogLevel, parameters.EventId, out RatioBasedSamplerFilterRule? rule);
+        SamplerRuleSelector.Select(_options.CurrentValue.Rules, parameters.Category, parameters.LogLevel, parameters.EventId, out ProbabilitySamplerFilterRule? rule);
         if (rule is not null)
         {
             probability = rule.Probability;

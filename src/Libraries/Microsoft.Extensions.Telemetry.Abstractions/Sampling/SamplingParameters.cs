@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.DiagnosticIds;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Logging;
 
@@ -22,7 +23,7 @@ public readonly struct SamplingParameters : IEquatable<SamplingParameters>
     public SamplingParameters(LogLevel logLevel, string category, EventId eventId)
     {
         LogLevel = logLevel;
-        Category = category;
+        Category = Throw.IfNull(category);
         EventId = eventId;
     }
 

@@ -35,7 +35,7 @@ public static class SamplingLoggerBuilderExtensions
     }
 
     /// <summary>
-    /// Adds Ratio-based sampler to the logging infrastructure. Matched logs will be sampled
+    /// Adds Probability sampler to the logging infrastructure. Matched logs will be sampled
     /// according to the provided probability./>.
     /// Higher the probability value, higher is the probability of a given log record to be sampled in.
     /// </summary>
@@ -43,18 +43,18 @@ public static class SamplingLoggerBuilderExtensions
     /// <param name="configuration">The <see cref="IConfiguration" /> to add.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
-    public static ILoggingBuilder AddRatioBasedSampler(this ILoggingBuilder builder, IConfiguration configuration)
+    public static ILoggingBuilder AddProbabilitySampler(this ILoggingBuilder builder, IConfiguration configuration)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configuration);
 
         return builder
-            .AddRatioBasedSamplerConfiguration(configuration)
-            .AddSampler<RatioBasedSampler>();
+            .AddProbabilitySamplerConfiguration(configuration)
+            .AddSampler<ProbabilitySampler>();
     }
 
     /// <summary>
-    /// Adds Ratio-based sampler to the logging infrastructure. Matched logs will be sampled
+    /// Adds Probability sampler to the logging infrastructure. Matched logs will be sampled
     /// according to the provided <paramref name="probability"/>.
     /// Higher the probability value, higher is the probability of a given log record to be sampled in.
     /// </summary>
@@ -63,15 +63,15 @@ public static class SamplingLoggerBuilderExtensions
     /// <param name="level">The log level (and below) to apply the sampler to.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
-    public static ILoggingBuilder AddRatioBasedSampler(this ILoggingBuilder builder, double probability, LogLevel? level = null)
+    public static ILoggingBuilder AddProbabilitySampler(this ILoggingBuilder builder, double probability, LogLevel? level = null)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfOutOfRange(probability, 0, 1, nameof(probability));
 
-        _ = builder.Services.Configure<RatioBasedSamplerOptions>(options =>
-                options.Rules.Add(new RatioBasedSamplerFilterRule(probability, null, level, null)));
+        _ = builder.Services.Configure<ProbabilitySamplerOptions>(options =>
+                options.Rules.Add(new ProbabilitySamplerFilterRule(probability, null, level, null)));
 
-        return builder.AddSampler<RatioBasedSampler>();
+        return builder.AddSampler<ProbabilitySampler>();
     }
 
     /// <summary>
@@ -127,17 +127,17 @@ public static class SamplingLoggerBuilderExtensions
     }
 
     /// <summary>
-    /// Configures <see cref="RatioBasedSamplerOptions" /> from an instance of <see cref="IConfiguration" />.
+    /// Configures <see cref="ProbabilitySamplerOptions" /> from an instance of <see cref="IConfiguration" />.
     /// </summary>
     /// <param name="builder">The <see cref="ILoggingBuilder"/> to use.</param>
     /// <param name="configuration">The <see cref="IConfiguration" /> to add.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
-    internal static ILoggingBuilder AddRatioBasedSamplerConfiguration(this ILoggingBuilder builder, IConfiguration configuration)
+    internal static ILoggingBuilder AddProbabilitySamplerConfiguration(this ILoggingBuilder builder, IConfiguration configuration)
     {
         _ = Throw.IfNull(builder);
 
-        _ = builder.Services.AddSingleton<IConfigureOptions<RatioBasedSamplerOptions>>(new RatioBasedSamplerConfigureOptions(configuration));
+        _ = builder.Services.AddSingleton<IConfigureOptions<ProbabilitySamplerOptions>>(new ProbabilitySamplerConfigureOptions(configuration));
 
         return builder;
     }

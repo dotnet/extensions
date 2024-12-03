@@ -8,17 +8,17 @@ using Microsoft.Shared.DiagnosticIds;
 namespace Microsoft.Extensions.Diagnostics.Sampling;
 
 /// <summary>
-/// The options for ratio based sampling.
+/// The options for probability sampling.
 /// </summary>
 [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
-public class RatioBasedSamplerOptions
+public class ProbabilitySamplerOptions
 {
     /// <summary>
-    /// Gets or sets the collection of <see cref="RatioBasedSamplerFilterRule"/> used for filtering log messages.
+    /// Gets or sets the collection of <see cref="ProbabilitySamplerFilterRule"/> used for filtering log messages.
     /// </summary>
 #pragma warning disable CA1002 // Do not expose generic lists - List is necessary to be able to call .AddRange()
 #pragma warning disable CA2227 // Collection properties should be read only - setter is necessary for options pattern
-    public List<RatioBasedSamplerFilterRule> Rules { get; set; } = [];
+    public List<ProbabilitySamplerFilterRule> Rules { get; set; } = [];
 #pragma warning restore CA2227 // Collection properties should be read only
 #pragma warning restore CA1002 // Do not expose generic lists
 }
