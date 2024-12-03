@@ -238,6 +238,7 @@ public class TypeSymbolExtensionsTests
     [Theory]
     [InlineData("ToString", "Test", true)]
     [InlineData("RandomMethod", "Test", false)]
+    [InlineData("ToooooString", "Test", false)]
     public void ValidateHasCustomToString(string methodName, string typeReference, bool expectedResult)
     {
         // Generate the code
@@ -247,7 +248,7 @@ public class TypeSymbolExtensionsTests
                     using System;
                     using Microsoft.Extensions.Logging;
 
-                    class Test 
+                    class {typeReference} 
                     {{
                         public override string {methodName}()
                         {{
