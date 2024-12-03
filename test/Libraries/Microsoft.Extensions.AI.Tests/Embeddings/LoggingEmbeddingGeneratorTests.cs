@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.Extensions.AI;
@@ -25,10 +26,10 @@ public class LoggingEmbeddingGeneratorTests
     [InlineData(LogLevel.Information)]
     public async Task CompleteAsync_LogsStartAndCompletion(LogLevel level)
     {
-        using CapturingLoggerProvider clp = new();
+        var collector = new FakeLogCollector();
 
         ServiceCollection c = new();
-        c.AddLogging(b => b.AddProvider(clp).SetMinimumLevel(level));
+        c.AddLogging(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(level));
         var services = c.BuildServiceProvider();
 
         using IEmbeddingGenerator<string, Embedding<float>> innerGenerator = new TestEmbeddingGenerator
@@ -39,27 +40,29 @@ public class LoggingEmbeddingGeneratorTests
             },
         };
 
-        using IEmbeddingGenerator<string, Embedding<float>> generator = new EmbeddingGeneratorBuilder<string, Embedding<float>>(services)
+        using IEmbeddingGenerator<string, Embedding<float>> generator = innerGenerator
+            .AsBuilder()
             .UseLogging()
-            .Use(innerGenerator);
+            .Build(services);
 
         await generator.GenerateEmbeddingAsync("Blue whale");
 
+        var logs = collector.GetSnapshot();
         if (level is LogLevel.Trace)
         {
-            Assert.Collection(clp.Logger.Entries,
+            Assert.Collection(logs,
                 entry => Assert.True(entry.Message.Contains("GenerateAsync invoked:") && entry.Message.Contains("Blue whale")),
                 entry => Assert.Contains("GenerateAsync generated 1 embedding(s).", entry.Message));
         }
         else if (level is LogLevel.Debug)
         {
-            Assert.Collection(clp.Logger.Entries,
+            Assert.Collection(logs,
                 entry => Assert.True(entry.Message.Contains("GenerateAsync invoked.") && !entry.Message.Contains("Blue whale")),
                 entry => Assert.Contains("GenerateAsync generated 1 embedding(s).", entry.Message));
         }
         else
         {
-            Assert.Empty(clp.Logger.Entries);
+            Assert.Empty(logs);
         }
     }
 }

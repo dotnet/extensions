@@ -45,7 +45,7 @@ public static class AIJsonUtilitiesTests
         Assert.True(options.DisallowAdditionalProperties);
         Assert.False(options.IncludeSchemaKeyword);
         Assert.True(options.RequireAllProperties);
-        Assert.True(options.FilterDisallowedKeywords);
+        Assert.Null(options.TransformSchemaNode);
     }
 
     [Fact]
@@ -125,6 +125,51 @@ public static class AIJsonUtilitiesTests
     }
 
     [Fact]
+    public static void CreateJsonSchema_UserDefinedTransformer()
+    {
+        JsonElement expected = JsonDocument.Parse("""
+            {
+                "description": "The type",
+                "type": "object",
+                "properties": {
+                    "Key": {
+                        "$comment": "Contains a DescriptionAttribute declaration with the text 'The parameter'.",
+                        "type": "integer"
+                    },
+                    "EnumValue": {
+                        "type": "string",
+                        "enum": ["A", "B"]
+                    },
+                    "Value": {
+                        "type": ["string", "null"],
+                        "default": null
+                    }
+                },
+                "required": ["Key", "EnumValue", "Value"],
+                "additionalProperties": false
+            }
+            """).RootElement;
+
+        AIJsonSchemaCreateOptions inferenceOptions = new()
+        {
+            TransformSchemaNode = static (context, schema) =>
+            {
+                return context.TypeInfo.Type == typeof(int) && context.GetCustomAttribute<DescriptionAttribute>() is DescriptionAttribute attr
+                ? new JsonObject
+                {
+                    ["$comment"] = $"Contains a DescriptionAttribute declaration with the text '{attr.Description}'.",
+                    ["type"] = "integer",
+                }
+                : schema;
+            }
+        };
+
+        JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(MyPoco), serializerOptions: JsonSerializerOptions.Default, inferenceOptions: inferenceOptions);
+
+        Assert.True(JsonElement.DeepEquals(expected, actual));
+    }
+
+    [Fact]
     public static void CreateJsonSchema_FiltersDisallowedKeywords()
     {
         JsonElement expected = JsonDocument.Parse("""
@@ -148,46 +193,6 @@ public static class AIJsonUtilitiesTests
             """).RootElement;
 
         JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(PocoWithTypesWithOpenAIUnsupportedKeywords), serializerOptions: JsonSerializerOptions.Default);
-
-        Assert.True(JsonElement.DeepEquals(expected, actual));
-    }
-
-    [Fact]
-    public static void CreateJsonSchema_FilterDisallowedKeywords_Disabled()
-    {
-        JsonElement expected = JsonDocument.Parse("""
-            {
-                "type": "object",
-                "properties": {
-                    "Date": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "TimeSpan": {
-                        "$comment": "Represents a System.TimeSpan value.",
-                        "type": "string",
-                        "pattern": "^-?(\\d+\\.)?\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,7})?$"
-                    },
-                    "Char" : {
-                        "type": "string",
-                        "minLength": 1,
-                        "maxLength": 1
-                    }
-                },
-                "required": ["Date","TimeSpan","Char"],
-                "additionalProperties": false
-            }
-            """).RootElement;
-
-        AIJsonSchemaCreateOptions inferenceOptions = new()
-        {
-            FilterDisallowedKeywords = false
-        };
-
-        JsonElement actual = AIJsonUtilities.CreateJsonSchema(
-            typeof(PocoWithTypesWithOpenAIUnsupportedKeywords),
-            serializerOptions: JsonSerializerOptions.Default,
-            inferenceOptions: inferenceOptions);
 
         Assert.True(JsonElement.DeepEquals(expected, actual));
     }

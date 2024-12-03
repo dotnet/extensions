@@ -70,9 +70,9 @@ using Microsoft.Extensions.AI;
 
 IChatClient ollamaClient = new OllamaChatClient(new Uri("http://localhost:11434/"), "llama3.1");
 
-IChatClient client = new ChatClientBuilder()
+IChatClient client = new ChatClientBuilder(ollamaClient)
     .UseFunctionInvocation()
-    .Use(ollamaClient);
+    .Build();
 
 ChatOptions chatOptions = new()
 {
@@ -97,9 +97,9 @@ IDistributedCache cache = new MemoryDistributedCache(Options.Create(new MemoryDi
 
 IChatClient ollamaClient = new OllamaChatClient(new Uri("http://localhost:11434/"), "llama3.1");
 
-IChatClient client = new ChatClientBuilder()
+IChatClient client = new ChatClientBuilder(ollamaClient)
     .UseDistributedCache(cache)
-    .Use(ollamaClient);
+    .Build();
 
 for (int i = 0; i < 3; i++)
 {
@@ -128,9 +128,9 @@ var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
 
 IChatClient ollamaClient = new OllamaChatClient(new Uri("http://localhost:11434/"), "llama3.1");
 
-IChatClient client = new ChatClientBuilder()
+IChatClient client = new ChatClientBuilder(ollamaClient)
     .UseOpenTelemetry(sourceName, c => c.EnableSensitiveData = true)
-    .Use(ollamaClient);
+    .Build();
 
 Console.WriteLine(await client.CompleteAsync("What is AI?"));
 ```
@@ -163,11 +163,11 @@ var chatOptions = new ChatOptions
 
 IChatClient ollamaClient = new OllamaChatClient(new Uri("http://localhost:11434/"), "llama3.1");
 
-IChatClient client = new ChatClientBuilder()
+IChatClient client = new ChatClientBuilder(ollamaClient)
     .UseDistributedCache(cache)
     .UseFunctionInvocation()
     .UseOpenTelemetry(sourceName, c => c.EnableSensitiveData = true)
-    .Use(ollamaClient);
+    .Build();
 
 for (int i = 0; i < 3; i++)
 {
@@ -210,9 +210,9 @@ IDistributedCache cache = new MemoryDistributedCache(Options.Create(new MemoryDi
 IEmbeddingGenerator<string, Embedding<float>> ollamaGenerator =
     new OllamaEmbeddingGenerator(new Uri("http://localhost:11434/"), "all-minilm");
 
-IEmbeddingGenerator<string, Embedding<float>> generator = new EmbeddingGeneratorBuilder<string, Embedding<float>>()
+IEmbeddingGenerator<string, Embedding<float>> generator = new EmbeddingGeneratorBuilder<string, Embedding<float>>(ollamaGenerator)
     .UseDistributedCache(cache)
-    .Use(ollamaGenerator);
+    .Build();
 
 foreach (var prompt in new[] { "What is AI?", "What is .NET?", "What is AI?" })
 {
@@ -235,10 +235,9 @@ var builder = Host.CreateApplicationBuilder();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddLogging(b => b.AddConsole().SetMinimumLevel(LogLevel.Trace));
 
-builder.Services.AddChatClient(b => b
+builder.Services.AddChatClient(new OllamaChatClient(new Uri("http://localhost:11434/"), "llama3.1"))
     .UseDistributedCache()
-    .UseLogging()
-    .Use(new OllamaChatClient(new Uri("http://localhost:11434/"), "llama3.1")));
+    .UseLogging();
 
 var app = builder.Build();
 
@@ -254,11 +253,10 @@ using Microsoft.Extensions.AI;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddChatClient(c =>
-    c.Use(new OllamaChatClient(new Uri("http://localhost:11434/"), "llama3.1")));
+builder.Services.AddChatClient(
+    new OllamaChatClient(new Uri("http://localhost:11434/"), "llama3.1"));
 
-builder.Services.AddEmbeddingGenerator<string,Embedding<float>>(g =>
-    g.Use(new OllamaEmbeddingGenerator(endpoint, "all-minilm")));
+builder.Services.AddEmbeddingGenerator(new OllamaEmbeddingGenerator(endpoint, "all-minilm"));
 
 var app = builder.Build();
 

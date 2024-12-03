@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Extensions.AI;
@@ -23,6 +21,4 @@ namespace Microsoft.Extensions.AI;
 [JsonSerializable(typeof(OllamaToolCall))]
 [JsonSerializable(typeof(OllamaEmbeddingRequest))]
 [JsonSerializable(typeof(OllamaEmbeddingResponse))]
-[JsonSerializable(typeof(IDictionary<string, object?>))]
-[JsonSerializable(typeof(JsonElement))]
 internal sealed partial class JsonContext : JsonSerializerContext;

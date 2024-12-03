@@ -111,7 +111,8 @@ public sealed class AdditionalPropertiesDictionary : IDictionary<string, object?
     public void Clear() => _dictionary.Clear();
 
     /// <inheritdoc />
-    bool ICollection<KeyValuePair<string, object?>>.Contains(KeyValuePair<string, object?> item) => _dictionary.Contains(item);
+    bool ICollection<KeyValuePair<string, object?>>.Contains(KeyValuePair<string, object?> item) =>
+        ((ICollection<KeyValuePair<string, object?>>)_dictionary).Contains(item);
 
     /// <inheritdoc />
     public bool ContainsKey(string key) => _dictionary.ContainsKey(key);
@@ -153,8 +154,8 @@ public sealed class AdditionalPropertiesDictionary : IDictionary<string, object?
     /// in the dictionary and converted to the requested type; otherwise, <see langword="false"/>.
     /// </returns>
     /// <remarks>
-    /// If a non-<see langword="null"/> is found for the key in the dictionary, but the value is not of the requested type but is
-    /// an <see cref="IConvertible"/> object, the method will attempt to convert the object to the requested type.
+    /// If a non-<see langword="null"/> value is found for the key in the dictionary, but the value is not of the requested type and is
+    /// an <see cref="IConvertible"/> object, the method attempts to convert the object to the requested type.
     /// </remarks>
     public bool TryGetValue<T>(string key, [NotNullWhen(true)] out T? value)
     {

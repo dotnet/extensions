@@ -14,7 +14,7 @@ public class DelegatingEmbeddingGeneratorTests
     [Fact]
     public void RequiresInnerService()
     {
-        Assert.Throws<ArgumentNullException>(() => new NoOpDelegatingEmbeddingGenerator(null!));
+        Assert.Throws<ArgumentNullException>("innerGenerator", () => new NoOpDelegatingEmbeddingGenerator(null!));
     }
 
     [Fact]

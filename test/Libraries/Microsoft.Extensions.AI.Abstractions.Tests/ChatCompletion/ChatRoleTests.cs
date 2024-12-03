@@ -18,8 +18,8 @@ public class ChatRoleTests
     [Fact]
     public void Constructor_NullOrWhiteSpace_Throws()
     {
-        Assert.Throws<ArgumentNullException>(() => new ChatRole(null!));
-        Assert.Throws<ArgumentException>(() => new ChatRole("  "));
+        Assert.Throws<ArgumentNullException>("value", () => new ChatRole(null!));
+        Assert.Throws<ArgumentException>("value", () => new ChatRole("  "));
     }
 
     [Fact]

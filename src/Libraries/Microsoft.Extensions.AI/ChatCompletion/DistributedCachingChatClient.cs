@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
@@ -19,8 +20,11 @@ namespace Microsoft.Extensions.AI;
 /// </remarks>
 public class DistributedCachingChatClient : CachingChatClient
 {
+    /// <summary>The <see cref="IDistributedCache"/> instance that will be used as the backing store for the cache.</summary>
     private readonly IDistributedCache _storage;
-    private JsonSerializerOptions _jsonSerializerOptions;
+
+    /// <summary>The <see cref="JsonSerializerOptions"/> to use when serializing cache data.</summary>
+    private JsonSerializerOptions _jsonSerializerOptions = AIJsonUtilities.DefaultOptions;
 
     /// <summary>Initializes a new instance of the <see cref="DistributedCachingChatClient"/> class.</summary>
     /// <param name="innerClient">The underlying <see cref="IChatClient"/>.</param>
@@ -29,7 +33,6 @@ public class DistributedCachingChatClient : CachingChatClient
         : base(innerClient)
     {
         _storage = Throw.IfNull(storage);
-        _jsonSerializerOptions = AIJsonUtilities.DefaultOptions;
     }
 
     /// <summary>Gets or sets JSON serialization options to use when serializing cache data.</summary>
@@ -89,14 +92,13 @@ public class DistributedCachingChatClient : CachingChatClient
         await _storage.SetAsync(key, newJson, cancellationToken).ConfigureAwait(false);
     }
 
-    /// <inheritdoc />
-    protected override string GetCacheKey(bool streaming, IList<ChatMessage> chatMessages, ChatOptions? options)
+    /// <summary>Computes a cache key for the specified values.</summary>
+    /// <param name="values">The values to inform the key.</param>
+    /// <returns>The computed key.</returns>
+    /// <remarks>The <paramref name="values"/> are serialized to JSON using <see cref="JsonSerializerOptions"/> in order to compute the key.</remarks>
+    protected override string GetCacheKey(params ReadOnlySpan<object?> values)
     {
-        // While it might be desirable to include ChatOptions in the cache key, it's not always possible,
-        // since ChatOptions can contain types that are not guaranteed to be serializable or have a stable
-        // hashcode across multiple calls. So the default cache key is simply the JSON representation of
-        // the chat contents. Developers may subclass and override this to provide custom rules.
         _jsonSerializerOptions.MakeReadOnly();
-        return CachingHelpers.GetCacheKey(chatMessages, streaming, _jsonSerializerOptions);
+        return CachingHelpers.GetCacheKey(values, _jsonSerializerOptions);
     }
 }

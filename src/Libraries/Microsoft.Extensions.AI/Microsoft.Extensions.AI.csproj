@@ -10,7 +10,8 @@
 
   <PropertyGroup>
     <Stage>preview</Stage>
-    <MinCodeCoverage>0</MinCodeCoverage>
+    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
+    <MinCodeCoverage>83</MinCodeCoverage>
     <MinMutationScore>0</MinMutationScore>
   </PropertyGroup>
 
@@ -37,6 +38,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="System.Diagnostics.DiagnosticSource" />
     <PackageReference Include="System.Text.Json" />
+    <PackageReference Include="System.Threading.Channels" />
   </ItemGroup>
 
   <ItemGroup>

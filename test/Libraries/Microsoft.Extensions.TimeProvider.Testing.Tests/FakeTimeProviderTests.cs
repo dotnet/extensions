@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Time.Testing;
 using Xunit;
 
 namespace Microsoft.Extensions.Time.Testing.Test;
@@ -13,7 +12,7 @@ namespace Microsoft.Extensions.Time.Testing.Test;
 public class FakeTimeProviderTests
 {
     [Fact]
-    public void DefaultCtor()
+    public void Constructor_DefaultInitialization_SetsExpectedValues()
     {
         var timeProvider = new FakeTimeProvider();
 
@@ -42,7 +41,7 @@ public class FakeTimeProviderTests
     }
 
     [Fact]
-    public void RichCtor()
+    public void Constructor_InitializesWithCustomDateTimeOffset_AdvancesCorrectly()
     {
         var timeProvider = new FakeTimeProvider(new DateTimeOffset(2001, 2, 3, 4, 5, 6, TimeSpan.Zero));
 
@@ -79,7 +78,7 @@ public class FakeTimeProviderTests
     }
 
     [Fact]
-    public void LocalTimeZoneIsUtc()
+    public void LocalTimeZone_Default_IsUtc()
     {
         var timeProvider = new FakeTimeProvider();
         var localTimeZone = timeProvider.LocalTimeZone;
@@ -88,7 +87,7 @@ public class FakeTimeProviderTests
     }
 
     [Fact]
-    public void SetLocalTimeZoneWorks()
+    public void SetLocalTimeZone_CustomTimeZone_SetsNewTimeZone()
     {
         var timeProvider = new FakeTimeProvider();
 
@@ -101,7 +100,7 @@ public class FakeTimeProviderTests
     }
 
     [Fact]
-    public void GetTimestampSyncWithUtcNow()
+    public void SetUtcNow_Forward_AdvancesByProperAmount()
     {
         var timeProvider = new FakeTimeProvider(new DateTimeOffset(2001, 2, 3, 4, 5, 6, TimeSpan.Zero));
 
@@ -125,7 +124,7 @@ public class FakeTimeProviderTests
     }
 
     [Fact]
-    public void AdvanceGoesForward()
+    public void Advance_Forward_AdvancesByProperAmount()
     {
         var timeProvider = new FakeTimeProvider(new DateTimeOffset(2001, 2, 3, 4, 5, 6, TimeSpan.Zero));
 
@@ -149,16 +148,23 @@ public class FakeTimeProviderTests
     }
 
     [Fact]
-    public void TimeCannotGoBackwards()
+    public void Advance_Backwards_ThrowsArgumentOutOfRangeException()
     {
         var timeProvider = new FakeTimeProvider();
 
         Assert.Throws<ArgumentOutOfRangeException>(() => timeProvider.Advance(TimeSpan.FromTicks(-1)));
+    }
+
+    [Fact]
+    public void SetUtcNow_Backwards_ThrowsArgumentOutOfRangeException()
+    {
+        var timeProvider = new FakeTimeProvider();
+
         Assert.Throws<ArgumentOutOfRangeException>(() => timeProvider.SetUtcNow(timeProvider.GetUtcNow() - TimeSpan.FromTicks(1)));
     }
 
     [Fact]
-    public void AdjustTimeForwardWorks()
+    public void TimerCallback_AdjustTimeForward_Works()
     {
         var tp = new FakeTimeProvider();
 
@@ -185,7 +191,7 @@ public class FakeTimeProviderTests
     }
 
     [Fact]
-    public void AdjustTimeBackwardWorks()
+    public void TimerCallback_AdjustTimeBackwards_Works()
     {
         var tp = new FakeTimeProvider();
 
@@ -212,7 +218,7 @@ public class FakeTimeProviderTests
     }
 
     [Fact]
-    public void ToStr()
+    public void ToString_SetDateTimeOffset_ReturnsProperFormat()
     {
         var dto = new DateTimeOffset(new DateTime(2022, 1, 2, 3, 4, 5, 6), TimeSpan.Zero);
 
@@ -223,7 +229,7 @@ public class FakeTimeProviderTests
     private readonly TimeSpan _infiniteTimeout = TimeSpan.FromMilliseconds(-1);
 
     [Fact]
-    public async Task Delay_Zero()
+    public async Task Delay_ZeroDelay_CompletesSuccessfully()
     {
         var timeProvider = new FakeTimeProvider();
         var t = timeProvider.Delay(TimeSpan.Zero, CancellationToken.None);
@@ -233,7 +239,7 @@ public class FakeTimeProviderTests
     }
 
     [Fact]
-    public async Task Delay_Timeout()
+    public async Task Delay_Awaited_CompletesSuccessfully()
     {
         var timeProvider = new FakeTimeProvider();
 
@@ -247,7 +253,7 @@ public class FakeTimeProviderTests
     }
 
     [Fact]
-    public async Task Delay_Cancelled()
+    public async Task Delay_TokenCancelled_ThrowsTaskCanceledException()
     {
         var timeProvider = new FakeTimeProvider();
 
@@ -263,7 +269,22 @@ public class FakeTimeProviderTests
     }
 
     [Fact]
-    public async Task CreateSource()
+    public async Task Delay_WhenTimeAdvanced_CompletesWithoutCancellation()
+    {
+        var fakeTimeProvider = new FakeTimeProvider();
+        using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(1000));
+
+        var task = fakeTimeProvider.Delay(TimeSpan.FromMilliseconds(10000), cancellationTokenSource.Token);
+
+        fakeTimeProvider.Advance(TimeSpan.FromMilliseconds(10000));
+
+        await task;
+
+        Assert.False(cancellationTokenSource.Token.IsCancellationRequested);
+    }
+
+    [Fact]
+    public async Task Advance_CancelledToken_ThrowsTaskCanceledException()
     {
         var timeProvider = new FakeTimeProvider();
 
@@ -273,9 +294,8 @@ public class FakeTimeProviderTests
         await Assert.ThrowsAsync<TaskCanceledException>(() => timeProvider.Delay(TimeSpan.FromTicks(1), cts.Token));
     }
 
-#pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
     [Fact]
-    public async Task WaitAsync()
+    public async Task WaitAsync_NegativeTimeout_Throws()
     {
         var timeProvider = new FakeTimeProvider();
         var source = new TaskCompletionSource<bool>();
@@ -286,6 +306,14 @@ public class FakeTimeProviderTests
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => source.Task.WaitAsync(TimeSpan.FromTicks(-1), timeProvider, CancellationToken.None));
 #endif
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => source.Task.WaitAsync(TimeSpan.FromMilliseconds(-2), timeProvider, CancellationToken.None));
+    }
+
+#pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
+    [Fact]
+    public async Task WaitAsync_ValidTimeout_CompletesSuccessfully()
+    {
+        var timeProvider = new FakeTimeProvider();
+        var source = new TaskCompletionSource<bool>();
 
         var t = source.Task.WaitAsync(TimeSpan.FromSeconds(100000), timeProvider, CancellationToken.None);
         while (!t.IsCompleted)
@@ -302,12 +330,12 @@ public class FakeTimeProviderTests
 #pragma warning restore VSTHRD003 // Avoid awaiting foreign Tasks
 
     [Fact]
-    public async Task WaitAsync_InfiniteTimeout()
+    public async Task WaitAsync_InfiniteTimeout_CompletesSuccessfully()
     {
         var timeProvider = new FakeTimeProvider();
         var source = new TaskCompletionSource<bool>();
 
-        var t = source.Task.WaitAsync(_infiniteTimeout, timeProvider, CancellationToken.None);
+        var t = source.Task.WaitAsync(TimeSpan.FromMilliseconds(-1), timeProvider, CancellationToken.None);
         while (!t.IsCompleted)
         {
             timeProvider.Advance(TimeSpan.FromMilliseconds(1));
@@ -321,7 +349,7 @@ public class FakeTimeProviderTests
     }
 
     [Fact]
-    public async Task WaitAsync_Timeout()
+    public async Task WaitAsync_Timeout_ResultsInFaultedTask()
     {
         var timeProvider = new FakeTimeProvider();
         var source = new TaskCompletionSource<bool>();
@@ -339,7 +367,7 @@ public class FakeTimeProviderTests
     }
 
     [Fact]
-    public async Task WaitAsync_Cancel()
+    public async Task WaitAsync_CancelledToken_ThrowsTaskCanceledException()
     {
         var timeProvider = new FakeTimeProvider();
         var source = new TaskCompletionSource<bool>();
@@ -354,7 +382,7 @@ public class FakeTimeProviderTests
     }
 
     [Fact]
-    public void AutoAdvance()
+    public void GetUtcNow_AutoAdvanceSpecified_AutoAdvancesBySpecifiedAmount()
     {
         var timeProvider = new FakeTimeProvider(DateTimeOffset.UtcNow)
         {
@@ -371,7 +399,7 @@ public class FakeTimeProviderTests
     }
 
     [Fact]
-    public void ToString_AutoAdvance_off()
+    public void ToString_NoAutoAdvanceSpecified_DoesNotAutoAdvance()
     {
         var timeProvider = new FakeTimeProvider();
 
@@ -381,7 +409,7 @@ public class FakeTimeProviderTests
     }
 
     [Fact]
-    public void ToString_AutoAdvance_on()
+    public void ToString_AutoAdvanceSpecified_AutoAdvancesBySpecifiedAmount()
     {
         var timeProvider = new FakeTimeProvider
         {
@@ -395,7 +423,7 @@ public class FakeTimeProviderTests
     }
 
     [Fact]
-    public void AdvanceTimeInCallback()
+    public void Advance_TimeInCallback_PreventsInfiniteLoop()
     {
         var oneSecond = TimeSpan.FromSeconds(1);
         var timeProvider = new FakeTimeProvider();
@@ -412,7 +440,7 @@ public class FakeTimeProviderTests
     }
 
     [Fact]
-    public void ShouldResetGateUnderLock_PreventingContextSwitching_AffectionOnTimerCallback()
+    public void GetUtcNow_ResetGateUnderLock_PreventsContextSwitchingIssuesWithTimerCallback()
     {
         // Arrange
         var provider = new FakeTimeProvider { AutoAdvanceAmount = TimeSpan.FromSeconds(2) };
@@ -439,9 +467,10 @@ public class FakeTimeProviderTests
     }
 
     [Fact]
-    public void SimulateRetryPolicy()
+    public void Advance_PollyRetryWithConfigureAwaitFalse_ProcessesCorrectly()
     {
         // Arrange
+        SynchronizationContext.SetSynchronizationContext(null);
         var retries = 42;
         var tries = 0;
         var taskDelay = 0.5;
@@ -468,8 +497,8 @@ public class FakeTimeProviderTests
                 }
                 catch (InvalidOperationException)
                 {
-                    // ConfigureAwait(true) is required to ensure that tasks continue on the captured context
-                    await provider.Delay(TimeSpan.FromSeconds(delay)).ConfigureAwait(true);
+                    // ConfigureAwait(false) is required to validate test properly
+                    await provider.Delay(TimeSpan.FromSeconds(delay)).ConfigureAwait(false);
                 }
             }
         }

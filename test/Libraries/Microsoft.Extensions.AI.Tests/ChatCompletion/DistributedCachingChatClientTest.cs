@@ -527,7 +527,7 @@ public class DistributedCachingChatClientTest
     }
 
     [Fact]
-    public async Task CacheKeyDoesNotVaryByChatOptionsAsync()
+    public async Task CacheKeyVariesByChatOptionsAsync()
     {
         // Arrange
         var innerCallCount = 0;
@@ -546,20 +546,35 @@ public class DistributedCachingChatClientTest
             JsonSerializerOptions = TestJsonSerializerContext.Default.Options
         };
 
-        // Act: Call with two different ChatOptions
+        // Act: Call with two different ChatOptions that have the same values
         var result1 = await outer.CompleteAsync([], new ChatOptions
         {
             AdditionalProperties = new() { { "someKey", "value 1" } }
         });
         var result2 = await outer.CompleteAsync([], new ChatOptions
         {
-            AdditionalProperties = new() { { "someKey", "value 2" } }
+            AdditionalProperties = new() { { "someKey", "value 1" } }
         });
 
         // Assert: Same result
         Assert.Equal(1, innerCallCount);
         Assert.Equal("value 1", result1.Message.Text);
         Assert.Equal("value 1", result2.Message.Text);
+
+        // Act: Call with two different ChatOptions that have different values
+        var result3 = await outer.CompleteAsync([], new ChatOptions
+        {
+            AdditionalProperties = new() { { "someKey", "value 1" } }
+        });
+        var result4 = await outer.CompleteAsync([], new ChatOptions
+        {
+            AdditionalProperties = new() { { "someKey", "value 2" } }
+        });
+
+        // Assert: Different results
+        Assert.Equal(2, innerCallCount);
+        Assert.Equal("value 1", result3.Message.Text);
+        Assert.Equal("value 2", result4.Message.Text);
     }
 
     [Fact]
@@ -666,12 +681,13 @@ public class DistributedCachingChatClientTest
                     new(ChatRole.Assistant, [new TextContent("Hey")])]));
             }
         };
-        using var outer = new ChatClientBuilder(services)
+        using var outer = testClient
+            .AsBuilder()
             .UseDistributedCache(configure: options =>
             {
                 options.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
             })
-            .Use(testClient);
+            .Build(services);
 
         // Act: Make a request that should populate the cache
         Assert.Empty(_storage.Keys);
@@ -800,10 +816,18 @@ public class DistributedCachingChatClientTest
     private sealed class CachingChatClientWithCustomKey(IChatClient innerClient, IDistributedCache storage)
         : DistributedCachingChatClient(innerClient, storage)
     {
-        protected override string GetCacheKey(bool streaming, IList<ChatMessage> chatMessages, ChatOptions? options)
+        protected override string GetCacheKey(params ReadOnlySpan<object?> values)
         {
-            var baseKey = base.GetCacheKey(streaming, chatMessages, options);
-            return baseKey + options?.AdditionalProperties?["someKey"]?.ToString();
+            var baseKey = base.GetCacheKey(values);
+            foreach (var value in values)
+            {
+                if (value is ChatOptions options)
+                {
+                    return baseKey + options.AdditionalProperties?["someKey"]?.ToString();
+                }
+            }
+
+            return baseKey;
         }
     }
 

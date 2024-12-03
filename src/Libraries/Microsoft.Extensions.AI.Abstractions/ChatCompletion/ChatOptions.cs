@@ -27,7 +27,7 @@ public class ChatOptions
     /// <summary>Gets or sets the presence penalty for generating chat responses.</summary>
     public float? PresencePenalty { get; set; }
 
-    /// <summary>Gets or sets a seed value used by a service to control the reproducability of results.</summary>
+    /// <summary>Gets or sets a seed value used by a service to control the reproducibility of results.</summary>
     public long? Seed { get; set; }
 
     /// <summary>
