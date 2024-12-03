@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.Gen.Logging.Parsing;
+using Moq;
 using Xunit;
 
 namespace Microsoft.Gen.Logging.Test;
@@ -284,4 +285,36 @@ public class TypeSymbolExtensionsTests
         Assert.Equal(expectedResult, parameterSymbol.Type.HasCustomToString());
     }
 
+    [Fact]
+    public void GetPossiblyNullWrappedType_NonNullableType_ReturnsSameType()
+    {
+        var typeSymbolMock = new Mock<ITypeSymbol>();
+
+        var result = typeSymbolMock.Object.GetPossiblyNullWrappedType();
+
+        Assert.Equal(typeSymbolMock.Object, result);
+    }
+
+    [Fact]
+    public void GetPossiblyNullWrappedType_NonGenericNullableType_ReturnsSameType()
+    {
+        var namedTypeSymbolMock = new Mock<INamedTypeSymbol>();
+        namedTypeSymbolMock.Setup(s => s.IsGenericType).Returns(false);
+
+        var result = namedTypeSymbolMock.Object.GetPossiblyNullWrappedType();
+
+        Assert.Equal(namedTypeSymbolMock.Object, result);
+    }
+
+    [Fact]
+    public void GetPossiblyNullWrappedType_NonNullableGenericType_ReturnsSameType()
+    {
+        var namedTypeSymbolMock = new Mock<INamedTypeSymbol>();
+        namedTypeSymbolMock.Setup(s => s.IsGenericType).Returns(true);
+        namedTypeSymbolMock.Setup(s => s.OriginalDefinition.SpecialType).Returns(SpecialType.None);
+
+        var result = namedTypeSymbolMock.Object.GetPossiblyNullWrappedType();
+
+        Assert.Equal(namedTypeSymbolMock.Object, result);
+    }
 }
