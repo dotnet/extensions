@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.AI;
 
 public sealed class TestEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>
 {
-    public EmbeddingGeneratorMetadata Metadata { get; } = new();
+    public EmbeddingGeneratorMetadata Metadata { get; set; } = new();
 
     public Func<IEnumerable<string>, EmbeddingGenerationOptions?, CancellationToken, Task<GeneratedEmbeddings<Embedding<float>>>>? GenerateAsyncCallback { get; set; }
 

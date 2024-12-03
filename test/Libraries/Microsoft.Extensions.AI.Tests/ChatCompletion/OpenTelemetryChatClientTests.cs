@@ -96,7 +96,7 @@ public class OpenTelemetryChatClientTests
             };
         }
 
-        var chatClient = innerClient
+        using var chatClient = innerClient
             .AsBuilder()
             .UseOpenTelemetry(loggerFactory, sourceName, configure: instance =>
             {
@@ -125,6 +125,7 @@ public class OpenTelemetryChatClientTests
             PresencePenalty = 5.0f,
             ResponseFormat = ChatResponseFormat.Json,
             Temperature = 6.0f,
+            Seed = 42,
             StopSequences = ["hello", "world"],
             AdditionalProperties = new()
             {
@@ -166,6 +167,7 @@ public class OpenTelemetryChatClientTests
         Assert.Equal("""["hello", "world"]""", activity.GetTagItem("gen_ai.request.stop_sequences"));
         Assert.Equal("value1", activity.GetTagItem("gen_ai.testservice.request.service_tier"));
         Assert.Equal("value2", activity.GetTagItem("gen_ai.testservice.request.something_else"));
+        Assert.Equal(42L, activity.GetTagItem("gen_ai.testservice.request.seed"));
 
         Assert.Equal("id123", activity.GetTagItem("gen_ai.response.id"));
         Assert.Equal("""["stop"]""", activity.GetTagItem("gen_ai.response.finish_reasons"));

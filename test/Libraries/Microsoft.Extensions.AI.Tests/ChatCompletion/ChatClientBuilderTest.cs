@@ -78,6 +78,24 @@ public class ChatClientBuilderTest
         Assert.Contains("entry at index 0", ex.Message);
     }
 
+    [Fact]
+    public void UsesEmptyServiceProviderWhenNoServicesProvided()
+    {
+        using var innerClient = new TestChatClient();
+        ChatClientBuilder builder = new(innerClient);
+        builder.Use((innerClient, serviceProvider) =>
+        {
+            Assert.Null(serviceProvider.GetService(typeof(object)));
+
+            var keyedServiceProvider = Assert.IsAssignableFrom<IKeyedServiceProvider>(serviceProvider);
+            Assert.Null(keyedServiceProvider.GetKeyedService(typeof(object), "key"));
+            Assert.Throws<InvalidOperationException>(() => keyedServiceProvider.GetRequiredKeyedService(typeof(object), "key"));
+
+            return innerClient;
+        });
+        builder.Build();
+    }
+
     private sealed class InnerClientCapturingChatClient(string name, IChatClient innerClient) : DelegatingChatClient(innerClient)
     {
 #pragma warning disable S3604 // False positive: Member initializer values should not be redundant
