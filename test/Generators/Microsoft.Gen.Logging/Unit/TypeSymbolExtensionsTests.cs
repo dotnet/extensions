@@ -191,4 +191,47 @@ public class TypeSymbolExtensionsTests
 
         Assert.Equal(expectedResult, parameterSymbol.Type.ImplementsISpanFormattable(symbolHolder));
     }
+
+    [Theory]
+    [InlineData("TestSpecialObject : object", "TestSpecialObject", true)]
+    [InlineData("TestEnumerable<T> : List<T>", "TestEnumerable<object>", true)]
+    [InlineData("NotUsed", "IEnumerable<string>", true)]
+    [InlineData("TestClass", "NonSpecialType", false)]
+    [InlineData("TestClassDerived : NonSpecialType", "TestClassDerived", false)]
+    [InlineData("NotUsed", "bool", false)]
+    public void ValidateIsSpecialType(string classDefinition, string typeReference, bool expectedResult)
+    {
+        // Generate the code
+        string source = $@"
+                namespace Test
+                {{
+                    using System.Collections.Generic;
+                    using Microsoft.Extensions.Logging;
+
+                    class {classDefinition} {{ }}
+
+                    class NonSpecialType {{ }}
+
+                    partial class C
+                    {{
+                        [LoggerMessage(EventId = 1, Level = LogLevel.Debug, Message = ""M1"")]
+                        static partial void M1(ILogger logger, {typeReference} property);
+                    }}
+                }}";
+
+        // Create compilation and extract symbols
+        Compilation compilation = CompilationHelper.CreateCompilation(source);
+        SymbolHolder? symbolHolder = SymbolLoader.LoadSymbols(compilation, _diagCallback);
+
+        IEnumerable<ISymbol> methodSymbols = compilation.GetSymbolsWithName("M1", SymbolFilter.Member);
+
+        // Assert
+        Assert.NotNull(symbolHolder);
+        ISymbol symbol = Assert.Single(methodSymbols);
+        var methodSymbol = Assert.IsAssignableFrom<IMethodSymbol>(symbol);
+        var parameterSymbol = Assert.Single(methodSymbol.Parameters, p => p.Name == "property");
+
+        Assert.Equal(expectedResult, parameterSymbol.Type.IsSpecialType(symbolHolder));
+    }
+
 }
