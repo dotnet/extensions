@@ -494,6 +494,58 @@ public class FunctionInvokingChatClientTests
         }
     }
 
+    [Fact]
+    public async Task SupportsMultipleCallsInSameStreamingUpdate()
+    {
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create((string text) => $"Result for {text}", "Func1")]
+        };
+
+        var messages = new List<ChatMessage>
+        {
+            new(ChatRole.User, "Hello"),
+        };
+
+        using var innerClient = new TestChatClient
+        {
+            CompleteStreamingAsyncCallback = (chatContents, chatOptions, cancellationToken) =>
+            {
+                // If the conversation is just starting, issue two calls in a single streaming update
+                // Otherwise just end the conversation
+                return chatContents.Last().Text == "Hello"
+                    ? YieldAsync(
+                        new StreamingChatCompletionUpdate { Contents = [new FunctionCallContent("callId1", "Func1", new Dictionary<string, object?> { ["text"] = "Input 1" })] },
+                        new StreamingChatCompletionUpdate { Contents = [new FunctionCallContent("callId2", "Func1", new Dictionary<string, object?> { ["text"] = "Input 2" })] })
+                    : YieldAsync(
+                        new StreamingChatCompletionUpdate { Contents = [new TextContent("OK bye")] });
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient);
+
+        var updates = new List<StreamingChatCompletionUpdate>();
+        await foreach (var update in client.CompleteStreamingAsync(messages, options, CancellationToken.None))
+        {
+            updates.Add(update);
+        }
+
+        // Message history should now include the FCCs and FRCs
+        Assert.Collection(messages,
+            m => Assert.Equal("Hello", Assert.IsType<TextContent>(Assert.Single(m.Contents)).Text),
+            m => Assert.Collection(m.Contents,
+                c => Assert.Equal("Input 1", Assert.IsType<FunctionCallContent>(c).Arguments!["text"]),
+                c => Assert.Equal("Input 2", Assert.IsType<FunctionCallContent>(c).Arguments!["text"])),
+            m => Assert.Collection(m.Contents,
+                c => Assert.Equal("Result for Input 1", Assert.IsType<FunctionResultContent>(c).Result?.ToString()),
+                c => Assert.Equal("Result for Input 2", Assert.IsType<FunctionResultContent>(c).Result?.ToString())));
+
+        // The returned updates should *not* include the FCCs and FRCs
+        var allUpdateContents = updates.SelectMany(updates => updates.Contents).ToList();
+        var singleUpdateContent = Assert.IsType<TextContent>(Assert.Single(allUpdateContents));
+        Assert.Equal("OK bye", singleUpdateContent.Text);
+    }
+
     private static async Task<List<ChatMessage>> InvokeAndAssertAsync(
         ChatOptions options,
         List<ChatMessage> plan,
