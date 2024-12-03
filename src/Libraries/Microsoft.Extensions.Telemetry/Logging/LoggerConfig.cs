@@ -15,7 +15,7 @@ internal sealed class LoggerConfig
     public LoggerConfig(
         KeyValuePair<string, object?>[] staticTags,
         Action<IEnrichmentTagCollector>[] enrichers,
-        LoggerSampler sampler,
+        LoggerSampler? sampler,
         bool captureStackTraces,
         bool useFileInfoForStackTraces,
         bool includeExceptionMessage,
@@ -37,7 +37,7 @@ internal sealed class LoggerConfig
 
     public KeyValuePair<string, object?>[] StaticTags { get; }
     public Action<IEnrichmentTagCollector>[] Enrichers { get; }
-    public LoggerSampler Sampler { get; }
+    public LoggerSampler? Sampler { get; }
     public bool CaptureStackTraces { get; }
     public bool UseFileInfoForStackTraces { get; }
     public bool IncludeExceptionMessage { get; }

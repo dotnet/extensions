@@ -8,7 +8,6 @@ using System.Linq;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.Diagnostics.Enrichment;
-using Microsoft.Extensions.Diagnostics.Sampling;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
 
@@ -24,7 +23,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
     private readonly IDisposable? _enrichmentOptionsChangeTokenRegistration;
     private readonly IDisposable? _redactionOptionsChangeTokenRegistration;
     private readonly Action<IEnrichmentTagCollector>[] _enrichers;
-    private readonly LoggerSampler _sampler;
+    private readonly LoggerSampler? _sampler;
     private readonly KeyValuePair<string, object?>[] _staticTags;
     private readonly Func<DataClassificationSet, Redactor> _redactorProvider;
     private volatile bool _disposed;
@@ -46,7 +45,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
 #pragma warning restore S107 // Methods should not have too many parameters
     {
         _scopeProvider = scopeProvider;
-        _sampler = sampler ?? new AlwaysOnSampler();
+        _sampler = sampler;
 
         _factoryOptions = factoryOptions == null || factoryOptions.Value == null ? new LoggerFactoryOptions() : factoryOptions.Value;
 

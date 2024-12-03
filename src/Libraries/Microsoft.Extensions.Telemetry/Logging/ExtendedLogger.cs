@@ -266,7 +266,10 @@ internal sealed partial class ExtendedLogger : ILogger
             ref readonly MessageLogger loggerInfo = ref loggers[i];
             if (loggerInfo.IsNotFilteredOut(logLevel))
             {
-                samplingDecision ??= config.Sampler.ShouldSample(new SamplingParameters(logLevel, loggerInfo.Category, eventId));
+                if (samplingDecision is null && config.Sampler is not null)
+                {
+                    samplingDecision = config.Sampler.ShouldSample(new SamplingParameters(logLevel, loggerInfo.Category, eventId));
+                }
 
                 if (samplingDecision is false)
                 {
@@ -359,7 +362,10 @@ internal sealed partial class ExtendedLogger : ILogger
             ref readonly MessageLogger loggerInfo = ref loggers[i];
             if (loggerInfo.IsNotFilteredOut(logLevel))
             {
-                samplingDecision ??= config.Sampler.ShouldSample(new SamplingParameters(logLevel, loggerInfo.Category, eventId));
+                if (samplingDecision is null && config.Sampler is not null)
+                {
+                    samplingDecision = config.Sampler.ShouldSample(new SamplingParameters(logLevel, loggerInfo.Category, eventId));
+                }
 
                 if (samplingDecision is false)
                 {
