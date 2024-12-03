@@ -4,6 +4,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -29,6 +30,14 @@ public static class LoggingChatClientBuilderExtensions
         return builder.Use((innerClient, services) =>
         {
             loggerFactory ??= services.GetRequiredService<ILoggerFactory>();
+
+            // If the factory we resolve is for the null logger, the LoggingChatClient will end up
+            // being an expensive nop, so skip adding it and just return the inner client.
+            if (loggerFactory == NullLoggerFactory.Instance)
+            {
+                return innerClient;
+            }
+
             var chatClient = new LoggingChatClient(innerClient, loggerFactory.CreateLogger(typeof(LoggingChatClient)));
             configure?.Invoke(chatClient);
             return chatClient;
