@@ -166,10 +166,10 @@ public class OpenAIChatClientTests
                 "completion_tokens": 9,
                 "total_tokens": 17,
                 "prompt_tokens_details": {
-                  "cached_tokens": 0
+                  "cached_tokens": 13
                 },
                 "completion_tokens_details": {
-                  "reasoning_tokens": 0
+                  "reasoning_tokens": 90
                 }
               },
               "system_fingerprint": "fp_f85bea6784"
@@ -199,7 +199,11 @@ public class OpenAIChatClientTests
         Assert.Equal(8, response.Usage.InputTokenCount);
         Assert.Equal(9, response.Usage.OutputTokenCount);
         Assert.Equal(17, response.Usage.TotalTokenCount);
-        Assert.NotNull(response.Usage.AdditionalProperties);
+        Assert.Equal(new Dictionary<string, long>
+        {
+            { "InputTokenDetails.CachedTokenCount", 13 },
+            { "OutputTokenDetails.ReasoningTokenCount", 90 }
+        }, response.Usage.AdditionalCounts);
 
         Assert.NotNull(response.AdditionalProperties);
         Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(OpenAI.Chat.ChatCompletion.SystemFingerprint)]);
@@ -235,7 +239,7 @@ public class OpenAIChatClientTests
 
             data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{},"logprobs":null,"finish_reason":"stop"}],"usage":null}
 
-            data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[],"usage":{"prompt_tokens":8,"completion_tokens":9,"total_tokens":17,"prompt_tokens_details":{"cached_tokens":0},"completion_tokens_details":{"reasoning_tokens":0}}}
+            data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[],"usage":{"prompt_tokens":8,"completion_tokens":9,"total_tokens":17,"prompt_tokens_details":{"cached_tokens":5,"audio_tokens":123},"completion_tokens_details":{"reasoning_tokens":90,"audio_tokens":456}}}
 
             data: [DONE]
 
@@ -275,8 +279,14 @@ public class OpenAIChatClientTests
         Assert.Equal(8, usage.Details.InputTokenCount);
         Assert.Equal(9, usage.Details.OutputTokenCount);
         Assert.Equal(17, usage.Details.TotalTokenCount);
-        Assert.NotNull(usage.Details.AdditionalProperties);
-        Assert.Equal(new Dictionary<string, object> { [nameof(ChatOutputTokenUsageDetails.ReasoningTokenCount)] = 0 }, usage.Details.AdditionalProperties[nameof(ChatTokenUsage.OutputTokenDetails)]);
+
+        Assert.Equal(new AdditionalPropertiesDictionary<long>
+        {
+            { "InputTokenDetails.AudioTokenCount", 123 },
+            { "InputTokenDetails.CachedTokenCount", 5 },
+            { "OutputTokenDetails.AudioTokenCount", 456 },
+            { "OutputTokenDetails.ReasoningTokenCount", 90 },
+        }, usage.Details.AdditionalCounts);
     }
 
     [Fact]
@@ -336,10 +346,12 @@ public class OpenAIChatClientTests
                 "completion_tokens": 15,
                 "total_tokens": 57,
                 "prompt_tokens_details": {
-                  "cached_tokens": 0
+                  "cached_tokens": 13,
+                  "audio_tokens": 123
                 },
                 "completion_tokens_details": {
-                  "reasoning_tokens": 0
+                  "reasoning_tokens": 90,
+                  "audio_tokens": 456
                 }
               },
               "system_fingerprint": "fp_f85bea6784"
@@ -380,7 +392,13 @@ public class OpenAIChatClientTests
         Assert.Equal(42, response.Usage.InputTokenCount);
         Assert.Equal(15, response.Usage.OutputTokenCount);
         Assert.Equal(57, response.Usage.TotalTokenCount);
-        Assert.NotNull(response.Usage.AdditionalProperties);
+        Assert.Equal(new Dictionary<string, long>
+        {
+            { "InputTokenDetails.AudioTokenCount", 123 },
+            { "InputTokenDetails.CachedTokenCount", 13 },
+            { "OutputTokenDetails.AudioTokenCount", 456 },
+            { "OutputTokenDetails.ReasoningTokenCount", 90 },
+        }, response.Usage.AdditionalCounts);
 
         Assert.NotNull(response.AdditionalProperties);
         Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(OpenAI.Chat.ChatCompletion.SystemFingerprint)]);
@@ -437,10 +455,10 @@ public class OpenAIChatClientTests
                 "completion_tokens": 15,
                 "total_tokens": 57,
                 "prompt_tokens_details": {
-                  "cached_tokens": 0
+                  "cached_tokens": 13
                 },
                 "completion_tokens_details": {
-                  "reasoning_tokens": 0
+                  "reasoning_tokens": 90
                 }
               },
               "system_fingerprint": "fp_f85bea6784"
@@ -472,7 +490,11 @@ public class OpenAIChatClientTests
         Assert.Equal(42, response.Usage.InputTokenCount);
         Assert.Equal(15, response.Usage.OutputTokenCount);
         Assert.Equal(57, response.Usage.TotalTokenCount);
-        Assert.NotNull(response.Usage.AdditionalProperties);
+        Assert.Equal(new Dictionary<string, long>
+        {
+            { "InputTokenDetails.CachedTokenCount", 13 },
+            { "OutputTokenDetails.ReasoningTokenCount", 90 }
+        }, response.Usage.AdditionalCounts);
 
         Assert.NotNull(response.AdditionalProperties);
         Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(OpenAI.Chat.ChatCompletion.SystemFingerprint)]);
@@ -528,10 +550,10 @@ public class OpenAIChatClientTests
                 "completion_tokens": 15,
                 "total_tokens": 57,
                 "prompt_tokens_details": {
-                  "cached_tokens": 0
+                  "cached_tokens": 13
                 },
                 "completion_tokens_details": {
-                  "reasoning_tokens": 0
+                  "reasoning_tokens": 90
                 }
               },
               "system_fingerprint": "fp_f85bea6784"
@@ -565,7 +587,11 @@ public class OpenAIChatClientTests
         Assert.Equal(42, response.Usage.InputTokenCount);
         Assert.Equal(15, response.Usage.OutputTokenCount);
         Assert.Equal(57, response.Usage.TotalTokenCount);
-        Assert.NotNull(response.Usage.AdditionalProperties);
+        Assert.Equal(new Dictionary<string, long>
+        {
+            { "InputTokenDetails.CachedTokenCount", 13 },
+            { "OutputTokenDetails.ReasoningTokenCount", 90 }
+        }, response.Usage.AdditionalCounts);
 
         Assert.NotNull(response.AdditionalProperties);
         Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(OpenAI.Chat.ChatCompletion.SystemFingerprint)]);
@@ -641,10 +667,10 @@ public class OpenAIChatClientTests
                 "completion_tokens": 16,
                 "total_tokens": 77,
                 "prompt_tokens_details": {
-                  "cached_tokens": 0
+                  "cached_tokens": 13
                 },
                 "completion_tokens_details": {
-                  "reasoning_tokens": 0
+                  "reasoning_tokens": 90
                 }
               },
               "system_fingerprint": "fp_f85bea6784"
@@ -670,6 +696,12 @@ public class OpenAIChatClientTests
         Assert.Equal(61, response.Usage.InputTokenCount);
         Assert.Equal(16, response.Usage.OutputTokenCount);
         Assert.Equal(77, response.Usage.TotalTokenCount);
+
+        Assert.Equal(new Dictionary<string, long>
+        {
+            { "InputTokenDetails.CachedTokenCount", 13 },
+            { "OutputTokenDetails.ReasoningTokenCount", 90 }
+        }, response.Usage.AdditionalCounts);
 
         Assert.Single(response.Choices);
         Assert.Single(response.Message.Contents);
@@ -739,7 +771,7 @@ public class OpenAIChatClientTests
 
             data: {"id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","object":"chat.completion.chunk","created":1727895263,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{},"logprobs":null,"finish_reason":"tool_calls"}],"usage":null}
 
-            data: {"id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","object":"chat.completion.chunk","created":1727895263,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[],"usage":{"prompt_tokens":61,"completion_tokens":16,"total_tokens":77,"prompt_tokens_details":{"cached_tokens":0},"completion_tokens_details":{"reasoning_tokens":0}}}
+            data: {"id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","object":"chat.completion.chunk","created":1727895263,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[],"usage":{"prompt_tokens":61,"completion_tokens":16,"total_tokens":77,"prompt_tokens_details":{"cached_tokens":0},"completion_tokens_details":{"reasoning_tokens":90}}}
 
             data: [DONE]
 
@@ -782,8 +814,12 @@ public class OpenAIChatClientTests
         Assert.Equal(61, usage.Details.InputTokenCount);
         Assert.Equal(16, usage.Details.OutputTokenCount);
         Assert.Equal(77, usage.Details.TotalTokenCount);
-        Assert.NotNull(usage.Details.AdditionalProperties);
-        Assert.Equal(new Dictionary<string, object> { [nameof(ChatOutputTokenUsageDetails.ReasoningTokenCount)] = 0 }, usage.Details.AdditionalProperties[nameof(ChatTokenUsage.OutputTokenDetails)]);
+
+        Assert.Equal(new Dictionary<string, long>
+        {
+            { "InputTokenDetails.CachedTokenCount", 0 },
+            { "OutputTokenDetails.ReasoningTokenCount", 90 }
+        }, usage.Details.AdditionalCounts);
     }
 
     [Fact]
@@ -868,10 +904,10 @@ public class OpenAIChatClientTests
                 "completion_tokens": 15,
                 "total_tokens": 57,
                 "prompt_tokens_details": {
-                  "cached_tokens": 0
+                  "cached_tokens": 20
                 },
                 "completion_tokens_details": {
-                  "reasoning_tokens": 0
+                  "reasoning_tokens": 90
                 }
               },
               "system_fingerprint": "fp_f85bea6784"
@@ -916,7 +952,11 @@ public class OpenAIChatClientTests
         Assert.Equal(42, response.Usage.InputTokenCount);
         Assert.Equal(15, response.Usage.OutputTokenCount);
         Assert.Equal(57, response.Usage.TotalTokenCount);
-        Assert.NotNull(response.Usage.AdditionalProperties);
+        Assert.Equal(new Dictionary<string, long>
+        {
+            { "InputTokenDetails.CachedTokenCount", 20 },
+            { "OutputTokenDetails.ReasoningTokenCount", 90 }
+        }, response.Usage.AdditionalCounts);
 
         Assert.NotNull(response.AdditionalProperties);
         Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(OpenAI.Chat.ChatCompletion.SystemFingerprint)]);

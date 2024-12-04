@@ -17,14 +17,13 @@ internal static class OllamaUtilities
         Timeout = Timeout.InfiniteTimeSpan,
     };
 
-    public static void TransferNanosecondsTime<TResponse>(TResponse response, Func<TResponse, long?> getNanoseconds, string key, ref AdditionalPropertiesDictionary? metadata)
+    public static void TransferNanosecondsTime<TResponse>(TResponse response, Func<TResponse, long?> getNanoseconds, string key, ref AdditionalPropertiesDictionary<long>? metadata)
     {
         if (getNanoseconds(response) is long duration)
         {
             try
             {
-                const double NanosecondsPerMillisecond = 1_000_000;
-                (metadata ??= [])[key] = TimeSpan.FromMilliseconds(duration / NanosecondsPerMillisecond);
+                (metadata ??= [])[key] = duration;
             }
             catch (OverflowException)
             {
