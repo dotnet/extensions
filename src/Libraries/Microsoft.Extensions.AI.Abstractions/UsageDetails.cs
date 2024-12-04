@@ -22,6 +22,10 @@ public class UsageDetails
     public int? TotalTokenCount { get; set; }
 
     /// <summary>Gets or sets a dictionary of additional usage counts.</summary>
+    /// <remarks>
+    /// All values set here are assumed to be summable. For example, when middleware makes multiple calls to an underlying
+    /// service, it may sum the counts from multiple results to produce an overall <see cref="UsageDetails"/>.
+    /// </remarks>
     public AdditionalPropertiesDictionary<long>? AdditionalCounts { get; set; }
 
     /// <summary>Adds usage data from another <see cref="UsageDetails"/> into this instance.</summary>
