@@ -13,6 +13,8 @@ using Microsoft.Shared.Diagnostics;
 #pragma warning disable S1144 // Unused private types or members should be removed
 #pragma warning disable S2365 // Properties should not make collection or array copies
 #pragma warning disable S3604 // Member initializer values should not be redundant
+#pragma warning disable S4039 // Interface methods should be callable by derived types
+#pragma warning disable CA1033 // Interface methods should be callable by derived types
 
 namespace Microsoft.Extensions.AI;
 
@@ -75,7 +77,7 @@ public class AdditionalPropertiesDictionary<TValue> : IDictionary<string, TValue
     public int Count => _dictionary.Count;
 
     /// <inheritdoc />
-    public bool IsReadOnly => false;
+    bool ICollection<KeyValuePair<string, TValue>>.IsReadOnly => false;
 
     /// <inheritdoc />
     IEnumerable<string> IReadOnlyDictionary<string, TValue>.Keys => _dictionary.Keys;
@@ -112,14 +114,14 @@ public class AdditionalPropertiesDictionary<TValue> : IDictionary<string, TValue
     public void Clear() => _dictionary.Clear();
 
     /// <inheritdoc />
-    public bool Contains(KeyValuePair<string, TValue> item) =>
+    bool ICollection<KeyValuePair<string, TValue>>.Contains(KeyValuePair<string, TValue> item) =>
         ((ICollection<KeyValuePair<string, TValue>>)_dictionary).Contains(item);
 
     /// <inheritdoc />
     public bool ContainsKey(string key) => _dictionary.ContainsKey(key);
 
     /// <inheritdoc />
-    public void CopyTo(KeyValuePair<string, TValue>[] array, int arrayIndex) =>
+    void ICollection<KeyValuePair<string, TValue>>.CopyTo(KeyValuePair<string, TValue>[] array, int arrayIndex) =>
         ((ICollection<KeyValuePair<string, TValue>>)_dictionary).CopyTo(array, arrayIndex);
 
     /// <summary>
