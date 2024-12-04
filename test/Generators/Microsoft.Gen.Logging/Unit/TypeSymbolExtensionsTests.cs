@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Gen.Logging.Parsing;
 using Moq;
 using Xunit;
@@ -286,35 +287,33 @@ public class TypeSymbolExtensionsTests
     }
 
     [Fact]
-    public void GetPossiblyNullWrappedType_NonNullableType_ReturnsSameType()
+    public void GetPossiblyNullWrappedType_NullableT_ReturnsT()
     {
-        var typeSymbolMock = new Mock<ITypeSymbol>();
-
-        var result = typeSymbolMock.Object.GetPossiblyNullWrappedType();
-
-        Assert.Equal(typeSymbolMock.Object, result);
+        Compilation compilation = CompilationHelper.CreateCompilation("public class TestClass { }");
+        INamedTypeSymbol nullableType = compilation.GetSpecialType(SpecialType.System_Nullable_T);
+        INamedTypeSymbol intType = compilation.GetSpecialType(SpecialType.System_Int32);
+        INamedTypeSymbol nullableIntType = nullableType.Construct(intType);
+        var result = nullableIntType.GetPossiblyNullWrappedType();
+        Assert.Equal(intType, result);
     }
 
     [Fact]
-    public void GetPossiblyNullWrappedType_NonGenericNullableType_ReturnsSameType()
+    public void GetPossiblyNullWrappedType_ListT_ReturnsListT()
     {
-        var namedTypeSymbolMock = new Mock<INamedTypeSymbol>();
-        namedTypeSymbolMock.Setup(s => s.IsGenericType).Returns(false);
-
-        var result = namedTypeSymbolMock.Object.GetPossiblyNullWrappedType();
-
-        Assert.Equal(namedTypeSymbolMock.Object, result);
+        Compilation compilation = CompilationHelper.CreateCompilation("using System.Collections.Generic; public class TestClass { }");
+        INamedTypeSymbol listType = compilation.GetTypeByMetadataName("System.Collections.Generic.List`1");
+        INamedTypeSymbol intType = compilation.GetSpecialType(SpecialType.System_Int32);
+        INamedTypeSymbol listIntType = listType.Construct(intType);
+        var result = listIntType.GetPossiblyNullWrappedType();
+        Assert.Equal(listIntType, result);
     }
 
     [Fact]
-    public void GetPossiblyNullWrappedType_NonNullableGenericType_ReturnsSameType()
+    public void GetPossiblyNullWrappedType_T_ReturnsT()
     {
-        var namedTypeSymbolMock = new Mock<INamedTypeSymbol>();
-        namedTypeSymbolMock.Setup(s => s.IsGenericType).Returns(true);
-        namedTypeSymbolMock.Setup(s => s.OriginalDefinition.SpecialType).Returns(SpecialType.None);
-
-        var result = namedTypeSymbolMock.Object.GetPossiblyNullWrappedType();
-
-        Assert.Equal(namedTypeSymbolMock.Object, result);
+        Compilation compilation = CompilationHelper.CreateCompilation("public class TestClass { }");
+        INamedTypeSymbol intType = compilation.GetSpecialType(SpecialType.System_Int32);
+        var result = intType.GetPossiblyNullWrappedType();
+        Assert.Equal(intType, result);
     }
 }
