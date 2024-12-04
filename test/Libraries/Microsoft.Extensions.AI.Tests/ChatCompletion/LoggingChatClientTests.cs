@@ -21,6 +21,25 @@ public class LoggingChatClientTests
         Assert.Throws<ArgumentNullException>("logger", () => new LoggingChatClient(new TestChatClient(), null!));
     }
 
+    [Fact]
+    public void UseLogging_AvoidsInjectingNopClient()
+    {
+        using var innerClient = new TestChatClient();
+
+        Assert.Null(innerClient.AsBuilder().UseLogging(NullLoggerFactory.Instance).Build().GetService(typeof(LoggingChatClient)));
+        Assert.Same(innerClient, innerClient.AsBuilder().UseLogging(NullLoggerFactory.Instance).Build().GetService(typeof(IChatClient)));
+
+        using var factory = LoggerFactory.Create(b => b.AddFakeLogging());
+        Assert.NotNull(innerClient.AsBuilder().UseLogging(factory).Build().GetService(typeof(LoggingChatClient)));
+
+        ServiceCollection c = new();
+        c.AddFakeLogging();
+        var services = c.BuildServiceProvider();
+        Assert.NotNull(innerClient.AsBuilder().UseLogging().Build(services).GetService(typeof(LoggingChatClient)));
+        Assert.NotNull(innerClient.AsBuilder().UseLogging(null).Build(services).GetService(typeof(LoggingChatClient)));
+        Assert.Null(innerClient.AsBuilder().UseLogging(NullLoggerFactory.Instance).Build(services).GetService(typeof(LoggingChatClient)));
+    }
+
     [Theory]
     [InlineData(LogLevel.Trace)]
     [InlineData(LogLevel.Debug)]
