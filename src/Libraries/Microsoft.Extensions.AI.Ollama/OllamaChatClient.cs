@@ -100,7 +100,6 @@ public sealed class OllamaChatClient : IChatClient
             CompletionId = response.CreatedAt,
             ModelId = response.Model ?? options?.ModelId ?? Metadata.ModelId,
             CreatedAt = DateTimeOffset.TryParse(response.CreatedAt, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset createdAt) ? createdAt : null,
-            AdditionalProperties = ParseOllamaChatResponseProps(response),
             FinishReason = ToFinishReason(response),
             Usage = ParseOllamaChatResponseUsage(response),
         };
@@ -153,7 +152,6 @@ public sealed class OllamaChatClient : IChatClient
             {
                 Role = chunk.Message?.Role is not null ? new ChatRole(chunk.Message.Role) : null,
                 CreatedAt = DateTimeOffset.TryParse(chunk.CreatedAt, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset createdAt) ? createdAt : null,
-                AdditionalProperties = ParseOllamaChatResponseProps(chunk),
                 FinishReason = ToFinishReason(chunk),
                 ModelId = modelId,
             };
@@ -193,29 +191,24 @@ public sealed class OllamaChatClient : IChatClient
 
     private static UsageDetails? ParseOllamaChatResponseUsage(OllamaChatResponse response)
     {
-        if (response.PromptEvalCount is not null || response.EvalCount is not null)
+        AdditionalPropertiesDictionary<long>? additionalCounts = null;
+        OllamaUtilities.TransferNanosecondsTime(response, static r => r.LoadDuration, "load_duration", ref additionalCounts);
+        OllamaUtilities.TransferNanosecondsTime(response, static r => r.TotalDuration, "total_duration", ref additionalCounts);
+        OllamaUtilities.TransferNanosecondsTime(response, static r => r.PromptEvalDuration, "prompt_eval_duration", ref additionalCounts);
+        OllamaUtilities.TransferNanosecondsTime(response, static r => r.EvalDuration, "eval_duration", ref additionalCounts);
+
+        if (additionalCounts is not null || response.PromptEvalCount is not null || response.EvalCount is not null)
         {
             return new()
             {
                 InputTokenCount = response.PromptEvalCount,
                 OutputTokenCount = response.EvalCount,
                 TotalTokenCount = response.PromptEvalCount.GetValueOrDefault() + response.EvalCount.GetValueOrDefault(),
+                AdditionalCounts = additionalCounts,
             };
         }
 
         return null;
-    }
-
-    private static AdditionalPropertiesDictionary? ParseOllamaChatResponseProps(OllamaChatResponse response)
-    {
-        AdditionalPropertiesDictionary? metadata = null;
-
-        OllamaUtilities.TransferNanosecondsTime(response, static r => r.LoadDuration, "load_duration", ref metadata);
-        OllamaUtilities.TransferNanosecondsTime(response, static r => r.TotalDuration, "total_duration", ref metadata);
-        OllamaUtilities.TransferNanosecondsTime(response, static r => r.PromptEvalDuration, "prompt_eval_duration", ref metadata);
-        OllamaUtilities.TransferNanosecondsTime(response, static r => r.EvalDuration, "eval_duration", ref metadata);
-
-        return metadata;
     }
 
     private static ChatFinishReason? ToFinishReason(OllamaChatResponse response) =>

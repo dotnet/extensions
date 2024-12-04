@@ -126,17 +126,18 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator<string, Embed
         }
 
         // Convert response into result objects.
-        AdditionalPropertiesDictionary? responseProps = null;
-        OllamaUtilities.TransferNanosecondsTime(response, r => r.TotalDuration, "total_duration", ref responseProps);
-        OllamaUtilities.TransferNanosecondsTime(response, r => r.LoadDuration, "load_duration", ref responseProps);
+        AdditionalPropertiesDictionary<long>? additionalCounts = null;
+        OllamaUtilities.TransferNanosecondsTime(response, r => r.TotalDuration, "total_duration", ref additionalCounts);
+        OllamaUtilities.TransferNanosecondsTime(response, r => r.LoadDuration, "load_duration", ref additionalCounts);
 
         UsageDetails? usage = null;
-        if (response.PromptEvalCount is int tokens)
+        if (additionalCounts is not null || response.PromptEvalCount is not null)
         {
             usage = new()
             {
-                InputTokenCount = tokens,
-                TotalTokenCount = tokens,
+                InputTokenCount = response.PromptEvalCount,
+                TotalTokenCount = response.PromptEvalCount,
+                AdditionalCounts = additionalCounts,
             };
         }
 
@@ -148,7 +149,6 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator<string, Embed
             }))
         {
             Usage = usage,
-            AdditionalProperties = responseProps,
         };
     }
 }
