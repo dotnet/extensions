@@ -161,7 +161,15 @@ public abstract class ChatClientIntegrationTests : IDisposable
     {
         SkipIfNotEnabled();
 
-        using var chatClient = new FunctionInvokingChatClient(_chatClient);
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using var chatClient = new FunctionInvokingChatClient(
+            new OpenTelemetryChatClient(_chatClient, sourceName: sourceName));
 
         int secretNumber = 42;
 
@@ -178,11 +186,14 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.Single(response.Choices);
         Assert.Contains(secretNumber.ToString(), response.Message.Text);
 
+        // If the underlying IChatClient provides usage data, function invocation should aggregate the
+        // usage data across all calls to produce a single Usage value on the final response
         if (response.Usage is { } finalUsage)
         {
-            UsageContent? intermediate = messages.SelectMany(m => m.Contents).OfType<UsageContent>().FirstOrDefault();
-            Assert.NotNull(intermediate);
-            Assert.True(finalUsage.TotalTokenCount > intermediate.Details.TotalTokenCount);
+            var totalInputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.input_tokens")!);
+            var totalOutputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.output_tokens")!);
+            Assert.Equal(totalInputTokens, finalUsage.InputTokenCount);
+            Assert.Equal(totalOutputTokens, finalUsage.OutputTokenCount);
         }
     }
 

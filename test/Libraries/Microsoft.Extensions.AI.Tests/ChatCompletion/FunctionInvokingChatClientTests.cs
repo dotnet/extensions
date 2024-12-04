@@ -559,6 +559,7 @@ public class FunctionInvokingChatClientTests
 
         using CancellationTokenSource cts = new();
         List<ChatMessage> chat = [plan[0]];
+        var expectedTotalTokenCounts = 0;
 
         using var innerClient = new TestChatClient
         {
@@ -569,7 +570,9 @@ public class FunctionInvokingChatClientTests
 
                 await Task.Yield();
 
-                return new ChatCompletion(new ChatMessage(ChatRole.Assistant, [.. plan[contents.Count].Contents]));
+                var usage = CreateRandomUsage();
+                expectedTotalTokenCounts += usage.InputTokenCount!.Value;
+                return new ChatCompletion(new ChatMessage(ChatRole.Assistant, [.. plan[contents.Count].Contents])) { Usage = usage };
             }
         };
 
@@ -612,7 +615,30 @@ public class FunctionInvokingChatClientTests
             }
         }
 
+        // Usage should be aggregated over all responses, including AdditionalUsage
+        var actualUsage = result.Usage!;
+        Assert.Equal(expectedTotalTokenCounts, actualUsage.InputTokenCount);
+        Assert.Equal(expectedTotalTokenCounts, actualUsage.OutputTokenCount);
+        Assert.Equal(expectedTotalTokenCounts, actualUsage.TotalTokenCount);
+        Assert.Equal(2, actualUsage.AdditionalCounts!.Count);
+        Assert.Equal(expectedTotalTokenCounts, actualUsage.AdditionalCounts["firstValue"]);
+        Assert.Equal(expectedTotalTokenCounts, actualUsage.AdditionalCounts["secondValue"]);
+
         return chat;
+    }
+
+    private static UsageDetails CreateRandomUsage()
+    {
+        // We'll set the same random number on all the properties so that, when determining the
+        // correct sum in tests, we only have to total the values once
+        var value = new Random().Next(100);
+        return new UsageDetails
+        {
+            InputTokenCount = value,
+            OutputTokenCount = value,
+            TotalTokenCount = value,
+            AdditionalCounts = new() { ["firstValue"] = value, ["secondValue"] = value },
+        };
     }
 
     private static async Task<List<ChatMessage>> InvokeAndAssertStreamingAsync(
