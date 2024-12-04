@@ -189,8 +189,15 @@ public class AdditionalPropertiesDictionary<TValue> : IDictionary<string, TValue
         return false;
     }
 
+    /// <summary>Gets the value associated with the specified key.</summary>
+    /// <returns><see langword="true"/> if the <see cref="AdditionalPropertiesDictionary{TValue}"/> contains an element with the specified key; otherwise <see langword="false"/>.</returns>
+    public bool TryGetValue(string key, [MaybeNullWhen(false)] out TValue value) => _dictionary.TryGetValue(key, out value);
+
     /// <inheritdoc />
-    public bool TryGetValue(string key, [NotNullWhen(true)] out TValue value) => _dictionary.TryGetValue(key, out value!);
+    bool IDictionary<string, TValue>.TryGetValue(string key, out TValue value) => _dictionary.TryGetValue(key, out value!);
+
+    /// <inheritdoc />
+    bool IReadOnlyDictionary<string, TValue>.TryGetValue(string key, out TValue value) => _dictionary.TryGetValue(key, out value!);
 
     /// <summary>Enumerates the elements of an <see cref="AdditionalPropertiesDictionary{TValue}"/>.</summary>
     public struct Enumerator : IEnumerator<KeyValuePair<string, TValue>>
