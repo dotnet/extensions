@@ -262,11 +262,6 @@ public class TypeSymbolExtensionsTests
                     {{
                         [LoggerMessage(EventId = 1, Level = LogLevel.Debug, Message = ""M1"")]
                         static partial void M1(ILogger logger, Test property);
-
-                        public override string {methodName}()
-                        {{
-                            throw new NotImplementedException();
-                        }}
                     }}
                 }}";
 
