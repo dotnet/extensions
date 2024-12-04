@@ -61,7 +61,7 @@ public class DistributedCachingChatClientTest
                 InputTokenCount = 123,
                 OutputTokenCount = 456,
                 TotalTokenCount = 99999,
-                AdditionalCounts = { ["someValue"] = 1_234_567 }
+                AdditionalCounts = new() { ["someValue"] = 1_234_567 }
             },
             CreatedAt = DateTimeOffset.UtcNow,
             ModelId = "someModel",

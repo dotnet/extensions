@@ -351,6 +351,7 @@ public sealed class OpenAIChatClient : IChatClient
             InputTokenCount = tokenUsage.InputTokenCount,
             OutputTokenCount = tokenUsage.OutputTokenCount,
             TotalTokenCount = tokenUsage.TotalTokenCount,
+            AdditionalCounts = new(),
         };
 
         if (tokenUsage.InputTokenDetails is ChatInputTokenUsageDetails inputDetails)

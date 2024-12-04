@@ -26,7 +26,7 @@ public class UsageContentTests
         Assert.Null(c.Details.InputTokenCount);
         Assert.Null(c.Details.OutputTokenCount);
         Assert.Null(c.Details.TotalTokenCount);
-        Assert.Empty(c.Details.AdditionalCounts);
+        Assert.Null(c.Details.AdditionalCounts);
     }
 
     [Fact]

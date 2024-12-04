@@ -280,12 +280,12 @@ public class OpenAIChatClientTests
         Assert.Equal(9, usage.Details.OutputTokenCount);
         Assert.Equal(17, usage.Details.TotalTokenCount);
 
-        Assert.Equal(new Dictionary<string, long>
+        Assert.Equal(new AdditionalPropertiesDictionary<long>
         {
-            { "InputTokenDetails.CachedTokenCount", 5 },
             { "InputTokenDetails.AudioTokenCount", 123 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 },
+            { "InputTokenDetails.CachedTokenCount", 5 },
             { "OutputTokenDetails.AudioTokenCount", 456 },
+            { "OutputTokenDetails.ReasoningTokenCount", 90 },
         }, usage.Details.AdditionalCounts);
     }
 
@@ -394,10 +394,10 @@ public class OpenAIChatClientTests
         Assert.Equal(57, response.Usage.TotalTokenCount);
         Assert.Equal(new Dictionary<string, long>
         {
-            { "InputTokenDetails.CachedTokenCount", 13 },
             { "InputTokenDetails.AudioTokenCount", 123 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 },
+            { "InputTokenDetails.CachedTokenCount", 13 },
             { "OutputTokenDetails.AudioTokenCount", 456 },
+            { "OutputTokenDetails.ReasoningTokenCount", 90 },
         }, response.Usage.AdditionalCounts);
 
         Assert.NotNull(response.AdditionalProperties);

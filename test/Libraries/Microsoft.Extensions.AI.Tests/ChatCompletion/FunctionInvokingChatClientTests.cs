@@ -568,7 +568,7 @@ public class FunctionInvokingChatClientTests
         Assert.Equal(expectedTotalTokenCounts, actualUsage.InputTokenCount);
         Assert.Equal(expectedTotalTokenCounts, actualUsage.OutputTokenCount);
         Assert.Equal(expectedTotalTokenCounts, actualUsage.TotalTokenCount);
-        Assert.Equal(2, actualUsage.AdditionalCounts.Count);
+        Assert.Equal(2, actualUsage.AdditionalCounts!.Count);
         Assert.Equal(expectedTotalTokenCounts, actualUsage.AdditionalCounts["firstValue"]);
         Assert.Equal(expectedTotalTokenCounts, actualUsage.AdditionalCounts["secondValue"]);
 
@@ -585,7 +585,7 @@ public class FunctionInvokingChatClientTests
             InputTokenCount = value,
             OutputTokenCount = value,
             TotalTokenCount = value,
-            AdditionalCounts = { ["firstValue"] = value, ["secondValue"] = value },
+            AdditionalCounts = new() { ["firstValue"] = value, ["secondValue"] = value },
         };
     }
 
