@@ -14,7 +14,6 @@ public sealed class AdditionalPropertiesDictionary : AdditionalPropertiesDiction
 {
     /// <summary>Initializes a new instance of the <see cref="AdditionalPropertiesDictionary"/> class.</summary>
     public AdditionalPropertiesDictionary()
-        : base()
     {
     }
 
