@@ -4,9 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Gen.Logging.Parsing;
-using Moq;
 using Xunit;
 
 namespace Microsoft.Gen.Logging.Test;
@@ -301,7 +299,7 @@ public class TypeSymbolExtensionsTests
     public void GetPossiblyNullWrappedType_ListT_ReturnsListT()
     {
         Compilation compilation = CompilationHelper.CreateCompilation("using System.Collections.Generic; public class TestClass { }");
-        INamedTypeSymbol listType = compilation.GetTypeByMetadataName("System.Collections.Generic.List`1");
+        INamedTypeSymbol listType = compilation.GetTypeByMetadataName("System.Collections.Generic.List`1")!;
         INamedTypeSymbol intType = compilation.GetSpecialType(SpecialType.System_Int32);
         INamedTypeSymbol listIntType = listType.Construct(intType);
         var result = listIntType.GetPossiblyNullWrappedType();
