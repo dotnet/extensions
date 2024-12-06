@@ -2,10 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -15,8 +13,6 @@ using Microsoft.Shared.Diagnostics;
 using OpenAI.Chat;
 
 #pragma warning disable SA1204 // Static elements should appear before instance elements
-#pragma warning disable S1135 // Track uses of "TODO" tags
-#pragma warning disable SA1118 // Parameter should not span multiple lines
 #pragma warning disable S103 // Lines should not be too long
 #pragma warning disable CA1859 // Use concrete types when possible for improved performance
 
@@ -26,9 +22,14 @@ internal static partial class OpenAIModelMappers
 {
     private static readonly JsonElement _defaultParameterSchema = JsonDocument.Parse("{}").RootElement;
 
-    internal static OpenAI.Chat.ChatCompletion ToOpenAIChatCompletion(ChatCompletion chatCompletion, JsonSerializerOptions options)
+    public static OpenAI.Chat.ChatCompletion ToOpenAIChatCompletion(ChatCompletion chatCompletion, JsonSerializerOptions options)
     {
         _ = Throw.IfNull(chatCompletion);
+
+        if (chatCompletion.Choices.Count > 1)
+        {
+            throw new NotSupportedException("Creating OpenAI ChatCompletion models with multiple choices is currently not supported.");
+        }
 
         List<OpenAI.Chat.ChatToolCall>? toolCalls = null;
         foreach (AIContent content in chatCompletion.Message.Contents)
@@ -66,7 +67,7 @@ internal static partial class OpenAIModelMappers
             usage: chatTokenUsage);
     }
 
-    internal static ChatCompletion FromOpenAIChatCompletion(OpenAI.Chat.ChatCompletion openAICompletion, ChatOptions? options)
+    public static ChatCompletion FromOpenAIChatCompletion(OpenAI.Chat.ChatCompletion openAICompletion, ChatOptions? options)
     {
         _ = Throw.IfNull(openAICompletion);
 
@@ -139,197 +140,13 @@ internal static partial class OpenAIModelMappers
         return completion;
     }
 
-    internal static async IAsyncEnumerable<OpenAI.Chat.StreamingChatCompletionUpdate> ToOpenAIStreamingChatCompletionAsync(
-        IAsyncEnumerable<StreamingChatCompletionUpdate> chatCompletions,
-        JsonSerializerOptions options,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        await foreach (var chatCompletionUpdate in chatCompletions.WithCancellation(cancellationToken).ConfigureAwait(false))
-        {
-            List<StreamingChatToolCallUpdate>? toolCallUpdates = null;
-            ChatTokenUsage? chatTokenUsage = null;
-
-            foreach (var content in chatCompletionUpdate.Contents)
-            {
-                if (content is FunctionCallContent functionCallContent)
-                {
-                    toolCallUpdates ??= [];
-                    toolCallUpdates.Add(OpenAIChatModelFactory.StreamingChatToolCallUpdate(
-                        index: toolCallUpdates.Count,
-                        toolCallId: functionCallContent.CallId,
-                        functionName: functionCallContent.Name,
-                        functionArgumentsUpdate: new(JsonSerializer.SerializeToUtf8Bytes(functionCallContent.Arguments, options.GetTypeInfo(typeof(IDictionary<string, object?>))))));
-                }
-                else if (content is UsageContent usageContent)
-                {
-                    chatTokenUsage = ToOpenAIUsage(usageContent.Details);
-                }
-            }
-
-            yield return OpenAIChatModelFactory.StreamingChatCompletionUpdate(
-                completionId: chatCompletionUpdate.CompletionId,
-                model: chatCompletionUpdate.ModelId,
-                createdAt: chatCompletionUpdate.CreatedAt ?? default,
-                role: ToOpenAIChatRole(chatCompletionUpdate.Role),
-                finishReason: ToOpenAIFinishReason(chatCompletionUpdate.FinishReason),
-                contentUpdate: [.. ToOpenAIChatContent(chatCompletionUpdate.Contents)],
-                toolCallUpdates: toolCallUpdates,
-                refusalUpdate: chatCompletionUpdate.AdditionalProperties.GetValueOrDefault<string>(nameof(OpenAI.Chat.StreamingChatCompletionUpdate.RefusalUpdate)),
-                contentTokenLogProbabilities: chatCompletionUpdate.AdditionalProperties.GetValueOrDefault<IReadOnlyList<ChatTokenLogProbabilityDetails>>(nameof(OpenAI.Chat.StreamingChatCompletionUpdate.ContentTokenLogProbabilities)),
-                refusalTokenLogProbabilities: chatCompletionUpdate.AdditionalProperties.GetValueOrDefault<IReadOnlyList<ChatTokenLogProbabilityDetails>>(nameof(OpenAI.Chat.StreamingChatCompletionUpdate.RefusalTokenLogProbabilities)),
-                systemFingerprint: chatCompletionUpdate.AdditionalProperties.GetValueOrDefault<string>(nameof(OpenAI.Chat.StreamingChatCompletionUpdate.SystemFingerprint)),
-                usage: chatTokenUsage);
-        }
-    }
-
-    internal static async IAsyncEnumerable<StreamingChatCompletionUpdate> FromOpenAIStreamingChatCompletionAsync(
-        IAsyncEnumerable<OpenAI.Chat.StreamingChatCompletionUpdate> chatCompletionUpdates,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        Dictionary<int, FunctionCallInfo>? functionCallInfos = null;
-        ChatRole? streamedRole = null;
-        ChatFinishReason? finishReason = null;
-        StringBuilder? refusal = null;
-        string? completionId = null;
-        DateTimeOffset? createdAt = null;
-        string? modelId = null;
-        string? fingerprint = null;
-
-        // Process each update as it arrives
-        await foreach (OpenAI.Chat.StreamingChatCompletionUpdate chatCompletionUpdate in chatCompletionUpdates.WithCancellation(cancellationToken).ConfigureAwait(false))
-        {
-            // The role and finish reason may arrive during any update, but once they've arrived, the same value should be the same for all subsequent updates.
-            streamedRole ??= chatCompletionUpdate.Role is ChatMessageRole role ? FromOpenAIChatRole(role) : null;
-            finishReason ??= chatCompletionUpdate.FinishReason is OpenAI.Chat.ChatFinishReason reason ? FromOpenAIFinishReason(reason) : null;
-            completionId ??= chatCompletionUpdate.CompletionId;
-            createdAt ??= chatCompletionUpdate.CreatedAt;
-            modelId ??= chatCompletionUpdate.Model;
-            fingerprint ??= chatCompletionUpdate.SystemFingerprint;
-
-            // Create the response content object.
-            StreamingChatCompletionUpdate completionUpdate = new()
-            {
-                CompletionId = chatCompletionUpdate.CompletionId,
-                CreatedAt = chatCompletionUpdate.CreatedAt,
-                FinishReason = finishReason,
-                ModelId = modelId,
-                RawRepresentation = chatCompletionUpdate,
-                Role = streamedRole,
-            };
-
-            // Populate it with any additional metadata from the OpenAI object.
-            if (chatCompletionUpdate.ContentTokenLogProbabilities is { Count: > 0 } contentTokenLogProbs)
-            {
-                (completionUpdate.AdditionalProperties ??= [])[nameof(chatCompletionUpdate.ContentTokenLogProbabilities)] = contentTokenLogProbs;
-            }
-
-            if (chatCompletionUpdate.RefusalTokenLogProbabilities is { Count: > 0 } refusalTokenLogProbs)
-            {
-                (completionUpdate.AdditionalProperties ??= [])[nameof(chatCompletionUpdate.RefusalTokenLogProbabilities)] = refusalTokenLogProbs;
-            }
-
-            if (fingerprint is not null)
-            {
-                (completionUpdate.AdditionalProperties ??= [])[nameof(chatCompletionUpdate.SystemFingerprint)] = fingerprint;
-            }
-
-            // Transfer over content update items.
-            if (chatCompletionUpdate.ContentUpdate is { Count: > 0 })
-            {
-                foreach (ChatMessageContentPart contentPart in chatCompletionUpdate.ContentUpdate)
-                {
-                    if (ToAIContent(contentPart) is AIContent aiContent)
-                    {
-                        completionUpdate.Contents.Add(aiContent);
-                    }
-                }
-            }
-
-            // Transfer over refusal updates.
-            if (chatCompletionUpdate.RefusalUpdate is not null)
-            {
-                _ = (refusal ??= new()).Append(chatCompletionUpdate.RefusalUpdate);
-            }
-
-            // Transfer over tool call updates.
-            if (chatCompletionUpdate.ToolCallUpdates is { Count: > 0 } toolCallUpdates)
-            {
-                foreach (StreamingChatToolCallUpdate toolCallUpdate in toolCallUpdates)
-                {
-                    functionCallInfos ??= [];
-                    if (!functionCallInfos.TryGetValue(toolCallUpdate.Index, out FunctionCallInfo? existing))
-                    {
-                        functionCallInfos[toolCallUpdate.Index] = existing = new();
-                    }
-
-                    existing.CallId ??= toolCallUpdate.ToolCallId;
-                    existing.Name ??= toolCallUpdate.FunctionName;
-                    if (toolCallUpdate.FunctionArgumentsUpdate is { } update && !update.ToMemory().IsEmpty)
-                    {
-                        _ = (existing.Arguments ??= new()).Append(update.ToString());
-                    }
-                }
-            }
-
-            // Transfer over usage updates.
-            if (chatCompletionUpdate.Usage is ChatTokenUsage tokenUsage)
-            {
-                var usageDetails = FromOpenAIUsage(tokenUsage);
-                completionUpdate.Contents.Add(new UsageContent(usageDetails));
-            }
-
-            // Now yield the item.
-            yield return completionUpdate;
-        }
-
-        // Now that we've received all updates, combine any for function calls into a single item to yield.
-        if (functionCallInfos is not null)
-        {
-            StreamingChatCompletionUpdate completionUpdate = new()
-            {
-                CompletionId = completionId,
-                CreatedAt = createdAt,
-                FinishReason = finishReason,
-                ModelId = modelId,
-                Role = streamedRole,
-            };
-
-            foreach (var entry in functionCallInfos)
-            {
-                FunctionCallInfo fci = entry.Value;
-                if (!string.IsNullOrWhiteSpace(fci.Name))
-                {
-                    var callContent = ParseCallContentFromJsonString(
-                        fci.Arguments?.ToString() ?? string.Empty,
-                        fci.CallId!,
-                        fci.Name!);
-                    completionUpdate.Contents.Add(callContent);
-                }
-            }
-
-            // Refusals are about the model not following the schema for tool calls. As such, if we have any refusal,
-            // add it to this function calling item.
-            if (refusal is not null)
-            {
-                (completionUpdate.AdditionalProperties ??= [])[nameof(ChatMessageContentPart.Refusal)] = refusal.ToString();
-            }
-
-            // Propagate additional relevant metadata.
-            if (fingerprint is not null)
-            {
-                (completionUpdate.AdditionalProperties ??= [])[nameof(OpenAI.Chat.ChatCompletion.SystemFingerprint)] = fingerprint;
-            }
-
-            yield return completionUpdate;
-        }
-    }
-
-    internal static ChatOptions FromOpenAIOptions(OpenAI.Chat.ChatCompletionOptions? options)
+    public static ChatOptions FromOpenAIOptions(OpenAI.Chat.ChatCompletionOptions? options)
     {
         ChatOptions result = new();
 
         if (options is not null)
         {
+            result.ModelId = _getModelIdAccessor.Invoke(options, null)?.ToString();
             result.FrequencyPenalty = options.FrequencyPenalty;
             result.MaxOutputTokens = options.MaxOutputTokenCount;
             result.TopP = options.TopP;
@@ -377,7 +194,7 @@ internal static partial class OpenAIModelMappers
                     result.Tools.Add(FromOpenAIChatTool(tool));
                 }
 
-                using var toolChoiceJson = JsonDocument.Parse(((IJsonModel<ChatToolChoice>)options.ToolChoice).Write(ModelReaderWriterOptions.Json));
+                using var toolChoiceJson = JsonDocument.Parse(JsonModelHelpers.Serialize(options.ToolChoice).ToMemory());
                 JsonElement jsonElement = toolChoiceJson.RootElement;
                 switch (jsonElement.ValueKind)
                 {
@@ -404,7 +221,7 @@ internal static partial class OpenAIModelMappers
     }
 
     /// <summary>Converts an extensions options instance to an OpenAI options instance.</summary>
-    internal static OpenAI.Chat.ChatCompletionOptions ToOpenAIOptions(ChatOptions? options)
+    public static OpenAI.Chat.ChatCompletionOptions ToOpenAIOptions(ChatOptions? options)
     {
         ChatCompletionOptions result = new();
 
@@ -744,7 +561,7 @@ internal static partial class OpenAIModelMappers
             argumentParser: static json => JsonSerializer.Deserialize(json, OpenAIJsonContext.Default.IDictionaryStringObject)!);
 
     private static T? GetValueOrDefault<T>(this AdditionalPropertiesDictionary? dict, string key) =>
-        dict?.TryGetValue<T>(key, out T? value) is true ? value : default;
+        dict?.TryGetValue(key, out T? value) is true ? value : default;
 
     /// <summary>Used to create the JSON payload for an OpenAI chat tool description.</summary>
     public sealed class OpenAIChatToolJson
