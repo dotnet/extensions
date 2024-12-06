@@ -3,18 +3,14 @@
 
 using System;
 using System.Buffers;
-using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.ServerSentEvents;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 using OpenAI.Chat;
-
-#pragma warning disable S1135 // Track uses of "TODO" tags
 
 namespace Microsoft.Extensions.AI;
 
@@ -24,40 +20,32 @@ namespace Microsoft.Extensions.AI;
 public static class OpenAISerializationHelpers
 {
     /// <summary>
-    /// Deserializes a stream using the OpenAI wire format into a pair of <see cref="ChatMessage"/> and <see cref="ChatOptions"/> values.
+    /// Deserializes a chat completion request in the OpenAI wire format into a pair of <see cref="ChatMessage"/> and <see cref="ChatOptions"/> values.
     /// </summary>
     /// <param name="stream">The stream containing a message using the OpenAI wire format.</param>
-    /// <param name="options">The <see cref="JsonSerializerOptions"/> governing deserialization of function call content.</param>
     /// <param name="cancellationToken">A token used to cancel the operation.</param>
     /// <returns>The deserialized list of chat messages and chat options.</returns>
-    public static async Task<(IList<ChatMessage> Messages, ChatOptions? Options)> DeserializeFromOpenAIAsync(
-        Stream stream,
-        JsonSerializerOptions? options = null,
-        CancellationToken cancellationToken = default)
+    public static async Task<OpenAIChatCompletionRequest> DeserializeChatCompletionRequestAsync(
+        Stream stream, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(stream);
-        options ??= AIJsonUtilities.DefaultOptions;
 
         BinaryData binaryData = await BinaryData.FromStreamAsync(stream, cancellationToken).ConfigureAwait(false);
         ChatCompletionOptions openAiChatOptions = JsonModelHelpers.Deserialize<ChatCompletionOptions>(binaryData);
-        var openAiMessages = (IList<OpenAI.Chat.ChatMessage>)typeof(ChatCompletionOptions).GetProperty("Messages")!.GetValue(openAiChatOptions)!;
-
-        IList<ChatMessage> messages = OpenAIModelMappers.FromOpenAIChatMessages(openAiMessages, options).ToList();
-        ChatOptions chatOptions = OpenAIModelMappers.FromOpenAIOptions(openAiChatOptions);
-        return (messages, chatOptions);
+        return OpenAIModelMappers.FromOpenAIChatCompletionRequest(openAiChatOptions);
     }
 
     /// <summary>
     /// Serializes a Microsoft.Extensions.AI completion using the OpenAI wire format.
     /// </summary>
-    /// <param name="chatCompletion">The chat completion to serialize.</param>
     /// <param name="stream">The stream to write the value.</param>
+    /// <param name="chatCompletion">The chat completion to serialize.</param>
     /// <param name="options">The <see cref="JsonSerializerOptions"/> governing function call content serialization.</param>
     /// <param name="cancellationToken">A token used to cancel the serialization operation.</param>
     /// <returns>A task tracking the serialization operation.</returns>
-    public static async Task SerializeAsOpenAIAsync(
-        this ChatCompletion chatCompletion,
+    public static async Task SerializeAsync(
         Stream stream,
+        ChatCompletion chatCompletion,
         JsonSerializerOptions? options = null,
         CancellationToken cancellationToken = default)
     {
@@ -77,14 +65,14 @@ public static class OpenAISerializationHelpers
     /// <summary>
     /// Serializes a Microsoft.Extensions.AI streaming completion using the OpenAI wire format.
     /// </summary>
-    /// <param name="streamingChatCompletionUpdates">The streaming chat completions to serialize.</param>
     /// <param name="stream">The stream to write the value.</param>
+    /// <param name="streamingChatCompletionUpdates">The streaming chat completions to serialize.</param>
     /// <param name="options">The <see cref="JsonSerializerOptions"/> governing function call content serialization.</param>
     /// <param name="cancellationToken">A token used to cancel the serialization operation.</param>
     /// <returns>A task tracking the serialization operation.</returns>
-    public static Task SerializeAsOpenAIAsync(
-        this IAsyncEnumerable<StreamingChatCompletionUpdate> streamingChatCompletionUpdates,
+    public static Task SerializeAsSseEventsAsync(
         Stream stream,
+        IAsyncEnumerable<StreamingChatCompletionUpdate> streamingChatCompletionUpdates,
         JsonSerializerOptions? options = null,
         CancellationToken cancellationToken = default)
     {
@@ -93,42 +81,20 @@ public static class OpenAISerializationHelpers
         options ??= AIJsonUtilities.DefaultOptions;
 
         var mappedUpdates = OpenAIModelMappers.ToOpenAIStreamingChatCompletionAsync(streamingChatCompletionUpdates, options, cancellationToken);
-        return SseFormatter.WriteAsync(WrapEventsAsync(mappedUpdates), stream, FormatAsSseEvent, cancellationToken);
+        return SseFormatter.WriteAsync(ToSseEventsAsync(mappedUpdates), stream, FormatAsSseEvent, cancellationToken);
 
-        static async IAsyncEnumerable<SseItem<T>> WrapEventsAsync<T>(IAsyncEnumerable<T> elements)
+        static async IAsyncEnumerable<SseItem<BinaryData>> ToSseEventsAsync(IAsyncEnumerable<OpenAI.Chat.StreamingChatCompletionUpdate> updates)
         {
-            await foreach (T element in elements.ConfigureAwait(false))
+            await foreach (var update in updates.ConfigureAwait(false))
             {
-                yield return new SseItem<T>(element); // TODO specify eventId or reconnection interval?
+                BinaryData binaryData = JsonModelHelpers.Serialize(update);
+                yield return new(binaryData);
             }
+
+            yield return new(new BinaryData("[DONE]"u8.ToArray()));
         }
 
-        static void FormatAsSseEvent(SseItem<OpenAI.Chat.StreamingChatCompletionUpdate> sseItem, IBufferWriter<byte> writer)
-        {
-            BinaryData binaryData = JsonModelHelpers.Serialize(sseItem.Data);
-            writer.Write(binaryData.ToMemory().Span);
-        }
+        static void FormatAsSseEvent(SseItem<BinaryData> sseItem, IBufferWriter<byte> writer) =>
+            writer.Write(sseItem.Data.ToMemory().Span);
     }
-
-    private static class JsonModelHelpers
-    {
-        public static BinaryData Serialize<TModel>(TModel value)
-            where TModel : IJsonModel<TModel>
-        {
-            return value.Write(ModelReaderWriterOptions.Json);
-        }
-
-        public static TModel Deserialize<TModel>(BinaryData data)
-            where TModel : IJsonModel<TModel>, new()
-        {
-            return JsonModelDeserializationWitness<TModel>.Value.Create(data, ModelReaderWriterOptions.Json);
-        }
-
-        private sealed class JsonModelDeserializationWitness<TModel>
-            where TModel : IJsonModel<TModel>, new()
-        {
-            public static readonly IJsonModel<TModel> Value = new TModel();
-        }
-    }
-
 }

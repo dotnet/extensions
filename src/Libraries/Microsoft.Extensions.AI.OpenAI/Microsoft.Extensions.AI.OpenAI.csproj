@@ -25,6 +25,8 @@
     <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
     <InjectStringHashOnLegacy>true</InjectStringHashOnLegacy>
     <InjectSharedServerSentEvents>true</InjectSharedServerSentEvents>
+    <InjectRequiredMemberOnLegacy>true</InjectRequiredMemberOnLegacy>
+    <InjectCompilerFeatureRequiredOnLegacy>true</InjectCompilerFeatureRequiredOnLegacy>
   </PropertyGroup>
 
   <ItemGroup>
