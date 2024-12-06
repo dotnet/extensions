@@ -186,6 +186,16 @@ internal static partial class OpenAIModelMappers
                 (result.AdditionalProperties ??= [])[nameof(options.TopLogProbabilityCount)] = topLogProbabilityCount;
             }
 
+            if (options.Metadata is IDictionary<string, string> { Count: > 0 } metadata)
+            {
+                (result.AdditionalProperties ??= [])[nameof(options.Metadata)] = metadata;
+            }
+
+            if (options.StoredOutputEnabled is bool storedOutputEnabled)
+            {
+                (result.AdditionalProperties ??= [])[nameof(options.StoredOutputEnabled)] = storedOutputEnabled;
+            }
+
             if (options.Tools is { Count: > 0 } tools)
             {
                 foreach (ChatTool tool in tools)
@@ -272,6 +282,19 @@ internal static partial class OpenAIModelMappers
                 if (additionalProperties.TryGetValue(nameof(result.TopLogProbabilityCount), out int topLogProbabilityCountInt))
                 {
                     result.TopLogProbabilityCount = topLogProbabilityCountInt;
+                }
+
+                if (additionalProperties.TryGetValue(nameof(result.Metadata), out IDictionary<string, string>? metadata))
+                {
+                    foreach (KeyValuePair<string, string> kvp in metadata)
+                    {
+                        result.Metadata[kvp.Key] = kvp.Value;
+                    }
+                }
+
+                if (additionalProperties.TryGetValue(nameof(result.StoredOutputEnabled), out bool storeOutputEnabled))
+                {
+                    result.StoredOutputEnabled = storeOutputEnabled;
                 }
             }
 

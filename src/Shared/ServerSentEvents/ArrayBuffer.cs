@@ -25,6 +25,7 @@ namespace System.Net
     // Discard(byteCount) will discard [byteCount] bytes as the beginning of the ActiveSpan.
 
     [StructLayout(LayoutKind.Auto)]
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     internal struct ArrayBuffer : IDisposable
     {
         private readonly bool _usePool;

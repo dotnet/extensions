@@ -9,6 +9,7 @@ using System.Text;
 namespace System.Net.ServerSentEvents
 {
     /// <summary>Provides a parser for parsing server-sent events.</summary>
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     internal static class SseParser
     {
         /// <summary>The default <see cref="SseItem{T}.EventType"/> ("message") for an event that did not explicitly specify a type.</summary>

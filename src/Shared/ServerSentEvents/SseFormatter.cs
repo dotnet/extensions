@@ -15,6 +15,7 @@ namespace System.Net.ServerSentEvents
     /// <summary>
     /// Provides methods for formatting server-sent events.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     internal static class SseFormatter
     {
         private static readonly byte[] _newLine = "\n"u8.ToArray();
