@@ -645,8 +645,8 @@ public static partial class OpenAISerializationTests
 
     private static void AssertSseEqual(string expected, string actual)
     {
-        expected = expected.Replace("\r\n", "\n");
-        actual = actual.Replace("\r\n", "\n");
+        expected = expected.Replace("\r\n", "\n").Replace("\\r\\n", "\\n");
+        actual = actual.Replace("\r\n", "\n").Replace("\\r\\n", "\\n");
         Assert.Equal(expected, actual);
     }
 }
