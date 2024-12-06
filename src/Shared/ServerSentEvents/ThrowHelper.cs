@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace System.Net.ServerSentEvents
 {
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     internal static class ThrowHelper
     {
         [DoesNotReturn]
