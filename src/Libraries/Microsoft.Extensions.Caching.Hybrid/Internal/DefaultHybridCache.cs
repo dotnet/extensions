@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -20,6 +21,7 @@ namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 /// <summary>
 /// The inbuilt implementation of <see cref="HybridCache"/>, as registered via <see cref="HybridCacheServiceExtensions.AddHybridCache(IServiceCollection)"/>.
 /// </summary>
+[SkipLocalsInit]
 internal sealed partial class DefaultHybridCache : HybridCache
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0032:Use auto property", Justification = "Keep usage explicit")]
@@ -32,6 +34,7 @@ internal sealed partial class DefaultHybridCache : HybridCache
     private readonly HybridCacheOptions _options;
     private readonly ILogger _logger;
     private readonly CacheFeatures _features; // used to avoid constant type-testing
+    private readonly TimeProvider _clock;
 
     private readonly HybridCacheEntryFlags _hardFlags; // *always* present (for example, because no L2)
     private readonly HybridCacheEntryFlags _defaultFlags; // note this already includes hardFlags
@@ -62,7 +65,7 @@ internal sealed partial class DefaultHybridCache : HybridCache
         _localCache = services.GetRequiredService<IMemoryCache>();
         _options = options.Value;
         _logger = services.GetService<ILoggerFactory>()?.CreateLogger(typeof(HybridCache)) ?? NullLogger.Instance;
-
+        _clock = services.GetService<TimeProvider>() ?? TimeProvider.System;
         _backendCache = services.GetService<IDistributedCache>(); // note optional
 
         // ignore L2 if it is really just the same L1, wrapped
@@ -119,14 +122,15 @@ internal sealed partial class DefaultHybridCache : HybridCache
         }
 
         var flags = GetEffectiveFlags(options);
-        if ((flags & HybridCacheEntryFlags.DisableLocalCacheRead) == 0 && _localCache.TryGetValue(key, out var untyped)
-            && untyped is CacheItem<T> typed && typed.TryGetValue(out var value))
+        if ((flags & HybridCacheEntryFlags.DisableLocalCacheRead) == 0
+            && TryGetExisting<T>(key, out var typed)
+            && typed.TryGetValue(out var value))
         {
             // short-circuit
             return new(value);
         }
 
-        if (GetOrCreateStampedeState<TState, T>(key, flags, out var stampede, canBeCanceled))
+        if (GetOrCreateStampedeState<TState, T>(key, flags, out var stampede, canBeCanceled, tags))
         {
             // new query; we're responsible for making it happen
             if (canBeCanceled)
@@ -152,19 +156,37 @@ internal sealed partial class DefaultHybridCache : HybridCache
         return _backendCache is null ? default : new(_backendCache.RemoveAsync(key, token));
     }
 
-    public override ValueTask RemoveByTagAsync(string tag, CancellationToken token = default)
-        => default; // tags not yet implemented
-
     public override ValueTask SetAsync<T>(string key, T value, HybridCacheEntryOptions? options = null, IEnumerable<string>? tags = null, CancellationToken token = default)
     {
         // since we're forcing a write: disable L1+L2 read; we'll use a direct pass-thru of the value as the callback, to reuse all the code
         // note also that stampede token is not shared with anyone else
         var flags = GetEffectiveFlags(options) | (HybridCacheEntryFlags.DisableLocalCacheRead | HybridCacheEntryFlags.DisableDistributedCacheRead);
-        var state = new StampedeState<T, T>(this, new StampedeKey(key, flags), token);
+        var state = new StampedeState<T, T>(this, new StampedeKey(key, flags), TagSet.Create(tags), token);
         return new(state.ExecuteDirectAsync(value, static (state, _) => new(state), options)); // note this spans L2 write etc
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private HybridCacheEntryFlags GetEffectiveFlags(HybridCacheEntryOptions? options)
-    => (options?.Flags | _hardFlags) ?? _defaultFlags;
+        => (options?.Flags | _hardFlags) ?? _defaultFlags;
+
+    private bool TryGetExisting<T>(string key, [NotNullWhen(true)] out CacheItem<T>? value)
+    {
+        if (_localCache.TryGetValue(key, out var untyped) && untyped is CacheItem<T> typed)
+        {
+            // check tag-based and global invalidation
+            if (IsValid(typed))
+            {
+                value = typed;
+                return true;
+            }
+
+            // remove from L1; note there's a little unavoidable race here; worst case is that
+            // a fresher value gets dropped - we'll have to accept it
+            _localCache.Remove(key);
+        }
+
+        // failure
+        value = null;
+        return false;
+    }
 }

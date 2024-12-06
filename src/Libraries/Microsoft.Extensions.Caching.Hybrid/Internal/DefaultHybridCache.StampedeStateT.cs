@@ -26,14 +26,14 @@ internal partial class DefaultHybridCache
         internal void SetResultDirect(CacheItem<T> value)
             => _result?.TrySetResult(value);
 
-        public StampedeState(DefaultHybridCache cache, in StampedeKey key, bool canBeCanceled)
-            : base(cache, key, CacheItem<T>.Create(), canBeCanceled)
+        public StampedeState(DefaultHybridCache cache, in StampedeKey key, TagSet tags, bool canBeCanceled)
+            : base(cache, key, CacheItem<T>.Create(cache.CurrentTimestamp(), tags), canBeCanceled)
         {
             _result = new(TaskCreationOptions.RunContinuationsAsynchronously);
         }
 
-        public StampedeState(DefaultHybridCache cache, in StampedeKey key, CancellationToken token)
-            : base(cache, key, CacheItem<T>.Create(), token)
+        public StampedeState(DefaultHybridCache cache, in StampedeKey key, TagSet tags, CancellationToken token)
+            : base(cache, key, CacheItem<T>.Create(cache.CurrentTimestamp(), tags), token)
         {
             // no TCS in this case - this is for SetValue only
         }
@@ -202,7 +202,7 @@ internal partial class DefaultHybridCache
                         // ^^^ The first thing we need to do is make sure we're not getting into a thread race over buffer disposal.
                         // In particular, if this cache item is somehow so short-lived that the buffers would be released *before* we're
                         // done writing them to L2, which happens *after* we've provided the value to consumers.
-                        RecyclableArrayBufferWriter<byte> writer = RecyclableArrayBufferWriter<byte>.Create(MaximumPayloadBytes); // note this lifetime spans the SetL2Async
+                        var writer = RecyclableArrayBufferWriter<byte>.Create(MaximumPayloadBytes); // note this lifetime spans the SetL2Async
                         IHybridCacheSerializer<T> serializer = Cache.GetSerializer<T>();
                         serializer.Serialize(newValue, writer);
                         BufferChunk buffer = new(writer.DetachCommitted(out var length), length, returnToPool: true); // remove buffer ownership from the writer
