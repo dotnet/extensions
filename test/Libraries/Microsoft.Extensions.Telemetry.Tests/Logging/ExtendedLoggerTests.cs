@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Enrichment;
+using Microsoft.Extensions.Diagnostics.Sampling;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -117,6 +118,37 @@ public static class ExtendedLoggerTests
             Assert.Null(snap[1].GetStructuredStateValue("SEK1"));
             Assert.Null(snap[1].GetStructuredStateValue("EK1"));
         }
+    }
+
+    [Fact]
+    public static void Sampling()
+    {
+        const string Category = "C1";
+
+        ProbabilitySamplerOptions options = new();
+        options.Rules.Add(new ProbabilitySamplerFilterRule(0, null, LogLevel.Warning, null));
+        var sampler = new ProbabilitySampler(new StaticOptionsMonitor<ProbabilitySamplerOptions>(options));
+
+        using var provider = new Provider();
+        using var factory = Utils.CreateLoggerFactory(
+             builder =>
+             {
+                 builder.AddProvider(provider);
+                 builder.AddProbabilitySampler(0, LogLevel.Warning);
+             });
+        var logger = factory.CreateLogger(Category);
+
+        // Act
+        // 1, no state (legacy path)
+        logger.LogWarning("MSG0");
+
+        // 2, with Modern state
+        var lms = LoggerMessageHelper.ThreadLocalState;
+        var index = lms.ReserveTagSpace(1);
+        lms.TagArray[index] = new("PK2", "PV2");
+        logger.Log(LogLevel.Warning, new EventId(2, "ID2"), lms, null, (_, _) => "MSG2");
+
+        Assert.Equal(0, provider.Logger!.Collector.Count);
     }
 
     [Theory]
@@ -946,7 +978,7 @@ public static class ExtendedLoggerTests
         }
     }
 
-    private sealed class StaticOptionsMonitor<T> : IOptionsMonitor<T>
+    public sealed class StaticOptionsMonitor<T> : IOptionsMonitor<T>
     {
         public StaticOptionsMonitor(T currentValue)
         {
