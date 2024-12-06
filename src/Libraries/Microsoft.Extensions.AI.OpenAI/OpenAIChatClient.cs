@@ -455,6 +455,19 @@ public sealed class OpenAIChatClient : IChatClient
                 {
                     result.TopLogProbabilityCount = topLogProbabilityCountInt;
                 }
+
+                if (additionalProperties.TryGetValue(nameof(result.Metadata), out IDictionary<string, string>? metadata))
+                {
+                    foreach (KeyValuePair<string, string> kvp in metadata)
+                    {
+                        result.Metadata[kvp.Key] = kvp.Value;
+                    }
+                }
+
+                if (additionalProperties.TryGetValue(nameof(result.StoredOutputEnabled), out bool storeOutputEnabled))
+                {
+                    result.StoredOutputEnabled = storeOutputEnabled;
+                }
             }
 
             if (options.Tools is { Count: > 0 } tools)
