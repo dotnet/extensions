@@ -27,7 +27,7 @@
     <Stage>dev</Stage>
     <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
     <StageDevDiagnosticId>EXTEXP0018</StageDevDiagnosticId>
-    <MinCodeCoverage>75</MinCodeCoverage>
+    <MinCodeCoverage>86</MinCodeCoverage>
     <MinMutationScore>50</MinMutationScore>
   </PropertyGroup>
 
