@@ -356,29 +356,20 @@ public sealed class OpenAIChatClient : IChatClient
 
         if (tokenUsage.InputTokenDetails is ChatInputTokenUsageDetails inputDetails)
         {
-            if (inputDetails.AudioTokenCount is int audioTokenCount)
-            {
-                destination.AdditionalCounts.Add(
-                    $"{nameof(ChatTokenUsage.InputTokenDetails)}.{nameof(ChatInputTokenUsageDetails.AudioTokenCount)}",
-                    audioTokenCount);
-            }
+            destination.AdditionalCounts.Add(
+                $"{nameof(ChatTokenUsage.InputTokenDetails)}.{nameof(ChatInputTokenUsageDetails.AudioTokenCount)}",
+                inputDetails.AudioTokenCount);
 
-            if (inputDetails.CachedTokenCount is int cachedTokenCount)
-            {
-                destination.AdditionalCounts.Add(
-                    $"{nameof(ChatTokenUsage.InputTokenDetails)}.{nameof(ChatInputTokenUsageDetails.CachedTokenCount)}",
-                    cachedTokenCount);
-            }
+            destination.AdditionalCounts.Add(
+                $"{nameof(ChatTokenUsage.InputTokenDetails)}.{nameof(ChatInputTokenUsageDetails.CachedTokenCount)}",
+                inputDetails.CachedTokenCount);
         }
 
         if (tokenUsage.OutputTokenDetails is ChatOutputTokenUsageDetails outputDetails)
         {
-            if (outputDetails.AudioTokenCount is int audioTokenCount)
-            {
-                destination.AdditionalCounts.Add(
-                    $"{nameof(ChatTokenUsage.OutputTokenDetails)}.{nameof(ChatOutputTokenUsageDetails.AudioTokenCount)}",
-                    audioTokenCount);
-            }
+            destination.AdditionalCounts.Add(
+                $"{nameof(ChatTokenUsage.OutputTokenDetails)}.{nameof(ChatOutputTokenUsageDetails.AudioTokenCount)}",
+                outputDetails.AudioTokenCount);
 
             destination.AdditionalCounts.Add(
                 $"{nameof(ChatTokenUsage.OutputTokenDetails)}.{nameof(ChatOutputTokenUsageDetails.ReasoningTokenCount)}",
