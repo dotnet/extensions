@@ -30,6 +30,7 @@ namespace System.Net.ServerSentEvents
 {
     /// <summary>Provides a parser for server-sent events information.</summary>
     /// <typeparam name="T">Specifies the type of data parsed from an event.</typeparam>
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     internal sealed class SseParser<T>
     {
         // For reference:

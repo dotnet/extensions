@@ -7,6 +7,7 @@ using System.ComponentModel;
 namespace System.Net.ServerSentEvents
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     internal sealed class PooledByteBufferWriter : IBufferWriter<byte>, IDisposable
     {
         private const int MinimumBufferSize = 256;

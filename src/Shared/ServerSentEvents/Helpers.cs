@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 namespace System.Net.ServerSentEvents
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     internal static class Helpers
     {
         public static void WriteUtf8Number(this IBufferWriter<byte> writer, long value)

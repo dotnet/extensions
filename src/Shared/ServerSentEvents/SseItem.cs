@@ -10,6 +10,7 @@ namespace System.Net.ServerSentEvents
 {
     /// <summary>Represents a server-sent event.</summary>
     /// <typeparam name="T">Specifies the type of data payload in the event.</typeparam>
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     internal readonly struct SseItem<T>
     {
         /// <summary>The event's type.</summary>
