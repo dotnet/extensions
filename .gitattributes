@@ -58,3 +58,5 @@
 *.dbproj text=auto
 *.sln text=auto
 
+# Interpret dictionary files as text
+*.dic   diff

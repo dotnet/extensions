@@ -80,6 +80,8 @@ internal readonly struct BufferChunk
         Debug.Assert(Array is null && !ReturnToPool, "expected clean slate after recycle");
     }
 
+    internal ReadOnlySpan<byte> AsSpan() => Length == 0 ? default : new(Array!, 0, Length);
+
     // get the data as a ROS; for note on null-logic of Array!, see comment in ToArray
     internal ReadOnlySequence<byte> AsSequence() => Length == 0 ? default : new ReadOnlySequence<byte>(Array!, 0, Length);
 
