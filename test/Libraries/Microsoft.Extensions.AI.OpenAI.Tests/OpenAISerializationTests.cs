@@ -424,16 +424,16 @@ public static partial class OpenAISerializationTests
               "system_fingerprint": "fp_f85bea6784",
               "object": "chat.completion",
               "usage": {
-                "prompt_tokens": 8,
                 "completion_tokens": 9,
+                "prompt_tokens": 8,
                 "total_tokens": 17,
-                "prompt_tokens_details": {
-                  "audio_tokens": 1,
-                  "cached_tokens": 13
-                },
                 "completion_tokens_details": {
                   "audio_tokens": 2,
                   "reasoning_tokens": 90
+                },
+                "prompt_tokens_details": {
+                  "audio_tokens": 1,
+                  "cached_tokens": 13
                 }
               }
             }
@@ -637,16 +637,17 @@ public static partial class OpenAISerializationTests
         {
             // JSON documents are not equal, assert on
             // normal form strings for better reporting.
-            expected = expectedNode?.ToString() ?? "null";
-            actual = actualNode?.ToString() ?? "null";
-            Assert.Equal(expected, actual);
+            expected = expectedNode?.ToJsonString() ?? "null";
+            actual = actualNode?.ToJsonString() ?? "null";
+            Assert.Equal(expected.NormalizeNewLines(), actual.NormalizeNewLines());
         }
     }
 
     private static void AssertSseEqual(string expected, string actual)
     {
-        expected = expected.Replace("\r\n", "\n").Replace("\\r\\n", "\\n");
-        actual = actual.Replace("\r\n", "\n").Replace("\\r\\n", "\\n");
-        Assert.Equal(expected, actual);
+        Assert.Equal(expected.NormalizeNewLines(), actual.NormalizeNewLines());
     }
+
+    private static string NormalizeNewLines(this string value) =>
+        value.Replace("\r\n", "\n").Replace("\\r\\n", "\\n");
 }
