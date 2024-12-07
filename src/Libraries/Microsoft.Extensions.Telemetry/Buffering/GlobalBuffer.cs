@@ -4,113 +4,81 @@
 #if NET9_0_OR_GREATER
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Diagnostics;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Shared.Diagnostics;
+using static Microsoft.Extensions.Logging.ExtendedLogger;
 
 namespace Microsoft.Extensions.Logging;
 
-internal sealed class GlobalBuffer : BackgroundService, ILoggingBuffer
+internal sealed class GlobalBuffer : ILoggingBuffer
 {
     private readonly IOptionsMonitor<GlobalBufferOptions> _options;
-    private readonly ConcurrentDictionary<IBufferedLogger, ConcurrentQueue<GlobalBufferedLogRecord>> _buffers;
-    private readonly TimeProvider _timeProvider = TimeProvider.System;
+    private readonly ConcurrentQueue<SerializedLogRecord> _buffer;
+    private readonly IBufferSink _bufferSink;
+    private readonly TimeProvider _timeProvider;
     private DateTimeOffset _lastFlushTimestamp;
 
-    public GlobalBuffer(IOptionsMonitor<GlobalBufferOptions> options)
+    public GlobalBuffer(IBufferSink bufferSink, IOptionsMonitor<GlobalBufferOptions> options, TimeProvider timeProvider)
     {
         _options = options;
-        _lastFlushTimestamp = _timeProvider.GetUtcNow();
-        _buffers = new ConcurrentDictionary<IBufferedLogger, ConcurrentQueue<GlobalBufferedLogRecord>>();
-    }
-
-    internal GlobalBuffer(IOptionsMonitor<GlobalBufferOptions> options, TimeProvider timeProvider)
-        : this(options)
-    {
         _timeProvider = timeProvider;
-        _lastFlushTimestamp = _timeProvider.GetUtcNow();
+        _buffer = new ConcurrentQueue<SerializedLogRecord>();
+        _bufferSink = bufferSink;
     }
 
-    public bool TryEnqueue(
-        IBufferedLogger logger,
+    [RequiresUnreferencedCode(
+        "Calls Microsoft.Extensions.Logging.SerializedLogRecord.SerializedLogRecord(LogLevel, EventId, DateTimeOffset, IReadOnlyList<KeyValuePair<String, Object>>, Exception, String)")]
+    public bool TryEnqueue<T>(
         LogLevel logLevel,
         string category,
         EventId eventId,
-        IReadOnlyList<KeyValuePair<string, object?>> joiner,
-        Exception? exception, string formatter)
+        T attributes,
+        Exception? exception,
+        Func<T, Exception?, string> formatter)
     {
         if (!IsEnabled(category, logLevel, eventId))
         {
             return false;
         }
 
-        var record = new GlobalBufferedLogRecord(logLevel, eventId, joiner, exception, formatter);
-        var queue = _buffers.GetOrAdd(logger, _ => new ConcurrentQueue<GlobalBufferedLogRecord>());
-        if (queue.Count >= _options.CurrentValue.Capacity)
+        switch (attributes)
         {
-            _ = queue.TryDequeue(out GlobalBufferedLogRecord? _);
+            case ModernTagJoiner modernTagJoiner:
+                _buffer.Enqueue(new SerializedLogRecord(logLevel, eventId, _timeProvider.GetUtcNow(), modernTagJoiner, exception,
+                    ((Func<ModernTagJoiner, Exception?, string>)(object)formatter)(modernTagJoiner, exception)));
+                break;
+            case LegacyTagJoiner legacyTagJoiner:
+                _buffer.Enqueue(new SerializedLogRecord(logLevel, eventId, _timeProvider.GetUtcNow(), legacyTagJoiner, exception,
+                    ((Func<LegacyTagJoiner, Exception?, string>)(object)formatter)(legacyTagJoiner, exception)));
+                break;
+            default:
+                Throw.ArgumentException(nameof(attributes), $"Unsupported type of the log attributes object detected: {typeof(T)}");
+                break;
         }
-
-        queue.Enqueue(record);
 
         return true;
     }
 
+    [RequiresUnreferencedCode("Calls Microsoft.Extensions.Logging.BufferSink.LogRecords(IEnumerable<SerializedLogRecord>)")]
     public void Flush()
     {
-        foreach (var (logger, queue) in _buffers)
-        {
-            var result = new List<BufferedLogRecord>();
-            while (!queue.IsEmpty)
-            {
-                if (queue.TryDequeue(out GlobalBufferedLogRecord? item))
-                {
-                    result.Add(item);
-                }
-            }
-
-            logger.LogRecords(result);
-        }
+        var result = _buffer.ToArray();
+        _buffer.Clear();
 
         _lastFlushTimestamp = _timeProvider.GetUtcNow();
+
+        _bufferSink.LogRecords(result);
     }
 
-    internal void RemoveExpiredItems()
+    public void TruncateOverlimit()
     {
-        foreach (var (logger, queue) in _buffers)
+        // Capacity is a soft limit, which might be exceeded, esp. in multi-threaded environments.
+        while (_buffer.Count > _options.CurrentValue.Capacity)
         {
-            while (!queue.IsEmpty)
-            {
-                if (queue.TryPeek(out GlobalBufferedLogRecord? item))
-                {
-                    if (_timeProvider.GetUtcNow() - item.Timestamp > _options.CurrentValue.Duration)
-                    {
-                        _ = queue.TryDequeue(out _);
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-                else
-                {
-                    break;
-                }
-            }
-        }
-    }
-
-    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
-    {
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            await _timeProvider.Delay(_options.CurrentValue.Duration, cancellationToken).ConfigureAwait(false);
-            RemoveExpiredItems();
+            _ = _buffer.TryDequeue(out _);
         }
     }
 

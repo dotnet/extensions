@@ -26,7 +26,7 @@ using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 #if NET9_0_OR_GREATER
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Diagnostics.Buffering;
 #endif
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.Net.Http.Headers;
@@ -59,6 +59,31 @@ public partial class AcceptanceTests
             app.UseRouting();
             app.UseHttpLogging();
 
+#if NET9_0_OR_GREATER
+            app.Map("/flushrequestlogs", static x =>
+                x.Run(static async context =>
+                {
+                    await context.Request.Body.DrainAsync(default);
+
+                    // normally, this would be a Middleware and IHttpRequestBufferManager would be injected via constructor
+                    var bufferManager = context.RequestServices.GetService<IHttpRequestBufferManager>();
+                    bufferManager?.FlushCurrentRequestLogs();
+                }));
+
+            app.Map("/flushalllogs", static x =>
+                x.Run(static async context =>
+                {
+                    await context.Request.Body.DrainAsync(default);
+
+                    // normally, this would be a Middleware and IHttpRequestBufferManager would be injected via constructor
+                    var bufferManager = context.RequestServices.GetService<IHttpRequestBufferManager>();
+                    if (bufferManager is not null)
+                    {
+                        bufferManager.FlushCurrentRequestLogs();
+                        bufferManager.Flush();
+                    }
+                }));
+#endif
             app.Map("/error", static x =>
                 x.Run(static async context =>
                 {
@@ -722,40 +747,39 @@ public partial class AcceptanceTests
     [Fact]
     public async Task HttpRequestBuffering()
     {
-        var clock = new FakeTimeProvider(TimeProvider.System.GetUtcNow());
-
-        HttpRequestBufferOptions options = new()
-        {
-            SuspendAfterFlushDuration = TimeSpan.FromSeconds(0),
-            Rules = new List<BufferFilterRule>
-            {
-                new(null, LogLevel.Information, null),
-            }
-        };
-        var buffer = new HttpRequestBuffer(new StaticOptionsMonitor<HttpRequestBufferOptions>(options), clock);
-
         await RunAsync<TestStartup>(
-            LogLevel.Information,
-            services => services.AddLogging(builder =>
+            LogLevel.Trace,
+            services => services
+            .AddLogging(builder =>
             {
-                builder.Services.AddScoped<ILoggingBuffer>(sp => buffer);
-                builder.Services.AddScoped(sp => buffer);
-                builder.AddHttpRequestBuffer(LogLevel.Information);
+                // enable Microsoft.AspNetCore.Routing.Matching.DfaMatcher debug logs
+                // which we are produced by ASP.NET Core within HTTP context:
+                builder.AddFilter("Microsoft.AspNetCore.Routing.Matching.DfaMatcher", LogLevel.Debug);
+
+                builder.AddHttpRequestBuffering(LogLevel.Debug);
             }),
             async (logCollector, client, sp) =>
             {
-                using var response = await client.GetAsync("/home").ConfigureAwait(false);
-
+                // just HTTP request logs:
+                using var response = await client.GetAsync("/flushrequestlogs").ConfigureAwait(false);
                 Assert.True(response.IsSuccessStatusCode);
-
-                Assert.Equal(0, logCollector.Count);
-
-                using var scope = sp.CreateScope();
-                var buffer = scope.ServiceProvider.GetRequiredService<HttpRequestBuffer>();
-                buffer.Flush();
-
                 await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout);
                 Assert.Equal(1, logCollector.Count);
+                Assert.Equal(LogLevel.Debug, logCollector.LatestRecord.Level);
+                Assert.Equal("Microsoft.AspNetCore.Routing.Matching.DfaMatcher", logCollector.LatestRecord.Category);
+
+                // HTTP request logs + global logs:
+                using var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+                var logger = loggerFactory.CreateLogger("test");
+                logger.LogTrace("This is a log message");
+                using var response2 = await client.GetAsync("/flushalllogs").ConfigureAwait(false);
+                Assert.True(response2.IsSuccessStatusCode);
+                await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout);
+
+                // 1 and 2 records are from DfaMatcher, and 3rd is from our test category
+                Assert.Equal(3, logCollector.Count);
+                Assert.Equal(LogLevel.Trace, logCollector.LatestRecord.Level);
+                Assert.Equal("test", logCollector.LatestRecord.Category);
             });
     }
 #endif
@@ -803,19 +827,5 @@ public partial class AcceptanceTests
     {
         public void Enrich(IEnrichmentTagCollector collector, HttpContext httpContext) => throw new InvalidOperationException();
     }
-
-#if NET9_0_OR_GREATER
-    private sealed class StaticOptionsMonitor<T> : IOptionsMonitor<T>
-    {
-        public StaticOptionsMonitor(T currentValue)
-        {
-            CurrentValue = currentValue;
-        }
-
-        public IDisposable? OnChange(Action<T, string> listener) => null;
-        public T Get(string? name) => CurrentValue;
-        public T CurrentValue { get; }
-    }
-#endif
 }
 #endif

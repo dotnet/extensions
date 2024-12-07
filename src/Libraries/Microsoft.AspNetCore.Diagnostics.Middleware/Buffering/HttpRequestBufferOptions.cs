@@ -17,23 +17,14 @@ namespace Microsoft.AspNetCore.Diagnostics.Logging;
 public class HttpRequestBufferOptions
 {
     /// <summary>
-    /// Gets or sets the time to suspend the buffer after flushing.
+    /// Gets or sets the duration to check and remove the buffered items exceeding the <see cref="PerRequestCapacity"/>.
     /// </summary>
-    /// <remarks>
-    /// Use this to temporarily suspend buffering after a flush, e.g. in case of an incident you may want all logs to be emitted immediately,
-    /// so the buffering will be suspended for the <see paramref="SuspendAfterFlushDuration"/> time.
-    /// </remarks>
-    public TimeSpan SuspendAfterFlushDuration { get; set; } = TimeSpan.FromSeconds(30);
+    public TimeSpan PerRequestDuration { get; set; } = TimeSpan.FromSeconds(10);
 
     /// <summary>
     /// Gets or sets the size of the buffer for a request.
     /// </summary>
     public int PerRequestCapacity { get; set; } = 1_000;
-
-    /// <summary>
-    /// Gets or sets the size of the global buffer which applies to non-request logs only.
-    /// </summary>
-    public int GlobalCapacity { get; set; } = 1_000_000;
 
 #pragma warning disable CA1002 // Do not expose generic lists - List is necessary to be able to call .AddRange()
 #pragma warning disable CA2227 // Collection properties should be read only - setter is necessary for options pattern

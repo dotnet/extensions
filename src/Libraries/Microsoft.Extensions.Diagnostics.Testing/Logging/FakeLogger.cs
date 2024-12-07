@@ -8,9 +8,10 @@ using System.Collections.Generic;
 using System.Globalization;
 #if NET9_0_OR_GREATER
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.DiagnosticIds;
-
+using Microsoft.Shared.JsonExceptionConverter;
 #endif
 using Microsoft.Shared.Diagnostics;
 
@@ -118,19 +119,20 @@ public class FakeLogger : ILogger
 #if NET9_0_OR_GREATER
     /// <inheritdoc/>
     [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public void LogRecords(IEnumerable<BufferedLogRecord> records)
     {
         _ = Throw.IfNull(records);
 
         var l = new List<object?>();
-        ScopeProvider.ForEachScope((scopeState, list) => list.Add(scopeState), l);
 
         foreach (var rec in records)
         {
-#pragma warning disable CA2201 // TO DO: Remove suppression and implement propert Exception deserialization
-            var record = new FakeLogRecord(rec.LogLevel, rec.EventId, ConsumeTState(rec.Attributes), new Exception(rec.Exception), rec.FormattedMessage ?? string.Empty,
+#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+            var exception = rec.Exception is not null ? JsonSerializer.Deserialize<Exception>(rec.Exception, ExceptionConverter.JsonSerializerOptions) : null;
+#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+            var record = new FakeLogRecord(rec.LogLevel, rec.EventId, ConsumeTState(rec.Attributes), exception, rec.FormattedMessage ?? string.Empty,
     l.ToArray(), Category, !_disabledLevels.ContainsKey(rec.LogLevel), rec.Timestamp);
-#pragma warning restore CA2201
             Collector.AddRecord(record);
         }
     }

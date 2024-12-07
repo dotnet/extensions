@@ -4,94 +4,111 @@
 #if NET9_0_OR_GREATER
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Diagnostics;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Shared.Diagnostics;
+using static Microsoft.Extensions.Logging.ExtendedLogger;
 
 namespace Microsoft.AspNetCore.Diagnostics.Logging;
 
 internal sealed class HttpRequestBuffer : ILoggingBuffer
 {
     private readonly IOptionsMonitor<HttpRequestBufferOptions> _options;
-    private readonly ConcurrentDictionary<IBufferedLogger, ConcurrentQueue<HttpRequestBufferedLogRecord>> _buffers;
+    private readonly IOptionsMonitor<GlobalBufferOptions> _globalOptions;
+    private readonly ConcurrentQueue<SerializedLogRecord> _buffer;
     private readonly TimeProvider _timeProvider = TimeProvider.System;
+    private readonly IBufferSink _bufferSink;
+    private readonly object _bufferCapacityLocker = new();
+    private DateTimeOffset _truncateAfter;
     private DateTimeOffset _lastFlushTimestamp;
 
-    public HttpRequestBuffer(IOptionsMonitor<HttpRequestBufferOptions> options)
+    public HttpRequestBuffer(IBufferSink bufferSink,
+        IOptionsMonitor<HttpRequestBufferOptions> options,
+        IOptionsMonitor<GlobalBufferOptions> globalOptions)
     {
         _options = options;
-        _buffers = new ConcurrentDictionary<IBufferedLogger, ConcurrentQueue<HttpRequestBufferedLogRecord>>();
-        _lastFlushTimestamp = _timeProvider.GetUtcNow();
+        _globalOptions = globalOptions;
+        _bufferSink = bufferSink;
+        _buffer = new ConcurrentQueue<SerializedLogRecord>();
+
+        _truncateAfter = _timeProvider.GetUtcNow();
     }
 
-    internal HttpRequestBuffer(IOptionsMonitor<HttpRequestBufferOptions> options, TimeProvider timeProvider)
-        : this(options)
-    {
-        _timeProvider = timeProvider;
-        _lastFlushTimestamp = _timeProvider.GetUtcNow();
-    }
-
-    public bool TryEnqueue(
-        IBufferedLogger logger,
+    [RequiresUnreferencedCode(
+        "Calls Microsoft.Extensions.Logging.SerializedLogRecord.SerializedLogRecord(LogLevel, EventId, DateTimeOffset, IReadOnlyList<KeyValuePair<String, Object>>, Exception, String)")]
+    public bool TryEnqueue<TState>(
         LogLevel logLevel,
         string category,
         EventId eventId,
-        IReadOnlyList<KeyValuePair<string, object?>> joiner,
+        TState attributes,
         Exception? exception,
-        string formatter)
+        Func<TState, Exception?, string> formatter)
     {
         if (!IsEnabled(category, logLevel, eventId))
         {
             return false;
         }
 
-        var record = new HttpRequestBufferedLogRecord(logLevel, eventId, joiner, exception, formatter);
-        var queue = _buffers.GetOrAdd(logger, _ => new ConcurrentQueue<HttpRequestBufferedLogRecord>());
-
-        // probably don't need to limit buffer capacity?
-        // because buffer is disposed when the respective HttpContext is disposed
-        // don't expect it to grow so much to cause a problem?
-        if (queue.Count >= _options.CurrentValue.PerRequestCapacity)
+        switch (attributes)
         {
-            _ = queue.TryDequeue(out HttpRequestBufferedLogRecord? _);
+            case ModernTagJoiner modernTagJoiner:
+                _buffer.Enqueue(new SerializedLogRecord(logLevel, eventId, _timeProvider.GetUtcNow(), modernTagJoiner, exception,
+                    ((Func<ModernTagJoiner, Exception?, string>)(object)formatter)(modernTagJoiner, exception)));
+                break;
+            case LegacyTagJoiner legacyTagJoiner:
+                _buffer.Enqueue(new SerializedLogRecord(logLevel, eventId, _timeProvider.GetUtcNow(), legacyTagJoiner, exception,
+                    ((Func<LegacyTagJoiner, Exception?, string>)(object)formatter)(legacyTagJoiner, exception)));
+                break;
+            default:
+                Throw.ArgumentException(nameof(attributes), $"Unsupported type of the log attributes object detected: {typeof(TState)}");
+                break;
         }
 
-        queue.Enqueue(record);
+        var now = _timeProvider.GetUtcNow();
+        lock (_bufferCapacityLocker)
+        {
+            if (now >= _truncateAfter)
+            {
+                _truncateAfter = now.Add(_options.CurrentValue.PerRequestDuration);
+                TruncateOverlimit();
+            }
+        }
 
         return true;
     }
 
+    [RequiresUnreferencedCode("Calls Microsoft.Extensions.Logging.BufferSink.LogRecords(IEnumerable<SerializedLogRecord>)")]
     public void Flush()
     {
-        foreach (var (logger, queue) in _buffers)
-        {
-            var result = new List<BufferedLogRecord>();
-            while (!queue.IsEmpty)
-            {
-                if (queue.TryDequeue(out HttpRequestBufferedLogRecord? item))
-                {
-                    result.Add(item);
-                }
-            }
-
-            logger.LogRecords(result);
-        }
+        var result = _buffer.ToArray();
+        _buffer.Clear();
 
         _lastFlushTimestamp = _timeProvider.GetUtcNow();
+
+        _bufferSink.LogRecords(result);
     }
 
     public bool IsEnabled(string category, LogLevel logLevel, EventId eventId)
     {
-        if (_timeProvider.GetUtcNow() < _lastFlushTimestamp + _options.CurrentValue.SuspendAfterFlushDuration)
+        if (_timeProvider.GetUtcNow() < _lastFlushTimestamp + _globalOptions.CurrentValue.SuspendAfterFlushDuration)
         {
             return false;
         }
 
-        LoggerFilterRuleSelector.Select<BufferFilterRule>(_options.CurrentValue.Rules, category, logLevel, eventId, out BufferFilterRule? rule);
+        LoggerFilterRuleSelector.Select(_options.CurrentValue.Rules, category, logLevel, eventId, out BufferFilterRule? rule);
 
         return rule is not null;
+    }
+
+    public void TruncateOverlimit()
+    {
+        // Capacity is a soft limit, which might be exceeded, esp. in multi-threaded environments.
+        while (_buffer.Count > _options.CurrentValue.PerRequestCapacity)
+        {
+            _ = _buffer.TryDequeue(out _);
+        }
     }
 }
 #endif

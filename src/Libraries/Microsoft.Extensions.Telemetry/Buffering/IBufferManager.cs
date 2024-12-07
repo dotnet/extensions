@@ -1,21 +1,29 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-
 #if NET9_0_OR_GREATER
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
+using Microsoft.Shared.DiagnosticIds;
 
-namespace Microsoft.Extensions.Logging;
+namespace Microsoft.Extensions.Diagnostics.Buffering;
 
 /// <summary>
-/// Interface for a logging buffer.
+/// Interface for a global buffer manager.
 /// </summary>
-internal interface ILoggingBuffer
+[Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
+public interface IBufferManager
 {
     /// <summary>
-    /// Enqueues a log record in the underlying buffer..
+    /// Flushes the buffer and emits all buffered logs.
     /// </summary>
+    [RequiresUnreferencedCode("Calls Microsoft.Extensions.Logging.ILoggingBuffer.Flush()")]
+    void Flush();
+
+    /// <summary>
+    /// Enqueues a log record in the underlying buffer.
+    /// </summary>
+    /// <param name="bufferSink">Buffer sink.</param>
     /// <param name="logLevel">Log level.</param>
     /// <param name="category">Category.</param>
     /// <param name="eventId">Event ID.</param>
@@ -27,22 +35,12 @@ internal interface ILoggingBuffer
     [RequiresUnreferencedCode(
         "Calls Microsoft.Extensions.Logging.SerializedLogRecord.SerializedLogRecord(LogLevel, EventId, DateTimeOffset, IReadOnlyList<KeyValuePair<String, Object>>, Exception, String)")]
     bool TryEnqueue<TState>(
+        IBufferSink bufferSink,
         LogLevel logLevel,
         string category,
         EventId eventId,
         TState attributes,
         Exception? exception,
         Func<TState, Exception?, string> formatter);
-
-    /// <summary>
-    /// Flushes the buffer.
-    /// </summary>
-    [RequiresUnreferencedCode("Calls Microsoft.Extensions.Logging.BufferSink.LogRecords(IEnumerable<SerializedLogRecord>)")]
-    void Flush();
-
-    /// <summary>
-    /// Removes items exceeding the buffer limit.
-    /// </summary>
-    void TruncateOverlimit();
 }
 #endif

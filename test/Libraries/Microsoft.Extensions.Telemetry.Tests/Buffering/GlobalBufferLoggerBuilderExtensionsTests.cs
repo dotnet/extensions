@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Buffering;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -24,10 +25,10 @@ public class GlobalBufferLoggerBuilderExtensionsTests
         });
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
-        var buffer = serviceProvider.GetService<ILoggingBuffer>();
+        var bufferManager = serviceProvider.GetService<IBufferManager>();
 
-        Assert.NotNull(buffer);
-        Assert.IsAssignableFrom<GlobalBuffer>(buffer);
+        Assert.NotNull(bufferManager);
+        Assert.IsAssignableFrom<GlobalBufferManager>(bufferManager);
     }
 
     [Fact]
@@ -38,7 +39,6 @@ public class GlobalBufferLoggerBuilderExtensionsTests
 
         Assert.Throws<ArgumentNullException>(() => builder!.AddGlobalBuffer(LogLevel.Warning));
         Assert.Throws<ArgumentNullException>(() => builder!.AddGlobalBuffer(configuration!));
-        Assert.Throws<ArgumentNullException>(() => builder!.AddGlobalBufferProvider());
     }
 
     [Fact]

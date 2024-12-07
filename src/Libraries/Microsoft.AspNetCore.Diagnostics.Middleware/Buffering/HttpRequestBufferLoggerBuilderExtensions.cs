@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Diagnostics.Buffering;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.DiagnosticIds;
@@ -30,14 +31,16 @@ public static class HttpRequestBufferLoggerBuilderExtensions
     /// <param name="configuration">The <see cref="IConfiguration" /> to add.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
-    public static ILoggingBuilder AddHttpRequestBuffer(this ILoggingBuilder builder, IConfiguration configuration)
+    public static ILoggingBuilder AddHttpRequestBuffering(this ILoggingBuilder builder, IConfiguration configuration)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configuration);
 
         return builder
             .AddHttpRequestBufferConfiguration(configuration)
-            .AddHttpRequestBufferProvider();
+            .AddHttpRequestBufferManager()
+            .AddGlobalBufferConfiguration(configuration)
+            .AddGlobalBufferManager();
     }
 
     /// <summary>
@@ -49,7 +52,7 @@ public static class HttpRequestBufferLoggerBuilderExtensions
     /// <param name="configure">The buffer configuration options.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
-    public static ILoggingBuilder AddHttpRequestBuffer(this ILoggingBuilder builder, LogLevel? level = null, Action<HttpRequestBufferOptions>? configure = null)
+    public static ILoggingBuilder AddHttpRequestBuffering(this ILoggingBuilder builder, LogLevel? level = null, Action<HttpRequestBufferOptions>? configure = null)
     {
         _ = Throw.IfNull(builder);
 
@@ -57,7 +60,10 @@ public static class HttpRequestBufferLoggerBuilderExtensions
             .Configure<HttpRequestBufferOptions>(options => options.Rules.Add(new BufferFilterRule(null, level, null)))
             .Configure(configure ?? new Action<HttpRequestBufferOptions>(_ => { }));
 
-        return builder.AddHttpRequestBufferProvider();
+        return builder
+            .AddHttpRequestBufferManager()
+            .AddGlobalBuffer(level)
+            .AddGlobalBufferManager();
     }
 
     /// <summary>
@@ -66,16 +72,20 @@ public static class HttpRequestBufferLoggerBuilderExtensions
     /// <param name="builder">The <see cref="ILoggingBuilder" />.</param>
     /// <returns>The <see cref="ILoggingBuilder"/> so that additional calls can be chained.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
-    public static ILoggingBuilder AddHttpRequestBufferProvider(this ILoggingBuilder builder)
+    internal static ILoggingBuilder AddHttpRequestBufferManager(this ILoggingBuilder builder)
     {
         _ = Throw.IfNull(builder);
 
-        builder.Services.TryAddScoped<HttpRequestBuffer>();
-        builder.Services.TryAddScoped<ILoggingBuffer>(sp => sp.GetRequiredService<HttpRequestBuffer>());
         builder.Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-        builder.Services.TryAddActivatedSingleton<ILoggingBufferProvider, HttpRequestBufferProvider>();
 
-        return builder.AddGlobalBufferProvider();
+        builder.Services.TryAddSingleton<ExtendedLoggerFactory>();
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerFactory, ExtendedLoggerFactory>(sp => sp.GetRequiredService<ExtendedLoggerFactory>()));
+
+        builder.Services.TryAddSingleton<HttpRequestBufferManager>();
+        builder.Services.TryAddSingleton<IBufferManager>(static sp => sp.GetRequiredService<HttpRequestBufferManager>());
+        builder.Services.TryAddSingleton<IHttpRequestBufferManager>(static sp => sp.GetRequiredService<HttpRequestBufferManager>());
+
+        return builder;
     }
 
     /// <summary>

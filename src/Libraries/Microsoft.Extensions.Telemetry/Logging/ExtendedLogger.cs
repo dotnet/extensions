@@ -4,8 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 #if NET9_0_OR_GREATER
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Diagnostics.Buffering;
 #endif
 using Microsoft.Shared.Pools;
 
@@ -33,13 +34,36 @@ internal sealed partial class ExtendedLogger : ILogger
     public MessageLogger[] MessageLoggers { get; set; } = Array.Empty<MessageLogger>();
     public ScopeLogger[] ScopeLoggers { get; set; } = Array.Empty<ScopeLogger>();
 
+#if NET9_0_OR_GREATER
+    private readonly IBufferManager? _bufferManager;
+    private readonly IBufferSink? _bufferSink;
+
+    public ExtendedLogger(ExtendedLoggerFactory factory, LoggerInformation[] loggers)
+    {
+        _factory = factory;
+        Loggers = loggers;
+
+        _bufferManager = _factory.Config.BufferManager;
+        if (_bufferManager is not null)
+        {
+            Debug.Assert(loggers.Length > 0, "There should be at least one logger provider.");
+
+            _bufferSink = new BufferSink(factory, loggers[0].Category);
+        }
+    }
+
+#else
     public ExtendedLogger(ExtendedLoggerFactory factory, LoggerInformation[] loggers)
     {
         _factory = factory;
         Loggers = loggers;
     }
+#endif
 
+    [RequiresUnreferencedCode("Calls Microsoft.Extensions.Logging.ExtendedLogger.ModernPath(LogLevel, EventId, LoggerMessageState, Exception, Func<LoggerMessageState, Exception, String>)")]
+#pragma warning disable IL2046 // 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+#pragma warning restore IL2046 // 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.
     {
         if (typeof(TState) == typeof(LoggerMessageState))
         {
@@ -207,6 +231,7 @@ internal sealed partial class ExtendedLogger : ILogger
         }
     }
 
+    [RequiresUnreferencedCode("Calls Microsoft.Extensions.Logging.ILoggingBuffer.TryEnqueue<TState>(LogLevel, String, EventId, TState, Exception, Func<TState, Exception, String>)")]
     private void ModernPath(LogLevel logLevel, EventId eventId, LoggerMessageState msgState, Exception? exception, Func<LoggerMessageState, Exception?, string> formatter)
     {
         var loggers = MessageLoggers;
@@ -263,21 +288,35 @@ internal sealed partial class ExtendedLogger : ILogger
             RecordException(exception, joiner.EnrichmentTagCollector, config);
         }
 
+#if NET9_0_OR_GREATER
+        bool? shouldBuffer = null;
+#endif        
         for (int i = 0; i < loggers.Length; i++)
         {
             ref readonly MessageLogger loggerInfo = ref loggers[i];
             if (loggerInfo.IsNotFilteredOut(logLevel))
             {
 #if NET9_0_OR_GREATER
-                if (loggerInfo.Logger is IBufferedLogger bufferedLogger)
+                if (shouldBuffer is null or true)
                 {
-                    if (config.BufferProvider is not null &&
-                        config.BufferProvider.CurrentBuffer.TryEnqueue(bufferedLogger, logLevel, loggerInfo.Category!, eventId, joiner, exception, joiner.Formatter!(joiner.State, exception)))
+                    if (_bufferManager is not null)
                     {
+                        var result = _bufferManager.TryEnqueue(_bufferSink!, logLevel, loggerInfo.Category!, eventId, joiner, exception, static (s, e) =>
+                        {
+                            var fmt = s.Formatter!;
+                            return fmt(s.State!, e);
+                        });
+                        shouldBuffer = result;
+
                         // The record was buffered, so we skip logging it for now.
-                        // When a caller needs to flush the buffer and calls ILoggerBuffer.Flush(),
-                        // the buffer will internally call IBufferedLogger.LogRecords to emit log records.
+                        // When a caller needs to flush the buffer and calls IBufferManager.Flush(),
+                        // the buffer manager will internally call IBufferedLogger.LogRecords to emit log records.
                         continue;
+
+                    }
+                    else
+                    {
+                        shouldBuffer = false;
                     }
                 }
 #endif
@@ -311,6 +350,7 @@ internal sealed partial class ExtendedLogger : ILogger
         HandleExceptions(exceptions);
     }
 
+    [RequiresUnreferencedCode("Calls Microsoft.Extensions.Logging.ILoggingBuffer.TryEnqueue<TState>(LogLevel, String, EventId, TState, Exception, Func<TState, Exception, String>)")]
     private void LegacyPath<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
         var loggers = MessageLoggers;
@@ -360,24 +400,35 @@ internal sealed partial class ExtendedLogger : ILogger
         {
             RecordException(exception, joiner.EnrichmentTagCollector, config);
         }
-
+#if NET9_0_OR_GREATER
+        bool? shouldBuffer = null;
+#endif
         for (int i = 0; i < loggers.Length; i++)
         {
             ref readonly MessageLogger loggerInfo = ref loggers[i];
             if (loggerInfo.IsNotFilteredOut(logLevel))
             {
 #if NET9_0_OR_GREATER
-                if (loggerInfo.Logger is IBufferedLogger bufferedLogger)
+                if (shouldBuffer is null or true)
                 {
-                    if (config.BufferProvider is not null &&
-                        config.BufferProvider.CurrentBuffer.TryEnqueue(
-                            bufferedLogger, logLevel, loggerInfo.Category!, eventId, joiner, exception,
-                            ((Func<TState, Exception?, string>)joiner.Formatter)((TState)joiner.State!, exception)))
+                    if (_bufferManager is not null)
                     {
+                        var result = _bufferManager.TryEnqueue(_bufferSink!, logLevel, loggerInfo.Category!, eventId, joiner, exception, static (s, e) =>
+                        {
+                            var fmt = (Func<TState, Exception?, string>)s.Formatter!;
+                            return fmt((TState)s.State!, e);
+                        });
+                        shouldBuffer = result;
+
                         // The record was buffered, so we skip logging it for now.
-                        // When a caller needs to flush the buffer and calls ILoggerBuffer.Flush(),
-                        // the buffer will internally call IBufferedLogger.LogRecords to emit log records.
+                        // When a caller needs to flush the buffer and calls IBufferManager.Flush(),
+                        // the buffer manager will internally call IBufferedLogger.LogRecords to emit log records.
                         continue;
+
+                    }
+                    else
+                    {
+                        shouldBuffer = false;
                     }
                 }
 #endif

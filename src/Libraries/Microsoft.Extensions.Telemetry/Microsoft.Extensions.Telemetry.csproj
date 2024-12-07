@@ -16,6 +16,7 @@
     <InjectSharedRentedSpan>true</InjectSharedRentedSpan>
     <InjectSharedMemoization>true</InjectSharedMemoization>
     <InjectGetOrAddOnLegacy>true</InjectGetOrAddOnLegacy>
+    <InjectJsonExceptionConverter>true</InjectJsonExceptionConverter>
     <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
     <UseLoggingGenerator>true</UseLoggingGenerator>
   </PropertyGroup>

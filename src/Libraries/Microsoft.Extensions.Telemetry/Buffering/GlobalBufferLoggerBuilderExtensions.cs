@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Diagnostics.Buffering;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -36,7 +37,7 @@ public static class GlobalBufferLoggerBuilderExtensions
 
         return builder
             .AddGlobalBufferConfiguration(configuration)
-            .AddGlobalBufferProvider();
+            .AddGlobalBufferManager();
     }
 
     /// <summary>
@@ -56,26 +57,23 @@ public static class GlobalBufferLoggerBuilderExtensions
             .Configure<GlobalBufferOptions>(options => options.Rules.Add(new BufferFilterRule(null, level, null)))
             .Configure(configure ?? new Action<GlobalBufferOptions>(_ => { }));
 
-        return builder.AddGlobalBufferProvider();
+        return builder.AddGlobalBufferManager();
     }
 
     /// <summary>
-    /// Adds global logging buffer provider.
+    /// Adds global logging buffer manager.
     /// </summary>
     /// <param name="builder">The <see cref="ILoggingBuilder" />.</param>
     /// <returns>The <see cref="ILoggingBuilder"/> so that additional calls can be chained.</returns>
-    public static ILoggingBuilder AddGlobalBufferProvider(this ILoggingBuilder builder)
+    internal static ILoggingBuilder AddGlobalBufferManager(this ILoggingBuilder builder)
     {
         _ = Throw.IfNull(builder);
 
-        builder.Services.TryAddSingleton<GlobalBufferProvider>();
-        builder.Services.TryAddSingleton<ILoggingBufferProvider>(static sp => sp.GetRequiredService<GlobalBufferProvider>());
+        builder.Services.TryAddSingleton<GlobalBufferManager>();
+        builder.Services.TryAddSingleton<IBufferManager>(static sp => sp.GetRequiredService<GlobalBufferManager>());
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerFactory, ExtendedLoggerFactory>());
-
-        builder.Services.TryAddSingleton<GlobalBuffer>();
-        builder.Services.TryAddSingleton<ILoggingBuffer>(static sp => sp.GetRequiredService<GlobalBuffer>());
-        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, GlobalBuffer>(static sp => sp.GetRequiredService<GlobalBuffer>()));
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, GlobalBufferManager>(static sp => sp.GetRequiredService<GlobalBufferManager>()));
 
         return builder;
     }

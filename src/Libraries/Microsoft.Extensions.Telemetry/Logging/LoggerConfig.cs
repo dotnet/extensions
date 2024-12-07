@@ -5,6 +5,9 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Redaction;
+#if NET9_0_OR_GREATER
+using Microsoft.Extensions.Diagnostics.Buffering;
+#endif
 using Microsoft.Extensions.Diagnostics.Enrichment;
 
 namespace Microsoft.Extensions.Logging;
@@ -22,7 +25,7 @@ internal sealed class LoggerConfig
         Func<DataClassificationSet, Redactor> getRedactor,
 #if NET9_0_OR_GREATER
         bool addRedactionDiscriminator,
-        ILoggingBufferProvider? bufferProvider)
+        IBufferManager? bufferManager)
 #else
         bool addRedactionDiscriminator)
 #endif
@@ -37,7 +40,7 @@ internal sealed class LoggerConfig
         GetRedactor = getRedactor;
         AddRedactionDiscriminator = addRedactionDiscriminator;
 #if NET9_0_OR_GREATER
-        BufferProvider = bufferProvider;
+        BufferManager = bufferManager;
 #endif
     }
 
@@ -50,6 +53,6 @@ internal sealed class LoggerConfig
     public Func<DataClassificationSet, Redactor> GetRedactor { get; }
     public bool AddRedactionDiscriminator { get; }
 #if NET9_0_OR_GREATER
-    public ILoggingBufferProvider? BufferProvider { get; }
+    public IBufferManager? BufferManager { get; }
 #endif
 }

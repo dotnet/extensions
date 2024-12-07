@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Buffering;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -15,33 +16,19 @@ namespace Microsoft.AspNetCore.Diagnostics.Logging.Test;
 public class HttpRequestBufferLoggerBuilderExtensionsTests
 {
     [Fact]
-    public void AddHttpRequestBuffer_RegistersInDI()
+    public void AddHttpRequestBuffering_RegistersInDI()
     {
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging(builder =>
         {
-            builder.AddHttpRequestBuffer(LogLevel.Warning);
+            builder.AddHttpRequestBuffering(LogLevel.Warning);
         });
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
-        var buffer = serviceProvider.GetService<ILoggingBuffer>();
+        var buffer = serviceProvider.GetService<IHttpRequestBufferManager>();
 
         Assert.NotNull(buffer);
-        Assert.IsAssignableFrom<HttpRequestBuffer>(buffer);
-    }
-
-    [Fact]
-    public void AddHttpRequestBufferProvider_RegistersInDI()
-    {
-        var serviceCollection = new ServiceCollection();
-        serviceCollection.AddLogging(builder =>
-        {
-            builder.AddHttpRequestBufferProvider();
-        });
-        var serviceProvider = serviceCollection.BuildServiceProvider();
-        var bufferProvider = serviceProvider.GetService<ILoggingBufferProvider>();
-        Assert.NotNull(bufferProvider);
-        Assert.IsAssignableFrom<HttpRequestBufferProvider>(bufferProvider);
+        Assert.IsAssignableFrom<HttpRequestBufferManager>(buffer);
     }
 
     [Fact]
@@ -50,9 +37,8 @@ public class HttpRequestBufferLoggerBuilderExtensionsTests
         var builder = null as ILoggingBuilder;
         var configuration = null as IConfiguration;
 
-        Assert.Throws<ArgumentNullException>(() => builder!.AddHttpRequestBuffer(LogLevel.Warning));
-        Assert.Throws<ArgumentNullException>(() => builder!.AddHttpRequestBuffer(configuration!));
-        Assert.Throws<ArgumentNullException>(() => builder!.AddHttpRequestBufferProvider());
+        Assert.Throws<ArgumentNullException>(() => builder!.AddHttpRequestBuffering(LogLevel.Warning));
+        Assert.Throws<ArgumentNullException>(() => builder!.AddHttpRequestBuffering(configuration!));
     }
 
     [Fact]

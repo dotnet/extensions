@@ -25,14 +25,14 @@ public class GlobalBufferOptions
     public TimeSpan SuspendAfterFlushDuration { get; set; } = TimeSpan.FromSeconds(30);
 
     /// <summary>
-    /// Gets or sets the duration to keep logs in the buffer.
+    /// Gets or sets the duration to check and remove the buffered items exceeding the <see cref="Capacity"/>.
     /// </summary>
     public TimeSpan Duration { get; set; } = TimeSpan.FromSeconds(30);
 
     /// <summary>
     /// Gets or sets the size of the buffer.
     /// </summary>
-    public int Capacity { get; set; } = 1_000_000;
+    public int Capacity { get; set; } = 10_000;
 
 #pragma warning disable CA1002 // Do not expose generic lists - List is necessary to be able to call .AddRange()
 #pragma warning disable CA2227 // Collection properties should be read only - setter is necessary for options pattern
