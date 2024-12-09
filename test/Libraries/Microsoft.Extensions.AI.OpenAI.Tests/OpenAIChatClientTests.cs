@@ -292,6 +292,60 @@ public class OpenAIChatClientTests
     }
 
     [Fact]
+    public async Task NonStronglyTypedOptions_AllSent()
+    {
+        const string Input = """
+            {"messages":[{"role":"user","content":"hello"}],
+            "model":"gpt-4o-mini",
+            "store":true,
+            "metadata":{"something":"else"},
+            "logit_bias":{"12":34},
+            "logprobs":true,
+            "top_logprobs":42,
+            "parallel_tool_calls":false,
+            "user":"12345"}
+            """;
+
+        const string Output = """
+            {
+              "id": "chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI",
+              "object": "chat.completion",
+              "model": "gpt-4o-mini-2024-07-18",
+              "choices": [
+                {
+                  "message": {
+                    "role": "assistant",
+                    "content": "Hello! How can I assist you today?"
+                  },
+                  "finish_reason": "stop"
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
+
+        Assert.NotNull(await client.CompleteAsync("hello", new()
+        {
+            AdditionalProperties = new()
+            {
+                ["StoredOutputEnabled"] = true,
+                ["Metadata"] = new Dictionary<string, string>
+                {
+                    ["something"] = "else",
+                },
+                ["LogitBiases"] = new Dictionary<int, int> { { 12, 34 } },
+                ["IncludeLogProbabilities"] = true,
+                ["TopLogProbabilityCount"] = 42,
+                ["AllowParallelToolCalls"] = false,
+                ["EndUserId"] = "12345",
+            },
+        }));
+    }
+
+    [Fact]
     public async Task MultipleMessages_NonStreaming()
     {
         const string Input = """
