@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Microsoft.Extensions.Logging;
+#if NET9_0_OR_GREATER
+using Microsoft.Extensions.Logging.Abstractions;
+#endif
 using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Logging;
@@ -266,6 +268,20 @@ internal sealed partial class ExtendedLogger : ILogger
             ref readonly MessageLogger loggerInfo = ref loggers[i];
             if (loggerInfo.IsNotFilteredOut(logLevel))
             {
+#if NET9_0_OR_GREATER
+                if (loggerInfo.Logger is IBufferedLogger bufferedLogger)
+                {
+                    if (config.BufferProvider is not null &&
+                        config.BufferProvider.CurrentBuffer.TryEnqueue(bufferedLogger, logLevel, loggerInfo.Category!, eventId, joiner, exception, joiner.Formatter!(joiner.State, exception)))
+                    {
+                        // The record was buffered, so we skip logging it for now.
+                        // When a caller needs to flush the buffer and calls ILoggerBuffer.Flush(),
+                        // the buffer will internally call IBufferedLogger.LogRecords to emit log records.
+                        continue;
+                    }
+                }
+#endif
+
                 try
                 {
                     loggerInfo.LoggerLog(logLevel, eventId, joiner, exception, static (s, e) =>
@@ -350,6 +366,22 @@ internal sealed partial class ExtendedLogger : ILogger
             ref readonly MessageLogger loggerInfo = ref loggers[i];
             if (loggerInfo.IsNotFilteredOut(logLevel))
             {
+#if NET9_0_OR_GREATER
+                if (loggerInfo.Logger is IBufferedLogger bufferedLogger)
+                {
+                    if (config.BufferProvider is not null &&
+                        config.BufferProvider.CurrentBuffer.TryEnqueue(
+                            bufferedLogger, logLevel, loggerInfo.Category!, eventId, joiner, exception,
+                            ((Func<TState, Exception?, string>)joiner.Formatter)((TState)joiner.State!, exception)))
+                    {
+                        // The record was buffered, so we skip logging it for now.
+                        // When a caller needs to flush the buffer and calls ILoggerBuffer.Flush(),
+                        // the buffer will internally call IBufferedLogger.LogRecords to emit log records.
+                        continue;
+                    }
+                }
+#endif
+
                 try
                 {
                     loggerInfo.Logger.Log(logLevel, eventId, joiner, exception, static (s, e) =>
