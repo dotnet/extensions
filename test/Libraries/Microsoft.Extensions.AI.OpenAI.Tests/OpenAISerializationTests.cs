@@ -112,10 +112,15 @@ public static partial class OpenAISerializationTests
                 "frequency_penalty": 0.75,
                 "presence_penalty": 0.5,
                 "seed":42,
-                "stop": [
-                    "great"
-                ],
-                "temperature": 0.25
+                "stop": [ "great" ],
+                "temperature": 0.25,
+                "user": "user",
+                "logprobs": true,
+                "logit_bias": { "42" : 0 },
+                "parallel_tool_calls": true,
+                "top_logprobs": 42,
+                "metadata": { "key": "value" },
+                "store": true
             }
             """;
 
@@ -133,6 +138,14 @@ public static partial class OpenAISerializationTests
         Assert.Equal(0.5f, request.Options.PresencePenalty);
         Assert.Equal(42, request.Options.Seed);
         Assert.Equal(["great"], request.Options.StopSequences);
+        Assert.NotNull(request.Options.AdditionalProperties);
+        Assert.Equal("user", request.Options.AdditionalProperties["EndUserId"]);
+        Assert.True((bool)request.Options.AdditionalProperties["IncludeLogProbabilities"]!);
+        Assert.Single((IDictionary<int, int>)request.Options.AdditionalProperties["LogitBiases"]!);
+        Assert.True((bool)request.Options.AdditionalProperties["AllowParallelToolCalls"]!);
+        Assert.Equal(42, request.Options.AdditionalProperties["TopLogProbabilityCount"]!);
+        Assert.Single((IDictionary<string, string>)request.Options.AdditionalProperties["Metadata"]!);
+        Assert.True((bool)request.Options.AdditionalProperties["StoredOutputEnabled"]!);
 
         Assert.Collection(request.Messages,
             msg =>
@@ -285,6 +298,7 @@ public static partial class OpenAISerializationTests
                         "function": {
                             "description": "Gets the age of the specified person.",
                             "name": "GetPersonAge",
+                            "strict": true,
                             "parameters": {
                                 "type": "object",
                                 "required": [
@@ -325,7 +339,7 @@ public static partial class OpenAISerializationTests
         AIFunction function = Assert.IsAssignableFrom<AIFunction>(Assert.Single(request.Options.Tools));
         Assert.Equal("Gets the age of the specified person.", function.Metadata.Description);
         Assert.Equal("GetPersonAge", function.Metadata.Name);
-        Assert.Empty(function.Metadata.AdditionalProperties);
+        Assert.Equal("Strict", Assert.Single(function.Metadata.AdditionalProperties).Key);
         Assert.Equal("Return parameter", function.Metadata.ReturnParameter.Description);
         Assert.Equal("{}", Assert.IsType<JsonElement>(function.Metadata.ReturnParameter.Schema).GetRawText());
 
@@ -341,6 +355,77 @@ public static partial class OpenAISerializationTests
         Dictionary<string, object?> functionArgs = new() { ["personName"] = "John" };
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => function.InvokeAsync(functionArgs));
         Assert.Contains("does not support being invoked.", ex.Message);
+    }
+
+    [Fact]
+    public static async Task RequestDeserialization_ToolChatMessage()
+    {
+        const string RequestJson = """
+            {
+                "messages": [
+                    {
+                        "role": "tool",
+                        "tool_call_id": "12345",
+                        "content": "42"
+                    },
+                    {
+                        "role": "assistant",
+                        "tool_calls": [
+                            {
+                                "id": "12345",
+                                "type": "function",
+                                "function": {
+                                    "name": "SayHello",
+                                    "arguments": "null"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "model": "gpt-4o-mini"
+            }
+            """;
+
+        using MemoryStream stream = new(Encoding.UTF8.GetBytes(RequestJson));
+        OpenAIChatCompletionRequest request = await OpenAISerializationHelpers.DeserializeChatCompletionRequestAsync(stream);
+
+        Assert.NotNull(request);
+        Assert.False(request.Stream);
+        Assert.Equal("gpt-4o-mini", request.ModelId);
+
+        Assert.NotNull(request.Options);
+        Assert.Equal("gpt-4o-mini", request.Options.ModelId);
+        Assert.Null(request.Options.Temperature);
+        Assert.Null(request.Options.FrequencyPenalty);
+        Assert.Null(request.Options.PresencePenalty);
+        Assert.Null(request.Options.Seed);
+        Assert.Null(request.Options.StopSequences);
+
+        Assert.Collection(request.Messages,
+            msg =>
+            {
+                Assert.Equal(ChatRole.Tool, msg.Role);
+                Assert.Null(msg.RawRepresentation);
+                Assert.Null(msg.AdditionalProperties);
+
+                FunctionResultContent frc = Assert.IsType<FunctionResultContent>(Assert.Single(msg.Contents));
+                Assert.Equal(42, Assert.IsType<JsonElement>(frc.Result).GetInt32());
+                Assert.Null(frc.AdditionalProperties);
+                Assert.Null(frc.RawRepresentation);
+                Assert.Null(frc.AdditionalProperties);
+            },
+            msg =>
+            {
+                Assert.Equal(ChatRole.Assistant, msg.Role);
+                Assert.Null(msg.RawRepresentation);
+                Assert.Null(msg.AdditionalProperties);
+
+                FunctionCallContent text = Assert.IsType<FunctionCallContent>(Assert.Single(msg.Contents));
+                Assert.Equal("12345", text.CallId);
+                Assert.Null(text.AdditionalProperties);
+                Assert.IsType<OpenAI.Chat.ChatToolCall>(text.RawRepresentation);
+                Assert.Null(text.AdditionalProperties);
+            });
     }
 
     [Fact]
