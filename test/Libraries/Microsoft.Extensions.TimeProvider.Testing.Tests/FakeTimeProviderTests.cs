@@ -294,6 +294,7 @@ public class FakeTimeProviderTests
         await Assert.ThrowsAsync<TaskCanceledException>(() => timeProvider.Delay(TimeSpan.FromTicks(1), cts.Token));
     }
 
+#pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
     [Fact]
     public async Task WaitAsync_NegativeTimeout_Throws()
     {
@@ -308,7 +309,6 @@ public class FakeTimeProviderTests
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => source.Task.WaitAsync(TimeSpan.FromMilliseconds(-2), timeProvider, CancellationToken.None));
     }
 
-#pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
     [Fact]
     public async Task WaitAsync_ValidTimeout_CompletesSuccessfully()
     {
