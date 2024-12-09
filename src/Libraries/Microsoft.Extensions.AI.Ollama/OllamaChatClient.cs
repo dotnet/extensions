@@ -111,15 +111,6 @@ public sealed class OllamaChatClient : IChatClient
     {
         _ = Throw.IfNull(chatMessages);
 
-        if (options?.Tools is { Count: > 0 })
-        {
-            // We can actually make it work by using the /generate endpoint like the eShopSupport sample does,
-            // but it's complicated. Really it should be Ollama's job to support this.
-            throw new NotSupportedException(
-                "Currently, Ollama does not support function calls in streaming mode. " +
-                "See Ollama docs at https://github.com/ollama/ollama/blob/main/docs/api.md#parameters-1 to see whether support has since been added.");
-        }
-
         using HttpRequestMessage request = new(HttpMethod.Post, _apiChatEndpoint)
         {
             Content = JsonContent.Create(ToOllamaChatRequest(chatMessages, options, stream: true), JsonContext.Default.OllamaChatRequest)
@@ -158,7 +149,22 @@ public sealed class OllamaChatClient : IChatClient
 
             if (chunk.Message is { } message)
             {
-                update.Contents.Add(new TextContent(message.Content));
+                if (message.ToolCalls is { Length: > 0 })
+                {
+                    foreach (var toolCall in message.ToolCalls)
+                    {
+                        if (toolCall.Function is { } function)
+                        {
+                            update.Contents.Add(ToFunctionCallContent(function));
+                        }
+                    }
+                }
+
+                // Equivalent rule to the nonstreaming case
+                if (message.Content?.Length > 0 || update.Contents.Count == 0)
+                {
+                    update.Contents.Insert(0, new TextContent(message.Content));
+                }
             }
 
             if (ParseOllamaChatResponseUsage(chunk) is { } usage)
@@ -231,8 +237,7 @@ public sealed class OllamaChatClient : IChatClient
             {
                 if (toolCall.Function is { } function)
                 {
-                    var id = Guid.NewGuid().ToString().Substring(0, 8);
-                    contents.Add(new FunctionCallContent(id, function.Name, function.Arguments));
+                    contents.Add(ToFunctionCallContent(function));
                 }
             }
         }
@@ -245,6 +250,12 @@ public sealed class OllamaChatClient : IChatClient
         }
 
         return new ChatMessage(new(message.Role), contents);
+    }
+
+    private static FunctionCallContent ToFunctionCallContent(OllamaFunctionToolCall function)
+    {
+        var id = Guid.NewGuid().ToString().Substring(0, 8);
+        return new FunctionCallContent(id, function.Name, function.Arguments);
     }
 
     private OllamaChatRequest ToOllamaChatRequest(IList<ChatMessage> chatMessages, ChatOptions? options, bool stream)
