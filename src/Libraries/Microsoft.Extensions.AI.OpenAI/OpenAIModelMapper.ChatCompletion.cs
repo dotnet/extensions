@@ -188,7 +188,7 @@ internal static partial class OpenAIModelMappers
 
             if (options.Metadata is IDictionary<string, string> { Count: > 0 } metadata)
             {
-                (result.AdditionalProperties ??= [])[nameof(options.Metadata)] = metadata;
+                (result.AdditionalProperties ??= [])[nameof(options.Metadata)] = new Dictionary<string, string>(metadata);
             }
 
             if (options.StoredOutputEnabled is bool storedOutputEnabled)
