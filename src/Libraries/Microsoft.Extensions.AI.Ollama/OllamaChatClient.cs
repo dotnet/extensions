@@ -255,7 +255,11 @@ public sealed class OllamaChatClient : IChatClient
 
     private static FunctionCallContent ToFunctionCallContent(OllamaFunctionToolCall function)
     {
+#if NET
+        var id = System.Security.Cryptography.RandomNumberGenerator.GetHexString(8);
+#else
         var id = Guid.NewGuid().ToString().Substring(0, 8);
+#endif
         return new FunctionCallContent(id, function.Name, function.Arguments);
     }
 
