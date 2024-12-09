@@ -758,6 +758,33 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.Equal(expectedPerson.Job, response.Result.Job);
     }
 
+    [ConditionalFact]
+    public virtual async Task CompleteAsync_StructuredOutput_Native()
+    {
+        SkipIfNotEnabled();
+
+        var capturedCalls = new List<IList<ChatMessage>>();
+        var captureOutputChatClient = _chatClient.AsBuilder()
+            .Use((messages, options, nextAsync, cancellationToken) =>
+            {
+                capturedCalls.Add([.. messages]);
+                return nextAsync(messages, options, cancellationToken);
+            })
+            .Build();
+
+        var response = await captureOutputChatClient.CompleteAsync<Person>("""
+            Supply a JSON object to represent Jimbo Smith from Cardiff.
+            """, useNativeJsonSchema: true);
+
+        Assert.Equal("Jimbo Smith", response.Result.FullName);
+        Assert.Contains("Cardiff", response.Result.HomeTown);
+
+        // Verify it used *native* structured output, i.e., no prompt augmentation
+        Assert.All(
+            Assert.Single(capturedCalls),
+            message => Assert.DoesNotContain("schema", message.Text));
+    }
+
     private class Person
     {
 #pragma warning disable S1144, S3459 // Unassigned members should be removed

@@ -23,6 +23,7 @@ namespace Microsoft.Extensions.AI;
 public sealed class OllamaChatClient : IChatClient
 {
     private static readonly JsonElement _defaultParameterSchema = JsonDocument.Parse("{}").RootElement;
+    private static readonly JsonElement _defaultJsonSchema = JsonDocument.Parse("\"json\"").RootElement;
 
     /// <summary>The api/chat endpoint URI.</summary>
     private readonly Uri _apiChatEndpoint;
@@ -258,11 +259,30 @@ public sealed class OllamaChatClient : IChatClient
         return new FunctionCallContent(id, function.Name, function.Arguments);
     }
 
+    private static JsonElement? ToOllamaChatResponseFormat(ChatResponseFormat? format)
+    {
+        if (format is ChatResponseFormatJson jsonFormat)
+        {
+            if (!string.IsNullOrEmpty(jsonFormat.Schema))
+            {
+                return JsonDocument.Parse(jsonFormat.Schema!).RootElement;
+            }
+            else
+            {
+                return _defaultJsonSchema;
+            }
+        }
+        else
+        {
+            return null;
+        }
+    }
+
     private OllamaChatRequest ToOllamaChatRequest(IList<ChatMessage> chatMessages, ChatOptions? options, bool stream)
     {
         OllamaChatRequest request = new()
         {
-            Format = options?.ResponseFormat is ChatResponseFormatJson ? "json" : null,
+            Format = ToOllamaChatResponseFormat(options?.ResponseFormat),
             Messages = chatMessages.SelectMany(ToOllamaChatRequestMessages).ToArray(),
             Model = options?.ModelId ?? Metadata.ModelId ?? string.Empty,
             Stream = stream,
