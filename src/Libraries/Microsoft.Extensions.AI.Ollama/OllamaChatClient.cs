@@ -263,14 +263,7 @@ public sealed class OllamaChatClient : IChatClient
     {
         if (format is ChatResponseFormatJson jsonFormat)
         {
-            if (!string.IsNullOrEmpty(jsonFormat.Schema))
-            {
-                return JsonDocument.Parse(jsonFormat.Schema!).RootElement;
-            }
-            else
-            {
-                return _defaultJsonSchema;
-            }
+            return jsonFormat.Schema ?? _defaultJsonSchema;
         }
         else
         {
