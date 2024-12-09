@@ -23,6 +23,7 @@ namespace Microsoft.Extensions.AI;
 public sealed class OllamaChatClient : IChatClient
 {
     private static readonly JsonElement _defaultParameterSchema = JsonDocument.Parse("{}").RootElement;
+    private static readonly JsonElement _schemalessJsonResponseFormatValue = JsonDocument.Parse("\"json\"").RootElement;
 
     /// <summary>The api/chat endpoint URI.</summary>
     private readonly Uri _apiChatEndpoint;
@@ -111,15 +112,6 @@ public sealed class OllamaChatClient : IChatClient
     {
         _ = Throw.IfNull(chatMessages);
 
-        if (options?.Tools is { Count: > 0 })
-        {
-            // We can actually make it work by using the /generate endpoint like the eShopSupport sample does,
-            // but it's complicated. Really it should be Ollama's job to support this.
-            throw new NotSupportedException(
-                "Currently, Ollama does not support function calls in streaming mode. " +
-                "See Ollama docs at https://github.com/ollama/ollama/blob/main/docs/api.md#parameters-1 to see whether support has since been added.");
-        }
-
         using HttpRequestMessage request = new(HttpMethod.Post, _apiChatEndpoint)
         {
             Content = JsonContent.Create(ToOllamaChatRequest(chatMessages, options, stream: true), JsonContext.Default.OllamaChatRequest)
@@ -158,7 +150,22 @@ public sealed class OllamaChatClient : IChatClient
 
             if (chunk.Message is { } message)
             {
-                update.Contents.Add(new TextContent(message.Content));
+                if (message.ToolCalls is { Length: > 0 })
+                {
+                    foreach (var toolCall in message.ToolCalls)
+                    {
+                        if (toolCall.Function is { } function)
+                        {
+                            update.Contents.Add(ToFunctionCallContent(function));
+                        }
+                    }
+                }
+
+                // Equivalent rule to the nonstreaming case
+                if (message.Content?.Length > 0 || update.Contents.Count == 0)
+                {
+                    update.Contents.Insert(0, new TextContent(message.Content));
+                }
             }
 
             if (ParseOllamaChatResponseUsage(chunk) is { } usage)
@@ -231,8 +238,7 @@ public sealed class OllamaChatClient : IChatClient
             {
                 if (toolCall.Function is { } function)
                 {
-                    var id = Guid.NewGuid().ToString().Substring(0, 8);
-                    contents.Add(new FunctionCallContent(id, function.Name, function.Arguments));
+                    contents.Add(ToFunctionCallContent(function));
                 }
             }
         }
@@ -247,11 +253,33 @@ public sealed class OllamaChatClient : IChatClient
         return new ChatMessage(new(message.Role), contents);
     }
 
+    private static FunctionCallContent ToFunctionCallContent(OllamaFunctionToolCall function)
+    {
+#if NET
+        var id = System.Security.Cryptography.RandomNumberGenerator.GetHexString(8);
+#else
+        var id = Guid.NewGuid().ToString().Substring(0, 8);
+#endif
+        return new FunctionCallContent(id, function.Name, function.Arguments);
+    }
+
+    private static JsonElement? ToOllamaChatResponseFormat(ChatResponseFormat? format)
+    {
+        if (format is ChatResponseFormatJson jsonFormat)
+        {
+            return jsonFormat.Schema ?? _schemalessJsonResponseFormatValue;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
     private OllamaChatRequest ToOllamaChatRequest(IList<ChatMessage> chatMessages, ChatOptions? options, bool stream)
     {
         OllamaChatRequest request = new()
         {
-            Format = options?.ResponseFormat is ChatResponseFormatJson ? "json" : null,
+            Format = ToOllamaChatResponseFormat(options?.ResponseFormat),
             Messages = chatMessages.SelectMany(ToOllamaChatRequestMessages).ToArray(),
             Model = options?.ModelId ?? Metadata.ModelId ?? string.Empty,
             Stream = stream,

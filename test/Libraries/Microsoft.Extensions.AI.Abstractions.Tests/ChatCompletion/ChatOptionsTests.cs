@@ -155,8 +155,7 @@ public class ChatOptionsTests
         Assert.Equal(0.4f, deserialized.FrequencyPenalty);
         Assert.Equal(0.5f, deserialized.PresencePenalty);
         Assert.Equal(12345, deserialized.Seed);
-        Assert.Equal(ChatResponseFormat.Json, deserialized.ResponseFormat);
-        Assert.NotSame(ChatResponseFormat.Json, deserialized.ResponseFormat);
+        Assert.IsType<ChatResponseFormatJson>(deserialized.ResponseFormat);
         Assert.Equal("modelId", deserialized.ModelId);
         Assert.NotSame(stopSequences, deserialized.StopSequences);
         Assert.Equal(stopSequences, deserialized.StopSequences);

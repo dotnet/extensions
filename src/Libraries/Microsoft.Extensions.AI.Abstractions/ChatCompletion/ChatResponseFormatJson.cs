@@ -1,9 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
 
@@ -19,7 +18,7 @@ public sealed class ChatResponseFormatJson : ChatResponseFormat
     /// <param name="schemaDescription">A description of the schema.</param>
     [JsonConstructor]
     public ChatResponseFormatJson(
-        [StringSyntax(StringSyntaxAttribute.Json)] string? schema, string? schemaName = null, string? schemaDescription = null)
+        JsonElement? schema, string? schemaName = null, string? schemaDescription = null)
     {
         if (schema is null && (schemaName is not null || schemaDescription is not null))
         {
@@ -34,7 +33,7 @@ public sealed class ChatResponseFormatJson : ChatResponseFormat
     }
 
     /// <summary>Gets the JSON schema associated with the response, or null if there is none.</summary>
-    public string? Schema { get; }
+    public JsonElement? Schema { get; }
 
     /// <summary>Gets a name for the schema.</summary>
     public string? SchemaName { get; }
@@ -42,19 +41,7 @@ public sealed class ChatResponseFormatJson : ChatResponseFormat
     /// <summary>Gets a description of the schema.</summary>
     public string? SchemaDescription { get; }
 
-    /// <inheritdoc/>
-    public override bool Equals(object? obj) =>
-        obj is ChatResponseFormatJson other &&
-        Schema == other.Schema &&
-        SchemaName == other.SchemaName &&
-        SchemaDescription == other.SchemaDescription;
-
-    /// <inheritdoc/>
-    public override int GetHashCode() =>
-        Schema?.GetHashCode(StringComparison.Ordinal) ??
-        typeof(ChatResponseFormatJson).GetHashCode();
-
     /// <summary>Gets a string representing this instance to display in the debugger.</summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private string DebuggerDisplay => Schema ?? "JSON";
+    private string DebuggerDisplay => Schema?.ToString() ?? "JSON";
 }
