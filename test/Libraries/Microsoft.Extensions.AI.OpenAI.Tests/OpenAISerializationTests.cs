@@ -364,11 +364,6 @@ public static partial class OpenAISerializationTests
             {
                 "messages": [
                     {
-                        "role": "tool",
-                        "tool_call_id": "12345",
-                        "content": "42"
-                    },
-                    {
                         "role": "assistant",
                         "tool_calls": [
                             {
@@ -380,6 +375,11 @@ public static partial class OpenAISerializationTests
                                 }
                             }
                         ]
+                    },
+                    {
+                        "role": "tool",
+                        "tool_call_id": "12345",
+                        "content": "42"
                     }
                 ],
                 "model": "gpt-4o-mini"
@@ -404,18 +404,6 @@ public static partial class OpenAISerializationTests
         Assert.Collection(request.Messages,
             msg =>
             {
-                Assert.Equal(ChatRole.Tool, msg.Role);
-                Assert.Null(msg.RawRepresentation);
-                Assert.Null(msg.AdditionalProperties);
-
-                FunctionResultContent frc = Assert.IsType<FunctionResultContent>(Assert.Single(msg.Contents));
-                Assert.Equal(42, Assert.IsType<JsonElement>(frc.Result).GetInt32());
-                Assert.Null(frc.AdditionalProperties);
-                Assert.Null(frc.RawRepresentation);
-                Assert.Null(frc.AdditionalProperties);
-            },
-            msg =>
-            {
                 Assert.Equal(ChatRole.Assistant, msg.Role);
                 Assert.Null(msg.RawRepresentation);
                 Assert.Null(msg.AdditionalProperties);
@@ -425,6 +413,20 @@ public static partial class OpenAISerializationTests
                 Assert.Null(text.AdditionalProperties);
                 Assert.IsType<OpenAI.Chat.ChatToolCall>(text.RawRepresentation);
                 Assert.Null(text.AdditionalProperties);
+            },
+            msg =>
+            {
+                Assert.Equal(ChatRole.Tool, msg.Role);
+                Assert.Null(msg.RawRepresentation);
+                Assert.Null(msg.AdditionalProperties);
+
+                FunctionResultContent frc = Assert.IsType<FunctionResultContent>(Assert.Single(msg.Contents));
+                Assert.Equal("SayHello", frc.Name);
+                Assert.Equal("12345", frc.CallId);
+                Assert.Equal(42, Assert.IsType<JsonElement>(frc.Result).GetInt32());
+                Assert.Null(frc.AdditionalProperties);
+                Assert.Null(frc.RawRepresentation);
+                Assert.Null(frc.AdditionalProperties);
             });
     }
 

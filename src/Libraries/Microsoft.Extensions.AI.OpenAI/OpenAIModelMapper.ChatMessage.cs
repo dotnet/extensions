@@ -32,6 +32,8 @@ internal static partial class OpenAIModelMappers
         // Maps all of the OpenAI types to the corresponding M.E.AI types.
         // Unrecognized or non-processable content is ignored.
 
+        Dictionary<string, string>? functionCalls = null;
+
         foreach (OpenAI.Chat.ChatMessage input in inputs)
         {
             switch (input)
@@ -71,10 +73,11 @@ internal static partial class OpenAIModelMappers
 #pragma warning restore CA1031 // Do not catch general exception types
                     }
 
+                    string functionName = functionCalls?.TryGetValue(toolMessage.ToolCallId, out string? name) is true ? name : string.Empty;
                     yield return new ChatMessage
                     {
                         Role = ChatRole.Tool,
-                        Contents = new AIContent[] { new FunctionResultContent(toolMessage.ToolCallId, name: string.Empty, result) },
+                        Contents = new AIContent[] { new FunctionResultContent(toolMessage.ToolCallId, functionName, result) },
                     };
                     break;
 
@@ -95,6 +98,7 @@ internal static partial class OpenAIModelMappers
                             callContent.RawRepresentation = toolCall;
 
                             message.Contents.Add(callContent);
+                            (functionCalls ??= new()).Add(toolCall.Id, toolCall.FunctionName);
                         }
                     }
 
