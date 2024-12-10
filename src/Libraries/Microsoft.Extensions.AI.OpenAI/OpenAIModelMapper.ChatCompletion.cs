@@ -15,6 +15,7 @@ using OpenAI.Chat;
 #pragma warning disable SA1204 // Static elements should appear before instance elements
 #pragma warning disable S103 // Lines should not be too long
 #pragma warning disable CA1859 // Use concrete types when possible for improved performance
+#pragma warning disable S1067 // Expressions should not be too complex
 
 namespace Microsoft.Extensions.AI;
 
@@ -58,7 +59,7 @@ internal static partial class OpenAIModelMappers
             createdAt: chatCompletion.CreatedAt ?? default,
             role: ToOpenAIChatRole(chatCompletion.Message.Role).Value,
             finishReason: ToOpenAIFinishReason(chatCompletion.FinishReason),
-            content: [.. ToOpenAIChatContent(chatCompletion.Message.Contents)],
+            content: new(ToOpenAIChatContent(chatCompletion.Message.Contents)),
             toolCalls: toolCalls,
             refusal: chatCompletion.AdditionalProperties.GetValueOrDefault<string>(nameof(OpenAI.Chat.ChatCompletion.Refusal)),
             contentTokenLogProbabilities: chatCompletion.AdditionalProperties.GetValueOrDefault<IReadOnlyList<ChatTokenLogProbabilityDetails>>(nameof(OpenAI.Chat.ChatCompletion.ContentTokenLogProbabilities)),
@@ -343,7 +344,7 @@ internal static partial class OpenAIModelMappers
 
     private static AITool FromOpenAIChatTool(ChatTool chatTool)
     {
-        Dictionary<string, object?> additionalProperties = new();
+        AdditionalPropertiesDictionary additionalProperties = new();
         if (chatTool.FunctionSchemaIsStrict is bool strictValue)
         {
             additionalProperties["Strict"] = strictValue;
@@ -509,15 +510,11 @@ internal static partial class OpenAIModelMappers
     /// <summary>Converts an Extensions role to an OpenAI role.</summary>
     [return: NotNullIfNotNull("role")]
     private static ChatMessageRole? ToOpenAIChatRole(ChatRole? role) =>
-        role switch
-        {
-            null => null,
-            _ when role == ChatRole.System => ChatMessageRole.System,
-            _ when role == ChatRole.User => ChatMessageRole.User,
-            _ when role == ChatRole.Assistant => ChatMessageRole.Assistant,
-            _ when role == ChatRole.Tool => ChatMessageRole.Tool,
-            _ => ChatMessageRole.System,
-        };
+        role is null ? null :
+        role == ChatRole.System ? ChatMessageRole.System :
+        role == ChatRole.User ? ChatMessageRole.User :
+        role == ChatRole.Assistant ? ChatMessageRole.Assistant :
+        role == ChatRole.Tool ? ChatMessageRole.Tool : ChatMessageRole.User;
 
     /// <summary>Creates an <see cref="AIContent"/> from a <see cref="ChatMessageContentPart"/>.</summary>
     /// <param name="contentPart">The content part to convert into a content.</param>
@@ -571,13 +568,10 @@ internal static partial class OpenAIModelMappers
 
     /// <summary>Converts an Extensions finish reason to an OpenAI finish reason.</summary>
     private static OpenAI.Chat.ChatFinishReason ToOpenAIFinishReason(ChatFinishReason? finishReason) =>
-        finishReason switch
-        {
-            _ when finishReason == ChatFinishReason.Length => OpenAI.Chat.ChatFinishReason.Length,
-            _ when finishReason == ChatFinishReason.ContentFilter => OpenAI.Chat.ChatFinishReason.ContentFilter,
-            _ when finishReason == ChatFinishReason.ToolCalls => OpenAI.Chat.ChatFinishReason.ToolCalls,
-            _ or null => OpenAI.Chat.ChatFinishReason.Stop,
-        };
+        finishReason == ChatFinishReason.Length ? OpenAI.Chat.ChatFinishReason.Length :
+        finishReason == ChatFinishReason.ContentFilter ? OpenAI.Chat.ChatFinishReason.ContentFilter :
+        finishReason == ChatFinishReason.ToolCalls ? OpenAI.Chat.ChatFinishReason.ToolCalls :
+        OpenAI.Chat.ChatFinishReason.Stop;
 
     private static FunctionCallContent ParseCallContentFromJsonString(string json, string callId, string name) =>
         FunctionCallContent.CreateFromParsedArguments(json, callId, name,
