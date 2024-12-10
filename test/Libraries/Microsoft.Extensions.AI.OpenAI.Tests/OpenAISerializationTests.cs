@@ -608,7 +608,7 @@ public static partial class OpenAISerializationTests
         }
 
         using MemoryStream stream = new();
-        await OpenAISerializationHelpers.SerializeAsSseEventsAsync(stream, CreateStreamingCompletion());
+        await OpenAISerializationHelpers.SerializeStreamingAsync(stream, CreateStreamingCompletion());
         string result = Encoding.UTF8.GetString(stream.ToArray());
 
         AssertSseEqual("""
@@ -636,8 +636,8 @@ public static partial class OpenAISerializationTests
         await Assert.ThrowsAsync<ArgumentNullException>(() => OpenAISerializationHelpers.SerializeAsync(null!, new(new ChatMessage())));
         await Assert.ThrowsAsync<ArgumentNullException>(() => OpenAISerializationHelpers.SerializeAsync(new MemoryStream(), null!));
 
-        await Assert.ThrowsAsync<ArgumentNullException>(() => OpenAISerializationHelpers.SerializeAsSseEventsAsync(null!, GetStreamingChatCompletion()));
-        await Assert.ThrowsAsync<ArgumentNullException>(() => OpenAISerializationHelpers.SerializeAsSseEventsAsync(new MemoryStream(), null!));
+        await Assert.ThrowsAsync<ArgumentNullException>(() => OpenAISerializationHelpers.SerializeStreamingAsync(null!, GetStreamingChatCompletion()));
+        await Assert.ThrowsAsync<ArgumentNullException>(() => OpenAISerializationHelpers.SerializeStreamingAsync(new MemoryStream(), null!));
 
         static async IAsyncEnumerable<StreamingChatCompletionUpdate> GetStreamingChatCompletion()
         {
@@ -654,7 +654,7 @@ public static partial class OpenAISerializationTests
 
         await Assert.ThrowsAsync<TaskCanceledException>(() => OpenAISerializationHelpers.DeserializeChatCompletionRequestAsync(stream, cancellationToken: canceledToken));
         await Assert.ThrowsAsync<TaskCanceledException>(() => OpenAISerializationHelpers.SerializeAsync(stream, new(new ChatMessage()), cancellationToken: canceledToken));
-        await Assert.ThrowsAsync<TaskCanceledException>(() => OpenAISerializationHelpers.SerializeAsSseEventsAsync(stream, GetStreamingChatCompletion(), cancellationToken: canceledToken));
+        await Assert.ThrowsAsync<TaskCanceledException>(() => OpenAISerializationHelpers.SerializeStreamingAsync(stream, GetStreamingChatCompletion(), cancellationToken: canceledToken));
 
         static async IAsyncEnumerable<StreamingChatCompletionUpdate> GetStreamingChatCompletion()
         {
@@ -686,12 +686,12 @@ public static partial class OpenAISerializationTests
         await OpenAISerializationHelpers.SerializeAsync(stream, completion, options: JsonContextWithFunctionArgument.Default.Options);
         stream.Position = 0;
 
-        await OpenAISerializationHelpers.SerializeAsSseEventsAsync(stream, GetStreamingCompletion(), options: JsonContextWithFunctionArgument.Default.Options);
+        await OpenAISerializationHelpers.SerializeStreamingAsync(stream, GetStreamingCompletion(), options: JsonContextWithFunctionArgument.Default.Options);
         stream.Position = 0;
 
         // Passing a JSO without a contract for the function argument result in failed serialization.
         await Assert.ThrowsAsync<NotSupportedException>(() => OpenAISerializationHelpers.SerializeAsync(stream, completion, options: JsonContextWithoutFunctionArgument.Default.Options));
-        await Assert.ThrowsAsync<NotSupportedException>(() => OpenAISerializationHelpers.SerializeAsSseEventsAsync(stream, GetStreamingCompletion(), options: JsonContextWithoutFunctionArgument.Default.Options));
+        await Assert.ThrowsAsync<NotSupportedException>(() => OpenAISerializationHelpers.SerializeStreamingAsync(stream, GetStreamingCompletion(), options: JsonContextWithoutFunctionArgument.Default.Options));
 
         async IAsyncEnumerable<StreamingChatCompletionUpdate> GetStreamingCompletion()
         {

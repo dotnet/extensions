@@ -66,7 +66,7 @@ public static class OpenAISerializationHelpers
     /// <param name="options">The <see cref="JsonSerializerOptions"/> governing function call content serialization.</param>
     /// <param name="cancellationToken">A token used to cancel the serialization operation.</param>
     /// <returns>A task tracking the serialization operation.</returns>
-    public static Task SerializeAsSseEventsAsync(
+    public static Task SerializeStreamingAsync(
         Stream stream,
         IAsyncEnumerable<StreamingChatCompletionUpdate> streamingChatCompletionUpdates,
         JsonSerializerOptions? options = null,
