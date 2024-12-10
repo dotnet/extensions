@@ -100,7 +100,7 @@ internal static partial class OpenAIModelMappers
 
                     if (assistantMessage.Refusal is not null)
                     {
-                        message.AdditionalProperties ??= new();
+                        message.AdditionalProperties ??= [];
                         message.AdditionalProperties.Add(nameof(assistantMessage.Refusal), assistantMessage.Refusal);
                     }
 

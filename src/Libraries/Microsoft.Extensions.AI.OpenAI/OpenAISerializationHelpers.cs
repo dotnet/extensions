@@ -55,11 +55,7 @@ public static class OpenAISerializationHelpers
 
         OpenAI.Chat.ChatCompletion openAiChatCompletion = OpenAIModelMappers.ToOpenAIChatCompletion(chatCompletion, options);
         BinaryData binaryData = JsonModelHelpers.Serialize(openAiChatCompletion);
-#if NET
         await stream.WriteAsync(binaryData.ToMemory(), cancellationToken).ConfigureAwait(false);
-#else
-        await stream.WriteAsync(binaryData.ToArray(), 0, binaryData.Length, cancellationToken).ConfigureAwait(false);
-#endif
     }
 
     /// <summary>
@@ -91,10 +87,12 @@ public static class OpenAISerializationHelpers
                 yield return new(binaryData);
             }
 
-            yield return new(new BinaryData("[DONE]"u8.ToArray()));
+            yield return new(_finalSseEvent);
         }
 
         static void FormatAsSseEvent(SseItem<BinaryData> sseItem, IBufferWriter<byte> writer) =>
             writer.Write(sseItem.Data.ToMemory().Span);
     }
+
+    private static readonly BinaryData _finalSseEvent = new("[DONE]"u8.ToArray());
 }
