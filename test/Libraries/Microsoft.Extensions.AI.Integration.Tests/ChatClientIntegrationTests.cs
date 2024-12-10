@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -720,11 +719,11 @@ public abstract class ChatClientIntegrationTests : IDisposable
     {
         SkipIfNotEnabled();
 
-        var response = await _chatClient.CompleteAsync<Architecture>("""
-            I'm using a Macbook Pro with an M2 chip. What architecture am I using?
+        var response = await _chatClient.CompleteAsync<JobType>("""
+            Taylor Swift is a famous singer and songwriter. What is her job?
             """);
 
-        Assert.Equal(Architecture.Arm64, response.Result);
+        Assert.Equal(JobType.PopStar, response.Result);
     }
 
     [ConditionalFact]
