@@ -406,7 +406,7 @@ public class AzureAIInferenceChatClientTests
 
         Assert.NotNull(await client.CompleteAsync("hello", new()
         {
-            ResponseFormat = ChatResponseFormat.ForJsonSchema("""
+            ResponseFormat = ChatResponseFormat.ForJsonSchema(JsonSerializer.Deserialize<JsonElement>("""
                 {
                   "type": "object",
                   "properties": {
@@ -416,7 +416,7 @@ public class AzureAIInferenceChatClientTests
                   },
                   "required": ["description"]
                 }
-                """, "DescribedObject", "An object with a description"),
+                """), "DescribedObject", "An object with a description"),
         }));
     }
 

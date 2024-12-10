@@ -18,12 +18,6 @@ public class OllamaChatClientIntegrationTests : ChatClientIntegrationTests
             new OllamaChatClient(endpoint, "llama3.1") :
             null;
 
-    public override Task FunctionInvocation_AutomaticallyInvokeFunction_WithParameters_Streaming() =>
-        throw new SkipTestException("Ollama does not currently support function invocation with streaming.");
-
-    public override Task Logging_LogsFunctionCalls_Streaming() =>
-        throw new SkipTestException("Ollama does not currently support function invocation with streaming.");
-
     public override Task FunctionInvocation_RequireAny() =>
         throw new SkipTestException("Ollama does not currently support requiring function invocation.");
 
