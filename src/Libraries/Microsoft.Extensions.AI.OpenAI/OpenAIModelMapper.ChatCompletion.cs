@@ -328,8 +328,12 @@ internal static partial class OpenAIModelMappers
             }
             else if (options.ResponseFormat is ChatResponseFormatJson jsonFormat)
             {
-                result.ResponseFormat = jsonFormat.Schema is string jsonSchema ?
-                    OpenAI.Chat.ChatResponseFormat.CreateJsonSchemaFormat(jsonFormat.SchemaName ?? "json_schema", BinaryData.FromString(jsonSchema), jsonFormat.SchemaDescription) :
+                result.ResponseFormat = jsonFormat.Schema is { } jsonSchema ?
+                    OpenAI.Chat.ChatResponseFormat.CreateJsonSchemaFormat(
+                        jsonFormat.SchemaName ?? "json_schema",
+                        BinaryData.FromBytes(
+                            JsonSerializer.SerializeToUtf8Bytes(jsonSchema, OpenAIJsonContext.Default.JsonElement)),
+                        jsonFormat.SchemaDescription) :
                     OpenAI.Chat.ChatResponseFormat.CreateJsonObjectFormat();
             }
         }
