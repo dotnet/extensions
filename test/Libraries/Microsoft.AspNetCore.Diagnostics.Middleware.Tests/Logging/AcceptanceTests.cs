@@ -4,6 +4,7 @@
 #if NET8_0_OR_GREATER
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net.Http;
@@ -24,6 +25,9 @@ using Microsoft.Extensions.Hosting.Testing;
 using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+#if NET9_0_OR_GREATER
+using Microsoft.Extensions.Options;
+#endif
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.Net.Http.Headers;
 using Microsoft.Shared.Text;
@@ -714,6 +718,48 @@ public partial class AcceptanceTests
             });
     }
 
+#if NET9_0_OR_GREATER
+    [Fact]
+    public async Task HttpRequestBuffering()
+    {
+        var clock = new FakeTimeProvider(TimeProvider.System.GetUtcNow());
+
+        HttpRequestBufferOptions options = new()
+        {
+            SuspendAfterFlushDuration = TimeSpan.FromSeconds(0),
+            Rules = new List<BufferFilterRule>
+            {
+                new(null, LogLevel.Information, null),
+            }
+        };
+        var buffer = new HttpRequestBuffer(new StaticOptionsMonitor<HttpRequestBufferOptions>(options), clock);
+
+        await RunAsync<TestStartup>(
+            LogLevel.Information,
+            services => services.AddLogging(builder =>
+            {
+                builder.Services.AddScoped<ILoggingBuffer>(sp => buffer);
+                builder.Services.AddScoped(sp => buffer);
+                builder.AddHttpRequestBuffer(LogLevel.Information);
+            }),
+            async (logCollector, client, sp) =>
+            {
+                using var response = await client.GetAsync("/home").ConfigureAwait(false);
+
+                Assert.True(response.IsSuccessStatusCode);
+
+                Assert.Equal(0, logCollector.Count);
+
+                using var scope = sp.CreateScope();
+                var buffer = scope.ServiceProvider.GetRequiredService<HttpRequestBuffer>();
+                buffer.Flush();
+
+                await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout);
+                Assert.Equal(1, logCollector.Count);
+            });
+    }
+#endif
+
     [Fact]
     public async Task HttpLogging_LogRecordIsNotCreated_If_Disabled()
     {
@@ -757,5 +803,19 @@ public partial class AcceptanceTests
     {
         public void Enrich(IEnrichmentTagCollector collector, HttpContext httpContext) => throw new InvalidOperationException();
     }
+
+#if NET9_0_OR_GREATER
+    private sealed class StaticOptionsMonitor<T> : IOptionsMonitor<T>
+    {
+        public StaticOptionsMonitor(T currentValue)
+        {
+            CurrentValue = currentValue;
+        }
+
+        public IDisposable? OnChange(Action<T, string> listener) => null;
+        public T Get(string? name) => CurrentValue;
+        public T CurrentValue { get; }
+    }
+#endif
 }
 #endif
