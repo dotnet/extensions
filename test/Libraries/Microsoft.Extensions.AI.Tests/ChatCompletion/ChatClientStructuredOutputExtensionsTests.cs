@@ -177,10 +177,12 @@ public class ChatClientStructuredOutputExtensionsTests
                 var responseFormat = Assert.IsType<ChatResponseFormatJson>(options!.ResponseFormat);
                 Assert.Equal(nameof(Animal), responseFormat.SchemaName);
                 Assert.Equal("Some test description", responseFormat.SchemaDescription);
-                Assert.Contains("https://json-schema.org/draft/2020-12/schema", responseFormat.Schema);
+
+                var responseFormatJsonSchema = JsonSerializer.Serialize(responseFormat.Schema, TestJsonSerializerContext.Default.JsonElement);
+                Assert.Contains("https://json-schema.org/draft/2020-12/schema", responseFormatJsonSchema);
                 foreach (Species v in Enum.GetValues(typeof(Species)))
                 {
-                    Assert.Contains(v.ToString(), responseFormat.Schema); // All enum values are described as strings
+                    Assert.Contains(v.ToString(), responseFormatJsonSchema); // All enum values are described as strings
                 }
 
                 // The chat history isn't mutated any further, since native structured output is used instead of a prompt

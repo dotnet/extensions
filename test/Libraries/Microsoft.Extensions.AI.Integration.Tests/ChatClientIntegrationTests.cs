@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -161,7 +160,15 @@ public abstract class ChatClientIntegrationTests : IDisposable
     {
         SkipIfNotEnabled();
 
-        using var chatClient = new FunctionInvokingChatClient(_chatClient);
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using var chatClient = new FunctionInvokingChatClient(
+            new OpenTelemetryChatClient(_chatClient, sourceName: sourceName));
 
         int secretNumber = 42;
 
@@ -178,11 +185,14 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.Single(response.Choices);
         Assert.Contains(secretNumber.ToString(), response.Message.Text);
 
+        // If the underlying IChatClient provides usage data, function invocation should aggregate the
+        // usage data across all calls to produce a single Usage value on the final response
         if (response.Usage is { } finalUsage)
         {
-            UsageContent? intermediate = messages.SelectMany(m => m.Contents).OfType<UsageContent>().FirstOrDefault();
-            Assert.NotNull(intermediate);
-            Assert.True(finalUsage.TotalTokenCount > intermediate.Details.TotalTokenCount);
+            var totalInputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.input_tokens")!);
+            var totalOutputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.output_tokens")!);
+            Assert.Equal(totalInputTokens, finalUsage.InputTokenCount);
+            Assert.Equal(totalOutputTokens, finalUsage.OutputTokenCount);
         }
     }
 
@@ -709,11 +719,11 @@ public abstract class ChatClientIntegrationTests : IDisposable
     {
         SkipIfNotEnabled();
 
-        var response = await _chatClient.CompleteAsync<Architecture>("""
-            I'm using a Macbook Pro with an M2 chip. What architecture am I using?
+        var response = await _chatClient.CompleteAsync<JobType>("""
+            Taylor Swift is a famous singer and songwriter. What is her job?
             """);
 
-        Assert.Equal(Architecture.Arm64, response.Result);
+        Assert.Equal(JobType.PopStar, response.Result);
     }
 
     [ConditionalFact]
@@ -745,6 +755,33 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.Equal(expectedPerson.AgeInYears, response.Result.AgeInYears);
         Assert.Equal(expectedPerson.HomeTown, response.Result.HomeTown);
         Assert.Equal(expectedPerson.Job, response.Result.Job);
+    }
+
+    [ConditionalFact]
+    public virtual async Task CompleteAsync_StructuredOutput_Native()
+    {
+        SkipIfNotEnabled();
+
+        var capturedCalls = new List<IList<ChatMessage>>();
+        var captureOutputChatClient = _chatClient.AsBuilder()
+            .Use((messages, options, nextAsync, cancellationToken) =>
+            {
+                capturedCalls.Add([.. messages]);
+                return nextAsync(messages, options, cancellationToken);
+            })
+            .Build();
+
+        var response = await captureOutputChatClient.CompleteAsync<Person>("""
+            Supply a JSON object to represent Jimbo Smith from Cardiff.
+            """, useNativeJsonSchema: true);
+
+        Assert.Equal("Jimbo Smith", response.Result.FullName);
+        Assert.Contains("Cardiff", response.Result.HomeTown);
+
+        // Verify it used *native* structured output, i.e., no prompt augmentation
+        Assert.All(
+            Assert.Single(capturedCalls),
+            message => Assert.DoesNotContain("schema", message.Text));
     }
 
     private class Person

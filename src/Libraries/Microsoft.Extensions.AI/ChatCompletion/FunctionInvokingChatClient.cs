@@ -190,16 +190,25 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     public override async Task<ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(chatMessages);
-        ChatCompletion? response;
 
+        ChatCompletion? response = null;
         HashSet<ChatMessage>? messagesToRemove = null;
         HashSet<AIContent>? contentsToRemove = null;
+        UsageDetails? totalUsage = null;
+
         try
         {
             for (int iteration = 0; ; iteration++)
             {
                 // Make the call to the handler.
                 response = await base.CompleteAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
+
+                // Aggregate usage data over all calls
+                if (response.Usage is not null)
+                {
+                    totalUsage ??= new();
+                    totalUsage.Add(response.Usage);
+                }
 
                 // If there are no tools to call, or for any other reason we should stop, return the response.
                 if (options is null
@@ -252,13 +261,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     }
                 }
 
-                // If the original chat completion included usage data,
-                // add that into the message so it's available in the history.
-                if (KeepFunctionCallingMessages && response.Usage is { } usage)
-                {
-                    response.Message.Contents = [.. response.Message.Contents, new UsageContent(usage)];
-                }
-
                 // Add the responses from the function calls into the history.
                 var modeAndMessages = await ProcessFunctionCallsAsync(chatMessages, options, functionCallContents, iteration, cancellationToken).ConfigureAwait(false);
                 if (modeAndMessages.MessagesAdded is not null)
@@ -286,11 +288,16 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 }
             }
 
-            return response!;
+            return response;
         }
         finally
         {
             RemoveMessagesAndContentFromList(messagesToRemove, contentsToRemove, chatMessages);
+
+            if (response is not null)
+            {
+                response.Usage = totalUsage;
+            }
         }
     }
 
@@ -325,7 +332,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     // If there were any, remove them from the update. We do this before yielding the update so
                     // that we're not modifying an instance already provided back to the caller.
                     int addedFccs = functionCallContents.Count - preFccCount;
-                    if (addedFccs > preFccCount)
+                    if (addedFccs > 0)
                     {
                         update.Contents = addedFccs == update.Contents.Count ?
                             [] : update.Contents.Where(c => c is not FunctionCallContent).ToList();

@@ -1,9 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
@@ -33,8 +32,8 @@ public class ChatResponseFormat
     /// <param name="schemaDescription">An optional description of the schema.</param>
     /// <returns>The <see cref="ChatResponseFormatJson"/> instance.</returns>
     public static ChatResponseFormatJson ForJsonSchema(
-        [StringSyntax(StringSyntaxAttribute.Json)] string schema, string? schemaName = null, string? schemaDescription = null) =>
-        new(Throw.IfNull(schema),
+        JsonElement schema, string? schemaName = null, string? schemaDescription = null) =>
+        new(schema,
             schemaName,
             schemaDescription);
 }

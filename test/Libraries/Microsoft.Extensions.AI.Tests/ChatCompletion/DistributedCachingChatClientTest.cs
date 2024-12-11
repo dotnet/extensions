@@ -61,6 +61,7 @@ public class DistributedCachingChatClientTest
                 InputTokenCount = 123,
                 OutputTokenCount = 456,
                 TotalTokenCount = 99999,
+                AdditionalCounts = new() { ["someValue"] = 1_234_567 }
             },
             CreatedAt = DateTimeOffset.UtcNow,
             ModelId = "someModel",
@@ -732,6 +733,7 @@ public class DistributedCachingChatClientTest
         Assert.Equal(expected.Usage?.InputTokenCount, actual.Usage?.InputTokenCount);
         Assert.Equal(expected.Usage?.OutputTokenCount, actual.Usage?.OutputTokenCount);
         Assert.Equal(expected.Usage?.TotalTokenCount, actual.Usage?.TotalTokenCount);
+        Assert.Equal(expected.Usage?.AdditionalCounts, actual.Usage?.AdditionalCounts);
         Assert.Equal(expected.CreatedAt, actual.CreatedAt);
         Assert.Equal(expected.ModelId, actual.ModelId);
         Assert.Equal(
