@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <MinCodeCoverage>70</MinCodeCoverage>
+    <MinCodeCoverage>76</MinCodeCoverage>
     <MinMutationScore>75</MinMutationScore>
   </PropertyGroup>
 
