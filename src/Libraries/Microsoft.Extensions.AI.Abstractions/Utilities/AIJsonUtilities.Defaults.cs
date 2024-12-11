@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+using Microsoft.Extensions.AI.Contents;
 
 namespace Microsoft.Extensions.AI;
 
@@ -25,24 +26,29 @@ public static partial class AIJsonUtilities
         // and we want to be flexible in terms of what can be put into the various collections in the object model.
         // Otherwise, use the source-generated options to enable trimming and Native AOT.
 
+        JsonSerializerOptions options;
+
         if (JsonSerializer.IsReflectionEnabledByDefault)
         {
             // Keep in sync with the JsonSourceGenerationOptions attribute on JsonContext below.
-            JsonSerializerOptions options = new(JsonSerializerDefaults.Web)
+            options = new(JsonSerializerDefaults.Web)
             {
-                TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+                TypeInfoResolver = new DefaultJsonTypeInfoResolver().ApplyAIContentRegistry(),
                 Converters = { new JsonStringEnumConverter() },
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
                 WriteIndented = true,
             };
-
-            options.MakeReadOnly();
-            return options;
         }
         else
         {
-            return JsonContext.Default.Options;
+            options = new(JsonContext.Default.Options)
+            {
+                TypeInfoResolver = JsonContext.Default.ApplyAIContentRegistry()
+            };
         }
+
+        options.MakeReadOnly();
+        return options;
     }
 
     // Keep in sync with CreateDefaultOptions above.
