@@ -17,7 +17,6 @@ public interface IBufferManager
     /// <summary>
     /// Flushes the buffer and emits all buffered logs.
     /// </summary>
-    [RequiresUnreferencedCode("Calls Microsoft.Extensions.Logging.ILoggingBuffer.Flush()")]
     void Flush();
 
     /// <summary>
@@ -32,8 +31,6 @@ public interface IBufferManager
     /// <param name="formatter">Formatter delegate.</param>
     /// <typeparam name="TState">Type of the <paramref name="attributes"/> instance.</typeparam>
     /// <returns><see langword="true"/> if the log record was buffered; otherwise, <see langword="false"/>.</returns>
-    [RequiresUnreferencedCode(
-        "Calls Microsoft.Extensions.Logging.SerializedLogRecord.SerializedLogRecord(LogLevel, EventId, DateTimeOffset, IReadOnlyList<KeyValuePair<String, Object>>, Exception, String)")]
     bool TryEnqueue<TState>(
         IBufferSink bufferSink,
         LogLevel logLevel,

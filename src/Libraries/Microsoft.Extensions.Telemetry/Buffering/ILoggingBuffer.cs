@@ -3,7 +3,6 @@
 
 #if NET9_0_OR_GREATER
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Logging;
@@ -24,8 +23,6 @@ internal interface ILoggingBuffer
     /// <param name="formatter">Formatter delegate.</param>
     /// <typeparam name="TState">Type of the <paramref name="attributes"/> instance.</typeparam>
     /// <returns><see langword="true"/> if the log record was buffered; otherwise, <see langword="false"/>.</returns>
-    [RequiresUnreferencedCode(
-        "Calls Microsoft.Extensions.Logging.SerializedLogRecord.SerializedLogRecord(LogLevel, EventId, DateTimeOffset, IReadOnlyList<KeyValuePair<String, Object>>, Exception, String)")]
     bool TryEnqueue<TState>(
         LogLevel logLevel,
         string category,
@@ -37,7 +34,6 @@ internal interface ILoggingBuffer
     /// <summary>
     /// Flushes the buffer.
     /// </summary>
-    [RequiresUnreferencedCode("Calls Microsoft.Extensions.Logging.BufferSink.LogRecords(IEnumerable<SerializedLogRecord>)")]
     void Flush();
 
     /// <summary>

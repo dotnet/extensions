@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 #if NET9_0_OR_GREATER
 using Microsoft.Extensions.Diagnostics.Buffering;
 #endif
@@ -60,10 +59,7 @@ internal sealed partial class ExtendedLogger : ILogger
     }
 #endif
 
-    [RequiresUnreferencedCode("Calls Microsoft.Extensions.Logging.ExtendedLogger.ModernPath(LogLevel, EventId, LoggerMessageState, Exception, Func<LoggerMessageState, Exception, String>)")]
-#pragma warning disable IL2046 // 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
-#pragma warning restore IL2046 // 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.
     {
         if (typeof(TState) == typeof(LoggerMessageState))
         {
@@ -231,7 +227,6 @@ internal sealed partial class ExtendedLogger : ILogger
         }
     }
 
-    [RequiresUnreferencedCode("Calls Microsoft.Extensions.Logging.ILoggingBuffer.TryEnqueue<TState>(LogLevel, String, EventId, TState, Exception, Func<TState, Exception, String>)")]
     private void ModernPath(LogLevel logLevel, EventId eventId, LoggerMessageState msgState, Exception? exception, Func<LoggerMessageState, Exception?, string> formatter)
     {
         var loggers = MessageLoggers;
@@ -350,7 +345,6 @@ internal sealed partial class ExtendedLogger : ILogger
         HandleExceptions(exceptions);
     }
 
-    [RequiresUnreferencedCode("Calls Microsoft.Extensions.Logging.ILoggingBuffer.TryEnqueue<TState>(LogLevel, String, EventId, TState, Exception, Func<TState, Exception, String>)")]
     private void LegacyPath<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
         var loggers = MessageLoggers;

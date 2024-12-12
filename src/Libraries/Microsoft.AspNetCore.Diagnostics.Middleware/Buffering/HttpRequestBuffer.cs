@@ -4,7 +4,6 @@
 #if NET9_0_OR_GREATER
 using System;
 using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -36,8 +35,6 @@ internal sealed class HttpRequestBuffer : ILoggingBuffer
         _truncateAfter = _timeProvider.GetUtcNow();
     }
 
-    [RequiresUnreferencedCode(
-        "Calls Microsoft.Extensions.Logging.SerializedLogRecord.SerializedLogRecord(LogLevel, EventId, DateTimeOffset, IReadOnlyList<KeyValuePair<String, Object>>, Exception, String)")]
     public bool TryEnqueue<TState>(
         LogLevel logLevel,
         string category,
@@ -79,7 +76,6 @@ internal sealed class HttpRequestBuffer : ILoggingBuffer
         return true;
     }
 
-    [RequiresUnreferencedCode("Calls Microsoft.Extensions.Logging.BufferSink.LogRecords(IEnumerable<SerializedLogRecord>)")]
     public void Flush()
     {
         var result = _buffer.ToArray();

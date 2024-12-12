@@ -3,13 +3,11 @@
 #if NET9_0_OR_GREATER
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.Extensions.Diagnostics.Buffering;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
-using Microsoft.Shared.JsonExceptionConverter;
 using Microsoft.Shared.Pools;
 using static Microsoft.Extensions.Logging.ExtendedLoggerFactory;
 
@@ -26,8 +24,6 @@ internal sealed class BufferSink : IBufferSink
         _category = category;
     }
 
-    [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public void LogRecords<T>(IEnumerable<T> serializedRecords)
         where T : ISerializedLogRecord
     {
@@ -69,7 +65,11 @@ internal sealed class BufferSink : IBufferSink
                         Exception? exception = null;
                         if (serializedRecord.Exception is not null)
                         {
-                            exception = JsonSerializer.Deserialize<Exception>(serializedRecord.Exception, ExceptionConverter.JsonSerializerOptions);
+#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
+                            exception = JsonSerializer.Deserialize<Exception>(serializedRecord.Exception);
+#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
+#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
                         }
 
                         logger.Log(

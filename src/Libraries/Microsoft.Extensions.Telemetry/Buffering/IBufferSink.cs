@@ -8,17 +8,17 @@ using Microsoft.Shared.DiagnosticIds;
 namespace Microsoft.Extensions.Logging;
 
 /// <summary>
-/// Interface for a buffer sink.
+/// Represents a sink for buffered log records of all categories which can be forwarded
+/// to all currently registered loggers.
 /// </summary>
 [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
 public interface IBufferSink
 {
     /// <summary>
-    /// Forward the <paramref name="serializedRecords"/> to all currently registered loggers.
+    /// Forwards the <paramref name="serializedRecords"/> to all currently registered loggers.
     /// </summary>
     /// <param name="serializedRecords">serialized log records.</param>
     /// <typeparam name="T">Type of the log records.</typeparam>
-    [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
     void LogRecords<T>(IEnumerable<T> serializedRecords)
         where T : ISerializedLogRecord;
 }

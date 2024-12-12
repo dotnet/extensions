@@ -7,7 +7,7 @@ using Microsoft.Shared.DiagnosticIds;
 namespace Microsoft.Extensions.Diagnostics.Buffering;
 
 /// <summary>
-/// Interface for a global buffer manager.
+/// Interface for a HTTP request buffer manager.
 /// </summary>
 [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
 public interface IHttpRequestBufferManager : IBufferManager
@@ -15,7 +15,6 @@ public interface IHttpRequestBufferManager : IBufferManager
     /// <summary>
     /// Flushes the buffer and emits buffered logs for the current request.
     /// </summary>
-    [RequiresUnreferencedCode("Calls Microsoft.Extensions.Logging.ILoggingBuffer.Flush()")]
     public void FlushCurrentRequestLogs();
 }
 #endif

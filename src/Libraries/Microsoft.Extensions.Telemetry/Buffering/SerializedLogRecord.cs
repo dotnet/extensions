@@ -4,17 +4,13 @@
 #if NET9_0_OR_GREATER
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
-using Microsoft.Shared.JsonExceptionConverter;
 
 namespace Microsoft.Extensions.Logging;
 
 internal readonly struct SerializedLogRecord : ISerializedLogRecord
 {
-    [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public SerializedLogRecord(
         LogLevel logLevel,
         EventId eventId,
@@ -35,8 +31,12 @@ internal readonly struct SerializedLogRecord : ISerializedLogRecord
 
         Attributes = serializedAttributes;
 
-        // Serialize without StackTrace, whis is already optionally available in the log attributes via the ExtendedLogger.
-        Exception = JsonSerializer.Serialize(exception, ExceptionConverter.JsonSerializerOptions);
+        // Serialize without StackTrace, which is already optionally available in the log attributes via the ExtendedLogger.
+#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
+        Exception = JsonSerializer.Serialize(exception);
+#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
+#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
         FormattedMessage = formattedMessage;
     }
 

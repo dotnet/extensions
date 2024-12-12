@@ -3,7 +3,6 @@
 #if NET9_0_OR_GREATER
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Diagnostics.Logging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -52,10 +51,8 @@ internal sealed class HttpRequestBufferManager : IHttpRequestBufferManager
         return loggingBuffer;
     }
 
-    [RequiresUnreferencedCode("Calls Microsoft.Extensions.Logging.ILoggingBuffer.Flush()")]
     public void Flush() => _globalBufferManager.Flush();
 
-    [RequiresUnreferencedCode("Calls Microsoft.Extensions.Logging.ILoggingBuffer.Flush()")]
     public void FlushCurrentRequestLogs()
     {
         if (_httpContextAccessor.HttpContext is not null)
@@ -70,7 +67,6 @@ internal sealed class HttpRequestBufferManager : IHttpRequestBufferManager
         }
     }
 
-    [RequiresUnreferencedCode("Calls Microsoft.Extensions.Logging.ILoggingBuffer.TryEnqueue<TState>(LogLevel, String, EventId, TState, Exception, Func<TState, Exception, String>)")]
     public bool TryEnqueue<TState>(
         IBufferSink bufferSink,
         LogLevel logLevel,

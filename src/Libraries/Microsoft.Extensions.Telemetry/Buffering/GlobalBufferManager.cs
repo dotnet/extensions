@@ -3,7 +3,6 @@
 #if NET9_0_OR_GREATER
 using System;
 using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
@@ -31,7 +30,6 @@ internal sealed class GlobalBufferManager : BackgroundService, IBufferManager
     public ILoggingBuffer CreateBuffer(IBufferSink bufferSink, string category)
         => Buffers.GetOrAdd(category, _ => new GlobalBuffer(bufferSink, _options, _timeProvider));
 
-    [RequiresUnreferencedCode("Calls Microsoft.Extensions.Logging.ILoggingBuffer.Flush()")]
     public void Flush()
     {
         foreach (var buffer in Buffers.Values)
@@ -40,7 +38,6 @@ internal sealed class GlobalBufferManager : BackgroundService, IBufferManager
         }
     }
 
-    [RequiresUnreferencedCode("Calls Microsoft.Extensions.Logging.ILoggingBuffer.TryEnqueue<TState>(LogLevel, String, EventId, TState, Exception, Func<TState, Exception, String>)")]
     public bool TryEnqueue<TState>(
         IBufferSink bufferSink,
         LogLevel logLevel,
