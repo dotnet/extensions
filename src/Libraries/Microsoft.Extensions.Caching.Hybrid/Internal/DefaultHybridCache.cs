@@ -63,6 +63,8 @@ internal sealed partial class DefaultHybridCache : HybridCache
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private CacheFeatures GetFeatures(CacheFeatures mask) => _features & mask;
 
+    internal bool HasBackendCache => (_features & CacheFeatures.BackendCache) != 0;
+
     public DefaultHybridCache(IOptions<HybridCacheOptions> options, IServiceProvider services)
     {
         _services = Throw.IfNull(services);
@@ -110,6 +112,9 @@ internal sealed partial class DefaultHybridCache : HybridCache
         _defaultExpiration = defaultEntryOptions?.Expiration ?? TimeSpan.FromMinutes(5);
         _defaultLocalCacheExpiration = defaultEntryOptions?.LocalCacheExpiration ?? TimeSpan.FromMinutes(1);
         _defaultDistributedCacheExpiration = new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = _defaultExpiration };
+
+        // do this last
+        _globalInvalidateTimestamp = _backendCache is null ? _zeroTimestamp : SafeReadTagInvalidationAsync(TagSet.WildcardTag);
     }
 
     internal IDistributedCache? BackendCache => _backendCache;

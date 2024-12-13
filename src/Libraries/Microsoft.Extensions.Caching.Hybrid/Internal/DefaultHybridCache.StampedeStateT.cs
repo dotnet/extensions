@@ -169,6 +169,9 @@ internal partial class DefaultHybridCache
                 // read from L2 if appropriate
                 if ((Key.Flags & HybridCacheEntryFlags.DisableDistributedCacheRead) == 0)
                 {
+                    // kick off any necessary tag invalidation fetches
+                    Cache.PrefetchTags(CacheItem.Tags);
+
                     BufferChunk result;
                     try
                     {
