@@ -10,33 +10,36 @@ namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
 internal partial class DefaultHybridCache
 {
-    private readonly ConcurrentDictionary<string, long> _tagInvalidationTimes = [];
+    private static readonly Task<long> _zeroTimestamp = Task.FromResult<long>(0L);
 
-    private long _globalInvalidateTimestamp;
+    private readonly ConcurrentDictionary<string, Task<long>> _tagInvalidationTimes = [];
+
+    private Task<long> _globalInvalidateTimestamp;
 
     public override ValueTask RemoveByTagAsync(string tag, CancellationToken token = default)
     {
-        InvalidateTagCore(tag);
-        return default;
+        if (string.IsNullOrWhiteSpace(tag))
+        {
+            return default; // nothing sensible to do
+        }
+
+        var now = CurrentTimestamp();
+        InvalidateTagLocalCore(tag, now, isNow: true); // isNow to be 100% explicit
+        return InvalidateL2TagAsync(tag, now, token);
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S1144:Unused private types or members should be removed", Justification = "Completion-checked")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "Completion-checked")]
     public bool IsValid(CacheItem cacheItem)
     {
-        long globalInvalidationTimestamp;
-        if (IntPtr.Size < sizeof(long))
-        {
-            // prevent torn values on x86
-            globalInvalidationTimestamp = Interlocked.Read(ref _globalInvalidateTimestamp);
-        }
-        else
-        {
-            globalInvalidationTimestamp = _globalInvalidateTimestamp;
-        }
-
         var timestamp = cacheItem.CreationTimestamp;
-        if (timestamp <= globalInvalidationTimestamp)
+
+        if (_globalInvalidateTimestamp.IsCompleted)
         {
-            return false; // invalidated by wildcard
+            if (timestamp <= _globalInvalidateTimestamp.Result)
+            {
+                return false; // invalidated by wildcard
+            }
         }
 
         var tags = cacheItem.Tags;
@@ -44,48 +47,99 @@ internal partial class DefaultHybridCache
         {
             case 0:
                 return true;
+
             case 1:
-                return !(_tagInvalidationTimes.TryGetValue(tags.GetSinglePrechecked(), out var tagInvalidatedTimestamp) && timestamp <= tagInvalidatedTimestamp);
+                return !IsTagExpired(tags.GetSinglePrechecked(), timestamp);
+
             default:
+                bool allValid = true;
                 foreach (var tag in tags.GetSpanPrechecked())
                 {
-                    if (_tagInvalidationTimes.TryGetValue(tag, out tagInvalidatedTimestamp) && timestamp <= tagInvalidatedTimestamp)
+                    if (IsTagExpired(tag, timestamp))
                     {
-                        return false;
+                        allValid = false; // but check them all, to kick-off tag fetch
                     }
                 }
 
-                return true;
+                return allValid;
         }
     }
 
     internal long CurrentTimestamp() => _clock.GetUtcNow().UtcTicks;
 
-    private void InvalidateTagCore(string tag)
+    internal void PrefetchTags(TagSet tags)
     {
-        if (string.IsNullOrEmpty(tag))
+        if (HasBackendCache && !tags.IsEmpty)
         {
-            // nothing sensible to do
-            return;
-        }
-
-        var now = CurrentTimestamp();
-        if (tag == TagSet.WildcardTag)
-        {
-            // on modern runtimes JIT will do a good job of dead-branch removal for this
-            if (IntPtr.Size < sizeof(long))
+            // only needed if L2 exists
+            switch (tags.Count)
             {
-                // prevent torn values on x86
-                _ = Interlocked.Exchange(ref _globalInvalidateTimestamp, now);
+                case 1:
+                    PrefetchTagWithBackendCache(tags.GetSinglePrechecked());
+                    break;
+                default:
+                    foreach (var tag in tags.GetSpanPrechecked())
+                    {
+                        PrefetchTagWithBackendCache(tag);
+                    }
+
+                    break;
+            }
+        }
+    }
+
+    private void PrefetchTagWithBackendCache(string tag)
+    {
+        if (!_tagInvalidationTimes.TryGetValue(tag, out var pending))
+        {
+            _ = _tagInvalidationTimes.TryAdd(tag, SafeReadTagInvalidationAsync(tag));
+        }
+    }
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S1144:Unused private types or members should be removed", Justification = "Completion-checked")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "Completion-checked")]
+    private bool IsTagExpired(string tag, long timestamp)
+    {
+        if (!_tagInvalidationTimes.TryGetValue(tag, out var pending))
+        {
+            // not in the tag invalidation cache; if we have L2, need to check there
+            if (HasBackendCache)
+            {
+                pending = SafeReadTagInvalidationAsync(tag);
+                _ = _tagInvalidationTimes.TryAdd(tag, pending);
             }
             else
             {
-                _globalInvalidateTimestamp = now;
+                // not invalidated, and no L2 to check
+                return false;
+            }
+        }
+
+        if (pending.IsCompleted)
+        {
+            return timestamp > pending.Result;
+        }
+        else
+        {
+            return true; // assume invalid until completed
+        }
+    }
+
+    private void InvalidateTagLocalCore(string tag, long timestamp, bool isNow)
+    {
+        var timestampTask = Task.FromResult<long>(timestamp);
+        if (tag == TagSet.WildcardTag)
+        {
+            _globalInvalidateTimestamp = timestampTask;
+            if (isNow && !HasBackendCache)
+            {
+                // no L2, so we don't need any prior invalidated tags any more; can clear
+                _tagInvalidationTimes.Clear();
             }
         }
         else
         {
-            _tagInvalidationTimes[tag] = now;
+            _tagInvalidationTimes[tag] = timestampTask;
         }
     }
 }

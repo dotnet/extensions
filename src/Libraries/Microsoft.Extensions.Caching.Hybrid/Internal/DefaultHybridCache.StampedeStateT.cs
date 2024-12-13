@@ -166,6 +166,9 @@ internal partial class DefaultHybridCache
                 // read from L2 if appropriate
                 if ((Key.Flags & HybridCacheEntryFlags.DisableDistributedCacheRead) == 0)
                 {
+                    // kick off any necessary tag invalidation fetches
+                    Cache.PrefetchTags(CacheItem.Tags);
+
                     var result = await Cache.GetFromL2Async(Key.Key, SharedToken).ConfigureAwait(false);
 
                     if (result.Array is not null)
