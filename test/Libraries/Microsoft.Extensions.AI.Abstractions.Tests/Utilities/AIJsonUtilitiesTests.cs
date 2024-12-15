@@ -1,10 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.AI.JsonSchemaExporter;
 using Xunit;
 
@@ -38,9 +41,11 @@ public static class AIJsonUtilitiesTests
     public static void AIJsonSchemaCreateOptions_DefaultInstance_ReturnsExpectedValues(bool useSingleton)
     {
         AIJsonSchemaCreateOptions options = useSingleton ? AIJsonSchemaCreateOptions.Default : new AIJsonSchemaCreateOptions();
-        Assert.False(options.IncludeTypeInEnumSchemas);
-        Assert.False(options.DisallowAdditionalProperties);
+        Assert.True(options.IncludeTypeInEnumSchemas);
+        Assert.True(options.DisallowAdditionalProperties);
         Assert.False(options.IncludeSchemaKeyword);
+        Assert.True(options.RequireAllProperties);
+        Assert.Null(options.TransformSchemaNode);
     }
 
     [Fact]
@@ -56,6 +61,7 @@ public static class AIJsonUtilitiesTests
                         "type": "integer"
                     },
                     "EnumValue": {
+                        "type": "string",
                         "enum": ["A", "B"]
                     },
                     "Value": {
@@ -63,11 +69,13 @@ public static class AIJsonUtilitiesTests
                         "default": null
                     }
                 },
-                "required": ["Key", "EnumValue"]
+                "required": ["Key", "EnumValue", "Value"],
+                "additionalProperties": false
             }
             """).RootElement;
 
         JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(MyPoco), serializerOptions: JsonSerializerOptions.Default);
+
         Assert.True(JsonElement.DeepEquals(expected, actual));
     }
 
@@ -85,7 +93,6 @@ public static class AIJsonUtilitiesTests
                         "type": "integer"
                     },
                     "EnumValue": {
-                        "type": "string",
                         "enum": ["A", "B"]
                     },
                     "Value": {
@@ -94,26 +101,112 @@ public static class AIJsonUtilitiesTests
                     }
                 },
                 "required": ["Key", "EnumValue"],
-                "additionalProperties": false,
                 "default": "42"
             }
             """).RootElement;
 
         AIJsonSchemaCreateOptions inferenceOptions = new AIJsonSchemaCreateOptions
         {
-            IncludeTypeInEnumSchemas = true,
-            DisallowAdditionalProperties = true,
-            IncludeSchemaKeyword = true
+            IncludeTypeInEnumSchemas = false,
+            DisallowAdditionalProperties = false,
+            IncludeSchemaKeyword = true,
+            RequireAllProperties = false,
         };
 
-        JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(MyPoco),
+        JsonElement actual = AIJsonUtilities.CreateJsonSchema(
+            typeof(MyPoco),
             description: "alternative description",
             hasDefaultValue: true,
             defaultValue: 42,
-            JsonSerializerOptions.Default,
-            inferenceOptions);
+            serializerOptions: JsonSerializerOptions.Default,
+            inferenceOptions: inferenceOptions);
 
         Assert.True(JsonElement.DeepEquals(expected, actual));
+    }
+
+    [Fact]
+    public static void CreateJsonSchema_UserDefinedTransformer()
+    {
+        JsonElement expected = JsonDocument.Parse("""
+            {
+                "description": "The type",
+                "type": "object",
+                "properties": {
+                    "Key": {
+                        "$comment": "Contains a DescriptionAttribute declaration with the text 'The parameter'.",
+                        "type": "integer"
+                    },
+                    "EnumValue": {
+                        "type": "string",
+                        "enum": ["A", "B"]
+                    },
+                    "Value": {
+                        "type": ["string", "null"],
+                        "default": null
+                    }
+                },
+                "required": ["Key", "EnumValue", "Value"],
+                "additionalProperties": false
+            }
+            """).RootElement;
+
+        AIJsonSchemaCreateOptions inferenceOptions = new()
+        {
+            TransformSchemaNode = static (context, schema) =>
+            {
+                return context.TypeInfo.Type == typeof(int) && context.GetCustomAttribute<DescriptionAttribute>() is DescriptionAttribute attr
+                ? new JsonObject
+                {
+                    ["$comment"] = $"Contains a DescriptionAttribute declaration with the text '{attr.Description}'.",
+                    ["type"] = "integer",
+                }
+                : schema;
+            }
+        };
+
+        JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(MyPoco), serializerOptions: JsonSerializerOptions.Default, inferenceOptions: inferenceOptions);
+
+        Assert.True(JsonElement.DeepEquals(expected, actual));
+    }
+
+    [Fact]
+    public static void CreateJsonSchema_FiltersDisallowedKeywords()
+    {
+        JsonElement expected = JsonDocument.Parse("""
+            {
+                "type": "object",
+                "properties": {
+                    "Date": {
+                        "type": "string"
+                    },
+                    "TimeSpan": {
+                        "$comment": "Represents a System.TimeSpan value.",
+                        "type": "string"
+                    },
+                    "Char" : {
+                        "type": "string"
+                    }
+                },
+                "required": ["Date","TimeSpan","Char"],
+                "additionalProperties": false
+            }
+            """).RootElement;
+
+        JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(PocoWithTypesWithOpenAIUnsupportedKeywords), serializerOptions: JsonSerializerOptions.Default);
+
+        Assert.True(JsonElement.DeepEquals(expected, actual));
+    }
+
+    public class PocoWithTypesWithOpenAIUnsupportedKeywords
+    {
+        // Uses the unsupported "format" keyword
+        public DateTimeOffset Date { get; init; }
+
+        // Uses the unsupported "pattern" keyword
+        public TimeSpan TimeSpan { get; init; }
+
+        // Uses the unsupported "minLength" and "maxLength" keywords
+        public char Char { get; init; }
     }
 
     [Fact]
@@ -178,7 +271,12 @@ public static class AIJsonUtilitiesTests
             ? new(opts) { TypeInfoResolver = TestTypes.TestTypesContext.Default }
             : TestTypes.TestTypesContext.Default.Options;
 
-        JsonElement schema = AIJsonUtilities.CreateJsonSchema(testData.Type, serializerOptions: options);
+        JsonTypeInfo typeInfo = options.GetTypeInfo(testData.Type);
+        AIJsonSchemaCreateOptions? createOptions = typeInfo.Properties.Any(prop => prop.IsExtensionData)
+            ? new() { DisallowAdditionalProperties = false } // Do not append additionalProperties: false to the schema if the type has extension data.
+            : null;
+
+        JsonElement schema = AIJsonUtilities.CreateJsonSchema(testData.Type, serializerOptions: options, inferenceOptions: createOptions);
         JsonNode? schemaAsNode = JsonSerializer.SerializeToNode(schema, options);
 
         Assert.NotNull(schemaAsNode);

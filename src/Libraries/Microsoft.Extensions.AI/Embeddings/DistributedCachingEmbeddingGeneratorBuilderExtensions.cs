@@ -32,7 +32,7 @@ public static class DistributedCachingEmbeddingGeneratorBuilderExtensions
         where TEmbedding : Embedding
     {
         _ = Throw.IfNull(builder);
-        return builder.Use((services, innerGenerator) =>
+        return builder.Use((innerGenerator, services) =>
         {
             storage ??= services.GetRequiredService<IDistributedCache>();
             var result = new DistributedCachingEmbeddingGenerator<TInput, TEmbedding>(innerGenerator, storage);

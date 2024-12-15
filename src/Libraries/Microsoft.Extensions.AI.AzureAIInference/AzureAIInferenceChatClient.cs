@@ -3,10 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.Inference;
@@ -26,6 +29,9 @@ public sealed class AzureAIInferenceChatClient : IChatClient
 
     /// <summary>The underlying <see cref="ChatCompletionsClient" />.</summary>
     private readonly ChatCompletionsClient _chatCompletionsClient;
+
+    /// <summary>The <see cref="JsonSerializerOptions"/> use for any serialization activities related to tool call arguments and results.</summary>
+    private JsonSerializerOptions _toolCallJsonSerializerOptions = AIJsonUtilities.DefaultOptions;
 
     /// <summary>Initializes a new instance of the <see cref="AzureAIInferenceChatClient"/> class for the specified <see cref="ChatCompletionsClient"/>.</summary>
     /// <param name="chatCompletionsClient">The underlying client.</param>
@@ -51,7 +57,11 @@ public sealed class AzureAIInferenceChatClient : IChatClient
     }
 
     /// <summary>Gets or sets <see cref="JsonSerializerOptions"/> to use for any serialization activities related to tool call arguments and results.</summary>
-    public JsonSerializerOptions? ToolCallJsonSerializerOptions { get; set; }
+    public JsonSerializerOptions ToolCallJsonSerializerOptions
+    {
+        get => _toolCallJsonSerializerOptions;
+        set => _toolCallJsonSerializerOptions = Throw.IfNull(value);
+    }
 
     /// <inheritdoc />
     public ChatClientMetadata Metadata { get; }
@@ -304,7 +314,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
             // These properties are strongly typed on ChatOptions but not on ChatCompletionsOptions.
             if (options.TopK is int topK)
             {
-                result.AdditionalProperties["top_k"] = new BinaryData(JsonSerializer.SerializeToUtf8Bytes(topK, JsonContext.Default.Int32));
+                result.AdditionalProperties["top_k"] = new BinaryData(JsonSerializer.SerializeToUtf8Bytes(topK, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(int))));
             }
 
             if (options.AdditionalProperties is { } props)
@@ -317,7 +327,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
                         default:
                             if (prop.Value is not null)
                             {
-                                byte[] data = JsonSerializer.SerializeToUtf8Bytes(prop.Value, JsonContext.GetTypeInfo(prop.Value.GetType(), ToolCallJsonSerializerOptions));
+                                byte[] data = JsonSerializer.SerializeToUtf8Bytes(prop.Value, ToolCallJsonSerializerOptions.GetTypeInfo(typeof(object)));
                                 result.AdditionalProperties[prop.Key] = new BinaryData(data);
                             }
 
@@ -397,7 +407,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
     }
 
     /// <summary>Converts an Extensions chat message enumerable to an AzureAI chat message enumerable.</summary>
-    private IEnumerable<ChatRequestMessage> ToAzureAIInferenceChatMessages(IEnumerable<ChatMessage> inputs)
+    private IEnumerable<ChatRequestMessage> ToAzureAIInferenceChatMessages(IList<ChatMessage> inputs)
     {
         // Maps all of the M.E.AI types to the corresponding AzureAI types.
         // Unrecognized or non-processable content is ignored.
@@ -419,7 +429,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
                         {
                             try
                             {
-                                result = JsonSerializer.Serialize(resultContent.Result, JsonContext.GetTypeInfo(typeof(object), ToolCallJsonSerializerOptions));
+                                result = JsonSerializer.Serialize(resultContent.Result, ToolCallJsonSerializerOptions.GetTypeInfo(typeof(object)));
                             }
                             catch (NotSupportedException)
                             {
@@ -433,13 +443,15 @@ public sealed class AzureAIInferenceChatClient : IChatClient
             }
             else if (input.Role == ChatRole.User)
             {
-                yield return new ChatRequestUserMessage(GetContentParts(input.Contents));
+                yield return input.Contents.All(c => c is TextContent) ?
+                    new ChatRequestUserMessage(string.Concat(input.Contents)) :
+                    new ChatRequestUserMessage(GetContentParts(input.Contents));
             }
             else if (input.Role == ChatRole.Assistant)
             {
                 // TODO: ChatRequestAssistantMessage only enables text content currently.
                 // Update it with other content types when it supports that.
-                ChatRequestAssistantMessage message = new(input.Text ?? string.Empty);
+                ChatRequestAssistantMessage message = new(string.Concat(input.Contents.Where(c => c is TextContent)));
 
                 foreach (var content in input.Contents)
                 {
@@ -449,7 +461,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
                              callRequest.CallId,
                              new FunctionCall(
                                  callRequest.Name,
-                                 JsonSerializer.Serialize(callRequest.Arguments, JsonContext.GetTypeInfo(typeof(IDictionary<string, object>), ToolCallJsonSerializerOptions)))));
+                                 JsonSerializer.Serialize(callRequest.Arguments, ToolCallJsonSerializerOptions.GetTypeInfo(typeof(IDictionary<string, object>))))));
                     }
                 }
 
@@ -461,6 +473,8 @@ public sealed class AzureAIInferenceChatClient : IChatClient
     /// <summary>Converts a list of <see cref="AIContent"/> to a list of <see cref="ChatMessageContentItem"/>.</summary>
     private static List<ChatMessageContentItem> GetContentParts(IList<AIContent> contents)
     {
+        Debug.Assert(contents is { Count: > 0 }, "Expected non-empty contents");
+
         List<ChatMessageContentItem> parts = [];
         foreach (var content in contents)
         {
@@ -480,15 +494,11 @@ public sealed class AzureAIInferenceChatClient : IChatClient
             }
         }
 
-        if (parts.Count == 0)
-        {
-            parts.Add(new ChatMessageTextContentItem(string.Empty));
-        }
-
         return parts;
     }
 
     private static FunctionCallContent ParseCallContentFromJsonString(string json, string callId, string name) =>
         FunctionCallContent.CreateFromParsedArguments(json, callId, name,
-            argumentParser: static json => JsonSerializer.Deserialize(json, JsonContext.Default.IDictionaryStringObject)!);
+            argumentParser: static json => JsonSerializer.Deserialize(json,
+                (JsonTypeInfo<IDictionary<string, object>>)AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object>)))!);
 }

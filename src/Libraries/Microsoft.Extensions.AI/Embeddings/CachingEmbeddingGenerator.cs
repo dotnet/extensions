@@ -106,13 +106,10 @@ public abstract class CachingEmbeddingGenerator<TInput, TEmbedding> : Delegating
         return results;
     }
 
-    /// <summary>
-    /// Computes a cache key for the specified call parameters.
-    /// </summary>
-    /// <param name="value">The <typeparamref name="TInput"/> for which an embedding is being requested.</param>
-    /// <param name="options">The options to configure the request.</param>
-    /// <returns>A string that will be used as a cache key.</returns>
-    protected abstract string GetCacheKey(TInput value, EmbeddingGenerationOptions? options);
+    /// <summary>Computes a cache key for the specified values.</summary>
+    /// <param name="values">The values to inform the key.</param>
+    /// <returns>The computed key.</returns>
+    protected abstract string GetCacheKey(params ReadOnlySpan<object?> values);
 
     /// <summary>Returns a previously cached <see cref="Embedding{TEmbedding}"/>, if available.</summary>
     /// <param name="key">The cache key.</param>

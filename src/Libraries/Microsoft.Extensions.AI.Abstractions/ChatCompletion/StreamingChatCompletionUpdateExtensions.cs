@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using System.Linq;
 #if NET
 using System.Runtime.InteropServices;
 #endif
@@ -133,7 +134,38 @@ public static class StreamingChatCompletionUpdateExtensions
     /// <param name="coalesceContent">The corresponding option value provided to <see cref="ToChatCompletion"/> or <see cref="ToChatCompletionAsync"/>.</param>
     private static void AddMessagesToCompletion(Dictionary<int, ChatMessage> messages, ChatCompletion completion, bool coalesceContent)
     {
-        foreach (var entry in messages)
+        if (messages.Count <= 1)
+        {
+            // Add the single message if there is one.
+            foreach (var entry in messages)
+            {
+                AddMessage(completion, coalesceContent, entry);
+            }
+
+            // In the vast majority case where there's only one choice, promote any additional properties
+            // from the single message to the chat completion, making them more discoverable and more similar
+            // to how they're typically surfaced from non-streaming services.
+            if (completion.Choices.Count == 1 &&
+                completion.Choices[0].AdditionalProperties is { } messageProps)
+            {
+                completion.Choices[0].AdditionalProperties = null;
+                completion.AdditionalProperties = messageProps;
+            }
+        }
+        else
+        {
+            // Add all of the messages, sorted by choice index.
+            foreach (var entry in messages.OrderBy(entry => entry.Key))
+            {
+                AddMessage(completion, coalesceContent, entry);
+            }
+
+            // If there are multiple choices, we don't promote additional properties from the individual messages.
+            // At a minimum, we'd want to know which choice the additional properties applied to, and if there were
+            // conflicting values across the choices, it would be unclear which one should be used.
+        }
+
+        static void AddMessage(ChatCompletion completion, bool coalesceContent, KeyValuePair<int, ChatMessage> entry)
         {
             if (entry.Value.Role == default)
             {
@@ -154,6 +186,8 @@ public static class StreamingChatCompletionUpdateExtensions
                     if (content is UsageContent c)
                     {
                         completion.Usage = c.Details;
+                        entry.Value.Contents = entry.Value.Contents.ToList();
+                        _ = entry.Value.Contents.Remove(c);
                         break;
                     }
                 }

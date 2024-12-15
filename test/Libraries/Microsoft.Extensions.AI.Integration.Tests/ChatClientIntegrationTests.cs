@@ -8,12 +8,13 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.TestUtilities;
 using OpenTelemetry.Trace;
 using Xunit;
@@ -159,17 +160,40 @@ public abstract class ChatClientIntegrationTests : IDisposable
     {
         SkipIfNotEnabled();
 
-        using var chatClient = new FunctionInvokingChatClient(_chatClient);
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using var chatClient = new FunctionInvokingChatClient(
+            new OpenTelemetryChatClient(_chatClient, sourceName: sourceName));
 
         int secretNumber = 42;
 
-        var response = await chatClient.CompleteAsync("What is the current secret number?", new()
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.User, "What is the current secret number?")
+        ];
+
+        var response = await chatClient.CompleteAsync(messages, new()
         {
             Tools = [AIFunctionFactory.Create(() => secretNumber, "GetSecretNumber")]
         });
 
         Assert.Single(response.Choices);
         Assert.Contains(secretNumber.ToString(), response.Message.Text);
+
+        // If the underlying IChatClient provides usage data, function invocation should aggregate the
+        // usage data across all calls to produce a single Usage value on the final response
+        if (response.Usage is { } finalUsage)
+        {
+            var totalInputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.input_tokens")!);
+            var totalOutputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.output_tokens")!);
+            Assert.Equal(totalInputTokens, finalUsage.InputTokenCount);
+            Assert.Equal(totalOutputTokens, finalUsage.OutputTokenCount);
+        }
     }
 
     [ConditionalFact]
@@ -377,12 +401,13 @@ public abstract class ChatClientIntegrationTests : IDisposable
         }, "GetTemperature");
 
         // First call executes the function and calls the LLM
-        using var chatClient = new ChatClientBuilder()
+        using var chatClient = CreateChatClient()!
+            .AsBuilder()
             .ConfigureOptions(options => options.Tools = [getTemperature])
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))
             .UseFunctionInvocation()
             .UseCallCounting()
-            .Use(CreateChatClient()!);
+            .Build();
 
         var llmCallCount = chatClient.GetService<CallCountingChatClient>();
         var message = new ChatMessage(ChatRole.User, "What is the temperature?");
@@ -415,12 +440,13 @@ public abstract class ChatClientIntegrationTests : IDisposable
         }, "GetTemperature");
 
         // First call executes the function and calls the LLM
-        using var chatClient = new ChatClientBuilder()
+        using var chatClient = CreateChatClient()!
+            .AsBuilder()
             .ConfigureOptions(options => options.Tools = [getTemperature])
             .UseFunctionInvocation()
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))
             .UseCallCounting()
-            .Use(CreateChatClient()!);
+            .Build();
 
         var llmCallCount = chatClient.GetService<CallCountingChatClient>();
         var message = new ChatMessage(ChatRole.User, "What is the temperature?");
@@ -454,12 +480,13 @@ public abstract class ChatClientIntegrationTests : IDisposable
         }, "GetTemperature");
 
         // First call executes the function and calls the LLM
-        using var chatClient = new ChatClientBuilder()
+        using var chatClient = CreateChatClient()!
+            .AsBuilder()
             .ConfigureOptions(options => options.Tools = [getTemperature])
             .UseFunctionInvocation()
             .UseDistributedCache(new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())))
             .UseCallCounting()
-            .Use(CreateChatClient()!);
+            .Build();
 
         var llmCallCount = chatClient.GetService<CallCountingChatClient>();
         var message = new ChatMessage(ChatRole.User, "What is the temperature?");
@@ -483,14 +510,16 @@ public abstract class ChatClientIntegrationTests : IDisposable
     {
         SkipIfNotEnabled();
 
-        CapturingLogger logger = new();
+        var collector = new FakeLogCollector();
+        using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(LogLevel.Trace));
 
-        using var chatClient =
-            new LoggingChatClient(CreateChatClient()!, logger);
+        using var chatClient = CreateChatClient()!.AsBuilder()
+            .UseLogging(loggerFactory)
+            .Build();
 
         await chatClient.CompleteAsync([new(ChatRole.User, "What's the biggest animal?")]);
 
-        Assert.Collection(logger.Entries,
+        Assert.Collection(collector.GetSnapshot(),
             entry => Assert.Contains("What\\u0027s the biggest animal?", entry.Message),
             entry => Assert.Contains("whale", entry.Message));
     }
@@ -500,18 +529,21 @@ public abstract class ChatClientIntegrationTests : IDisposable
     {
         SkipIfNotEnabled();
 
-        CapturingLogger logger = new();
+        var collector = new FakeLogCollector();
+        using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(LogLevel.Trace));
 
-        using var chatClient =
-            new LoggingChatClient(CreateChatClient()!, logger);
+        using var chatClient = CreateChatClient()!.AsBuilder()
+            .UseLogging(loggerFactory)
+            .Build();
 
         await foreach (var update in chatClient.CompleteStreamingAsync("What's the biggest animal?"))
         {
             // Do nothing with the updates
         }
 
-        Assert.Contains(logger.Entries, e => e.Message.Contains("What\\u0027s the biggest animal?"));
-        Assert.Contains(logger.Entries, e => e.Message.Contains("whale"));
+        var logs = collector.GetSnapshot();
+        Assert.Contains(logs, e => e.Message.Contains("What\\u0027s the biggest animal?"));
+        Assert.Contains(logs, e => e.Message.Contains("whale"));
     }
 
     [ConditionalFact]
@@ -519,18 +551,21 @@ public abstract class ChatClientIntegrationTests : IDisposable
     {
         SkipIfNotEnabled();
 
-        CapturingLogger logger = new();
+        var collector = new FakeLogCollector();
+        using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(LogLevel.Trace));
 
-        using var chatClient =
-            new FunctionInvokingChatClient(
-                new LoggingChatClient(CreateChatClient()!, logger));
+        using var chatClient = CreateChatClient()!
+            .AsBuilder()
+            .UseFunctionInvocation()
+            .UseLogging(loggerFactory)
+            .Build();
 
         int secretNumber = 42;
         await chatClient.CompleteAsync(
             "What is the current secret number?",
             new ChatOptions { Tools = [AIFunctionFactory.Create(() => secretNumber, "GetSecretNumber")] });
 
-        Assert.Collection(logger.Entries,
+        Assert.Collection(collector.GetSnapshot(),
             entry => Assert.Contains("What is the current secret number?", entry.Message),
             entry => Assert.Contains("\"name\": \"GetSecretNumber\"", entry.Message),
             entry => Assert.Contains($"\"result\": {secretNumber}", entry.Message),
@@ -542,11 +577,14 @@ public abstract class ChatClientIntegrationTests : IDisposable
     {
         SkipIfNotEnabled();
 
-        CapturingLogger logger = new();
+        var collector = new FakeLogCollector();
+        using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(LogLevel.Trace));
 
-        using var chatClient =
-            new FunctionInvokingChatClient(
-                new LoggingChatClient(CreateChatClient()!, logger));
+        using var chatClient = CreateChatClient()!
+            .AsBuilder()
+            .UseFunctionInvocation()
+            .UseLogging(loggerFactory)
+            .Build();
 
         int secretNumber = 42;
         await foreach (var update in chatClient.CompleteStreamingAsync(
@@ -556,9 +594,10 @@ public abstract class ChatClientIntegrationTests : IDisposable
             // Do nothing with the updates
         }
 
-        Assert.Contains(logger.Entries, e => e.Message.Contains("What is the current secret number?"));
-        Assert.Contains(logger.Entries, e => e.Message.Contains("\"name\": \"GetSecretNumber\""));
-        Assert.Contains(logger.Entries, e => e.Message.Contains($"\"result\": {secretNumber}"));
+        var logs = collector.GetSnapshot();
+        Assert.Contains(logs, e => e.Message.Contains("What is the current secret number?"));
+        Assert.Contains(logs, e => e.Message.Contains("\"name\": \"GetSecretNumber\""));
+        Assert.Contains(logs, e => e.Message.Contains($"\"result\": {secretNumber}"));
     }
 
     [ConditionalFact]
@@ -573,9 +612,9 @@ public abstract class ChatClientIntegrationTests : IDisposable
             .AddInMemoryExporter(activities)
             .Build();
 
-        var chatClient = new ChatClientBuilder()
+        var chatClient = CreateChatClient()!.AsBuilder()
             .UseOpenTelemetry(sourceName: sourceName)
-            .Use(CreateChatClient()!);
+            .Build();
 
         var response = await chatClient.CompleteAsync([new(ChatRole.User, "What's the biggest animal?")]);
 
@@ -680,11 +719,11 @@ public abstract class ChatClientIntegrationTests : IDisposable
     {
         SkipIfNotEnabled();
 
-        var response = await _chatClient.CompleteAsync<Architecture>("""
-            I'm using a Macbook Pro with an M2 chip. What architecture am I using?
+        var response = await _chatClient.CompleteAsync<JobType>("""
+            Taylor Swift is a famous singer and songwriter. What is her job?
             """);
 
-        Assert.Equal(Architecture.Arm64, response.Result);
+        Assert.Equal(JobType.PopStar, response.Result);
     }
 
     [ConditionalFact]
@@ -716,6 +755,33 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.Equal(expectedPerson.AgeInYears, response.Result.AgeInYears);
         Assert.Equal(expectedPerson.HomeTown, response.Result.HomeTown);
         Assert.Equal(expectedPerson.Job, response.Result.Job);
+    }
+
+    [ConditionalFact]
+    public virtual async Task CompleteAsync_StructuredOutput_Native()
+    {
+        SkipIfNotEnabled();
+
+        var capturedCalls = new List<IList<ChatMessage>>();
+        var captureOutputChatClient = _chatClient.AsBuilder()
+            .Use((messages, options, nextAsync, cancellationToken) =>
+            {
+                capturedCalls.Add([.. messages]);
+                return nextAsync(messages, options, cancellationToken);
+            })
+            .Build();
+
+        var response = await captureOutputChatClient.CompleteAsync<Person>("""
+            Supply a JSON object to represent Jimbo Smith from Cardiff.
+            """, useNativeJsonSchema: true);
+
+        Assert.Equal("Jimbo Smith", response.Result.FullName);
+        Assert.Contains("Cardiff", response.Result.HomeTown);
+
+        // Verify it used *native* structured output, i.e., no prompt augmentation
+        Assert.All(
+            Assert.Single(capturedCalls),
+            message => Assert.DoesNotContain("schema", message.Text));
     }
 
     private class Person

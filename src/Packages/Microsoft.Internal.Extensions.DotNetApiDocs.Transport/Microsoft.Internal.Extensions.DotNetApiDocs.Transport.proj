@@ -6,6 +6,7 @@
     <TargetFrameworks />
 
     <Stage>transport</Stage>
+    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
     <IsShipping>false</IsShipping>
 
     <PackageDescription>Internal transport package to provide dotnet-api-docs with the reference assemblies and compiler generated documentation files from dotnet/extensions.</PackageDescription>

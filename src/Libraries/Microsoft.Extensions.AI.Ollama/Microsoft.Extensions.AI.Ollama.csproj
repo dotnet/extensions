@@ -8,7 +8,8 @@
 
   <PropertyGroup>
     <Stage>preview</Stage>
-    <MinCodeCoverage>0</MinCodeCoverage>
+    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
+    <MinCodeCoverage>80</MinCodeCoverage>
     <MinMutationScore>0</MinMutationScore>
   </PropertyGroup>
 

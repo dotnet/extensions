@@ -69,6 +69,7 @@ public sealed class FunctionResultContent : AIContent
     public Exception? Exception { get; set; }
 
     /// <summary>Gets a string representing this instance to display in the debugger.</summary>
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay
     {
         get

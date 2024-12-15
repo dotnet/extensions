@@ -2,10 +2,12 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.AI</RootNamespace>
     <Description>Unit tests for Microsoft.Extensions.AI.OpenAI</Description>
+    <NoWarn>$(NoWarn);OPENAI002</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <InjectDiagnosticAttributesOnLegacy>true</InjectDiagnosticAttributesOnLegacy>
   </PropertyGroup>
 
   <ItemGroup>

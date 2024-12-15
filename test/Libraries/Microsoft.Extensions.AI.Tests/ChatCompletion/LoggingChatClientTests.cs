@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.Extensions.AI;
@@ -20,16 +21,35 @@ public class LoggingChatClientTests
         Assert.Throws<ArgumentNullException>("logger", () => new LoggingChatClient(new TestChatClient(), null!));
     }
 
+    [Fact]
+    public void UseLogging_AvoidsInjectingNopClient()
+    {
+        using var innerClient = new TestChatClient();
+
+        Assert.Null(innerClient.AsBuilder().UseLogging(NullLoggerFactory.Instance).Build().GetService(typeof(LoggingChatClient)));
+        Assert.Same(innerClient, innerClient.AsBuilder().UseLogging(NullLoggerFactory.Instance).Build().GetService(typeof(IChatClient)));
+
+        using var factory = LoggerFactory.Create(b => b.AddFakeLogging());
+        Assert.NotNull(innerClient.AsBuilder().UseLogging(factory).Build().GetService(typeof(LoggingChatClient)));
+
+        ServiceCollection c = new();
+        c.AddFakeLogging();
+        var services = c.BuildServiceProvider();
+        Assert.NotNull(innerClient.AsBuilder().UseLogging().Build(services).GetService(typeof(LoggingChatClient)));
+        Assert.NotNull(innerClient.AsBuilder().UseLogging(null).Build(services).GetService(typeof(LoggingChatClient)));
+        Assert.Null(innerClient.AsBuilder().UseLogging(NullLoggerFactory.Instance).Build(services).GetService(typeof(LoggingChatClient)));
+    }
+
     [Theory]
     [InlineData(LogLevel.Trace)]
     [InlineData(LogLevel.Debug)]
     [InlineData(LogLevel.Information)]
     public async Task CompleteAsync_LogsStartAndCompletion(LogLevel level)
     {
-        using CapturingLoggerProvider clp = new();
+        var collector = new FakeLogCollector();
 
         ServiceCollection c = new();
-        c.AddLogging(b => b.AddProvider(clp).SetMinimumLevel(level));
+        c.AddLogging(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(level));
         var services = c.BuildServiceProvider();
 
         using IChatClient innerClient = new TestChatClient
@@ -40,29 +60,31 @@ public class LoggingChatClientTests
             },
         };
 
-        using IChatClient client = new ChatClientBuilder(services)
+        using IChatClient client = innerClient
+            .AsBuilder()
             .UseLogging()
-            .Use(innerClient);
+            .Build(services);
 
         await client.CompleteAsync(
             [new(ChatRole.User, "What's the biggest animal?")],
             new ChatOptions { FrequencyPenalty = 3.0f });
 
+        var logs = collector.GetSnapshot();
         if (level is LogLevel.Trace)
         {
-            Assert.Collection(clp.Logger.Entries,
+            Assert.Collection(logs,
                 entry => Assert.True(entry.Message.Contains("CompleteAsync invoked:") && entry.Message.Contains("biggest animal")),
                 entry => Assert.True(entry.Message.Contains("CompleteAsync completed:") && entry.Message.Contains("blue whale")));
         }
         else if (level is LogLevel.Debug)
         {
-            Assert.Collection(clp.Logger.Entries,
+            Assert.Collection(logs,
                 entry => Assert.True(entry.Message.Contains("CompleteAsync invoked.") && !entry.Message.Contains("biggest animal")),
                 entry => Assert.True(entry.Message.Contains("CompleteAsync completed.") && !entry.Message.Contains("blue whale")));
         }
         else
         {
-            Assert.Empty(clp.Logger.Entries);
+            Assert.Empty(logs);
         }
     }
 
@@ -72,7 +94,8 @@ public class LoggingChatClientTests
     [InlineData(LogLevel.Information)]
     public async Task CompleteStreamAsync_LogsStartUpdateCompletion(LogLevel level)
     {
-        CapturingLogger logger = new(level);
+        var collector = new FakeLogCollector();
+        using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(level));
 
         using IChatClient innerClient = new TestChatClient
         {
@@ -86,9 +109,10 @@ public class LoggingChatClientTests
             yield return new StreamingChatCompletionUpdate { Role = ChatRole.Assistant, Text = "whale" };
         }
 
-        using IChatClient client = new ChatClientBuilder()
-            .UseLogging(logger)
-            .Use(innerClient);
+        using IChatClient client = innerClient
+            .AsBuilder()
+            .UseLogging(loggerFactory)
+            .Build();
 
         await foreach (var update in client.CompleteStreamingAsync(
             [new(ChatRole.User, "What's the biggest animal?")],
@@ -97,9 +121,10 @@ public class LoggingChatClientTests
             // nop
         }
 
+        var logs = collector.GetSnapshot();
         if (level is LogLevel.Trace)
         {
-            Assert.Collection(logger.Entries,
+            Assert.Collection(logs,
                 entry => Assert.True(entry.Message.Contains("CompleteStreamingAsync invoked:") && entry.Message.Contains("biggest animal")),
                 entry => Assert.True(entry.Message.Contains("CompleteStreamingAsync received update:") && entry.Message.Contains("blue")),
                 entry => Assert.True(entry.Message.Contains("CompleteStreamingAsync received update:") && entry.Message.Contains("whale")),
@@ -107,7 +132,7 @@ public class LoggingChatClientTests
         }
         else if (level is LogLevel.Debug)
         {
-            Assert.Collection(logger.Entries,
+            Assert.Collection(logs,
                 entry => Assert.True(entry.Message.Contains("CompleteStreamingAsync invoked.") && !entry.Message.Contains("biggest animal")),
                 entry => Assert.True(entry.Message.Contains("CompleteStreamingAsync received update.") && !entry.Message.Contains("blue")),
                 entry => Assert.True(entry.Message.Contains("CompleteStreamingAsync received update.") && !entry.Message.Contains("whale")),
@@ -115,7 +140,7 @@ public class LoggingChatClientTests
         }
         else
         {
-            Assert.Empty(logger.Entries);
+            Assert.Empty(logs);
         }
     }
 }

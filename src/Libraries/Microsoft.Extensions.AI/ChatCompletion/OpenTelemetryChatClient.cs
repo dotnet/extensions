@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a delegating chat client that implements the OpenTelemetry Semantic Conventions for Generative AI systems.</summary>
 /// <remarks>
-/// The draft specification this follows is available at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
+/// This class provides an implementation of the Semantic Conventions for Generative AI systems v1.29, defined at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
 /// The specification is still experimental and subject to change; as such, the telemetry output by this client is also subject to change.
 /// </remarks>
 public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
@@ -201,60 +201,10 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         }
         finally
         {
-            TraceCompletion(activity, requestModelId, ComposeStreamingUpdatesIntoChatCompletion(trackedUpdates), error, stopwatch);
+            TraceCompletion(activity, requestModelId, trackedUpdates.ToChatCompletion(), error, stopwatch);
 
             await responseEnumerator.DisposeAsync();
         }
-    }
-
-    /// <summary>Creates a <see cref="ChatCompletion"/> from a collection of <see cref="StreamingChatCompletionUpdate"/> instances.</summary>
-    /// <remarks>
-    /// This only propagates information that's later used by the telemetry. If additional information from the <see cref="ChatCompletion"/>
-    /// is needed, this implementation should be updated to include it.
-    /// </remarks>
-    private static ChatCompletion ComposeStreamingUpdatesIntoChatCompletion(
-        List<StreamingChatCompletionUpdate> updates)
-    {
-        // Group updates by choice index.
-        Dictionary<int, List<StreamingChatCompletionUpdate>> choices = [];
-        foreach (var update in updates)
-        {
-            if (!choices.TryGetValue(update.ChoiceIndex, out var choiceContents))
-            {
-                choices[update.ChoiceIndex] = choiceContents = [];
-            }
-
-            choiceContents.Add(update);
-        }
-
-        // Add a ChatMessage for each choice.
-        string? id = null;
-        ChatFinishReason? finishReason = null;
-        string? modelId = null;
-        List<ChatMessage> messages = new(choices.Count);
-        foreach (var choice in choices.OrderBy(c => c.Key))
-        {
-            ChatRole? role = null;
-            List<AIContent> items = [];
-            foreach (var update in choice.Value)
-            {
-                id ??= update.CompletionId;
-                finishReason ??= update.FinishReason;
-                role ??= update.Role;
-                items.AddRange(update.Contents);
-                modelId ??= update.ModelId;
-            }
-
-            messages.Add(new ChatMessage(role ?? ChatRole.Assistant, items));
-        }
-
-        return new(messages)
-        {
-            CompletionId = id,
-            FinishReason = finishReason,
-            ModelId = modelId,
-            Usage = updates.SelectMany(c => c.Contents).OfType<UsageContent>().LastOrDefault()?.Details,
-        };
     }
 
     /// <summary>Creates an activity for a chat completion request, or returns null if not enabled.</summary>
@@ -337,6 +287,19 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                         if (options.Seed is long seed)
                         {
                             _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.PerProvider(_system, "seed"), seed);
+                        }
+
+                        if (options.AdditionalProperties is { } props)
+                        {
+                            // Log all additional request options as per-provider tags. This is non-normative, but it covers cases where
+                            // there's a per-provider specification in a best-effort manner (e.g. gen_ai.openai.request.service_tier),
+                            // and more generally cases where there's additional useful information to be logged.
+                            foreach (KeyValuePair<string, object?> prop in props)
+                            {
+                                _ = activity.AddTag(
+                                    OpenTelemetryConsts.GenAI.Request.PerProvider(_system, JsonNamingPolicy.SnakeCaseLower.ConvertName(prop.Key)),
+                                    prop.Value);
+                            }
                         }
                     }
                 }
@@ -424,6 +387,22 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                 if (completion.Usage?.OutputTokenCount is int outputTokens)
                 {
                     _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.OutputTokens, outputTokens);
+                }
+
+                if (_system is not null)
+                {
+                    // Log all additional response properties as per-provider tags. This is non-normative, but it covers cases where
+                    // there's a per-provider specification in a best-effort manner (e.g. gen_ai.openai.response.system_fingerprint),
+                    // and more generally cases where there's additional useful information to be logged.
+                    if (completion.AdditionalProperties is { } props)
+                    {
+                        foreach (KeyValuePair<string, object?> prop in props)
+                        {
+                            _ = activity.AddTag(
+                                OpenTelemetryConsts.GenAI.Response.PerProvider(_system, JsonNamingPolicy.SnakeCaseLower.ConvertName(prop.Key)),
+                                prop.Value);
+                        }
+                    }
                 }
             }
         }
@@ -552,7 +531,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     {
         if (EnableSensitiveData)
         {
-            string content = string.Concat(message.Contents.OfType<TextContent>().Select(c => c.Text));
+            string content = string.Concat(message.Contents.OfType<TextContent>());
             if (content.Length > 0)
             {
                 return content;

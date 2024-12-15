@@ -2,46 +2,70 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.AI;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.AI;
+namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>Provides extension methods for registering <see cref="IChatClient"/> with a <see cref="IServiceCollection"/>.</summary>
 public static class ChatClientBuilderServiceCollectionExtensions
 {
-    /// <summary>Adds a chat client to the <see cref="IServiceCollection"/>.</summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to which the client should be added.</param>
-    /// <param name="clientFactory">The factory to use to construct the <see cref="IChatClient"/> instance.</param>
-    /// <returns>The <paramref name="services"/> collection.</returns>
-    /// <remarks>The client is registered as a scoped service.</remarks>
-    public static IServiceCollection AddChatClient(
-        this IServiceCollection services,
-        Func<ChatClientBuilder, IChatClient> clientFactory)
-    {
-        _ = Throw.IfNull(services);
-        _ = Throw.IfNull(clientFactory);
+    /// <summary>Registers a singleton <see cref="IChatClient"/> in the <see cref="IServiceCollection"/>.</summary>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the client should be added.</param>
+    /// <param name="innerClient">The inner <see cref="IChatClient"/> that represents the underlying backend.</param>
+    /// <returns>A <see cref="ChatClientBuilder"/> that can be used to build a pipeline around the inner client.</returns>
+    /// <remarks>The client is registered as a singleton service.</remarks>
+    public static ChatClientBuilder AddChatClient(
+        this IServiceCollection serviceCollection,
+        IChatClient innerClient)
+        => AddChatClient(serviceCollection, _ => innerClient);
 
-        return services.AddScoped(services =>
-            clientFactory(new ChatClientBuilder(services)));
+    /// <summary>Registers a singleton <see cref="IChatClient"/> in the <see cref="IServiceCollection"/>.</summary>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the client should be added.</param>
+    /// <param name="innerClientFactory">A callback that produces the inner <see cref="IChatClient"/> that represents the underlying backend.</param>
+    /// <returns>A <see cref="ChatClientBuilder"/> that can be used to build a pipeline around the inner client.</returns>
+    /// <remarks>The client is registered as a singleton service.</remarks>
+    public static ChatClientBuilder AddChatClient(
+        this IServiceCollection serviceCollection,
+        Func<IServiceProvider, IChatClient> innerClientFactory)
+    {
+        _ = Throw.IfNull(serviceCollection);
+        _ = Throw.IfNull(innerClientFactory);
+
+        var builder = new ChatClientBuilder(innerClientFactory);
+        _ = serviceCollection.AddSingleton(builder.Build);
+        return builder;
     }
 
-    /// <summary>Adds a chat client to the <see cref="IServiceCollection"/>.</summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to which the client should be added.</param>
+    /// <summary>Registers a keyed singleton <see cref="IChatClient"/> in the <see cref="IServiceCollection"/>.</summary>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the client should be added.</param>
     /// <param name="serviceKey">The key with which to associate the client.</param>
-    /// <param name="clientFactory">The factory to use to construct the <see cref="IChatClient"/> instance.</param>
-    /// <returns>The <paramref name="services"/> collection.</returns>
+    /// <param name="innerClient">The inner <see cref="IChatClient"/> that represents the underlying backend.</param>
+    /// <returns>A <see cref="ChatClientBuilder"/> that can be used to build a pipeline around the inner client.</returns>
     /// <remarks>The client is registered as a scoped service.</remarks>
-    public static IServiceCollection AddKeyedChatClient(
-        this IServiceCollection services,
+    public static ChatClientBuilder AddKeyedChatClient(
+        this IServiceCollection serviceCollection,
         object serviceKey,
-        Func<ChatClientBuilder, IChatClient> clientFactory)
-    {
-        _ = Throw.IfNull(services);
-        _ = Throw.IfNull(serviceKey);
-        _ = Throw.IfNull(clientFactory);
+        IChatClient innerClient)
+        => AddKeyedChatClient(serviceCollection, serviceKey, _ => innerClient);
 
-        return services.AddKeyedScoped(serviceKey, (services, _) =>
-            clientFactory(new ChatClientBuilder(services)));
+    /// <summary>Registers a keyed singleton <see cref="IChatClient"/> in the <see cref="IServiceCollection"/>.</summary>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the client should be added.</param>
+    /// <param name="serviceKey">The key with which to associate the client.</param>
+    /// <param name="innerClientFactory">A callback that produces the inner <see cref="IChatClient"/> that represents the underlying backend.</param>
+    /// <returns>A <see cref="ChatClientBuilder"/> that can be used to build a pipeline around the inner client.</returns>
+    /// <remarks>The client is registered as a scoped service.</remarks>
+    public static ChatClientBuilder AddKeyedChatClient(
+        this IServiceCollection serviceCollection,
+        object serviceKey,
+        Func<IServiceProvider, IChatClient> innerClientFactory)
+    {
+        _ = Throw.IfNull(serviceCollection);
+        _ = Throw.IfNull(serviceKey);
+        _ = Throw.IfNull(innerClientFactory);
+
+        var builder = new ChatClientBuilder(innerClientFactory);
+        _ = serviceCollection.AddKeyedSingleton(serviceKey, (services, _) => builder.Build(services));
+        return builder;
     }
 }

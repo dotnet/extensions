@@ -190,16 +190,25 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     public override async Task<ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(chatMessages);
-        ChatCompletion? response;
 
+        ChatCompletion? response = null;
         HashSet<ChatMessage>? messagesToRemove = null;
         HashSet<AIContent>? contentsToRemove = null;
+        UsageDetails? totalUsage = null;
+
         try
         {
             for (int iteration = 0; ; iteration++)
             {
                 // Make the call to the handler.
                 response = await base.CompleteAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
+
+                // Aggregate usage data over all calls
+                if (response.Usage is not null)
+                {
+                    totalUsage ??= new();
+                    totalUsage.Add(response.Usage);
+                }
 
                 // If there are no tools to call, or for any other reason we should stop, return the response.
                 if (options is null
@@ -216,7 +225,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 // doesn't realize this and is wasting their budget requesting extra choices we'd never use.
                 if (response.Choices.Count > 1)
                 {
-                    throw new InvalidOperationException($"Automatic function call invocation only accepts a single choice, but {response.Choices.Count} choices were received.");
+                    ThrowForMultipleChoices();
                 }
 
                 // Extract any function call contents on the first choice. If there are none, we're done.
@@ -279,11 +288,16 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 }
             }
 
-            return response!;
+            return response;
         }
         finally
         {
             RemoveMessagesAndContentFromList(messagesToRemove, contentsToRemove, chatMessages);
+
+            if (response is not null)
+            {
+                response.Usage = totalUsage;
+            }
         }
     }
 
@@ -294,22 +308,47 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         _ = Throw.IfNull(chatMessages);
 
         HashSet<ChatMessage>? messagesToRemove = null;
+        List<FunctionCallContent> functionCallContents = [];
+        int? choice;
         try
         {
             for (int iteration = 0; ; iteration++)
             {
-                List<FunctionCallContent>? functionCallContents = null;
-                await foreach (var chunk in base.CompleteStreamingAsync(chatMessages, options, cancellationToken).ConfigureAwait(false))
+                choice = null;
+                functionCallContents.Clear();
+                await foreach (var update in base.CompleteStreamingAsync(chatMessages, options, cancellationToken).ConfigureAwait(false))
                 {
                     // We're going to emit all StreamingChatMessage items upstream, even ones that represent
-                    // function calls, because a given StreamingChatMessage can contain other content too.
-                    yield return chunk;
+                    // function calls, because a given StreamingChatMessage can contain other content, too.
+                    // And if we yield the function calls, and the consumer adds all the content into a message
+                    // that's then added into history, they'll end up with function call contents that aren't
+                    // directly paired with function result contents, which may cause issues for some models
+                    // when the history is later sent again.
 
-                    foreach (var item in chunk.Contents.OfType<FunctionCallContent>())
+                    // Find all the FCCs. We need to track these separately in order to be able to process them later.
+                    int preFccCount = functionCallContents.Count;
+                    functionCallContents.AddRange(update.Contents.OfType<FunctionCallContent>());
+
+                    // If there were any, remove them from the update. We do this before yielding the update so
+                    // that we're not modifying an instance already provided back to the caller.
+                    int addedFccs = functionCallContents.Count - preFccCount;
+                    if (addedFccs > 0)
                     {
-                        functionCallContents ??= [];
-                        functionCallContents.Add(item);
+                        update.Contents = addedFccs == update.Contents.Count ?
+                            [] : update.Contents.Where(c => c is not FunctionCallContent).ToList();
                     }
+
+                    // Only one choice is allowed with automatic function calling.
+                    if (choice is null)
+                    {
+                        choice = update.ChoiceIndex;
+                    }
+                    else if (choice != update.ChoiceIndex)
+                    {
+                        ThrowForMultipleChoices();
+                    }
+
+                    yield return update;
                 }
 
                 // If there are no tools to call, or for any other reason we should stop, return the response.
@@ -364,6 +403,16 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         {
             RemoveMessagesAndContentFromList(messagesToRemove, contentToRemove: null, chatMessages);
         }
+    }
+
+    /// <summary>Throws an exception when multiple choices are received.</summary>
+    private static void ThrowForMultipleChoices()
+    {
+        // If there's more than one choice, we don't know which one to add to chat history, or which
+        // of their function calls to process. This should not happen except if the developer has
+        // explicitly requested multiple choices. We fail aggressively to avoid cases where a developer
+        // doesn't realize this and is wasting their budget requesting extra choices we'd never use.
+        throw new InvalidOperationException("Automatic function call invocation only accepts a single choice, but multiple choices were received.");
     }
 
     /// <summary>

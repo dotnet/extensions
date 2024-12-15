@@ -25,6 +25,7 @@ namespace Microsoft.Extensions.AI;
 /// a <see cref="ReadOnlyMemory{T}"/>. In that case, a data URI will be constructed and returned.
 /// </para>
 /// </remarks>
+[DebuggerDisplay("{DebuggerDisplay,nq}")]
 public class DataContent : AIContent
 {
     // Design note:
@@ -191,6 +192,19 @@ public class DataContent : AIContent
             }
 
             return _data;
+        }
+    }
+
+    /// <summary>Gets a string representing this instance to display in the debugger.</summary>
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private string DebuggerDisplay
+    {
+        get
+        {
+            const int MaxLength = 80;
+
+            string uri = Uri;
+            return uri.Length <= MaxLength ? uri : $"{uri.Substring(0, MaxLength)}...";
         }
     }
 }
