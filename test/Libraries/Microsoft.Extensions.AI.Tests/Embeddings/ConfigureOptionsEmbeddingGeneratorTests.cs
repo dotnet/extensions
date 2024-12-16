@@ -20,7 +20,8 @@ public class ConfigureOptionsEmbeddingGeneratorTests
     [Fact]
     public void ConfigureOptions_InvalidArgs_Throws()
     {
-        var builder = new EmbeddingGeneratorBuilder<string, Embedding<float>>();
+        using var innerGenerator = new TestEmbeddingGenerator();
+        var builder = innerGenerator.AsBuilder();
         Assert.Throws<ArgumentNullException>("configure", () => builder.ConfigureOptions(null!));
     }
 
@@ -44,7 +45,8 @@ public class ConfigureOptionsEmbeddingGeneratorTests
             }
         };
 
-        using var generator = new EmbeddingGeneratorBuilder<string, Embedding<float>>()
+        using var generator = innerGenerator
+            .AsBuilder()
             .ConfigureOptions(options =>
             {
                 Assert.NotSame(providedOptions, options);
@@ -59,7 +61,7 @@ public class ConfigureOptionsEmbeddingGeneratorTests
 
                 returnedOptions = options;
             })
-            .Use(innerGenerator);
+            .Build();
 
         var embeddings = await generator.GenerateAsync([], providedOptions, cts.Token);
         Assert.Same(expectedEmbeddings, embeddings);

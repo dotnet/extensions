@@ -25,4 +25,6 @@ namespace Microsoft.Extensions.AI;
 [JsonSerializable(typeof(Dictionary<string, string>))]
 [JsonSerializable(typeof(DayOfWeek[]))]
 [JsonSerializable(typeof(Guid))]
+[JsonSerializable(typeof(ChatOptions))]
+[JsonSerializable(typeof(EmbeddingGenerationOptions))]
 internal sealed partial class TestJsonSerializerContext : JsonSerializerContext;

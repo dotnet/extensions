@@ -14,8 +14,8 @@ public static class ConfigureOptionsEmbeddingGeneratorBuilderExtensions
     /// <summary>
     /// Adds a callback that configures a <see cref="EmbeddingGenerationOptions"/> to be passed to the next client in the pipeline.
     /// </summary>
-    /// <typeparam name="TInput">Specifies the type of the input passed to the generator.</typeparam>
-    /// <typeparam name="TEmbedding">Specifies the type of the embedding instance produced by the generator.</typeparam>
+    /// <typeparam name="TInput">The type of the input passed to the generator.</typeparam>
+    /// <typeparam name="TEmbedding">The type of the embedding instance produced by the generator.</typeparam>
     /// <param name="builder">The <see cref="EmbeddingGeneratorBuilder{TInput, TEmbedding}"/>.</param>
     /// <param name="configure">
     /// The delegate to invoke to configure the <see cref="EmbeddingGenerationOptions"/> instance. It is passed a clone of the caller-supplied

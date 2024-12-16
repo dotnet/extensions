@@ -9,6 +9,8 @@ namespace Microsoft.Extensions.AI;
 
 public class ChatResponseFormatTests
 {
+    private static JsonElement EmptySchema => JsonDocument.Parse("{}").RootElement;
+
     [Fact]
     public void Singletons_Idempotent()
     {
@@ -19,9 +21,9 @@ public class ChatResponseFormatTests
     [Fact]
     public void Constructor_InvalidArgs_Throws()
     {
-        Assert.Throws<ArgumentException>(() => new ChatResponseFormatJson(null, "name"));
-        Assert.Throws<ArgumentException>(() => new ChatResponseFormatJson(null, null, "description"));
-        Assert.Throws<ArgumentException>(() => new ChatResponseFormatJson(null, "name", "description"));
+        Assert.Throws<ArgumentException>("schemaName", () => new ChatResponseFormatJson(null, "name"));
+        Assert.Throws<ArgumentException>("schemaDescription", () => new ChatResponseFormatJson(null, null, "description"));
+        Assert.Throws<ArgumentException>("schemaName", () => new ChatResponseFormatJson(null, "name", "description"));
     }
 
     [Fact]
@@ -36,45 +38,10 @@ public class ChatResponseFormatTests
     [Fact]
     public void Constructor_PropsRoundtrip()
     {
-        ChatResponseFormatJson f = new("{}", "name", "description");
-        Assert.Equal("{}", f.Schema);
+        ChatResponseFormatJson f = new(EmptySchema, "name", "description");
+        Assert.Equal("{}", JsonSerializer.Serialize(f.Schema, TestJsonSerializerContext.Default.JsonElement));
         Assert.Equal("name", f.SchemaName);
         Assert.Equal("description", f.SchemaDescription);
-    }
-
-    [Fact]
-    public void Equality_ComparersProduceExpectedResults()
-    {
-        Assert.True(ChatResponseFormat.Text == ChatResponseFormat.Text);
-        Assert.True(ChatResponseFormat.Text.Equals(ChatResponseFormat.Text));
-        Assert.Equal(ChatResponseFormat.Text.GetHashCode(), ChatResponseFormat.Text.GetHashCode());
-        Assert.False(ChatResponseFormat.Text.Equals(ChatResponseFormat.Json));
-        Assert.False(ChatResponseFormat.Text.Equals(new ChatResponseFormatJson(null)));
-        Assert.False(ChatResponseFormat.Text.Equals(new ChatResponseFormatJson("{}")));
-
-        Assert.True(ChatResponseFormat.Json == ChatResponseFormat.Json);
-        Assert.True(ChatResponseFormat.Json.Equals(ChatResponseFormat.Json));
-        Assert.False(ChatResponseFormat.Json.Equals(ChatResponseFormat.Text));
-        Assert.False(ChatResponseFormat.Json.Equals(new ChatResponseFormatJson("{}")));
-
-        Assert.True(ChatResponseFormat.Json.Equals(new ChatResponseFormatJson(null)));
-        Assert.Equal(ChatResponseFormat.Json.GetHashCode(), new ChatResponseFormatJson(null).GetHashCode());
-
-        Assert.True(new ChatResponseFormatJson("{}").Equals(new ChatResponseFormatJson("{}")));
-        Assert.Equal(new ChatResponseFormatJson("{}").GetHashCode(), new ChatResponseFormatJson("{}").GetHashCode());
-
-        Assert.False(new ChatResponseFormatJson("""{ "prop": 42 }""").Equals(new ChatResponseFormatJson("""{ "prop": 43 }""")));
-        Assert.NotEqual(new ChatResponseFormatJson("""{ "prop": 42 }""").GetHashCode(), new ChatResponseFormatJson("""{ "prop": 43 }""").GetHashCode()); // technically not guaranteed
-
-        Assert.False(new ChatResponseFormatJson("""{ "prop": 42 }""").Equals(new ChatResponseFormatJson("""{ "PROP": 42 }""")));
-        Assert.NotEqual(new ChatResponseFormatJson("""{ "prop": 42 }""").GetHashCode(), new ChatResponseFormatJson("""{ "PROP": 42 }""").GetHashCode()); // technically not guaranteed
-
-        Assert.True(new ChatResponseFormatJson("{}", "name", "description").Equals(new ChatResponseFormatJson("{}", "name", "description")));
-        Assert.False(new ChatResponseFormatJson("{}", "name", "description").Equals(new ChatResponseFormatJson("{}", "name", "description2")));
-        Assert.False(new ChatResponseFormatJson("{}", "name", "description").Equals(new ChatResponseFormatJson("{}", "name2", "description")));
-        Assert.False(new ChatResponseFormatJson("{}", "name", "description").Equals(new ChatResponseFormatJson("{}", "name2", "description2")));
-
-        Assert.Equal(new ChatResponseFormatJson("{}", "name", "description").GetHashCode(), new ChatResponseFormatJson("{}", "name", "description").GetHashCode());
     }
 
     [Fact]
@@ -94,19 +61,24 @@ public class ChatResponseFormatTests
         Assert.Equal("""{"$type":"json"}""", json);
 
         ChatResponseFormat? result = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.ChatResponseFormat);
-        Assert.Equal(ChatResponseFormat.Json, result);
+        var actual = Assert.IsType<ChatResponseFormatJson>(result);
+        Assert.Null(actual.Schema);
+        Assert.Null(actual.SchemaDescription);
+        Assert.Null(actual.SchemaName);
     }
 
     [Fact]
     public void Serialization_ForJsonSchemaRoundtrips()
     {
-        string json = JsonSerializer.Serialize(ChatResponseFormat.ForJsonSchema("[1,2,3]", "name", "description"), TestJsonSerializerContext.Default.ChatResponseFormat);
-        Assert.Equal("""{"$type":"json","schema":"[1,2,3]","schemaName":"name","schemaDescription":"description"}""", json);
+        string json = JsonSerializer.Serialize(
+            ChatResponseFormat.ForJsonSchema(JsonSerializer.Deserialize<JsonElement>("[1,2,3]"), "name", "description"),
+            TestJsonSerializerContext.Default.ChatResponseFormat);
+        Assert.Equal("""{"$type":"json","schema":[1,2,3],"schemaName":"name","schemaDescription":"description"}""", json);
 
         ChatResponseFormat? result = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.ChatResponseFormat);
-        Assert.Equal(ChatResponseFormat.ForJsonSchema("[1,2,3]", "name", "description"), result);
-        Assert.Equal("[1,2,3]", (result as ChatResponseFormatJson)?.Schema);
-        Assert.Equal("name", (result as ChatResponseFormatJson)?.SchemaName);
-        Assert.Equal("description", (result as ChatResponseFormatJson)?.SchemaDescription);
+        var actual = Assert.IsType<ChatResponseFormatJson>(result);
+        Assert.Equal("[1,2,3]", JsonSerializer.Serialize(actual.Schema, TestJsonSerializerContext.Default.JsonElement));
+        Assert.Equal("name", actual.SchemaName);
+        Assert.Equal("description", actual.SchemaDescription);
     }
 }

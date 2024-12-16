@@ -18,12 +18,6 @@ public class OllamaChatClientIntegrationTests : ChatClientIntegrationTests
             new OllamaChatClient(endpoint, "llama3.1") :
             null;
 
-    public override Task FunctionInvocation_AutomaticallyInvokeFunction_WithParameters_Streaming() =>
-        throw new SkipTestException("Ollama does not currently support function invocation with streaming.");
-
-    public override Task Logging_LogsFunctionCalls_Streaming() =>
-        throw new SkipTestException("Ollama does not currently support function invocation with streaming.");
-
     public override Task FunctionInvocation_RequireAny() =>
         throw new SkipTestException("Ollama does not currently support requiring function invocation.");
 
@@ -37,11 +31,12 @@ public class OllamaChatClientIntegrationTests : ChatClientIntegrationTests
     {
         SkipIfNotEnabled();
 
-        using var chatClient = new ChatClientBuilder()
+        using var chatClient = CreateChatClient()!
+            .AsBuilder()
             .UseFunctionInvocation()
             .UsePromptBasedFunctionCalling()
             .Use(innerClient => new AssertNoToolsDefinedChatClient(innerClient))
-            .Use(CreateChatClient()!);
+            .Build();
 
         var secretNumber = 42;
         var response = await chatClient.CompleteAsync("What is the current secret number? Answer with digits only.", new ChatOptions
@@ -61,11 +56,12 @@ public class OllamaChatClientIntegrationTests : ChatClientIntegrationTests
     {
         SkipIfNotEnabled();
 
-        using var chatClient = new ChatClientBuilder()
+        using var chatClient = CreateChatClient()!
+            .AsBuilder()
             .UseFunctionInvocation()
             .UsePromptBasedFunctionCalling()
             .Use(innerClient => new AssertNoToolsDefinedChatClient(innerClient))
-            .Use(CreateChatClient()!);
+            .Build();
 
         var stockPriceTool = AIFunctionFactory.Create([Description("Returns the stock price for a given ticker symbol")] (
             [Description("The ticker symbol")] string symbol,

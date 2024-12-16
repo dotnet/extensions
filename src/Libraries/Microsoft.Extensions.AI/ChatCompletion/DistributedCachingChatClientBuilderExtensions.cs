@@ -25,7 +25,7 @@ public static class DistributedCachingChatClientBuilderExtensions
     public static ChatClientBuilder UseDistributedCache(this ChatClientBuilder builder, IDistributedCache? storage = null, Action<DistributedCachingChatClient>? configure = null)
     {
         _ = Throw.IfNull(builder);
-        return builder.Use((services, innerClient) =>
+        return builder.Use((innerClient, services) =>
         {
             storage ??= services.GetRequiredService<IDistributedCache>();
             var chatClient = new DistributedCachingChatClient(innerClient, storage);

@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
 
@@ -60,10 +59,10 @@ public class ChatMessage
     [JsonIgnore]
     public string? Text
     {
-        get => Contents.OfType<TextContent>().FirstOrDefault()?.Text;
+        get => Contents.FindFirst<TextContent>()?.Text;
         set
         {
-            if (Contents.OfType<TextContent>().FirstOrDefault() is { } textContent)
+            if (Contents.FindFirst<TextContent>() is { } textContent)
             {
                 textContent.Text = value;
             }
@@ -95,6 +94,5 @@ public class ChatMessage
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
 
     /// <inheritdoc/>
-    public override string ToString() =>
-        string.Concat(Contents.OfType<TextContent>());
+    public override string ToString() => Contents.ConcatText();
 }

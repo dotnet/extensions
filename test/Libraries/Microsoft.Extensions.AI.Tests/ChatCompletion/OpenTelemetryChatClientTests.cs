@@ -49,6 +49,11 @@ public class OpenTelemetryChatClientTests
                         OutputTokenCount = 20,
                         TotalTokenCount = 42,
                     },
+                    AdditionalProperties = new()
+                    {
+                        ["system_fingerprint"] = "abcdefgh",
+                        ["AndSomethingElse"] = "value2",
+                    },
                 };
             },
             CompleteStreamingAsyncCallback = CallbackAsync,
@@ -83,16 +88,22 @@ public class OpenTelemetryChatClientTests
                     OutputTokenCount = 20,
                     TotalTokenCount = 42,
                 })],
+                AdditionalProperties = new()
+                {
+                    ["system_fingerprint"] = "abcdefgh",
+                    ["AndSomethingElse"] = "value2",
+                },
             };
         }
 
-        var chatClient = new ChatClientBuilder()
+        using var chatClient = innerClient
+            .AsBuilder()
             .UseOpenTelemetry(loggerFactory, sourceName, configure: instance =>
             {
                 instance.EnableSensitiveData = enableSensitiveData;
                 instance.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
             })
-            .Use(innerClient);
+            .Build();
 
         List<ChatMessage> chatMessages =
         [
@@ -114,7 +125,13 @@ public class OpenTelemetryChatClientTests
             PresencePenalty = 5.0f,
             ResponseFormat = ChatResponseFormat.Json,
             Temperature = 6.0f,
+            Seed = 42,
             StopSequences = ["hello", "world"],
+            AdditionalProperties = new()
+            {
+                ["service_tier"] = "value1",
+                ["SomethingElse"] = "value2",
+            },
         };
 
         if (streaming)
@@ -148,11 +165,16 @@ public class OpenTelemetryChatClientTests
         Assert.Equal(7, activity.GetTagItem("gen_ai.request.top_k"));
         Assert.Equal(123, activity.GetTagItem("gen_ai.request.max_tokens"));
         Assert.Equal("""["hello", "world"]""", activity.GetTagItem("gen_ai.request.stop_sequences"));
+        Assert.Equal("value1", activity.GetTagItem("gen_ai.testservice.request.service_tier"));
+        Assert.Equal("value2", activity.GetTagItem("gen_ai.testservice.request.something_else"));
+        Assert.Equal(42L, activity.GetTagItem("gen_ai.testservice.request.seed"));
 
         Assert.Equal("id123", activity.GetTagItem("gen_ai.response.id"));
         Assert.Equal("""["stop"]""", activity.GetTagItem("gen_ai.response.finish_reasons"));
         Assert.Equal(10, activity.GetTagItem("gen_ai.response.input_tokens"));
         Assert.Equal(20, activity.GetTagItem("gen_ai.response.output_tokens"));
+        Assert.Equal("abcdefgh", activity.GetTagItem("gen_ai.testservice.response.system_fingerprint"));
+        Assert.Equal("value2", activity.GetTagItem("gen_ai.testservice.response.and_something_else"));
 
         Assert.True(activity.Duration.TotalMilliseconds > 0);
 

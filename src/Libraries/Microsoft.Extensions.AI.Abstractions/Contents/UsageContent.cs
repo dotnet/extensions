@@ -38,5 +38,6 @@ public class UsageContent : AIContent
     }
 
     /// <summary>Gets a string representing this instance to display in the debugger.</summary>
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => _details.DebuggerDisplay;
 }
