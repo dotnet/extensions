@@ -117,7 +117,7 @@ internal partial class DefaultHybridCache
 
         if (pending.IsCompleted)
         {
-            return timestamp > pending.Result;
+            return timestamp <= pending.Result;
         }
         else
         {

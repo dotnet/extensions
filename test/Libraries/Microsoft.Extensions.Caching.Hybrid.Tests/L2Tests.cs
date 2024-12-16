@@ -204,7 +204,7 @@ public class L2Tests(ITestOutputHelper log)
         }
     }
 
-    private class LoggingCache(ITestOutputHelper log, IDistributedCache tail) : IDistributedCache
+    internal class LoggingCache(ITestOutputHelper log, IDistributedCache tail) : IDistributedCache
     {
         protected ITestOutputHelper Log => log;
         protected IDistributedCache Tail => tail;
