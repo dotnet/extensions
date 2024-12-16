@@ -1,9 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Extensions.Logging;
-
-namespace Microsoft.Extensions.Diagnostics;
+namespace Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Represents a rule used for filtering log messages for purposes of log sampling and buffering.

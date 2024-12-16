@@ -2,6 +2,7 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Options.Contextual.Test</RootNamespace>
     <Description>Unit tests for Microsoft.Extensions.Options.Contextual</Description>
+    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
   </PropertyGroup>
 
   <PropertyGroup>

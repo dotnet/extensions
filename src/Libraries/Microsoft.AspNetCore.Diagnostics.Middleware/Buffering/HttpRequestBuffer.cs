@@ -1,16 +1,15 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if NET9_0_OR_GREATER
 using System;
 using System.Collections.Concurrent;
-using Microsoft.Extensions.Diagnostics;
+using Microsoft.Extensions.Diagnostics.Buffering;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
 using static Microsoft.Extensions.Logging.ExtendedLogger;
 
-namespace Microsoft.AspNetCore.Diagnostics.Logging;
+namespace Microsoft.AspNetCore.Diagnostics.Buffering;
 
 internal sealed class HttpRequestBuffer : ILoggingBuffer
 {
@@ -107,4 +106,3 @@ internal sealed class HttpRequestBuffer : ILoggingBuffer
         }
     }
 }
-#endif

@@ -1,13 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if NET9_0_OR_GREATER
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Shared.DiagnosticIds;
 
-namespace Microsoft.Extensions.Logging;
+namespace Microsoft.Extensions.Diagnostics.Buffering;
 
 /// <summary>
 /// Defines a rule used to filter log messages for purposes of futher buffering.
@@ -45,4 +43,3 @@ public class BufferFilterRule : ILoggerFilterRule
     /// <inheritdoc/>
     public int? EventId { get; set; }
 }
-#endif

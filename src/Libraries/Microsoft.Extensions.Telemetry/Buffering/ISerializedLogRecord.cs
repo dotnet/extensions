@@ -4,9 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Logging;
 using Microsoft.Shared.DiagnosticIds;
 
-namespace Microsoft.Extensions.Logging;
+namespace Microsoft.Extensions.Diagnostics.Buffering;
 
 /// <summary>
 /// Represents a buffered log record that has been serialized.

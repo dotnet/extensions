@@ -1,13 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-#if NET9_0_OR_GREATER
+
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Diagnostics.Buffering;
 using Microsoft.Shared.DiagnosticIds;
 
-namespace Microsoft.Extensions.Diagnostics.Buffering;
+namespace Microsoft.AspNetCore.Diagnostics.Buffering;
 
 /// <summary>
-/// Interface for a HTTP request buffer manager.
+/// Interface for an HTTP request buffer manager.
 /// </summary>
 [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
 public interface IHttpRequestBufferManager : IBufferManager
@@ -17,4 +18,3 @@ public interface IHttpRequestBufferManager : IBufferManager
     /// </summary>
     public void FlushCurrentRequestLogs();
 }
-#endif

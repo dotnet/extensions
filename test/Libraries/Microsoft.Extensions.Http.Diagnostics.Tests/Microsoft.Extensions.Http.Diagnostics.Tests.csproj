@@ -2,6 +2,7 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Http.Diagnostics.Test</RootNamespace>
     <Description>Unit tests for Microsoft.Extensions.Http.Diagnostics.</Description>
+    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
   </PropertyGroup>
 
   <ItemGroup>

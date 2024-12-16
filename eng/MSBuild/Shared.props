@@ -42,4 +42,8 @@
   <ItemGroup Condition="'$(InjectStringSplitExtensions)' == 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\StringSplit\*.cs" LinkBase="Shared\StringSplit" />
   </ItemGroup>
+
+  <ItemGroup Condition="'$(InjectExceptionJsonConverter)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\ExceptionJsonConverter\*.cs" LinkBase="Shared\ExceptionJsonConverter" />
+  </ItemGroup>
 </Project>

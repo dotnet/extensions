@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
@@ -16,9 +17,11 @@
     <InjectSharedRentedSpan>true</InjectSharedRentedSpan>
     <InjectSharedMemoization>true</InjectSharedMemoization>
     <InjectGetOrAddOnLegacy>true</InjectGetOrAddOnLegacy>
+    <InjectExceptionJsonConverter>true</InjectExceptionJsonConverter>
     <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
     <UseLoggingGenerator>true</UseLoggingGenerator>
-  </PropertyGroup>
+    <NoWarn>$(NoWarn);IL2026</NoWarn>
+</PropertyGroup>
 
   <PropertyGroup>
     <Stage>normal</Stage>
@@ -34,8 +37,10 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Bcl.TimeProvider" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Configuration" />
     <PackageReference Include="System.Collections.Immutable" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))" />
+    <PackageReference Include="System.Text.Json"/>
   </ItemGroup>
 
   <ItemGroup>

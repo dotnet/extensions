@@ -1,10 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if NET9_0_OR_GREATER
 using System;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Diagnostics.Logging;
+using Microsoft.AspNetCore.Diagnostics.Buffering;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -44,7 +43,7 @@ public static class HttpRequestBufferLoggerBuilderExtensions
     }
 
     /// <summary>
-    /// Adds HTTP request-aware buffer to the logging infrastructure. Matched logs will be buffered in
+    /// Adds HTTP request-aware buffering to the logging infrastructure. Matched logs will be buffered in
     /// a buffer specific to each HTTP request and can optionally be flushed and emitted during the request lifetime./>.
     /// </summary>
     /// <param name="builder">The <see cref="ILoggingBuilder" />.</param>
@@ -104,4 +103,3 @@ public static class HttpRequestBufferLoggerBuilderExtensions
         return builder;
     }
 }
-#endif

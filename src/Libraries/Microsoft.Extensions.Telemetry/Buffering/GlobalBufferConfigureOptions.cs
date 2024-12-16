@@ -1,12 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if NET9_0_OR_GREATER
-using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.Extensions.Logging;
+namespace Microsoft.Extensions.Diagnostics.Buffering;
 
 internal sealed class GlobalBufferConfigureOptions : IConfigureOptions<GlobalBufferOptions>
 {
@@ -40,4 +38,3 @@ internal sealed class GlobalBufferConfigureOptions : IConfigureOptions<GlobalBuf
         options.Rules.AddRange(parsedOptions.Rules);
     }
 }
-#endif

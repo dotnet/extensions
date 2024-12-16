@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
     <InjectCallerAttributesOnLegacy>false</InjectCallerAttributesOnLegacy>
     <InjectDiagnosticAttributesOnLegacy>false</InjectDiagnosticAttributesOnLegacy>
     <InjectSharedThrow>false</InjectSharedThrow>

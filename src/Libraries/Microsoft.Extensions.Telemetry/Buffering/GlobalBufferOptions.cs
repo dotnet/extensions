@@ -1,13 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if NET9_0_OR_GREATER
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.DiagnosticIds;
 
-namespace Microsoft.Extensions.Logging;
+namespace Microsoft.Extensions.Diagnostics.Buffering;
 
 /// <summary>
 /// The options for LoggerBuffer.
@@ -16,7 +15,7 @@ namespace Microsoft.Extensions.Logging;
 public class GlobalBufferOptions
 {
     /// <summary>
-    /// Gets or sets the time to suspend the buffer after flushing.
+    /// Gets or sets the time to suspend the buffering after flushing.
     /// </summary>
     /// <remarks>
     /// Use this to temporarily suspend buffering after a flush, e.g. in case of an incident you may want all logs to be emitted immediately,
@@ -43,4 +42,3 @@ public class GlobalBufferOptions
 #pragma warning restore CA2227 // Collection properties should be read only
 #pragma warning restore CA1002 // Do not expose generic lists
 }
-#endif

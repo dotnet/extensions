@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <NoWarn>$(NoWarn);IL2026</NoWarn>
     <TargetFrameworks>$(NetCoreTargetFrameworks)$(ConditionalNet462)</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <DefineConstants>$(DefineConstants);SHARED_PROJECT</DefineConstants>

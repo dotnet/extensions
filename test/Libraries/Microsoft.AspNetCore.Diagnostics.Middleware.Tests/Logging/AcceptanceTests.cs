@@ -4,7 +4,6 @@
 #if NET8_0_OR_GREATER
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net.Http;
@@ -12,6 +11,7 @@ using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.Buffering;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpLogging;
@@ -25,9 +25,6 @@ using Microsoft.Extensions.Hosting.Testing;
 using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-#if NET9_0_OR_GREATER
-using Microsoft.Extensions.Diagnostics.Buffering;
-#endif
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.Net.Http.Headers;
 using Microsoft.Shared.Text;
@@ -59,7 +56,6 @@ public partial class AcceptanceTests
             app.UseRouting();
             app.UseHttpLogging();
 
-#if NET9_0_OR_GREATER
             app.Map("/flushrequestlogs", static x =>
                 x.Run(static async context =>
                 {
@@ -83,7 +79,7 @@ public partial class AcceptanceTests
                         bufferManager.Flush();
                     }
                 }));
-#endif
+
             app.Map("/error", static x =>
                 x.Run(static async context =>
                 {
@@ -743,7 +739,6 @@ public partial class AcceptanceTests
             });
     }
 
-#if NET9_0_OR_GREATER
     [Fact]
     public async Task HttpRequestBuffering()
     {
@@ -753,8 +748,13 @@ public partial class AcceptanceTests
             .AddLogging(builder =>
             {
                 // enable Microsoft.AspNetCore.Routing.Matching.DfaMatcher debug logs
-                // which we are produced by ASP.NET Core within HTTP context:
+                // which are produced by ASP.NET Core within HTTP context.
+                // This is what is going to be buffered and tested.
                 builder.AddFilter("Microsoft.AspNetCore.Routing.Matching.DfaMatcher", LogLevel.Debug);
+
+                // Disable HTTP logging middleware, otherwise even though they are not buffered,
+                // they will be logged as usual and contaminate test results:
+                builder.AddFilter("Microsoft.AspNetCore.HttpLogging", LogLevel.None);
 
                 builder.AddHttpRequestBuffering(LogLevel.Debug);
             }),
@@ -782,7 +782,6 @@ public partial class AcceptanceTests
                 Assert.Equal("test", logCollector.LatestRecord.Category);
             });
     }
-#endif
 
     [Fact]
     public async Task HttpLogging_LogRecordIsNotCreated_If_Disabled()

@@ -6,12 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Buffering;
 using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
-#if NET9_0_OR_GREATER
-using Microsoft.Extensions.Diagnostics.Buffering;
-#endif
 using Moq;
 using Xunit;
 
@@ -122,7 +120,6 @@ public static class ExtendedLoggerTests
         }
     }
 
-#if NET9_0_OR_GREATER
     [Fact]
     public static void GlobalBuffering_CanonicalUsecase()
     {
@@ -150,7 +147,6 @@ public static class ExtendedLoggerTests
         // 2 log records emitted because the buffer has been flushed
         Assert.Equal(2, provider.Logger!.Collector.Count);
     }
-#endif
 
     [Theory]
     [CombinatorialData]

@@ -1,11 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-#if NET9_0_OR_GREATER
+
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.DiagnosticIds;
 
-namespace Microsoft.Extensions.Logging;
+namespace Microsoft.Extensions.Diagnostics.Buffering;
 
 /// <summary>
 /// Represents a sink for buffered log records of all categories which can be forwarded
@@ -22,4 +22,3 @@ public interface IBufferSink
     void LogRecords<T>(IEnumerable<T> serializedRecords)
         where T : ISerializedLogRecord;
 }
-#endif

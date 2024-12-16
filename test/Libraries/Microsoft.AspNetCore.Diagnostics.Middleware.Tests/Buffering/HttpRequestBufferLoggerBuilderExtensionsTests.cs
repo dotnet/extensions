@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if NET9_0_OR_GREATER
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
@@ -11,7 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Diagnostics.Logging.Test;
+namespace Microsoft.AspNetCore.Diagnostics.Buffering.Test;
 
 public class HttpRequestBufferLoggerBuilderExtensionsTests
 {
@@ -64,4 +63,3 @@ public class HttpRequestBufferLoggerBuilderExtensionsTests
         Assert.Equivalent(expectedData, options.CurrentValue.Rules);
     }
 }
-#endif

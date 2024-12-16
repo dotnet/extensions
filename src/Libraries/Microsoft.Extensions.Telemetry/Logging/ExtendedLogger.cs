@@ -4,16 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-#if NET9_0_OR_GREATER
 using Microsoft.Extensions.Diagnostics.Buffering;
-#endif
 using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Logging;
 
 #pragma warning disable CA1031
 
-// NOTE: This implementation uses thread local storage. As a result, it will fail if formatter code, enricher code, or
+// NOTE: This implementation uses thread local storage. As a wasBuffered, it will fail if formatter code, enricher code, or
 //       redactor code calls recursively back into the logger. Don't do that.
 //
 // NOTE: Unlike the original logger in dotnet/runtime, this logger eats exceptions thrown from invoked loggers, enrichers,
@@ -33,7 +31,6 @@ internal sealed partial class ExtendedLogger : ILogger
     public MessageLogger[] MessageLoggers { get; set; } = Array.Empty<MessageLogger>();
     public ScopeLogger[] ScopeLoggers { get; set; } = Array.Empty<ScopeLogger>();
 
-#if NET9_0_OR_GREATER
     private readonly IBufferManager? _bufferManager;
     private readonly IBufferSink? _bufferSink;
 
@@ -50,14 +47,6 @@ internal sealed partial class ExtendedLogger : ILogger
             _bufferSink = new BufferSink(factory, loggers[0].Category);
         }
     }
-
-#else
-    public ExtendedLogger(ExtendedLoggerFactory factory, LoggerInformation[] loggers)
-    {
-        _factory = factory;
-        Loggers = loggers;
-    }
-#endif
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
@@ -283,38 +272,33 @@ internal sealed partial class ExtendedLogger : ILogger
             RecordException(exception, joiner.EnrichmentTagCollector, config);
         }
 
-#if NET9_0_OR_GREATER
-        bool? shouldBuffer = null;
-#endif        
+        bool shouldBuffer = true;
         for (int i = 0; i < loggers.Length; i++)
         {
             ref readonly MessageLogger loggerInfo = ref loggers[i];
             if (loggerInfo.IsNotFilteredOut(logLevel))
             {
-#if NET9_0_OR_GREATER
-                if (shouldBuffer is null or true)
+                if (shouldBuffer)
                 {
                     if (_bufferManager is not null)
                     {
-                        var result = _bufferManager.TryEnqueue(_bufferSink!, logLevel, loggerInfo.Category!, eventId, joiner, exception, static (s, e) =>
+                        var wasBuffered = _bufferManager.TryEnqueue(_bufferSink!, logLevel, loggerInfo.Category!, eventId, joiner, exception, static (s, e) =>
                         {
                             var fmt = s.Formatter!;
                             return fmt(s.State!, e);
                         });
-                        shouldBuffer = result;
 
-                        // The record was buffered, so we skip logging it for now.
-                        // When a caller needs to flush the buffer and calls IBufferManager.Flush(),
-                        // the buffer manager will internally call IBufferedLogger.LogRecords to emit log records.
-                        continue;
+                        if (wasBuffered)
+                        {
+                            // The record was buffered, so we skip logging it here and for all other loggers.
+                            // When a caller needs to flush the buffer and calls IBufferManager.Flush(),
+                            // the buffer manager will internally call IBufferedLogger.LogRecords to emit log records.
+                            break;
+                        }
+                    }
 
-                    }
-                    else
-                    {
-                        shouldBuffer = false;
-                    }
+                    shouldBuffer = false;
                 }
-#endif
 
                 try
                 {
@@ -394,38 +378,35 @@ internal sealed partial class ExtendedLogger : ILogger
         {
             RecordException(exception, joiner.EnrichmentTagCollector, config);
         }
-#if NET9_0_OR_GREATER
-        bool? shouldBuffer = null;
-#endif
+
+        bool shouldBuffer = true;
         for (int i = 0; i < loggers.Length; i++)
         {
             ref readonly MessageLogger loggerInfo = ref loggers[i];
             if (loggerInfo.IsNotFilteredOut(logLevel))
             {
-#if NET9_0_OR_GREATER
-                if (shouldBuffer is null or true)
+                if (shouldBuffer)
                 {
                     if (_bufferManager is not null)
                     {
-                        var result = _bufferManager.TryEnqueue(_bufferSink!, logLevel, loggerInfo.Category!, eventId, joiner, exception, static (s, e) =>
+                        bool wasBuffered = _bufferManager.TryEnqueue(_bufferSink!, logLevel, loggerInfo.Category!, eventId, joiner, exception, static (s, e) =>
                         {
                             var fmt = (Func<TState, Exception?, string>)s.Formatter!;
                             return fmt((TState)s.State!, e);
                         });
-                        shouldBuffer = result;
 
-                        // The record was buffered, so we skip logging it for now.
-                        // When a caller needs to flush the buffer and calls IBufferManager.Flush(),
-                        // the buffer manager will internally call IBufferedLogger.LogRecords to emit log records.
-                        continue;
+                        if (wasBuffered)
+                        {
+                            // The record was buffered, so we skip logging it here and for all other loggers.
+                            // When a caller needs to flush the buffer and calls IBufferManager.Flush(),
+                            // the buffer manager will internally call IBufferedLogger.LogRecords to emit log records.
+                            break;
+                        }
 
                     }
-                    else
-                    {
-                        shouldBuffer = false;
-                    }
+
+                    shouldBuffer = false;
                 }
-#endif
 
                 try
                 {

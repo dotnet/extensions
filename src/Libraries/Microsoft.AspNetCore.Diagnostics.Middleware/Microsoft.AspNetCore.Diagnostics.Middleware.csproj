@@ -8,6 +8,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
+    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
     <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <InjectSharedThrow>false</InjectSharedThrow>

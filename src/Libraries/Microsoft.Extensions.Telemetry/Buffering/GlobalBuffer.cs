@@ -1,16 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if NET9_0_OR_GREATER
 using System;
 using System.Collections.Concurrent;
-using Microsoft.Extensions.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
 using static Microsoft.Extensions.Logging.ExtendedLogger;
 
-namespace Microsoft.Extensions.Logging;
+namespace Microsoft.Extensions.Diagnostics.Buffering;
 
 internal sealed class GlobalBuffer : ILoggingBuffer
 {
@@ -19,6 +17,9 @@ internal sealed class GlobalBuffer : ILoggingBuffer
     private readonly IBufferSink _bufferSink;
     private readonly TimeProvider _timeProvider;
     private DateTimeOffset _lastFlushTimestamp;
+#if NETFRAMEWORK
+    private object _netfxBufferLocker = new();
+#endif
 
     public GlobalBuffer(IBufferSink bufferSink, IOptionsMonitor<GlobalBufferOptions> options, TimeProvider timeProvider)
     {
@@ -62,7 +63,18 @@ internal sealed class GlobalBuffer : ILoggingBuffer
     public void Flush()
     {
         var result = _buffer.ToArray();
+
+#if NETFRAMEWORK
+        lock (_netfxBufferLocker)
+        {
+            while (_buffer.TryDequeue(out _))
+            {
+                // Clear the buffer
+            }
+        }
+#else
         _buffer.Clear();
+#endif
 
         _lastFlushTimestamp = _timeProvider.GetUtcNow();
 
@@ -90,4 +102,3 @@ internal sealed class GlobalBuffer : ILoggingBuffer
         return rule is not null;
     }
 }
-#endif
