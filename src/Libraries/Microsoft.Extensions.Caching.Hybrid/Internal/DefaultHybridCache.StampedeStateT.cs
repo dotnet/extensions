@@ -169,12 +169,28 @@ internal partial class DefaultHybridCache
                     // kick off any necessary tag invalidation fetches
                     Cache.PrefetchTags(CacheItem.Tags);
 
-                    var result = await Cache.GetFromL2Async(Key.Key, SharedToken).ConfigureAwait(false);
+                    var result = await Cache.GetFromL2DirectAsync(Key.Key, SharedToken).ConfigureAwait(false);
 
-                    if (result.Array is not null)
+                    if (result.HasValue)
                     {
-                        SetResultAndRecycleIfAppropriate(ref result);
-                        return;
+                        // result is the wider payload including HC headers; unwrap it:
+                        switch (HybridCachePayload.TryParse(result.AsArraySegment(), Key.Key, CacheItem.Tags, Cache, out var payload,
+                            out var flags, out var entropy, out var pendingTags))
+                        {
+                            case HybridCachePayload.ParseResult.Success:
+                                // check any pending expirations, if necessary
+                                if (pendingTags.IsEmpty || !await Cache.IsAnyTagExpiredAsync(pendingTags, CacheItem.CreationTimestamp).ConfigureAwait(false))
+                                {
+                                    // move into the payload segment (minus any framing/header/etc data)
+                                    result = new(payload.Array!, payload.Offset, payload.Count, result.ReturnToPool);
+                                    SetResultAndRecycleIfAppropriate(ref result);
+                                    return;
+                                }
+
+                                break;
+                        }
+
+                        result.RecycleIfAppropriate();
                     }
                 }
 
@@ -208,7 +224,7 @@ internal partial class DefaultHybridCache
                         var writer = RecyclableArrayBufferWriter<byte>.Create(MaximumPayloadBytes); // note this lifetime spans the SetL2Async
                         IHybridCacheSerializer<T> serializer = Cache.GetSerializer<T>();
                         serializer.Serialize(newValue, writer);
-                        BufferChunk buffer = new(writer.DetachCommitted(out var length), length, returnToPool: true); // remove buffer ownership from the writer
+                        BufferChunk buffer = new(writer.DetachCommitted(out var length), 0, length, returnToPool: true); // remove buffer ownership from the writer
                         writer.Dispose(); // we're done with the writer
 
                         // protect "buffer" (this is why we "reserved") for writing to L2 if needed; SetResultPreSerialized
@@ -231,7 +247,7 @@ internal partial class DefaultHybridCache
                         if ((Key.Flags & HybridCacheEntryFlags.DisableDistributedCacheWrite) == 0)
                         {
                             // We already have the payload serialized, so this is trivial to do.
-                            await Cache.SetL2Async(Key.Key, in buffer, _options, SharedToken).ConfigureAwait(false);
+                            await Cache.SetL2Async(Key.Key, cacheItem, in buffer, _options, SharedToken).ConfigureAwait(false);
                         }
 
                         // Release our hook on the CacheItem (only really important for "mutable").
@@ -284,7 +300,7 @@ internal partial class DefaultHybridCache
         private void SetResultAndRecycleIfAppropriate(ref BufferChunk value)
         {
             // set a result from L2 cache
-            Debug.Assert(value.Array is not null, "expected buffer");
+            Debug.Assert(value.OversizedArray is not null, "expected buffer");
 
             IHybridCacheSerializer<T> serializer = Cache.GetSerializer<T>();
             CacheItem<T> cacheItem;
@@ -292,7 +308,7 @@ internal partial class DefaultHybridCache
             {
                 case ImmutableCacheItem<T> immutable:
                     // deserialize; and store object; buffer can be recycled now
-                    immutable.SetValue(serializer.Deserialize(new(value.Array!, 0, value.Length)), value.Length);
+                    immutable.SetValue(serializer.Deserialize(new(value.OversizedArray!, value.Offset, value.Length)), value.Length);
                     value.RecycleIfAppropriate();
                     cacheItem = immutable;
                     break;

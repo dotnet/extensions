@@ -121,7 +121,11 @@ public class BufferReleaseTests // note that buffer ref-counting is only enabled
         using (RecyclableArrayBufferWriter<byte> writer = RecyclableArrayBufferWriter<byte>.Create(int.MaxValue))
         {
             serializer.Serialize(await GetAsync(), writer);
-            cache.BackendCache.Set(key, writer.ToArray());
+
+            var arr = ArrayPool<byte>.Shared.Rent(HybridCachePayload.GetMaxBytes(key, TagSet.Empty, writer.CommittedBytes));
+            var bytes = HybridCachePayload.Write(arr, key, cache.CurrentTimestamp(), TimeSpan.FromHours(1), 0, TagSet.Empty, writer.AsSequence());
+            cache.BackendCache.Set(key, new ReadOnlySpan<byte>(arr, 0, bytes).ToArray());
+            ArrayPool<byte>.Shared.Return(arr);
         }
 #if DEBUG
         cache.DebugOnlyGetOutstandingBuffers(flush: true);
@@ -180,7 +184,11 @@ public class BufferReleaseTests // note that buffer ref-counting is only enabled
         using (RecyclableArrayBufferWriter<byte> writer = RecyclableArrayBufferWriter<byte>.Create(int.MaxValue))
         {
             serializer.Serialize(await GetAsync(), writer);
-            cache.BackendCache.Set(key, writer.ToArray());
+
+            var arr = ArrayPool<byte>.Shared.Rent(HybridCachePayload.GetMaxBytes(key, TagSet.Empty, writer.CommittedBytes));
+            var bytes = HybridCachePayload.Write(arr, key, cache.CurrentTimestamp(), TimeSpan.FromHours(1), 0, TagSet.Empty, writer.AsSequence());
+            cache.BackendCache.Set(key, new ReadOnlySpan<byte>(arr, 0, bytes).ToArray());
+            ArrayPool<byte>.Shared.Return(arr);
         }
 #if DEBUG
         cache.DebugOnlyGetOutstandingBuffers(flush: true);
