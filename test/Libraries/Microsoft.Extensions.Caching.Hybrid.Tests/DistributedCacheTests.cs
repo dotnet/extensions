@@ -26,9 +26,9 @@ public abstract class DistributedCacheTests
     protected abstract ValueTask ConfigureAsync(IServiceCollection services);
     protected abstract bool CustomClockSupported { get; }
 
-    protected FakeTime Clock { get; } = new();
+    internal FakeTime Clock { get; } = new();
 
-    protected sealed class FakeTime : TimeProvider, ISystemClock
+    internal sealed class FakeTime : TimeProvider, ISystemClock
     {
         private DateTimeOffset _now = DateTimeOffset.UtcNow;
         public void Reset() => _now = DateTimeOffset.UtcNow;

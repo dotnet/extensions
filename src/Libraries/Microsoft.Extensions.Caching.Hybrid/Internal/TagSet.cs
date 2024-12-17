@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
@@ -18,13 +19,13 @@ internal readonly struct TagSet
 
     private readonly object? _tagOrTags;
 
-    private TagSet(string tag)
+    internal TagSet(string tag)
     {
         Validate(tag);
         _tagOrTags = tag;
     }
 
-    private TagSet(string[] tags)
+    internal TagSet(string[] tags)
     {
         Debug.Assert(tags is { Length: > 1 }, "should be non-trivial array");
         foreach (var tag in tags)
@@ -32,6 +33,7 @@ internal readonly struct TagSet
             Validate(tag);
         }
 
+        Array.Sort(tags, StringComparer.InvariantCulture);
         _tagOrTags = tags;
     }
 
@@ -167,6 +169,31 @@ internal readonly struct TagSet
     }
 
     internal const string WildcardTag = "*";
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1122:Use string.Empty for empty strings", Justification = "Not needed")]
+    internal bool TryFind(ReadOnlySpan<char> span, [NotNullWhen(true)] out string? tag)
+    {
+        switch (_tagOrTags)
+        {
+            case string single when span.SequenceEqual(single.AsSpan()):
+                tag = single;
+                return true;
+            case string[] tags:
+                foreach (string test in tags)
+                {
+                    if (span.SequenceEqual(test.AsSpan()))
+                    {
+                        tag = test;
+                        return true;
+                    }
+                }
+
+                break;
+        }
+
+        tag = null;
+        return false;
+    }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S3928:Parameter names used into ArgumentException constructors should match an existing one ",
         Justification = "Using parameter name from public callable API")]

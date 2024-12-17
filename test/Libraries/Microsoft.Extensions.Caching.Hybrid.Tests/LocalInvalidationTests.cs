@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.ComponentModel;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Hybrid.Internal;
 using Microsoft.Extensions.Caching.Memory;
@@ -44,6 +43,7 @@ public class LocalInvalidationTests(ITestOutputHelper log)
         // which should now be repeatable again
         Assert.Equal(newValue, await cache.GetOrCreateAsync<Guid>("abc", ct => new(Guid.NewGuid())));
     }
+
     static class Options
     {
         public static IOptions<T> Create<T>(T value)
