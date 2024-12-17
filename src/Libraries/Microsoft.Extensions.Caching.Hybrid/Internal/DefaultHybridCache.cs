@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -112,6 +113,10 @@ internal sealed partial class DefaultHybridCache : HybridCache
         _defaultExpiration = defaultEntryOptions?.Expiration ?? TimeSpan.FromMinutes(5);
         _defaultLocalCacheExpiration = defaultEntryOptions?.LocalCacheExpiration ?? TimeSpan.FromMinutes(1);
         _defaultDistributedCacheExpiration = new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = _defaultExpiration };
+
+#if NET9_0_OR_GREATER
+        _tagInvalidationTimesUseAltLookup = _tagInvalidationTimes.TryGetAlternateLookup(out _tagInvalidationTimesBySpan);
+#endif
 
         // do this last
         _globalInvalidateTimestamp = _backendCache is null ? _zeroTimestamp : SafeReadTagInvalidationAsync(TagSet.WildcardTag);

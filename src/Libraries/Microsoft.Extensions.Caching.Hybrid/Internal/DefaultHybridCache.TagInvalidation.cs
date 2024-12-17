@@ -14,6 +14,11 @@ internal partial class DefaultHybridCache
 
     private readonly ConcurrentDictionary<string, Task<long>> _tagInvalidationTimes = [];
 
+#if NET9_0_OR_GREATER
+    private readonly ConcurrentDictionary<string, Task<long>>.AlternateLookup<ReadOnlySpan<char>> _tagInvalidationTimesBySpan;
+    private readonly bool _tagInvalidationTimesUseAltLookup;
+#endif
+
     private Task<long> _globalInvalidateTimestamp;
 
     public override ValueTask RemoveByTagAsync(string tag, CancellationToken token = default)
@@ -28,18 +33,13 @@ internal partial class DefaultHybridCache
         return InvalidateL2TagAsync(tag, now, token);
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S1144:Unused private types or members should be removed", Justification = "Completion-checked")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "Completion-checked")]
     public bool IsValid(CacheItem cacheItem)
     {
         var timestamp = cacheItem.CreationTimestamp;
 
-        if (_globalInvalidateTimestamp.IsCompleted)
+        if (IsWildcardExpired(timestamp))
         {
-            if (timestamp <= _globalInvalidateTimestamp.Result)
-            {
-                return false; // invalidated by wildcard
-            }
+            return false;
         }
 
         var tags = cacheItem.Tags;
@@ -49,19 +49,160 @@ internal partial class DefaultHybridCache
                 return true;
 
             case 1:
-                return !IsTagExpired(tags.GetSinglePrechecked(), timestamp);
+                return !IsTagExpired(tags.GetSinglePrechecked(), timestamp, out _);
 
             default:
                 bool allValid = true;
                 foreach (var tag in tags.GetSpanPrechecked())
                 {
-                    if (IsTagExpired(tag, timestamp))
+                    if (IsTagExpired(tag, timestamp, out _))
                     {
                         allValid = false; // but check them all, to kick-off tag fetch
                     }
                 }
 
                 return allValid;
+        }
+    }
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "Completion-checked")]
+    public bool IsWildcardExpired(long timestamp)
+    {
+        if (_globalInvalidateTimestamp.IsCompleted)
+        {
+            if (timestamp <= _globalInvalidateTimestamp.Result)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "Completion-checked")]
+    public bool IsTagExpired(ReadOnlySpan<char> tag, long timestamp, out bool isPending)
+    {
+        isPending = false;
+#if NET9_0_OR_GREATER
+        if (_tagInvalidationTimesUseAltLookup && _tagInvalidationTimesBySpan.TryGetValue(tag, out var pending))
+        {
+            if (pending.IsCompleted)
+            {
+                return timestamp <= pending.Result;
+            }
+            else
+            {
+                isPending = true;
+                return true; // assume invalid until completed
+            }
+        }
+        else if (!HasBackendCache)
+        {
+            // not invalidated, and no L2 to check
+            return false;
+        }
+#endif
+
+        // fallback to using a string
+        return IsTagExpired(tag.ToString(), timestamp, out isPending);
+    }
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "Completion-checked")]
+    public bool IsTagExpired(string tag, long timestamp, out bool isPending)
+    {
+        isPending = false;
+        if (!_tagInvalidationTimes.TryGetValue(tag, out var pending))
+        {
+            // not in the tag invalidation cache; if we have L2, need to check there
+            if (HasBackendCache)
+            {
+                pending = SafeReadTagInvalidationAsync(tag);
+                _ = _tagInvalidationTimes.TryAdd(tag, pending);
+            }
+            else
+            {
+                // not invalidated, and no L2 to check
+                return false;
+            }
+        }
+
+        if (pending.IsCompleted)
+        {
+            return timestamp <= pending.Result;
+        }
+        else
+        {
+            isPending = true;
+            return true; // assume invalid until completed
+        }
+    }
+
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Resilience", "EA0014:The async method doesn't support cancellation", Justification = "Ack")]
+    public ValueTask<bool> IsAnyTagExpiredAsync(TagSet tags, long timestamp)
+    {
+        return tags.Count switch
+        {
+            0 => new(false),
+            1 => IsTagExpiredAsync(tags.GetSinglePrechecked(), timestamp),
+            _ => SlowAsync(this, tags, timestamp),
+        };
+
+        static async ValueTask<bool> SlowAsync(DefaultHybridCache @this, TagSet tags, long timestamp)
+        {
+            int count = tags.Count;
+            for (int i = 0; i < count; i++)
+            {
+                if (await @this.IsTagExpiredAsync(tags[i], timestamp).ConfigureAwait(false))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Resilience", "EA0014:The async method doesn't support cancellation", Justification = "Ack")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1849:Call async methods when in an async method", Justification = "Completion-checked")]
+    public ValueTask<bool> IsTagExpiredAsync(string tag, long timestamp)
+    {
+        if (!_tagInvalidationTimes.TryGetValue(tag, out var pending))
+        {
+            // not in the tag invalidation cache; if we have L2, need to check there
+            if (HasBackendCache)
+            {
+                pending = SafeReadTagInvalidationAsync(tag);
+                _ = _tagInvalidationTimes.TryAdd(tag, pending);
+            }
+            else
+            {
+                // not invalidated, and no L2 to check
+                return new(false);
+            }
+        }
+
+        if (pending.IsCompleted)
+        {
+            return new(timestamp <= pending.Result);
+        }
+        else
+        {
+            return AwaitedAsync(pending, timestamp);
+        }
+
+        static async ValueTask<bool> AwaitedAsync(Task<long> pending, long timestamp) => timestamp <= await pending.ConfigureAwait(false);
+    }
+
+    internal void DebugInvalidateTag(string tag, Task<long> pending)
+    {
+        if (tag == TagSet.WildcardTag)
+        {
+            _globalInvalidateTimestamp = pending;
+        }
+        else
+        {
+            _tagInvalidationTimes[tag] = pending;
         }
     }
 
@@ -93,35 +234,6 @@ internal partial class DefaultHybridCache
         if (!_tagInvalidationTimes.TryGetValue(tag, out var pending))
         {
             _ = _tagInvalidationTimes.TryAdd(tag, SafeReadTagInvalidationAsync(tag));
-        }
-    }
-
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S1144:Unused private types or members should be removed", Justification = "Completion-checked")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "Completion-checked")]
-    private bool IsTagExpired(string tag, long timestamp)
-    {
-        if (!_tagInvalidationTimes.TryGetValue(tag, out var pending))
-        {
-            // not in the tag invalidation cache; if we have L2, need to check there
-            if (HasBackendCache)
-            {
-                pending = SafeReadTagInvalidationAsync(tag);
-                _ = _tagInvalidationTimes.TryAdd(tag, pending);
-            }
-            else
-            {
-                // not invalidated, and no L2 to check
-                return false;
-            }
-        }
-
-        if (pending.IsCompleted)
-        {
-            return timestamp <= pending.Result;
-        }
-        else
-        {
-            return true; // assume invalid until completed
         }
     }
 
