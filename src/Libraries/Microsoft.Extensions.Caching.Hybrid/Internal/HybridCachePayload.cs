@@ -10,7 +10,7 @@ using System.Text;
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
 // logic related to the payload that we send to IDistributedCache
-internal static class DistributedCachePayload
+internal static class HybridCachePayload
 {
     // FORMAT (v1):
     // fixed-size header (so that it can be reliably broadcast) 
@@ -172,8 +172,8 @@ internal static class DistributedCachePayload
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1204:Static elements should appear before instance elements", Justification = "False positive?")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S109:Magic numbers should not be used", Justification = "Encoding details; clear in context")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S107:Methods should not have too many parameters", Justification = "Borderline")]
-    public static ParseResult TryParse(ReadOnlySpan<byte> bytes, string key, TagSet knownTags, DefaultHybridCache cache,
-        out ReadOnlySpan<byte> payload, out PayloadFlags flags, out ushort entropy, out TagSet pendingTags)
+    public static ParseResult TryParse(ArraySegment<byte> source, string key, TagSet knownTags, DefaultHybridCache cache,
+        out ArraySegment<byte> payload, out PayloadFlags flags, out ushort entropy, out TagSet pendingTags)
     {
         // note "cache" is used primarily for expiration checks; we don't automatically add etc
         entropy = 0;
@@ -183,7 +183,7 @@ internal static class DistributedCachePayload
         int pendingTagsCount = 0;
 
         pendingTags = TagSet.Empty;
-
+        ReadOnlySpan<byte> bytes = new(source.Array!, source.Offset, source.Count);
         if (bytes.Length < 19) // minimum needed for empty payload and zero tags
         {
             return ParseResult.NotRecognized;
@@ -292,7 +292,8 @@ internal static class DistributedCachePayload
                         return ParseResult.InvalidData;
                     }
 
-                    payload = bytes.Slice(0, payloadLength);
+                    var start = source.Offset + source.Count - (payloadLength + 2);
+                    payload = new(source.Array!, start, payloadLength);
 
                     // finalize the pending tag buffer (in-flight tag expirations)
                     switch (pendingTagsCount)

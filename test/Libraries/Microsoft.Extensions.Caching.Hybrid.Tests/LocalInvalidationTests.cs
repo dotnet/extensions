@@ -44,7 +44,7 @@ public class LocalInvalidationTests(ITestOutputHelper log)
         Assert.Equal(newValue, await cache.GetOrCreateAsync<Guid>("abc", ct => new(Guid.NewGuid())));
     }
 
-    static class Options
+    private static class Options
     {
         public static IOptions<T> Create<T>(T value)
             where T : class

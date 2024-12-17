@@ -180,10 +180,10 @@ internal partial class DefaultHybridCache
                             HybridCacheEventSource.Log.DistributedCacheGet();
                         }
 
-                        result = await Cache.GetFromL2Async(Key.Key, SharedToken).ConfigureAwait(false);
+                        result = await Cache.GetFromL2DirectAsync(Key.Key, SharedToken).ConfigureAwait(false);
                         if (eventSourceEnabled)
                         {
-                            if (result.Array is not null)
+                            if (result.HasValue)
                             {
                                 HybridCacheEventSource.Log.DistributedCacheHit();
                             }
@@ -213,10 +213,26 @@ internal partial class DefaultHybridCache
                         result = default; // treat as "miss"
                     }
 
-                    if (result.Array is not null)
+                    if (result.HasValue)
                     {
-                        SetResultAndRecycleIfAppropriate(ref result);
-                        return;
+                        // result is the wider payload including HC headers; unwrap it:
+                        switch (HybridCachePayload.TryParse(result.AsArraySegment(), Key.Key, CacheItem.Tags, Cache, out var payload,
+                            out var flags, out var entropy, out var pendingTags))
+                        {
+                            case HybridCachePayload.ParseResult.Success:
+                                // check any pending expirations, if necessary
+                                if (pendingTags.IsEmpty || !await Cache.IsAnyTagExpiredAsync(pendingTags, CacheItem.CreationTimestamp).ConfigureAwait(false))
+                                {
+                                    // move into the payload segment (minus any framing/header/etc data)
+                                    result = new(payload.Array!, payload.Offset, payload.Count, result.ReturnToPool);
+                                    SetResultAndRecycleIfAppropriate(ref result);
+                                    return;
+                                }
+
+                                break;
+                        }
+
+                        result.RecycleIfAppropriate();
                     }
                 }
 
@@ -304,7 +320,7 @@ internal partial class DefaultHybridCache
                                 // We already have the payload serialized, so this is trivial to do.
                                 try
                                 {
-                                    await Cache.SetL2Async(Key.Key, in buffer, _options, SharedToken).ConfigureAwait(false);
+                                    await Cache.SetL2Async(Key.Key, cacheItem, in buffer, _options, SharedToken).ConfigureAwait(false);
 
                                     if (eventSourceEnabled)
                                     {
@@ -377,7 +393,7 @@ internal partial class DefaultHybridCache
         private void SetResultAndRecycleIfAppropriate(ref BufferChunk value)
         {
             // set a result from L2 cache
-            Debug.Assert(value.Array is not null, "expected buffer");
+            Debug.Assert(value.OversizedArray is not null, "expected buffer");
 
             IHybridCacheSerializer<T> serializer = Cache.GetSerializer<T>();
             CacheItem<T> cacheItem;
@@ -385,7 +401,7 @@ internal partial class DefaultHybridCache
             {
                 case ImmutableCacheItem<T> immutable:
                     // deserialize; and store object; buffer can be recycled now
-                    immutable.SetValue(serializer.Deserialize(new(value.Array!, 0, value.Length)), value.Length);
+                    immutable.SetValue(serializer.Deserialize(new(value.OversizedArray!, value.Offset, value.Length)), value.Length);
                     value.RecycleIfAppropriate();
                     cacheItem = immutable;
                     break;

@@ -34,17 +34,17 @@ public class PayloadTests(ITestOutputHelper log)
 
         string key = "my key";
         var tags = TagSet.Create(["some_tag"]);
-        var maxLen = DistributedCachePayload.GetMaxBytes(key, tags, bytes.Length);
+        var maxLen = HybridCachePayload.GetMaxBytes(key, tags, bytes.Length);
         var oversized = ArrayPool<byte>.Shared.Rent(maxLen);
 
-        int actualLength = DistributedCachePayload.Write(oversized, key, cache.CurrentTimestamp(), TimeSpan.FromMinutes(1), 0, tags, new(bytes));
+        int actualLength = HybridCachePayload.Write(oversized, key, cache.CurrentTimestamp(), TimeSpan.FromMinutes(1), 0, tags, new(bytes));
         log.WriteLine($"bytes written: {actualLength}");
         Assert.Equal(1063, actualLength);
 
         clock.Add(TimeSpan.FromSeconds(10));
-        var result = DistributedCachePayload.TryParse(new(oversized, 0, actualLength), key, tags, cache, out var payload, out var flags, out var entropy, out var pendingTags);
+        var result = HybridCachePayload.TryParse(new(oversized, 0, actualLength), key, tags, cache, out var payload, out var flags, out var entropy, out var pendingTags);
         log.WriteLine($"Entropy: {entropy}; Flags: {flags}");
-        Assert.Equal(DistributedCachePayload.ParseResult.Success, result);
+        Assert.Equal(HybridCachePayload.ParseResult.Success, result);
         Assert.True(payload.SequenceEqual(bytes));
         Assert.True(pendingTags.IsEmpty);
     }
@@ -63,23 +63,23 @@ public class PayloadTests(ITestOutputHelper log)
 
         string key = "my key";
         var tags = TagSet.Create(["some_tag"]);
-        var maxLen = DistributedCachePayload.GetMaxBytes(key, tags, bytes.Length);
+        var maxLen = HybridCachePayload.GetMaxBytes(key, tags, bytes.Length);
         var oversized = ArrayPool<byte>.Shared.Rent(maxLen);
 
-        int actualLength = DistributedCachePayload.Write(oversized, key, cache.CurrentTimestamp(), TimeSpan.FromMinutes(1), 0, tags, new(bytes));
+        int actualLength = HybridCachePayload.Write(oversized, key, cache.CurrentTimestamp(), TimeSpan.FromMinutes(1), 0, tags, new(bytes));
         log.WriteLine($"bytes written: {actualLength}");
         Assert.Equal(1063, actualLength);
 
         clock.Add(TimeSpan.FromSeconds(58));
-        var result = DistributedCachePayload.TryParse(new(oversized, 0, actualLength), key, tags, cache, out var payload, out var flags, out var entropy, out var pendingTags);
-        Assert.Equal(DistributedCachePayload.ParseResult.Success, result);
+        var result = HybridCachePayload.TryParse(new(oversized, 0, actualLength), key, tags, cache, out var payload, out var flags, out var entropy, out var pendingTags);
+        Assert.Equal(HybridCachePayload.ParseResult.Success, result);
         Assert.True(payload.SequenceEqual(bytes));
         Assert.True(pendingTags.IsEmpty);
 
         clock.Add(TimeSpan.FromSeconds(4));
-        result = DistributedCachePayload.TryParse(new(oversized, 0, actualLength), key, tags, cache, out payload, out flags, out entropy, out pendingTags);
-        Assert.Equal(DistributedCachePayload.ParseResult.ExpiredSelf, result);
-        Assert.Equal(0, payload.Length);
+        result = HybridCachePayload.TryParse(new(oversized, 0, actualLength), key, tags, cache, out payload, out flags, out entropy, out pendingTags);
+        Assert.Equal(HybridCachePayload.ParseResult.ExpiredSelf, result);
+        Assert.Equal(0, payload.Count);
         Assert.True(pendingTags.IsEmpty);
     }
 
@@ -97,19 +97,19 @@ public class PayloadTests(ITestOutputHelper log)
 
         string key = "my key";
         var tags = TagSet.Create(["some_tag"]);
-        var maxLen = DistributedCachePayload.GetMaxBytes(key, tags, bytes.Length);
+        var maxLen = HybridCachePayload.GetMaxBytes(key, tags, bytes.Length);
         var oversized = ArrayPool<byte>.Shared.Rent(maxLen);
 
-        int actualLength = DistributedCachePayload.Write(oversized, key, cache.CurrentTimestamp(), TimeSpan.FromMinutes(1), 0, tags, new(bytes));
+        int actualLength = HybridCachePayload.Write(oversized, key, cache.CurrentTimestamp(), TimeSpan.FromMinutes(1), 0, tags, new(bytes));
         log.WriteLine($"bytes written: {actualLength}");
         Assert.Equal(1063, actualLength);
 
         clock.Add(TimeSpan.FromSeconds(2));
         await cache.RemoveByTagAsync("*");
 
-        var result = DistributedCachePayload.TryParse(new(oversized, 0, actualLength), key, tags, cache, out var payload, out var flags, out var entropy, out var pendingTags);
-        Assert.Equal(DistributedCachePayload.ParseResult.ExpiredWildcard, result);
-        Assert.Equal(0, payload.Length);
+        var result = HybridCachePayload.TryParse(new(oversized, 0, actualLength), key, tags, cache, out var payload, out var flags, out var entropy, out var pendingTags);
+        Assert.Equal(HybridCachePayload.ParseResult.ExpiredWildcard, result);
+        Assert.Equal(0, payload.Count);
         Assert.True(pendingTags.IsEmpty);
     }
 
@@ -127,25 +127,25 @@ public class PayloadTests(ITestOutputHelper log)
 
         string key = "my key";
         var tags = TagSet.Create(["some_tag"]);
-        var maxLen = DistributedCachePayload.GetMaxBytes(key, tags, bytes.Length);
+        var maxLen = HybridCachePayload.GetMaxBytes(key, tags, bytes.Length);
         var oversized = ArrayPool<byte>.Shared.Rent(maxLen);
 
-        int actualLength = DistributedCachePayload.Write(oversized, key, cache.CurrentTimestamp(), TimeSpan.FromMinutes(1), 0, tags, new(bytes));
+        int actualLength = HybridCachePayload.Write(oversized, key, cache.CurrentTimestamp(), TimeSpan.FromMinutes(1), 0, tags, new(bytes));
         log.WriteLine($"bytes written: {actualLength}");
         Assert.Equal(1063, actualLength);
 
         clock.Add(TimeSpan.FromSeconds(2));
         await cache.RemoveByTagAsync("other_tag");
 
-        var result = DistributedCachePayload.TryParse(new(oversized, 0, actualLength), key, tags, cache, out var payload, out var flags, out var entropy, out var pendingTags);
-        Assert.Equal(DistributedCachePayload.ParseResult.Success, result);
+        var result = HybridCachePayload.TryParse(new(oversized, 0, actualLength), key, tags, cache, out var payload, out var flags, out var entropy, out var pendingTags);
+        Assert.Equal(HybridCachePayload.ParseResult.Success, result);
         Assert.True(payload.SequenceEqual(bytes));
         Assert.True(pendingTags.IsEmpty);
 
         await cache.RemoveByTagAsync("some_tag");
-        result = DistributedCachePayload.TryParse(new(oversized, 0, actualLength), key, tags, cache, out payload, out flags, out entropy, out pendingTags);
-        Assert.Equal(DistributedCachePayload.ParseResult.ExpiredTag, result);
-        Assert.Equal(0, payload.Length);
+        result = HybridCachePayload.TryParse(new(oversized, 0, actualLength), key, tags, cache, out payload, out flags, out entropy, out pendingTags);
+        Assert.Equal(HybridCachePayload.ParseResult.ExpiredTag, result);
+        Assert.Equal(0, payload.Count);
         Assert.True(pendingTags.IsEmpty);
     }
 
@@ -163,11 +163,11 @@ public class PayloadTests(ITestOutputHelper log)
 
         string key = "my key";
         var tags = TagSet.Create(["some_tag"]);
-        var maxLen = DistributedCachePayload.GetMaxBytes(key, tags, bytes.Length);
+        var maxLen = HybridCachePayload.GetMaxBytes(key, tags, bytes.Length);
         var oversized = ArrayPool<byte>.Shared.Rent(maxLen);
 
         var creation = cache.CurrentTimestamp();
-        int actualLength = DistributedCachePayload.Write(oversized, key, creation, TimeSpan.FromMinutes(1), 0, tags, new(bytes));
+        int actualLength = HybridCachePayload.Write(oversized, key, creation, TimeSpan.FromMinutes(1), 0, tags, new(bytes));
         log.WriteLine($"bytes written: {actualLength}");
         Assert.Equal(1063, actualLength);
 
@@ -175,8 +175,8 @@ public class PayloadTests(ITestOutputHelper log)
 
         var tcs = new TaskCompletionSource<long>();
         cache.DebugInvalidateTag("some_tag", tcs.Task);
-        var result = DistributedCachePayload.TryParse(new(oversized, 0, actualLength), key, tags, cache, out var payload, out var flags, out var entropy, out var pendingTags);
-        Assert.Equal(DistributedCachePayload.ParseResult.Success, result);
+        var result = HybridCachePayload.TryParse(new(oversized, 0, actualLength), key, tags, cache, out var payload, out var flags, out var entropy, out var pendingTags);
+        Assert.Equal(HybridCachePayload.ParseResult.Success, result);
         Assert.True(payload.SequenceEqual(bytes));
         Assert.Equal(1, pendingTags.Count);
         Assert.Equal("some_tag", pendingTags[0]);
@@ -197,9 +197,9 @@ public class PayloadTests(ITestOutputHelper log)
         byte[] bytes = new byte[1024];
         new Random().NextBytes(bytes);
 
-        var result = DistributedCachePayload.TryParse(bytes, "whatever", TagSet.Empty, cache, out var payload, out var flags, out var entropy, out var pendingTags);
-        Assert.Equal(DistributedCachePayload.ParseResult.NotRecognized, result);
-        Assert.Equal(0, payload.Length);
+        var result = HybridCachePayload.TryParse(new(bytes), "whatever", TagSet.Empty, cache, out var payload, out var flags, out var entropy, out var pendingTags);
+        Assert.Equal(HybridCachePayload.ParseResult.NotRecognized, result);
+        Assert.Equal(0, payload.Count);
         Assert.True(pendingTags.IsEmpty);
     }
 
@@ -217,16 +217,16 @@ public class PayloadTests(ITestOutputHelper log)
 
         string key = "my key";
         var tags = TagSet.Create(["some_tag"]);
-        var maxLen = DistributedCachePayload.GetMaxBytes(key, tags, bytes.Length);
+        var maxLen = HybridCachePayload.GetMaxBytes(key, tags, bytes.Length);
         var oversized = ArrayPool<byte>.Shared.Rent(maxLen);
 
-        int actualLength = DistributedCachePayload.Write(oversized, key, cache.CurrentTimestamp(), TimeSpan.FromMinutes(1), 0, tags, new(bytes));
+        int actualLength = HybridCachePayload.Write(oversized, key, cache.CurrentTimestamp(), TimeSpan.FromMinutes(1), 0, tags, new(bytes));
         log.WriteLine($"bytes written: {actualLength}");
         Assert.Equal(1063, actualLength);
 
-        var result = DistributedCachePayload.TryParse(new(oversized, 0, actualLength - 1), key, tags, cache, out var payload, out var flags, out var entropy, out var pendingTags);
-        Assert.Equal(DistributedCachePayload.ParseResult.InvalidData, result);
-        Assert.Equal(0, payload.Length);
+        var result = HybridCachePayload.TryParse(new(oversized, 0, actualLength - 1), key, tags, cache, out var payload, out var flags, out var entropy, out var pendingTags);
+        Assert.Equal(HybridCachePayload.ParseResult.InvalidData, result);
+        Assert.Equal(0, payload.Count);
         Assert.True(pendingTags.IsEmpty);
     }
 
@@ -244,16 +244,16 @@ public class PayloadTests(ITestOutputHelper log)
 
         string key = "my key";
         var tags = TagSet.Create(["some_tag"]);
-        var maxLen = DistributedCachePayload.GetMaxBytes(key, tags, bytes.Length) + 1;
+        var maxLen = HybridCachePayload.GetMaxBytes(key, tags, bytes.Length) + 1;
         var oversized = ArrayPool<byte>.Shared.Rent(maxLen);
 
-        int actualLength = DistributedCachePayload.Write(oversized, key, cache.CurrentTimestamp(), TimeSpan.FromMinutes(1), 0, tags, new(bytes));
+        int actualLength = HybridCachePayload.Write(oversized, key, cache.CurrentTimestamp(), TimeSpan.FromMinutes(1), 0, tags, new(bytes));
         log.WriteLine($"bytes written: {actualLength}");
         Assert.Equal(1063, actualLength);
 
-        var result = DistributedCachePayload.TryParse(new(oversized, 0, actualLength + 1), key, tags, cache, out var payload, out var flags, out var entropy, out var pendingTags);
-        Assert.Equal(DistributedCachePayload.ParseResult.InvalidData, result);
-        Assert.Equal(0, payload.Length);
+        var result = HybridCachePayload.TryParse(new(oversized, 0, actualLength + 1), key, tags, cache, out var payload, out var flags, out var entropy, out var pendingTags);
+        Assert.Equal(HybridCachePayload.ParseResult.InvalidData, result);
+        Assert.Equal(0, payload.Count);
         Assert.True(pendingTags.IsEmpty);
     }
 }

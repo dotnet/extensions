@@ -137,7 +137,6 @@ internal partial class DefaultHybridCache
         }
     }
 
-
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Resilience", "EA0014:The async method doesn't support cancellation", Justification = "Ack")]
     public ValueTask<bool> IsAnyTagExpiredAsync(TagSet tags, long timestamp)
     {
@@ -165,6 +164,7 @@ internal partial class DefaultHybridCache
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Resilience", "EA0014:The async method doesn't support cancellation", Justification = "Ack")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1849:Call async methods when in an async method", Justification = "Completion-checked")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "Manual async unwrap")]
     public ValueTask<bool> IsTagExpiredAsync(string tag, long timestamp)
     {
         if (!_tagInvalidationTimes.TryGetValue(tag, out var pending))

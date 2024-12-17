@@ -20,11 +20,13 @@ internal partial class DefaultHybridCache
     private const string TagKeyPrefix = "__MSFT_HCT__";
     private static readonly DistributedCacheEntryOptions _tagInvalidationEntryOptions = new() { AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(MaxCacheDays) };
 
+    private static readonly TimeSpan _defaultTimeout = TimeSpan.FromHours(1);
+
     [SuppressMessage("Performance", "CA1849:Call async methods when in an async method", Justification = "Manual sync check")]
     [SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "Manual sync check")]
     [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Explicit async exception handling")]
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Deliberate recycle only on success")]
-    internal ValueTask<BufferChunk> GetFromL2Async(string key, CancellationToken token)
+    internal ValueTask<BufferChunk> GetFromL2DirectAsync(string key, CancellationToken token)
     {
         switch (GetFeatures(CacheFeatures.BackendCache | CacheFeatures.BackendBuffers))
         {
@@ -54,7 +56,7 @@ internal partial class DefaultHybridCache
                 }
 
                 BufferChunk result = pendingBuffers.GetAwaiter().GetResult()
-                    ? new(writer.DetachCommitted(out var length), length, returnToPool: true)
+                    ? new(writer.DetachCommitted(out var length), 0, length, returnToPool: true)
                     : default;
                 writer.Dispose(); // it is not accidental that this isn't "using"; avoid recycling if not 100% sure what happened
                 return new(result);
@@ -71,24 +73,24 @@ internal partial class DefaultHybridCache
         static async Task<BufferChunk> AwaitedBuffersAsync(ValueTask<bool> pending, RecyclableArrayBufferWriter<byte> writer)
         {
             BufferChunk result = await pending.ConfigureAwait(false)
-                    ? new(writer.DetachCommitted(out var length), length, returnToPool: true)
+                    ? new(writer.DetachCommitted(out var length), 0, length, returnToPool: true)
                     : default;
             writer.Dispose(); // it is not accidental that this isn't "using"; avoid recycling if not 100% sure what happened
             return result;
         }
     }
 
-    internal ValueTask SetL2Async(string key, in BufferChunk buffer, HybridCacheEntryOptions? options, CancellationToken token)
-        => HasBackendCache ? SetDirectL2Async(key, in buffer, GetOptions(options), token) : default;
+    internal ValueTask SetL2Async(string key, CacheItem cacheItem, in BufferChunk buffer, HybridCacheEntryOptions? options, CancellationToken token)
+        => HasBackendCache ? WritePayloadAsync(key, cacheItem, buffer, options, token) : default;
 
     internal ValueTask SetDirectL2Async(string key, in BufferChunk buffer, DistributedCacheEntryOptions options, CancellationToken token)
     {
-        Debug.Assert(buffer.Array is not null, "array should be non-null");
+        Debug.Assert(buffer.OversizedArray is not null, "array should be non-null");
         switch (GetFeatures(CacheFeatures.BackendCache | CacheFeatures.BackendBuffers))
         {
             case CacheFeatures.BackendCache: // legacy byte[]-based
-                var arr = buffer.Array!;
-                if (arr.Length != buffer.Length)
+                var arr = buffer.OversizedArray!;
+                if (buffer.Offset != 0 || arr.Length != buffer.Length)
                 {
                     // we'll need a right-sized snapshot
                     arr = buffer.ToArray();
@@ -113,7 +115,7 @@ internal partial class DefaultHybridCache
 
         byte[] oversized = ArrayPool<byte>.Shared.Rent(sizeof(long));
         BinaryPrimitives.WriteInt64LittleEndian(oversized, timestamp);
-        var pending = SetDirectL2Async(TagKeyPrefix + tag, new BufferChunk(oversized, sizeof(long), false), _tagInvalidationEntryOptions, token);
+        var pending = SetDirectL2Async(TagKeyPrefix + tag, new BufferChunk(oversized, 0, sizeof(long), false), _tagInvalidationEntryOptions, token);
 
         if (pending.IsCompletedSuccessfully)
         {
@@ -144,10 +146,10 @@ internal partial class DefaultHybridCache
         try
         {
             using var cts = new CancellationTokenSource(millisecondsDelay: READ_TIMEOUT);
-            var buffer = await GetFromL2Async(TagKeyPrefix + tag, cts.Token).ConfigureAwait(false);
+            var buffer = await GetFromL2DirectAsync(TagKeyPrefix + tag, cts.Token).ConfigureAwait(false);
 
             long timestamp;
-            if (buffer.Array is not null)
+            if (buffer.OversizedArray is not null)
             {
                 if (buffer.Length == sizeof(long))
                 {
@@ -210,6 +212,20 @@ internal partial class DefaultHybridCache
                 HybridCacheEventSource.Log.LocalCacheWrite();
             }
         }
+    }
+
+    private async ValueTask WritePayloadAsync(string key, CacheItem cacheItem, BufferChunk payload, HybridCacheEntryOptions? options, CancellationToken token)
+    {
+        // bundle a serialized payload inside the wrapper used at the DC layer
+        var maxLength = HybridCachePayload.GetMaxBytes(key, cacheItem.Tags, payload.Length);
+        var oversized = ArrayPool<byte>.Shared.Rent(maxLength);
+
+        var length = HybridCachePayload.Write(oversized, key, cacheItem.CreationTimestamp, options?.Expiration ?? _defaultTimeout,
+            HybridCachePayload.PayloadFlags.None, cacheItem.Tags, payload.AsSequence());
+
+        await SetDirectL2Async(key, new(oversized, 0, length, true), GetOptions(options), token).ConfigureAwait(false);
+
+        ArrayPool<byte>.Shared.Return(oversized);
     }
 
     private BufferChunk GetValidPayloadSegment(byte[]? payload)
