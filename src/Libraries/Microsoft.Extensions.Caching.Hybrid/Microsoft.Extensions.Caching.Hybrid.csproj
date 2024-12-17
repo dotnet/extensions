@@ -17,6 +17,7 @@
     <MinCodeCoverage>75</MinCodeCoverage>
     <MinMutationScore>50</MinMutationScore>
     <Workstream>Fundamentals</Workstream>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
