@@ -25,6 +25,13 @@
     <LibraryProjects Remove="$(RepoRoot)\src\Libraries\Microsoft.Extensions.Compliance.Redaction\Microsoft.Extensions.Compliance.Redaction.csproj" />
     <!-- https://github.com/dotnet/extensions/issues/5625 -->
     <LibraryProjects Remove="$(RepoRoot)\src\Libraries\Microsoft.Extensions.Http.Resilience\Microsoft.Extensions.Http.Resilience.csproj" />
+
+    <!-- TO DO: create a GitHub issue -->
+    <LibraryProjects Remove="$(RepoRoot)\src\Libraries\Microsoft.Extensions.Diagnostics.Testing\Microsoft.Extensions.Diagnostics.Testing.csproj" />
+    <LibraryProjects Remove="$(RepoRoot)\src\Libraries\Microsoft.Extensions.Http.Diagnostics\Microsoft.Extensions.Http.Diagnosticss.csproj" />
+    <LibraryProjects Remove="$(RepoRoot)\src\Libraries\Microsoft.Extensions.Telemetry\Microsoft.Extensions.Telemetry.csproj" />
+    <LibraryProjects Remove="$(RepoRoot)\src\Libraries\Microsoft.AspNetCore.Diagnostics.Middleware\Microsoft.AspNetCore.Diagnostics.Middleware.csproj" />
+    <!---->
     
     <TrimmerRootAssembly Include="@(LibraryProjects->'%(FileName)')" />
     <ProjectReference Include="@(LibraryProjects)" />

@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Compliance.Classification;
 using Xunit;
 
+namespace Microsoft.AspNetCore.Diagnostics.Logging.Test;
+
 public class HeaderNormalizerTests
 {
     [Fact]

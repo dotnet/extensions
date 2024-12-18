@@ -8,6 +8,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
+    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
     <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <InjectSharedThrow>false</InjectSharedThrow>
@@ -17,7 +18,6 @@
     <InjectSharedPools>false</InjectSharedPools>
     <InjectSharedBufferWriterPool>true</InjectSharedBufferWriterPool>
     <InjectSharedNumericExtensions>false</InjectSharedNumericExtensions>
-    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
   </PropertyGroup>
 
