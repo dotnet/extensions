@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
@@ -13,7 +14,7 @@ internal partial class DefaultHybridCache
     private readonly ConcurrentDictionary<StampedeKey, StampedeState> _currentOperations = new();
 
     // returns true for a new session (in which case: we need to start the work), false for a pre-existing session
-    public bool GetOrCreateStampedeState<TState, T>(string key, HybridCacheEntryFlags flags, out StampedeState<TState, T> stampedeState, bool canBeCanceled)
+    public bool GetOrCreateStampedeState<TState, T>(string key, HybridCacheEntryFlags flags, out StampedeState<TState, T> stampedeState, bool canBeCanceled, IEnumerable<string>? tags)
     {
         var stampedeKey = new StampedeKey(key, flags);
 
@@ -27,7 +28,7 @@ internal partial class DefaultHybridCache
 
         // Most common scenario here, then, is that we're not fighting with anyone else
         // go ahead and create a placeholder state object and *try* to add it.
-        stampedeState = new StampedeState<TState, T>(this, stampedeKey, canBeCanceled);
+        stampedeState = new StampedeState<TState, T>(this, stampedeKey, TagSet.Create(tags), canBeCanceled);
         if (_currentOperations.TryAdd(stampedeKey, stampedeState))
         {
             // successfully added; indeed, no-one else was fighting: we're done
@@ -56,8 +57,9 @@ internal partial class DefaultHybridCache
             // Check whether the value was L1-cached by an outgoing operation (for *us* to check needs local-cache-read,
             // and for *them* to have updated needs local-cache-write, but since the shared us/them key includes flags,
             // we can skip this if *either* flag is set).
-            if ((flags & HybridCacheEntryFlags.DisableLocalCache) == 0 && _localCache.TryGetValue(key, out var untyped)
-                && untyped is CacheItem<T> typed && typed.TryReserve())
+            if ((flags & HybridCacheEntryFlags.DisableLocalCache) == 0
+                && TryGetExisting<T>(key, out var typed)
+                && typed.TryReserve())
             {
                 stampedeState.SetResultDirect(typed);
                 return false; // the work has ALREADY been done
