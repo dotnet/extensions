@@ -26,9 +26,9 @@ public abstract class DistributedCacheTests
     protected abstract ValueTask ConfigureAsync(IServiceCollection services);
     protected abstract bool CustomClockSupported { get; }
 
-    protected FakeTime Clock { get; } = new();
+    internal FakeTime Clock { get; } = new();
 
-    protected sealed class FakeTime : TimeProvider, ISystemClock
+    internal sealed class FakeTime : TimeProvider, ISystemClock
     {
         private DateTimeOffset _now = DateTimeOffset.UtcNow;
         public void Reset() => _now = DateTimeOffset.UtcNow;
@@ -185,7 +185,7 @@ public abstract class DistributedCacheTests
         Assert.Equal(size, expected.Length);
         cache.Set(key, payload, _fiveMinutes);
 
-        RecyclableArrayBufferWriter<byte> writer = RecyclableArrayBufferWriter<byte>.Create(int.MaxValue);
+        var writer = RecyclableArrayBufferWriter<byte>.Create(int.MaxValue);
         Assert.True(cache.TryGet(key, writer));
         Assert.True(expected.Span.SequenceEqual(writer.GetCommittedMemory().Span));
         writer.ResetInPlace();
@@ -247,7 +247,7 @@ public abstract class DistributedCacheTests
         Assert.Equal(size, expected.Length);
         await cache.SetAsync(key, payload, _fiveMinutes);
 
-        RecyclableArrayBufferWriter<byte> writer = RecyclableArrayBufferWriter<byte>.Create(int.MaxValue);
+        var writer = RecyclableArrayBufferWriter<byte>.Create(int.MaxValue);
         Assert.True(await cache.TryGetAsync(key, writer));
         Assert.True(expected.Span.SequenceEqual(writer.GetCommittedMemory().Span));
         writer.ResetInPlace();
