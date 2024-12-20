@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Redaction;
+using Microsoft.Extensions.Diagnostics.Buffering;
 using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
@@ -23,11 +24,13 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
     private readonly IDisposable? _enrichmentOptionsChangeTokenRegistration;
     private readonly IDisposable? _redactionOptionsChangeTokenRegistration;
     private readonly Action<IEnrichmentTagCollector>[] _enrichers;
+    private readonly IBufferManager? _bufferManager;
     private readonly KeyValuePair<string, object?>[] _staticTags;
     private readonly Func<DataClassificationSet, Redactor> _redactorProvider;
     private volatile bool _disposed;
     private LoggerFilterOptions _filterOptions;
     private IExternalScopeProvider? _scopeProvider;
+    public IReadOnlyCollection<ProviderRegistration> ProviderRegistrations => _providerRegistrations;
 
 #pragma warning disable S107 // Methods should not have too many parameters
     public ExtendedLoggerFactory(
@@ -39,10 +42,12 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
         IExternalScopeProvider? scopeProvider = null,
         IOptionsMonitor<LoggerEnrichmentOptions>? enrichmentOptions = null,
         IOptionsMonitor<LoggerRedactionOptions>? redactionOptions = null,
-        IRedactorProvider? redactorProvider = null)
+        IRedactorProvider? redactorProvider = null,
+        IBufferManager? bufferManager = null)
 #pragma warning restore S107 // Methods should not have too many parameters
     {
         _scopeProvider = scopeProvider;
+        _bufferManager = bufferManager;
 
         _factoryOptions = factoryOptions == null || factoryOptions.Value == null ? new LoggerFactoryOptions() : factoryOptions.Value;
 
@@ -289,13 +294,14 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
                 enrichmentOptions.IncludeExceptionMessage,
                 enrichmentOptions.MaxStackTraceLength,
                 _redactorProvider,
-                redactionOptions.ApplyDiscriminator);
+                redactionOptions.ApplyDiscriminator,
+                _bufferManager);
     }
 
     private void UpdateEnrichmentOptions(LoggerEnrichmentOptions enrichmentOptions) => Config = ComputeConfig(enrichmentOptions, null);
     private void UpdateRedactionOptions(LoggerRedactionOptions redactionOptions) => Config = ComputeConfig(null, redactionOptions);
 
-    private struct ProviderRegistration
+    public struct ProviderRegistration
     {
         public ILoggerProvider Provider;
         public bool ShouldDispose;
