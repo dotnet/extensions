@@ -1,4 +1,12 @@
 <Project>
+  <ItemGroup Condition="'$(InjectCompilerFeatureRequiredOnLegacy)' == 'true' AND ('$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netcoreapp3.1')">
+    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\LegacySupport\CompilerFeatureRequiredAttribute\*.cs" LinkBase="LegacySupport\CompilerFeatureRequiredAttribute" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(InjectRequiredMemberOnLegacy)' == 'true' AND ('$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netcoreapp3.1')">
+    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\LegacySupport\RequiredMemberAttribute\*.cs" LinkBase="LegacySupport\RequiredMemberAttribute" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(InjectDiagnosticAttributesOnLegacy)' == 'true' AND ('$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netcoreapp3.1')">
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\LegacySupport\DiagnosticAttributes\*.cs" LinkBase="LegacySupport\DiagnosticAttributes" />
   </ItemGroup>
@@ -33,6 +41,10 @@
 
   <ItemGroup Condition="'$(InjectStringSyntaxAttributeOnLegacy)' == 'true' AND ('$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netcoreapp3.1' or '$(TargetFramework)' == 'net6.0')">
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\LegacySupport\StringSyntaxAttribute\*.cs" LinkBase="LegacySupport\StringSyntaxAttribute" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(InjectJsonSchemaExporterOnLegacy)' == 'true' AND ('$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netcoreapp3.1' or '$(TargetFramework)' == 'net6.0' or '$(TargetFramework)' == 'net7.0' or '$(TargetFramework)' == 'net8.0')">
+    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\JsonSchemaExporter\**\*.cs" LinkBase="Shared\EmptyCollections" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(InjectGetOrAddOnLegacy)' == 'true' AND ('$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0')">

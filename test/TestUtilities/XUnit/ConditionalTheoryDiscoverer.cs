@@ -3,7 +3,6 @@
 
 // Borrowed from https://github.com/dotnet/aspnetcore/blob/95ed45c67/src/Testing/src/xunit/
 
-using System;
 using System.Collections.Generic;
 using Xunit.Abstractions;
 using Xunit.Sdk;
