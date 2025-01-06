@@ -485,7 +485,13 @@ public class FunctionInvokingChatClientTests
                 Assert.Collection(activities,
                     activity => Assert.Equal("chat", activity.DisplayName),
                     activity => Assert.Equal("Func1", activity.DisplayName),
-                    activity => Assert.Equal("chat", activity.DisplayName));
+                    activity => Assert.Equal("chat", activity.DisplayName),
+                    activity => Assert.Equal(nameof(FunctionInvokingChatClient), activity.DisplayName));
+
+                for (int i = 0; i < activities.Count - 1; i++)
+                {
+                    Assert.Same(activities[3], activities[i].Parent);
+                }
             }
             else
             {
