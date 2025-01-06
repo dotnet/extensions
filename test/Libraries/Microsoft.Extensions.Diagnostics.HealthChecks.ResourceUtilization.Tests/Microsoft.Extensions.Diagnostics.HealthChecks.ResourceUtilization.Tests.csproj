@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilization\Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilization.csproj" ProjectUnderTest="true" />
+    <ProjectReference Include="..\..\TestUtilities\TestUtilities.csproj" />
   </ItemGroup>
 
   <ItemGroup>

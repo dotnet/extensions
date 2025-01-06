@@ -8,14 +8,16 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 using Microsoft.Extensions.Options;
+using Microsoft.TestUtilities;
 using Moq;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.HealthChecks.Test;
 
+[OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Not supported on MacOs.")]
 public class ResourceHealthCheckExtensionsTests
 {
-    [Fact]
+    [ConditionalFact]
     public async Task AddResourceHealthCheck()
     {
         var dataTracker = new Mock<IResourceMonitor>();
@@ -35,7 +37,7 @@ public class ResourceHealthCheckExtensionsTests
         dataTracker.Verify(tracker => tracker.GetUtilization(samplingWindow), Times.Once);
     }
 
-    [Fact]
+    [ConditionalFact]
     public async Task AddResourceHealthCheck_WithCustomResourceMonitorAddedAfterInternalResourceMonitor_OverridesIt()
     {
         var dataTracker = new Mock<IResourceMonitor>();
@@ -55,7 +57,7 @@ public class ResourceHealthCheckExtensionsTests
         dataTracker.Verify(tracker => tracker.GetUtilization(samplingWindow), Times.Once);
     }
 
-    [Fact]
+    [ConditionalFact]
     public void AddResourceHealthCheck_RegistersInternalResourceMonitoring()
     {
         var dataTracker = new Mock<IResourceMonitor>();
@@ -75,7 +77,7 @@ public class ResourceHealthCheckExtensionsTests
         Assert.NotNull(resourceMonitor);
     }
 
-    [Fact]
+    [ConditionalFact]
     public async Task AddResourceHealthCheck_WithTags()
     {
         var dataTracker = new Mock<IResourceMonitor>();
@@ -95,7 +97,7 @@ public class ResourceHealthCheckExtensionsTests
         dataTracker.Verify(tracker => tracker.GetUtilization(samplingWindow), Times.Once);
     }
 
-    [Fact]
+    [ConditionalFact]
     public void AddResourceHealthCheck_WithTags_RegistersInternalResourceMonitoring()
     {
         var serviceCollection = new ServiceCollection();
@@ -110,7 +112,7 @@ public class ResourceHealthCheckExtensionsTests
         Assert.NotNull(resourceMonitor);
     }
 
-    [Fact]
+    [ConditionalFact]
     public async Task AddResourceHealthCheck_WithTags_WithCustomResourceMonitorAddedAfterInternalResourceMonitor_OverridesIt()
     {
         var dataTracker = new Mock<IResourceMonitor>();
@@ -130,7 +132,7 @@ public class ResourceHealthCheckExtensionsTests
         dataTracker.Verify(tracker => tracker.GetUtilization(samplingWindow), Times.Once);
     }
 
-    [Fact]
+    [ConditionalFact]
     public async Task AddResourceHealthCheck_WithTagsEnumerable()
     {
         var dataTracker = new Mock<IResourceMonitor>();
@@ -150,7 +152,7 @@ public class ResourceHealthCheckExtensionsTests
         dataTracker.Verify(tracker => tracker.GetUtilization(samplingWindow), Times.Once);
     }
 
-    [Fact]
+    [ConditionalFact]
     public void AddResourceHealthCheck_WithTagsEnumerable_RegistersInternalResourceMonitoring()
     {
         var serviceCollection = new ServiceCollection();
@@ -165,7 +167,7 @@ public class ResourceHealthCheckExtensionsTests
         Assert.NotNull(resourceMonitor);
     }
 
-    [Fact]
+    [ConditionalFact]
     public async Task AddResourceHealthCheck_WithAction()
     {
         var dataTracker = new Mock<IResourceMonitor>();
@@ -188,7 +190,7 @@ public class ResourceHealthCheckExtensionsTests
         dataTracker.Verify(tracker => tracker.GetUtilization(samplingWindow), Times.Once);
     }
 
-    [Fact]
+    [ConditionalFact]
     public void AddResourceHealthCheck_WithAction_RegistersInternalResourceMonitoring()
     {
         var serviceCollection = new ServiceCollection();
@@ -206,7 +208,7 @@ public class ResourceHealthCheckExtensionsTests
         Assert.NotNull(resourceMonitor);
     }
 
-    [Fact]
+    [ConditionalFact]
     public async Task AddResourceHealthCheck_WithActionAndTags()
     {
         var dataTracker = new Mock<IResourceMonitor>();
@@ -230,7 +232,7 @@ public class ResourceHealthCheckExtensionsTests
         dataTracker.Verify(tracker => tracker.GetUtilization(samplingWindow), Times.Once);
     }
 
-    [Fact]
+    [ConditionalFact]
     public void AddResourceHealthCheck_WithActionAndTags_RegistersInternalResourceMonitoring()
     {
         var serviceCollection = new ServiceCollection();
@@ -249,7 +251,7 @@ public class ResourceHealthCheckExtensionsTests
         Assert.NotNull(resourceMonitor);
     }
 
-    [Fact]
+    [ConditionalFact]
     public async Task AddResourceHealthCheck_WithActionAndTagsEnumerable()
     {
         var dataTracker = new Mock<IResourceMonitor>();
@@ -273,7 +275,7 @@ public class ResourceHealthCheckExtensionsTests
         dataTracker.Verify(tracker => tracker.GetUtilization(samplingWindow), Times.Once);
     }
 
-    [Fact]
+    [ConditionalFact]
     public void AddResourceHealthCheck_WithActionAndTagsEnumerable_RegistersInternalResourceMonitoring()
     {
         var serviceCollection = new ServiceCollection();
@@ -292,7 +294,7 @@ public class ResourceHealthCheckExtensionsTests
         Assert.NotNull(resourceMonitor);
     }
 
-    [Fact]
+    [ConditionalFact]
     public async Task AddResourceHealthCheck_WithConfigurationSection()
     {
         var dataTracker = new Mock<IResourceMonitor>();
@@ -311,7 +313,7 @@ public class ResourceHealthCheckExtensionsTests
         dataTracker.Verify(tracker => tracker.GetUtilization(samplingWindow), Times.Once);
     }
 
-    [Fact]
+    [ConditionalFact]
     public void AddResourceHealthCheck_WithConfigurationSection_RegistersInternalResourceMonitoring()
     {
         var serviceCollection = new ServiceCollection();
@@ -326,7 +328,7 @@ public class ResourceHealthCheckExtensionsTests
         Assert.NotNull(resourceMonitor);
     }
 
-    [Fact]
+    [ConditionalFact]
     public async Task AddResourceHealthCheck_WithConfigurationSectionAndTags()
     {
         var dataTracker = new Mock<IResourceMonitor>();
@@ -347,7 +349,7 @@ public class ResourceHealthCheckExtensionsTests
         dataTracker.Verify(tracker => tracker.GetUtilization(samplingWindow), Times.Once);
     }
 
-    [Fact]
+    [ConditionalFact]
     public void AddResourceHealthCheck_WithConfigurationSectionAndTags_RegistersInternalResourceMonitoring()
     {
         var serviceCollection = new ServiceCollection();
@@ -363,7 +365,7 @@ public class ResourceHealthCheckExtensionsTests
         Assert.NotNull(resourceMonitor);
     }
 
-    [Fact]
+    [ConditionalFact]
     public async Task AddResourceHealthCheck_WithConfigurationSectionAndTagsEnumerable()
     {
         var dataTracker = new Mock<IResourceMonitor>();
@@ -384,7 +386,7 @@ public class ResourceHealthCheckExtensionsTests
         dataTracker.Verify(tracker => tracker.GetUtilization(samplingWindow), Times.Once);
     }
 
-    [Fact]
+    [ConditionalFact]
     public void AddResourceHealthCheck_WithConfigurationSectionAndTagsEnumerable_RegistersInternalResourceMonitoring()
     {
         var serviceCollection = new ServiceCollection();
@@ -401,7 +403,7 @@ public class ResourceHealthCheckExtensionsTests
         Assert.NotNull(resourceMonitor);
     }
 
-    [Fact]
+    [ConditionalFact]
     public void ConfigureResourceUtilizationHealthCheck_WithAction()
     {
         TimeSpan samplingWindow = TimeSpan.FromSeconds(1);
@@ -423,7 +425,7 @@ public class ResourceHealthCheckExtensionsTests
         Assert.Equal(0.4, options.CpuThresholds.UnhealthyUtilizationPercentage);
     }
 
-    [Fact]
+    [ConditionalFact]
     public void ConfigureResourceUtilizationHealthCheck_WithConfigurationSection()
     {
         TimeSpan samplingWindow = TimeSpan.FromSeconds(5);
