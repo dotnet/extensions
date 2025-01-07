@@ -490,7 +490,8 @@ public class FunctionInvokingChatClientTests
 
                 for (int i = 0; i < activities.Count - 1; i++)
                 {
-                    Assert.Same(activities[3], activities[i].Parent);
+                    // Activities are exported in the order of completion, so all except the last are children of the last (i.e., outer)
+                    Assert.Same(activities[activities.Count - 1], activities[i].Parent);
                 }
             }
             else
