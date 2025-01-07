@@ -1,14 +1,23 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using Microsoft.Extensions.Logging;
+
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
 internal partial class DefaultHybridCache
 {
     private sealed partial class MutableCacheItem<T> : CacheItem<T> // used to hold types that require defensive copies
     {
-        private IHybridCacheSerializer<T> _serializer = null!; // deferred until SetValue
+        private IHybridCacheSerializer<T>? _serializer;
         private BufferChunk _buffer;
+        private T? _fallbackValue; // only used in the case of serialization failures
+
+        public MutableCacheItem(long creationTimestamp, TagSet tags)
+            : base(creationTimestamp, tags)
+        {
+        }
 
         public override bool NeedsEvictionCallback => _buffer.ReturnToPool;
 
@@ -21,15 +30,26 @@ internal partial class DefaultHybridCache
             buffer = default; // we're taking over the lifetime; the caller no longer has it!
         }
 
-        public override bool TryGetValue(out T value)
+        public void SetFallbackValue(T fallbackValue)
+        {
+            _fallbackValue = fallbackValue;
+        }
+
+        public override bool TryGetValue(ILogger log, out T value)
         {
             // only if we haven't already burned
             if (TryReserve())
             {
                 try
                 {
-                    value = _serializer.Deserialize(_buffer.AsSequence());
+                    var serializer = _serializer;
+                    value = serializer is null ? _fallbackValue! : serializer.Deserialize(_buffer.AsSequence());
                     return true;
+                }
+                catch (Exception ex)
+                {
+                    log.DeserializationFailure(ex);
+                    throw;
                 }
                 finally
                 {

@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Reflection;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -49,6 +49,56 @@ internal partial class DefaultHybridCache
             // store the result so we don't repeat this in future
             @this._serializers[typeof(T)] = serializer;
             return serializer;
+        }
+    }
+
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentional for logged failure mode")]
+    private bool TrySerialize<T>(T value, out BufferChunk buffer, out IHybridCacheSerializer<T>? serializer)
+    {
+        // note: also returns the serializer we resolved, because most-any time we want to serialize, we'll also want
+        // to make sure we use that same instance later (without needing to re-resolve and/or store the entire HC machinery)
+
+        RecyclableArrayBufferWriter<byte>? writer = null;
+        buffer = default;
+        try
+        {
+            writer = RecyclableArrayBufferWriter<byte>.Create(MaximumPayloadBytes); // note this lifetime spans the SetL2Async
+            serializer = GetSerializer<T>();
+
+            serializer.Serialize(value, writer);
+
+            buffer = new(writer.DetachCommitted(out var length), 0, length, returnToPool: true); // remove buffer ownership from the writer
+            writer.Dispose(); // we're done with the writer
+            return true;
+        }
+        catch (Exception ex)
+        {
+            bool knownCause = false;
+
+            // ^^^ if we know what happened, we can record directly via cause-specific events
+            // and treat as a handled failure (i.e. return false) - otherwise, we'll bubble
+            // the fault up a few layers *in addition to* logging in a failure event
+
+            if (writer is not null)
+            {
+                if (writer.QuotaExceeded)
+                {
+                    _logger.MaximumPayloadBytesExceeded(ex, MaximumPayloadBytes);
+                    knownCause = true;
+                }
+
+                writer.Dispose();
+            }
+
+            if (!knownCause)
+            {
+                _logger.SerializationFailure(ex);
+                throw;
+            }
+
+            buffer = default;
+            serializer = null;
+            return false;
         }
     }
 }

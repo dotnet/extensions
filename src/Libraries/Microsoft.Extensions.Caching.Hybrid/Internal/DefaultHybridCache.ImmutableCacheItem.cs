@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
@@ -10,6 +11,11 @@ internal partial class DefaultHybridCache
     private sealed class ImmutableCacheItem<T> : CacheItem<T> // used to hold types that do not require defensive copies
     {
         private static ImmutableCacheItem<T>? _sharedDefault;
+
+        public ImmutableCacheItem(long creationTimestamp, TagSet tags)
+            : base(creationTimestamp, tags)
+        {
+        }
 
         private T _value = default!; // deferred until SetValue
 
@@ -24,7 +30,7 @@ internal partial class DefaultHybridCache
             ImmutableCacheItem<T>? obj = Volatile.Read(ref _sharedDefault);
             if (obj is null || !obj.TryReserve())
             {
-                obj = new();
+                obj = new(0, TagSet.Empty); // timestamp doesn't matter - not used in L1/L2
                 _ = obj.TryReserve(); // this is reliable on a new instance
                 Volatile.Write(ref _sharedDefault, obj);
             }
@@ -38,7 +44,7 @@ internal partial class DefaultHybridCache
             Size = size;
         }
 
-        public override bool TryGetValue(out T value)
+        public override bool TryGetValue(ILogger log, out T value)
         {
             value = _value;
             return true; // always available

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -20,8 +21,12 @@ namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 /// <summary>
 /// The inbuilt implementation of <see cref="HybridCache"/>, as registered via <see cref="HybridCacheServiceExtensions.AddHybridCache(IServiceCollection)"/>.
 /// </summary>
+[SkipLocalsInit]
 internal sealed partial class DefaultHybridCache : HybridCache
 {
+    // reserve non-printable characters from keys, to prevent potential L2 abuse
+    private static readonly char[] _keyReservedCharacters = Enumerable.Range(0, 32).Select(i => (char)i).ToArray();
+
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0032:Use auto property", Justification = "Keep usage explicit")]
     private readonly IDistributedCache? _backendCache;
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0032:Use auto property", Justification = "Keep usage explicit")]
@@ -32,11 +37,13 @@ internal sealed partial class DefaultHybridCache : HybridCache
     private readonly HybridCacheOptions _options;
     private readonly ILogger _logger;
     private readonly CacheFeatures _features; // used to avoid constant type-testing
+    private readonly TimeProvider _clock;
 
     private readonly HybridCacheEntryFlags _hardFlags; // *always* present (for example, because no L2)
     private readonly HybridCacheEntryFlags _defaultFlags; // note this already includes hardFlags
     private readonly TimeSpan _defaultExpiration;
     private readonly TimeSpan _defaultLocalCacheExpiration;
+    private readonly int _maximumKeyLength;
 
     private readonly DistributedCacheEntryOptions _defaultDistributedCacheExpiration;
 
@@ -56,13 +63,15 @@ internal sealed partial class DefaultHybridCache : HybridCache
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private CacheFeatures GetFeatures(CacheFeatures mask) => _features & mask;
 
+    internal bool HasBackendCache => (_features & CacheFeatures.BackendCache) != 0;
+
     public DefaultHybridCache(IOptions<HybridCacheOptions> options, IServiceProvider services)
     {
         _services = Throw.IfNull(services);
         _localCache = services.GetRequiredService<IMemoryCache>();
         _options = options.Value;
         _logger = services.GetService<ILoggerFactory>()?.CreateLogger(typeof(HybridCache)) ?? NullLogger.Instance;
-
+        _clock = services.GetService<TimeProvider>() ?? TimeProvider.System;
         _backendCache = services.GetService<IDistributedCache>(); // note optional
 
         // ignore L2 if it is really just the same L1, wrapped
@@ -90,6 +99,7 @@ internal sealed partial class DefaultHybridCache : HybridCache
         _serializerFactories = factories;
 
         MaximumPayloadBytes = checked((int)_options.MaximumPayloadBytes); // for now hard-limit to 2GiB
+        _maximumKeyLength = _options.MaximumKeyLength;
 
         var defaultEntryOptions = _options.DefaultEntryOptions;
 
@@ -102,6 +112,13 @@ internal sealed partial class DefaultHybridCache : HybridCache
         _defaultExpiration = defaultEntryOptions?.Expiration ?? TimeSpan.FromMinutes(5);
         _defaultLocalCacheExpiration = defaultEntryOptions?.LocalCacheExpiration ?? TimeSpan.FromMinutes(1);
         _defaultDistributedCacheExpiration = new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = _defaultExpiration };
+
+#if NET9_0_OR_GREATER
+        _tagInvalidationTimesUseAltLookup = _tagInvalidationTimes.TryGetAlternateLookup(out _tagInvalidationTimesBySpan);
+#endif
+
+        // do this last
+        _globalInvalidateTimestamp = _backendCache is null ? _zeroTimestamp : SafeReadTagInvalidationAsync(TagSet.WildcardTag);
     }
 
     internal IDistributedCache? BackendCache => _backendCache;
@@ -119,14 +136,37 @@ internal sealed partial class DefaultHybridCache : HybridCache
         }
 
         var flags = GetEffectiveFlags(options);
-        if ((flags & HybridCacheEntryFlags.DisableLocalCacheRead) == 0 && _localCache.TryGetValue(key, out var untyped)
-            && untyped is CacheItem<T> typed && typed.TryGetValue(out var value))
+        if (!ValidateKey(key))
         {
-            // short-circuit
-            return new(value);
+            // we can't use cache, but we can still provide the data
+            return RunWithoutCacheAsync(flags, state, underlyingDataCallback, cancellationToken);
         }
 
-        if (GetOrCreateStampedeState<TState, T>(key, flags, out var stampede, canBeCanceled))
+        bool eventSourceEnabled = HybridCacheEventSource.Log.IsEnabled();
+
+        if ((flags & HybridCacheEntryFlags.DisableLocalCacheRead) == 0)
+        {
+            if (TryGetExisting<T>(key, out var typed)
+                && typed.TryGetValue(_logger, out var value))
+            {
+                // short-circuit
+                if (eventSourceEnabled)
+                {
+                    HybridCacheEventSource.Log.LocalCacheHit();
+                }
+
+                return new(value);
+            }
+            else
+            {
+                if (eventSourceEnabled)
+                {
+                    HybridCacheEventSource.Log.LocalCacheMiss();
+                }
+            }
+        }
+
+        if (GetOrCreateStampedeState<TState, T>(key, flags, out var stampede, canBeCanceled, tags))
         {
             // new query; we're responsible for making it happen
             if (canBeCanceled)
@@ -139,11 +179,19 @@ internal sealed partial class DefaultHybridCache : HybridCache
             {
                 // we're going to run to completion; no need to get complicated
                 _ = stampede.ExecuteDirectAsync(in state, underlyingDataCallback, options); // this larger task includes L2 write etc
-                return stampede.UnwrapReservedAsync();
+                return stampede.UnwrapReservedAsync(_logger);
+            }
+        }
+        else
+        {
+            // pre-existing query
+            if (eventSourceEnabled)
+            {
+                HybridCacheEventSource.Log.StampedeJoin();
             }
         }
 
-        return stampede.JoinAsync(cancellationToken);
+        return stampede.JoinAsync(_logger, cancellationToken);
     }
 
     public override ValueTask RemoveAsync(string key, CancellationToken token = default)
@@ -152,19 +200,69 @@ internal sealed partial class DefaultHybridCache : HybridCache
         return _backendCache is null ? default : new(_backendCache.RemoveAsync(key, token));
     }
 
-    public override ValueTask RemoveByTagAsync(string tag, CancellationToken token = default)
-        => default; // tags not yet implemented
-
     public override ValueTask SetAsync<T>(string key, T value, HybridCacheEntryOptions? options = null, IEnumerable<string>? tags = null, CancellationToken token = default)
     {
         // since we're forcing a write: disable L1+L2 read; we'll use a direct pass-thru of the value as the callback, to reuse all the code
         // note also that stampede token is not shared with anyone else
         var flags = GetEffectiveFlags(options) | (HybridCacheEntryFlags.DisableLocalCacheRead | HybridCacheEntryFlags.DisableDistributedCacheRead);
-        var state = new StampedeState<T, T>(this, new StampedeKey(key, flags), token);
+        var state = new StampedeState<T, T>(this, new StampedeKey(key, flags), TagSet.Create(tags), token);
         return new(state.ExecuteDirectAsync(value, static (state, _) => new(state), options)); // note this spans L2 write etc
+    }
+
+    private static ValueTask<T> RunWithoutCacheAsync<TState, T>(HybridCacheEntryFlags flags, TState state,
+        Func<TState, CancellationToken, ValueTask<T>> underlyingDataCallback,
+        CancellationToken cancellationToken)
+    {
+        return (flags & HybridCacheEntryFlags.DisableUnderlyingData) == 0
+            ? underlyingDataCallback(state, cancellationToken) : default;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private HybridCacheEntryFlags GetEffectiveFlags(HybridCacheEntryOptions? options)
-    => (options?.Flags | _hardFlags) ?? _defaultFlags;
+        => (options?.Flags | _hardFlags) ?? _defaultFlags;
+
+    private bool ValidateKey(string key)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            _logger.KeyEmptyOrWhitespace();
+            return false;
+        }
+
+        if (key.Length > _maximumKeyLength)
+        {
+            _logger.MaximumKeyLengthExceeded(_maximumKeyLength, key.Length);
+            return false;
+        }
+
+        if (key.IndexOfAny(_keyReservedCharacters) >= 0)
+        {
+            _logger.KeyInvalidContent();
+            return false;
+        }
+
+        // nothing to complain about
+        return true;
+    }
+
+    private bool TryGetExisting<T>(string key, [NotNullWhen(true)] out CacheItem<T>? value)
+    {
+        if (_localCache.TryGetValue(key, out var untyped) && untyped is CacheItem<T> typed)
+        {
+            // check tag-based and global invalidation
+            if (IsValid(typed))
+            {
+                value = typed;
+                return true;
+            }
+
+            // remove from L1; note there's a little unavoidable race here; worst case is that
+            // a fresher value gets dropped - we'll have to accept it
+            _localCache.Remove(key);
+        }
+
+        // failure
+        value = null;
+        return false;
+    }
 }
