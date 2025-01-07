@@ -171,8 +171,9 @@ internal partial class DefaultHybridCache
             buffer.RecycleIfAppropriate();
             return timestamp;
         }
-        catch (Exception ex) // this is the "Safe" in "SafeReadTagInvalidationAsync"
+        catch (Exception ex)
         {
+            // ^^^ this catch is the "Safe" in "SafeReadTagInvalidationAsync"
             Debug.WriteLine(ex.Message);
 
             // if anything goes wrong reading tag invalidations; we have to assume the tag is invalid

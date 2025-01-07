@@ -77,7 +77,9 @@ public class LocalInvalidationTests(ITestOutputHelper log)
         }
 
         Guid lastValue = Guid.Empty;
-        for (int i = 0; i < 3; i++) // because we want to test pre-existing L1/L2 impact
+
+        // loop because we want to test pre-existing L1/L2 impact
+        for (int i = 0; i < 3; i++)
         {
             using var services = GetDefaultCache(out var cache, svc =>
             {
