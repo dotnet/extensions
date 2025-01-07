@@ -191,6 +191,10 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     {
         _ = Throw.IfNull(chatMessages);
 
+        // A single request into this CompleteAsync may result in multiple requests to the inner client.
+        // Create an activity to group them together for better observability.
+        using Activity? activity = _activitySource?.StartActivity(nameof(FunctionInvokingChatClient));
+
         ChatCompletion? response = null;
         HashSet<ChatMessage>? messagesToRemove = null;
         HashSet<AIContent>? contentsToRemove = null;
@@ -307,6 +311,10 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     {
         _ = Throw.IfNull(chatMessages);
 
+        // A single request into this CompleteStreamingAsync may result in multiple requests to the inner client.
+        // Create an activity to group them together for better observability.
+        using Activity? activity = _activitySource?.StartActivity(nameof(FunctionInvokingChatClient));
+
         HashSet<ChatMessage>? messagesToRemove = null;
         List<FunctionCallContent> functionCallContents = [];
         int? choice;
@@ -349,6 +357,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     }
 
                     yield return update;
+                    Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
                 }
 
                 // If there are no tools to call, or for any other reason we should stop, return the response.
