@@ -30,7 +30,6 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
     private volatile bool _disposed;
     private LoggerFilterOptions _filterOptions;
     private IExternalScopeProvider? _scopeProvider;
-    public IReadOnlyCollection<ProviderRegistration> ProviderRegistrations => _providerRegistrations;
 
 #pragma warning disable S107 // Methods should not have too many parameters
     public ExtendedLoggerFactory(

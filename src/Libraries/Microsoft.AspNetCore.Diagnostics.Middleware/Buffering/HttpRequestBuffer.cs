@@ -3,10 +3,14 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Microsoft.Extensions.Diagnostics.Buffering;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
+using Microsoft.Shared.Pools;
 using static Microsoft.Extensions.Logging.ExtendedLogger;
 
 namespace Microsoft.AspNetCore.Diagnostics.Buffering;
@@ -17,18 +21,19 @@ internal sealed class HttpRequestBuffer : ILoggingBuffer
     private readonly IOptionsMonitor<GlobalBufferOptions> _globalOptions;
     private readonly ConcurrentQueue<SerializedLogRecord> _buffer;
     private readonly TimeProvider _timeProvider = TimeProvider.System;
-    private readonly IBufferSink _bufferSink;
+    private readonly IBufferedLogger _bufferedLogger;
     private readonly object _bufferCapacityLocker = new();
+    private readonly ObjectPool<List<PooledLogRecord>> _logRecordPool = PoolFactory.CreateListPool<PooledLogRecord>();
     private DateTimeOffset _truncateAfter;
     private DateTimeOffset _lastFlushTimestamp;
 
-    public HttpRequestBuffer(IBufferSink bufferSink,
+    public HttpRequestBuffer(IBufferedLogger bufferedLogger,
         IOptionsMonitor<HttpRequestBufferOptions> options,
         IOptionsMonitor<GlobalBufferOptions> globalOptions)
     {
         _options = options;
         _globalOptions = globalOptions;
-        _bufferSink = bufferSink;
+        _bufferedLogger = bufferedLogger;
         _buffer = new ConcurrentQueue<SerializedLogRecord>();
 
         _truncateAfter = _timeProvider.GetUtcNow();
@@ -82,7 +87,31 @@ internal sealed class HttpRequestBuffer : ILoggingBuffer
 
         _lastFlushTimestamp = _timeProvider.GetUtcNow();
 
-        _bufferSink.LogRecords(result);
+        List<PooledLogRecord>? pooledList = null;
+        try
+        {
+            pooledList = _logRecordPool.Get();
+            foreach (var serializedRecord in result)
+            {
+                pooledList.Add(
+                    new PooledLogRecord(
+                        serializedRecord.Timestamp,
+                        serializedRecord.LogLevel,
+                        serializedRecord.EventId,
+                        serializedRecord.Exception,
+                        serializedRecord.FormattedMessage,
+                        serializedRecord.Attributes));
+            }
+
+            _bufferedLogger.LogRecords(pooledList);
+        }
+        finally
+        {
+            if (pooledList is not null)
+            {
+                _logRecordPool.Return(pooledList);
+            }
+        }
     }
 
     public bool IsEnabled(string category, LogLevel logLevel, EventId eventId)

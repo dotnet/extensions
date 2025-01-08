@@ -9,7 +9,7 @@ using Microsoft.Shared.ExceptionJsonConverter;
 
 namespace Microsoft.Extensions.Diagnostics.Buffering;
 
-internal readonly struct SerializedLogRecord : ISerializedLogRecord
+internal readonly struct SerializedLogRecord
 {
     public SerializedLogRecord(
         LogLevel logLevel,
@@ -23,13 +23,13 @@ internal readonly struct SerializedLogRecord : ISerializedLogRecord
         EventId = eventId;
         Timestamp = timestamp;
 
-        var serializedAttributes = new List<KeyValuePair<string, string>>(attributes.Count);
+        var serializedAttributes = new List<KeyValuePair<string, object?>>(attributes.Count);
         for (int i = 0; i < attributes.Count; i++)
         {
 #if NETFRAMEWORK
-            serializedAttributes.Add(new KeyValuePair<string, string>(new string(attributes[i].Key.ToCharArray()), attributes[i].Value?.ToString() ?? string.Empty));
+            serializedAttributes.Add(new KeyValuePair<string, object?>(new string(attributes[i].Key.ToCharArray()), attributes[i].Value?.ToString() ?? string.Empty));
 #else
-            serializedAttributes.Add(new KeyValuePair<string, string>(new string(attributes[i].Key), attributes[i].Value?.ToString() ?? string.Empty));
+            serializedAttributes.Add(new KeyValuePair<string, object?>(new string(attributes[i].Key), attributes[i].Value?.ToString() ?? string.Empty));
 #endif
         }
 
@@ -41,7 +41,7 @@ internal readonly struct SerializedLogRecord : ISerializedLogRecord
         FormattedMessage = formattedMessage;
     }
 
-    public IReadOnlyList<KeyValuePair<string, string>> Attributes { get; }
+    public IReadOnlyList<KeyValuePair<string, object?>> Attributes { get; }
     public string? FormattedMessage { get; }
     public string? Exception { get; }
 

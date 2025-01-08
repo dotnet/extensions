@@ -7,11 +7,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Diagnostics.Buffering;
 
-internal sealed class GlobalBufferManager : BackgroundService, IBufferManager
+internal sealed class GlobalBufferManager : BackgroundService, IGlobalBufferManager
 {
     internal readonly ConcurrentDictionary<string, ILoggingBuffer> Buffers = [];
     private readonly IOptionsMonitor<GlobalBufferOptions> _options;
@@ -28,8 +29,8 @@ internal sealed class GlobalBufferManager : BackgroundService, IBufferManager
         _options = options;
     }
 
-    public ILoggingBuffer CreateBuffer(IBufferSink bufferSink, string category)
-        => Buffers.GetOrAdd(category, _ => new GlobalBuffer(bufferSink, _options, _timeProvider));
+    public ILoggingBuffer CreateBuffer(IBufferedLogger bufferedLogger, string category)
+        => Buffers.GetOrAdd(category, _ => new GlobalBuffer(bufferedLogger, _options, _timeProvider));
 
     public void Flush()
     {
@@ -40,14 +41,14 @@ internal sealed class GlobalBufferManager : BackgroundService, IBufferManager
     }
 
     public bool TryEnqueue<TState>(
-        IBufferSink bufferSink,
+        IBufferedLogger bufferedLogger,
         LogLevel logLevel,
         string category,
         EventId eventId, TState attributes,
         Exception? exception,
         Func<TState, Exception?, string> formatter)
     {
-        var buffer = CreateBuffer(bufferSink, category);
+        var buffer = CreateBuffer(bufferedLogger, category);
         return buffer.TryEnqueue(logLevel, category, eventId, attributes, exception, formatter);
     }
 

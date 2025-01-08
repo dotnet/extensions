@@ -14,6 +14,11 @@ namespace Microsoft.AspNetCore.Diagnostics.Buffering;
 public interface IHttpRequestBufferManager : IBufferManager
 {
     /// <summary>
+    /// Flushes the buffer and emits non-request logs.
+    /// </summary>
+    void FlushNonRequestLogs();
+
+    /// <summary>
     /// Flushes the buffer and emits buffered logs for the current request.
     /// </summary>
     public void FlushCurrentRequestLogs();

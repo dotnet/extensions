@@ -5,13 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Extensions.Diagnostics.Buffering;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Logging;
 
 #pragma warning disable CA1031
 
-// NOTE: This implementation uses thread local storage. As a wasBuffered, it will fail if formatter code, enricher code, or
+// NOTE: This implementation uses thread local storage. As a result, it will fail if formatter code, enricher code, or
 //       redactor code calls recursively back into the logger. Don't do that.
 //
 // NOTE: Unlike the original logger in dotnet/runtime, this logger eats exceptions thrown from invoked loggers, enrichers,
@@ -32,7 +33,7 @@ internal sealed partial class ExtendedLogger : ILogger
     public ScopeLogger[] ScopeLoggers { get; set; } = Array.Empty<ScopeLogger>();
 
     private readonly IBufferManager? _bufferManager;
-    private readonly IBufferSink? _bufferSink;
+    private readonly IBufferedLogger? _bufferedLogger;
 
     public ExtendedLogger(ExtendedLoggerFactory factory, LoggerInformation[] loggers)
     {
@@ -42,9 +43,7 @@ internal sealed partial class ExtendedLogger : ILogger
         _bufferManager = _factory.Config.BufferManager;
         if (_bufferManager is not null)
         {
-            Debug.Assert(loggers.Length > 0, "There should be at least one logger provider.");
-
-            _bufferSink = new BufferSink(factory, loggers[0].Category);
+            _bufferedLogger = new BufferedLoggerProxy(this);
         }
     }
 
@@ -282,7 +281,7 @@ internal sealed partial class ExtendedLogger : ILogger
                 {
                     if (_bufferManager is not null)
                     {
-                        var wasBuffered = _bufferManager.TryEnqueue(_bufferSink!, logLevel, loggerInfo.Category!, eventId, joiner, exception, static (s, e) =>
+                        var wasBuffered = _bufferManager.TryEnqueue(_bufferedLogger!, logLevel, loggerInfo.Category!, eventId, joiner, exception, static (s, e) =>
                         {
                             var fmt = s.Formatter!;
                             return fmt(s.State!, e);
@@ -389,7 +388,7 @@ internal sealed partial class ExtendedLogger : ILogger
                 {
                     if (_bufferManager is not null)
                     {
-                        bool wasBuffered = _bufferManager.TryEnqueue(_bufferSink!, logLevel, loggerInfo.Category!, eventId, joiner, exception, static (s, e) =>
+                        bool wasBuffered = _bufferManager.TryEnqueue(_bufferedLogger!, logLevel, loggerInfo.Category!, eventId, joiner, exception, static (s, e) =>
                         {
                             var fmt = (Func<TState, Exception?, string>)s.Formatter!;
                             return fmt((TState)s.State!, e);

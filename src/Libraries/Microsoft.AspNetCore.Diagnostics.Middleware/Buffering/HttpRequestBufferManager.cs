@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Diagnostics.Buffering;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Diagnostics.Buffering;
@@ -28,17 +29,17 @@ internal sealed class HttpRequestBufferManager : IHttpRequestBufferManager
         _globalOptions = globalOptions;
     }
 
-    public ILoggingBuffer CreateBuffer(IBufferSink bufferSink, string category)
+    public ILoggingBuffer CreateBuffer(IBufferedLogger bufferedLogger, string category)
     {
         var httpContext = _httpContextAccessor.HttpContext;
         if (httpContext is null)
         {
-            return _globalBufferManager.CreateBuffer(bufferSink, category);
+            return _globalBufferManager.CreateBuffer(bufferedLogger, category);
         }
 
         if (!httpContext.Items.TryGetValue(category, out var buffer))
         {
-            var httpRequestBuffer = new HttpRequestBuffer(bufferSink, _requestOptions, _globalOptions);
+            var httpRequestBuffer = new HttpRequestBuffer(bufferedLogger, _requestOptions, _globalOptions);
             httpContext.Items[category] = httpRequestBuffer;
             return httpRequestBuffer;
         }
@@ -51,7 +52,7 @@ internal sealed class HttpRequestBufferManager : IHttpRequestBufferManager
         return loggingBuffer;
     }
 
-    public void Flush() => _globalBufferManager.Flush();
+    public void FlushNonRequestLogs() => _globalBufferManager.Flush();
 
     public void FlushCurrentRequestLogs()
     {
@@ -68,7 +69,7 @@ internal sealed class HttpRequestBufferManager : IHttpRequestBufferManager
     }
 
     public bool TryEnqueue<TState>(
-        IBufferSink bufferSink,
+        IBufferedLogger bufferedLogger,
         LogLevel logLevel,
         string category,
         EventId eventId,
@@ -76,7 +77,7 @@ internal sealed class HttpRequestBufferManager : IHttpRequestBufferManager
         Exception? exception,
         Func<TState, Exception?, string> formatter)
     {
-        var buffer = CreateBuffer(bufferSink, category);
+        var buffer = CreateBuffer(bufferedLogger, category);
         return buffer.TryEnqueue(logLevel, category, eventId, attributes, exception, formatter);
     }
 }

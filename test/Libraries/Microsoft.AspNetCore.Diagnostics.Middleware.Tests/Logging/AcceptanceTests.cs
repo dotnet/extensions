@@ -76,7 +76,7 @@ public partial class AcceptanceTests
                     if (bufferManager is not null)
                     {
                         bufferManager.FlushCurrentRequestLogs();
-                        bufferManager.Flush();
+                        bufferManager.FlushNonRequestLogs();
                     }
                 }));
 

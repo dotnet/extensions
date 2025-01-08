@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Diagnostics.Buffering;
 internal interface ILoggingBuffer
 {
     /// <summary>
-    /// Enqueues a log record in the underlying buffer..
+    /// Enqueues a log record in the underlying buffer.
     /// </summary>
     /// <param name="logLevel">Log level.</param>
     /// <param name="category">Category.</param>

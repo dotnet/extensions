@@ -70,6 +70,7 @@ public static class GlobalBufferLoggerBuilderExtensions
 
         builder.Services.TryAddSingleton<GlobalBufferManager>();
         builder.Services.TryAddSingleton<IBufferManager>(static sp => sp.GetRequiredService<GlobalBufferManager>());
+        builder.Services.TryAddSingleton<IGlobalBufferManager>(static sp => sp.GetRequiredService<GlobalBufferManager>());
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerFactory, ExtendedLoggerFactory>());
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, GlobalBufferManager>(static sp => sp.GetRequiredService<GlobalBufferManager>()));

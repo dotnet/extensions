@@ -3,9 +3,13 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
+using Microsoft.Shared.Pools;
 using static Microsoft.Extensions.Logging.ExtendedLogger;
 
 namespace Microsoft.Extensions.Diagnostics.Buffering;
@@ -14,19 +18,20 @@ internal sealed class GlobalBuffer : ILoggingBuffer
 {
     private readonly IOptionsMonitor<GlobalBufferOptions> _options;
     private readonly ConcurrentQueue<SerializedLogRecord> _buffer;
-    private readonly IBufferSink _bufferSink;
+    private readonly IBufferedLogger _bufferedLogger;
     private readonly TimeProvider _timeProvider;
+    private readonly ObjectPool<List<PooledLogRecord>> _logRecordPool = PoolFactory.CreateListPool<PooledLogRecord>();
     private DateTimeOffset _lastFlushTimestamp;
 #if NETFRAMEWORK
     private object _netfxBufferLocker = new();
 #endif
 
-    public GlobalBuffer(IBufferSink bufferSink, IOptionsMonitor<GlobalBufferOptions> options, TimeProvider timeProvider)
+    public GlobalBuffer(IBufferedLogger bufferedLogger, IOptionsMonitor<GlobalBufferOptions> options, TimeProvider timeProvider)
     {
         _options = options;
         _timeProvider = timeProvider;
         _buffer = new ConcurrentQueue<SerializedLogRecord>();
-        _bufferSink = bufferSink;
+        _bufferedLogger = bufferedLogger;
     }
 
     public bool TryEnqueue<T>(
@@ -62,6 +67,8 @@ internal sealed class GlobalBuffer : ILoggingBuffer
 
     public void Flush()
     {
+        _lastFlushTimestamp = _timeProvider.GetUtcNow();
+
         var result = _buffer.ToArray();
 
 #if NETFRAMEWORK
@@ -76,9 +83,31 @@ internal sealed class GlobalBuffer : ILoggingBuffer
         _buffer.Clear();
 #endif
 
-        _lastFlushTimestamp = _timeProvider.GetUtcNow();
+        List<PooledLogRecord>? pooledList = null;
+        try
+        {
+            pooledList = _logRecordPool.Get();
+            foreach (var serializedRecord in result)
+            {
+                pooledList.Add(
+                    new PooledLogRecord(
+                        serializedRecord.Timestamp,
+                        serializedRecord.LogLevel,
+                        serializedRecord.EventId,
+                        serializedRecord.Exception,
+                        serializedRecord.FormattedMessage,
+                        serializedRecord.Attributes));
+            }
 
-        _bufferSink.LogRecords(result);
+            _bufferedLogger.LogRecords(pooledList);
+        }
+        finally
+        {
+            if (pooledList is not null)
+            {
+                _logRecordPool.Return(pooledList);
+            }
+        }
     }
 
     public void TruncateOverlimit()

@@ -19,7 +19,7 @@ internal interface ILoggerFilterRule
     public LogLevel? LogLevel { get; }
 
     /// <summary>
-    /// Gets the maximum <see cref="LogLevel"/> of messages where this rule applies to.
+    /// Gets the <see cref="EventId"/> of messages where this rule applies to.
     /// </summary>
     public int? EventId { get; }
 }

@@ -140,7 +140,7 @@ public static class ExtendedLoggerTests
 
         // instead of this, users would get IBufferManager from DI and call Flush on it
         var dlf = (Utils.DisposingLoggerFactory)factory;
-        var bufferManager = dlf.ServiceProvider.GetRequiredService<IBufferManager>();
+        var bufferManager = dlf.ServiceProvider.GetRequiredService<IGlobalBufferManager>();
 
         bufferManager.Flush();
 
