@@ -289,10 +289,9 @@ internal partial class DefaultHybridCache
                         var time = Cache.CurrentTimestamp();
                         if (time <= CacheItem.CreationTimestamp)
                         {
-                            // clock hasn't changed; this is *very rare*, and honestly mostly applies to
+                            // Clock hasn't changed; this is *very rare*, and honestly mostly applies to
                             // tests with dummy fetch calls; inject an artificial delay and re-fetch
-                            // the time
-                            // HasExactTagExpirationMatch to understand the context for this
+                            // the time.
                             await System.Threading.Tasks.Task.Delay(1, CancellationToken.None).ConfigureAwait(false);
                             time = Cache.CurrentTimestamp();
                         }
