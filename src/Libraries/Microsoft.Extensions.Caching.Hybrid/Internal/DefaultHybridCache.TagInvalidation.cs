@@ -208,6 +208,55 @@ internal partial class DefaultHybridCache
 
     internal long CurrentTimestamp() => _clock.GetUtcNow().UtcTicks;
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "Prechecked, sync only")]
+    internal bool HasExactTagExpirationMatch(CacheItem cacheItem)
+    {
+        // When writing to L1, we need to avoid a problem where either "*" or one of
+        // the active tags matches "now" - we get into a problem whereby it is
+        // ambiguous whether the data is invalidated; consider all of the following happen
+        // *in the same measured instance*:
+        // - write with value A
+        // - invalidate by tag (or wildcard)
+        // - write with value B
+        // Both A and B have the same timestamp as the invalidated one; to avoid this problem,
+        // we need to detect this (very rare) scenario, and inject an artificial delay, such that
+        // B effectively gets written at a later time.
+        var tags = cacheItem.Tags;
+        var timestamp = cacheItem.CreationTimestamp;
+
+        if (timestamp != CurrentTimestamp())
+        {
+            // importantly, this problem **only applies** if it is still "now"
+            return false;
+        }
+
+        Task<long>? pending = _globalInvalidateTimestamp;
+        if (pending.IsCompleted && timestamp == pending.Result)
+        {
+            return true;
+        }
+
+        switch (tags.Count)
+        {
+            case 0:
+                return false;
+            case 1:
+                return _tagInvalidationTimes.TryGetValue(tags.GetSinglePrechecked(), out pending)
+                    && pending.IsCompleted && timestamp == pending.Result;
+            default:
+                foreach (var tag in tags.GetSpanPrechecked())
+                {
+                    if (_tagInvalidationTimes.TryGetValue(tag, out pending)
+                        && pending.IsCompleted && timestamp == pending.Result)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+        }
+    }
+
     internal void PrefetchTags(TagSet tags)
     {
         if (HasBackendCache && !tags.IsEmpty)

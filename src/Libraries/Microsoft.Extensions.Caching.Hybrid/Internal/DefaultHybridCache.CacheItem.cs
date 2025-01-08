@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -13,17 +14,19 @@ internal partial class DefaultHybridCache
 {
     internal abstract class CacheItem
     {
+        private readonly long _creationTimestamp;
+
         protected CacheItem(long creationTimestamp, TagSet tags)
         {
             Tags = tags;
-            CreationTimestamp = creationTimestamp;
+            _creationTimestamp = creationTimestamp;
         }
 
         private int _refCount = 1; // the number of pending operations against this cache item
 
         public abstract bool DebugIsImmutable { get; }
 
-        public long CreationTimestamp { get; }
+        public long CreationTimestamp => _creationTimestamp;
 
         public TagSet Tags { get; }
 
@@ -36,6 +39,9 @@ internal partial class DefaultHybridCache
         // who increment/decrement around their fetch), allowing safe buffer recycling.
 
         internal int RefCount => Volatile.Read(ref _refCount);
+
+        internal void UnsafeSetCreationTimsetamp(long timestamp)
+            => Unsafe.AsRef(in _creationTimestamp) = timestamp;
 
         internal static readonly PostEvictionDelegate SharedOnEviction = static (key, value, reason, state) =>
         {

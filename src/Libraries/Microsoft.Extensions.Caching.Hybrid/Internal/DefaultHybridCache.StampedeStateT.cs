@@ -161,6 +161,7 @@ internal partial class DefaultHybridCache
 
         [SuppressMessage("Resilience", "EA0014:The async method doesn't support cancellation", Justification = "In this case the cancellation token is provided internally via SharedToken")]
         [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exception is passed through to faulted task result")]
+        [SuppressMessage("Reliability", "EA0002:Use 'System.TimeProvider' to make the code easier to test", Justification = "Does not apply")]
         private async Task BackgroundFetchAsync()
         {
             bool eventSourceEnabled = HybridCacheEventSource.Log.IsEnabled();
@@ -272,6 +273,19 @@ internal partial class DefaultHybridCache
                         throw;
                     }
 
+                    // check whether we're going to hit a timing problem with tag invalidation
+                    if (Cache.HasExactTagExpirationMatch(CacheItem))
+                    {
+                        // this is *very rare*; inject an artificial delay - see
+                        // HasExactTagExpirationMatch to understand the context for this
+                        await System.Threading.Tasks.Task.Delay(1, CancellationToken.None).ConfigureAwait(false);
+
+                        // We can safely update the timestamp without fear of torn values etc; no competing code
+                        // will access this until we set it into L1, which happens towards the *end* of this method,
+                        // and we (the current thread/path) are the only execution for this instance.
+                        CacheItem.UnsafeSetCreationTimsetamp(Cache.CurrentTimestamp());
+                    }
+
                     // If we're writing this value *anywhere*, we're going to need to serialize; this is obvious
                     // in the case of L2, but we also need it for L1, because MemoryCache might be enforcing
                     // SizeLimit (we can't know - it is an abstraction), and for *that* we need to know the item size.
@@ -280,7 +294,6 @@ internal partial class DefaultHybridCache
                     // Rephrasing that: the only scenario in which we *do not* need to serialize is if:
                     // - it is an ImmutableCacheItem (so we don't need bytes for the CacheItem, L1)
                     // - we're not writing to L2
-
                     CacheItem cacheItem = CacheItem;
                     bool skipSerialize = cacheItem is ImmutableCacheItem<T> && (Key.Flags & FlagsDisableL1AndL2Write) == FlagsDisableL1AndL2Write;
 

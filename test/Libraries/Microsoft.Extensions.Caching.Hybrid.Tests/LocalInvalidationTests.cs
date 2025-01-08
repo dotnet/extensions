@@ -91,8 +91,10 @@ public class LocalInvalidationTests(ITestOutputHelper log)
             });
             var clock = services.GetRequiredService<TimeProvider>();
 
-            string[] tags = ["abc"];
-            var value = await cache.GetOrCreateAsync<Guid>("abc", ct => new(Guid.NewGuid()), tags: tags);
+            string key = "mykey";
+            string tag = "abc";
+            string[] tags = [tag];
+            var value = await cache.GetOrCreateAsync<Guid>(key, ct => new(Guid.NewGuid()), tags: tags);
             log.WriteLine($"First value: {value}");
             if (lastValue != Guid.Empty)
             {
@@ -100,30 +102,38 @@ public class LocalInvalidationTests(ITestOutputHelper log)
             }
 
             // should work immediately as-is
-            Assert.Equal(value, await cache.GetOrCreateAsync<Guid>("abc", ct => new(Guid.NewGuid()), tags: tags));
+            var tmp = await cache.GetOrCreateAsync<Guid>(key, ct => new(Guid.NewGuid()), tags: tags);
+            log.WriteLine($"Second value: {tmp} (should be {value})");
+            Assert.Equal(value, tmp);
 
             // invalidating a normal tag should have no effect
             await cache.RemoveByTagAsync("foo");
-            Assert.Equal(value, await cache.GetOrCreateAsync<Guid>("abc", ct => new(Guid.NewGuid()), tags: tags));
+            tmp = await cache.GetOrCreateAsync<Guid>(key, ct => new(Guid.NewGuid()), tags: tags);
+            log.WriteLine($"Value after invalidating tag foo: {tmp} (should be {value})");
+            Assert.Equal(value, tmp);
 
             // invalidating a tag we have should force a re-fetch
-            await cache.RemoveByTagAsync("abc");
-            var newValue = await cache.GetOrCreateAsync<Guid>("abc", ct => new(Guid.NewGuid()), tags: tags);
-            log.WriteLine($"Value after invalidating tag abc: {value}");
+            await cache.RemoveByTagAsync(tag);
+            var newValue = await cache.GetOrCreateAsync<Guid>(key, ct => new(Guid.NewGuid()), tags: tags);
+            log.WriteLine($"Value after invalidating tag {tag}: {newValue} (should not be {value})");
             Assert.NotEqual(value, newValue);
 
             // which should now be repeatable again
-            Assert.Equal(newValue, await cache.GetOrCreateAsync<Guid>("abc", ct => new(Guid.NewGuid()), tags: tags));
+            tmp = await cache.GetOrCreateAsync<Guid>(key, ct => new(Guid.NewGuid()), tags: tags);
+            log.WriteLine($"And repeating: {tmp} (should be {newValue})");
+            Assert.Equal(newValue, tmp);
             value = newValue;
 
             // invalidating everything should force a re-fetch
             await cache.RemoveByTagAsync("*");
-            newValue = await cache.GetOrCreateAsync<Guid>("abc", ct => new(Guid.NewGuid()), tags: tags);
-            log.WriteLine($"Value after invalidating tag *: {value}");
+            newValue = await cache.GetOrCreateAsync<Guid>(key, ct => new(Guid.NewGuid()), tags: tags);
+            log.WriteLine($"Value after invalidating tag *: {newValue} (should not be {value})");
             Assert.NotEqual(value, newValue);
 
             // which should now be repeatable again
-            Assert.Equal(newValue, await cache.GetOrCreateAsync<Guid>("abc", ct => new(Guid.NewGuid()), tags: tags));
+            tmp = await cache.GetOrCreateAsync<Guid>(key, ct => new(Guid.NewGuid()), tags: tags);
+            log.WriteLine($"And repeating: {tmp} (should be {newValue})");
+            Assert.Equal(newValue, tmp);
             lastValue = newValue;
 
             var now = clock.GetUtcNow().UtcTicks;
