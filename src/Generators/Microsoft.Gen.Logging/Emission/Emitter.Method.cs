@@ -155,8 +155,8 @@ internal sealed partial class Emitter : EmitterBase
                 result = (c ^ result) * Mult;
             }
 
-            const uint NegativeMask = 0x7FFFFFFF;
-            return (int)(result & NegativeMask); // Ensure the result is non-negative
+            int ret = (int)result;
+            return ret == int.MinValue ? 0 : Math.Abs(ret); // Ensure the result is non-negative
         }
 
         static bool ShouldStringifyParameter(LoggingMethodParameter p)
