@@ -274,16 +274,33 @@ internal partial class DefaultHybridCache
                     }
 
                     // check whether we're going to hit a timing problem with tag invalidation
-                    if (Cache.HasExactTagExpirationMatch(CacheItem))
+                    if (!Cache.IsValid(CacheItem))
                     {
-                        // this is *very rare*; inject an artificial delay - see
-                        // HasExactTagExpirationMatch to understand the context for this
-                        await System.Threading.Tasks.Task.Delay(1, CancellationToken.None).ConfigureAwait(false);
+                        // When writing to L1, we need to avoid a problem where either "*" or one of
+                        // the active tags matches "now" - we get into a problem whereby it is
+                        // ambiguous whether the data is invalidated; consider all of the following happen
+                        // *in the same measured instance*:
+                        // - write with value A
+                        // - invalidate by tag (or wildcard)
+                        // - write with value B
+                        // Both A and B have the same timestamp as the invalidated one; to avoid this problem,
+                        // we need to detect this (very rare) scenario, and inject an artificial delay, such that
+                        // B effectively gets written at a later time.
+                        var time = Cache.CurrentTimestamp();
+                        if (time <= CacheItem.CreationTimestamp)
+                        {
+                            // clock hasn't changed; this is *very rare*, and honestly mostly applies to
+                            // tests with dummy fetch calls; inject an artificial delay and re-fetch
+                            // the time
+                            // HasExactTagExpirationMatch to understand the context for this
+                            await System.Threading.Tasks.Task.Delay(1, CancellationToken.None).ConfigureAwait(false);
+                            time = Cache.CurrentTimestamp();
+                        }
 
                         // We can safely update the timestamp without fear of torn values etc; no competing code
                         // will access this until we set it into L1, which happens towards the *end* of this method,
                         // and we (the current thread/path) are the only execution for this instance.
-                        CacheItem.UnsafeSetCreationTimsetamp(Cache.CurrentTimestamp());
+                        CacheItem.UnsafeSetCreationTimsetamp(time);
                     }
 
                     // If we're writing this value *anywhere*, we're going to need to serialize; this is obvious
