@@ -21,7 +21,6 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Xunit.SkippableFact" />
-    <PackageReference Include="System.Runtime.Caching" />
   </ItemGroup>
 
   <ItemGroup>

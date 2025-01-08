@@ -30,14 +30,13 @@ public abstract class DistributedCacheTests
 
     internal sealed class FakeTime : TimeProvider, ISystemClock
     {
-        private DateTimeOffset _now = DateTimeOffset.UtcNow;
-        public void Reset() => _now = DateTimeOffset.UtcNow;
+        public void Reset() => UtcNow = DateTimeOffset.UtcNow;
 
-        DateTimeOffset ISystemClock.UtcNow => _now;
+        public DateTimeOffset UtcNow { get; private set; } = DateTimeOffset.UtcNow;
 
-        public override DateTimeOffset GetUtcNow() => _now;
+        public override DateTimeOffset GetUtcNow() => UtcNow;
 
-        public void Add(TimeSpan delta) => _now += delta;
+        public void Add(TimeSpan delta) => UtcNow += delta;
     }
 
     private async ValueTask<IServiceCollection> InitAsync()

@@ -126,12 +126,12 @@ public class LocalInvalidationTests(ITestOutputHelper log)
             Assert.Equal(newValue, await cache.GetOrCreateAsync<Guid>("abc", ct => new(Guid.NewGuid()), tags: tags));
             lastValue = newValue;
 
-            var now = clock.GetTimestamp();
+            var now = clock.GetUtcNow().UtcTicks;
             do
             {
                 await Task.Delay(10);
             }
-            while (clock.GetTimestamp() == now);
+            while (clock.GetUtcNow().UtcTicks == now);
         }
     }
 }
