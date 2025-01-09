@@ -299,7 +299,7 @@ internal partial class DefaultHybridCache
                         // We can safely update the timestamp without fear of torn values etc; no competing code
                         // will access this until we set it into L1, which happens towards the *end* of this method,
                         // and we (the current thread/path) are the only execution for this instance.
-                        CacheItem.UnsafeSetCreationTimsetamp(time);
+                        CacheItem.UnsafeSetCreationTimestamp(time);
                     }
 
                     // If we're writing this value *anywhere*, we're going to need to serialize; this is obvious

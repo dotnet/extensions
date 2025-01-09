@@ -40,7 +40,7 @@ internal partial class DefaultHybridCache
 
         internal int RefCount => Volatile.Read(ref _refCount);
 
-        internal void UnsafeSetCreationTimsetamp(long timestamp)
+        internal void UnsafeSetCreationTimestamp(long timestamp)
             => Unsafe.AsRef(in _creationTimestamp) = timestamp;
 
         internal static readonly PostEvictionDelegate SharedOnEviction = static (key, value, reason, state) =>
