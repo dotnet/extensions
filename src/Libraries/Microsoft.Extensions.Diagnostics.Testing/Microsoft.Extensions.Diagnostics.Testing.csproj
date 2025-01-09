@@ -12,7 +12,6 @@
     <InjectIsExternalInitOnLegacy>true</InjectIsExternalInitOnLegacy>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
-    <InjectExceptionJsonConverter>true</InjectExceptionJsonConverter>
     <NoWarn>$(NoWarn);IL2026;SYSLIB1100;SYSLIB1101</NoWarn>
   </PropertyGroup>
 

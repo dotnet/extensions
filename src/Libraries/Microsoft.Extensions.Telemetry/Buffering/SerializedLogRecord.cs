@@ -3,9 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
-using Microsoft.Shared.ExceptionJsonConverter;
 
 namespace Microsoft.Extensions.Diagnostics.Buffering;
 
@@ -24,20 +22,22 @@ internal readonly struct SerializedLogRecord
         Timestamp = timestamp;
 
         var serializedAttributes = new List<KeyValuePair<string, object?>>(attributes.Count);
+#if NETFRAMEWORK
         for (int i = 0; i < attributes.Count; i++)
         {
-#if NETFRAMEWORK
             serializedAttributes.Add(new KeyValuePair<string, object?>(new string(attributes[i].Key.ToCharArray()), attributes[i].Value?.ToString() ?? string.Empty));
-#else
-            serializedAttributes.Add(new KeyValuePair<string, object?>(new string(attributes[i].Key), attributes[i].Value?.ToString() ?? string.Empty));
-#endif
         }
 
+        Exception = new string(exception?.Message.ToCharArray());
+#else
+        for (int i = 0; i < attributes.Count; i++)
+        {
+            serializedAttributes.Add(new KeyValuePair<string, object?>(new string(attributes[i].Key), attributes[i].Value?.ToString() ?? string.Empty));
+        }
+
+        Exception = new string(exception?.Message);
+#endif
         Attributes = serializedAttributes;
-
-        // Serialize without StackTrace, which is already optionally available in the log attributes via the ExtendedLogger.
-        Exception = JsonSerializer.Serialize(exception, ExceptionJsonContext.Default.Exception);
-
         FormattedMessage = formattedMessage;
     }
 

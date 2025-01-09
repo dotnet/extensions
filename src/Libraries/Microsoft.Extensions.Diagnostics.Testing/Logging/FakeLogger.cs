@@ -7,11 +7,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Text.Json;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
-using Microsoft.Shared.ExceptionJsonConverter;
 
 namespace Microsoft.Extensions.Logging.Testing;
 
@@ -120,8 +118,9 @@ public class FakeLogger : ILogger, IBufferedLogger
 
         foreach (var rec in records)
         {
-            var exception = rec.Exception is null ?
-                null : JsonSerializer.Deserialize(rec.Exception, ExceptionJsonContext.Default.Exception);
+#pragma warning disable CA2201 // Do not raise reserved exception types
+            var exception = rec.Exception is not null ? new Exception(rec.Exception) : null;
+#pragma warning restore CA2201 // Do not raise reserved exception types
             var record = new FakeLogRecord(rec.LogLevel, rec.EventId, ConsumeTState(rec.Attributes), exception, rec.FormattedMessage ?? string.Empty,
     l.ToArray(), Category, !_disabledLevels.ContainsKey(rec.LogLevel), rec.Timestamp);
             Collector.AddRecord(record);

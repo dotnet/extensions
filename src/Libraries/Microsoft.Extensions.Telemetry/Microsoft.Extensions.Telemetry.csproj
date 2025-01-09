@@ -17,7 +17,6 @@
     <InjectSharedRentedSpan>true</InjectSharedRentedSpan>
     <InjectSharedMemoization>true</InjectSharedMemoization>
     <InjectGetOrAddOnLegacy>true</InjectGetOrAddOnLegacy>
-    <InjectExceptionJsonConverter>true</InjectExceptionJsonConverter>
     <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <NoWarn>$(NoWarn);IL2026</NoWarn>
@@ -50,6 +49,7 @@
     <InternalsVisibleToTest Include="Microsoft.Extensions.Http.Diagnostics.PerformanceTests" />
     <InternalsVisibleToTest Include="Microsoft.Extensions.Telemetry.PerformanceTests" />
     <InternalsVisibleToDynamicProxyGenAssembly2 Include="*" />
+    <Compile Remove="C:\dotnet-extensions\eng\MSBuild\..\..\src\Shared\ExceptionJsonConverter\ExceptionJsonContext.cs" />
 
     <InternalsVisibleTo Include="Microsoft.Extensions.Http.Diagnostics" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Diagnostics.Middleware" />
