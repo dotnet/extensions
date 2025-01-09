@@ -176,16 +176,7 @@ public class FakeTimeProvider : TimeProvider
         Debug.Assert(TimestampFrequency == TimeSpan.TicksPerSecond, "Assuming frequency equals ticks per second");
 #pragma warning restore S3236 // Caller information arguments should not be provided explicitly
 
-        DateTimeOffset result;
-
-        lock (Waiters)
-        {
-            result = _now;
-            _now += _autoAdvanceAmount;
-        }
-
-        WakeWaiters();
-        return result.Ticks;
+        return GetUtcNow().Ticks;
     }
 
     /// <inheritdoc />
