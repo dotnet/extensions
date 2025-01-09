@@ -84,7 +84,7 @@ public class FakeTimeProviderTests
     [Fact]
     public void GetElapsedTime_WithAutoAdvance_AdvancesProperly()
     {
-        var timeProvider = new FakeTimeProvider()
+        var timeProvider = new FakeTimeProvider
         {
             AutoAdvanceAmount = TimeSpan.FromSeconds(1)
         };
