@@ -546,6 +546,61 @@ public class FunctionInvokingChatClientTests
         Assert.Equal("OK bye", singleUpdateContent.Text);
     }
 
+    [Fact]
+    public async Task CanTerminateInvocationLoopFromFunction()
+    {
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                AIFunctionFactory.Create((int i) =>
+                {
+                    if (i == 42)
+                    {
+                        FunctionInvokingChatClient.CurrentContext!.Terminate = true;
+                    }
+
+                    return $"Result {i}";
+                }, "Func1"),
+            ],
+        };
+
+        // The invocation loop should terminate after the second function call
+        List<ChatMessage> planBeforeTermination =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1", new Dictionary<string, object?> { ["i"] = 41 })]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", "Func1", result: "Result 41")]),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId2", "Func1", new Dictionary<string, object?> { ["i"] = 42 })]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", "Func1", result: "Result 42")]),
+        ];
+
+        // The full plan should never be fulfilled
+        List<ChatMessage> plan =
+        [
+            .. planBeforeTermination,
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId3", "Func1", new Dictionary<string, object?> { ["i"] = 43 })]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId3", "Func1", result: "Result 43")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        await InvokeAndAssertAsync(options, plan, expected: [
+            .. planBeforeTermination,
+
+            // The last message is the one returned by the chat client
+            // This message's content should contain the last function call before the termination
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId2", "Func1", new Dictionary<string, object?> { ["i"] = 42 })]),
+        ]);
+
+        await InvokeAndAssertStreamingAsync(options, plan, expected: [
+            .. planBeforeTermination,
+
+            // The last message is the one returned by the chat client
+            // When streaming, function call content is removed from this message
+            new ChatMessage(ChatRole.Assistant, []),
+        ]);
+    }
+
     private static async Task<List<ChatMessage>> InvokeAndAssertAsync(
         ChatOptions options,
         List<ChatMessage> plan,
