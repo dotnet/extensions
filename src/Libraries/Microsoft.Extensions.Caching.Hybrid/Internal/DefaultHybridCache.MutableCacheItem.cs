@@ -14,6 +14,11 @@ internal partial class DefaultHybridCache
         private BufferChunk _buffer;
         private T? _fallbackValue; // only used in the case of serialization failures
 
+        public MutableCacheItem(long creationTimestamp, TagSet tags)
+            : base(creationTimestamp, tags)
+        {
+        }
+
         public override bool NeedsEvictionCallback => _buffer.ReturnToPool;
 
         public override bool DebugIsImmutable => false;
