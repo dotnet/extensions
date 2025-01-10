@@ -27,7 +27,7 @@ public static partial class AIJsonUtilities
         _ = Throw.IfNull(options);
         _ = Throw.IfNull(typeDiscriminatorId);
 
-        AddAIContentType(options, typeof(TContent), typeDiscriminatorId);
+        AddAIContentTypeCore(options, typeof(TContent), typeDiscriminatorId);
     }
 
     /// <summary>
