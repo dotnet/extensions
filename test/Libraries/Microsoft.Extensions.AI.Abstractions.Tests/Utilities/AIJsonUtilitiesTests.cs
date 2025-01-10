@@ -227,18 +227,22 @@ public static class AIJsonUtilitiesTests
     [Fact]
     public static void CreateParameterJsonSchema_TreatsIntegralTypesAsInteger_EvenWithAllowReadingFromString()
     {
-        JsonElement expected = JsonDocument.Parse("""
-            {
-              "type": "integer"
-            }
-            """).RootElement;
-
         JsonSerializerOptions options = new(JsonSerializerOptions.Default) { NumberHandling = JsonNumberHandling.AllowReadingFromString };
         AIFunction func = AIFunctionFactory.Create((int a, int? b, long c, short d, float e, double f, decimal g) => { }, serializerOptions: options);
 
         AIFunctionMetadata metadata = func.Metadata;
         foreach (var param in metadata.Parameters)
         {
+            string numericType = Type.GetTypeCode(param.ParameterType) is TypeCode.Double or TypeCode.Single or TypeCode.Decimal
+                ? "number"
+                : "integer";
+
+            JsonElement expected = JsonDocument.Parse($$"""
+                {
+                  "type": "{{numericType}}"
+                }
+                """).RootElement;
+
             JsonElement actualSchema = Assert.IsType<JsonElement>(param.Schema);
             Assert.True(JsonElement.DeepEquals(expected, actualSchema));
         }
