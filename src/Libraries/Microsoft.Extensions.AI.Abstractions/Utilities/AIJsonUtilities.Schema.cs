@@ -21,6 +21,7 @@ using Microsoft.Shared.Diagnostics;
 #pragma warning disable S107 // Methods should not have too many parameters
 #pragma warning disable S1075 // URIs should not be hardcoded
 #pragma warning disable SA1118 // Parameter should not span multiple lines
+#pragma warning disable S109 // Magic numbers should not be used
 
 namespace Microsoft.Extensions.AI;
 
@@ -382,19 +383,22 @@ public static partial class AIJsonUtilities
 
     private static bool TypeIsIntegerWithStringNumberHandling(AIJsonSchemaCreateContext ctx, JsonObject schema)
     {
-        if (ctx.TypeInfo.NumberHandling is not JsonNumberHandling.Strict && schema["type"] is JsonArray typeArray)
+        if (ctx.TypeInfo.NumberHandling is not JsonNumberHandling.Strict && schema["type"] is JsonArray { Count: 2 } typeArray)
         {
-            int count = 0;
+            bool allowString = false;
+            bool allowNumeric = false;
+
             foreach (JsonNode? entry in typeArray)
             {
                 if (entry?.GetValueKind() is JsonValueKind.String &&
-                    entry.GetValue<string>() is "integer" or "string")
+                    entry.GetValue<string>() is string type)
                 {
-                    count++;
+                    allowString |= type is "string";
+                    allowNumeric |= type is "integer" or "number";
                 }
             }
 
-            return count == typeArray.Count;
+            return allowString && allowNumeric;
         }
 
         return false;

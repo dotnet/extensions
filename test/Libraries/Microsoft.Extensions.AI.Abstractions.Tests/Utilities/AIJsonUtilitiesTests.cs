@@ -234,7 +234,7 @@ public static class AIJsonUtilitiesTests
             """).RootElement;
 
         JsonSerializerOptions options = new(JsonSerializerOptions.Default) { NumberHandling = JsonNumberHandling.AllowReadingFromString };
-        AIFunction func = AIFunctionFactory.Create((int a, int? b, long c, short d) => { }, serializerOptions: options);
+        AIFunction func = AIFunctionFactory.Create((int a, int? b, long c, short d, float e, double f, decimal g) => { }, serializerOptions: options);
 
         AIFunctionMetadata metadata = func.Metadata;
         foreach (var param in metadata.Parameters)
