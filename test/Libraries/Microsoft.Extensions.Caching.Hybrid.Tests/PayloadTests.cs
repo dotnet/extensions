@@ -2,10 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Hybrid.Internal;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit.Abstractions;
 using static Microsoft.Extensions.Caching.Hybrid.Tests.DistributedCacheTests;
+using static Microsoft.Extensions.Caching.Hybrid.Tests.L2Tests;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
 public class PayloadTests(ITestOutputHelper log)
@@ -255,5 +260,59 @@ public class PayloadTests(ITestOutputHelper log)
         Assert.Equal(HybridCachePayload.ParseResult.InvalidData, result);
         Assert.Equal(0, payload.Count);
         Assert.True(pendingTags.IsEmpty);
+    }
+
+    [Fact]
+    public async Task MalformedKeyDetected()
+    {
+        using var collector = new LogCollector();
+        using var provider = GetDefaultCache(out var cache, config =>
+        {
+            var localCache = new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
+            config.AddSingleton<IDistributedCache>(new LoggingCache(log, localCache));
+            config.AddLogging(options =>
+            {
+                options.ClearProviders();
+                options.AddProvider(collector);
+            });
+        });
+
+        byte[] bytes = new byte[1024];
+        new Random().NextBytes(bytes);
+
+        string key = "my\uD801\uD802key"; // malformed
+        string[] tags = ["mytag"];
+
+        _ = await cache.GetOrCreateAsync<Guid>(key, ct => new(Guid.NewGuid()), tags: tags);
+
+        collector.WriteTo(log);
+        collector.AssertErrors([Log.IdKeyInvalidUnicode]);
+    }
+
+    [Fact]
+    public async Task MalformedTagDetected()
+    {
+        using var collector = new LogCollector();
+        using var provider = GetDefaultCache(out var cache, config =>
+        {
+            var localCache = new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
+            config.AddSingleton<IDistributedCache>(new LoggingCache(log, localCache));
+            config.AddLogging(options =>
+            {
+                options.ClearProviders();
+                options.AddProvider(collector);
+            });
+        });
+
+        byte[] bytes = new byte[1024];
+        new Random().NextBytes(bytes);
+
+        string key = "my key"; // malformed
+        string[] tags = ["my\uD801\uD802tag"];
+
+        _ = await cache.GetOrCreateAsync<Guid>(key, ct => new(Guid.NewGuid()), tags: tags);
+
+        collector.WriteTo(log);
+        collector.AssertErrors([Log.IdTagInvalidUnicode]);
     }
 }

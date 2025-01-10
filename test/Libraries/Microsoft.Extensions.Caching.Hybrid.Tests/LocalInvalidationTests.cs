@@ -44,24 +44,6 @@ public class LocalInvalidationTests(ITestOutputHelper log)
         Assert.Equal(newValue, await cache.GetOrCreateAsync<Guid>("abc", ct => new(Guid.NewGuid())));
     }
 
-    private static class Options
-    {
-        public static IOptions<T> Create<T>(T value)
-            where T : class
-            => new OptionsImpl<T>(value);
-
-        private sealed class OptionsImpl<T> : IOptions<T>
-            where T : class
-        {
-            public OptionsImpl(T value)
-            {
-                Value = value;
-            }
-
-            public T Value { get; }
-        }
-    }
-
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

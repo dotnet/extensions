@@ -195,6 +195,25 @@ internal readonly struct TagSet
         return false;
     }
 
+    internal int MaxLength()
+    {
+        switch (_tagOrTags)
+        {
+            case string single:
+                return single.Length;
+            case string[] tags:
+                int max = 0;
+                foreach (string test in tags)
+                {
+                    max = Math.Max(max, test.Length);
+                }
+
+                return max;
+            default:
+                return 0;
+        }
+    }
+
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S3928:Parameter names used into ArgumentException constructors should match an existing one ",
         Justification = "Using parameter name from public callable API")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly", Justification = "Using parameter name from public callable API")]

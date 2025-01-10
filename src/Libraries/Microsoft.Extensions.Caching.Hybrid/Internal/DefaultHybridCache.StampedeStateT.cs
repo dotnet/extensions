@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -167,8 +169,18 @@ internal partial class DefaultHybridCache
             bool eventSourceEnabled = HybridCacheEventSource.Log.IsEnabled();
             try
             {
+                var activeFlags = Key.Flags;
+                if ((activeFlags & HybridCacheEntryFlags.DisableDistributedCache) != HybridCacheEntryFlags.DisableDistributedCache)
+                {
+                    // in order to use distributed cache, the tags and keys must be valid unicode, to avoid security complications
+                    if (!ValidateUnicodeCorrectness(Cache._logger, Key.Key, CacheItem.Tags))
+                    {
+                        activeFlags |= HybridCacheEntryFlags.DisableDistributedCache;
+                    }
+                }
+
                 // read from L2 if appropriate
-                if ((Key.Flags & HybridCacheEntryFlags.DisableDistributedCacheRead) == 0)
+                if ((activeFlags & HybridCacheEntryFlags.DisableDistributedCacheRead) == 0)
                 {
                     // kick off any necessary tag invalidation fetches
                     Cache.PrefetchTags(CacheItem.Tags);
@@ -238,7 +250,7 @@ internal partial class DefaultHybridCache
                 }
 
                 // nothing from L2; invoke the underlying data store
-                if ((Key.Flags & HybridCacheEntryFlags.DisableUnderlyingData) == 0)
+                if ((activeFlags & HybridCacheEntryFlags.DisableUnderlyingData) == 0)
                 {
                     // invoke the callback supplied by the caller
                     T newValue;
@@ -311,7 +323,7 @@ internal partial class DefaultHybridCache
                     // - it is an ImmutableCacheItem (so we don't need bytes for the CacheItem, L1)
                     // - we're not writing to L2
                     CacheItem cacheItem = CacheItem;
-                    bool skipSerialize = cacheItem is ImmutableCacheItem<T> && (Key.Flags & FlagsDisableL1AndL2Write) == FlagsDisableL1AndL2Write;
+                    bool skipSerialize = cacheItem is ImmutableCacheItem<T> && (activeFlags & FlagsDisableL1AndL2Write) == FlagsDisableL1AndL2Write;
 
                     if (skipSerialize)
                     {
@@ -344,7 +356,7 @@ internal partial class DefaultHybridCache
                             // from this point onwards happens in the background, from the perspective of the calling code.
 
                             // Write to L2 if appropriate.
-                            if ((Key.Flags & HybridCacheEntryFlags.DisableDistributedCacheWrite) == 0)
+                            if ((activeFlags & HybridCacheEntryFlags.DisableDistributedCacheWrite) == 0)
                             {
                                 // We already have the payload serialized, so this is trivial to do.
                                 try
@@ -517,6 +529,87 @@ internal partial class DefaultHybridCache
                 Cache.RemoveStampedeState(in Key);
                 _ = _result.TrySetResult(value);
             }
+        }
+    }
+
+    [SuppressMessage("Major Code Smell", "S1121:Assignments should not be made from within sub-expressions", Justification = "Reasonable in this case, due to stack alloc scope.")]
+    private static bool ValidateUnicodeCorrectness(ILogger logger, string key, TagSet tags)
+    {
+        var maxChars = Math.Max(key.Length, tags.MaxLength());
+        var maxBytes = HybridCachePayload.Encoding.GetMaxByteCount(maxChars);
+
+        byte[] leasedBytes = [];
+        char[] leasedChars = [];
+
+        Span<byte> byteBuffer = maxBytes <= 128 ? stackalloc byte[128] : (leasedBytes = ArrayPool<byte>.Shared.Rent(maxBytes));
+        Span<char> charBuffer = maxChars <= 128 ? stackalloc char[128] : (leasedChars = ArrayPool<char>.Shared.Rent(maxChars));
+
+        try
+        {
+            if (!Test(key, byteBuffer, charBuffer))
+            {
+                Log.KeyInvalidUnicode(logger);
+                return false;
+            }
+
+            switch (tags.Count)
+            {
+                case 0:
+                    break;
+                case 1:
+                    if (!Test(tags.GetSinglePrechecked(), byteBuffer, charBuffer))
+                    {
+                        Log.TagInvalidUnicode(logger);
+                        return false;
+                    }
+
+                    break;
+                default:
+                    foreach (var tag in tags.GetSpanPrechecked())
+                    {
+                        if (!Test(tag, byteBuffer, charBuffer))
+                        {
+                            Log.TagInvalidUnicode(logger);
+                            return false;
+                        }
+                    }
+
+                    break;
+            }
+
+            return true;
+        }
+        finally
+        {
+            ArrayPool<char>.Shared.Return(leasedChars);
+            ArrayPool<byte>.Shared.Return(leasedBytes);
+        }
+
+        static unsafe bool Test(string value, Span<byte> byteBuffer, Span<char> charBuffer)
+        {
+            // for reliable confidence of unicode correctness: encode and decode, and verify equality
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+            byteBuffer = byteBuffer.Slice(0, HybridCachePayload.Encoding.GetBytes(value.AsSpan(), byteBuffer));
+            charBuffer = charBuffer.Slice(0, HybridCachePayload.Encoding.GetChars(byteBuffer, charBuffer));
+#else
+            unsafe
+            {
+                int bytes;
+                fixed (byte* bPtr = byteBuffer)
+                {
+                    fixed (char* cPtr = value)
+                    {
+                        bytes = HybridCachePayload.Encoding.GetBytes(cPtr, value.Length, bPtr, byteBuffer.Length);
+                    }
+
+                    fixed (char* cPtr = charBuffer)
+                    {
+                        charBuffer = charBuffer.Slice(0, HybridCachePayload.Encoding.GetChars(bPtr, bytes, cPtr, charBuffer.Length));
+                    }
+                }
+            }
+#endif
+            return charBuffer.SequenceEqual(value.AsSpan());
         }
     }
 }
