@@ -547,22 +547,28 @@ public class FunctionInvokingChatClientTests
     }
 
     [Fact]
-    public async Task CanTerminateInvocationLoopFromFunction()
+    public async Task CanAccesssFunctionInvocationContextFromFunctionCall()
     {
+        var invocationContexts = new List<FunctionInvokingChatClient.FunctionInvocationContext>();
+        var function = AIFunctionFactory.Create(async (int i) =>
+        {
+            // The context should propogate across async calls
+            await Task.Yield();
+
+            var context = FunctionInvokingChatClient.CurrentContext!;
+            invocationContexts.Add(context);
+
+            if (i == 42)
+            {
+                context.Terminate = true;
+            }
+
+            return $"Result {i}";
+        }, "Func1");
+
         var options = new ChatOptions
         {
-            Tools =
-            [
-                AIFunctionFactory.Create((int i) =>
-                {
-                    if (i == 42)
-                    {
-                        FunctionInvokingChatClient.CurrentContext!.Terminate = true;
-                    }
-
-                    return $"Result {i}";
-                }, "Func1"),
-            ],
+            Tools = [function],
         };
 
         // The invocation loop should terminate after the second function call
@@ -584,21 +590,47 @@ public class FunctionInvokingChatClientTests
             new ChatMessage(ChatRole.Assistant, "world"),
         ];
 
-        await InvokeAndAssertAsync(options, plan, expected: [
+        await InvokeAsync(() => InvokeAndAssertAsync(options, plan, expected: [
             .. planBeforeTermination,
 
             // The last message is the one returned by the chat client
             // This message's content should contain the last function call before the termination
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId2", "Func1", new Dictionary<string, object?> { ["i"] = 42 })]),
-        ]);
+        ]));
 
-        await InvokeAndAssertStreamingAsync(options, plan, expected: [
+        await InvokeAsync(() => InvokeAndAssertStreamingAsync(options, plan, expected: [
             .. planBeforeTermination,
 
             // The last message is the one returned by the chat client
             // When streaming, function call content is removed from this message
             new ChatMessage(ChatRole.Assistant, []),
-        ]);
+        ]));
+
+        // The current context should be null outside the async call stack for the function invocation
+        Assert.Null(FunctionInvokingChatClient.CurrentContext);
+
+        async Task InvokeAsync(Func<Task<List<ChatMessage>>> work)
+        {
+            invocationContexts.Clear();
+
+            var chatMessages = await work();
+
+            Assert.Collection(invocationContexts,
+                c => AssertInvocationContext(c, iteration: 0, terminate: false),
+                c => AssertInvocationContext(c, iteration: 1, terminate: true));
+
+            void AssertInvocationContext(FunctionInvokingChatClient.FunctionInvocationContext context, int iteration, bool terminate)
+            {
+                Assert.NotNull(context);
+                Assert.Same(chatMessages, context.ChatMessages);
+                Assert.Same(function, context.Function);
+                Assert.Equal("Func1", context.CallContent.Name);
+                Assert.Equal(0, context.FunctionCallIndex);
+                Assert.Equal(1, context.FunctionCount);
+                Assert.Equal(iteration, context.Iteration);
+                Assert.Equal(terminate, context.Terminate);
+            }
+        }
     }
 
     private static async Task<List<ChatMessage>> InvokeAndAssertAsync(
