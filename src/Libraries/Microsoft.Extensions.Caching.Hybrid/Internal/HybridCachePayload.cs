@@ -4,7 +4,6 @@
 using System;
 using System.Buffers;
 using System.Buffers.Binary;
-using System.Diagnostics;
 using System.Text;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
@@ -37,7 +36,6 @@ internal static class HybridCachePayload
     private const ushort UInt16SentinelPrefixPair = (ProtocolVersion << 8) | SentinelPrefix;
 
     private static readonly Random _entropySource = new(); // doesn't need to be cryptographic
-    private static readonly UTF8Encoding _utf8NoBom = new(false);
 
     [Flags]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S2344:Enumeration type names should not have \"Flags\" or \"Enum\" suffixes", Justification = "Clarity")]
@@ -56,6 +54,8 @@ internal static class HybridCachePayload
         ExpiredTag = 5,
         ExpiredWildcard = 6,
     }
+
+    public static UTF8Encoding Encoding { get; } = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: false);
 
     public static int GetMaxBytes(string key, TagSet tags, int payloadSize)
     {
@@ -91,13 +91,14 @@ internal static class HybridCachePayload
         return length;
 
         // pay the cost to get the actual length, to avoid significant
-        // over-estiamte in ASCII cases
+        // over-estimate in ASCII cases
         static int GetMaxStringLength(int charCount) =>
-            MaxVarint64Length + _utf8NoBom.GetMaxByteCount(charCount);
+            MaxVarint64Length + Encoding.GetMaxByteCount(charCount);
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S109:Magic numbers should not be used", Justification = "Encoding details; clear in context")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA5394:Do not use insecure randomness", Justification = "Not cryptographic")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S107:Methods should not have too many parameters", Justification = "Borderline")]
     public static int Write(byte[] destination,
         string key, long creationTime, TimeSpan duration, PayloadFlags flags, TagSet tags, ReadOnlySequence<byte> payload)
     {
@@ -159,9 +160,9 @@ internal static class HybridCachePayload
 
         static void WriteString(byte[] target, ref int offset, string value)
         {
-            var len = _utf8NoBom.GetByteCount(value);
+            var len = Encoding.GetByteCount(value);
             Write7BitEncodedInt64(target, ref offset, (ulong)len);
-            offset += _utf8NoBom.GetBytes(value, 0, value.Length, target, offset);
+            offset += Encoding.GetBytes(value, 0, value.Length, target, offset);
         }
     }
 
@@ -333,7 +334,7 @@ internal static class HybridCachePayload
             }
 
             // make sure we have enough buffer space
-            var maxChars = _utf8NoBom.GetMaxCharCount(length);
+            var maxChars = Encoding.GetMaxCharCount(length);
             if (scratch.Length < maxChars)
             {
                 ArrayPool<char>.Shared.Return(scratch);
@@ -342,7 +343,7 @@ internal static class HybridCachePayload
 
             // decode
 #if NETCOREAPP3_1_OR_GREATER
-            var charCount = _utf8NoBom.GetChars(buffer.Slice(0, length), scratch);
+            var charCount = Encoding.GetChars(buffer.Slice(0, length), scratch);
 #else
             int charCount;
             unsafe
@@ -351,7 +352,7 @@ internal static class HybridCachePayload
                 {
                     fixed (char* cPtr = scratch)
                     {
-                        charCount = _utf8NoBom.GetChars(bPtr, length, cPtr, scratch.Length);
+                        charCount = Encoding.GetChars(bPtr, length, cPtr, scratch.Length);
                     }
                 }
             }
