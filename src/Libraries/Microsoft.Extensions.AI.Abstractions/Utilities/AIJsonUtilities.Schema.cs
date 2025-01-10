@@ -3,12 +3,9 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-#if !NET9_0_OR_GREATER
 using System.Diagnostics.CodeAnalysis;
-#endif
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -21,6 +18,7 @@ using Microsoft.Shared.Diagnostics;
 #pragma warning disable S107 // Methods should not have too many parameters
 #pragma warning disable S1075 // URIs should not be hardcoded
 #pragma warning disable SA1118 // Parameter should not span multiple lines
+#pragma warning disable S109 // Magic numbers should not be used
 
 namespace Microsoft.Extensions.AI;
 
@@ -304,14 +302,14 @@ public static partial class AIJsonUtilities
 
                 // Some consumers of the JSON schema, including Ollama as of v0.3.13, don't understand
                 // schemas with "type": [...], and only understand "type" being a single value.
-                // STJ represents .NET integer types as ["string", "integer"], which will then lead to an error.
-                if (TypeIsIntegerWithStringNumberHandling(ctx, objSchema))
+                // In certain configurations STJ represents .NET numeric types as ["string", "number"], which will then lead to an error.
+                if (TypeIsIntegerWithStringNumberHandling(ctx, objSchema, out string? numericType))
                 {
-                    // We don't want to emit any array for "type". In this case we know it contains "integer"
+                    // We don't want to emit any array for "type". In this case we know it contains "integer" or "number",
                     // so reduce the type to that alone, assuming it's the most specific type.
                     // This makes schemas for Int32 (etc) work with Ollama.
                     JsonObject obj = ConvertSchemaToObject(ref schema);
-                    obj[TypePropertyName] = "integer";
+                    obj[TypePropertyName] = numericType;
                     _ = obj.Remove(PatternPropertyName);
                 }
             }
@@ -380,21 +378,32 @@ public static partial class AIJsonUtilities
         }
     }
 
-    private static bool TypeIsIntegerWithStringNumberHandling(AIJsonSchemaCreateContext ctx, JsonObject schema)
+    private static bool TypeIsIntegerWithStringNumberHandling(AIJsonSchemaCreateContext ctx, JsonObject schema, [NotNullWhen(true)] out string? numericType)
     {
-        if (ctx.TypeInfo.NumberHandling is not JsonNumberHandling.Strict && schema["type"] is JsonArray typeArray)
+        numericType = null;
+
+        if (ctx.TypeInfo.NumberHandling is not JsonNumberHandling.Strict && schema["type"] is JsonArray { Count: 2 } typeArray)
         {
-            int count = 0;
+            bool allowString = false;
+
             foreach (JsonNode? entry in typeArray)
             {
                 if (entry?.GetValueKind() is JsonValueKind.String &&
-                    entry.GetValue<string>() is "integer" or "string")
+                    entry.GetValue<string>() is string type)
                 {
-                    count++;
+                    switch (type)
+                    {
+                        case "integer" or "number":
+                            numericType = type;
+                            break;
+                        case "string":
+                            allowString = true;
+                            break;
+                    }
                 }
             }
 
-            return count == typeArray.Count;
+            return allowString && numericType is not null;
         }
 
         return false;
