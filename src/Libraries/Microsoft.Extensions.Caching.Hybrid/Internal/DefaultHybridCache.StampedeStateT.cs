@@ -544,14 +544,16 @@ internal partial class DefaultHybridCache
         Span<byte> byteBuffer = maxBytes <= 128 ? stackalloc byte[128] : (leasedBytes = ArrayPool<byte>.Shared.Rent(maxBytes));
         Span<char> charBuffer = maxChars <= 128 ? stackalloc char[128] : (leasedChars = ArrayPool<char>.Shared.Rent(maxChars));
 
-        try
-        {
-            if (!Test(key, byteBuffer, charBuffer))
-            {
-                Log.KeyInvalidUnicode(logger);
-                return false;
-            }
+        bool isValid = true;
 
+        if (!Test(key, byteBuffer, charBuffer))
+        {
+            Log.KeyInvalidUnicode(logger);
+            isValid = false;
+        }
+
+        if (isValid)
+        {
             switch (tags.Count)
             {
                 case 0:
@@ -560,7 +562,8 @@ internal partial class DefaultHybridCache
                     if (!Test(tags.GetSinglePrechecked(), byteBuffer, charBuffer))
                     {
                         Log.TagInvalidUnicode(logger);
-                        return false;
+                        isValid = false;
+                        break;
                     }
 
                     break;
@@ -570,20 +573,18 @@ internal partial class DefaultHybridCache
                         if (!Test(tag, byteBuffer, charBuffer))
                         {
                             Log.TagInvalidUnicode(logger);
-                            return false;
+                            isValid = false;
+                            break;
                         }
                     }
 
                     break;
             }
+        }
 
-            return true;
-        }
-        finally
-        {
-            ArrayPool<char>.Shared.Return(leasedChars);
-            ArrayPool<byte>.Shared.Return(leasedBytes);
-        }
+        ArrayPool<char>.Shared.Return(leasedChars);
+        ArrayPool<byte>.Shared.Return(leasedBytes);
+        return isValid;
 
         static unsafe bool Test(string value, Span<byte> byteBuffer, Span<char> charBuffer)
         {
