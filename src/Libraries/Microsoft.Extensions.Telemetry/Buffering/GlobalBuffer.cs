@@ -4,12 +4,11 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
-using Microsoft.Shared.Pools;
 using static Microsoft.Extensions.Logging.ExtendedLogger;
 
 namespace Microsoft.Extensions.Diagnostics.Buffering;
@@ -20,8 +19,9 @@ internal sealed class GlobalBuffer : ILoggingBuffer
     private readonly ConcurrentQueue<SerializedLogRecord> _buffer;
     private readonly IBufferedLogger _bufferedLogger;
     private readonly TimeProvider _timeProvider;
-    private readonly ObjectPool<List<PooledLogRecord>> _logRecordPool = PoolFactory.CreateListPool<PooledLogRecord>();
     private DateTimeOffset _lastFlushTimestamp;
+
+    private int _bufferSize;
 #if NETFRAMEWORK
     private object _netfxBufferLocker = new();
 #endif
@@ -47,20 +47,31 @@ internal sealed class GlobalBuffer : ILoggingBuffer
             return false;
         }
 
-        switch (attributes)
+        SerializedLogRecord serializedLogRecord = default;
+        if (attributes is ModernTagJoiner modernTagJoiner)
         {
-            case ModernTagJoiner modernTagJoiner:
-                _buffer.Enqueue(new SerializedLogRecord(logLevel, eventId, _timeProvider.GetUtcNow(), modernTagJoiner, exception,
-                    ((Func<ModernTagJoiner, Exception?, string>)(object)formatter)(modernTagJoiner, exception)));
-                break;
-            case LegacyTagJoiner legacyTagJoiner:
-                _buffer.Enqueue(new SerializedLogRecord(logLevel, eventId, _timeProvider.GetUtcNow(), legacyTagJoiner, exception,
-                    ((Func<LegacyTagJoiner, Exception?, string>)(object)formatter)(legacyTagJoiner, exception)));
-                break;
-            default:
-                Throw.ArgumentException(nameof(attributes), $"Unsupported type of the log attributes object detected: {typeof(T)}");
-                break;
+            serializedLogRecord = new SerializedLogRecord(logLevel, eventId, _timeProvider.GetUtcNow(), modernTagJoiner, exception,
+                ((Func<ModernTagJoiner, Exception?, string>)(object)formatter)(modernTagJoiner, exception));
         }
+        else if (attributes is LegacyTagJoiner legacyTagJoiner)
+        {
+            serializedLogRecord = new SerializedLogRecord(logLevel, eventId, _timeProvider.GetUtcNow(), legacyTagJoiner, exception,
+                ((Func<LegacyTagJoiner, Exception?, string>)(object)formatter)(legacyTagJoiner, exception));
+        }
+        else
+        {
+            Throw.ArgumentException(nameof(attributes), $"Unsupported type of the log attributes object detected: {typeof(T)}");
+        }
+
+        if (serializedLogRecord.SizeInBytes > _options.CurrentValue.LogRecordSizeInBytes)
+        {
+            return false;
+        }
+
+        _buffer.Enqueue(serializedLogRecord);
+        _ = Interlocked.Add(ref _bufferSize, serializedLogRecord.SizeInBytes);
+
+        Trim();
 
         return true;
     }
@@ -69,7 +80,7 @@ internal sealed class GlobalBuffer : ILoggingBuffer
     {
         _lastFlushTimestamp = _timeProvider.GetUtcNow();
 
-        var result = _buffer.ToArray();
+        SerializedLogRecord[] bufferedRecords = _buffer.ToArray();
 
 #if NETFRAMEWORK
         lock (_netfxBufferLocker)
@@ -83,39 +94,27 @@ internal sealed class GlobalBuffer : ILoggingBuffer
         _buffer.Clear();
 #endif
 
-        List<PooledLogRecord>? pooledList = null;
-        try
+        var deserializedLogRecords = new List<DeserializedLogRecord>(bufferedRecords.Length);
+        foreach (var bufferedRecord in bufferedRecords)
         {
-            pooledList = _logRecordPool.Get();
-            foreach (var serializedRecord in result)
-            {
-                pooledList.Add(
-                    new PooledLogRecord(
-                        serializedRecord.Timestamp,
-                        serializedRecord.LogLevel,
-                        serializedRecord.EventId,
-                        serializedRecord.Exception,
-                        serializedRecord.FormattedMessage,
-                        serializedRecord.Attributes));
-            }
+            deserializedLogRecords.Add(
+                new DeserializedLogRecord(
+                    bufferedRecord.Timestamp,
+                    bufferedRecord.LogLevel,
+                    bufferedRecord.EventId,
+                    bufferedRecord.Exception,
+                    bufferedRecord.FormattedMessage,
+                    bufferedRecord.Attributes));
+        }
 
-            _bufferedLogger.LogRecords(pooledList);
-        }
-        finally
-        {
-            if (pooledList is not null)
-            {
-                _logRecordPool.Return(pooledList);
-            }
-        }
+        _bufferedLogger.LogRecords(deserializedLogRecords);
     }
 
-    public void TruncateOverlimit()
+    private void Trim()
     {
-        // Capacity is a soft limit, which might be exceeded, esp. in multi-threaded environments.
-        while (_buffer.Count > _options.CurrentValue.Capacity)
+        while (_bufferSize > _options.CurrentValue.BufferSizeInBytes && _buffer.TryDequeue(out var item))
         {
-            _ = _buffer.TryDequeue(out _);
+            _ = Interlocked.Add(ref _bufferSize, -item.SizeInBytes);
         }
     }
 

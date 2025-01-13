@@ -24,14 +24,16 @@ public class GlobalBufferOptions
     public TimeSpan SuspendAfterFlushDuration { get; set; } = TimeSpan.FromSeconds(30);
 
     /// <summary>
-    /// Gets or sets the duration to check and remove the buffered items exceeding the <see cref="Capacity"/>.
+    /// Gets or sets the maxiumum size of each individual log record in bytes. If the size of a log record exceeds this limit, it won't be buffered.
     /// </summary>
-    public TimeSpan Duration { get; set; } = TimeSpan.FromSeconds(30);
+    /// TO DO: add validation.
+    public int LogRecordSizeInBytes { get; set; } = 50_000;
 
     /// <summary>
-    /// Gets or sets the size of the buffer.
+    /// Gets or sets the maximum size of the buffer in bytes. If the buffer size exceeds this limit, the oldest buffered log records will be dropped.
     /// </summary>
-    public int Capacity { get; set; } = 10_000;
+    /// TO DO: add validation.
+    public int BufferSizeInBytes { get; set; } = 500_000_000;
 
 #pragma warning disable CA1002 // Do not expose generic lists - List is necessary to be able to call .AddRange()
 #pragma warning disable CA2227 // Collection properties should be read only - setter is necessary for options pattern

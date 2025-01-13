@@ -3,15 +3,29 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.ObjectPool;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Diagnostics.Buffering;
-internal sealed class PooledLogRecord : BufferedLogRecord, IResettable
+
+/// <summary>
+/// Represents a log record deserialized from somewhere, such as buffer.
+/// </summary>
+[Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
+public sealed class DeserializedLogRecord : BufferedLogRecord
 {
-    public PooledLogRecord(
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DeserializedLogRecord"/> class.
+    /// </summary>
+    /// <param name="timestamp">The time when the log record was first created.</param>
+    /// <param name="logLevel">Logging severity level.</param>
+    /// <param name="eventId">Event ID.</param>
+    /// <param name="exception">An exception string for this record.</param>
+    /// <param name="formattedMessage">The formatted log message.</param>
+    /// <param name="attributes">The set of name/value pairs associated with the record.</param>
+    public DeserializedLogRecord(
         DateTimeOffset timestamp,
         LogLevel logLevel,
         EventId eventId,
@@ -27,49 +41,27 @@ internal sealed class PooledLogRecord : BufferedLogRecord, IResettable
         _attributes = attributes;
     }
 
+    /// <inheritdoc/>
     public override DateTimeOffset Timestamp => _timestamp;
     private DateTimeOffset _timestamp;
 
+    /// <inheritdoc/>
     public override LogLevel LogLevel => _logLevel;
     private LogLevel _logLevel;
 
+    /// <inheritdoc/>
     public override EventId EventId => _eventId;
     private EventId _eventId;
 
+    /// <inheritdoc/>
     public override string? Exception => _exception;
     private string? _exception;
 
-    public override ActivitySpanId? ActivitySpanId => _activitySpanId;
-    private ActivitySpanId? _activitySpanId;
-
-    public override ActivityTraceId? ActivityTraceId => _activityTraceId;
-    private ActivityTraceId? _activityTraceId;
-
-    public override int? ManagedThreadId => _managedThreadId;
-    private int? _managedThreadId;
-
+    /// <inheritdoc/>
     public override string? FormattedMessage => _formattedMessage;
     private string? _formattedMessage;
 
-    public override string? MessageTemplate => _messageTemplate;
-    private string? _messageTemplate;
-
+    /// <inheritdoc/>
     public override IReadOnlyList<KeyValuePair<string, object?>> Attributes => _attributes;
     private IReadOnlyList<KeyValuePair<string, object?>> _attributes;
-
-    public bool TryReset()
-    {
-        _timestamp = default;
-        _logLevel = default;
-        _eventId = default;
-        _exception = default;
-        _activitySpanId = default;
-        _activityTraceId = default;
-        _managedThreadId = default;
-        _formattedMessage = default;
-        _messageTemplate = default;
-        _attributes = [];
-
-        return true;
-    }
 }

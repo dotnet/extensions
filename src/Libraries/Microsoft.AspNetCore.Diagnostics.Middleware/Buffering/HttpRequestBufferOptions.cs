@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Diagnostics.Buffering;
@@ -16,14 +15,10 @@ namespace Microsoft.AspNetCore.Diagnostics.Buffering;
 public class HttpRequestBufferOptions
 {
     /// <summary>
-    /// Gets or sets the duration to check and remove the buffered items exceeding the <see cref="PerRequestCapacity"/>.
+    /// Gets or sets the size in bytes of the buffer for a request. If the buffer size exceeds this limit, the oldest buffered log records will be dropped.
     /// </summary>
-    public TimeSpan PerRequestDuration { get; set; } = TimeSpan.FromSeconds(10);
-
-    /// <summary>
-    /// Gets or sets the size of the buffer for a request.
-    /// </summary>
-    public int PerRequestCapacity { get; set; } = 1_000;
+    /// TO DO: add validation.
+    public int PerRequestBufferSizeInBytes { get; set; } = 5_000_000;
 
 #pragma warning disable CA1002 // Do not expose generic lists - List is necessary to be able to call .AddRange()
 #pragma warning disable CA2227 // Collection properties should be read only - setter is necessary for options pattern

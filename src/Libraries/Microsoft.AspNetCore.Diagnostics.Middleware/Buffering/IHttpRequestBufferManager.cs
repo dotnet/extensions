@@ -21,5 +21,5 @@ public interface IHttpRequestBufferManager : IBufferManager
     /// <summary>
     /// Flushes the buffer and emits buffered logs for the current request.
     /// </summary>
-    public void FlushCurrentRequestLogs();
+    void FlushCurrentRequestLogs();
 }

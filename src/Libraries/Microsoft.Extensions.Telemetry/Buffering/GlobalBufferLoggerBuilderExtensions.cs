@@ -7,7 +7,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.Buffering;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.DiagnosticIds;
@@ -68,12 +67,11 @@ public static class GlobalBufferLoggerBuilderExtensions
     {
         _ = Throw.IfNull(builder);
 
+        _ = builder.Services.AddExtendedLoggerFeactory();
+
         builder.Services.TryAddSingleton<GlobalBufferManager>();
         builder.Services.TryAddSingleton<IBufferManager>(static sp => sp.GetRequiredService<GlobalBufferManager>());
         builder.Services.TryAddSingleton<IGlobalBufferManager>(static sp => sp.GetRequiredService<GlobalBufferManager>());
-
-        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerFactory, ExtendedLoggerFactory>());
-        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, GlobalBufferManager>(static sp => sp.GetRequiredService<GlobalBufferManager>()));
 
         return builder;
     }

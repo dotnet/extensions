@@ -4,13 +4,12 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
 using Microsoft.Extensions.Diagnostics.Buffering;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
-using Microsoft.Shared.Pools;
 using static Microsoft.Extensions.Logging.ExtendedLogger;
 
 namespace Microsoft.AspNetCore.Diagnostics.Buffering;
@@ -22,10 +21,9 @@ internal sealed class HttpRequestBuffer : ILoggingBuffer
     private readonly ConcurrentQueue<SerializedLogRecord> _buffer;
     private readonly TimeProvider _timeProvider = TimeProvider.System;
     private readonly IBufferedLogger _bufferedLogger;
-    private readonly object _bufferCapacityLocker = new();
-    private readonly ObjectPool<List<PooledLogRecord>> _logRecordPool = PoolFactory.CreateListPool<PooledLogRecord>();
-    private DateTimeOffset _truncateAfter;
+
     private DateTimeOffset _lastFlushTimestamp;
+    private int _bufferSize;
 
     public HttpRequestBuffer(IBufferedLogger bufferedLogger,
         IOptionsMonitor<HttpRequestBufferOptions> options,
@@ -35,8 +33,6 @@ internal sealed class HttpRequestBuffer : ILoggingBuffer
         _globalOptions = globalOptions;
         _bufferedLogger = bufferedLogger;
         _buffer = new ConcurrentQueue<SerializedLogRecord>();
-
-        _truncateAfter = _timeProvider.GetUtcNow();
     }
 
     public bool TryEnqueue<TState>(
@@ -52,66 +48,57 @@ internal sealed class HttpRequestBuffer : ILoggingBuffer
             return false;
         }
 
-        switch (attributes)
+        SerializedLogRecord serializedLogRecord = default;
+        if (attributes is ModernTagJoiner modernTagJoiner)
         {
-            case ModernTagJoiner modernTagJoiner:
-                _buffer.Enqueue(new SerializedLogRecord(logLevel, eventId, _timeProvider.GetUtcNow(), modernTagJoiner, exception,
-                    ((Func<ModernTagJoiner, Exception?, string>)(object)formatter)(modernTagJoiner, exception)));
-                break;
-            case LegacyTagJoiner legacyTagJoiner:
-                _buffer.Enqueue(new SerializedLogRecord(logLevel, eventId, _timeProvider.GetUtcNow(), legacyTagJoiner, exception,
-                    ((Func<LegacyTagJoiner, Exception?, string>)(object)formatter)(legacyTagJoiner, exception)));
-                break;
-            default:
-                Throw.ArgumentException(nameof(attributes), $"Unsupported type of the log attributes object detected: {typeof(TState)}");
-                break;
+            serializedLogRecord = new SerializedLogRecord(logLevel, eventId, _timeProvider.GetUtcNow(), modernTagJoiner, exception,
+                ((Func<ModernTagJoiner, Exception?, string>)(object)formatter)(modernTagJoiner, exception));
+        }
+        else if (attributes is LegacyTagJoiner legacyTagJoiner)
+        {
+            serializedLogRecord = new SerializedLogRecord(logLevel, eventId, _timeProvider.GetUtcNow(), legacyTagJoiner, exception,
+                ((Func<LegacyTagJoiner, Exception?, string>)(object)formatter)(legacyTagJoiner, exception));
+        }
+        else
+        {
+            Throw.ArgumentException(nameof(attributes), $"Unsupported type of the log attributes object detected: {typeof(TState)}");
         }
 
-        var now = _timeProvider.GetUtcNow();
-        lock (_bufferCapacityLocker)
+        if (serializedLogRecord.SizeInBytes > _globalOptions.CurrentValue.LogRecordSizeInBytes)
         {
-            if (now >= _truncateAfter)
-            {
-                _truncateAfter = now.Add(_options.CurrentValue.PerRequestDuration);
-                TruncateOverlimit();
-            }
+            return false;
         }
+
+        _buffer.Enqueue(serializedLogRecord);
+        _ = Interlocked.Add(ref _bufferSize, serializedLogRecord.SizeInBytes);
+
+        Trim();
 
         return true;
     }
 
     public void Flush()
     {
-        var result = _buffer.ToArray();
-        _buffer.Clear();
-
         _lastFlushTimestamp = _timeProvider.GetUtcNow();
 
-        List<PooledLogRecord>? pooledList = null;
-        try
-        {
-            pooledList = _logRecordPool.Get();
-            foreach (var serializedRecord in result)
-            {
-                pooledList.Add(
-                    new PooledLogRecord(
-                        serializedRecord.Timestamp,
-                        serializedRecord.LogLevel,
-                        serializedRecord.EventId,
-                        serializedRecord.Exception,
-                        serializedRecord.FormattedMessage,
-                        serializedRecord.Attributes));
-            }
+        SerializedLogRecord[] bufferedRecords = _buffer.ToArray();
 
-            _bufferedLogger.LogRecords(pooledList);
-        }
-        finally
+        _buffer.Clear();
+
+        var deserializedLogRecords = new List<DeserializedLogRecord>(bufferedRecords.Length);
+        foreach (var bufferedRecord in bufferedRecords)
         {
-            if (pooledList is not null)
-            {
-                _logRecordPool.Return(pooledList);
-            }
+            deserializedLogRecords.Add(
+                new DeserializedLogRecord(
+                    bufferedRecord.Timestamp,
+                    bufferedRecord.LogLevel,
+                    bufferedRecord.EventId,
+                    bufferedRecord.Exception,
+                    bufferedRecord.FormattedMessage,
+                    bufferedRecord.Attributes));
         }
+
+        _bufferedLogger.LogRecords(deserializedLogRecords);
     }
 
     public bool IsEnabled(string category, LogLevel logLevel, EventId eventId)
@@ -126,12 +113,11 @@ internal sealed class HttpRequestBuffer : ILoggingBuffer
         return rule is not null;
     }
 
-    public void TruncateOverlimit()
+    private void Trim()
     {
-        // Capacity is a soft limit, which might be exceeded, esp. in multi-threaded environments.
-        while (_buffer.Count > _options.CurrentValue.PerRequestCapacity)
+        while (_bufferSize > _options.CurrentValue.PerRequestBufferSizeInBytes && _buffer.TryDequeue(out var item))
         {
-            _ = _buffer.TryDequeue(out _);
+            _ = Interlocked.Add(ref _bufferSize, -item.SizeInBytes);
         }
     }
 }

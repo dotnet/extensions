@@ -2,14 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Diagnostics.Buffering;
 
 /// <summary>
 /// Interface for a logging buffer.
 /// </summary>
-internal interface ILoggingBuffer
+[Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
+public interface ILoggingBuffer
 {
     /// <summary>
     /// Enqueues a log record in the underlying buffer.
@@ -34,9 +37,4 @@ internal interface ILoggingBuffer
     /// Flushes the buffer.
     /// </summary>
     void Flush();
-
-    /// <summary>
-    /// Removes items exceeding the buffer limit.
-    /// </summary>
-    void TruncateOverlimit();
 }

@@ -12,13 +12,13 @@ namespace Microsoft.AspNetCore.Diagnostics.Buffering;
 
 internal sealed class HttpRequestBufferManager : IHttpRequestBufferManager
 {
-    private readonly GlobalBufferManager _globalBufferManager;
+    private readonly IGlobalBufferManager _globalBufferManager;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IOptionsMonitor<HttpRequestBufferOptions> _requestOptions;
     private readonly IOptionsMonitor<GlobalBufferOptions> _globalOptions;
 
     public HttpRequestBufferManager(
-        GlobalBufferManager globalBufferManager,
+        IGlobalBufferManager globalBufferManager,
         IHttpContextAccessor httpContextAccessor,
         IOptionsMonitor<HttpRequestBufferOptions> requestOptions,
         IOptionsMonitor<GlobalBufferOptions> globalOptions)
@@ -27,29 +27,6 @@ internal sealed class HttpRequestBufferManager : IHttpRequestBufferManager
         _httpContextAccessor = httpContextAccessor;
         _requestOptions = requestOptions;
         _globalOptions = globalOptions;
-    }
-
-    public ILoggingBuffer CreateBuffer(IBufferedLogger bufferedLogger, string category)
-    {
-        var httpContext = _httpContextAccessor.HttpContext;
-        if (httpContext is null)
-        {
-            return _globalBufferManager.CreateBuffer(bufferedLogger, category);
-        }
-
-        if (!httpContext.Items.TryGetValue(category, out var buffer))
-        {
-            var httpRequestBuffer = new HttpRequestBuffer(bufferedLogger, _requestOptions, _globalOptions);
-            httpContext.Items[category] = httpRequestBuffer;
-            return httpRequestBuffer;
-        }
-
-        if (buffer is not ILoggingBuffer loggingBuffer)
-        {
-            throw new InvalidOperationException($"Unable to parse value of {buffer} of the {category}");
-        }
-
-        return loggingBuffer;
     }
 
     public void FlushNonRequestLogs() => _globalBufferManager.Flush();
@@ -77,7 +54,24 @@ internal sealed class HttpRequestBufferManager : IHttpRequestBufferManager
         Exception? exception,
         Func<TState, Exception?, string> formatter)
     {
-        var buffer = CreateBuffer(bufferedLogger, category);
-        return buffer.TryEnqueue(logLevel, category, eventId, attributes, exception, formatter);
+        var httpContext = _httpContextAccessor.HttpContext;
+        if (httpContext is null)
+        {
+            return _globalBufferManager.TryEnqueue(bufferedLogger, logLevel, category, eventId, attributes, exception, formatter);
+        }
+
+        if (!httpContext.Items.TryGetValue(category, out var buffer))
+        {
+            var httpRequestBuffer = new HttpRequestBuffer(bufferedLogger, _requestOptions, _globalOptions);
+            httpContext.Items[category] = httpRequestBuffer;
+            buffer = httpRequestBuffer;
+        }
+
+        if (buffer is not ILoggingBuffer loggingBuffer)
+        {
+            throw new InvalidOperationException($"Unable to parse value of {buffer} of the {category}");
+        }
+
+        return loggingBuffer.TryEnqueue(logLevel, category, eventId, attributes, exception, formatter);
     }
 }

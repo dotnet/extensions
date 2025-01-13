@@ -26,7 +26,6 @@ internal sealed class BufferedLoggerProxy : IBufferedLogger
             if (iLogger is IBufferedLogger bufferedLogger)
             {
                 bufferedLogger.LogRecords(records);
-                return;
             }
             else
             {

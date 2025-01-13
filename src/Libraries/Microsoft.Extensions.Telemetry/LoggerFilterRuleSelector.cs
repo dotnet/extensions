@@ -7,11 +7,26 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Logging;
 
-internal static class LoggerFilterRuleSelector
+/// <summary>
+/// Selects the best rule from the list of rules for a given log event.
+/// </summary>
+[Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
+public static class LoggerFilterRuleSelector
 {
+    /// <summary>
+    /// Selects the best <typeparamref name="T"/> rule from the list of rules for a given log event.
+    /// </summary>
+    /// <typeparam name="T">The type of the rules.</typeparam>
+    /// <param name="rules">The list of rules to select from.</param>
+    /// <param name="category">The category of the log event.</param>
+    /// <param name="logLevel">The log level of the log event.</param>
+    /// <param name="eventId">The event id of the log event.</param>
+    /// <param name="bestRule">The best rule that matches the log event.</param>
     public static void Select<T>(IList<T> rules, string category, LogLevel logLevel, EventId eventId,
         out T? bestRule)
         where T : class, ILoggerFilterRule
@@ -26,11 +41,14 @@ internal static class LoggerFilterRuleSelector
         // 4. If there are multiple rules use last
 
         T? current = null;
-        foreach (T rule in rules)
+        if (rules is not null)
         {
-            if (IsBetter(rule, current, category, logLevel, eventId))
+            foreach (T rule in rules)
             {
-                current = rule;
+                if (IsBetter(rule, current, category, logLevel, eventId))
+                {
+                    current = rule;
+                }
             }
         }
 

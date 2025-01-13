@@ -38,8 +38,7 @@ public static class HttpRequestBufferLoggerBuilderExtensions
         return builder
             .AddHttpRequestBufferConfiguration(configuration)
             .AddHttpRequestBufferManager()
-            .AddGlobalBufferConfiguration(configuration)
-            .AddGlobalBufferManager();
+            .AddGlobalBuffer(configuration);
     }
 
     /// <summary>
@@ -61,8 +60,7 @@ public static class HttpRequestBufferLoggerBuilderExtensions
 
         return builder
             .AddHttpRequestBufferManager()
-            .AddGlobalBuffer(level)
-            .AddGlobalBufferManager();
+            .AddGlobalBuffer(level);
     }
 
     /// <summary>
@@ -75,11 +73,9 @@ public static class HttpRequestBufferLoggerBuilderExtensions
     {
         _ = Throw.IfNull(builder);
 
+        _ = builder.Services.AddExtendedLoggerFeactory();
+
         builder.Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-
-        builder.Services.TryAddSingleton<ExtendedLoggerFactory>();
-        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerFactory, ExtendedLoggerFactory>(sp => sp.GetRequiredService<ExtendedLoggerFactory>()));
-
         builder.Services.TryAddSingleton<HttpRequestBufferManager>();
         builder.Services.TryAddSingleton<IBufferManager>(static sp => sp.GetRequiredService<HttpRequestBufferManager>());
         builder.Services.TryAddSingleton<IHttpRequestBufferManager>(static sp => sp.GetRequiredService<HttpRequestBufferManager>());

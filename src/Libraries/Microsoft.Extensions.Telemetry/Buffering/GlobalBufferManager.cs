@@ -3,16 +3,13 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Diagnostics.Buffering;
 
-internal sealed class GlobalBufferManager : BackgroundService, IGlobalBufferManager
+internal sealed class GlobalBufferManager : IGlobalBufferManager
 {
     internal readonly ConcurrentDictionary<string, ILoggingBuffer> Buffers = [];
     private readonly IOptionsMonitor<GlobalBufferOptions> _options;
@@ -28,9 +25,6 @@ internal sealed class GlobalBufferManager : BackgroundService, IGlobalBufferMana
         _timeProvider = timeProvider;
         _options = options;
     }
-
-    public ILoggingBuffer CreateBuffer(IBufferedLogger bufferedLogger, string category)
-        => Buffers.GetOrAdd(category, _ => new GlobalBuffer(bufferedLogger, _options, _timeProvider));
 
     public void Flush()
     {
@@ -48,19 +42,7 @@ internal sealed class GlobalBufferManager : BackgroundService, IGlobalBufferMana
         Exception? exception,
         Func<TState, Exception?, string> formatter)
     {
-        var buffer = CreateBuffer(bufferedLogger, category);
+        var buffer = Buffers.GetOrAdd(category, _ => new GlobalBuffer(bufferedLogger, _options, _timeProvider));
         return buffer.TryEnqueue(logLevel, category, eventId, attributes, exception, formatter);
-    }
-
-    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
-    {
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            await _timeProvider.Delay(_options.CurrentValue.Duration, cancellationToken).ConfigureAwait(false);
-            foreach (var buffer in Buffers.Values)
-            {
-                buffer.TruncateOverlimit();
-            }
-        }
     }
 }

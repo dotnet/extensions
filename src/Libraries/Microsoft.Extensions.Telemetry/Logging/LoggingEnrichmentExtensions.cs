@@ -2,10 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Logging;
@@ -34,9 +36,10 @@ public static class LoggingEnrichmentExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);
 
-        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerFactory, ExtendedLoggerFactory>());
-        _ = builder.Services.Configure(configure);
-        _ = builder.Services.AddOptionsWithValidateOnStart<LoggerEnrichmentOptions, LoggerEnrichmentOptionsValidator>();
+        _ = builder.Services
+            .AddExtendedLoggerFeactory()
+            .Configure(configure)
+            .AddOptionsWithValidateOnStart<LoggerEnrichmentOptions, LoggerEnrichmentOptionsValidator>();
 
         return builder;
     }
@@ -52,9 +55,25 @@ public static class LoggingEnrichmentExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(section);
 
-        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerFactory, ExtendedLoggerFactory>());
-        _ = builder.Services.AddOptionsWithValidateOnStart<LoggerEnrichmentOptions, LoggerEnrichmentOptionsValidator>().Bind(section);
+        _ = builder.Services
+            .AddExtendedLoggerFeactory()
+            .AddOptionsWithValidateOnStart<LoggerEnrichmentOptions, LoggerEnrichmentOptionsValidator>().Bind(section);
 
         return builder;
+    }
+
+    /// <summary>
+    /// Adds a default implementation of the <see cref="ILoggerFactory"/> to the service collection.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection" />.</param>
+    /// <returns>The value of <paramref name="services"/>.</returns>
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
+    public static IServiceCollection AddExtendedLoggerFeactory(this IServiceCollection services)
+    {
+        _ = Throw.IfNull(services);
+
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerFactory, ExtendedLoggerFactory>());
+
+        return services;
     }
 }
