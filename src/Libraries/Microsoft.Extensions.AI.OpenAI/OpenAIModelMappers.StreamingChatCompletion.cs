@@ -46,7 +46,7 @@ internal static partial class OpenAIModelMappers
             }
 
             yield return OpenAIChatModelFactory.StreamingChatCompletionUpdate(
-                completionId: chatCompletionUpdate.CompletionId,
+                completionId: chatCompletionUpdate.CompletionId ?? CreateCompletionId(),
                 model: chatCompletionUpdate.ModelId,
                 createdAt: chatCompletionUpdate.CreatedAt ?? default,
                 role: ToOpenAIChatRole(chatCompletionUpdate.Role),

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -54,7 +55,7 @@ internal static partial class OpenAIModelMappers
         }
 
         return OpenAIChatModelFactory.ChatCompletion(
-            id: chatCompletion.CompletionId,
+            id: chatCompletion.CompletionId ?? CreateCompletionId(),
             model: chatCompletion.ModelId,
             createdAt: chatCompletion.CreatedAt ?? default,
             role: ToOpenAIChatRole(chatCompletion.Message.Role).Value,
@@ -583,6 +584,8 @@ internal static partial class OpenAIModelMappers
 
     private static T? GetValueOrDefault<T>(this AdditionalPropertiesDictionary? dict, string key) =>
         dict?.TryGetValue(key, out T? value) is true ? value : default;
+
+    private static string CreateCompletionId() => $"chatcmpl-{Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture)}";
 
     /// <summary>Used to create the JSON payload for an OpenAI chat tool description.</summary>
     public sealed class OpenAIChatToolJson
