@@ -42,19 +42,24 @@ internal sealed class GlobalBuffer : ILoggingBuffer
         Exception? exception,
         Func<T, Exception?, string> formatter)
     {
-        if (!IsEnabled(category, logLevel, eventId))
-        {
-            return false;
-        }
-
         SerializedLogRecord serializedLogRecord = default;
         if (attributes is ModernTagJoiner modernTagJoiner)
         {
+            if (!IsEnabled(category, logLevel, eventId, modernTagJoiner))
+            {
+                return false;
+            }
+
             serializedLogRecord = new SerializedLogRecord(logLevel, eventId, _timeProvider.GetUtcNow(), modernTagJoiner, exception,
                 ((Func<ModernTagJoiner, Exception?, string>)(object)formatter)(modernTagJoiner, exception));
         }
         else if (attributes is LegacyTagJoiner legacyTagJoiner)
         {
+            if (!IsEnabled(category, logLevel, eventId, legacyTagJoiner))
+            {
+                return false;
+            }
+
             serializedLogRecord = new SerializedLogRecord(logLevel, eventId, _timeProvider.GetUtcNow(), legacyTagJoiner, exception,
                 ((Func<LegacyTagJoiner, Exception?, string>)(object)formatter)(legacyTagJoiner, exception));
         }
@@ -118,14 +123,14 @@ internal sealed class GlobalBuffer : ILoggingBuffer
         }
     }
 
-    private bool IsEnabled(string category, LogLevel logLevel, EventId eventId)
+    private bool IsEnabled(string category, LogLevel logLevel, EventId eventId, IReadOnlyList<KeyValuePair<string, object?>> attributes)
     {
         if (_timeProvider.GetUtcNow() < _lastFlushTimestamp + _options.CurrentValue.SuspendAfterFlushDuration)
         {
             return false;
         }
 
-        LoggerFilterRuleSelector.Select(_options.CurrentValue.Rules, category, logLevel, eventId, out BufferFilterRule? rule);
+        LoggerFilterRuleSelector.Select(_options.CurrentValue.Rules, category, logLevel, eventId, attributes, out BufferFilterRule? rule);
 
         return rule is not null;
     }

@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.DiagnosticIds;
 
@@ -15,15 +16,20 @@ public interface ILoggerFilterRule
     /// <summary>
     /// Gets the logger category this rule applies to.
     /// </summary>
-    public string? Category { get; }
+    string? Category { get; }
 
     /// <summary>
     /// Gets the maximum <see cref="LogLevel"/> of messages.
     /// </summary>
-    public LogLevel? LogLevel { get; }
+    LogLevel? LogLevel { get; }
 
     /// <summary>
     /// Gets the <see cref="EventId"/> of messages where this rule applies to.
     /// </summary>
-    public int? EventId { get; }
+    int? EventId { get; }
+
+    /// <summary>
+    /// Gets the log state attributes of messages where this rule applies to.
+    /// </summary>
+    IReadOnlyList<KeyValuePair<string, object?>> Attributes { get; }
 }
