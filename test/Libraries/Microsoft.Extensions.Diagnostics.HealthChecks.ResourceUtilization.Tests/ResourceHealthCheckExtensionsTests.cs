@@ -3,14 +3,20 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring;
+using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows;
+using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Time.Testing;
 using Microsoft.TestUtilities;
 using Moq;
 using Xunit;
+using static Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop.JobObjectInfo;
 
 namespace Microsoft.Extensions.Diagnostics.HealthChecks.Test;
 
@@ -452,6 +458,83 @@ public class ResourceHealthCheckExtensionsTests
         Assert.Throws<ArgumentNullException>(() => ((IHealthChecksBuilder)null!).AddResourceUtilizationHealthCheck((IEnumerable<string>)null!));
         Assert.Throws<ArgumentNullException>(() => ((IHealthChecksBuilder)null!).AddResourceUtilizationHealthCheck((Action<ResourceUtilizationHealthCheckOptions>)null!));
         Assert.Throws<ArgumentNullException>(() => ((IHealthChecksBuilder)null!).AddResourceUtilizationHealthCheck((IConfigurationSection)null!));
+    }
+
+    [ConditionalTheory]
+    [ClassData(typeof(HealthCheckTestData))]
+    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Windows-specific test.")]
+    public async Task TestCpuAndMemoryChecks_WithMetrics(
+        HealthStatus expected, double utilization, ulong memoryUsed, ulong totalMemory,
+        ResourceUsageThresholds cpuThresholds, ResourceUsageThresholds memoryThresholds,
+        string expectedDescription)
+    {
+        var logger = new FakeLogger<WindowsContainerSnapshotProvider>();
+        var fakeClock = new FakeTimeProvider();
+        var dataTracker = new Mock<IResourceMonitor>();
+        SYSTEM_INFO sysInfo = default;
+        sysInfo.NumberOfProcessors = 1;
+        Mock<ISystemInfo> systemInfoMock = new();
+        systemInfoMock.Setup(s => s.GetSystemInfo())
+            .Returns(() => sysInfo);
+        Mock<IMemoryInfo> memoryInfoMock = new();
+
+        JOBOBJECT_CPU_RATE_CONTROL_INFORMATION cpuLimit = default;
+        cpuLimit.CpuRate = 7_000;
+        Mock<IJobHandle> jobHandleMock = new();
+        jobHandleMock.Setup(j => j.GetJobCpuLimitInfo()).Returns(() => cpuLimit);
+
+        Mock<IProcessInfo> processInfoMock = new();
+        var appMemoryUsage = memoryUsed;
+        processInfoMock.Setup(p => p.GetMemoryUsage()).Returns(() => appMemoryUsage);
+
+        JOBOBJECT_EXTENDED_LIMIT_INFORMATION limitInfo = default;
+        limitInfo.JobMemoryLimit = new UIntPtr(totalMemory);
+        jobHandleMock.Setup(j => j.GetExtendedLimitInfo()).Returns(() => limitInfo);
+
+        JOBOBJECT_BASIC_ACCOUNTING_INFORMATION initialAccountingInfo = default;
+        JOBOBJECT_BASIC_ACCOUNTING_INFORMATION accountingInfoAfter1Ms = default;
+        accountingInfoAfter1Ms.TotalUserTime = (long)(utilization * 100);
+        jobHandleMock.SetupSequence(j => j.GetBasicAccountingInfo())
+            .Returns(() => initialAccountingInfo) // this is called from the WindowsContainerSnapshotProvider's constructor
+            .Returns(() => accountingInfoAfter1Ms); // this is called from the WindowsContainerSnapshotProvider's CpuPercentage method
+
+        using var meter = new Meter("Microsoft.Extensions.Diagnostics.ResourceMonitoring");
+        var meterFactoryMock = new Mock<IMeterFactory>();
+        meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>()))
+            .Returns(meter);
+
+        var snapshotProvider = new WindowsContainerSnapshotProvider(
+            memoryInfoMock.Object,
+            systemInfoMock.Object,
+            processInfoMock.Object,
+            logger,
+            meterFactoryMock.Object,
+            () => jobHandleMock.Object,
+            fakeClock,
+            new ResourceMonitoringOptions { CpuConsumptionRefreshInterval = TimeSpan.FromMilliseconds(1) });
+
+        var checkContext = new HealthCheckContext();
+        var checkOptions = new ResourceUtilizationHealthCheckOptions
+        {
+            CpuThresholds = cpuThresholds,
+            MemoryThresholds = memoryThresholds,
+            UseObservableResourceMonitoringInstruments = true
+        };
+
+        var options = Microsoft.Extensions.Options.Options.Create(checkOptions);
+        using var healthCheck = new ResourceUtilizationHealthCheck(options, dataTracker.Object);
+
+        // Act
+        fakeClock.Advance(TimeSpan.FromMilliseconds(1));
+        var healthCheckResult = await healthCheck.CheckHealthAsync(checkContext);
+
+        // Assert
+        Assert.Equal(expected, healthCheckResult.Status);
+        Assert.NotEmpty(healthCheckResult.Data);
+        if (healthCheckResult.Status != HealthStatus.Healthy)
+        {
+            Assert.Equal(expectedDescription, healthCheckResult.Description);
+        }
     }
 
     private static IConfiguration SetupResourceHealthCheckConfiguration(

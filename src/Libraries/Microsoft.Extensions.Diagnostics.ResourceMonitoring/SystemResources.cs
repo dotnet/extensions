@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
@@ -9,6 +11,9 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 /// Provides information about the CPU and memory limits defined by the underlying system.
 /// </summary>
 #pragma warning disable CA1815 // Override equals and operator equals on value types
+[Obsolete(DiagnosticIds.Obsoletions.NonObservableResourceMonitoringApiMessage,
+    DiagnosticId = DiagnosticIds.Obsoletions.NonObservableResourceMonitoringApiDiagId,
+    UrlFormat = DiagnosticIds.UrlFormat)]
 public readonly struct SystemResources
 #pragma warning restore CA1815 // Override equals and operator equals on value types
 {
