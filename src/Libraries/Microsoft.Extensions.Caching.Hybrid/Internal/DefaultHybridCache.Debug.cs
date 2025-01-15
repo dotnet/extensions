@@ -54,7 +54,6 @@ internal partial class DefaultHybridCache
 #endif
 
         [Conditional("DEBUG")]
-        [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Instance state used in debug")]
         internal void DebugOnlyTrackBuffer(DefaultHybridCache cache)
         {
 #if DEBUG
@@ -63,11 +62,12 @@ internal partial class DefaultHybridCache
             {
                 _cache?.DebugOnlyIncrementOutstandingBuffers();
             }
+#else
+            _ = this; // dummy just to prevent CA1822, never hit
 #endif
         }
 
         [Conditional("DEBUG")]
-        [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Instance state used in debug")]
         private void DebugOnlyDecrementOutstandingBuffers()
         {
 #if DEBUG
@@ -75,6 +75,8 @@ internal partial class DefaultHybridCache
             {
                 _cache?.DebugOnlyDecrementOutstandingBuffers();
             }
+#else
+            _ = this; // dummy just to prevent CA1822, never hit
 #endif
         }
     }

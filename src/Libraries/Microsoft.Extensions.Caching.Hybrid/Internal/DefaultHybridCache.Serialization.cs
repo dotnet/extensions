@@ -67,7 +67,7 @@ internal partial class DefaultHybridCache
 
             serializer.Serialize(value, writer);
 
-            buffer = new(writer.DetachCommitted(out var length), length, returnToPool: true); // remove buffer ownership from the writer
+            buffer = new(writer.DetachCommitted(out var length), 0, length, returnToPool: true); // remove buffer ownership from the writer
             writer.Dispose(); // we're done with the writer
             return true;
         }

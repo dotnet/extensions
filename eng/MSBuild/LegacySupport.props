@@ -23,7 +23,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\LegacySupport\CallerAttributes\*.cs" LinkBase="LegacySupport\CallerAttributes" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(InjectSkipLocalsInitAttributeOnLegacy)' == 'true' AND ('$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netcoreapp3.1')">
+  <ItemGroup Condition="'$(InjectSkipLocalsInitAttributeOnLegacy)' == 'true' AND ('$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netstandard2.1' or '$(TargetFramework)' == 'netcoreapp3.1')">
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\LegacySupport\SkipLocalsInitAttribute\*.cs" LinkBase="LegacySupport\SkipLocalsInitAttribute" />
   </ItemGroup>
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -13,9 +14,21 @@ internal partial class DefaultHybridCache
 {
     internal abstract class CacheItem
     {
+        private readonly long _creationTimestamp;
+
+        protected CacheItem(long creationTimestamp, TagSet tags)
+        {
+            Tags = tags;
+            _creationTimestamp = creationTimestamp;
+        }
+
         private int _refCount = 1; // the number of pending operations against this cache item
 
         public abstract bool DebugIsImmutable { get; }
+
+        public long CreationTimestamp => _creationTimestamp;
+
+        public TagSet Tags { get; }
 
         // Note: the ref count is the number of callers anticipating this value at any given time. Initially,
         // it is one for a simple "get the value" flow, but if another call joins with us, it'll be incremented.
@@ -26,6 +39,9 @@ internal partial class DefaultHybridCache
         // who increment/decrement around their fetch), allowing safe buffer recycling.
 
         internal int RefCount => Volatile.Read(ref _refCount);
+
+        internal void UnsafeSetCreationTimestamp(long timestamp)
+            => Unsafe.AsRef(in _creationTimestamp) = timestamp;
 
         internal static readonly PostEvictionDelegate SharedOnEviction = static (key, value, reason, state) =>
         {
@@ -88,6 +104,11 @@ internal partial class DefaultHybridCache
 
     internal abstract class CacheItem<T> : CacheItem
     {
+        protected CacheItem(long creationTimestamp, TagSet tags)
+            : base(creationTimestamp, tags)
+        {
+        }
+
         public abstract bool TryGetSize(out long size);
 
         // Attempt to get a value that was *not* previously reserved.
@@ -112,6 +133,7 @@ internal partial class DefaultHybridCache
             static void Throw() => throw new ObjectDisposedException("The cache item has been recycled before the value was obtained");
         }
 
-        internal static CacheItem<T> Create() => ImmutableTypeCache<T>.IsImmutable ? new ImmutableCacheItem<T>() : new MutableCacheItem<T>();
+        internal static CacheItem<T> Create(long creationTimestamp, TagSet tags) => ImmutableTypeCache<T>.IsImmutable
+            ? new ImmutableCacheItem<T>(creationTimestamp, tags) : new MutableCacheItem<T>(creationTimestamp, tags);
     }
 }

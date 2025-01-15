@@ -16,6 +16,8 @@ internal static partial class Log
     internal const int IdCacheBackendReadFailure = 6;
     internal const int IdCacheBackendWriteFailure = 7;
     internal const int IdKeyInvalidContent = 8;
+    internal const int IdKeyInvalidUnicode = 9;
+    internal const int IdTagInvalidUnicode = 10;
 
     [LoggerMessage(LogLevel.Error, "Cache MaximumPayloadBytes ({Bytes}) exceeded.", EventName = "MaximumPayloadBytesExceeded", EventId = IdMaximumPayloadBytesExceeded, SkipEnabledCheck = false)]
     internal static partial void MaximumPayloadBytesExceeded(this ILogger logger, Exception e, int bytes);
@@ -46,4 +48,12 @@ internal static partial class Log
 
     [LoggerMessage(LogLevel.Error, "Cache key contains invalid content.", EventName = "KeyInvalidContent", EventId = IdKeyInvalidContent, SkipEnabledCheck = false)]
     internal static partial void KeyInvalidContent(this ILogger logger); // for PII etc reasons, we won't include the actual key
+
+    [LoggerMessage(LogLevel.Error, "Key contains malformed unicode.",
+        EventName = "KeyInvalidUnicode", EventId = IdKeyInvalidUnicode, SkipEnabledCheck = false)]
+    internal static partial void KeyInvalidUnicode(this ILogger logger);
+
+    [LoggerMessage(LogLevel.Error, "Tag contains malformed unicode.",
+        EventName = "TagInvalidUnicode", EventId = IdTagInvalidUnicode, SkipEnabledCheck = false)]
+    internal static partial void TagInvalidUnicode(this ILogger logger);
 }
