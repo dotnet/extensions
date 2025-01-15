@@ -191,9 +191,11 @@ public sealed class WindowsContainerSnapshotProviderTests
     }
 
     [Theory]
-    [InlineData(ResourceUtilizationInstruments.ProcessCpuUtilization)]
-    [InlineData(ResourceUtilizationInstruments.ContainerCpuLimitUtilization)]
-    public void SnapshotProvider_EmitsCpuMetrics(string instrumentName)
+    [InlineData(ResourceUtilizationInstruments.ProcessCpuUtilization, true)]
+    [InlineData(ResourceUtilizationInstruments.ProcessCpuUtilization, false)]
+    [InlineData(ResourceUtilizationInstruments.ContainerCpuLimitUtilization, true)]
+    [InlineData(ResourceUtilizationInstruments.ContainerCpuLimitUtilization, false)]
+    public void SnapshotProvider_EmitsCpuMetrics(string instrumentName, bool useZeroToOneRange)
     {
         // Simulating 10% CPU usage (2 CPUs, 2000 ticks initially, 4000 ticks after 1 ms):
         JOBOBJECT_BASIC_ACCOUNTING_INFORMATION updatedAccountingInfo = default;
@@ -216,8 +218,12 @@ public sealed class WindowsContainerSnapshotProviderTests
             .Returns(meter);
         using var metricCollector = new MetricCollector<double>(meter, instrumentName, fakeClock);
 
-        var options = new ResourceMonitoringOptions { CpuConsumptionRefreshInterval = TimeSpan.FromMilliseconds(2) };
-
+        var options = new ResourceMonitoringOptions
+        {
+            CpuConsumptionRefreshInterval = TimeSpan.FromMilliseconds(2),
+            UseZeroToOneRangeForMetrics = useZeroToOneRange
+        };
+        var multiplier = useZeroToOneRange ? 1 : 100;
         var snapshotProvider = new WindowsContainerSnapshotProvider(
             _memoryInfoMock.Object,
             _systemInfoMock.Object,
@@ -237,27 +243,29 @@ public sealed class WindowsContainerSnapshotProviderTests
         fakeClock.Advance(TimeSpan.FromMilliseconds(1));
         metricCollector.RecordObservableInstruments();
 
-        Assert.Equal(10, metricCollector.LastMeasurement.Value); // Consumed 10% of the CPU.
+        Assert.Equal(0.1 * multiplier, metricCollector.LastMeasurement.Value); // Consumed 10% of the CPU.
 
         // Step #2 - simulate 1 millisecond passing and collect metrics again:
         fakeClock.Advance(TimeSpan.FromMilliseconds(1));
         metricCollector.RecordObservableInstruments();
 
         // CPU usage should be the same as before, as we didn't recalculate it:
-        Assert.Equal(10, metricCollector.LastMeasurement.Value); // Still consuming 10% as gauge wasn't updated.
+        Assert.Equal(0.1 * multiplier, metricCollector.LastMeasurement.Value); // Still consuming 10% as gauge wasn't updated.
 
         // Step #3 - simulate 1 millisecond passing and collect metrics again:
         fakeClock.Advance(TimeSpan.FromMilliseconds(1));
         metricCollector.RecordObservableInstruments();
 
         // CPU usage should be the same as before, as we're not simulating any CPU usage:
-        Assert.Equal(10, metricCollector.LastMeasurement.Value); // Consumed 10% of the CPU.
+        Assert.Equal(0.1 * multiplier, metricCollector.LastMeasurement.Value); // Consumed 10% of the CPU.
     }
 
     [Theory]
-    [InlineData(ResourceUtilizationInstruments.ProcessMemoryUtilization)]
-    [InlineData(ResourceUtilizationInstruments.ContainerMemoryLimitUtilization)]
-    public void SnapshotProvider_EmitsMemoryMetrics(string instrumentName)
+    [InlineData(ResourceUtilizationInstruments.ProcessMemoryUtilization, true)]
+    [InlineData(ResourceUtilizationInstruments.ProcessMemoryUtilization, false)]
+    [InlineData(ResourceUtilizationInstruments.ContainerMemoryLimitUtilization, true)]
+    [InlineData(ResourceUtilizationInstruments.ContainerMemoryLimitUtilization, false)]
+    public void SnapshotProvider_EmitsMemoryMetrics(string instrumentName, bool useZeroToOneRange)
     {
         _appMemoryUsage = 200UL;
         ulong updatedAppMemoryUsage = 600UL;
@@ -279,8 +287,12 @@ public sealed class WindowsContainerSnapshotProviderTests
             .Returns(meter);
         using var metricCollector = new MetricCollector<double>(meter, instrumentName, fakeClock);
 
-        var options = new ResourceMonitoringOptions { MemoryConsumptionRefreshInterval = TimeSpan.FromMilliseconds(2) };
-
+        var options = new ResourceMonitoringOptions
+        {
+            MemoryConsumptionRefreshInterval = TimeSpan.FromMilliseconds(2),
+            UseZeroToOneRangeForMetrics = useZeroToOneRange
+        };
+        var multiplier = useZeroToOneRange ? 1 : 100;
         var snapshotProvider = new WindowsContainerSnapshotProvider(
             _memoryInfoMock.Object,
             _systemInfoMock.Object,
@@ -294,17 +306,17 @@ public sealed class WindowsContainerSnapshotProviderTests
         // Step #0 - state in the beginning:
         metricCollector.RecordObservableInstruments();
         Assert.NotNull(metricCollector.LastMeasurement?.Value);
-        Assert.Equal(10, metricCollector.LastMeasurement.Value); // Consuming 10% of the memory initially.
+        Assert.Equal(0.1 * multiplier, metricCollector.LastMeasurement.Value); // Consuming 10% of the memory initially.
 
         // Step #1 - simulate 1 millisecond passing and collect metrics again:
         fakeClock.Advance(options.MemoryConsumptionRefreshInterval - TimeSpan.FromMilliseconds(1));
         metricCollector.RecordObservableInstruments();
-        Assert.Equal(10, metricCollector.LastMeasurement.Value); // Still consuming 10% as gauge wasn't updated.
+        Assert.Equal(0.1 * multiplier, metricCollector.LastMeasurement.Value); // Still consuming 10% as gauge wasn't updated.
 
         // Step #2 - simulate 2 milliseconds passing and collect metrics again:
         fakeClock.Advance(TimeSpan.FromMilliseconds(1));
         metricCollector.RecordObservableInstruments();
-        Assert.Equal(30, metricCollector.LastMeasurement.Value); // Consuming 30% of the memory afterwards.
+        Assert.Equal(0.3 * multiplier, metricCollector.LastMeasurement.Value); // Consuming 30% of the memory afterwards.
     }
 
     [Fact]
