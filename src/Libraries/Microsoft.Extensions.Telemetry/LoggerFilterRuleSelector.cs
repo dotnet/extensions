@@ -27,8 +27,7 @@ public static class LoggerFilterRuleSelector
     /// <param name="logLevel">The log level of the log event.</param>
     /// <param name="eventId">The event id of the log event.</param>
     /// <param name="bestRule">The best rule that matches the log event.</param>
-    public static void Select<T>(IList<T> rules, string category, LogLevel logLevel, EventId eventId,
-        out T? bestRule)
+    public static void Select<T>(IList<T> rules, string category, LogLevel logLevel, EventId eventId, out T? bestRule)
         where T : class, ILoggerFilterRule
     {
         bestRule = null;

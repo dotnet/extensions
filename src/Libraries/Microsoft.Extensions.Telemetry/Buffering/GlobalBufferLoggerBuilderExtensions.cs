@@ -52,7 +52,7 @@ public static class GlobalBufferLoggerBuilderExtensions
         _ = Throw.IfNull(builder);
 
         _ = builder.Services
-            .Configure<GlobalBufferOptions>(options => options.Rules.Add(new BufferFilterRule(null, level, null)))
+            .Configure<GlobalBufferOptions>(options => options.Rules.Add(new BufferFilterRule(null, level, null, null)))
             .Configure(configure ?? new Action<GlobalBufferOptions>(_ => { }));
 
         return builder.AddGlobalBufferManager();

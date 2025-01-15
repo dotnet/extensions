@@ -44,8 +44,8 @@ public class GlobalBufferLoggerBuilderExtensionsTests
     {
         List<BufferFilterRule> expectedData =
         [
-            new BufferFilterRule("Program.MyLogger", LogLevel.Information, 1),
-            new BufferFilterRule(null, LogLevel.Information, null),
+            new BufferFilterRule("Program.MyLogger", LogLevel.Information, 1, null),
+            new BufferFilterRule(null, LogLevel.Information, null, null),
         ];
         ConfigurationBuilder configBuilder = new ConfigurationBuilder();
         configBuilder.AddJsonFile("appsettings.json");

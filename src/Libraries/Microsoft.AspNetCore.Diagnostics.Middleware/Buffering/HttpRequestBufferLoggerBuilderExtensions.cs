@@ -55,7 +55,7 @@ public static class HttpRequestBufferLoggerBuilderExtensions
         _ = Throw.IfNull(builder);
 
         _ = builder.Services
-            .Configure<HttpRequestBufferOptions>(options => options.Rules.Add(new BufferFilterRule(null, level, null)))
+            .Configure<HttpRequestBufferOptions>(options => options.Rules.Add(new BufferFilterRule(null, level, null, null)))
             .Configure(configure ?? new Action<HttpRequestBufferOptions>(_ => { }));
 
         return builder
