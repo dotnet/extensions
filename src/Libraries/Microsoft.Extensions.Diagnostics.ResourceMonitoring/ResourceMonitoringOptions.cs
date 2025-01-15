@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.Shared.Data.Validation;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 
@@ -31,6 +32,9 @@ public partial class ResourceMonitoringOptions
     /// This value represents the total amount of time for which the resource monitor tracks utilization
     /// information for the system.
     /// </remarks>
+    [Obsolete(DiagnosticIds.Obsoletions.NonObservableResourceMonitoringApiMessage,
+        DiagnosticId = DiagnosticIds.Obsoletions.NonObservableResourceMonitoringApiDiagId,
+        UrlFormat = DiagnosticIds.UrlFormat)]
     [TimeSpan(MinimumSamplingWindow, MaximumSamplingWindow)]
     public TimeSpan CollectionWindow { get; set; } = DefaultCollectionWindow;
 
@@ -43,6 +47,9 @@ public partial class ResourceMonitoringOptions
     /// <remarks>
     /// This value must be less than or equal to <see cref="CollectionWindow"/>.
     /// </remarks>
+    [Obsolete(DiagnosticIds.Obsoletions.NonObservableResourceMonitoringApiMessage,
+        DiagnosticId = DiagnosticIds.Obsoletions.NonObservableResourceMonitoringApiDiagId,
+        UrlFormat = DiagnosticIds.UrlFormat)]
     [TimeSpan(MinimumSamplingPeriod, MaximumSamplingPeriod)]
     public TimeSpan SamplingInterval { get; set; } = DefaultSamplingInterval;
 
@@ -55,6 +62,9 @@ public partial class ResourceMonitoringOptions
     /// <remarks>
     /// The value needs to be less than or equal to <see cref="CollectionWindow"/>.
     /// </remarks>
+    [Obsolete(DiagnosticIds.Obsoletions.NonObservableResourceMonitoringApiMessage,
+        DiagnosticId = DiagnosticIds.Obsoletions.NonObservableResourceMonitoringApiDiagId,
+        UrlFormat = DiagnosticIds.UrlFormat)]
     [TimeSpan(MinimumSamplingWindow, MaximumSamplingWindow)]
     public TimeSpan PublishingWindow { get; set; } = DefaultCollectionWindow;
 
@@ -67,6 +77,9 @@ public partial class ResourceMonitoringOptions
     /// <remarks>
     /// This is the time interval for a metric value to fetch resource utilization data from the operating system.
     /// </remarks>
+    [Obsolete(DiagnosticIds.Obsoletions.NonObservableResourceMonitoringApiMessage,
+        DiagnosticId = DiagnosticIds.Obsoletions.NonObservableResourceMonitoringApiDiagId,
+        UrlFormat = DiagnosticIds.UrlFormat)]
     [TimeSpan(MinimumCachingInterval, MaximumCachingInterval)]
     public TimeSpan CpuConsumptionRefreshInterval { get; set; } = DefaultRefreshInterval;
 
@@ -79,6 +92,9 @@ public partial class ResourceMonitoringOptions
     /// <remarks>
     /// This is the time interval for a metric value to fetch resource utilization data from the operating system.
     /// </remarks>
+    [Obsolete(DiagnosticIds.Obsoletions.NonObservableResourceMonitoringApiMessage,
+        DiagnosticId = DiagnosticIds.Obsoletions.NonObservableResourceMonitoringApiDiagId,
+        UrlFormat = DiagnosticIds.UrlFormat)]
     [TimeSpan(MinimumCachingInterval, MaximumCachingInterval)]
     public TimeSpan MemoryConsumptionRefreshInterval { get; set; } = DefaultRefreshInterval;
 }

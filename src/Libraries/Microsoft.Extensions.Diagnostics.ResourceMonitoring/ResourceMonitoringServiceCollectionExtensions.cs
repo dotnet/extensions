@@ -13,6 +13,7 @@ using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Network;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Network;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -43,6 +44,9 @@ public static class ResourceMonitoringServiceCollectionExtensions
     /// <param name="configure">Delegate to configure <see cref="IResourceMonitorBuilder"/>.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
     /// <exception cref="ArgumentNullException">Either <paramref name="services"/> or <paramref name="configure"/> is <see langword="null"/>.</exception>
+    [Obsolete(DiagnosticIds.Obsoletions.NonObservableResourceMonitoringApiMessage,
+        DiagnosticId = DiagnosticIds.Obsoletions.NonObservableResourceMonitoringApiDiagId,
+        UrlFormat = DiagnosticIds.UrlFormat)]
     public static IServiceCollection AddResourceMonitoring(
         this IServiceCollection services,
         Action<IResourceMonitorBuilder> configure)
