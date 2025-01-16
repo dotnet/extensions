@@ -286,6 +286,46 @@ public sealed partial class HttpClientBuilderExtensionsTests
         Assert.NotNull(factory.CreateClient("my-client"));
     }
 
+    [Fact]
+    public void RemoveAllResilienceHandlers_ArgumentValidation()
+    {
+        var services = new ServiceCollection();
+        IHttpClientBuilder? builder = null;
+        Assert.Throws<ArgumentNullException>(() => builder!.AddResilienceHandler("pipeline-name", _ => { }));
+        Assert.Throws<ArgumentNullException>(() => builder!.AddResilienceHandler("pipeline-name", (_, _) => { }));
+    }
+
+    [Fact]
+    public void RemoveAllResilienceHandlers_EnsureServicesRemoved()
+    {
+        var services = new ServiceCollection().AddLogging().AddMetrics().AddRedaction();
+
+        IHttpClientBuilder? customBuilder = services.AddHttpClient("custom");
+
+        customBuilder.AddResilienceHandler("pipeline-name", _ => {});
+        customBuilder.ConfigureAdditionalHttpMessageHandlers((handlers, _) =>
+        {
+            Assert.Single(handlers);
+        });
+        customBuilder.RemoveAllResilienceHandlers();
+
+        customBuilder.ConfigureAdditionalHttpMessageHandlers((handlers, _) =>
+        {
+            Assert.Empty(handlers);
+        });
+
+        customBuilder.RemoveAllResilienceHandlers().AddStandardResilienceHandler();
+
+        customBuilder.ConfigureAdditionalHttpMessageHandlers((handlers, _) =>
+        {
+            Assert.Single(handlers);
+        });
+
+        using ServiceProvider serviceProvider = services.BuildServiceProvider();
+        services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>().CreateClient("custom");
+    }
+
+
     private void ConfigureBuilder(ResiliencePipelineBuilder<HttpResponseMessage> builder) => builder.AddTimeout(TimeSpan.FromSeconds(1));
 
     private class TestMetricsEnricher : MeteringEnricher

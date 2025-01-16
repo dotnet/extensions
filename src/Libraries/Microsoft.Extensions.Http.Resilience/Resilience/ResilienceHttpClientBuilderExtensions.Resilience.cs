@@ -75,6 +75,24 @@ public static partial class ResilienceHttpClientBuilderExtensions
         return pipelineBuilder;
     }
 
+    /// <summary>
+    /// Removes all resilience handlers registered earlier.
+    /// </summary>
+    /// <param name="builder">The builder instance.</param>
+    /// <returns>The value of <paramref name="builder"/>.</returns>
+    public static IHttpClientBuilder RemoveAllResilienceHandlers(this IHttpClientBuilder builder)
+    {
+        _ = Throw.IfNull(builder);
+        _ = builder.ConfigureAdditionalHttpMessageHandlers(static (handlers, _) =>
+        {
+            for (int i = handlers.Count - 1; i >=0; i--)
+            {
+                handlers.RemoveAt(i);
+            }
+        });
+        return builder;
+    }
+
     private static Func<HttpRequestMessage, ResiliencePipeline<HttpResponseMessage>> CreatePipelineSelector(IServiceProvider serviceProvider, string pipelineName)
     {
         var resilienceProvider = serviceProvider.GetRequiredService<ResiliencePipelineProvider<HttpKey>>();
