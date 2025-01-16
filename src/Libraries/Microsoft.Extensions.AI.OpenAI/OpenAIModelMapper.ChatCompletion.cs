@@ -56,8 +56,8 @@ internal static partial class OpenAIModelMappers
 
         return OpenAIChatModelFactory.ChatCompletion(
             id: chatCompletion.CompletionId ?? CreateCompletionId(),
-            model: chatCompletion.ModelId,
-            createdAt: chatCompletion.CreatedAt ?? default,
+            model: chatCompletion.ModelId ?? string.Empty,
+            createdAt: chatCompletion.CreatedAt ?? DateTimeOffset.UtcNow,
             role: ToOpenAIChatRole(chatCompletion.Message.Role).Value,
             finishReason: ToOpenAIFinishReason(chatCompletion.FinishReason),
             content: new(ToOpenAIChatContent(chatCompletion.Message.Contents)),
