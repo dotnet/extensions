@@ -35,6 +35,13 @@ IChatClient client =
 Console.WriteLine(await client.CompleteAsync("What is AI?"));
 ```
 
+> **Note:** When connecting with Azure Open AI, the URL passed into the `ChatCompletionsClient` needs to include `openai/deployments/{yourDeployment}`. For example:
+> ```csharp
+> new Azure.AI.Inference.ChatCompletionsClient(
+>     new("https://{your-resource-name}.openai.azure.com/openai/deployments/{yourDeployment}"),
+>     new AzureKeyCredential(Environment.GetEnvironmentVariable("AZURE_OPENAI_KEY")!))
+> ```
+
 ### Chat + Conversation History
 
 ```csharp
