@@ -2,11 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.ExceptionSummarization;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Http.Resilience.Internal;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using Polly;
 using Polly.Registry;
@@ -80,6 +82,7 @@ public static partial class ResilienceHttpClientBuilderExtensions
     /// </summary>
     /// <param name="builder">The builder instance.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.Resilience, UrlFormat = DiagnosticIds.UrlFormat)]
     public static IHttpClientBuilder RemoveAllResilienceHandlers(this IHttpClientBuilder builder)
     {
         _ = Throw.IfNull(builder);
