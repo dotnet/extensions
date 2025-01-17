@@ -1,5 +1,11 @@
 # Release History
 
+## 9.1.0-preview.1.25064.3
+
+- Updated to depend on OpenAI 2.1.0.
+- Updated to propagate `Metadata` and `StoredOutputEnabled` from `ChatOptions.AdditionalProperties`.
+- Added serialization helpers methods for deserializing OpenAI compatible JSON into the Microsoft.Extensions.AI object model, and vice versa serializing the Microsoft.Extensions.AI object model into OpenAI compatible JSON.
+
 ## 9.0.1-preview.1.24570.5
 
   - Upgraded to depend on the 2.1.0-beta.2 version of the OpenAI NuGet package.

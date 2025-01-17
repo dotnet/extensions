@@ -1,5 +1,12 @@
 # Release History
 
+## 9.1.0-preview.1.25064.3
+
+- Added `AdditionalPropertiesDictionary<TValue>` and changed `UsageDetails.AdditionalProperties` to be named `AdditionalCounts` and to be of type `AdditionalPropertiesDictionary<long>`.
+- Updated `FunctionCallingChatClient` to sum all `UsageDetails` token counts from all intermediate messages.
+- Fixed JSON schema generation for floating-point types.
+- Added `AddAIContentType` for enabling custom `AIContent`-derived types to participate in polymorphic serialization.
+
 ## 9.0.1-preview.1.24570.5
 
 - Changed `IChatClient`/`IEmbeddingGenerator`.`GetService` to be non-generic.
