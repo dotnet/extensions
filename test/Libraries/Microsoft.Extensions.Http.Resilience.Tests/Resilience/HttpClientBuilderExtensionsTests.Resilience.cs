@@ -296,27 +296,38 @@ public sealed partial class HttpClientBuilderExtensionsTests
     }
 
     [Fact]
-    public void RemoveAllResilienceHandlers_EnsureServicesRemoved()
+    public void RemoveAllResilienceHandlers_EnsureHandlersRemoved()
     {
-        var services = new ServiceCollection().AddLogging().AddMetrics().AddRedaction();
+        var services = new ServiceCollection();
 
-        IHttpClientBuilder? customBuilder = services.AddHttpClient("custom");
+        IHttpClientBuilder? builder = services.AddHttpClient("custom");
 
-        customBuilder.AddResilienceHandler("pipeline-name", _ => {});
-        customBuilder.ConfigureAdditionalHttpMessageHandlers((handlers, _) =>
+        builder.AddStandardResilienceHandler();
+
+        builder.ConfigureAdditionalHttpMessageHandlers((handlers, _) =>
         {
             Assert.Single(handlers);
         });
-        customBuilder.RemoveAllResilienceHandlers();
 
-        customBuilder.ConfigureAdditionalHttpMessageHandlers((handlers, _) =>
+        builder.RemoveAllResilienceHandlers();
+
+        builder.ConfigureAdditionalHttpMessageHandlers((handlers, _) =>
         {
             Assert.Empty(handlers);
         });
 
-        customBuilder.RemoveAllResilienceHandlers().AddStandardResilienceHandler();
+        using ServiceProvider serviceProvider = services.BuildServiceProvider();
+        services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>().CreateClient("custom");
+    }
 
-        customBuilder.ConfigureAdditionalHttpMessageHandlers((handlers, _) =>
+    [Fact]
+    public void RemoveAllResilienceHandlers_AddHandlersAfterRemoval()
+    {
+        var services = new ServiceCollection();
+
+        IHttpClientBuilder? builder = services.AddHttpClient("custom");
+        builder.RemoveAllResilienceHandlers().AddStandardResilienceHandler();
+        builder.ConfigureAdditionalHttpMessageHandlers((handlers, _) =>
         {
             Assert.Single(handlers);
         });
