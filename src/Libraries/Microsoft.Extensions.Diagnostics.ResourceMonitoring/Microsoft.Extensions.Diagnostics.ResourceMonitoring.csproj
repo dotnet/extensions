@@ -3,6 +3,7 @@
     <RootNamespace>Microsoft.Extensions.Diagnostics.ResourceMonitoring</RootNamespace>
     <Description>Measures processor and memory usage.</Description>
     <Workstream>ResourceMonitoring</Workstream>
+    <NoWarn Condition="'$(TargetFramework)' == 'net462'">$(NoWarn);CS0436</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -40,7 +41,6 @@
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
     <PackageReference Include="System.Threading.Tasks.Extensions" Condition="'$(TargetFramework)' == 'net462'" />
     <PackageReference Include="Microsoft.Bcl.HashCode" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))" />
-    <PackageReference Include="System.Diagnostics.PerformanceCounter" Condition="'$(TargetFramework)' != 'net462'" />
     <PackageReference Include="System.Collections.Immutable" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))" />
   </ItemGroup>
 

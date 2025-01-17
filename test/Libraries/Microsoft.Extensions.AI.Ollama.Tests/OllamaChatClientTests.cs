@@ -185,6 +185,7 @@ public class OllamaChatClientTests
 
         for (int i = 0; i < updates.Count; i++)
         {
+            Assert.NotNull(updates[i].CompletionId);
             Assert.Equal(i < updates.Count - 1 ? 1 : 2, updates[i].Contents.Count);
             Assert.Equal(ChatRole.Assistant, updates[i].Role);
             Assert.Equal("llama3.1", updates[i].ModelId);
