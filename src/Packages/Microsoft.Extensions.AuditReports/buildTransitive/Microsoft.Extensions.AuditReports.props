@@ -14,8 +14,6 @@
     <GenerateMetadataReport Condition="'$(DesignTimeBuild)' != 'true' OR '$(BuildingProject)' == 'true'">true</GenerateMetadataReport>
   </PropertyGroup>
 
-
-
   <ItemGroup>
     <CompilerVisibleProperty Include="GenerateMetadataReport" />
     <CompilerVisibleProperty Include="GenerateComplianceReport" />
