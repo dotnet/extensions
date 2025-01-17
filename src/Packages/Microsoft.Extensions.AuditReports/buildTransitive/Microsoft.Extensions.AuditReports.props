@@ -17,6 +17,7 @@
   <ItemGroup>
     <CompilerVisibleProperty Include="GenerateMetadataReport" />
     <CompilerVisibleProperty Include="GenerateComplianceReport" />
+    <CompilerVisibleProperty Include="ComplianceReportOutputPath" />
     <CompilerVisibleProperty Include="GenerateMetricsReport" />
     <CompilerVisibleProperty Include="MetadataReportOutputPath" />
     <CompilerVisibleProperty Include="MetricsReportOutputPath" />
