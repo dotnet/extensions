@@ -28,7 +28,7 @@ The following reports are available in this package:
 
 The table below shows various MSBuild properties that you can use to control the behavior of the reports generation:
 
-| Metrics report generator | Compliance report generator | Meta data report generator | Description |
+| Metrics report generator | Compliance report generator | Metadata report generator | Description |
 | --- | --- | --- | --- |
 | `<GenerateMetricsReport>` | `<GenerateComplianceReport>` | `<GenerateMetadataReport>` | Controls whether the report is generated. |
 | `<MetricsReportOutputPath>` | `<ComplianceReportOutputPath>`  | `<MetadataReportOutputPath>`| The path to the directory where the report will be generated. |
@@ -155,7 +155,7 @@ A metrics report for the code listed above might look like this:
 ```
 
 
-## Example of a meta data report
+## Example of a metadata report
 
 Let's assume we have a project with a class that contains a metric definition:
 
@@ -204,7 +204,7 @@ namespace ComplianceTesting
 
 `Microsoft.Extensions.Compliance.Testing` package contains a definition for `[PrivateData]` attribute, we use it here for demonstration purposes only.
 
-A meta data report for the code listed above might look like this:
+A metadata report for the code listed above might look like this:
 
 ```json
 { "Name": "MyAssembly", "ComplianceReport":
