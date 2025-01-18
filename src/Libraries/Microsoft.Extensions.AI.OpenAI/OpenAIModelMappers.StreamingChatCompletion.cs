@@ -48,9 +48,9 @@ internal static partial class OpenAIModelMappers
             yield return OpenAIChatModelFactory.StreamingChatCompletionUpdate(
                 completionId: chatCompletionUpdate.CompletionId ?? CreateCompletionId(),
                 model: chatCompletionUpdate.ModelId,
-                createdAt: chatCompletionUpdate.CreatedAt ?? default,
+                createdAt: chatCompletionUpdate.CreatedAt ?? DateTimeOffset.UtcNow,
                 role: ToOpenAIChatRole(chatCompletionUpdate.Role),
-                finishReason: ToOpenAIFinishReason(chatCompletionUpdate.FinishReason),
+                finishReason: chatCompletionUpdate.FinishReason is null ? null : ToOpenAIFinishReason(chatCompletionUpdate.FinishReason),
                 contentUpdate: [.. ToOpenAIChatContent(chatCompletionUpdate.Contents)],
                 toolCallUpdates: toolCallUpdates,
                 refusalUpdate: chatCompletionUpdate.AdditionalProperties.GetValueOrDefault<string>(nameof(OpenAI.Chat.StreamingChatCompletionUpdate.RefusalUpdate)),

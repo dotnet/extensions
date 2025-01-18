@@ -86,6 +86,38 @@ public static partial class OpenAISerializationTests
     }
 
     [Fact]
+    public static void RequestDeserialization_SimpleMessage_JsonSerializer()
+    {
+        const string RequestJson = """
+            {"messages":[{"role":"user","content":"hello"}],"model":"gpt-4o-mini","max_completion_tokens":20,"stream":true,"stream_options":{"include_usage":true},"temperature":0.5}
+            """;
+
+        OpenAIChatCompletionRequest? request = JsonSerializer.Deserialize<OpenAIChatCompletionRequest>(RequestJson);
+
+        Assert.NotNull(request);
+        Assert.True(request.Stream);
+        Assert.Equal("gpt-4o-mini", request.ModelId);
+
+        Assert.NotNull(request.Options);
+        Assert.Equal("gpt-4o-mini", request.Options.ModelId);
+        Assert.Equal(0.5f, request.Options.Temperature);
+        Assert.Equal(20, request.Options.MaxOutputTokens);
+        Assert.Null(request.Options.TopK);
+        Assert.Null(request.Options.TopP);
+        Assert.Null(request.Options.StopSequences);
+        Assert.Null(request.Options.AdditionalProperties);
+        Assert.Null(request.Options.Tools);
+
+        ChatMessage message = Assert.Single(request.Messages);
+        Assert.Equal(ChatRole.User, message.Role);
+        AIContent content = Assert.Single(message.Contents);
+        TextContent textContent = Assert.IsType<TextContent>(content);
+        Assert.Equal("hello", textContent.Text);
+        Assert.Null(textContent.RawRepresentation);
+        Assert.Null(textContent.AdditionalProperties);
+    }
+
+    [Fact]
     public static async Task RequestDeserialization_MultipleMessages()
     {
         const string RequestJson = """
@@ -614,13 +646,13 @@ public static partial class OpenAISerializationTests
         string result = Encoding.UTF8.GetString(stream.ToArray());
 
         AssertSseEqual("""
-            data: {"id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","choices":[{"delta":{"content":"Streaming update 0","tool_calls":[],"role":"assistant"},"logprobs":{"content":[],"refusal":[]},"finish_reason":"stop","index":0}],"created":1727888631,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","object":"chat.completion.chunk"}
+            data: {"id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","choices":[{"delta":{"content":"Streaming update 0","tool_calls":[],"role":"assistant"},"logprobs":{"content":[],"refusal":[]},"index":0}],"created":1727888631,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","object":"chat.completion.chunk"}
 
-            data: {"id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","choices":[{"delta":{"content":"Streaming update 1","tool_calls":[],"role":"assistant"},"logprobs":{"content":[],"refusal":[]},"finish_reason":"stop","index":0}],"created":1727888631,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","object":"chat.completion.chunk"}
+            data: {"id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","choices":[{"delta":{"content":"Streaming update 1","tool_calls":[],"role":"assistant"},"logprobs":{"content":[],"refusal":[]},"index":0}],"created":1727888631,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","object":"chat.completion.chunk"}
 
-            data: {"id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","choices":[{"delta":{"content":"Streaming update 2","tool_calls":[{"index":0,"id":"callId","type":"function","function":{"name":"MyCoolFunc","arguments":"{\r\n  \u0022arg1\u0022: 42,\r\n  \u0022arg2\u0022: \u0022str\u0022\r\n}"}}],"role":"assistant"},"logprobs":{"content":[],"refusal":[]},"finish_reason":"stop","index":0}],"created":1727888631,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","object":"chat.completion.chunk"}
+            data: {"id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","choices":[{"delta":{"content":"Streaming update 2","tool_calls":[{"index":0,"id":"callId","type":"function","function":{"name":"MyCoolFunc","arguments":"{\r\n  \u0022arg1\u0022: 42,\r\n  \u0022arg2\u0022: \u0022str\u0022\r\n}"}}],"role":"assistant"},"logprobs":{"content":[],"refusal":[]},"index":0}],"created":1727888631,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","object":"chat.completion.chunk"}
 
-            data: {"id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","choices":[{"delta":{"content":"Streaming update 3","tool_calls":[],"role":"assistant"},"logprobs":{"content":[],"refusal":[]},"finish_reason":"stop","index":0}],"created":1727888631,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","object":"chat.completion.chunk"}
+            data: {"id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","choices":[{"delta":{"content":"Streaming update 3","tool_calls":[],"role":"assistant"},"logprobs":{"content":[],"refusal":[]},"index":0}],"created":1727888631,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","object":"chat.completion.chunk"}
 
             data: {"id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","choices":[{"delta":{"content":"Streaming update 4","tool_calls":[],"role":"assistant"},"logprobs":{"content":[],"refusal":[]},"finish_reason":"stop","index":0}],"created":1727888631,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","object":"chat.completion.chunk","usage":{"completion_tokens":9,"prompt_tokens":8,"total_tokens":17,"completion_tokens_details":{"audio_tokens":2,"reasoning_tokens":90},"prompt_tokens_details":{"audio_tokens":1,"cached_tokens":13}}}
 
