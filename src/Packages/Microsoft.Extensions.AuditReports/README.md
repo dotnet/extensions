@@ -24,7 +24,7 @@ The following reports are available in this package:
 
 - **Metrics**: Reports on the use of source-generated metric definitions in the code.
 - **Compliance**: Reports on the use of privacy-sensitive data in the code, including source-generated logging methods.
-- **MetaData** : Is a Combination of both reports above.
+- **Metadata** : Is a Combination of both reports above.
 
 The table below shows various MSBuild properties that you can use to control the behavior of the reports generation:
 
