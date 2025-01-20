@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.ExceptionSummarization;
@@ -90,7 +91,10 @@ public static partial class ResilienceHttpClientBuilderExtensions
         {
             for (int i = handlers.Count - 1; i >= 0; i--)
             {
-                handlers.RemoveAt(i);
+                if (handlers[i] is ResilienceHandler)
+                {
+                    handlers.RemoveAt(i);
+                }
             }
         });
         return builder;

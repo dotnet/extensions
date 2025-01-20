@@ -336,7 +336,6 @@ public sealed partial class HttpClientBuilderExtensionsTests
         services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>().CreateClient("custom");
     }
 
-
     private void ConfigureBuilder(ResiliencePipelineBuilder<HttpResponseMessage> builder) => builder.AddTimeout(TimeSpan.FromSeconds(1));
 
     private class TestMetricsEnricher : MeteringEnricher
