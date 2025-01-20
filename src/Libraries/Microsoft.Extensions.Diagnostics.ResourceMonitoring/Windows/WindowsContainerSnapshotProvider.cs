@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.Threading;
@@ -15,6 +16,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows;
 internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 {
     private const double Hundred = 100.0d;
+    private const double TicksPerSecoundDouble = TimeSpan.TicksPerSecond;
 
     private readonly Lazy<MEMORYSTATUSEX> _memoryStatus;
 
@@ -109,6 +111,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
         // Container based metrics:
+        _ = meter.CreateObservableCounter(name: ResourceUtilizationInstruments.ContainerCpuTime, observeValues: GetCpuTime, unit: "s", description: "CPU time used by the container.");
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization, observeValue: CpuPercentage);
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization, observeValue: () => MemoryPercentage(() => _processInfo.GetMemoryUsage()));
 
@@ -203,6 +206,15 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 
             return _memoryPercentage;
         }
+    }
+
+    private IEnumerable<Measurement<double>> GetCpuTime()
+    {
+        using var jobHandle = _createJobHandleObject();
+        var basicAccountingInfo = jobHandle.GetBasicAccountingInfo();
+
+        yield return new(basicAccountingInfo.TotalUserTime / TicksPerSecoundDouble, [new KeyValuePair<string, object?>("cpu.mode", "user")]);
+        yield return new(basicAccountingInfo.TotalKernelTime / TicksPerSecoundDouble, [new KeyValuePair<string, object?>("cpu.mode", "system")]);
     }
 
     private double CpuPercentage()
