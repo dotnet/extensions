@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -330,6 +331,28 @@ public sealed partial class HttpClientBuilderExtensionsTests
         builder.ConfigureAdditionalHttpMessageHandlers((handlers, _) =>
         {
             Assert.Single(handlers);
+        });
+
+        using ServiceProvider serviceProvider = services.BuildServiceProvider();
+        services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>().CreateClient("custom");
+    }
+
+    [Fact]
+    public void RemoveAllResilienceHandlers_EnsureOnlyResilienceHandlersRemoved()
+    {
+        var services = new ServiceCollection();
+
+        IHttpClientBuilder? builder = services.AddHttpClient("custom");
+
+        builder.AddHttpMessageHandler(() => new TestHandlerStub(HttpStatusCode.OK));
+        builder.AddStandardResilienceHandler();
+
+        builder.RemoveAllResilienceHandlers();
+
+        builder.ConfigureAdditionalHttpMessageHandlers((handlers, _) =>
+        {
+            Assert.Single(handlers);
+            Assert.Equal("TestHandlerStub", handlers.First().GetType().Name);
         });
 
         using ServiceProvider serviceProvider = services.BuildServiceProvider();
