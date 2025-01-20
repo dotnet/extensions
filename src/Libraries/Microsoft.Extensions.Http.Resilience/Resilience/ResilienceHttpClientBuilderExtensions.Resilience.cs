@@ -88,7 +88,7 @@ public static partial class ResilienceHttpClientBuilderExtensions
         _ = Throw.IfNull(builder);
         _ = builder.ConfigureAdditionalHttpMessageHandlers(static (handlers, _) =>
         {
-            for (int i = handlers.Count - 1; i >=0; i--)
+            for (int i = handlers.Count - 1; i >= 0; i--)
             {
                 handlers.RemoveAt(i);
             }
