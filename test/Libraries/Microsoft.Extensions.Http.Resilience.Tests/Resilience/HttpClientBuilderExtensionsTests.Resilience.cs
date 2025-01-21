@@ -293,7 +293,6 @@ public sealed partial class HttpClientBuilderExtensionsTests
         var services = new ServiceCollection();
         IHttpClientBuilder? builder = null;
         Assert.Throws<ArgumentNullException>(() => builder!.RemoveAllResilienceHandlers());
-        Assert.Throws<ArgumentNullException>(() => builder!.RemoveAllResilienceHandlers());
     }
 
     [Fact]
@@ -356,7 +355,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
         });
 
         using ServiceProvider serviceProvider = services.BuildServiceProvider();
-        services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>().CreateClient("custom");
+        serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("custom");
     }
 
     private void ConfigureBuilder(ResiliencePipelineBuilder<HttpResponseMessage> builder) => builder.AddTimeout(TimeSpan.FromSeconds(1));
