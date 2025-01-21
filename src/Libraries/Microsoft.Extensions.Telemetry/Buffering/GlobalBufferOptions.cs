@@ -36,11 +36,9 @@ public class GlobalBufferOptions
     public int BufferSizeInBytes { get; set; } = 500_000_000;
 
 #pragma warning disable CA1002 // Do not expose generic lists - List is necessary to be able to call .AddRange()
-#pragma warning disable CA2227 // Collection properties should be read only - setter is necessary for options pattern
     /// <summary>
-    /// Gets or sets the collection of <see cref="BufferFilterRule"/> used for filtering log messages for the purpose of further buffering.
+    /// Gets the collection of <see cref="BufferFilterRule"/> used for filtering log messages for the purpose of further buffering.
     /// </summary>
-    public List<BufferFilterRule> Rules { get; set; } = [];
-#pragma warning restore CA2227 // Collection properties should be read only
+    public List<BufferFilterRule> Rules { get; } = [];
 #pragma warning restore CA1002 // Do not expose generic lists
 }

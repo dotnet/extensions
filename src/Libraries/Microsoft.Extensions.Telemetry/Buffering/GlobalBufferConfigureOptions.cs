@@ -35,6 +35,16 @@ internal sealed class GlobalBufferConfigureOptions : IConfigureOptions<GlobalBuf
             return;
         }
 
+        if (parsedOptions.LogRecordSizeInBytes > 0)
+        {
+            options.LogRecordSizeInBytes = parsedOptions.LogRecordSizeInBytes;
+        }
+
+        if (parsedOptions.BufferSizeInBytes > 0)
+        {
+            options.BufferSizeInBytes = parsedOptions.BufferSizeInBytes;
+        }
+
         options.Rules.AddRange(parsedOptions.Rules);
     }
 }

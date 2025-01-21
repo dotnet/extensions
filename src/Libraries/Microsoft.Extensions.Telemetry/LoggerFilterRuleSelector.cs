@@ -8,6 +8,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Logging;
@@ -26,8 +27,10 @@ public static class LoggerFilterRuleSelector
     /// <param name="category">The category of the log event.</param>
     /// <param name="logLevel">The log level of the log event.</param>
     /// <param name="eventId">The event id of the log event.</param>
+    /// <param name="attributes">The log state attributes of the log event.</param>
     /// <param name="bestRule">The best rule that matches the log event.</param>
-    public static void Select<T>(IList<T> rules, string category, LogLevel logLevel, EventId eventId, out T? bestRule)
+    public static void Select<T>(IList<T> rules, string category, LogLevel logLevel,
+        EventId eventId, IReadOnlyList<KeyValuePair<string, object?>>? attributes, out T? bestRule)
         where T : class, ILoggerFilterRule
     {
         bestRule = null;
@@ -44,7 +47,7 @@ public static class LoggerFilterRuleSelector
         {
             foreach (T rule in rules)
             {
-                if (IsBetter(rule, current, category, logLevel, eventId))
+                if (IsBetter(rule, current, category, logLevel, eventId, attributes))
                 {
                     current = rule;
                 }
@@ -57,7 +60,7 @@ public static class LoggerFilterRuleSelector
         }
     }
 
-    private static bool IsBetter<T>(T rule, T? current, string category, LogLevel logLevel, EventId eventId)
+    private static bool IsBetter<T>(T rule, T? current, string category, LogLevel logLevel, EventId eventId, IReadOnlyList<KeyValuePair<string, object?>>? attributes)
         where T : class, ILoggerFilterRule
     {
         // Skip rules with inapplicable log level
@@ -104,6 +107,18 @@ public static class LoggerFilterRuleSelector
             }
         }
 
+        // Skip rules with inapplicable attributes
+        if (rule.Attributes.Count > 0 && attributes?.Count > 0)
+        {
+            foreach (KeyValuePair<string, object?> ruleAttribute in rule.Attributes)
+            {
+                if (!attributes.Contains(ruleAttribute))
+                {
+                    return false;
+                }
+            }
+        }
+
         // Decide whose category is better - rule vs current
         if (current?.Category != null)
         {
@@ -136,6 +151,20 @@ public static class LoggerFilterRuleSelector
         if (rule.EventId is null)
         {
             if (current?.EventId != null)
+            {
+                return false;
+            }
+        }
+
+        // Decide whose attributes are better - rule vs current
+        if (current?.Attributes.Count > 0)
+        {
+            if (rule?.Attributes.Count == 0)
+            {
+                return false;
+            }
+
+            if (rule?.Attributes.Count < current.Attributes.Count)
             {
                 return false;
             }

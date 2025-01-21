@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.DiagnosticIds;
@@ -30,7 +29,7 @@ public interface ILoggerFilterRule
     int? EventId { get; }
 
     /// <summary>
-    /// Gets the filter delegate that would be additionally applied to messages that passed the <see cref="LogLevel"/>, <see cref="Category"/>, and <see cref="EventId"/> filters.
+    /// Gets the log state attributes of messages where this rules applies to.
     /// </summary>
-    Func<string?, LogLevel?, EventId?, IReadOnlyList<KeyValuePair<string, object?>>, bool> Filter { get; }
+    IReadOnlyList<KeyValuePair<string, object?>> Attributes { get; }
 }

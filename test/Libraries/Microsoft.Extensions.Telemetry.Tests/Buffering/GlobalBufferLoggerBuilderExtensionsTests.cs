@@ -40,11 +40,11 @@ public class GlobalBufferLoggerBuilderExtensionsTests
     }
 
     [Fact]
-    public void AddGlobalBufferConfiguration_RegistersInDI()
+    public void AddGlobalBuffer_WithConfiguration_RegistersInDI()
     {
         List<BufferFilterRule> expectedData =
         [
-            new BufferFilterRule("Program.MyLogger", LogLevel.Information, 1, null),
+            new BufferFilterRule("Program.MyLogger", LogLevel.Information, 1, [new("region", "westus2")]),
             new BufferFilterRule(null, LogLevel.Information, null, null),
         ];
         ConfigurationBuilder configBuilder = new ConfigurationBuilder();
@@ -53,12 +53,19 @@ public class GlobalBufferLoggerBuilderExtensionsTests
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging(builder =>
         {
-            builder.AddGlobalBufferConfiguration(configuration);
+            builder.AddGlobalBuffer(configuration);
+            builder.Services.Configure<GlobalBufferOptions>(options =>
+            {
+                options.LogRecordSizeInBytes = 33;
+            });
         });
         var serviceProvider = serviceCollection.BuildServiceProvider();
         var options = serviceProvider.GetService<IOptionsMonitor<GlobalBufferOptions>>();
         Assert.NotNull(options);
         Assert.NotNull(options.CurrentValue);
+        Assert.Equal(33, options.CurrentValue.LogRecordSizeInBytes); // value comes from the Configure<GlobalBufferOptions>()  call
+        Assert.Equal(1000, options.CurrentValue.BufferSizeInBytes); // value comes from appsettings.json
+        Assert.Equal(TimeSpan.FromSeconds(30), options.CurrentValue.SuspendAfterFlushDuration); // value comes from default
         Assert.Equivalent(expectedData, options.CurrentValue.Rules);
     }
 }

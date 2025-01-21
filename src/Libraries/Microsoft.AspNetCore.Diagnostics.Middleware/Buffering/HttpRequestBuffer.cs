@@ -113,9 +113,9 @@ internal sealed class HttpRequestBuffer : ILoggingBuffer
             return false;
         }
 
-        LoggerFilterRuleSelector.Select(_options.CurrentValue.Rules, category, logLevel, eventId, out BufferFilterRule? rule);
+        LoggerFilterRuleSelector.Select(_options.CurrentValue.Rules, category, logLevel, eventId, attributes, out BufferFilterRule? rule);
 
-        return rule is not null && rule.Filter(category, logLevel, eventId, attributes);
+        return rule is not null;
     }
 
     private void Trim()

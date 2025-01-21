@@ -24,7 +24,9 @@ public class LoggerFilterRuleSelectorTests
             new BufferFilterRule(null, LogLevel.Warning, 1, null),
             new BufferFilterRule("Program1.MyLogger", LogLevel.Warning, 1, null),
             new BufferFilterRule("Program.*MyLogger1", LogLevel.Warning, 1, null),
-            new BufferFilterRule("Program.MyLogger", LogLevel.Warning, 1), // the best rule
+            new BufferFilterRule("Program.MyLogger", LogLevel.Warning, 1, [new("region2", "westus2")]), // inapplicable key
+            new BufferFilterRule("Program.MyLogger", LogLevel.Warning, 1, [new("region", "westus3")]), // inapplicable value
+            new BufferFilterRule("Program.MyLogger", LogLevel.Warning, 1, [new("region", "westus2")]), // the best rule - [11]
             new BufferFilterRule("Program.MyLogger", LogLevel.Warning, 2, null),
             new BufferFilterRule("Program.MyLogger", null, 1, null),
             new BufferFilterRule(null, LogLevel.Warning, 1, null),
@@ -35,10 +37,10 @@ public class LoggerFilterRuleSelectorTests
 
         // Act
         LoggerFilterRuleSelector.Select(
-            rules, "Program.MyLogger", LogLevel.Warning, 1, out var actualResult);
+            rules, "Program.MyLogger", LogLevel.Warning, 1, [new("region", "westus2")], out var actualResult);
 
         // Assert
-        Assert.Same(rules[9], actualResult);
+        Assert.Same(rules[11], actualResult);
     }
 
     [Fact]
@@ -56,12 +58,12 @@ public class LoggerFilterRuleSelectorTests
             new BufferFilterRule("Program.*MyLogger1", LogLevel.Warning, 1, null),
             new BufferFilterRule("Program.MyLogger", LogLevel.Warning, 1, null),
             new BufferFilterRule("Program.MyLogger*", LogLevel.Warning, 1, null),
-            new BufferFilterRule("Program.MyLogger", LogLevel.Warning, 1), // the best rule
-            new BufferFilterRule("Program.MyLogger*", LogLevel.Warning, 1), // same as the best, but last and should be selected
+            new BufferFilterRule("Program.MyLogger", LogLevel.Warning, 1, [new("region", "westus2")]), // the best rule
+            new BufferFilterRule("Program.MyLogger*", LogLevel.Warning, 1, [new("region", "westus2")]), // same as the best, but last and should be selected
         };
 
         // Act
-        LoggerFilterRuleSelector.Select(rules, "Program.MyLogger", LogLevel.Warning, 1, out var actualResult);
+        LoggerFilterRuleSelector.Select(rules, "Program.MyLogger", LogLevel.Warning, 1, [new("region", "westus2")], out var actualResult);
 
         // Assert
         Assert.Same(rules.Last(), actualResult);

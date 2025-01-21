@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
@@ -29,14 +28,14 @@ public class BufferFilterRule : ILoggerFilterRule
     /// <param name="categoryName">The category name to use in this filter rule.</param>
     /// <param name="logLevel">The <see cref="LogLevel"/> to use in this filter rule.</param>
     /// <param name="eventId">The <see cref="EventId"/> to use in this filter rule.</param>
-    /// <param name="filter">The optional filter delegate to use if a log message passes other filters.</param>
+    /// <param name="attributes">The optional attributes to use if a log message passes other filters.</param>
     public BufferFilterRule(string? categoryName, LogLevel? logLevel, int? eventId,
-        Func<string?, LogLevel?, EventId?, IReadOnlyList<KeyValuePair<string, object?>>, bool>? filter = null)
+        IReadOnlyList<KeyValuePair<string, object?>>? attributes = null)
     {
         Category = categoryName;
         LogLevel = logLevel;
         EventId = eventId;
-        Filter = filter ?? ((_, _, _, _) => true);
+        Attributes = attributes ?? [];
     }
 
     /// <inheritdoc/>
@@ -49,5 +48,5 @@ public class BufferFilterRule : ILoggerFilterRule
     public int? EventId { get; set; }
 
     /// <inheritdoc/>
-    public Func<string?, LogLevel?, EventId?, IReadOnlyList<KeyValuePair<string, object?>>, bool> Filter { get; }
+    public IReadOnlyList<KeyValuePair<string, object?>> Attributes { get; set; }
 }
