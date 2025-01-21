@@ -292,8 +292,8 @@ public sealed partial class HttpClientBuilderExtensionsTests
     {
         var services = new ServiceCollection();
         IHttpClientBuilder? builder = null;
-        Assert.Throws<ArgumentNullException>(() => builder!.AddResilienceHandler("pipeline-name", _ => { }));
-        Assert.Throws<ArgumentNullException>(() => builder!.AddResilienceHandler("pipeline-name", (_, _) => { }));
+        Assert.Throws<ArgumentNullException>(() => builder!.RemoveAllResilienceHandlers());
+        Assert.Throws<ArgumentNullException>(() => builder!.RemoveAllResilienceHandlers());
     }
 
     [Fact]
@@ -318,7 +318,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
         });
 
         using ServiceProvider serviceProvider = services.BuildServiceProvider();
-        services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>().CreateClient("custom");
+        serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("custom");
     }
 
     [Fact]
@@ -334,7 +334,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
         });
 
         using ServiceProvider serviceProvider = services.BuildServiceProvider();
-        services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>().CreateClient("custom");
+        serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("custom");
     }
 
     [Fact]
@@ -352,7 +352,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
         builder.ConfigureAdditionalHttpMessageHandlers((handlers, _) =>
         {
             Assert.Single(handlers);
-            Assert.Equal("TestHandlerStub", handlers.First().GetType().Name);
+            Assert.Equal(typeof(TestHandlerStub), handlers.First().GetType());
         });
 
         using ServiceProvider serviceProvider = services.BuildServiceProvider();
