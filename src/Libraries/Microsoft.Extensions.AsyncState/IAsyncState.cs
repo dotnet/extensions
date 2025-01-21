@@ -55,5 +55,5 @@ public interface IAsyncState
     /// Registers new async context with the state.
     /// </summary>
     /// <returns>Token that gives access to the reserved context.</returns>
-    public AsyncStateToken RegisterAsyncContext();
+    AsyncStateToken RegisterAsyncContext();
 }
