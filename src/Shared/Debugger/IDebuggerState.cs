@@ -13,5 +13,5 @@ internal interface IDebuggerState
     /// <summary>
     /// Gets a value indicating whether a debugger is attached or not.
     /// </summary>
-    public bool IsAttached { get; }
+    bool IsAttached { get; }
 }
