@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.Extensions.Diagnostics.Buffering;
+namespace Microsoft.AspNetCore.Diagnostics.Buffering;
 
 /// <summary>
 /// Represents a log record that has been serialized for purposes of buffering or similar.

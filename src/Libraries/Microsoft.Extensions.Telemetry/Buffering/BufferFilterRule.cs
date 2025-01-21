@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Diagnostics.Buffering;
 /// Defines a rule used to filter log messages for purposes of futher buffering.
 /// </summary>
 [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
-public class BufferFilterRule : ILoggerFilterRule
+public class BufferFilterRule
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="BufferFilterRule"/> class.
@@ -38,15 +38,23 @@ public class BufferFilterRule : ILoggerFilterRule
         Attributes = attributes ?? [];
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets or sets the logger category this rule applies to.
+    /// </summary>
     public string? Category { get; set; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets or sets the maximum <see cref="LogLevel"/> of messages.
+    /// </summary>
     public LogLevel? LogLevel { get; set; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets or sets the <see cref="EventId"/> of messages where this rule applies to.
+    /// </summary>
     public int? EventId { get; set; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets or sets the log state attributes of messages where this rules applies to.
+    /// </summary>
     public IReadOnlyList<KeyValuePair<string, object?>> Attributes { get; set; }
 }

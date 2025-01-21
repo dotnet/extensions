@@ -38,11 +38,11 @@ internal sealed class GlobalBufferManager : IGlobalBufferManager
         IBufferedLogger bufferedLogger,
         LogLevel logLevel,
         string category,
-        EventId eventId, TState attributes,
+        EventId eventId, TState state,
         Exception? exception,
         Func<TState, Exception?, string> formatter)
     {
         var buffer = Buffers.GetOrAdd(category, _ => new GlobalBuffer(bufferedLogger, _options, _timeProvider));
-        return buffer.TryEnqueue(logLevel, category, eventId, attributes, exception, formatter);
+        return buffer.TryEnqueue(logLevel, category, eventId, state, exception, formatter);
     }
 }

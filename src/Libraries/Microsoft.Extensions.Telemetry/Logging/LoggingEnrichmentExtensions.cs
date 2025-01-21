@@ -2,12 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Logging;
@@ -67,8 +65,7 @@ public static class LoggingEnrichmentExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection" />.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
-    public static IServiceCollection AddExtendedLoggerFeactory(this IServiceCollection services)
+    internal static IServiceCollection AddExtendedLoggerFeactory(this IServiceCollection services)
     {
         _ = Throw.IfNull(services);
 

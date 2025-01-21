@@ -27,10 +27,11 @@ public class GlobalBufferOptions
     /// Gets or sets the maxiumum size of each individual log record in bytes. If the size of a log record exceeds this limit, it won't be buffered.
     /// </summary>
     /// TO DO: add validation.
-    public int LogRecordSizeInBytes { get; set; } = 50_000;
+    public int MaxLogRecordSizeInBytes { get; set; } = 50_000;
 
     /// <summary>
-    /// Gets or sets the maximum size of the buffer in bytes. If the buffer size exceeds this limit, the oldest buffered log records will be dropped.
+    /// Gets or sets the maximum size of the buffer in bytes. If adding a new log entry would cause the buffer size to exceed this limit,
+    /// the oldest buffered log records will be dropped to make room.
     /// </summary>
     /// TO DO: add validation.
     public int BufferSizeInBytes { get; set; } = 500_000_000;

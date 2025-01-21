@@ -22,17 +22,17 @@ public interface IBufferManager
     /// <param name="logLevel">Log level.</param>
     /// <param name="category">Category.</param>
     /// <param name="eventId">Event ID.</param>
-    /// <param name="attributes">Attributes.</param>
+    /// <param name="state">Log state attributes.</param>
     /// <param name="exception">Exception.</param>
     /// <param name="formatter">Formatter delegate.</param>
-    /// <typeparam name="TState">Type of the <paramref name="attributes"/> instance.</typeparam>
+    /// <typeparam name="TState">Type of the <paramref name="state"/> instance.</typeparam>
     /// <returns><see langword="true"/> if the log record was buffered; otherwise, <see langword="false"/>.</returns>
     bool TryEnqueue<TState>(
         IBufferedLogger bufferedLoger,
         LogLevel logLevel,
         string category,
         EventId eventId,
-        TState attributes,
+        TState state,
         Exception? exception,
         Func<TState, Exception?, string> formatter);
 }

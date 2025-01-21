@@ -68,7 +68,7 @@ internal sealed class GlobalBuffer : ILoggingBuffer
             Throw.ArgumentException(nameof(attributes), $"Unsupported type of the log attributes object detected: {typeof(T)}");
         }
 
-        if (serializedLogRecord.SizeInBytes > _options.CurrentValue.LogRecordSizeInBytes)
+        if (serializedLogRecord.SizeInBytes > _options.CurrentValue.MaxLogRecordSizeInBytes)
         {
             return false;
         }
@@ -130,7 +130,7 @@ internal sealed class GlobalBuffer : ILoggingBuffer
             return false;
         }
 
-        LoggerFilterRuleSelector.Select(_options.CurrentValue.Rules, category, logLevel, eventId, attributes, out BufferFilterRule? rule);
+        BufferFilterRuleSelector.Select(_options.CurrentValue.Rules, category, logLevel, eventId, attributes, out BufferFilterRule? rule);
 
         return rule is not null;
     }

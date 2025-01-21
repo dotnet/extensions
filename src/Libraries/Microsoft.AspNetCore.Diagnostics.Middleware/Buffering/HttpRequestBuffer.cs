@@ -39,12 +39,12 @@ internal sealed class HttpRequestBuffer : ILoggingBuffer
         LogLevel logLevel,
         string category,
         EventId eventId,
-        TState attributes,
+        TState state,
         Exception? exception,
         Func<TState, Exception?, string> formatter)
     {
         SerializedLogRecord serializedLogRecord = default;
-        if (attributes is ModernTagJoiner modernTagJoiner)
+        if (state is ModernTagJoiner modernTagJoiner)
         {
             if (!IsEnabled(category, logLevel, eventId, modernTagJoiner))
             {
@@ -54,7 +54,7 @@ internal sealed class HttpRequestBuffer : ILoggingBuffer
             serializedLogRecord = new SerializedLogRecord(logLevel, eventId, _timeProvider.GetUtcNow(), modernTagJoiner, exception,
                 ((Func<ModernTagJoiner, Exception?, string>)(object)formatter)(modernTagJoiner, exception));
         }
-        else if (attributes is LegacyTagJoiner legacyTagJoiner)
+        else if (state is LegacyTagJoiner legacyTagJoiner)
         {
             if (!IsEnabled(category, logLevel, eventId, legacyTagJoiner))
             {
@@ -66,10 +66,10 @@ internal sealed class HttpRequestBuffer : ILoggingBuffer
         }
         else
         {
-            Throw.ArgumentException(nameof(attributes), $"Unsupported type of the log attributes object detected: {typeof(TState)}");
+            Throw.ArgumentException(nameof(state), $"Unsupported type of the log state object detected: {typeof(TState)}");
         }
 
-        if (serializedLogRecord.SizeInBytes > _globalOptions.CurrentValue.LogRecordSizeInBytes)
+        if (serializedLogRecord.SizeInBytes > _globalOptions.CurrentValue.MaxLogRecordSizeInBytes)
         {
             return false;
         }
@@ -113,7 +113,7 @@ internal sealed class HttpRequestBuffer : ILoggingBuffer
             return false;
         }
 
-        LoggerFilterRuleSelector.Select(_options.CurrentValue.Rules, category, logLevel, eventId, attributes, out BufferFilterRule? rule);
+        BufferFilterRuleSelector.Select(_options.CurrentValue.Rules, category, logLevel, eventId, attributes, out BufferFilterRule? rule);
 
         return rule is not null;
     }

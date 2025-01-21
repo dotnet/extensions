@@ -7,31 +7,27 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Microsoft.Shared.DiagnosticIds;
+using Microsoft.Extensions.Logging;
 
-namespace Microsoft.Extensions.Logging;
+namespace Microsoft.Extensions.Diagnostics.Buffering;
 
 /// <summary>
 /// Selects the best rule from the list of rules for a given log event.
 /// </summary>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
-public static class LoggerFilterRuleSelector
+internal static class BufferFilterRuleSelector
 {
     /// <summary>
-    /// Selects the best <typeparamref name="T"/> rule from the list of rules for a given log event.
+    /// Selects the best rule from the list of rules for a given log event.
     /// </summary>
-    /// <typeparam name="T">The type of the rules.</typeparam>
     /// <param name="rules">The list of rules to select from.</param>
     /// <param name="category">The category of the log event.</param>
     /// <param name="logLevel">The log level of the log event.</param>
     /// <param name="eventId">The event id of the log event.</param>
     /// <param name="attributes">The log state attributes of the log event.</param>
     /// <param name="bestRule">The best rule that matches the log event.</param>
-    public static void Select<T>(IList<T> rules, string category, LogLevel logLevel,
-        EventId eventId, IReadOnlyList<KeyValuePair<string, object?>>? attributes, out T? bestRule)
-        where T : class, ILoggerFilterRule
+    public static void Select(IList<BufferFilterRule> rules, string category, LogLevel logLevel,
+        EventId eventId, IReadOnlyList<KeyValuePair<string, object?>>? attributes, out BufferFilterRule? bestRule)
     {
         bestRule = null;
 
@@ -42,10 +38,10 @@ public static class LoggerFilterRuleSelector
         // 3. If there is only one rule use it
         // 4. If there are multiple rules use last
 
-        T? current = null;
+        BufferFilterRule? current = null;
         if (rules is not null)
         {
-            foreach (T rule in rules)
+            foreach (BufferFilterRule rule in rules)
             {
                 if (IsBetter(rule, current, category, logLevel, eventId, attributes))
                 {
@@ -60,8 +56,8 @@ public static class LoggerFilterRuleSelector
         }
     }
 
-    private static bool IsBetter<T>(T rule, T? current, string category, LogLevel logLevel, EventId eventId, IReadOnlyList<KeyValuePair<string, object?>>? attributes)
-        where T : class, ILoggerFilterRule
+    private static bool IsBetter(BufferFilterRule rule, BufferFilterRule? current, string category,
+        LogLevel logLevel, EventId eventId, IReadOnlyList<KeyValuePair<string, object?>>? attributes)
     {
         // Skip rules with inapplicable log level
         if (rule.LogLevel != null && rule.LogLevel < logLevel)
@@ -159,12 +155,12 @@ public static class LoggerFilterRuleSelector
         // Decide whose attributes are better - rule vs current
         if (current?.Attributes.Count > 0)
         {
-            if (rule?.Attributes.Count == 0)
+            if (rule.Attributes.Count == 0)
             {
                 return false;
             }
 
-            if (rule?.Attributes.Count < current.Attributes.Count)
+            if (rule.Attributes.Count < current.Attributes.Count)
             {
                 return false;
             }

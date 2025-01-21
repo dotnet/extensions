@@ -73,8 +73,7 @@ public static class HttpRequestBufferLoggerBuilderExtensions
     {
         _ = Throw.IfNull(builder);
 
-        _ = builder.Services.AddExtendedLoggerFeactory();
-
+        builder.Services.TryAddScoped<HttpRequestBufferHolder>();
         builder.Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         builder.Services.TryAddSingleton<HttpRequestBufferManager>();
         builder.Services.TryAddSingleton<IBufferManager>(static sp => sp.GetRequiredService<HttpRequestBufferManager>());

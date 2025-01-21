@@ -13,7 +13,7 @@ public class LoggerFilterRuleSelectorTests
     public void SelectsRightRule()
     {
         // Arrange
-        var rules = new List<ILoggerFilterRule>
+        var rules = new List<BufferFilterRule>
         {
             new BufferFilterRule(null, null, null, null),
             new BufferFilterRule(null, null, 1, null),
@@ -36,7 +36,7 @@ public class LoggerFilterRuleSelectorTests
         };
 
         // Act
-        LoggerFilterRuleSelector.Select(
+        BufferFilterRuleSelector.Select(
             rules, "Program.MyLogger", LogLevel.Warning, 1, [new("region", "westus2")], out var actualResult);
 
         // Assert
@@ -47,7 +47,7 @@ public class LoggerFilterRuleSelectorTests
     public void WhenManyRuleApply_SelectsLast()
     {
         // Arrange
-        var rules = new List<ILoggerFilterRule>
+        var rules = new List<BufferFilterRule>
         {
             new BufferFilterRule(null, LogLevel.Information, 1, null),
             new BufferFilterRule(null, LogLevel.Information, 1, null),
@@ -63,7 +63,7 @@ public class LoggerFilterRuleSelectorTests
         };
 
         // Act
-        LoggerFilterRuleSelector.Select(rules, "Program.MyLogger", LogLevel.Warning, 1, [new("region", "westus2")], out var actualResult);
+        BufferFilterRuleSelector.Select(rules, "Program.MyLogger", LogLevel.Warning, 1, [new("region", "westus2")], out var actualResult);
 
         // Assert
         Assert.Same(rules.Last(), actualResult);

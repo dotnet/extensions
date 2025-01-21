@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Buffering;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -33,16 +34,7 @@ internal sealed class HttpRequestBufferManager : IHttpRequestBufferManager
 
     public void FlushCurrentRequestLogs()
     {
-        if (_httpContextAccessor.HttpContext is not null)
-        {
-            foreach (var kvp in _httpContextAccessor.HttpContext!.Items)
-            {
-                if (kvp.Value is ILoggingBuffer buffer)
-                {
-                    buffer.Flush();
-                }
-            }
-        }
+        _httpContextAccessor.HttpContext?.RequestServices.GetService<HttpRequestBufferHolder>()?.Flush();
     }
 
     public bool TryEnqueue<TState>(
@@ -50,28 +42,24 @@ internal sealed class HttpRequestBufferManager : IHttpRequestBufferManager
         LogLevel logLevel,
         string category,
         EventId eventId,
-        TState attributes,
+        TState state,
         Exception? exception,
         Func<TState, Exception?, string> formatter)
     {
-        var httpContext = _httpContextAccessor.HttpContext;
+        HttpContext? httpContext = _httpContextAccessor.HttpContext;
         if (httpContext is null)
         {
-            return _globalBufferManager.TryEnqueue(bufferedLogger, logLevel, category, eventId, attributes, exception, formatter);
+            return _globalBufferManager.TryEnqueue(bufferedLogger, logLevel, category, eventId, state, exception, formatter);
         }
 
-        if (!httpContext.Items.TryGetValue(category, out var buffer))
+        HttpRequestBufferHolder? bufferHolder = httpContext.RequestServices.GetService<HttpRequestBufferHolder>();
+        ILoggingBuffer? buffer = bufferHolder?.GetOrAdd(category, _ => new HttpRequestBuffer(bufferedLogger, _requestOptions, _globalOptions)!);
+
+        if (buffer is null)
         {
-            var httpRequestBuffer = new HttpRequestBuffer(bufferedLogger, _requestOptions, _globalOptions);
-            httpContext.Items[category] = httpRequestBuffer;
-            buffer = httpRequestBuffer;
+            return _globalBufferManager.TryEnqueue(bufferedLogger, logLevel, category, eventId, state, exception, formatter);
         }
 
-        if (buffer is not ILoggingBuffer loggingBuffer)
-        {
-            throw new InvalidOperationException($"Unable to parse value of {buffer} of the {category}");
-        }
-
-        return loggingBuffer.TryEnqueue(logLevel, category, eventId, attributes, exception, formatter);
+        return buffer.TryEnqueue(logLevel, category, eventId, state, exception, formatter);
     }
 }

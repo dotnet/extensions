@@ -56,14 +56,14 @@ public class GlobalBufferLoggerBuilderExtensionsTests
             builder.AddGlobalBuffer(configuration);
             builder.Services.Configure<GlobalBufferOptions>(options =>
             {
-                options.LogRecordSizeInBytes = 33;
+                options.MaxLogRecordSizeInBytes = 33;
             });
         });
         var serviceProvider = serviceCollection.BuildServiceProvider();
         var options = serviceProvider.GetService<IOptionsMonitor<GlobalBufferOptions>>();
         Assert.NotNull(options);
         Assert.NotNull(options.CurrentValue);
-        Assert.Equal(33, options.CurrentValue.LogRecordSizeInBytes); // value comes from the Configure<GlobalBufferOptions>()  call
+        Assert.Equal(33, options.CurrentValue.MaxLogRecordSizeInBytes); // value comes from the Configure<GlobalBufferOptions>()  call
         Assert.Equal(1000, options.CurrentValue.BufferSizeInBytes); // value comes from appsettings.json
         Assert.Equal(TimeSpan.FromSeconds(30), options.CurrentValue.SuspendAfterFlushDuration); // value comes from default
         Assert.Equivalent(expectedData, options.CurrentValue.Rules);
