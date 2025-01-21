@@ -551,8 +551,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         int iteration, int functionCallIndex, int totalFunctionCount, CancellationToken cancellationToken)
     {
         // Look up the AIFunction for the function call. If the requested function isn't available, send back an error.
-        AIFunction? function = options.Tools!.OfType<AIFunction>().FirstOrDefault(t => t.Metadata.Name == functionCallContent.Name);
-        if (function is null)
+        if (FindFunction(options, functionCallContent) is not AIFunction function)
         {
             return new(ContinueMode.Continue, FunctionStatus.NotFound, functionCallContent, result: null, exception: null);
         }
@@ -630,7 +629,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             {
                 string message = result.Status switch
                 {
-                    FunctionStatus.NotFound => "Error: Requested function not found.",
+                    FunctionStatus.NotFound => $"Error: Requested function '{result.CallContent.Name}' not found.",
                     FunctionStatus.Failed => "Error: Function failed.",
                     _ => "Error: Unknown error.",
                 };
@@ -645,6 +644,22 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
             return new FunctionResultContent(result.CallContent.CallId, result.CallContent.Name, functionResult) { Exception = result.Exception };
         }
+    }
+
+    /// <summary>Finds the <see cref="AIFunction"/> to use for the specified <see cref="FunctionCallContent"/>.</summary>
+    /// <param name="options">The <see cref="ChatOptions"/> used during the request. It contains the <see cref="ChatOptions.Tools"/> provided in the request.</param>
+    /// <param name="functionCallContent">The <see cref="FunctionCallContent"/> detailing the function requested to be called.</param>
+    /// <returns>The found <see cref="AIFunction"/>, or <see langword="null"/> if none could be found.</returns>
+    protected virtual AIFunction? FindFunction(
+        ChatOptions options, FunctionCallContent functionCallContent)
+    {
+        _ = Throw.IfNull(options);
+        _ = Throw.IfNull(functionCallContent);
+
+        return options
+            .Tools?
+            .OfType<AIFunction>()
+            .FirstOrDefault(t => t.Metadata.Name == functionCallContent.Name);
     }
 
     /// <summary>Invokes the function asynchronously.</summary>
