@@ -75,15 +75,16 @@ public class LoggerFilterRuleSelectorTests
         // Arrange
         var rules = new List<BufferFilterRule>
         {
+            new BufferFilterRule("Program.MyLogger", LogLevel.Warning, 1, [new("priority", 1)]),
             new BufferFilterRule("Program.MyLogger", LogLevel.Warning, 1, [new("priority", 2)]), // the best rule
             new BufferFilterRule("Program.MyLogger", LogLevel.Warning, 1, [new("priority", 3)]),
-            new BufferFilterRule("Program.MyLogger*", LogLevel.Warning, 1, null),
+            new BufferFilterRule("Program.MyLogger", LogLevel.Warning, 1, null),
         };
 
         // Act
-        BufferFilterRuleSelector.Select(rules, "Program.MyLogger", LogLevel.Warning, 1, [new("priority", 2)], out var actualResult);
+        BufferFilterRuleSelector.Select(rules, "Program.MyLogger", LogLevel.Warning, 1, [new("priority", "2")], out var actualResult);
 
         // Assert
-        Assert.Same(rules.First(), actualResult);
+        Assert.Same(rules[1], actualResult);
     }
 }

@@ -17,6 +17,8 @@ namespace Microsoft.Extensions.Diagnostics.Buffering;
 /// </summary>
 internal static class BufferFilterRuleSelector
 {
+    private static readonly IEqualityComparer<KeyValuePair<string, object?>> _stringifyComparer = new StringifyComprarer();
+
     /// <summary>
     /// Selects the best rule from the list of rules for a given log event.
     /// </summary>
@@ -108,7 +110,7 @@ internal static class BufferFilterRuleSelector
         {
             foreach (KeyValuePair<string, object?> ruleAttribute in rule.Attributes)
             {
-                if (!attributes.Contains(ruleAttribute))
+                if (!attributes.Contains(ruleAttribute, _stringifyComparer))
                 {
                     return false;
                 }
