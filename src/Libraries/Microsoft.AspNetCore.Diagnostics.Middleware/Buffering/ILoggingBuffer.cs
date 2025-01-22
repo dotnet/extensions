@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.Extensions.Diagnostics.Buffering;
+namespace Microsoft.AspNetCore.Diagnostics.Buffering;
 
 /// <summary>
 /// Interface for a logging buffer.

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Microsoft.Extensions.Diagnostics.Buffering;
+namespace Microsoft.AspNetCore.Diagnostics.Buffering;
 
 /// <summary>
 /// Represents a log record deserialized from somewhere, such as buffer.
