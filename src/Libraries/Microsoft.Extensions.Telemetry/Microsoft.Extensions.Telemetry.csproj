@@ -8,15 +8,16 @@
   <PropertyGroup>
     <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <InjectGetOrAddOnLegacy>true</InjectGetOrAddOnLegacy>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
-    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
-    <InjectSharedText>true</InjectSharedText>
     <InjectSharedDataValidation>true</InjectSharedDataValidation>
+    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
+    <InjectSharedLoggingBuffering>true</InjectSharedLoggingBuffering>
+    <InjectSharedMemoization>true</InjectSharedMemoization>
     <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>
     <InjectSharedPools>true</InjectSharedPools>
     <InjectSharedRentedSpan>true</InjectSharedRentedSpan>
-    <InjectSharedMemoization>true</InjectSharedMemoization>
-    <InjectGetOrAddOnLegacy>true</InjectGetOrAddOnLegacy>
+    <InjectSharedText>true</InjectSharedText>
     <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <NoWarn>$(NoWarn);IL2026</NoWarn>

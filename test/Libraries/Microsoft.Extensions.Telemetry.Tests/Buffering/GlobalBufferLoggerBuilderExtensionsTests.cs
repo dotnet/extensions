@@ -44,7 +44,7 @@ public class GlobalBufferLoggerBuilderExtensionsTests
     {
         List<BufferFilterRule> expectedData =
         [
-            new BufferFilterRule("Program.MyLogger", LogLevel.Information, 1, [new("region", "westus2")]),
+            new BufferFilterRule("Program.MyLogger", LogLevel.Information, 1, [new("region", "westus2"), new ("priority", 1)]),
             new BufferFilterRule(null, LogLevel.Information, null, null),
         ];
         ConfigurationBuilder configBuilder = new ConfigurationBuilder();

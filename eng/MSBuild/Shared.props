@@ -46,4 +46,8 @@
   <ItemGroup Condition="'$(InjectStringSplitExtensions)' == 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\StringSplit\*.cs" LinkBase="Shared\StringSplit" />
   </ItemGroup>
+
+  <ItemGroup Condition="'$(InjectSharedLoggingBuffering)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\LoggingBuffering\*.cs" LinkBase="Shared\LoggingBuffering" />
+  </ItemGroup>
 </Project>

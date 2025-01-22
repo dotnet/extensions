@@ -11,14 +11,14 @@
     <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
     <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
     <UseLoggingGenerator>true</UseLoggingGenerator>
-    <InjectSharedThrow>false</InjectSharedThrow>
-    <InjectTrimAttributesOnLegacy>false</InjectTrimAttributesOnLegacy>
+    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectSharedDebugger>true</InjectSharedDebugger>
     <InjectSharedDataValidation>false</InjectSharedDataValidation>
     <InjectSharedPools>false</InjectSharedPools>
     <InjectSharedBufferWriterPool>true</InjectSharedBufferWriterPool>
     <InjectSharedNumericExtensions>false</InjectSharedNumericExtensions>
-    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <InjectSharedThrow>false</InjectSharedThrow>
+    <InjectTrimAttributesOnLegacy>false</InjectTrimAttributesOnLegacy>
   </PropertyGroup>
 
   <PropertyGroup>

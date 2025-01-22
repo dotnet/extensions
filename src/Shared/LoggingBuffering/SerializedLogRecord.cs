@@ -5,14 +5,13 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Diagnostics.Buffering;
+namespace Microsoft.Extensions.Diagnostics.Buffering;
 
 /// <summary>
 /// Represents a log record that has been serialized for purposes of buffering or similar.
 /// </summary>
-#pragma warning disable CA1815 // Override equals and operator equals on value types
+#pragma warning disable CA1815 // Override equals and operator equals on value types - not used for this struct, would be dead code
 internal readonly struct SerializedLogRecord
-#pragma warning restore CA1815 // Override equals and operator equals on value types
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="SerializedLogRecord"/> struct.
@@ -41,16 +40,28 @@ internal readonly struct SerializedLogRecord
             serializedAttributes = new List<KeyValuePair<string, object?>>(attributes.Count);
             for (int i = 0; i < attributes.Count; i++)
             {
+                string key = attributes[i].Key;
                 string value = attributes[i].Value?.ToString() ?? string.Empty;
-                serializedAttributes.Add(new KeyValuePair<string, object?>(attributes[i].Key, value));
+                serializedAttributes.Add(new KeyValuePair<string, object?>(key, value));
+
+                SizeInBytes += key.Length * sizeof(char);
                 SizeInBytes += value.Length * sizeof(char);
             }
-
-            Exception = exception?.Message;
         }
 
         Attributes = serializedAttributes;
+
+        Exception = exception?.Message;
+        if (Exception is not null)
+        {
+            SizeInBytes += Exception.Length * sizeof(char);
+        }
+
         FormattedMessage = formattedMessage;
+        if (FormattedMessage is not null)
+        {
+            SizeInBytes += FormattedMessage.Length * sizeof(char);
+        }
     }
 
     /// <summary>

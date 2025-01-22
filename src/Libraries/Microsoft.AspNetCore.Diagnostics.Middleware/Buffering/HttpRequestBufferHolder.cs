@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using Microsoft.Extensions.Diagnostics.Buffering;
 
 namespace Microsoft.AspNetCore.Diagnostics.Buffering;
 
