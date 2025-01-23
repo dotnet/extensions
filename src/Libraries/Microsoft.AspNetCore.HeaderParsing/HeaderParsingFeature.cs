@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.HeaderParsing;
 /// </summary>
 public sealed partial class HeaderParsingFeature
 {
-    private readonly IHeaderRegistry _registry;
     private readonly ILogger _logger;
     private readonly HeaderParsingMetrics _metrics;
 
@@ -26,11 +25,10 @@ public sealed partial class HeaderParsingFeature
 
     internal HttpContext? Context { get; set; }
 
-    internal HeaderParsingFeature(IHeaderRegistry registry, ILogger<HeaderParsingFeature> logger, HeaderParsingMetrics metrics)
+    internal HeaderParsingFeature(ILogger<HeaderParsingFeature> logger, HeaderParsingMetrics metrics)
     {
         _logger = logger;
         _metrics = metrics;
-        _registry = registry;
     }
 
     /// <summary>
@@ -91,12 +89,11 @@ public sealed partial class HeaderParsingFeature
 
         public PoolHelper(
             ObjectPool<PoolHelper> pool,
-            IHeaderRegistry registry,
             ILogger<HeaderParsingFeature> logger,
             HeaderParsingMetrics metrics)
         {
             _pool = pool;
-            Feature = new HeaderParsingFeature(registry, logger, metrics);
+            Feature = new HeaderParsingFeature(logger, metrics);
         }
 
         public void Dispose()
