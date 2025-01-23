@@ -41,11 +41,11 @@ public class ResourceUtilizationHealthCheckOptions
     /// <value>
     /// The default value is 5 seconds.
     /// </value>
-#pragma warning disable CS0436 // Type conflicts with imported type    
+#pragma warning disable CS0436 // Type conflicts with imported type
     [Obsolete(DiagnosticIds.Obsoletions.NonObservableResourceMonitoringApiMessage,
         DiagnosticId = DiagnosticIds.Obsoletions.NonObservableResourceMonitoringApiDiagId,
         UrlFormat = DiagnosticIds.UrlFormat)]
-#pragma warning restore CS0436 // Type conflicts with imported type    
+#pragma warning restore CS0436 // Type conflicts with imported type
     [TimeSpan(MinimumSamplingWindow, int.MaxValue)]
     public TimeSpan SamplingWindow { get; set; } = DefaultSamplingWindow;
 

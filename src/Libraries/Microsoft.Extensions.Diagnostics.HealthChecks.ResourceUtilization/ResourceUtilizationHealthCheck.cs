@@ -15,82 +15,26 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks;
 /// <summary>
 /// Represents a health check for in-container resources <see cref="IHealthCheck"/>.
 /// </summary>
-internal sealed class ResourceUtilizationHealthCheck : IHealthCheck, IDisposable
+internal sealed partial class ResourceUtilizationHealthCheck : IHealthCheck, IDisposable
 {
     private readonly double _multiplier;
     private readonly MeterListener? _meterListener;
     private readonly ResourceUtilizationHealthCheckOptions _options;
-    private readonly IResourceMonitor _dataTracker;
+    private IResourceMonitor? _dataTracker;
     private double _cpuUsedPercentage;
     private double _memoryUsedPercentage;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ResourceUtilizationHealthCheck"/> class.
-    /// </summary>
-    /// <param name="options">The options.</param>
-    /// <param name="dataTracker">The datatracker.</param>
-    public ResourceUtilizationHealthCheck(IOptions<ResourceUtilizationHealthCheckOptions> options, IResourceMonitor dataTracker)
+#pragma warning disable EA0014 // The async method doesn't support cancellation
+    public static Task<HealthCheckResult> EvaluateHealthStatusAsync(double cpuUsedPercentage, double memoryUsedPercentage, ResourceUtilizationHealthCheckOptions options)
     {
-#if NETFRAMEWORK
-        _multiplier = 1;
-#else
-        // Due to a bug on Windows https://github.com/dotnet/extensions/issues/5472,
-        // the CPU utilization comes in the range [0, 100].
-        if (OperatingSystem.IsWindows())
-        {
-            _multiplier = 1;
-        }
-
-        // On Linux, the CPU utilization comes in the correct range [0, 1], which we will be converting to percentage.
-        else
-        {
-#pragma warning disable S109 // Magic numbers should not be used
-            _multiplier = 100;
-#pragma warning restore S109 // Magic numbers should not be used
-        }
-#endif
-        _options = Throw.IfMemberNull(options, options.Value);
-        _dataTracker = Throw.IfNull(dataTracker);
-
-        if (_options.UseObservableResourceMonitoringInstruments)
-        {
-            _meterListener = new()
-            {
-                InstrumentPublished = OnInstrumentPublished
-            };
-
-            _meterListener.SetMeasurementEventCallback<double>(OnMeasurementRecorded);
-            _meterListener.Start();
-        }
-    }
-
-    /// <summary>
-    /// Runs the health check.
-    /// </summary>
-    /// <param name="context">A context object associated with the current execution.</param>
-    /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can be used to cancel the health check.</param>
-    /// <returns>A <see cref="Task{HealthCheckResult}"/> that completes when the health check has finished, yielding the status of the component being checked.</returns>
-    public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
-    {
-        if (_options.UseObservableResourceMonitoringInstruments)
-        {
-            _meterListener!.RecordObservableInstruments();
-        }
-        else
-        {
-            var utilization = _dataTracker.GetUtilization(_options.SamplingWindow);
-            _cpuUsedPercentage = utilization.CpuUsedPercentage;
-            _memoryUsedPercentage = utilization.MemoryUsedPercentage;
-        }
-
         IReadOnlyDictionary<string, object> data = new Dictionary<string, object>
         {
-            { "CpuUsedPercentage", _cpuUsedPercentage },
-            { "MemoryUsedPercentage", _memoryUsedPercentage },
+            { "CpuUsedPercentage", cpuUsedPercentage },
+            { "MemoryUsedPercentage", memoryUsedPercentage },
         };
 
-        bool cpuUnhealthy = _cpuUsedPercentage > _options.CpuThresholds.UnhealthyUtilizationPercentage;
-        bool memoryUnhealthy = _memoryUsedPercentage > _options.MemoryThresholds.UnhealthyUtilizationPercentage;
+        bool cpuUnhealthy = cpuUsedPercentage > options.CpuThresholds.UnhealthyUtilizationPercentage;
+        bool memoryUnhealthy = memoryUsedPercentage > options.MemoryThresholds.UnhealthyUtilizationPercentage;
 
         if (cpuUnhealthy || memoryUnhealthy)
         {
@@ -111,8 +55,8 @@ internal sealed class ResourceUtilizationHealthCheck : IHealthCheck, IDisposable
             return Task.FromResult(HealthCheckResult.Unhealthy(message, default, data));
         }
 
-        bool cpuDegraded = _cpuUsedPercentage > _options.CpuThresholds.DegradedUtilizationPercentage;
-        bool memoryDegraded = _memoryUsedPercentage > _options.MemoryThresholds.DegradedUtilizationPercentage;
+        bool cpuDegraded = cpuUsedPercentage > options.CpuThresholds.DegradedUtilizationPercentage;
+        bool memoryDegraded = memoryUsedPercentage > options.MemoryThresholds.DegradedUtilizationPercentage;
 
         if (cpuDegraded || memoryDegraded)
         {
@@ -134,6 +78,67 @@ internal sealed class ResourceUtilizationHealthCheck : IHealthCheck, IDisposable
         }
 
         return Task.FromResult(HealthCheckResult.Healthy(default, data));
+    }
+#pragma warning restore EA0014 // The async method doesn't support cancellation
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ResourceUtilizationHealthCheck"/> class.
+    /// </summary>
+    /// <param name="options">The options.</param>
+    /// <param name="dataTracker">The datatracker.</param>
+    public ResourceUtilizationHealthCheck(IOptions<ResourceUtilizationHealthCheckOptions> options, IResourceMonitor dataTracker)
+    {
+        _options = Throw.IfMemberNull(options, options.Value);
+        if (!_options.UseObservableResourceMonitoringInstruments)
+        {
+            ObsoleteConstructor(dataTracker);
+            return;
+        }
+
+#if NETFRAMEWORK
+        _multiplier = 1;
+#else
+        // Due to a bug on Windows https://github.com/dotnet/extensions/issues/5472,
+        // the CPU utilization comes in the range [0, 100].
+        if (OperatingSystem.IsWindows())
+        {
+            _multiplier = 1;
+        }
+
+        // On Linux, the CPU utilization comes in the correct range [0, 1], which we will be converting to percentage.
+        else
+        {
+#pragma warning disable S109 // Magic numbers should not be used
+            _multiplier = 100;
+#pragma warning restore S109 // Magic numbers should not be used
+        }
+#endif
+
+        _meterListener = new()
+        {
+            InstrumentPublished = OnInstrumentPublished
+        };
+
+        _meterListener.SetMeasurementEventCallback<double>(OnMeasurementRecorded);
+        _meterListener.Start();
+    }
+
+    /// <summary>
+    /// Runs the health check.
+    /// </summary>
+    /// <param name="context">A context object associated with the current execution.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can be used to cancel the health check.</param>
+    /// <returns>A <see cref="Task{HealthCheckResult}"/> that completes when the health check has finished, yielding the status of the component being checked.</returns>
+    public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
+    {
+        if (!_options.UseObservableResourceMonitoringInstruments)
+        {
+            return ObsoleteCheckHealthAsync(cancellationToken);
+        }
+
+        _meterListener!.RecordObservableInstruments();
+
+        return EvaluateHealthStatusAsync(_cpuUsedPercentage, _memoryUsedPercentage, _options);
     }
 
     /// <inheritdoc />
