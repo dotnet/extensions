@@ -195,10 +195,10 @@ namespace TestClasses
 
         internal interface IMyInterface
         {
-            public int IntProperty { get; set; }
+            int IntProperty { get; set; }
 
             [LogProperties]
-            public LeafTransitiveBaseClass? TransitiveProp { get; set; }
+            LeafTransitiveBaseClass? TransitiveProp { get; set; }
         }
 
         internal sealed class MyInterfaceImpl : IMyInterface
