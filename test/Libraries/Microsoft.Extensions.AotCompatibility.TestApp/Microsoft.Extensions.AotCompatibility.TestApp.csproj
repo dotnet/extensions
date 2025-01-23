@@ -25,6 +25,8 @@
     <LibraryProjects Remove="$(RepoRoot)\src\Libraries\Microsoft.Extensions.Compliance.Redaction\Microsoft.Extensions.Compliance.Redaction.csproj" />
     <!-- https://github.com/dotnet/extensions/issues/5625 -->
     <LibraryProjects Remove="$(RepoRoot)\src\Libraries\Microsoft.Extensions.Http.Resilience\Microsoft.Extensions.Http.Resilience.csproj" />
+    <!-- Exclude the 'aieval' dotnet tool. -->
+    <LibraryProjects Remove="$(RepoRoot)\src\Libraries\Microsoft.Extensions.AI.Evaluation.Console\Microsoft.Extensions.AI.Evaluation.Console.csproj" />
     
     <TrimmerRootAssembly Include="@(LibraryProjects->'%(FileName)')" />
     <ProjectReference Include="@(LibraryProjects)" />
