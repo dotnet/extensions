@@ -146,7 +146,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
                 new(ChatRole.User,
                 [
                     new TextContent("What does this logo say?"),
-                    new ImageContent(GetImageDataUri()),
+                    new DataContent(GetImageDataUri(), "image/png"),
                 ])
             ],
             new() { ModelId = GetModel_MultiModal_DescribeImage() });

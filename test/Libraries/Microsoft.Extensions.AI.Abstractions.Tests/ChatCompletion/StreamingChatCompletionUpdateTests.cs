@@ -91,8 +91,8 @@ public class StreamingChatCompletionUpdateTests
             Role = ChatRole.User,
             Contents =
             [
-                new AudioContent("http://localhost/audio"),
-                new ImageContent("http://localhost/image"),
+                new DataContent("http://localhost/audio", mediaType: "audio/mpeg"),
+                new DataContent("http://localhost/image", mediaType: "image/png"),
                 new FunctionCallContent("callId1", "fc1"),
                 new TextContent("text-1"),
                 new TextContent("text-2"),
@@ -136,8 +136,8 @@ public class StreamingChatCompletionUpdateTests
         {
             Contents =
             [
-                new AudioContent("http://localhost/audio"),
-                new ImageContent("http://localhost/image"),
+                new DataContent("http://localhost/audio", "audio/mpeg"),
+                new DataContent("http://localhost/image", "image/png"),
                 new FunctionCallContent("callId1", "fc1"),
             ]
         };
@@ -169,7 +169,7 @@ public class StreamingChatCompletionUpdateTests
             Contents =
             [
                 new TextContent("text-1"),
-                new ImageContent("http://localhost/image"),
+                new DataContent("http://localhost/image", "image/png"),
                 new FunctionCallContent("callId1", "fc1"),
                 new DataContent("data"u8.ToArray()),
                 new TextContent("text-2"),
@@ -192,8 +192,8 @@ public class StreamingChatCompletionUpdateTests
         Assert.IsType<TextContent>(result.Contents[0]);
         Assert.Equal("text-1", ((TextContent)result.Contents[0]).Text);
 
-        Assert.IsType<ImageContent>(result.Contents[1]);
-        Assert.Equal("http://localhost/image", ((ImageContent)result.Contents[1]).Uri);
+        Assert.IsType<DataContent>(result.Contents[1]);
+        Assert.Equal("http://localhost/image", ((DataContent)result.Contents[1]).Uri);
 
         Assert.IsType<FunctionCallContent>(result.Contents[2]);
         Assert.Equal("fc1", ((FunctionCallContent)result.Contents[2]).Name);

@@ -14,7 +14,7 @@
   <ItemGroup Condition="'$(InjectSharedRentedSpan)' == 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\RentedSpan\*.cs" LinkBase="Shared\RentedSpan" />
   </ItemGroup>
-  
+
   <ItemGroup Condition="'$(InjectSharedServerSentEvents)' == 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\ServerSentEvents\*.cs" LinkBase="Shared\ServerSentEvents" />
   </ItemGroup>
@@ -45,5 +45,9 @@
 
   <ItemGroup Condition="'$(InjectStringSplitExtensions)' == 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\StringSplit\*.cs" LinkBase="Shared\StringSplit" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(InjectSharedDataContentExtensions)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\DataContent\*.cs" LinkBase="Shared\DataContent" />
   </ItemGroup>
 </Project>

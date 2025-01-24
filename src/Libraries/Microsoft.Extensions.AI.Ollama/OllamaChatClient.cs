@@ -375,7 +375,7 @@ public sealed class OllamaChatClient : IChatClient
         OllamaChatRequestMessage? currentTextMessage = null;
         foreach (var item in content.Contents)
         {
-            if (currentTextMessage is not null && item is not ImageContent)
+            if (currentTextMessage is not null && item is not DataContent)
             {
                 yield return currentTextMessage;
                 currentTextMessage = null;
@@ -391,9 +391,9 @@ public sealed class OllamaChatClient : IChatClient
                     };
                     break;
 
-                case ImageContent imageContent when imageContent.Data is not null:
+                case DataContent dataContent when dataContent.Data is not null && dataContent.HasImageMediaType():
                     IList<string> images = currentTextMessage?.Images ?? [];
-                    images.Add(Convert.ToBase64String(imageContent.Data.Value
+                    images.Add(Convert.ToBase64String(dataContent.Data.Value
 #if NET
                         .Span));
 #else
