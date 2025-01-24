@@ -26,6 +26,7 @@
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
     <InjectStringHashOnLegacy>true</InjectStringHashOnLegacy>
+    <InjectSharedDataContentExtensions>true</InjectSharedDataContentExtensions>
   </PropertyGroup>
 
   <ItemGroup>
@@ -40,5 +41,5 @@
   <ItemGroup>
     <ProjectReference Include="../Microsoft.Extensions.AI.Abstractions/Microsoft.Extensions.AI.Abstractions.csproj" />
   </ItemGroup>
-  
+
 </Project>

@@ -25,8 +25,9 @@
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
     <InjectStringHashOnLegacy>true</InjectStringHashOnLegacy>
+    <InjectSharedDataContentExtensions>true</InjectSharedDataContentExtensions>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="Azure.AI.Inference" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
@@ -37,5 +38,5 @@
   <ItemGroup>
     <ProjectReference Include="../Microsoft.Extensions.AI.Abstractions/Microsoft.Extensions.AI.Abstractions.csproj" />
   </ItemGroup>
-  
+
 </Project>
