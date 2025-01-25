@@ -47,7 +47,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\StringSplit\*.cs" LinkBase="Shared\StringSplit" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(InjectSharedDataContentExtensions)' == 'true'">
-    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\DataContent\*.cs" LinkBase="Shared\DataContent" />
+  <ItemGroup Condition="'$(InjectSharedAIExtensions)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\AIExtensions\*.cs" LinkBase="Shared\AIExtensions" />
   </ItemGroup>
 </Project>
