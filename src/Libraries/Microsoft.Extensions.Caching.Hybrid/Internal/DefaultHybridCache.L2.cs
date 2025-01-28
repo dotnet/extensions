@@ -20,8 +20,6 @@ internal partial class DefaultHybridCache
     private const string TagKeyPrefix = "__MSFT_HCT__";
     private static readonly DistributedCacheEntryOptions _tagInvalidationEntryOptions = new() { AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(MaxCacheDays) };
 
-    private static readonly TimeSpan _defaultTimeout = TimeSpan.FromHours(1);
-
     [SuppressMessage("Performance", "CA1849:Call async methods when in an async method", Justification = "Manual sync check")]
     [SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "Manual sync check")]
     [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Explicit async exception handling")]
@@ -192,7 +190,7 @@ internal partial class DefaultHybridCache
             // that actually commits the add - so: if we fault, we don't want to try
             // committing a partially configured cache entry
             ICacheEntry cacheEntry = _localCache.CreateEntry(key);
-            cacheEntry.AbsoluteExpirationRelativeToNow = options?.LocalCacheExpiration ?? _defaultLocalCacheExpiration;
+            cacheEntry.AbsoluteExpirationRelativeToNow = GetL1AbsoluteExpirationRelativeToNow(options);
             cacheEntry.Value = value;
 
             if (value.TryGetSize(out var size))
@@ -221,10 +219,10 @@ internal partial class DefaultHybridCache
         var maxLength = HybridCachePayload.GetMaxBytes(key, cacheItem.Tags, payload.Length);
         var oversized = ArrayPool<byte>.Shared.Rent(maxLength);
 
-        var length = HybridCachePayload.Write(oversized, key, cacheItem.CreationTimestamp, options?.Expiration ?? _defaultTimeout,
+        var length = HybridCachePayload.Write(oversized, key, cacheItem.CreationTimestamp, GetL2AbsoluteExpirationRelativeToNow(options),
             HybridCachePayload.PayloadFlags.None, cacheItem.Tags, payload.AsSequence());
 
-        await SetDirectL2Async(key, new(oversized, 0, length, true), GetOptions(options), token).ConfigureAwait(false);
+        await SetDirectL2Async(key, new(oversized, 0, length, true), GetL2DistributedCacheOptions(options), token).ConfigureAwait(false);
 
         ArrayPool<byte>.Shared.Return(oversized);
     }
@@ -255,12 +253,17 @@ internal partial class DefaultHybridCache
 #if NET8_0_OR_GREATER
     [SuppressMessage("Maintainability", "CA1508:Avoid dead conditional code", Justification = "False positive from unsafe accessor")]
 #endif
-    private DistributedCacheEntryOptions GetOptions(HybridCacheEntryOptions? options)
+    private DistributedCacheEntryOptions GetL2DistributedCacheOptions(HybridCacheEntryOptions? options)
     {
         DistributedCacheEntryOptions? result = null;
-        if (options is not null && options.Expiration.HasValue && options.Expiration.GetValueOrDefault() != _defaultExpiration)
+        if (options is not null)
         {
-            result = ToDistributedCacheEntryOptions(options);
+            var expiration = GetL2AbsoluteExpirationRelativeToNow(options);
+            if (expiration != _defaultExpiration)
+            {
+                // ^^^ avoid creating unnecessary DC options objects if the expiration still matches the default
+                result = ToDistributedCacheEntryOptions(options);
+            }
         }
 
         return result ?? _defaultDistributedCacheExpiration;
