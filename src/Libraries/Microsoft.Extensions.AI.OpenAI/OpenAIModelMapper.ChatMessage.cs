@@ -219,7 +219,7 @@ internal static partial class OpenAIModelMappers
                     parts.Add(ChatMessageContentPart.CreateTextPart(textContent.Text));
                     break;
 
-                case DataContent dataContent when dataContent.HasImageMediaType():
+                case DataContent dataContent when dataContent.HasMediaTypePrefix("image/"):
                     if (dataContent.Data is { IsEmpty: false } data)
                     {
                         parts.Add(ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(data), dataContent.MediaType));

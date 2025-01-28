@@ -105,6 +105,14 @@ public class DataContent : AIContent
         _data = data;
     }
 
+    /// <summary>
+    /// Determines whether the <see cref="MediaType"/> has the specified prefix.
+    /// </summary>
+    /// <param name="prefix">The media type prefix.</param>
+    /// <returns><see langword="true"/> if the <see cref="MediaType"/> has the specified prefix, otherwise <see langword="false"/>.</returns>
+    public bool HasMediaTypePrefix(string prefix)
+        => MediaType?.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) is true;
+
     /// <summary>Sets <paramref name="mediaType"/> to null if it's empty or composed entirely of whitespace.</summary>
     private static void ValidateMediaType(ref string? mediaType)
     {

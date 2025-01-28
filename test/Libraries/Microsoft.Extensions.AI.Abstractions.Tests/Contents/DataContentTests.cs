@@ -223,4 +223,32 @@ public sealed class DataContentTests
         DataContent c = new("data:,", mediaType);
         Assert.Equal(mediaType, c.MediaType);
     }
+
+    [Theory]
+    [InlineData("image/gif", "image/")]
+    [InlineData("IMAGE/JPEG", "image")]
+    [InlineData("image/vnd.microsoft.icon", "ima")]
+    [InlineData("image/svg+xml", "IMAGE/")]
+    [InlineData("image/nonexistentimagemimetype", "IMAGE")]
+    [InlineData("audio/mpeg", "aUdIo/")]
+    [InlineData("application/json", "")]
+    [InlineData("application/pdf", "application/pdf")]
+    public void HasMediaTypePrefix_ReturnsTrue(string? mediaType, string prefix)
+    {
+        var content = new DataContent("http://localhost/image.png", mediaType);
+        Assert.True(content.HasMediaTypePrefix(prefix));
+    }
+
+    [Theory]
+    [InlineData("audio/mpeg", "image/")]
+    [InlineData("text/css", "text/csv")]
+    [InlineData("application/json", "application/json!")]
+    [InlineData("", "")] // The media type will get normalized to null
+    [InlineData(null, "image/")]
+    [InlineData(null, "")]
+    public void HasMediaTypePrefix_ReturnsFalse(string? mediaType, string prefix)
+    {
+        var content = new DataContent("http://localhost/image.png", mediaType);
+        Assert.False(content.HasMediaTypePrefix(prefix));
+    }
 }

@@ -39,10 +39,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Libraries\Microsoft.Extensions.AI.Abstractions\Microsoft.Extensions.AI.Abstractions.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
     <InternalsVisibleToDynamicProxyGenAssembly2 Include="*" />
   </ItemGroup>
