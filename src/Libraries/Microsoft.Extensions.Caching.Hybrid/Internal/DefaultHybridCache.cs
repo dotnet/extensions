@@ -24,6 +24,8 @@ namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 [SkipLocalsInit]
 internal sealed partial class DefaultHybridCache : HybridCache
 {
+    internal const int DefaultExpirationMinutes = 5;
+
     // reserve non-printable characters from keys, to prevent potential L2 abuse
     private static readonly char[] _keyReservedCharacters = Enumerable.Range(0, 32).Select(i => (char)i).ToArray();
 
@@ -109,8 +111,8 @@ internal sealed partial class DefaultHybridCache : HybridCache
         }
 
         _defaultFlags = (defaultEntryOptions?.Flags ?? HybridCacheEntryFlags.None) | _hardFlags;
-        _defaultExpiration = defaultEntryOptions?.Expiration ?? TimeSpan.FromMinutes(5);
-        _defaultLocalCacheExpiration = defaultEntryOptions?.LocalCacheExpiration ?? TimeSpan.FromMinutes(1);
+        _defaultExpiration = defaultEntryOptions?.Expiration ?? TimeSpan.FromMinutes(DefaultExpirationMinutes);
+        _defaultLocalCacheExpiration = GetEffectiveLocalCacheExpiration(defaultEntryOptions) ?? _defaultExpiration;
         _defaultDistributedCacheExpiration = new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = _defaultExpiration };
 
 #if NET9_0_OR_GREATER
@@ -209,6 +211,15 @@ internal sealed partial class DefaultHybridCache : HybridCache
         return new(state.ExecuteDirectAsync(value, static (state, _) => new(state), options)); // note this spans L2 write etc
     }
 
+    // exposed as internal for testability
+    internal TimeSpan GetL1AbsoluteExpirationRelativeToNow(HybridCacheEntryOptions? options) => GetEffectiveLocalCacheExpiration(options) ?? _defaultLocalCacheExpiration;
+
+    internal TimeSpan GetL2AbsoluteExpirationRelativeToNow(HybridCacheEntryOptions? options) => options?.Expiration ?? _defaultExpiration;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal HybridCacheEntryFlags GetEffectiveFlags(HybridCacheEntryOptions? options)
+        => (options?.Flags | _hardFlags) ?? _defaultFlags;
+
     private static ValueTask<T> RunWithoutCacheAsync<TState, T>(HybridCacheEntryFlags flags, TState state,
         Func<TState, CancellationToken, ValueTask<T>> underlyingDataCallback,
         CancellationToken cancellationToken)
@@ -217,9 +228,15 @@ internal sealed partial class DefaultHybridCache : HybridCache
             ? underlyingDataCallback(state, cancellationToken) : default;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private HybridCacheEntryFlags GetEffectiveFlags(HybridCacheEntryOptions? options)
-        => (options?.Flags | _hardFlags) ?? _defaultFlags;
+    private static TimeSpan? GetEffectiveLocalCacheExpiration(HybridCacheEntryOptions? options)
+    {
+        // If LocalCacheExpiration is not specified, then use option's Expiration, to keep in sync by default.
+        // Or in other words: the inheritance of "LocalCacheExpiration : Expiration" in a single object takes
+        // precedence between the inheritance between per-entry options and global options, and if a caller
+        // provides a per-entry option with *just* the Expiration specified, then that is assumed to also
+        // specify the LocalCacheExpiration.
+        return options is not null ? options.LocalCacheExpiration ?? options.Expiration : null;
+    }
 
     private bool ValidateKey(string key)
     {
