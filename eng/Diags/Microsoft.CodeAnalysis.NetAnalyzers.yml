@@ -3953,7 +3953,7 @@ Diagnostics:
     Metadata:
       Category: Usage
       Title: Named placeholders should not be numeric values
-      Description: Named placeholders in the logging message template should not be comprised of only numeric characters.
+      Description: Named placeholders in the logging message template should not be composed of only numeric characters.
       HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2253
       CustomTags:
       - Telemetry
