@@ -146,7 +146,7 @@ public class AdditionalPropertiesDictionary<TValue> : IDictionary<string, TValue
     /// <typeparam name="T">The type of the value to be retrieved.</typeparam>
     /// <param name="key">The key to locate.</param>
     /// <param name="value">
-    /// When this method returns, contains he value retrieved from the dictionary, if found and successfully converted to the requested type;
+    /// When this method returns, contains the value retrieved from the dictionary, if found and successfully converted to the requested type;
     /// otherwise, the default value of <typeparamref name="T"/>.
     /// </param>
     /// <returns>
