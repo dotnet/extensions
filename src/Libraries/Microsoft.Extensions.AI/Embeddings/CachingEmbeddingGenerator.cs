@@ -24,7 +24,7 @@ public abstract class CachingEmbeddingGenerator<TInput, TEmbedding> : Delegating
     {
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="IEmbeddingGenerator{TInput, TEmbedding}"/>
     public override async Task<GeneratedEmbeddings<TEmbedding>> GenerateAsync(
         IEnumerable<TInput> values, EmbeddingGenerationOptions? options = null, CancellationToken cancellationToken = default)
     {

@@ -44,7 +44,7 @@ public abstract class CachingChatClient : DelegatingChatClient
     /// </remarks>
     public bool CoalesceStreamingUpdates { get; set; } = true;
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="IChatClient"/>
     public override async Task<ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(chatMessages);
@@ -63,7 +63,7 @@ public abstract class CachingChatClient : DelegatingChatClient
         return result;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="IChatClient"/>
     public override async IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(
         IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
