@@ -87,6 +87,11 @@ public sealed class OllamaChatClient : IChatClient
             JsonContext.Default.OllamaChatRequest,
             cancellationToken).ConfigureAwait(false);
 
+        if (!httpResponse.IsSuccessStatusCode)
+        {
+            await OllamaUtilities.ThrowUnsuccessfulOllamaResponseAsync(httpResponse, cancellationToken).ConfigureAwait(false);
+        }
+
         var response = (await httpResponse.Content.ReadFromJsonAsync(
             JsonContext.Default.OllamaChatResponse,
             cancellationToken).ConfigureAwait(false))!;
@@ -117,6 +122,12 @@ public sealed class OllamaChatClient : IChatClient
             Content = JsonContent.Create(ToOllamaChatRequest(chatMessages, options, stream: true), JsonContext.Default.OllamaChatRequest)
         };
         using var httpResponse = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+
+        if (!httpResponse.IsSuccessStatusCode)
+        {
+            await OllamaUtilities.ThrowUnsuccessfulOllamaResponseAsync(httpResponse, cancellationToken).ConfigureAwait(false);
+        }
+
         using var httpResponseStream = await httpResponse.Content
 #if NET
             .ReadAsStreamAsync(cancellationToken)
