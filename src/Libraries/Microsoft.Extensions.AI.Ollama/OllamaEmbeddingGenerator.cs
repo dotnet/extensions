@@ -110,6 +110,11 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator<string, Embed
             JsonContext.Default.OllamaEmbeddingRequest,
             cancellationToken).ConfigureAwait(false);
 
+        if (!httpResponse.IsSuccessStatusCode)
+        {
+            await OllamaUtilities.ThrowUnsuccessfulOllamaResponseAsync(httpResponse, cancellationToken).ConfigureAwait(false);
+        }
+
         var response = (await httpResponse.Content.ReadFromJsonAsync(
             JsonContext.Default.OllamaEmbeddingResponse,
             cancellationToken).ConfigureAwait(false))!;

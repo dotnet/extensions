@@ -2,8 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.AI;
 
@@ -30,5 +34,39 @@ internal static class OllamaUtilities
                 // Ignore options that don't convert
             }
         }
+    }
+
+    [DoesNotReturn]
+    public static async ValueTask ThrowUnsuccessfulOllamaResponseAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        Debug.Assert(!response.IsSuccessStatusCode, "must only be invoked for unsuccessful responses.");
+
+        // Read the entire response content into a string.
+        string errorContent =
+#if NET
+            await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+#else
+            await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+#endif
+
+        // The response content *could* be JSON formatted, try to extract the error field.
+
+#pragma warning disable CA1031 // Do not catch general exception types
+        try
+        {
+            using JsonDocument document = JsonDocument.Parse(errorContent);
+            if (document.RootElement.TryGetProperty("error", out JsonElement errorElement) &&
+                errorElement.ValueKind is JsonValueKind.String)
+            {
+                errorContent = errorElement.GetString()!;
+            }
+        }
+        catch
+        {
+            // Ignore JSON parsing errors.
+        }
+#pragma warning restore CA1031 // Do not catch general exception types
+
+        throw new InvalidOperationException($"Ollama error: {errorContent}");
     }
 }
