@@ -87,7 +87,7 @@ public class OllamaChatClientIntegrationTests : ChatClientIntegrationTests
         Assert.False(didCallIrrelevantTool);
     }
 
-    [Fact]
+    [ConditionalFact]
     public async Task InvalidModelParameter_ThrowsInvalidOperationException()
     {
         SkipIfNotEnabled();

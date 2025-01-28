@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.TestUtilities;
 using Xunit;
 
 namespace Microsoft.Extensions.AI;
@@ -14,7 +15,7 @@ public class OllamaEmbeddingGeneratorIntegrationTests : EmbeddingGeneratorIntegr
             new OllamaEmbeddingGenerator(endpoint, "all-minilm") :
             null;
 
-    [Fact]
+    [ConditionalFact]
     public async Task InvalidModelParameter_ThrowsInvalidOperationException()
     {
         SkipIfNotEnabled();
