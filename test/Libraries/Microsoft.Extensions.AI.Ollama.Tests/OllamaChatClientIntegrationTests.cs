@@ -87,6 +87,24 @@ public class OllamaChatClientIntegrationTests : ChatClientIntegrationTests
         Assert.False(didCallIrrelevantTool);
     }
 
+    [ConditionalFact]
+    public async Task InvalidModelParameter_ThrowsInvalidOperationException()
+    {
+        SkipIfNotEnabled();
+
+        var endpoint = IntegrationTestHelpers.GetOllamaUri();
+        Assert.NotNull(endpoint);
+
+        using var chatClient = new OllamaChatClient(endpoint, modelId: "inexistent-model");
+
+        InvalidOperationException ex;
+        ex = await Assert.ThrowsAsync<InvalidOperationException>(() => chatClient.CompleteAsync("Hello, world!"));
+        Assert.Contains("inexistent-model", ex.Message);
+
+        ex = await Assert.ThrowsAsync<InvalidOperationException>(() => chatClient.CompleteStreamingAsync("Hello, world!").ToChatCompletionAsync());
+        Assert.Contains("inexistent-model", ex.Message);
+    }
+
     private sealed class AssertNoToolsDefinedChatClient(IChatClient innerClient) : DelegatingChatClient(innerClient)
     {
         public override Task<ChatCompletion> CompleteAsync(
