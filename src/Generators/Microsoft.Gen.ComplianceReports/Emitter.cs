@@ -21,11 +21,15 @@ internal sealed class Emitter : EmitterBase
     }
 
     [SuppressMessage("Performance", "LA0002:Use 'Microsoft.Extensions.Text.NumericExtensions.ToInvariantString' for improved performance", Justification = "Can't use that in a generator")]
-    public string Emit(IReadOnlyCollection<ClassifiedType> classifiedTypes, string assemblyName)
+    public string Emit(IReadOnlyCollection<ClassifiedType> classifiedTypes, string assemblyName, bool includeName = true) // show or hide assemblyName in the report,defaulted to true.
     {
         OutObject(() =>
         {
-            OutNameValue("Name", assemblyName);
+            // this is only for not displaying a name as part of ComplianceReport properties,it should be at the root of the report, defaulted to true for beackward compatibility
+            if (includeName)
+            {
+                OutNameValue("Name", assemblyName);
+            }
 
             OutArray("Types", () =>
             {
