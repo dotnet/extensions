@@ -227,18 +227,22 @@ public static class AIJsonUtilitiesTests
     [Fact]
     public static void CreateParameterJsonSchema_TreatsIntegralTypesAsInteger_EvenWithAllowReadingFromString()
     {
-        JsonElement expected = JsonDocument.Parse("""
-            {
-              "type": "integer"
-            }
-            """).RootElement;
-
         JsonSerializerOptions options = new(JsonSerializerOptions.Default) { NumberHandling = JsonNumberHandling.AllowReadingFromString };
-        AIFunction func = AIFunctionFactory.Create((int a, int? b, long c, short d) => { }, serializerOptions: options);
+        AIFunction func = AIFunctionFactory.Create((int a, int? b, long c, short d, float e, double f, decimal g) => { }, serializerOptions: options);
 
         AIFunctionMetadata metadata = func.Metadata;
         foreach (var param in metadata.Parameters)
         {
+            string numericType = Type.GetTypeCode(param.ParameterType) is TypeCode.Double or TypeCode.Single or TypeCode.Decimal
+                ? "number"
+                : "integer";
+
+            JsonElement expected = JsonDocument.Parse($$"""
+                {
+                  "type": "{{numericType}}"
+                }
+                """).RootElement;
+
             JsonElement actualSchema = Assert.IsType<JsonElement>(param.Schema);
             Assert.True(JsonElement.DeepEquals(expected, actualSchema));
         }
@@ -291,5 +295,69 @@ public static class AIJsonUtilitiesTests
 
         JsonNode? serializedValue = JsonSerializer.SerializeToNode(testData.Value, testData.Type, options);
         SchemaTestHelpers.AssertDocumentMatchesSchema(schemaAsNode, serializedValue);
+    }
+
+    [Fact]
+    public static void AddAIContentType_DerivedAIContent()
+    {
+        JsonSerializerOptions options = new();
+        options.AddAIContentType<DerivedAIContent>("derivativeContent");
+
+        AIContent c = new DerivedAIContent { DerivedValue = 42 };
+        string json = JsonSerializer.Serialize(c, options);
+        Assert.Equal("""{"$type":"derivativeContent","DerivedValue":42,"AdditionalProperties":null}""", json);
+
+        AIContent? deserialized = JsonSerializer.Deserialize<AIContent>(json, options);
+        Assert.IsType<DerivedAIContent>(deserialized);
+    }
+
+    [Fact]
+    public static void AddAIContentType_ReadOnlyJsonSerializerOptions_ThrowsInvalidOperationException()
+    {
+        Assert.Throws<InvalidOperationException>(() => AIJsonUtilities.DefaultOptions.AddAIContentType<DerivedAIContent>("derivativeContent"));
+    }
+
+    [Fact]
+    public static void AddAIContentType_NonAIContent_ThrowsArgumentException()
+    {
+        JsonSerializerOptions options = new();
+        Assert.Throws<ArgumentException>(() => options.AddAIContentType(typeof(int), "discriminator"));
+        Assert.Throws<ArgumentException>(() => options.AddAIContentType(typeof(object), "discriminator"));
+        Assert.Throws<ArgumentException>(() => options.AddAIContentType(typeof(ChatMessage), "discriminator"));
+    }
+
+    [Fact]
+    public static void AddAIContentType_BuiltInAIContent_ThrowsArgumentException()
+    {
+        JsonSerializerOptions options = new();
+        Assert.Throws<ArgumentException>(() => options.AddAIContentType<AIContent>("discriminator"));
+        Assert.Throws<ArgumentException>(() => options.AddAIContentType<TextContent>("discriminator"));
+    }
+
+    [Fact]
+    public static void AddAIContentType_ConflictingIdentifier_ThrowsInvalidOperationException()
+    {
+        JsonSerializerOptions options = new();
+        options.AddAIContentType<DerivedAIContent>("text");
+        options.AddAIContentType<DerivedAIContent>("audio");
+
+        AIContent c = new DerivedAIContent();
+        Assert.Throws<InvalidOperationException>(() => JsonSerializer.Serialize(c, options));
+    }
+
+    [Fact]
+    public static void AddAIContentType_NullArguments_ThrowsArgumentNullException()
+    {
+        JsonSerializerOptions options = new();
+        Assert.Throws<ArgumentNullException>(() => ((JsonSerializerOptions)null!).AddAIContentType<DerivedAIContent>("discriminator"));
+        Assert.Throws<ArgumentNullException>(() => ((JsonSerializerOptions)null!).AddAIContentType(typeof(DerivedAIContent), "discriminator"));
+        Assert.Throws<ArgumentNullException>(() => options.AddAIContentType<DerivedAIContent>(null!));
+        Assert.Throws<ArgumentNullException>(() => options.AddAIContentType(typeof(DerivedAIContent), null!));
+        Assert.Throws<ArgumentNullException>(() => options.AddAIContentType(null!, "discriminator"));
+    }
+
+    private class DerivedAIContent : AIContent
+    {
+        public int DerivedValue { get; set; }
     }
 }

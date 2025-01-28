@@ -77,7 +77,7 @@ public readonly struct ChatFinishReason : IEquatable<ChatFinishReason>
     /// <summary>Gets a <see cref="ChatFinishReason"/> representing the model filtering content, whether for safety, prohibited content, sensitive content, or other such issues.</summary>
     public static ChatFinishReason ContentFilter { get; } = new("content_filter");
 
-    /// <summary>Provides a <see cref="JsonConverter{ChatFinishReason}"/> for serializing <see cref="ChatRole"/> instances.</summary>
+    /// <summary>Provides a <see cref="JsonConverter{ChatFinishReason}"/> for serializing <see cref="ChatFinishReason"/> instances.</summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public sealed class Converter : JsonConverter<ChatFinishReason>
     {

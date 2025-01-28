@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -16,6 +17,7 @@ using OpenAI.Chat;
 #pragma warning disable S103 // Lines should not be too long
 #pragma warning disable CA1859 // Use concrete types when possible for improved performance
 #pragma warning disable S1067 // Expressions should not be too complex
+#pragma warning disable S3440 // Variables should not be checked against the values they're about to be assigned
 
 namespace Microsoft.Extensions.AI;
 
@@ -54,9 +56,9 @@ internal static partial class OpenAIModelMappers
         }
 
         return OpenAIChatModelFactory.ChatCompletion(
-            id: chatCompletion.CompletionId,
+            id: chatCompletion.CompletionId ?? CreateCompletionId(),
             model: chatCompletion.ModelId,
-            createdAt: chatCompletion.CreatedAt ?? default,
+            createdAt: chatCompletion.CreatedAt ?? DateTimeOffset.UtcNow,
             role: ToOpenAIChatRole(chatCompletion.Message.Role).Value,
             finishReason: ToOpenAIFinishReason(chatCompletion.FinishReason),
             content: new(ToOpenAIChatContent(chatCompletion.Message.Contents)),
@@ -147,7 +149,12 @@ internal static partial class OpenAIModelMappers
 
         if (options is not null)
         {
-            result.ModelId = _getModelIdAccessor.Invoke(options, null)?.ToString();
+            result.ModelId = _getModelIdAccessor.Invoke(options, null)?.ToString() switch
+            {
+                null or "" => null,
+                var modelId => modelId,
+            };
+
             result.FrequencyPenalty = options.FrequencyPenalty;
             result.MaxOutputTokens = options.MaxOutputTokenCount;
             result.TopP = options.TopP;
@@ -583,6 +590,8 @@ internal static partial class OpenAIModelMappers
 
     private static T? GetValueOrDefault<T>(this AdditionalPropertiesDictionary? dict, string key) =>
         dict?.TryGetValue(key, out T? value) is true ? value : default;
+
+    private static string CreateCompletionId() => $"chatcmpl-{Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture)}";
 
     /// <summary>Used to create the JSON payload for an OpenAI chat tool description.</summary>
     public sealed class OpenAIChatToolJson

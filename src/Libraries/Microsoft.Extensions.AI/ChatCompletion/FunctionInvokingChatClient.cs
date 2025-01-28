@@ -40,6 +40,9 @@ namespace Microsoft.Extensions.AI;
 /// </remarks>
 public partial class FunctionInvokingChatClient : DelegatingChatClient
 {
+    /// <summary>The <see cref="FunctionInvocationContext"/> for the current function invocation.</summary>
+    private static readonly AsyncLocal<FunctionInvocationContext?> _currentContext = new();
+
     /// <summary>The logger to use for logging information about function invocation.</summary>
     private readonly ILogger _logger;
 
@@ -49,6 +52,18 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
     /// <summary>Maximum number of roundtrips allowed to the inner client.</summary>
     private int? _maximumIterationsPerRequest;
+
+    /// <summary>
+    /// Gets or sets the <see cref="FunctionInvocationContext"/> for the current function invocation.
+    /// </summary>
+    /// <remarks>
+    /// This value flows across async calls.
+    /// </remarks>
+    public static FunctionInvocationContext? CurrentContext
+    {
+        get => _currentContext.Value;
+        set => _currentContext.Value = value;
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvokingChatClient"/> class.
@@ -661,6 +676,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         object? result = null;
         try
         {
+            CurrentContext = context;
             result = await context.Function.InvokeAsync(context.CallContent.Arguments, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception e)
