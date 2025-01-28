@@ -3,6 +3,7 @@
 
 using System;
 using System.ClientModel.Primitives;
+using System.Text.Json;
 
 namespace Microsoft.Extensions.AI;
 
@@ -21,6 +22,12 @@ internal static class JsonModelHelpers
         where TModel : IJsonModel<TModel>, new()
     {
         return JsonModelDeserializationWitness<TModel>.Value.Create(data, ModelReaderWriterOptions.Json);
+    }
+
+    public static TModel Deserialize<TModel>(ref Utf8JsonReader reader)
+        where TModel : IJsonModel<TModel>, new()
+    {
+        return JsonModelDeserializationWitness<TModel>.Value.Create(ref reader, ModelReaderWriterOptions.Json);
     }
 
     private sealed class JsonModelDeserializationWitness<TModel>

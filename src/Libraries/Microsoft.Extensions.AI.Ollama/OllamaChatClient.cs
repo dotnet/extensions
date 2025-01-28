@@ -142,6 +142,7 @@ public sealed class OllamaChatClient : IChatClient
 
             StreamingChatCompletionUpdate update = new()
             {
+                CompletionId = chunk.CreatedAt,
                 Role = chunk.Message?.Role is not null ? new ChatRole(chunk.Message.Role) : null,
                 CreatedAt = DateTimeOffset.TryParse(chunk.CreatedAt, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset createdAt) ? createdAt : null,
                 FinishReason = ToFinishReason(chunk),

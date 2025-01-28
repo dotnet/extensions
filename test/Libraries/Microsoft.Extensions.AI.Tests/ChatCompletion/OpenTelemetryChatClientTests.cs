@@ -167,7 +167,7 @@ public class OpenTelemetryChatClientTests
         Assert.Equal("""["hello", "world"]""", activity.GetTagItem("gen_ai.request.stop_sequences"));
         Assert.Equal("value1", activity.GetTagItem("gen_ai.testservice.request.service_tier"));
         Assert.Equal("value2", activity.GetTagItem("gen_ai.testservice.request.something_else"));
-        Assert.Equal(42L, activity.GetTagItem("gen_ai.testservice.request.seed"));
+        Assert.Equal(42L, activity.GetTagItem("gen_ai.request.seed"));
 
         Assert.Equal("id123", activity.GetTagItem("gen_ai.response.id"));
         Assert.Equal("""["stop"]""", activity.GetTagItem("gen_ai.response.finish_reasons"));
