@@ -33,13 +33,13 @@ public sealed class ConfigureOptionsChatClient : DelegatingChatClient
         _configureOptions = Throw.IfNull(configure);
     }
 
-    /// <inheritdoc cref="IChatClient"/>
+    /// <inheritdoc cref="IChatClient.CompleteAsync(IList{ChatMessage}, ChatOptions?, CancellationToken)"/>
     public override async Task<ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         return await base.CompleteAsync(chatMessages, Configure(options), cancellationToken).ConfigureAwait(false);
     }
 
-    /// <inheritdoc cref="IChatClient"/>
+    /// <inheritdoc cref="IChatClient.CompleteStreamingAsync(IList{ChatMessage}, ChatOptions?, CancellationToken)"/>
     public override async IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(
         IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
