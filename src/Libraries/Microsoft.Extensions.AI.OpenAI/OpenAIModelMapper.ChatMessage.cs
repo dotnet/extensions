@@ -220,9 +220,9 @@ internal static partial class OpenAIModelMappers
                     break;
 
                 case DataContent dataContent when dataContent.HasMediaTypePrefix("image/"):
-                    if (dataContent.Data is { IsEmpty: false } data)
+                    if (dataContent.ContainsData)
                     {
-                        parts.Add(ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(data), dataContent.MediaType));
+                        parts.Add(ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(dataContent.Data!.Value), dataContent.MediaType));
                     }
                     else if (dataContent.Uri is string uri)
                     {

@@ -26,7 +26,6 @@
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
     <InjectStringHashOnLegacy>true</InjectStringHashOnLegacy>
-    <InjectSharedAIExtensions>true</InjectSharedAIExtensions>
   </PropertyGroup>
 
   <ItemGroup>

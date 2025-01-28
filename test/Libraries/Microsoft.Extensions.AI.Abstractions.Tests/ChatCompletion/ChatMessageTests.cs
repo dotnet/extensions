@@ -124,8 +124,8 @@ public class ChatMessageTests
     {
         ChatMessage message = new(ChatRole.User,
         [
-            new DataContent("http://localhost/audio", mediaType: "audio/mpeg"),
-            new DataContent("http://localhost/image", mediaType: "image/png"),
+            new DataContent("http://localhost/audio"),
+            new DataContent("http://localhost/image"),
             new FunctionCallContent("callId1", "fc1"),
             new TextContent("text-1"),
             new TextContent("text-2"),
@@ -163,8 +163,8 @@ public class ChatMessageTests
     {
         ChatMessage message = new(ChatRole.User,
         [
-            new DataContent("http://localhost/audio", mediaType: "audio/mpeg"),
-            new DataContent("http://localhost/image", mediaType: "image/png"),
+            new DataContent("http://localhost/audio"),
+            new DataContent("http://localhost/image"),
             new FunctionCallContent("callId1", "fc1"),
         ]);
         Assert.Equal(3, message.Contents.Count);

@@ -27,7 +27,6 @@
     <InjectSharedServerSentEvents>true</InjectSharedServerSentEvents>
     <InjectRequiredMemberOnLegacy>true</InjectRequiredMemberOnLegacy>
     <InjectCompilerFeatureRequiredOnLegacy>true</InjectCompilerFeatureRequiredOnLegacy>
-    <InjectSharedAIExtensions>true</InjectSharedAIExtensions>
   </PropertyGroup>
 
   <ItemGroup>

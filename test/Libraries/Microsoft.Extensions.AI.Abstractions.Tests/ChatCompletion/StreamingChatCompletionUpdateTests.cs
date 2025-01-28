@@ -136,8 +136,8 @@ public class StreamingChatCompletionUpdateTests
         {
             Contents =
             [
-                new DataContent("http://localhost/audio", "audio/mpeg"),
-                new DataContent("http://localhost/image", "image/png"),
+                new DataContent("http://localhost/audio"),
+                new DataContent("http://localhost/image"),
                 new FunctionCallContent("callId1", "fc1"),
             ]
         };
@@ -169,7 +169,7 @@ public class StreamingChatCompletionUpdateTests
             Contents =
             [
                 new TextContent("text-1"),
-                new DataContent("http://localhost/image", "image/png"),
+                new DataContent("http://localhost/image"),
                 new FunctionCallContent("callId1", "fc1"),
                 new DataContent("data"u8.ToArray()),
                 new TextContent("text-2"),
