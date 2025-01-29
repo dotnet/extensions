@@ -24,9 +24,6 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents an <see cref="IChatClient"/> for an Azure AI Inference <see cref="ChatCompletionsClient"/>.</summary>
 public sealed class AzureAIInferenceChatClient : IChatClient
 {
-    /// <summary>A default schema to use when a parameter lacks a pre-defined schema.</summary>
-    private static readonly JsonElement _defaultParameterSchema = JsonDocument.Parse("{}").RootElement;
-
     /// <summary>The underlying <see cref="ChatCompletionsClient" />.</summary>
     private readonly ChatCompletionsClient _chatCompletionsClient;
 
@@ -376,33 +373,19 @@ public sealed class AzureAIInferenceChatClient : IChatClient
     /// <summary>Converts an Extensions function to an AzureAI chat tool.</summary>
     private static ChatCompletionsToolDefinition ToAzureAIChatTool(AIFunction aiFunction)
     {
-        BinaryData resultParameters = AzureAIChatToolJson.ZeroFunctionParametersSchema;
-
-        var parameters = aiFunction.Metadata.Parameters;
-        if (parameters is { Count: > 0 })
+        BinaryData functionParameters = AzureAIChatToolJson.ZeroFunctionParametersSchema;
+        if (aiFunction.Metadata.Schema is { } schema)
         {
-            AzureAIChatToolJson tool = new();
-
-            foreach (AIFunctionParameterMetadata parameter in parameters)
-            {
-                tool.Properties.Add(
-                    parameter.Name,
-                    parameter.Schema is JsonElement schema ? schema : _defaultParameterSchema);
-
-                if (parameter.IsRequired)
-                {
-                    tool.Required.Add(parameter.Name);
-                }
-            }
-
-            resultParameters = BinaryData.FromBytes(
+            // Map to an intermediate model so that redundant properties are skipped.
+            AzureAIChatToolJson tool = JsonSerializer.Deserialize(schema, JsonContext.Default.AzureAIChatToolJson)!;
+            functionParameters = BinaryData.FromBytes(
                 JsonSerializer.SerializeToUtf8Bytes(tool, JsonContext.Default.AzureAIChatToolJson));
         }
 
         return new(new FunctionDefinition(aiFunction.Metadata.Name)
         {
             Description = aiFunction.Metadata.Description,
-            Parameters = resultParameters,
+            Parameters = functionParameters,
         });
     }
 

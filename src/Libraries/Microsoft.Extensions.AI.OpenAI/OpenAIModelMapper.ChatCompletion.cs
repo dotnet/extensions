@@ -363,7 +363,6 @@ internal static partial class OpenAIModelMappers
         {
             parameters.Add(new(property.Key)
             {
-                Schema = property.Value,
                 IsRequired = openAiChatTool.Required.Contains(property.Key),
             });
         }
@@ -373,6 +372,7 @@ internal static partial class OpenAIModelMappers
             Description = chatTool.FunctionDescription,
             AdditionalProperties = additionalProperties,
             Parameters = parameters,
+            Schema = JsonSerializer.SerializeToElement(openAiChatTool, OpenAIJsonContext.Default.OpenAIChatToolJson),
             ReturnParameter = new()
             {
                 Description = "Return parameter",
@@ -398,28 +398,16 @@ internal static partial class OpenAIModelMappers
             strictObj is bool strictValue ?
             strictValue : null;
 
-        BinaryData resultParameters = OpenAIChatToolJson.ZeroFunctionParametersSchema;
-
-        var parameters = aiFunction.Metadata.Parameters;
-        if (parameters is { Count: > 0 })
+        BinaryData functionParameters = OpenAIChatToolJson.ZeroFunctionParametersSchema;
+        if (aiFunction.Metadata.Schema is { } schema)
         {
-            OpenAIChatToolJson tool = new();
-
-            foreach (AIFunctionParameterMetadata parameter in parameters)
-            {
-                tool.Properties.Add(parameter.Name, parameter.Schema is JsonElement e ? e : _defaultParameterSchema);
-
-                if (parameter.IsRequired)
-                {
-                    _ = tool.Required.Add(parameter.Name);
-                }
-            }
-
-            resultParameters = BinaryData.FromBytes(
+            // Map to an intermediate model so that redundant properties are skipped.
+            OpenAIChatToolJson tool = JsonSerializer.Deserialize(schema, OpenAIJsonContext.Default.OpenAIChatToolJson)!;
+            functionParameters = BinaryData.FromBytes(
                 JsonSerializer.SerializeToUtf8Bytes(tool, OpenAIJsonContext.Default.OpenAIChatToolJson));
         }
 
-        return ChatTool.CreateFunctionTool(aiFunction.Metadata.Name, aiFunction.Metadata.Description, resultParameters, strict);
+        return ChatTool.CreateFunctionTool(aiFunction.Metadata.Name, aiFunction.Metadata.Description, functionParameters, strict);
     }
 
     private static UsageDetails FromOpenAIUsage(ChatTokenUsage tokenUsage)
