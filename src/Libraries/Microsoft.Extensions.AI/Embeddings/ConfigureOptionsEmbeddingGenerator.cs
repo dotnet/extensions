@@ -40,7 +40,7 @@ public sealed class ConfigureOptionsEmbeddingGenerator<TInput, TEmbedding> : Del
         _configureOptions = Throw.IfNull(configure);
     }
 
-    /// <inheritdoc cref="IEmbeddingGenerator{TInput, TEmbedding}.GenerateAsync(IEnumerable{TInput}, EmbeddingGenerationOptions?, CancellationToken)"/>
+    /// <inheritdoc/>
     public override async Task<GeneratedEmbeddings<TEmbedding>> GenerateAsync(
         IEnumerable<TInput> values,
         EmbeddingGenerationOptions? options = null,
