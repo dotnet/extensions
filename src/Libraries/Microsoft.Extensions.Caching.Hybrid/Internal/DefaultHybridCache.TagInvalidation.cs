@@ -252,6 +252,11 @@ internal partial class DefaultHybridCache
         else
         {
             _tagInvalidationTimes[tag] = timestampTask;
+
+            if (HybridCacheEventSource.Log.IsEnabled())
+            {
+                HybridCacheEventSource.Log.TagInvalidated();
+            }
         }
     }
 }
