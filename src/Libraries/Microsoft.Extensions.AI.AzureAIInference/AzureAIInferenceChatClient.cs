@@ -484,10 +484,10 @@ public sealed class AzureAIInferenceChatClient : IChatClient
                     parts.Add(new ChatMessageTextContentItem(textContent.Text));
                     break;
 
-                case DataContent dataContent when dataContent.HasMediaTypePrefix("image/"):
+                case DataContent dataContent when dataContent.MediaTypeStartsWith("image/"):
                     if (dataContent.ContainsData)
                     {
-                        parts.Add(new ChatMessageImageContentItem(BinaryData.FromBytes(dataContent.Data!.Value), dataContent.MediaType));
+                        parts.Add(new ChatMessageImageContentItem(BinaryData.FromBytes(dataContent.Data.Value), dataContent.MediaType));
                     }
                     else if (dataContent.Uri is string uri)
                     {

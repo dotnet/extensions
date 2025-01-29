@@ -140,7 +140,7 @@ public sealed class DataContentTests
 
         Assert.Equal("data:application/octet-stream;base64,AQIDBA==", content.Uri);
         Assert.NotNull(content.Data);
-        Assert.Equal([0x01, 0x02, 0x03, 0x04], content.Data!.Value.ToArray());
+        Assert.Equal([0x01, 0x02, 0x03, 0x04], content.Data.Value.ToArray());
         Assert.Equal("application/octet-stream", content.MediaType);
         Assert.True(content.ContainsData);
 
@@ -167,7 +167,7 @@ public sealed class DataContentTests
 
         Assert.Equal("data:text/plain;base64,AQIDBA==", content.Uri);
         Assert.NotNull(content.Data);
-        Assert.Equal([0x01, 0x02, 0x03, 0x04], content.Data!.Value.ToArray());
+        Assert.Equal([0x01, 0x02, 0x03, 0x04], content.Data.Value.ToArray());
         Assert.Equal("text/plain", content.MediaType);
         Assert.True(content.ContainsData);
         Assert.Equal("value", content.AdditionalProperties!["key"]!.ToString());
@@ -236,7 +236,7 @@ public sealed class DataContentTests
     public void HasMediaTypePrefix_ReturnsTrue(string? mediaType, string prefix)
     {
         var content = new DataContent("http://localhost/image.png", mediaType);
-        Assert.True(content.HasMediaTypePrefix(prefix));
+        Assert.True(content.MediaTypeStartsWith(prefix));
     }
 
     [Theory]
@@ -249,6 +249,6 @@ public sealed class DataContentTests
     public void HasMediaTypePrefix_ReturnsFalse(string? mediaType, string prefix)
     {
         var content = new DataContent("http://localhost/image.png", mediaType);
-        Assert.False(content.HasMediaTypePrefix(prefix));
+        Assert.False(content.MediaTypeStartsWith(prefix));
     }
 }
