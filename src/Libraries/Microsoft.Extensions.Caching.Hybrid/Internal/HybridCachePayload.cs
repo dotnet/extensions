@@ -44,15 +44,16 @@ internal static class HybridCachePayload
         None = 0,
     }
 
-    internal enum ParseResult
+    internal enum HybridCachePayloadParseResult
     {
         Success = 0,
-        NotRecognized = 1,
+        FormatNotRecognized = 1,
         InvalidData = 2,
         InvalidKey = 3,
-        ExpiredSelf = 4,
-        ExpiredTag = 5,
-        ExpiredWildcard = 6,
+        ExpiredByEntry = 4,
+        ExpiredByTag = 5,
+        ExpiredByWildcard = 6,
+        ParseFault = 7,
     }
 
     public static UTF8Encoding Encoding { get; } = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: false);
@@ -173,9 +174,11 @@ internal static class HybridCachePayload
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1204:Static elements should appear before instance elements", Justification = "False positive?")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S109:Magic numbers should not be used", Justification = "Encoding details; clear in context")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S107:Methods should not have too many parameters", Justification = "Borderline")]
-    public static ParseResult TryParse(ArraySegment<byte> source, string key, TagSet knownTags, DefaultHybridCache cache,
-        out ArraySegment<byte> payload, out PayloadFlags flags, out ushort entropy, out TagSet pendingTags)
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exposed for logging")]
+    public static HybridCachePayloadParseResult TryParse(ArraySegment<byte> source, string key, TagSet knownTags, DefaultHybridCache cache,
+        out ArraySegment<byte> payload, out PayloadFlags flags, out ushort entropy, out TagSet pendingTags, out Exception? fault)
     {
+        fault = null;
         // note "cache" is used primarily for expiration checks; we don't automatically add etc
         entropy = 0;
         payload = default;
@@ -187,7 +190,7 @@ internal static class HybridCachePayload
         ReadOnlySpan<byte> bytes = new(source.Array!, source.Offset, source.Count);
         if (bytes.Length < 19) // minimum needed for empty payload and zero tags
         {
-            return ParseResult.NotRecognized;
+            return HybridCachePayloadParseResult.FormatNotRecognized;
         }
 
         var now = cache.CurrentTimestamp();
@@ -203,55 +206,55 @@ internal static class HybridCachePayload
 
                     if (cache.IsWildcardExpired(creationTime))
                     {
-                        return ParseResult.ExpiredWildcard;
+                        return HybridCachePayloadParseResult.ExpiredByWildcard;
                     }
 
                     if (!TryRead7BitEncodedInt64(ref bytes, out var u64)) // flags
                     {
-                        return ParseResult.InvalidData;
+                        return HybridCachePayloadParseResult.InvalidData;
                     }
 
                     flags = (PayloadFlags)u64;
 
                     if (!TryRead7BitEncodedInt64(ref bytes, out u64) || u64 > int.MaxValue) // payload length
                     {
-                        return ParseResult.InvalidData;
+                        return HybridCachePayloadParseResult.InvalidData;
                     }
 
                     var payloadLength = (int)u64;
 
                     if (!TryRead7BitEncodedInt64(ref bytes, out var duration)) // duration
                     {
-                        return ParseResult.InvalidData;
+                        return HybridCachePayloadParseResult.InvalidData;
                     }
 
                     if ((creationTime + (long)duration) <= now)
                     {
-                        return ParseResult.ExpiredSelf;
+                        return HybridCachePayloadParseResult.ExpiredByEntry;
                     }
 
                     if (!TryRead7BitEncodedInt64(ref bytes, out u64) || u64 > int.MaxValue) // tag count
                     {
-                        return ParseResult.InvalidData;
+                        return HybridCachePayloadParseResult.InvalidData;
                     }
 
                     var tagCount = (int)u64;
 
                     if (!TryReadString(ref bytes, ref scratch, out var stringSpan))
                     {
-                        return ParseResult.InvalidData;
+                        return HybridCachePayloadParseResult.InvalidData;
                     }
 
                     if (!stringSpan.SequenceEqual(key.AsSpan()))
                     {
-                        return ParseResult.InvalidKey; // key must match!
+                        return HybridCachePayloadParseResult.InvalidKey; // key must match!
                     }
 
                     for (int i = 0; i < tagCount; i++)
                     {
                         if (!TryReadString(ref bytes, ref scratch, out stringSpan))
                         {
-                            return ParseResult.InvalidData;
+                            return HybridCachePayloadParseResult.InvalidData;
                         }
 
                         bool isTagExpired;
@@ -283,14 +286,14 @@ internal static class HybridCachePayload
                         else if (isTagExpired)
                         {
                             // definitely an expired tag
-                            return ParseResult.ExpiredTag;
+                            return HybridCachePayloadParseResult.ExpiredByTag;
                         }
                     }
 
                     if (bytes.Length != payloadLength + 2
                         || BinaryPrimitives.ReadUInt16LittleEndian(bytes.Slice(payloadLength)) != UInt16SentinelPrefixPair)
                     {
-                        return ParseResult.InvalidData;
+                        return HybridCachePayloadParseResult.InvalidData;
                     }
 
                     var start = source.Offset + source.Count - (payloadLength + 2);
@@ -311,10 +314,15 @@ internal static class HybridCachePayload
                             break;
                     }
 
-                    return ParseResult.Success;
+                    return HybridCachePayloadParseResult.Success;
                 default:
-                    return ParseResult.NotRecognized;
+                    return HybridCachePayloadParseResult.FormatNotRecognized;
             }
+        }
+        catch (Exception ex)
+        {
+            fault = ex;
+            return HybridCachePayloadParseResult.ParseFault;
         }
         finally
         {

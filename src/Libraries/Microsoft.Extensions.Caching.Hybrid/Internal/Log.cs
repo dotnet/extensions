@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.Extensions.Logging;
+using static Microsoft.Extensions.Caching.Hybrid.Internal.HybridCachePayload;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
@@ -18,6 +19,7 @@ internal static partial class Log
     internal const int IdKeyInvalidContent = 8;
     internal const int IdKeyInvalidUnicode = 9;
     internal const int IdTagInvalidUnicode = 10;
+    internal const int IdCacheBackendDataRejected = 11;
 
     [LoggerMessage(LogLevel.Error, "Cache MaximumPayloadBytes ({Bytes}) exceeded.", EventName = "MaximumPayloadBytesExceeded", EventId = IdMaximumPayloadBytesExceeded, SkipEnabledCheck = false)]
     internal static partial void MaximumPayloadBytesExceeded(this ILogger logger, Exception e, int bytes);
@@ -56,4 +58,8 @@ internal static partial class Log
     [LoggerMessage(LogLevel.Error, "Tag contains malformed unicode.",
         EventName = "TagInvalidUnicode", EventId = IdTagInvalidUnicode, SkipEnabledCheck = false)]
     internal static partial void TagInvalidUnicode(this ILogger logger);
+
+    [LoggerMessage(LogLevel.Warning, "Cache backend data rejected: {reason}.",
+        EventName = "CacheBackendDataRejected", EventId = IdCacheBackendDataRejected, SkipEnabledCheck = false)]
+    internal static partial void CacheBackendDataRejected(this ILogger logger, HybridCachePayloadParseResult reason, Exception? ex);
 }

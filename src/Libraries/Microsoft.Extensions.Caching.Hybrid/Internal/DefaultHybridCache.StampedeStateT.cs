@@ -229,10 +229,11 @@ internal partial class DefaultHybridCache
                     if (result.HasValue)
                     {
                         // result is the wider payload including HC headers; unwrap it:
-                        switch (HybridCachePayload.TryParse(result.AsArraySegment(), Key.Key, CacheItem.Tags, Cache, out var payload,
-                            out var flags, out var entropy, out var pendingTags))
+                        var parseResult = HybridCachePayload.TryParse(result.AsArraySegment(), Key.Key, CacheItem.Tags, Cache, out var payload,
+                            out var flags, out var entropy, out var pendingTags, out var fault);
+                        switch (parseResult)
                         {
-                            case HybridCachePayload.ParseResult.Success:
+                            case HybridCachePayload.HybridCachePayloadParseResult.Success:
                                 // check any pending expirations, if necessary
                                 if (pendingTags.IsEmpty || !await Cache.IsAnyTagExpiredAsync(pendingTags, CacheItem.CreationTimestamp).ConfigureAwait(false))
                                 {
@@ -242,6 +243,14 @@ internal partial class DefaultHybridCache
                                     return;
                                 }
 
+                                break;
+                            case HybridCachePayload.HybridCachePayloadParseResult.ExpiredByEntry:
+                            case HybridCachePayload.HybridCachePayloadParseResult.ExpiredByWildcard:
+                            case HybridCachePayload.HybridCachePayloadParseResult.ExpiredByTag:
+                                // we don't need to log anything in the case of expiration
+                                break;
+                            default:
+                                Cache._logger.CacheBackendDataRejected(parseResult, fault);
                                 break;
                         }
 
