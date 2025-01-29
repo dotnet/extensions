@@ -171,7 +171,7 @@ public class StreamingChatCompletionUpdateExtensionsTests
         {
             for (int i = 0; i < gapLength; i++)
             {
-                updates.Add(new() { Contents = [new ImageContent("https://uri")] });
+                updates.Add(new() { Contents = [new DataContent("https://uri", mediaType: "image/png")] });
             }
         }
 

@@ -386,74 +386,76 @@ public sealed class OllamaChatClient : IChatClient
         OllamaChatRequestMessage? currentTextMessage = null;
         foreach (var item in content.Contents)
         {
-            if (currentTextMessage is not null && item is not ImageContent)
+            if (item is DataContent { ContainsData: true } dataContent && dataContent.MediaTypeStartsWith("image/"))
             {
-                yield return currentTextMessage;
-                currentTextMessage = null;
-            }
-
-            switch (item)
-            {
-                case TextContent textContent:
-                    currentTextMessage = new OllamaChatRequestMessage
-                    {
-                        Role = content.Role.Value,
-                        Content = textContent.Text ?? string.Empty,
-                    };
-                    break;
-
-                case ImageContent imageContent when imageContent.Data is not null:
-                    IList<string> images = currentTextMessage?.Images ?? [];
-                    images.Add(Convert.ToBase64String(imageContent.Data.Value
+                IList<string> images = currentTextMessage?.Images ?? [];
+                images.Add(Convert.ToBase64String(dataContent.Data.Value
 #if NET
-                        .Span));
+                    .Span));
 #else
-                        .ToArray()));
+                    .ToArray()));
 #endif
 
-                    if (currentTextMessage is not null)
+                if (currentTextMessage is not null)
+                {
+                    currentTextMessage.Images = images;
+                }
+                else
+                {
+                    yield return new OllamaChatRequestMessage
                     {
-                        currentTextMessage.Images = images;
-                    }
-                    else
+                        Role = content.Role.Value,
+                        Images = images,
+                    };
+                }
+            }
+            else
+            {
+                if (currentTextMessage is not null)
+                {
+                    yield return currentTextMessage;
+                    currentTextMessage = null;
+                }
+
+                switch (item)
+                {
+                    case TextContent textContent:
+                        currentTextMessage = new OllamaChatRequestMessage
+                        {
+                            Role = content.Role.Value,
+                            Content = textContent.Text ?? string.Empty,
+                        };
+                        break;
+
+                    case FunctionCallContent fcc:
                     {
                         yield return new OllamaChatRequestMessage
                         {
-                            Role = content.Role.Value,
-                            Images = images,
+                            Role = "assistant",
+                            Content = JsonSerializer.Serialize(new OllamaFunctionCallContent
+                            {
+                                CallId = fcc.CallId,
+                                Name = fcc.Name,
+                                Arguments = JsonSerializer.SerializeToElement(fcc.Arguments, ToolCallJsonSerializerOptions.GetTypeInfo(typeof(IDictionary<string, object?>))),
+                            }, JsonContext.Default.OllamaFunctionCallContent)
                         };
+                        break;
                     }
 
-                    break;
-
-                case FunctionCallContent fcc:
-                {
-                    yield return new OllamaChatRequestMessage
+                    case FunctionResultContent frc:
                     {
-                        Role = "assistant",
-                        Content = JsonSerializer.Serialize(new OllamaFunctionCallContent
+                        JsonElement jsonResult = JsonSerializer.SerializeToElement(frc.Result, ToolCallJsonSerializerOptions.GetTypeInfo(typeof(object)));
+                        yield return new OllamaChatRequestMessage
                         {
-                            CallId = fcc.CallId,
-                            Name = fcc.Name,
-                            Arguments = JsonSerializer.SerializeToElement(fcc.Arguments, ToolCallJsonSerializerOptions.GetTypeInfo(typeof(IDictionary<string, object?>))),
-                        }, JsonContext.Default.OllamaFunctionCallContent)
-                    };
-                    break;
-                }
-
-                case FunctionResultContent frc:
-                {
-                    JsonElement jsonResult = JsonSerializer.SerializeToElement(frc.Result, ToolCallJsonSerializerOptions.GetTypeInfo(typeof(object)));
-                    yield return new OllamaChatRequestMessage
-                    {
-                        Role = "tool",
-                        Content = JsonSerializer.Serialize(new OllamaFunctionResultContent
-                        {
-                            CallId = frc.CallId,
-                            Result = jsonResult,
-                        }, JsonContext.Default.OllamaFunctionResultContent)
-                    };
-                    break;
+                            Role = "tool",
+                            Content = JsonSerializer.Serialize(new OllamaFunctionResultContent
+                            {
+                                CallId = frc.CallId,
+                                Result = jsonResult,
+                            }, JsonContext.Default.OllamaFunctionResultContent)
+                        };
+                        break;
+                    }
                 }
             }
         }

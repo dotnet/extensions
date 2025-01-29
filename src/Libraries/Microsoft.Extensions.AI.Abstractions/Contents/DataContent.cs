@@ -105,6 +105,14 @@ public class DataContent : AIContent
         _data = data;
     }
 
+    /// <summary>
+    /// Determines whether the <see cref="MediaType"/> has the specified prefix.
+    /// </summary>
+    /// <param name="prefix">The media type prefix.</param>
+    /// <returns><see langword="true"/> if the <see cref="MediaType"/> has the specified prefix, otherwise <see langword="false"/>.</returns>
+    public bool MediaTypeStartsWith(string prefix)
+        => MediaType?.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) is true;
+
     /// <summary>Sets <paramref name="mediaType"/> to null if it's empty or composed entirely of whitespace.</summary>
     private static void ValidateMediaType(ref string? mediaType)
     {
@@ -172,6 +180,7 @@ public class DataContent : AIContent
     /// as the instance actually contains all of the data it represents. If, however, the instance was constructed from another form of URI, one
     /// that simply references where the data can be found but doesn't actually contain the data, this property returns <see langword="false"/>.
     /// </remarks>
+    [MemberNotNullWhen(true, nameof(Data))]
     [JsonIgnore]
     public bool ContainsData => _dataUri is not null || _data is not null;
 
@@ -180,7 +189,6 @@ public class DataContent : AIContent
     /// If <see cref="ContainsData"/> is <see langword="true" />, this property returns the represented data.
     /// If <see cref="ContainsData"/> is <see langword="false" />, this property returns <see langword="null" />.
     /// </remarks>
-    [MemberNotNullWhen(true, nameof(ContainsData))]
     [JsonIgnore]
     public ReadOnlyMemory<byte>? Data
     {

@@ -7,11 +7,9 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides a base class for all content used with AI services.</summary>
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
-[JsonDerivedType(typeof(AudioContent), typeDiscriminator: "audio")]
 [JsonDerivedType(typeof(DataContent), typeDiscriminator: "data")]
 [JsonDerivedType(typeof(FunctionCallContent), typeDiscriminator: "functionCall")]
 [JsonDerivedType(typeof(FunctionResultContent), typeDiscriminator: "functionResult")]
-[JsonDerivedType(typeof(ImageContent), typeDiscriminator: "image")]
 [JsonDerivedType(typeof(TextContent), typeDiscriminator: "text")]
 [JsonDerivedType(typeof(UsageContent), typeDiscriminator: "usage")]
 public class AIContent
