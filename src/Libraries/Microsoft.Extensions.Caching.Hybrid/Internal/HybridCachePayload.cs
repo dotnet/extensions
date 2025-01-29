@@ -179,6 +179,7 @@ internal static class HybridCachePayload
         out ArraySegment<byte> payload, out PayloadFlags flags, out ushort entropy, out TagSet pendingTags, out Exception? fault)
     {
         fault = null;
+
         // note "cache" is used primarily for expiration checks; we don't automatically add etc
         entropy = 0;
         payload = default;
