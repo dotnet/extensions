@@ -13,6 +13,7 @@ namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 /// Represents zero (null), one (string) or more (string[]) tags, avoiding the additional array overhead when necessary.
 /// </summary>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1066:Implement IEquatable when overriding Object.Equals", Justification = "Equals throws by intent")]
+[System.Diagnostics.DebuggerDisplay("{ToString()}")]
 internal readonly struct TagSet
 {
     public static readonly TagSet Empty = default!;
