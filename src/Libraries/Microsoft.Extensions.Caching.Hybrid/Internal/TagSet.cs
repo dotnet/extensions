@@ -17,11 +17,11 @@ internal readonly struct TagSet
 {
     public static readonly TagSet Empty = default!;
 
-    private readonly object? _tagOrTags;
-
     // this array is used in CopyTo to efficiently copy out of collections
     [ThreadStatic]
     private static string[]? _perThreadSingleLengthArray;
+
+    private readonly object? _tagOrTags;
 
     internal TagSet(string tag)
     {
