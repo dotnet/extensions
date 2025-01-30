@@ -207,7 +207,6 @@ public class HybridCacheEventSourceTests(ITestOutputHelper log, TestEventListene
         listener.AssertRemainingCountersZero();
     }
 
-
     [SkippableFact]
     public async Task TagInvalidated()
     {
