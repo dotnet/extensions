@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 using static Microsoft.Extensions.Caching.Hybrid.Tests.L2Tests;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
-public class LocalInvalidationTests(ITestOutputHelper log)
+public class LocalInvalidationTests(ITestOutputHelper log) : IClassFixture<TestEventListener>
 {
     private static ServiceProvider GetDefaultCache(out DefaultHybridCache cache, Action<ServiceCollection>? config = null)
     {

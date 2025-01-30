@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.Caching.Hybrid.Tests;
 /// <summary>
 /// Validate over-arching expectations of DC implementations, in particular behaviour re IBufferDistributedCache added for HybridCache.
 /// </summary>
-public abstract class DistributedCacheTests
+public abstract class DistributedCacheTests : IClassFixture<TestEventListener>
 {
     protected DistributedCacheTests(ITestOutputHelper log)
     {

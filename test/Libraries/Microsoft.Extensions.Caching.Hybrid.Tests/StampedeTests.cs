@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
 
-public class StampedeTests
+public class StampedeTests : IClassFixture<TestEventListener>
 {
     private static ServiceProvider GetDefaultCache(out DefaultHybridCache cache)
     {

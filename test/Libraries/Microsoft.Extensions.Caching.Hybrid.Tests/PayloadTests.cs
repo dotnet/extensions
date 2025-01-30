@@ -12,7 +12,7 @@ using static Microsoft.Extensions.Caching.Hybrid.Tests.DistributedCacheTests;
 using static Microsoft.Extensions.Caching.Hybrid.Tests.L2Tests;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
-public class PayloadTests(ITestOutputHelper log)
+public class PayloadTests(ITestOutputHelper log) : IClassFixture<TestEventListener>
 {
     private static ServiceProvider GetDefaultCache(out DefaultHybridCache cache, Action<ServiceCollection>? config = null)
     {

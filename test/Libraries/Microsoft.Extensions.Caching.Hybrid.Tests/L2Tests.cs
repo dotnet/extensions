@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
-public class L2Tests(ITestOutputHelper log)
+public class L2Tests(ITestOutputHelper log) : IClassFixture<TestEventListener>
 {
     private static string CreateString(bool work = false)
     {

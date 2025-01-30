@@ -12,7 +12,7 @@ using static Microsoft.Extensions.Caching.Hybrid.Internal.DefaultHybridCache;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
 
-public class BufferReleaseTests // note that buffer ref-counting is only enabled for DEBUG builds; can only verify general behaviour without that
+public class BufferReleaseTests : IClassFixture<TestEventListener> // note that buffer ref-counting is only enabled for DEBUG builds; can only verify general behaviour without that
 {
     private static ServiceProvider GetDefaultCache(out DefaultHybridCache cache, Action<ServiceCollection>? config = null)
     {

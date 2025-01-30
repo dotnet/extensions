@@ -20,7 +20,7 @@ using Microsoft.Extensions.Configuration.Json;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
 
-public class ServiceConstructionTests
+public class ServiceConstructionTests : IClassFixture<TestEventListener>
 {
     [Fact]
     public void CanCreateDefaultService()
