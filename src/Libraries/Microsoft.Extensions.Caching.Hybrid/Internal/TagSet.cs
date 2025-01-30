@@ -19,6 +19,10 @@ internal readonly struct TagSet
 
     private readonly object? _tagOrTags;
 
+    // this array is used in CopyTo to efficiently copy out of collections
+    [ThreadStatic]
+    private static string[]? _perThreadSingleLengthArray;
+
     internal TagSet(string tag)
     {
         Validate(tag);
@@ -106,11 +110,9 @@ internal readonly struct TagSet
                     return new TagSet(list[0]);
                 case 1:
                     // avoid the GetEnumerator() alloc
-                    var arr = ArrayPool<string>.Shared.Rent(1);
+                    var arr = _perThreadSingleLengthArray ??= new string[1];
                     collection.CopyTo(arr, 0);
-                    string tag = arr[0];
-                    ArrayPool<string>.Shared.Return(arr);
-                    return new TagSet(tag);
+                    return new TagSet(arr[0]);
                 default:
                     arr = new string[collection.Count];
                     collection.CopyTo(arr, 0);
