@@ -24,8 +24,11 @@ public class PayloadTests(ITestOutputHelper log) : IClassFixture<TestEventListen
         return provider;
     }
 
-    [Fact]
-    public void RoundTrip_Success()
+    [Theory]
+    [InlineData("", 1054, 0)]
+    [InlineData("some_tag", 1063, 1)]
+    [InlineData("some_tag,another_tag", 1075, 2)]
+    public void RoundTrip_Success(string delimitedTags, int expectedLength, int tagCount)
     {
         var clock = new FakeTime();
         using var provider = GetDefaultCache(out var cache, config =>
@@ -37,13 +40,17 @@ public class PayloadTests(ITestOutputHelper log) : IClassFixture<TestEventListen
         new Random().NextBytes(bytes);
 
         string key = "my key";
-        var tags = TagSet.Create(["some_tag"]);
+        var tags = string.IsNullOrEmpty(delimitedTags)
+            ? TagSet.Empty : TagSet.Create(delimitedTags.Split(','));
+        Assert.Equal(tagCount, tags.Count);
+
         var maxLen = HybridCachePayload.GetMaxBytes(key, tags, bytes.Length);
         var oversized = ArrayPool<byte>.Shared.Rent(maxLen);
 
         int actualLength = HybridCachePayload.Write(oversized, key, cache.CurrentTimestamp(), TimeSpan.FromMinutes(1), 0, tags, new(bytes));
         log.WriteLine($"bytes written: {actualLength}");
-        Assert.Equal(1063, actualLength);
+
+        Assert.Equal(expectedLength, actualLength);
 
         clock.Add(TimeSpan.FromSeconds(10));
         var result = HybridCachePayload.TryParse(new(oversized, 0, actualLength), key, tags, cache, out var payload, out var flags, out var entropy, out var pendingTags, out _);

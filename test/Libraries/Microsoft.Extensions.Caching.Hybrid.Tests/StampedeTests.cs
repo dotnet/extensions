@@ -436,6 +436,8 @@ public class StampedeTests : IClassFixture<TestEventListener>
         for (int i = 0; i < 1024; i++)
         {
             var key = new DefaultHybridCache.StampedeKey(Guid.NewGuid().ToString(), default);
+            Assert.True(key.Equals(key), "typed equality self");
+            Assert.True(key.Equals((object)key), "object equality self");
             var obj = cache.GetPartitionedSyncLock(in key);
             if (!counts.TryGetValue(obj, out var count))
             {
