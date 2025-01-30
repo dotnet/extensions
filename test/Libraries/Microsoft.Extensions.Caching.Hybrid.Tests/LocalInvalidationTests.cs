@@ -44,9 +44,11 @@ public class LocalInvalidationTests(ITestOutputHelper log) : IClassFixture<TestE
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task TagBasedInvalidate(bool withL2)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task TagBasedInvalidate(bool withL2, bool withExtraTag)
     {
         using IMemoryCache l1 = new MemoryCache(new MemoryCacheOptions());
         IDistributedCache? l2 = null;
@@ -74,7 +76,7 @@ public class LocalInvalidationTests(ITestOutputHelper log) : IClassFixture<TestE
 
             string key = "mykey";
             string tag = "abc";
-            string[] tags = [tag];
+            string[] tags = withExtraTag ? [tag, "other"] : [tag];
             var value = await cache.GetOrCreateAsync<Guid>(key, ct => new(Guid.NewGuid()), tags: tags);
             log.WriteLine($"First value: {value}");
             if (lastValue != Guid.Empty)
