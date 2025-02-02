@@ -151,6 +151,49 @@ function Get-AreaLabels {
     return $areaLabels | Sort-Object name;
 }
 
+function Get-Discussions {
+    [CmdletBinding()]
+    Param(
+        [string] $labels
+    )
+
+    $discussions = @();
+    $nextPattern = "(?<=<)([\S]*)(?=>; rel=`"next`")";
+
+    $headers = @{
+        Authorization = "token $ghToken"
+    }
+    $url = "$baseUri/discussions?page=1&per_page=500"
+    Write-Verbose "Next URL: $url"
+    do {
+        $response = Invoke-RestMethod -Method Get -Uri $url -Headers $headers -ResponseHeadersVariable responseHeaders #-Verbose
+
+        $response | ForEach-Object {
+            $discussion = $_;
+            if ($discussion.state -ne 'open') {
+                return;
+            }
+
+            $discussion.labels | ForEach-Object {
+                if ($_.name -eq $labels) {
+                    $discussions += $discussion;
+                }
+            }
+        }
+
+        $url = $null;
+
+        # See https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api#using-link-headers
+        $linkHeader = $responseHeaders["link"];
+        if ($linkHeader -and ($linkHeader -match $nextPattern) -eq $true) {
+            $url = $Matches[0];
+            Write-Verbose "Next URL: $url"
+        }
+    } while ($url)
+
+    return $discussions;
+}
+
 function Get-Issues {
     [CmdletBinding()]
     Param(
@@ -213,6 +256,10 @@ function Get-IssueAssignees {
 
     $assignees = '';
     $issue.assignees | ForEach-Object {
+        if ($_ -eq $null) {
+            return;
+        }
+
         $login = Format-Avatar -user $_;
         $assignees += " <div><strong>$login</strong></div>";
     }
@@ -260,7 +307,10 @@ try {
 
     # A list of comma separated label names. Example: bug,ui,@high
     # See https://docs.github.com/rest/issues/issues
-    $untriagedIssues = Format-UntriagedIssue -issues (Get-Issues -labels 'untriaged') -columnHeader 'Untriaged issues'
+    $untriaged = @();
+    $untriaged += (Get-Issues -labels 'untriaged');
+    $untriaged += (Get-Discussions -labels 'untriaged');
+    $untriagedIssues = Format-UntriagedIssue -issues $untriaged -columnHeader 'Untriaged issues'
 
     # A list of comma separated label names. Example: bug,ui,@high
     # See https://docs.github.com/rest/issues/issues
