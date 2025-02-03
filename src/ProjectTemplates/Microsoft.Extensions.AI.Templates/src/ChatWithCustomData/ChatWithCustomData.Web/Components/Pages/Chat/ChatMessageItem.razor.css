@@ -1,0 +1,56 @@
+﻿.user-message {
+    background: rgb(182 215 232);
+    align-self: flex-end;
+    min-width: 25%;
+    max-width: calc(100% - 5rem);
+}
+
+.assistant-message {
+    grid-template-rows: min-content;
+    grid-template-columns: 2rem minmax(0, 1fr);
+}
+
+/* Default styling for markdown-formatted assistant messages */
+::deep ul {
+    list-style-type: disc;
+    margin-left: 1.5rem;
+}
+
+::deep ol {
+    list-style-type: decimal;
+    margin-left: 1.5rem;
+}
+
+::deep li {
+    margin: 0.5rem 0;
+}
+
+::deep strong {
+    font-weight: 600;
+}
+
+::deep h3 {
+    margin: 1rem 0;
+    font-weight: 600;
+}
+
+::deep p + p {
+    margin-top: 1rem;
+}
+
+::deep table {
+    margin: 1rem 0;
+}
+
+::deep th {
+    text-align: left;
+    border-bottom: 1px solid silver;
+}
+
+::deep th, ::deep td {
+    padding: 0.1rem 0.5rem;
+}
+
+::deep th, ::deep tr:nth-child(even) {
+    background-color: rgba(0, 0, 0, 0.05);
+}
