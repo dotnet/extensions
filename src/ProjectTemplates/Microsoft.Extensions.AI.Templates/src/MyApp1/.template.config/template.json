@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [ "Common", "AI", "Web" ],
+  "identity": "Microsoft.Extensions.AI.Templates.Chat.CSharp",
+  "name": "Chat with Custom Data",
+  "description": "A project template for creating an AI chat application. It can perform retrieval-augmented generation (RAG) using your own data.",
+  "shortName": "chat",
+  "defaultName": "ChatApp",
+  "sourceName": "MyApp1",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "guids": [
+    "d5681fae-b21b-4114-b781-48180f08c0c4"
+  ],
+  "symbols":{
+    "framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "net9.0",
+          "description": "Target net9.0"
+        }
+      ],
+      "replaces": "net9.0",
+      "defaultValue": "net9.0"
+    },
+    "hostIdentifier": {
+      "type": "bind",
+      "binding": "HostIdentifier"
+    }
+  }
+}

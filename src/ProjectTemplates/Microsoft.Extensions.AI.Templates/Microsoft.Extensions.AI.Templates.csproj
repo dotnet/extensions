@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageType>Template</PackageType>
+    <TargetFrameworks>$(NetCoreTargetFrameworks);netstandard2.0</TargetFrameworks>
+    <Description>Project templates for Microsoft.Extensions.AI.</Description>
+    <PackageTags>dotnet-new;templates;ai</PackageTags>
+
+    <Stage>normal</Stage>
+    <Workstream>AI</Workstream>
+    <MinCodeCoverage>n/a</MinCodeCoverage>
+    <MinMutationScore>n/a</MinMutationScore>
+
+    <IsPackable>true</IsPackable>
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+
+    <NoWarn>$(NoWarn);SA1633</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="src\MyApp1\**\*" Exclude="**\bin\**;**\obj\**;**\node_modules\**;**\*.out.js" />
+    <Compile Remove="**\*" />
+  </ItemGroup>
+
+</Project>
