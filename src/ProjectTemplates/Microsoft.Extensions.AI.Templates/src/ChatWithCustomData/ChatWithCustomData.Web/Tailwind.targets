@@ -1,0 +1,22 @@
+<Project>
+    <PropertyGroup>
+        <TailwindCssInput>wwwroot\app.css</TailwindCssInput>
+        <TailwindCssOutput>wwwroot\app.generated.css</TailwindCssOutput>
+    </PropertyGroup>
+
+	<ItemGroup>
+		<TailwindFileInputs Include="$(MSBuildProjectDirectory)\**\*.razor; $(MSBuildProjectDirectory)\**\*.css"
+							Exclude="$(IntermediateOutputPath)\**; $(TailwindCssOutput)" />
+	</ItemGroup>
+
+	<Target Name="TailwindBuild" BeforeTargets="PrepareForBuild"
+			AfterTargets="BuildNpmDependencies"
+            Inputs="@(TailwindFileInputs)" Outputs="$(TailwindCssOutput)"
+			Condition="'$(DesignTimeBuild)' != 'true'">
+		<Exec Command="npx tailwindcss -i $(TailwindCssInput) -o $(TailwindCssOutput)" />
+		<Touch Files="$(TailwindCssOutput)" />
+		<ItemGroup>
+			<FileWrites Include="$(TailwindCssOutput)" />
+		</ItemGroup>
+	</Target>
+</Project>
