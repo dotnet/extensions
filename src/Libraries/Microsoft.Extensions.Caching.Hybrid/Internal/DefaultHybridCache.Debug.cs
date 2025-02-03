@@ -47,7 +47,7 @@ internal partial class DefaultHybridCache
     }
 #endif
 
-    private partial class MutableCacheItem<T>
+    internal partial class MutableCacheItem<T>
     {
 #if DEBUG
         private DefaultHybridCache? _cache; // for buffer-tracking - only needed in DEBUG

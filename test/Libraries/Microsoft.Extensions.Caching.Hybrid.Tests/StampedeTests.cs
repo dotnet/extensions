@@ -59,6 +59,24 @@ public class StampedeTests : IClassFixture<TestEventListener>
         bool IMemoryCache.TryGetValue(object key, out object? value) => throw new NotSupportedException("Intentionally not provided");
     }
 
+    [Fact]
+    public void ToString_Key()
+    {
+        var services = new ServiceCollection();
+        services.AddHybridCache();
+        using var provider = services.BuildServiceProvider();
+        var cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
+
+        var key = new DefaultHybridCache.StampedeKey("test_key", HybridCacheEntryFlags.DisableLocalCache);
+
+        const string Expected = "test_key (DisableLocalCache)";
+
+        Assert.Equal(Expected, key.ToString());
+
+        var state = new DefaultHybridCache.StampedeState<string, string>(cache, in key, TagSet.Empty, true);
+        Assert.Equal(Expected, state.ToString());
+    }
+
     [Theory]
     [InlineData(1, false)]
     [InlineData(1, true)]

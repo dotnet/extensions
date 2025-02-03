@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
 internal partial class DefaultHybridCache
 {
-    private sealed class ImmutableCacheItem<T> : CacheItem<T> // used to hold types that do not require defensive copies
+    internal sealed class ImmutableCacheItem<T> : CacheItem<T> // used to hold types that do not require defensive copies
     {
         private static ImmutableCacheItem<T>? _sharedDefault;
 

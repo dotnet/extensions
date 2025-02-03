@@ -7,6 +7,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Hybrid.Internal;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using static Microsoft.Extensions.Caching.Hybrid.Internal.DefaultHybridCache;
 
@@ -231,6 +232,54 @@ public class BufferReleaseTests : IClassFixture<TestEventListener> // note that 
 
         Assert.False(cacheItem.NeedsEvictionCallback, "should be recycled by now");
         static ValueTask<Customer> GetAsync() => new(new Customer { Id = 42, Name = "Fred" });
+    }
+
+    [Fact]
+    public void ImmutableCacheItem_Reservation()
+    {
+        var obj = Assert.IsType<ImmutableCacheItem<string>>(CacheItem<string>.Create(12345, TagSet.Empty));
+        Assert.True(obj.DebugIsImmutable);
+        obj.SetValue("abc", 3);
+        Assert.False(obj.TryReserveBuffer(out _));
+        Assert.True(obj.TryGetValue(NullLogger.Instance, out var value));
+        Assert.Equal("abc", value);
+        Assert.True(obj.TryGetSize(out var size));
+        Assert.Equal(3, size);
+    }
+
+    [Fact]
+    public void MutableCacheItem_Reservation()
+    {
+        var obj = Assert.IsType<MutableCacheItem<Customer>>(CacheItem<Customer>.Create(12345, TagSet.Empty));
+
+        Assert.True(new DefaultJsonSerializerFactory().TryCreateSerializer<Customer>(out var serializer));
+        var target = RecyclableArrayBufferWriter<byte>.Create(int.MaxValue);
+        serializer.Serialize(new Customer { Id = 42, Name = "Fred" }, target);
+        var arr = target.DetachCommitted(out var length);
+        var chunk = new BufferChunk(arr, 0, length, true);
+        target.Dispose();
+
+        Assert.False(obj.DebugIsImmutable);
+        obj.SetValue(ref chunk, serializer);
+
+        for (int i = 0; i < 3; i++)
+        {
+            Assert.True(obj.TryReserveBuffer(out var lease));
+            Assert.Equal(length, lease.Length);
+            Assert.False(obj.Release());
+
+            Assert.True(obj.TryGetValue(NullLogger.Instance, out var value));
+            Assert.Equal(42, value.Id);
+            Assert.Equal("Fred", value.Name);
+
+            Assert.True(obj.TryGetSize(out var size));
+            Assert.Equal(length, size);
+        }
+
+        Assert.True(obj.Release());
+        Assert.False(obj.TryReserveBuffer(out _));
+        Assert.False(obj.TryGetValue(NullLogger.Instance, out _));
+        Assert.False(obj.TryGetSize(out var _));
     }
 
     public class Customer
