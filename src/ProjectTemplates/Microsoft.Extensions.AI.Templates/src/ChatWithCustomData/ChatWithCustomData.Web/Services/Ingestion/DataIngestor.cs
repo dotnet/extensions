@@ -39,20 +39,18 @@ public class DataIngestor(
         foreach (var modifiedDoc in modifiedDocs)
         {
             logger.LogInformation("Processing {file}", modifiedDoc.Id);
-            if (modifiedDoc.Records.Count > 0)
+
+            await vectorCollection.DeleteBatchAsync(modifiedDoc.Records.Select(r => r.Id));
+
+            var newRecords = await source.CreateRecordsForDocumentAsync(embeddingGenerator, modifiedDoc.Id);
+            await foreach (var id in vectorCollection.UpsertBatchAsync(newRecords)) { }
+
+            modifiedDoc.Records.Clear();
+            modifiedDoc.Records.AddRange(newRecords.Select(r => new IngestedRecord { Id = r.Key, DocumentId = modifiedDoc.Id }));
+
+            if (ingestionCacheDb.Entry(modifiedDoc).State == EntityState.Detached)
             {
-                await vectorCollection.DeleteBatchAsync(modifiedDoc.Records.Select(r => r.Id));
-
-                var newRecords = await source.CreateRecordsForDocumentAsync(embeddingGenerator, modifiedDoc.Id);
-                await foreach (var id in vectorCollection.UpsertBatchAsync(newRecords)) { }
-
-                modifiedDoc.Records.Clear();
-                modifiedDoc.Records.AddRange(newRecords.Select(r => new IngestedRecord { Id = r.Key, DocumentId = modifiedDoc.Id }));
-
-                if (ingestionCacheDb.Entry(modifiedDoc).State == EntityState.Detached)
-                {
-                    ingestionCacheDb.Documents.Add(modifiedDoc);
-                }
+                ingestionCacheDb.Documents.Add(modifiedDoc);
             }
         }
 
