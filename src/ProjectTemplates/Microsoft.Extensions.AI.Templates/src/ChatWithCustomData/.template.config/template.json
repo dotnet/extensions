@@ -3,7 +3,7 @@
   "author": "Microsoft",
   "classifications": [ "Common", "AI", "Web" ],
   "identity": "Microsoft.Extensions.AI.Templates.Chat.CSharp",
-  "name": "Chat with Custom Data",
+  "name": "AI Chat with Custom Data",
   "description": "A project template for creating an AI chat application. It can perform retrieval-augmented generation (RAG) using your own data.",
   "shortName": "chat",
   "defaultName": "ChatApp",
@@ -47,6 +47,167 @@
     "hostIdentifier": {
       "type": "bind",
       "binding": "HostIdentifier"
+    },
+    "AiServiceProvider": {
+      "type": "parameter",
+      "displayName": "_AI service provider",
+      "datatype": "choice",
+      "defaultValue": "azureopenai",
+      "choices": [
+        // {
+        //   "choice": "githubmodels",
+        //   "displayName": "GitHub Models",
+        //   "description": "Uses GitHub Models"
+        // },
+        {
+          "choice": "azureopenai",
+          "displayName": "Azure OpenAI",
+          "description": "Uses Azure OpenAI service"
+        },
+        {
+          "choice": "openai",
+          "displayName": "OpenAI Platform",
+          "description": "Uses the OpenAI Platform"
+        },
+        {
+          "choice": "ollama",
+          "displayName": "Ollama (for local development)",
+          "description": "Uses Ollama with the llama3.2 model for local development"
+        }
+        // {
+        //   "choice": "azureaifoundry",
+        //   "displayName": "Azure AI Foundry (Preview)",
+        //   "description": "Uses Azure AI Foundry (Preview)"
+        // }
+      ]
+    },
+    "UseManagedIdentity": {
+      "type": "parameter",
+      "displayName": "Use managed identity",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "isEnabled": "(AiServiceProvider == \"azureopenai\")",
+      "description": "Use managed identity to access Azure services"
+    },
+    "VectorStore": {
+      "type": "parameter",
+      "displayName": "_Vector store",
+      "datatype": "choice",
+      "defaultValue": "local",
+      "choices": [
+        {
+          "choice": "local",
+          "displayName": "Local on-disk (for prototyping)",
+          "description": "Uses a JSON file on disk. You can change the implementation to a real vector database before publishing."
+        },
+        {
+          "choice": "azureaisearch",
+          "displayName": "Azure AI Search",
+          "description": "Uses Azure AI Search. This also avoids the need to define a data ingestion pipeline, since it's managed by Azure AI Search."
+        }
+      ]
+    },
+    "IsAzureOpenAi": {
+      "type": "computed",
+      "value": "(AiServiceProvider == \"azureopenai\")"
+    },
+    "IsOpenAi": {
+      "type": "computed",
+      "value": "(AiServiceProvider == \"openai\")"
+    },
+    "IsGHModels": {
+      "type": "computed",
+      "value": "(AiServiceProvider == \"githubmodels\")"
+    },
+    "IsOllama": {
+      "type": "computed",
+      "value": "(AiServiceProvider == \"ollama\")"
+    },
+    "IsAzureAiFoundry": {
+      "type": "computed",
+      "value": "(AiServiceProvider == \"azureaifoundry\")"
+    },
+    "UseAzureAISearch": {
+      "type": "computed",
+      "value": "(VectorStore == \"azureaisearch\")"
+    },
+    "UseLocalVectorStore": {
+      "type": "computed",
+      "value": "(VectorStore == \"local\")"
+    },
+    "ChatModel": {
+      "type": "parameter",
+      "displayName": "Model/deployment for chat completions. Example: gpt-4o-mini",
+      "description": "Model/deployment for chat completions. Example: gpt-4o-mini"
+    },
+    "EmbeddingModel": {
+      "type": "parameter",
+      "displayName": "Model/deployment for embeddings. Example: text-embedding-3-small",
+      "description": "Model/deployment for embeddings. Example: text-embedding-3-small"
+    },
+    "OpenAiChatModelDefault": {
+      "type": "generated",      
+      "generator": "constant",
+      "parameters": {
+        "value": "gpt-4o-mini"
+      }
+    },
+    "OpenAiEmbeddingModelDefault": {
+      "type": "generated",      
+      "generator": "constant",
+      "parameters": {
+        "value": "text-embedding-3-small"
+      }
+    },
+    "OpenAiChatModel": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "ChatModel",
+        "fallbackVariableName": "OpenAiChatModelDefault"
+      },
+      "replaces": "gpt-4o-mini"
+    },
+    "OpenAiEmbeddingModel": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "EmbeddingModel",
+        "fallbackVariableName": "OpenAiEmbeddingModelDefault"
+      },
+      "replaces": "text-embedding-3-small"
+    },
+    "OllamaChatModelDefault": {
+      "type": "generated",      
+      "generator": "constant",
+      "parameters": {
+        "value": "llama3.1"
+      }
+    },
+    "OllamaEmbeddingModelDefault": {
+      "type": "generated",      
+      "generator": "constant",
+      "parameters": {
+        "value": "all-minilm"
+      }
+    },
+    "OllamaChatModel": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "ChatModel",
+        "fallbackVariableName": "OllamaChatModelDefault"
+      },
+      "replaces": "llama3.2"
+    },
+    "OllamaEmbeddingModel": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "EmbeddingModel",
+        "fallbackVariableName": "OllamaEmbeddingModelDefault"
+      },
+      "replaces": "all-minilm"
     }
   }
 }
