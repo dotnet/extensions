@@ -12,8 +12,6 @@
   <ItemGroup>
 <!--#if (IsOllama)
     <PackageReference Include="OllamaSharp" Version="5.0.5" />
-#elif (IsAzureOpenAi)
-    <PackageReference Include="Azure.AI.OpenAI" Version="2.1.0" />
 #elif (IsGHModels)
     <PackageReference Include="OpenAI" Version="2.1.0" />
 #elif (IsAzureAiFoundry)
