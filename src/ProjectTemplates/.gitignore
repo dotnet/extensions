@@ -5,3 +5,6 @@
 package-lock.json
 
 */src/**/*.csproj
+
+#launchSettings.json files are required for the templates.
+!launchSettings.json
