@@ -1,6 +1,5 @@
 <Project Sdk="Microsoft.Build.Traversal">
   <ItemGroup>
-    <_ProjectsToExclude Include="$(MSBuildThisFileDirectory)..\src\ProjectTemplates\Microsoft.Extensions.AI.Templates\src\**\*.csproj" />
     <!-- We recursively add all of the projects inside the src directory, except for the exclusions above -->
     <_ProjectsToBuild Include="$(MSBuildThisFileDirectory)..\src\**\*.csproj" Exclude="@(_ProjectsToExclude)" />
     <!-- We recursively add all of the test projects -->
