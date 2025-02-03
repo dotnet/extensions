@@ -52,7 +52,7 @@
         chatSuggestions?.Clear();
         await chatInput!.FocusAsync();
 
-@*#if (IsOllama)
+#if (IsOllama)
         // Display a new response from the IChatClient, streaming responses
         // aren't supported because Ollama will not support both streaming and using Tools
         currentResponseCancellation = new();
@@ -69,10 +69,10 @@
             responseText.Text += chunk.Text;
             ChatMessageItem.NotifyChanged(currentResponseMessage);
         }
-#endif*@
+#endif
 
         // Store the final response in the conversation, and begin getting suggestions
-        messages.Add(currentResponseMessage);
+        messages.Add(currentResponseMessage!);
         currentResponseMessage = null;
         chatSuggestions?.Update(messages);
     }
