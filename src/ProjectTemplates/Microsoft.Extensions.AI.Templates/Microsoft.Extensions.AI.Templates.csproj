@@ -24,8 +24,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="src\ChatWithCustomData\**\*" Exclude="**\bin\**;**\obj\**;**\node_modules\**;**\*.out.js;**\*.generated.css;**\package-lock.json" />
+    <Content Include="src\ChatWithCustomData\**\*" Exclude="**\bin\**;**\obj\**;**\node_modules\**;**\*.user;**\*.csproj.in;**\*.out.js;**\*.generated.css;**\package-lock.json" />
     <Compile Remove="**\*" />
   </ItemGroup>
+
+  <!-- Copy the .csproj.in files to corresponding .csproj files -->
+  <!-- The reason they are initially .csproj.in is that there's no other way to exclude them from the main build -->
+  <Target Name="PrepareCsprojFiles" BeforeTargets="PrepareForBuild">
+    <ItemGroup>
+      <_CsprojFiles Include="src\**\*.csproj.in" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_CsprojFiles)" DestinationFiles="@(_CsprojFiles->'$([System.String]::Copy('%(Identity)').Replace('.csproj.in', '.csproj'))')" SkipUnchangedFiles="true" />
+  </Target>
 
 </Project>

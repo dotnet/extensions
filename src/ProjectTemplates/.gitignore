@@ -3,3 +3,5 @@
 # them in the project template's .gitignore file because they should be tracked
 # in source control when people actually create projects from the templates.
 package-lock.json
+
+*/src/**/*.csproj
