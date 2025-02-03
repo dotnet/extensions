@@ -6,10 +6,11 @@
     <Description>Project templates for Microsoft.Extensions.AI.</Description>
     <PackageTags>dotnet-new;templates;ai</PackageTags>
 
-    <Stage>normal</Stage>
+    <Stage>preview</Stage>
+    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
     <Workstream>AI</Workstream>
-    <MinCodeCoverage>n/a</MinCodeCoverage>
-    <MinMutationScore>n/a</MinMutationScore>
+    <MinCodeCoverage>0</MinCodeCoverage>
+    <MinMutationScore>0</MinMutationScore>
 
     <IsPackable>true</IsPackable>
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
