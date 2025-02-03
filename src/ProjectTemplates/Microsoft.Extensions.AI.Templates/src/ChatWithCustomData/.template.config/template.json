@@ -23,7 +23,6 @@
         // For now, we only produce single-project output.
         // Later when we support multi-project output with Qdrant on Docker, we'll also emit
         // a second project ChatWithCustomData.AppHost and hence will suppress this renaming.
-        "condition": "true",
         "rename": {
           "ChatWithCustomData.Web/": "./"
         }
