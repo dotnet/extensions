@@ -185,7 +185,7 @@ internal static partial class OpenAIModelMappers
 
     private static List<AIContent> FromOpenAIChatContent(IList<ChatMessageContentPart> openAiMessageContentParts)
     {
-        List<AIContent> contents = new();
+        List<AIContent> contents = [];
         foreach (var openAiContentPart in openAiMessageContentParts)
         {
             switch (openAiContentPart.Kind)
@@ -194,14 +194,13 @@ internal static partial class OpenAIModelMappers
                     contents.Add(new TextContent(openAiContentPart.Text));
                     break;
 
-                case ChatMessageContentPartKind.Image when (openAiContentPart.ImageBytes is { } bytes):
-                    contents.Add(new ImageContent(bytes.ToArray(), openAiContentPart.ImageBytesMediaType));
+                case ChatMessageContentPartKind.Image when openAiContentPart.ImageBytes is { } bytes:
+                    contents.Add(new DataContent(bytes.ToArray(), openAiContentPart.ImageBytesMediaType));
                     break;
 
                 case ChatMessageContentPartKind.Image:
-                    contents.Add(new ImageContent(openAiContentPart.ImageUri?.ToString() ?? string.Empty));
+                    contents.Add(new DataContent(openAiContentPart.ImageUri?.ToString() ?? string.Empty));
                     break;
-
             }
         }
 
@@ -220,12 +219,16 @@ internal static partial class OpenAIModelMappers
                     parts.Add(ChatMessageContentPart.CreateTextPart(textContent.Text));
                     break;
 
-                case ImageContent imageContent when imageContent.Data is { IsEmpty: false } data:
-                    parts.Add(ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(data), imageContent.MediaType));
-                    break;
+                case DataContent dataContent when dataContent.MediaTypeStartsWith("image/"):
+                    if (dataContent.ContainsData)
+                    {
+                        parts.Add(ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(dataContent.Data.Value), dataContent.MediaType));
+                    }
+                    else if (dataContent.Uri is string uri)
+                    {
+                        parts.Add(ChatMessageContentPart.CreateImagePart(new Uri(uri)));
+                    }
 
-                case ImageContent imageContent when imageContent.Uri is string uri:
-                    parts.Add(ChatMessageContentPart.CreateImagePart(new Uri(uri)));
                     break;
             }
         }

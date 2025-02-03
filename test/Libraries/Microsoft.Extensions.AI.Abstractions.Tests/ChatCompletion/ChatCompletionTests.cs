@@ -239,7 +239,7 @@ public class ChatCompletionTests
             new ChatMessage(ChatRole.Assistant,
             [
                 new TextContent("Hello, "),
-                new ImageContent("http://localhost/image.png"),
+                new DataContent("http://localhost/image.png", mediaType: "image/png"),
                 new TextContent("world!"),
             ])
             {
@@ -275,7 +275,7 @@ public class ChatCompletionTests
         Assert.Equal(new DateTimeOffset(2024, 11, 10, 9, 20, 0, TimeSpan.Zero), update0.CreatedAt);
         Assert.Equal("assistant", update0.Role?.Value);
         Assert.Equal("Hello, ", Assert.IsType<TextContent>(update0.Contents[0]).Text);
-        Assert.IsType<ImageContent>(update0.Contents[1]);
+        Assert.Equal("image/png", Assert.IsType<DataContent>(update0.Contents[1]).MediaType);
         Assert.Equal("world!", Assert.IsType<TextContent>(update0.Contents[2]).Text);
         Assert.Equal("choice1Value", update0.AdditionalProperties?["choice1Key"]);
 
