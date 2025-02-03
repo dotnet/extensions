@@ -24,7 +24,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="src\MyApp1\**\*" Exclude="**\bin\**;**\obj\**;**\node_modules\**;**\*.out.js" />
+    <Content Include="src\ChatWithCustomData\**\*" Exclude="**\bin\**;**\obj\**;**\node_modules\**;**\*.out.js" />
     <Compile Remove="**\*" />
   </ItemGroup>
 

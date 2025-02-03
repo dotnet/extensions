@@ -7,7 +7,7 @@
   "description": "A project template for creating an AI chat application. It can perform retrieval-augmented generation (RAG) using your own data.",
   "shortName": "chat",
   "defaultName": "ChatApp",
-  "sourceName": "MyApp1",
+  "sourceName": "ChatWithCustomData.Web", // TODO: When we support multi-project output, this needs to change to ChatWithCustomData, then we need some other technique to make it avoid emitting a .Web suffix in the single-project case
   "tags": {
     "language": "C#",
     "type": "project"
@@ -15,6 +15,21 @@
   "guids": [
     "d5681fae-b21b-4114-b781-48180f08c0c4"
   ],
+  "sources": [{
+    "source": "./",
+    "target": "./",
+    "modifiers": [
+      {
+        // For now, we only produce single-project output.
+        // Later when we support multi-project output with Qdrant on Docker, we'll also emit
+        // a second project ChatWithCustomData.AppHost and hence will suppress this renaming.
+        "condition": "true",
+        "rename": {
+          "ChatWithCustomData.Web/": "./"
+        }
+      }
+    ]
+  }],
   "symbols":{
     "framework": {
       "type": "parameter",
