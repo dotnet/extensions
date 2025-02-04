@@ -18,15 +18,15 @@
 </div>
 
 @code {
-    private readonly string systemPrompt = @"
+    private const string SystemPrompt = @"
         You are an assistant who answers questions about information you retrieve.
         Do not answer questions about anything else.
         Use only simple markdown to format your responses.
 
         Use the search tool to find relevant information. When you do this, end your
         reply with citations in the special format, always formatted as XML:
-        <citation file='filename' page='page_number'>verbatim quote here</citation>.
-        The quote must be max 5 words, taken directly from search result text, and is the basis for why the citation is relevant.
+        <citation filename='string' page_number='number'>exact quote here</citation>.
+        The quote must be max 5 words, taken word-for-word from the search result, and is the basis for why the citation is relevant.
         Don't refer to the presence of citations; just emit these tags right at the end, with no surrounding text.
         ";
 
@@ -39,7 +39,7 @@
 
     protected override void OnInitialized()
     {
-        messages.Add(new(ChatRole.System, systemPrompt));
+        messages.Add(new(ChatRole.System, SystemPrompt));
         chatOptions.Tools = [AIFunctionFactory.Create(SearchAsync)];
     }
 
@@ -93,14 +93,15 @@
     {
         CancelAnyCurrentResponse();
         messages.Clear();
-        messages.Add(new(ChatRole.System, systemPrompt));
+        messages.Add(new(ChatRole.System, SystemPrompt));
         chatSuggestions?.Clear();
         await chatInput!.FocusAsync();
     }
 
+    [Description("Searches for information using a phrase or keyword")]
     private async Task<IEnumerable<string>> SearchAsync(
         [Description("The phrase to search for.")] string searchPhrase,
-        [Description("Whenever possible, specify the filename to search that file only. If you leave this blank, we will search all files.")] string? filenameFilter = null)
+        [Description("Whenever possible, specify the filename to search that file only. If not provided, the search includes all files.")] string? filenameFilter = null)
     {
         await InvokeAsync(StateHasChanged);
         var results = await Search.SearchAsync(searchPhrase, filenameFilter, maxResults: 5);

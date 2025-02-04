@@ -1,3 +1,11 @@
 ﻿.citation {
     border-bottom: 2px solid #a770de;
 }
+
+    .citation[href]:hover {
+        outline: 1px solid #865cb1;
+    }
+
+    .citation:active {
+        background-color: rgba(0,0,0,0.05);
+    }

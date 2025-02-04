@@ -9,10 +9,12 @@
 							Exclude="$(IntermediateOutputPath)\**; $(TailwindCssOutput)" />
 	</ItemGroup>
 
-	<Target Name="TailwindBuild" BeforeTargets="PrepareForBuild"
-			AfterTargets="BuildNpmDependencies"
-            Inputs="@(TailwindFileInputs)" Outputs="$(TailwindCssOutput)"
-			Condition="'$(DesignTimeBuild)' != 'true'">
+	<Target Name="TailwindBuild"
+          BeforeTargets="PrepareForBuild"
+          DependsOnTargets="BuildNpmDependencies"
+          Inputs="@(TailwindFileInputs)"
+          Outputs="$(TailwindCssOutput)"
+          Condition="'$(DesignTimeBuild)' != 'true'">
 		<Exec Command="npx tailwindcss -i $(TailwindCssInput) -o $(TailwindCssOutput)" />
 		<Touch Files="$(TailwindCssOutput)" />
 		<ItemGroup>
