@@ -26,13 +26,13 @@ public sealed class AIFunctionMetadata
     private readonly JsonElement _schema = AIJsonUtilities.DefaultJsonSchema;
 
     /// <summary>The function's parameters.</summary>
-    private IReadOnlyList<AIFunctionParameterMetadata> _parameters = [];
+    private readonly IReadOnlyList<AIFunctionParameterMetadata> _parameters = [];
 
     /// <summary>The function's return parameter.</summary>
-    private AIFunctionReturnParameterMetadata _returnParameter = AIFunctionReturnParameterMetadata.Empty;
+    private readonly AIFunctionReturnParameterMetadata _returnParameter = AIFunctionReturnParameterMetadata.Empty;
 
     /// <summary>Optional additional properties in addition to the named properties already available on this class.</summary>
-    private IReadOnlyDictionary<string, object?> _additionalProperties = EmptyReadOnlyDictionary<string, object?>.Instance;
+    private readonly IReadOnlyDictionary<string, object?> _additionalProperties = EmptyReadOnlyDictionary<string, object?>.Instance;
 
     /// <summary><see cref="_parameters"/> indexed by name, lazily initialized.</summary>
     private Dictionary<string, AIFunctionParameterMetadata>? _parametersByName;

@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.AI;
 /// </summary>
 public sealed class AIFunctionParameterMetadata
 {
-    private string _name;
+    private readonly string _name;
 
     /// <summary>Initializes a new instance of the <see cref="AIFunctionParameterMetadata"/> class for a parameter with the specified name.</summary>
     /// <param name="name">The name of the parameter.</param>
