@@ -1,4 +1,18 @@
-﻿.no-messages {
+﻿.message-list-container {
+    margin-left: 1.5rem;
+    margin-right: 1.5rem;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    flex-grow: 1;
+}
+
+.message-list {
+    display: flex; 
+    flex-direction: column; 
+    gap: 1.25rem; 
+}
+
+.no-messages {
     text-align: center;
     font-size: 1.25rem;
     color: #999;

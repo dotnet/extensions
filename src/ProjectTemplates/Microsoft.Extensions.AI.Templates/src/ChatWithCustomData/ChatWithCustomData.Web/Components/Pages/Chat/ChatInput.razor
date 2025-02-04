@@ -1,19 +1,19 @@
 @inject IJSRuntime JS
 
 <EditForm Model="@this" OnValidSubmit="@SendMessageAsync">
-    <label class="flex flex-col input-box page-width px-3 py-2 mt-3">
+    <label class="input-box page-width">
         <textarea @ref="@textArea" @bind="@messageText" placeholder="Type your message..." rows="1"></textarea>
 
-        <div class="tools flex items-center mt-4">
+        <div class="tools">
             <button type="button" title="Attach media file" class="btn-default attach">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="tool-icon">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
                 Add content
             </button>
 
-            <button type="submit" title="Send" class="send-button ml-auto">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+            <button type="submit" title="Send" class="send-button">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="tool-icon">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
                 </svg>
             </button>

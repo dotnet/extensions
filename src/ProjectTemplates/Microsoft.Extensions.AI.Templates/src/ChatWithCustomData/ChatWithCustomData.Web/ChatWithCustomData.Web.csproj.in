@@ -1,7 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <Import Project="Tailwind.targets" />
-
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
@@ -38,7 +36,7 @@
   <ItemGroup>
     <Content Include="Data\**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
-    
+
   <Target Name="BuildNpmDependencies" BeforeTargets="PrepareForBuild"
           Inputs="package-lock.json; rollup.config.js; wwwroot\lib.js" Outputs="wwwroot\lib.out.js">
     <Exec Command="npm install" />
