@@ -131,6 +131,8 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
     // create a standalone isolated copy of the buffer
     public T[] ToArray() => _buffer.AsSpan(0, _index).ToArray();
 
+    public ReadOnlySequence<T> AsSequence() => new(_buffer, 0, _index);
+
     /// <summary>
     /// Disconnect the current buffer so that we can store it without it being recycled.
     /// </summary>

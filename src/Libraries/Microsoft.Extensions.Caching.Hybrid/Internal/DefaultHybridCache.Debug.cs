@@ -47,14 +47,13 @@ internal partial class DefaultHybridCache
     }
 #endif
 
-    private partial class MutableCacheItem<T>
+    internal partial class MutableCacheItem<T>
     {
 #if DEBUG
         private DefaultHybridCache? _cache; // for buffer-tracking - only needed in DEBUG
 #endif
 
         [Conditional("DEBUG")]
-        [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Instance state used in debug")]
         internal void DebugOnlyTrackBuffer(DefaultHybridCache cache)
         {
 #if DEBUG
@@ -63,11 +62,12 @@ internal partial class DefaultHybridCache
             {
                 _cache?.DebugOnlyIncrementOutstandingBuffers();
             }
+#else
+            _ = this; // dummy just to prevent CA1822, never hit
 #endif
         }
 
         [Conditional("DEBUG")]
-        [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Instance state used in debug")]
         private void DebugOnlyDecrementOutstandingBuffers()
         {
 #if DEBUG
@@ -75,6 +75,8 @@ internal partial class DefaultHybridCache
             {
                 _cache?.DebugOnlyDecrementOutstandingBuffers();
             }
+#else
+            _ = this; // dummy just to prevent CA1822, never hit
 #endif
         }
     }
