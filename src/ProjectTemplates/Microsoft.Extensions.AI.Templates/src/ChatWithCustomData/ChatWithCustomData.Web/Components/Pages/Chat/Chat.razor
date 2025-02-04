@@ -18,7 +18,7 @@
 </div>
 
 @code {
-    private readonly string systemPrompt = @"
+    private const string SystemPrompt = @"
         You are an assistant who answers questions about information you retrieve.
         Do not answer questions about anything else.
         Use only simple markdown to format your responses.
@@ -39,7 +39,7 @@
 
     protected override void OnInitialized()
     {
-        messages.Add(new(ChatRole.System, systemPrompt));
+        messages.Add(new(ChatRole.System, SystemPrompt));
         chatOptions.Tools = [AIFunctionFactory.Create(SearchAsync)];
     }
 
@@ -93,7 +93,7 @@
     {
         CancelAnyCurrentResponse();
         messages.Clear();
-        messages.Add(new(ChatRole.System, systemPrompt));
+        messages.Add(new(ChatRole.System, SystemPrompt));
         chatSuggestions?.Clear();
         await chatInput!.FocusAsync();
     }
