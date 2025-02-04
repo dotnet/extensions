@@ -373,15 +373,9 @@ public sealed class AzureAIInferenceChatClient : IChatClient
     /// <summary>Converts an Extensions function to an AzureAI chat tool.</summary>
     private static ChatCompletionsToolDefinition ToAzureAIChatTool(AIFunction aiFunction)
     {
-        BinaryData functionParameters = AzureAIChatToolJson.ZeroFunctionParametersSchema;
-        if (aiFunction.Metadata.Schema is { } schema)
-        {
-            // Map to an intermediate model so that redundant properties are skipped.
-            AzureAIChatToolJson tool = JsonSerializer.Deserialize(schema, JsonContext.Default.AzureAIChatToolJson)!;
-            functionParameters = BinaryData.FromBytes(
-                JsonSerializer.SerializeToUtf8Bytes(tool, JsonContext.Default.AzureAIChatToolJson));
-        }
-
+        // Map to an intermediate model so that redundant properties are skipped.
+        AzureAIChatToolJson tool = JsonSerializer.Deserialize(aiFunction.Metadata.Schema, JsonContext.Default.AzureAIChatToolJson)!;
+        BinaryData functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool, JsonContext.Default.AzureAIChatToolJson));
         return new(new FunctionDefinition(aiFunction.Metadata.Name)
         {
             Description = aiFunction.Metadata.Description,

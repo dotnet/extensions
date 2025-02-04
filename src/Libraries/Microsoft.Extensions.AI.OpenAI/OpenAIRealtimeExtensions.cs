@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 using OpenAI.RealtimeConversation;
-using static Microsoft.Extensions.AI.OpenAIModelMappers;
 
 namespace Microsoft.Extensions.AI;
 
@@ -28,13 +27,8 @@ public static class OpenAIRealtimeExtensions
     {
         _ = Throw.IfNull(aiFunction);
 
-        BinaryData functionParameters = OpenAIChatToolJson.ZeroFunctionParametersSchema;
-        if (aiFunction.Metadata.Schema is { } schema)
-        {
-            ConversationFunctionToolParametersSchema functionToolSchema = JsonSerializer.Deserialize(schema, OpenAIJsonContext.Default.ConversationFunctionToolParametersSchema)!;
-            functionParameters = new(JsonSerializer.SerializeToUtf8Bytes(functionToolSchema, OpenAIJsonContext.Default.ConversationFunctionToolParametersSchema));
-        }
-
+        ConversationFunctionToolParametersSchema functionToolSchema = JsonSerializer.Deserialize(aiFunction.Metadata.Schema, OpenAIJsonContext.Default.ConversationFunctionToolParametersSchema)!;
+        BinaryData functionParameters = new(JsonSerializer.SerializeToUtf8Bytes(functionToolSchema, OpenAIJsonContext.Default.ConversationFunctionToolParametersSchema));
         return new ConversationFunctionTool
         {
             Name = aiFunction.Metadata.Name,

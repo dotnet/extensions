@@ -467,10 +467,6 @@ public sealed class OllamaChatClient : IChatClient
 
     private static OllamaTool ToOllamaTool(AIFunction function)
     {
-        OllamaFunctionToolParameters toolParameters = function.Metadata.Schema is { } schema
-            ? JsonSerializer.Deserialize(schema, JsonContext.Default.OllamaFunctionToolParameters)!
-            : new() { Properties = new Dictionary<string, JsonElement>(), Required = [] };
-
         return new()
         {
             Type = "function",
@@ -478,7 +474,7 @@ public sealed class OllamaChatClient : IChatClient
             {
                 Name = function.Metadata.Name,
                 Description = function.Metadata.Description,
-                Parameters = toolParameters,
+                Parameters = JsonSerializer.Deserialize(function.Metadata.Schema, JsonContext.Default.OllamaFunctionToolParameters)!,
             }
         };
     }

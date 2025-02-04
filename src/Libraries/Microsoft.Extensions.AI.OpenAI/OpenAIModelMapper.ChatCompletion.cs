@@ -398,15 +398,9 @@ internal static partial class OpenAIModelMappers
             strictObj is bool strictValue ?
             strictValue : null;
 
-        BinaryData functionParameters = OpenAIChatToolJson.ZeroFunctionParametersSchema;
-        if (aiFunction.Metadata.Schema is { } schema)
-        {
-            // Map to an intermediate model so that redundant properties are skipped.
-            OpenAIChatToolJson tool = JsonSerializer.Deserialize(schema, OpenAIJsonContext.Default.OpenAIChatToolJson)!;
-            functionParameters = BinaryData.FromBytes(
-                JsonSerializer.SerializeToUtf8Bytes(tool, OpenAIJsonContext.Default.OpenAIChatToolJson));
-        }
-
+        // Map to an intermediate model so that redundant properties are skipped.
+        OpenAIChatToolJson tool = JsonSerializer.Deserialize(aiFunction.Metadata.Schema, OpenAIJsonContext.Default.OpenAIChatToolJson)!;
+        BinaryData functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool, OpenAIJsonContext.Default.OpenAIChatToolJson));
         return ChatTool.CreateFunctionTool(aiFunction.Metadata.Name, aiFunction.Metadata.Description, functionParameters, strict);
     }
 
@@ -584,9 +578,6 @@ internal static partial class OpenAIModelMappers
     /// <summary>Used to create the JSON payload for an OpenAI chat tool description.</summary>
     public sealed class OpenAIChatToolJson
     {
-        /// <summary>Gets a singleton JSON data for empty parameters. Optimization for the reasonably common case of a parameterless function.</summary>
-        public static BinaryData ZeroFunctionParametersSchema { get; } = new("""{"type":"object","required":[],"properties":{}}"""u8.ToArray());
-
         [JsonPropertyName("type")]
         public string Type { get; set; } = "object";
 
