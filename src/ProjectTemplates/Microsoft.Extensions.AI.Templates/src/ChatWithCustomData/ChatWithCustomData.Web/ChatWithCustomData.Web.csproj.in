@@ -37,10 +37,4 @@
     <Content Include="Data\**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <Target Name="BuildNpmDependencies" BeforeTargets="PrepareForBuild"
-          Inputs="package-lock.json; rollup.config.js; wwwroot\lib.js" Outputs="wwwroot\lib.out.js">
-    <Exec Command="npm install" />
-    <Exec Command="npm run build" EnvironmentVariables="FORCE_COLOR=0" />
-  </Target>
-
 </Project>
