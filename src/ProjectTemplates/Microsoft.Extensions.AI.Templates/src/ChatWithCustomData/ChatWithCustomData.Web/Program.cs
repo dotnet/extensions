@@ -1,21 +1,23 @@
-#if (IsOllama)
-using OllamaSharp;
-#elif (IsOpenAi || IsGHModels)
-using OpenAI;
-#else
-using Azure.AI.OpenAI;
-#if (UseManagedIdentity)
-using Azure;
-using Azure.Identity;
-#endif
-#endif
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using ChatWithCustomData.Web.Components;
 using ChatWithCustomData.Web.Services;
 using ChatWithCustomData.Web.Services.Ingestion;
+#if (IsOllama)
+using OllamaSharp;
+#elif (IsOpenAi || IsGHModels)
+using OpenAI;
 using System.ClientModel;
+#else
+using Azure;
+using Azure.AI.OpenAI;
+#if (UseManagedIdentity)
+using Azure.Identity;
+#else
+using System.ClientModel;
+#endif
+#endif
 #if (UseAzureAISearch)
 using Azure.Search.Documents.Indexes;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
