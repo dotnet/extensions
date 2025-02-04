@@ -29,7 +29,7 @@
       }
     ]
   }],
-  "symbols":{
+  "symbols": {
     "framework": {
       "type": "parameter",
       "description": "The target framework for the project.",
@@ -145,14 +145,14 @@
       "description": "Model/deployment for embeddings. Example: text-embedding-3-small"
     },
     "OpenAiChatModelDefault": {
-      "type": "generated",      
+      "type": "generated",
       "generator": "constant",
       "parameters": {
         "value": "gpt-4o-mini"
       }
     },
     "OpenAiEmbeddingModelDefault": {
-      "type": "generated",      
+      "type": "generated",
       "generator": "constant",
       "parameters": {
         "value": "text-embedding-3-small"
@@ -177,14 +177,14 @@
       "replaces": "text-embedding-3-small"
     },
     "OllamaChatModelDefault": {
-      "type": "generated",      
+      "type": "generated",
       "generator": "constant",
       "parameters": {
         "value": "llama3.1"
       }
     },
     "OllamaEmbeddingModelDefault": {
-      "type": "generated",      
+      "type": "generated",
       "generator": "constant",
       "parameters": {
         "value": "all-minilm"
@@ -207,6 +207,50 @@
         "fallbackVariableName": "OllamaEmbeddingModelDefault"
       },
       "replaces": "all-minilm"
+    },
+    "kestrelHttpPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the HTTP endpoint in launchSettings.json."
+    },
+    "kestrelHttpPortGenerated": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 5000,
+        "high": 5300
+      }
+    },
+    "kestrelHttpPortReplacer": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "kestrelHttpPort",
+        "fallbackVariableName": "kestrelHttpPortGenerated"
+      },
+      "replaces": "5000"
+    },
+    "kestrelHttpsPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the HTTPS endpoint in launchSettings.json."
+    },
+    "kestrelHttpsPortGenerated": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 7000,
+        "high": 7300
+      }
+    },
+    "kestrelHttpsPortReplacer": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "kestrelHttpsPort",
+        "fallbackVariableName": "kestrelHttpsPortGenerated"
+      },
+      "replaces": "5001"
     }
   }
 }
