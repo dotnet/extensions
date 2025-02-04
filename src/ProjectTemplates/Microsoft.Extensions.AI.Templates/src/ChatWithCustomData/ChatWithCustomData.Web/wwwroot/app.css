@@ -38,7 +38,7 @@ h1:focus {
 }
 
 .invalid {
-    outline: 1px solid #e51650;
+    outline: 1px solid #e50000;
 }
 
 .validation-message {
