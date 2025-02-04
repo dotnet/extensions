@@ -16,6 +16,8 @@ using ChatWithCustomData.Web.Components;
 using ChatWithCustomData.Web.Services;
 using ChatWithCustomData.Web.Services.Ingestion;
 using System.ClientModel;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.FileProviders.Physical;
 #if (UseAzureAISearch)
 using Azure.Search.Documents.Indexes;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
@@ -111,7 +113,15 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAntiforgery();
 
-app.MapStaticAssets();
+// Serve any file in the /Data directory for the purpose of showing citations
+// Caution: only place files in this directory that you want to be publicly accessible
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(Path.Combine(builder.Environment.ContentRootPath, "Data")),
+    RequestPath = "/citation"
+});
+
+app.UseStaticFiles();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
