@@ -1,11 +1,11 @@
 # Diagnostic IDs
 
-Defines various diagnostic IDs reported by this repo.
+Contains common telemetry instruments names that are created or consumed in other projects.
 
 To use this in your project, add the following to your `.csproj` file:
 
 ```xml
 <PropertyGroup>
-  <InjectSharedDiagnosticIds>true</InjectSharedInstruments>
+  <InjectSharedInstruments>true</InjectSharedInstruments>
 </PropertyGroup>
 ```
