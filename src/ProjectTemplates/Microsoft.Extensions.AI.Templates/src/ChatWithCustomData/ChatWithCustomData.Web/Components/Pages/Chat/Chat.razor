@@ -98,9 +98,10 @@
         await chatInput!.FocusAsync();
     }
 
+    [Description("Searches for information using a phrase or keyword")]
     private async Task<IEnumerable<string>> SearchAsync(
         [Description("The phrase to search for.")] string searchPhrase,
-        [Description("Whenever possible, specify the filename to search that file only. If you leave this blank, we will search all files.")] string? filenameFilter = null)
+        [Description("Whenever possible, specify the filename to search that file only. If not provided, the search includes all files.")] string? filenameFilter = null)
     {
         await InvokeAsync(StateHasChanged);
         var results = await Search.SearchAsync(searchPhrase, filenameFilter, maxResults: 5);
