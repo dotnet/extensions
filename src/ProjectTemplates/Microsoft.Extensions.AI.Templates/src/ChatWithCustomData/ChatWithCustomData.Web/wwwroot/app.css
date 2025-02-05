@@ -61,8 +61,7 @@ h1:focus {
     gap: 0.25rem;
     align-items: center;
     border-radius: 0.25rem;
-    border-width: 1px;
-    border-color: #9CA3AF;
+    border: 1px solid #9CA3AF;
     font-size: 0.875rem;
     line-height: 1.25rem;
     font-weight: 600;
