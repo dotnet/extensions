@@ -283,4 +283,59 @@ public class FakeLoggerTests
         Assert.Equal(42, (int)logger.LatestRecord.Scopes[0]!);
         Assert.Equal("Hello World", (string)logger.LatestRecord.Scopes[1]!);
     }
+
+    [Fact]
+    public void FilterByCustomFilter()
+    {
+        const string NotIgnoredMessage1 = "Not ignored message 1";
+        const string NotIgnoredMessage2 = "Not ignored message 2";
+        const string IgnoredMessage = "Ignored message";
+
+        // Given
+        var options = new FakeLogCollectorOptions
+        {
+            CustomFilters = [
+                r => !r.Message.Equals(IgnoredMessage, StringComparison.Ordinal),
+            ],
+        };
+
+        var collector = FakeLogCollector.Create(options);
+        var logger = new FakeLogger(collector);
+
+        // When
+        logger.LogInformation(NotIgnoredMessage1);
+        logger.LogInformation(IgnoredMessage);
+        logger.LogError(IgnoredMessage);
+        logger.LogCritical(IgnoredMessage);
+        logger.LogError(NotIgnoredMessage2);
+
+        var records = logger.Collector.GetSnapshot();
+
+        // Then
+        Assert.Equal(2, records.Count);
+        Assert.Equal(2, logger.Collector.Count);
+
+        var firstLogRecordFromSnapshot = records[0];
+
+        Assert.Equal(NotIgnoredMessage1, firstLogRecordFromSnapshot.Message);
+        Assert.Equal(LogLevel.Information, firstLogRecordFromSnapshot.Level);
+        Assert.Null(firstLogRecordFromSnapshot.Exception);
+        Assert.Null(firstLogRecordFromSnapshot.Category);
+        Assert.True(firstLogRecordFromSnapshot.LevelEnabled);
+        Assert.Empty(firstLogRecordFromSnapshot.Scopes);
+        Assert.Equal(0, firstLogRecordFromSnapshot.Id.Id);
+        Assert.EndsWith($"info] {NotIgnoredMessage1}", firstLogRecordFromSnapshot.ToString());
+
+        var secondLogRecordFromSnapshot = records[1];
+        Assert.Equal(NotIgnoredMessage2, secondLogRecordFromSnapshot.Message);
+        Assert.Equal(LogLevel.Error, secondLogRecordFromSnapshot.Level);
+        Assert.Null(secondLogRecordFromSnapshot.Exception);
+        Assert.Null(secondLogRecordFromSnapshot.Category);
+        Assert.Empty(secondLogRecordFromSnapshot.Scopes);
+        Assert.True(secondLogRecordFromSnapshot.LevelEnabled);
+        Assert.Equal(0, secondLogRecordFromSnapshot.Id.Id);
+        Assert.EndsWith($"error] {NotIgnoredMessage2}", secondLogRecordFromSnapshot.ToString());
+
+        Assert.Equivalent(secondLogRecordFromSnapshot, logger.LatestRecord);
+    }
 }

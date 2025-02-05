@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
 
@@ -127,6 +128,15 @@ public class FakeLogCollector
         {
             // record is not enabled and we're not collecting disabled records
             return;
+        }
+
+        foreach(var condition in _options.CustomFilters)
+        {
+            if (!condition(record))
+            {
+                // record was filtered out by a custom filter
+                return;
+            }
         }
 
         lock (_records)
