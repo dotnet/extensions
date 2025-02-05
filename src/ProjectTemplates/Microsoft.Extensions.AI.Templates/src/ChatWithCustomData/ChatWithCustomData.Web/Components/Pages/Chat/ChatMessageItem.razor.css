@@ -3,10 +3,7 @@
     align-self: flex-end;
     min-width: 25%;
     max-width: calc(100% - 5rem);
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem; 
-    padding-left: 1.25rem;
-    padding-right: 1.25rem; 
+    padding: 0.5rem 1.25rem;
     border-radius: 0.25rem; 
     color: #1F2937; 
     white-space: pre-wrap; 
