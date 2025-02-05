@@ -1,9 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+#pragma warning disable CA1716
+namespace Microsoft.Shared.Instruments;
+#pragma warning restore CA1716
 
-namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
+#pragma warning disable CS1574
 
 /// <summary>
 /// Represents the names of instruments published by this package.
@@ -64,3 +66,5 @@ internal static class ResourceUtilizationInstruments
     /// </remarks>
     public const string SystemNetworkConnections = "system.network.connections";
 }
+
+#pragma warning disable CS1574
