@@ -27,6 +27,7 @@ internal sealed class HybridCacheEventSource : EventSource
     internal const int EventIdStampedeJoin = 12;
     internal const int EventIdUnderlyingDataQueryCanceled = 13;
     internal const int EventIdDistributedCacheCanceled = 14;
+    internal const int EventIdTagInvalidated = 15;
 
     // fast local counters
     private long _totalLocalCacheHit;
@@ -39,6 +40,7 @@ internal sealed class HybridCacheEventSource : EventSource
     private long _totalLocalCacheWrite;
     private long _totalDistributedCacheWrite;
     private long _totalStampedeJoin;
+    private long _totalTagInvalidations;
 
 #if !(NETSTANDARD2_0 || NET462)
     // full Counter infrastructure
@@ -60,6 +62,7 @@ internal sealed class HybridCacheEventSource : EventSource
         Volatile.Write(ref _totalLocalCacheWrite, 0);
         Volatile.Write(ref _totalDistributedCacheWrite, 0);
         Volatile.Write(ref _totalStampedeJoin, 0);
+        Volatile.Write(ref _totalTagInvalidations, 0);
     }
 
     [Event(EventIdLocalCacheHit, Level = EventLevel.Verbose)]
@@ -185,6 +188,14 @@ internal sealed class HybridCacheEventSource : EventSource
         WriteEvent(EventIdStampedeJoin);
     }
 
+    [Event(EventIdTagInvalidated, Level = EventLevel.Verbose)]
+    internal void TagInvalidated()
+    {
+        DebugAssertEnabled();
+        _ = Interlocked.Increment(ref _totalTagInvalidations);
+        WriteEvent(EventIdTagInvalidated);
+    }
+
 #if !(NETSTANDARD2_0 || NET462)
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Lifetime exceeds obvious scope; handed to event source")]
     [NonEvent]
@@ -204,6 +215,7 @@ internal sealed class HybridCacheEventSource : EventSource
                 new PollingCounter("total-local-cache-writes", this, () => Volatile.Read(ref _totalLocalCacheWrite)) { DisplayName = "Total Local Cache Writes" },
                 new PollingCounter("total-distributed-cache-writes", this, () => Volatile.Read(ref _totalDistributedCacheWrite)) { DisplayName = "Total Distributed Cache Writes" },
                 new PollingCounter("total-stampede-joins", this, () => Volatile.Read(ref _totalStampedeJoin)) { DisplayName = "Total Stampede Joins" },
+                new PollingCounter("total-tag-invalidations", this, () => Volatile.Read(ref _totalTagInvalidations)) { DisplayName = "Total Tag Invalidations" },
             ];
         }
 

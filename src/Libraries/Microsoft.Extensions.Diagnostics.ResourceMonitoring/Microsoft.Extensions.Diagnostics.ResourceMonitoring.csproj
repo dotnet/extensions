@@ -17,6 +17,7 @@
     <InjectSharedBufferWriterPool>true</InjectSharedBufferWriterPool>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectStringSplitExtensions>true</InjectStringSplitExtensions>
+    <InjectSharedInstruments>true</InjectSharedInstruments>
   </PropertyGroup>
 
   <PropertyGroup>
