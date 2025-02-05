@@ -4,10 +4,7 @@
     background: white;
     border: 1px solid rgb(229, 231, 235);
     border-radius: 8px;
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem; 
-    padding-left: 0.75rem;
-    padding-right: 0.75rem; 
+    padding: 0.5rem 0.75rem;
     margin-top: 0.75rem; 
 }
 
