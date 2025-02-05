@@ -1,8 +1,5 @@
 ﻿.message-list-container {
-    margin-left: 1.5rem;
-    margin-right: 1.5rem;
-    margin-top: 2rem;
-    margin-bottom: 2rem;
+    margin: 2rem 1.5rem;
     flex-grow: 1;
 }
 
