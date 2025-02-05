@@ -228,7 +228,10 @@
         "sourceVariableName": "kestrelHttpPort",
         "fallbackVariableName": "kestrelHttpPortGenerated"
       },
-      "replaces": "KESTREL_HTTP_PORT"
+      "replaces": "5000",
+      "onlyIf": [{
+        "after": "localhost:"
+      }]
     },
     "kestrelHttpsPort": {
       "type": "parameter",
@@ -250,7 +253,10 @@
         "sourceVariableName": "kestrelHttpsPort",
         "fallbackVariableName": "kestrelHttpsPortGenerated"
       },
-      "replaces": "KESTREL_HTTPS_PORT"
+      "replaces": "5001",
+      "onlyIf": [{
+        "after": "localhost:"
+      }]
     }
   }
 }
