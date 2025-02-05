@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.AI;
 /// <see cref="CompleteStreamingAsync"/>, such as by adding additional messages to the messages list or configuring the options
 /// instance. Thus, consumers of the interface either should avoid using shared instances of these arguments for concurrent
 /// invocations or should otherwise ensure by construction that no <see cref="IChatClient"/> instances are used which might employ
-/// such mutation. For example, the WithChatOptions method be provided with a callback that could mutate the supplied options
+/// such mutation. For example, the ConfigureOptions method be provided with a callback that could mutate the supplied options
 /// argument, and that should be avoided if using a singleton options instance.
 /// </para>
 /// </remarks>
