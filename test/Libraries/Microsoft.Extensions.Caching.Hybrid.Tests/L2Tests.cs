@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
-public class L2Tests(ITestOutputHelper log)
+public class L2Tests(ITestOutputHelper log) : IClassFixture<TestEventListener>
 {
     private static string CreateString(bool work = false)
     {
@@ -52,7 +52,7 @@ public class L2Tests(ITestOutputHelper log)
         var backend = Assert.IsAssignableFrom<LoggingCache>(cache.BackendCache);
         Log.WriteLine("Inventing key...");
         var s = await cache.GetOrCreateAsync(Me(), ct => new ValueTask<string>(CreateString(true)));
-        Assert.Equal(2, backend.OpCount); // GET, SET
+        Assert.Equal(3, backend.OpCount); // (wildcard timstamp GET), GET, SET
 
         Log.WriteLine("Reading with L1...");
         for (var i = 0; i < 5; i++)
@@ -62,7 +62,7 @@ public class L2Tests(ITestOutputHelper log)
             Assert.Same(s, x);
         }
 
-        Assert.Equal(2, backend.OpCount); // shouldn't be hit
+        Assert.Equal(3, backend.OpCount); // shouldn't be hit
 
         Log.WriteLine("Reading without L1...");
         for (var i = 0; i < 5; i++)
@@ -72,7 +72,7 @@ public class L2Tests(ITestOutputHelper log)
             Assert.NotSame(s, x);
         }
 
-        Assert.Equal(7, backend.OpCount); // should be read every time
+        Assert.Equal(8, backend.OpCount); // should be read every time
 
         Log.WriteLine("Setting value directly");
         s = CreateString(true);
@@ -84,16 +84,16 @@ public class L2Tests(ITestOutputHelper log)
             Assert.Same(s, x);
         }
 
-        Assert.Equal(8, backend.OpCount); // SET
+        Assert.Equal(9, backend.OpCount); // SET
 
         Log.WriteLine("Removing key...");
         await cache.RemoveAsync(Me());
-        Assert.Equal(9, backend.OpCount); // DEL
+        Assert.Equal(10, backend.OpCount); // DEL
 
         Log.WriteLine("Fetching new...");
         var t = await cache.GetOrCreateAsync(Me(), ct => new ValueTask<string>(CreateString(true)));
         Assert.NotEqual(s, t);
-        Assert.Equal(11, backend.OpCount); // GET, SET
+        Assert.Equal(12, backend.OpCount); // GET, SET
     }
 
     public sealed class Foo
@@ -110,7 +110,7 @@ public class L2Tests(ITestOutputHelper log)
         var backend = Assert.IsAssignableFrom<LoggingCache>(cache.BackendCache);
         Log.WriteLine("Inventing key...");
         var s = await cache.GetOrCreateAsync(Me(), ct => new ValueTask<Foo>(new Foo { Value = CreateString(true) }), _expiry);
-        Assert.Equal(2, backend.OpCount); // GET, SET
+        Assert.Equal(3, backend.OpCount); // (wildcard timstamp GET), GET, SET
 
         Log.WriteLine("Reading with L1...");
         for (var i = 0; i < 5; i++)
@@ -120,7 +120,7 @@ public class L2Tests(ITestOutputHelper log)
             Assert.NotSame(s, x);
         }
 
-        Assert.Equal(2, backend.OpCount); // shouldn't be hit
+        Assert.Equal(3, backend.OpCount); // shouldn't be hit
 
         Log.WriteLine("Reading without L1...");
         for (var i = 0; i < 5; i++)
@@ -130,7 +130,7 @@ public class L2Tests(ITestOutputHelper log)
             Assert.NotSame(s, x);
         }
 
-        Assert.Equal(7, backend.OpCount); // should be read every time
+        Assert.Equal(8, backend.OpCount); // should be read every time
 
         Log.WriteLine("Setting value directly");
         s = new Foo { Value = CreateString(true) };
@@ -142,16 +142,16 @@ public class L2Tests(ITestOutputHelper log)
             Assert.NotSame(s, x);
         }
 
-        Assert.Equal(8, backend.OpCount); // SET
+        Assert.Equal(9, backend.OpCount); // SET
 
         Log.WriteLine("Removing key...");
         await cache.RemoveAsync(Me());
-        Assert.Equal(9, backend.OpCount); // DEL
+        Assert.Equal(10, backend.OpCount); // DEL
 
         Log.WriteLine("Fetching new...");
         var t = await cache.GetOrCreateAsync(Me(), ct => new ValueTask<Foo>(new Foo { Value = CreateString(true) }), _expiry);
         Assert.NotEqual(s.Value, t.Value);
-        Assert.Equal(11, backend.OpCount); // GET, SET
+        Assert.Equal(12, backend.OpCount); // GET, SET
     }
 
     private class BufferLoggingCache : LoggingCache, IBufferDistributedCache
@@ -204,7 +204,7 @@ public class L2Tests(ITestOutputHelper log)
         }
     }
 
-    private class LoggingCache(ITestOutputHelper log, IDistributedCache tail) : IDistributedCache
+    internal class LoggingCache(ITestOutputHelper log, IDistributedCache tail) : IDistributedCache
     {
         protected ITestOutputHelper Log => log;
         protected IDistributedCache Tail => tail;
