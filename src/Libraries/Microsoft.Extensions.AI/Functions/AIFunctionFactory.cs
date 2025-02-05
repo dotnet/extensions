@@ -265,9 +265,10 @@ public static partial class AIFunctionFactory
             Type returnType = GetReturnMarshaller(method, out _returnMarshaller);
             _returnTypeInfo = returnType != typeof(void) ? options.SerializerOptions.GetTypeInfo(returnType) : null;
 
+            string? description = options.Description ?? method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
             Metadata = new AIFunctionMetadata(functionName)
             {
-                Description = options.Description ?? method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? string.Empty,
+                Description = description,
                 Parameters = options.Parameters ?? parameterMetadata!,
                 ReturnParameter = options.ReturnParameter ?? new()
                 {
@@ -277,6 +278,12 @@ public static partial class AIFunctionFactory
                 },
                 AdditionalProperties = options.AdditionalProperties ?? EmptyReadOnlyDictionary<string, object?>.Instance,
                 JsonSerializerOptions = options.SerializerOptions,
+                Schema = AIJsonUtilities.CreateFunctionJsonSchema(
+                    title: functionName,
+                    description: description,
+                    parameters: options.Parameters ?? parameterMetadata,
+                    options.SerializerOptions,
+                    options.SchemaCreateOptions)
             };
         }
 
@@ -419,14 +426,6 @@ public static partial class AIFunctionFactory
                 DefaultValue = parameter.HasDefaultValue ? parameter.DefaultValue : null,
                 IsRequired = !parameter.IsOptional,
                 ParameterType = parameter.ParameterType,
-                Schema = AIJsonUtilities.CreateParameterJsonSchema(
-                    parameter.ParameterType,
-                    parameter.Name,
-                    description,
-                    parameter.HasDefaultValue,
-                    parameter.DefaultValue,
-                    options.SerializerOptions,
-                    options.SchemaCreateOptions)
             };
         }
 

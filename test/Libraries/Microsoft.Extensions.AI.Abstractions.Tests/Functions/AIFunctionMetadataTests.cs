@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using Xunit;
 
 namespace Microsoft.Extensions.AI;
@@ -26,7 +27,7 @@ public class AIFunctionMetadataTests
         Assert.Empty(f.Parameters);
 
         Assert.NotNull(f.ReturnParameter);
-        Assert.Null(f.ReturnParameter.Schema);
+        Assert.True(JsonElement.DeepEquals(f.ReturnParameter.Schema, JsonDocument.Parse("{}").RootElement));
         Assert.Null(f.ReturnParameter.ParameterType);
         Assert.Null(f.ReturnParameter.Description);
 

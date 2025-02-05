@@ -14,7 +14,7 @@ public class AIFunctionReturnParameterMetadataTests
         AIFunctionReturnParameterMetadata p = new();
         Assert.Null(p.Description);
         Assert.Null(p.ParameterType);
-        Assert.Null(p.Schema);
+        Assert.True(JsonElement.DeepEquals(p.Schema, JsonDocument.Parse("{}").RootElement));
     }
 
     [Fact]
@@ -24,7 +24,7 @@ public class AIFunctionReturnParameterMetadataTests
         {
             Description = "description",
             ParameterType = typeof(int),
-            Schema = JsonDocument.Parse("""{"type":"integer"}"""),
+            Schema = JsonDocument.Parse("""{"type":"integer"}""").RootElement,
         };
 
         AIFunctionReturnParameterMetadata p2 = new(p1);

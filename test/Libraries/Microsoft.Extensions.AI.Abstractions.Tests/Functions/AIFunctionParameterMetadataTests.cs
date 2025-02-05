@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Text.Json;
 using Xunit;
 
 namespace Microsoft.Extensions.AI;
@@ -26,7 +25,6 @@ public class AIFunctionParameterMetadataTests
         Assert.Null(p.DefaultValue);
         Assert.False(p.IsRequired);
         Assert.Null(p.ParameterType);
-        Assert.Null(p.Schema);
     }
 
     [Fact]
@@ -39,7 +37,6 @@ public class AIFunctionParameterMetadataTests
             DefaultValue = 42,
             IsRequired = true,
             ParameterType = typeof(int),
-            Schema = JsonDocument.Parse("""{"type":"integer"}"""),
         };
 
         AIFunctionParameterMetadata p2 = new(p1);
@@ -49,7 +46,6 @@ public class AIFunctionParameterMetadataTests
         Assert.Equal(p1.DefaultValue, p2.DefaultValue);
         Assert.Equal(p1.IsRequired, p2.IsRequired);
         Assert.Equal(p1.ParameterType, p2.ParameterType);
-        Assert.Equal(p1.Schema, p2.Schema);
     }
 
     [Fact]
@@ -62,7 +58,6 @@ public class AIFunctionParameterMetadataTests
             DefaultValue = 42,
             IsRequired = true,
             ParameterType = typeof(int),
-            Schema = JsonDocument.Parse("""{"type":"integer"}"""),
         };
 
         AIFunctionParameterMetadata p2 = new(p1)
@@ -72,7 +67,6 @@ public class AIFunctionParameterMetadataTests
             DefaultValue = 43,
             IsRequired = false,
             ParameterType = typeof(long),
-            Schema = JsonDocument.Parse("""{"type":"number"}"""),
         };
 
         Assert.Equal("description2", p2.Description);
