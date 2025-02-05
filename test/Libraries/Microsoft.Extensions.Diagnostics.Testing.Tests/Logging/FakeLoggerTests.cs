@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Time.Testing;
 using Xunit;
 

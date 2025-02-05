@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
 

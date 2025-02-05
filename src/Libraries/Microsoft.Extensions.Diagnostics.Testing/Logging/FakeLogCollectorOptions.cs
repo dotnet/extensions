@@ -3,7 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 
 #pragma warning disable CA2227 // Collection properties should be read only
 
@@ -42,6 +43,7 @@ public class FakeLogCollectorOptions
     /// Defaults to an empty array, which doesn't filter any records.
     /// If not empty, only records for which the filter function returns <see langword="true" /> will be collected by the fake logger.
     /// </remarks>
+    [Experimental(DiagnosticIds.Experiments.Telemetry)]
     public IEnumerable<Func<FakeLogRecord, bool>> CustomFilters { get; set; } = Array.Empty<Func<FakeLogRecord, bool>>();
 
     /// <summary>
