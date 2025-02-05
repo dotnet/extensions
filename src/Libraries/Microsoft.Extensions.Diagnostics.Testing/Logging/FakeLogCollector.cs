@@ -129,7 +129,7 @@ public class FakeLogCollector
             return;
         }
 
-        foreach(var condition in _options.CustomFilters)
+        foreach (var condition in _options.CustomFilters)
         {
             if (!condition(record))
             {
