@@ -12,7 +12,7 @@
     <NoMessagesContent>Ask me anything about ChatWithCustomData.Web.</NoMessagesContent>
 </ChatMessageList>
 
-<div class="pt-3 pb-6 px-6 sticky bottom-0 border-t bg-gray-100">
+<div class="chat-container">
     <ChatSuggestions OnSelected="@AddUserMessageAsync" @ref="@chatSuggestions" />
     <ChatInput OnSend="@AddUserMessageAsync" @ref="@chatInput" />
 </div>
