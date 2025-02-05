@@ -90,6 +90,5 @@ h1:focus {
 
 .page-width {
     max-width: 1024px;
-    margin-left: auto;
-    margin-right: auto;
+    margin: auto;
 }
