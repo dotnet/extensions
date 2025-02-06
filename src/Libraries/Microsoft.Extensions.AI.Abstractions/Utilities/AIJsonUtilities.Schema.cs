@@ -212,7 +212,7 @@ public static partial class AIJsonUtilities
 
             return schemaObj is null
                 ? _trueJsonSchema
-                : JsonSerializer.SerializeToElement(schemaObj, JsonContext.Default.JsonNode);
+                : JsonSerializer.SerializeToElement(schemaObj, options.GetTypeInfo(typeof(JsonNode)));
         }
 
         if (key.Type == typeof(void))
@@ -227,7 +227,7 @@ public static partial class AIJsonUtilities
         };
 
         JsonNode node = options.GetJsonSchemaAsNode(key.Type, exporterOptions);
-        return JsonSerializer.SerializeToElement(node, JsonContext.Default.JsonNode);
+        return JsonSerializer.SerializeToElement(node, DefaultOptions.GetTypeInfo(typeof(JsonNode)));
 
         JsonNode TransformSchemaNode(JsonSchemaExporterContext schemaExporterContext, JsonNode schema)
         {
