@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.AI;
 
 internal static partial class OpenAIModelMappers
 {
-    private static readonly JsonElement _defaultParameterSchema = JsonDocument.Parse("{}").RootElement;
+    internal static JsonElement DefaultParameterSchema { get; } = JsonDocument.Parse("{}").RootElement;
 
     public static OpenAI.Chat.ChatCompletion ToOpenAIChatCompletion(ChatCompletion chatCompletion, JsonSerializerOptions options)
     {
@@ -376,7 +376,7 @@ internal static partial class OpenAIModelMappers
             ReturnParameter = new()
             {
                 Description = "Return parameter",
-                Schema = _defaultParameterSchema,
+                Schema = DefaultParameterSchema,
             }
         };
 

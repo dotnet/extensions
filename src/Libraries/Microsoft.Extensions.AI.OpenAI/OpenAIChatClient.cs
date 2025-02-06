@@ -21,8 +21,8 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents an <see cref="IChatClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="OpenAI.Chat.ChatClient"/>.</summary>
 public sealed class OpenAIChatClient : IChatClient
 {
-    /// <summary>Default OpenAI endpoint.</summary>
-    private static readonly Uri _defaultOpenAIEndpoint = new("https://api.openai.com/v1");
+    /// <summary>Gets the default OpenAI endpoint.</summary>
+    internal static Uri DefaultOpenAIEndpoint { get; } = new("https://api.openai.com/v1");
 
     /// <summary>The underlying <see cref="OpenAIClient" />.</summary>
     private readonly OpenAIClient? _openAIClient;
@@ -49,7 +49,7 @@ public sealed class OpenAIChatClient : IChatClient
         // implement the abstractions directly rather than providing adapters on top of the public APIs,
         // the package can provide such implementations separate from what's exposed in the public API.
         Uri providerUrl = typeof(OpenAIClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            ?.GetValue(openAIClient) as Uri ?? _defaultOpenAIEndpoint;
+            ?.GetValue(openAIClient) as Uri ?? DefaultOpenAIEndpoint;
 
         Metadata = new("openai", providerUrl, modelId);
     }
@@ -67,7 +67,7 @@ public sealed class OpenAIChatClient : IChatClient
         // implement the abstractions directly rather than providing adapters on top of the public APIs,
         // the package can provide such implementations separate from what's exposed in the public API.
         Uri providerUrl = typeof(ChatClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            ?.GetValue(chatClient) as Uri ?? _defaultOpenAIEndpoint;
+            ?.GetValue(chatClient) as Uri ?? DefaultOpenAIEndpoint;
         string? model = typeof(ChatClient).GetField("_model", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(chatClient) as string;
 

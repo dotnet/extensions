@@ -61,6 +61,16 @@ public class ChatCompletion
     /// <summary>Gets or sets the ID of the chat completion.</summary>
     public string? CompletionId { get; set; }
 
+    /// <summary>Gets or sets the chat thread ID associated with this chat completion.</summary>
+    /// <remarks>
+    /// Some <see cref="IChatClient"/> implementations are capable of storing the state for a chat thread, such that
+    /// the input messages supplied to <see cref="IChatClient.CompleteAsync"/> need only be the additional messages beyond
+    /// what's already stored. If this property is non-<see langword="null"/>, it represents an identifier for that state,
+    /// and it should be used in a subsequent <see cref="ChatOptions.ChatThreadId"/> instead of supplying the same messages
+    /// (and this <see cref="ChatCompletion"/>'s message) as part of the <c>chatMessages</c> parameter.
+    /// </remarks>
+    public string? ChatThreadId { get; set; }
+
     /// <summary>Gets or sets the model ID used in the creation of the chat completion.</summary>
     public string? ModelId { get; set; }
 
