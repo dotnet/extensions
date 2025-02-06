@@ -18,6 +18,9 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks;
 /// </summary>
 internal sealed partial class ResourceUtilizationHealthCheck : IHealthCheck, IDisposable
 {
+#if !NETFRAMEWORK
+    private const double Hundred = 100.0;
+#endif
     private readonly double _multiplier;
     private readonly MeterListener? _meterListener;
     private readonly ResourceUtilizationHealthCheckOptions _options;
@@ -82,6 +85,45 @@ internal sealed partial class ResourceUtilizationHealthCheck : IHealthCheck, IDi
     }
 #pragma warning restore EA0014 // The async method doesn't support cancellation
 
+#if !NETFRAMEWORK
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ResourceUtilizationHealthCheck"/> class.
+    /// </summary>
+    /// <param name="options">The options.</param>
+    /// <param name="dataTracker">The datatracker.</param>
+    /// <param name="rmOptions">The Resource Monitoring options.</param>
+    public ResourceUtilizationHealthCheck(IOptions<ResourceUtilizationHealthCheckOptions> options, IResourceMonitor dataTracker, IOptions<ResourceMonitoringOptions> rmOptions)
+    {
+        _options = Throw.IfMemberNull(options, options.Value);
+        if (!_options.UseObservableResourceMonitoringInstruments)
+        {
+            ObsoleteConstructor(dataTracker);
+            return;
+        }
+
+        // On Windows there was a bug https://github.com/dotnet/extensions/issues/5472,
+        // so the CPU utilization might come in the range [0, 100], which means we don't need to multiply it by 100.
+        var rmOptionsValue = Throw.IfMemberNull(rmOptions, rmOptions.Value);
+        if (OperatingSystem.IsWindows() && !rmOptionsValue.UseZeroToOneRangeForMetrics)
+        {
+            _multiplier = 1;
+        }
+
+        // On Linux, the CPU utilization always comes in the correct range [0, 1], which we need to convert to percentage.
+        else
+        {
+            _multiplier = Hundred;
+        }
+
+        _meterListener = new()
+        {
+            InstrumentPublished = OnInstrumentPublished
+        };
+
+        _meterListener.SetMeasurementEventCallback<double>(OnMeasurementRecorded);
+        _meterListener.Start();
+    }
+#else
     /// <summary>
     /// Initializes a new instance of the <see cref="ResourceUtilizationHealthCheck"/> class.
     /// </summary>
@@ -96,25 +138,7 @@ internal sealed partial class ResourceUtilizationHealthCheck : IHealthCheck, IDi
             return;
         }
 
-#if NETFRAMEWORK
         _multiplier = 1;
-#else
-        // Due to a bug on Windows https://github.com/dotnet/extensions/issues/5472,
-        // the CPU utilization comes in the range [0, 100].
-        if (OperatingSystem.IsWindows())
-        {
-            _multiplier = 1;
-        }
-
-        // On Linux, the CPU utilization comes in the correct range [0, 1], which we will be converting to percentage.
-        else
-        {
-#pragma warning disable S109 // Magic numbers should not be used
-            _multiplier = 100;
-#pragma warning restore S109 // Magic numbers should not be used
-        }
-#endif
-
         _meterListener = new()
         {
             InstrumentPublished = OnInstrumentPublished
@@ -123,6 +147,7 @@ internal sealed partial class ResourceUtilizationHealthCheck : IHealthCheck, IDi
         _meterListener.SetMeasurementEventCallback<double>(OnMeasurementRecorded);
         _meterListener.Start();
     }
+#endif
 
     /// <summary>
     /// Runs the health check.
