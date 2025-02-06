@@ -1,0 +1,32 @@
+{
+  "name": "@microsoft/extensions-project-templates",
+  "version": "1.0.0",
+  "description": "Project template dependencies",
+  "main": "index.js",
+  "config": {
+    "destRoot": {
+      "chat": "./Microsoft.Extensions.AI.Templates/src/ChatWithCustomData/ChatWithCustomData.Web/wwwroot"
+    }
+  },
+  "scripts": {
+    "copy-dependency": "node copyDependency.mjs",
+    "copy-dompurify": "npm run copy-dependency -- --name dompurify --dest-root chat --src-root dist --filter purify.es.mjs;purify.es.mjs.map",
+    "copy-marked": "npm run copy-dependency -- --name marked --dest-root chat --src-root lib --filter marked.esm.js;marked.esm.js.map",
+    "copy-tailwindcss": "npm run copy-dependency -- --name tailwindcss --dest-root chat --filter preflight.css",
+    "copy-pdfjs": "npm run copy-dependency -- --name pdfjs-dist --dest-root chat --src-root web --filter images/;pdf_viewer.css;pdf_viewer.html;pdf_viewer.mjs;pdf_viewer.mjs.map"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dotnet/extensions.git"
+  },
+  "homepage": "https://github.com/dotnet/extensions#readme",
+  "dependencies": {
+    "dompurify": "^3.2.4",
+    "marked": "^15.0.6",
+    "tailwindcss": "^4.0.3",
+    "pdfjs-dist": "^4.10.38"
+  },
+  "devDependencies": {
+    "commander": "^13.1.0"
+  }
+}
