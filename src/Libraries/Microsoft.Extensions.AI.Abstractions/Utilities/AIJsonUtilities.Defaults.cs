@@ -30,7 +30,7 @@ public static partial class AIJsonUtilities
     /// <item>Enables <see cref="JsonIgnoreCondition.WhenWritingNull"/> as the default ignore condition for properties.</item>
     /// <item>
     /// Enables <see cref="JavaScriptEncoder.UnsafeRelaxedJsonEscaping"/> when escaping JSON strings.
-    /// Consuming applications must ensure that JSON outputs are adequately escaped before embedding in HTML documents.
+    /// Consuming applications must ensure that JSON outputs are adequately escaped before embedding in other document formats, such as HTML and XML.
     /// </item>
     /// </list>
     /// </para>
