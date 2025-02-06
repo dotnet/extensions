@@ -1,5 +1,6 @@
-﻿import DOMPurify from 'dompurify';
-import * as marked from 'marked';
+﻿import DOMPurify from './dompurify/web/purify.es.mjs';
+import * as marked from './marked/web/marked.esm.js';
+
 const purify = DOMPurify(window);
 
 customElements.define('assistant-message', class extends HTMLElement {
