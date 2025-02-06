@@ -8,3 +8,6 @@ package-lock.json
 
 # launchSettings.json files are required for the templates.
 !launchSettings.json
+
+# Templates include JS dependencies in dist folders.
+!**/dist/*

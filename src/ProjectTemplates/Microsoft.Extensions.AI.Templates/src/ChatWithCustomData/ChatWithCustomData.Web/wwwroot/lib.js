@@ -1,5 +1,5 @@
-﻿import DOMPurify from './dompurify/web/purify.es.mjs';
-import * as marked from './marked/web/marked.esm.js';
+﻿import DOMPurify from './dompurify/dist/purify.es.mjs';
+import * as marked from './marked/dist/marked.esm.js';
 
 const purify = DOMPurify(window);
 
