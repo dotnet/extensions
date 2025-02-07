@@ -12,9 +12,8 @@ public class FunctionResultContentTests
     [Fact]
     public void Constructor_PropsDefault()
     {
-        FunctionResultContent c = new("callId1", "functionName", null);
+        FunctionResultContent c = new("callId1", null);
         Assert.Equal("callId1", c.CallId);
-        Assert.Equal("functionName", c.Name);
         Assert.Null(c.RawRepresentation);
         Assert.Null(c.AdditionalProperties);
         Assert.Null(c.Result);
@@ -24,10 +23,9 @@ public class FunctionResultContentTests
     [Fact]
     public void Constructor_String_PropsRoundtrip()
     {
-        FunctionResultContent c = new("id", "name", "result");
+        FunctionResultContent c = new("id", "result");
         Assert.Null(c.RawRepresentation);
         Assert.Null(c.AdditionalProperties);
-        Assert.Equal("name", c.Name);
         Assert.Equal("id", c.CallId);
         Assert.Equal("result", c.Result);
         Assert.Null(c.Exception);
@@ -36,7 +34,7 @@ public class FunctionResultContentTests
     [Fact]
     public void Constructor_PropsRoundtrip()
     {
-        FunctionResultContent c = new("callId1", "functionName", null);
+        FunctionResultContent c = new("callId1", null);
 
         Assert.Null(c.RawRepresentation);
         object raw = new();
@@ -49,8 +47,6 @@ public class FunctionResultContentTests
         Assert.Same(props, c.AdditionalProperties);
 
         Assert.Equal("callId1", c.CallId);
-        c.CallId = "id";
-        Assert.Equal("id", c.CallId);
 
         Assert.Null(c.Result);
         c.Result = "result";
@@ -66,7 +62,7 @@ public class FunctionResultContentTests
     public void ItShouldBeSerializableAndDeserializable()
     {
         // Arrange
-        var sut = new FunctionResultContent("id", "p1-f1", "result");
+        var sut = new FunctionResultContent("id", "result");
 
         // Act
         var json = JsonSerializer.Serialize(sut, TestJsonSerializerContext.Default.Options);
@@ -75,7 +71,6 @@ public class FunctionResultContentTests
 
         // Assert
         Assert.NotNull(deserializedSut);
-        Assert.Equal(sut.Name, deserializedSut.Name);
         Assert.Equal(sut.CallId, deserializedSut.CallId);
         Assert.Equal(sut.Result, deserializedSut.Result?.ToString());
     }
@@ -84,7 +79,7 @@ public class FunctionResultContentTests
     public void ItShouldBeSerializableAndDeserializableWithException()
     {
         // Arrange
-        var sut = new FunctionResultContent("callId1", "functionName", null) { Exception = new InvalidOperationException("hello") };
+        var sut = new FunctionResultContent("callId1", null) { Exception = new InvalidOperationException("hello") };
 
         // Act
         var json = JsonSerializer.Serialize(sut, TestJsonSerializerContext.Default.Options);
@@ -92,7 +87,6 @@ public class FunctionResultContentTests
 
         // Assert
         Assert.NotNull(deserializedSut);
-        Assert.Equal(sut.Name, deserializedSut.Name);
         Assert.Equal(sut.CallId, deserializedSut.CallId);
         Assert.Equal(sut.Result, deserializedSut.Result?.ToString());
         Assert.Null(deserializedSut.Exception);

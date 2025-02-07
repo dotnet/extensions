@@ -23,7 +23,7 @@ public class ChatOptionsTests
         Assert.Null(options.ResponseFormat);
         Assert.Null(options.ModelId);
         Assert.Null(options.StopSequences);
-        Assert.Same(ChatToolMode.Auto, options.ToolMode);
+        Assert.Null(options.ToolMode);
         Assert.Null(options.Tools);
         Assert.Null(options.AdditionalProperties);
 
@@ -38,7 +38,7 @@ public class ChatOptionsTests
         Assert.Null(clone.ResponseFormat);
         Assert.Null(clone.ModelId);
         Assert.Null(clone.StopSequences);
-        Assert.Same(ChatToolMode.Auto, clone.ToolMode);
+        Assert.Null(clone.ToolMode);
         Assert.Null(clone.Tools);
         Assert.Null(clone.AdditionalProperties);
     }

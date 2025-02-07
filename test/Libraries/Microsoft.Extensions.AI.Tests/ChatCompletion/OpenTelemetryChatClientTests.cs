@@ -35,11 +35,10 @@ public class OpenTelemetryChatClientTests
 
         using var innerClient = new TestChatClient
         {
-            Metadata = new("testservice", new Uri("http://localhost:12345/something"), "amazingmodel"),
             CompleteAsyncCallback = async (messages, options, cancellationToken) =>
             {
                 await Task.Yield();
-                return new ChatCompletion([new ChatMessage(ChatRole.Assistant, "The blue whale, I think.")])
+                return new ChatCompletion(new ChatMessage(ChatRole.Assistant, "The blue whale, I think."))
                 {
                     CompletionId = "id123",
                     FinishReason = ChatFinishReason.Stop,
@@ -57,6 +56,9 @@ public class OpenTelemetryChatClientTests
                 };
             },
             CompleteStreamingAsyncCallback = CallbackAsync,
+            GetServiceCallback = (serviceType, serviceKey) =>
+                serviceType == typeof(ChatClientMetadata) ? new ChatClientMetadata("testservice", new Uri("http://localhost:12345/something"), "amazingmodel") :
+                null,
         };
 
         async static IAsyncEnumerable<StreamingChatCompletionUpdate> CallbackAsync(
@@ -110,7 +112,7 @@ public class OpenTelemetryChatClientTests
             new(ChatRole.System, "You are a close friend."),
             new(ChatRole.User, "Hey!"),
             new(ChatRole.Assistant, [new FunctionCallContent("12345", "GetPersonName")]),
-            new(ChatRole.Tool, [new FunctionResultContent("12345", "GetPersonName", "John")]),
+            new(ChatRole.Tool, [new FunctionResultContent("12345", "John")]),
             new(ChatRole.Assistant, "Hey John, what's up?"),
             new(ChatRole.User, "What's the biggest animal?")
         ];

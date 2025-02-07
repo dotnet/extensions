@@ -17,7 +17,7 @@ public class ChatClientStructuredOutputExtensionsTests
     public async Task SuccessUsage()
     {
         var expectedResult = new Animal { Id = 1, FullName = "Tigger", Species = Species.Tiger };
-        var expectedCompletion = new ChatCompletion([new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult))])
+        var expectedCompletion = new ChatCompletion(new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult)))
         {
             CompletionId = "test",
             CreatedAt = DateTimeOffset.UtcNow,
@@ -78,7 +78,7 @@ public class ChatClientStructuredOutputExtensionsTests
     public async Task WrapsNonObjectValuesInDataProperty()
     {
         var expectedResult = new { data = 123 };
-        var expectedCompletion = new ChatCompletion([new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult))]);
+        var expectedCompletion = new ChatCompletion(new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult)));
 
         using var client = new TestChatClient
         {
@@ -110,7 +110,7 @@ public class ChatClientStructuredOutputExtensionsTests
     [Fact]
     public async Task FailureUsage_InvalidJson()
     {
-        var expectedCompletion = new ChatCompletion([new ChatMessage(ChatRole.Assistant, "This is not valid JSON")]);
+        var expectedCompletion = new ChatCompletion(new ChatMessage(ChatRole.Assistant, "This is not valid JSON"));
         using var client = new TestChatClient
         {
             CompleteAsyncCallback = (messages, options, cancellationToken) => Task.FromResult(expectedCompletion),
@@ -129,7 +129,7 @@ public class ChatClientStructuredOutputExtensionsTests
     [Fact]
     public async Task FailureUsage_NullJson()
     {
-        var expectedCompletion = new ChatCompletion([new ChatMessage(ChatRole.Assistant, "null")]);
+        var expectedCompletion = new ChatCompletion(new ChatMessage(ChatRole.Assistant, "null"));
         using var client = new TestChatClient
         {
             CompleteAsyncCallback = (messages, options, cancellationToken) => Task.FromResult(expectedCompletion),
@@ -148,7 +148,7 @@ public class ChatClientStructuredOutputExtensionsTests
     [Fact]
     public async Task FailureUsage_NoJsonInResponse()
     {
-        var expectedCompletion = new ChatCompletion([new ChatMessage(ChatRole.Assistant, [new DataContent("https://example.com")])]);
+        var expectedCompletion = new ChatCompletion(new ChatMessage(ChatRole.Assistant, [new DataContent("https://example.com")]));
         using var client = new TestChatClient
         {
             CompleteAsyncCallback = (messages, options, cancellationToken) => Task.FromResult(expectedCompletion),
@@ -168,7 +168,7 @@ public class ChatClientStructuredOutputExtensionsTests
     public async Task CanUseNativeStructuredOutput()
     {
         var expectedResult = new Animal { Id = 1, FullName = "Tigger", Species = Species.Tiger };
-        var expectedCompletion = new ChatCompletion([new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult))]);
+        var expectedCompletion = new ChatCompletion(new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult)));
 
         using var client = new TestChatClient
         {
@@ -212,7 +212,7 @@ public class ChatClientStructuredOutputExtensionsTests
     public async Task CanUseNativeStructuredOutputWithSanitizedTypeName()
     {
         var expectedResult = new Data<Animal> { Value = new Animal { Id = 1, FullName = "Tigger", Species = Species.Tiger } };
-        var expectedCompletion = new ChatCompletion([new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult))]);
+        var expectedCompletion = new ChatCompletion(new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult)));
 
         using var client = new TestChatClient
         {
@@ -247,7 +247,7 @@ public class ChatClientStructuredOutputExtensionsTests
     {
         var expectedResult = new[] { new Animal { Id = 1, FullName = "Tigger", Species = Species.Tiger } };
         var payload = new { data = expectedResult };
-        var expectedCompletion = new ChatCompletion([new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(payload))]);
+        var expectedCompletion = new ChatCompletion(new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(payload)));
 
         using var client = new TestChatClient
         {
@@ -278,7 +278,7 @@ public class ChatClientStructuredOutputExtensionsTests
             PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
         };
         var expectedResult = new Animal { Id = 1, FullName = "Tigger", Species = Species.Tiger };
-        var expectedCompletion = new ChatCompletion([new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult, jso))]);
+        var expectedCompletion = new ChatCompletion(new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult, jso)));
 
         using var client = new TestChatClient
         {
@@ -324,7 +324,7 @@ public class ChatClientStructuredOutputExtensionsTests
         {
             CompleteAsyncCallback = (messages, options, cancellationToken) =>
             {
-                return Task.FromResult(new ChatCompletion([new ChatMessage(ChatRole.Assistant, resultDuplicatedJson)]));
+                return Task.FromResult(new ChatCompletion(new ChatMessage(ChatRole.Assistant, resultDuplicatedJson)));
             },
         };
 

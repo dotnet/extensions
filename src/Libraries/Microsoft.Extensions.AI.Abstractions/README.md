@@ -40,10 +40,10 @@ using Microsoft.Extensions.AI;
 
 public class SampleChatClient : IChatClient
 {
-    public ChatClientMetadata Metadata { get; }
+    private readonly ChatClientMetadata _metadata;
 
     public SampleChatClient(Uri endpoint, string modelId) =>
-        Metadata = new("SampleChatClient", endpoint, modelId);
+        _metadata = new("SampleChatClient", endpoint, modelId);
 
     public async Task<ChatCompletion> CompleteAsync(
         IList<ChatMessage> chatMessages,
@@ -61,11 +61,11 @@ public class SampleChatClient : IChatClient
             "This is yet another response message."
         ];
 
-        return new([new ChatMessage()
+        return new(new ChatMessage()
         {
             Role = ChatRole.Assistant,
             Text = responses[Random.Shared.Next(responses.Length)],
-        }]);
+        });
     }
 
     public async IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(
@@ -89,9 +89,12 @@ public class SampleChatClient : IChatClient
         }
     }
 
-    public TService? GetService<TService>(object? key = null) where TService : class =>
-        this as TService;
-
+    object? IChatClient.GetService(Type serviceType, object? serviceKey = null) =>
+        serviceKey is not null ? null :
+        serviceType == typeof(ChatClientMetadata) ? _metadata :
+        serviceType?.IsInstanceOfType(this) is true ? this :
+        null;
+        
     void IDisposable.Dispose() { }
 }
 ```
@@ -446,7 +449,7 @@ using Microsoft.Extensions.AI;
 
 public class SampleEmbeddingGenerator(Uri endpoint, string modelId) : IEmbeddingGenerator<string, Embedding<float>>
 {
-    public EmbeddingGeneratorMetadata Metadata { get; } = new("SampleEmbeddingGenerator", endpoint, modelId);
+    private readonly EmbeddingGeneratorMetadata _metadata = new("SampleEmbeddingGenerator", endpoint, modelId);
 
     public async Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(
         IEnumerable<string> values,
@@ -463,8 +466,11 @@ public class SampleEmbeddingGenerator(Uri endpoint, string modelId) : IEmbedding
                 Enumerable.Range(0, 384).Select(_ => Random.Shared.NextSingle()).ToArray()));
     }
 
-    public TService? GetService<TService>(object? key = null) where TService : class =>
-        this as TService;
+    object? IChatClient.GetService(Type serviceType, object? serviceKey = null) =>
+        serviceKey is not null ? null :
+        serviceType == typeof(EmbeddingGeneratorMetadata) ? _metadata :
+        serviceType?.IsInstanceOfType(this) is true ? this :
+        null;
 
     void IDisposable.Dispose() { }
 }

@@ -15,8 +15,6 @@ public sealed class TestEmbeddingGenerator : IEmbeddingGenerator<string, Embeddi
         GetServiceCallback = DefaultGetServiceCallback;
     }
 
-    public EmbeddingGeneratorMetadata Metadata { get; set; } = new();
-
     public Func<IEnumerable<string>, EmbeddingGenerationOptions?, CancellationToken, Task<GeneratedEmbeddings<Embedding<float>>>>? GenerateAsyncCallback { get; set; }
 
     public Func<Type, object?, object?> GetServiceCallback { get; set; }

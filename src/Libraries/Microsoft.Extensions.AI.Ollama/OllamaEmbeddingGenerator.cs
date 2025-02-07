@@ -10,11 +10,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 
+#pragma warning disable S3358 // Ternary operators should not be nested
+
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="IEmbeddingGenerator{String, Embedding}"/> for Ollama.</summary>
 public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>
 {
+    /// <summary>Metadata about the embedding generator.</summary>
+    private readonly EmbeddingGeneratorMetadata _metadata;
+
     /// <summary>The api/embeddings endpoint URI.</summary>
     private readonly Uri _apiEmbeddingsEndpoint;
 
@@ -50,19 +55,18 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator<string, Embed
 
         _apiEmbeddingsEndpoint = new Uri(endpoint, "api/embed");
         _httpClient = httpClient ?? OllamaUtilities.SharedClient;
-        Metadata = new("ollama", endpoint, modelId);
+        _metadata = new("ollama", endpoint, modelId);
     }
 
     /// <inheritdoc />
-    public EmbeddingGeneratorMetadata Metadata { get; }
-
-    /// <inheritdoc />
-    public object? GetService(Type serviceType, object? serviceKey = null)
+    object? IEmbeddingGenerator<string, Embedding<float>>.GetService(Type serviceType, object? serviceKey)
     {
         _ = Throw.IfNull(serviceType);
 
         return
-            serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+            serviceKey is not null ? null :
+            serviceType == typeof(EmbeddingGeneratorMetadata) ? _metadata :
+            serviceType.IsInstanceOfType(this) ? this :
             null;
     }
 
@@ -83,7 +87,7 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator<string, Embed
 
         // Create request.
         string[] inputs = values.ToArray();
-        string? requestModel = options?.ModelId ?? Metadata.ModelId;
+        string? requestModel = options?.ModelId ?? _metadata.ModelId;
         var request = new OllamaEmbeddingRequest
         {
             Model = requestModel ?? string.Empty,

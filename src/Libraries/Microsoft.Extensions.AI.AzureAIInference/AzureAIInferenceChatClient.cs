@@ -24,6 +24,9 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents an <see cref="IChatClient"/> for an Azure AI Inference <see cref="ChatCompletionsClient"/>.</summary>
 public sealed class AzureAIInferenceChatClient : IChatClient
 {
+    /// <summary>Metadata about the client.</summary>
+    private readonly ChatClientMetadata _metadata;
+
     /// <summary>The underlying <see cref="ChatCompletionsClient" />.</summary>
     private readonly ChatCompletionsClient _chatCompletionsClient;
 
@@ -50,7 +53,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
         var providerUrl = typeof(ChatCompletionsClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(chatCompletionsClient) as Uri;
 
-        Metadata = new("az.ai.inference", providerUrl, modelId);
+        _metadata = new("az.ai.inference", providerUrl, modelId);
     }
 
     /// <summary>Gets or sets <see cref="JsonSerializerOptions"/> to use for any serialization activities related to tool call arguments and results.</summary>
@@ -61,16 +64,14 @@ public sealed class AzureAIInferenceChatClient : IChatClient
     }
 
     /// <inheritdoc />
-    public ChatClientMetadata Metadata { get; }
-
-    /// <inheritdoc />
-    public object? GetService(Type serviceType, object? serviceKey = null)
+    object? IChatClient.GetService(Type serviceType, object? serviceKey)
     {
         _ = Throw.IfNull(serviceType);
 
         return
             serviceKey is not null ? null :
             serviceType == typeof(ChatCompletionsClient) ? _chatCompletionsClient :
+            serviceType == typeof(ChatClientMetadata) ? _metadata :
             serviceType.IsInstanceOfType(this) ? this :
             null;
     }
@@ -288,7 +289,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
     {
         ChatCompletionsOptions result = new(ToAzureAIInferenceChatMessages(chatContents))
         {
-            Model = options?.ModelId ?? Metadata.ModelId ?? throw new InvalidOperationException("No model id was provided when either constructing the client or in the chat options.")
+            Model = options?.ModelId ?? _metadata.ModelId ?? throw new InvalidOperationException("No model id was provided when either constructing the client or in the chat options.")
         };
 
         if (options is not null)
@@ -345,7 +346,12 @@ public sealed class AzureAIInferenceChatClient : IChatClient
 
                 switch (options.ToolMode)
                 {
+                    case NoneChatToolMode:
+                        result.ToolChoice = ChatCompletionsToolChoice.None;
+                        break;
+
                     case AutoChatToolMode:
+                    case null:
                         result.ToolChoice = ChatCompletionsToolChoice.Auto;
                         break;
 
@@ -374,8 +380,8 @@ public sealed class AzureAIInferenceChatClient : IChatClient
     private static ChatCompletionsToolDefinition ToAzureAIChatTool(AIFunction aiFunction)
     {
         // Map to an intermediate model so that redundant properties are skipped.
-        AzureAIChatToolJson tool = JsonSerializer.Deserialize(aiFunction.Metadata.Schema, JsonContext.Default.AzureAIChatToolJson)!;
-        BinaryData functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool, JsonContext.Default.AzureAIChatToolJson));
+        var tool = JsonSerializer.Deserialize(aiFunction.Metadata.Schema, JsonContext.Default.AzureAIChatToolJson)!;
+        var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool, JsonContext.Default.AzureAIChatToolJson));
         return new(new FunctionDefinition(aiFunction.Metadata.Name)
         {
             Description = aiFunction.Metadata.Description,
@@ -462,7 +468,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
                     break;
 
                 case DataContent dataContent when dataContent.MediaTypeStartsWith("image/"):
-                    if (dataContent.ContainsData)
+                    if (dataContent.Data.HasValue)
                     {
                         parts.Add(new ChatMessageImageContentItem(BinaryData.FromBytes(dataContent.Data.Value), dataContent.MediaType));
                     }

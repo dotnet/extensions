@@ -50,7 +50,7 @@ public partial class LoggingChatClient : DelegatingChatClient
         {
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokedSensitive(nameof(CompleteAsync), AsJson(chatMessages), AsJson(options), AsJson(Metadata));
+                LogInvokedSensitive(nameof(CompleteAsync), AsJson(chatMessages), AsJson(options), AsJson(this.GetService<ChatClientMetadata>()));
             }
             else
             {
@@ -96,7 +96,7 @@ public partial class LoggingChatClient : DelegatingChatClient
         {
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokedSensitive(nameof(CompleteStreamingAsync), AsJson(chatMessages), AsJson(options), AsJson(Metadata));
+                LogInvokedSensitive(nameof(CompleteStreamingAsync), AsJson(chatMessages), AsJson(options), AsJson(this.GetService<ChatClientMetadata>()));
             }
             else
             {
