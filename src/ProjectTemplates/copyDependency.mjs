@@ -20,15 +20,15 @@ const {
 // If it's not, then we'll treat it as a path.
 const normalizedDestRoot = packageJson.config.destRoot?.[destRoot] || destRoot;
 if (!existsSync(normalizedDestRoot)) {
-  console.error('The specified destination root path does not exist:', normalizedDestRoot);
+  logError('The specified destination root path does not exist:', normalizedDestRoot);
   process.exit(1);
 }
 
 // Infer package path from the specified package name.
 const srcRootPath = join('node_modules', name, srcRoot || '');
 if (!existsSync(srcRootPath)) {
-  console.error('The package root path does not exist:', srcRootPath);
-  console.error(`Is the '${name}' package installed?`);
+  logError('The package root path does not exist:', srcRootPath);
+  console.log(`Is the '${name}' package installed?`);
   process.exit(1);
 }
 
