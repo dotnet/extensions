@@ -60,4 +60,3 @@ const pdfDocument = await pdfjsLib.getDocument({
 
 pdfViewer.setDocument(pdfDocument);
 pdfLinkService.setDocument(pdfDocument, null);
-
