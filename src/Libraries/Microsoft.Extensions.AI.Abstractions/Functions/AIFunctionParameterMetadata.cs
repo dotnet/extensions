@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.AI;
 /// </summary>
 public sealed class AIFunctionParameterMetadata
 {
-    private string _name;
+    private readonly string _name;
 
     /// <summary>Initializes a new instance of the <see cref="AIFunctionParameterMetadata"/> class for a parameter with the specified name.</summary>
     /// <param name="name">The name of the parameter.</param>
@@ -37,7 +37,6 @@ public sealed class AIFunctionParameterMetadata
         DefaultValue = metadata.DefaultValue;
         IsRequired = metadata.IsRequired;
         ParameterType = metadata.ParameterType;
-        Schema = metadata.Schema;
     }
 
     /// <summary>Gets the name of the parameter.</summary>
@@ -61,7 +60,4 @@ public sealed class AIFunctionParameterMetadata
 
     /// <summary>Gets the .NET type of the parameter.</summary>
     public Type? ParameterType { get; init; }
-
-    /// <summary>Gets a JSON Schema describing the parameter's type.</summary>
-    public object? Schema { get; init; }
 }

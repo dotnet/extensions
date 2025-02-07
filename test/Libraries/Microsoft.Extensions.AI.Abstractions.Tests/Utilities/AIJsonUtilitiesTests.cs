@@ -225,30 +225,32 @@ public static class AIJsonUtilitiesTests
     }
 
     [Fact]
-    public static void ResolveParameterJsonSchema_ReturnsExpectedValue()
+    public static void CreateFunctionJsonSchema_ReturnsExpectedValue()
     {
         JsonSerializerOptions options = new(JsonSerializerOptions.Default);
         AIFunction func = AIFunctionFactory.Create((int x, int y) => x + y, serializerOptions: options);
 
         AIFunctionMetadata metadata = func.Metadata;
         AIFunctionParameterMetadata param = metadata.Parameters[0];
-        JsonElement generatedSchema = Assert.IsType<JsonElement>(param.Schema);
 
-        JsonElement resolvedSchema;
-        resolvedSchema = AIJsonUtilities.ResolveParameterJsonSchema(param, metadata, options);
-        Assert.True(JsonElement.DeepEquals(generatedSchema, resolvedSchema));
+        JsonElement resolvedSchema = AIJsonUtilities.CreateFunctionJsonSchema(title: func.Metadata.Name, description: func.Metadata.Description, parameters: func.Metadata.Parameters);
+        Assert.True(JsonElement.DeepEquals(resolvedSchema, func.Metadata.Schema));
     }
 
     [Fact]
-    public static void CreateParameterJsonSchema_TreatsIntegralTypesAsInteger_EvenWithAllowReadingFromString()
+    public static void CreateFunctionJsonSchema_TreatsIntegralTypesAsInteger_EvenWithAllowReadingFromString()
     {
         JsonSerializerOptions options = new(JsonSerializerOptions.Default) { NumberHandling = JsonNumberHandling.AllowReadingFromString };
         AIFunction func = AIFunctionFactory.Create((int a, int? b, long c, short d, float e, double f, decimal g) => { }, serializerOptions: options);
 
         AIFunctionMetadata metadata = func.Metadata;
-        foreach (var param in metadata.Parameters)
+        JsonElement schemaParameters = func.Metadata.Schema.GetProperty("properties");
+        Assert.Equal(metadata.Parameters.Count, schemaParameters.GetPropertyCount());
+
+        int i = 0;
+        foreach (JsonProperty property in schemaParameters.EnumerateObject())
         {
-            string numericType = Type.GetTypeCode(param.ParameterType) is TypeCode.Double or TypeCode.Single or TypeCode.Decimal
+            string numericType = Type.GetTypeCode(metadata.Parameters[i].ParameterType) is TypeCode.Double or TypeCode.Single or TypeCode.Decimal
                 ? "number"
                 : "integer";
 
@@ -258,8 +260,9 @@ public static class AIJsonUtilitiesTests
                 }
                 """).RootElement;
 
-            JsonElement actualSchema = Assert.IsType<JsonElement>(param.Schema);
+            JsonElement actualSchema = property.Value;
             Assert.True(JsonElement.DeepEquals(expected, actualSchema));
+            i++;
         }
     }
 
