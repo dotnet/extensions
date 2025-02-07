@@ -13,7 +13,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// A delegating chat client that caches the results of chat calls.
+/// Represents a delegating chat client that caches the results of chat calls.
 /// </summary>
 public abstract class CachingChatClient : DelegatingChatClient
 {
@@ -31,7 +31,7 @@ public abstract class CachingChatClient : DelegatingChatClient
     }
 
     /// <summary>Gets or sets a value indicating whether to coalesce streaming updates.</summary>
-    /// <remarks>
+    /// <value>
     /// <para>
     /// When <see langword="true"/>, the client will attempt to coalesce contiguous streaming updates
     /// into a single update, in order to reduce the number of individual items that are yielded on
@@ -41,7 +41,7 @@ public abstract class CachingChatClient : DelegatingChatClient
     /// <para>
     /// The default is <see langword="true"/>.
     /// </para>
-    /// </remarks>
+    /// </value>
     public bool CoalesceStreamingUpdates { get; set; } = true;
 
     /// <inheritdoc />
