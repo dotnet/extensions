@@ -520,7 +520,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         await chatClient.CompleteAsync([new(ChatRole.User, "What's the biggest animal?")]);
 
         Assert.Collection(collector.GetSnapshot(),
-            entry => Assert.Contains("What\\u0027s the biggest animal?", entry.Message),
+            entry => Assert.Contains("What's the biggest animal?", entry.Message),
             entry => Assert.Contains("whale", entry.Message));
     }
 
@@ -542,7 +542,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         }
 
         var logs = collector.GetSnapshot();
-        Assert.Contains(logs, e => e.Message.Contains("What\\u0027s the biggest animal?"));
+        Assert.Contains(logs, e => e.Message.Contains("What's the biggest animal?"));
         Assert.Contains(logs, e => e.Message.Contains("whale"));
     }
 
