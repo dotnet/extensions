@@ -6,13 +6,15 @@ using ChatWithCustomData.Web.Services;
 using ChatWithCustomData.Web.Services.Ingestion;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.FileProviders.Physical;
+#if(IsAzureOpenAi || UseAzureAISearch)
+using Azure;
+#endif
 #if (IsOllama)
 using OllamaSharp;
 #elif (IsOpenAi || IsGHModels)
 using OpenAI;
 using System.ClientModel;
 #else
-using Azure;
 using Azure.AI.OpenAI;
 #if (UseManagedIdentity)
 using Azure.Identity;
