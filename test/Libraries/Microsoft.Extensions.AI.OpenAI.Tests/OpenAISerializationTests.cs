@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -379,7 +380,8 @@ public static partial class OpenAISerializationTests
         Assert.Equal("personName", parameter.Name);
         Assert.True(parameter.IsRequired);
 
-        JsonObject parameterSchema = Assert.IsType<JsonObject>(JsonNode.Parse(Assert.IsType<JsonElement>(parameter.Schema).GetRawText()));
+        JsonObject parametersSchema = Assert.IsType<JsonObject>(JsonNode.Parse(function.Metadata.Schema.GetProperty("properties").GetRawText()));
+        var parameterSchema = Assert.IsType<JsonObject>(Assert.Single(parametersSchema.Select(kvp => kvp.Value)));
         Assert.Equal(2, parameterSchema.Count);
         Assert.Equal("The person whose age is being requested", (string)parameterSchema["description"]!);
         Assert.Equal("string", (string)parameterSchema["type"]!);

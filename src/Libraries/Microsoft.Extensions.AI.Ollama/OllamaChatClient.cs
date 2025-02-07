@@ -22,7 +22,6 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents an <see cref="IChatClient"/> for Ollama.</summary>
 public sealed class OllamaChatClient : IChatClient
 {
-    private static readonly JsonElement _defaultParameterSchema = JsonDocument.Parse("{}").RootElement;
     private static readonly JsonElement _schemalessJsonResponseFormatValue = JsonDocument.Parse("\"json\"").RootElement;
 
     /// <summary>The api/chat endpoint URI.</summary>
@@ -466,20 +465,17 @@ public sealed class OllamaChatClient : IChatClient
         }
     }
 
-    private static OllamaTool ToOllamaTool(AIFunction function) => new()
+    private static OllamaTool ToOllamaTool(AIFunction function)
     {
-        Type = "function",
-        Function = new OllamaFunctionTool
+        return new()
         {
-            Name = function.Metadata.Name,
-            Description = function.Metadata.Description,
-            Parameters = new OllamaFunctionToolParameters
+            Type = "function",
+            Function = new OllamaFunctionTool
             {
-                Properties = function.Metadata.Parameters.ToDictionary(
-                    p => p.Name,
-                    p => p.Schema is JsonElement e ? e : _defaultParameterSchema),
-                Required = function.Metadata.Parameters.Where(p => p.IsRequired).Select(p => p.Name).ToList(),
-            },
-        }
-    };
+                Name = function.Metadata.Name,
+                Description = function.Metadata.Description,
+                Parameters = JsonSerializer.Deserialize(function.Metadata.Schema, JsonContext.Default.OllamaFunctionToolParameters)!,
+            }
+        };
+    }
 }
