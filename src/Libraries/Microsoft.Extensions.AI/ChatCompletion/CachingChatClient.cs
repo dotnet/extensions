@@ -30,12 +30,12 @@ public abstract class CachingChatClient : DelegatingChatClient
     {
     }
 
-    /// <summary>Gets or sets a value indicating whether to coalesce streaming updates.</summary>
+    /// <summary>Gets or sets a value indicating whether streaming updates are coalesced.</summary>
     /// <value>
     /// <para>
-    /// When <see langword="true"/>, the client will attempt to coalesce contiguous streaming updates
-    /// into a single update, in order to reduce the number of individual items that are yielded on
-    /// subsequent enumerations of the cached data. When <see langword="false"/>, the updates are
+    /// <see langword="true"/> if the client attempts to coalesce contiguous streaming updates
+    /// into a single update, to reduce the number of individual items that are yielded on
+    /// subsequent enumerations of the cached data; <see langword="false"/> if the updates are
     /// kept unaltered.
     /// </para>
     /// <para>
