@@ -13,7 +13,8 @@ internal static class IntegrationTestHelpers
     /// <summary>Gets a <see cref="Uri"/> to use for testing, or null if the associated tests should be disabled.</summary>
     public static Uri? GetOllamaUri()
     {
-        // return new Uri("http://localhost:11434");
-        return null;
+        return TestRunnerConfiguration.Instance["Ollama:Endpoint"] is string endpoint
+            ? new Uri(endpoint)
+            : null;
     }
 }

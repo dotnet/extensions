@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
+using Microsoft.Shared.Instruments;
 
 namespace Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -157,7 +158,7 @@ internal sealed partial class ResourceUtilizationHealthCheck : IHealthCheck, IDi
 
     private void OnInstrumentPublished(Instrument instrument, MeterListener listener)
     {
-        if (instrument.Meter.Name is "Microsoft.Extensions.Diagnostics.ResourceMonitoring")
+        if (instrument.Meter.Name == ResourceUtilizationInstruments.MeterName)
         {
             listener.EnableMeasurementEvents(instrument);
         }
@@ -169,12 +170,12 @@ internal sealed partial class ResourceUtilizationHealthCheck : IHealthCheck, IDi
     {
         switch (instrument.Name)
         {
-            case "process.cpu.utilization":
-            case "container.cpu.limit.utilization":
+            case ResourceUtilizationInstruments.ProcessCpuUtilization:
+            case ResourceUtilizationInstruments.ContainerCpuLimitUtilization:
                 _cpuUsedPercentage = measurement * _multiplier;
                 break;
-            case "dotnet.process.memory.virtual.utilization":
-            case "container.memory.limit.utilization":
+            case ResourceUtilizationInstruments.ProcessMemoryUtilization:
+            case ResourceUtilizationInstruments.ContainerMemoryLimitUtilization:
                 _memoryUsedPercentage = measurement * _multiplier;
                 break;
         }

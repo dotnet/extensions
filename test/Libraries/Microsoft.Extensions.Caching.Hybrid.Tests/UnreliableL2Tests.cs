@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
 
 // validate HC stability when the L2 is unreliable
-public class UnreliableL2Tests(ITestOutputHelper testLog)
+public class UnreliableL2Tests(ITestOutputHelper testLog) : IClassFixture<TestEventListener>
 {
     [Theory]
     [InlineData(BreakType.None)]

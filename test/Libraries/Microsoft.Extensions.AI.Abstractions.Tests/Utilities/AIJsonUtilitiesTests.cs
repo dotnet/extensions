@@ -4,6 +4,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
@@ -33,6 +34,20 @@ public static class AIJsonUtilitiesTests
         // Additional settings
         Assert.Equal(JsonIgnoreCondition.WhenWritingNull, options.DefaultIgnoreCondition);
         Assert.True(options.WriteIndented);
+        Assert.Same(JavaScriptEncoder.UnsafeRelaxedJsonEscaping, options.Encoder);
+    }
+
+    [Theory]
+    [InlineData("<script>alert('XSS')</script>", "<script>alert('XSS')</script>")]
+    [InlineData("""{"forecast":"sunny", "temperature":"75"}""", """{\"forecast\":\"sunny\", \"temperature\":\"75\"}""")]
+    [InlineData("""{"message":"Πάντα ῥεῖ."}""", """{\"message\":\"Πάντα ῥεῖ.\"}""")]
+    [InlineData("""{"message":"七転び八起き"}""", """{\"message\":\"七転び八起き\"}""")]
+    [InlineData("""☺️🤖🌍𝄞""", """☺️\uD83E\uDD16\uD83C\uDF0D\uD834\uDD1E""")]
+    public static void DefaultOptions_UsesExpectedEscaping(string input, string expectedJsonString)
+    {
+        var options = AIJsonUtilities.DefaultOptions;
+        string json = JsonSerializer.Serialize(input, options);
+        Assert.Equal($@"""{expectedJsonString}""", json);
     }
 
     [Theory]
