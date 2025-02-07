@@ -180,7 +180,7 @@
       "type": "generated",
       "generator": "constant",
       "parameters": {
-        "value": "llama3.1"
+        "value": "llama3.2"
       }
     },
     "OllamaEmbeddingModelDefault": {
