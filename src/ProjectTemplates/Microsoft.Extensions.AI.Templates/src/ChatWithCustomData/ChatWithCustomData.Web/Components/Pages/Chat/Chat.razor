@@ -63,7 +63,7 @@
         ChatCompletion response = await ChatClient.CompleteAsync(messages, chatOptions, currentResponseCancellation.Token);
         currentResponseMessage = response.Message;
         ChatMessageItem.NotifyChanged(currentResponseMessage);
-#else
+#else*@
         // Stream and display a new response from the IChatClient
         var responseText = new TextContent("");
         currentResponseMessage = new ChatMessage(ChatRole.Assistant, [responseText]);
@@ -73,7 +73,7 @@
             responseText.Text += chunk.Text;
             ChatMessageItem.NotifyChanged(currentResponseMessage);
         }
-#endif*@
+@*#endif*@
 
         // Store the final response in the conversation, and begin getting suggestions
         messages.Add(currentResponseMessage!);
