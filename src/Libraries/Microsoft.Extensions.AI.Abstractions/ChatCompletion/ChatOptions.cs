@@ -31,7 +31,7 @@ public class ChatOptions
     /// </summary>
     /// <remarks>
     /// This property reduces the probability of generating nonsense. A higher value gives more diverse answers, while a lower value is more conservative.
-    /// </summary>
+    /// </remarks>
     public int? TopK { get; set; }
 
     /// <summary>
