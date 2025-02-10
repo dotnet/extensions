@@ -621,7 +621,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         var activity = Assert.Single(activities);
         Assert.StartsWith("chat", activity.DisplayName);
         Assert.StartsWith("http", (string)activity.GetTagItem("server.address")!);
-        Assert.Equal(chatClient.Metadata.ProviderUri?.Port, (int)activity.GetTagItem("server.port")!);
+        Assert.Equal(chatClient.GetService<ChatClientMetadata>()?.ProviderUri?.Port, (int)activity.GetTagItem("server.port")!);
         Assert.NotNull(activity.Id);
         Assert.NotEmpty(activity.Id);
         Assert.NotEqual(0, (int)activity.GetTagItem("gen_ai.response.input_tokens")!);

@@ -292,7 +292,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     case ContinueMode.Continue when options.ToolMode is RequiredChatToolMode:
                         // We have to reset this after the first iteration, otherwise we'll be in an infinite loop.
                         options = options.Clone();
-                        options.ToolMode = ChatToolMode.Auto;
+                        options.ToolMode = null;
                         break;
 
                     case ContinueMode.AllowOneMoreRoundtrip:
@@ -408,7 +408,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     case ContinueMode.Continue when options.ToolMode is RequiredChatToolMode:
                         // We have to reset this after the first iteration, otherwise we'll be in an infinite loop.
                         options = options.Clone();
-                        options.ToolMode = ChatToolMode.Auto;
+                        options.ToolMode = null;
                         break;
 
                     case ContinueMode.AllowOneMoreRoundtrip:
@@ -643,7 +643,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 functionResult = message;
             }
 
-            return new FunctionResultContent(result.CallContent.CallId, result.CallContent.Name, functionResult) { Exception = result.Exception };
+            return new FunctionResultContent(result.CallContent.CallId, functionResult) { Exception = result.Exception };
         }
     }
 

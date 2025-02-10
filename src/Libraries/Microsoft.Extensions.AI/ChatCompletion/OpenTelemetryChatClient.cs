@@ -55,11 +55,13 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
         _logger = logger ?? NullLogger.Instance;
 
-        ChatClientMetadata metadata = innerClient!.Metadata;
-        _modelId = metadata.ModelId;
-        _system = metadata.ProviderName;
-        _serverAddress = metadata.ProviderUri?.GetLeftPart(UriPartial.Path);
-        _serverPort = metadata.ProviderUri?.Port ?? 0;
+        if (innerClient!.GetService<ChatClientMetadata>() is ChatClientMetadata metadata)
+        {
+            _modelId = metadata.ModelId;
+            _system = metadata.ProviderName;
+            _serverAddress = metadata.ProviderUri?.GetLeftPart(UriPartial.Path);
+            _serverPort = metadata.ProviderUri?.Port ?? 0;
+        }
 
         string name = string.IsNullOrEmpty(sourceName) ? OpenTelemetryConsts.DefaultSourceName : sourceName!;
         _activitySource = new(name);
@@ -333,20 +335,20 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
         if (_tokenUsageHistogram.Enabled && completion?.Usage is { } usage)
         {
-            if (usage.InputTokenCount is int inputTokens)
+            if (usage.InputTokenCount is long inputTokens)
             {
                 TagList tags = default;
                 tags.Add(OpenTelemetryConsts.GenAI.Token.Type, "input");
                 AddMetricTags(ref tags, requestModelId, completion);
-                _tokenUsageHistogram.Record(inputTokens);
+                _tokenUsageHistogram.Record((int)inputTokens);
             }
 
-            if (usage.OutputTokenCount is int outputTokens)
+            if (usage.OutputTokenCount is long outputTokens)
             {
                 TagList tags = default;
                 tags.Add(OpenTelemetryConsts.GenAI.Token.Type, "output");
                 AddMetricTags(ref tags, requestModelId, completion);
-                _tokenUsageHistogram.Record(outputTokens);
+                _tokenUsageHistogram.Record((int)outputTokens);
             }
         }
 
@@ -380,14 +382,14 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                     _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.Model, completion.ModelId);
                 }
 
-                if (completion.Usage?.InputTokenCount is int inputTokens)
+                if (completion.Usage?.InputTokenCount is long inputTokens)
                 {
-                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.InputTokens, inputTokens);
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.InputTokens, (int)inputTokens);
                 }
 
-                if (completion.Usage?.OutputTokenCount is int outputTokens)
+                if (completion.Usage?.OutputTokenCount is long outputTokens)
                 {
-                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.OutputTokens, outputTokens);
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.OutputTokens, (int)outputTokens);
                 }
 
                 if (_system is not null)

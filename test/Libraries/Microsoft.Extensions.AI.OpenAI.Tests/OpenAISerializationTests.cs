@@ -366,7 +366,7 @@ public static partial class OpenAISerializationTests
         Assert.Null(request.Options.Seed);
         Assert.Null(request.Options.StopSequences);
 
-        Assert.Equal(ChatToolMode.Auto, request.Options.ToolMode);
+        Assert.Same(ChatToolMode.Auto, request.Options.ToolMode);
         Assert.NotNull(request.Options.Tools);
 
         AIFunction function = Assert.IsAssignableFrom<AIFunction>(Assert.Single(request.Options.Tools));
@@ -455,7 +455,6 @@ public static partial class OpenAISerializationTests
                 Assert.Null(msg.AdditionalProperties);
 
                 FunctionResultContent frc = Assert.IsType<FunctionResultContent>(Assert.Single(msg.Contents));
-                Assert.Equal("SayHello", frc.Name);
                 Assert.Equal("12345", frc.CallId);
                 Assert.Equal(42, Assert.IsType<JsonElement>(frc.Result).GetInt32());
                 Assert.Null(frc.AdditionalProperties);

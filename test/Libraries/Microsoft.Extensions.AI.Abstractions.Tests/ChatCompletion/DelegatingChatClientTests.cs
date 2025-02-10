@@ -18,15 +18,6 @@ public class DelegatingChatClientTests
     }
 
     [Fact]
-    public void MetadataDefaultsToInnerClient()
-    {
-        using var inner = new TestChatClient();
-        using var delegating = new NoOpDelegatingChatClient(inner);
-
-        Assert.Same(inner.Metadata, delegating.Metadata);
-    }
-
-    [Fact]
     public async Task ChatAsyncDefaultsToInnerClientAsync()
     {
         // Arrange

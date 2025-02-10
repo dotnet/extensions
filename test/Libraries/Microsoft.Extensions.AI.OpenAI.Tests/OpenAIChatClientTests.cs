@@ -72,14 +72,16 @@ public class OpenAIChatClientTests
             new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
 
         IChatClient chatClient = client.AsChatClient(model);
-        Assert.Equal("openai", chatClient.Metadata.ProviderName);
-        Assert.Equal(endpoint, chatClient.Metadata.ProviderUri);
-        Assert.Equal(model, chatClient.Metadata.ModelId);
+        var metadata = chatClient.GetService<ChatClientMetadata>();
+        Assert.Equal("openai", metadata?.ProviderName);
+        Assert.Equal(endpoint, metadata?.ProviderUri);
+        Assert.Equal(model, metadata?.ModelId);
 
         chatClient = client.GetChatClient(model).AsChatClient();
-        Assert.Equal("openai", chatClient.Metadata.ProviderName);
-        Assert.Equal(endpoint, chatClient.Metadata.ProviderUri);
-        Assert.Equal(model, chatClient.Metadata.ModelId);
+        metadata = chatClient.GetService<ChatClientMetadata>();
+        Assert.Equal("openai", metadata?.ProviderName);
+        Assert.Equal(endpoint, metadata?.ProviderUri);
+        Assert.Equal(model, metadata?.ModelId);
     }
 
     [Fact]
@@ -994,8 +996,8 @@ public class OpenAIChatClientTests
             ]),
             new (ChatRole.Tool,
             [
-                new FunctionResultContent("12345", "SayHello", "Said hello"),
-                new FunctionResultContent("12346", "SayHi", "Said hi"),
+                new FunctionResultContent("12345", "Said hello"),
+                new FunctionResultContent("12346", "Said hi"),
             ]),
             new(ChatRole.Assistant, "You are great."),
             new(ChatRole.User, "Thanks!"),

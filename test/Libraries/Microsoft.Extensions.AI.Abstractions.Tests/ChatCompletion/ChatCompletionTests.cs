@@ -249,7 +249,7 @@ public class ChatCompletionTests
             new ChatMessage(ChatRole.System,
             [
                 new FunctionCallContent("call123", "name"),
-                new FunctionResultContent("call123", "name", 42),
+                new FunctionResultContent("call123", 42),
             ])
             {
                 AdditionalProperties = new() { ["choice2Key"] = "choice2Value" },

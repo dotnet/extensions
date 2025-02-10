@@ -37,19 +37,6 @@ public class DelegatingChatClient : IChatClient
     /// <summary>Gets the inner <see cref="IChatClient" />.</summary>
     protected IChatClient InnerClient { get; }
 
-    /// <summary>Provides a mechanism for releasing unmanaged resources.</summary>
-    /// <param name="disposing"><see langword="true"/> if being called from <see cref="Dispose()"/>; otherwise, <see langword="false"/>.</param>
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            InnerClient.Dispose();
-        }
-    }
-
-    /// <inheritdoc />
-    public virtual ChatClientMetadata Metadata => InnerClient.Metadata;
-
     /// <inheritdoc />
     public virtual Task<ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
@@ -71,5 +58,15 @@ public class DelegatingChatClient : IChatClient
         return
             serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
             InnerClient.GetService(serviceType, serviceKey);
+    }
+
+    /// <summary>Provides a mechanism for releasing unmanaged resources.</summary>
+    /// <param name="disposing"><see langword="true"/> if being called from <see cref="Dispose()"/>; otherwise, <see langword="false"/>.</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            InnerClient.Dispose();
+        }
     }
 }

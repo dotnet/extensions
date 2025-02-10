@@ -34,7 +34,7 @@ internal static partial class OpenAIModelMappers
             throw new NotSupportedException("Creating OpenAI ChatCompletion models with multiple choices is currently not supported.");
         }
 
-        List<OpenAI.Chat.ChatToolCall>? toolCalls = null;
+        List<ChatToolCall>? toolCalls = null;
         foreach (AIContent content in chatCompletion.Message.Contents)
         {
             if (content is FunctionCallContent callRequest)
@@ -49,7 +49,7 @@ internal static partial class OpenAIModelMappers
             }
         }
 
-        OpenAI.Chat.ChatTokenUsage? chatTokenUsage = null;
+        ChatTokenUsage? chatTokenUsage = null;
         if (chatCompletion.Usage is UsageDetails usageDetails)
         {
             chatTokenUsage = ToOpenAIUsage(usageDetails);
@@ -143,7 +143,7 @@ internal static partial class OpenAIModelMappers
         return completion;
     }
 
-    public static ChatOptions FromOpenAIOptions(OpenAI.Chat.ChatCompletionOptions? options)
+    public static ChatOptions FromOpenAIOptions(ChatCompletionOptions? options)
     {
         ChatOptions result = new();
 
@@ -220,6 +220,7 @@ internal static partial class OpenAIModelMappers
                         result.ToolMode = jsonElement.GetString() switch
                         {
                             "required" => ChatToolMode.RequireAny,
+                            "none" => ChatToolMode.None,
                             _ => ChatToolMode.Auto,
                         };
 
@@ -239,7 +240,7 @@ internal static partial class OpenAIModelMappers
     }
 
     /// <summary>Converts an extensions options instance to an OpenAI options instance.</summary>
-    public static OpenAI.Chat.ChatCompletionOptions ToOpenAIOptions(ChatOptions? options)
+    public static ChatCompletionOptions ToOpenAIOptions(ChatOptions? options)
     {
         ChatCompletionOptions result = new();
 
@@ -318,7 +319,12 @@ internal static partial class OpenAIModelMappers
 
                 switch (options.ToolMode)
                 {
+                    case NoneChatToolMode:
+                        result.ToolChoice = ChatToolChoice.CreateNoneChoice();
+                        break;
+
                     case AutoChatToolMode:
+                    case null:
                         result.ToolChoice = ChatToolChoice.CreateAutoChoice();
                         break;
 
@@ -351,7 +357,7 @@ internal static partial class OpenAIModelMappers
 
     private static AITool FromOpenAIChatTool(ChatTool chatTool)
     {
-        AdditionalPropertiesDictionary additionalProperties = new();
+        AdditionalPropertiesDictionary additionalProperties = [];
         if (chatTool.FunctionSchemaIsStrict is bool strictValue)
         {
             additionalProperties["Strict"] = strictValue;
@@ -399,8 +405,8 @@ internal static partial class OpenAIModelMappers
             strictValue : null;
 
         // Map to an intermediate model so that redundant properties are skipped.
-        OpenAIChatToolJson tool = JsonSerializer.Deserialize(aiFunction.Metadata.Schema, OpenAIJsonContext.Default.OpenAIChatToolJson)!;
-        BinaryData functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool, OpenAIJsonContext.Default.OpenAIChatToolJson));
+        var tool = JsonSerializer.Deserialize(aiFunction.Metadata.Schema, OpenAIJsonContext.Default.OpenAIChatToolJson)!;
+        var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool, OpenAIJsonContext.Default.OpenAIChatToolJson));
         return ChatTool.CreateFunctionTool(aiFunction.Metadata.Name, aiFunction.Metadata.Description, functionParameters, strict);
     }
 
@@ -411,7 +417,7 @@ internal static partial class OpenAIModelMappers
             InputTokenCount = tokenUsage.InputTokenCount,
             OutputTokenCount = tokenUsage.OutputTokenCount,
             TotalTokenCount = tokenUsage.TotalTokenCount,
-            AdditionalCounts = new(),
+            AdditionalCounts = [],
         };
 
         if (tokenUsage.InputTokenDetails is ChatInputTokenUsageDetails inputDetails)
@@ -478,11 +484,17 @@ internal static partial class OpenAIModelMappers
         }
 
         return OpenAIChatModelFactory.ChatTokenUsage(
-            inputTokenCount: usageDetails.InputTokenCount ?? 0,
-            outputTokenCount: usageDetails.OutputTokenCount ?? 0,
-            totalTokenCount: usageDetails.TotalTokenCount ?? 0,
+            inputTokenCount: ToInt32Saturate(usageDetails.InputTokenCount),
+            outputTokenCount: ToInt32Saturate(usageDetails.OutputTokenCount),
+            totalTokenCount: ToInt32Saturate(usageDetails.TotalTokenCount),
             outputTokenDetails: outputTokenUsageDetails,
             inputTokenDetails: inputTokenUsageDetails);
+
+        static int ToInt32Saturate(long? value) =>
+            value is null ? 0 :
+            value > int.MaxValue ? int.MaxValue :
+            value < int.MinValue ? int.MinValue :
+            (int)value;
     }
 
     /// <summary>Converts an OpenAI role to an Extensions role.</summary>

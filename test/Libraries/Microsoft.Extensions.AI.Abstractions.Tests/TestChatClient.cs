@@ -17,8 +17,6 @@ public sealed class TestChatClient : IChatClient
 
     public IServiceProvider? Services { get; set; }
 
-    public ChatClientMetadata Metadata { get; set; } = new();
-
     public Func<IList<ChatMessage>, ChatOptions?, CancellationToken, Task<ChatCompletion>>? CompleteAsyncCallback { get; set; }
 
     public Func<IList<ChatMessage>, ChatOptions?, CancellationToken, IAsyncEnumerable<StreamingChatCompletionUpdate>>? CompleteStreamingAsyncCallback { get; set; }

@@ -71,9 +71,10 @@ public class OllamaChatClientTests
         string model = "amazingModel";
 
         using IChatClient chatClient = new OllamaChatClient(endpoint, model);
-        Assert.Equal("ollama", chatClient.Metadata.ProviderName);
-        Assert.Equal(endpoint, chatClient.Metadata.ProviderUri);
-        Assert.Equal(model, chatClient.Metadata.ModelId);
+        var metadata = chatClient.GetService<ChatClientMetadata>();
+        Assert.Equal("ollama", metadata?.ProviderName);
+        Assert.Equal(endpoint, metadata?.ProviderUri);
+        Assert.Equal(model, metadata?.ModelId);
     }
 
     [Fact]
@@ -459,7 +460,7 @@ public class OllamaChatClientTests
             [
                 new(ChatRole.User, "How old is Alice?"),
                 new(ChatRole.Assistant, [new FunctionCallContent("abcd1234", "GetPersonAge", new Dictionary<string, object?> { ["personName"] = "Alice" })]),
-                new(ChatRole.Tool, [new FunctionResultContent("abcd1234", "GetPersonAge", 42)]),
+                new(ChatRole.Tool, [new FunctionResultContent("abcd1234", 42)]),
             ],
             new()
             {
