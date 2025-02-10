@@ -140,13 +140,14 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     public bool ConcurrentInvocation { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether to keep intermediate messages in the chat history.
+    /// Gets or sets a value indicating whether to keep intermediate function calling request
+    /// and response messages in the chat history.
     /// </summary>
     /// <value>
     /// <see langword="true"/> if intermediate messages persist in the <see cref="IList{ChatMessage}"/> list provided
     /// to <see cref="CompleteAsync"/> and <see cref="CompleteStreamingAsync"/> by the caller.
     /// <see langword="false"/> if intermediate messages are removed prior to completing the operation.
-    /// The default value is <see langword="false"/>.
+    /// The default value is <see langword="true"/>.
     /// </value>
     /// <remarks>
     /// <para>
@@ -155,10 +156,10 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// those messages to the list of messages, along with <see cref="FunctionResultContent"/> instances
     /// it creates with the results of invoking the requested functions. The resulting augmented
     /// list of messages is then passed to the inner client in order to send the results back.
-    /// By default, those messages do not persist in the <see cref="IList{ChatMessage}"/> list provided to
-    /// <see cref="CompleteAsync"/> and <see cref="CompleteStreamingAsync"/> by the caller. Set <see cref="KeepFunctionCallingMessages"/>
-    /// to <see langword="true"/> to mutate the provided list with those messages such that they're available
-    /// to the caller.
+    /// By default, those messages persist in the <see cref="IList{ChatMessage}"/> list provided to
+    /// <see cref="CompleteAsync"/> and <see cref="CompleteStreamingAsync"/> by the caller, such that those
+    /// messages are available to the caller. Set <see cref="KeepFunctionCallingMessages"/> to avoid including
+    /// those messages in the caller-provided <see cref="IList{ChatMessage}"/>.
     /// </para>
     /// <para>
     /// Changing the value of this property while the client is in use might result in inconsistencies
@@ -166,11 +167,11 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// </para>
     /// <para>
     /// If the underlying <see cref="IChatClient"/> responds with <see cref="ChatCompletion.ChatThreadId"/>
-    /// set to a non-<see langword="null"/> value, this property may be ignored and behaves as if it is
+    /// set to a non-<see langword="null"/> value, this property may be ignored and behave as if it is
     /// <see langword="false"/>, with any such intermediate messages not stored in the messages list.
     /// </para>
     /// </remarks>
-    public bool KeepFunctionCallingMessages { get; set; }
+    public bool KeepFunctionCallingMessages { get; set; } = true;
 
     /// <summary>
     /// Gets or sets the maximum number of iterations per request.
@@ -302,34 +303,10 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
                 // Add the responses from the function calls into the history.
                 var modeAndMessages = await ProcessFunctionCallsAsync(chatMessages, options, functionCallContents, iteration, cancellationToken).ConfigureAwait(false);
-
-                switch (modeAndMessages.Mode)
+                if (UpdateOptionsForMode(modeAndMessages.Mode, ref options, response.ChatThreadId))
                 {
-                    case ContinueMode.Continue when options.ToolMode is RequiredChatToolMode:
-                        // We have to reset this after the first iteration, otherwise we'll be in an infinite loop.
-                        options = options.Clone();
-                        options.ToolMode = null;
-                        if (response.ChatThreadId is not null)
-                        {
-                            options.ChatThreadId = response.ChatThreadId;
-                        }
-
-                        break;
-
-                    case ContinueMode.AllowOneMoreRoundtrip:
-                        // The LLM gets one further chance to answer, but cannot use tools.
-                        options = options.Clone();
-                        options.Tools = null;
-                        if (response.ChatThreadId is not null)
-                        {
-                            options.ChatThreadId = response.ChatThreadId;
-                        }
-
-                        break;
-
-                    case ContinueMode.Terminate:
-                        // Bail immediately.
-                        return response;
+                    // Terminate
+                    return response;
                 }
             }
 
@@ -360,7 +337,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         for (int iteration = 0; ; iteration++)
         {
             choice = null;
-            string? threadId = null;
+            string? chatThreadId = null;
             functionCallContents.Clear();
             await foreach (var update in base.CompleteStreamingAsync(chatMessages, options, cancellationToken).ConfigureAwait(false))
             {
@@ -394,7 +371,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     ThrowForMultipleChoices();
                 }
 
-                threadId ??= update.ChatThreadId;
+                chatThreadId ??= update.ChatThreadId;
 
                 yield return update;
                 Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
@@ -411,7 +388,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
             // Update the chat history. If the underlying client is tracking the state, then we want to avoid re-sending
             // what we already sent as well as this response message, so create a new list to store the response message(s).
-            if (threadId is not null)
+            if (chatThreadId is not null)
             {
                 if (chatMessages == originalChatMessages)
                 {
@@ -437,35 +414,10 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
             // Process all of the functions, adding their results into the history.
             var modeAndMessages = await ProcessFunctionCallsAsync(chatMessages, options, functionCallContents, iteration, cancellationToken).ConfigureAwait(false);
-
-            // Decide how to proceed based on the result of the function calls.
-            switch (modeAndMessages.Mode)
+            if (UpdateOptionsForMode(modeAndMessages.Mode, ref options, chatThreadId))
             {
-                case ContinueMode.Continue when options.ToolMode is RequiredChatToolMode:
-                    // We have to reset this after the first iteration, otherwise we'll be in an infinite loop.
-                    options = options.Clone();
-                    options.ToolMode = null;
-                    if (threadId is not null)
-                    {
-                        options.ChatThreadId = threadId;
-                    }
-
-                    break;
-
-                case ContinueMode.AllowOneMoreRoundtrip:
-                    // The LLM gets one further chance to answer, but cannot use tools.
-                    options = options.Clone();
-                    options.Tools = null;
-                    if (threadId is not null)
-                    {
-                        options.ChatThreadId = threadId;
-                    }
-
-                    break;
-
-                case ContinueMode.Terminate:
-                    // Bail immediately.
-                    yield break;
+                // Terminate
+                yield break;
             }
         }
     }
@@ -478,6 +430,55 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         // explicitly requested multiple choices. We fail aggressively to avoid cases where a developer
         // doesn't realize this and is wasting their budget requesting extra choices we'd never use.
         throw new InvalidOperationException("Automatic function call invocation only accepts a single choice, but multiple choices were received.");
+    }
+
+    /// <summary>Updates <paramref name="options"/> for the response.</summary>
+    /// <returns>true if the function calling loop should terminate; otherwise, false.</returns>
+    private static bool UpdateOptionsForMode(ContinueMode mode, ref ChatOptions options, string? chatThreadId)
+    {
+        switch (mode)
+        {
+            case ContinueMode.Continue when options.ToolMode is RequiredChatToolMode:
+                // We have to reset the tool mode to be non-required after the first iteration,
+                // as otherwise we'll be in an infinite loop.
+                options = options.Clone();
+                options.ToolMode = null;
+                if (chatThreadId is not null)
+                {
+                    options.ChatThreadId = chatThreadId;
+                }
+
+                break;
+
+            case ContinueMode.AllowOneMoreRoundtrip:
+                // The LLM gets one further chance to answer, but cannot use tools.
+                options = options.Clone();
+                options.Tools = null;
+                options.ToolMode = null;
+                if (chatThreadId is not null)
+                {
+                    options.ChatThreadId = chatThreadId;
+                }
+
+                break;
+
+            case ContinueMode.Terminate:
+                // Bail immediately.
+                return true;
+
+            default:
+                // As with the other modes, ensure we've propagated the chat thread ID to the options.
+                // We only need to clone the options if we're actually mutating it.
+                if (chatThreadId is not null && options.ChatThreadId != chatThreadId)
+                {
+                    options = options.Clone();
+                    options.ChatThreadId = chatThreadId;
+                }
+
+                break;
+        }
+
+        return false;
     }
 
     /// <summary>

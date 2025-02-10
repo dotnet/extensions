@@ -37,7 +37,7 @@ public class FunctionInvokingChatClientTests
 
         Assert.False(client.ConcurrentInvocation);
         Assert.False(client.DetailedErrors);
-        Assert.False(client.KeepFunctionCallingMessages);
+        Assert.True(client.KeepFunctionCallingMessages);
         Assert.Null(client.MaximumIterationsPerRequest);
         Assert.False(client.RetryOnError);
     }
@@ -651,6 +651,56 @@ public class FunctionInvokingChatClientTests
                 Assert.Equal(terminate, context.Terminate);
             }
         }
+    }
+
+    [Fact]
+    public async Task PropagatesCompletionChatThreadIdToOptions()
+    {
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result 1", "Func1")],
+        };
+
+        int iteration = 0;
+
+        Func<IList<ChatMessage>, ChatOptions?, CancellationToken, ChatCompletion> callback =
+            (chatContents, chatOptions, cancellationToken) =>
+            {
+                iteration++;
+
+                if (iteration == 1)
+                {
+                    Assert.Null(chatOptions?.ChatThreadId);
+                    return new ChatCompletion(new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId-abc", "Func1")]))
+                    {
+                        ChatThreadId = "12345",
+                    };
+                }
+                else if (iteration == 2)
+                {
+                    Assert.Equal("12345", chatOptions?.ChatThreadId);
+                    return new ChatCompletion(new ChatMessage(ChatRole.Assistant, "done!"));
+                }
+                else
+                {
+                    throw new InvalidOperationException("Unexpected iteration");
+                }
+            };
+
+        using var innerClient = new TestChatClient
+        {
+            CompleteAsyncCallback = (chatContents, chatOptions, cancellationToken) =>
+                Task.FromResult(callback(chatContents, chatOptions, cancellationToken)),
+            CompleteStreamingAsyncCallback = (chatContents, chatOptions, cancellationToken) =>
+                YieldAsync(callback(chatContents, chatOptions, cancellationToken).ToStreamingChatCompletionUpdates()),
+        };
+
+        using IChatClient service = innerClient.AsBuilder().UseFunctionInvocation().Build();
+
+        iteration = 0;
+        Assert.Equal("done!", (await service.CompleteAsync("hey", options)).ToString());
+        iteration = 0;
+        Assert.Equal("done!", (await service.CompleteStreamingAsync("hey", options).ToChatCompletionAsync()).ToString());
     }
 
     private static async Task<List<ChatMessage>> InvokeAndAssertAsync(

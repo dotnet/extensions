@@ -143,6 +143,7 @@ public class ChatCompletion
             ChatMessage choice = Choices[choiceIndex];
             updates[choiceIndex] = new StreamingChatCompletionUpdate
             {
+                ChatThreadId = ChatThreadId,
                 ChoiceIndex = choiceIndex,
 
                 AdditionalProperties = choice.AdditionalProperties,

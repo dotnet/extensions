@@ -27,6 +27,9 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents an <see cref="IChatClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="OpenAI.Chat.ChatClient"/>.</summary>
 internal sealed class OpenAIAssistantClient : IChatClient
 {
+    /// <summary>Metadata for the client.</summary>
+    private readonly ChatClientMetadata _metadata;
+
     /// <summary>The underlying <see cref="AssistantClient" />.</summary>
     private readonly AssistantClient _assistantClient;
 
@@ -49,11 +52,8 @@ internal sealed class OpenAIAssistantClient : IChatClient
         _assistantId = Throw.IfNull(assistantId);
         _threadId = threadId;
 
-        Metadata = new("openai");
+        _metadata = new("openai");
     }
-
-    /// <inheritdoc />
-    public ChatClientMetadata Metadata { get; }
 
     /// <inheritdoc />
     public object? GetService(Type serviceType, object? serviceKey = null)
@@ -62,6 +62,7 @@ internal sealed class OpenAIAssistantClient : IChatClient
 
         return
             serviceKey is not null ? null :
+            serviceType == typeof(ChatClientMetadata) ? _metadata :
             serviceType == typeof(AssistantClient) ? _assistantClient :
             serviceType.IsInstanceOfType(this) ? this :
             null;
