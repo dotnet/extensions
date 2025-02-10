@@ -361,7 +361,7 @@ public class FunctionInvokingChatClientTests
         var func1 = AIFunctionFactory.Create(() => "Some result 1", "Func1");
         var func2 = AIFunctionFactory.Create(() => "Some result 2", "Func2");
 
-        var expected = new ChatCompletion(
+        var expected = new ChatResponse(
         [
             new(ChatRole.Assistant, [new FunctionCallContent("callId1", func1.Metadata.Name)]),
             new(ChatRole.Assistant, [new FunctionCallContent("callId2", func2.Metadata.Name)]),
@@ -375,7 +375,7 @@ public class FunctionInvokingChatClientTests
                 return expected;
             },
             CompleteStreamingAsyncCallback = (chatContents, options, cancellationToken) =>
-              YieldAsync(expected.ToStreamingChatCompletionUpdates()),
+              YieldAsync(expected.ToChatResponseUpdates()),
         };
 
         IChatClient service = innerClient.AsBuilder().UseFunctionInvocation().Build();
@@ -383,8 +383,8 @@ public class FunctionInvokingChatClientTests
         List<ChatMessage> chat = [new ChatMessage(ChatRole.User, "hello")];
         ChatOptions options = new() { Tools = [func1, func2] };
 
-        Validate(await Assert.ThrowsAsync<InvalidOperationException>(() => service.CompleteAsync(chat, options)));
-        Validate(await Assert.ThrowsAsync<InvalidOperationException>(() => service.CompleteStreamingAsync(chat, options).ToChatCompletionAsync()));
+        Validate(await Assert.ThrowsAsync<InvalidOperationException>(() => service.GetResponseAsync(chat, options)));
+        Validate(await Assert.ThrowsAsync<InvalidOperationException>(() => service.GetStreamingResponseAsync(chat, options).ToChatResponseAsync()));
 
         void Validate(Exception ex)
         {
@@ -503,7 +503,7 @@ public class FunctionInvokingChatClientTests
 
                 for (int i = 0; i < activities.Count - 1; i++)
                 {
-                    // Activities are exported in the order of completion, so all except the last are children of the last (i.e., outer)
+                    // Activities are exported in the order of response, so all except the last are children of the last (i.e., outer)
                     Assert.Same(activities[activities.Count - 1], activities[i].Parent);
                 }
             }
@@ -535,17 +535,17 @@ public class FunctionInvokingChatClientTests
                 // Otherwise just end the conversation
                 return chatContents.Last().Text == "Hello"
                     ? YieldAsync(
-                        new StreamingChatCompletionUpdate { Contents = [new FunctionCallContent("callId1", "Func1", new Dictionary<string, object?> { ["text"] = "Input 1" })] },
-                        new StreamingChatCompletionUpdate { Contents = [new FunctionCallContent("callId2", "Func1", new Dictionary<string, object?> { ["text"] = "Input 2" })] })
+                        new ChatResponseUpdate { Contents = [new FunctionCallContent("callId1", "Func1", new Dictionary<string, object?> { ["text"] = "Input 1" })] },
+                        new ChatResponseUpdate { Contents = [new FunctionCallContent("callId2", "Func1", new Dictionary<string, object?> { ["text"] = "Input 2" })] })
                     : YieldAsync(
-                        new StreamingChatCompletionUpdate { Contents = [new TextContent("OK bye")] });
+                        new ChatResponseUpdate { Contents = [new TextContent("OK bye")] });
             }
         };
 
         using var client = new FunctionInvokingChatClient(innerClient) { KeepFunctionCallingMessages = true };
 
-        var updates = new List<StreamingChatCompletionUpdate>();
-        await foreach (var update in client.CompleteStreamingAsync(messages, options, CancellationToken.None))
+        var updates = new List<ChatResponseUpdate>();
+        await foreach (var update in client.GetStreamingResponseAsync(messages, options, CancellationToken.None))
         {
             updates.Add(update);
         }
@@ -654,7 +654,7 @@ public class FunctionInvokingChatClientTests
     }
 
     [Fact]
-    public async Task PropagatesCompletionChatThreadIdToOptions()
+    public async Task PropagatesResponseChatThreadIdToOptions()
     {
         var options = new ChatOptions
         {
@@ -663,7 +663,7 @@ public class FunctionInvokingChatClientTests
 
         int iteration = 0;
 
-        Func<IList<ChatMessage>, ChatOptions?, CancellationToken, ChatCompletion> callback =
+        Func<IList<ChatMessage>, ChatOptions?, CancellationToken, ChatResponse> callback =
             (chatContents, chatOptions, cancellationToken) =>
             {
                 iteration++;
@@ -671,7 +671,7 @@ public class FunctionInvokingChatClientTests
                 if (iteration == 1)
                 {
                     Assert.Null(chatOptions?.ChatThreadId);
-                    return new ChatCompletion(new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId-abc", "Func1")]))
+                    return new ChatResponse(new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId-abc", "Func1")]))
                     {
                         ChatThreadId = "12345",
                     };
@@ -679,7 +679,7 @@ public class FunctionInvokingChatClientTests
                 else if (iteration == 2)
                 {
                     Assert.Equal("12345", chatOptions?.ChatThreadId);
-                    return new ChatCompletion(new ChatMessage(ChatRole.Assistant, "done!"));
+                    return new ChatResponse(new ChatMessage(ChatRole.Assistant, "done!"));
                 }
                 else
                 {
@@ -692,15 +692,15 @@ public class FunctionInvokingChatClientTests
             CompleteAsyncCallback = (chatContents, chatOptions, cancellationToken) =>
                 Task.FromResult(callback(chatContents, chatOptions, cancellationToken)),
             CompleteStreamingAsyncCallback = (chatContents, chatOptions, cancellationToken) =>
-                YieldAsync(callback(chatContents, chatOptions, cancellationToken).ToStreamingChatCompletionUpdates()),
+                YieldAsync(callback(chatContents, chatOptions, cancellationToken).ToChatResponseUpdates()),
         };
 
         using IChatClient service = innerClient.AsBuilder().UseFunctionInvocation().Build();
 
         iteration = 0;
-        Assert.Equal("done!", (await service.CompleteAsync("hey", options)).ToString());
+        Assert.Equal("done!", (await service.GetResponseAsync("hey", options)).ToString());
         iteration = 0;
-        Assert.Equal("done!", (await service.CompleteStreamingAsync("hey", options).ToChatCompletionAsync()).ToString());
+        Assert.Equal("done!", (await service.GetStreamingResponseAsync("hey", options).ToChatResponseAsync()).ToString());
     }
 
     private static async Task<List<ChatMessage>> InvokeAndAssertAsync(
@@ -728,13 +728,13 @@ public class FunctionInvokingChatClientTests
 
                 var usage = CreateRandomUsage();
                 expectedTotalTokenCounts += usage.InputTokenCount!.Value;
-                return new ChatCompletion(new ChatMessage(ChatRole.Assistant, [.. plan[contents.Count].Contents])) { Usage = usage };
+                return new ChatResponse(new ChatMessage(ChatRole.Assistant, [.. plan[contents.Count].Contents])) { Usage = usage };
             }
         };
 
         IChatClient service = configurePipeline(innerClient.AsBuilder()).Build(services);
 
-        var result = await service.CompleteAsync(chat, options, cts.Token);
+        var result = await service.GetResponseAsync(chat, options, cts.Token);
         chat.Add(result.Message);
 
         expected ??= plan;
@@ -817,13 +817,13 @@ public class FunctionInvokingChatClientTests
             {
                 Assert.Equal(cts.Token, actualCancellationToken);
 
-                return YieldAsync(new ChatCompletion(new ChatMessage(ChatRole.Assistant, [.. plan[contents.Count].Contents])).ToStreamingChatCompletionUpdates());
+                return YieldAsync(new ChatResponse(new ChatMessage(ChatRole.Assistant, [.. plan[contents.Count].Contents])).ToChatResponseUpdates());
             }
         };
 
         IChatClient service = configurePipeline(innerClient.AsBuilder()).Build(services);
 
-        var result = await service.CompleteStreamingAsync(chat, options, cts.Token).ToChatCompletionAsync();
+        var result = await service.GetStreamingResponseAsync(chat, options, cts.Token).ToChatResponseAsync();
         chat.Add(result.Message);
 
         expected ??= plan;

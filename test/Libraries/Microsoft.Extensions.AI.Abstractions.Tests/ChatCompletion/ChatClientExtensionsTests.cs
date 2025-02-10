@@ -22,12 +22,12 @@ public class ChatClientExtensionsTests
     {
         Assert.Throws<ArgumentNullException>("client", () =>
         {
-            _ = ChatClientExtensions.CompleteAsync(null!, "hello");
+            _ = ChatClientExtensions.GetResponseAsync(null!, "hello");
         });
 
         Assert.Throws<ArgumentNullException>("chatMessage", () =>
         {
-            _ = ChatClientExtensions.CompleteAsync(new TestChatClient(), (ChatMessage)null!);
+            _ = ChatClientExtensions.GetResponseAsync(new TestChatClient(), (ChatMessage)null!);
         });
     }
 
@@ -36,19 +36,19 @@ public class ChatClientExtensionsTests
     {
         Assert.Throws<ArgumentNullException>("client", () =>
         {
-            _ = ChatClientExtensions.CompleteStreamingAsync(null!, "hello");
+            _ = ChatClientExtensions.GetStreamingResponseAsync(null!, "hello");
         });
 
         Assert.Throws<ArgumentNullException>("chatMessage", () =>
         {
-            _ = ChatClientExtensions.CompleteStreamingAsync(new TestChatClient(), (ChatMessage)null!);
+            _ = ChatClientExtensions.GetStreamingResponseAsync(new TestChatClient(), (ChatMessage)null!);
         });
     }
 
     [Fact]
     public async Task CompleteAsync_CreatesTextMessageAsync()
     {
-        var expectedResponse = new ChatCompletion([new ChatMessage()]);
+        var expectedResponse = new ChatResponse([new ChatMessage()]);
         var expectedOptions = new ChatOptions();
         using var cts = new CancellationTokenSource();
 
@@ -68,7 +68,7 @@ public class ChatClientExtensionsTests
             },
         };
 
-        ChatCompletion response = await client.CompleteAsync("hello", expectedOptions, cts.Token);
+        ChatResponse response = await client.GetResponseAsync("hello", expectedOptions, cts.Token);
 
         Assert.Same(expectedResponse, response);
     }
@@ -91,12 +91,12 @@ public class ChatClientExtensionsTests
 
                 Assert.Equal(cts.Token, cancellationToken);
 
-                return YieldAsync([new StreamingChatCompletionUpdate { Text = "world" }]);
+                return YieldAsync([new ChatResponseUpdate { Text = "world" }]);
             },
         };
 
         int count = 0;
-        await foreach (var update in client.CompleteStreamingAsync("hello", expectedOptions, cts.Token))
+        await foreach (var update in client.GetStreamingResponseAsync("hello", expectedOptions, cts.Token))
         {
             Assert.Equal(0, count);
             Assert.Equal("world", update.Text);
@@ -106,7 +106,7 @@ public class ChatClientExtensionsTests
         Assert.Equal(1, count);
     }
 
-    private static async IAsyncEnumerable<StreamingChatCompletionUpdate> YieldAsync(params StreamingChatCompletionUpdate[] updates)
+    private static async IAsyncEnumerable<ChatResponseUpdate> YieldAsync(params ChatResponseUpdate[] updates)
     {
         await Task.Yield();
         foreach (var update in updates)

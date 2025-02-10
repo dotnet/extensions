@@ -24,7 +24,7 @@ using OpenAI.Chat;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Represents an <see cref="IChatClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="OpenAI.Chat.ChatClient"/>.</summary>
+/// <summary>Represents an <see cref="IChatClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="ChatClient"/>.</summary>
 internal sealed class OpenAIAssistantClient : IChatClient
 {
     /// <summary>Metadata for the client.</summary>
@@ -69,12 +69,12 @@ internal sealed class OpenAIAssistantClient : IChatClient
     }
 
     /// <inheritdoc />
-    public Task<ChatCompletion> CompleteAsync(
+    public Task<ChatResponse> GetResponseAsync(
         IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default) =>
-        CompleteStreamingAsync(chatMessages, options, cancellationToken).ToChatCompletionAsync(coalesceContent: true, cancellationToken);
+        GetStreamingResponseAsync(chatMessages, options, cancellationToken).ToChatResponseAsync(coalesceContent: true, cancellationToken);
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(
+    public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         // Extract necessary state from chatMessages and options.
@@ -133,14 +133,14 @@ internal sealed class OpenAIAssistantClient : IChatClient
                 case RunUpdate ru:
                     threadId ??= ru.Value.ThreadId;
 
-                    StreamingChatCompletionUpdate ruUpdate = new()
+                    ChatResponseUpdate ruUpdate = new()
                     {
                         AuthorName = ru.Value.AssistantId,
                         ChatThreadId = threadId,
-                        CompletionId = ru.Value.Id,
                         CreatedAt = ru.Value.CreatedAt,
                         ModelId = ru.Value.Model,
                         RawRepresentation = ru,
+                        ResponseId = ru.Value.Id,
                         Role = ChatRole.Assistant,
                     };
 

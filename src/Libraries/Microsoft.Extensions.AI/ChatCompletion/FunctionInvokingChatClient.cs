@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.AI;
 /// </summary>
 /// <remarks>
 /// <para>
-/// When this client receives a <see cref="FunctionCallContent"/> in a chat completion, it responds
+/// When this client receives a <see cref="FunctionCallContent"/> in a chat response, it responds
 /// by calling the corresponding <see cref="AIFunction"/> defined in <see cref="ChatOptions"/>,
 /// producing a <see cref="FunctionResultContent"/>.
 /// </para>
@@ -145,7 +145,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// </summary>
     /// <value>
     /// <see langword="true"/> if intermediate messages persist in the <see cref="IList{ChatMessage}"/> list provided
-    /// to <see cref="CompleteAsync"/> and <see cref="CompleteStreamingAsync"/> by the caller.
+    /// to <see cref="GetResponseAsync"/> and <see cref="GetStreamingResponseAsync"/> by the caller.
     /// <see langword="false"/> if intermediate messages are removed prior to completing the operation.
     /// The default value is <see langword="true"/>.
     /// </value>
@@ -157,7 +157,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// it creates with the results of invoking the requested functions. The resulting augmented
     /// list of messages is then passed to the inner client in order to send the results back.
     /// By default, those messages persist in the <see cref="IList{ChatMessage}"/> list provided to
-    /// <see cref="CompleteAsync"/> and <see cref="CompleteStreamingAsync"/> by the caller, such that those
+    /// <see cref="GetResponseAsync"/> and <see cref="GetStreamingResponseAsync"/> by the caller, such that those
     /// messages are available to the caller. Set <see cref="KeepFunctionCallingMessages"/> to avoid including
     /// those messages in the caller-provided <see cref="IList{ChatMessage}"/>.
     /// </para>
@@ -166,7 +166,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// as to whether function calling messages are kept during an in-flight request.
     /// </para>
     /// <para>
-    /// If the underlying <see cref="IChatClient"/> responds with <see cref="ChatCompletion.ChatThreadId"/>
+    /// If the underlying <see cref="IChatClient"/> responds with <see cref="ChatResponse.ChatThreadId"/>
     /// set to a non-<see langword="null"/> value, this property may be ignored and behave as if it is
     /// <see langword="false"/>, with any such intermediate messages not stored in the messages list.
     /// </para>
@@ -209,15 +209,15 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     }
 
     /// <inheritdoc/>
-    public override async Task<ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<ChatResponse> GetResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(chatMessages);
 
-        // A single request into this CompleteAsync may result in multiple requests to the inner client.
+        // A single request into this GetResponseAsync may result in multiple requests to the inner client.
         // Create an activity to group them together for better observability.
         using Activity? activity = _activitySource?.StartActivity(nameof(FunctionInvokingChatClient));
 
-        ChatCompletion? response = null;
+        ChatResponse? response = null;
         UsageDetails? totalUsage = null;
         IList<ChatMessage> originalChatMessages = chatMessages;
         try
@@ -225,7 +225,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             for (int iteration = 0; ; iteration++)
             {
                 // Make the call to the handler.
-                response = await base.CompleteAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
+                response = await base.GetResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
 
                 // Aggregate usage data over all calls
                 if (response.Usage is not null)
@@ -322,12 +322,12 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     }
 
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(
+    public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(chatMessages);
 
-        // A single request into this CompleteStreamingAsync may result in multiple requests to the inner client.
+        // A single request into this GetStreamingResponseAsync may result in multiple requests to the inner client.
         // Create an activity to group them together for better observability.
         using Activity? activity = _activitySource?.StartActivity(nameof(FunctionInvokingChatClient));
 
@@ -339,7 +339,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             choice = null;
             string? chatThreadId = null;
             functionCallContents.Clear();
-            await foreach (var update in base.CompleteStreamingAsync(chatMessages, options, cancellationToken).ConfigureAwait(false))
+            await foreach (var update in base.GetStreamingResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false))
             {
                 // We're going to emit all StreamingChatMessage items upstream, even ones that represent
                 // function calls, because a given StreamingChatMessage can contain other content, too.

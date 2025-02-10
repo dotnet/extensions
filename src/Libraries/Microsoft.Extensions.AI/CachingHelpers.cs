@@ -42,7 +42,7 @@ internal static class CachingHelpers
             // We need to ensure that the value in ThreadStaticInstance is always ready to use.
             // If we start using an instance, write to it, and then fail, we will have left it
             // in an inconsistent state. So, when renting it, we null it out, and we only put
-            // it back upon successful completion after resetting it.
+            // it back upon successful response after resetting it.
             IncrementalHashStream.ThreadStaticInstance = null;
         }
         else

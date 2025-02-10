@@ -13,15 +13,15 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class StreamingChatCompletionUpdateExtensionsTests
+public class ChatResponseUpdateExtensionsTests
 {
     [Fact]
     public void InvalidArgs_Throws()
     {
-        Assert.Throws<ArgumentNullException>("updates", () => ((List<StreamingChatCompletionUpdate>)null!).ToChatCompletion());
+        Assert.Throws<ArgumentNullException>("updates", () => ((List<ChatResponseUpdate>)null!).ToChatResponse());
     }
 
-    public static IEnumerable<object?[]> ToChatCompletion_SuccessfullyCreatesCompletion_MemberData()
+    public static IEnumerable<object?[]> ToChatResponse_SuccessfullyCreatesResponse_MemberData()
     {
         foreach (bool useAsync in new[] { false, true })
         {
@@ -33,13 +33,13 @@ public class StreamingChatCompletionUpdateExtensionsTests
     }
 
     [Theory]
-    [MemberData(nameof(ToChatCompletion_SuccessfullyCreatesCompletion_MemberData))]
-    public async Task ToChatCompletion_SuccessfullyCreatesCompletion(bool useAsync, bool? coalesceContent)
+    [MemberData(nameof(ToChatResponse_SuccessfullyCreatesResponse_MemberData))]
+    public async Task ToChatResponse_SuccessfullyCreatesResponse(bool useAsync, bool? coalesceContent)
     {
-        StreamingChatCompletionUpdate[] updates =
+        ChatResponseUpdate[] updates =
         [
-            new() { ChoiceIndex = 0, Text = "Hello", CompletionId = "12345", CreatedAt = new DateTimeOffset(1, 2, 3, 4, 5, 6, TimeSpan.Zero), ModelId = "model123" },
-            new() { ChoiceIndex = 1, Text = "Hey", CompletionId = "12345", CreatedAt = new DateTimeOffset(1, 2, 3, 4, 5, 6, TimeSpan.Zero), ModelId = "model124" },
+            new() { ChoiceIndex = 0, Text = "Hello", ResponseId = "12345", CreatedAt = new DateTimeOffset(1, 2, 3, 4, 5, 6, TimeSpan.Zero), ModelId = "model123" },
+            new() { ChoiceIndex = 1, Text = "Hey", ResponseId = "12345", CreatedAt = new DateTimeOffset(1, 2, 3, 4, 5, 6, TimeSpan.Zero), ModelId = "model124" },
 
             new() { ChoiceIndex = 0, Text = ", ", AuthorName = "Someone", Role = ChatRole.User, AdditionalProperties = new() { ["a"] = "b" } },
             new() { ChoiceIndex = 1, Text = ", ", AuthorName = "Else", Role = ChatRole.System, AdditionalProperties = new() { ["g"] = "h" } },
@@ -51,27 +51,27 @@ public class StreamingChatCompletionUpdateExtensionsTests
             new() { ChoiceIndex = 3, Contents = new[] { new UsageContent(new() { InputTokenCount = 4, OutputTokenCount = 5 }) } },
         ];
 
-        ChatCompletion completion = (coalesceContent is bool, useAsync) switch
+        ChatResponse response = (coalesceContent is bool, useAsync) switch
         {
-            (false, false) => updates.ToChatCompletion(),
-            (false, true) => await YieldAsync(updates).ToChatCompletionAsync(),
+            (false, false) => updates.ToChatResponse(),
+            (false, true) => await YieldAsync(updates).ToChatResponseAsync(),
 
-            (true, false) => updates.ToChatCompletion(coalesceContent.GetValueOrDefault()),
-            (true, true) => await YieldAsync(updates).ToChatCompletionAsync(coalesceContent.GetValueOrDefault()),
+            (true, false) => updates.ToChatResponse(coalesceContent.GetValueOrDefault()),
+            (true, true) => await YieldAsync(updates).ToChatResponseAsync(coalesceContent.GetValueOrDefault()),
         };
-        Assert.NotNull(completion);
+        Assert.NotNull(response);
 
-        Assert.NotNull(completion.Usage);
-        Assert.Equal(5, completion.Usage.InputTokenCount);
-        Assert.Equal(7, completion.Usage.OutputTokenCount);
+        Assert.NotNull(response.Usage);
+        Assert.Equal(5, response.Usage.InputTokenCount);
+        Assert.Equal(7, response.Usage.OutputTokenCount);
 
-        Assert.Equal("12345", completion.CompletionId);
-        Assert.Equal(new DateTimeOffset(1, 2, 3, 4, 5, 6, TimeSpan.Zero), completion.CreatedAt);
-        Assert.Equal("model123", completion.ModelId);
+        Assert.Equal("12345", response.ResponseId);
+        Assert.Equal(new DateTimeOffset(1, 2, 3, 4, 5, 6, TimeSpan.Zero), response.CreatedAt);
+        Assert.Equal("model123", response.ModelId);
 
-        Assert.Equal(3, completion.Choices.Count);
+        Assert.Equal(3, response.Choices.Count);
 
-        ChatMessage message = completion.Choices[0];
+        ChatMessage message = response.Choices[0];
         Assert.Equal(ChatRole.User, message.Role);
         Assert.Equal("Someone", message.AuthorName);
         Assert.NotNull(message.AdditionalProperties);
@@ -79,7 +79,7 @@ public class StreamingChatCompletionUpdateExtensionsTests
         Assert.Equal("b", message.AdditionalProperties["a"]);
         Assert.Equal("d", message.AdditionalProperties["c"]);
 
-        message = completion.Choices[1];
+        message = response.Choices[1];
         Assert.Equal(ChatRole.System, message.Role);
         Assert.Equal("Else", message.AuthorName);
         Assert.NotNull(message.AdditionalProperties);
@@ -88,7 +88,7 @@ public class StreamingChatCompletionUpdateExtensionsTests
         Assert.Equal("f", message.AdditionalProperties["e"]);
         Assert.Equal(42, message.AdditionalProperties["i"]);
 
-        message = completion.Choices[2];
+        message = response.Choices[2];
         Assert.Equal(ChatRole.Assistant, message.Role);
         Assert.Null(message.AuthorName);
         Assert.Null(message.AdditionalProperties);
@@ -96,25 +96,25 @@ public class StreamingChatCompletionUpdateExtensionsTests
 
         if (coalesceContent is null or true)
         {
-            Assert.Equal("Hello, world!", completion.Choices[0].Text);
-            Assert.Equal("Hey, you!", completion.Choices[1].Text);
-            Assert.Null(completion.Choices[2].Text);
+            Assert.Equal("Hello, world!", response.Choices[0].Text);
+            Assert.Equal("Hey, you!", response.Choices[1].Text);
+            Assert.Null(response.Choices[2].Text);
         }
         else
         {
-            Assert.Equal("Hello", completion.Choices[0].Contents[0].ToString());
-            Assert.Equal(", ", completion.Choices[0].Contents[1].ToString());
-            Assert.Equal("world!", completion.Choices[0].Contents[2].ToString());
+            Assert.Equal("Hello", response.Choices[0].Contents[0].ToString());
+            Assert.Equal(", ", response.Choices[0].Contents[1].ToString());
+            Assert.Equal("world!", response.Choices[0].Contents[2].ToString());
 
-            Assert.Equal("Hey", completion.Choices[1].Contents[0].ToString());
-            Assert.Equal(", ", completion.Choices[1].Contents[1].ToString());
-            Assert.Equal("you!", completion.Choices[1].Contents[2].ToString());
+            Assert.Equal("Hey", response.Choices[1].Contents[0].ToString());
+            Assert.Equal(", ", response.Choices[1].Contents[1].ToString());
+            Assert.Equal("you!", response.Choices[1].Contents[2].ToString());
 
-            Assert.Null(completion.Choices[2].Text);
+            Assert.Null(response.Choices[2].Text);
         }
     }
 
-    public static IEnumerable<object[]> ToChatCompletion_Coalescing_VariousSequenceAndGapLengths_MemberData()
+    public static IEnumerable<object[]> ToChatResponse_Coalescing_VariousSequenceAndGapLengths_MemberData()
     {
         foreach (bool useAsync in new[] { false, true })
         {
@@ -135,10 +135,10 @@ public class StreamingChatCompletionUpdateExtensionsTests
     }
 
     [Theory]
-    [MemberData(nameof(ToChatCompletion_Coalescing_VariousSequenceAndGapLengths_MemberData))]
-    public async Task ToChatCompletion_Coalescing_VariousSequenceAndGapLengths(bool useAsync, int numSequences, int sequenceLength, int gapLength, bool gapBeginningEnd)
+    [MemberData(nameof(ToChatResponse_Coalescing_VariousSequenceAndGapLengths_MemberData))]
+    public async Task ToChatResponse_Coalescing_VariousSequenceAndGapLengths(bool useAsync, int numSequences, int sequenceLength, int gapLength, bool gapBeginningEnd)
     {
-        List<StreamingChatCompletionUpdate> updates = [];
+        List<ChatResponseUpdate> updates = [];
 
         List<string> expected = [];
 
@@ -178,10 +178,10 @@ public class StreamingChatCompletionUpdateExtensionsTests
             }
         }
 
-        ChatCompletion completion = useAsync ? await YieldAsync(updates).ToChatCompletionAsync() : updates.ToChatCompletion();
-        Assert.Single(completion.Choices);
+        ChatResponse response = useAsync ? await YieldAsync(updates).ToChatResponseAsync() : updates.ToChatResponse();
+        Assert.Single(response.Choices);
 
-        ChatMessage message = completion.Message;
+        ChatMessage message = response.Message;
         Assert.Equal(expected.Count + (gapLength * ((numSequences - 1) + (gapBeginningEnd ? 2 : 0))), message.Contents.Count);
 
         TextContent[] contents = message.Contents.OfType<TextContent>().ToArray();
@@ -193,28 +193,28 @@ public class StreamingChatCompletionUpdateExtensionsTests
     }
 
     [Fact]
-    public async Task ToChatCompletion_UsageContentExtractedFromContents()
+    public async Task ToChatResponse_UsageContentExtractedFromContents()
     {
-        StreamingChatCompletionUpdate[] updates =
+        ChatResponseUpdate[] updates =
         {
             new() { Text = "Hello, " },
             new() { Text = "world!" },
             new() { Contents = [new UsageContent(new() { TotalTokenCount = 42 })] },
         };
 
-        ChatCompletion completion = await YieldAsync(updates).ToChatCompletionAsync();
+        ChatResponse response = await YieldAsync(updates).ToChatResponseAsync();
 
-        Assert.NotNull(completion);
+        Assert.NotNull(response);
 
-        Assert.NotNull(completion.Usage);
-        Assert.Equal(42, completion.Usage.TotalTokenCount);
+        Assert.NotNull(response.Usage);
+        Assert.Equal(42, response.Usage.TotalTokenCount);
 
-        Assert.Equal("Hello, world!", Assert.IsType<TextContent>(Assert.Single(completion.Message.Contents)).Text);
+        Assert.Equal("Hello, world!", Assert.IsType<TextContent>(Assert.Single(response.Message.Contents)).Text);
     }
 
-    private static async IAsyncEnumerable<StreamingChatCompletionUpdate> YieldAsync(IEnumerable<StreamingChatCompletionUpdate> updates)
+    private static async IAsyncEnumerable<ChatResponseUpdate> YieldAsync(IEnumerable<ChatResponseUpdate> updates)
     {
-        foreach (StreamingChatCompletionUpdate update in updates)
+        foreach (ChatResponseUpdate update in updates)
         {
             await Task.Yield();
             yield return update;

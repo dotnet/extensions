@@ -11,21 +11,21 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// Describes the intended purpose of a message within a chat completion interaction.
+/// Describes the intended purpose of a message within a chat interaction.
 /// </summary>
 [JsonConverter(typeof(Converter))]
 public readonly struct ChatRole : IEquatable<ChatRole>
 {
-    /// <summary>Gets the role that instructs or sets the behavior of the assistant.</summary>
+    /// <summary>Gets the role that instructs or sets the behavior of the system.</summary>
     public static ChatRole System { get; } = new("system");
 
     /// <summary>Gets the role that provides responses to system-instructed, user-prompted input.</summary>
     public static ChatRole Assistant { get; } = new("assistant");
 
-    /// <summary>Gets the role that provides input for chat completions.</summary>
+    /// <summary>Gets the role that provides user input for chat interactions.</summary>
     public static ChatRole User { get; } = new("user");
 
-    /// <summary>Gets the role that provides additional information and references for chat completions.</summary>
+    /// <summary>Gets the role that provides additional information and references in response to tool use requests.</summary>
     public static ChatRole Tool { get; } = new("tool");
 
     /// <summary>
