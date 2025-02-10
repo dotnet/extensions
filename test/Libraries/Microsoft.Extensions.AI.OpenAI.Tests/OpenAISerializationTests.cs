@@ -531,24 +531,25 @@ public static partial class OpenAISerializationTests
                   "cached_tokens": 13
                 }
               },
+              "object": "chat.completion",
               "choices": [
                 {
                   "finish_reason": "stop",
                   "index": 0,
                   "message": {
-                    "content": "Hello! How can I assist you today?",
                     "refusal": null,
                     "tool_calls": [
                       {
                         "id": "callId",
-                        "type": "function",
                         "function": {
                           "name": "MyCoolFunc",
                           "arguments": "{\r\n  \u0022arg1\u0022: 42,\r\n  \u0022arg2\u0022: \u0022str\u0022\r\n}"
-                        }
+                        },
+                        "type": "function"
                       }
                     ],
-                    "role": "assistant"
+                    "role": "assistant",
+                    "content": "Hello! How can I assist you today?"
                   },
                   "logprobs": {
                     "content": [],
@@ -556,8 +557,7 @@ public static partial class OpenAISerializationTests
                   }
                 }
               ],
-              "created": 1727888631,
-              "object": "chat.completion"
+              "created": 1727888631
             }
             """, result);
     }
