@@ -102,6 +102,16 @@ public class StreamingChatCompletionUpdate
     /// <summary>Gets or sets the ID of the completion of which this update is a part.</summary>
     public string? CompletionId { get; set; }
 
+    /// <summary>Gets or sets the chat thread ID associated with the chat completion of which this update is a part.</summary>
+    /// <remarks>
+    /// Some <see cref="IChatClient"/> implementations are capable of storing the state for a chat thread, such that
+    /// the input messages supplied to <see cref="IChatClient.CompleteStreamingAsync"/> need only be the additional messages beyond
+    /// what's already stored. If this property is non-<see langword="null"/>, it represents an identifier for that state,
+    /// and it should be used in a subsequent <see cref="ChatOptions.ChatThreadId"/> instead of supplying the same messages
+    /// (and this streaming message) as part of the <c>chatMessages</c> parameter.
+    /// </remarks>
+    public string? ChatThreadId { get; set; }
+
     /// <summary>Gets or sets a timestamp for the completion update.</summary>
     public DateTimeOffset? CreatedAt { get; set; }
 

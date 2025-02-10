@@ -61,10 +61,13 @@ public class StreamingChatCompletionUpdateExtensionsTests
         };
         Assert.NotNull(completion);
 
+        Assert.NotNull(completion.Usage);
+        Assert.Equal(5, completion.Usage.InputTokenCount);
+        Assert.Equal(7, completion.Usage.OutputTokenCount);
+
         Assert.Equal("12345", completion.CompletionId);
         Assert.Equal(new DateTimeOffset(1, 2, 3, 4, 5, 6, TimeSpan.Zero), completion.CreatedAt);
         Assert.Equal("model123", completion.ModelId);
-        Assert.Same(Assert.IsType<UsageContent>(updates[6].Contents[0]).Details, completion.Usage);
 
         Assert.Equal(3, completion.Choices.Count);
 
@@ -89,7 +92,7 @@ public class StreamingChatCompletionUpdateExtensionsTests
         Assert.Equal(ChatRole.Assistant, message.Role);
         Assert.Null(message.AuthorName);
         Assert.Null(message.AdditionalProperties);
-        Assert.Same(updates[7].Contents[0], Assert.Single(message.Contents));
+        Assert.Empty(message.Contents);
 
         if (coalesceContent is null or true)
         {

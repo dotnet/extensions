@@ -13,6 +13,7 @@ using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable S109 // Magic numbers should not be used
 #pragma warning disable S127 // "for" loop stop conditions should be invariant
+#pragma warning disable S1121 // Assignments should not be made from within sub-expressions
 
 namespace Microsoft.Extensions.AI;
 
@@ -103,7 +104,21 @@ public static class StreamingChatCompletionUpdateExtensions
         }
 #endif
 
-        ((List<AIContent>)message.Contents).AddRange(update.Contents);
+        // Incorporate all content from the update into the completion.
+        foreach (var content in update.Contents)
+        {
+            switch (content)
+            {
+                // Usage content is treated specially and propagated to the completion's Usage.
+                case UsageContent usage:
+                    (completion.Usage ??= new()).Add(usage.Details);
+                    break;
+
+                default:
+                    message.Contents.Add(content);
+                    break;
+            }
+        }
 
         message.AuthorName ??= update.AuthorName;
         if (update.Role is ChatRole role && message.Role == default)
@@ -178,20 +193,6 @@ public static class StreamingChatCompletionUpdateExtensions
             }
 
             completion.Choices.Add(entry.Value);
-
-            if (completion.Usage is null)
-            {
-                foreach (var content in entry.Value.Contents)
-                {
-                    if (content is UsageContent c)
-                    {
-                        completion.Usage = c.Details;
-                        entry.Value.Contents = entry.Value.Contents.ToList();
-                        _ = entry.Value.Contents.Remove(c);
-                        break;
-                    }
-                }
-            }
         }
     }
 

@@ -39,6 +39,22 @@ public class ChatMessage
         _contents = Throw.IfNull(contents);
     }
 
+    /// <summary>Clones the <see cref="ChatMessage"/> to a new <see cref="ChatMessage"/> instance.</summary>
+    /// <returns>A shallow clone of the original message object.</returns>
+    /// <remarks>
+    /// This is a shallow clone. The returned instance is different from the original, but all properties
+    /// refer to the same objects as the original.
+    /// </remarks>
+    public ChatMessage Clone() =>
+        new()
+        {
+            AdditionalProperties = AdditionalProperties,
+            _authorName = _authorName,
+            _contents = _contents,
+            RawRepresentation = RawRepresentation,
+            Role = Role,
+        };
+
     /// <summary>Gets or sets the name of the author of the message.</summary>
     public string? AuthorName
     {
