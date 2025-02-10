@@ -33,7 +33,7 @@ const pdfViewer = new PDFViewer({
 });
 pdfLinkService.setViewer(pdfViewer);
 
-// Allow navigation to a citaiton from the URL hash.
+// Allow navigation to a citation from the URL hash.
 eventBus.on('pagesinit', function () {
   pdfLinkService.setHash(window.location.hash.substring(1));
 });
