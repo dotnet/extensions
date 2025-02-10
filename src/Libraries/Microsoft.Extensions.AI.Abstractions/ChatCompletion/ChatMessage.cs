@@ -21,15 +21,15 @@ public class ChatMessage
     }
 
     /// <summary>Initializes a new instance of the <see cref="ChatMessage"/> class.</summary>
-    /// <param name="role">Role of the author of the message.</param>
-    /// <param name="content">Content of the message.</param>
+    /// <param name="role">The role of the author of the message.</param>
+    /// <param name="content">The contents of the message.</param>
     public ChatMessage(ChatRole role, string? content)
         : this(role, content is null ? [] : [new TextContent(content)])
     {
     }
 
     /// <summary>Initializes a new instance of the <see cref="ChatMessage"/> class.</summary>
-    /// <param name="role">Role of the author of the message.</param>
+    /// <param name="role">The role of the author of the message.</param>
     /// <param name="contents">The contents for this message.</param>
     public ChatMessage(
         ChatRole role,

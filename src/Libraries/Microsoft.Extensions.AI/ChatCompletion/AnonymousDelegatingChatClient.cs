@@ -13,7 +13,7 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>A delegating chat client that wraps an inner client with implementations provided by delegates.</summary>
+/// <summary>Represents a delegating chat client that wraps an inner client with implementations provided by delegates.</summary>
 public sealed class AnonymousDelegatingChatClient : DelegatingChatClient
 {
     /// <summary>The delegate to use as the implementation of <see cref="CompleteAsync"/>.</summary>
@@ -40,7 +40,7 @@ public sealed class AnonymousDelegatingChatClient : DelegatingChatClient
     /// used to perform the operation on the inner client. It will handle both the non-streaming and streaming cases.
     /// </param>
     /// <remarks>
-    /// This overload may be used when the anonymous implementation needs to provide pre- and/or post-processing, but doesn't
+    /// This overload may be used when the anonymous implementation needs to provide pre-processing and/or post-processing, but doesn't
     /// need to interact with the results of the operation, which will come from the inner client.
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="innerClient"/> is <see langword="null"/>.</exception>
