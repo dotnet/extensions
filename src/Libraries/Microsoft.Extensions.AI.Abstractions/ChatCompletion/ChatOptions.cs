@@ -54,7 +54,8 @@ public class ChatOptions
     public IList<string>? StopSequences { get; set; }
 
     /// <summary>Gets or sets the tool mode for the chat request.</summary>
-    public ChatToolMode ToolMode { get; set; } = ChatToolMode.Auto;
+    /// <remarks>The default value is <see langword="null"/>, which is treated the same as <see cref="ChatToolMode.Auto"/>.</remarks>
+    public ChatToolMode? ToolMode { get; set; }
 
     /// <summary>Gets or sets the list of tools to include with a chat request.</summary>
     [JsonIgnore]

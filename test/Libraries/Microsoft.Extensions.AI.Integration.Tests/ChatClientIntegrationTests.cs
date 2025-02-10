@@ -520,7 +520,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         await chatClient.CompleteAsync([new(ChatRole.User, "What's the biggest animal?")]);
 
         Assert.Collection(collector.GetSnapshot(),
-            entry => Assert.Contains("What\\u0027s the biggest animal?", entry.Message),
+            entry => Assert.Contains("What's the biggest animal?", entry.Message),
             entry => Assert.Contains("whale", entry.Message));
     }
 
@@ -542,7 +542,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         }
 
         var logs = collector.GetSnapshot();
-        Assert.Contains(logs, e => e.Message.Contains("What\\u0027s the biggest animal?"));
+        Assert.Contains(logs, e => e.Message.Contains("What's the biggest animal?"));
         Assert.Contains(logs, e => e.Message.Contains("whale"));
     }
 
@@ -621,7 +621,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         var activity = Assert.Single(activities);
         Assert.StartsWith("chat", activity.DisplayName);
         Assert.StartsWith("http", (string)activity.GetTagItem("server.address")!);
-        Assert.Equal(chatClient.Metadata.ProviderUri?.Port, (int)activity.GetTagItem("server.port")!);
+        Assert.Equal(chatClient.GetService<ChatClientMetadata>()?.ProviderUri?.Port, (int)activity.GetTagItem("server.port")!);
         Assert.NotNull(activity.Id);
         Assert.NotEmpty(activity.Id);
         Assert.NotEqual(0, (int)activity.GetTagItem("gen_ai.response.input_tokens")!);

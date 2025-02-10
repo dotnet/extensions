@@ -53,9 +53,6 @@ public interface IChatClient : IDisposable
         ChatOptions? options = null,
         CancellationToken cancellationToken = default);
 
-    /// <summary>Gets metadata that describes the <see cref="IChatClient"/>.</summary>
-    ChatClientMetadata Metadata { get; }
-
     /// <summary>Asks the <see cref="IChatClient"/> for an object of the specified type <paramref name="serviceType"/>.</summary>
     /// <param name="serviceType">The type of object being requested.</param>
     /// <param name="serviceKey">An optional key that can be used to help identify the target service.</param>

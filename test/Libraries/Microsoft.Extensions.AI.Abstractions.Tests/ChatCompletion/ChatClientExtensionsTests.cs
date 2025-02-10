@@ -27,7 +27,7 @@ public class ChatClientExtensionsTests
 
         Assert.Throws<ArgumentNullException>("chatMessage", () =>
         {
-            _ = ChatClientExtensions.CompleteAsync(new TestChatClient(), null!);
+            _ = ChatClientExtensions.CompleteAsync(new TestChatClient(), (ChatMessage)null!);
         });
     }
 
@@ -41,7 +41,7 @@ public class ChatClientExtensionsTests
 
         Assert.Throws<ArgumentNullException>("chatMessage", () =>
         {
-            _ = ChatClientExtensions.CompleteStreamingAsync(new TestChatClient(), null!);
+            _ = ChatClientExtensions.CompleteStreamingAsync(new TestChatClient(), (ChatMessage)null!);
         });
     }
 

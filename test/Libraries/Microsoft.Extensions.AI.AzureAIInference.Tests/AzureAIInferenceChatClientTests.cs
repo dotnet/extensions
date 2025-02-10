@@ -63,9 +63,10 @@ public class AzureAIInferenceChatClientTests
         ChatCompletionsClient client = new(endpoint, new AzureKeyCredential("key"));
 
         IChatClient chatClient = client.AsChatClient(model);
-        Assert.Equal("az.ai.inference", chatClient.Metadata.ProviderName);
-        Assert.Equal(endpoint, chatClient.Metadata.ProviderUri);
-        Assert.Equal(model, chatClient.Metadata.ModelId);
+        var metadata = chatClient.GetService<ChatClientMetadata>();
+        Assert.Equal("az.ai.inference", metadata?.ProviderName);
+        Assert.Equal(endpoint, metadata?.ProviderUri);
+        Assert.Equal(model, metadata?.ModelId);
     }
 
     [Fact]
@@ -508,7 +509,7 @@ public class AzureAIInferenceChatClientTests
             new(ChatRole.Assistant, "hi, how are you?"),
             new(ChatRole.User, "i'm good. how are you?"),
             new(ChatRole.Assistant, [new FunctionCallContent("abcd123", "GetMood")]),
-            new(ChatRole.Tool, [new FunctionResultContent("abcd123", "GetMood", "happy")]),
+            new(ChatRole.Tool, [new FunctionResultContent("abcd123", "happy")]),
         ];
 
         var response = await client.CompleteAsync(messages, new()
@@ -672,6 +673,7 @@ public class AzureAIInferenceChatClientTests
     public static IEnumerable<object[]> FunctionCallContent_NonStreaming_MemberData()
     {
         yield return [ChatToolMode.Auto];
+        yield return [ChatToolMode.None];
         yield return [ChatToolMode.RequireAny];
         yield return [ChatToolMode.RequireSpecific("GetPersonAge")];
     }
@@ -709,6 +711,7 @@ public class AzureAIInferenceChatClientTests
                     }
                 ],
                 "tool_choice": {{(
+                    mode is NoneChatToolMode ? "\"none\"" :
                     mode is AutoChatToolMode ? "\"auto\"" :
                     mode is RequiredChatToolMode { RequiredFunctionName: not null } f ? "{\"type\":\"function\",\"function\":{\"name\":\"GetPersonAge\"}}" :
                     "\"required\""

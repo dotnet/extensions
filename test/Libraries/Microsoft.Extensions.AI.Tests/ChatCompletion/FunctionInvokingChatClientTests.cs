@@ -59,11 +59,11 @@ public class FunctionInvokingChatClientTests
         [
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", "Func1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", "Func2", result: "Result 2: 42")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", result: "Result 2: 42")]),
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId3", "VoidReturn", arguments: new Dictionary<string, object?> { { "i", 43 } })]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId3", "VoidReturn", result: "Success: Function completed.")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId3", result: "Success: Function completed.")]),
             new ChatMessage(ChatRole.Assistant, "world"),
         ];
 
@@ -97,9 +97,9 @@ public class FunctionInvokingChatClientTests
             ]),
             new ChatMessage(ChatRole.Tool,
             [
-                new FunctionResultContent("callId1", "Func1", result: "Result 1"),
-                new FunctionResultContent("callId2", "Func2", result: "Result 2: 34"),
-                new FunctionResultContent("callId3", "Func2", result: "Result 2: 56"),
+                new FunctionResultContent("callId1", result: "Result 1"),
+                new FunctionResultContent("callId2", result: "Result 2: 34"),
+                new FunctionResultContent("callId3", result: "Result 2: 56"),
             ]),
             new ChatMessage(ChatRole.Assistant,
             [
@@ -108,8 +108,8 @@ public class FunctionInvokingChatClientTests
             ]),
             new ChatMessage(ChatRole.Tool,
             [
-                new FunctionResultContent("callId4", "Func2", result: "Result 2: 78"),
-                new FunctionResultContent("callId5", "Func1", result: "Result 1")
+                new FunctionResultContent("callId4", result: "Result 2: 78"),
+                new FunctionResultContent("callId5", result: "Result 1")
             ]),
             new ChatMessage(ChatRole.Assistant, "world"),
         ];
@@ -149,8 +149,8 @@ public class FunctionInvokingChatClientTests
             ]),
             new ChatMessage(ChatRole.Tool,
             [
-                new FunctionResultContent("callId1", "Func", result: "hellohello"),
-                new FunctionResultContent("callId2", "Func", result: "worldworld"),
+                new FunctionResultContent("callId1", result: "hellohello"),
+                new FunctionResultContent("callId2", result: "worldworld"),
             ]),
             new ChatMessage(ChatRole.Assistant, "done"),
         ];
@@ -193,8 +193,8 @@ public class FunctionInvokingChatClientTests
             ]),
             new ChatMessage(ChatRole.Tool,
             [
-                new FunctionResultContent("callId1", "Func", result: "hellohello"),
-                new FunctionResultContent("callId2", "Func", result: "worldworld"),
+                new FunctionResultContent("callId1", result: "hellohello"),
+                new FunctionResultContent("callId2", result: "worldworld"),
             ]),
             new ChatMessage(ChatRole.Assistant, "done"),
         ];
@@ -223,11 +223,11 @@ public class FunctionInvokingChatClientTests
         [
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", "Func1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", "Func2", result: "Result 2: 42")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", result: "Result 2: 42")]),
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId3", "VoidReturn", arguments: new Dictionary<string, object?> { { "i", 43 } })]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId3", "VoidReturn", result: "Success: Function completed.")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId3", result: "Success: Function completed.")]),
             new ChatMessage(ChatRole.Assistant, "world"),
         ];
 
@@ -276,11 +276,11 @@ public class FunctionInvokingChatClientTests
         [
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.Assistant, [new TextContent("extra"), new FunctionCallContent("callId1", "Func1"), new TextContent("stuff")]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", "Func1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", result: "Result 1")]),
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", "Func2", result: "Result 2: 42")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", result: "Result 2: 42")]),
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId3", "VoidReturn", arguments: new Dictionary<string, object?> { { "i", 43 } }), new TextContent("more")]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId3", "VoidReturn", result: "Success: Function completed.")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId3", result: "Success: Function completed.")]),
             new ChatMessage(ChatRole.Assistant, "world"),
         ];
 
@@ -300,11 +300,11 @@ public class FunctionInvokingChatClientTests
         [
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", "Func1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", result: "Result 1")]),
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", "Func2", result: "Result 2: 42")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", result: "Result 2: 42")]),
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId3", "VoidReturn", arguments: new Dictionary<string, object?> { { "i", 43 } })]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId3", "VoidReturn", result: "Success: Function completed.")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId3", result: "Success: Function completed.")]),
             new ChatMessage(ChatRole.Assistant, "extrastuffmoreworld"),
         ] :
         [
@@ -343,7 +343,7 @@ public class FunctionInvokingChatClientTests
         [
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", "Func1", result: detailedErrors ? "Error: Function failed. Exception: Oh no!" : "Error: Function failed.")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: detailedErrors ? "Error: Function failed. Exception: Oh no!" : "Error: Function failed.")]),
             new ChatMessage(ChatRole.Assistant, "world"),
         ];
 
@@ -403,7 +403,7 @@ public class FunctionInvokingChatClientTests
         [
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1", new Dictionary<string, object?> { ["arg1"] = "value1" })]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", "Func1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
             new ChatMessage(ChatRole.Assistant, "world"),
         ];
 
@@ -462,7 +462,7 @@ public class FunctionInvokingChatClientTests
         [
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1", new Dictionary<string, object?> { ["arg1"] = "value1" })]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", "Func1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
             new ChatMessage(ChatRole.Assistant, "world"),
         ];
 
@@ -596,9 +596,9 @@ public class FunctionInvokingChatClientTests
         [
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1", new Dictionary<string, object?> { ["i"] = 41 })]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", "Func1", result: "Result 41")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 41")]),
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId2", "Func1", new Dictionary<string, object?> { ["i"] = 42 })]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", "Func1", result: "Result 42")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", result: "Result 42")]),
         ];
 
         // The full plan should never be fulfilled
@@ -606,7 +606,7 @@ public class FunctionInvokingChatClientTests
         [
             .. planBeforeTermination,
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId3", "Func1", new Dictionary<string, object?> { ["i"] = 43 })]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId3", "Func1", result: "Result 43")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId3", result: "Result 43")]),
             new ChatMessage(ChatRole.Assistant, "world"),
         ];
 
@@ -666,7 +666,7 @@ public class FunctionInvokingChatClientTests
 
         using CancellationTokenSource cts = new();
         List<ChatMessage> chat = [plan[0]];
-        var expectedTotalTokenCounts = 0;
+        long expectedTotalTokenCounts = 0;
 
         using var innerClient = new TestChatClient
         {

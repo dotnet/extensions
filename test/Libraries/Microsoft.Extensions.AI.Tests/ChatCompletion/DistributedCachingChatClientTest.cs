@@ -83,19 +83,19 @@ public class DistributedCachingChatClientTest
         };
 
         // Make the initial request and do a quick sanity check
-        var result1 = await outer.CompleteAsync([new ChatMessage(ChatRole.User, "some input")]);
+        var result1 = await outer.CompleteAsync("some input");
         Assert.Same(expectedCompletion, result1);
         Assert.Equal(1, innerCallCount);
 
         // Act
-        var result2 = await outer.CompleteAsync([new ChatMessage(ChatRole.User, "some input")]);
+        var result2 = await outer.CompleteAsync("some input");
 
         // Assert
         Assert.Equal(1, innerCallCount);
         AssertCompletionsEqual(expectedCompletion, result2);
 
         // Act/Assert 2: Cache misses do not return cached results
-        await outer.CompleteAsync([new ChatMessage(ChatRole.User, "some modified input")]);
+        await outer.CompleteAsync("some modified input");
         Assert.Equal(2, innerCallCount);
     }
 
@@ -120,8 +120,8 @@ public class DistributedCachingChatClientTest
         };
 
         // Act 1: Concurrent calls before resolution are passed into the inner client
-        var result1 = outer.CompleteAsync([new ChatMessage(ChatRole.User, "some input")]);
-        var result2 = outer.CompleteAsync([new ChatMessage(ChatRole.User, "some input")]);
+        var result1 = outer.CompleteAsync("some input");
+        var result2 = outer.CompleteAsync("some input");
 
         // Assert 1
         Assert.Equal(2, innerCallCount);
@@ -132,7 +132,7 @@ public class DistributedCachingChatClientTest
         Assert.Equal("Hello", (await result2).Message.Text);
 
         // Act 2: Subsequent calls after completion are resolved from the cache
-        var result3 = outer.CompleteAsync([new ChatMessage(ChatRole.User, "some input")]);
+        var result3 = outer.CompleteAsync("some input");
         Assert.Equal(2, innerCallCount);
         Assert.Equal("Hello", (await result3).Message.Text);
     }
@@ -270,19 +270,19 @@ public class DistributedCachingChatClientTest
         };
 
         // Make the initial request and do a quick sanity check
-        var result1 = outer.CompleteStreamingAsync([new ChatMessage(ChatRole.User, "some input")]);
+        var result1 = outer.CompleteStreamingAsync("some input");
         await AssertCompletionsEqualAsync(actualCompletion, result1);
         Assert.Equal(1, innerCallCount);
 
         // Act
-        var result2 = outer.CompleteStreamingAsync([new ChatMessage(ChatRole.User, "some input")]);
+        var result2 = outer.CompleteStreamingAsync("some input");
 
         // Assert
         Assert.Equal(1, innerCallCount);
         await AssertCompletionsEqualAsync(expectedCachedCompletion, result2);
 
         // Act/Assert 2: Cache misses do not return cached results
-        await ToListAsync(outer.CompleteStreamingAsync([new ChatMessage(ChatRole.User, "some modified input")]));
+        await ToListAsync(outer.CompleteStreamingAsync("some modified input"));
         Assert.Equal(2, innerCallCount);
     }
 
@@ -317,11 +317,11 @@ public class DistributedCachingChatClientTest
             outer.CoalesceStreamingUpdates = coalesce.Value;
         }
 
-        var result1 = outer.CompleteStreamingAsync([new ChatMessage(ChatRole.User, "some input")]);
+        var result1 = outer.CompleteStreamingAsync("some input");
         await ToListAsync(result1);
 
         // Act
-        var result2 = outer.CompleteStreamingAsync([new ChatMessage(ChatRole.User, "some input")]);
+        var result2 = outer.CompleteStreamingAsync("some input");
 
         // Assert
         if (coalesce is null or true)
@@ -389,11 +389,11 @@ public class DistributedCachingChatClientTest
             JsonSerializerOptions = TestJsonSerializerContext.Default.Options
         };
 
-        var result1 = outer.CompleteStreamingAsync([new ChatMessage(ChatRole.User, "some input")]);
+        var result1 = outer.CompleteStreamingAsync("some input");
         await ToListAsync(result1);
 
         // Act
-        var result2 = outer.CompleteStreamingAsync([new ChatMessage(ChatRole.User, "some input")]);
+        var result2 = outer.CompleteStreamingAsync("some input");
 
         // Assert
         var items = await ToListAsync(result2);
@@ -432,8 +432,8 @@ public class DistributedCachingChatClientTest
         };
 
         // Act 1: Concurrent calls before resolution are passed into the inner client
-        var result1 = outer.CompleteStreamingAsync([new ChatMessage(ChatRole.User, "some input")]);
-        var result2 = outer.CompleteStreamingAsync([new ChatMessage(ChatRole.User, "some input")]);
+        var result1 = outer.CompleteStreamingAsync("some input");
+        var result2 = outer.CompleteStreamingAsync("some input");
 
         // Assert 1
         Assert.NotSame(result1, result2);
@@ -447,7 +447,7 @@ public class DistributedCachingChatClientTest
         Assert.Equal(2, innerCallCount);
 
         // Act 2: Subsequent calls after completion are resolved from the cache
-        var result3 = outer.CompleteStreamingAsync([new ChatMessage(ChatRole.User, "some input")]);
+        var result3 = outer.CompleteStreamingAsync("some input");
         await AssertCompletionsEqualAsync(expectedCompletion, result3);
         Assert.Equal(2, innerCallCount);
     }
@@ -654,11 +654,11 @@ public class DistributedCachingChatClientTest
         };
 
         // Make the initial request and do a quick sanity check
-        var result1 = await outer.CompleteAsync([new ChatMessage(ChatRole.User, "some input")]);
+        var result1 = await outer.CompleteAsync("some input");
         AssertCompletionsEqual(expectedCompletion, result1);
 
         // Act
-        var result2 = await outer.CompleteAsync([new ChatMessage(ChatRole.User, "some input")]);
+        var result2 = await outer.CompleteAsync("some input");
 
         // Assert
         Assert.Equal(1, innerCallCount);
@@ -692,7 +692,7 @@ public class DistributedCachingChatClientTest
 
         // Act: Make a request that should populate the cache
         Assert.Empty(_storage.Keys);
-        var result = await outer.CompleteAsync([new ChatMessage(ChatRole.User, "some input")]);
+        var result = await outer.CompleteAsync("some input");
 
         // Assert
         Assert.NotNull(result);

@@ -37,9 +37,6 @@ public interface IEmbeddingGenerator<TInput, TEmbedding> : IDisposable
         EmbeddingGenerationOptions? options = null,
         CancellationToken cancellationToken = default);
 
-    /// <summary>Gets metadata that describes the <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/>.</summary>
-    EmbeddingGeneratorMetadata Metadata { get; }
-
     /// <summary>Asks the <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> for an object of the specified type <paramref name="serviceType"/>.</summary>
     /// <param name="serviceType">The type of object being requested.</param>
     /// <param name="serviceKey">An optional key that can be used to help identify the target service.</param>
