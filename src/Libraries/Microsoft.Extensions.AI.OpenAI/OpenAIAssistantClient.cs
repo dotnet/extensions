@@ -266,7 +266,8 @@ internal sealed class OpenAIAssistantClient : IChatClient
         {
             List<MessageContent> messageContents = [];
 
-            if (chatMessage.Role == ChatRole.System)
+            if (chatMessage.Role == ChatRole.System ||
+                chatMessage.Role == OpenAIModelMappers.ChatRoleDeveloper)
             {
                 instructions ??= new();
                 foreach (var textContent in chatMessage.Contents.OfType<TextContent>())

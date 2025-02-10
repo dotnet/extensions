@@ -210,8 +210,10 @@ public class OpenAIChatClientTests
         {
             { "InputTokenDetails.AudioTokenCount", 0 },
             { "InputTokenDetails.CachedTokenCount", 13 },
+            { "OutputTokenDetails.ReasoningTokenCount", 90 },
             { "OutputTokenDetails.AudioTokenCount", 0 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 }
+            { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
+            { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, response.Usage.AdditionalCounts);
 
         Assert.NotNull(response.AdditionalProperties);
@@ -300,8 +302,10 @@ public class OpenAIChatClientTests
         {
             { "InputTokenDetails.AudioTokenCount", 123 },
             { "InputTokenDetails.CachedTokenCount", 5 },
-            { "OutputTokenDetails.AudioTokenCount", 456 },
             { "OutputTokenDetails.ReasoningTokenCount", 90 },
+            { "OutputTokenDetails.AudioTokenCount", 456 },
+            { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
+            { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, usage.Details.AdditionalCounts);
     }
 
@@ -466,8 +470,10 @@ public class OpenAIChatClientTests
         {
             { "InputTokenDetails.AudioTokenCount", 123 },
             { "InputTokenDetails.CachedTokenCount", 13 },
-            { "OutputTokenDetails.AudioTokenCount", 456 },
             { "OutputTokenDetails.ReasoningTokenCount", 90 },
+            { "OutputTokenDetails.AudioTokenCount", 456 },
+            { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
+            { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, response.Usage.AdditionalCounts);
 
         Assert.NotNull(response.AdditionalProperties);
@@ -564,8 +570,10 @@ public class OpenAIChatClientTests
         {
             { "InputTokenDetails.AudioTokenCount", 0 },
             { "InputTokenDetails.CachedTokenCount", 13 },
+            { "OutputTokenDetails.ReasoningTokenCount", 90 },
             { "OutputTokenDetails.AudioTokenCount", 0 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 }
+            { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
+            { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, response.Usage.AdditionalCounts);
 
         Assert.NotNull(response.AdditionalProperties);
@@ -663,8 +671,10 @@ public class OpenAIChatClientTests
         {
             { "InputTokenDetails.AudioTokenCount", 0 },
             { "InputTokenDetails.CachedTokenCount", 13 },
+            { "OutputTokenDetails.ReasoningTokenCount", 90 },
             { "OutputTokenDetails.AudioTokenCount", 0 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 }
+            { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
+            { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, response.Usage.AdditionalCounts);
 
         Assert.NotNull(response.AdditionalProperties);
@@ -775,8 +785,10 @@ public class OpenAIChatClientTests
         {
             { "InputTokenDetails.AudioTokenCount", 0 },
             { "InputTokenDetails.CachedTokenCount", 13 },
+            { "OutputTokenDetails.ReasoningTokenCount", 90 },
             { "OutputTokenDetails.AudioTokenCount", 0 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 }
+            { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
+            { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, response.Usage.AdditionalCounts);
 
         Assert.Single(response.Choices);
@@ -895,8 +907,10 @@ public class OpenAIChatClientTests
         {
             { "InputTokenDetails.AudioTokenCount", 0 },
             { "InputTokenDetails.CachedTokenCount", 0 },
+            { "OutputTokenDetails.ReasoningTokenCount", 90 },
             { "OutputTokenDetails.AudioTokenCount", 0 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 }
+            { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
+            { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, usage.Details.AdditionalCounts);
     }
 
@@ -1034,8 +1048,10 @@ public class OpenAIChatClientTests
         {
             { "InputTokenDetails.AudioTokenCount", 0 },
             { "InputTokenDetails.CachedTokenCount", 20 },
+            { "OutputTokenDetails.ReasoningTokenCount", 90 },
             { "OutputTokenDetails.AudioTokenCount", 0 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 }
+            { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
+            { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, response.Usage.AdditionalCounts);
 
         Assert.NotNull(response.AdditionalProperties);

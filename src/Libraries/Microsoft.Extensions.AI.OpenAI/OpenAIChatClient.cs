@@ -110,7 +110,7 @@ public sealed class OpenAIChatClient : IChatClient
         // Make the call to OpenAI.
         var response = await _chatClient.CompleteChatAsync(openAIChatMessages, openAIOptions, cancellationToken).ConfigureAwait(false);
 
-        return OpenAIModelMappers.FromOpenAIChatCompletion(response.Value, options);
+        return OpenAIModelMappers.FromOpenAIChatCompletion(response.Value, options, openAIOptions);
     }
 
     /// <inheritdoc />
