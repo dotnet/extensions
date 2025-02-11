@@ -6,11 +6,20 @@ param (
 # if version is not set, then run a script to get it
 if ($Version -eq "")
 {
-    $Version = $(nbgv get-version --variable Version)
+    $DotNetRoot = Resolve-Path $PSScriptRoot/../../../../../.dotnet/
+    $ReportingProjectLocation = Resolve-Path $PSScriptRoot/../../CSharp/
+    $VersionFields = . "$DotNetRoot/dotnet" msbuild $ReportingProjectLocation -getProperty:MajorVersion,MinorVersion,PatchVersion,VersionSuffixDateStamp,VersionSuffixBuildOfTheDayPadded | ConvertFrom-Json
+    $Version = $VersionFields.Properties.MajorVersion + "." + $VersionFields.Properties.MinorVersion + "." + $VersionFields.Properties.PatchVersion + "."
+    $VersionBuildNumber = $VersionFields.Properties.VersionSuffixDateStamp + "." + $VersionFields.Properties.VersionSuffixBuildOfTheDayPadded
+    if ($VersionBuildNumber -eq ".")
+    {
+        $Version += "424242"
+    } else {
+        $Version += $VersionBuildNumber
+    }
 }
 
-# Make sure we only use the first 3 segments of the version
-$PackageVersion = $Version | Select-String -Pattern '\d+\.\d+\.\d+' | ForEach-Object { $_.Matches.Value }
+$PackageVersion = $Version
 
 if ($null -eq $PackageVersion)
 {
