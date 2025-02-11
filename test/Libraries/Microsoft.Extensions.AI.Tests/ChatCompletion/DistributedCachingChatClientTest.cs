@@ -71,7 +71,7 @@ public class DistributedCachingChatClientTest
         var innerCallCount = 0;
         using var testClient = new TestChatClient
         {
-            CompleteAsyncCallback = delegate
+            GetResponseAsyncCallback = delegate
             {
                 innerCallCount++;
                 return Task.FromResult(expectedResponse);
@@ -107,7 +107,7 @@ public class DistributedCachingChatClientTest
         var completionTcs = new TaskCompletionSource<bool>();
         using var testClient = new TestChatClient
         {
-            CompleteAsyncCallback = async delegate
+            GetResponseAsyncCallback = async delegate
             {
                 innerCallCount++;
                 await completionTcs.Task;
@@ -144,7 +144,7 @@ public class DistributedCachingChatClientTest
         var innerCallCount = 0;
         using var testClient = new TestChatClient
         {
-            CompleteAsyncCallback = delegate
+            GetResponseAsyncCallback = delegate
             {
                 innerCallCount++;
                 throw new InvalidTimeZoneException("some failure");
@@ -177,7 +177,7 @@ public class DistributedCachingChatClientTest
         var resolutionTcs = new TaskCompletionSource<bool>();
         using var testClient = new TestChatClient
         {
-            CompleteAsyncCallback = async delegate
+            GetResponseAsyncCallback = async delegate
             {
                 innerCallCount++;
                 if (innerCallCount == 1)
@@ -258,7 +258,7 @@ public class DistributedCachingChatClientTest
         var innerCallCount = 0;
         using var testClient = new TestChatClient
         {
-            CompleteStreamingAsyncCallback = delegate
+            GetStreamingResponseAsyncCallback = delegate
             {
                 innerCallCount++;
                 return ToAsyncEnumerableAsync(actualUpdate);
@@ -305,7 +305,7 @@ public class DistributedCachingChatClientTest
 
         using var testClient = new TestChatClient
         {
-            CompleteStreamingAsyncCallback = delegate { return ToAsyncEnumerableAsync(expectedResponse); }
+            GetStreamingResponseAsyncCallback = delegate { return ToAsyncEnumerableAsync(expectedResponse); }
         };
         using var outer = new DistributedCachingChatClient(testClient, _storage)
         {
@@ -382,7 +382,7 @@ public class DistributedCachingChatClientTest
 
         using var testClient = new TestChatClient
         {
-            CompleteStreamingAsyncCallback = delegate { return ToAsyncEnumerableAsync(expectedResponse); }
+            GetStreamingResponseAsyncCallback = delegate { return ToAsyncEnumerableAsync(expectedResponse); }
         };
         using var outer = new DistributedCachingChatClient(testClient, _storage)
         {
@@ -420,7 +420,7 @@ public class DistributedCachingChatClientTest
         ];
         using var testClient = new TestChatClient
         {
-            CompleteStreamingAsyncCallback = delegate
+            GetStreamingResponseAsyncCallback = delegate
             {
                 innerCallCount++;
                 return ToAsyncEnumerableAsync(completionTcs.Task, expectedResponse);
@@ -459,7 +459,7 @@ public class DistributedCachingChatClientTest
         var innerCallCount = 0;
         using var testClient = new TestChatClient
         {
-            CompleteStreamingAsyncCallback = delegate
+            GetStreamingResponseAsyncCallback = delegate
             {
                 innerCallCount++;
                 return ToAsyncEnumerableAsync<ChatResponseUpdate>(Task.CompletedTask,
@@ -498,7 +498,7 @@ public class DistributedCachingChatClientTest
         var completionTcs = new TaskCompletionSource<bool>();
         using var testClient = new TestChatClient
         {
-            CompleteStreamingAsyncCallback = delegate
+            GetStreamingResponseAsyncCallback = delegate
             {
                 innerCallCount++;
                 return ToAsyncEnumerableAsync<ChatResponseUpdate>(
@@ -535,7 +535,7 @@ public class DistributedCachingChatClientTest
         var completionTcs = new TaskCompletionSource<bool>();
         using var testClient = new TestChatClient
         {
-            CompleteAsyncCallback = async (_, options, _) =>
+            GetResponseAsyncCallback = async (_, options, _) =>
             {
                 innerCallCount++;
                 await Task.Yield();
@@ -586,7 +586,7 @@ public class DistributedCachingChatClientTest
         var completionTcs = new TaskCompletionSource<bool>();
         using var testClient = new TestChatClient
         {
-            CompleteAsyncCallback = async (_, options, _) =>
+            GetResponseAsyncCallback = async (_, options, _) =>
             {
                 innerCallCount++;
                 await Task.Yield();
@@ -642,7 +642,7 @@ public class DistributedCachingChatClientTest
         var innerCallCount = 0;
         using var testClient = new TestChatClient
         {
-            CompleteAsyncCallback = delegate
+            GetResponseAsyncCallback = delegate
             {
                 innerCallCount++;
                 return Task.FromResult(expectedResponse);
@@ -676,7 +676,7 @@ public class DistributedCachingChatClientTest
             .BuildServiceProvider();
         using var testClient = new TestChatClient
         {
-            CompleteAsyncCallback = delegate
+            GetResponseAsyncCallback = delegate
             {
                 return Task.FromResult(new ChatResponse([
                     new(ChatRole.Assistant, [new TextContent("Hey")])]));

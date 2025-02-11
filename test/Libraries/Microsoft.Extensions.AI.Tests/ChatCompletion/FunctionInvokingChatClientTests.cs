@@ -369,12 +369,12 @@ public class FunctionInvokingChatClientTests
 
         using var innerClient = new TestChatClient
         {
-            CompleteAsyncCallback = async (chatContents, options, cancellationToken) =>
+            GetResponseAsyncCallback = async (chatContents, options, cancellationToken) =>
             {
                 await Task.Yield();
                 return expected;
             },
-            CompleteStreamingAsyncCallback = (chatContents, options, cancellationToken) =>
+            GetStreamingResponseAsyncCallback = (chatContents, options, cancellationToken) =>
               YieldAsync(expected.ToChatResponseUpdates()),
         };
 
@@ -529,7 +529,7 @@ public class FunctionInvokingChatClientTests
 
         using var innerClient = new TestChatClient
         {
-            CompleteStreamingAsyncCallback = (chatContents, chatOptions, cancellationToken) =>
+            GetStreamingResponseAsyncCallback = (chatContents, chatOptions, cancellationToken) =>
             {
                 // If the conversation is just starting, issue two consecutive updates with function calls
                 // Otherwise just end the conversation
@@ -689,9 +689,9 @@ public class FunctionInvokingChatClientTests
 
         using var innerClient = new TestChatClient
         {
-            CompleteAsyncCallback = (chatContents, chatOptions, cancellationToken) =>
+            GetResponseAsyncCallback = (chatContents, chatOptions, cancellationToken) =>
                 Task.FromResult(callback(chatContents, chatOptions, cancellationToken)),
-            CompleteStreamingAsyncCallback = (chatContents, chatOptions, cancellationToken) =>
+            GetStreamingResponseAsyncCallback = (chatContents, chatOptions, cancellationToken) =>
                 YieldAsync(callback(chatContents, chatOptions, cancellationToken).ToChatResponseUpdates()),
         };
 
@@ -720,7 +720,7 @@ public class FunctionInvokingChatClientTests
 
         using var innerClient = new TestChatClient
         {
-            CompleteAsyncCallback = async (contents, actualOptions, actualCancellationToken) =>
+            GetResponseAsyncCallback = async (contents, actualOptions, actualCancellationToken) =>
             {
                 Assert.Equal(cts.Token, actualCancellationToken);
 
@@ -813,7 +813,7 @@ public class FunctionInvokingChatClientTests
 
         using var innerClient = new TestChatClient
         {
-            CompleteStreamingAsyncCallback = (contents, actualOptions, actualCancellationToken) =>
+            GetStreamingResponseAsyncCallback = (contents, actualOptions, actualCancellationToken) =>
             {
                 Assert.Equal(cts.Token, actualCancellationToken);
 

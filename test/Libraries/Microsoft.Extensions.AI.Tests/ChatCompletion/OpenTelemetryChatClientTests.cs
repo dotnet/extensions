@@ -35,7 +35,7 @@ public class OpenTelemetryChatClientTests
 
         using var innerClient = new TestChatClient
         {
-            CompleteAsyncCallback = async (messages, options, cancellationToken) =>
+            GetResponseAsyncCallback = async (messages, options, cancellationToken) =>
             {
                 await Task.Yield();
                 return new ChatResponse(new ChatMessage(ChatRole.Assistant, "The blue whale, I think."))
@@ -55,7 +55,7 @@ public class OpenTelemetryChatClientTests
                     },
                 };
             },
-            CompleteStreamingAsyncCallback = CallbackAsync,
+            GetStreamingResponseAsyncCallback = CallbackAsync,
             GetServiceCallback = (serviceType, serviceKey) =>
                 serviceType == typeof(ChatClientMetadata) ? new ChatClientMetadata("testservice", new Uri("http://localhost:12345/something"), "amazingmodel") :
                 null,

@@ -164,9 +164,9 @@ public sealed class AnonymousDelegatingChatClient : DelegatingChatClient
         else
         {
             Debug.Assert(_getResponseFunc is not null, "Expected non-null non-streaming delegate.");
-            return CompleteStreamingAsyncViaCompleteAsync(_getResponseFunc!(chatMessages, options, InnerClient, cancellationToken));
+            return GetStreamingResponseAsyncViaGetResponseAsync(_getResponseFunc!(chatMessages, options, InnerClient, cancellationToken));
 
-            static async IAsyncEnumerable<ChatResponseUpdate> CompleteStreamingAsyncViaCompleteAsync(Task<ChatResponse> task)
+            static async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsyncViaGetResponseAsync(Task<ChatResponse> task)
             {
                 ChatResponse response = await task.ConfigureAwait(false);
                 foreach (var update in response.ToChatResponseUpdates())
