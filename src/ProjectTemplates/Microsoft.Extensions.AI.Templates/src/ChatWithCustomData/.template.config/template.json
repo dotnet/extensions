@@ -180,7 +180,7 @@
       "type": "generated",
       "generator": "constant",
       "parameters": {
-        "value": "llama3.1"
+        "value": "llama3.2"
       }
     },
     "OllamaEmbeddingModelDefault": {
@@ -228,7 +228,10 @@
         "sourceVariableName": "kestrelHttpPort",
         "fallbackVariableName": "kestrelHttpPortGenerated"
       },
-      "replaces": "5000"
+      "replaces": "5000",
+      "onlyIf": [{
+        "after": "localhost:"
+      }]
     },
     "kestrelHttpsPort": {
       "type": "parameter",
@@ -250,7 +253,10 @@
         "sourceVariableName": "kestrelHttpsPort",
         "fallbackVariableName": "kestrelHttpsPortGenerated"
       },
-      "replaces": "5001"
+      "replaces": "5001",
+      "onlyIf": [{
+        "after": "localhost:"
+      }]
     }
   }
 }

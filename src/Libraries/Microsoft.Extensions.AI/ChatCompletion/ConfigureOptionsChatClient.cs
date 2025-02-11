@@ -34,16 +34,16 @@ public sealed class ConfigureOptionsChatClient : DelegatingChatClient
     }
 
     /// <inheritdoc/>
-    public override async Task<ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<ChatResponse> GetResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await base.CompleteAsync(chatMessages, Configure(options), cancellationToken).ConfigureAwait(false);
+        return await base.GetResponseAsync(chatMessages, Configure(options), cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(
+    public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var update in base.CompleteStreamingAsync(chatMessages, Configure(options), cancellationToken).ConfigureAwait(false))
+        await foreach (var update in base.GetStreamingResponseAsync(chatMessages, Configure(options), cancellationToken).ConfigureAwait(false))
         {
             yield return update;
         }

@@ -37,29 +37,16 @@ public class DelegatingChatClient : IChatClient
     /// <summary>Gets the inner <see cref="IChatClient" />.</summary>
     protected IChatClient InnerClient { get; }
 
-    /// <summary>Provides a mechanism for releasing unmanaged resources.</summary>
-    /// <param name="disposing"><see langword="true"/> if being called from <see cref="Dispose()"/>; otherwise, <see langword="false"/>.</param>
-    protected virtual void Dispose(bool disposing)
+    /// <inheritdoc />
+    public virtual Task<ChatResponse> GetResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
-        if (disposing)
-        {
-            InnerClient.Dispose();
-        }
+        return InnerClient.GetResponseAsync(chatMessages, options, cancellationToken);
     }
 
     /// <inheritdoc />
-    public virtual ChatClientMetadata Metadata => InnerClient.Metadata;
-
-    /// <inheritdoc />
-    public virtual Task<ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    public virtual IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return InnerClient.CompleteAsync(chatMessages, options, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public virtual IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
-    {
-        return InnerClient.CompleteStreamingAsync(chatMessages, options, cancellationToken);
+        return InnerClient.GetStreamingResponseAsync(chatMessages, options, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -71,5 +58,15 @@ public class DelegatingChatClient : IChatClient
         return
             serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
             InnerClient.GetService(serviceType, serviceKey);
+    }
+
+    /// <summary>Provides a mechanism for releasing unmanaged resources.</summary>
+    /// <param name="disposing"><see langword="true"/> if being called from <see cref="Dispose()"/>; otherwise, <see langword="false"/>.</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            InnerClient.Dispose();
+        }
     }
 }

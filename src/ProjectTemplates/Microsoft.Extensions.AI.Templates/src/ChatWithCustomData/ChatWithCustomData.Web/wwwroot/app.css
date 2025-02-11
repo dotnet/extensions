@@ -1,10 +1,11 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url('lib/tailwindcss/dist/preflight.css');
 
 html {
-    @apply main-background-gradient;
     min-height: 100vh;
+}
+
+html, .main-background-gradient {
+    background: linear-gradient(to bottom, rgb(225 227 233), #f4f4f4 25rem);
 }
 
 body {
@@ -23,7 +24,9 @@ body {
     }
 
 h1 {
-    @apply text-4xl font-semibold;
+    font-size: 2.25rem;
+    line-height: 2.5rem;
+    font-weight: 600;
 }
 
 h1:focus {
@@ -52,19 +55,40 @@ h1:focus {
         content: "An error has occurred."
     }
 
-.main-background-gradient {
-    background: linear-gradient(to bottom, rgb(225 227 233), #f4f4f4 25rem);
+.btn-default {
+    display: flex;
+    padding: 0.25rem 0.75rem;
+    gap: 0.25rem;
+    align-items: center;
+    border-radius: 0.25rem;
+    border: 1px solid #9CA3AF;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 600;
+    background-color: #D1D5DB;
 }
 
-.btn-default {
-    @apply border bg-gray-300 border-gray-400 hover:bg-gray-200 active:bg-gray-300 px-3 py-1 rounded text-sm font-semibold flex items-center gap-1;
-}
+    .btn-default:hover {
+        background-color: #E5E7EB;
+    }
 
 .btn-subtle {
-    @apply border border-gray-300 hover:border-blue-300 hover:bg-blue-100 active:border-gray-300 px-3 py-1 rounded text-sm flex items-center gap-1;
+    display: flex;
+    padding: 0.25rem 0.75rem;
+    gap: 0.25rem;
+    align-items: center;
+    border-radius: 0.25rem;
+    border: 1px solid #D1D5DB;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
 }
 
-    .page-width {
-        max-width: 1024px;
-        @apply mx-auto;
+    .btn-subtle:hover {
+        border-color: #93C5FD;
+        background-color: #DBEAFE;
     }
+
+.page-width {
+    max-width: 1024px;
+    margin: auto;
+}

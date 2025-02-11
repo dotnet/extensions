@@ -16,14 +16,17 @@ using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable EA0011 // Consider removing unnecessary conditional access operator (?)
 #pragma warning disable SA1204 // Static elements should appear before instance elements
+#pragma warning disable S3358  // Ternary operators should not be nested
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="IChatClient"/> for Ollama.</summary>
 public sealed class OllamaChatClient : IChatClient
 {
-    private static readonly JsonElement _defaultParameterSchema = JsonDocument.Parse("{}").RootElement;
     private static readonly JsonElement _schemalessJsonResponseFormatValue = JsonDocument.Parse("\"json\"").RootElement;
+
+    /// <summary>Metadata about the client.</summary>
+    private readonly ChatClientMetadata _metadata;
 
     /// <summary>The api/chat endpoint URI.</summary>
     private readonly Uri _apiChatEndpoint;
@@ -63,11 +66,9 @@ public sealed class OllamaChatClient : IChatClient
 
         _apiChatEndpoint = new Uri(endpoint, "api/chat");
         _httpClient = httpClient ?? OllamaUtilities.SharedClient;
-        Metadata = new("ollama", endpoint, modelId);
-    }
 
-    /// <inheritdoc />
-    public ChatClientMetadata Metadata { get; }
+        _metadata = new("ollama", endpoint, modelId);
+    }
 
     /// <summary>Gets or sets <see cref="JsonSerializerOptions"/> to use for any serialization activities related to tool call arguments and results.</summary>
     public JsonSerializerOptions ToolCallJsonSerializerOptions
@@ -77,7 +78,7 @@ public sealed class OllamaChatClient : IChatClient
     }
 
     /// <inheritdoc />
-    public async Task<ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<ChatResponse> GetResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(chatMessages);
 
@@ -103,16 +104,16 @@ public sealed class OllamaChatClient : IChatClient
 
         return new([FromOllamaMessage(response.Message!)])
         {
-            CompletionId = response.CreatedAt,
-            ModelId = response.Model ?? options?.ModelId ?? Metadata.ModelId,
             CreatedAt = DateTimeOffset.TryParse(response.CreatedAt, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset createdAt) ? createdAt : null,
             FinishReason = ToFinishReason(response),
+            ModelId = response.Model ?? options?.ModelId ?? _metadata.ModelId,
+            ResponseId = response.CreatedAt,
             Usage = ParseOllamaChatResponseUsage(response),
         };
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(
+    public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(chatMessages);
@@ -149,15 +150,15 @@ public sealed class OllamaChatClient : IChatClient
                 continue;
             }
 
-            string? modelId = chunk.Model ?? Metadata.ModelId;
+            string? modelId = chunk.Model ?? _metadata.ModelId;
 
-            StreamingChatCompletionUpdate update = new()
+            ChatResponseUpdate update = new()
             {
-                CompletionId = chunk.CreatedAt,
-                Role = chunk.Message?.Role is not null ? new ChatRole(chunk.Message.Role) : null,
                 CreatedAt = DateTimeOffset.TryParse(chunk.CreatedAt, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset createdAt) ? createdAt : null,
                 FinishReason = ToFinishReason(chunk),
                 ModelId = modelId,
+                ResponseId = chunk.CreatedAt,
+                Role = chunk.Message?.Role is not null ? new ChatRole(chunk.Message.Role) : null,
             };
 
             if (chunk.Message is { } message)
@@ -190,12 +191,14 @@ public sealed class OllamaChatClient : IChatClient
     }
 
     /// <inheritdoc />
-    public object? GetService(Type serviceType, object? serviceKey = null)
+    object? IChatClient.GetService(Type serviceType, object? serviceKey)
     {
         _ = Throw.IfNull(serviceType);
 
         return
-            serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+            serviceKey is not null ? null :
+            serviceType == typeof(ChatClientMetadata) ? _metadata :
+            serviceType.IsInstanceOfType(this) ? this :
             null;
     }
 
@@ -293,9 +296,9 @@ public sealed class OllamaChatClient : IChatClient
         {
             Format = ToOllamaChatResponseFormat(options?.ResponseFormat),
             Messages = chatMessages.SelectMany(ToOllamaChatRequestMessages).ToArray(),
-            Model = options?.ModelId ?? Metadata.ModelId ?? string.Empty,
+            Model = options?.ModelId ?? _metadata.ModelId ?? string.Empty,
             Stream = stream,
-            Tools = options?.Tools is { Count: > 0 } tools ? tools.OfType<AIFunction>().Select(ToOllamaTool) : null,
+            Tools = options?.ToolMode is not NoneChatToolMode && options?.Tools is { Count: > 0 } tools ? tools.OfType<AIFunction>().Select(ToOllamaTool) : null,
         };
 
         if (options is not null)
@@ -386,7 +389,7 @@ public sealed class OllamaChatClient : IChatClient
         OllamaChatRequestMessage? currentTextMessage = null;
         foreach (var item in content.Contents)
         {
-            if (item is DataContent { ContainsData: true } dataContent && dataContent.MediaTypeStartsWith("image/"))
+            if (item is DataContent dataContent && dataContent.MediaTypeStartsWith("image/") && dataContent.Data.HasValue)
             {
                 IList<string> images = currentTextMessage?.Images ?? [];
                 images.Add(Convert.ToBase64String(dataContent.Data.Value
@@ -466,20 +469,17 @@ public sealed class OllamaChatClient : IChatClient
         }
     }
 
-    private static OllamaTool ToOllamaTool(AIFunction function) => new()
+    private static OllamaTool ToOllamaTool(AIFunction function)
     {
-        Type = "function",
-        Function = new OllamaFunctionTool
+        return new()
         {
-            Name = function.Metadata.Name,
-            Description = function.Metadata.Description,
-            Parameters = new OllamaFunctionToolParameters
+            Type = "function",
+            Function = new OllamaFunctionTool
             {
-                Properties = function.Metadata.Parameters.ToDictionary(
-                    p => p.Name,
-                    p => p.Schema is JsonElement e ? e : _defaultParameterSchema),
-                Required = function.Metadata.Parameters.Where(p => p.IsRequired).Select(p => p.Name).ToList(),
-            },
-        }
-    };
+                Name = function.Metadata.Name,
+                Description = function.Metadata.Description,
+                Parameters = JsonSerializer.Deserialize(function.Metadata.Schema, JsonContext.Default.OllamaFunctionToolParameters)!,
+            }
+        };
+    }
 }

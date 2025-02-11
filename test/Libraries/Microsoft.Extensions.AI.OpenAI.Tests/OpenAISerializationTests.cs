@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -365,7 +366,7 @@ public static partial class OpenAISerializationTests
         Assert.Null(request.Options.Seed);
         Assert.Null(request.Options.StopSequences);
 
-        Assert.Equal(ChatToolMode.Auto, request.Options.ToolMode);
+        Assert.Same(ChatToolMode.Auto, request.Options.ToolMode);
         Assert.NotNull(request.Options.Tools);
 
         AIFunction function = Assert.IsAssignableFrom<AIFunction>(Assert.Single(request.Options.Tools));
@@ -379,7 +380,8 @@ public static partial class OpenAISerializationTests
         Assert.Equal("personName", parameter.Name);
         Assert.True(parameter.IsRequired);
 
-        JsonObject parameterSchema = Assert.IsType<JsonObject>(JsonNode.Parse(Assert.IsType<JsonElement>(parameter.Schema).GetRawText()));
+        JsonObject parametersSchema = Assert.IsType<JsonObject>(JsonNode.Parse(function.Metadata.Schema.GetProperty("properties").GetRawText()));
+        var parameterSchema = Assert.IsType<JsonObject>(Assert.Single(parametersSchema.Select(kvp => kvp.Value)));
         Assert.Equal(2, parameterSchema.Count);
         Assert.Equal("The person whose age is being requested", (string)parameterSchema["description"]!);
         Assert.Equal("string", (string)parameterSchema["type"]!);
@@ -453,7 +455,6 @@ public static partial class OpenAISerializationTests
                 Assert.Null(msg.AdditionalProperties);
 
                 FunctionResultContent frc = Assert.IsType<FunctionResultContent>(Assert.Single(msg.Contents));
-                Assert.Equal("SayHello", frc.Name);
                 Assert.Equal("12345", frc.CallId);
                 Assert.Equal(42, Assert.IsType<JsonElement>(frc.Result).GetInt32());
                 Assert.Null(frc.AdditionalProperties);
@@ -463,7 +464,7 @@ public static partial class OpenAISerializationTests
     }
 
     [Fact]
-    public static async Task SerializeCompletion_SingleChoice()
+    public static async Task SerializeResponse_SingleChoice()
     {
         ChatMessage message = new()
         {
@@ -481,9 +482,9 @@ public static partial class OpenAISerializationTests
             ]
         };
 
-        ChatCompletion completion = new(message)
+        ChatResponse response = new(message)
         {
-            CompletionId = "chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI",
+            ResponseId = "chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI",
             ModelId = "gpt-4o-mini-2024-07-18",
             CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1_727_888_631),
             FinishReason = ChatFinishReason.Stop,
@@ -502,35 +503,53 @@ public static partial class OpenAISerializationTests
             },
             AdditionalProperties = new()
             {
-                [nameof(OpenAI.Chat.ChatCompletion.SystemFingerprint)] = "fp_f85bea6784",
+                [nameof(ChatCompletion.SystemFingerprint)] = "fp_f85bea6784",
             }
         };
 
         using MemoryStream stream = new();
-        await OpenAISerializationHelpers.SerializeAsync(stream, completion);
+        await OpenAISerializationHelpers.SerializeAsync(stream, response);
         string result = Encoding.UTF8.GetString(stream.ToArray());
 
         AssertJsonEqual("""
             {
               "id": "chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI",
+              "model": "gpt-4o-mini-2024-07-18",
+              "system_fingerprint": "fp_f85bea6784",
+              "usage": {
+                "completion_tokens": 9,
+                "prompt_tokens": 8,
+                "total_tokens": 17,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 90,
+                  "audio_tokens": 2,
+                  "accepted_prediction_tokens": 0,
+                  "rejected_prediction_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "audio_tokens": 1,
+                  "cached_tokens": 13
+                }
+              },
+              "object": "chat.completion",
               "choices": [
                 {
                   "finish_reason": "stop",
                   "index": 0,
                   "message": {
-                    "content": "Hello! How can I assist you today?",
                     "refusal": null,
                     "tool_calls": [
                       {
                         "id": "callId",
-                        "type": "function",
                         "function": {
                           "name": "MyCoolFunc",
                           "arguments": "{\r\n  \u0022arg1\u0022: 42,\r\n  \u0022arg2\u0022: \u0022str\u0022\r\n}"
-                        }
+                        },
+                        "type": "function"
                       }
                     ],
-                    "role": "assistant"
+                    "role": "assistant",
+                    "content": "Hello! How can I assist you today?"
                   },
                   "logprobs": {
                     "content": [],
@@ -538,29 +557,13 @@ public static partial class OpenAISerializationTests
                   }
                 }
               ],
-              "created": 1727888631,
-              "model": "gpt-4o-mini-2024-07-18",
-              "system_fingerprint": "fp_f85bea6784",
-              "object": "chat.completion",
-              "usage": {
-                "completion_tokens": 9,
-                "prompt_tokens": 8,
-                "total_tokens": 17,
-                "completion_tokens_details": {
-                  "audio_tokens": 2,
-                  "reasoning_tokens": 90
-                },
-                "prompt_tokens_details": {
-                  "audio_tokens": 1,
-                  "cached_tokens": 13
-                }
-              }
+              "created": 1727888631
             }
             """, result);
     }
 
     [Fact]
-    public static async Task SerializeCompletion_ManyChoices_ThrowsNotSupportedException()
+    public static async Task SerializeResponse_ManyChoices_ThrowsNotSupportedException()
     {
         ChatMessage message1 = new()
         {
@@ -574,17 +577,17 @@ public static partial class OpenAISerializationTests
             Text = "Hey there! How can I help?",
         };
 
-        ChatCompletion completion = new([message1, message2]);
+        ChatResponse response = new([message1, message2]);
 
         using MemoryStream stream = new();
-        var ex = await Assert.ThrowsAsync<NotSupportedException>(() => OpenAISerializationHelpers.SerializeAsync(stream, completion));
+        var ex = await Assert.ThrowsAsync<NotSupportedException>(() => OpenAISerializationHelpers.SerializeAsync(stream, response));
         Assert.Contains("multiple choices", ex.Message);
     }
 
     [Fact]
-    public static async Task SerializeStreamingCompletion()
+    public static async Task SerializeStreamingResponse()
     {
-        static async IAsyncEnumerable<StreamingChatCompletionUpdate> CreateStreamingCompletion()
+        static async IAsyncEnumerable<ChatResponseUpdate> CreateStreamingResponse()
         {
             for (int i = 0; i < 5; i++)
             {
@@ -623,9 +626,9 @@ public static partial class OpenAISerializationTests
                     contents.Add(new UsageContent(usageDetails));
                 }
 
-                yield return new StreamingChatCompletionUpdate
+                yield return new ChatResponseUpdate
                 {
-                    CompletionId = "chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl",
+                    ResponseId = "chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl",
                     ModelId = "gpt-4o-mini-2024-07-18",
                     CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1_727_888_631),
                     Role = ChatRole.Assistant,
@@ -633,7 +636,7 @@ public static partial class OpenAISerializationTests
                     FinishReason = i == 4 ? ChatFinishReason.Stop : null,
                     AdditionalProperties = new()
                     {
-                        [nameof(OpenAI.Chat.ChatCompletion.SystemFingerprint)] = "fp_f85bea6784",
+                        [nameof(ChatCompletion.SystemFingerprint)] = "fp_f85bea6784",
                     },
                 };
 
@@ -642,19 +645,19 @@ public static partial class OpenAISerializationTests
         }
 
         using MemoryStream stream = new();
-        await OpenAISerializationHelpers.SerializeStreamingAsync(stream, CreateStreamingCompletion());
+        await OpenAISerializationHelpers.SerializeStreamingAsync(stream, CreateStreamingResponse());
         string result = Encoding.UTF8.GetString(stream.ToArray());
 
         AssertSseEqual("""
-            data: {"id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","choices":[{"delta":{"content":"Streaming update 0","tool_calls":[],"role":"assistant"},"logprobs":{"content":[],"refusal":[]},"index":0}],"created":1727888631,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","object":"chat.completion.chunk"}
+            data: {"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","object":"chat.completion.chunk","id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","choices":[{"delta":{"tool_calls":[],"role":"assistant","content":"Streaming update 0"},"logprobs":{"content":[],"refusal":[]},"index":0}],"created":1727888631}
 
-            data: {"id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","choices":[{"delta":{"content":"Streaming update 1","tool_calls":[],"role":"assistant"},"logprobs":{"content":[],"refusal":[]},"index":0}],"created":1727888631,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","object":"chat.completion.chunk"}
+            data: {"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","object":"chat.completion.chunk","id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","choices":[{"delta":{"tool_calls":[],"role":"assistant","content":"Streaming update 1"},"logprobs":{"content":[],"refusal":[]},"index":0}],"created":1727888631}
 
-            data: {"id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","choices":[{"delta":{"content":"Streaming update 2","tool_calls":[{"index":0,"id":"callId","type":"function","function":{"name":"MyCoolFunc","arguments":"{\r\n  \u0022arg1\u0022: 42,\r\n  \u0022arg2\u0022: \u0022str\u0022\r\n}"}}],"role":"assistant"},"logprobs":{"content":[],"refusal":[]},"index":0}],"created":1727888631,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","object":"chat.completion.chunk"}
+            data: {"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","object":"chat.completion.chunk","id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","choices":[{"delta":{"tool_calls":[{"index":0,"function":{"name":"MyCoolFunc","arguments":"{\r\n  \u0022arg1\u0022: 42,\r\n  \u0022arg2\u0022: \u0022str\u0022\r\n}"},"type":"function","id":"callId"}],"role":"assistant","content":"Streaming update 2"},"logprobs":{"content":[],"refusal":[]},"index":0}],"created":1727888631}
 
-            data: {"id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","choices":[{"delta":{"content":"Streaming update 3","tool_calls":[],"role":"assistant"},"logprobs":{"content":[],"refusal":[]},"index":0}],"created":1727888631,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","object":"chat.completion.chunk"}
+            data: {"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","object":"chat.completion.chunk","id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","choices":[{"delta":{"tool_calls":[],"role":"assistant","content":"Streaming update 3"},"logprobs":{"content":[],"refusal":[]},"index":0}],"created":1727888631}
 
-            data: {"id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","choices":[{"delta":{"content":"Streaming update 4","tool_calls":[],"role":"assistant"},"logprobs":{"content":[],"refusal":[]},"finish_reason":"stop","index":0}],"created":1727888631,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","object":"chat.completion.chunk","usage":{"completion_tokens":9,"prompt_tokens":8,"total_tokens":17,"completion_tokens_details":{"audio_tokens":2,"reasoning_tokens":90},"prompt_tokens_details":{"audio_tokens":1,"cached_tokens":13}}}
+            data: {"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","object":"chat.completion.chunk","id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","choices":[{"delta":{"tool_calls":[],"role":"assistant","content":"Streaming update 4"},"logprobs":{"content":[],"refusal":[]},"finish_reason":"stop","index":0}],"created":1727888631,"usage":{"completion_tokens":9,"prompt_tokens":8,"total_tokens":17,"completion_tokens_details":{"reasoning_tokens":90,"audio_tokens":2,"accepted_prediction_tokens":0,"rejected_prediction_tokens":0},"prompt_tokens_details":{"audio_tokens":1,"cached_tokens":13}}}
 
             data: [DONE]
 
@@ -670,12 +673,12 @@ public static partial class OpenAISerializationTests
         await Assert.ThrowsAsync<ArgumentNullException>(() => OpenAISerializationHelpers.SerializeAsync(null!, new(new ChatMessage())));
         await Assert.ThrowsAsync<ArgumentNullException>(() => OpenAISerializationHelpers.SerializeAsync(new MemoryStream(), null!));
 
-        await Assert.ThrowsAsync<ArgumentNullException>(() => OpenAISerializationHelpers.SerializeStreamingAsync(null!, GetStreamingChatCompletion()));
+        await Assert.ThrowsAsync<ArgumentNullException>(() => OpenAISerializationHelpers.SerializeStreamingAsync(null!, GetStreamingChatResponse()));
         await Assert.ThrowsAsync<ArgumentNullException>(() => OpenAISerializationHelpers.SerializeStreamingAsync(new MemoryStream(), null!));
 
-        static async IAsyncEnumerable<StreamingChatCompletionUpdate> GetStreamingChatCompletion()
+        static async IAsyncEnumerable<ChatResponseUpdate> GetStreamingChatResponse()
         {
-            yield return new StreamingChatCompletionUpdate();
+            yield return new ChatResponseUpdate();
             await Task.CompletedTask;
         }
     }
@@ -688,11 +691,11 @@ public static partial class OpenAISerializationTests
 
         await Assert.ThrowsAsync<TaskCanceledException>(() => OpenAISerializationHelpers.DeserializeChatCompletionRequestAsync(stream, cancellationToken: canceledToken));
         await Assert.ThrowsAsync<TaskCanceledException>(() => OpenAISerializationHelpers.SerializeAsync(stream, new(new ChatMessage()), cancellationToken: canceledToken));
-        await Assert.ThrowsAsync<TaskCanceledException>(() => OpenAISerializationHelpers.SerializeStreamingAsync(stream, GetStreamingChatCompletion(), cancellationToken: canceledToken));
+        await Assert.ThrowsAsync<TaskCanceledException>(() => OpenAISerializationHelpers.SerializeStreamingAsync(stream, GetStreamingChatResponse(), cancellationToken: canceledToken));
 
-        static async IAsyncEnumerable<StreamingChatCompletionUpdate> GetStreamingChatCompletion()
+        static async IAsyncEnumerable<ChatResponseUpdate> GetStreamingChatResponse()
         {
-            yield return new StreamingChatCompletionUpdate();
+            yield return new ChatResponseUpdate();
             await Task.CompletedTask;
         }
     }
@@ -708,7 +711,7 @@ public static partial class OpenAISerializationTests
                 ["arg1"] = new SomeFunctionArgument(),
             });
 
-        ChatCompletion completion = new(new ChatMessage
+        ChatResponse response = new(new ChatMessage
         {
             Role = ChatRole.Assistant,
             Contents = [fcc],
@@ -717,23 +720,23 @@ public static partial class OpenAISerializationTests
         using MemoryStream stream = new();
 
         // Passing a JSO that contains a contract for the function argument results in successful serialization.
-        await OpenAISerializationHelpers.SerializeAsync(stream, completion, options: JsonContextWithFunctionArgument.Default.Options);
+        await OpenAISerializationHelpers.SerializeAsync(stream, response, options: JsonContextWithFunctionArgument.Default.Options);
         stream.Position = 0;
 
-        await OpenAISerializationHelpers.SerializeStreamingAsync(stream, GetStreamingCompletion(), options: JsonContextWithFunctionArgument.Default.Options);
+        await OpenAISerializationHelpers.SerializeStreamingAsync(stream, GetStreamingResponse(), options: JsonContextWithFunctionArgument.Default.Options);
         stream.Position = 0;
 
         // Passing a JSO without a contract for the function argument result in failed serialization.
-        await Assert.ThrowsAsync<NotSupportedException>(() => OpenAISerializationHelpers.SerializeAsync(stream, completion, options: JsonContextWithoutFunctionArgument.Default.Options));
-        await Assert.ThrowsAsync<NotSupportedException>(() => OpenAISerializationHelpers.SerializeStreamingAsync(stream, GetStreamingCompletion(), options: JsonContextWithoutFunctionArgument.Default.Options));
+        await Assert.ThrowsAsync<NotSupportedException>(() => OpenAISerializationHelpers.SerializeAsync(stream, response, options: JsonContextWithoutFunctionArgument.Default.Options));
+        await Assert.ThrowsAsync<NotSupportedException>(() => OpenAISerializationHelpers.SerializeStreamingAsync(stream, GetStreamingResponse(), options: JsonContextWithoutFunctionArgument.Default.Options));
 
-        async IAsyncEnumerable<StreamingChatCompletionUpdate> GetStreamingCompletion()
+        async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponse()
         {
-            yield return new StreamingChatCompletionUpdate
+            await Task.Yield();
+            yield return new ChatResponseUpdate
             {
                 Contents = [fcc],
             };
-            await Task.CompletedTask;
         }
     }
 

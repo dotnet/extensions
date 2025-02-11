@@ -36,50 +36,50 @@ public static class OpenAISerializationHelpers
     }
 
     /// <summary>
-    /// Serializes a Microsoft.Extensions.AI completion using the OpenAI wire format.
+    /// Serializes a Microsoft.Extensions.AI response using the OpenAI wire format.
     /// </summary>
     /// <param name="stream">The stream to write the value.</param>
-    /// <param name="chatCompletion">The chat completion to serialize.</param>
+    /// <param name="response">The chat response to serialize.</param>
     /// <param name="options">The <see cref="JsonSerializerOptions"/> governing function call content serialization.</param>
     /// <param name="cancellationToken">A token used to cancel the serialization operation.</param>
     /// <returns>A task tracking the serialization operation.</returns>
     public static async Task SerializeAsync(
         Stream stream,
-        ChatCompletion chatCompletion,
+        ChatResponse response,
         JsonSerializerOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(stream);
-        _ = Throw.IfNull(chatCompletion);
+        _ = Throw.IfNull(response);
         options ??= AIJsonUtilities.DefaultOptions;
 
-        OpenAI.Chat.ChatCompletion openAiChatCompletion = OpenAIModelMappers.ToOpenAIChatCompletion(chatCompletion, options);
-        BinaryData binaryData = JsonModelHelpers.Serialize(openAiChatCompletion);
+        ChatCompletion openAiChatResponse = OpenAIModelMappers.ToOpenAIChatCompletion(response, options);
+        BinaryData binaryData = JsonModelHelpers.Serialize(openAiChatResponse);
         await stream.WriteAsync(binaryData.ToMemory(), cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
-    /// Serializes a Microsoft.Extensions.AI streaming completion using the OpenAI wire format.
+    /// Serializes a Microsoft.Extensions.AI streaming response using the OpenAI wire format.
     /// </summary>
     /// <param name="stream">The stream to write the value.</param>
-    /// <param name="streamingChatCompletionUpdates">The streaming chat completions to serialize.</param>
+    /// <param name="updates">The chat response updates to serialize.</param>
     /// <param name="options">The <see cref="JsonSerializerOptions"/> governing function call content serialization.</param>
     /// <param name="cancellationToken">A token used to cancel the serialization operation.</param>
     /// <returns>A task tracking the serialization operation.</returns>
     public static Task SerializeStreamingAsync(
         Stream stream,
-        IAsyncEnumerable<StreamingChatCompletionUpdate> streamingChatCompletionUpdates,
+        IAsyncEnumerable<ChatResponseUpdate> updates,
         JsonSerializerOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(stream);
-        _ = Throw.IfNull(streamingChatCompletionUpdates);
+        _ = Throw.IfNull(updates);
         options ??= AIJsonUtilities.DefaultOptions;
 
-        var mappedUpdates = OpenAIModelMappers.ToOpenAIStreamingChatCompletionAsync(streamingChatCompletionUpdates, options, cancellationToken);
+        var mappedUpdates = OpenAIModelMappers.ToOpenAIStreamingChatCompletionAsync(updates, options, cancellationToken);
         return SseFormatter.WriteAsync(ToSseEventsAsync(mappedUpdates), stream, FormatAsSseEvent, cancellationToken);
 
-        static async IAsyncEnumerable<SseItem<BinaryData>> ToSseEventsAsync(IAsyncEnumerable<OpenAI.Chat.StreamingChatCompletionUpdate> updates)
+        static async IAsyncEnumerable<SseItem<BinaryData>> ToSseEventsAsync(IAsyncEnumerable<StreamingChatCompletionUpdate> updates)
         {
             await foreach (var update in updates.ConfigureAwait(false))
             {

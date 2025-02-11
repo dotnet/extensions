@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Text.Json;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -13,6 +14,9 @@ public sealed class AIFunctionReturnParameterMetadata
 {
     /// <summary>Gets an empty return parameter metadata instance.</summary>
     public static AIFunctionReturnParameterMetadata Empty { get; } = new();
+
+    /// <summary>The JSON schema describing the function and its input parameters.</summary>
+    private readonly JsonElement _schema = AIJsonUtilities.DefaultJsonSchema;
 
     /// <summary>Initializes a new instance of the <see cref="AIFunctionReturnParameterMetadata"/> class.</summary>
     public AIFunctionReturnParameterMetadata()
@@ -34,5 +38,13 @@ public sealed class AIFunctionReturnParameterMetadata
     public Type? ParameterType { get; init; }
 
     /// <summary>Gets a JSON Schema describing the type of the return parameter.</summary>
-    public object? Schema { get; init; }
+    public JsonElement Schema
+    {
+        get => _schema;
+        init
+        {
+            AIJsonUtilities.ValidateSchemaDocument(value);
+            _schema = value;
+        }
+    }
 }

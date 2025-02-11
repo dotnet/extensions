@@ -37,7 +37,7 @@ internal sealed class PromptBasedFunctionCallingChatClient(IChatClient innerClie
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     };
 
-    public override async Task<ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<ChatResponse> GetResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         // Our goal is to convert tools into a prompt describing them, then to detect tool calls in the
         // response and convert those into FunctionCallContent.
@@ -78,7 +78,7 @@ internal sealed class PromptBasedFunctionCallingChatClient(IChatClient innerClie
             }
         }
 
-        var result = await base.CompleteAsync(chatMessages, options, cancellationToken);
+        var result = await base.GetResponseAsync(chatMessages, options, cancellationToken);
 
         if (result.Choices.FirstOrDefault()?.Text is { } content && content.IndexOf("<tool_call_json>", StringComparison.Ordinal) is int startPos
             && startPos >= 0)

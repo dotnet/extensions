@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup Label="Version settings">
     <MajorVersion>9</MajorVersion>
-    <MinorVersion>2</MinorVersion>
+    <MinorVersion>3</MinorVersion>
     <PatchVersion>0</PatchVersion>
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
@@ -10,11 +10,8 @@
     <AssemblyVersion>$(MajorVersion).$(MinorVersion).0.0</AssemblyVersion>
     <!--
         When DotNetFinalVersionKind is set to 'release', this branch will produce stable outputs for 'Shipping' packages
-
-        In 8.0, we shipped this package as stable even when it was in the dev stage, so we
-        keep it as stable for compatiblity.
     -->
-    <DotNetFinalVersionKind Condition="'$(DotNetFinalVersionKind)' == '' And ('$(Stage)' != 'dev' Or '$(Stage)' != 'preview' Or '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.Testing')">release</DotNetFinalVersionKind>
+    <DotNetFinalVersionKind />
     <!-- Enabling this rule will cause build failures on undocumented public APIs. -->
     <SkipArcadeNoWarnCS1591>true</SkipArcadeNoWarnCS1591>
   </PropertyGroup>
@@ -66,7 +63,7 @@
     <SystemTextEncodingsWebVersion>9.0.2</SystemTextEncodingsWebVersion>
     <SystemNumericsTensorsVersion>9.0.2</SystemNumericsTensorsVersion>
     <SystemTextJsonVersion>9.0.2</SystemTextJsonVersion>
-    <SystemThreadingChannelsVersion>9.0.1</SystemThreadingChannelsVersion>
+    <SystemThreadingChannelsVersion>9.0.2</SystemThreadingChannelsVersion>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
     <MicrosoftAspNetCoreAppRefVersion>9.0.2</MicrosoftAspNetCoreAppRefVersion>
     <MicrosoftAspNetCoreAppRuntimewinx64Version>9.0.2</MicrosoftAspNetCoreAppRuntimewinx64Version>

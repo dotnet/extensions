@@ -17,9 +17,9 @@ public class ChatClientStructuredOutputExtensionsTests
     public async Task SuccessUsage()
     {
         var expectedResult = new Animal { Id = 1, FullName = "Tigger", Species = Species.Tiger };
-        var expectedCompletion = new ChatCompletion([new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult))])
+        var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult)))
         {
-            CompletionId = "test",
+            ResponseId = "test",
             CreatedAt = DateTimeOffset.UtcNow,
             ModelId = "someModel",
             RawRepresentation = new object(),
@@ -28,7 +28,7 @@ public class ChatClientStructuredOutputExtensionsTests
 
         using var client = new TestChatClient
         {
-            CompleteAsyncCallback = (messages, options, cancellationToken) =>
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
                 var responseFormat = Assert.IsType<ChatResponseFormatJson>(options!.ResponseFormat);
                 Assert.Null(responseFormat.Schema);
@@ -49,22 +49,22 @@ public class ChatClientStructuredOutputExtensionsTests
                         }
                     });
 
-                return Task.FromResult(expectedCompletion);
+                return Task.FromResult(expectedResponse);
             },
         };
 
         var chatHistory = new List<ChatMessage> { new(ChatRole.User, "Hello") };
-        var response = await client.CompleteAsync<Animal>(chatHistory);
+        var response = await client.GetResponseAsync<Animal>(chatHistory);
 
-        // The completion contains the deserialized result and other completion properties
+        // The response contains the deserialized result and other response properties
         Assert.Equal(1, response.Result.Id);
         Assert.Equal("Tigger", response.Result.FullName);
         Assert.Equal(Species.Tiger, response.Result.Species);
-        Assert.Equal(expectedCompletion.CompletionId, response.CompletionId);
-        Assert.Equal(expectedCompletion.CreatedAt, response.CreatedAt);
-        Assert.Equal(expectedCompletion.ModelId, response.ModelId);
-        Assert.Same(expectedCompletion.RawRepresentation, response.RawRepresentation);
-        Assert.Same(expectedCompletion.Usage, response.Usage);
+        Assert.Equal(expectedResponse.ResponseId, response.ResponseId);
+        Assert.Equal(expectedResponse.CreatedAt, response.CreatedAt);
+        Assert.Equal(expectedResponse.ModelId, response.ModelId);
+        Assert.Same(expectedResponse.RawRepresentation, response.RawRepresentation);
+        Assert.Same(expectedResponse.Usage, response.Usage);
 
         // TryGetResult returns the same value
         Assert.True(response.TryGetResult(out var tryGetResultOutput));
@@ -78,11 +78,11 @@ public class ChatClientStructuredOutputExtensionsTests
     public async Task WrapsNonObjectValuesInDataProperty()
     {
         var expectedResult = new { data = 123 };
-        var expectedCompletion = new ChatCompletion([new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult))]);
+        var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult)));
 
         using var client = new TestChatClient
         {
-            CompleteAsyncCallback = (messages, options, cancellationToken) =>
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
                 var suppliedSchemaMatch = Regex.Match(messages[1].Text!, "```(.*?)```", RegexOptions.Singleline);
                 Assert.True(suppliedSchemaMatch.Success);
@@ -99,25 +99,25 @@ public class ChatClientStructuredOutputExtensionsTests
                       "additionalProperties": false
                     }
                     """, suppliedSchemaMatch.Groups[1].Value.Trim());
-                return Task.FromResult(expectedCompletion);
+                return Task.FromResult(expectedResponse);
             },
         };
 
-        var response = await client.CompleteAsync<int>("Hello");
+        var response = await client.GetResponseAsync<int>("Hello");
         Assert.Equal(123, response.Result);
     }
 
     [Fact]
     public async Task FailureUsage_InvalidJson()
     {
-        var expectedCompletion = new ChatCompletion([new ChatMessage(ChatRole.Assistant, "This is not valid JSON")]);
+        var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, "This is not valid JSON"));
         using var client = new TestChatClient
         {
-            CompleteAsyncCallback = (messages, options, cancellationToken) => Task.FromResult(expectedCompletion),
+            GetResponseAsyncCallback = (messages, options, cancellationToken) => Task.FromResult(expectedResponse),
         };
 
         var chatHistory = new List<ChatMessage> { new(ChatRole.User, "Hello") };
-        var response = await client.CompleteAsync<Animal>(chatHistory);
+        var response = await client.GetResponseAsync<Animal>(chatHistory);
 
         var ex = Assert.Throws<JsonException>(() => response.Result);
         Assert.Contains("invalid", ex.Message);
@@ -129,14 +129,14 @@ public class ChatClientStructuredOutputExtensionsTests
     [Fact]
     public async Task FailureUsage_NullJson()
     {
-        var expectedCompletion = new ChatCompletion([new ChatMessage(ChatRole.Assistant, "null")]);
+        var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, "null"));
         using var client = new TestChatClient
         {
-            CompleteAsyncCallback = (messages, options, cancellationToken) => Task.FromResult(expectedCompletion),
+            GetResponseAsyncCallback = (messages, options, cancellationToken) => Task.FromResult(expectedResponse),
         };
 
         var chatHistory = new List<ChatMessage> { new(ChatRole.User, "Hello") };
-        var response = await client.CompleteAsync<Animal>(chatHistory);
+        var response = await client.GetResponseAsync<Animal>(chatHistory);
 
         var ex = Assert.Throws<InvalidOperationException>(() => response.Result);
         Assert.Equal("The deserialized response is null", ex.Message);
@@ -148,14 +148,14 @@ public class ChatClientStructuredOutputExtensionsTests
     [Fact]
     public async Task FailureUsage_NoJsonInResponse()
     {
-        var expectedCompletion = new ChatCompletion([new ChatMessage(ChatRole.Assistant, [new DataContent("https://example.com")])]);
+        var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, [new DataContent("https://example.com")]));
         using var client = new TestChatClient
         {
-            CompleteAsyncCallback = (messages, options, cancellationToken) => Task.FromResult(expectedCompletion),
+            GetResponseAsyncCallback = (messages, options, cancellationToken) => Task.FromResult(expectedResponse),
         };
 
         var chatHistory = new List<ChatMessage> { new(ChatRole.User, "Hello") };
-        var response = await client.CompleteAsync<Animal>(chatHistory);
+        var response = await client.GetResponseAsync<Animal>(chatHistory);
 
         var ex = Assert.Throws<InvalidOperationException>(() => response.Result);
         Assert.Equal("The response did not contain text to be deserialized", ex.Message);
@@ -168,11 +168,11 @@ public class ChatClientStructuredOutputExtensionsTests
     public async Task CanUseNativeStructuredOutput()
     {
         var expectedResult = new Animal { Id = 1, FullName = "Tigger", Species = Species.Tiger };
-        var expectedCompletion = new ChatCompletion([new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult))]);
+        var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult)));
 
         using var client = new TestChatClient
         {
-            CompleteAsyncCallback = (messages, options, cancellationToken) =>
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
                 var responseFormat = Assert.IsType<ChatResponseFormatJson>(options!.ResponseFormat);
                 Assert.Equal(nameof(Animal), responseFormat.SchemaName);
@@ -188,14 +188,14 @@ public class ChatClientStructuredOutputExtensionsTests
                 // The chat history isn't mutated any further, since native structured output is used instead of a prompt
                 Assert.Equal("Hello", Assert.Single(messages).Text);
 
-                return Task.FromResult(expectedCompletion);
+                return Task.FromResult(expectedResponse);
             },
         };
 
         var chatHistory = new List<ChatMessage> { new(ChatRole.User, "Hello") };
-        var response = await client.CompleteAsync<Animal>(chatHistory, useNativeJsonSchema: true);
+        var response = await client.GetResponseAsync<Animal>(chatHistory, useNativeJsonSchema: true);
 
-        // The completion contains the deserialized result and other completion properties
+        // The response contains the deserialized result and other response properties
         Assert.Equal(1, response.Result.Id);
         Assert.Equal("Tigger", response.Result.FullName);
         Assert.Equal(Species.Tiger, response.Result.Species);
@@ -212,24 +212,24 @@ public class ChatClientStructuredOutputExtensionsTests
     public async Task CanUseNativeStructuredOutputWithSanitizedTypeName()
     {
         var expectedResult = new Data<Animal> { Value = new Animal { Id = 1, FullName = "Tigger", Species = Species.Tiger } };
-        var expectedCompletion = new ChatCompletion([new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult))]);
+        var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult)));
 
         using var client = new TestChatClient
         {
-            CompleteAsyncCallback = (messages, options, cancellationToken) =>
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
                 var responseFormat = Assert.IsType<ChatResponseFormatJson>(options!.ResponseFormat);
 
                 Assert.Matches("Data_1", responseFormat.SchemaName);
 
-                return Task.FromResult(expectedCompletion);
+                return Task.FromResult(expectedResponse);
             },
         };
 
         var chatHistory = new List<ChatMessage> { new(ChatRole.User, "Hello") };
-        var response = await client.CompleteAsync<Data<Animal>>(chatHistory, useNativeJsonSchema: true);
+        var response = await client.GetResponseAsync<Data<Animal>>(chatHistory, useNativeJsonSchema: true);
 
-        // The completion contains the deserialized result and other completion properties
+        // The response contains the deserialized result and other response properties
         Assert.Equal(1, response.Result!.Value!.Id);
         Assert.Equal("Tigger", response.Result.Value.FullName);
         Assert.Equal(Species.Tiger, response.Result.Value.Species);
@@ -247,17 +247,17 @@ public class ChatClientStructuredOutputExtensionsTests
     {
         var expectedResult = new[] { new Animal { Id = 1, FullName = "Tigger", Species = Species.Tiger } };
         var payload = new { data = expectedResult };
-        var expectedCompletion = new ChatCompletion([new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(payload))]);
+        var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(payload)));
 
         using var client = new TestChatClient
         {
-            CompleteAsyncCallback = (messages, options, cancellationToken) => Task.FromResult(expectedCompletion)
+            GetResponseAsyncCallback = (messages, options, cancellationToken) => Task.FromResult(expectedResponse)
         };
 
         var chatHistory = new List<ChatMessage> { new(ChatRole.User, "Hello") };
-        var response = await client.CompleteAsync<Animal[]>(chatHistory, useNativeJsonSchema: true);
+        var response = await client.GetResponseAsync<Animal[]>(chatHistory, useNativeJsonSchema: true);
 
-        // The completion contains the deserialized result and other completion properties
+        // The response contains the deserialized result and other response properties
         Assert.Single(response.Result!);
         Assert.Equal("Tigger", response.Result[0].FullName);
         Assert.Equal(Species.Tiger, response.Result[0].Species);
@@ -278,11 +278,11 @@ public class ChatClientStructuredOutputExtensionsTests
             PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
         };
         var expectedResult = new Animal { Id = 1, FullName = "Tigger", Species = Species.Tiger };
-        var expectedCompletion = new ChatCompletion([new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult, jso))]);
+        var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult, jso)));
 
         using var client = new TestChatClient
         {
-            CompleteAsyncCallback = (messages, options, cancellationToken) =>
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
                 Assert.Collection(messages,
                     message => Assert.Equal("Hello", message.Text),
@@ -296,14 +296,14 @@ public class ChatClientStructuredOutputExtensionsTests
                         Assert.DoesNotContain(nameof(Species.Tiger), message.Text); // The JSO doesn't use enum-to-string conversion
                     });
 
-                return Task.FromResult(expectedCompletion);
+                return Task.FromResult(expectedResponse);
             },
         };
 
         var chatHistory = new List<ChatMessage> { new(ChatRole.User, "Hello") };
-        var response = await client.CompleteAsync<Animal>(chatHistory, jso);
+        var response = await client.GetResponseAsync<Animal>(chatHistory, jso);
 
-        // The completion contains the deserialized result and other completion properties
+        // The response contains the deserialized result and other response properties
         Assert.Equal(1, response.Result.Id);
         Assert.Equal("Tigger", response.Result.FullName);
         Assert.Equal(Species.Tiger, response.Result.Species);
@@ -322,16 +322,16 @@ public class ChatClientStructuredOutputExtensionsTests
 
         using var client = new TestChatClient
         {
-            CompleteAsyncCallback = (messages, options, cancellationToken) =>
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
-                return Task.FromResult(new ChatCompletion([new ChatMessage(ChatRole.Assistant, resultDuplicatedJson)]));
+                return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, resultDuplicatedJson)));
             },
         };
 
         var chatHistory = new List<ChatMessage> { new(ChatRole.User, "Hello") };
-        var response = await client.CompleteAsync<Animal>(chatHistory);
+        var response = await client.GetResponseAsync<Animal>(chatHistory);
 
-        // The completion contains the deserialized result and other completion properties
+        // The response contains the deserialized result and other response properties
         Assert.Equal(1, response.Result.Id);
         Assert.Equal("Tigger", response.Result.FullName);
         Assert.Equal(Species.Tiger, response.Result.Species);

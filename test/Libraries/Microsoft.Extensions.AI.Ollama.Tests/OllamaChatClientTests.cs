@@ -71,9 +71,10 @@ public class OllamaChatClientTests
         string model = "amazingModel";
 
         using IChatClient chatClient = new OllamaChatClient(endpoint, model);
-        Assert.Equal("ollama", chatClient.Metadata.ProviderName);
-        Assert.Equal(endpoint, chatClient.Metadata.ProviderUri);
-        Assert.Equal(model, chatClient.Metadata.ModelId);
+        var metadata = chatClient.GetService<ChatClientMetadata>();
+        Assert.Equal("ollama", metadata?.ProviderName);
+        Assert.Equal(endpoint, metadata?.ProviderUri);
+        Assert.Equal(model, metadata?.ModelId);
     }
 
     [Fact]
@@ -110,7 +111,7 @@ public class OllamaChatClientTests
         using VerbatimHttpHandler handler = new(Input, Output);
         using HttpClient httpClient = new(handler);
         using OllamaChatClient client = new("http://localhost:11434", "llama3.1", httpClient);
-        var response = await client.CompleteAsync("hello", new()
+        var response = await client.GetResponseAsync("hello", new()
         {
             MaxOutputTokens = 10,
             Temperature = 0.5f,
@@ -169,8 +170,8 @@ public class OllamaChatClientTests
         using HttpClient httpClient = new(handler);
         using IChatClient client = new OllamaChatClient("http://localhost:11434", "llama3.1", httpClient);
 
-        List<StreamingChatCompletionUpdate> updates = [];
-        await foreach (var update in client.CompleteStreamingAsync("hello", new()
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("hello", new()
         {
             MaxOutputTokens = 20,
             Temperature = 0.5f,
@@ -185,7 +186,7 @@ public class OllamaChatClientTests
 
         for (int i = 0; i < updates.Count; i++)
         {
-            Assert.NotNull(updates[i].CompletionId);
+            Assert.NotNull(updates[i].ResponseId);
             Assert.Equal(i < updates.Count - 1 ? 1 : 2, updates[i].Contents.Count);
             Assert.Equal(ChatRole.Assistant, updates[i].Role);
             Assert.Equal("llama3.1", updates[i].ModelId);
@@ -263,7 +264,7 @@ public class OllamaChatClientTests
             new(ChatRole.User, "i'm good. how are you?"),
         ];
 
-        var response = await client.CompleteAsync(messages, new()
+        var response = await client.GetResponseAsync(messages, new()
         {
             ModelId = "llama3.1",
             Temperature = 0.25f,
@@ -363,7 +364,7 @@ public class OllamaChatClientTests
             ToolCallJsonSerializerOptions = TestJsonSerializerContext.Default.Options,
         };
 
-        var response = await client.CompleteAsync("How old is Alice?", new()
+        var response = await client.GetResponseAsync("How old is Alice?", new()
         {
             Tools = [AIFunctionFactory.Create(([Description("The person whose age is being requested")] string personName) => 42, "GetPersonAge", "Gets the age of the specified person.")],
         });
@@ -455,11 +456,11 @@ public class OllamaChatClientTests
             ToolCallJsonSerializerOptions = TestJsonSerializerContext.Default.Options,
         };
 
-        var response = await client.CompleteAsync(
+        var response = await client.GetResponseAsync(
             [
                 new(ChatRole.User, "How old is Alice?"),
                 new(ChatRole.Assistant, [new FunctionCallContent("abcd1234", "GetPersonAge", new Dictionary<string, object?> { ["personName"] = "Alice" })]),
-                new(ChatRole.Tool, [new FunctionResultContent("abcd1234", "GetPersonAge", 42)]),
+                new(ChatRole.Tool, [new FunctionResultContent("abcd1234", 42)]),
             ],
             new()
             {

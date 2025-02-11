@@ -43,86 +43,86 @@ public partial class LoggingChatClient : DelegatingChatClient
     }
 
     /// <inheritdoc/>
-    public override async Task<ChatCompletion> CompleteAsync(
+    public override async Task<ChatResponse> GetResponseAsync(
         IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
         {
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokedSensitive(nameof(CompleteAsync), AsJson(chatMessages), AsJson(options), AsJson(Metadata));
+                LogInvokedSensitive(nameof(GetResponseAsync), AsJson(chatMessages), AsJson(options), AsJson(this.GetService<ChatClientMetadata>()));
             }
             else
             {
-                LogInvoked(nameof(CompleteAsync));
+                LogInvoked(nameof(GetResponseAsync));
             }
         }
 
         try
         {
-            var completion = await base.CompleteAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
+            var response = await base.GetResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
 
             if (_logger.IsEnabled(LogLevel.Debug))
             {
                 if (_logger.IsEnabled(LogLevel.Trace))
                 {
-                    LogCompletedSensitive(nameof(CompleteAsync), AsJson(completion));
+                    LogCompletedSensitive(nameof(GetResponseAsync), AsJson(response));
                 }
                 else
                 {
-                    LogCompleted(nameof(CompleteAsync));
+                    LogCompleted(nameof(GetResponseAsync));
                 }
             }
 
-            return completion;
+            return response;
         }
         catch (OperationCanceledException)
         {
-            LogInvocationCanceled(nameof(CompleteAsync));
+            LogInvocationCanceled(nameof(GetResponseAsync));
             throw;
         }
         catch (Exception ex)
         {
-            LogInvocationFailed(nameof(CompleteAsync), ex);
+            LogInvocationFailed(nameof(GetResponseAsync), ex);
             throw;
         }
     }
 
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(
+    public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
         {
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokedSensitive(nameof(CompleteStreamingAsync), AsJson(chatMessages), AsJson(options), AsJson(Metadata));
+                LogInvokedSensitive(nameof(GetStreamingResponseAsync), AsJson(chatMessages), AsJson(options), AsJson(this.GetService<ChatClientMetadata>()));
             }
             else
             {
-                LogInvoked(nameof(CompleteStreamingAsync));
+                LogInvoked(nameof(GetStreamingResponseAsync));
             }
         }
 
-        IAsyncEnumerator<StreamingChatCompletionUpdate> e;
+        IAsyncEnumerator<ChatResponseUpdate> e;
         try
         {
-            e = base.CompleteStreamingAsync(chatMessages, options, cancellationToken).GetAsyncEnumerator(cancellationToken);
+            e = base.GetStreamingResponseAsync(chatMessages, options, cancellationToken).GetAsyncEnumerator(cancellationToken);
         }
         catch (OperationCanceledException)
         {
-            LogInvocationCanceled(nameof(CompleteStreamingAsync));
+            LogInvocationCanceled(nameof(GetStreamingResponseAsync));
             throw;
         }
         catch (Exception ex)
         {
-            LogInvocationFailed(nameof(CompleteStreamingAsync), ex);
+            LogInvocationFailed(nameof(GetStreamingResponseAsync), ex);
             throw;
         }
 
         try
         {
-            StreamingChatCompletionUpdate? update = null;
+            ChatResponseUpdate? update = null;
             while (true)
             {
                 try
@@ -136,12 +136,12 @@ public partial class LoggingChatClient : DelegatingChatClient
                 }
                 catch (OperationCanceledException)
                 {
-                    LogInvocationCanceled(nameof(CompleteStreamingAsync));
+                    LogInvocationCanceled(nameof(GetStreamingResponseAsync));
                     throw;
                 }
                 catch (Exception ex)
                 {
-                    LogInvocationFailed(nameof(CompleteStreamingAsync), ex);
+                    LogInvocationFailed(nameof(GetStreamingResponseAsync), ex);
                     throw;
                 }
 
@@ -160,7 +160,7 @@ public partial class LoggingChatClient : DelegatingChatClient
                 yield return update;
             }
 
-            LogCompleted(nameof(CompleteStreamingAsync));
+            LogCompleted(nameof(GetStreamingResponseAsync));
         }
         finally
         {
@@ -179,14 +179,14 @@ public partial class LoggingChatClient : DelegatingChatClient
     [LoggerMessage(LogLevel.Debug, "{MethodName} completed.")]
     private partial void LogCompleted(string methodName);
 
-    [LoggerMessage(LogLevel.Trace, "{MethodName} completed: {ChatCompletion}.")]
-    private partial void LogCompletedSensitive(string methodName, string chatCompletion);
+    [LoggerMessage(LogLevel.Trace, "{MethodName} completed: {ChatResponse}.")]
+    private partial void LogCompletedSensitive(string methodName, string chatResponse);
 
-    [LoggerMessage(LogLevel.Debug, "CompleteStreamingAsync received update.")]
+    [LoggerMessage(LogLevel.Debug, "GetStreamingResponseAsync received update.")]
     private partial void LogStreamingUpdate();
 
-    [LoggerMessage(LogLevel.Trace, "CompleteStreamingAsync received update: {StreamingChatCompletionUpdate}")]
-    private partial void LogStreamingUpdateSensitive(string streamingChatCompletionUpdate);
+    [LoggerMessage(LogLevel.Trace, "GetStreamingResponseAsync received update: {ChatResponseUpdate}")]
+    private partial void LogStreamingUpdateSensitive(string chatResponseUpdate);
 
     [LoggerMessage(LogLevel.Debug, "{MethodName} canceled.")]
     private partial void LogInvocationCanceled(string methodName);

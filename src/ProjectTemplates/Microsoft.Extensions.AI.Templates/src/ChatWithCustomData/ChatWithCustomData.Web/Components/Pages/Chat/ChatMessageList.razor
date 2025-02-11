@@ -1,7 +1,7 @@
 @inject IJSRuntime JS
 
-<div class="my-8 mx-6 grow">
-    <chat-messages class="page-width flex flex-col gap-5" in-progress="@(InProgressMessage is not null)">
+<div class="message-list-container">
+    <chat-messages class="page-width message-list" in-progress="@(InProgressMessage is not null)">
         @foreach (var message in Messages)
         {
             <ChatMessageItem @key="@message" Message="@message" />

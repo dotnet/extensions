@@ -11,6 +11,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\EmptyCollections\*.cs" LinkBase="Shared\EmptyCollections" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(InjectSharedInstruments)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\Instruments\*.cs" LinkBase="Shared\Instruments" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(InjectSharedRentedSpan)' == 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\RentedSpan\*.cs" LinkBase="Shared\RentedSpan" />
   </ItemGroup>

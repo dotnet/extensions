@@ -12,7 +12,7 @@
     <NoMessagesContent>Ask me anything about ChatWithCustomData.Web.</NoMessagesContent>
 </ChatMessageList>
 
-<div class="pt-3 pb-6 px-6 sticky bottom-0 border-t bg-gray-100">
+<div class="chat-container">
     <ChatSuggestions OnSelected="@AddUserMessageAsync" @ref="@chatSuggestions" />
     <ChatInput OnSend="@AddUserMessageAsync" @ref="@chatInput" />
 </div>
@@ -24,8 +24,12 @@
         Use only simple markdown to format your responses.
 
         Use the search tool to find relevant information. When you do this, end your
-        reply with citations in the special format, always formatted as XML:
-        <citation filename='string' page_number='number'>exact quote here</citation>.
+        reply with citations in the special XML format:
+
+        <citation filename='string' page_number='number'>exact quote here</citation>
+
+        Always include the citation in your response if there are results.
+
         The quote must be max 5 words, taken word-for-word from the search result, and is the basis for why the citation is relevant.
         Don't refer to the presence of citations; just emit these tags right at the end, with no surrounding text.
         ";
@@ -52,14 +56,14 @@
         chatSuggestions?.Clear();
         await chatInput!.FocusAsync();
 
-#if (IsOllama)
+@*#if (IsOllama)
         // Display a new response from the IChatClient, streaming responses
         // aren't supported because Ollama will not support both streaming and using Tools
         currentResponseCancellation = new();
         ChatCompletion response = await ChatClient.CompleteAsync(messages, chatOptions, currentResponseCancellation.Token);
         currentResponseMessage = response.Message;
         ChatMessageItem.NotifyChanged(currentResponseMessage);
-#else
+#else*@
         // Stream and display a new response from the IChatClient
         var responseText = new TextContent("");
         currentResponseMessage = new ChatMessage(ChatRole.Assistant, [responseText]);
@@ -69,7 +73,7 @@
             responseText.Text += chunk.Text;
             ChatMessageItem.NotifyChanged(currentResponseMessage);
         }
-#endif
+@*#endif*@
 
         // Store the final response in the conversation, and begin getting suggestions
         messages.Add(currentResponseMessage!);

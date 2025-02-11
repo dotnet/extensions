@@ -11,7 +11,7 @@
     <PackageVersion Include="Microsoft.CodeAnalysis" Version="$(MicrosoftCodeAnalysisVersion)" />
     <PackageVersion Include="Microsoft.IO.RecyclableMemoryStream" Version="3.0.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageVersion Include="OpenAI" Version="2.1.0" />
+    <PackageVersion Include="OpenAI" Version="2.2.0-beta.1" />
     <PackageVersion Include="Polly" Version="8.4.2" />
     <PackageVersion Include="Polly.Core" Version="8.4.2" />
     <PackageVersion Include="Polly.Extensions" Version="8.4.2" />
