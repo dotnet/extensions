@@ -54,7 +54,7 @@ public class LoggingChatClientTests
 
         using IChatClient innerClient = new TestChatClient
         {
-            CompleteAsyncCallback = (messages, options, cancellationToken) =>
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
                 return Task.FromResult(new ChatResponse([new(ChatRole.Assistant, "blue whale")]));
             },
@@ -99,7 +99,7 @@ public class LoggingChatClientTests
 
         using IChatClient innerClient = new TestChatClient
         {
-            CompleteStreamingAsyncCallback = (messages, options, cancellationToken) => GetUpdatesAsync()
+            GetStreamingResponseAsyncCallback = (messages, options, cancellationToken) => GetUpdatesAsync()
         };
 
         static async IAsyncEnumerable<ChatResponseUpdate> GetUpdatesAsync()

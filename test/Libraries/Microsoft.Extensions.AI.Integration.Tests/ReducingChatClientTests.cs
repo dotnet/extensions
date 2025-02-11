@@ -27,7 +27,7 @@ public class ReducingChatClientTests
     {
         using var innerClient = new TestChatClient
         {
-            CompleteAsyncCallback = (messages, options, cancellationToken) =>
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
                 Assert.Equal(2, messages.Count);
                 Assert.Collection(messages,

@@ -28,7 +28,7 @@ public class ChatClientStructuredOutputExtensionsTests
 
         using var client = new TestChatClient
         {
-            CompleteAsyncCallback = (messages, options, cancellationToken) =>
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
                 var responseFormat = Assert.IsType<ChatResponseFormatJson>(options!.ResponseFormat);
                 Assert.Null(responseFormat.Schema);
@@ -82,7 +82,7 @@ public class ChatClientStructuredOutputExtensionsTests
 
         using var client = new TestChatClient
         {
-            CompleteAsyncCallback = (messages, options, cancellationToken) =>
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
                 var suppliedSchemaMatch = Regex.Match(messages[1].Text!, "```(.*?)```", RegexOptions.Singleline);
                 Assert.True(suppliedSchemaMatch.Success);
@@ -113,7 +113,7 @@ public class ChatClientStructuredOutputExtensionsTests
         var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, "This is not valid JSON"));
         using var client = new TestChatClient
         {
-            CompleteAsyncCallback = (messages, options, cancellationToken) => Task.FromResult(expectedResponse),
+            GetResponseAsyncCallback = (messages, options, cancellationToken) => Task.FromResult(expectedResponse),
         };
 
         var chatHistory = new List<ChatMessage> { new(ChatRole.User, "Hello") };
@@ -132,7 +132,7 @@ public class ChatClientStructuredOutputExtensionsTests
         var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, "null"));
         using var client = new TestChatClient
         {
-            CompleteAsyncCallback = (messages, options, cancellationToken) => Task.FromResult(expectedResponse),
+            GetResponseAsyncCallback = (messages, options, cancellationToken) => Task.FromResult(expectedResponse),
         };
 
         var chatHistory = new List<ChatMessage> { new(ChatRole.User, "Hello") };
@@ -151,7 +151,7 @@ public class ChatClientStructuredOutputExtensionsTests
         var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, [new DataContent("https://example.com")]));
         using var client = new TestChatClient
         {
-            CompleteAsyncCallback = (messages, options, cancellationToken) => Task.FromResult(expectedResponse),
+            GetResponseAsyncCallback = (messages, options, cancellationToken) => Task.FromResult(expectedResponse),
         };
 
         var chatHistory = new List<ChatMessage> { new(ChatRole.User, "Hello") };
@@ -172,7 +172,7 @@ public class ChatClientStructuredOutputExtensionsTests
 
         using var client = new TestChatClient
         {
-            CompleteAsyncCallback = (messages, options, cancellationToken) =>
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
                 var responseFormat = Assert.IsType<ChatResponseFormatJson>(options!.ResponseFormat);
                 Assert.Equal(nameof(Animal), responseFormat.SchemaName);
@@ -216,7 +216,7 @@ public class ChatClientStructuredOutputExtensionsTests
 
         using var client = new TestChatClient
         {
-            CompleteAsyncCallback = (messages, options, cancellationToken) =>
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
                 var responseFormat = Assert.IsType<ChatResponseFormatJson>(options!.ResponseFormat);
 
@@ -251,7 +251,7 @@ public class ChatClientStructuredOutputExtensionsTests
 
         using var client = new TestChatClient
         {
-            CompleteAsyncCallback = (messages, options, cancellationToken) => Task.FromResult(expectedResponse)
+            GetResponseAsyncCallback = (messages, options, cancellationToken) => Task.FromResult(expectedResponse)
         };
 
         var chatHistory = new List<ChatMessage> { new(ChatRole.User, "Hello") };
@@ -282,7 +282,7 @@ public class ChatClientStructuredOutputExtensionsTests
 
         using var client = new TestChatClient
         {
-            CompleteAsyncCallback = (messages, options, cancellationToken) =>
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
                 Assert.Collection(messages,
                     message => Assert.Equal("Hello", message.Text),
@@ -322,7 +322,7 @@ public class ChatClientStructuredOutputExtensionsTests
 
         using var client = new TestChatClient
         {
-            CompleteAsyncCallback = (messages, options, cancellationToken) =>
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
                 return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, resultDuplicatedJson)));
             },

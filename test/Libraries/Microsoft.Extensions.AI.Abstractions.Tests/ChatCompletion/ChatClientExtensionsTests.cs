@@ -18,7 +18,7 @@ public class ChatClientExtensionsTests
     }
 
     [Fact]
-    public void CompleteAsync_InvalidArgs_Throws()
+    public void GetResponseAsync_InvalidArgs_Throws()
     {
         Assert.Throws<ArgumentNullException>("client", () =>
         {
@@ -32,7 +32,7 @@ public class ChatClientExtensionsTests
     }
 
     [Fact]
-    public void CompleteStreamingAsync_InvalidArgs_Throws()
+    public void GetStreamingResponseAsync_InvalidArgs_Throws()
     {
         Assert.Throws<ArgumentNullException>("client", () =>
         {
@@ -46,7 +46,7 @@ public class ChatClientExtensionsTests
     }
 
     [Fact]
-    public async Task CompleteAsync_CreatesTextMessageAsync()
+    public async Task GetResponseAsync_CreatesTextMessageAsync()
     {
         var expectedResponse = new ChatResponse([new ChatMessage()]);
         var expectedOptions = new ChatOptions();
@@ -54,7 +54,7 @@ public class ChatClientExtensionsTests
 
         using TestChatClient client = new()
         {
-            CompleteAsyncCallback = (chatMessages, options, cancellationToken) =>
+            GetResponseAsyncCallback = (chatMessages, options, cancellationToken) =>
             {
                 ChatMessage m = Assert.Single(chatMessages);
                 Assert.Equal(ChatRole.User, m.Role);
@@ -74,14 +74,14 @@ public class ChatClientExtensionsTests
     }
 
     [Fact]
-    public async Task CompleteStreamingAsync_CreatesTextMessageAsync()
+    public async Task GetStreamingResponseAsync_CreatesTextMessageAsync()
     {
         var expectedOptions = new ChatOptions();
         using var cts = new CancellationTokenSource();
 
         using TestChatClient client = new()
         {
-            CompleteStreamingAsyncCallback = (chatMessages, options, cancellationToken) =>
+            GetStreamingResponseAsyncCallback = (chatMessages, options, cancellationToken) =>
             {
                 ChatMessage m = Assert.Single(chatMessages);
                 Assert.Equal(ChatRole.User, m.Role);

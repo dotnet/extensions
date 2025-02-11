@@ -41,7 +41,7 @@ public class UseDelegateChatClientTests
 
         using IChatClient innerClient = new TestChatClient
         {
-            CompleteAsyncCallback = (chatMessages, options, cancellationToken) =>
+            GetResponseAsyncCallback = (chatMessages, options, cancellationToken) =>
             {
                 Assert.Same(expectedMessages, chatMessages);
                 Assert.Same(expectedOptions, options);
@@ -50,7 +50,7 @@ public class UseDelegateChatClientTests
                 return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "hello")));
             },
 
-            CompleteStreamingAsyncCallback = (chatMessages, options, cancellationToken) =>
+            GetStreamingResponseAsyncCallback = (chatMessages, options, cancellationToken) =>
             {
                 Assert.Same(expectedMessages, chatMessages);
                 Assert.Same(expectedOptions, options);
@@ -90,7 +90,7 @@ public class UseDelegateChatClientTests
 
         using IChatClient innerClient = new TestChatClient
         {
-            CompleteAsyncCallback = (chatMessages, options, cancellationToken) =>
+            GetResponseAsyncCallback = (chatMessages, options, cancellationToken) =>
             {
                 Assert.Same(expectedMessages, chatMessages);
                 Assert.Same(expectedOptions, options);
@@ -132,7 +132,7 @@ public class UseDelegateChatClientTests
 
         using IChatClient innerClient = new TestChatClient
         {
-            CompleteStreamingAsyncCallback = (chatMessages, options, cancellationToken) =>
+            GetStreamingResponseAsyncCallback = (chatMessages, options, cancellationToken) =>
             {
                 Assert.Same(expectedMessages, chatMessages);
                 Assert.Same(expectedOptions, options);
@@ -183,7 +183,7 @@ public class UseDelegateChatClientTests
 
         using IChatClient innerClient = new TestChatClient
         {
-            CompleteAsyncCallback = (chatMessages, options, cancellationToken) =>
+            GetResponseAsyncCallback = (chatMessages, options, cancellationToken) =>
             {
                 Assert.Same(expectedMessages, chatMessages);
                 Assert.Same(expectedOptions, options);
@@ -192,7 +192,7 @@ public class UseDelegateChatClientTests
                 return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "non-streaming hello")));
             },
 
-            CompleteStreamingAsyncCallback = (chatMessages, options, cancellationToken) =>
+            GetStreamingResponseAsyncCallback = (chatMessages, options, cancellationToken) =>
             {
                 Assert.Same(expectedMessages, chatMessages);
                 Assert.Same(expectedOptions, options);

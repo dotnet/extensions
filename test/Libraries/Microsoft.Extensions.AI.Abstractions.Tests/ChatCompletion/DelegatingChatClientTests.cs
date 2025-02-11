@@ -28,7 +28,7 @@ public class DelegatingChatClientTests
         var expectedResponse = new ChatResponse([]);
         using var inner = new TestChatClient
         {
-            CompleteAsyncCallback = (chatContents, options, cancellationToken) =>
+            GetResponseAsyncCallback = (chatContents, options, cancellationToken) =>
             {
                 Assert.Same(expectedChatContents, chatContents);
                 Assert.Same(expectedChatOptions, options);
@@ -64,7 +64,7 @@ public class DelegatingChatClientTests
 
         using var inner = new TestChatClient
         {
-            CompleteStreamingAsyncCallback = (chatContents, options, cancellationToken) =>
+            GetStreamingResponseAsyncCallback = (chatContents, options, cancellationToken) =>
             {
                 Assert.Same(expectedChatContents, chatContents);
                 Assert.Same(expectedChatOptions, options);

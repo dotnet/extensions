@@ -42,7 +42,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
     protected abstract IChatClient? CreateChatClient();
 
     [ConditionalFact]
-    public virtual async Task CompleteAsync_SingleRequestMessage()
+    public virtual async Task GetResponseAsync_SingleRequestMessage()
     {
         SkipIfNotEnabled();
 
@@ -52,7 +52,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
-    public virtual async Task CompleteAsync_MultipleRequestMessages()
+    public virtual async Task GetResponseAsync_MultipleRequestMessages()
     {
         SkipIfNotEnabled();
 
@@ -71,7 +71,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
-    public virtual async Task CompleteStreamingAsync_SingleStreamingResponseChoice()
+    public virtual async Task GetStreamingResponseAsync_SingleStreamingResponseChoice()
     {
         SkipIfNotEnabled();
 
@@ -95,7 +95,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
-    public virtual async Task CompleteAsync_UsageDataAvailable()
+    public virtual async Task GetResponseAsync_UsageDataAvailable()
     {
         SkipIfNotEnabled();
 
@@ -108,7 +108,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
-    public virtual async Task CompleteStreamingAsync_UsageDataAvailable()
+    public virtual async Task GetStreamingResponseAsync_UsageDataAvailable()
     {
         SkipIfNotEnabled();
 
@@ -631,7 +631,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
-    public virtual async Task CompleteAsync_StructuredOutput()
+    public virtual async Task GetResponseAsync_StructuredOutput()
     {
         SkipIfNotEnabled();
 
@@ -647,7 +647,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
-    public virtual async Task CompleteAsync_StructuredOutputArray()
+    public virtual async Task GetResponseAsync_StructuredOutputArray()
     {
         SkipIfNotEnabled();
 
@@ -663,7 +663,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
-    public virtual async Task CompleteAsync_StructuredOutputInteger()
+    public virtual async Task GetResponseAsync_StructuredOutputInteger()
     {
         SkipIfNotEnabled();
 
@@ -676,7 +676,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
-    public virtual async Task CompleteAsync_StructuredOutputString()
+    public virtual async Task GetResponseAsync_StructuredOutputString()
     {
         SkipIfNotEnabled();
 
@@ -689,7 +689,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
-    public virtual async Task CompleteAsync_StructuredOutputBool_True()
+    public virtual async Task GetResponseAsync_StructuredOutputBool_True()
     {
         SkipIfNotEnabled();
 
@@ -702,7 +702,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
-    public virtual async Task CompleteAsync_StructuredOutputBool_False()
+    public virtual async Task GetResponseAsync_StructuredOutputBool_False()
     {
         SkipIfNotEnabled();
 
@@ -715,7 +715,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
-    public virtual async Task CompleteAsync_StructuredOutputEnum()
+    public virtual async Task GetResponseAsync_StructuredOutputEnum()
     {
         SkipIfNotEnabled();
 
@@ -727,7 +727,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
-    public virtual async Task CompleteAsync_StructuredOutput_WithFunctions()
+    public virtual async Task GetResponseAsync_StructuredOutput_WithFunctions()
     {
         SkipIfNotEnabled();
 
@@ -758,7 +758,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
-    public virtual async Task CompleteAsync_StructuredOutput_Native()
+    public virtual async Task GetResponseAsync_StructuredOutput_Native()
     {
         SkipIfNotEnabled();
 
