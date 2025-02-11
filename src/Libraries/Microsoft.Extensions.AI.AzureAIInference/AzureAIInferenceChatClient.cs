@@ -321,7 +321,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
                 {
                     switch (prop.Key)
                     {
-                        // Propagate everything else to the ChatResponseOptions' AdditionalProperties.
+                        // Propagate everything else to the ChatCompletionsOptions' AdditionalProperties.
                         default:
                             if (prop.Value is not null)
                             {
