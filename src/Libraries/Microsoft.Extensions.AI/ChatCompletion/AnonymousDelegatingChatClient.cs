@@ -28,7 +28,7 @@ public sealed class AnonymousDelegatingChatClient : DelegatingChatClient
     private readonly Func<IList<ChatMessage>, ChatOptions?, IChatClient, CancellationToken, IAsyncEnumerable<ChatResponseUpdate>>? _getStreamingResponseFunc;
 
     /// <summary>The delegate to use as the implementation of both <see cref="GetResponseAsync"/> and <see cref="GetStreamingResponseAsync"/>.</summary>
-    private readonly CompleteSharedFunc? _sharedFunc;
+    private readonly GetResponseSharedFunc? _sharedFunc;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AnonymousDelegatingChatClient"/> class.
@@ -45,7 +45,7 @@ public sealed class AnonymousDelegatingChatClient : DelegatingChatClient
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="innerClient"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="sharedFunc"/> is <see langword="null"/>.</exception>
-    public AnonymousDelegatingChatClient(IChatClient innerClient, CompleteSharedFunc sharedFunc)
+    public AnonymousDelegatingChatClient(IChatClient innerClient, GetResponseSharedFunc sharedFunc)
         : base(innerClient)
     {
         _ = Throw.IfNull(sharedFunc);
@@ -178,12 +178,12 @@ public sealed class AnonymousDelegatingChatClient : DelegatingChatClient
     }
 
     /// <summary>Throws an exception if both of the specified delegates are null.</summary>
-    /// <exception cref="ArgumentNullException">Both <paramref name="completeFunc"/> and <paramref name="completeStreamingFunc"/> are <see langword="null"/>.</exception>
-    internal static void ThrowIfBothDelegatesNull(object? completeFunc, object? completeStreamingFunc)
+    /// <exception cref="ArgumentNullException">Both <paramref name="getResponseFunc"/> and <paramref name="getStreamingResponseFunc"/> are <see langword="null"/>.</exception>
+    internal static void ThrowIfBothDelegatesNull(object? getResponseFunc, object? getStreamingResponseFunc)
     {
-        if (completeFunc is null && completeStreamingFunc is null)
+        if (getResponseFunc is null && getStreamingResponseFunc is null)
         {
-            Throw.ArgumentNullException(nameof(completeFunc), $"At least one of the {nameof(completeFunc)} or {nameof(completeStreamingFunc)} delegates must be non-null.");
+            Throw.ArgumentNullException(nameof(getResponseFunc), $"At least one of the {nameof(getResponseFunc)} or {nameof(getStreamingResponseFunc)} delegates must be non-null.");
         }
     }
 
@@ -205,7 +205,7 @@ public sealed class AnonymousDelegatingChatClient : DelegatingChatClient
     /// </param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A <see cref="Task"/> that represents the completion of the operation.</returns>
-    public delegate Task CompleteSharedFunc(
+    public delegate Task GetResponseSharedFunc(
         IList<ChatMessage> chatMessages,
         ChatOptions? options,
         Func<IList<ChatMessage>, ChatOptions?, CancellationToken, Task> nextAsync,
