@@ -67,12 +67,12 @@ internal static class JsonOutputFixer
             new ChatMessage(ChatRole.User, fixPrompt)
         };
 
-        ChatCompletion result =
-            await chatConfig.ChatClient.CompleteAsync(
+        ChatResponse response =
+            await chatConfig.ChatClient.GetResponseAsync(
                 messages,
                 chatOptions,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        return result.Message.Text;
+        return response.Message.Text;
     }
 }

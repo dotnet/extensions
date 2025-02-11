@@ -172,8 +172,8 @@ public abstract class ChatConversationEvaluator : IEvaluator
 
         evaluationMessages.Add(new ChatMessage(ChatRole.User, evaluationPrompt));
 
-        ChatCompletion evaluationResponse =
-            await chatConfiguration.ChatClient.CompleteAsync(
+        ChatResponse evaluationResponse =
+            await chatConfiguration.ChatClient.GetResponseAsync(
                 evaluationMessages,
                 ChatOptions,
                 cancellationToken: cancellationToken).ConfigureAwait(false);

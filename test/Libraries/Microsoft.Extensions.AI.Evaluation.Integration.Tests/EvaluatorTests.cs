@@ -70,10 +70,9 @@ public class EvaluatorTests
             ChatMessage promptMessage = new ChatMessage(ChatRole.User, prompt);
             messages.Add(promptMessage);
 
-            ChatCompletion responseCompletion = await chatClient.CompleteAsync(messages, _chatOptions);
-            ChatMessage responseMessage = responseCompletion.Message;
-            string? response = responseMessage.Text;
-            Assert.NotNull(response);
+            ChatResponse response = await chatClient.GetResponseAsync(messages, _chatOptions);
+            ChatMessage responseMessage = response.Message;
+            Assert.NotNull(responseMessage.Text);
 
             EvaluationResult result = await scenarioRun.EvaluateAsync(promptMessage, responseMessage);
 
@@ -122,10 +121,9 @@ public class EvaluatorTests
             ChatMessage promptMessage = prompt.ToUserMessage();
             messages.Add(promptMessage);
 
-            ChatCompletion responseCompletion = await chatClient.CompleteAsync(messages, _chatOptions);
-            ChatMessage responseMessage = responseCompletion.Message;
-            string? response = responseMessage.Text;
-            Assert.NotNull(response);
+            ChatResponse response = await chatClient.GetResponseAsync(messages, _chatOptions);
+            ChatMessage responseMessage = response.Message;
+            Assert.NotNull(responseMessage.Text);
 
             EvaluationResult result = await scenarioRun.EvaluateAsync(promptMessage, responseMessage);
 
