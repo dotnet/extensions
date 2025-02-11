@@ -28,7 +28,7 @@ internal static partial class OpenAIModelMappers
 {
     internal static JsonElement DefaultParameterSchema { get; } = JsonDocument.Parse("{}").RootElement;
 
-    public static ChatCompletion ToOpenAIChatResponse(ChatResponse response, JsonSerializerOptions options)
+    public static ChatCompletion ToOpenAIChatCompletion(ChatResponse response, JsonSerializerOptions options)
     {
         _ = Throw.IfNull(response);
 
@@ -73,7 +73,7 @@ internal static partial class OpenAIModelMappers
             usage: chatTokenUsage);
     }
 
-    public static ChatResponse FromOpenAIChatResponse(ChatCompletion openAICompletion, ChatOptions? options, ChatCompletionOptions chatCompletionOptions)
+    public static ChatResponse FromOpenAIChatCompletion(ChatCompletion openAICompletion, ChatOptions? options, ChatCompletionOptions chatCompletionOptions)
     {
         _ = Throw.IfNull(openAICompletion);
 

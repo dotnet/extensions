@@ -13,28 +13,21 @@ namespace Microsoft.Extensions.AI;
 /// </summary>
 /// <remarks>
 /// <para>
-/// Conceptually, this combines the roles of <see cref="ChatResponse"/> and <see cref="ChatMessage"/>
-/// in streaming output. For ease of consumption, it also flattens the nested structure you see on
-/// streaming chunks in some AI services, so instead of a dictionary of choices, each update represents a
-/// single choice (and hence has its own role, choice ID, etc.).
-/// </para>
-/// <para>
 /// <see cref="ChatResponseUpdate"/> is so named because it represents updates
-/// to a single chat response. As such, it is considered erroneous for multiple updates that are part
-/// of the same response to contain competing values. For example, some updates that are part of
-/// the same response may have a <see langword="null"/> <see cref="Role"/>
-/// value, and others may have a non-<see langword="null"/> value, but all of those with a non-<see langword="null"/>
-/// value must have the same value (e.g. <see cref="ChatRole.Assistant"/>. It should never be the case, for example,
-/// that one <see cref="ChatResponseUpdate"/> in a response has a role of <see cref="ChatRole.Assistant"/>
-/// while another has a role of "AI".
+/// that layer on each other to form a single chat response. Conceptually, this combines the roles of
+/// <see cref="ChatResponse"/> and <see cref="ChatMessage"/> in streaming output. For ease of consumption,
+/// it also flattens the nested structure you see on streaming chunks in some AI services, so instead of a
+/// dictionary of choices, each update is part of a single choice (and hence has its own role, choice ID, etc.).
 /// </para>
 /// <para>
 /// The relationship between <see cref="ChatResponse"/> and <see cref="ChatResponseUpdate"/> is
 /// codified in the <see cref="ChatResponseUpdateExtensions.ToChatResponseAsync"/> and
 /// <see cref="ChatResponse.ToChatResponseUpdates"/>, which enable bidirectional conversions
-/// between the two. Note, however, that the conversion may be slightly lossy, for example if multiple updates
-/// all have different <see cref="RawRepresentation"/> objects whereas there's
-/// only one slot for such an object available in <see cref="ChatResponse.RawRepresentation"/>.
+/// between the two. Note, however, that the provided conversions may be lossy, for example if multiple
+/// updates all have different <see cref="RawRepresentation"/> objects whereas there's only one slot for
+/// such an object available in <see cref="ChatResponse.RawRepresentation"/>. Similarly, if different
+/// updates that are part of the same choice provide different values for properties like <see cref="ModelId"/>,
+/// only one of the values will be used to populate <see cref="ChatResponse.ModelId"/>.
 /// </para>
 /// </remarks>
 public class ChatResponseUpdate

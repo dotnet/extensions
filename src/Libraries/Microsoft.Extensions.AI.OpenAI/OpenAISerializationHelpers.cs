@@ -53,7 +53,7 @@ public static class OpenAISerializationHelpers
         _ = Throw.IfNull(response);
         options ??= AIJsonUtilities.DefaultOptions;
 
-        ChatCompletion openAiChatResponse = OpenAIModelMappers.ToOpenAIChatResponse(response, options);
+        ChatCompletion openAiChatResponse = OpenAIModelMappers.ToOpenAIChatCompletion(response, options);
         BinaryData binaryData = JsonModelHelpers.Serialize(openAiChatResponse);
         await stream.WriteAsync(binaryData.ToMemory(), cancellationToken).ConfigureAwait(false);
     }
@@ -76,7 +76,7 @@ public static class OpenAISerializationHelpers
         _ = Throw.IfNull(updates);
         options ??= AIJsonUtilities.DefaultOptions;
 
-        var mappedUpdates = OpenAIModelMappers.ToOpenAIStreamingChatResponseAsync(updates, options, cancellationToken);
+        var mappedUpdates = OpenAIModelMappers.ToOpenAIStreamingChatCompletionAsync(updates, options, cancellationToken);
         return SseFormatter.WriteAsync(ToSseEventsAsync(mappedUpdates), stream, FormatAsSseEvent, cancellationToken);
 
         static async IAsyncEnumerable<SseItem<BinaryData>> ToSseEventsAsync(IAsyncEnumerable<StreamingChatCompletionUpdate> updates)

@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.AI;
 
 internal static partial class OpenAIModelMappers
 {
-    public static async IAsyncEnumerable<StreamingChatCompletionUpdate> ToOpenAIStreamingChatResponseAsync(
+    public static async IAsyncEnumerable<StreamingChatCompletionUpdate> ToOpenAIStreamingChatCompletionAsync(
         IAsyncEnumerable<ChatResponseUpdate> updates,
         JsonSerializerOptions options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -61,7 +61,7 @@ internal static partial class OpenAIModelMappers
         }
     }
 
-    public static async IAsyncEnumerable<ChatResponseUpdate> FromOpenAIStreamingChatResponseAsync(
+    public static async IAsyncEnumerable<ChatResponseUpdate> FromOpenAIStreamingChatCompletionAsync(
         IAsyncEnumerable<StreamingChatCompletionUpdate> updates,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
