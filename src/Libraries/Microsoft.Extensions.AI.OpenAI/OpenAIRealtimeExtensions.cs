@@ -52,7 +52,7 @@ public static class OpenAIRealtimeExtensions
     /// <param name="detailedErrors">An optional flag specifying whether to disclose detailed exception information to the model. The default value is <see langword="false"/>.</param>
     /// <param name="jsonSerializerOptions">An optional <see cref="JsonSerializerOptions"/> that controls JSON handling.</param>
     /// <param name="cancellationToken">An optional <see cref="CancellationToken"/>.</param>
-    /// <returns>A <see cref="Task"/> that represents the response of processing, including invoking any asynchronous tools.</returns>
+    /// <returns>A <see cref="Task"/> that represents the completion of processing, including invoking any asynchronous tools.</returns>
     public static async Task HandleToolCallsAsync(
         this RealtimeConversationSession session,
         ConversationUpdate update,

@@ -121,6 +121,6 @@ public abstract class CachingEmbeddingGenerator<TInput, TEmbedding> : Delegating
     /// <param name="key">The cache key.</param>
     /// <param name="value">The <typeparamref name="TEmbedding"/> to be stored.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
-    /// <returns>A <see cref="Task"/> representing the response of the operation.</returns>
+    /// <returns>A <see cref="Task"/> representing the completion of the operation.</returns>
     protected abstract Task WriteCacheAsync(string key, TEmbedding value, CancellationToken cancellationToken);
 }

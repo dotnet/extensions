@@ -204,7 +204,7 @@ public sealed class AnonymousDelegatingChatClient : DelegatingChatClient
     /// but need not be.
     /// </param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>A <see cref="Task"/> that represents the response of the operation.</returns>
+    /// <returns>A <see cref="Task"/> that represents the completion of the operation.</returns>
     public delegate Task CompleteSharedFunc(
         IList<ChatMessage> chatMessages,
         ChatOptions? options,

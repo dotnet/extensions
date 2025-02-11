@@ -309,7 +309,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
                 }
             }
 
-            // These properties are strongly typed on ChatOptions but not on ChatResponsesOptions.
+            // These properties are strongly typed on ChatOptions but not on ChatCompletionsOptions.
             if (options.TopK is int topK)
             {
                 result.AdditionalProperties["top_k"] = new BinaryData(JsonSerializer.SerializeToUtf8Bytes(topK, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(int))));

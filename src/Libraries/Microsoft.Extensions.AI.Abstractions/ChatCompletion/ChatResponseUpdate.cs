@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.AI;
 /// <para>
 /// Conceptually, this combines the roles of <see cref="ChatResponse"/> and <see cref="ChatMessage"/>
 /// in streaming output. For ease of consumption, it also flattens the nested structure you see on
-/// streaming chunks in some AI service, so instead of a dictionary of choices, each update represents a
+/// streaming chunks in some AI services, so instead of a dictionary of choices, each update represents a
 /// single choice (and hence has its own role, choice ID, etc.).
 /// </para>
 /// <para>
@@ -121,7 +121,7 @@ public class ChatResponseUpdate
     /// <summary>Gets or sets the finish reason for the operation.</summary>
     public ChatFinishReason? FinishReason { get; set; }
 
-    /// <summary>Gets or sets the model ID using in the creation of the chat response of which this update is a part.</summary>
+    /// <summary>Gets or sets the model ID associated with this response update.</summary>
     public string? ModelId { get; set; }
 
     /// <inheritdoc/>

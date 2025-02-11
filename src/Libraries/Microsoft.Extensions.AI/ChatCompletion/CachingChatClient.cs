@@ -155,7 +155,7 @@ public abstract class CachingChatClient : DelegatingChatClient
     /// <param name="key">The cache key.</param>
     /// <param name="value">The <see cref="ChatResponse"/> to be stored.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
-    /// <returns>A <see cref="Task"/> representing the response of the operation.</returns>
+    /// <returns>A <see cref="Task"/> representing the completion of the operation.</returns>
     protected abstract Task WriteCacheAsync(string key, ChatResponse value, CancellationToken cancellationToken);
 
     /// <summary>
@@ -165,6 +165,6 @@ public abstract class CachingChatClient : DelegatingChatClient
     /// <param name="key">The cache key.</param>
     /// <param name="value">The <see cref="ChatResponse"/> to be stored.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
-    /// <returns>A <see cref="Task"/> representing the response of the operation.</returns>
+    /// <returns>A <see cref="Task"/> representing the completion of the operation.</returns>
     protected abstract Task WriteCacheStreamingAsync(string key, IReadOnlyList<ChatResponseUpdate> value, CancellationToken cancellationToken);
 }
