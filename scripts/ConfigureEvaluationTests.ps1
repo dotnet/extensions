@@ -1,3 +1,23 @@
+#!/usr/bin/env pwsh
+
+<#
+.SYNOPSIS
+    The script to configure a local repo for online evaluation tests, which use external resources.
+
+.DESCRIPTION
+    This script copies appsettings files from the a location on the developer's machine to the test
+    project directories so that the tests are configured to connect to external resources. The online 
+    configuration files should gitignore'd and not checked in to the repo.
+
+.PARAMETER Configure
+    Configure this repo for online evaluation tests, by copying appsettings files from the developer's 
+    machine to this repo.
+.PARAMETER Unconfigure
+    Unconfigure this repo for online evaluation tests, by removing the appsettings files from this repo.
+.PARAMETER ConfigRoot
+    ConfigRoot specifies where to copy the configuration files from. The default is $HOME/.config/dotnet-extensions.
+#>
+
 param (
     [switch]$Configure=$False,
     [switch]$Unconfigure=$False,
