@@ -514,24 +514,42 @@ public static partial class OpenAISerializationTests
         AssertJsonEqual("""
             {
               "id": "chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI",
+              "model": "gpt-4o-mini-2024-07-18",
+              "system_fingerprint": "fp_f85bea6784",
+              "usage": {
+                "completion_tokens": 9,
+                "prompt_tokens": 8,
+                "total_tokens": 17,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 90,
+                  "audio_tokens": 2,
+                  "accepted_prediction_tokens": 0,
+                  "rejected_prediction_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "audio_tokens": 1,
+                  "cached_tokens": 13
+                }
+              },
+              "object": "chat.completion",
               "choices": [
                 {
                   "finish_reason": "stop",
                   "index": 0,
                   "message": {
-                    "content": "Hello! How can I assist you today?",
                     "refusal": null,
                     "tool_calls": [
                       {
                         "id": "callId",
-                        "type": "function",
                         "function": {
                           "name": "MyCoolFunc",
                           "arguments": "{\r\n  \u0022arg1\u0022: 42,\r\n  \u0022arg2\u0022: \u0022str\u0022\r\n}"
-                        }
+                        },
+                        "type": "function"
                       }
                     ],
-                    "role": "assistant"
+                    "role": "assistant",
+                    "content": "Hello! How can I assist you today?"
                   },
                   "logprobs": {
                     "content": [],
@@ -539,23 +557,7 @@ public static partial class OpenAISerializationTests
                   }
                 }
               ],
-              "created": 1727888631,
-              "model": "gpt-4o-mini-2024-07-18",
-              "system_fingerprint": "fp_f85bea6784",
-              "object": "chat.completion",
-              "usage": {
-                "completion_tokens": 9,
-                "prompt_tokens": 8,
-                "total_tokens": 17,
-                "completion_tokens_details": {
-                  "audio_tokens": 2,
-                  "reasoning_tokens": 90
-                },
-                "prompt_tokens_details": {
-                  "audio_tokens": 1,
-                  "cached_tokens": 13
-                }
-              }
+              "created": 1727888631
             }
             """, result);
     }
@@ -647,15 +649,15 @@ public static partial class OpenAISerializationTests
         string result = Encoding.UTF8.GetString(stream.ToArray());
 
         AssertSseEqual("""
-            data: {"id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","choices":[{"delta":{"content":"Streaming update 0","tool_calls":[],"role":"assistant"},"logprobs":{"content":[],"refusal":[]},"index":0}],"created":1727888631,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","object":"chat.completion.chunk"}
+            data: {"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","object":"chat.completion.chunk","id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","choices":[{"delta":{"tool_calls":[],"role":"assistant","content":"Streaming update 0"},"logprobs":{"content":[],"refusal":[]},"index":0}],"created":1727888631}
 
-            data: {"id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","choices":[{"delta":{"content":"Streaming update 1","tool_calls":[],"role":"assistant"},"logprobs":{"content":[],"refusal":[]},"index":0}],"created":1727888631,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","object":"chat.completion.chunk"}
+            data: {"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","object":"chat.completion.chunk","id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","choices":[{"delta":{"tool_calls":[],"role":"assistant","content":"Streaming update 1"},"logprobs":{"content":[],"refusal":[]},"index":0}],"created":1727888631}
 
-            data: {"id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","choices":[{"delta":{"content":"Streaming update 2","tool_calls":[{"index":0,"id":"callId","type":"function","function":{"name":"MyCoolFunc","arguments":"{\r\n  \u0022arg1\u0022: 42,\r\n  \u0022arg2\u0022: \u0022str\u0022\r\n}"}}],"role":"assistant"},"logprobs":{"content":[],"refusal":[]},"index":0}],"created":1727888631,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","object":"chat.completion.chunk"}
+            data: {"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","object":"chat.completion.chunk","id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","choices":[{"delta":{"tool_calls":[{"index":0,"function":{"name":"MyCoolFunc","arguments":"{\r\n  \u0022arg1\u0022: 42,\r\n  \u0022arg2\u0022: \u0022str\u0022\r\n}"},"type":"function","id":"callId"}],"role":"assistant","content":"Streaming update 2"},"logprobs":{"content":[],"refusal":[]},"index":0}],"created":1727888631}
 
-            data: {"id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","choices":[{"delta":{"content":"Streaming update 3","tool_calls":[],"role":"assistant"},"logprobs":{"content":[],"refusal":[]},"index":0}],"created":1727888631,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","object":"chat.completion.chunk"}
+            data: {"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","object":"chat.completion.chunk","id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","choices":[{"delta":{"tool_calls":[],"role":"assistant","content":"Streaming update 3"},"logprobs":{"content":[],"refusal":[]},"index":0}],"created":1727888631}
 
-            data: {"id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","choices":[{"delta":{"content":"Streaming update 4","tool_calls":[],"role":"assistant"},"logprobs":{"content":[],"refusal":[]},"finish_reason":"stop","index":0}],"created":1727888631,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","object":"chat.completion.chunk","usage":{"completion_tokens":9,"prompt_tokens":8,"total_tokens":17,"completion_tokens_details":{"audio_tokens":2,"reasoning_tokens":90},"prompt_tokens_details":{"audio_tokens":1,"cached_tokens":13}}}
+            data: {"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","object":"chat.completion.chunk","id":"chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl","choices":[{"delta":{"tool_calls":[],"role":"assistant","content":"Streaming update 4"},"logprobs":{"content":[],"refusal":[]},"finish_reason":"stop","index":0}],"created":1727888631,"usage":{"completion_tokens":9,"prompt_tokens":8,"total_tokens":17,"completion_tokens_details":{"reasoning_tokens":90,"audio_tokens":2,"accepted_prediction_tokens":0,"rejected_prediction_tokens":0},"prompt_tokens_details":{"audio_tokens":1,"cached_tokens":13}}}
 
             data: [DONE]
 

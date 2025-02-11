@@ -142,7 +142,12 @@ public class OpenAIChatClientTests
     public async Task BasicRequestResponse_NonStreaming()
     {
         const string Input = """
-            {"messages":[{"role":"user","content":"hello"}],"model":"gpt-4o-mini","max_completion_tokens":10,"temperature":0.5}
+            {
+                "temperature":0.5,
+                "messages":[{"role":"user","content":"hello"}],
+                "model":"gpt-4o-mini",
+                "max_completion_tokens":10
+            }
             """;
 
         const string Output = """
@@ -205,8 +210,10 @@ public class OpenAIChatClientTests
         {
             { "InputTokenDetails.AudioTokenCount", 0 },
             { "InputTokenDetails.CachedTokenCount", 13 },
+            { "OutputTokenDetails.ReasoningTokenCount", 90 },
             { "OutputTokenDetails.AudioTokenCount", 0 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 }
+            { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
+            { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, response.Usage.AdditionalCounts);
 
         Assert.NotNull(response.AdditionalProperties);
@@ -217,7 +224,14 @@ public class OpenAIChatClientTests
     public async Task BasicRequestResponse_Streaming()
     {
         const string Input = """
-            {"messages":[{"role":"user","content":"hello"}],"model":"gpt-4o-mini","max_completion_tokens":20,"stream":true,"stream_options":{"include_usage":true},"temperature":0.5}
+            {
+                "temperature":0.5,
+                "messages":[{"role":"user","content":"hello"}],
+                "model":"gpt-4o-mini",
+                "stream":true,
+                "stream_options":{"include_usage":true},
+                "max_completion_tokens":20
+            }
             """;
 
         const string Output = """
@@ -288,8 +302,10 @@ public class OpenAIChatClientTests
         {
             { "InputTokenDetails.AudioTokenCount", 123 },
             { "InputTokenDetails.CachedTokenCount", 5 },
-            { "OutputTokenDetails.AudioTokenCount", 456 },
             { "OutputTokenDetails.ReasoningTokenCount", 90 },
+            { "OutputTokenDetails.AudioTokenCount", 456 },
+            { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
+            { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, usage.Details.AdditionalCounts);
     }
 
@@ -297,15 +313,17 @@ public class OpenAIChatClientTests
     public async Task NonStronglyTypedOptions_AllSent()
     {
         const string Input = """
-            {"messages":[{"role":"user","content":"hello"}],
-            "model":"gpt-4o-mini",
-            "store":true,
-            "metadata":{"something":"else"},
-            "logit_bias":{"12":34},
-            "logprobs":true,
-            "top_logprobs":42,
-            "parallel_tool_calls":false,
-            "user":"12345"}
+            {
+                "messages":[{"role":"user","content":"hello"}],
+                "model":"gpt-4o-mini",
+                "logprobs":true,
+                "top_logprobs":42,
+                "logit_bias":{"12":34},
+                "parallel_tool_calls":false,
+                "user":"12345",
+                "metadata":{"something":"else"},
+                "store":true
+            }
             """;
 
         const string Output = """
@@ -352,6 +370,9 @@ public class OpenAIChatClientTests
     {
         const string Input = """
             {
+                "frequency_penalty": 0.75,
+                "presence_penalty": 0.5,
+                "temperature": 0.25,
                 "messages": [
                     {
                         "role": "system",
@@ -371,13 +392,8 @@ public class OpenAIChatClientTests
                     }
                 ],
                 "model": "gpt-4o-mini",
-                "frequency_penalty": 0.75,
-                "presence_penalty": 0.5,
-                "seed":42,
-                "stop": [
-                    "great"
-                ],
-                "temperature": 0.25
+                "stop": ["great"],
+                "seed": 42
             }
             """;
 
@@ -454,8 +470,10 @@ public class OpenAIChatClientTests
         {
             { "InputTokenDetails.AudioTokenCount", 123 },
             { "InputTokenDetails.CachedTokenCount", 13 },
-            { "OutputTokenDetails.AudioTokenCount", 456 },
             { "OutputTokenDetails.ReasoningTokenCount", 90 },
+            { "OutputTokenDetails.AudioTokenCount", 456 },
+            { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
+            { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, response.Usage.AdditionalCounts);
 
         Assert.NotNull(response.AdditionalProperties);
@@ -552,8 +570,10 @@ public class OpenAIChatClientTests
         {
             { "InputTokenDetails.AudioTokenCount", 0 },
             { "InputTokenDetails.CachedTokenCount", 13 },
+            { "OutputTokenDetails.ReasoningTokenCount", 90 },
             { "OutputTokenDetails.AudioTokenCount", 0 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 }
+            { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
+            { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, response.Usage.AdditionalCounts);
 
         Assert.NotNull(response.AdditionalProperties);
@@ -651,8 +671,10 @@ public class OpenAIChatClientTests
         {
             { "InputTokenDetails.AudioTokenCount", 0 },
             { "InputTokenDetails.CachedTokenCount", 13 },
+            { "OutputTokenDetails.ReasoningTokenCount", 90 },
             { "OutputTokenDetails.AudioTokenCount", 0 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 }
+            { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
+            { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, response.Usage.AdditionalCounts);
 
         Assert.NotNull(response.AdditionalProperties);
@@ -664,16 +686,8 @@ public class OpenAIChatClientTests
     {
         const string Input = """
             {
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": "How old is Alice?"
-                    }
-                ],
-                "model": "gpt-4o-mini",
                 "tools": [
                     {
-                        "type": "function",
                         "function": {
                             "description": "Gets the age of the specified person.",
                             "name": "GetPersonAge",
@@ -689,9 +703,17 @@ public class OpenAIChatClientTests
                                     }
                                 }
                             }
-                        }
+                        },
+                        "type": "function"
                     }
                 ],
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "How old is Alice?"
+                    }
+                ],
+                "model": "gpt-4o-mini",
                 "tool_choice": "auto"
             }
             """;
@@ -763,8 +785,10 @@ public class OpenAIChatClientTests
         {
             { "InputTokenDetails.AudioTokenCount", 0 },
             { "InputTokenDetails.CachedTokenCount", 13 },
+            { "OutputTokenDetails.ReasoningTokenCount", 90 },
             { "OutputTokenDetails.AudioTokenCount", 0 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 }
+            { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
+            { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, response.Usage.AdditionalCounts);
 
         Assert.Single(response.Choices);
@@ -782,20 +806,8 @@ public class OpenAIChatClientTests
     {
         const string Input = """
             {
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": "How old is Alice?"
-                    }
-                ],
-                "model": "gpt-4o-mini",
-                "stream": true,
-                "stream_options": {
-                    "include_usage": true
-                },
                 "tools": [
                     {
-                        "type": "function",
                         "function": {
                             "description": "Gets the age of the specified person.",
                             "name": "GetPersonAge",
@@ -811,9 +823,21 @@ public class OpenAIChatClientTests
                                     }
                                 }
                             }
-                        }
+                        },
+                        "type": "function"
                     }
                 ],
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "How old is Alice?"
+                    }
+                ],
+                "model": "gpt-4o-mini",
+                "stream": true,
+                "stream_options": {
+                    "include_usage": true
+                },
                 "tool_choice": "auto"
             }
             """;
@@ -883,8 +907,10 @@ public class OpenAIChatClientTests
         {
             { "InputTokenDetails.AudioTokenCount", 0 },
             { "InputTokenDetails.CachedTokenCount", 0 },
+            { "OutputTokenDetails.ReasoningTokenCount", 90 },
             { "OutputTokenDetails.AudioTokenCount", 0 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 }
+            { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
+            { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, usage.Details.AdditionalCounts);
     }
 
@@ -908,19 +934,19 @@ public class OpenAIChatClientTests
                         "tool_calls": [
                             {
                                 "id": "12345",
-                                "type": "function",
                                 "function": {
                                     "name": "SayHello",
                                     "arguments": "null"
-                                }
+                                },
+                                "type": "function"
                             },
                             {
                                 "id": "12346",
-                                "type": "function",
                                 "function": {
                                     "name": "SayHi",
                                     "arguments": "null"
-                                }
+                                },
+                                "type": "function"
                             }
                         ]
                     },
@@ -1022,8 +1048,10 @@ public class OpenAIChatClientTests
         {
             { "InputTokenDetails.AudioTokenCount", 0 },
             { "InputTokenDetails.CachedTokenCount", 20 },
+            { "OutputTokenDetails.ReasoningTokenCount", 90 },
             { "OutputTokenDetails.AudioTokenCount", 0 },
-            { "OutputTokenDetails.ReasoningTokenCount", 90 }
+            { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
+            { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, response.Usage.AdditionalCounts);
 
         Assert.NotNull(response.AdditionalProperties);
