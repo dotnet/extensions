@@ -16,18 +16,18 @@ internal sealed class CallCountingChatClient(IChatClient innerClient) : Delegati
 
     public int CallCount => _callCount;
 
-    public override Task<ChatCompletion> CompleteAsync(
+    public override Task<ChatResponse> GetResponseAsync(
         IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         Interlocked.Increment(ref _callCount);
-        return base.CompleteAsync(chatMessages, options, cancellationToken);
+        return base.GetResponseAsync(chatMessages, options, cancellationToken);
     }
 
-    public override IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(
+    public override IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         Interlocked.Increment(ref _callCount);
-        return base.CompleteStreamingAsync(chatMessages, options, cancellationToken);
+        return base.GetStreamingResponseAsync(chatMessages, options, cancellationToken);
     }
 }
 

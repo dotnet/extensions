@@ -12,39 +12,39 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Represents the result of a chat completion request with structured output.</summary>
-/// <typeparam name="T">The type of value expected from the chat completion.</typeparam>
+/// <summary>Represents the response to a chat request with structured output.</summary>
+/// <typeparam name="T">The type of value expected from the chat response.</typeparam>
 /// <remarks>
 /// Language models are not guaranteed to honor the requested schema. If the model's output is not
 /// parseable as the expected type, then <see cref="TryGetResult(out T)"/> will return <see langword="false"/>.
-/// You can access the underlying JSON response on the <see cref="ChatCompletion.Message"/> property.
+/// You can access the underlying JSON response on the <see cref="ChatResponse.Message"/> property.
 /// </remarks>
-public class ChatCompletion<T> : ChatCompletion
+public class ChatResponse<T> : ChatResponse
 {
-    private static readonly JsonReaderOptions _allowMultipleValuesJsonReaderOptions = new JsonReaderOptions { AllowMultipleValues = true };
+    private static readonly JsonReaderOptions _allowMultipleValuesJsonReaderOptions = new() { AllowMultipleValues = true };
     private readonly JsonSerializerOptions _serializerOptions;
 
     private T? _deserializedResult;
     private bool _hasDeserializedResult;
 
-    /// <summary>Initializes a new instance of the <see cref="ChatCompletion{T}"/> class.</summary>
-    /// <param name="completion">The unstructured <see cref="ChatCompletion"/> that is being wrapped.</param>
+    /// <summary>Initializes a new instance of the <see cref="ChatResponse{T}"/> class.</summary>
+    /// <param name="response">The unstructured <see cref="ChatResponse"/> that is being wrapped.</param>
     /// <param name="serializerOptions">The <see cref="JsonSerializerOptions"/> to use when deserializing the result.</param>
-    public ChatCompletion(ChatCompletion completion, JsonSerializerOptions serializerOptions)
-        : base(Throw.IfNull(completion).Choices)
+    public ChatResponse(ChatResponse response, JsonSerializerOptions serializerOptions)
+        : base(Throw.IfNull(response).Choices)
     {
         _serializerOptions = Throw.IfNull(serializerOptions);
-        CompletionId = completion.CompletionId;
-        ModelId = completion.ModelId;
-        CreatedAt = completion.CreatedAt;
-        FinishReason = completion.FinishReason;
-        Usage = completion.Usage;
-        RawRepresentation = completion.RawRepresentation;
-        AdditionalProperties = completion.AdditionalProperties;
+        AdditionalProperties = response.AdditionalProperties;
+        CreatedAt = response.CreatedAt;
+        FinishReason = response.FinishReason;
+        ModelId = response.ModelId;
+        RawRepresentation = response.RawRepresentation;
+        ResponseId = response.ResponseId;
+        Usage = response.Usage;
     }
 
     /// <summary>
-    /// Gets the result of the chat completion as an instance of <typeparamref name="T"/>.
+    /// Gets the result value of the chat response as an instance of <typeparamref name="T"/>.
     /// </summary>
     /// <remarks>
     /// If the response did not contain JSON, or if deserialization fails, this property will throw.

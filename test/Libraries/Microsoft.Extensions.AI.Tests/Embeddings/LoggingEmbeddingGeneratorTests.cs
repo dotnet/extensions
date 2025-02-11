@@ -43,7 +43,7 @@ public class LoggingEmbeddingGeneratorTests
     [InlineData(LogLevel.Trace)]
     [InlineData(LogLevel.Debug)]
     [InlineData(LogLevel.Information)]
-    public async Task CompleteAsync_LogsStartAndCompletion(LogLevel level)
+    public async Task GetResponseAsync_LogsResponseInvocationAndCompletion(LogLevel level)
     {
         var collector = new FakeLogCollector();
 

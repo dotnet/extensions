@@ -13,46 +13,39 @@ namespace Microsoft.Extensions.AI;
 /// </summary>
 /// <remarks>
 /// <para>
-/// Conceptually, this combines the roles of <see cref="ChatCompletion"/> and <see cref="ChatMessage"/>
-/// in streaming output. For ease of consumption, it also flattens the nested structure you see on
-/// streaming chunks in some AI service, so instead of a dictionary of choices, each update represents a
-/// single choice (and hence has its own role, choice ID, etc.).
+/// <see cref="ChatResponseUpdate"/> is so named because it represents updates
+/// that layer on each other to form a single chat response. Conceptually, this combines the roles of
+/// <see cref="ChatResponse"/> and <see cref="ChatMessage"/> in streaming output. For ease of consumption,
+/// it also flattens the nested structure you see on streaming chunks in some AI services, so instead of a
+/// dictionary of choices, each update is part of a single choice (and hence has its own role, choice ID, etc.).
 /// </para>
 /// <para>
-/// <see cref="StreamingChatCompletionUpdate"/> is so named because it represents streaming updates
-/// to a single chat completion. As such, it is considered erroneous for multiple updates that are part
-/// of the same completion to contain competing values. For example, some updates that are part of
-/// the same completion may have a <see langword="null"/> <see cref="StreamingChatCompletionUpdate.Role"/>
-/// value, and others may have a non-<see langword="null"/> value, but all of those with a non-<see langword="null"/>
-/// value must have the same value (e.g. <see cref="ChatRole.Assistant"/>. It should never be the case, for example,
-/// that one <see cref="StreamingChatCompletionUpdate"/> in a completion has a role of <see cref="ChatRole.Assistant"/>
-/// while another has a role of "AI".
-/// </para>
-/// <para>
-/// The relationship between <see cref="ChatCompletion"/> and <see cref="StreamingChatCompletionUpdate"/> is
-/// codified in the <see cref="StreamingChatCompletionUpdateExtensions.ToChatCompletionAsync"/> and
-/// <see cref="ChatCompletion.ToStreamingChatCompletionUpdates"/>, which enable bidirectional conversions
-/// between the two. Note, however, that the conversion may be slightly lossy, for example if multiple updates
-/// all have different <see cref="StreamingChatCompletionUpdate.RawRepresentation"/> objects whereas there's
-/// only one slot for such an object available in <see cref="ChatCompletion.RawRepresentation"/>.
+/// The relationship between <see cref="ChatResponse"/> and <see cref="ChatResponseUpdate"/> is
+/// codified in the <see cref="ChatResponseUpdateExtensions.ToChatResponseAsync"/> and
+/// <see cref="ChatResponse.ToChatResponseUpdates"/>, which enable bidirectional conversions
+/// between the two. Note, however, that the provided conversions may be lossy, for example if multiple
+/// updates all have different <see cref="RawRepresentation"/> objects whereas there's only one slot for
+/// such an object available in <see cref="ChatResponse.RawRepresentation"/>. Similarly, if different
+/// updates that are part of the same choice provide different values for properties like <see cref="ModelId"/>,
+/// only one of the values will be used to populate <see cref="ChatResponse.ModelId"/>.
 /// </para>
 /// </remarks>
-public class StreamingChatCompletionUpdate
+public class ChatResponseUpdate
 {
-    /// <summary>The completion update content items.</summary>
+    /// <summary>The response update content items.</summary>
     private IList<AIContent>? _contents;
 
     /// <summary>The name of the author of the update.</summary>
     private string? _authorName;
 
-    /// <summary>Gets or sets the name of the author of the completion update.</summary>
+    /// <summary>Gets or sets the name of the author of the response update.</summary>
     public string? AuthorName
     {
         get => _authorName;
         set => _authorName = string.IsNullOrWhiteSpace(value) ? null : value;
     }
 
-    /// <summary>Gets or sets the role of the author of the completion update.</summary>
+    /// <summary>Gets or sets the role of the author of the response update.</summary>
     public ChatRole? Role { get; set; }
 
     /// <summary>
@@ -79,7 +72,7 @@ public class StreamingChatCompletionUpdate
         }
     }
 
-    /// <summary>Gets or sets the chat completion update content items.</summary>
+    /// <summary>Gets or sets the chat response update content items.</summary>
     [AllowNull]
     public IList<AIContent> Contents
     {
@@ -87,9 +80,9 @@ public class StreamingChatCompletionUpdate
         set => _contents = value;
     }
 
-    /// <summary>Gets or sets the raw representation of the completion update from an underlying implementation.</summary>
+    /// <summary>Gets or sets the raw representation of the response update from an underlying implementation.</summary>
     /// <remarks>
-    /// If a <see cref="StreamingChatCompletionUpdate"/> is created to represent some underlying object from another object
+    /// If a <see cref="ChatResponseUpdate"/> is created to represent some underlying object from another object
     /// model, this property can be used to store that original object. This can be useful for debugging or
     /// for enabling a consumer to access the underlying object model if needed.
     /// </remarks>
@@ -99,20 +92,20 @@ public class StreamingChatCompletionUpdate
     /// <summary>Gets or sets additional properties for the update.</summary>
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
 
-    /// <summary>Gets or sets the ID of the completion of which this update is a part.</summary>
-    public string? CompletionId { get; set; }
+    /// <summary>Gets or sets the ID of the response of which this update is a part.</summary>
+    public string? ResponseId { get; set; }
 
-    /// <summary>Gets or sets the chat thread ID associated with the chat completion of which this update is a part.</summary>
+    /// <summary>Gets or sets the chat thread ID associated with the chat response of which this update is a part.</summary>
     /// <remarks>
     /// Some <see cref="IChatClient"/> implementations are capable of storing the state for a chat thread, such that
-    /// the input messages supplied to <see cref="IChatClient.CompleteStreamingAsync"/> need only be the additional messages beyond
+    /// the input messages supplied to <see cref="IChatClient.GetStreamingResponseAsync"/> need only be the additional messages beyond
     /// what's already stored. If this property is non-<see langword="null"/>, it represents an identifier for that state,
     /// and it should be used in a subsequent <see cref="ChatOptions.ChatThreadId"/> instead of supplying the same messages
     /// (and this streaming message) as part of the <c>chatMessages</c> parameter.
     /// </remarks>
     public string? ChatThreadId { get; set; }
 
-    /// <summary>Gets or sets a timestamp for the completion update.</summary>
+    /// <summary>Gets or sets a timestamp for the response update.</summary>
     public DateTimeOffset? CreatedAt { get; set; }
 
     /// <summary>Gets or sets the zero-based index of the choice with which this update is associated in the streaming sequence.</summary>
@@ -121,7 +114,7 @@ public class StreamingChatCompletionUpdate
     /// <summary>Gets or sets the finish reason for the operation.</summary>
     public ChatFinishReason? FinishReason { get; set; }
 
-    /// <summary>Gets or sets the model ID using in the creation of the chat completion of which this update is a part.</summary>
+    /// <summary>Gets or sets the model ID associated with this response update.</summary>
     public string? ModelId { get; set; }
 
     /// <inheritdoc/>

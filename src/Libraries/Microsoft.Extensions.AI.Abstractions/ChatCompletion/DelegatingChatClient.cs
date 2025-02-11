@@ -38,15 +38,15 @@ public class DelegatingChatClient : IChatClient
     protected IChatClient InnerClient { get; }
 
     /// <inheritdoc />
-    public virtual Task<ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    public virtual Task<ChatResponse> GetResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return InnerClient.CompleteAsync(chatMessages, options, cancellationToken);
+        return InnerClient.GetResponseAsync(chatMessages, options, cancellationToken);
     }
 
     /// <inheritdoc />
-    public virtual IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    public virtual IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return InnerClient.CompleteStreamingAsync(chatMessages, options, cancellationToken);
+        return InnerClient.GetStreamingResponseAsync(chatMessages, options, cancellationToken);
     }
 
     /// <inheritdoc />

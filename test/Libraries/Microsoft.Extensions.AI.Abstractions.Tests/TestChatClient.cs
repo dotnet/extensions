@@ -17,19 +17,19 @@ public sealed class TestChatClient : IChatClient
 
     public IServiceProvider? Services { get; set; }
 
-    public Func<IList<ChatMessage>, ChatOptions?, CancellationToken, Task<ChatCompletion>>? CompleteAsyncCallback { get; set; }
+    public Func<IList<ChatMessage>, ChatOptions?, CancellationToken, Task<ChatResponse>>? CompleteAsyncCallback { get; set; }
 
-    public Func<IList<ChatMessage>, ChatOptions?, CancellationToken, IAsyncEnumerable<StreamingChatCompletionUpdate>>? CompleteStreamingAsyncCallback { get; set; }
+    public Func<IList<ChatMessage>, ChatOptions?, CancellationToken, IAsyncEnumerable<ChatResponseUpdate>>? CompleteStreamingAsyncCallback { get; set; }
 
     public Func<Type, object?, object?> GetServiceCallback { get; set; }
 
     private object? DefaultGetServiceCallback(Type serviceType, object? serviceKey) =>
         serviceType is not null && serviceKey is null && serviceType.IsInstanceOfType(this) ? this : null;
 
-    public Task<ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    public Task<ChatResponse> GetResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
         => CompleteAsyncCallback!.Invoke(chatMessages, options, cancellationToken);
 
-    public IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
         => CompleteStreamingAsyncCallback!.Invoke(chatMessages, options, cancellationToken);
 
     public object? GetService(Type serviceType, object? serviceKey = null)

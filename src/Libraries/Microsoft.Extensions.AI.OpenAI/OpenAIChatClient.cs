@@ -18,7 +18,7 @@ using OpenAI.Chat;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Represents an <see cref="IChatClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="OpenAI.Chat.ChatClient"/>.</summary>
+/// <summary>Represents an <see cref="IChatClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="ChatClient"/>.</summary>
 public sealed class OpenAIChatClient : IChatClient
 {
     /// <summary>Gets the default OpenAI endpoint.</summary>
@@ -99,7 +99,7 @@ public sealed class OpenAIChatClient : IChatClient
     }
 
     /// <inheritdoc />
-    public async Task<ChatCompletion> CompleteAsync(
+    public async Task<ChatResponse> GetResponseAsync(
         IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(chatMessages);
@@ -114,7 +114,7 @@ public sealed class OpenAIChatClient : IChatClient
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(
+    public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(chatMessages);

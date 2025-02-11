@@ -78,7 +78,7 @@ public sealed class OllamaChatClient : IChatClient
     }
 
     /// <inheritdoc />
-    public async Task<ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<ChatResponse> GetResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(chatMessages);
 
@@ -104,16 +104,16 @@ public sealed class OllamaChatClient : IChatClient
 
         return new([FromOllamaMessage(response.Message!)])
         {
-            CompletionId = response.CreatedAt,
-            ModelId = response.Model ?? options?.ModelId ?? _metadata.ModelId,
             CreatedAt = DateTimeOffset.TryParse(response.CreatedAt, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset createdAt) ? createdAt : null,
             FinishReason = ToFinishReason(response),
+            ModelId = response.Model ?? options?.ModelId ?? _metadata.ModelId,
+            ResponseId = response.CreatedAt,
             Usage = ParseOllamaChatResponseUsage(response),
         };
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(
+    public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(chatMessages);
@@ -152,13 +152,13 @@ public sealed class OllamaChatClient : IChatClient
 
             string? modelId = chunk.Model ?? _metadata.ModelId;
 
-            StreamingChatCompletionUpdate update = new()
+            ChatResponseUpdate update = new()
             {
-                CompletionId = chunk.CreatedAt,
-                Role = chunk.Message?.Role is not null ? new ChatRole(chunk.Message.Role) : null,
                 CreatedAt = DateTimeOffset.TryParse(chunk.CreatedAt, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset createdAt) ? createdAt : null,
                 FinishReason = ToFinishReason(chunk),
                 ModelId = modelId,
+                ResponseId = chunk.CreatedAt,
+                Role = chunk.Message?.Role is not null ? new ChatRole(chunk.Message.Role) : null,
             };
 
             if (chunk.Message is { } message)

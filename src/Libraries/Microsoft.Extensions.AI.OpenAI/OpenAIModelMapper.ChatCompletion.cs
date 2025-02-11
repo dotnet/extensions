@@ -28,17 +28,17 @@ internal static partial class OpenAIModelMappers
 {
     internal static JsonElement DefaultParameterSchema { get; } = JsonDocument.Parse("{}").RootElement;
 
-    public static OpenAI.Chat.ChatCompletion ToOpenAIChatCompletion(ChatCompletion chatCompletion, JsonSerializerOptions options)
+    public static ChatCompletion ToOpenAIChatCompletion(ChatResponse response, JsonSerializerOptions options)
     {
-        _ = Throw.IfNull(chatCompletion);
+        _ = Throw.IfNull(response);
 
-        if (chatCompletion.Choices.Count > 1)
+        if (response.Choices.Count > 1)
         {
             throw new NotSupportedException("Creating OpenAI ChatCompletion models with multiple choices is currently not supported.");
         }
 
         List<ChatToolCall>? toolCalls = null;
-        foreach (AIContent content in chatCompletion.Message.Contents)
+        foreach (AIContent content in response.Message.Contents)
         {
             if (content is FunctionCallContent callRequest)
             {
@@ -53,27 +53,27 @@ internal static partial class OpenAIModelMappers
         }
 
         ChatTokenUsage? chatTokenUsage = null;
-        if (chatCompletion.Usage is UsageDetails usageDetails)
+        if (response.Usage is UsageDetails usageDetails)
         {
             chatTokenUsage = ToOpenAIUsage(usageDetails);
         }
 
         return OpenAIChatModelFactory.ChatCompletion(
-            id: chatCompletion.CompletionId ?? CreateCompletionId(),
-            model: chatCompletion.ModelId,
-            createdAt: chatCompletion.CreatedAt ?? DateTimeOffset.UtcNow,
-            role: ToOpenAIChatRole(chatCompletion.Message.Role).Value,
-            finishReason: ToOpenAIFinishReason(chatCompletion.FinishReason),
-            content: new(ToOpenAIChatContent(chatCompletion.Message.Contents)),
+            id: response.ResponseId ?? CreateCompletionId(),
+            model: response.ModelId,
+            createdAt: response.CreatedAt ?? DateTimeOffset.UtcNow,
+            role: ToOpenAIChatRole(response.Message.Role).Value,
+            finishReason: ToOpenAIFinishReason(response.FinishReason),
+            content: new(ToOpenAIChatContent(response.Message.Contents)),
             toolCalls: toolCalls,
-            refusal: chatCompletion.AdditionalProperties.GetValueOrDefault<string>(nameof(OpenAI.Chat.ChatCompletion.Refusal)),
-            contentTokenLogProbabilities: chatCompletion.AdditionalProperties.GetValueOrDefault<IReadOnlyList<ChatTokenLogProbabilityDetails>>(nameof(OpenAI.Chat.ChatCompletion.ContentTokenLogProbabilities)),
-            refusalTokenLogProbabilities: chatCompletion.AdditionalProperties.GetValueOrDefault<IReadOnlyList<ChatTokenLogProbabilityDetails>>(nameof(OpenAI.Chat.ChatCompletion.RefusalTokenLogProbabilities)),
-            systemFingerprint: chatCompletion.AdditionalProperties.GetValueOrDefault<string>(nameof(OpenAI.Chat.ChatCompletion.SystemFingerprint)),
+            refusal: response.AdditionalProperties.GetValueOrDefault<string>(nameof(ChatCompletion.Refusal)),
+            contentTokenLogProbabilities: response.AdditionalProperties.GetValueOrDefault<IReadOnlyList<ChatTokenLogProbabilityDetails>>(nameof(ChatCompletion.ContentTokenLogProbabilities)),
+            refusalTokenLogProbabilities: response.AdditionalProperties.GetValueOrDefault<IReadOnlyList<ChatTokenLogProbabilityDetails>>(nameof(ChatCompletion.RefusalTokenLogProbabilities)),
+            systemFingerprint: response.AdditionalProperties.GetValueOrDefault<string>(nameof(ChatCompletion.SystemFingerprint)),
             usage: chatTokenUsage);
     }
 
-    public static ChatCompletion FromOpenAIChatCompletion(OpenAI.Chat.ChatCompletion openAICompletion, ChatOptions? options, ChatCompletionOptions chatCompletionOptions)
+    public static ChatResponse FromOpenAIChatCompletion(ChatCompletion openAICompletion, ChatOptions? options, ChatCompletionOptions chatCompletionOptions)
     {
         _ = Throw.IfNull(openAICompletion);
 
@@ -139,42 +139,42 @@ internal static partial class OpenAIModelMappers
             }
         }
 
-        // Wrap the content in a ChatCompletion to return.
-        var completion = new ChatCompletion([returnMessage])
+        // Wrap the content in a ChatResponse to return.
+        var response = new ChatResponse([returnMessage])
         {
-            CompletionId = openAICompletion.Id,
             CreatedAt = openAICompletion.CreatedAt,
             FinishReason = FromOpenAIFinishReason(openAICompletion.FinishReason),
             ModelId = openAICompletion.Model,
             RawRepresentation = openAICompletion,
+            ResponseId = openAICompletion.Id,
         };
 
         if (openAICompletion.Usage is ChatTokenUsage tokenUsage)
         {
-            completion.Usage = FromOpenAIUsage(tokenUsage);
+            response.Usage = FromOpenAIUsage(tokenUsage);
         }
 
         if (openAICompletion.ContentTokenLogProbabilities is { Count: > 0 } contentTokenLogProbs)
         {
-            (completion.AdditionalProperties ??= [])[nameof(openAICompletion.ContentTokenLogProbabilities)] = contentTokenLogProbs;
+            (response.AdditionalProperties ??= [])[nameof(openAICompletion.ContentTokenLogProbabilities)] = contentTokenLogProbs;
         }
 
         if (openAICompletion.Refusal is string refusal)
         {
-            (completion.AdditionalProperties ??= [])[nameof(openAICompletion.Refusal)] = refusal;
+            (response.AdditionalProperties ??= [])[nameof(openAICompletion.Refusal)] = refusal;
         }
 
         if (openAICompletion.RefusalTokenLogProbabilities is { Count: > 0 } refusalTokenLogProbs)
         {
-            (completion.AdditionalProperties ??= [])[nameof(openAICompletion.RefusalTokenLogProbabilities)] = refusalTokenLogProbs;
+            (response.AdditionalProperties ??= [])[nameof(openAICompletion.RefusalTokenLogProbabilities)] = refusalTokenLogProbs;
         }
 
         if (openAICompletion.SystemFingerprint is string systemFingerprint)
         {
-            (completion.AdditionalProperties ??= [])[nameof(openAICompletion.SystemFingerprint)] = systemFingerprint;
+            (response.AdditionalProperties ??= [])[nameof(openAICompletion.SystemFingerprint)] = systemFingerprint;
         }
 
-        return completion;
+        return response;
     }
 
     public static ChatOptions FromOpenAIOptions(ChatCompletionOptions? options)

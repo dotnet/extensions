@@ -8,19 +8,19 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class StreamingChatCompletionUpdateTests
+public class ChatResponseUpdateTests
 {
     [Fact]
     public void Constructor_PropsDefaulted()
     {
-        StreamingChatCompletionUpdate update = new();
+        ChatResponseUpdate update = new();
         Assert.Null(update.AuthorName);
         Assert.Null(update.Role);
         Assert.Null(update.Text);
         Assert.Empty(update.Contents);
         Assert.Null(update.RawRepresentation);
         Assert.Null(update.AdditionalProperties);
-        Assert.Null(update.CompletionId);
+        Assert.Null(update.ResponseId);
         Assert.Null(update.CreatedAt);
         Assert.Null(update.FinishReason);
         Assert.Equal(0, update.ChoiceIndex);
@@ -30,7 +30,7 @@ public class StreamingChatCompletionUpdateTests
     [Fact]
     public void Properties_Roundtrip()
     {
-        StreamingChatCompletionUpdate update = new();
+        ChatResponseUpdate update = new();
 
         Assert.Null(update.AuthorName);
         update.AuthorName = "author";
@@ -66,9 +66,9 @@ public class StreamingChatCompletionUpdateTests
         update.AdditionalProperties = props;
         Assert.Same(props, update.AdditionalProperties);
 
-        Assert.Null(update.CompletionId);
-        update.CompletionId = "id";
-        Assert.Equal("id", update.CompletionId);
+        Assert.Null(update.ResponseId);
+        update.ResponseId = "id";
+        Assert.Equal("id", update.ResponseId);
 
         Assert.Null(update.CreatedAt);
         update.CreatedAt = new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero);
@@ -86,7 +86,7 @@ public class StreamingChatCompletionUpdateTests
     [Fact]
     public void Text_GetSet_UsesFirstTextContent()
     {
-        StreamingChatCompletionUpdate update = new()
+        ChatResponseUpdate update = new()
         {
             Role = ChatRole.User,
             Contents =
@@ -115,7 +115,7 @@ public class StreamingChatCompletionUpdateTests
     [Fact]
     public void Text_Set_AddsTextMessageToEmptyList()
     {
-        StreamingChatCompletionUpdate update = new()
+        ChatResponseUpdate update = new()
         {
             Role = ChatRole.User,
         };
@@ -132,7 +132,7 @@ public class StreamingChatCompletionUpdateTests
     [Fact]
     public void Text_Set_AddsTextMessageToListWithNoText()
     {
-        StreamingChatCompletionUpdate update = new()
+        ChatResponseUpdate update = new()
         {
             Contents =
             [
@@ -162,7 +162,7 @@ public class StreamingChatCompletionUpdateTests
     [Fact]
     public void JsonSerialization_Roundtrips()
     {
-        StreamingChatCompletionUpdate original = new()
+        ChatResponseUpdate original = new()
         {
             AuthorName = "author",
             Role = ChatRole.Assistant,
@@ -175,16 +175,16 @@ public class StreamingChatCompletionUpdateTests
                 new TextContent("text-2"),
             ],
             RawRepresentation = new object(),
-            CompletionId = "id",
+            ResponseId = "id",
             CreatedAt = new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero),
             FinishReason = ChatFinishReason.ContentFilter,
             AdditionalProperties = new() { ["key"] = "value" },
             ChoiceIndex = 42,
         };
 
-        string json = JsonSerializer.Serialize(original, TestJsonSerializerContext.Default.StreamingChatCompletionUpdate);
+        string json = JsonSerializer.Serialize(original, TestJsonSerializerContext.Default.ChatResponseUpdate);
 
-        StreamingChatCompletionUpdate? result = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.StreamingChatCompletionUpdate);
+        ChatResponseUpdate? result = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.ChatResponseUpdate);
 
         Assert.NotNull(result);
         Assert.Equal(5, result.Contents.Count);
@@ -206,7 +206,7 @@ public class StreamingChatCompletionUpdateTests
 
         Assert.Equal("author", result.AuthorName);
         Assert.Equal(ChatRole.Assistant, result.Role);
-        Assert.Equal("id", result.CompletionId);
+        Assert.Equal("id", result.ResponseId);
         Assert.Equal(new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero), result.CreatedAt);
         Assert.Equal(ChatFinishReason.ContentFilter, result.FinishReason);
         Assert.Equal(42, result.ChoiceIndex);

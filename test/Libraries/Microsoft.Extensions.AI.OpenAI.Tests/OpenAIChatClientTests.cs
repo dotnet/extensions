@@ -187,14 +187,14 @@ public class OpenAIChatClientTests
         using HttpClient httpClient = new(handler);
         using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
 
-        var response = await client.CompleteAsync("hello", new()
+        var response = await client.GetResponseAsync("hello", new()
         {
             MaxOutputTokens = 10,
             Temperature = 0.5f,
         });
         Assert.NotNull(response);
 
-        Assert.Equal("chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI", response.CompletionId);
+        Assert.Equal("chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI", response.ResponseId);
         Assert.Equal("Hello! How can I assist you today?", response.Message.Text);
         Assert.Single(response.Message.Contents);
         Assert.Equal(ChatRole.Assistant, response.Message.Role);
@@ -217,7 +217,7 @@ public class OpenAIChatClientTests
         }, response.Usage.AdditionalCounts);
 
         Assert.NotNull(response.AdditionalProperties);
-        Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(OpenAI.Chat.ChatCompletion.SystemFingerprint)]);
+        Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(ChatCompletion.SystemFingerprint)]);
     }
 
     [Fact]
@@ -267,8 +267,8 @@ public class OpenAIChatClientTests
         using HttpClient httpClient = new(handler);
         using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
 
-        List<StreamingChatCompletionUpdate> updates = [];
-        await foreach (var update in client.CompleteStreamingAsync("hello", new()
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("hello", new()
         {
             MaxOutputTokens = 20,
             Temperature = 0.5f,
@@ -283,12 +283,12 @@ public class OpenAIChatClientTests
         Assert.Equal(12, updates.Count);
         for (int i = 0; i < updates.Count; i++)
         {
-            Assert.Equal("chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK", updates[i].CompletionId);
+            Assert.Equal("chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK", updates[i].ResponseId);
             Assert.Equal(createdAt, updates[i].CreatedAt);
             Assert.Equal("gpt-4o-mini-2024-07-18", updates[i].ModelId);
             Assert.Equal(ChatRole.Assistant, updates[i].Role);
             Assert.NotNull(updates[i].AdditionalProperties);
-            Assert.Equal("fp_f85bea6784", updates[i].AdditionalProperties![nameof(OpenAI.Chat.ChatCompletion.SystemFingerprint)]);
+            Assert.Equal("fp_f85bea6784", updates[i].AdditionalProperties![nameof(ChatCompletion.SystemFingerprint)]);
             Assert.Equal(i == 10 ? 0 : 1, updates[i].Contents.Count);
             Assert.Equal(i < 10 ? null : ChatFinishReason.Stop, updates[i].FinishReason);
         }
@@ -347,7 +347,7 @@ public class OpenAIChatClientTests
         using HttpClient httpClient = new(handler);
         using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
 
-        Assert.NotNull(await client.CompleteAsync("hello", new()
+        Assert.NotNull(await client.GetResponseAsync("hello", new()
         {
             AdditionalProperties = new()
             {
@@ -444,7 +444,7 @@ public class OpenAIChatClientTests
             new(ChatRole.User, "i'm good. how are you?"),
         ];
 
-        var response = await client.CompleteAsync(messages, new()
+        var response = await client.GetResponseAsync(messages, new()
         {
             Temperature = 0.25f,
             FrequencyPenalty = 0.75f,
@@ -454,7 +454,7 @@ public class OpenAIChatClientTests
         });
         Assert.NotNull(response);
 
-        Assert.Equal("chatcmpl-ADyV17bXeSm5rzUx3n46O7m3M0o3P", response.CompletionId);
+        Assert.Equal("chatcmpl-ADyV17bXeSm5rzUx3n46O7m3M0o3P", response.ResponseId);
         Assert.Equal("I’m doing well, thank you! What’s on your mind today?", response.Message.Text);
         Assert.Single(response.Message.Contents);
         Assert.Equal(ChatRole.Assistant, response.Message.Role);
@@ -477,7 +477,7 @@ public class OpenAIChatClientTests
         }, response.Usage.AdditionalCounts);
 
         Assert.NotNull(response.AdditionalProperties);
-        Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(OpenAI.Chat.ChatCompletion.SystemFingerprint)]);
+        Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(ChatCompletion.SystemFingerprint)]);
     }
 
     [Fact]
@@ -551,10 +551,10 @@ public class OpenAIChatClientTests
             new(ChatRole.User, "hello!"),
         ];
 
-        var response = await client.CompleteAsync(messages);
+        var response = await client.GetResponseAsync(messages);
         Assert.NotNull(response);
 
-        Assert.Equal("chatcmpl-ADyV17bXeSm5rzUx3n46O7m3M0o3P", response.CompletionId);
+        Assert.Equal("chatcmpl-ADyV17bXeSm5rzUx3n46O7m3M0o3P", response.ResponseId);
         Assert.Equal("Hi! It's so good to hear from you!", response.Message.Text);
         Assert.Single(response.Message.Contents);
         Assert.Equal(ChatRole.Assistant, response.Message.Role);
@@ -577,7 +577,7 @@ public class OpenAIChatClientTests
         }, response.Usage.AdditionalCounts);
 
         Assert.NotNull(response.AdditionalProperties);
-        Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(OpenAI.Chat.ChatCompletion.SystemFingerprint)]);
+        Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(ChatCompletion.SystemFingerprint)]);
     }
 
     [Fact]
@@ -652,10 +652,10 @@ public class OpenAIChatClientTests
             new(ChatRole.User, "i'm good. how are you?"),
         ];
 
-        var response = await client.CompleteAsync(messages);
+        var response = await client.GetResponseAsync(messages);
         Assert.NotNull(response);
 
-        Assert.Equal("chatcmpl-ADyV17bXeSm5rzUx3n46O7m3M0o3P", response.CompletionId);
+        Assert.Equal("chatcmpl-ADyV17bXeSm5rzUx3n46O7m3M0o3P", response.ResponseId);
         Assert.Equal("I’m doing well, thank you! What’s on your mind today?", response.Message.Text);
         Assert.Single(response.Message.Contents);
         Assert.Equal(ChatRole.Assistant, response.Message.Role);
@@ -678,7 +678,7 @@ public class OpenAIChatClientTests
         }, response.Usage.AdditionalCounts);
 
         Assert.NotNull(response.AdditionalProperties);
-        Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(OpenAI.Chat.ChatCompletion.SystemFingerprint)]);
+        Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(ChatCompletion.SystemFingerprint)]);
     }
 
     [Fact]
@@ -765,7 +765,7 @@ public class OpenAIChatClientTests
         using HttpClient httpClient = new(handler);
         using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
 
-        var response = await client.CompleteAsync("How old is Alice?", new()
+        var response = await client.GetResponseAsync("How old is Alice?", new()
         {
             Tools = [AIFunctionFactory.Create(([Description("The person whose age is being requested")] string personName) => 42, "GetPersonAge", "Gets the age of the specified person.")],
         });
@@ -798,7 +798,7 @@ public class OpenAIChatClientTests
         AssertExtensions.EqualFunctionCallParameters(new Dictionary<string, object?> { ["personName"] = "Alice" }, fcc.Arguments);
 
         Assert.NotNull(response.AdditionalProperties);
-        Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(OpenAI.Chat.ChatCompletion.SystemFingerprint)]);
+        Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(ChatCompletion.SystemFingerprint)]);
     }
 
     [Fact]
@@ -869,8 +869,8 @@ public class OpenAIChatClientTests
         using HttpClient httpClient = new(handler);
         using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
 
-        List<StreamingChatCompletionUpdate> updates = [];
-        await foreach (var update in client.CompleteStreamingAsync("How old is Alice?", new()
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("How old is Alice?", new()
         {
             Tools = [AIFunctionFactory.Create(([Description("The person whose age is being requested")] string personName) => 42, "GetPersonAge", "Gets the age of the specified person.")],
         }))
@@ -884,12 +884,12 @@ public class OpenAIChatClientTests
         Assert.Equal(10, updates.Count);
         for (int i = 0; i < updates.Count; i++)
         {
-            Assert.Equal("chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl", updates[i].CompletionId);
+            Assert.Equal("chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl", updates[i].ResponseId);
             Assert.Equal(createdAt, updates[i].CreatedAt);
             Assert.Equal("gpt-4o-mini-2024-07-18", updates[i].ModelId);
             Assert.Equal(ChatRole.Assistant, updates[i].Role);
             Assert.NotNull(updates[i].AdditionalProperties);
-            Assert.Equal("fp_f85bea6784", updates[i].AdditionalProperties![nameof(OpenAI.Chat.ChatCompletion.SystemFingerprint)]);
+            Assert.Equal("fp_f85bea6784", updates[i].AdditionalProperties![nameof(ChatCompletion.SystemFingerprint)]);
             Assert.Equal(i < 7 ? null : ChatFinishReason.ToolCalls, updates[i].FinishReason);
         }
 
@@ -1029,10 +1029,10 @@ public class OpenAIChatClientTests
             new(ChatRole.User, "Thanks!"),
         ];
 
-        var response = await client.CompleteAsync(messages);
+        var response = await client.GetResponseAsync(messages);
         Assert.NotNull(response);
 
-        Assert.Equal("chatcmpl-ADyV17bXeSm5rzUx3n46O7m3M0o3P", response.CompletionId);
+        Assert.Equal("chatcmpl-ADyV17bXeSm5rzUx3n46O7m3M0o3P", response.ResponseId);
         Assert.Equal("I’m doing well, thank you! What’s on your mind today?", response.Message.Text);
         Assert.Single(response.Message.Contents);
         Assert.Equal(ChatRole.Assistant, response.Message.Role);
@@ -1055,7 +1055,7 @@ public class OpenAIChatClientTests
         }, response.Usage.AdditionalCounts);
 
         Assert.NotNull(response.AdditionalProperties);
-        Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(OpenAI.Chat.ChatCompletion.SystemFingerprint)]);
+        Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(ChatCompletion.SystemFingerprint)]);
     }
 
     private static IChatClient CreateChatClient(HttpClient httpClient, string modelId) =>

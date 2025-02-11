@@ -104,7 +104,7 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
         }
         finally
         {
-            TraceCompletion(activity, requestModelId, response, error, stopwatch);
+            TraceResponse(activity, requestModelId, response, error, stopwatch);
         }
 
         return response;
@@ -177,7 +177,7 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
     }
 
     /// <summary>Adds embedding generation response information to the activity.</summary>
-    private void TraceCompletion(
+    private void TraceResponse(
         Activity? activity,
         string? requestModelId,
         GeneratedEmbeddings<TEmbedding>? embeddings,

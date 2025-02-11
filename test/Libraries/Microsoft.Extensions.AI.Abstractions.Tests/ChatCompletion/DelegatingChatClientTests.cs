@@ -24,8 +24,8 @@ public class DelegatingChatClientTests
         var expectedChatContents = new List<ChatMessage>();
         var expectedChatOptions = new ChatOptions();
         var expectedCancellationToken = CancellationToken.None;
-        var expectedResult = new TaskCompletionSource<ChatCompletion>();
-        var expectedCompletion = new ChatCompletion([]);
+        var expectedResult = new TaskCompletionSource<ChatResponse>();
+        var expectedResponse = new ChatResponse([]);
         using var inner = new TestChatClient
         {
             CompleteAsyncCallback = (chatContents, options, cancellationToken) =>
@@ -40,13 +40,13 @@ public class DelegatingChatClientTests
         using var delegating = new NoOpDelegatingChatClient(inner);
 
         // Act
-        var resultTask = delegating.CompleteAsync(expectedChatContents, expectedChatOptions, expectedCancellationToken);
+        var resultTask = delegating.GetResponseAsync(expectedChatContents, expectedChatOptions, expectedCancellationToken);
 
         // Assert
         Assert.False(resultTask.IsCompleted);
-        expectedResult.SetResult(expectedCompletion);
+        expectedResult.SetResult(expectedResponse);
         Assert.True(resultTask.IsCompleted);
-        Assert.Same(expectedCompletion, await resultTask);
+        Assert.Same(expectedResponse, await resultTask);
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public class DelegatingChatClientTests
         var expectedChatContents = new List<ChatMessage>();
         var expectedChatOptions = new ChatOptions();
         var expectedCancellationToken = CancellationToken.None;
-        StreamingChatCompletionUpdate[] expectedResults =
+        ChatResponseUpdate[] expectedResults =
         [
             new() { Role = ChatRole.User, Text = "Message 1" },
             new() { Role = ChatRole.User, Text = "Message 2" }
@@ -76,7 +76,7 @@ public class DelegatingChatClientTests
         using var delegating = new NoOpDelegatingChatClient(inner);
 
         // Act
-        var resultAsyncEnumerable = delegating.CompleteStreamingAsync(expectedChatContents, expectedChatOptions, expectedCancellationToken);
+        var resultAsyncEnumerable = delegating.GetStreamingResponseAsync(expectedChatContents, expectedChatOptions, expectedCancellationToken);
 
         // Assert
         var enumerator = resultAsyncEnumerable.GetAsyncEnumerator();

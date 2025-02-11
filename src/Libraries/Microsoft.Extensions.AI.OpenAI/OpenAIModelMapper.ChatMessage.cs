@@ -23,8 +23,8 @@ internal static partial class OpenAIModelMappers
         return new()
         {
             Messages = messages,
-            Options = chatOptions,
             ModelId = chatOptions.ModelId,
+            Options = chatOptions,
             Stream = _getStreamAccessor(chatCompletionOptions) ?? false,
         };
     }

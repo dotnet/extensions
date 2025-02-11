@@ -464,7 +464,7 @@ public static partial class OpenAISerializationTests
     }
 
     [Fact]
-    public static async Task SerializeCompletion_SingleChoice()
+    public static async Task SerializeResponse_SingleChoice()
     {
         ChatMessage message = new()
         {
@@ -482,9 +482,9 @@ public static partial class OpenAISerializationTests
             ]
         };
 
-        ChatCompletion completion = new(message)
+        ChatResponse response = new(message)
         {
-            CompletionId = "chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI",
+            ResponseId = "chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI",
             ModelId = "gpt-4o-mini-2024-07-18",
             CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1_727_888_631),
             FinishReason = ChatFinishReason.Stop,
@@ -503,12 +503,12 @@ public static partial class OpenAISerializationTests
             },
             AdditionalProperties = new()
             {
-                [nameof(OpenAI.Chat.ChatCompletion.SystemFingerprint)] = "fp_f85bea6784",
+                [nameof(ChatCompletion.SystemFingerprint)] = "fp_f85bea6784",
             }
         };
 
         using MemoryStream stream = new();
-        await OpenAISerializationHelpers.SerializeAsync(stream, completion);
+        await OpenAISerializationHelpers.SerializeAsync(stream, response);
         string result = Encoding.UTF8.GetString(stream.ToArray());
 
         AssertJsonEqual("""
@@ -563,7 +563,7 @@ public static partial class OpenAISerializationTests
     }
 
     [Fact]
-    public static async Task SerializeCompletion_ManyChoices_ThrowsNotSupportedException()
+    public static async Task SerializeResponse_ManyChoices_ThrowsNotSupportedException()
     {
         ChatMessage message1 = new()
         {
@@ -577,17 +577,17 @@ public static partial class OpenAISerializationTests
             Text = "Hey there! How can I help?",
         };
 
-        ChatCompletion completion = new([message1, message2]);
+        ChatResponse response = new([message1, message2]);
 
         using MemoryStream stream = new();
-        var ex = await Assert.ThrowsAsync<NotSupportedException>(() => OpenAISerializationHelpers.SerializeAsync(stream, completion));
+        var ex = await Assert.ThrowsAsync<NotSupportedException>(() => OpenAISerializationHelpers.SerializeAsync(stream, response));
         Assert.Contains("multiple choices", ex.Message);
     }
 
     [Fact]
-    public static async Task SerializeStreamingCompletion()
+    public static async Task SerializeStreamingResponse()
     {
-        static async IAsyncEnumerable<StreamingChatCompletionUpdate> CreateStreamingCompletion()
+        static async IAsyncEnumerable<ChatResponseUpdate> CreateStreamingResponse()
         {
             for (int i = 0; i < 5; i++)
             {
@@ -626,9 +626,9 @@ public static partial class OpenAISerializationTests
                     contents.Add(new UsageContent(usageDetails));
                 }
 
-                yield return new StreamingChatCompletionUpdate
+                yield return new ChatResponseUpdate
                 {
-                    CompletionId = "chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl",
+                    ResponseId = "chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl",
                     ModelId = "gpt-4o-mini-2024-07-18",
                     CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1_727_888_631),
                     Role = ChatRole.Assistant,
@@ -636,7 +636,7 @@ public static partial class OpenAISerializationTests
                     FinishReason = i == 4 ? ChatFinishReason.Stop : null,
                     AdditionalProperties = new()
                     {
-                        [nameof(OpenAI.Chat.ChatCompletion.SystemFingerprint)] = "fp_f85bea6784",
+                        [nameof(ChatCompletion.SystemFingerprint)] = "fp_f85bea6784",
                     },
                 };
 
@@ -645,7 +645,7 @@ public static partial class OpenAISerializationTests
         }
 
         using MemoryStream stream = new();
-        await OpenAISerializationHelpers.SerializeStreamingAsync(stream, CreateStreamingCompletion());
+        await OpenAISerializationHelpers.SerializeStreamingAsync(stream, CreateStreamingResponse());
         string result = Encoding.UTF8.GetString(stream.ToArray());
 
         AssertSseEqual("""
@@ -673,12 +673,12 @@ public static partial class OpenAISerializationTests
         await Assert.ThrowsAsync<ArgumentNullException>(() => OpenAISerializationHelpers.SerializeAsync(null!, new(new ChatMessage())));
         await Assert.ThrowsAsync<ArgumentNullException>(() => OpenAISerializationHelpers.SerializeAsync(new MemoryStream(), null!));
 
-        await Assert.ThrowsAsync<ArgumentNullException>(() => OpenAISerializationHelpers.SerializeStreamingAsync(null!, GetStreamingChatCompletion()));
+        await Assert.ThrowsAsync<ArgumentNullException>(() => OpenAISerializationHelpers.SerializeStreamingAsync(null!, GetStreamingChatResponse()));
         await Assert.ThrowsAsync<ArgumentNullException>(() => OpenAISerializationHelpers.SerializeStreamingAsync(new MemoryStream(), null!));
 
-        static async IAsyncEnumerable<StreamingChatCompletionUpdate> GetStreamingChatCompletion()
+        static async IAsyncEnumerable<ChatResponseUpdate> GetStreamingChatResponse()
         {
-            yield return new StreamingChatCompletionUpdate();
+            yield return new ChatResponseUpdate();
             await Task.CompletedTask;
         }
     }
@@ -691,11 +691,11 @@ public static partial class OpenAISerializationTests
 
         await Assert.ThrowsAsync<TaskCanceledException>(() => OpenAISerializationHelpers.DeserializeChatCompletionRequestAsync(stream, cancellationToken: canceledToken));
         await Assert.ThrowsAsync<TaskCanceledException>(() => OpenAISerializationHelpers.SerializeAsync(stream, new(new ChatMessage()), cancellationToken: canceledToken));
-        await Assert.ThrowsAsync<TaskCanceledException>(() => OpenAISerializationHelpers.SerializeStreamingAsync(stream, GetStreamingChatCompletion(), cancellationToken: canceledToken));
+        await Assert.ThrowsAsync<TaskCanceledException>(() => OpenAISerializationHelpers.SerializeStreamingAsync(stream, GetStreamingChatResponse(), cancellationToken: canceledToken));
 
-        static async IAsyncEnumerable<StreamingChatCompletionUpdate> GetStreamingChatCompletion()
+        static async IAsyncEnumerable<ChatResponseUpdate> GetStreamingChatResponse()
         {
-            yield return new StreamingChatCompletionUpdate();
+            yield return new ChatResponseUpdate();
             await Task.CompletedTask;
         }
     }
@@ -711,7 +711,7 @@ public static partial class OpenAISerializationTests
                 ["arg1"] = new SomeFunctionArgument(),
             });
 
-        ChatCompletion completion = new(new ChatMessage
+        ChatResponse response = new(new ChatMessage
         {
             Role = ChatRole.Assistant,
             Contents = [fcc],
@@ -720,23 +720,23 @@ public static partial class OpenAISerializationTests
         using MemoryStream stream = new();
 
         // Passing a JSO that contains a contract for the function argument results in successful serialization.
-        await OpenAISerializationHelpers.SerializeAsync(stream, completion, options: JsonContextWithFunctionArgument.Default.Options);
+        await OpenAISerializationHelpers.SerializeAsync(stream, response, options: JsonContextWithFunctionArgument.Default.Options);
         stream.Position = 0;
 
-        await OpenAISerializationHelpers.SerializeStreamingAsync(stream, GetStreamingCompletion(), options: JsonContextWithFunctionArgument.Default.Options);
+        await OpenAISerializationHelpers.SerializeStreamingAsync(stream, GetStreamingResponse(), options: JsonContextWithFunctionArgument.Default.Options);
         stream.Position = 0;
 
         // Passing a JSO without a contract for the function argument result in failed serialization.
-        await Assert.ThrowsAsync<NotSupportedException>(() => OpenAISerializationHelpers.SerializeAsync(stream, completion, options: JsonContextWithoutFunctionArgument.Default.Options));
-        await Assert.ThrowsAsync<NotSupportedException>(() => OpenAISerializationHelpers.SerializeStreamingAsync(stream, GetStreamingCompletion(), options: JsonContextWithoutFunctionArgument.Default.Options));
+        await Assert.ThrowsAsync<NotSupportedException>(() => OpenAISerializationHelpers.SerializeAsync(stream, response, options: JsonContextWithoutFunctionArgument.Default.Options));
+        await Assert.ThrowsAsync<NotSupportedException>(() => OpenAISerializationHelpers.SerializeStreamingAsync(stream, GetStreamingResponse(), options: JsonContextWithoutFunctionArgument.Default.Options));
 
-        async IAsyncEnumerable<StreamingChatCompletionUpdate> GetStreamingCompletion()
+        async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponse()
         {
-            yield return new StreamingChatCompletionUpdate
+            await Task.Yield();
+            yield return new ChatResponseUpdate
             {
                 Contents = [fcc],
             };
-            await Task.CompletedTask;
         }
     }
 
