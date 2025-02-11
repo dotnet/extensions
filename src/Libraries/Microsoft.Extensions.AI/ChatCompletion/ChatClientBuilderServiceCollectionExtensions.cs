@@ -19,7 +19,7 @@ public static class ChatClientBuilderServiceCollectionExtensions
     public static ChatClientBuilder AddChatClient(
         this IServiceCollection serviceCollection,
         IChatClient innerClient,
-        ServiceLifetime lifetime)
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
         => AddChatClient(serviceCollection, _ => innerClient, lifetime);
 
     /// <summary>Registers a singleton <see cref="IChatClient"/> in the <see cref="IServiceCollection"/>.</summary>
@@ -52,7 +52,7 @@ public static class ChatClientBuilderServiceCollectionExtensions
         this IServiceCollection serviceCollection,
         object serviceKey,
         IChatClient innerClient,
-        ServiceLifetime lifetime)
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
         => AddKeyedChatClient(serviceCollection, serviceKey, _ => innerClient, lifetime);
 
     /// <summary>Registers a keyed singleton <see cref="IChatClient"/> in the <see cref="IServiceCollection"/>.</summary>

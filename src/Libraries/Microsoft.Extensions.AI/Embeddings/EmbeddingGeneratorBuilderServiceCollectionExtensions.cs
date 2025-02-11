@@ -21,7 +21,7 @@ public static class EmbeddingGeneratorBuilderServiceCollectionExtensions
     public static EmbeddingGeneratorBuilder<TInput, TEmbedding> AddEmbeddingGenerator<TInput, TEmbedding>(
         this IServiceCollection serviceCollection,
         IEmbeddingGenerator<TInput, TEmbedding> innerGenerator,
-        ServiceLifetime lifetime)
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TEmbedding : Embedding
         => AddEmbeddingGenerator(serviceCollection, _ => innerGenerator, lifetime);
 
@@ -60,7 +60,7 @@ public static class EmbeddingGeneratorBuilderServiceCollectionExtensions
         this IServiceCollection serviceCollection,
         object serviceKey,
         IEmbeddingGenerator<TInput, TEmbedding> innerGenerator,
-        ServiceLifetime lifetime)
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TEmbedding : Embedding
         => AddKeyedEmbeddingGenerator(serviceCollection, serviceKey, _ => innerGenerator, lifetime);
 
