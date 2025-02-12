@@ -8,9 +8,9 @@ namespace Microsoft.Extensions.AI.Evaluation.Reporting.Tests;
 
 public class Settings
 {
-    public readonly bool Configured;
-    public readonly string StorageAccountEndpoint;
-    public readonly string StorageContainerName;
+    public bool Configured { get; }
+    public string StorageAccountEndpoint { get; }
+    public string StorageContainerName { get; }
 
     public Settings(IConfiguration config)
     {

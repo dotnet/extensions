@@ -12,27 +12,27 @@ public partial class RelevanceTruthAndCompletenessEvaluator
 {
     internal sealed class Rating
     {
-        public readonly int Relevance;
-        public readonly string? RelevanceReasoning;
-        public readonly string[] RelevanceReasons = [];
+        public static Rating Inconclusive { get; } = new Rating(relevance: -1, truth: -1, completeness: -1);
 
-        public readonly int Truth;
-        public readonly string? TruthReasoning;
-        public readonly string[] TruthReasons = [];
+        public int Relevance { get; }
+        public string? RelevanceReasoning { get; }
+        public string[] RelevanceReasons { get; } = [];
 
-        public readonly int Completeness;
-        public readonly string? CompletenessReasoning;
-        public readonly string[] CompletenessReasons = [];
+        public int Truth { get; }
+        public string? TruthReasoning { get; }
+        public string[] TruthReasons { get; } = [];
 
-        public readonly string? Error;
+        public int Completeness { get; }
+        public string? CompletenessReasoning { get; }
+        public string[] CompletenessReasons { get; } = [];
 
-        internal static readonly Rating Inconclusive = new Rating(relevance: -1, truth: -1, completeness: -1);
+        public string? Error { get; }
 
         private const int MinValue = 1;
         private const int MaxValue = 5;
 
 #pragma warning disable S1067 // Expressions should not be too complex.
-        internal bool IsInconclusive =>
+        public bool IsInconclusive =>
             Error is not null ||
             Relevance < MinValue || Relevance > MaxValue ||
             Truth < MinValue || Truth > MaxValue ||
@@ -63,7 +63,7 @@ public partial class RelevanceTruthAndCompletenessEvaluator
                 error);
         }
 
-        internal static Rating FromJson(string jsonResponse)
+        public static Rating FromJson(string jsonResponse)
         {
             ReadOnlySpan<char> trimmed = JsonOutputFixer.TrimMarkdownDelimiters(jsonResponse);
             return JsonSerializer.Deserialize(trimmed, SerializerContext.Default.Rating)!;

@@ -16,7 +16,7 @@ public partial class DiskBasedResponseCache
 {
     internal sealed class CacheOptions
     {
-        public static readonly CacheOptions Default = new CacheOptions();
+        public static CacheOptions Default { get; } = new CacheOptions();
 
         private const string DeserializationFailedMessage = "Unable to deserialize the cache options file at {0}.";
 

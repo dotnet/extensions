@@ -8,11 +8,11 @@ namespace Microsoft.Extensions.AI.Evaluation.Integration.Tests;
 
 public class Settings
 {
-    public readonly bool Configured;
-    public readonly string DeploymentName;
-    public readonly string ModelName;
-    public readonly string Endpoint;
-    public readonly string StorageRootPath;
+    public bool Configured { get; }
+    public string DeploymentName { get; }
+    public string ModelName { get; }
+    public string Endpoint { get; }
+    public string StorageRootPath { get; }
 
     public Settings(IConfiguration config)
     {
