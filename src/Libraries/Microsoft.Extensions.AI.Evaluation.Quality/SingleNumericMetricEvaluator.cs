@@ -49,6 +49,9 @@ public abstract class SingleNumericMetricEvaluator : ChatConversationEvaluator
         in your response besides the evaluation score.
         """;
 
+    // TASK: Explore using structured output and providing a JSON schema to better enforce the LLM response format
+    // requirements above.
+
     /// <inheritdoc/>
     protected sealed override EvaluationResult InitializeResult()
     {
