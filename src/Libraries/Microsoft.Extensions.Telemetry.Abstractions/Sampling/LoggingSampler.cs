@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Logging;
 /// </summary>
 #pragma warning disable S1694 // An abstract class should have both abstract and concrete methods
 [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
-public abstract class LoggerSampler
+public abstract class LoggingSampler
 #pragma warning restore S1694 // An abstract class should have both abstract and concrete methods
 {
     /// <summary>

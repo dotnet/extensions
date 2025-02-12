@@ -8,7 +8,7 @@ using Microsoft.Shared.DiagnosticIds;
 namespace Microsoft.Extensions.Diagnostics.Sampling;
 
 /// <summary>
-/// The options for probabilistic sampling.
+/// The options for probabilistic sampler.
 /// </summary>
 [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
 public class ProbabilisticSamplerOptions

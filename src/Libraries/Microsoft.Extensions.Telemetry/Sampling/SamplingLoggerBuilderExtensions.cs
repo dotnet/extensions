@@ -6,12 +6,13 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Diagnostics.Sampling;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Diagnostics.Sampling;
+namespace Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Extensions for configuring logging sampling.
@@ -35,7 +36,7 @@ public static class SamplingLoggerBuilderExtensions
     }
 
     /// <summary>
-    /// Adds Probabilistic sampler to the logging infrastructure.
+    /// Adds Probabilistic logging sampler to the logging infrastructure.
     /// </summary>
     /// <param name="builder">The dependency injection container to add logging to.</param>
     /// <param name="configuration">The <see cref="IConfiguration" /> to add.</param>
@@ -56,7 +57,7 @@ public static class SamplingLoggerBuilderExtensions
     }
 
     /// <summary>
-    /// Adds Probabilistic sampler to the logging infrastructure.
+    /// Adds Probabilistic logging sampler to the logging infrastructure.
     /// </summary>
     /// <param name="builder">The dependency injection container to add logging to.</param>
     /// <param name="probability">Probability from 0.0 to 1.0.</param>
@@ -85,14 +86,13 @@ public static class SamplingLoggerBuilderExtensions
     /// <param name="builder">The dependency injection container to add logging to.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
-    public static ILoggingBuilder AddSampler<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(
-        this ILoggingBuilder builder)
-        where T : LoggerSampler
+    public static ILoggingBuilder AddSampler<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(this ILoggingBuilder builder)
+        where T : LoggingSampler
     {
         _ = Throw.IfNull(builder);
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerFactory, ExtendedLoggerFactory>());
-        _ = builder.Services.AddSingleton<LoggerSampler, T>();
+        _ = builder.Services.AddSingleton<LoggingSampler, T>();
 
         return builder;
     }
@@ -104,7 +104,7 @@ public static class SamplingLoggerBuilderExtensions
     /// <param name="sampler">The sampler instance to add.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> or <paramref name="sampler"/> is <see langword="null"/>.</exception>    
-    public static ILoggingBuilder AddSampler(this ILoggingBuilder builder, LoggerSampler sampler)
+    public static ILoggingBuilder AddSampler(this ILoggingBuilder builder, LoggingSampler sampler)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(sampler);

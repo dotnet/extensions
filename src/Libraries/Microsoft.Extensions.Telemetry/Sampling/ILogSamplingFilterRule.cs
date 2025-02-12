@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.Diagnostics.Sampling;
 /// <summary>
 /// Represents a rule used for filtering log messages for purposes of log sampling and buffering.
 /// </summary>
-internal interface ILoggerSamplerFilterRule
+internal interface ILogSamplingFilterRule
 {
     /// <summary>
     /// Gets the logger category this rule applies to.
@@ -21,7 +21,12 @@ internal interface ILoggerSamplerFilterRule
     LogLevel? LogLevel { get; }
 
     /// <summary>
-    /// Gets the maximum <see cref="LogLevel"/> of messages where this rule applies to.
+    /// Gets the event ID this rule applies to.
     /// </summary>
     int? EventId { get; }
+
+    /// <summary>
+    /// Gets the name of the event this rule applies to.
+    /// </summary>
+    string? EventName { get; }
 }

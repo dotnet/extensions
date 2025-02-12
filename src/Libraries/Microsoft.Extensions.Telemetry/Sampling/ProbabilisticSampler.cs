@@ -9,10 +9,11 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.Extensions.Diagnostics.Sampling;
 
 #pragma warning disable CA5394 // Do not use insecure randomness
+
 /// <summary>
 /// Samples logs according to the specified probability.
 /// </summary>
-internal sealed class ProbabilisticSampler : LoggerSampler
+internal sealed class ProbabilisticSampler : LoggingSampler
 {
 #if !NET6_0_OR_GREATER
     private static readonly System.Threading.ThreadLocal<Random> _randomInstance = new(() => new Random());
@@ -49,7 +50,7 @@ internal sealed class ProbabilisticSampler : LoggerSampler
 
         // TO DO: check if we can optimize this. It is a hot path and
         // we should be able to minimize number of rule selections on every log record.
-        SamplerRuleSelector.Select(_options.CurrentValue.Rules, logEntry.Category, logEntry.LogLevel, logEntry.EventId, out ProbabilisticSamplerFilterRule? rule);
+        LogSamplingRuleSelector.Select(_options.CurrentValue.Rules, logEntry.Category, logEntry.LogLevel, logEntry.EventId, out ProbabilisticSamplerFilterRule? rule);
         if (rule is not null)
         {
             probability = rule.Probability;

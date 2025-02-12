@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Diagnostics.Sampling;
 /// Defines a rule used to filter log messages for purposes of sampling.
 /// </summary>
 [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
-public class ProbabilisticSamplerFilterRule : ILoggerSamplerFilterRule
+public class ProbabilisticSamplerFilterRule : ILogSamplingFilterRule
 {
     /// <inheritdoc/>
     public string? Category { get; set; }
@@ -21,6 +21,9 @@ public class ProbabilisticSamplerFilterRule : ILoggerSamplerFilterRule
 
     /// <inheritdoc/>
     public int? EventId { get; set; }
+
+    /// <inheritdoc/>
+    public string? EventName { get; set; }
 
     /// <summary>
     /// Gets or sets the probability for sampling in if this rule applies.

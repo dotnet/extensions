@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.Extensions.Diagnostics.Sampling;
 
-internal sealed class TraceBasedSampler : LoggerSampler
+internal sealed class TraceBasedSampler : LoggingSampler
 {
     public override bool ShouldSample<TState>(in LogEntry<TState> _) =>
         Activity.Current?.Recorded ?? true;

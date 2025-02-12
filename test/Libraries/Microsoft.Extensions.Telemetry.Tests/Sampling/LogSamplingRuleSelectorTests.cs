@@ -8,13 +8,14 @@ using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.Extensions.Telemetry.Sampling;
-public class SamplingRuleSelectorTests
+
+public class LogSamplingRuleSelectorTests
 {
     [Fact]
     public void SelectsRightRule()
     {
         // Arrange
-        var rules = new List<ILoggerSamplerFilterRule>
+        var rules = new List<ILogSamplingFilterRule>
         {
             new ProbabilisticSamplerFilterRule { Probability = 0 },
             new ProbabilisticSamplerFilterRule { Probability = 0, EventId = 1 },
@@ -35,7 +36,7 @@ public class SamplingRuleSelectorTests
         };
 
         // Act
-        SamplerRuleSelector.Select(rules, "Program.MyLogger", LogLevel.Warning, 1, out var actualResult);
+        LogSamplingRuleSelector.Select(rules, "Program.MyLogger", LogLevel.Warning, 1, out var actualResult);
 
         // Assert
         Assert.Same(rules[9], actualResult);
@@ -45,7 +46,7 @@ public class SamplingRuleSelectorTests
     public void WhenManyRuleApply_SelectsLast()
     {
         // Arrange
-        var rules = new List<ILoggerSamplerFilterRule>
+        var rules = new List<ILogSamplingFilterRule>
         {
             new ProbabilisticSamplerFilterRule { Probability = 0, LogLevel = LogLevel.Information, EventId = 1 },
             new ProbabilisticSamplerFilterRule { Probability = 0, LogLevel = LogLevel.Information, EventId = 1 },
@@ -55,11 +56,14 @@ public class SamplingRuleSelectorTests
             new ProbabilisticSamplerFilterRule { Probability = 0, Category = "Program1.MyLogger", LogLevel = LogLevel.Warning, EventId = 1 },
             new ProbabilisticSamplerFilterRule { Probability = 0, Category = "Program.*MyLogger1", LogLevel = LogLevel.Warning, EventId = 1 },
             new ProbabilisticSamplerFilterRule { Probability = 0, Category = "Program.MyLogger", LogLevel = LogLevel.Warning, EventId = 1 }, // the best rule
-            new ProbabilisticSamplerFilterRule { Probability = 0, Category = "Program.MyLogger*", LogLevel = LogLevel.Warning, EventId = 1 }, // same as the best, but last, and should be selected
+            new ProbabilisticSamplerFilterRule
+            {
+                Probability = 0, Category = "Program.MyLogger*", LogLevel = LogLevel.Warning, EventId = 1
+            }, // same as the best, but last, and should be selected
         };
 
         // Act
-        SamplerRuleSelector.Select(rules, "Program.MyLogger", LogLevel.Warning, 1, out var actualResult);
+        LogSamplingRuleSelector.Select(rules, "Program.MyLogger", LogLevel.Warning, 1, out var actualResult);
 
         // Assert
         Assert.Same(rules.Last(), actualResult);

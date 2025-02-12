@@ -12,6 +12,7 @@ using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.Extensions.Telemetry.Sampling;
+
 public class SamplingLoggerBuilderExtensionsTests
 {
     [Fact]
@@ -24,7 +25,7 @@ public class SamplingLoggerBuilderExtensionsTests
         });
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
-        var sampler = serviceProvider.GetService<LoggerSampler>();
+        var sampler = serviceProvider.GetService<LoggingSampler>();
 
         Assert.NotNull(sampler);
         Assert.IsType<TraceBasedSampler>(sampler);
@@ -40,7 +41,7 @@ public class SamplingLoggerBuilderExtensionsTests
         });
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
-        var sampler = serviceProvider.GetService<LoggerSampler>();
+        var sampler = serviceProvider.GetService<LoggingSampler>();
 
         Assert.NotNull(sampler);
         Assert.IsType<ProbabilisticSampler>(sampler);
@@ -51,7 +52,7 @@ public class SamplingLoggerBuilderExtensionsTests
     {
         List<ProbabilisticSamplerFilterRule> expectedData =
         [
-            new ProbabilisticSamplerFilterRule { Probability = 1.0, Category = "Program.MyLogger", LogLevel = LogLevel.Information, EventId = 1 },
+            new ProbabilisticSamplerFilterRule { Probability = 1.0, Category = "Program.MyLogger", LogLevel = LogLevel.Information, EventId = 1, EventName = "number one" },
             new ProbabilisticSamplerFilterRule { Probability = 0.01, LogLevel = LogLevel.Information },
             new ProbabilisticSamplerFilterRule { Probability = 0.1, LogLevel = LogLevel.Warning }
         ];
@@ -79,7 +80,7 @@ public class SamplingLoggerBuilderExtensionsTests
             builder.AddSampler<MySampler>();
         });
         var serviceProvider = serviceCollection.BuildServiceProvider();
-        var sampler = serviceProvider.GetService<LoggerSampler>();
+        var sampler = serviceProvider.GetService<LoggingSampler>();
 
         Assert.NotNull(sampler);
         Assert.IsType<MySampler>(sampler);
@@ -95,7 +96,7 @@ public class SamplingLoggerBuilderExtensionsTests
         });
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
-        var sampler = serviceProvider.GetService<LoggerSampler>();
+        var sampler = serviceProvider.GetService<LoggingSampler>();
 
         Assert.NotNull(sampler);
         Assert.IsType<MySampler>(sampler);
@@ -119,7 +120,7 @@ public class SamplingLoggerBuilderExtensionsTests
         Assert.Throws<ArgumentNullException>(action);
     }
 
-    private class MySampler : LoggerSampler
+    private class MySampler : LoggingSampler
     {
         public override bool ShouldSample<TState>(in LogEntry<TState> logEntry) => true;
     }

@@ -23,7 +23,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
     private readonly IDisposable? _enrichmentOptionsChangeTokenRegistration;
     private readonly IDisposable? _redactionOptionsChangeTokenRegistration;
     private readonly Action<IEnrichmentTagCollector>[] _enrichers;
-    private readonly LoggerSampler? _sampler;
+    private readonly LoggingSampler? _sampler;
     private readonly KeyValuePair<string, object?>[] _staticTags;
     private readonly Func<DataClassificationSet, Redactor> _redactorProvider;
     private volatile bool _disposed;
@@ -36,7 +36,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
         IEnumerable<ILogEnricher> enrichers,
         IEnumerable<IStaticLogEnricher> staticEnrichers,
         IOptionsMonitor<LoggerFilterOptions> filterOptions,
-        LoggerSampler? sampler = null,
+        LoggingSampler? sampler = null,
         IOptions<LoggerFactoryOptions>? factoryOptions = null,
         IExternalScopeProvider? scopeProvider = null,
         IOptionsMonitor<LoggerEnrichmentOptions>? enrichmentOptions = null,
