@@ -10,9 +10,6 @@ public partial class RelevanceTruthAndCompletenessEvaluator
     [JsonSourceGenerationOptions(
         WriteIndented = true,
         AllowTrailingCommas = true,
-        IncludeFields = true,
-        IgnoreReadOnlyFields = false,
-        IgnoreReadOnlyProperties = true,
         PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
     [JsonSerializable(typeof(Rating))]
     internal sealed partial class SerializerContext : JsonSerializerContext;
