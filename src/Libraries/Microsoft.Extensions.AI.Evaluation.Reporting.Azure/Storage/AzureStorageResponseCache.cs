@@ -265,9 +265,8 @@ public sealed partial class AzureStorageResponseCache(
 
     private (string entryFilePath, string contentsFilePath) GetPaths(string key)
     {
-        string keyPath = $"{_iterationPath}/{key}";
-        string entryFilePath = $"{keyPath}/{EntryFileName}";
-        string contentsFilePath = $"{keyPath}/{ContentsFileName}";
+        string entryFilePath = $"{_iterationPath}/{key}/{EntryFileName}";
+        string contentsFilePath = $"{_iterationPath}/{key}/{ContentsFileName}";
 
         return (entryFilePath, contentsFilePath);
     }
