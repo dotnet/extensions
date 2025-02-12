@@ -50,7 +50,7 @@ public abstract class SingleNumericMetricEvaluator : ChatConversationEvaluator
         """;
 
     // TASK: Explore using structured output and providing a JSON schema to better enforce the LLM response format
-    // requirements above.
+    // requirements above. Tracked by https://github.com/dotnet/extensions/issues/5888.
 
     /// <inheritdoc/>
     protected sealed override EvaluationResult InitializeResult()
