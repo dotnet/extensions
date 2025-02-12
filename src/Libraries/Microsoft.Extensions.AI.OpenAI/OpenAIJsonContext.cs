@@ -15,4 +15,5 @@ namespace Microsoft.Extensions.AI;
 [JsonSerializable(typeof(OpenAIRealtimeExtensions.ConversationFunctionToolParametersSchema))]
 [JsonSerializable(typeof(OpenAIModelMappers.OpenAIChatToolJson))]
 [JsonSerializable(typeof(IDictionary<string, object?>))]
+[JsonSerializable(typeof(string[]))]
 internal sealed partial class OpenAIJsonContext : JsonSerializerContext;

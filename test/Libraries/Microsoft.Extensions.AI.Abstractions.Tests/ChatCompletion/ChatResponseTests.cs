@@ -8,13 +8,13 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class ChatCompletionTests
+public class ChatResponseTests
 {
     [Fact]
     public void Constructor_InvalidArgs_Throws()
     {
-        Assert.Throws<ArgumentNullException>("message", () => new ChatCompletion((ChatMessage)null!));
-        Assert.Throws<ArgumentNullException>("choices", () => new ChatCompletion((IList<ChatMessage>)null!));
+        Assert.Throws<ArgumentNullException>("message", () => new ChatResponse((ChatMessage)null!));
+        Assert.Throws<ArgumentNullException>("choices", () => new ChatResponse((IList<ChatMessage>)null!));
     }
 
     [Fact]
@@ -22,9 +22,9 @@ public class ChatCompletionTests
     {
         ChatMessage message = new();
 
-        ChatCompletion completion = new(message);
-        Assert.Same(message, completion.Message);
-        Assert.Same(message, Assert.Single(completion.Choices));
+        ChatResponse response = new(message);
+        Assert.Same(message, response.Message);
+        Assert.Same(message, Assert.Single(response.Choices));
     }
 
     [Fact]
@@ -37,95 +37,95 @@ public class ChatCompletionTests
             new ChatMessage(),
         ];
 
-        ChatCompletion completion = new(messages);
-        Assert.Same(messages, completion.Choices);
+        ChatResponse response = new(messages);
+        Assert.Same(messages, response.Choices);
         Assert.Equal(3, messages.Count);
     }
 
     [Fact]
     public void Message_EmptyChoices_Throws()
     {
-        ChatCompletion completion = new([]);
+        ChatResponse response = new([]);
 
-        Assert.Empty(completion.Choices);
-        Assert.Throws<InvalidOperationException>(() => completion.Message);
+        Assert.Empty(response.Choices);
+        Assert.Throws<InvalidOperationException>(() => response.Message);
     }
 
     [Fact]
     public void Message_SingleChoice_Returned()
     {
         ChatMessage message = new();
-        ChatCompletion completion = new([message]);
+        ChatResponse response = new([message]);
 
-        Assert.Same(message, completion.Message);
-        Assert.Same(message, completion.Choices[0]);
+        Assert.Same(message, response.Message);
+        Assert.Same(message, response.Choices[0]);
     }
 
     [Fact]
     public void Message_MultipleChoices_ReturnsFirst()
     {
         ChatMessage first = new();
-        ChatCompletion completion = new([
+        ChatResponse response = new([
             first,
             new ChatMessage(),
         ]);
 
-        Assert.Same(first, completion.Message);
-        Assert.Same(first, completion.Choices[0]);
+        Assert.Same(first, response.Message);
+        Assert.Same(first, response.Choices[0]);
     }
 
     [Fact]
     public void Choices_SetNull_Throws()
     {
-        ChatCompletion completion = new([]);
-        Assert.Throws<ArgumentNullException>("value", () => completion.Choices = null!);
+        ChatResponse response = new([]);
+        Assert.Throws<ArgumentNullException>("value", () => response.Choices = null!);
     }
 
     [Fact]
     public void Properties_Roundtrip()
     {
-        ChatCompletion completion = new([]);
+        ChatResponse response = new([]);
 
-        Assert.Null(completion.CompletionId);
-        completion.CompletionId = "id";
-        Assert.Equal("id", completion.CompletionId);
+        Assert.Null(response.ResponseId);
+        response.ResponseId = "id";
+        Assert.Equal("id", response.ResponseId);
 
-        Assert.Null(completion.ModelId);
-        completion.ModelId = "modelId";
-        Assert.Equal("modelId", completion.ModelId);
+        Assert.Null(response.ModelId);
+        response.ModelId = "modelId";
+        Assert.Equal("modelId", response.ModelId);
 
-        Assert.Null(completion.CreatedAt);
-        completion.CreatedAt = new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero);
-        Assert.Equal(new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero), completion.CreatedAt);
+        Assert.Null(response.CreatedAt);
+        response.CreatedAt = new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        Assert.Equal(new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero), response.CreatedAt);
 
-        Assert.Null(completion.FinishReason);
-        completion.FinishReason = ChatFinishReason.ContentFilter;
-        Assert.Equal(ChatFinishReason.ContentFilter, completion.FinishReason);
+        Assert.Null(response.FinishReason);
+        response.FinishReason = ChatFinishReason.ContentFilter;
+        Assert.Equal(ChatFinishReason.ContentFilter, response.FinishReason);
 
-        Assert.Null(completion.Usage);
+        Assert.Null(response.Usage);
         UsageDetails usage = new();
-        completion.Usage = usage;
-        Assert.Same(usage, completion.Usage);
+        response.Usage = usage;
+        Assert.Same(usage, response.Usage);
 
-        Assert.Null(completion.RawRepresentation);
+        Assert.Null(response.RawRepresentation);
         object raw = new();
-        completion.RawRepresentation = raw;
-        Assert.Same(raw, completion.RawRepresentation);
+        response.RawRepresentation = raw;
+        Assert.Same(raw, response.RawRepresentation);
 
-        Assert.Null(completion.AdditionalProperties);
+        Assert.Null(response.AdditionalProperties);
         AdditionalPropertiesDictionary additionalProps = [];
-        completion.AdditionalProperties = additionalProps;
-        Assert.Same(additionalProps, completion.AdditionalProperties);
+        response.AdditionalProperties = additionalProps;
+        Assert.Same(additionalProps, response.AdditionalProperties);
 
         List<ChatMessage> newChoices = [new ChatMessage(), new ChatMessage()];
-        completion.Choices = newChoices;
-        Assert.Same(newChoices, completion.Choices);
+        response.Choices = newChoices;
+        Assert.Same(newChoices, response.Choices);
     }
 
     [Fact]
     public void JsonSerialization_Roundtrips()
     {
-        ChatCompletion original = new(
+        ChatResponse original = new(
         [
             new ChatMessage(ChatRole.Assistant, "Choice1"),
             new ChatMessage(ChatRole.Assistant, "Choice2"),
@@ -133,7 +133,7 @@ public class ChatCompletionTests
             new ChatMessage(ChatRole.Assistant, "Choice4"),
         ])
         {
-            CompletionId = "id",
+            ResponseId = "id",
             ModelId = "modelId",
             CreatedAt = new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero),
             FinishReason = ChatFinishReason.ContentFilter,
@@ -142,9 +142,9 @@ public class ChatCompletionTests
             AdditionalProperties = new() { ["key"] = "value" },
         };
 
-        string json = JsonSerializer.Serialize(original, TestJsonSerializerContext.Default.ChatCompletion);
+        string json = JsonSerializer.Serialize(original, TestJsonSerializerContext.Default.ChatResponse);
 
-        ChatCompletion? result = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.ChatCompletion);
+        ChatResponse? result = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.ChatResponse);
 
         Assert.NotNull(result);
         Assert.Equal(4, result.Choices.Count);
@@ -155,7 +155,7 @@ public class ChatCompletionTests
             Assert.Equal($"Choice{i + 1}", result.Choices[i].Text);
         }
 
-        Assert.Equal("id", result.CompletionId);
+        Assert.Equal("id", result.ResponseId);
         Assert.Equal("modelId", result.ModelId);
         Assert.Equal(new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero), result.CreatedAt);
         Assert.Equal(ChatFinishReason.ContentFilter, result.FinishReason);
@@ -171,18 +171,18 @@ public class ChatCompletionTests
     [Fact]
     public void ToString_OneChoice_OutputsChatMessageToString()
     {
-        ChatCompletion completion = new(
+        ChatResponse response = new(
         [
             new ChatMessage(ChatRole.Assistant, "This is a test." + Environment.NewLine + "It's multiple lines.")
         ]);
 
-        Assert.Equal(completion.Choices[0].Text, completion.ToString());
+        Assert.Equal(response.Choices[0].Text, response.ToString());
     }
 
     [Fact]
     public void ToString_MultipleChoices_OutputsAllChoicesWithPrefix()
     {
-        ChatCompletion completion = new(
+        ChatResponse response = new(
         [
             new ChatMessage(ChatRole.Assistant, "This is a test." + Environment.NewLine + "It's multiple lines."),
             new ChatMessage(ChatRole.Assistant, "So is" + Environment.NewLine + " this."),
@@ -191,50 +191,50 @@ public class ChatCompletionTests
 
         Assert.Equal(
             "Choice 0:" + Environment.NewLine +
-            completion.Choices[0] + Environment.NewLine + Environment.NewLine +
+            response.Choices[0] + Environment.NewLine + Environment.NewLine +
 
             "Choice 1:" + Environment.NewLine +
-            completion.Choices[1] + Environment.NewLine + Environment.NewLine +
+            response.Choices[1] + Environment.NewLine + Environment.NewLine +
 
             "Choice 2:" + Environment.NewLine +
-            completion.Choices[2],
+            response.Choices[2],
 
-            completion.ToString());
+            response.ToString());
     }
 
     [Fact]
-    public void ToStreamingChatCompletionUpdates_SingleChoice()
+    public void ToChatResponseUpdates_SingleChoice()
     {
-        ChatCompletion completion = new(new ChatMessage(new ChatRole("customRole"), "Text"))
+        ChatResponse response = new(new ChatMessage(new ChatRole("customRole"), "Text"))
         {
-            CompletionId = "12345",
+            ResponseId = "12345",
             ModelId = "someModel",
             FinishReason = ChatFinishReason.ContentFilter,
             CreatedAt = new DateTimeOffset(2024, 11, 10, 9, 20, 0, TimeSpan.Zero),
             AdditionalProperties = new() { ["key1"] = "value1", ["key2"] = 42 },
         };
 
-        StreamingChatCompletionUpdate[] updates = completion.ToStreamingChatCompletionUpdates();
+        ChatResponseUpdate[] updates = response.ToChatResponseUpdates();
         Assert.NotNull(updates);
         Assert.Equal(2, updates.Length);
 
-        StreamingChatCompletionUpdate update0 = updates[0];
-        Assert.Equal("12345", update0.CompletionId);
+        ChatResponseUpdate update0 = updates[0];
+        Assert.Equal("12345", update0.ResponseId);
         Assert.Equal("someModel", update0.ModelId);
         Assert.Equal(ChatFinishReason.ContentFilter, update0.FinishReason);
         Assert.Equal(new DateTimeOffset(2024, 11, 10, 9, 20, 0, TimeSpan.Zero), update0.CreatedAt);
         Assert.Equal("customRole", update0.Role?.Value);
         Assert.Equal("Text", update0.Text);
 
-        StreamingChatCompletionUpdate update1 = updates[1];
+        ChatResponseUpdate update1 = updates[1];
         Assert.Equal("value1", update1.AdditionalProperties?["key1"]);
         Assert.Equal(42, update1.AdditionalProperties?["key2"]);
     }
 
     [Fact]
-    public void ToStreamingChatCompletionUpdates_MultiChoice()
+    public void ToChatResponseUpdates_MultiChoice()
     {
-        ChatCompletion completion = new(
+        ChatResponse response = new(
         [
             new ChatMessage(ChatRole.Assistant,
             [
@@ -256,7 +256,7 @@ public class ChatCompletionTests
             },
         ])
         {
-            CompletionId = "12345",
+            ResponseId = "12345",
             ModelId = "someModel",
             FinishReason = ChatFinishReason.ContentFilter,
             CreatedAt = new DateTimeOffset(2024, 11, 10, 9, 20, 0, TimeSpan.Zero),
@@ -264,12 +264,12 @@ public class ChatCompletionTests
             Usage = new UsageDetails { TotalTokenCount = 123 },
         };
 
-        StreamingChatCompletionUpdate[] updates = completion.ToStreamingChatCompletionUpdates();
+        ChatResponseUpdate[] updates = response.ToChatResponseUpdates();
         Assert.NotNull(updates);
         Assert.Equal(3, updates.Length);
 
-        StreamingChatCompletionUpdate update0 = updates[0];
-        Assert.Equal("12345", update0.CompletionId);
+        ChatResponseUpdate update0 = updates[0];
+        Assert.Equal("12345", update0.ResponseId);
         Assert.Equal("someModel", update0.ModelId);
         Assert.Equal(ChatFinishReason.ContentFilter, update0.FinishReason);
         Assert.Equal(new DateTimeOffset(2024, 11, 10, 9, 20, 0, TimeSpan.Zero), update0.CreatedAt);
@@ -279,8 +279,8 @@ public class ChatCompletionTests
         Assert.Equal("world!", Assert.IsType<TextContent>(update0.Contents[2]).Text);
         Assert.Equal("choice1Value", update0.AdditionalProperties?["choice1Key"]);
 
-        StreamingChatCompletionUpdate update1 = updates[1];
-        Assert.Equal("12345", update1.CompletionId);
+        ChatResponseUpdate update1 = updates[1];
+        Assert.Equal("12345", update1.ResponseId);
         Assert.Equal("someModel", update1.ModelId);
         Assert.Equal(ChatFinishReason.ContentFilter, update1.FinishReason);
         Assert.Equal(new DateTimeOffset(2024, 11, 10, 9, 20, 0, TimeSpan.Zero), update1.CreatedAt);
@@ -289,7 +289,7 @@ public class ChatCompletionTests
         Assert.IsType<FunctionResultContent>(update1.Contents[1]);
         Assert.Equal("choice2Value", update1.AdditionalProperties?["choice2Key"]);
 
-        StreamingChatCompletionUpdate update2 = updates[2];
+        ChatResponseUpdate update2 = updates[2];
         Assert.Equal("value1", update2.AdditionalProperties?["key1"]);
         Assert.Equal(42, update2.AdditionalProperties?["key2"]);
         Assert.Equal(123, Assert.IsType<UsageContent>(Assert.Single(update2.Contents)).Details.TotalTokenCount);

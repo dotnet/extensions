@@ -81,11 +81,11 @@ public sealed class ChatClientBuilder
 
     /// <summary>
     /// Adds to the chat client pipeline an anonymous delegating chat client based on a delegate that provides
-    /// an implementation for both <see cref="IChatClient.CompleteAsync"/> and <see cref="IChatClient.CompleteStreamingAsync"/>.
+    /// an implementation for both <see cref="IChatClient.GetResponseAsync"/> and <see cref="IChatClient.GetStreamingResponseAsync"/>.
     /// </summary>
     /// <param name="sharedFunc">
-    /// A delegate that provides the implementation for both <see cref="IChatClient.CompleteAsync"/> and
-    /// <see cref="IChatClient.CompleteStreamingAsync"/>. In addition to the arguments for the operation, it's
+    /// A delegate that provides the implementation for both <see cref="IChatClient.GetResponseAsync"/> and
+    /// <see cref="IChatClient.GetStreamingResponseAsync"/>. In addition to the arguments for the operation, it's
     /// provided with a delegate to the inner client that should be used to perform the operation on the inner client.
     /// It will handle both the non-streaming and streaming cases.
     /// </param>
@@ -95,7 +95,7 @@ public sealed class ChatClientBuilder
     /// need to interact with the results of the operation, which will come from the inner client.
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="sharedFunc"/> is <see langword="null"/>.</exception>
-    public ChatClientBuilder Use(AnonymousDelegatingChatClient.CompleteSharedFunc sharedFunc)
+    public ChatClientBuilder Use(AnonymousDelegatingChatClient.GetResponseSharedFunc sharedFunc)
     {
         _ = Throw.IfNull(sharedFunc);
 
@@ -104,36 +104,36 @@ public sealed class ChatClientBuilder
 
     /// <summary>
     /// Adds to the chat client pipeline an anonymous delegating chat client based on a delegate that provides
-    /// an implementation for both <see cref="IChatClient.CompleteAsync"/> and <see cref="IChatClient.CompleteStreamingAsync"/>.
+    /// an implementation for both <see cref="IChatClient.GetResponseAsync"/> and <see cref="IChatClient.GetStreamingResponseAsync"/>.
     /// </summary>
-    /// <param name="completeFunc">
-    /// A delegate that provides the implementation for <see cref="IChatClient.CompleteAsync"/>. When <see langword="null"/>,
-    /// <paramref name="completeStreamingFunc"/> must be non-null, and the implementation of <see cref="IChatClient.CompleteAsync"/>
-    /// will use <paramref name="completeStreamingFunc"/> for the implementation.
+    /// <param name="getResponseFunc">
+    /// A delegate that provides the implementation for <see cref="IChatClient.GetResponseAsync"/>. When <see langword="null"/>,
+    /// <paramref name="getStreamingResponseFunc"/> must be non-null, and the implementation of <see cref="IChatClient.GetResponseAsync"/>
+    /// will use <paramref name="getStreamingResponseFunc"/> for the implementation.
     /// </param>
-    /// <param name="completeStreamingFunc">
-    /// A delegate that provides the implementation for <see cref="IChatClient.CompleteStreamingAsync"/>. When <see langword="null"/>,
-    /// <paramref name="completeFunc"/> must be non-null, and the implementation of <see cref="IChatClient.CompleteStreamingAsync"/>
-    /// will use <paramref name="completeFunc"/> for the implementation.
+    /// <param name="getStreamingResponseFunc">
+    /// A delegate that provides the implementation for <see cref="IChatClient.GetStreamingResponseAsync"/>. When <see langword="null"/>,
+    /// <paramref name="getResponseFunc"/> must be non-null, and the implementation of <see cref="IChatClient.GetStreamingResponseAsync"/>
+    /// will use <paramref name="getResponseFunc"/> for the implementation.
     /// </param>
     /// <returns>The updated <see cref="ChatClientBuilder"/> instance.</returns>
     /// <remarks>
     /// One or both delegates may be provided. If both are provided, they will be used for their respective methods:
-    /// <paramref name="completeFunc"/> will provide the implementation of <see cref="IChatClient.CompleteAsync"/>, and
-    /// <paramref name="completeStreamingFunc"/> will provide the implementation of <see cref="IChatClient.CompleteStreamingAsync"/>.
-    /// If only one of the delegates is provided, it will be used for both methods. That means that if <paramref name="completeFunc"/>
-    /// is supplied without <paramref name="completeStreamingFunc"/>, the implementation of <see cref="IChatClient.CompleteStreamingAsync"/>
-    /// will employ limited streaming, as it will be operating on the batch output produced by <paramref name="completeFunc"/>. And if
-    /// <paramref name="completeStreamingFunc"/> is supplied without <paramref name="completeFunc"/>, the implementation of
-    /// <see cref="IChatClient.CompleteAsync"/> will be implemented by combining the updates from <paramref name="completeStreamingFunc"/>.
+    /// <paramref name="getResponseFunc"/> will provide the implementation of <see cref="IChatClient.GetResponseAsync"/>, and
+    /// <paramref name="getStreamingResponseFunc"/> will provide the implementation of <see cref="IChatClient.GetStreamingResponseAsync"/>.
+    /// If only one of the delegates is provided, it will be used for both methods. That means that if <paramref name="getResponseFunc"/>
+    /// is supplied without <paramref name="getStreamingResponseFunc"/>, the implementation of <see cref="IChatClient.GetStreamingResponseAsync"/>
+    /// will employ limited streaming, as it will be operating on the batch output produced by <paramref name="getResponseFunc"/>. And if
+    /// <paramref name="getStreamingResponseFunc"/> is supplied without <paramref name="getResponseFunc"/>, the implementation of
+    /// <see cref="IChatClient.GetResponseAsync"/> will be implemented by combining the updates from <paramref name="getStreamingResponseFunc"/>.
     /// </remarks>
-    /// <exception cref="ArgumentNullException">Both <paramref name="completeFunc"/> and <paramref name="completeStreamingFunc"/> are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">Both <paramref name="getResponseFunc"/> and <paramref name="getStreamingResponseFunc"/> are <see langword="null"/>.</exception>
     public ChatClientBuilder Use(
-        Func<IList<ChatMessage>, ChatOptions?, IChatClient, CancellationToken, Task<ChatCompletion>>? completeFunc,
-        Func<IList<ChatMessage>, ChatOptions?, IChatClient, CancellationToken, IAsyncEnumerable<StreamingChatCompletionUpdate>>? completeStreamingFunc)
+        Func<IList<ChatMessage>, ChatOptions?, IChatClient, CancellationToken, Task<ChatResponse>>? getResponseFunc,
+        Func<IList<ChatMessage>, ChatOptions?, IChatClient, CancellationToken, IAsyncEnumerable<ChatResponseUpdate>>? getStreamingResponseFunc)
     {
-        AnonymousDelegatingChatClient.ThrowIfBothDelegatesNull(completeFunc, completeStreamingFunc);
+        AnonymousDelegatingChatClient.ThrowIfBothDelegatesNull(getResponseFunc, getStreamingResponseFunc);
 
-        return Use((innerClient, _) => new AnonymousDelegatingChatClient(innerClient, completeFunc, completeStreamingFunc));
+        return Use((innerClient, _) => new AnonymousDelegatingChatClient(innerClient, getResponseFunc, getStreamingResponseFunc));
     }
 }

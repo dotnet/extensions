@@ -14,6 +14,8 @@ namespace Microsoft.Extensions.AI;
 
 internal static partial class OpenAIModelMappers
 {
+    public static ChatRole ChatRoleDeveloper { get; } = new ChatRole("developer");
+
     public static OpenAIChatCompletionRequest FromOpenAIChatCompletionRequest(OpenAI.Chat.ChatCompletionOptions chatCompletionOptions)
     {
         ChatOptions chatOptions = FromOpenAIOptions(chatCompletionOptions);
@@ -21,8 +23,8 @@ internal static partial class OpenAIModelMappers
         return new()
         {
             Messages = messages,
-            Options = chatOptions,
             ModelId = chatOptions.ModelId,
+            Options = chatOptions,
             Stream = _getStreamAccessor(chatCompletionOptions) ?? false,
         };
     }
@@ -42,6 +44,15 @@ internal static partial class OpenAIModelMappers
                         Role = ChatRole.System,
                         AuthorName = systemMessage.ParticipantName,
                         Contents = FromOpenAIChatContent(systemMessage.Content),
+                    };
+                    break;
+
+                case DeveloperChatMessage developerMessage:
+                    yield return new ChatMessage
+                    {
+                        Role = ChatRoleDeveloper,
+                        AuthorName = developerMessage.ParticipantName,
+                        Contents = FromOpenAIChatContent(developerMessage.Content),
                     };
                     break;
 
@@ -118,11 +129,14 @@ internal static partial class OpenAIModelMappers
 
         foreach (ChatMessage input in inputs)
         {
-            if (input.Role == ChatRole.System || input.Role == ChatRole.User)
+            if (input.Role == ChatRole.System ||
+                input.Role == ChatRole.User ||
+                input.Role == ChatRoleDeveloper)
             {
                 var parts = ToOpenAIChatContent(input.Contents);
-                yield return input.Role == ChatRole.System ?
-                    new SystemChatMessage(parts) { ParticipantName = input.AuthorName } :
+                yield return
+                    input.Role == ChatRole.System ? new SystemChatMessage(parts) { ParticipantName = input.AuthorName } :
+                    input.Role == OpenAIModelMappers.ChatRoleDeveloper ? new DeveloperChatMessage(parts) { ParticipantName = input.AuthorName } :
                     new UserChatMessage(parts) { ParticipantName = input.AuthorName };
             }
             else if (input.Role == ChatRole.Tool)
@@ -223,6 +237,19 @@ internal static partial class OpenAIModelMappers
                     else if (dataContent.Uri is string uri)
                     {
                         parts.Add(ChatMessageContentPart.CreateImagePart(new Uri(uri)));
+                    }
+
+                    break;
+
+                case DataContent dataContent when dataContent.MediaTypeStartsWith("audio/") && dataContent.Data.HasValue:
+                    var audioData = BinaryData.FromBytes(dataContent.Data.Value);
+                    if (dataContent.MediaTypeStartsWith("audio/mpeg"))
+                    {
+                        parts.Add(ChatMessageContentPart.CreateInputAudioPart(audioData, ChatInputAudioFormat.Mp3));
+                    }
+                    else if (dataContent.MediaTypeStartsWith("audio/wav"))
+                    {
+                        parts.Add(ChatMessageContentPart.CreateInputAudioPart(audioData, ChatInputAudioFormat.Wav));
                     }
 
                     break;
