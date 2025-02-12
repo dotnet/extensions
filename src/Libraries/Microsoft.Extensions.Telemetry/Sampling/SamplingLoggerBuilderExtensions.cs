@@ -21,12 +21,12 @@ namespace Microsoft.Extensions.Logging;
 public static class SamplingLoggerBuilderExtensions
 {
     /// <summary>
-    /// Adds Trace-based logging sampler to the logging infrastructure. Sampling decisions
-    /// for logs match exactly the sampling decisions for the underlying <see cref="System.Diagnostics.Activity"/>.
+    /// Adds Trace-based logging sampler to the logging infrastructure.
     /// </summary>
     /// <param name="builder">The dependency injection container to add logging to.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <remarks>Please configure Tracing Sampling separately as part of OpenTelemetry .NET.</remarks>
+    /// <remarks>Sampling decisions for logs match exactly the sampling decisions for the underlying <see cref="System.Diagnostics.Activity"/>.
+    /// You may want to configure Tracing Sampling separately as part of OpenTelemetry .NET.</remarks>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
     public static ILoggingBuilder AddTraceBasedSampler(this ILoggingBuilder builder)
     {
@@ -51,9 +51,28 @@ public static class SamplingLoggerBuilderExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configuration);
 
-        return builder
-            .AddProbabilisticSamplerConfiguration(configuration)
-            .AddSampler<ProbabilisticSampler>();
+        _ = builder.Services.AddSingleton<IConfigureOptions<ProbabilisticSamplerOptions>>(new ProbabilisticSamplerConfigureOptions(configuration));
+        return builder.AddSampler<ProbabilisticSampler>();
+    }
+
+    /// <summary>
+    /// Adds Probabilistic logging sampler to the logging infrastructure.
+    /// </summary>
+    /// <param name="builder">The dependency injection container to add logging to.</param>
+    /// <param name="configure">The <see cref="ProbabilisticSamplerOptions"/> configuration delegate.</param>
+    /// <returns>The value of <paramref name="builder"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
+    /// <remarks>
+    /// Matched logs will be sampled according to the configured probability.
+    /// Higher the probability value, higher is the probability of a given log record to be sampled in.
+    /// </remarks>
+    public static ILoggingBuilder AddProbabilisticSampler(this ILoggingBuilder builder, Action<ProbabilisticSamplerOptions> configure)
+    {
+        _ = Throw.IfNull(builder);
+        _ = Throw.IfNull(configure);
+
+        _ = builder.Services.Configure(configure);
+        return builder.AddSampler<ProbabilisticSampler>();
     }
 
     /// <summary>
@@ -103,7 +122,7 @@ public static class SamplingLoggerBuilderExtensions
     /// <param name="builder">The dependency injection container to add logging to.</param>
     /// <param name="sampler">The sampler instance to add.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="builder"/> or <paramref name="sampler"/> is <see langword="null"/>.</exception>    
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> or <paramref name="sampler"/> is <see langword="null"/>.</exception>
     public static ILoggingBuilder AddSampler(this ILoggingBuilder builder, LoggingSampler sampler)
     {
         _ = Throw.IfNull(builder);
@@ -111,22 +130,6 @@ public static class SamplingLoggerBuilderExtensions
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerFactory, ExtendedLoggerFactory>());
         _ = builder.Services.AddSingleton(sampler);
-
-        return builder;
-    }
-
-    /// <summary>
-    /// Configures <see cref="ProbabilisticSamplerOptions" /> from an instance of <see cref="IConfiguration" />.
-    /// </summary>
-    /// <param name="builder">The <see cref="ILoggingBuilder"/> to use.</param>
-    /// <param name="configuration">The <see cref="IConfiguration" /> to add.</param>
-    /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
-    internal static ILoggingBuilder AddProbabilisticSamplerConfiguration(this ILoggingBuilder builder, IConfiguration configuration)
-    {
-        _ = Throw.IfNull(builder);
-
-        _ = builder.Services.AddSingleton<IConfigureOptions<ProbabilisticSamplerOptions>>(new ProbabilisticSamplerConfigureOptions(configuration));
 
         return builder;
     }

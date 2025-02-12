@@ -48,7 +48,7 @@ public class SamplingLoggerBuilderExtensionsTests
     }
 
     [Fact]
-    public void AddProbabilisticSamplerConfiguration_RegistersInDI()
+    public void AddProbabilisticSamplerFromConfiguration_RegistersInDI()
     {
         List<ProbabilisticSamplerFilterRule> expectedData =
         [
@@ -62,7 +62,31 @@ public class SamplingLoggerBuilderExtensionsTests
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging(builder =>
         {
-            builder.AddProbabilisticSamplerConfiguration(configuration);
+            builder.AddProbabilisticSampler(configuration);
+        });
+        var serviceProvider = serviceCollection.BuildServiceProvider();
+        var options = serviceProvider.GetService<IOptionsMonitor<ProbabilisticSamplerOptions>>();
+        Assert.NotNull(options);
+        Assert.NotNull(options.CurrentValue);
+        Assert.Equivalent(expectedData, options.CurrentValue.Rules);
+    }
+
+    [Fact]
+    public void AddProbabilisticSamplerFromDelegate_RegistersInDI()
+    {
+        List<ProbabilisticSamplerFilterRule> expectedData =
+        [
+            new ProbabilisticSamplerFilterRule { Probability = 1.0, Category = "Program.MyLogger", LogLevel = LogLevel.Information, EventId = 1, EventName = "number one" },
+            new ProbabilisticSamplerFilterRule { Probability = 0.01, LogLevel = LogLevel.Information },
+            new ProbabilisticSamplerFilterRule { Probability = 0.1, LogLevel = LogLevel.Warning }
+        ];
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddLogging(builder =>
+        {
+            builder.AddProbabilisticSampler(opts =>
+            {
+                opts.Rules = expectedData;
+            });
         });
         var serviceProvider = serviceCollection.BuildServiceProvider();
         var options = serviceProvider.GetService<IOptionsMonitor<ProbabilisticSamplerOptions>>();
