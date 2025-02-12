@@ -83,3 +83,12 @@ Optionally also run the following. The values shown here are the defaults if you
 dotnet user-secrets set AzureAIInference:ChatModel gpt-4o-mini
 dotnet user-secrets set AzureAIInference:EmbeddingModel text-embedding-3-small
 ```
+
+### Configuring Ollama tests
+
+Run commands like the following. The settings will be saved in your user profile.
+
+```
+cd test/Libraries/Microsoft.Extensions.AI.Integration.Tests
+dotnet user-secrets set Ollama:Endpoint http://localhost:11434/
+```

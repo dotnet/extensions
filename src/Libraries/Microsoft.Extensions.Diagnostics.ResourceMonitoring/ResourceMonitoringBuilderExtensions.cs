@@ -5,6 +5,7 @@ using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
@@ -12,6 +13,9 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 /// <summary>
 /// Lets you configure and register resource monitoring components.
 /// </summary>
+[Obsolete(DiagnosticIds.Obsoletions.NonObservableResourceMonitoringApiMessage,
+    DiagnosticId = DiagnosticIds.Obsoletions.NonObservableResourceMonitoringApiDiagId,
+    UrlFormat = DiagnosticIds.UrlFormat)]
 public static class ResourceMonitoringBuilderExtensions
 {
     /// <summary>

@@ -41,6 +41,63 @@ public class FakeTimeProviderTests
     }
 
     [Fact]
+    public void GetTimestamp_WithoutAutoAdvance_DoesNotAdvance()
+    {
+        var nowOffset = new DateTimeOffset(2000, 1, 1, 0, 0, 0, 0, TimeSpan.Zero);
+        var timeProvider = new FakeTimeProvider(nowOffset);
+
+        var timestamp1 = timeProvider.GetTimestamp();
+        var timestamp2 = timeProvider.GetTimestamp();
+
+        Assert.Equal(nowOffset, new DateTimeOffset(timestamp1, TimeSpan.Zero));
+        Assert.Equal(nowOffset, new DateTimeOffset(timestamp2, TimeSpan.Zero));
+    }
+
+    [Fact]
+    public void GetTimestamp_WithAutoAdvance_AdvancesProperly()
+    {
+        var msToElapse = 100;
+        var nowOffset = new DateTimeOffset(2000, 1, 1, 0, 0, 0, 0, TimeSpan.Zero);
+        var timeProvider = new FakeTimeProvider(nowOffset)
+        {
+            AutoAdvanceAmount = TimeSpan.FromMilliseconds(msToElapse)
+        };
+
+        var timestamp1 = timeProvider.GetTimestamp();
+        var timestamp2 = timeProvider.GetTimestamp();
+
+        Assert.Equal(nowOffset, new DateTimeOffset(timestamp1, TimeSpan.Zero));
+        Assert.Equal(nowOffset.AddMilliseconds(msToElapse), new DateTimeOffset(timestamp2, TimeSpan.Zero));
+    }
+
+    [Fact]
+    public void GetElapsedTime_CallsGetTimestamp()
+    {
+        var timeProvider = new FakeTimeProvider();
+        var st = timeProvider.GetTimestamp();
+        timeProvider.Advance(TimeSpan.FromSeconds(1));
+        var t = timeProvider.GetElapsedTime(st);
+
+        Assert.Equal(TimeSpan.FromSeconds(1), t);
+    }
+
+    [Fact]
+    public void GetElapsedTime_WithAutoAdvance_AdvancesProperly()
+    {
+        var timeProvider = new FakeTimeProvider
+        {
+            AutoAdvanceAmount = TimeSpan.FromSeconds(1)
+        };
+
+        var st = timeProvider.GetTimestamp();
+        var elapsedTime = timeProvider.GetElapsedTime(st);
+        var elapsedTime2 = timeProvider.GetElapsedTime(st);
+
+        Assert.Equal(TimeSpan.FromSeconds(1), elapsedTime);
+        Assert.Equal(TimeSpan.FromSeconds(2), elapsedTime2);
+    }
+
+    [Fact]
     public void Constructor_InitializesWithCustomDateTimeOffset_AdvancesCorrectly()
     {
         var timeProvider = new FakeTimeProvider(new DateTimeOffset(2001, 2, 3, 4, 5, 6, TimeSpan.Zero));
@@ -294,6 +351,7 @@ public class FakeTimeProviderTests
         await Assert.ThrowsAsync<TaskCanceledException>(() => timeProvider.Delay(TimeSpan.FromTicks(1), cts.Token));
     }
 
+#pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
     [Fact]
     public async Task WaitAsync_NegativeTimeout_Throws()
     {
@@ -308,7 +366,6 @@ public class FakeTimeProviderTests
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => source.Task.WaitAsync(TimeSpan.FromMilliseconds(-2), timeProvider, CancellationToken.None));
     }
 
-#pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
     [Fact]
     public async Task WaitAsync_ValidTimeout_CompletesSuccessfully()
     {

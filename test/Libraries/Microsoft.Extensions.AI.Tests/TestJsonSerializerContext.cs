@@ -10,9 +10,9 @@ using System.Text.Json.Serialization;
 namespace Microsoft.Extensions.AI;
 
 // These types are directly serialized by DistributedCachingChatClient
-[JsonSerializable(typeof(ChatCompletion))]
+[JsonSerializable(typeof(ChatResponse))]
 [JsonSerializable(typeof(IList<ChatMessage>))]
-[JsonSerializable(typeof(IReadOnlyList<StreamingChatCompletionUpdate>))]
+[JsonSerializable(typeof(IReadOnlyList<ChatResponseUpdate>))]
 
 // These types are specific to the tests in this project
 [JsonSerializable(typeof(bool))]

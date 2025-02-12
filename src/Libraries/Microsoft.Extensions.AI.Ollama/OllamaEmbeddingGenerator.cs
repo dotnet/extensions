@@ -10,11 +10,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 
+#pragma warning disable S3358 // Ternary operators should not be nested
+
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="IEmbeddingGenerator{String, Embedding}"/> for Ollama.</summary>
 public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>
 {
+    /// <summary>Metadata about the embedding generator.</summary>
+    private readonly EmbeddingGeneratorMetadata _metadata;
+
     /// <summary>The api/embeddings endpoint URI.</summary>
     private readonly Uri _apiEmbeddingsEndpoint;
 
@@ -50,19 +55,18 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator<string, Embed
 
         _apiEmbeddingsEndpoint = new Uri(endpoint, "api/embed");
         _httpClient = httpClient ?? OllamaUtilities.SharedClient;
-        Metadata = new("ollama", endpoint, modelId);
+        _metadata = new("ollama", endpoint, modelId);
     }
 
     /// <inheritdoc />
-    public EmbeddingGeneratorMetadata Metadata { get; }
-
-    /// <inheritdoc />
-    public object? GetService(Type serviceType, object? serviceKey = null)
+    object? IEmbeddingGenerator<string, Embedding<float>>.GetService(Type serviceType, object? serviceKey)
     {
         _ = Throw.IfNull(serviceType);
 
         return
-            serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+            serviceKey is not null ? null :
+            serviceType == typeof(EmbeddingGeneratorMetadata) ? _metadata :
+            serviceType.IsInstanceOfType(this) ? this :
             null;
     }
 
@@ -83,7 +87,7 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator<string, Embed
 
         // Create request.
         string[] inputs = values.ToArray();
-        string? requestModel = options?.ModelId ?? Metadata.ModelId;
+        string? requestModel = options?.ModelId ?? _metadata.ModelId;
         var request = new OllamaEmbeddingRequest
         {
             Model = requestModel ?? string.Empty,
@@ -110,6 +114,11 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator<string, Embed
             JsonContext.Default.OllamaEmbeddingRequest,
             cancellationToken).ConfigureAwait(false);
 
+        if (!httpResponse.IsSuccessStatusCode)
+        {
+            await OllamaUtilities.ThrowUnsuccessfulOllamaResponseAsync(httpResponse, cancellationToken).ConfigureAwait(false);
+        }
+
         var response = (await httpResponse.Content.ReadFromJsonAsync(
             JsonContext.Default.OllamaEmbeddingResponse,
             cancellationToken).ConfigureAwait(false))!;
@@ -126,17 +135,18 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator<string, Embed
         }
 
         // Convert response into result objects.
-        AdditionalPropertiesDictionary? responseProps = null;
-        OllamaUtilities.TransferNanosecondsTime(response, r => r.TotalDuration, "total_duration", ref responseProps);
-        OllamaUtilities.TransferNanosecondsTime(response, r => r.LoadDuration, "load_duration", ref responseProps);
+        AdditionalPropertiesDictionary<long>? additionalCounts = null;
+        OllamaUtilities.TransferNanosecondsTime(response, r => r.TotalDuration, "total_duration", ref additionalCounts);
+        OllamaUtilities.TransferNanosecondsTime(response, r => r.LoadDuration, "load_duration", ref additionalCounts);
 
         UsageDetails? usage = null;
-        if (response.PromptEvalCount is int tokens)
+        if (additionalCounts is not null || response.PromptEvalCount is not null)
         {
             usage = new()
             {
-                InputTokenCount = tokens,
-                TotalTokenCount = tokens,
+                InputTokenCount = response.PromptEvalCount,
+                TotalTokenCount = response.PromptEvalCount,
+                AdditionalCounts = additionalCounts,
             };
         }
 
@@ -148,7 +158,6 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator<string, Embed
             }))
         {
             Usage = usage,
-            AdditionalProperties = responseProps,
         };
     }
 }

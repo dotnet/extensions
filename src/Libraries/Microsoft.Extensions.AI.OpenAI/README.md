@@ -30,7 +30,7 @@ IChatClient client =
     new OpenAIClient(Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
         .AsChatClient("gpt-4o-mini");
 
-Console.WriteLine(await client.CompleteAsync("What is AI?"));
+Console.WriteLine(await client.GetResponseAsync("What is AI?"));
 ```
 
 ### Chat + Conversation History
@@ -43,7 +43,7 @@ IChatClient client =
     new OpenAIClient(Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
         .AsChatClient("gpt-4o-mini");
 
-Console.WriteLine(await client.CompleteAsync(
+Console.WriteLine(await client.GetResponseAsync(
 [
     new ChatMessage(ChatRole.System, "You are a helpful AI assistant"),
     new ChatMessage(ChatRole.User, "What is AI?"),
@@ -60,7 +60,7 @@ IChatClient client =
     new OpenAIClient(Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
         .AsChatClient("gpt-4o-mini");
 
-await foreach (var update in client.CompleteStreamingAsync("What is AI?"))
+await foreach (var update in client.GetStreamingResponseAsync("What is AI?"))
 {
     Console.Write(update);
 }
@@ -86,7 +86,7 @@ ChatOptions chatOptions = new()
     Tools = [AIFunctionFactory.Create(GetWeather)]
 };
 
-await foreach (var message in client.CompleteStreamingAsync("Do I need an umbrella?", chatOptions))
+await foreach (var message in client.GetStreamingResponseAsync("Do I need an umbrella?", chatOptions))
 {
     Console.Write(message);
 }
@@ -116,7 +116,7 @@ IChatClient client = new ChatClientBuilder(openaiClient)
 
 for (int i = 0; i < 3; i++)
 {
-    await foreach (var message in client.CompleteStreamingAsync("In less than 100 words, what is AI?"))
+    await foreach (var message in client.GetStreamingResponseAsync("In less than 100 words, what is AI?"))
     {
         Console.Write(message);
     }
@@ -148,7 +148,7 @@ IChatClient client = new ChatClientBuilder(openaiClient)
     .UseOpenTelemetry(sourceName, c => c.EnableSensitiveData = true)
     .Build();
 
-Console.WriteLine(await client.CompleteAsync("What is AI?"));
+Console.WriteLine(await client.GetResponseAsync("What is AI?"));
 ```
 
 ### Telemetry, Caching, and Tool Calling
@@ -190,7 +190,7 @@ IChatClient client = new ChatClientBuilder(openaiClient)
 
 for (int i = 0; i < 3; i++)
 {
-    Console.WriteLine(await client.CompleteAsync("How much older is Alice than Bob?", chatOptions));
+    Console.WriteLine(await client.GetResponseAsync("How much older is Alice than Bob?", chatOptions));
 }
 
 [Description("Gets the age of a person specified by name.")]
@@ -268,7 +268,7 @@ var app = builder.Build();
 
 // Elsewhere in the app
 var chatClient = app.Services.GetRequiredService<IChatClient>();
-Console.WriteLine(await chatClient.CompleteAsync("What is AI?"));
+Console.WriteLine(await chatClient.GetResponseAsync("What is AI?"));
 ```
 
 ### Minimal Web API
@@ -291,7 +291,7 @@ var app = builder.Build();
 
 app.MapPost("/chat", async (IChatClient client, string message) =>
 {
-    var response = await client.CompleteAsync(message);
+    var response = await client.GetResponseAsync(message);
     return response.Message;
 });
 

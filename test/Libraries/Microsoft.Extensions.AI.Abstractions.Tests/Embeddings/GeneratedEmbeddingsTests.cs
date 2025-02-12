@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 #pragma warning disable xUnit2013 // Do not use equality check to check for collection size.
@@ -242,5 +243,22 @@ public class GeneratedEmbeddingsTests
 
         Assert.Throws<ArgumentOutOfRangeException>("index", () => embeddings[-1]);
         Assert.Throws<ArgumentOutOfRangeException>("index", () => embeddings[2]);
+    }
+
+    [Fact]
+    public async Task Generator_SupportsCovariantInput()
+    {
+        var expectedGeneratedEmbeddings = new GeneratedEmbeddings<Embedding<float>>([new Embedding<float>(new float[] { 1, 2, 3 })]);
+
+        using IEmbeddingGenerator<object, Embedding<float>> acceptsObject = new TestEmbeddingGenerator<object, Embedding<float>>
+        {
+            GenerateAsyncCallback = (values, options, cancellationToken) => Task.FromResult(expectedGeneratedEmbeddings),
+        };
+
+        IEmbeddingGenerator<string, Embedding<float>> acceptsString = acceptsObject;
+
+        var actual = await acceptsString.GenerateAsync(["hello"]);
+
+        Assert.Same(expectedGeneratedEmbeddings, actual);
     }
 }

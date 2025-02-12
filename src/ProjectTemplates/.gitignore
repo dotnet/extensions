@@ -1,0 +1,16 @@
+# We're not tracking any package-lock.json files in source control here because
+# we don't ship pre-generated NPM lockfiles in the templates. But we don't put
+# them in the project template's .gitignore file because they should be tracked
+# in source control when people actually create projects from the templates.
+package-lock.json
+
+*/src/**/*.csproj
+
+# launchSettings.json files are required for the templates.
+!launchSettings.json
+
+# Templates include JS dependencies in dist folders.
+!**/dist/*
+
+# Keep the package-lock.json file for updating template dependencies.
+!package-lock.json

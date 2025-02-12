@@ -17,6 +17,10 @@
 /docs/                                                                      @dotnet/dotnet-extensions-infra
 /eng/                                                                       @dotnet/dotnet-extensions-infra
 
+/src/Libraries/Microsoft.Extensions.AI.Evaluation                           @dotnet/dotnet-extensions-ai-evaluation
+/src/Libraries/Microsoft.Extensions.AI.Evaluation.*                         @dotnet/dotnet-extensions-ai-evaluation
+/test/Libraries/Microsoft.Extensions.AI.Evaluation.*                        @dotnet/dotnet-extensions-ai-evaluation
+
 /src/Libraries/Microsoft.Extensions.AI                                      @dotnet/dotnet-extensions-ai
 /src/Libraries/Microsoft.Extensions.AI.*                                    @dotnet/dotnet-extensions-ai
 /test/Libraries/Microsoft.Extensions.AI                                     @dotnet/dotnet-extensions-ai

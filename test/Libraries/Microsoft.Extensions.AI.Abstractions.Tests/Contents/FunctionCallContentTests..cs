@@ -61,8 +61,6 @@ public class FunctionCallContentTests
         Assert.Same(props, c.AdditionalProperties);
 
         Assert.Equal("callId1", c.CallId);
-        c.CallId = "id";
-        Assert.Equal("id", c.CallId);
 
         Assert.Null(c.Arguments);
         AdditionalPropertiesDictionary args = new() { { "key", "value" } };

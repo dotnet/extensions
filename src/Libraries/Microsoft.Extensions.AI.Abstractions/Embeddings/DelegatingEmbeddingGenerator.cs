@@ -40,20 +40,6 @@ public class DelegatingEmbeddingGenerator<TInput, TEmbedding> : IEmbeddingGenera
         GC.SuppressFinalize(this);
     }
 
-    /// <summary>Provides a mechanism for releasing unmanaged resources.</summary>
-    /// <param name="disposing"><see langword="true"/> if being called from <see cref="Dispose()"/>; otherwise, <see langword="false"/>.</param>
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            InnerGenerator.Dispose();
-        }
-    }
-
-    /// <inheritdoc />
-    public virtual EmbeddingGeneratorMetadata Metadata =>
-        InnerGenerator.Metadata;
-
     /// <inheritdoc />
     public virtual Task<GeneratedEmbeddings<TEmbedding>> GenerateAsync(IEnumerable<TInput> values, EmbeddingGenerationOptions? options = null, CancellationToken cancellationToken = default) =>
         InnerGenerator.GenerateAsync(values, options, cancellationToken);
@@ -67,5 +53,15 @@ public class DelegatingEmbeddingGenerator<TInput, TEmbedding> : IEmbeddingGenera
         return
             serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
             InnerGenerator.GetService(serviceType, serviceKey);
+    }
+
+    /// <summary>Provides a mechanism for releasing unmanaged resources.</summary>
+    /// <param name="disposing"><see langword="true"/> if being called from <see cref="Dispose()"/>; otherwise, <see langword="false"/>.</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            InnerGenerator.Dispose();
+        }
     }
 }

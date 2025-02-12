@@ -18,12 +18,6 @@ public class OllamaChatClientIntegrationTests : ChatClientIntegrationTests
             new OllamaChatClient(endpoint, "llama3.1") :
             null;
 
-    public override Task FunctionInvocation_AutomaticallyInvokeFunction_WithParameters_Streaming() =>
-        throw new SkipTestException("Ollama does not currently support function invocation with streaming.");
-
-    public override Task Logging_LogsFunctionCalls_Streaming() =>
-        throw new SkipTestException("Ollama does not currently support function invocation with streaming.");
-
     public override Task FunctionInvocation_RequireAny() =>
         throw new SkipTestException("Ollama does not currently support requiring function invocation.");
 
@@ -45,7 +39,7 @@ public class OllamaChatClientIntegrationTests : ChatClientIntegrationTests
             .Build();
 
         var secretNumber = 42;
-        var response = await chatClient.CompleteAsync("What is the current secret number? Answer with digits only.", new ChatOptions
+        var response = await chatClient.GetResponseAsync("What is the current secret number? Answer with digits only.", new ChatOptions
         {
             ModelId = "llama3:8b",
             Tools = [AIFunctionFactory.Create(() => secretNumber, "GetSecretNumber")],
@@ -81,7 +75,7 @@ public class OllamaChatClientIntegrationTests : ChatClientIntegrationTests
         var didCallIrrelevantTool = false;
         var irrelevantTool = AIFunctionFactory.Create(() => { didCallIrrelevantTool = true; return 123; }, "GetSecretNumber");
 
-        var response = await chatClient.CompleteAsync("What's the stock price for Microsoft in British pounds?", new ChatOptions
+        var response = await chatClient.GetResponseAsync("What's the stock price for Microsoft in British pounds?", new ChatOptions
         {
             Tools = [stockPriceTool, irrelevantTool],
             Temperature = 0,
@@ -93,13 +87,31 @@ public class OllamaChatClientIntegrationTests : ChatClientIntegrationTests
         Assert.False(didCallIrrelevantTool);
     }
 
+    [ConditionalFact]
+    public async Task InvalidModelParameter_ThrowsInvalidOperationException()
+    {
+        SkipIfNotEnabled();
+
+        var endpoint = IntegrationTestHelpers.GetOllamaUri();
+        Assert.NotNull(endpoint);
+
+        using var chatClient = new OllamaChatClient(endpoint, modelId: "inexistent-model");
+
+        InvalidOperationException ex;
+        ex = await Assert.ThrowsAsync<InvalidOperationException>(() => chatClient.GetResponseAsync("Hello, world!"));
+        Assert.Contains("inexistent-model", ex.Message);
+
+        ex = await Assert.ThrowsAsync<InvalidOperationException>(() => chatClient.GetStreamingResponseAsync("Hello, world!").ToChatResponseAsync());
+        Assert.Contains("inexistent-model", ex.Message);
+    }
+
     private sealed class AssertNoToolsDefinedChatClient(IChatClient innerClient) : DelegatingChatClient(innerClient)
     {
-        public override Task<ChatCompletion> CompleteAsync(
+        public override Task<ChatResponse> GetResponseAsync(
             IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
         {
             Assert.Null(options?.Tools);
-            return base.CompleteAsync(chatMessages, options, cancellationToken);
+            return base.GetResponseAsync(chatMessages, options, cancellationToken);
         }
     }
 }
