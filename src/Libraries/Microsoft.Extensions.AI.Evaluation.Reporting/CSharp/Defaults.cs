@@ -26,8 +26,8 @@ public static class Defaults
     public const string DefaultIterationName = "1";
 
     /// <summary>
-    /// A <see cref="TimeSpan"/> that specifies the default amount of time that cached AI responses should survive
+    /// Gets a <see cref="TimeSpan"/> that specifies the default amount of time that cached AI responses should survive
     /// in the <see cref="IResponseCacheProvider"/>'s cache before they are considered expired and evicted.
     /// </summary>
-    public static readonly TimeSpan DefaultTimeToLiveForCacheEntries = TimeSpan.FromDays(14);
+    public static TimeSpan DefaultTimeToLiveForCacheEntries { get; } = TimeSpan.FromDays(14);
 }
