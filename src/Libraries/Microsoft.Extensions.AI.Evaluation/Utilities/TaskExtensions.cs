@@ -56,10 +56,9 @@ internal static class TaskExtensions
         else
         {
 #if NET9_0_OR_GREATER
-            await foreach (Task<T> task in Task.WhenEach(concurrentTasks).ConfigureAwait(false))
+            await foreach (Task<T> task in
+                Task.WhenEach(concurrentTasks).WithCancellation(cancellationToken).ConfigureAwait(false))
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
                 yield return await task.ConfigureAwait(false);
             }
 #else
