@@ -4,7 +4,6 @@
   of the framework, we should use the following LTS versions instead -->
   <ItemGroup Condition="'$(TargetFramework)' != 'net9.0' And '$(ForceLatestDotnetVersions)' != 'true'">
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="$(MicrosoftBclAsyncInterfacesLTSVersion)" />
-    <PackageVersion Include="Microsoft.Bcl.Memory" Version="$(MicrosoftBclMemoryLTSVersion)" />
     <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="$(MicrosoftBclTimeProviderLTSVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="$(MicrosoftExtensionsCachingAbstractionsLTSVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftExtensionsCachingMemoryLTSVersion)" />
