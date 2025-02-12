@@ -240,7 +240,6 @@ public abstract class ChatConversationEvaluator : IEvaluator
             return new ValueTask<bool>(true);
         }
 
-        // The 'AuthorName' property is subject to change or removal in future updates.
         string? author = message.AuthorName;
         string role = message.Role.Value;
         string content = message.Text ?? string.Empty;
@@ -288,7 +287,6 @@ public abstract class ChatConversationEvaluator : IEvaluator
     {
         _ = Throw.IfNull(message, nameof(message));
 
-        // The 'AuthorName' property is subject to change or removal in future updates.
         string? author = message.AuthorName;
         string role = message.Role.Value;
         string? content = message.Text;
