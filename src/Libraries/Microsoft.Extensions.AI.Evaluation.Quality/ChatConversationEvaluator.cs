@@ -37,8 +37,6 @@ public abstract class ChatConversationEvaluator : IEvaluator
     /// </summary>
     protected virtual string? SystemPrompt => null;
 
-    private static List<ChatMessage> EmptyMessages { get; } = [];
-
     /// <inheritdoc/>
     public async ValueTask<EvaluationResult> EvaluateAsync(
         IEnumerable<ChatMessage> messages,
@@ -95,7 +93,7 @@ public abstract class ChatConversationEvaluator : IEvaluator
                 await RenderEvaluationPromptAsync(
                     userRequest,
                     modelResponse,
-                    includedHistory: EmptyMessages,
+                    includedHistory: [],
                     additionalContext,
                     cancellationToken).ConfigureAwait(false);
 
@@ -120,7 +118,7 @@ public abstract class ChatConversationEvaluator : IEvaluator
                     if (!canRender)
                     {
                         ignoredMessagesCount = 1;
-                        history = EmptyMessages;
+                        history = [];
                     }
                 }
                 else
@@ -376,7 +374,7 @@ public abstract class ChatConversationEvaluator : IEvaluator
                     ? lastMessage
                     : null;
 
-            history = EmptyMessages;
+            history = [];
         }
         else
         {

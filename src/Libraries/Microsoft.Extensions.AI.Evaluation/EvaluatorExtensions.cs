@@ -13,8 +13,6 @@ namespace Microsoft.Extensions.AI.Evaluation;
 /// </summary>
 public static class EvaluatorExtensions
 {
-    private static IEnumerable<ChatMessage> EmptyMessages { get; } = [];
-
     /// <summary>
     /// Evaluates the supplied <paramref name="modelResponse"/> and returns an <see cref="EvaluationResult"/>
     /// containing one or more <see cref="EvaluationMetric"/>s.
@@ -138,7 +136,7 @@ public static class EvaluatorExtensions
         _ = Throw.IfNull(evaluator, nameof(evaluator));
 
         return evaluator.EvaluateAsync(
-                messages: EmptyMessages,
+                messages: [],
                 modelResponse,
                 chatConfiguration,
                 additionalContext,
