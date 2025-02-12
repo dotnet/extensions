@@ -55,6 +55,14 @@ internal static class TaskExtensions
         }
         else
         {
+#if NET9_0_OR_GREATER
+            await foreach (Task<T> task in Task.WhenEach(concurrentTasks).ConfigureAwait(false))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                yield return await task.ConfigureAwait(false);
+            }
+#else
             var remaining = new HashSet<Task<T>>(concurrentTasks);
 
             while (remaining.Count is not 0)
@@ -65,6 +73,7 @@ internal static class TaskExtensions
                 _ = remaining.Remove(task);
                 yield return await task.ConfigureAwait(false);
             }
+#endif
         }
     }
 
