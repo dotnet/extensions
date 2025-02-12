@@ -31,7 +31,7 @@ if ($Configure -and $Unconfigure) {
     Exit 1
 }
 
-if ($ConfigRoot -eq $Null) {
+if (!(Test-Path $ConfigRoot)) {
     $ConfigRoot = "$HOME/.config/dotnet-extensions"
 }
 
