@@ -6,7 +6,8 @@ param (
 # if version is not set, then run a script to get it
 if ($Version -eq "")
 {
-    $Version = $(nbgv get-version --variable Version)
+    $VSIXPackageVersion = Get-Content $PSScriptRoot/VSIXPackageVersion.json | ConvertFrom-Json
+    $Version = $VSIXPackageVersion.PackageVersion
 }
 
 # Make sure we only use the first 3 segments of the version
