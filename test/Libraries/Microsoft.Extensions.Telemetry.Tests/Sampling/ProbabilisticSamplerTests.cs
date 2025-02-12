@@ -24,7 +24,7 @@ public class ProbabilisticSamplerTests
     {
         // Arrange
         ProbabilisticSamplerOptions options = new();
-        options.Rules.Add(new ProbabilisticSamplerFilterRule(probability, null, LogLevel.Trace, null));
+        options.Rules.Add(new ProbabilisticSamplerFilterRule { Probability = probability, LogLevel = LogLevel.Trace });
         var sampler = new ProbabilisticSampler(new StaticOptionsMonitor<ProbabilisticSamplerOptions>(options));
 
         // Act
@@ -44,7 +44,7 @@ public class ProbabilisticSamplerTests
         var logRecordParameters = new LogEntry<IReadOnlyList<KeyValuePair<string, object?>>>(
             LogLevel.Warning, nameof(WhenParametersNotMatch_AlwaysSamples), 0, _dummyState, _dummyException, _dummyFormatter);
         ProbabilisticSamplerOptions options = new();
-        options.Rules.Add(new ProbabilisticSamplerFilterRule(Probability, null, LogLevel.Information, null));
+        options.Rules.Add(new ProbabilisticSamplerFilterRule { Probability = Probability, LogLevel = LogLevel.Information });
         var sampler = new ProbabilisticSampler(new StaticOptionsMonitor<ProbabilisticSamplerOptions>(options));
 
         // Act
@@ -62,7 +62,7 @@ public class ProbabilisticSamplerTests
         var logRecordParameters = new LogEntry<IReadOnlyList<KeyValuePair<string, object?>>>(
             LogLevel.Information, nameof(WhenParametersMatch_UsesProvidedProbability), 0, _dummyState, _dummyException, _dummyFormatter);
         ProbabilisticSamplerOptions options = new();
-        options.Rules.Add(new ProbabilisticSamplerFilterRule(Probability, null, LogLevel.Information, null));
+        options.Rules.Add(new ProbabilisticSamplerFilterRule { Probability = Probability, LogLevel = LogLevel.Information });
         var sampler = new ProbabilisticSampler(new StaticOptionsMonitor<ProbabilisticSamplerOptions>(options));
 
         // Act

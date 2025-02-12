@@ -36,6 +36,9 @@ internal sealed class ProbabilisticSamplerConfigureOptions : IConfigureOptions<P
             return;
         }
 
-        options.Rules.AddRange(parsedOptions.Rules);
+        foreach (var rule in parsedOptions.Rules)
+        {
+            options.Rules.Add(rule);
+        }
     }
 }

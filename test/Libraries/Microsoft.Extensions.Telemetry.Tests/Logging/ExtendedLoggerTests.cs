@@ -126,7 +126,7 @@ public static class ExtendedLoggerTests
         const string Category = "C1";
 
         ProbabilisticSamplerOptions options = new();
-        options.Rules.Add(new ProbabilisticSamplerFilterRule(0, null, LogLevel.Warning, null));
+        options.Rules.Add(new ProbabilisticSamplerFilterRule { Probability = 0, LogLevel = LogLevel.Warning });
         var sampler = new ProbabilisticSampler(new StaticOptionsMonitor<ProbabilisticSamplerOptions>(options));
 
         using var provider = new Provider();

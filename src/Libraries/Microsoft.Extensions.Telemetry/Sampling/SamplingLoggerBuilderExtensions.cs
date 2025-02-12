@@ -73,7 +73,7 @@ public static class SamplingLoggerBuilderExtensions
         _ = Throw.IfOutOfRange(probability, 0, 1, nameof(probability));
 
         _ = builder.Services.Configure<ProbabilisticSamplerOptions>(options =>
-                options.Rules.Add(new ProbabilisticSamplerFilterRule(probability, null, level, null)));
+                options.Rules.Add(new ProbabilisticSamplerFilterRule { Probability = probability, LogLevel = level }));
 
         return builder.AddSampler<ProbabilisticSampler>();
     }

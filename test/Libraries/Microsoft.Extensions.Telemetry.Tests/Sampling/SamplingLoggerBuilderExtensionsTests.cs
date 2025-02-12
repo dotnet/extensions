@@ -51,9 +51,9 @@ public class SamplingLoggerBuilderExtensionsTests
     {
         List<ProbabilisticSamplerFilterRule> expectedData =
         [
-            new ProbabilisticSamplerFilterRule(1.0, "Program.MyLogger", LogLevel.Information, 1),
-            new ProbabilisticSamplerFilterRule(0.01, null, LogLevel.Information, null),
-            new ProbabilisticSamplerFilterRule(0.1, null, LogLevel.Warning, null)
+            new ProbabilisticSamplerFilterRule { Probability = 1.0, Category = "Program.MyLogger", LogLevel = LogLevel.Information, EventId = 1 },
+            new ProbabilisticSamplerFilterRule { Probability = 0.01, LogLevel = LogLevel.Information },
+            new ProbabilisticSamplerFilterRule { Probability = 0.1, LogLevel = LogLevel.Warning }
         ];
         ConfigurationBuilder configBuilder = new ConfigurationBuilder();
         configBuilder.AddJsonFile("appsettings.json");

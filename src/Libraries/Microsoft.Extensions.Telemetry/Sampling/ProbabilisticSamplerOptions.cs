@@ -16,9 +16,7 @@ public class ProbabilisticSamplerOptions
     /// <summary>
     /// Gets or sets the collection of <see cref="ProbabilisticSamplerFilterRule"/> used for filtering log messages.
     /// </summary>
-#pragma warning disable CA1002 // Do not expose generic lists - List is necessary to be able to call .AddRange()
 #pragma warning disable CA2227 // Collection properties should be read only - setter is necessary for options pattern
-    public List<ProbabilisticSamplerFilterRule> Rules { get; set; } = [];
+    public IList<ProbabilisticSamplerFilterRule> Rules { get; set; } = [];
 #pragma warning restore CA2227 // Collection properties should be read only
-#pragma warning restore CA1002 // Do not expose generic lists
 }
