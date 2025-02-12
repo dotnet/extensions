@@ -12,23 +12,7 @@ namespace Microsoft.Extensions.AI.Evaluation.Console.Tests;
 public class ExceptionUtilitiesTests
 {
     [Fact]
-    public void ReturnsTrueForOperationCanceledException()
-    {
-        var exception = new OperationCanceledException();
-
-        exception.IsCancellation().Should().BeTrue();
-    }
-
-    [Fact]
-    public void ReturnsTrueForAggregateExceptionWithOnlyOperationCanceledExceptions()
-    {
-        var exception = new AggregateException(new OperationCanceledException());
-
-        exception.IsCancellation().Should().BeTrue();
-    }
-
-    [Fact]
-    public void ReturnsFalseForNonCancellationException()
+    public void IsCancellationReturnsFalseForNonCancellationException()
     {
         var exception = new InvalidOperationException();
 
@@ -36,7 +20,31 @@ public class ExceptionUtilitiesTests
     }
 
     [Fact]
-    public void ReturnsTrueForAggregateExceptionWithOnlyTaskCanceledExceptions()
+    public void IsCancellationReturnsTrueForOperationCanceledException()
+    {
+        var exception = new OperationCanceledException();
+
+        exception.IsCancellation().Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsCancellationReturnsTrueForTaskCanceledException()
+    {
+        var exception = new TaskCanceledException();
+
+        exception.IsCancellation().Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsCancellationReturnsTrueForAggregateExceptionWithOnlyOperationCanceledExceptions()
+    {
+        var exception = new AggregateException(new OperationCanceledException());
+
+        exception.IsCancellation().Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsCancellationReturnsTrueForAggregateExceptionWithOnlyTaskCanceledExceptions()
     {
         var exception = new AggregateException(new TaskCanceledException());
 
@@ -44,7 +52,7 @@ public class ExceptionUtilitiesTests
     }
 
     [Fact]
-    public void ReturnsTrueForAggregateExceptionWithMultipleCancellationExceptions()
+    public void IsCancellationReturnsTrueForAggregateExceptionWithMultipleCancellationExceptions()
     {
         var exception =
             new AggregateException(
@@ -56,7 +64,7 @@ public class ExceptionUtilitiesTests
     }
 
     [Fact]
-    public void ReturnsFalseForEmptyAggregateException()
+    public void IsCancellationReturnsFalseForEmptyAggregateException()
     {
         var exception = new AggregateException();
 
@@ -64,7 +72,7 @@ public class ExceptionUtilitiesTests
     }
 
     [Fact]
-    public void ReturnsFalseForAggregateExceptionWithNonCancellationExceptions()
+    public void IsCancellationReturnsFalseForAggregateExceptionWithNonCancellationExceptions()
     {
         var exception = new AggregateException(new InvalidOperationException(), new ArgumentException());
 
@@ -72,7 +80,7 @@ public class ExceptionUtilitiesTests
     }
 
     [Fact]
-    public void ReturnsFalseForAggregateExceptionWithCancellationAndNonCancellationExceptions()
+    public void IsCancellationReturnsFalseForAggregateExceptionWithCancellationAndNonCancellationExceptions()
     {
         var exception = new AggregateException(new OperationCanceledException(), new InvalidOperationException());
 
@@ -80,7 +88,7 @@ public class ExceptionUtilitiesTests
     }
 
     [Fact]
-    public void ReturnsTrueForNestedAggregateExceptionWithMultipleCancellationExceptions()
+    public void IsCancellationReturnsTrueForNestedAggregateExceptionsContainingOnlyCancellationExceptions()
     {
         var exception1 =
             new AggregateException(
@@ -94,7 +102,7 @@ public class ExceptionUtilitiesTests
     }
 
     [Fact]
-    public void ReturnsFalseForNestedAggregateExceptionWithNonCancellationExceptions()
+    public void IsCancellationReturnsFalseForNestedAggregateExceptionsContainingNonCancellationExceptions()
     {
         var exception1 = new AggregateException(new TaskCanceledException(), new InvalidOperationException());
         var exception2 = new AggregateException(new TaskCanceledException(), exception1);
@@ -103,7 +111,7 @@ public class ExceptionUtilitiesTests
     }
 
     [Fact]
-    public void HandlesLoopsInNestedAggregateExceptions1()
+    public void IsCancellationHandlesLoopsInNestedAggregateExceptions1()
     {
         var exception1 = new AggregateException();
         var exception2 = new AggregateException(exception1);
@@ -112,7 +120,7 @@ public class ExceptionUtilitiesTests
     }
 
     [Fact]
-    public void HandlesLoopsInNestedAggregateExceptions2()
+    public void IsCancellationHandlesLoopsInNestedAggregateExceptions2()
     {
         var exception1 = new AggregateException(new TaskCanceledException(), new OperationCanceledException());
         var exception2 = new AggregateException(new OperationCanceledException());
@@ -122,7 +130,7 @@ public class ExceptionUtilitiesTests
     }
 
     [Fact]
-    public void HandlesLoopsInNestedAggregateExceptions3()
+    public void IsCancellationHandlesLoopsInNestedAggregateExceptions3()
     {
         var exception1 = new AggregateException(new TaskCanceledException(), new OperationCanceledException());
         var exception2 = new AggregateException(new InvalidOperationException(), new OperationCanceledException());
