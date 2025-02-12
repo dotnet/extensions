@@ -221,7 +221,9 @@ public class DataClassificationTypeConverterTests
     private class TestOptions
     {
 #pragma warning disable S3459 // Unassigned members should be removed
+#pragma warning disable S1144 // Unused private types or members should be removed
         public DataClassification? Example { get; set; }
+#pragma warning restore S1144 // Unused private types or members should be removed
 #pragma warning restore S3459 // Unassigned members should be removed
         public IDictionary<string, DataClassification> Facts { get; set; } = new Dictionary<string, DataClassification>();
     }
