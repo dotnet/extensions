@@ -66,7 +66,7 @@ public sealed class AIFunctionMetadata
     }
 
     /// <summary>
-    /// Gets the underlying .NET method that the function could be wrapping.
+    /// Gets a <see cref="MethodInfo"/> for the underlying .NET method this <see cref="AIFunction"/> represents.
     /// </summary>
     /// <remarks>
     /// This property provides additional metadata on the function and its signature.
