@@ -10,8 +10,7 @@ if ($Version -eq "")
     $Version = $VSIXPackageVersion.PackageVersion
 }
 
-# Make sure we only use the first 3 segments of the version
-$PackageVersion = $Version | Select-String -Pattern '\d+\.\d+\.\d+' | ForEach-Object { $_.Matches.Value }
+$PackageVersion = $Version
 
 if ($null -eq $PackageVersion)
 {
