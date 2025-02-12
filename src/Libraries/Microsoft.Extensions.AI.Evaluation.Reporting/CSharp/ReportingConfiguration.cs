@@ -174,13 +174,10 @@ public sealed class ReportingConfiguration
         {
             IChatClient originalChatClient = chatConfiguration.ChatClient;
 
-            IEnumerable<string> cachingKeys = CachingKeys;
-
-            cachingKeys = [scenarioName, iterationName, .. cachingKeys];
-            if (additionalCachingKeys is not null)
-            {
-                cachingKeys = [.. cachingKeys, .. additionalCachingKeys];
-            }
+            IEnumerable<string> cachingKeys =
+                additionalCachingKeys is null
+                    ? [scenarioName, iterationName, .. CachingKeys]
+                    : [scenarioName, iterationName, .. CachingKeys, .. additionalCachingKeys];
 
             IDistributedCache cache =
                 await ResponseCacheProvider.GetCacheAsync(
@@ -219,6 +216,7 @@ public sealed class ReportingConfiguration
     private static IEnumerable<string> GetCachingKeysForChatClient(IChatClient chatClient)
     {
         var metadata = chatClient.GetService<ChatClientMetadata>();
+
         string? providerName = metadata?.ProviderName;
         if (!string.IsNullOrWhiteSpace(providerName))
         {
