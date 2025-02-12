@@ -24,7 +24,7 @@ namespace Microsoft.Extensions.AI;
 /// are used which might employ such mutation.
 /// </para>
 /// </remarks>
-public interface IEmbeddingGenerator<TInput, TEmbedding> : IDisposable
+public interface IEmbeddingGenerator<in TInput, TEmbedding> : IDisposable
     where TEmbedding : Embedding
 {
     /// <summary>Generates embeddings for each of the supplied <paramref name="values"/>.</summary>
