@@ -13,7 +13,7 @@ public static class ChatClientBuilderServiceCollectionExtensions
     /// <summary>Registers a singleton <see cref="IChatClient"/> in the <see cref="IServiceCollection"/>.</summary>
     /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the client should be added.</param>
     /// <param name="innerClient">The inner <see cref="IChatClient"/> that represents the underlying backend.</param>
-    /// <param name="lifetime">The service lifetime for the client.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>A <see cref="ChatClientBuilder"/> that can be used to build a pipeline around the inner client.</returns>
     /// <remarks>The client is registered as a singleton service.</remarks>
     public static ChatClientBuilder AddChatClient(
@@ -25,7 +25,7 @@ public static class ChatClientBuilderServiceCollectionExtensions
     /// <summary>Registers a singleton <see cref="IChatClient"/> in the <see cref="IServiceCollection"/>.</summary>
     /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the client should be added.</param>
     /// <param name="innerClientFactory">A callback that produces the inner <see cref="IChatClient"/> that represents the underlying backend.</param>
-    /// <param name="lifetime">The service lifetime for the client.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>A <see cref="ChatClientBuilder"/> that can be used to build a pipeline around the inner client.</returns>
     /// <remarks>The client is registered as a singleton service.</remarks>
     public static ChatClientBuilder AddChatClient(
@@ -45,7 +45,7 @@ public static class ChatClientBuilderServiceCollectionExtensions
     /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the client should be added.</param>
     /// <param name="serviceKey">The key with which to associate the client.</param>
     /// <param name="innerClient">The inner <see cref="IChatClient"/> that represents the underlying backend.</param>
-    /// <param name="lifetime">The service lifetime for the client.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>A <see cref="ChatClientBuilder"/> that can be used to build a pipeline around the inner client.</returns>
     /// <remarks>The client is registered as a scoped service.</remarks>
     public static ChatClientBuilder AddKeyedChatClient(
@@ -59,7 +59,7 @@ public static class ChatClientBuilderServiceCollectionExtensions
     /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the client should be added.</param>
     /// <param name="serviceKey">The key with which to associate the client.</param>
     /// <param name="innerClientFactory">A callback that produces the inner <see cref="IChatClient"/> that represents the underlying backend.</param>
-    /// <param name="lifetime">The service lifetime for the client.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>A <see cref="ChatClientBuilder"/> that can be used to build a pipeline around the inner client.</returns>
     /// <remarks>The client is registered as a scoped service.</remarks>
     public static ChatClientBuilder AddKeyedChatClient(

@@ -15,7 +15,7 @@ public static class EmbeddingGeneratorBuilderServiceCollectionExtensions
     /// <typeparam name="TEmbedding">The type of embeddings to generate.</typeparam>
     /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the generator should be added.</param>
     /// <param name="innerGenerator">The inner <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> that represents the underlying backend.</param>
-    /// <param name="lifetime">The service lifetime for the client.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>An <see cref="EmbeddingGeneratorBuilder{TInput, TEmbedding}"/> that can be used to build a pipeline around the inner generator.</returns>
     /// <remarks>The generator is registered as a singleton service.</remarks>
     public static EmbeddingGeneratorBuilder<TInput, TEmbedding> AddEmbeddingGenerator<TInput, TEmbedding>(
@@ -30,7 +30,7 @@ public static class EmbeddingGeneratorBuilderServiceCollectionExtensions
     /// <typeparam name="TEmbedding">The type of embeddings to generate.</typeparam>
     /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the generator should be added.</param>
     /// <param name="innerGeneratorFactory">A callback that produces the inner <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> that represents the underlying backend.</param>
-    /// <param name="lifetime">The service lifetime for the client.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>An <see cref="EmbeddingGeneratorBuilder{TInput, TEmbedding}"/> that can be used to build a pipeline around the inner generator.</returns>
     /// <remarks>The generator is registered as a singleton service.</remarks>
     public static EmbeddingGeneratorBuilder<TInput, TEmbedding> AddEmbeddingGenerator<TInput, TEmbedding>(
@@ -53,7 +53,7 @@ public static class EmbeddingGeneratorBuilderServiceCollectionExtensions
     /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the generator should be added.</param>
     /// <param name="serviceKey">The key with which to associated the generator.</param>
     /// <param name="innerGenerator">The inner <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> that represents the underlying backend.</param>
-    /// <param name="lifetime">The service lifetime for the client.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>An <see cref="EmbeddingGeneratorBuilder{TInput, TEmbedding}"/> that can be used to build a pipeline around the inner generator.</returns>
     /// <remarks>The generator is registered as a singleton service.</remarks>
     public static EmbeddingGeneratorBuilder<TInput, TEmbedding> AddKeyedEmbeddingGenerator<TInput, TEmbedding>(
@@ -70,7 +70,7 @@ public static class EmbeddingGeneratorBuilderServiceCollectionExtensions
     /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the generator should be added.</param>
     /// <param name="serviceKey">The key with which to associated the generator.</param>
     /// <param name="innerGeneratorFactory">A callback that produces the inner <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> that represents the underlying backend.</param>
-    /// <param name="lifetime">The service lifetime for the client.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>An <see cref="EmbeddingGeneratorBuilder{TInput, TEmbedding}"/> that can be used to build a pipeline around the inner generator.</returns>
     /// <remarks>The generator is registered as a singleton service.</remarks>
     public static EmbeddingGeneratorBuilder<TInput, TEmbedding> AddKeyedEmbeddingGenerator<TInput, TEmbedding>(
