@@ -26,8 +26,6 @@ namespace Microsoft.Extensions.AI;
 
 internal static partial class OpenAIModelMappers
 {
-    internal static JsonElement DefaultParameterSchema { get; } = JsonDocument.Parse("{}").RootElement;
-
     public static ChatCompletion ToOpenAIChatCompletion(ChatResponse response, JsonSerializerOptions options)
     {
         _ = Throw.IfNull(response);
@@ -418,26 +416,11 @@ internal static partial class OpenAIModelMappers
         }
 
         OpenAIChatToolJson openAiChatTool = JsonSerializer.Deserialize(chatTool.FunctionParameters.ToMemory().Span, OpenAIJsonContext.Default.OpenAIChatToolJson)!;
-        List<AIFunctionParameterMetadata> parameters = new(openAiChatTool.Properties.Count);
-        foreach (KeyValuePair<string, JsonElement> property in openAiChatTool.Properties)
-        {
-            parameters.Add(new(property.Key)
-            {
-                IsRequired = openAiChatTool.Required.Contains(property.Key),
-            });
-        }
-
         AIFunctionMetadata metadata = new(chatTool.FunctionName)
         {
             Description = chatTool.FunctionDescription,
             AdditionalProperties = additionalProperties,
-            Parameters = parameters,
             Schema = JsonSerializer.SerializeToElement(openAiChatTool, OpenAIJsonContext.Default.OpenAIChatToolJson),
-            ReturnParameter = new()
-            {
-                Description = "Return parameter",
-                Schema = DefaultParameterSchema,
-            }
         };
 
         return new MetadataOnlyAIFunction(metadata);

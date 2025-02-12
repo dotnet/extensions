@@ -54,18 +54,6 @@ public sealed class AIFunctionFactoryCreateOptions
     /// </value>
     public string? Description { get; set; }
 
-    /// <summary>Gets or sets metadata for the parameters of the function.</summary>
-    /// <value>
-    /// Metadata for the function's parameters. The default value is metadata derived from the passed <see cref="Delegate"/> or <see cref="MethodInfo"/>.
-    /// </value>
-    public IReadOnlyList<AIFunctionParameterMetadata>? Parameters { get; set; }
-
-    /// <summary>Gets or sets metadata for function's return parameter.</summary>
-    /// <value>
-    /// Metadata for the function's return parameter. The default value is metadata derived from the passed <see cref="Delegate"/> or <see cref="MethodInfo"/>.
-    /// </value>
-    public AIFunctionReturnParameterMetadata? ReturnParameter { get; set; }
-
     /// <summary>
     /// Gets or sets additional values to store on the resulting <see cref="AIFunctionMetadata.AdditionalProperties" /> property.
     /// </summary>

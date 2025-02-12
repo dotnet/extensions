@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -181,14 +183,14 @@ internal sealed class PromptBasedFunctionCallingChatClient(IChatClient innerClie
     {
         Name = tool.Metadata.Name,
         Description = tool.Metadata.Description,
-        Arguments = tool.Metadata.Parameters.ToDictionary(
-            p => p.Name,
+        Arguments = tool.Metadata.UnderlyingMethod!.GetParameters().ToDictionary(
+            p => p.Name!,
             p => new ToolParameterDescriptor
             {
-                Type = p.ParameterType?.Name,
-                Description = p.Description,
-                Enum = p.ParameterType?.IsEnum == true ? Enum.GetNames(p.ParameterType) : null,
-                Required = p.IsRequired,
+                Type = p.Name!,
+                Description = p.GetCustomAttribute<DescriptionAttribute>()?.Description,
+                Enum = p.ParameterType.IsEnum ? Enum.GetNames(p.ParameterType) : null,
+                Required = !p.IsOptional,
             }),
     };
 

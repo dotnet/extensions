@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
 using Xunit;
 
 namespace Microsoft.Extensions.AI;
@@ -24,12 +23,7 @@ public class AIFunctionMetadataTests
         AIFunctionMetadata f = new("name");
         Assert.Equal("name", f.Name);
         Assert.Empty(f.Description);
-        Assert.Empty(f.Parameters);
-
-        Assert.NotNull(f.ReturnParameter);
-        Assert.True(JsonElement.DeepEquals(f.ReturnParameter.Schema, JsonDocument.Parse("{}").RootElement));
-        Assert.Null(f.ReturnParameter.ParameterType);
-        Assert.Null(f.ReturnParameter.Description);
+        Assert.Null(f.UnderlyingMethod);
 
         Assert.NotNull(f.AdditionalProperties);
         Assert.Empty(f.AdditionalProperties);
@@ -42,16 +36,14 @@ public class AIFunctionMetadataTests
         AIFunctionMetadata f1 = new("name")
         {
             Description = "description",
-            Parameters = [new AIFunctionParameterMetadata("param")],
-            ReturnParameter = new AIFunctionReturnParameterMetadata(),
+            UnderlyingMethod = typeof(AIFunctionMetadataTests).GetMethod(nameof(Constructor_Copy_PropsPropagated))!,
             AdditionalProperties = new Dictionary<string, object?> { { "key", "value" } },
         };
 
         AIFunctionMetadata f2 = new(f1);
         Assert.Equal(f1.Name, f2.Name);
         Assert.Equal(f1.Description, f2.Description);
-        Assert.Same(f1.Parameters, f2.Parameters);
-        Assert.Same(f1.ReturnParameter, f2.ReturnParameter);
+        Assert.Same(f1.UnderlyingMethod, f2.UnderlyingMethod);
         Assert.Same(f1.AdditionalProperties, f2.AdditionalProperties);
     }
 
@@ -59,8 +51,6 @@ public class AIFunctionMetadataTests
     public void Props_InvalidArg_Throws()
     {
         Assert.Throws<ArgumentNullException>("value", () => new AIFunctionMetadata("name") { Name = null! });
-        Assert.Throws<ArgumentNullException>("value", () => new AIFunctionMetadata("name") { Parameters = null! });
-        Assert.Throws<ArgumentNullException>("value", () => new AIFunctionMetadata("name") { ReturnParameter = null! });
         Assert.Throws<ArgumentNullException>("value", () => new AIFunctionMetadata("name") { AdditionalProperties = null! });
     }
 
@@ -69,30 +59,5 @@ public class AIFunctionMetadataTests
     {
         AIFunctionMetadata f = new("name") { Description = null };
         Assert.Equal("", f.Description);
-    }
-
-    [Fact]
-    public void GetParameter_EmptyCollection_ReturnsNull()
-    {
-        Assert.Null(new AIFunctionMetadata("name").GetParameter("test"));
-    }
-
-    [Fact]
-    public void GetParameter_ByName_ReturnsParameter()
-    {
-        AIFunctionMetadata f = new("name")
-        {
-            Parameters =
-            [
-                new AIFunctionParameterMetadata("param0"),
-                new AIFunctionParameterMetadata("param1"),
-                new AIFunctionParameterMetadata("param2"),
-            ]
-        };
-
-        Assert.Same(f.Parameters[0], f.GetParameter("param0"));
-        Assert.Same(f.Parameters[1], f.GetParameter("param1"));
-        Assert.Same(f.Parameters[2], f.GetParameter("param2"));
-        Assert.Null(f.GetParameter("param3"));
     }
 }

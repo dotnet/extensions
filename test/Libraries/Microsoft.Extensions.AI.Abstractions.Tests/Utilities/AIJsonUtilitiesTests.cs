@@ -4,6 +4,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -230,10 +231,9 @@ public static class AIJsonUtilitiesTests
         JsonSerializerOptions options = new(JsonSerializerOptions.Default);
         AIFunction func = AIFunctionFactory.Create((int x, int y) => x + y, serializerOptions: options);
 
-        AIFunctionMetadata metadata = func.Metadata;
-        AIFunctionParameterMetadata param = metadata.Parameters[0];
+        Assert.NotNull(func.Metadata.UnderlyingMethod);
 
-        JsonElement resolvedSchema = AIJsonUtilities.CreateFunctionJsonSchema(title: func.Metadata.Name, description: func.Metadata.Description, parameters: func.Metadata.Parameters);
+        JsonElement resolvedSchema = AIJsonUtilities.CreateFunctionJsonSchema(func.Metadata.UnderlyingMethod, title: func.Metadata.Name);
         Assert.True(JsonElement.DeepEquals(resolvedSchema, func.Metadata.Schema));
     }
 
@@ -245,12 +245,14 @@ public static class AIJsonUtilitiesTests
 
         AIFunctionMetadata metadata = func.Metadata;
         JsonElement schemaParameters = func.Metadata.Schema.GetProperty("properties");
-        Assert.Equal(metadata.Parameters.Count, schemaParameters.GetPropertyCount());
+        Assert.NotNull(metadata.UnderlyingMethod);
+        ParameterInfo[] parameters = metadata.UnderlyingMethod.GetParameters();
+        Assert.Equal(parameters.Length, schemaParameters.GetPropertyCount());
 
         int i = 0;
         foreach (JsonProperty property in schemaParameters.EnumerateObject())
         {
-            string numericType = Type.GetTypeCode(metadata.Parameters[i].ParameterType) is TypeCode.Double or TypeCode.Single or TypeCode.Decimal
+            string numericType = Type.GetTypeCode(parameters[i].ParameterType) is TypeCode.Double or TypeCode.Single or TypeCode.Decimal
                 ? "number"
                 : "integer";
 

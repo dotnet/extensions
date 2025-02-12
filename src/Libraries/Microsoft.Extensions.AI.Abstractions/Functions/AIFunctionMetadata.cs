@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using Microsoft.Shared.Collections;
 using Microsoft.Shared.Diagnostics;
@@ -25,17 +25,8 @@ public sealed class AIFunctionMetadata
     /// <summary>The JSON schema describing the function and its input parameters.</summary>
     private readonly JsonElement _schema = AIJsonUtilities.DefaultJsonSchema;
 
-    /// <summary>The function's parameters.</summary>
-    private readonly IReadOnlyList<AIFunctionParameterMetadata> _parameters = [];
-
-    /// <summary>The function's return parameter.</summary>
-    private readonly AIFunctionReturnParameterMetadata _returnParameter = AIFunctionReturnParameterMetadata.Empty;
-
     /// <summary>Optional additional properties in addition to the named properties already available on this class.</summary>
     private readonly IReadOnlyDictionary<string, object?> _additionalProperties = EmptyReadOnlyDictionary<string, object?>.Instance;
-
-    /// <summary><see cref="_parameters"/> indexed by name, lazily initialized.</summary>
-    private Dictionary<string, AIFunctionParameterMetadata>? _parametersByName;
 
     /// <summary>Initializes a new instance of the <see cref="AIFunctionMetadata"/> class for a function with the specified name.</summary>
     /// <param name="name">The name of the function.</param>
@@ -48,15 +39,13 @@ public sealed class AIFunctionMetadata
     /// <summary>Initializes a new instance of the <see cref="AIFunctionMetadata"/> class as a copy of another <see cref="AIFunctionMetadata"/>.</summary>
     /// <exception cref="ArgumentNullException">The <paramref name="metadata"/> was null.</exception>
     /// <remarks>
-    /// This creates a shallow clone of <paramref name="metadata"/>. The new instance's <see cref="Parameters"/> and
-    /// <see cref="ReturnParameter"/> properties will return the same objects as in the original instance.
+    /// This creates a shallow clone of <paramref name="metadata"/>.
     /// </remarks>
     public AIFunctionMetadata(AIFunctionMetadata metadata)
     {
         Name = Throw.IfNull(metadata).Name;
         Description = metadata.Description;
-        Parameters = metadata.Parameters;
-        ReturnParameter = metadata.ReturnParameter;
+        UnderlyingMethod = metadata.UnderlyingMethod;
         AdditionalProperties = metadata.AdditionalProperties;
         Schema = metadata.Schema;
     }
@@ -76,33 +65,15 @@ public sealed class AIFunctionMetadata
         init => _description = value ?? string.Empty;
     }
 
-    /// <summary>Gets the metadata for the parameters to the function.</summary>
-    /// <remarks>If the function has no parameters, the returned list is empty.</remarks>
-    public IReadOnlyList<AIFunctionParameterMetadata> Parameters
-    {
-        get => _parameters;
-        init => _parameters = Throw.IfNull(value);
-    }
-
-    /// <summary>Gets the <see cref="AIFunctionParameterMetadata"/> for a parameter by its name.</summary>
-    /// <param name="name">The name of the parameter.</param>
-    /// <returns>The corresponding <see cref="AIFunctionParameterMetadata"/>, if found; otherwise, null.</returns>
-    public AIFunctionParameterMetadata? GetParameter(string name)
-    {
-        Dictionary<string, AIFunctionParameterMetadata>? parametersByName = _parametersByName ??= _parameters.ToDictionary(p => p.Name);
-
-        return parametersByName.TryGetValue(name, out AIFunctionParameterMetadata? parameter) ?
-            parameter :
-            null;
-    }
-
-    /// <summary>Gets parameter metadata for the return parameter.</summary>
-    /// <remarks>If the function has no return parameter, the value is a default instance of an <see cref="AIFunctionReturnParameterMetadata"/>.</remarks>
-    public AIFunctionReturnParameterMetadata ReturnParameter
-    {
-        get => _returnParameter;
-        init => _returnParameter = Throw.IfNull(value);
-    }
+    /// <summary>
+    /// Gets the underlying .NET method that the function could be wrapping.
+    /// </summary>
+    /// <remarks>
+    /// Used to provide additional metadata on the function and its signature.
+    /// Setting this property is optional and should have no impact on function invocation or its JSON schema,
+    /// which is how <see cref="IChatClient"/> implementations interface with AI functions primarily.
+    /// </remarks>
+    public MethodInfo? UnderlyingMethod { get; init; }
 
     /// <summary>Gets a JSON Schema describing the function and its input parameters.</summary>
     /// <remarks>
@@ -124,8 +95,6 @@ public sealed class AIFunctionMetadata
     /// </code>
     /// <para>
     /// The metadata present in the schema document plays an important role in guiding AI function invocation.
-    /// Functions should incorporate as much detail as possible. The arity of the "properties" keyword should
-    /// also match the length of the <see cref="Parameters"/> list.
     /// </para>
     /// <para>
     /// When no schema is specified, consuming chat clients should assume the "{}" or "true" schema, indicating that any JSON input is admissible.

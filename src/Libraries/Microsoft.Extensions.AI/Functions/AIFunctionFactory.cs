@@ -242,46 +242,32 @@ public static partial class AIFunctionFactory
                 }
             }
 
-            // Build up a list of AIParameterMetadata for the parameters we expect to be populated
-            // from arguments. Some arguments are populated specially, not from arguments, and thus
-            // we don't want to advertise their metadata.
-            List<AIFunctionParameterMetadata>? parameterMetadata = options.Parameters is not null ? null : [];
-
-            // Get marshaling delegates for parameters and build up the parameter metadata.
-            var parameters = method.GetParameters();
+            // Get marshaling delegates for parameters.
+            ParameterInfo[] parameters = method.GetParameters();
             _parameterMarshallers = new Func<IReadOnlyDictionary<string, object?>, AIFunctionContext?, object?>[parameters.Length];
             bool sawAIContextParameter = false;
             for (int i = 0; i < parameters.Length; i++)
             {
-                if (GetParameterMarshaller(options, parameters[i], ref sawAIContextParameter, out _parameterMarshallers[i]) is AIFunctionParameterMetadata parameterView)
-                {
-                    parameterMetadata?.Add(parameterView);
-                }
+                _parameterMarshallers[i] = GetParameterMarshaller(options, parameters[i], ref sawAIContextParameter);
             }
 
             _needsAIFunctionContext = sawAIContextParameter;
 
             // Get the return type and a marshaling func for the return value.
-            Type returnType = GetReturnMarshaller(method, out _returnMarshaller);
+            _returnMarshaller = GetReturnMarshaller(method, out Type returnType);
             _returnTypeInfo = returnType != typeof(void) ? options.SerializerOptions.GetTypeInfo(returnType) : null;
 
             string? description = options.Description ?? method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
             Metadata = new AIFunctionMetadata(functionName)
             {
                 Description = description,
-                Parameters = options.Parameters ?? parameterMetadata!,
-                ReturnParameter = options.ReturnParameter ?? new()
-                {
-                    ParameterType = returnType,
-                    Description = method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
-                    Schema = AIJsonUtilities.CreateJsonSchema(returnType, serializerOptions: options.SerializerOptions, inferenceOptions: options.SchemaCreateOptions),
-                },
+                UnderlyingMethod = method,
                 AdditionalProperties = options.AdditionalProperties ?? EmptyReadOnlyDictionary<string, object?>.Instance,
                 JsonSerializerOptions = options.SerializerOptions,
                 Schema = AIJsonUtilities.CreateFunctionJsonSchema(
+                    method,
                     title: functionName,
                     description: description,
-                    parameters: options.Parameters ?? parameterMetadata,
                     options.SerializerOptions,
                     options.SchemaCreateOptions)
             };
@@ -321,7 +307,11 @@ public static partial class AIFunctionFactory
             switch (_returnTypeInfo)
             {
                 case null:
-                    Debug.Assert(Metadata.ReturnParameter.ParameterType == typeof(void), "The return parameter is not void.");
+                    Debug.Assert(
+                        Metadata.UnderlyingMethod?.ReturnType == typeof(void) ||
+                        Metadata.UnderlyingMethod?.ReturnType == typeof(Task) ||
+                        Metadata.UnderlyingMethod?.ReturnType == typeof(ValueTask), "The return parameter should be void or non-generic task.");
+
                     return null;
 
                 case { Kind: JsonTypeInfoKind.None }:
@@ -342,11 +332,10 @@ public static partial class AIFunctionFactory
         /// <summary>
         /// Gets a delegate for handling the marshaling of a parameter.
         /// </summary>
-        private static AIFunctionParameterMetadata? GetParameterMarshaller(
+        private static Func<IReadOnlyDictionary<string, object?>, AIFunctionContext?, object?> GetParameterMarshaller(
             AIFunctionFactoryCreateOptions options,
             ParameterInfo parameter,
-            ref bool sawAIFunctionContext,
-            out Func<IReadOnlyDictionary<string, object?>, AIFunctionContext?, object?> marshaller)
+            ref bool sawAIFunctionContext)
         {
             if (string.IsNullOrWhiteSpace(parameter.Name))
             {
@@ -363,12 +352,11 @@ public static partial class AIFunctionFactory
 
                 sawAIFunctionContext = true;
 
-                marshaller = static (_, ctx) =>
+                return static (_, ctx) =>
                 {
                     Debug.Assert(ctx is not null, "Expected a non-null context object.");
                     return ctx;
                 };
-                return null;
             }
 
             // Resolve the contract used to marshal the value from JSON -- can throw if not supported or not found.
@@ -376,7 +364,7 @@ public static partial class AIFunctionFactory
             JsonTypeInfo typeInfo = options.SerializerOptions.GetTypeInfo(parameterType);
 
             // Create a marshaller that simply looks up the parameter by name in the arguments dictionary.
-            marshaller = (IReadOnlyDictionary<string, object?> arguments, AIFunctionContext? _) =>
+            return (IReadOnlyDictionary<string, object?> arguments, AIFunctionContext? _) =>
             {
                 // If the parameter has an argument specified in the dictionary, return that argument.
                 if (arguments.TryGetValue(parameter.Name, out object? value))
@@ -417,46 +405,36 @@ public static partial class AIFunctionFactory
                 // No default either. Leave it empty.
                 return null;
             };
-
-            string? description = parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
-            return new AIFunctionParameterMetadata(parameter.Name)
-            {
-                Description = description,
-                HasDefaultValue = parameter.HasDefaultValue,
-                DefaultValue = parameter.HasDefaultValue ? parameter.DefaultValue : null,
-                IsRequired = !parameter.IsOptional,
-                ParameterType = parameter.ParameterType,
-            };
         }
 
         /// <summary>
         /// Gets a delegate for handling the result value of a method, converting it into the <see cref="Task{FunctionResult}"/> to return from the invocation.
         /// </summary>
-        private static Type GetReturnMarshaller(MethodInfo method, out Func<object?, ValueTask<object?>> marshaller)
+        private static Func<object?, ValueTask<object?>> GetReturnMarshaller(MethodInfo method, out Type returnType)
         {
             // Handle each known return type for the method
-            Type returnType = method.ReturnType;
+            returnType = method.ReturnType;
 
             // Task
             if (returnType == typeof(Task))
             {
-                marshaller = async static result =>
+                returnType = typeof(void);
+                return async static result =>
                 {
                     await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
                     return null;
                 };
-                return typeof(void);
             }
 
             // ValueTask
             if (returnType == typeof(ValueTask))
             {
-                marshaller = async static result =>
+                returnType = typeof(void);
+                return async static result =>
                 {
                     await ((ValueTask)ThrowIfNullResult(result)).ConfigureAwait(false);
                     return null;
                 };
-                return typeof(void);
             }
 
             if (returnType.IsGenericType)
@@ -465,12 +443,12 @@ public static partial class AIFunctionFactory
                 if (returnType.GetGenericTypeDefinition() == typeof(Task<>))
                 {
                     MethodInfo taskResultGetter = GetMethodFromGenericMethodDefinition(returnType, _taskGetResult);
-                    marshaller = async result =>
+                    returnType = taskResultGetter.ReturnType;
+                    return async result =>
                     {
                         await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
                         return ReflectionInvoke(taskResultGetter, result, null);
                     };
-                    return taskResultGetter.ReturnType;
                 }
 
                 // ValueTask<T>
@@ -478,19 +456,18 @@ public static partial class AIFunctionFactory
                 {
                     MethodInfo valueTaskAsTask = GetMethodFromGenericMethodDefinition(returnType, _valueTaskAsTask);
                     MethodInfo asTaskResultGetter = GetMethodFromGenericMethodDefinition(valueTaskAsTask.ReturnType, _taskGetResult);
-                    marshaller = async result =>
+                    returnType = asTaskResultGetter.ReturnType;
+                    return async result =>
                     {
                         var task = (Task)ReflectionInvoke(valueTaskAsTask, ThrowIfNullResult(result), null)!;
                         await task.ConfigureAwait(false);
                         return ReflectionInvoke(asTaskResultGetter, task, null);
                     };
-                    return asTaskResultGetter.ReturnType;
                 }
             }
 
             // For everything else, just use the result as-is.
-            marshaller = result => new ValueTask<object?>(result);
-            return returnType;
+            return result => new ValueTask<object?>(result);
 
             // Throws an exception if a result is found to be null unexpectedly
             static object ThrowIfNullResult(object? result) => result ?? throw new InvalidOperationException("Function returned null unexpectedly.");

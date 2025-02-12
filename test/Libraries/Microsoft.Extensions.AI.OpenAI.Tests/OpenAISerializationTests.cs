@@ -373,12 +373,8 @@ public static partial class OpenAISerializationTests
         Assert.Equal("Gets the age of the specified person.", function.Metadata.Description);
         Assert.Equal("GetPersonAge", function.Metadata.Name);
         Assert.Equal("Strict", Assert.Single(function.Metadata.AdditionalProperties).Key);
-        Assert.Equal("Return parameter", function.Metadata.ReturnParameter.Description);
-        Assert.Equal("{}", Assert.IsType<JsonElement>(function.Metadata.ReturnParameter.Schema).GetRawText());
 
-        AIFunctionParameterMetadata parameter = Assert.Single(function.Metadata.Parameters);
-        Assert.Equal("personName", parameter.Name);
-        Assert.True(parameter.IsRequired);
+        Assert.Null(function.Metadata.UnderlyingMethod);
 
         JsonObject parametersSchema = Assert.IsType<JsonObject>(JsonNode.Parse(function.Metadata.Schema.GetProperty("properties").GetRawText()));
         var parameterSchema = Assert.IsType<JsonObject>(Assert.Single(parametersSchema.Select(kvp => kvp.Value)));

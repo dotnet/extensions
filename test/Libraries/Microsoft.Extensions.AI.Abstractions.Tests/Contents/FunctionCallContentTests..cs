@@ -252,15 +252,6 @@ public class FunctionCallContentTests
         public override AIFunctionMetadata Metadata => new("NetTypeless")
         {
             Description = "AIFunction with parameters that lack .NET types",
-            Parameters =
-            [
-                new AIFunctionParameterMetadata("a"),
-                new AIFunctionParameterMetadata("b"),
-                new AIFunctionParameterMetadata("c"),
-                new AIFunctionParameterMetadata("d"),
-                new AIFunctionParameterMetadata("e"),
-                new AIFunctionParameterMetadata("f"),
-            ]
         };
 
         protected override Task<object?> InvokeCoreAsync(IEnumerable<KeyValuePair<string, object?>>? arguments, CancellationToken cancellationToken) =>
