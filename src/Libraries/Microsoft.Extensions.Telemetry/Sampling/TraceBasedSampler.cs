@@ -3,10 +3,12 @@
 
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.Extensions.Diagnostics.Sampling;
+
 internal sealed class TraceBasedSampler : LoggerSampler
 {
-    public override bool ShouldSample(SamplingParameters _) =>
+    public override bool ShouldSample<TState>(in LogEntry<TState> _) =>
         Activity.Current?.Recorded ?? true;
 }

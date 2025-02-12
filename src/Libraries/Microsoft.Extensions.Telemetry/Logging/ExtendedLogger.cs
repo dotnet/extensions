@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Logging;
@@ -268,7 +269,8 @@ internal sealed partial class ExtendedLogger : ILogger
             {
                 if (samplingDecision is null && config.Sampler is not null)
                 {
-                    samplingDecision = config.Sampler.ShouldSample(new SamplingParameters(logLevel, loggerInfo.Category, eventId, joiner));
+                    var logEntry = new LogEntry<LoggerMessageState>(logLevel, loggerInfo.Category, eventId, msgState, exception, formatter);
+                    samplingDecision = config.Sampler.ShouldSample(in logEntry);
                 }
 
                 if (samplingDecision is false)
@@ -364,7 +366,8 @@ internal sealed partial class ExtendedLogger : ILogger
             {
                 if (samplingDecision is null && config.Sampler is not null)
                 {
-                    samplingDecision = config.Sampler.ShouldSample(new SamplingParameters(logLevel, loggerInfo.Category, eventId, joiner));
+                    var logEntry = new LogEntry<TState>(logLevel, loggerInfo.Category, eventId, state, exception, formatter);
+                    samplingDecision = config.Sampler.ShouldSample(in logEntry);
                 }
 
                 if (samplingDecision is false)

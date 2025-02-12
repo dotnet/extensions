@@ -13,15 +13,15 @@ internal interface ILoggerSamplerFilterRule
     /// <summary>
     /// Gets the logger category this rule applies to.
     /// </summary>
-    public string? Category { get; }
+    string? Category { get; }
 
     /// <summary>
     /// Gets the maximum <see cref="LogLevel"/> of messages.
     /// </summary>
-    public LogLevel? LogLevel { get; }
+    LogLevel? LogLevel { get; }
 
     /// <summary>
     /// Gets the maximum <see cref="LogLevel"/> of messages where this rule applies to.
     /// </summary>
-    public int? EventId { get; }
+    int? EventId { get; }
 }

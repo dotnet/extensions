@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Diagnostics.Sampling;
@@ -28,9 +29,9 @@ internal sealed class ProbabilitySampler : LoggerSampler
     }
 
     /// <inheritdoc/>
-    public override bool ShouldSample(SamplingParameters parameters)
+    public override bool ShouldSample<TState>(in LogEntry<TState> logEntry)
     {
-        if (!TryApply(parameters, out var probability))
+        if (!TryApply(logEntry, out var probability))
         {
             return true;
         }
@@ -42,13 +43,13 @@ internal sealed class ProbabilitySampler : LoggerSampler
 #endif
     }
 
-    private bool TryApply(SamplingParameters parameters, out double probability)
+    private bool TryApply<TState>(in LogEntry<TState> logEntry, out double probability)
     {
         probability = 0.0;
 
         // TO DO: check if we can optimize this. It is a hot path and
         // we should be able to minimize number of rule selections on every log record.
-        SamplerRuleSelector.Select(_options.CurrentValue.Rules, parameters.Category, parameters.LogLevel, parameters.EventId, out ProbabilitySamplerFilterRule? rule);
+        SamplerRuleSelector.Select(_options.CurrentValue.Rules, logEntry.Category, logEntry.LogLevel, logEntry.EventId, out ProbabilitySamplerFilterRule? rule);
         if (rule is not null)
         {
             probability = rule.Probability;

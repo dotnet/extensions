@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Sampling;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -101,22 +102,6 @@ public class SamplingLoggerBuilderExtensionsTests
     }
 
     [Fact]
-    public void AddFuncSampler_RegistersInDI()
-    {
-        var serviceCollection = new ServiceCollection();
-        serviceCollection.AddLogging(builder =>
-        {
-            builder.AddSampler(_ => true);
-        });
-        var serviceProvider = serviceCollection.BuildServiceProvider();
-
-        var sampler = serviceProvider.GetService<LoggerSampler>();
-
-        Assert.NotNull(sampler);
-        Assert.IsType<FuncBasedSampler>(sampler);
-    }
-
-    [Fact]
     public void WhenArgumentIsNull_Throws()
     {
         var builder = null as ILoggingBuilder;
@@ -127,18 +112,15 @@ public class SamplingLoggerBuilderExtensionsTests
         var action2 = () => SamplingLoggerBuilderExtensions.AddProbabilitySampler(builder!, 1.0);
         Assert.Throws<ArgumentNullException>(action);
 
-        var action3 = () => SamplingLoggerBuilderExtensions.AddSampler(builder!, (_) => true);
+        var action3 = () => SamplingLoggerBuilderExtensions.AddSampler<MySampler>(builder!);
         Assert.Throws<ArgumentNullException>(action);
 
-        var action4 = () => SamplingLoggerBuilderExtensions.AddSampler<MySampler>(builder!);
-        Assert.Throws<ArgumentNullException>(action);
-
-        var action5 = () => SamplingLoggerBuilderExtensions.AddSampler(builder!, new MySampler());
+        var action4 = () => SamplingLoggerBuilderExtensions.AddSampler(builder!, new MySampler());
         Assert.Throws<ArgumentNullException>(action);
     }
 
     private class MySampler : LoggerSampler
     {
-        public override bool ShouldSample(SamplingParameters _) => true;
+        public override bool ShouldSample<TState>(in LogEntry<TState> logEntry) => true;
     }
 }

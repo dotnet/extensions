@@ -75,21 +75,6 @@ public static class SamplingLoggerBuilderExtensions
     }
 
     /// <summary>
-    /// Adds a lambda logging sampler to the logging infrastructure.
-    /// </summary>
-    /// <param name="builder">The dependency injection container to add logging to.</param>
-    /// <param name="samplingDecision">The delegate to be used to decide what to sample.</param>
-    /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="builder"/> or <paramref name="samplingDecision"/> is <see langword="null"/>.</exception>
-    public static ILoggingBuilder AddSampler(this ILoggingBuilder builder, Func<SamplingParameters, bool> samplingDecision)
-    {
-        _ = Throw.IfNull(builder);
-        _ = Throw.IfNull(samplingDecision);
-
-        return builder.AddSampler(new FuncBasedSampler(samplingDecision));
-    }
-
-    /// <summary>
     /// Adds a logging sampler type to the logging infrastructure.
     /// </summary>
     /// <typeparam name="T">Logging sampler type.</typeparam>
