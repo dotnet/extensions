@@ -69,7 +69,7 @@ public sealed class AIFunctionMetadata
     /// Gets the underlying .NET method that the function could be wrapping.
     /// </summary>
     /// <remarks>
-    /// Used to provide additional metadata on the function and its signature.
+    /// This property provides additional metadata on the function and its signature.
     /// Setting this property is optional and should have no impact on function invocation or its JSON schema,
     /// which is how <see cref="IChatClient"/> implementations interface with AI functions primarily.
     /// </remarks>
