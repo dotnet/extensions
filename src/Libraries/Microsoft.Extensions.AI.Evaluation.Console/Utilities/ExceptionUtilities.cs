@@ -18,26 +18,32 @@ internal static class ExceptionUtilities
 
     private static bool ContainsOnlyCancellations(this AggregateException exception)
     {
-        var exceptionsToCheck = new Stack<Exception>();
-        exceptionsToCheck.Push(exception);
+        var toCheck = new Stack<Exception>();
+        toCheck.Push(exception);
 
+        var seen = new HashSet<Exception>();
         bool containsAtLeastOneCancellation = false;
-        while (exceptionsToCheck.TryPop(out Exception? current))
+
+        while (toCheck.TryPop(out Exception? current))
         {
-            if (current is AggregateException aggregateException)
+            // To avoid infinite loops, ignore exceptions that were already seen.
+            if (seen.Add(current))
             {
-                foreach (var innerException in aggregateException.InnerExceptions)
+                if (current is AggregateException aggregateException)
                 {
-                    exceptionsToCheck.Push(innerException);
+                    foreach (var innerException in aggregateException.InnerExceptions)
+                    {
+                        toCheck.Push(innerException);
+                    }
                 }
-            }
-            else if (current is OperationCanceledException)
-            {
-                containsAtLeastOneCancellation = true;
-            }
-            else
-            {
-                return false;
+                else if (current is OperationCanceledException)
+                {
+                    containsAtLeastOneCancellation = true;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
 
