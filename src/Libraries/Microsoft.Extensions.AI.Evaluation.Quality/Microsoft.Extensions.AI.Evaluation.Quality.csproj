@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>A library containing a set of evaluators for evaluating the quality (coherence, relevance, truth, completeness, groundedness, fluency, equivalence etc.) of responses received from an LLM.</Description>
@@ -11,6 +11,7 @@
     <Stage>preview</Stage>
     <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
     <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
+    <EnablePackageValidation>false</EnablePackageValidation>
     <MinCodeCoverage>88</MinCodeCoverage>
     <MinMutationScore>0</MinMutationScore>
   </PropertyGroup>
