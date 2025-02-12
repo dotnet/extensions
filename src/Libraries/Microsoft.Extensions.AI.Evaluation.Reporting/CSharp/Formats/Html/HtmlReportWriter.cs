@@ -34,7 +34,15 @@ public sealed class HtmlReportWriter(string reportFilePath) : IEvaluationReportW
                 createdAt: DateTime.UtcNow,
                 generatorVersion: Constants.Version);
 
-        using var stream = new FileStream(reportFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
+        using var stream =
+            new FileStream(
+                reportFilePath,
+                FileMode.Create,
+                FileAccess.Write,
+                FileShare.None,
+                bufferSize: 4096,
+                useAsync: true);
+
         using var writer = new StreamWriter(stream, Encoding.UTF8);
 
 #if NET
