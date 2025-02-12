@@ -183,7 +183,7 @@ internal sealed class PromptBasedFunctionCallingChatClient(IChatClient innerClie
     {
         Name = tool.Metadata.Name,
         Description = tool.Metadata.Description,
-        Arguments = tool.Metadata.UnderlyingMethod!.GetParameters().ToDictionary(
+        Arguments = tool.Metadata.UnderlyingMethod?.GetParameters().ToDictionary(
             p => p.Name!,
             p => new ToolParameterDescriptor
             {
@@ -191,7 +191,7 @@ internal sealed class PromptBasedFunctionCallingChatClient(IChatClient innerClie
                 Description = p.GetCustomAttribute<DescriptionAttribute>()?.Description,
                 Enum = p.ParameterType.IsEnum ? Enum.GetNames(p.ParameterType) : null,
                 Required = !p.IsOptional,
-            }),
+            }) ?? [],
     };
 
     private sealed class ToolDescriptor
