@@ -119,8 +119,6 @@ public sealed class CompositeEvaluator : IEvaluator
 
         await foreach (EvaluationResult result in resultsStream.ConfigureAwait(false))
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             metrics.AddRange(result.Metrics.Values);
         }
 

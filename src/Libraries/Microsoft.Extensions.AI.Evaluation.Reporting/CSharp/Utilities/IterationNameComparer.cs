@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.AI.Evaluation.Reporting.Utilities;
 
 internal static class IterationNameComparer
 {
-    internal static readonly Comparer<string> Default =
+    internal static Comparer<string> Default { get; } =
          Comparer<string>.Create(
              (first, second) =>
              {

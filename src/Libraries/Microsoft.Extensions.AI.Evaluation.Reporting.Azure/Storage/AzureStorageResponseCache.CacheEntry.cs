@@ -44,7 +44,7 @@ public partial class AzureStorageResponseCache
 
             CacheEntry cacheEntry =
                 JsonSerializer.Deserialize(
-                    content.Value.Content.ToStream(),
+                    content.Value.Content.ToMemory().Span,
                     AzureStorageSerializerContext.Default.CacheEntry)
                 ?? throw new JsonException(
                     string.Format(CultureInfo.CurrentCulture, DeserializationFailedMessage, fileClient.Name));

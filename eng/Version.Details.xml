@@ -1,9 +1,5 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Bcl.Memory" Version="9.0.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>69ae1ac0682f4b69b1d733fbf3bdee2825a2aab2</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.Bcl.TimeProvider" Version="9.0.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>69ae1ac0682f4b69b1d733fbf3bdee2825a2aab2</Sha>

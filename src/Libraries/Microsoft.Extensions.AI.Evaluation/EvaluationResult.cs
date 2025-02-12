@@ -56,12 +56,19 @@ public sealed class EvaluationResult
 
         foreach (EvaluationMetric metric in metrics)
         {
+#if NET
+            if (!metricsDictionary.TryAdd(metric.Name, metric))
+            {
+                Throw.ArgumentException(nameof(metrics), $"Cannot add multiple metrics with name '{metric.Name}'.");
+            }
+#else
             if (metricsDictionary.ContainsKey(metric.Name))
             {
                 Throw.ArgumentException(nameof(metrics), $"Cannot add multiple metrics with name '{metric.Name}'.");
             }
 
             metricsDictionary[metric.Name] = metric;
+#endif
         }
 
         Metrics = metricsDictionary;

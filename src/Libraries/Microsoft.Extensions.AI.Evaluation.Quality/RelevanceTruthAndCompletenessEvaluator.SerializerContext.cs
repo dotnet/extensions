@@ -15,7 +15,5 @@ public partial class RelevanceTruthAndCompletenessEvaluator
         IgnoreReadOnlyProperties = true,
         PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
     [JsonSerializable(typeof(Rating))]
-    internal sealed partial class SerializerContext : JsonSerializerContext
-    {
-    }
+    internal sealed partial class SerializerContext : JsonSerializerContext;
 }

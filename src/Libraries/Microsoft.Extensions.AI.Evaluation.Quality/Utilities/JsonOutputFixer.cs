@@ -22,8 +22,9 @@ internal static class JsonOutputFixer
         trimmed = trimmed.Trim().Trim(['`']);
 
         // Trim 'json' marker from markdown if it exists.
-        int markerLength = "json".Length;
-        if (trimmed.Length > markerLength && trimmed[0..markerLength].SequenceEqual(['j', 's', 'o', 'n']))
+        const string JsonMarker = "json";
+        int markerLength = JsonMarker.Length;
+        if (trimmed.Length > markerLength && trimmed[0..markerLength].SequenceEqual(JsonMarker.AsSpan()))
         {
             trimmed = trimmed.Slice(markerLength);
         }
@@ -66,6 +67,9 @@ internal static class JsonOutputFixer
             new ChatMessage(ChatRole.System, SystemPrompt),
             new ChatMessage(ChatRole.User, fixPrompt)
         };
+
+        // TASK: Explore supplying the target json type as a type parameter to the IChatClient.GetResponseAsync<T>()
+        // extension method.
 
         ChatResponse response =
             await chatConfig.ChatClient.GetResponseAsync(

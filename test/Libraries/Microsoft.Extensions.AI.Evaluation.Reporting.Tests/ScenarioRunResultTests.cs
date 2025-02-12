@@ -149,7 +149,7 @@ public class ScenarioRunResultTests
 
     private class ChatMessageComparer : IEqualityComparer<ChatMessage>
     {
-        public static readonly ChatMessageComparer Instance = new ChatMessageComparer();
+        public static ChatMessageComparer Instance { get; } = new ChatMessageComparer();
 
         public bool Equals(ChatMessage? x, ChatMessage? y)
             => x?.AuthorName == y?.AuthorName && x?.Role == y?.Role && x?.Text == y?.Text;
@@ -160,7 +160,7 @@ public class ScenarioRunResultTests
 
     private class DiagnosticComparer : IEqualityComparer<EvaluationDiagnostic>
     {
-        public static readonly DiagnosticComparer Instance = new DiagnosticComparer();
+        public static DiagnosticComparer Instance { get; } = new DiagnosticComparer();
 
         public bool Equals(EvaluationDiagnostic? x, EvaluationDiagnostic? y)
             => x?.Severity == y?.Severity && x?.Message == y?.Message;

@@ -19,15 +19,15 @@ namespace Microsoft.Extensions.AI.Evaluation.Quality;
 /// reasoning behind the corresponding scores. By default, <paramref name="includeReasoning"/> is set to
 /// <see langword="false"/>.
 /// </param>
-public class RelevanceTruthAndCompletenessEvaluatorOptions(bool includeReasoning = false)
+public sealed class RelevanceTruthAndCompletenessEvaluatorOptions(bool includeReasoning = false)
 {
     /// <summary>
-    /// Default options for <see cref="RelevanceTruthAndCompletenessEvaluator"/>.
+    /// Gets the default options for <see cref="RelevanceTruthAndCompletenessEvaluator"/>.
     /// </summary>
     /// <remarks>
     /// <see cref="IncludeReasoning"/> is set to <see langword="false"/> by default.
     /// </remarks>
-    public static readonly RelevanceTruthAndCompletenessEvaluatorOptions Default =
+    public static RelevanceTruthAndCompletenessEvaluatorOptions Default { get; } =
         new RelevanceTruthAndCompletenessEvaluatorOptions();
 
     /// <summary>

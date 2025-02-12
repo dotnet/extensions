@@ -2,12 +2,12 @@
 
 <#
 .SYNOPSIS
-    The script to configure a local repo for online evaluation tests, which use external resources.
+    Configures local repo for online evaluation tests, which use external resources.
 
 .DESCRIPTION
-    This script copies appsettings files from the a location on the developer's machine to the test
+    This script copies appsettings files from a location on the developer's machine to the test
     project directories so that the tests are configured to connect to external resources. The online 
-    configuration files should gitignore'd and not checked in to the repo.
+    configuration files are gitignore'd and not checked in to the repo.
 
 .PARAMETER Configure
     Configure this repo for online evaluation tests, by copying appsettings files from the developer's 

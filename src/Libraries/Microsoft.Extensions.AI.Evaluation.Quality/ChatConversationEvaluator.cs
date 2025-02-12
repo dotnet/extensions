@@ -37,8 +37,6 @@ public abstract class ChatConversationEvaluator : IEvaluator
     /// </summary>
     protected virtual string? SystemPrompt => null;
 
-    private static List<ChatMessage> EmptyMessages { get; } = [];
-
     /// <inheritdoc/>
     public async ValueTask<EvaluationResult> EvaluateAsync(
         IEnumerable<ChatMessage> messages,
@@ -95,7 +93,7 @@ public abstract class ChatConversationEvaluator : IEvaluator
                 await RenderEvaluationPromptAsync(
                     userRequest,
                     modelResponse,
-                    includedHistory: EmptyMessages,
+                    includedHistory: [],
                     additionalContext,
                     cancellationToken).ConfigureAwait(false);
 
@@ -120,7 +118,7 @@ public abstract class ChatConversationEvaluator : IEvaluator
                     if (!canRender)
                     {
                         ignoredMessagesCount = 1;
-                        history = EmptyMessages;
+                        history = [];
                     }
                 }
                 else
@@ -242,7 +240,6 @@ public abstract class ChatConversationEvaluator : IEvaluator
             return new ValueTask<bool>(true);
         }
 
-        // The 'AuthorName' property is subject to change or removal in future updates.
         string? author = message.AuthorName;
         string role = message.Role.Value;
         string content = message.Text ?? string.Empty;
@@ -290,7 +287,6 @@ public abstract class ChatConversationEvaluator : IEvaluator
     {
         _ = Throw.IfNull(message, nameof(message));
 
-        // The 'AuthorName' property is subject to change or removal in future updates.
         string? author = message.AuthorName;
         string role = message.Role.Value;
         string? content = message.Text;
@@ -376,7 +372,7 @@ public abstract class ChatConversationEvaluator : IEvaluator
                     ? lastMessage
                     : null;
 
-            history = EmptyMessages;
+            history = [];
         }
         else
         {

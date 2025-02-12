@@ -13,8 +13,6 @@ namespace Microsoft.Extensions.AI.Evaluation.Reporting;
 /// </summary>
 public static class ScenarioRunExtensions
 {
-    private static IEnumerable<ChatMessage> EmptyMessages { get; } = [];
-
     /// <summary>
     /// Evaluates the supplied <paramref name="modelResponse"/> and returns an <see cref="EvaluationResult"/>
     /// containing one or more <see cref="EvaluationMetric"/>s.
@@ -92,7 +90,7 @@ public static class ScenarioRunExtensions
         _ = Throw.IfNull(scenarioRun, nameof(scenarioRun));
 
         return scenarioRun.EvaluateAsync(
-                messages: EmptyMessages,
+                messages: [],
                 modelResponse,
                 additionalContext,
                 cancellationToken);

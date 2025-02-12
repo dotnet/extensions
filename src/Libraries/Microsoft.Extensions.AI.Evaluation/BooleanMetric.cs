@@ -9,6 +9,4 @@ namespace Microsoft.Extensions.AI.Evaluation;
 /// </summary>
 /// <param name="name">The name of the <see cref="BooleanMetric"/>.</param>
 /// <param name="value">The value of the <see cref="BooleanMetric"/>.</param>
-public sealed class BooleanMetric(string name, bool? value = null) : EvaluationMetric<bool?>(name, value)
-{
-}
+public sealed class BooleanMetric(string name, bool? value = null) : EvaluationMetric<bool?>(name, value);

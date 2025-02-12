@@ -12,7 +12,7 @@
     <Workstream>AIEval</Workstream>
     <Stage>preview</Stage>
     <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
-    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
+    <EnablePackageValidation>false</EnablePackageValidation>
     <MinCodeCoverage>88</MinCodeCoverage>
     <MinMutationScore>0</MinMutationScore>
   </PropertyGroup>

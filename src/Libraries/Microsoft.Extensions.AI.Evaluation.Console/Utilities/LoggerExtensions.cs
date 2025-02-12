@@ -16,7 +16,7 @@ internal static class LoggerExtensions
 {
     internal static bool LogException(this ILogger logger, Exception exception)
     {
-        logger.LogError("{errorMessage}", exception.ToString());
+        logger.LogError(exception, message: null);
         return true;
     }
 

@@ -28,7 +28,6 @@
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/runtime -->
     <MicrosoftBclAsyncInterfacesVersion>9.0.1</MicrosoftBclAsyncInterfacesVersion>
-    <MicrosoftBclMemoryVersion>9.0.1</MicrosoftBclMemoryVersion>
     <MicrosoftBclTimeProviderVersion>9.0.1</MicrosoftBclTimeProviderVersion>
     <MicrosoftExtensionsCachingAbstractionsVersion>9.0.1</MicrosoftExtensionsCachingAbstractionsVersion>
     <MicrosoftExtensionsCachingMemoryVersion>9.0.1</MicrosoftExtensionsCachingMemoryVersion>
@@ -79,7 +78,6 @@
   <PropertyGroup Label="Manual">
     <!-- Packages from dotnet/runtime -->
     <MicrosoftBclAsyncInterfacesLTSVersion>8.0.0</MicrosoftBclAsyncInterfacesLTSVersion>
-    <MicrosoftBclMemoryLTSVersion>9.0.1</MicrosoftBclMemoryLTSVersion>
     <MicrosoftBclTimeProviderLTSVersion>8.0.1</MicrosoftBclTimeProviderLTSVersion>
     <MicrosoftExtensionsCachingAbstractionsLTSVersion>8.0.0</MicrosoftExtensionsCachingAbstractionsLTSVersion>
     <MicrosoftExtensionsCachingMemoryLTSVersion>8.0.1</MicrosoftExtensionsCachingMemoryLTSVersion>

@@ -20,6 +20,4 @@ namespace Microsoft.Extensions.AI.Evaluation;
 /// </remarks>
 /// <param name="name">The name of the <see cref="NumericMetric"/>.</param>
 /// <param name="value">The value of the <see cref="NumericMetric"/>.</param>
-public sealed class NumericMetric(string name, double? value = null) : EvaluationMetric<double?>(name, value)
-{
-}
+public sealed class NumericMetric(string name, double? value = null) : EvaluationMetric<double?>(name, value);
