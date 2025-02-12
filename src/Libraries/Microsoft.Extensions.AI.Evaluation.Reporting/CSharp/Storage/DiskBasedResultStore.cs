@@ -177,12 +177,12 @@ public sealed class DiskBasedResultStore : IResultStore
     }
 
     /// <inheritdoc/>
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously.
     public async IAsyncEnumerable<string> GetLatestExecutionNamesAsync(
         int? count = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
+#pragma warning restore CS1998
     {
-        await Task.CompletedTask.ConfigureAwait(false);
-
         if (count.HasValue && count <= 0)
         {
             yield break;
@@ -204,12 +204,12 @@ public sealed class DiskBasedResultStore : IResultStore
     }
 
     /// <inheritdoc/>
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously.
     public async IAsyncEnumerable<string> GetScenarioNamesAsync(
         string executionName,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
+#pragma warning restore CS1998
     {
-        await Task.CompletedTask.ConfigureAwait(false);
-
         IEnumerable<DirectoryInfo> executionDirs = EnumerateExecutionDirs(executionName, cancellationToken);
 
         IEnumerable<DirectoryInfo> scenarioDirs =
@@ -224,13 +224,13 @@ public sealed class DiskBasedResultStore : IResultStore
     }
 
     /// <inheritdoc/>
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously.
     public async IAsyncEnumerable<string> GetIterationNamesAsync(
         string executionName,
         string scenarioName,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
+#pragma warning restore CS1998
     {
-        await Task.CompletedTask.ConfigureAwait(false);
-
         IEnumerable<FileInfo> resultFiles =
             EnumerateResultFiles(executionName, scenarioName, cancellationToken: cancellationToken);
 
