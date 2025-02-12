@@ -49,8 +49,7 @@ public sealed class GroundednessEvaluator : SingleNumericMetricEvaluator
 
         var builder = new StringBuilder();
 
-        if (additionalContext is not null &&
-            additionalContext.OfType<GroundednessEvaluatorContext>().FirstOrDefault()
+        if (additionalContext?.OfType<GroundednessEvaluatorContext>().FirstOrDefault()
                 is GroundednessEvaluatorContext context)
         {
             _ = builder.Append(context.GroundingContext);

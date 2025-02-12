@@ -49,8 +49,7 @@ public sealed class EquivalenceEvaluator : SingleNumericMetricEvaluator
 
         string groundTruth;
 
-        if (additionalContext is not null &&
-            additionalContext.OfType<EquivalenceEvaluatorContext>().FirstOrDefault()
+        if (additionalContext?.OfType<EquivalenceEvaluatorContext>().FirstOrDefault()
                 is EquivalenceEvaluatorContext context)
         {
             groundTruth = context.GroundTruth;
