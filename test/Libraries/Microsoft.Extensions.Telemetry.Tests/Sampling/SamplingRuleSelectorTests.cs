@@ -16,22 +16,22 @@ public class SamplingRuleSelectorTests
         // Arrange
         var rules = new List<ILoggerSamplerFilterRule>
         {
-            new ProbabilitySamplerFilterRule(0, null, null, null),
-            new ProbabilitySamplerFilterRule(0, null, null, 1),
-            new ProbabilitySamplerFilterRule(0, null, LogLevel.Information, 1),
-            new ProbabilitySamplerFilterRule(0, null, LogLevel.Information, 1),
-            new ProbabilitySamplerFilterRule(0, null, LogLevel.Warning, null),
-            new ProbabilitySamplerFilterRule(0, null, LogLevel.Warning, 2),
-            new ProbabilitySamplerFilterRule(0, null, LogLevel.Warning, 1),
-            new ProbabilitySamplerFilterRule(0, "Program1.MyLogger", LogLevel.Warning, 1),
-            new ProbabilitySamplerFilterRule(0, "Program.*MyLogger1", LogLevel.Warning, 1),
-            new ProbabilitySamplerFilterRule(0, "Program.MyLogger", LogLevel.Warning, 1), // the best rule
-            new ProbabilitySamplerFilterRule(0, "Program.MyLogger", LogLevel.Warning, 2),
-            new ProbabilitySamplerFilterRule(0, "Program.MyLogger", null, 1),
-            new ProbabilitySamplerFilterRule(0, null, LogLevel.Warning, 1),
-            new ProbabilitySamplerFilterRule(0, "Program", LogLevel.Warning, 1),
-            new ProbabilitySamplerFilterRule(0, "Program.MyLogger", LogLevel.Warning, null),
-            new ProbabilitySamplerFilterRule(0, "Program.MyLogger", LogLevel.Error, 1),
+            new ProbabilisticSamplerFilterRule(0, null, null, null),
+            new ProbabilisticSamplerFilterRule(0, null, null, 1),
+            new ProbabilisticSamplerFilterRule(0, null, LogLevel.Information, 1),
+            new ProbabilisticSamplerFilterRule(0, null, LogLevel.Information, 1),
+            new ProbabilisticSamplerFilterRule(0, null, LogLevel.Warning, null),
+            new ProbabilisticSamplerFilterRule(0, null, LogLevel.Warning, 2),
+            new ProbabilisticSamplerFilterRule(0, null, LogLevel.Warning, 1),
+            new ProbabilisticSamplerFilterRule(0, "Program1.MyLogger", LogLevel.Warning, 1),
+            new ProbabilisticSamplerFilterRule(0, "Program.*MyLogger1", LogLevel.Warning, 1),
+            new ProbabilisticSamplerFilterRule(0, "Program.MyLogger", LogLevel.Warning, 1), // the best rule
+            new ProbabilisticSamplerFilterRule(0, "Program.MyLogger", LogLevel.Warning, 2),
+            new ProbabilisticSamplerFilterRule(0, "Program.MyLogger", null, 1),
+            new ProbabilisticSamplerFilterRule(0, null, LogLevel.Warning, 1),
+            new ProbabilisticSamplerFilterRule(0, "Program", LogLevel.Warning, 1),
+            new ProbabilisticSamplerFilterRule(0, "Program.MyLogger", LogLevel.Warning, null),
+            new ProbabilisticSamplerFilterRule(0, "Program.MyLogger", LogLevel.Error, 1),
         };
 
         // Act
@@ -47,15 +47,15 @@ public class SamplingRuleSelectorTests
         // Arrange
         var rules = new List<ILoggerSamplerFilterRule>
         {
-            new ProbabilitySamplerFilterRule(0, null, LogLevel.Information, 1),
-            new ProbabilitySamplerFilterRule(0, null, LogLevel.Information, 1),
-            new ProbabilitySamplerFilterRule(0, null, LogLevel.Warning, null),
-            new ProbabilitySamplerFilterRule(0, null, LogLevel.Warning, 2),
-            new ProbabilitySamplerFilterRule(0, null, LogLevel.Warning, 1),
-            new ProbabilitySamplerFilterRule(0, "Program1.MyLogger", LogLevel.Warning, 1),
-            new ProbabilitySamplerFilterRule(0, "Program.*MyLogger1", LogLevel.Warning, 1),
-            new ProbabilitySamplerFilterRule(0, "Program.MyLogger", LogLevel.Warning, 1), // the best rule
-            new ProbabilitySamplerFilterRule(0, "Program.MyLogger*", LogLevel.Warning, 1), // same as the best, but last, and should be selected
+            new ProbabilisticSamplerFilterRule(0, null, LogLevel.Information, 1),
+            new ProbabilisticSamplerFilterRule(0, null, LogLevel.Information, 1),
+            new ProbabilisticSamplerFilterRule(0, null, LogLevel.Warning, null),
+            new ProbabilisticSamplerFilterRule(0, null, LogLevel.Warning, 2),
+            new ProbabilisticSamplerFilterRule(0, null, LogLevel.Warning, 1),
+            new ProbabilisticSamplerFilterRule(0, "Program1.MyLogger", LogLevel.Warning, 1),
+            new ProbabilisticSamplerFilterRule(0, "Program.*MyLogger1", LogLevel.Warning, 1),
+            new ProbabilisticSamplerFilterRule(0, "Program.MyLogger", LogLevel.Warning, 1), // the best rule
+            new ProbabilisticSamplerFilterRule(0, "Program.MyLogger*", LogLevel.Warning, 1), // same as the best, but last, and should be selected
         };
 
         // Act

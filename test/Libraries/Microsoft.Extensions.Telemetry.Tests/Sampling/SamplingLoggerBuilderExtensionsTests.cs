@@ -31,29 +31,29 @@ public class SamplingLoggerBuilderExtensionsTests
     }
 
     [Fact]
-    public void AddProbabilitySampler_RegistersInDI()
+    public void AddProbabilisticSampler_RegistersInDI()
     {
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging(builder =>
         {
-            builder.AddProbabilitySampler(1.0);
+            builder.AddProbabilisticSampler(1.0);
         });
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
         var sampler = serviceProvider.GetService<LoggerSampler>();
 
         Assert.NotNull(sampler);
-        Assert.IsType<ProbabilitySampler>(sampler);
+        Assert.IsType<ProbabilisticSampler>(sampler);
     }
 
     [Fact]
-    public void AddProbabilitySamplerConfiguration_RegistersInDI()
+    public void AddProbabilisticSamplerConfiguration_RegistersInDI()
     {
-        List<ProbabilitySamplerFilterRule> expectedData =
+        List<ProbabilisticSamplerFilterRule> expectedData =
         [
-            new ProbabilitySamplerFilterRule(1.0, "Program.MyLogger", LogLevel.Information, 1),
-            new ProbabilitySamplerFilterRule(0.01, null, LogLevel.Information, null),
-            new ProbabilitySamplerFilterRule(0.1, null, LogLevel.Warning, null)
+            new ProbabilisticSamplerFilterRule(1.0, "Program.MyLogger", LogLevel.Information, 1),
+            new ProbabilisticSamplerFilterRule(0.01, null, LogLevel.Information, null),
+            new ProbabilisticSamplerFilterRule(0.1, null, LogLevel.Warning, null)
         ];
         ConfigurationBuilder configBuilder = new ConfigurationBuilder();
         configBuilder.AddJsonFile("appsettings.json");
@@ -61,10 +61,10 @@ public class SamplingLoggerBuilderExtensionsTests
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging(builder =>
         {
-            builder.AddProbabilitySamplerConfiguration(configuration);
+            builder.AddProbabilisticSamplerConfiguration(configuration);
         });
         var serviceProvider = serviceCollection.BuildServiceProvider();
-        var options = serviceProvider.GetService<IOptionsMonitor<ProbabilitySamplerOptions>>();
+        var options = serviceProvider.GetService<IOptionsMonitor<ProbabilisticSamplerOptions>>();
         Assert.NotNull(options);
         Assert.NotNull(options.CurrentValue);
         Assert.Equivalent(expectedData, options.CurrentValue.Rules);
@@ -109,7 +109,7 @@ public class SamplingLoggerBuilderExtensionsTests
         var action = () => SamplingLoggerBuilderExtensions.AddTraceBasedSampler(builder!);
         Assert.Throws<ArgumentNullException>(action);
 
-        var action2 = () => SamplingLoggerBuilderExtensions.AddProbabilitySampler(builder!, 1.0);
+        var action2 = () => SamplingLoggerBuilderExtensions.AddProbabilisticSampler(builder!, 1.0);
         Assert.Throws<ArgumentNullException>(action);
 
         var action3 = () => SamplingLoggerBuilderExtensions.AddSampler<MySampler>(builder!);
