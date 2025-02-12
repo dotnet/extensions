@@ -6,17 +6,8 @@ param (
 # if version is not set, then run a script to get it
 if ($Version -eq "")
 {
-    $DotNetRoot = Resolve-Path $PSScriptRoot/../../../../../.dotnet/
-    $ReportingProjectLocation = Resolve-Path $PSScriptRoot/../../CSharp/
-    $VersionFields = . "$DotNetRoot/dotnet" msbuild $ReportingProjectLocation -getProperty:MajorVersion,MinorVersion,PatchVersion,VersionSuffixDateStamp,VersionSuffixBuildOfTheDayPadded | ConvertFrom-Json
-    $Version = $VersionFields.Properties.MajorVersion + "." + $VersionFields.Properties.MinorVersion + "." + $VersionFields.Properties.PatchVersion + "."
-    $VersionBuildNumber = $VersionFields.Properties.VersionSuffixDateStamp + "." + $VersionFields.Properties.VersionSuffixBuildOfTheDayPadded
-    if ($VersionBuildNumber -eq ".")
-    {
-        $Version += "424242"
-    } else {
-        $Version += $VersionBuildNumber
-    }
+    $VSIXPackageVersion = Get-Content $PSScriptRoot/VSIXPackageVersion.json | ConvertFrom-Json
+    $Version = $VSIXPackageVersion.PackageVersion
 }
 
 $PackageVersion = $Version

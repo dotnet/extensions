@@ -73,4 +73,19 @@ internal static class Constants
       <Compile Include="$(ConstantsFilePath)" />
     </ItemGroup>
   </Target>
+
+  <!-- Generate a version file that can be accessed from the script that builds the Azure DevOps Extension pacakge. -->
+  <Target Name="StampVSIXPackageVersion" BeforeTargets="CoreCompile">
+    <PropertyGroup>
+      <VSIXPackageVersionFile>..\TypeScript\azure-devops-report\VSIXPackageVersion.json</VSIXPackageVersionFile>
+      <VSIXVersion>$(VersionPrefix).42424242</VSIXVersion>
+      <VSIXVersion Condition=" '$(VersionSuffixDateStamp)'!='' ">$(VersionPrefix).$(VersionSuffixDateStamp)$(VersionSuffixBuildOfTheDayPadded)</VSIXVersion>
+      <Lines>{"PackageVersion":"$(VSIXVersion)"}</Lines>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(VSIXPackageVersionFile)"
+                      Lines="$(Lines)"
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
+  </Target>
+
 </Project>
