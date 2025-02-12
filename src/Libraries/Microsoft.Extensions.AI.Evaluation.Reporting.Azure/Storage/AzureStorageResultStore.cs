@@ -47,8 +47,6 @@ public sealed class AzureStorageResultStore(DataLakeDirectoryClient client) : IR
             subClient.GetPathsAsync(recursive: false, cancellationToken: cancellationToken).ConfigureAwait(false))
 #pragma warning restore S3254
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             if (remaining > 0)
             {
                 yield return GetLastSegmentFromPath(item.Name);
@@ -74,8 +72,6 @@ public sealed class AzureStorageResultStore(DataLakeDirectoryClient client) : IR
             subClient.GetPathsAsync(recursive: false, cancellationToken: cancellationToken).ConfigureAwait(false))
 #pragma warning restore S3254
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             yield return GetLastSegmentFromPath(item.Name);
         }
     }
@@ -94,8 +90,6 @@ public sealed class AzureStorageResultStore(DataLakeDirectoryClient client) : IR
             subClient.GetPathsAsync(recursive: false, cancellationToken: cancellationToken).ConfigureAwait(false))
 #pragma warning restore S3254
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             yield return StripExtension(GetLastSegmentFromPath(item.Name));
         }
     }
@@ -113,8 +107,6 @@ public sealed class AzureStorageResultStore(DataLakeDirectoryClient client) : IR
         await foreach (PathItem pathItem in
             subClient.GetPathsAsync(recursive: true, cancellationToken: cancellationToken).ConfigureAwait(false))
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             if (pathItem.IsDirectory ?? true)
             {
                 continue;

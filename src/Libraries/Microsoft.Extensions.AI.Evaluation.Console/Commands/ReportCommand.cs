@@ -32,15 +32,11 @@ internal sealed partial class ReportCommand(ILogger logger)
         await foreach (string executionName in
             resultStore.GetLatestExecutionNamesAsync(lastN, cancellationToken).ConfigureAwait(false))
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             await foreach (ScenarioRunResult result in
                 resultStore.ReadResultsAsync(
                     executionName,
                     cancellationToken: cancellationToken).ConfigureAwait(false))
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
                 results.Add(result);
             }
         }

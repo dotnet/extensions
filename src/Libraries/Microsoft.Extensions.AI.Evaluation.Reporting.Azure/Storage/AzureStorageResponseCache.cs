@@ -242,8 +242,6 @@ public sealed partial class AzureStorageResponseCache(
         await foreach (PathItem pathItem in
             client.GetPathsAsync(recursive: true, cancellationToken: cancellationToken).ConfigureAwait(false))
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             if (pathItem.Name.EndsWith($"/{EntryFileName}", StringComparison.Ordinal))
             {
                 DataLakeFileClient entryFileClient = client.GetParentFileSystemClient().GetFileClient(pathItem.Name);

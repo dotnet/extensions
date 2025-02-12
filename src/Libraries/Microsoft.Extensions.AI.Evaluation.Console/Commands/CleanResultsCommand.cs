@@ -41,8 +41,6 @@ internal sealed class CleanResultsCommand(ILogger logger)
                     await foreach (string executionName in
                         resultStore.GetLatestExecutionNamesAsync(lastN, cancellationToken).ConfigureAwait(false))
                     {
-                        cancellationToken.ThrowIfCancellationRequested();
-
                         _ = toPreserve.Add(executionName);
                     }
 
@@ -50,8 +48,6 @@ internal sealed class CleanResultsCommand(ILogger logger)
                         resultStore.GetLatestExecutionNamesAsync(
                             cancellationToken: cancellationToken).ConfigureAwait(false))
                     {
-                        cancellationToken.ThrowIfCancellationRequested();
-
                         if (!toPreserve.Contains(executionName))
                         {
                             await resultStore.DeleteResultsAsync(

@@ -89,8 +89,6 @@ internal static class TaskExtensions
 
             await foreach (T result in results.ConfigureAwait(false))
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
                 yield return result;
             }
         }
