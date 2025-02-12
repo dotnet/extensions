@@ -12,6 +12,4 @@ namespace Microsoft.Extensions.AI.Evaluation;
 /// </remarks>
 /// <param name="name">The name of the <see cref="StringMetric"/>.</param>
 /// <param name="value">The value of the <see cref="StringMetric"/>.</param>
-public sealed class StringMetric(string name, string? value = null) : EvaluationMetric<string>(name, value)
-{
-}
+public sealed class StringMetric(string name, string? value = null) : EvaluationMetric<string>(name, value);

@@ -7,6 +7,4 @@ namespace Microsoft.Extensions.AI.Evaluation;
 /// A base class that represents additional contextual information (beyond that which is available in the conversation
 /// history) that an <see cref="IEvaluator"/> may need to accurately evaluate a supplied response. 
 /// </summary>
-public class EvaluationContext
-{
-}
+public class EvaluationContext;
