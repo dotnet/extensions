@@ -426,7 +426,7 @@ public sealed class OllamaChatClient : IChatClient
                         currentTextMessage = new OllamaChatRequestMessage
                         {
                             Role = content.Role.Value,
-                            Content = textContent.Text ?? string.Empty,
+                            Content = textContent.Text,
                         };
                         break;
 
