@@ -89,10 +89,11 @@ public static class ChatResponseUpdateExtensions
     /// <param name="response">The <see cref="ChatResponse"/> object whose properties should be updated based on <paramref name="update"/>.</param>
     private static void ProcessUpdate(ChatResponseUpdate update, Dictionary<int, ChatMessage> messages, ChatResponse response)
     {
-        response.ResponseId ??= update.ResponseId;
+        response.ChatThreadId ??= update.ChatThreadId;
         response.CreatedAt ??= update.CreatedAt;
         response.FinishReason ??= update.FinishReason;
         response.ModelId ??= update.ModelId;
+        response.ResponseId ??= update.ResponseId;
 
 #if NET
         ChatMessage message = CollectionsMarshal.GetValueRefOrAddDefault(messages, update.ChoiceIndex, out _) ??=
