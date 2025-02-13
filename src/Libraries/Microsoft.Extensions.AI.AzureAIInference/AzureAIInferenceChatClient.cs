@@ -77,7 +77,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
     }
 
     /// <inheritdoc />
-    public async Task<ChatCompletion> CompleteAsync(
+    public async Task<ChatResponse> GetResponseAsync(
         IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(chatMessages);
@@ -129,20 +129,20 @@ public sealed class AzureAIInferenceChatClient : IChatClient
             };
         }
 
-        // Wrap the content in a ChatCompletion to return.
-        return new ChatCompletion(returnMessages)
+        // Wrap the content in a ChatResponse to return.
+        return new ChatResponse(returnMessages)
         {
-            CompletionId = response.Id,
             CreatedAt = response.Created,
             ModelId = response.Model,
             FinishReason = ToFinishReason(response.FinishReason),
             RawRepresentation = response,
+            ResponseId = response.Id,
             Usage = usage,
         };
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(
+    public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(chatMessages);
@@ -150,7 +150,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
         Dictionary<string, FunctionCallInfo>? functionCallInfos = null;
         ChatRole? streamedRole = default;
         ChatFinishReason? finishReason = default;
-        string? completionId = null;
+        string? responseId = null;
         DateTimeOffset? createdAt = null;
         string? modelId = null;
         string lastCallId = string.Empty;
@@ -162,25 +162,25 @@ public sealed class AzureAIInferenceChatClient : IChatClient
             // The role and finish reason may arrive during any update, but once they've arrived, the same value should be the same for all subsequent updates.
             streamedRole ??= chatCompletionUpdate.Role is global::Azure.AI.Inference.ChatRole role ? ToChatRole(role) : null;
             finishReason ??= chatCompletionUpdate.FinishReason is CompletionsFinishReason reason ? ToFinishReason(reason) : null;
-            completionId ??= chatCompletionUpdate.Id;
+            responseId ??= chatCompletionUpdate.Id;
             createdAt ??= chatCompletionUpdate.Created;
             modelId ??= chatCompletionUpdate.Model;
 
             // Create the response content object.
-            StreamingChatCompletionUpdate completionUpdate = new()
+            ChatResponseUpdate responseUpdate = new()
             {
-                CompletionId = chatCompletionUpdate.Id,
                 CreatedAt = chatCompletionUpdate.Created,
                 FinishReason = finishReason,
                 ModelId = modelId,
                 RawRepresentation = chatCompletionUpdate,
+                ResponseId = chatCompletionUpdate.Id,
                 Role = streamedRole,
             };
 
             // Transfer over content update items.
             if (chatCompletionUpdate.ContentUpdate is string update)
             {
-                completionUpdate.Contents.Add(new TextContent(update));
+                responseUpdate.Contents.Add(new TextContent(update));
             }
 
             // Transfer over tool call updates.
@@ -213,7 +213,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
 
             if (chatCompletionUpdate.Usage is { } usage)
             {
-                completionUpdate.Contents.Add(new UsageContent(new()
+                responseUpdate.Contents.Add(new UsageContent(new()
                 {
                     InputTokenCount = usage.PromptTokens,
                     OutputTokenCount = usage.CompletionTokens,
@@ -222,18 +222,18 @@ public sealed class AzureAIInferenceChatClient : IChatClient
             }
 
             // Now yield the item.
-            yield return completionUpdate;
+            yield return responseUpdate;
         }
 
         // Now that we've received all updates, combine any for function calls into a single item to yield.
         if (functionCallInfos is not null)
         {
-            var completionUpdate = new StreamingChatCompletionUpdate
+            var responseUpdate = new ChatResponseUpdate
             {
-                CompletionId = completionId,
                 CreatedAt = createdAt,
                 FinishReason = finishReason,
                 ModelId = modelId,
+                ResponseId = responseId,
                 Role = streamedRole,
             };
 
@@ -246,11 +246,11 @@ public sealed class AzureAIInferenceChatClient : IChatClient
                         fci.Arguments?.ToString() ?? string.Empty,
                         entry.Key,
                         fci.Name!);
-                    completionUpdate.Contents.Add(callContent);
+                    responseUpdate.Contents.Add(callContent);
                 }
             }
 
-            yield return completionUpdate;
+            yield return responseUpdate;
         }
     }
 
@@ -321,7 +321,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
                 {
                     switch (prop.Key)
                     {
-                        // Propagate everything else to the ChatCompletionOptions' AdditionalProperties.
+                        // Propagate everything else to the ChatCompletionsOptions' AdditionalProperties.
                         default:
                             if (prop.Value is not null)
                             {

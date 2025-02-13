@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.AI.Evaluation.Tests</RootNamespace>
+    <Description>Unit tests for Microsoft.Extensions.AI.Evaluation.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Evaluation\Microsoft.Extensions.AI.Evaluation.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Evaluation.Quality\Microsoft.Extensions.AI.Evaluation.Quality.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -35,12 +35,12 @@ public class OpenTelemetryChatClientTests
 
         using var innerClient = new TestChatClient
         {
-            CompleteAsyncCallback = async (messages, options, cancellationToken) =>
+            GetResponseAsyncCallback = async (messages, options, cancellationToken) =>
             {
                 await Task.Yield();
-                return new ChatCompletion(new ChatMessage(ChatRole.Assistant, "The blue whale, I think."))
+                return new ChatResponse(new ChatMessage(ChatRole.Assistant, "The blue whale, I think."))
                 {
-                    CompletionId = "id123",
+                    ResponseId = "id123",
                     FinishReason = ChatFinishReason.Stop,
                     Usage = new UsageDetails
                     {
@@ -55,13 +55,13 @@ public class OpenTelemetryChatClientTests
                     },
                 };
             },
-            CompleteStreamingAsyncCallback = CallbackAsync,
+            GetStreamingResponseAsyncCallback = CallbackAsync,
             GetServiceCallback = (serviceType, serviceKey) =>
                 serviceType == typeof(ChatClientMetadata) ? new ChatClientMetadata("testservice", new Uri("http://localhost:12345/something"), "amazingmodel") :
                 null,
         };
 
-        async static IAsyncEnumerable<StreamingChatCompletionUpdate> CallbackAsync(
+        async static IAsyncEnumerable<ChatResponseUpdate> CallbackAsync(
             IList<ChatMessage> messages, ChatOptions? options, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             await Task.Yield();
@@ -69,20 +69,20 @@ public class OpenTelemetryChatClientTests
             foreach (string text in new[] { "The ", "blue ", "whale,", " ", "", "I", " think." })
             {
                 await Task.Yield();
-                yield return new StreamingChatCompletionUpdate
+                yield return new ChatResponseUpdate
                 {
                     Role = ChatRole.Assistant,
                     Text = text,
-                    CompletionId = "id123",
+                    ResponseId = "id123",
                 };
             }
 
-            yield return new StreamingChatCompletionUpdate
+            yield return new ChatResponseUpdate
             {
                 FinishReason = ChatFinishReason.Stop,
             };
 
-            yield return new StreamingChatCompletionUpdate
+            yield return new ChatResponseUpdate
             {
                 Contents = [new UsageContent(new()
                 {
@@ -138,14 +138,14 @@ public class OpenTelemetryChatClientTests
 
         if (streaming)
         {
-            await foreach (var update in chatClient.CompleteStreamingAsync(chatMessages, options))
+            await foreach (var update in chatClient.GetStreamingResponseAsync(chatMessages, options))
             {
                 await Task.Yield();
             }
         }
         else
         {
-            await chatClient.CompleteAsync(chatMessages, options);
+            await chatClient.GetResponseAsync(chatMessages, options);
         }
 
         var activity = Assert.Single(activities);

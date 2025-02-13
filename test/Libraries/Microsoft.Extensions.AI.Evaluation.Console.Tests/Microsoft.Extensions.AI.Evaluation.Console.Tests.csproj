@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
+    <RootNamespace>Microsoft.Extensions.AI.Evaluation.Console.Tests</RootNamespace>
+    <Description>Unit tests for Microsoft.Extensions.AI.Evaluation.Console.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Evaluation.Console\Microsoft.Extensions.AI.Evaluation.Console.csproj" />
+  </ItemGroup>
+
+</Project>

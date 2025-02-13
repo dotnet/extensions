@@ -40,8 +40,11 @@ public class DataIngestor(
         {
             logger.LogInformation("Processing {file}", modifiedDoc.Id);
 
-            await vectorCollection.DeleteBatchAsync(modifiedDoc.Records.Select(r => r.Id));
-
+            if (modifiedDoc.Records.Count > 0)
+            {
+                await vectorCollection.DeleteBatchAsync(modifiedDoc.Records.Select(r => r.Id));
+            }
+            
             var newRecords = await source.CreateRecordsForDocumentAsync(embeddingGenerator, modifiedDoc.Id);
             await foreach (var id in vectorCollection.UpsertBatchAsync(newRecords)) { }
 

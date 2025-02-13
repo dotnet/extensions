@@ -21,15 +21,15 @@ public class ChatMessage
     }
 
     /// <summary>Initializes a new instance of the <see cref="ChatMessage"/> class.</summary>
-    /// <param name="role">Role of the author of the message.</param>
-    /// <param name="content">Content of the message.</param>
+    /// <param name="role">The role of the author of the message.</param>
+    /// <param name="content">The contents of the message.</param>
     public ChatMessage(ChatRole role, string? content)
         : this(role, content is null ? [] : [new TextContent(content)])
     {
     }
 
     /// <summary>Initializes a new instance of the <see cref="ChatMessage"/> class.</summary>
-    /// <param name="role">Role of the author of the message.</param>
+    /// <param name="role">The role of the author of the message.</param>
     /// <param name="contents">The contents for this message.</param>
     public ChatMessage(
         ChatRole role,
@@ -38,6 +38,22 @@ public class ChatMessage
         Role = role;
         _contents = Throw.IfNull(contents);
     }
+
+    /// <summary>Clones the <see cref="ChatMessage"/> to a new <see cref="ChatMessage"/> instance.</summary>
+    /// <returns>A shallow clone of the original message object.</returns>
+    /// <remarks>
+    /// This is a shallow clone. The returned instance is different from the original, but all properties
+    /// refer to the same objects as the original.
+    /// </remarks>
+    public ChatMessage Clone() =>
+        new()
+        {
+            AdditionalProperties = AdditionalProperties,
+            _authorName = _authorName,
+            _contents = _contents,
+            RawRepresentation = RawRepresentation,
+            Role = Role,
+        };
 
     /// <summary>Gets or sets the name of the author of the message.</summary>
     public string? AuthorName
