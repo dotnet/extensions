@@ -23,7 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="..\TypeScript\html-report\dist\index.html" Visible="false">
+    <EmbeddedResource Condition="'$(EnableEvaluationReportBuild)'=='true'"
+        Include="..\TypeScript\html-report\dist\index.html" Visible="false">
       <LogicalName>Reporting.HTML.index.html</LogicalName>
     </EmbeddedResource>
   </ItemGroup>

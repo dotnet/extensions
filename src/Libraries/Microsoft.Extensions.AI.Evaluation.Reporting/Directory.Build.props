@@ -1,0 +1,8 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <!-- Enable this property during development and CI so that the report is built and embedded in the assembly. -->
+    <!-- <EnableEvaluationReportBuild>true</EnableEvaluationReportBuild> -->
+  </PropertyGroup>
+</Project>

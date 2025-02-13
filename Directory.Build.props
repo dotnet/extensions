@@ -102,6 +102,12 @@
     <UseVSTestRunner>true</UseVSTestRunner>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- By default turn off the NodeJS tools required to build the reports for Microsoft.Extensions.AI.Evaluation.Reporting 
+         This should be enabled in CI and also for report development work. -->
+    <EnableEvaluationReportBuild>false</EnableEvaluationReportBuild>
+  </PropertyGroup>
+
   <!-- Common properties -->
   <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\Analyzers.props" />
   <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\Packaging.props" />

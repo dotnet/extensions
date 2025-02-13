@@ -6,6 +6,7 @@
   the multiple parallel builds are invoked for each target framework. -->
   <Target Name="BuildTypescriptBundle"
           BeforeTargets="DispatchToInnerBuilds"
+          Condition="'$(EnableEvaluationReportBuild)'=='true'"
           Outputs="$(MSBuildThisFileDirectory)\TypeScript\html-report\dist\index.html">
     <Message Text="Build the Typescript bundle" Importance="high" />
     <Exec Command="npm install" WorkingDirectory="$(MSBuildThisFileDirectory)\TypeScript" />
