@@ -215,16 +215,16 @@ internal sealed class OpenAIAssistantClient : IChatClient
                     if (tool is AIFunction aiFunction)
                     {
                         bool? strict =
-                            aiFunction.Metadata.AdditionalProperties.TryGetValue("Strict", out object? strictObj) &&
+                            aiFunction.AdditionalProperties.TryGetValue("Strict", out object? strictObj) &&
                             strictObj is bool strictValue ?
                             strictValue : null;
 
                         var functionParameters = BinaryData.FromBytes(
                             JsonSerializer.SerializeToUtf8Bytes(
-                                JsonSerializer.Deserialize(aiFunction.Metadata.Schema, OpenAIJsonContext.Default.OpenAIChatToolJson)!,
+                                JsonSerializer.Deserialize(aiFunction.JsonSchema, OpenAIJsonContext.Default.OpenAIChatToolJson)!,
                                 OpenAIJsonContext.Default.OpenAIChatToolJson));
 
-                        runOptions.ToolsOverride.Add(ToolDefinition.CreateFunction(aiFunction.Metadata.Name, aiFunction.Metadata.Description, functionParameters, strict));
+                        runOptions.ToolsOverride.Add(ToolDefinition.CreateFunction(aiFunction.Name, aiFunction.Description, functionParameters, strict));
                     }
                 }
             }

@@ -416,35 +416,33 @@ internal static partial class OpenAIModelMappers
         }
 
         OpenAIChatToolJson openAiChatTool = JsonSerializer.Deserialize(chatTool.FunctionParameters.ToMemory().Span, OpenAIJsonContext.Default.OpenAIChatToolJson)!;
-        AIFunctionMetadata metadata = new(chatTool.FunctionName)
+        return new MetadataOnlyAIFunction(chatTool.FunctionName)
         {
             Description = chatTool.FunctionDescription,
             AdditionalProperties = additionalProperties,
-            Schema = JsonSerializer.SerializeToElement(openAiChatTool, OpenAIJsonContext.Default.OpenAIChatToolJson),
+            JsonSchema = JsonSerializer.SerializeToElement(openAiChatTool, OpenAIJsonContext.Default.OpenAIChatToolJson),
         };
-
-        return new MetadataOnlyAIFunction(metadata);
     }
 
-    private sealed class MetadataOnlyAIFunction(AIFunctionMetadata metadata) : AIFunction
+    private sealed class MetadataOnlyAIFunction(string name) : AIFunction
     {
-        public override AIFunctionMetadata Metadata => metadata;
+        public override string Name => name;
         protected override Task<object?> InvokeCoreAsync(IEnumerable<KeyValuePair<string, object?>> arguments, CancellationToken cancellationToken) =>
-            throw new InvalidOperationException($"The AI function '{metadata.Name}' does not support being invoked.");
+            throw new InvalidOperationException($"The AI function '{Name}' does not support being invoked.");
     }
 
     /// <summary>Converts an Extensions function to an OpenAI chat tool.</summary>
     private static ChatTool ToOpenAIChatTool(AIFunction aiFunction)
     {
         bool? strict =
-            aiFunction.Metadata.AdditionalProperties.TryGetValue("Strict", out object? strictObj) &&
+            aiFunction.AdditionalProperties.TryGetValue("Strict", out object? strictObj) &&
             strictObj is bool strictValue ?
             strictValue : null;
 
         // Map to an intermediate model so that redundant properties are skipped.
-        var tool = JsonSerializer.Deserialize(aiFunction.Metadata.Schema, OpenAIJsonContext.Default.OpenAIChatToolJson)!;
+        var tool = JsonSerializer.Deserialize(aiFunction.JsonSchema, OpenAIJsonContext.Default.OpenAIChatToolJson)!;
         var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool, OpenAIJsonContext.Default.OpenAIChatToolJson));
-        return ChatTool.CreateFunctionTool(aiFunction.Metadata.Name, aiFunction.Metadata.Description, functionParameters, strict);
+        return ChatTool.CreateFunctionTool(aiFunction.Name, aiFunction.Description, functionParameters, strict);
     }
 
     private static UsageDetails FromOpenAIUsage(ChatTokenUsage tokenUsage)

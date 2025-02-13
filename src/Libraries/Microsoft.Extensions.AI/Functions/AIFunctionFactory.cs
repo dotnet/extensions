@@ -30,12 +30,6 @@ public static partial class AIFunctionFactory
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
     /// <remarks>
     /// <para>
-    /// The resulting <see cref="AIFunction"/> exposes metadata about the function via <see cref="AIFunction.Metadata"/>.
-    /// This metadata includes the function's name, description, and parameters. All of that information may be specified
-    /// explicitly via <paramref name="options"/>; however, if not specified, defaults are inferred by examining
-    /// <paramref name="method"/>. That includes examining the method and its parameters for <see cref="DescriptionAttribute"/>s.
-    /// </para>
-    /// <para>
     /// Return values are serialized to <see cref="JsonElement"/> using <paramref name="options"/>'s
     /// <see cref="AIFunctionFactoryCreateOptions.SerializerOptions"/>. Arguments that are not already of the expected type are
     /// marshaled to the expected type via JSON and using <paramref name="options"/>'s
@@ -58,13 +52,6 @@ public static partial class AIFunctionFactory
     /// <param name="serializerOptions">The <see cref="JsonSerializerOptions"/> used to marshal function parameters and any return value.</param>
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
     /// <remarks>
-    /// <para>
-    /// The resulting <see cref="AIFunction"/> exposes metadata about the function via <see cref="AIFunction.Metadata"/>.
-    /// This metadata includes the function's name, description, and parameters. The function's name and description may
-    /// be specified explicitly via <paramref name="name"/> and <paramref name="description"/>, but if they're not, this method
-    /// will infer values from examining <paramref name="method"/>. That includes looking for <see cref="DescriptionAttribute"/>
-    /// attributes on the method itself and on its parameters.
-    /// </para>
     /// <para>
     /// Return values are serialized to <see cref="JsonElement"/> using <paramref name="serializerOptions"/>.
     /// Arguments that are not already of the expected type are marshaled to the expected type via JSON and using
@@ -102,12 +89,6 @@ public static partial class AIFunctionFactory
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
     /// <remarks>
     /// <para>
-    /// The resulting <see cref="AIFunction"/> exposes metadata about the function via <see cref="AIFunction.Metadata"/>.
-    /// This metadata includes the function's name, description, and parameters. All of that information may be specified
-    /// explicitly via <paramref name="options"/>; however, if not specified, defaults are inferred by examining
-    /// <paramref name="method"/>. That includes examining the method and its parameters for <see cref="DescriptionAttribute"/>s.
-    /// </para>
-    /// <para>
     /// Return values are serialized to <see cref="JsonElement"/> using <paramref name="options"/>'s
     /// <see cref="AIFunctionFactoryCreateOptions.SerializerOptions"/>. Arguments that are not already of the expected type are
     /// marshaled to the expected type via JSON and using <paramref name="options"/>'s
@@ -136,13 +117,6 @@ public static partial class AIFunctionFactory
     /// <param name="serializerOptions">The <see cref="JsonSerializerOptions"/> used to marshal function parameters and return value.</param>
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
     /// <remarks>
-    /// <para>
-    /// The resulting <see cref="AIFunction"/> exposes metadata about the function via <see cref="AIFunction.Metadata"/>.
-    /// This metadata includes the function's name, description, and parameters. The function's name and description may
-    /// be specified explicitly via <paramref name="name"/> and <paramref name="description"/>, but if they're not, this method
-    /// will infer values from examining <paramref name="method"/>. That includes looking for <see cref="DescriptionAttribute"/>
-    /// attributes on the method itself and on its parameters.
-    /// </para>
     /// <para>
     /// Return values are serialized to <see cref="JsonElement"/> using <paramref name="serializerOptions"/>.
     /// Arguments that are not already of the expected type are marshaled to the expected type via JSON and using
@@ -257,24 +231,21 @@ public static partial class AIFunctionFactory
             _returnMarshaller = GetReturnMarshaller(method, out Type returnType);
             _returnTypeInfo = returnType != typeof(void) ? options.SerializerOptions.GetTypeInfo(returnType) : null;
 
-            string? description = options.Description ?? method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
-            Metadata = new AIFunctionMetadata(functionName)
-            {
-                Description = description,
-                UnderlyingMethod = method,
-                AdditionalProperties = options.AdditionalProperties ?? EmptyReadOnlyDictionary<string, object?>.Instance,
-                JsonSerializerOptions = options.SerializerOptions,
-                Schema = AIJsonUtilities.CreateFunctionJsonSchema(
-                    method,
-                    title: functionName,
-                    description: description,
-                    options.SerializerOptions,
-                    options.SchemaCreateOptions)
-            };
+            Name = functionName;
+            Description = options.Description ?? method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
+            UnderlyingMethod = method;
+            AdditionalProperties = options.AdditionalProperties ?? EmptyReadOnlyDictionary<string, object?>.Instance;
+            JsonSerializerOptions = options.SerializerOptions;
+            JsonSchema = AIJsonUtilities.CreateFunctionJsonSchema(
+                method,
+                title: Name,
+                description: Description,
+                options.SerializerOptions,
+                options.JsonSchemaCreateOptions);
         }
 
         /// <inheritdoc />
-        public override AIFunctionMetadata Metadata { get; }
+        public override string Name { get; }
 
         /// <inheritdoc />
         protected override async Task<object?> InvokeCoreAsync(
@@ -308,9 +279,9 @@ public static partial class AIFunctionFactory
             {
                 case null:
                     Debug.Assert(
-                        Metadata.UnderlyingMethod?.ReturnType == typeof(void) ||
-                        Metadata.UnderlyingMethod?.ReturnType == typeof(Task) ||
-                        Metadata.UnderlyingMethod?.ReturnType == typeof(ValueTask), "The return parameter should be void or non-generic task.");
+                        UnderlyingMethod?.ReturnType == typeof(void) ||
+                        UnderlyingMethod?.ReturnType == typeof(Task) ||
+                        UnderlyingMethod?.ReturnType == typeof(ValueTask), "The return parameter should be void or non-generic task.");
 
                     return null;
 

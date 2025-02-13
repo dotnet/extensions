@@ -249,11 +249,8 @@ public class FunctionCallContentTests
     {
         public static NetTypelessAIFunction Instance { get; } = new NetTypelessAIFunction();
 
-        public override AIFunctionMetadata Metadata => new("NetTypeless")
-        {
-            Description = "AIFunction with parameters that lack .NET types",
-        };
-
+        public override string Name => "NetTypeless";
+        public override string Description => "AIFunction with parameters that lack .NET types";
         protected override Task<object?> InvokeCoreAsync(IEnumerable<KeyValuePair<string, object?>>? arguments, CancellationToken cancellationToken) =>
             Task.FromResult<object?>(arguments);
     }

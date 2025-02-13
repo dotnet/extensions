@@ -181,9 +181,9 @@ internal sealed class PromptBasedFunctionCallingChatClient(IChatClient innerClie
 
     private static ToolDescriptor ToToolDescriptor(AIFunction tool) => new()
     {
-        Name = tool.Metadata.Name,
-        Description = tool.Metadata.Description,
-        Arguments = tool.Metadata.UnderlyingMethod?.GetParameters().ToDictionary(
+        Name = tool.Name,
+        Description = tool.Description,
+        Arguments = tool.UnderlyingMethod?.GetParameters().ToDictionary(
             p => p.Name!,
             p => new ToolParameterDescriptor
             {

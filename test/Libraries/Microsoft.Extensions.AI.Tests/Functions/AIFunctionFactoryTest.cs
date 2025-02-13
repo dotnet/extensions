@@ -135,22 +135,22 @@ public class AIFunctionFactoryTest
 
         Func<string> dotnetFunc = () => "test";
         func = AIFunctionFactory.Create(dotnetFunc);
-        Assert.Contains("Metadata_DerivedFromLambda", func.Metadata.Name);
-        Assert.Empty(func.Metadata.Description);
-        Assert.Same(dotnetFunc.Method, func.Metadata.UnderlyingMethod);
+        Assert.Contains("Metadata_DerivedFromLambda", func.Name);
+        Assert.Empty(func.Description);
+        Assert.Same(dotnetFunc.Method, func.UnderlyingMethod);
 
         Func<string, string> dotnetFunc2 = (string a) => a + " " + a;
         func = AIFunctionFactory.Create(dotnetFunc2);
-        Assert.Contains("Metadata_DerivedFromLambda", func.Metadata.Name);
-        Assert.Empty(func.Metadata.Description);
-        Assert.Same(dotnetFunc2.Method, func.Metadata.UnderlyingMethod);
+        Assert.Contains("Metadata_DerivedFromLambda", func.Name);
+        Assert.Empty(func.Description);
+        Assert.Same(dotnetFunc2.Method, func.UnderlyingMethod);
 
         Func<string, string, string> dotnetFunc3 = [Description("This is a test function")] ([Description("This is A")] string a, [Description("This is B")] string b) => b + " " + a;
         func = AIFunctionFactory.Create(dotnetFunc3);
-        Assert.Contains("Metadata_DerivedFromLambda", func.Metadata.Name);
-        Assert.Equal("This is a test function", func.Metadata.Description);
-        Assert.Same(dotnetFunc3.Method, func.Metadata.UnderlyingMethod);
-        Assert.Collection(func.Metadata.UnderlyingMethod!.GetParameters(),
+        Assert.Contains("Metadata_DerivedFromLambda", func.Name);
+        Assert.Equal("This is a test function", func.Description);
+        Assert.Same(dotnetFunc3.Method, func.UnderlyingMethod);
+        Assert.Collection(func.UnderlyingMethod!.GetParameters(),
             p => Assert.Equal("This is A", p.GetCustomAttribute<DescriptionAttribute>()?.Description),
             p => Assert.Equal("This is B", p.GetCustomAttribute<DescriptionAttribute>()?.Description));
     }
@@ -174,17 +174,17 @@ public class AIFunctionFactoryTest
         Action dotnetFunc = () => { };
         AIFunction func = AIFunctionFactory.Create(dotnetFunc, options);
 
-        Assert.Equal("test name", func.Metadata.Name);
-        Assert.Equal("test description", func.Metadata.Description);
-        Assert.Same(dotnetFunc.Method, func.Metadata.UnderlyingMethod);
-        Assert.Equal(metadata, func.Metadata.AdditionalProperties);
+        Assert.Equal("test name", func.Name);
+        Assert.Equal("test description", func.Description);
+        Assert.Same(dotnetFunc.Method, func.UnderlyingMethod);
+        Assert.Equal(metadata, func.AdditionalProperties);
     }
 
     [Fact]
     public void AIFunctionFactoryCreateOptions_SchemaOptions_HasExpectedDefaults()
     {
         var options = new AIFunctionFactoryCreateOptions();
-        var schemaOptions = options.SchemaCreateOptions;
+        var schemaOptions = options.JsonSchemaCreateOptions;
 
         Assert.NotNull(schemaOptions);
         Assert.True(schemaOptions.IncludeTypeInEnumSchemas);

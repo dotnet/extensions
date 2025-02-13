@@ -231,10 +231,10 @@ public static class AIJsonUtilitiesTests
         JsonSerializerOptions options = new(JsonSerializerOptions.Default);
         AIFunction func = AIFunctionFactory.Create((int x, int y) => x + y, serializerOptions: options);
 
-        Assert.NotNull(func.Metadata.UnderlyingMethod);
+        Assert.NotNull(func.UnderlyingMethod);
 
-        JsonElement resolvedSchema = AIJsonUtilities.CreateFunctionJsonSchema(func.Metadata.UnderlyingMethod, title: func.Metadata.Name);
-        Assert.True(JsonElement.DeepEquals(resolvedSchema, func.Metadata.Schema));
+        JsonElement resolvedSchema = AIJsonUtilities.CreateFunctionJsonSchema(func.UnderlyingMethod, title: func.Name);
+        Assert.True(JsonElement.DeepEquals(resolvedSchema, func.JsonSchema));
     }
 
     [Fact]
@@ -243,10 +243,9 @@ public static class AIJsonUtilitiesTests
         JsonSerializerOptions options = new(JsonSerializerOptions.Default) { NumberHandling = JsonNumberHandling.AllowReadingFromString };
         AIFunction func = AIFunctionFactory.Create((int a, int? b, long c, short d, float e, double f, decimal g) => { }, serializerOptions: options);
 
-        AIFunctionMetadata metadata = func.Metadata;
-        JsonElement schemaParameters = func.Metadata.Schema.GetProperty("properties");
-        Assert.NotNull(metadata.UnderlyingMethod);
-        ParameterInfo[] parameters = metadata.UnderlyingMethod.GetParameters();
+        JsonElement schemaParameters = func.JsonSchema.GetProperty("properties");
+        Assert.NotNull(func.UnderlyingMethod);
+        ParameterInfo[] parameters = func.UnderlyingMethod.GetParameters();
         Assert.Equal(parameters.Length, schemaParameters.GetPropertyCount());
 
         int i = 0;
