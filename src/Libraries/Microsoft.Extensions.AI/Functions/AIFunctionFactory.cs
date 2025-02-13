@@ -232,7 +232,7 @@ public static partial class AIFunctionFactory
             _returnTypeInfo = returnType != typeof(void) ? options.SerializerOptions.GetTypeInfo(returnType) : null;
 
             Name = functionName;
-            Description = options.Description ?? method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
+            Description = options.Description ?? method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? string.Empty;
             UnderlyingMethod = method;
             AdditionalProperties = options.AdditionalProperties ?? EmptyReadOnlyDictionary<string, object?>.Instance;
             JsonSerializerOptions = options.SerializerOptions;
@@ -244,8 +244,12 @@ public static partial class AIFunctionFactory
                 options.JsonSchemaCreateOptions);
         }
 
-        /// <inheritdoc />
         public override string Name { get; }
+        public override string Description { get; }
+        public override MethodInfo? UnderlyingMethod { get; }
+        public override IReadOnlyDictionary<string, object?> AdditionalProperties { get; }
+        public override JsonSerializerOptions JsonSerializerOptions { get; }
+        public override JsonElement JsonSchema { get; }
 
         /// <inheritdoc />
         protected override async Task<object?> InvokeCoreAsync(

@@ -416,17 +416,16 @@ internal static partial class OpenAIModelMappers
         }
 
         OpenAIChatToolJson openAiChatTool = JsonSerializer.Deserialize(chatTool.FunctionParameters.ToMemory().Span, OpenAIJsonContext.Default.OpenAIChatToolJson)!;
-        return new MetadataOnlyAIFunction(chatTool.FunctionName)
-        {
-            Description = chatTool.FunctionDescription,
-            AdditionalProperties = additionalProperties,
-            JsonSchema = JsonSerializer.SerializeToElement(openAiChatTool, OpenAIJsonContext.Default.OpenAIChatToolJson),
-        };
+        JsonElement schema = JsonSerializer.SerializeToElement(openAiChatTool, OpenAIJsonContext.Default.OpenAIChatToolJson);
+        return new MetadataOnlyAIFunction(chatTool.FunctionName, chatTool.FunctionDescription, schema, additionalProperties);
     }
 
-    private sealed class MetadataOnlyAIFunction(string name) : AIFunction
+    private sealed class MetadataOnlyAIFunction(string name, string description, JsonElement schema, IReadOnlyDictionary<string, object?> additionalProps) : AIFunction
     {
         public override string Name => name;
+        public override string Description => description;
+        public override JsonElement JsonSchema => schema;
+        public override IReadOnlyDictionary<string, object?> AdditionalProperties => additionalProps;
         protected override Task<object?> InvokeCoreAsync(IEnumerable<KeyValuePair<string, object?>> arguments, CancellationToken cancellationToken) =>
             throw new InvalidOperationException($"The AI function '{Name}' does not support being invoked.");
     }
