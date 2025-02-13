@@ -370,17 +370,13 @@ public static partial class OpenAISerializationTests
         Assert.NotNull(request.Options.Tools);
 
         AIFunction function = Assert.IsAssignableFrom<AIFunction>(Assert.Single(request.Options.Tools));
-        Assert.Equal("Gets the age of the specified person.", function.Metadata.Description);
-        Assert.Equal("GetPersonAge", function.Metadata.Name);
-        Assert.Equal("Strict", Assert.Single(function.Metadata.AdditionalProperties).Key);
-        Assert.Equal("Return parameter", function.Metadata.ReturnParameter.Description);
-        Assert.Equal("{}", Assert.IsType<JsonElement>(function.Metadata.ReturnParameter.Schema).GetRawText());
+        Assert.Equal("Gets the age of the specified person.", function.Description);
+        Assert.Equal("GetPersonAge", function.Name);
+        Assert.Equal("Strict", Assert.Single(function.AdditionalProperties).Key);
 
-        AIFunctionParameterMetadata parameter = Assert.Single(function.Metadata.Parameters);
-        Assert.Equal("personName", parameter.Name);
-        Assert.True(parameter.IsRequired);
+        Assert.Null(function.UnderlyingMethod);
 
-        JsonObject parametersSchema = Assert.IsType<JsonObject>(JsonNode.Parse(function.Metadata.Schema.GetProperty("properties").GetRawText()));
+        JsonObject parametersSchema = Assert.IsType<JsonObject>(JsonNode.Parse(function.JsonSchema.GetProperty("properties").GetRawText()));
         var parameterSchema = Assert.IsType<JsonObject>(Assert.Single(parametersSchema.Select(kvp => kvp.Value)));
         Assert.Equal(2, parameterSchema.Count);
         Assert.Equal("The person whose age is being requested", (string)parameterSchema["description"]!);

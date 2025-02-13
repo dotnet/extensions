@@ -380,11 +380,11 @@ public sealed class AzureAIInferenceChatClient : IChatClient
     private static ChatCompletionsToolDefinition ToAzureAIChatTool(AIFunction aiFunction)
     {
         // Map to an intermediate model so that redundant properties are skipped.
-        var tool = JsonSerializer.Deserialize(aiFunction.Metadata.Schema, JsonContext.Default.AzureAIChatToolJson)!;
+        var tool = JsonSerializer.Deserialize(aiFunction.JsonSchema, JsonContext.Default.AzureAIChatToolJson)!;
         var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool, JsonContext.Default.AzureAIChatToolJson));
-        return new(new FunctionDefinition(aiFunction.Metadata.Name)
+        return new(new FunctionDefinition(aiFunction.Name)
         {
-            Description = aiFunction.Metadata.Description,
+            Description = aiFunction.Description,
             Parameters = functionParameters,
         });
     }

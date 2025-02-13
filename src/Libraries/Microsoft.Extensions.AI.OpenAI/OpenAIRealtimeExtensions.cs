@@ -27,12 +27,12 @@ public static class OpenAIRealtimeExtensions
     {
         _ = Throw.IfNull(aiFunction);
 
-        ConversationFunctionToolParametersSchema functionToolSchema = JsonSerializer.Deserialize(aiFunction.Metadata.Schema, OpenAIJsonContext.Default.ConversationFunctionToolParametersSchema)!;
+        ConversationFunctionToolParametersSchema functionToolSchema = JsonSerializer.Deserialize(aiFunction.JsonSchema, OpenAIJsonContext.Default.ConversationFunctionToolParametersSchema)!;
         BinaryData functionParameters = new(JsonSerializer.SerializeToUtf8Bytes(functionToolSchema, OpenAIJsonContext.Default.ConversationFunctionToolParametersSchema));
         return new ConversationFunctionTool
         {
-            Name = aiFunction.Metadata.Name,
-            Description = aiFunction.Metadata.Description,
+            Name = aiFunction.Name,
+            Description = aiFunction.Description,
             Parameters = functionParameters
         };
     }
@@ -92,7 +92,7 @@ public static class OpenAIRealtimeExtensions
         CancellationToken cancellationToken = default)
     {
         if (!string.IsNullOrEmpty(update.FunctionName)
-            && tools.FirstOrDefault(t => t.Metadata.Name == update.FunctionName) is AIFunction aiFunction)
+            && tools.FirstOrDefault(t => t.Name == update.FunctionName) is AIFunction aiFunction)
         {
             var jsonOptions = jsonSerializerOptions ?? AIJsonUtilities.DefaultOptions;
 

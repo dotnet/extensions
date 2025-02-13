@@ -363,8 +363,8 @@ public class FunctionInvokingChatClientTests
 
         var expected = new ChatResponse(
         [
-            new(ChatRole.Assistant, [new FunctionCallContent("callId1", func1.Metadata.Name)]),
-            new(ChatRole.Assistant, [new FunctionCallContent("callId2", func2.Metadata.Name)]),
+            new(ChatRole.Assistant, [new FunctionCallContent("callId1", func1.Name)]),
+            new(ChatRole.Assistant, [new FunctionCallContent("callId2", func2.Name)]),
         ]);
 
         using var innerClient = new TestChatClient
