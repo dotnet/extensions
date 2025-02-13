@@ -1,4 +1,5 @@
 <Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
 
   <!-- Build the report code before this, so it can be embedded.
   Setting the BeforeTargets=DispatchToInnerBuilds allows it to build only once before
