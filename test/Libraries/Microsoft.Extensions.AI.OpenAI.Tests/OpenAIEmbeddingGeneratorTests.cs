@@ -55,14 +55,15 @@ public class OpenAIEmbeddingGeneratorTests
             new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
 
         IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator = client.AsEmbeddingGenerator(model);
-        Assert.Equal("openai", embeddingGenerator.Metadata.ProviderName);
-        Assert.Equal(endpoint, embeddingGenerator.Metadata.ProviderUri);
-        Assert.Equal(model, embeddingGenerator.Metadata.ModelId);
+        var metadata = embeddingGenerator.GetService<EmbeddingGeneratorMetadata>();
+        Assert.Equal("openai", metadata?.ProviderName);
+        Assert.Equal(endpoint, metadata?.ProviderUri);
+        Assert.Equal(model, metadata?.ModelId);
 
         embeddingGenerator = client.GetEmbeddingClient(model).AsEmbeddingGenerator();
-        Assert.Equal("openai", embeddingGenerator.Metadata.ProviderName);
-        Assert.Equal(endpoint, embeddingGenerator.Metadata.ProviderUri);
-        Assert.Equal(model, embeddingGenerator.Metadata.ModelId);
+        Assert.Equal("openai", metadata?.ProviderName);
+        Assert.Equal(endpoint, metadata?.ProviderUri);
+        Assert.Equal(model, metadata?.ModelId);
     }
 
     [Fact]

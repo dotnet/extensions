@@ -22,6 +22,9 @@ public sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Embed
     /// <summary>Default OpenAI endpoint.</summary>
     private const string DefaultOpenAIEndpoint = "https://api.openai.com/v1";
 
+    /// <summary>Metadata about the embedding generator.</summary>
+    private readonly EmbeddingGeneratorMetadata _metadata;
+
     /// <summary>The underlying <see cref="OpenAIClient" />.</summary>
     private readonly OpenAIClient? _openAIClient;
 
@@ -57,7 +60,7 @@ public sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Embed
             ?.GetValue(openAIClient) as Uri)?.ToString() ??
             DefaultOpenAIEndpoint;
 
-        Metadata = CreateMetadata("openai", providerUrl, modelId, dimensions);
+        _metadata = CreateMetadata("openai", providerUrl, modelId, dimensions);
     }
 
     /// <summary>Initializes a new instance of the <see cref="OpenAIEmbeddingGenerator"/> class.</summary>
@@ -85,27 +88,7 @@ public sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Embed
         FieldInfo? modelField = typeof(EmbeddingClient).GetField("_model", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
         string? model = modelField?.GetValue(embeddingClient) as string;
 
-        Metadata = CreateMetadata("openai", providerUrl, model, dimensions);
-    }
-
-    /// <summary>Creates the <see cref="EmbeddingGeneratorMetadata"/> for this instance.</summary>
-    private static EmbeddingGeneratorMetadata CreateMetadata(string providerName, string providerUrl, string? model, int? dimensions) =>
-        new(providerName, Uri.TryCreate(providerUrl, UriKind.Absolute, out Uri? providerUri) ? providerUri : null, model, dimensions);
-
-    /// <inheritdoc />
-    public EmbeddingGeneratorMetadata Metadata { get; }
-
-    /// <inheritdoc />
-    public object? GetService(Type serviceType, object? serviceKey = null)
-    {
-        _ = Throw.IfNull(serviceType);
-
-        return
-            serviceKey is not null ? null :
-            serviceType == typeof(OpenAIClient) ? _openAIClient :
-            serviceType == typeof(EmbeddingClient) ? _embeddingClient :
-            serviceType.IsInstanceOfType(this) ? this :
-            null;
+        _metadata = CreateMetadata("openai", providerUrl, model, dimensions);
     }
 
     /// <inheritdoc />
@@ -135,6 +118,24 @@ public sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Embed
     {
         // Nothing to dispose. Implementation required for the IEmbeddingGenerator interface.
     }
+
+    /// <inheritdoc />
+    object? IEmbeddingGenerator<string, Embedding<float>>.GetService(Type serviceType, object? serviceKey)
+    {
+        _ = Throw.IfNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(EmbeddingGeneratorMetadata) ? _metadata :
+            serviceType == typeof(OpenAIClient) ? _openAIClient :
+            serviceType == typeof(EmbeddingClient) ? _embeddingClient :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
+    }
+
+    /// <summary>Creates the <see cref="EmbeddingGeneratorMetadata"/> for this instance.</summary>
+    private static EmbeddingGeneratorMetadata CreateMetadata(string providerName, string providerUrl, string? model, int? dimensions) =>
+        new(providerName, Uri.TryCreate(providerUrl, UriKind.Absolute, out Uri? providerUri) ? providerUri : null, model, dimensions);
 
     /// <summary>Converts an extensions options instance to an OpenAI options instance.</summary>
     private OpenAI.Embeddings.EmbeddingGenerationOptions? ToOpenAIOptions(EmbeddingGenerationOptions? options)

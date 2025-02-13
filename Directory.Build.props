@@ -47,9 +47,6 @@
     <Deterministic>true</Deterministic>
     <Features>debug-determinism</Features>
 
-    <!-- https://learn.microsoft.com/dotnet/fundamentals/package-validation/overview -->
-    <EnablePackageValidation>true</EnablePackageValidation>
-
     <EnableXlfLocalization>false</EnableXlfLocalization>
     <UpdateXlfOnBuild>false</UpdateXlfOnBuild>
 

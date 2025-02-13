@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.AI;
 /// </summary>
 /// <remarks>
 /// <para>
-/// When this client receives a <see cref="FunctionCallContent"/> in a chat completion, it responds
+/// When this client receives a <see cref="FunctionCallContent"/> in a chat response, it responds
 /// by calling the corresponding <see cref="AIFunction"/> defined in <see cref="ChatOptions"/>,
 /// producing a <see cref="FunctionResultContent"/>.
 /// </para>
@@ -140,11 +140,12 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     public bool ConcurrentInvocation { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether to keep intermediate messages in the chat history.
+    /// Gets or sets a value indicating whether to keep intermediate function calling request
+    /// and response messages in the chat history.
     /// </summary>
     /// <value>
     /// <see langword="true"/> if intermediate messages persist in the <see cref="IList{ChatMessage}"/> list provided
-    /// to <see cref="CompleteAsync"/> and <see cref="CompleteStreamingAsync"/> by the caller.
+    /// to <see cref="GetResponseAsync"/> and <see cref="GetStreamingResponseAsync"/> by the caller.
     /// <see langword="false"/> if intermediate messages are removed prior to completing the operation.
     /// The default value is <see langword="true"/>.
     /// </value>
@@ -155,13 +156,19 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// those messages to the list of messages, along with <see cref="FunctionResultContent"/> instances
     /// it creates with the results of invoking the requested functions. The resulting augmented
     /// list of messages is then passed to the inner client in order to send the results back.
-    /// By default, those messages persist in the <see cref="IList{ChatMessage}"/> list provided to <see cref="CompleteAsync"/>
-    /// and <see cref="CompleteStreamingAsync"/> by the caller. Set <see cref="KeepFunctionCallingMessages"/>
-    /// to <see langword="false"/> to remove those messages prior to completing the operation.
+    /// By default, those messages persist in the <see cref="IList{ChatMessage}"/> list provided to
+    /// <see cref="GetResponseAsync"/> and <see cref="GetStreamingResponseAsync"/> by the caller, such that those
+    /// messages are available to the caller. Set <see cref="KeepFunctionCallingMessages"/> to avoid including
+    /// those messages in the caller-provided <see cref="IList{ChatMessage}"/>.
     /// </para>
     /// <para>
     /// Changing the value of this property while the client is in use might result in inconsistencies
     /// as to whether function calling messages are kept during an in-flight request.
+    /// </para>
+    /// <para>
+    /// If the underlying <see cref="IChatClient"/> responds with <see cref="ChatResponse.ChatThreadId"/>
+    /// set to a non-<see langword="null"/> value, this property may be ignored and behave as if it is
+    /// <see langword="false"/>, with any such intermediate messages not stored in the messages list.
     /// </para>
     /// </remarks>
     public bool KeepFunctionCallingMessages { get; set; } = true;
@@ -202,25 +209,23 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     }
 
     /// <inheritdoc/>
-    public override async Task<ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<ChatResponse> GetResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(chatMessages);
 
-        // A single request into this CompleteAsync may result in multiple requests to the inner client.
+        // A single request into this GetResponseAsync may result in multiple requests to the inner client.
         // Create an activity to group them together for better observability.
         using Activity? activity = _activitySource?.StartActivity(nameof(FunctionInvokingChatClient));
 
-        ChatCompletion? response = null;
-        HashSet<ChatMessage>? messagesToRemove = null;
-        HashSet<AIContent>? contentsToRemove = null;
+        ChatResponse? response = null;
         UsageDetails? totalUsage = null;
-
+        IList<ChatMessage> originalChatMessages = chatMessages;
         try
         {
             for (int iteration = 0; ; iteration++)
             {
                 // Make the call to the handler.
-                response = await base.CompleteAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
+                response = await base.GetResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
 
                 // Aggregate usage data over all calls
                 if (response.Usage is not null)
@@ -256,54 +261,52 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     break;
                 }
 
-                // Track all added messages in order to remove them, if requested.
-                if (!KeepFunctionCallingMessages)
+                // Update the chat history. If the underlying client is tracking the state, then we want to avoid re-sending
+                // what we already sent as well as this response message, so create a new list to store the response message(s).
+                if (response.ChatThreadId is not null)
                 {
-                    messagesToRemove ??= [];
-                }
-
-                // Add the original response message into the history and track the message for removal.
-                chatMessages.Add(response.Message);
-                if (messagesToRemove is not null)
-                {
-                    if (functionCallContents.Length == response.Message.Contents.Count)
+                    if (chatMessages == originalChatMessages)
                     {
-                        // The most common case is that the response message contains only function calling content.
-                        // In that case, we can just track the whole message for removal.
-                        _ = messagesToRemove.Add(response.Message);
+                        chatMessages = [];
                     }
                     else
                     {
-                        // In the less likely case where some content is function calling and some isn't, we don't want to remove
-                        // the non-function calling content by removing the whole message. So we track the content directly.
-                        (contentsToRemove ??= []).UnionWith(functionCallContents);
+                        chatMessages.Clear();
                     }
+                }
+                else
+                {
+                    // Otherwise, we need to add the response message to the history we're sending back. However, if the caller
+                    // doesn't want the intermediate messages, create a new list that we mutate instead of mutating the original.
+                    if (!KeepFunctionCallingMessages)
+                    {
+                        // Create a new list that will include the message with the function call contents.
+                        if (chatMessages == originalChatMessages)
+                        {
+                            chatMessages = [.. chatMessages];
+                        }
+
+                        // We want to include any non-functional calling content, if there is any,
+                        // in the caller's list so that they don't lose out on actual content.
+                        // This can happen but is relatively rare.
+                        if (response.Message.Contents.Any(c => c is not FunctionCallContent))
+                        {
+                            var clone = response.Message.Clone();
+                            clone.Contents = clone.Contents.Where(c => c is not FunctionCallContent).ToList();
+                            originalChatMessages.Add(clone);
+                        }
+                    }
+
+                    // Add the original response message into the history.
+                    chatMessages.Add(response.Message);
                 }
 
                 // Add the responses from the function calls into the history.
                 var modeAndMessages = await ProcessFunctionCallsAsync(chatMessages, options, functionCallContents, iteration, cancellationToken).ConfigureAwait(false);
-                if (modeAndMessages.MessagesAdded is not null)
+                if (UpdateOptionsForMode(modeAndMessages.Mode, ref options, response.ChatThreadId))
                 {
-                    messagesToRemove?.UnionWith(modeAndMessages.MessagesAdded);
-                }
-
-                switch (modeAndMessages.Mode)
-                {
-                    case ContinueMode.Continue when options.ToolMode is RequiredChatToolMode:
-                        // We have to reset this after the first iteration, otherwise we'll be in an infinite loop.
-                        options = options.Clone();
-                        options.ToolMode = ChatToolMode.Auto;
-                        break;
-
-                    case ContinueMode.AllowOneMoreRoundtrip:
-                        // The LLM gets one further chance to answer, but cannot use tools.
-                        options = options.Clone();
-                        options.Tools = null;
-                        break;
-
-                    case ContinueMode.Terminate:
-                        // Bail immediately.
-                        return response;
+                    // Terminate
+                    return response;
                 }
             }
 
@@ -311,8 +314,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         }
         finally
         {
-            RemoveMessagesAndContentFromList(messagesToRemove, contentsToRemove, chatMessages);
-
             if (response is not null)
             {
                 response.Usage = totalUsage;
@@ -321,111 +322,103 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     }
 
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(
+    public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(chatMessages);
 
-        // A single request into this CompleteStreamingAsync may result in multiple requests to the inner client.
+        // A single request into this GetStreamingResponseAsync may result in multiple requests to the inner client.
         // Create an activity to group them together for better observability.
         using Activity? activity = _activitySource?.StartActivity(nameof(FunctionInvokingChatClient));
 
-        HashSet<ChatMessage>? messagesToRemove = null;
         List<FunctionCallContent> functionCallContents = [];
         int? choice;
-        try
+        IList<ChatMessage> originalChatMessages = chatMessages;
+        for (int iteration = 0; ; iteration++)
         {
-            for (int iteration = 0; ; iteration++)
+            choice = null;
+            string? chatThreadId = null;
+            functionCallContents.Clear();
+            await foreach (var update in base.GetStreamingResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false))
             {
-                choice = null;
-                functionCallContents.Clear();
-                await foreach (var update in base.CompleteStreamingAsync(chatMessages, options, cancellationToken).ConfigureAwait(false))
+                // We're going to emit all StreamingChatMessage items upstream, even ones that represent
+                // function calls, because a given StreamingChatMessage can contain other content, too.
+                // And if we yield the function calls, and the consumer adds all the content into a message
+                // that's then added into history, they'll end up with function call contents that aren't
+                // directly paired with function result contents, which may cause issues for some models
+                // when the history is later sent again.
+
+                // Find all the FCCs. We need to track these separately in order to be able to process them later.
+                int preFccCount = functionCallContents.Count;
+                functionCallContents.AddRange(update.Contents.OfType<FunctionCallContent>());
+
+                // If there were any, remove them from the update. We do this before yielding the update so
+                // that we're not modifying an instance already provided back to the caller.
+                int addedFccs = functionCallContents.Count - preFccCount;
+                if (addedFccs > 0)
                 {
-                    // We're going to emit all StreamingChatMessage items upstream, even ones that represent
-                    // function calls, because a given StreamingChatMessage can contain other content, too.
-                    // And if we yield the function calls, and the consumer adds all the content into a message
-                    // that's then added into history, they'll end up with function call contents that aren't
-                    // directly paired with function result contents, which may cause issues for some models
-                    // when the history is later sent again.
-
-                    // Find all the FCCs. We need to track these separately in order to be able to process them later.
-                    int preFccCount = functionCallContents.Count;
-                    functionCallContents.AddRange(update.Contents.OfType<FunctionCallContent>());
-
-                    // If there were any, remove them from the update. We do this before yielding the update so
-                    // that we're not modifying an instance already provided back to the caller.
-                    int addedFccs = functionCallContents.Count - preFccCount;
-                    if (addedFccs > 0)
-                    {
-                        update.Contents = addedFccs == update.Contents.Count ?
-                            [] : update.Contents.Where(c => c is not FunctionCallContent).ToList();
-                    }
-
-                    // Only one choice is allowed with automatic function calling.
-                    if (choice is null)
-                    {
-                        choice = update.ChoiceIndex;
-                    }
-                    else if (choice != update.ChoiceIndex)
-                    {
-                        ThrowForMultipleChoices();
-                    }
-
-                    yield return update;
-                    Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
+                    update.Contents = addedFccs == update.Contents.Count ?
+                        [] : update.Contents.Where(c => c is not FunctionCallContent).ToList();
                 }
 
-                // If there are no tools to call, or for any other reason we should stop, return the response.
-                if (options is null
-                    || options.Tools is not { Count: > 0 }
-                    || (MaximumIterationsPerRequest is { } maxIterations && iteration >= maxIterations)
-                    || functionCallContents is not { Count: > 0 })
+                // Only one choice is allowed with automatic function calling.
+                if (choice is null)
                 {
-                    break;
+                    choice = update.ChoiceIndex;
+                }
+                else if (choice != update.ChoiceIndex)
+                {
+                    ThrowForMultipleChoices();
                 }
 
-                // Track all added messages in order to remove them, if requested.
-                if (!KeepFunctionCallingMessages)
+                chatThreadId ??= update.ChatThreadId;
+
+                yield return update;
+                Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
+            }
+
+            // If there are no tools to call, or for any other reason we should stop, return the response.
+            if (options is null
+                || options.Tools is not { Count: > 0 }
+                || (MaximumIterationsPerRequest is { } maxIterations && iteration >= maxIterations)
+                || functionCallContents is not { Count: > 0 })
+            {
+                break;
+            }
+
+            // Update the chat history. If the underlying client is tracking the state, then we want to avoid re-sending
+            // what we already sent as well as this response message, so create a new list to store the response message(s).
+            if (chatThreadId is not null)
+            {
+                if (chatMessages == originalChatMessages)
                 {
-                    messagesToRemove ??= [];
+                    chatMessages = [];
+                }
+                else
+                {
+                    chatMessages.Clear();
+                }
+            }
+            else
+            {
+                // Otherwise, we need to add the response message to the history we're sending back. However, if the caller
+                // doesn't want the intermediate messages, create a new list that we mutate instead of mutating the original.
+                if (chatMessages == originalChatMessages && !KeepFunctionCallingMessages)
+                {
+                    chatMessages = [.. chatMessages];
                 }
 
                 // Add a manufactured response message containing the function call contents to the chat history.
-                ChatMessage functionCallMessage = new(ChatRole.Assistant, [.. functionCallContents]);
-                chatMessages.Add(functionCallMessage);
-                _ = messagesToRemove?.Add(functionCallMessage);
-
-                // Process all of the functions, adding their results into the history.
-                var modeAndMessages = await ProcessFunctionCallsAsync(chatMessages, options, functionCallContents, iteration, cancellationToken).ConfigureAwait(false);
-                if (modeAndMessages.MessagesAdded is not null)
-                {
-                    messagesToRemove?.UnionWith(modeAndMessages.MessagesAdded);
-                }
-
-                // Decide how to proceed based on the result of the function calls.
-                switch (modeAndMessages.Mode)
-                {
-                    case ContinueMode.Continue when options.ToolMode is RequiredChatToolMode:
-                        // We have to reset this after the first iteration, otherwise we'll be in an infinite loop.
-                        options = options.Clone();
-                        options.ToolMode = ChatToolMode.Auto;
-                        break;
-
-                    case ContinueMode.AllowOneMoreRoundtrip:
-                        // The LLM gets one further chance to answer, but cannot use tools.
-                        options = options.Clone();
-                        options.Tools = null;
-                        break;
-
-                    case ContinueMode.Terminate:
-                        // Bail immediately.
-                        yield break;
-                }
+                chatMessages.Add(new(ChatRole.Assistant, [.. functionCallContents]));
             }
-        }
-        finally
-        {
-            RemoveMessagesAndContentFromList(messagesToRemove, contentToRemove: null, chatMessages);
+
+            // Process all of the functions, adding their results into the history.
+            var modeAndMessages = await ProcessFunctionCallsAsync(chatMessages, options, functionCallContents, iteration, cancellationToken).ConfigureAwait(false);
+            if (UpdateOptionsForMode(modeAndMessages.Mode, ref options, chatThreadId))
+            {
+                // Terminate
+                yield break;
+            }
         }
     }
 
@@ -439,42 +432,53 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         throw new InvalidOperationException("Automatic function call invocation only accepts a single choice, but multiple choices were received.");
     }
 
-    /// <summary>
-    /// Removes all of the messages in <paramref name="messagesToRemove"/> from <paramref name="messages"/>
-    /// and all of the content in <paramref name="contentToRemove"/> from the messages in <paramref name="messages"/>.
-    /// </summary>
-    private static void RemoveMessagesAndContentFromList(
-        HashSet<ChatMessage>? messagesToRemove,
-        HashSet<AIContent>? contentToRemove,
-        IList<ChatMessage> messages)
+    /// <summary>Updates <paramref name="options"/> for the response.</summary>
+    /// <returns>true if the function calling loop should terminate; otherwise, false.</returns>
+    private static bool UpdateOptionsForMode(ContinueMode mode, ref ChatOptions options, string? chatThreadId)
     {
-        Debug.Assert(
-            contentToRemove is null || messagesToRemove is not null,
-            "We should only be tracking content to remove if we're also tracking messages to remove.");
-
-        if (messagesToRemove is not null)
+        switch (mode)
         {
-            for (int m = messages.Count - 1; m >= 0; m--)
-            {
-                ChatMessage message = messages[m];
-
-                if (contentToRemove is not null)
+            case ContinueMode.Continue when options.ToolMode is RequiredChatToolMode:
+                // We have to reset the tool mode to be non-required after the first iteration,
+                // as otherwise we'll be in an infinite loop.
+                options = options.Clone();
+                options.ToolMode = null;
+                if (chatThreadId is not null)
                 {
-                    for (int c = message.Contents.Count - 1; c >= 0; c--)
-                    {
-                        if (contentToRemove.Contains(message.Contents[c]))
-                        {
-                            message.Contents.RemoveAt(c);
-                        }
-                    }
+                    options.ChatThreadId = chatThreadId;
                 }
 
-                if (messages.Count == 0 || messagesToRemove.Contains(messages[m]))
+                break;
+
+            case ContinueMode.AllowOneMoreRoundtrip:
+                // The LLM gets one further chance to answer, but cannot use tools.
+                options = options.Clone();
+                options.Tools = null;
+                options.ToolMode = null;
+                if (chatThreadId is not null)
                 {
-                    messages.RemoveAt(m);
+                    options.ChatThreadId = chatThreadId;
                 }
-            }
+
+                break;
+
+            case ContinueMode.Terminate:
+                // Bail immediately.
+                return true;
+
+            default:
+                // As with the other modes, ensure we've propagated the chat thread ID to the options.
+                // We only need to clone the options if we're actually mutating it.
+                if (chatThreadId is not null && options.ChatThreadId != chatThreadId)
+                {
+                    options = options.Clone();
+                    options.ChatThreadId = chatThreadId;
+                }
+
+                break;
         }
+
+        return false;
     }
 
     /// <summary>
@@ -630,7 +634,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             {
                 string message = result.Status switch
                 {
-                    FunctionStatus.NotFound => "Error: Requested function not found.",
+                    FunctionStatus.NotFound => $"Error: Requested function \"{result.CallContent.Name}\" not found.",
                     FunctionStatus.Failed => "Error: Function failed.",
                     _ => "Error: Unknown error.",
                 };
@@ -643,7 +647,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 functionResult = message;
             }
 
-            return new FunctionResultContent(result.CallContent.CallId, result.CallContent.Name, functionResult) { Exception = result.Exception };
+            return new FunctionResultContent(result.CallContent.CallId, functionResult) { Exception = result.Exception };
         }
     }
 

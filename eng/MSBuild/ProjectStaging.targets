@@ -4,6 +4,19 @@
     <!-- Preview packages: do not use stable branding and do not warn about lack of [Experimental] -->
     <SuppressFinalPackageVersion Condition="'$(Stage)' == 'preview'">true</SuppressFinalPackageVersion>
     <NoWarn Condition="'$(Stage)' == 'preview'">$(NoWarn);LA0003</NoWarn>
+
+    <!-- Amend the description based on stage -->
+    <Description Condition="'$(Stage)' == 'dev'">Experimental package. $(Description)</Description>
+    <Description Condition="'$(Stage)' == 'obsolete'">Obsolete Package. $(Description)</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!--
+      Makes it such that the package version won't be stabilized even when the rest of the repo is going stable.
+      https://github.com/dotnet/arcade/blob/main/Documentation/CorePackages/Versioning.md#package-version
+     -->
+    <SuppressFinalPackageVersion />
+    <SuppressFinalPackageVersion Condition="'$(Stage)' == 'dev' or '$(Stage)' == 'preview'">true</SuppressFinalPackageVersion>
   </PropertyGroup>
 
   <!-- Produce errors if we don't have all the right properties defined -->
@@ -22,10 +35,11 @@
     <Error Condition="'$(MinMutationScore)' != 'n/a' AND ('$(MinMutationScore)' &lt; 50)" Text="MinMutationScore property must be >= 50 for normal stage." />
   </Target>
 
-  <!-- Amend the description based on stage -->
-  <PropertyGroup>
-    <Description Condition="'$(Stage)' == 'dev'">Experimental package. $(Description)</Description>
-    <Description Condition="'$(Stage)' == 'obsolete'">Obsolete Package. $(Description)</Description>
-  </PropertyGroup>
+  <Target Name="_ValidateVersion" AfterTargets="GenerateNuspec" Condition="'$(Stage)' == 'dev' or '$(Stage)' == 'preview'">
+    <PropertyGroup>
+      <_ExpectedVersionSuffix>$(_PreReleaseLabel)$(_BuildNumberLabels)</_ExpectedVersionSuffix>
+    </PropertyGroup>
 
+    <Error Condition=" '$(VersionSuffix)' != '$(_ExpectedVersionSuffix)' " Text="Unexpected package version suffix. Expected suffix for '$(Stage)' stage: '$(_ExpectedVersionSuffix)', received: '$(VersionSuffix)'." />
+  </Target>
 </Project>

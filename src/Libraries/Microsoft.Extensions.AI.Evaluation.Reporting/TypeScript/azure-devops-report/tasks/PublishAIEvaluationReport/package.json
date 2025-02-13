@@ -1,0 +1,6 @@
+{
+  "type": "module",
+  "dependencies": {
+    "azure-pipelines-task-lib": "^4.17.2"
+  }
+}

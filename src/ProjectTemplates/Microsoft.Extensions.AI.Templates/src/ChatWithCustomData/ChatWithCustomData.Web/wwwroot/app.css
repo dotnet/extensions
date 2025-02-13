@@ -1,4 +1,4 @@
-@import url('tailwindcss/web/preflight.css');
+@import url('lib/tailwindcss/dist/preflight.css');
 
 html {
     min-height: 100vh;

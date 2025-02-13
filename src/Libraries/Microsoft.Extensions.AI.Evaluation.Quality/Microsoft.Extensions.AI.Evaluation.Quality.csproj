@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>A library containing a set of evaluators for evaluating the quality (coherence, relevance, truth, completeness, groundedness, fluency, equivalence etc.) of responses received from an LLM.</Description>
+    <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
+    <RootNamespace>Microsoft.Extensions.AI.Evaluation.Quality</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Workstream>AIEval</Workstream>
+    <Stage>preview</Stage>
+    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
+    <EnablePackageValidation>false</EnablePackageValidation>
+    <MinCodeCoverage>88</MinCodeCoverage>
+    <MinMutationScore>0</MinMutationScore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.AI.Evaluation\Microsoft.Extensions.AI.Evaluation.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleToTest Include="Microsoft.Extensions.AI.Evaluation.Tests" />
+  </ItemGroup>
+  
+</Project>

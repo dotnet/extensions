@@ -34,20 +34,20 @@ public class ConfigureOptionsChatClientTests
     {
         ChatOptions? providedOptions = nullProvidedOptions ? null : new() { ModelId = "test" };
         ChatOptions? returnedOptions = null;
-        ChatCompletion expectedCompletion = new(Array.Empty<ChatMessage>());
-        var expectedUpdates = Enumerable.Range(0, 3).Select(i => new StreamingChatCompletionUpdate()).ToArray();
+        ChatResponse expectedResponse = new(Array.Empty<ChatMessage>());
+        var expectedUpdates = Enumerable.Range(0, 3).Select(i => new ChatResponseUpdate()).ToArray();
         using CancellationTokenSource cts = new();
 
         using IChatClient innerClient = new TestChatClient
         {
-            CompleteAsyncCallback = (messages, options, cancellationToken) =>
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
                 Assert.Same(returnedOptions, options);
                 Assert.Equal(cts.Token, cancellationToken);
-                return Task.FromResult(expectedCompletion);
+                return Task.FromResult(expectedResponse);
             },
 
-            CompleteStreamingAsyncCallback = (messages, options, cancellationToken) =>
+            GetStreamingResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
                 Assert.Same(returnedOptions, options);
                 Assert.Equal(cts.Token, cancellationToken);
@@ -73,11 +73,11 @@ public class ConfigureOptionsChatClientTests
             })
             .Build();
 
-        var completion = await client.CompleteAsync(Array.Empty<ChatMessage>(), providedOptions, cts.Token);
-        Assert.Same(expectedCompletion, completion);
+        var response = await client.GetResponseAsync(Array.Empty<ChatMessage>(), providedOptions, cts.Token);
+        Assert.Same(expectedResponse, response);
 
         int i = 0;
-        await using var e = client.CompleteStreamingAsync(Array.Empty<ChatMessage>(), providedOptions, cts.Token).GetAsyncEnumerator();
+        await using var e = client.GetStreamingResponseAsync(Array.Empty<ChatMessage>(), providedOptions, cts.Token).GetAsyncEnumerator();
         while (i < expectedUpdates.Length)
         {
             Assert.True(await e.MoveNextAsync());
@@ -86,7 +86,7 @@ public class ConfigureOptionsChatClientTests
 
         Assert.False(await e.MoveNextAsync());
 
-        static async IAsyncEnumerable<StreamingChatCompletionUpdate> YieldUpdates(StreamingChatCompletionUpdate[] updates)
+        static async IAsyncEnumerable<ChatResponseUpdate> YieldUpdates(ChatResponseUpdate[] updates)
         {
             foreach (var update in updates)
             {

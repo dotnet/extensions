@@ -142,7 +142,6 @@ public sealed class DataContentTests
         Assert.NotNull(content.Data);
         Assert.Equal([0x01, 0x02, 0x03, 0x04], content.Data.Value.ToArray());
         Assert.Equal("application/octet-stream", content.MediaType);
-        Assert.True(content.ContainsData);
 
         // Uri referenced content-only
         content = JsonSerializer.Deserialize<DataContent>("""{"mediaType":"application/octet-stream","uri":"http://localhost/"}""", TestJsonSerializerContext.Default.Options)!;
@@ -150,7 +149,6 @@ public sealed class DataContentTests
         Assert.Null(content.Data);
         Assert.Equal("http://localhost/", content.Uri);
         Assert.Equal("application/octet-stream", content.MediaType);
-        Assert.False(content.ContainsData);
 
         // Using extra metadata
         content = JsonSerializer.Deserialize<DataContent>("""
@@ -169,7 +167,6 @@ public sealed class DataContentTests
         Assert.NotNull(content.Data);
         Assert.Equal([0x01, 0x02, 0x03, 0x04], content.Data.Value.ToArray());
         Assert.Equal("text/plain", content.MediaType);
-        Assert.True(content.ContainsData);
         Assert.Equal("value", content.AdditionalProperties!["key"]!.ToString());
     }
 
