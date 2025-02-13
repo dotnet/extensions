@@ -39,12 +39,10 @@ public abstract class AIFunction : AITool
     }
 
     /// <summary>
-    /// Gets a <see cref="MethodInfo"/> for the underlying .NET method this <see cref="AIFunction"/> represents.
+    /// Gets the underlying <see cref="MethodInfo"/> that this <see cref="AIFunction"/> might be wrapping.
     /// </summary>
     /// <remarks>
-    /// This property provides additional metadata on the function and its signature.
-    /// Setting this property is optional and should have no impact on function invocation or its JSON schema,
-    /// which is how <see cref="IChatClient"/> implementations interface with AI functions primarily.
+    /// Provides additional metadata on the function and its signature. Implementations not wrapping .NET methods may return <see langword="null"/>.
     /// </remarks>
     public virtual MethodInfo? UnderlyingMethod { get; init; }
 

@@ -48,28 +48,28 @@ public static partial class AIJsonUtilities
     /// <summary>
     /// Determines a JSON schema for the provided method.
     /// </summary>
-    /// <param name="methodInfo">The method from which to extract schema information.</param>
+    /// <param name="method">The method from which to extract schema information.</param>
     /// <param name="title">The title keyword used by the method schema.</param>
     /// <param name="description">The description keyword used by the method schema.</param>
     /// <param name="serializerOptions">The options used to extract the schema from the specified type.</param>
     /// <param name="inferenceOptions">The options controlling schema inference.</param>
     /// <returns>A JSON schema document encoded as a <see cref="JsonElement"/>.</returns>
     public static JsonElement CreateFunctionJsonSchema(
-        MethodBase methodInfo,
+        MethodBase method,
         string? title = null,
         string? description = null,
         JsonSerializerOptions? serializerOptions = null,
         AIJsonSchemaCreateOptions? inferenceOptions = null)
     {
-        _ = Throw.IfNull(methodInfo);
+        _ = Throw.IfNull(method);
         serializerOptions ??= DefaultOptions;
         inferenceOptions ??= AIJsonSchemaCreateOptions.Default;
-        title ??= methodInfo.Name;
-        description ??= methodInfo.GetCustomAttribute<DescriptionAttribute>()?.Description;
+        title ??= method.Name;
+        description ??= method.GetCustomAttribute<DescriptionAttribute>()?.Description;
 
         JsonObject parameterSchemas = new();
         JsonArray? requiredProperties = null;
-        foreach (ParameterInfo parameter in methodInfo.GetParameters())
+        foreach (ParameterInfo parameter in method.GetParameters())
         {
             if (string.IsNullOrWhiteSpace(parameter.Name))
             {
