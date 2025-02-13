@@ -555,7 +555,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         int iteration, int functionCallIndex, int totalFunctionCount, CancellationToken cancellationToken)
     {
         // Look up the AIFunction for the function call. If the requested function isn't available, send back an error.
-        AIFunction? function = options.Tools!.OfType<AIFunction>().FirstOrDefault(t => t.Metadata.Name == functionCallContent.Name);
+        AIFunction? function = options.Tools!.OfType<AIFunction>().FirstOrDefault(t => t.Name == functionCallContent.Name);
         if (function is null)
         {
             return new(ContinueMode.Continue, FunctionStatus.NotFound, functionCallContent, result: null, exception: null);
@@ -661,7 +661,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     {
         _ = Throw.IfNull(context);
 
-        using Activity? activity = _activitySource?.StartActivity(context.Function.Metadata.Name);
+        using Activity? activity = _activitySource?.StartActivity(context.Function.Name);
 
         long startingTimestamp = 0;
         if (_logger.IsEnabled(LogLevel.Debug))
@@ -669,11 +669,11 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             startingTimestamp = Stopwatch.GetTimestamp();
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokingSensitive(context.Function.Metadata.Name, LoggingHelpers.AsJson(context.CallContent.Arguments, context.Function.Metadata.JsonSerializerOptions));
+                LogInvokingSensitive(context.Function.Name, LoggingHelpers.AsJson(context.CallContent.Arguments, context.Function.JsonSerializerOptions));
             }
             else
             {
-                LogInvoking(context.Function.Metadata.Name);
+                LogInvoking(context.Function.Name);
             }
         }
 
@@ -693,11 +693,11 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
             if (e is OperationCanceledException)
             {
-                LogInvocationCanceled(context.Function.Metadata.Name);
+                LogInvocationCanceled(context.Function.Name);
             }
             else
             {
-                LogInvocationFailed(context.Function.Metadata.Name, e);
+                LogInvocationFailed(context.Function.Name, e);
             }
 
             throw;
@@ -710,11 +710,11 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
                 if (result is not null && _logger.IsEnabled(LogLevel.Trace))
                 {
-                    LogInvocationCompletedSensitive(context.Function.Metadata.Name, elapsed, LoggingHelpers.AsJson(result, context.Function.Metadata.JsonSerializerOptions));
+                    LogInvocationCompletedSensitive(context.Function.Name, elapsed, LoggingHelpers.AsJson(result, context.Function.JsonSerializerOptions));
                 }
                 else
                 {
-                    LogInvocationCompleted(context.Function.Metadata.Name, elapsed);
+                    LogInvocationCompleted(context.Function.Name, elapsed);
                 }
             }
         }
