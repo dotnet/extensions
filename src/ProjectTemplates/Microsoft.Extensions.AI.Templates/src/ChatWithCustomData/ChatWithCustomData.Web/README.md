@@ -1,0 +1,209 @@
+# AI Chat with Custom Data
+
+This project is an AI chat application that demonstrates how to chat with custom data using an AI language model. This was created using an early preview version of a new AI Starter Web App template for .NET, thanks for trying it out!
+
+>[!NOTE]
+> Before you can run this project you'll need to setup your environment to work with the providers you configured in the template options. See below for the details specific to your choices.
+
+#### ---#if (UseAzure)
+### Prerequisites
+To use Azure OpenAI or Azure AI Search, you will need an Azure account. If you don't have one already, [create an Azure account](https://azure.microsoft.com/free/).
+
+#### ---#endif
+# Configure the AI Model Provider
+
+#### ---#if (IsOpenAI)
+## Using OpenAI
+
+To call the OpenAI REST API, you will need an API key. To obtain one, first [create a new OpenAI account](https://platform.openai.com/signup) or [log in](https://platform.openai.com/login). Next, navigate to the API key page and select "Create new secret key", optionally naming the key. Make sure to save your API key somewhere safe and do not share it with anyone.
+
+#### ---#if (hostIdentifier == "vs")
+Configure your API key for this project, using .NET User Secrets:
+
+1. In Visual Studio, right-click on your project in the Solution Explorer and select "Manage User Secrets".
+2. This will open a secrets.json file where you can store your API key securely, add the following key & value to the file:
+   
+```json
+{
+   "OpenAI:Key": "YOUR-API-KEY"
+}
+```
+
+#### ---#else
+From the command line, configure your API key for this project using .NET User Secrets by running the following commands:
+
+```sh
+cd <<your-project-directory>>
+dotnet user-secrets set OpenAI:Key YOUR-API-KEY
+```
+
+#### ---#endif
+#### ---#endif
+#### ---#if (IsOllama)
+## Setting up a local environment using Ollama
+To enable a fully offline/local workflow, the .NET AI templates support Ollama, an application that allows you to run a set of AI models locally on your machine. Note: Ollama is an excellent open source product, but it is not maintained by Microsoft.
+
+### 1. Install Ollama & Run
+First, download and install Ollama from their [official website](https://www.ollama.com). Follow the installation instructions specific to your operating system.
+
+### 2. Choose and Install Models
+This project uses the `llama3.2` and `all-minilm` language modes. To install these models, use the following commands in your terminal once Ollama has been started:
+
+```sh
+ollama pull llama3.2
+ollama pull all-minilm
+```
+
+### 3. Learn more about Ollama
+Once the models are installed, you can start using them in your application. Refer to the [Ollama documentation](https://github.com/ollama/ollama/blob/main/docs/README.md) for detailed instructions on how to explore models locally.
+
+#### ---#endif
+#### ---#if (IsAzureOpenAI)
+## Using Azure OpenAI
+
+To use Azure OpenAI, you will need an Azure account and an Azure OpenAI Service resource. For detailed instructions, see the [Azure OpenAI Service documentation](https://learn.microsoft.com/azure/ai-services/openai/how-to/create-resource).
+
+### 1. Create an Azure OpenAI Service Resource
+Follow the instructions in the [Azure portal](https://portal.azure.com/) to create an Azure OpenAI Service resource.
+
+### 2. Deploy the Models
+Deploy the `gpt-4o-mini` and `text-embedding-3-small` models to your Azure OpenAI Service resource. When creating those deployments, give them the same names as the models (`gpt-40-mini` and `text-embedding-3-small`). See the Azure OpenAI documentation to learn how to [Deploy a model](https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/create-resource?pivots=web-portal#deploy-a-model).
+
+#### ---#if (UseManagedIdentity)
+### 3. Configure Azure OpenAI for Keyless Authentication
+This template is configured to use keyless authentication (also known as Managed Identity, with Entra ID). In the Azure Portal, when viewing the Azure OpenAI resource you just created, view access control settings and assign yourself the `Cognitive Services OpenAI User` role. [Learn more](https://learn.microsoft.com/azure/developer/ai/keyless-connections).
+
+### 4. Configure Azure OpenAI Endpoint
+Configure your Azure OpenAI endpoint for this project, using .NET User Secrets:
+   1.  In the Azure Portal, navigate to your Azure OpenAI resource.
+   2.  Copy the "Endpoint" URL from the "Keys & Endpoint" section.
+#### ---#if (hostIdentifier == "vs")
+   3.  In Visual Studio, right-click on your project in the Solution Explorer and select "Manage User Secrets".
+   4.  This will open a `secrets.json` file where you can store your Azure OpenAI endpoint securely. Add the following key & value to the file:
+
+   ```json
+   {
+   "AzureOpenAI:Endpoint": "YOUR-AZURE-OPENAI-ENDPOINT"
+   }
+   ```
+#### ---#else
+   3.  From the command line, configure your Azure OpenAI endpoint for this project using .NET User Secrets by running the following commands:
+
+   ```sh
+   cd <<your-project-directory>>
+   dotnet user-secrets set AzureOpenAI:Endpoint YOUR-AZURE-OPENAI-ENDPOINT
+   ```
+#### ---#endif
+
+   Make sure to replace `YOUR-AZURE-OPENAI-ENDPOINT` with your actual Azure OpenAI endpoint.
+#### ---#else
+### 3. Configure API Key and Endpoint
+Configure your Azure OpenAI API key and endpoint for this project, using .NET User Secrets:
+   1.  In the Azure Portal, navigate to your Azure OpenAI resource.
+   2.  Copy the "Endpoint" URL and "Key 1" from the "Keys & Endpoint" section.
+#### ---#if (hostIdentifier == "vs")
+   3. In Visual Studio, right-click on your project in the Solution Explorer and select "Manage User Secrets".
+   4. This will open a secrets.json file where you can store your API key and endpoint securely, add the following keys & values to the file:
+   
+   ```json
+   {
+      "AzureOpenAI:Key": "YOUR-AZURE-OPENAI-KEY",
+      "AzureOpenAI:Endpoint": "YOUR-AZURE-OPENAI-ENDPOINT"
+   }
+   ```
+#### ---#else
+   3. From the command line, configure your API key and endpoint for this project using .NET User Secrets by running the following commands:
+    
+   ```sh
+   cd <<your-project-directory>>
+   dotnet user-secrets set AzureOpenAI:Key YOUR-AZURE-OPENAI-KEY
+   dotnet user-secrets set AzureOpenAI:Endpoint YOUR-AZURE-OPENAI-ENDPOINT
+   ```
+#### ---#endif
+
+Make sure to replace `YOUR-AZURE-OPENAI-KEY` and `YOUR-AZURE-OPENAI-ENDPOINT` with your actual Azure OpenAI key and endpoint.
+
+#### ---#endif
+#### ---#endif
+#### ---#if (UseAzureAISearch)
+## Configure Azure AI Search
+
+To use Azure AI Search, you will need an Azure account and an Azure AI Search resource. For detailed instructions, see the [Azure AI Search documentation](https://learn.microsoft.com/azure/search/search-create-service-portal).
+
+### 1. Create an Azure AI Search Resource
+Follow the instructions in the [Azure portal](https://portal.azure.com/) to create an Azure AI Search resource.
+
+#### ---#if (UseManagedIdentity)
+### 2. Configure Azure AI Search for Keyless Authentication
+This template is configured to use keyless authentication (also known as Managed Identity, with Entra ID). Before continuing, you'll need to configure your Azure AI Search resource to support this. [Learn more](https://learn.microsoft.com/azure/search/keyless-connections).
+
+### 3. Set the Azure AI Search Endpoint for this app
+   Configure your Azure AI Search endpoint for this project, using .NET User Secrets:
+   1.  In the Azure Portal, navigate to your Azure AI Search resource.
+   2.  Copy the "URL" from the "Overview" section.
+#### ---#if (hostIdentifier == "vs")
+   3.  In Visual Studio, right-click on your project in the Solution Explorer and select "Manage User Secrets".
+   4.  This will open a `secrets.json` file where you can store your Azure AI Search endpoint securely. Add the following key & value to the file:
+
+   ```json
+   {
+      "AzureAISearch:Endpoint": "YOUR-AZURE-AI-SEARCH-ENDPOINT"
+   }
+   ```
+#### ---#else
+   3.  From the command line, configure your Azure AI Search endpoint for this project using .NET User Secrets by running the following commands:
+
+   ```sh
+   cd <<your-project-directory>>
+   dotnet user-secrets set AzureAISearch:Endpoint YOUR-AZURE-AI-SEARCH-ENDPOINT
+   ```
+#### ---#endif
+
+   Make sure to replace `YOUR-AZURE-AI-SEARCH-ENDPOINT` with your actual Azure AI Search endpoint.
+
+#### ---#else
+### 3. Configure API Key and Endpoint
+   Configure your Azure AI Search API key and endpoint for this project, using .NET User Secrets:
+   1.  In the Azure Portal, navigate to your Azure AI Search resource.
+   2.  Copy the "Endpoint" URL and "Primary admin key" from the "Keys" section.
+#### ---#if (hostIdentifier == "vs")
+   3. In Visual Studio, right-click on your project in the Solution Explorer and select "Manage User Secrets".
+   4. This will open a `secrets.json` file where you can store your API key and endpoint securely, add the following keys & values to the file:
+
+   ```json
+   {
+      "AzureAISearch:Key": "YOUR-AZURE-AI-SEARCH-KEY",
+      "AzureAISearch:Endpoint": "YOUR-AZURE-AI-SEARCH-ENDPOINT"
+   }
+   ```
+#### ---#else
+   3. From the command line, configure your API key and endpoint for this project using .NET User Secrets by running the following commands:
+
+   ```sh
+   cd <<your-project-directory>>
+   dotnet user-secrets set AzureAISearch:Key YOUR-AZURE-AI-SEARCH-KEY
+   dotnet user-secrets set AzureAISearch:Endpoint YOUR-AZURE-AI-SEARCH-ENDPOINT
+   ```
+#### ---#endif
+   Make sure to replace `YOUR-AZURE-AI-SEARCH-KEY` and `YOUR-AZURE-AI-SEARCH-ENDPOINT` with your actual Azure AI Search key and endpoint.
+
+#### ---#endif
+
+# Running the application
+
+## Using Visual Studio
+
+1.  Open the `.csproj` file in Visual Studio.
+2.  Press `Ctrl+F5` or click the "Start" button in the toolbar to run the project.
+
+## Using Visual Studio Code
+
+1.  Open the project folder in Visual Studio Code.
+2.  Install the [C# Dev Kit extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit) for Visual Studio Code.
+3.  Once installed, Open the `Program.cs` file.
+4.  Run the project by clicking the "Run" button in the Debug view.
+
+# Learn More
+To learn more about development with .NET and AI, check out the following links:
+
+* [AI for .NET Developers](https://learn.microsoft.com/en-us/dotnet/ai/)

@@ -6,12 +6,12 @@ using ChatWithCustomData.Web.Services;
 using ChatWithCustomData.Web.Services.Ingestion;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.FileProviders.Physical;
-#if(IsAzureOpenAi || UseAzureAISearch)
+#if(IsAzureOpenAI || UseAzureAISearch)
 using Azure;
 #endif
 #if (IsOllama)
 using OllamaSharp;
-#elif (IsOpenAi || IsGHModels)
+#elif (IsOpenAI || IsGHModels)
 using OpenAI;
 using System.ClientModel;
 #else
@@ -50,7 +50,7 @@ IChatClient chatClient = new OllamaApiClient(new Uri("http://localhost:11434"),
     "llama3.2");
 IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator = new OllamaApiClient(new Uri("http://localhost:11434"),
     "all-minilm");
-#elif (IsOpenAi)
+#elif (IsOpenAI)
 // You will need to set the endpoint and key to your own values
 // You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
 //   cd this-project-directory
@@ -89,7 +89,11 @@ var embeddingGenerator = azureOpenAi.AsEmbeddingGenerator("text-embedding-3-smal
 var vectorStore = new AzureAISearchVectorStore(
     new SearchIndexClient(
         new Uri(builder.Configuration["AzureAISearch:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Endpoint")),
+    #if (UseManagedIdentity)
+        new DefaultAzureCredential()));
+    #else
         new AzureKeyCredential(builder.Configuration["AzureAISearch:Key"] ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Key"))));
+    #endif
 #else
 var vectorStore = new JsonVectorStore(Path.Combine(AppContext.BaseDirectory, "vector-store"));
 #endif
