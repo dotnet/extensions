@@ -89,7 +89,7 @@ public abstract class AIFunction : AITool
     }
 
     /// <summary>Gets a <see cref="JsonSerializerOptions"/> that can be used to marshal function parameters.</summary>
-    public JsonSerializerOptions? JsonSerializerOptions { get; init; }
+    public virtual JsonSerializerOptions? JsonSerializerOptions { get; init; }
 
     /// <summary>Invokes the <see cref="AIFunction"/> and returns its result.</summary>
     /// <param name="arguments">The arguments to pass to the function's invocation.</param>
