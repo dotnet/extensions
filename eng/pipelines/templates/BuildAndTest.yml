@@ -23,6 +23,12 @@ parameters:
     default: false
 
 steps:
+  - task: NodeTool@0
+    displayName: Add NodeJS/npm
+    inputs:
+      versionSpec: "20.x"
+      checkLatest: true
+
   - script: ${{ parameters.buildScript }}
             -restore
             /bl:${{ parameters.repoLogPath }}/restore.binlog
@@ -44,6 +50,11 @@ steps:
             /bl:${{ parameters.repoLogPath }}/build.binlog
             $(_OfficialBuildIdArgs)
     displayName: Build
+
+  - ${{ if eq(parameters.isWindows, 'true') }}:
+    - pwsh: |
+          $(Build.SourcesDirectory)/src/Libraries/Microsoft.Extensions.AI.Evaluation.Reporting/TypeScript/azure-devops-report/build.ps1 -OutputPath $(Build.ArtifactStagingDirectory)\VSIX
+      displayName: Build Azure DevOps plugin
 
   - ${{ if ne(parameters.skipTests, 'true') }}:
     - script: $(Build.SourcesDirectory)/.dotnet/dotnet dotnet-coverage collect
