@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.AI;
 public sealed class AIFunctionFactoryCreateOptions
 {
     private JsonSerializerOptions _options = AIJsonUtilities.DefaultOptions;
-    private AIJsonSchemaCreateOptions _schemaCreateOptions = AIJsonSchemaCreateOptions.Default;
+    private AIJsonSchemaCreateOptions _jsonSchemaCreateOptions = AIJsonSchemaCreateOptions.Default;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AIFunctionFactoryCreateOptions"/> class.
@@ -35,10 +35,10 @@ public sealed class AIFunctionFactoryCreateOptions
     /// <summary>
     /// Gets or sets the <see cref="AIJsonSchemaCreateOptions"/> governing the generation of JSON schemas for the function.
     /// </summary>
-    public AIJsonSchemaCreateOptions SchemaCreateOptions
+    public AIJsonSchemaCreateOptions JsonSchemaCreateOptions
     {
-        get => _schemaCreateOptions;
-        set => _schemaCreateOptions = Throw.IfNull(value);
+        get => _jsonSchemaCreateOptions;
+        set => _jsonSchemaCreateOptions = Throw.IfNull(value);
     }
 
     /// <summary>Gets or sets the name to use for the function.</summary>
@@ -54,20 +54,8 @@ public sealed class AIFunctionFactoryCreateOptions
     /// </value>
     public string? Description { get; set; }
 
-    /// <summary>Gets or sets metadata for the parameters of the function.</summary>
-    /// <value>
-    /// Metadata for the function's parameters. The default value is metadata derived from the passed <see cref="Delegate"/> or <see cref="MethodInfo"/>.
-    /// </value>
-    public IReadOnlyList<AIFunctionParameterMetadata>? Parameters { get; set; }
-
-    /// <summary>Gets or sets metadata for function's return parameter.</summary>
-    /// <value>
-    /// Metadata for the function's return parameter. The default value is metadata derived from the passed <see cref="Delegate"/> or <see cref="MethodInfo"/>.
-    /// </value>
-    public AIFunctionReturnParameterMetadata? ReturnParameter { get; set; }
-
     /// <summary>
-    /// Gets or sets additional values to store on the resulting <see cref="AIFunctionMetadata.AdditionalProperties" /> property.
+    /// Gets or sets additional values to store on the resulting <see cref="AIFunction.AdditionalProperties" /> property.
     /// </summary>
     /// <remarks>
     /// This property can be used to provide arbitrary information about the function.
