@@ -187,7 +187,7 @@ public sealed class AzureStorageResultStore(DataLakeDirectoryClient client) : IR
         => name.Substring(name.LastIndexOf('/') + 1);
 
     private static string StripExtension(string name)
-        => name.Substring(0, name.LastIndexOf(".", StringComparison.Ordinal));
+        => name.Substring(0, name.LastIndexOf('.'));
 
     private static (string path, bool isDir) GetResultPath(
         string? executionName = null,

@@ -232,6 +232,11 @@ internal sealed class OpenAIAssistantClient : IChatClient
             // Store the tool mode.
             switch (options.ToolMode)
             {
+                case NoneChatToolMode:
+                    runOptions.ToolConstraint = ToolConstraint.None;
+                    break;
+
+                case null:
                 case AutoChatToolMode:
                     runOptions.ToolConstraint = ToolConstraint.Auto;
                     break;
