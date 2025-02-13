@@ -33,14 +33,6 @@
     <Compile Include="..\Microsoft.Gen.Metrics\*.cs" LinkBase="Microsoft.Gen.Metrics" />
     <Compile Include="..\Microsoft.Gen.Shared\*.cs" LinkBase="Microsoft.Gen.Metrics" />
     <Compile Include="..\Microsoft.Gen.Shared\*.cs" LinkBase="Microsoft.Gen.Metrics" />
-
-
-
-  </ItemGroup>
-
-  <ItemGroup>
-    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.ComplianceReports\Microsoft.Gen.ComplianceReports.csproj" />
-    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.MetricsReports\Microsoft.Gen.MetricsReports.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -48,9 +40,6 @@
     <PackageReference Include="Microsoft.CodeAnalysis" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Gen.Metrics\Microsoft.Gen.Metrics.csproj" />
-  </ItemGroup>
   <ItemGroup>
     <InternalsVisibleToTest Include="Microsoft.Gen.MetadataExtractor.Unit.Tests" />
   </ItemGroup>
