@@ -46,7 +46,7 @@ public static partial class AIJsonUtilities
     private static readonly string[] _schemaKeywordsDisallowedByAIVendors = ["minLength", "maxLength", "pattern", "format"];
 
     /// <summary>
-    /// Determines a JSON schema for the provided method signature.
+    /// Determines a JSON schema for the provided method.
     /// </summary>
     /// <param name="methodInfo">The method from which to extract schema information.</param>
     /// <param name="title">The title keyword used by the method schema.</param>
