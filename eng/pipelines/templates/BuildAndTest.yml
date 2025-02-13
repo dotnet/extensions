@@ -48,7 +48,7 @@ steps:
             -configuration ${{ parameters.buildConfig }}
             -warnAsError ${{ parameters.warnAsError }}
             /bl:${{ parameters.repoLogPath }}/build.binlog
-            /p:"EnableEvaluationReportBuild=true"
+            /p:EnableEvaluationReportBuild=true
             $(_OfficialBuildIdArgs)
     displayName: Build
 
