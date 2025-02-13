@@ -1,6 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
+using Microsoft.Shared.Collections;
+
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a tool that can be specified to an AI service to enable it to execute code it generates.</summary>
@@ -11,10 +14,11 @@ namespace Microsoft.Extensions.AI;
 public class CodeInterpreterTool : AITool
 {
     /// <summary>Initializes a new instance of the <see cref="CodeInterpreterTool"/> class.</summary>
-    public CodeInterpreterTool()
+    public CodeInterpreterTool(IReadOnlyDictionary<string, object?>? additionalProperties = null)
     {
+        AdditionalProperties = additionalProperties ?? EmptyReadOnlyDictionary<string, object?>.Instance;
     }
 
-    /// <summary>Gets or sets additional properties that impact the behavior of the tool.</summary>
-    public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
+    /// <inheritdoc/>
+    public override IReadOnlyDictionary<string, object?> AdditionalProperties { get; }
 }

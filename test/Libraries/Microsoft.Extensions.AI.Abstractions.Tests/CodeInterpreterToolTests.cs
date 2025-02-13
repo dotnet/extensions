@@ -11,10 +11,16 @@ public class CodeInterpreterToolTests
     public void Constructor_Roundtrips()
     {
         var tool = new CodeInterpreterTool();
-        Assert.Null(tool.AdditionalProperties);
+        Assert.Equal(nameof(CodeInterpreterTool), tool.Name);
+        Assert.Empty(tool.Description);
+        Assert.Empty(tool.AdditionalProperties);
+        Assert.Equal(nameof(CodeInterpreterTool), tool.ToString());
 
         var props = new AdditionalPropertiesDictionary();
-        tool.AdditionalProperties = props;
+        tool = new CodeInterpreterTool(props);
+        Assert.Equal(nameof(CodeInterpreterTool), tool.Name);
+        Assert.Empty(tool.Description);
         Assert.Same(props, tool.AdditionalProperties);
+        Assert.Equal(nameof(CodeInterpreterTool), tool.ToString());
     }
 }
