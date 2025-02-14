@@ -43,7 +43,7 @@ steps:
             /bl:${{ parameters.repoLogPath }}/restore2.binlog
     displayName: Restore solution
 
-  # Temporarily pre-build the TypeScript byndle as a workaround for build failures in the MSBuild targets
+  # Temporarily pre-build the TypeScript bundle as a workaround to make the build more reliable.
   - pwsh: |
         cd $(Build.SourcesDirectory)/src/Libraries/Microsoft.Extensions.AI.Evaluation.Reporting/TypeScript
         npm install
