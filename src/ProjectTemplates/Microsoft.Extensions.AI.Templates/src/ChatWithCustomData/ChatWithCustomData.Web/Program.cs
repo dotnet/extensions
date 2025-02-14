@@ -8,6 +8,11 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.FileProviders.Physical;
 #if(IsAzureOpenAI || UseAzureAISearch)
 using Azure;
+#if (UseManagedIdentity)
+using Azure.Identity;
+#else
+using System.ClientModel;
+#endif
 #endif
 #if (IsOllama)
 using OllamaSharp;
@@ -16,11 +21,6 @@ using OpenAI;
 using System.ClientModel;
 #else
 using Azure.AI.OpenAI;
-#if (UseManagedIdentity)
-using Azure.Identity;
-#else
-using System.ClientModel;
-#endif
 #endif
 #if (UseAzureAISearch)
 using Azure.Search.Documents.Indexes;
@@ -29,6 +29,13 @@ using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+
+#if (IsOllama)
+await ValidatePrerequisitesAsync(builder.Configuration);
+#else
+ValidatePrerequisites(builder.Configuration);
+#endif
+
 #if (IsGHModels)
 // You will need to set the endpoint and key to your own values
 // You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
@@ -89,11 +96,11 @@ var embeddingGenerator = azureOpenAi.AsEmbeddingGenerator("text-embedding-3-smal
 var vectorStore = new AzureAISearchVectorStore(
     new SearchIndexClient(
         new Uri(builder.Configuration["AzureAISearch:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Endpoint")),
-    #if (UseManagedIdentity)
+#if (UseManagedIdentity)
         new DefaultAzureCredential()));
-    #else
+#else
         new AzureKeyCredential(builder.Configuration["AzureAISearch:Key"] ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Key"))));
-    #endif
+#endif
 #else
 var vectorStore = new JsonVectorStore(Path.Combine(AppContext.BaseDirectory, "vector-store"));
 #endif
@@ -138,3 +145,73 @@ await DataIngestor.IngestDataAsync(
     new PDFDirectorySource(Path.Combine(builder.Environment.ContentRootPath, "Data")));
 
 app.Run();
+
+#if (IsOllama)
+async Task ValidatePrerequisitesAsync(IConfiguration configuration)
+#else
+void ValidatePrerequisites(IConfiguration configuration)
+#endif
+{
+#if (IsOllama)
+    var client = new OllamaApiClient(new Uri("http://localhost:11434"));
+    
+    try
+    {
+        await client.IsRunningAsync();
+     }
+    catch (Exception ex)
+    {
+        throw new InvalidOperationException("Failed to check if the Ollama API is running. Please make sure the Ollama service is started and accessible. See the README for details.", ex);
+    }
+
+    var installedModels = await client.ListRunningModelsAsync();
+    var requiredModels = new[] { "llama2", "all-minilm" };
+    var missingModels = requiredModels.Except(installedModels.Select(m => m.Name));
+
+    if (missingModels.Any())
+    {
+        throw new InvalidOperationException(
+            $"Required Ollama models are not installed: {string.Join(", ", missingModels)}. " +
+            "Please install the missing models, by using your terminal and running: 'ollama pull <model>'. See the README for details.");
+    }
+#elif (IsOpenAI)
+    if (string.IsNullOrEmpty(configuration["OpenAI:ApiKey"]))
+    {
+        throw new InvalidOperationException("Missing configuration: OpenAI:ApiKey. See the README for details.");
+    }
+#else
+#if (UseManagedIdentity)
+    if (string.IsNullOrEmpty(configuration["AzureOpenAI:Endpoint"]))
+    {
+        throw new InvalidOperationException("Missing configuration: AzureOpenAI:Endpoint. See the README for details.");
+    }
+#else
+    if (string.IsNullOrEmpty(configuration["AzureOpenAI:Endpoint"]))
+    {
+        throw new InvalidOperationException("Missing configuration: AzureOpenAI:Endpoint. See the README for details.");
+    }
+    if (string.IsNullOrEmpty(configuration["AzureOpenAI:Key"]))
+    {
+        throw new InvalidOperationException("Missing configuration: AzureOpenAI:Key. See the README for details.");
+    }
+#endif
+#endif
+#if (UseAzureAISearch)
+
+#if (UseManagedIdentity)
+    if (string.IsNullOrEmpty(configuration["AzureAISearch:Endpoint"]))
+    {
+        throw new InvalidOperationException("Missing configuration: AzureAISearch:Endpoint. See the README for details.");
+    }
+#else
+    if (string.IsNullOrEmpty(configuration["AzureAISearch:Endpoint"]))
+    {
+        throw new InvalidOperationException("Missing configuration: AzureAISearch:Endpoint. See the README for details.");
+    }
+    if (string.IsNullOrEmpty(configuration["AzureAISearch:Key"]))
+    {
+        throw new InvalidOperationException("Missing configuration: AzureAISearch:Key. See the README for details.");
+    }
+#endif
+#endif
+}
