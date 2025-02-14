@@ -48,12 +48,13 @@ steps:
             -configuration ${{ parameters.buildConfig }}
             -warnAsError ${{ parameters.warnAsError }}
             /bl:${{ parameters.repoLogPath }}/build.binlog
+            /p:EnableEvaluationReportBuild=true
             $(_OfficialBuildIdArgs)
     displayName: Build
 
   - ${{ if eq(parameters.isWindows, 'true') }}:
     - pwsh: |
-          $(Build.SourcesDirectory)/src/Libraries/Microsoft.Extensions.AI.Evaluation.Reporting/TypeScript/azure-devops-report/build.ps1 -OutputPath $(Build.ArtifactStagingDirectory)\VSIX
+          $(Build.SourcesDirectory)/src/Libraries/Microsoft.Extensions.AI.Evaluation.Reporting/TypeScript/azure-devops-report/build.ps1 -OutputPath $(Build.Arcade.ArtifactsPath)/packages
       displayName: Build Azure DevOps plugin
 
   - ${{ if ne(parameters.skipTests, 'true') }}:
