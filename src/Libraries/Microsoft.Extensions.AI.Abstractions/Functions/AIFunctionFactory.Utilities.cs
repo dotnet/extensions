@@ -16,7 +16,7 @@ public static partial class AIFunctionFactory
     /// Replaces non-alphanumeric characters in the identifier with the underscore character.
     /// Primarily intended to remove characters produced by compiler-generated method name mangling.
     /// </returns>
-    internal static string SanitizeMemberName(string memberName)
+    public static string SanitizeMemberName(string memberName)
     {
         _ = Throw.IfNull(memberName);
         return InvalidNameCharsRegex().Replace(memberName, "_");

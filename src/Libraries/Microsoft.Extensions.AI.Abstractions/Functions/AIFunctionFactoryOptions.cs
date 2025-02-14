@@ -13,15 +13,15 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Represents options that can be provided when creating an <see cref="AIFunction"/> from a method.
 /// </summary>
-public sealed class AIFunctionFactoryCreateOptions
+public sealed class AIFunctionFactoryOptions
 {
     private JsonSerializerOptions _options = AIJsonUtilities.DefaultOptions;
     private AIJsonSchemaCreateOptions _jsonSchemaCreateOptions = AIJsonSchemaCreateOptions.Default;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AIFunctionFactoryCreateOptions"/> class.
+    /// Initializes a new instance of the <see cref="AIFunctionFactoryOptions"/> class.
     /// </summary>
-    public AIFunctionFactoryCreateOptions()
+    public AIFunctionFactoryOptions()
     {
     }
 

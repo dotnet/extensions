@@ -160,7 +160,7 @@ public class AIFunctionFactoryTest
     {
         IReadOnlyDictionary<string, object?> metadata = new Dictionary<string, object?> { ["a"] = "b" };
 
-        var options = new AIFunctionFactoryCreateOptions
+        var options = new AIFunctionFactoryOptions
         {
             Name = "test name",
             Description = "test description",
@@ -183,7 +183,7 @@ public class AIFunctionFactoryTest
     [Fact]
     public void AIFunctionFactoryCreateOptions_SchemaOptions_HasExpectedDefaults()
     {
-        var options = new AIFunctionFactoryCreateOptions();
+        var options = new AIFunctionFactoryOptions();
         var schemaOptions = options.JsonSchemaCreateOptions;
 
         Assert.NotNull(schemaOptions);
