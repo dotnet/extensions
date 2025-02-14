@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.AI;
 public static partial class AIFunctionFactory
 {
     /// <summary>Holds the default options instance used when creating function.</summary>
-    private static readonly AIFunctionFactoryCreateOptions _defaultOptions = new();
+    private static readonly AIFunctionFactoryOptions _defaultOptions = new();
 
     /// <summary>Creates an <see cref="AIFunction"/> instance for a method, specified via a delegate.</summary>
     /// <param name="method">The method to be represented via the created <see cref="AIFunction"/>.</param>
@@ -31,14 +31,14 @@ public static partial class AIFunctionFactory
     /// <remarks>
     /// <para>
     /// Return values are serialized to <see cref="JsonElement"/> using <paramref name="options"/>'s
-    /// <see cref="AIFunctionFactoryCreateOptions.SerializerOptions"/>. Arguments that are not already of the expected type are
+    /// <see cref="AIFunctionFactoryOptions.SerializerOptions"/>. Arguments that are not already of the expected type are
     /// marshaled to the expected type via JSON and using <paramref name="options"/>'s
-    /// <see cref="AIFunctionFactoryCreateOptions.SerializerOptions"/>. If the argument is a <see cref="JsonElement"/>,
+    /// <see cref="AIFunctionFactoryOptions.SerializerOptions"/>. If the argument is a <see cref="JsonElement"/>,
     /// <see cref="JsonDocument"/>, or <see cref="JsonNode"/>, it is deserialized directly. If the argument is anything else unknown,
     /// it is round-tripped through JSON, serializing the object as JSON and then deserializing it to the expected type.
     /// </para>
     /// </remarks>
-    public static AIFunction Create(Delegate method, AIFunctionFactoryCreateOptions? options)
+    public static AIFunction Create(Delegate method, AIFunctionFactoryOptions? options)
     {
         _ = Throw.IfNull(method);
 
@@ -64,7 +64,7 @@ public static partial class AIFunctionFactory
     {
         _ = Throw.IfNull(method);
 
-        AIFunctionFactoryCreateOptions createOptions = serializerOptions is null && name is null && description is null
+        AIFunctionFactoryOptions createOptions = serializerOptions is null && name is null && description is null
             ? _defaultOptions
             : new()
             {
@@ -90,14 +90,14 @@ public static partial class AIFunctionFactory
     /// <remarks>
     /// <para>
     /// Return values are serialized to <see cref="JsonElement"/> using <paramref name="options"/>'s
-    /// <see cref="AIFunctionFactoryCreateOptions.SerializerOptions"/>. Arguments that are not already of the expected type are
+    /// <see cref="AIFunctionFactoryOptions.SerializerOptions"/>. Arguments that are not already of the expected type are
     /// marshaled to the expected type via JSON and using <paramref name="options"/>'s
-    /// <see cref="AIFunctionFactoryCreateOptions.SerializerOptions"/>. If the argument is a <see cref="JsonElement"/>,
+    /// <see cref="AIFunctionFactoryOptions.SerializerOptions"/>. If the argument is a <see cref="JsonElement"/>,
     /// <see cref="JsonDocument"/>, or <see cref="JsonNode"/>, it is deserialized directly. If the argument is anything else unknown,
     /// it is round-tripped through JSON, serializing the object as JSON and then deserializing it to the expected type.
     /// </para>
     /// </remarks>
-    public static AIFunction Create(MethodInfo method, object? target, AIFunctionFactoryCreateOptions? options)
+    public static AIFunction Create(MethodInfo method, object? target, AIFunctionFactoryOptions? options)
     {
         _ = Throw.IfNull(method);
         return new ReflectionAIFunction(method, target, options ?? _defaultOptions);
@@ -129,7 +129,7 @@ public static partial class AIFunctionFactory
     {
         _ = Throw.IfNull(method);
 
-        AIFunctionFactoryCreateOptions? createOptions = serializerOptions is null && name is null && description is null
+        AIFunctionFactoryOptions? createOptions = serializerOptions is null && name is null && description is null
             ? _defaultOptions
             : new()
             {
@@ -160,12 +160,13 @@ public static partial class AIFunctionFactory
         /// This should be <see langword="null"/> if and only if <paramref name="method"/> is a static method.
         /// </param>
         /// <param name="options">Function creation options.</param>
-        public ReflectionAIFunction(MethodInfo method, object? target, AIFunctionFactoryCreateOptions options)
+        public ReflectionAIFunction(MethodInfo method, object? target, AIFunctionFactoryOptions options)
         {
             _ = Throw.IfNull(method);
             _ = Throw.IfNull(options);
 
-            options.SerializerOptions.MakeReadOnly();
+            JsonSerializerOptions serializerOptions = options.SerializerOptions ?? AIJsonUtilities.DefaultOptions;
+            serializerOptions.MakeReadOnly();
 
             if (method.ContainsGenericParameters)
             {
@@ -222,20 +223,20 @@ public static partial class AIFunctionFactory
             bool sawAIContextParameter = false;
             for (int i = 0; i < parameters.Length; i++)
             {
-                _parameterMarshallers[i] = GetParameterMarshaller(options, parameters[i], ref sawAIContextParameter);
+                _parameterMarshallers[i] = GetParameterMarshaller(serializerOptions, parameters[i], ref sawAIContextParameter);
             }
 
             _needsAIFunctionContext = sawAIContextParameter;
 
             // Get the return type and a marshaling func for the return value.
             _returnMarshaller = GetReturnMarshaller(method, out Type returnType);
-            _returnTypeInfo = returnType != typeof(void) ? options.SerializerOptions.GetTypeInfo(returnType) : null;
+            _returnTypeInfo = returnType != typeof(void) ? serializerOptions.GetTypeInfo(returnType) : null;
 
             Name = functionName;
             Description = options.Description ?? method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? string.Empty;
             UnderlyingMethod = method;
             AdditionalProperties = options.AdditionalProperties ?? EmptyReadOnlyDictionary<string, object?>.Instance;
-            JsonSerializerOptions = options.SerializerOptions;
+            JsonSerializerOptions = serializerOptions;
             JsonSchema = AIJsonUtilities.CreateFunctionJsonSchema(
                 method,
                 title: Name,
@@ -308,7 +309,7 @@ public static partial class AIFunctionFactory
         /// Gets a delegate for handling the marshaling of a parameter.
         /// </summary>
         private static Func<IReadOnlyDictionary<string, object?>, AIFunctionContext?, object?> GetParameterMarshaller(
-            AIFunctionFactoryCreateOptions options,
+            JsonSerializerOptions serializerOptions,
             ParameterInfo parameter,
             ref bool sawAIFunctionContext)
         {
@@ -336,7 +337,7 @@ public static partial class AIFunctionFactory
 
             // Resolve the contract used to marshal the value from JSON -- can throw if not supported or not found.
             Type parameterType = parameter.ParameterType;
-            JsonTypeInfo typeInfo = options.SerializerOptions.GetTypeInfo(parameterType);
+            JsonTypeInfo typeInfo = serializerOptions.GetTypeInfo(parameterType);
 
             // Create a marshaller that simply looks up the parameter by name in the arguments dictionary.
             return (IReadOnlyDictionary<string, object?> arguments, AIFunctionContext? _) =>
@@ -359,7 +360,7 @@ public static partial class AIFunctionFactory
 #pragma warning disable CA1031 // Do not catch general exception types
                         try
                         {
-                            string json = JsonSerializer.Serialize(value, options.SerializerOptions.GetTypeInfo(value.GetType()));
+                            string json = JsonSerializer.Serialize(value, serializerOptions.GetTypeInfo(value.GetType()));
                             return JsonSerializer.Deserialize(json, typeInfo);
                         }
                         catch
