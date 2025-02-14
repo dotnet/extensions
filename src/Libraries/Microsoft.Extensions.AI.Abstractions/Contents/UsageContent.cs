@@ -8,7 +8,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// Represents usage information associated with a chat response.
+/// Represents usage information associated with a chat request and response.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public class UsageContent : AIContent

@@ -155,7 +155,8 @@ internal sealed partial class Emitter : EmitterBase
                 result = (c ^ result) * Mult;
             }
 
-            return Math.Abs((int)result);
+            int ret = (int)result;
+            return ret == int.MinValue ? 0 : Math.Abs(ret); // Ensure the result is non-negative
         }
 
         static bool ShouldStringifyParameter(LoggingMethodParameter p)
@@ -174,7 +175,7 @@ internal sealed partial class Emitter : EmitterBase
 
             if (!p.Type.Contains("."))
             {
-                // no . means this is a primitive type, pass as-is 
+                // no . means this is a primitive type, pass as-is
                 return false;
             }
 
@@ -198,7 +199,7 @@ internal sealed partial class Emitter : EmitterBase
 
             if (!p.Type.Contains("."))
             {
-                // no . means this is a primitive type, pass as-is 
+                // no . means this is a primitive type, pass as-is
                 return false;
             }
 

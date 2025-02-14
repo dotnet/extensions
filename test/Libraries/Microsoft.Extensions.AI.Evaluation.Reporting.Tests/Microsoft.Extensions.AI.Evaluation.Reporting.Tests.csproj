@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.AI.Evaluation.Reporting.Tests</RootNamespace>
+    <Description>Unit tests for Microsoft.Extensions.AI.Evaluation.Reporting.</Description>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Azure.Identity" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="appsettings*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Evaluation.Reporting.Azure\Microsoft.Extensions.AI.Evaluation.Reporting.Azure.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Evaluation.Reporting\CSharp\Microsoft.Extensions.AI.Evaluation.Reporting.csproj" />
+    <ProjectReference Include="..\..\TestUtilities\TestUtilities.csproj" />
+  </ItemGroup>
+
+</Project>

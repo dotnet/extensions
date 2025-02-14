@@ -9,11 +9,13 @@ using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Shared.Instruments;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows;
 
 internal sealed class WindowsSnapshotProvider : ISnapshotProvider
 {
+    private const double One = 1.0d;
     private const double Hundred = 100.0d;
 
     public SystemResources Resources { get; }
@@ -28,6 +30,7 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
     private readonly double _totalMemory;
     private readonly TimeSpan _cpuRefreshInterval;
     private readonly TimeSpan _memoryRefreshInterval;
+    private readonly double _metricValueMultiplier;
 
     private long _oldCpuUsageTicks;
     private long _oldCpuTimeTicks;
@@ -55,6 +58,8 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
         _logger = logger ?? NullLogger<WindowsSnapshotProvider>.Instance;
 
         Log.RunningOutsideJobObject(_logger);
+
+        _metricValueMultiplier = options.UseZeroToOneRangeForMetrics ? One : Hundred;
 
         _cpuUnits = getCpuUnitsFunc();
         var totalMemory = getTotalMemoryInBytesFunc();
@@ -135,7 +140,8 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
         {
             if (now >= _refreshAfterMemory)
             {
-                _memoryPercentage = Math.Min(Hundred, currentMemoryUsage / _totalMemory * Hundred); // Don't change calculation order, otherwise we loose some precision
+                // Don't change calculation order, otherwise we loose some precision:
+                _memoryPercentage = Math.Min(_metricValueMultiplier, currentMemoryUsage / _totalMemory * _metricValueMultiplier);
                 _refreshAfterMemory = now.Add(_memoryRefreshInterval);
             }
 
@@ -167,7 +173,8 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
                 var timeTickDelta = (now.Ticks - _oldCpuTimeTicks) * _cpuUnits;
                 if (usageTickDelta > 0 && timeTickDelta > 0)
                 {
-                    _cpuPercentage = Math.Min(Hundred, usageTickDelta / (double)timeTickDelta * Hundred); // Don't change calculation order, otherwise we loose some precision
+                    // Don't change calculation order, otherwise we loose some precision:
+                    _cpuPercentage = Math.Min(_metricValueMultiplier, usageTickDelta / (double)timeTickDelta * _metricValueMultiplier);
 
                     Log.CpuUsageData(_logger, currentCpuTicks, _oldCpuUsageTicks, timeTickDelta, _cpuUnits, _cpuPercentage);
 

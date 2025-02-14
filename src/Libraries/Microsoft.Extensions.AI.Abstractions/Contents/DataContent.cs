@@ -105,6 +105,14 @@ public class DataContent : AIContent
         _data = data;
     }
 
+    /// <summary>
+    /// Determines whether the <see cref="MediaType"/> has the specified prefix.
+    /// </summary>
+    /// <param name="prefix">The media type prefix.</param>
+    /// <returns><see langword="true"/> if the <see cref="MediaType"/> has the specified prefix, otherwise <see langword="false"/>.</returns>
+    public bool MediaTypeStartsWith(string prefix)
+        => MediaType?.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) is true;
+
     /// <summary>Sets <paramref name="mediaType"/> to null if it's empty or composed entirely of whitespace.</summary>
     private static void ValidateMediaType(ref string? mediaType)
     {
@@ -164,23 +172,14 @@ public class DataContent : AIContent
     [JsonPropertyOrder(1)]
     public string? MediaType { get; private set; }
 
-    /// <summary>
-    /// Gets a value indicating whether the content contains data rather than only being a reference to data.
-    /// </summary>
-    /// <remarks>
-    /// If the instance is constructed from a <see cref="ReadOnlyMemory{Byte}"/> or from a data URI, this property returns <see langword="true"/>,
-    /// as the instance actually contains all of the data it represents. If, however, the instance was constructed from another form of URI, one
-    /// that simply references where the data can be found but doesn't actually contain the data, this property returns <see langword="false"/>.
-    /// </remarks>
-    [JsonIgnore]
-    public bool ContainsData => _dataUri is not null || _data is not null;
-
     /// <summary>Gets the data represented by this instance.</summary>
     /// <remarks>
-    /// If <see cref="ContainsData"/> is <see langword="true" />, this property returns the represented data.
-    /// If <see cref="ContainsData"/> is <see langword="false" />, this property returns <see langword="null" />.
+    /// If the instance was constructed from a <see cref="ReadOnlyMemory{Byte}"/>, this property returns that data.
+    /// If the instance was constructed from a data URI, this property the data contained within the data URI.
+    /// If, however, the instance was constructed from another form of URI, one that simply references where the
+    /// data can be found but doesn't actually contain the data, this property returns <see langword="null"/>;
+    /// no attempt is made to retrieve the data from that URI.
     /// </remarks>
-    [MemberNotNullWhen(true, nameof(ContainsData))]
     [JsonIgnore]
     public ReadOnlyMemory<byte>? Data
     {

@@ -13,13 +13,13 @@ namespace Microsoft.Extensions.AI;
 public class UsageDetails
 {
     /// <summary>Gets or sets the number of tokens in the input.</summary>
-    public int? InputTokenCount { get; set; }
+    public long? InputTokenCount { get; set; }
 
     /// <summary>Gets or sets the number of tokens in the output.</summary>
-    public int? OutputTokenCount { get; set; }
+    public long? OutputTokenCount { get; set; }
 
     /// <summary>Gets or sets the total number of tokens used to produce the response.</summary>
-    public int? TotalTokenCount { get; set; }
+    public long? TotalTokenCount { get; set; }
 
     /// <summary>Gets or sets a dictionary of additional usage counts.</summary>
     /// <remarks>
@@ -62,17 +62,17 @@ public class UsageDetails
         {
             List<string> parts = [];
 
-            if (InputTokenCount is int input)
+            if (InputTokenCount is { } input)
             {
                 parts.Add($"{nameof(InputTokenCount)} = {input}");
             }
 
-            if (OutputTokenCount is int output)
+            if (OutputTokenCount is { } output)
             {
                 parts.Add($"{nameof(OutputTokenCount)} = {output}");
             }
 
-            if (TotalTokenCount is int total)
+            if (TotalTokenCount is { } total)
             {
                 parts.Add($"{nameof(TotalTokenCount)} = {total}");
             }
@@ -89,5 +89,5 @@ public class UsageDetails
         }
     }
 
-    private static int? NullableSum(int? a, int? b) => (a.HasValue || b.HasValue) ? (a ?? 0) + (b ?? 0) : null;
+    private static long? NullableSum(long? a, long? b) => (a.HasValue || b.HasValue) ? (a ?? 0) + (b ?? 0) : null;
 }

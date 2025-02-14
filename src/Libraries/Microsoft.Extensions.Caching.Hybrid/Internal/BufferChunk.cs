@@ -15,11 +15,13 @@ namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 internal readonly struct BufferChunk
 {
     private const int FlagReturnToPool = (1 << 31);
-
     private readonly int _lengthAndPoolFlag;
 
-    public byte[]? Array { get; } // null for default
+    public byte[]? OversizedArray { get; } // null for default
 
+    public bool HasValue => OversizedArray is not null;
+
+    public int Offset { get; }
     public int Length => _lengthAndPoolFlag & ~FlagReturnToPool;
 
     public bool ReturnToPool => (_lengthAndPoolFlag & FlagReturnToPool) != 0;
@@ -27,8 +29,9 @@ internal readonly struct BufferChunk
     public BufferChunk(byte[] array)
     {
         Debug.Assert(array is not null, "expected valid array input");
-        Array = array;
+        OversizedArray = array;
         _lengthAndPoolFlag = array!.Length;
+        Offset = 0;
 
         // assume not pooled, if exact-sized
         // (we don't expect array.Length to be negative; we're really just saying
@@ -39,11 +42,12 @@ internal readonly struct BufferChunk
         Debug.Assert(Length == array.Length, "array length not respected");
     }
 
-    public BufferChunk(byte[] array, int length, bool returnToPool)
+    public BufferChunk(byte[] array, int offset, int length, bool returnToPool)
     {
         Debug.Assert(array is not null, "expected valid array input");
         Debug.Assert(length >= 0, "expected valid length");
-        Array = array;
+        OversizedArray = array;
+        Offset = offset;
         _lengthAndPoolFlag = length | (returnToPool ? FlagReturnToPool : 0);
         Debug.Assert(ReturnToPool == returnToPool, "return-to-pool not respected");
         Debug.Assert(Length == length, "length not respected");
@@ -58,7 +62,7 @@ internal readonly struct BufferChunk
         }
 
         var copy = new byte[length];
-        Buffer.BlockCopy(Array!, 0, copy, 0, length);
+        Buffer.BlockCopy(OversizedArray!, Offset, copy, 0, length);
         return copy;
 
         // Note on nullability of Array; the usage here is that a non-null array
@@ -73,15 +77,19 @@ internal readonly struct BufferChunk
     {
         if (ReturnToPool)
         {
-            ArrayPool<byte>.Shared.Return(Array!);
+            ArrayPool<byte>.Shared.Return(OversizedArray!);
         }
 
         Unsafe.AsRef(in this) = default; // anti foot-shotgun double-return guard; not 100%, but worth doing
-        Debug.Assert(Array is null && !ReturnToPool, "expected clean slate after recycle");
+        Debug.Assert(OversizedArray is null && !ReturnToPool, "expected clean slate after recycle");
     }
 
+    internal ArraySegment<byte> AsArraySegment() => Length == 0 ? default! : new(OversizedArray!, Offset, Length);
+
+    internal ReadOnlySpan<byte> AsSpan() => Length == 0 ? default : new(OversizedArray!, Offset, Length);
+
     // get the data as a ROS; for note on null-logic of Array!, see comment in ToArray
-    internal ReadOnlySequence<byte> AsSequence() => Length == 0 ? default : new ReadOnlySequence<byte>(Array!, 0, Length);
+    internal ReadOnlySequence<byte> AsSequence() => Length == 0 ? default : new ReadOnlySequence<byte>(OversizedArray!, Offset, Length);
 
     internal BufferChunk DoNotReturnToPool()
     {

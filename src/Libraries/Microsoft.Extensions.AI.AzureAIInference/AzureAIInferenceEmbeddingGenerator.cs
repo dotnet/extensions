@@ -25,6 +25,9 @@ namespace Microsoft.Extensions.AI;
 public sealed class AzureAIInferenceEmbeddingGenerator :
     IEmbeddingGenerator<string, Embedding<float>>
 {
+    /// <summary>Metadata about the embedding generator.</summary>
+    private readonly EmbeddingGeneratorMetadata _metadata;
+
     /// <summary>The underlying <see cref="EmbeddingsClient" />.</summary>
     private readonly EmbeddingsClient _embeddingsClient;
 
@@ -63,20 +66,18 @@ public sealed class AzureAIInferenceEmbeddingGenerator :
         var providerUrl = typeof(EmbeddingsClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(embeddingsClient) as Uri;
 
-        Metadata = new("az.ai.inference", providerUrl, modelId, dimensions);
+        _metadata = new("az.ai.inference", providerUrl, modelId, dimensions);
     }
 
     /// <inheritdoc />
-    public EmbeddingGeneratorMetadata Metadata { get; }
-
-    /// <inheritdoc />
-    public object? GetService(Type serviceType, object? serviceKey = null)
+    object? IEmbeddingGenerator<string, Embedding<float>>.GetService(Type serviceType, object? serviceKey)
     {
         _ = Throw.IfNull(serviceType);
 
         return
             serviceKey is not null ? null :
             serviceType == typeof(EmbeddingsClient) ? _embeddingsClient :
+            serviceType == typeof(EmbeddingGeneratorMetadata) ? _metadata :
             serviceType.IsInstanceOfType(this) ? this :
             null;
     }
@@ -163,7 +164,7 @@ public sealed class AzureAIInferenceEmbeddingGenerator :
         EmbeddingsOptions result = new(inputs)
         {
             Dimensions = options?.Dimensions ?? _dimensions,
-            Model = options?.ModelId ?? Metadata.ModelId,
+            Model = options?.ModelId ?? _metadata.ModelId,
             EncodingFormat = format,
         };
 

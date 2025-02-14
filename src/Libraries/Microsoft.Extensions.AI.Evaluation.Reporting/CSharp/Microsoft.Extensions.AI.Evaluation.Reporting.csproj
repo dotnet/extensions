@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- 
+    NOTE: To build and test the TypeScript code that this project depends on, set the 'EnableEvaluationReportBuild'
+    environment variable to 'true'. Note that the TypeScript build depends on Node.js tools. So you will need to
+    install the latest version of Node.js from https://nodejs.org/ as a prerequisite before setting the
+    'EnableEvaluationReportBuild' environment variable.
+  -->
+
+  <PropertyGroup>
+    <Description>A library for aggregating and reporting evaluation data. This library also includes support for caching LLM responses.</Description>
+    <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
+    <RootNamespace>Microsoft.Extensions.AI.Evaluation.Reporting</RootNamespace>
+    <!-- EA0002: Use System.TimeProvider to make the code easier to test. -->
+    <NoWarn>$(NoWarn);EA0002</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Workstream>AIEval</Workstream>
+    <Stage>preview</Stage>
+    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
+    <EnablePackageValidation>false</EnablePackageValidation>
+    <MinCodeCoverage>88</MinCodeCoverage>
+    <MinMutationScore>0</MinMutationScore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Microsoft.Extensions.AI\Microsoft.Extensions.AI.csproj" />
+    <ProjectReference Include="..\..\Microsoft.Extensions.AI.Evaluation\Microsoft.Extensions.AI.Evaluation.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Condition="'$(EnableEvaluationReportBuild)'=='true'"
+        Include="..\TypeScript\html-report\dist\index.html" Visible="false">
+      <LogicalName>Reporting.HTML.index.html</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleToTest Include="Microsoft.Extensions.AI.Evaluation.Integration.Tests" />
+    <InternalsVisibleToTest Include="Microsoft.Extensions.AI.Evaluation.Reporting.Tests" />
+  </ItemGroup>
+
+</Project>

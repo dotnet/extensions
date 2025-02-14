@@ -1,0 +1,57 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Gen.MetadataExtractor</RootNamespace>
+    <Description>Produces compliance and metrics reports based on data classification annotations in the code.</Description>
+    <Workstream>Fundamentals</Workstream>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <AnalyzerLanguage>cs</AnalyzerLanguage>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <InjectIsExternalInitOnLegacy>true</InjectIsExternalInitOnLegacy>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Stage>dev</Stage>
+    <MinCodeCoverage>98</MinCodeCoverage>
+    <MinMutationScore>85</MinMutationScore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Shared\TypeDeclarationSyntaxReceiver.cs" LinkBase="Shared" />
+    <Compile Include="..\Shared\GeneratorUtilities.cs" LinkBase="Shared" />
+    <Compile Include="..\Shared\ClassDeclarationSyntaxReceiver.cs" LinkBase="Shared" />
+    <Compile Include="..\Shared\EmitterBase.cs" LinkBase="Shared" />
+    <Compile Include="..\Shared\ParserUtilities.cs" LinkBase="Shared" />
+    <Compile Include="..\Shared\DiagDescriptorsBase.cs" LinkBase="Shared" />
+    <Compile Include="..\Shared\StringBuilderPool.cs" LinkBase="Shared" />
+    <Compile Include="..\Microsoft.Gen.ComplianceReports\Model\*.cs" LinkBase="Microsoft.Gen.ComplianceReports" />
+    <Compile Include="..\Microsoft.Gen.ComplianceReports\*.cs" LinkBase="Microsoft.Gen.ComplianceReports" />
+    <Compile Include="..\Microsoft.Gen.Metrics\Exceptions\*.cs" LinkBase="Microsoft.Gen.Metrics" />
+    <Compile Include="..\Microsoft.Gen.MetricsReports\*.cs" LinkBase="Microsoft.Gen.MetricsReports" />
+    <Compile Include="..\Microsoft.Gen.Metrics\Model\*.cs" LinkBase="Microsoft.Gen.Metrics" />
+    <Compile Include="..\Microsoft.Gen.Metrics\*.cs" LinkBase="Microsoft.Gen.Metrics" />
+    <Compile Include="..\Microsoft.Gen.Shared\*.cs" LinkBase="Microsoft.Gen.Metrics" />
+    <Compile Include="..\Microsoft.Gen.Shared\*.cs" LinkBase="Microsoft.Gen.Metrics" />
+
+
+
+  </ItemGroup>
+
+  <ItemGroup>
+    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.ComplianceReports\Microsoft.Gen.ComplianceReports.csproj" />
+    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.MetricsReports\Microsoft.Gen.MetricsReports.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Gen.Metrics\Microsoft.Gen.Metrics.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleToTest Include="Microsoft.Gen.MetadataExtractor.Unit.Tests" />
+  </ItemGroup>
+</Project>

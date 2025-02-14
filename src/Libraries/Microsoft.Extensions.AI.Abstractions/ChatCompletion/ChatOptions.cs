@@ -9,22 +9,50 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents the options for a chat request.</summary>
 public class ChatOptions
 {
+    /// <summary>Gets or sets an optional identifier used to associate a request with an existing chat thread.</summary>
+    public string? ChatThreadId { get; set; }
+
     /// <summary>Gets or sets the temperature for generating chat responses.</summary>
+    /// <remarks>
+    /// This value controls the randomness of predictions made by the model. Use a lower value to decrease randomness in the response.
+    /// </remarks>
     public float? Temperature { get; set; }
 
     /// <summary>Gets or sets the maximum number of tokens in the generated chat response.</summary>
     public int? MaxOutputTokens { get; set; }
 
     /// <summary>Gets or sets the "nucleus sampling" factor (or "top p") for generating chat responses.</summary>
+    /// <remarks>
+    /// Nucleus sampling is an alternative to sampling with temperature where the model
+    /// considers the results of the tokens with <see cref="TopP"/> probability mass.
+    /// For example, 0.1 means only the tokens comprising the top 10% probability mass are considered.
+    /// </remarks>
     public float? TopP { get; set; }
 
-    /// <summary>Gets or sets a count indicating how many of the most probable tokens the model should consider when generating the next part of the text.</summary>
+    /// <summary>
+    /// Gets or sets the number of most probable tokens that the model considers when generating the next part of the text.
+    /// </summary>
+    /// <remarks>
+    /// This property reduces the probability of generating nonsense. A higher value gives more diverse answers, while a lower value is more conservative.
+    /// </remarks>
     public int? TopK { get; set; }
 
-    /// <summary>Gets or sets the frequency penalty for generating chat responses.</summary>
+    /// <summary>
+    /// Gets or sets the penalty for repeated tokens in chat responses proportional to how many times they've appeared.
+    /// </summary>
+    /// <remarks>
+    /// You can modify this value to reduce the repetitiveness of generated tokens. The higher the value, the stronger a penalty
+    /// is applied to previously present tokens, proportional to how many times they've already appeared in the prompt or prior generation.
+    /// </remarks>
     public float? FrequencyPenalty { get; set; }
 
-    /// <summary>Gets or sets the presence penalty for generating chat responses.</summary>
+    /// <summary>
+    /// Gets or sets a value that influences the probability of generated tokens appearing based on their existing presence in generated text.
+    /// </summary>
+    /// <remarks>
+    /// You can modify this value to reduce repetitiveness of generated tokens. Similar to <see cref="FrequencyPenalty"/>,
+    /// except that this penalty is applied equally to all tokens that have already appeared, regardless of their exact frequencies.
+    /// </remarks>
     public float? PresencePenalty { get; set; }
 
     /// <summary>Gets or sets a seed value used by a service to control the reproducibility of results.</summary>
@@ -47,11 +75,17 @@ public class ChatOptions
     /// <summary>Gets or sets the model ID for the chat request.</summary>
     public string? ModelId { get; set; }
 
-    /// <summary>Gets or sets the stop sequences for generating chat responses.</summary>
+    /// <summary>
+    /// Gets or sets the list of stop sequences.
+    /// </summary>
+    /// <remarks>
+    /// After a stop sequence is detected, the model stops generating further tokens for chat responses.
+    /// </remarks>
     public IList<string>? StopSequences { get; set; }
 
     /// <summary>Gets or sets the tool mode for the chat request.</summary>
-    public ChatToolMode ToolMode { get; set; } = ChatToolMode.Auto;
+    /// <remarks>The default value is <see langword="null"/>, which is treated the same as <see cref="ChatToolMode.Auto"/>.</remarks>
+    public ChatToolMode? ToolMode { get; set; }
 
     /// <summary>Gets or sets the list of tools to include with a chat request.</summary>
     [JsonIgnore]
@@ -71,6 +105,7 @@ public class ChatOptions
     {
         ChatOptions options = new()
         {
+            ChatThreadId = ChatThreadId,
             Temperature = Temperature,
             MaxOutputTokens = MaxOutputTokens,
             TopP = TopP,
