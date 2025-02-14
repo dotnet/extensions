@@ -156,7 +156,7 @@ public class AIFunctionFactoryTest
     }
 
     [Fact]
-    public void AIFunctionFactoryCreateOptions_ValuesPropagateToAIFunction()
+    public void AIFunctionFactoryOptions_ValuesPropagateToAIFunction()
     {
         IReadOnlyDictionary<string, object?> metadata = new Dictionary<string, object?> { ["a"] = "b" };
 
@@ -181,14 +181,14 @@ public class AIFunctionFactoryTest
     }
 
     [Fact]
-    public void AIFunctionFactoryCreateOptions_SchemaOptions_HasExpectedDefaults()
+    public void AIFunctionFactoryOptions_DefaultValues()
     {
-        var options = new AIFunctionFactoryOptions();
-        var schemaOptions = options.JsonSchemaCreateOptions;
+        AIFunctionFactoryOptions options = new();
 
-        Assert.NotNull(schemaOptions);
-        Assert.True(schemaOptions.IncludeTypeInEnumSchemas);
-        Assert.True(schemaOptions.RequireAllProperties);
-        Assert.True(schemaOptions.DisallowAdditionalProperties);
+        Assert.Null(options.Name);
+        Assert.Null(options.Description);
+        Assert.Null(options.AdditionalProperties);
+        Assert.Null(options.SerializerOptions);
+        Assert.Null(options.JsonSchemaCreateOptions);
     }
 }

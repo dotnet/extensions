@@ -165,7 +165,8 @@ public static partial class AIFunctionFactory
             _ = Throw.IfNull(method);
             _ = Throw.IfNull(options);
 
-            options.SerializerOptions.MakeReadOnly();
+            JsonSerializerOptions serializerOptions = options.SerializerOptions ?? AIJsonUtilities.DefaultOptions;
+            serializerOptions.MakeReadOnly();
 
             if (method.ContainsGenericParameters)
             {
@@ -222,20 +223,20 @@ public static partial class AIFunctionFactory
             bool sawAIContextParameter = false;
             for (int i = 0; i < parameters.Length; i++)
             {
-                _parameterMarshallers[i] = GetParameterMarshaller(options, parameters[i], ref sawAIContextParameter);
+                _parameterMarshallers[i] = GetParameterMarshaller(serializerOptions, parameters[i], ref sawAIContextParameter);
             }
 
             _needsAIFunctionContext = sawAIContextParameter;
 
             // Get the return type and a marshaling func for the return value.
             _returnMarshaller = GetReturnMarshaller(method, out Type returnType);
-            _returnTypeInfo = returnType != typeof(void) ? options.SerializerOptions.GetTypeInfo(returnType) : null;
+            _returnTypeInfo = returnType != typeof(void) ? serializerOptions.GetTypeInfo(returnType) : null;
 
             Name = functionName;
             Description = options.Description ?? method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? string.Empty;
             UnderlyingMethod = method;
             AdditionalProperties = options.AdditionalProperties ?? EmptyReadOnlyDictionary<string, object?>.Instance;
-            JsonSerializerOptions = options.SerializerOptions;
+            JsonSerializerOptions = serializerOptions;
             JsonSchema = AIJsonUtilities.CreateFunctionJsonSchema(
                 method,
                 title: Name,
@@ -308,7 +309,7 @@ public static partial class AIFunctionFactory
         /// Gets a delegate for handling the marshaling of a parameter.
         /// </summary>
         private static Func<IReadOnlyDictionary<string, object?>, AIFunctionContext?, object?> GetParameterMarshaller(
-            AIFunctionFactoryOptions options,
+            JsonSerializerOptions serializerOptions,
             ParameterInfo parameter,
             ref bool sawAIFunctionContext)
         {
@@ -336,7 +337,7 @@ public static partial class AIFunctionFactory
 
             // Resolve the contract used to marshal the value from JSON -- can throw if not supported or not found.
             Type parameterType = parameter.ParameterType;
-            JsonTypeInfo typeInfo = options.SerializerOptions.GetTypeInfo(parameterType);
+            JsonTypeInfo typeInfo = serializerOptions.GetTypeInfo(parameterType);
 
             // Create a marshaller that simply looks up the parameter by name in the arguments dictionary.
             return (IReadOnlyDictionary<string, object?> arguments, AIFunctionContext? _) =>
@@ -359,7 +360,7 @@ public static partial class AIFunctionFactory
 #pragma warning disable CA1031 // Do not catch general exception types
                         try
                         {
-                            string json = JsonSerializer.Serialize(value, options.SerializerOptions.GetTypeInfo(value.GetType()));
+                            string json = JsonSerializer.Serialize(value, serializerOptions.GetTypeInfo(value.GetType()));
                             return JsonSerializer.Deserialize(json, typeInfo);
                         }
                         catch
