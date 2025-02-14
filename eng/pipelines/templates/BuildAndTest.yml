@@ -43,6 +43,13 @@ steps:
             /bl:${{ parameters.repoLogPath }}/restore2.binlog
     displayName: Restore solution
 
+  - pwsh: |
+        cd $(Build.SourcesDirectory)/src/Libraries/Microsoft.Extensions.AI.Evaluation.Reporting/TypeScript
+        npm install
+        node html-report/reset-devdata.js
+        npm run build
+    displayName: Pre-Build TypeScript Bundle
+
   - script: ${{ parameters.buildScript }}
             -build
             -configuration ${{ parameters.buildConfig }}
@@ -108,6 +115,7 @@ steps:
               -publish $(_PublishArgs)
               -configuration ${{ parameters.buildConfig }}
               /bl:${{ parameters.repoLogPath }}/transport.binlog
+              /p:EnableEvaluationReportBuild=true
               $(_OfficialBuildIdArgs)
       displayName: Build and publish docs transport package
 
@@ -119,5 +127,6 @@ steps:
               -warnAsError 1
               /bl:${{ parameters.repoLogPath }}/pack.binlog
               /p:Restore=false /p:Build=false
+              /p:EnableEvaluationReportBuild=true
               $(_OfficialBuildIdArgs)
       displayName: Pack, sign, and publish
