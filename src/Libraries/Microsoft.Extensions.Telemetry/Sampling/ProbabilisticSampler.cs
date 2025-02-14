@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.Diagnostics.Sampling;
 /// </summary>
 internal sealed class ProbabilisticSampler : LoggingSampler
 {
-#if !NET6_0_OR_GREATER
+#if NETFRAMEWORK
     private static readonly System.Threading.ThreadLocal<Random> _randomInstance = new(() => new Random());
 #endif
 
@@ -37,10 +37,10 @@ internal sealed class ProbabilisticSampler : LoggingSampler
             return true;
         }
 
-#if NET6_0_OR_GREATER
-        return Random.Shared.Next(int.MaxValue) < int.MaxValue * probability;
-#else
+#if NETFRAMEWORK
         return _randomInstance.Value!.Next(int.MaxValue) < int.MaxValue * probability;
+#else
+        return Random.Shared.Next(int.MaxValue) < int.MaxValue * probability;
 #endif
     }
 

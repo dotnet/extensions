@@ -269,7 +269,11 @@ internal sealed partial class ExtendedLogger : ILogger
             {
                 if (samplingDecision is null && config.Sampler is not null)
                 {
-                    var logEntry = new LogEntry<LoggerMessageState>(logLevel, loggerInfo.Category, eventId, msgState, exception, formatter);
+                    var logEntry = new LogEntry<ModernTagJoiner>(logLevel, loggerInfo.Category, eventId, joiner, exception, static (s, e) =>
+                    {
+                        var fmt = s.Formatter!;
+                        return fmt(s.State!, e);
+                    });
                     samplingDecision = config.Sampler.ShouldSample(in logEntry);
                 }
 
@@ -366,7 +370,11 @@ internal sealed partial class ExtendedLogger : ILogger
             {
                 if (samplingDecision is null && config.Sampler is not null)
                 {
-                    var logEntry = new LogEntry<TState>(logLevel, loggerInfo.Category, eventId, state, exception, formatter);
+                    var logEntry = new LogEntry<LegacyTagJoiner>(logLevel, loggerInfo.Category, eventId, joiner, exception, static (s, e) =>
+                    {
+                        var fmt = (Func<TState, Exception?, string>)s.Formatter!;
+                        return fmt((TState)s.State!, e);
+                    });
                     samplingDecision = config.Sampler.ShouldSample(in logEntry);
                 }
 
