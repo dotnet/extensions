@@ -13,41 +13,41 @@ namespace Microsoft.Extensions.AI;
 /// Represents a single streaming response chunk from an <see cref="IAudioTranscriptionClient"/>.
 /// </summary>
 /// <remarks>
-/// <para><see cref="StreamingAudioTranscriptionUpdate"/> is so named because it represents streaming updates
+/// <para><see cref="AudioTranscriptionResponseUpdate"/> is so named because it represents streaming updates
 /// to an audio transcroption. As such, it is considered erroneous for multiple updates that are part
 /// of the same audio to contain competing values. For example, some updates that are part of
 /// the same audio may have a <see langword="null"/> value, and others may have a non-<see langword="null"/> value,
-/// but all of those with a non-<see langword="null"/> value must have the same value (e.g. <see cref="StreamingAudioTranscriptionUpdate.CompletionId"/>).
+/// but all of those with a non-<see langword="null"/> value must have the same value (e.g. <see cref="AudioTranscriptionResponseUpdate.TranscriptionId"/>).
 /// </para>
 /// <para>
-/// The relationship between <see cref="AudioTranscriptionCompletion"/> and <see cref="StreamingAudioTranscriptionUpdate"/> is
-/// codified in the <see cref="StreamingAudioTranscriptionUpdateExtensions.ToAudioTranscriptionCompletionAsync"/> and
-/// <see cref="AudioTranscriptionCompletion.ToStreamingAudioTranscriptionUpdates"/>, which enable bidirectional conversions
+/// The relationship between <see cref="AudioTranscriptionResponse"/> and <see cref="AudioTranscriptionResponseUpdate"/> is
+/// codified in the <see cref="AudioTranscriptionResponseUpdateExtensions.ToAudioTranscriptionCompletionAsync"/> and
+/// <see cref="AudioTranscriptionResponse.ToStreamingAudioTranscriptionUpdates"/>, which enable bidirectional conversions
 /// between the two. Note, however, that the conversion may be slightly lossy, for example if multiple updates
-/// all have different <see cref="StreamingAudioTranscriptionUpdate.RawRepresentation"/> objects whereas there's
-/// only one slot for such an object available in <see cref="AudioTranscriptionCompletion.RawRepresentation"/>.
+/// all have different <see cref="AudioTranscriptionResponseUpdate.RawRepresentation"/> objects whereas there's
+/// only one slot for such an object available in <see cref="AudioTranscriptionResponse.RawRepresentation"/>.
 /// </para>
 /// </remarks>
-public class StreamingAudioTranscriptionUpdate
+public class AudioTranscriptionResponseUpdate
 {
     private IList<AIContent>? _contents;
 
-    /// <summary>Initializes a new instance of the <see cref="StreamingAudioTranscriptionUpdate"/> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="AudioTranscriptionResponseUpdate"/> class.</summary>
     [JsonConstructor]
-    public StreamingAudioTranscriptionUpdate()
+    public AudioTranscriptionResponseUpdate()
     {
     }
 
-    /// <summary>Initializes a new instance of the <see cref="StreamingAudioTranscriptionUpdate"/> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="AudioTranscriptionResponseUpdate"/> class.</summary>
     /// <param name="contents">The contents for this message.</param>
-    public StreamingAudioTranscriptionUpdate(IList<AIContent> contents)
+    public AudioTranscriptionResponseUpdate(IList<AIContent> contents)
     {
         _contents = Throw.IfNull(contents);
     }
 
-    /// <summary>Initializes a new instance of the <see cref="StreamingAudioTranscriptionUpdate"/> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="AudioTranscriptionResponseUpdate"/> class.</summary>
     /// <param name="content">Content of the message.</param>
-    public StreamingAudioTranscriptionUpdate(string? content)
+    public AudioTranscriptionResponseUpdate(string? content)
         : this(content is null ? [] : [new TextContent(content)])
     {
     }
@@ -59,10 +59,10 @@ public class StreamingAudioTranscriptionUpdate
     public int ChoiceIndex { get; set; }
 
     /// <summary>Gets or sets the kind of the transcription update.</summary>
-    public AudioTranscriptionUpdateKind Kind { get; set; } = AudioTranscriptionUpdateKind.Transcribing;
+    public AudioTranscriptionResponseUpdateKind Kind { get; set; } = AudioTranscriptionResponseUpdateKind.Transcribing;
 
     /// <summary>Gets or sets the ID of the transcription of which this update is a part.</summary>
-    public string? CompletionId { get; set; }
+    public string? TranscriptionId { get; set; }
 
     /// <summary>Gets or sets the start time of the audio segment associated with this update in relation to the input audio length.</summary>
     public TimeSpan? StartTime { get; set; }
@@ -75,7 +75,7 @@ public class StreamingAudioTranscriptionUpdate
 
     /// <summary>Gets or sets the raw representation of the transcription update from an underlying implementation.</summary>
     /// <remarks>
-    /// If a <see cref="StreamingAudioTranscriptionUpdate"/> is created to represent some underlying object from another object
+    /// If a <see cref="AudioTranscriptionResponseUpdate"/> is created to represent some underlying object from another object
     /// model, this property can be used to store that original object. This can be useful for debugging or
     /// for enabling a consumer to access the underlying object model if needed.
     /// </remarks>

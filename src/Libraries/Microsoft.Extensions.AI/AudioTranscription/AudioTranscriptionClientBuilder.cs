@@ -129,9 +129,9 @@ public sealed class AudioTranscriptionClientBuilder
     /// </remarks>
     /// <exception cref="ArgumentNullException">Both <paramref name="transcribeFunc"/> and <paramref name="transcribeStreamingFunc"/> are <see langword="null"/>.</exception>
     public AudioTranscriptionClientBuilder Use(
-        Func<IList<IAsyncEnumerable<DataContent>>, AudioTranscriptionOptions?, IAudioTranscriptionClient, CancellationToken, Task<AudioTranscriptionCompletion>>? transcribeFunc,
+        Func<IList<IAsyncEnumerable<DataContent>>, AudioTranscriptionOptions?, IAudioTranscriptionClient, CancellationToken, Task<AudioTranscriptionResponse>>? transcribeFunc,
         Func<IList<IAsyncEnumerable<DataContent>>, AudioTranscriptionOptions?, IAudioTranscriptionClient, CancellationToken,
-            IAsyncEnumerable<StreamingAudioTranscriptionUpdate>>? transcribeStreamingFunc)
+            IAsyncEnumerable<AudioTranscriptionResponseUpdate>>? transcribeStreamingFunc)
     {
         AnonymousDelegatingAudioTranscriptionClient.ThrowIfBothDelegatesNull(transcribeFunc, transcribeStreamingFunc);
 

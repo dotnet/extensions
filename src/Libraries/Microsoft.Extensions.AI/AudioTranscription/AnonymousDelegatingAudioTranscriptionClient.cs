@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.AI;
 public sealed class AnonymousDelegatingAudioTranscriptionClient : DelegatingAudioTranscriptionClient
 {
     /// <summary>The delegate to use as the implementation of <see cref="TranscribeAsync"/>.</summary>
-    private readonly Func<IList<IAsyncEnumerable<DataContent>>, AudioTranscriptionOptions?, IAudioTranscriptionClient, CancellationToken, Task<AudioTranscriptionCompletion>>? _transcribeFunc;
+    private readonly Func<IList<IAsyncEnumerable<DataContent>>, AudioTranscriptionOptions?, IAudioTranscriptionClient, CancellationToken, Task<AudioTranscriptionResponse>>? _transcribeFunc;
 
     /// <summary>The delegate to use as the implementation of <see cref="TranscribeStreamingAsync"/>.</summary>
     /// <remarks>
@@ -26,7 +26,7 @@ public sealed class AnonymousDelegatingAudioTranscriptionClient : DelegatingAudi
     /// When <see langword="null"/>, <see cref="TranscribeStreamingAsync"/> will delegate directly to the inner client.
     /// </remarks>
     private readonly Func<
-        IList<IAsyncEnumerable<DataContent>>, AudioTranscriptionOptions?, IAudioTranscriptionClient, CancellationToken, IAsyncEnumerable<StreamingAudioTranscriptionUpdate>>? _transcribeStreamingFunc;
+        IList<IAsyncEnumerable<DataContent>>, AudioTranscriptionOptions?, IAudioTranscriptionClient, CancellationToken, IAsyncEnumerable<AudioTranscriptionResponseUpdate>>? _transcribeStreamingFunc;
 
     /// <summary>The delegate to use as the implementation of both <see cref="TranscribeAsync"/> and <see cref="TranscribeStreamingAsync"/>.</summary>
     private readonly TranscribeSharedFunc? _sharedFunc;
@@ -72,10 +72,10 @@ public sealed class AnonymousDelegatingAudioTranscriptionClient : DelegatingAudi
     /// <exception cref="ArgumentNullException">Both <paramref name="transcribeFunc"/> and <paramref name="transcribeStreamingFunc"/> are <see langword="null"/>.</exception>
     public AnonymousDelegatingAudioTranscriptionClient(
         IAudioTranscriptionClient innerClient,
-        Func<IList<IAsyncEnumerable<DataContent>>, AudioTranscriptionOptions?, IAudioTranscriptionClient, CancellationToken, Task<AudioTranscriptionCompletion>>? transcribeFunc,
+        Func<IList<IAsyncEnumerable<DataContent>>, AudioTranscriptionOptions?, IAudioTranscriptionClient, CancellationToken, Task<AudioTranscriptionResponse>>? transcribeFunc,
         Func<
             IList<IAsyncEnumerable<DataContent>>,
-            AudioTranscriptionOptions?, IAudioTranscriptionClient, CancellationToken, IAsyncEnumerable<StreamingAudioTranscriptionUpdate>>? transcribeStreamingFunc)
+            AudioTranscriptionOptions?, IAudioTranscriptionClient, CancellationToken, IAsyncEnumerable<AudioTranscriptionResponseUpdate>>? transcribeStreamingFunc)
         : base(innerClient)
     {
         ThrowIfBothDelegatesNull(transcribeFunc, transcribeStreamingFunc);
@@ -85,7 +85,7 @@ public sealed class AnonymousDelegatingAudioTranscriptionClient : DelegatingAudi
     }
 
     /// <inheritdoc/>
-    public override Task<AudioTranscriptionCompletion> TranscribeAsync(
+    public override Task<AudioTranscriptionResponse> TranscribeAsync(
         IList<IAsyncEnumerable<DataContent>> audioContents, AudioTranscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(audioContents);
@@ -94,10 +94,10 @@ public sealed class AnonymousDelegatingAudioTranscriptionClient : DelegatingAudi
         {
             return TranscribeViaSharedAsync(audioContents, options, cancellationToken);
 
-            async Task<AudioTranscriptionCompletion> TranscribeViaSharedAsync(
+            async Task<AudioTranscriptionResponse> TranscribeViaSharedAsync(
                 IList<IAsyncEnumerable<DataContent>> audioContents, AudioTranscriptionOptions? options, CancellationToken cancellationToken)
             {
-                AudioTranscriptionCompletion? completion = null;
+                AudioTranscriptionResponse? completion = null;
                 await _sharedFunc(audioContents, options, async (audioContents, options, cancellationToken) =>
                 {
                     completion = await InnerClient.TranscribeAsync(audioContents, options, cancellationToken).ConfigureAwait(false);
@@ -105,7 +105,7 @@ public sealed class AnonymousDelegatingAudioTranscriptionClient : DelegatingAudi
 
                 if (completion is null)
                 {
-                    throw new InvalidOperationException("The wrapper completed successfully without producing a AudioTranscriptionCompletion.");
+                    throw new InvalidOperationException("The wrapper completed successfully without producing a AudioTranscriptionResponse.");
                 }
 
                 return completion;
@@ -124,14 +124,14 @@ public sealed class AnonymousDelegatingAudioTranscriptionClient : DelegatingAudi
     }
 
     /// <inheritdoc/>
-    public override IAsyncEnumerable<StreamingAudioTranscriptionUpdate> TranscribeStreamingAsync(
+    public override IAsyncEnumerable<AudioTranscriptionResponseUpdate> TranscribeStreamingAsync(
         IList<IAsyncEnumerable<DataContent>> audioContents, AudioTranscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(audioContents);
 
         if (_sharedFunc is not null)
         {
-            var updates = Channel.CreateBounded<StreamingAudioTranscriptionUpdate>(1);
+            var updates = Channel.CreateBounded<AudioTranscriptionResponseUpdate>(1);
 
 #pragma warning disable CA2016 // explicitly not forwarding the cancellation token, as we need to ensure the channel is always completed
             _ = Task.Run(async () =>
@@ -170,9 +170,9 @@ public sealed class AnonymousDelegatingAudioTranscriptionClient : DelegatingAudi
             Debug.Assert(_transcribeFunc is not null, "Expected non-null non-streaming delegate.");
             return TranscribeStreamingAsyncViaTranscribeAsync(_transcribeFunc!(audioContents, options, InnerClient, cancellationToken));
 
-            static async IAsyncEnumerable<StreamingAudioTranscriptionUpdate> TranscribeStreamingAsyncViaTranscribeAsync(Task<AudioTranscriptionCompletion> task)
+            static async IAsyncEnumerable<AudioTranscriptionResponseUpdate> TranscribeStreamingAsyncViaTranscribeAsync(Task<AudioTranscriptionResponse> task)
             {
-                AudioTranscriptionCompletion completion = await task.ConfigureAwait(false);
+                AudioTranscriptionResponse completion = await task.ConfigureAwait(false);
                 foreach (var update in completion.ToStreamingAudioTranscriptionUpdates())
                 {
                     yield return update;

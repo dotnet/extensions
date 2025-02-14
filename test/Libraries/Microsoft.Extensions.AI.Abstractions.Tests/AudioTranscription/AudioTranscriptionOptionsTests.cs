@@ -13,14 +13,14 @@ public class AudioTranscriptionOptionsTests
     public void Constructor_Parameterless_PropsDefaulted()
     {
         AudioTranscriptionOptions options = new();
-        Assert.Null(options.CompletionId);
+        Assert.Null(options.TranscriptionId);
         Assert.Null(options.ModelId);
         Assert.Null(options.AudioLanguage);
         Assert.Null(options.AudioSampleRate);
         Assert.Null(options.AdditionalProperties);
 
         AudioTranscriptionOptions clone = options.Clone();
-        Assert.Null(clone.CompletionId);
+        Assert.Null(clone.TranscriptionId);
         Assert.Null(clone.ModelId);
         Assert.Null(clone.AudioLanguage);
         Assert.Null(clone.AudioSampleRate);
@@ -37,20 +37,20 @@ public class AudioTranscriptionOptionsTests
             ["key"] = "value",
         };
 
-        options.CompletionId = "completionId";
+        options.TranscriptionId = "completionId";
         options.ModelId = "modelId";
         options.AudioLanguage = "en-US";
         options.AudioSampleRate = 44100;
         options.AdditionalProperties = additionalProps;
 
-        Assert.Equal("completionId", options.CompletionId);
+        Assert.Equal("completionId", options.TranscriptionId);
         Assert.Equal("modelId", options.ModelId);
         Assert.Equal("en-US", options.AudioLanguage);
         Assert.Equal(44100, options.AudioSampleRate);
         Assert.Same(additionalProps, options.AdditionalProperties);
 
         AudioTranscriptionOptions clone = options.Clone();
-        Assert.Equal("completionId", clone.CompletionId);
+        Assert.Equal("completionId", clone.TranscriptionId);
         Assert.Equal("modelId", clone.ModelId);
         Assert.Equal("en-US", clone.AudioLanguage);
         Assert.Equal(44100, clone.AudioSampleRate);
@@ -67,7 +67,7 @@ public class AudioTranscriptionOptionsTests
             ["key"] = "value",
         };
 
-        options.CompletionId = "completionId";
+        options.TranscriptionId = "completionId";
         options.ModelId = "modelId";
         options.AudioLanguage = "en-US";
         options.AudioSampleRate = 44100;
@@ -78,7 +78,7 @@ public class AudioTranscriptionOptionsTests
         AudioTranscriptionOptions? deserialized = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.AudioTranscriptionOptions);
         Assert.NotNull(deserialized);
 
-        Assert.Equal("completionId", deserialized.CompletionId);
+        Assert.Equal("completionId", deserialized.TranscriptionId);
         Assert.Equal("modelId", deserialized.ModelId);
         Assert.Equal("en-US", deserialized.AudioLanguage);
         Assert.Equal(44100, deserialized.AudioSampleRate);

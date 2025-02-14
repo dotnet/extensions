@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.AI;
 
 internal static partial class OpenAIModelMappers
 {
-    public static AudioTranscriptionChoice FromOpenAIAudioTranscription(OpenAI.Audio.AudioTranscription audioTranscription, int inputIndex)
+    public static AudioTranscription FromOpenAIAudioTranscription(OpenAI.Audio.AudioTranscription audioTranscription, int inputIndex)
     {
         _ = Throw.IfNull(audioTranscription);
 
@@ -37,7 +37,7 @@ internal static partial class OpenAIModelMappers
         }
 
         // Create the return choice.
-        return new AudioTranscriptionChoice
+        return new AudioTranscription
         {
             RawRepresentation = audioTranscription,
             InputIndex = inputIndex,

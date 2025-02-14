@@ -58,14 +58,18 @@ public class OpenAIAudioTranscriptionClientTests
             new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
 
         IAudioTranscriptionClient client = openAIClient.AsAudioTranscriptionClient(model);
-        Assert.Equal("openai", client.Metadata.ProviderName);
-        Assert.Equal(endpoint, client.Metadata.ProviderUri);
-        Assert.Equal(model, client.Metadata.ModelId);
+        var metadata = client.GetService<ChatClientMetadata>();
+        Assert.NotNull(metadata);
+        Assert.Equal("openai", metadata.ProviderName);
+        Assert.Equal(endpoint, metadata.ProviderUri);
+        Assert.Equal(model, metadata.ModelId);
 
         client = openAIClient.GetAudioClient(model).AsAudioTranscriptionClient();
-        Assert.Equal("openai", client.Metadata.ProviderName);
-        Assert.Equal(endpoint, client.Metadata.ProviderUri);
-        Assert.Equal(model, client.Metadata.ModelId);
+        metadata = client.GetService<ChatClientMetadata>();
+        Assert.NotNull(metadata);
+        Assert.Equal("openai", metadata.ProviderName);
+        Assert.Equal(endpoint, metadata.ProviderUri);
+        Assert.Equal(model, metadata.ModelId);
     }
 
     [Fact]
@@ -153,7 +157,7 @@ public class OpenAIAudioTranscriptionClientTests
         Assert.NotNull(response);
 
         Assert.Single(response.Choices);
-        Assert.Contains("I finally got back to the gym the other day", response.FirstChoice.Text);
+        Assert.Contains("I finally got back to the gym the other day", response.AudioTranscription.Text);
 
         Assert.NotNull(response.RawRepresentation);
         Assert.IsType<OpenAI.Audio.AudioTranscription>(response.RawRepresentation);

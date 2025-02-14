@@ -43,14 +43,14 @@ public partial class LoggingAudioTranscriptionClient : DelegatingAudioTranscript
     }
 
     /// <inheritdoc/>
-    public override async Task<AudioTranscriptionCompletion> TranscribeAsync(
+    public override async Task<AudioTranscriptionResponse> TranscribeAsync(
         IList<IAsyncEnumerable<DataContent>> audioContents, AudioTranscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
         {
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokedSensitive(nameof(TranscribeAsync), AsJson(audioContents), AsJson(options), AsJson(Metadata));
+                LogInvokedSensitive(nameof(TranscribeAsync), AsJson(audioContents), AsJson(options), AsJson(this.GetService<AudioTranscriptionClientMetadata>()));
             }
             else
             {
@@ -89,14 +89,14 @@ public partial class LoggingAudioTranscriptionClient : DelegatingAudioTranscript
     }
 
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<StreamingAudioTranscriptionUpdate> TranscribeStreamingAsync(
+    public override async IAsyncEnumerable<AudioTranscriptionResponseUpdate> TranscribeStreamingAsync(
         IList<IAsyncEnumerable<DataContent>> audioContents, AudioTranscriptionOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
         {
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokedSensitive(nameof(TranscribeStreamingAsync), AsJson(audioContents), AsJson(options), AsJson(Metadata));
+                LogInvokedSensitive(nameof(TranscribeStreamingAsync), AsJson(audioContents), AsJson(options), AsJson(this.GetService<AudioTranscriptionClientMetadata>()));
             }
             else
             {
@@ -104,7 +104,7 @@ public partial class LoggingAudioTranscriptionClient : DelegatingAudioTranscript
             }
         }
 
-        IAsyncEnumerator<StreamingAudioTranscriptionUpdate> e;
+        IAsyncEnumerator<AudioTranscriptionResponseUpdate> e;
         try
         {
             e = base.TranscribeStreamingAsync(audioContents, options, cancellationToken).GetAsyncEnumerator(cancellationToken);
@@ -122,7 +122,7 @@ public partial class LoggingAudioTranscriptionClient : DelegatingAudioTranscript
 
         try
         {
-            StreamingAudioTranscriptionUpdate? update = null;
+            AudioTranscriptionResponseUpdate? update = null;
             while (true)
             {
                 try
@@ -179,14 +179,14 @@ public partial class LoggingAudioTranscriptionClient : DelegatingAudioTranscript
     [LoggerMessage(LogLevel.Debug, "{MethodName} completed.")]
     private partial void LogCompleted(string methodName);
 
-    [LoggerMessage(LogLevel.Trace, "{MethodName} completed: {AudioTranscriptionCompletion}.")]
-    private partial void LogCompletedSensitive(string methodName, string audioTranscriptionCompletion);
+    [LoggerMessage(LogLevel.Trace, "{MethodName} completed: {AudioTranscriptionResponse}.")]
+    private partial void LogCompletedSensitive(string methodName, string audioTranscriptionResponse);
 
     [LoggerMessage(LogLevel.Debug, "TranscribeStreamingAsync received update.")]
     private partial void LogStreamingUpdate();
 
-    [LoggerMessage(LogLevel.Trace, "TranscribeStreamingAsync received update: {StreamingAudioTranscriptionCompletionUpdate}")]
-    private partial void LogStreamingUpdateSensitive(string streamingAudioTranscriptionCompletionUpdate);
+    [LoggerMessage(LogLevel.Trace, "TranscribeStreamingAsync received update: {StreamingAudioTranscriptionResponseUpdate}")]
+    private partial void LogStreamingUpdateSensitive(string streamingAudioTranscriptionResponseUpdate);
 
     [LoggerMessage(LogLevel.Debug, "{MethodName} canceled.")]
     private partial void LogInvocationCanceled(string methodName);

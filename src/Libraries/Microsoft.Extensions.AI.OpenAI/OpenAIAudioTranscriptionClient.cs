@@ -22,6 +22,9 @@ public sealed class OpenAIAudioTranscriptionClient : IAudioTranscriptionClient
     /// <summary>Default OpenAI endpoint.</summary>
     private static readonly Uri _defaultOpenAIEndpoint = new("https://api.openai.com/v1");
 
+    /// <summary>Metadata about the client.</summary>
+    private readonly AudioTranscriptionClientMetadata _metadata;
+
     /// <summary>The underlying <see cref="OpenAIClient" />.</summary>
     private readonly OpenAIClient? _openAIClient;
 
@@ -46,7 +49,7 @@ public sealed class OpenAIAudioTranscriptionClient : IAudioTranscriptionClient
         Uri providerUrl = typeof(OpenAIClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(openAIClient) as Uri ?? _defaultOpenAIEndpoint;
 
-        Metadata = new("openai", providerUrl, modelId);
+        _metadata = new("openai", providerUrl, modelId);
     }
 
     /// <summary>Initializes a new instance of the <see cref="OpenAIAudioTranscriptionClient"/> class for the specified <see cref="AudioClient"/>.</summary>
@@ -66,11 +69,8 @@ public sealed class OpenAIAudioTranscriptionClient : IAudioTranscriptionClient
         string? model = typeof(AudioClient).GetField("_model", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(audioClient) as string;
 
-        Metadata = new("openai", providerUrl, model);
+        _metadata = new("openai", providerUrl, model);
     }
-
-    /// <inheritdoc />
-    public AudioTranscriptionClientMetadata Metadata { get; }
 
     /// <inheritdoc />
     public object? GetService(Type serviceType, object? serviceKey = null)
@@ -79,6 +79,7 @@ public sealed class OpenAIAudioTranscriptionClient : IAudioTranscriptionClient
 
         return
             serviceKey is not null ? null :
+            serviceType == typeof(AudioTranscriptionClientMetadata) ? _metadata :
             serviceType == typeof(OpenAIClient) ? _openAIClient :
             serviceType == typeof(AudioClient) ? _audioClient :
             serviceType.IsInstanceOfType(this) ? this :
@@ -86,13 +87,13 @@ public sealed class OpenAIAudioTranscriptionClient : IAudioTranscriptionClient
     }
 
     /// <inheritdoc />
-    public async Task<AudioTranscriptionCompletion> TranscribeAsync(
+    public async Task<AudioTranscriptionResponse> TranscribeAsync(
         IList<IAsyncEnumerable<DataContent>> audioContents, AudioTranscriptionOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNullOrEmpty(audioContents);
 
         var openAIOptions = OpenAIModelMappers.ToOpenAIOptions(options);
-        List<AudioTranscriptionChoice> choices = [];
+        List<AudioTranscription> choices = [];
 
         for (var inputIndex = 0; inputIndex < audioContents.Count; inputIndex++)
         {
@@ -107,8 +108,8 @@ public sealed class OpenAIAudioTranscriptionClient : IAudioTranscriptionClient
 
             var firstChunk = enumerator.Current;
 
-            AudioTranscription transcriptionResult;
-            if (!firstChunk.ContainsData)
+            OpenAI.Audio.AudioTranscription transcriptionResult;
+            if (!firstChunk.Data.HasValue)
             {
                 // Check if the first chunk is a file path (file://)
                 var uri = new Uri(firstChunk.Uri);
@@ -118,24 +119,24 @@ public sealed class OpenAIAudioTranscriptionClient : IAudioTranscriptionClient
                 }
 
                 var filePath = uri.LocalPath;
-                transcriptionResult = await _audioClient.TranscribeAudioAsync(
+                transcriptionResult = (await _audioClient.TranscribeAudioAsync(
                     audioFilePath: filePath,
-                    options: OpenAIModelMappers.ToOpenAIOptions(options)).ConfigureAwait(false);
+                    options: OpenAIModelMappers.ToOpenAIOptions(options)).ConfigureAwait(false)).Value;
             }
             else
             {
                 using var audioFileStream = audioContent.ToStream(firstChunk, cancellationToken);
-                transcriptionResult = await _audioClient.TranscribeAudioAsync(
+                transcriptionResult = (await _audioClient.TranscribeAudioAsync(
                     audioFileStream,
                     "file.wav", // this information internally is required but is only being used to create a header name in the multipart request.
-                    OpenAIModelMappers.ToOpenAIOptions(options), cancellationToken).ConfigureAwait(false);
+                    OpenAIModelMappers.ToOpenAIOptions(options), cancellationToken).ConfigureAwait(false)).Value;
             }
 
             var choice = OpenAIModelMappers.FromOpenAIAudioTranscription(transcriptionResult, inputIndex);
             choices.Add(choice);
         }
 
-        return new AudioTranscriptionCompletion(choices)
+        return new AudioTranscriptionResponse(choices)
         {
             RawRepresentation = choices[0].RawRepresentation,
         };
@@ -148,7 +149,7 @@ public sealed class OpenAIAudioTranscriptionClient : IAudioTranscriptionClient
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<StreamingAudioTranscriptionUpdate> TranscribeStreamingAsync(
+    public async IAsyncEnumerable<AudioTranscriptionResponseUpdate> TranscribeStreamingAsync(
         IList<IAsyncEnumerable<DataContent>> audioContents, AudioTranscriptionOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNullOrEmpty(audioContents);
@@ -162,10 +163,10 @@ public sealed class OpenAIAudioTranscriptionClient : IAudioTranscriptionClient
 
             foreach (var choice in transcriptionCompletion.Choices)
             {
-                yield return new StreamingAudioTranscriptionUpdate(choice.Contents)
+                yield return new AudioTranscriptionResponseUpdate(choice.Contents)
                 {
                     InputIndex = inputIndex,
-                    Kind = AudioTranscriptionUpdateKind.Transcribed,
+                    Kind = AudioTranscriptionResponseUpdateKind.Transcribed,
                     RawRepresentation = choice.RawRepresentation
                 };
             }

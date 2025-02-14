@@ -138,6 +138,7 @@ public static class ChatResponseUpdateExtensions
     /// <param name="response">The <see cref="ChatResponse"/> object whose properties should be updated based on <paramref name="update"/>.</param>
     private static void ProcessUpdate(ChatResponseUpdate update, Dictionary<int, ChatMessage> messages, ChatResponse response)
     {
+        response.ChatThreadId ??= update.ChatThreadId;
         response.ResponseId ??= update.ResponseId;
         response.CreatedAt ??= update.CreatedAt;
         response.FinishReason ??= update.FinishReason;

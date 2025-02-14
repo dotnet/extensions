@@ -10,9 +10,9 @@ public class AudioTranscriptionOptions
 {
     private CultureInfo? _audioLanguage;
 
-    /// <summary>Gets or sets the completion ID for the audio transcription.</summary>
+    /// <summary>Gets or sets the ID for the audio transcription.</summary>
     /// <remarks>Long running jobs may use this ID for status pooling.</remarks>
-    public string? CompletionId { get; set; }
+    public string? TranscriptionId { get; set; }
 
     /// <summary>Gets or sets the model ID for the audio transcription.</summary>
     public string? ModelId { get; set; }
@@ -36,7 +36,7 @@ public class AudioTranscriptionOptions
     {
         AudioTranscriptionOptions options = new()
         {
-            CompletionId = CompletionId,
+            TranscriptionId = TranscriptionId,
             ModelId = ModelId,
             AudioLanguage = AudioLanguage,
             AudioSampleRate = AudioSampleRate,

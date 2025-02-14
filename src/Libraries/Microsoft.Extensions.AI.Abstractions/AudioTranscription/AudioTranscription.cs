@@ -10,26 +10,26 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a choice in an audio transcription.</summary>
-public class AudioTranscriptionChoice
+public class AudioTranscription
 {
     private IList<AIContent>? _contents;
 
-    /// <summary>Initializes a new instance of the <see cref="AudioTranscriptionChoice"/> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="AudioTranscription"/> class.</summary>
     [JsonConstructor]
-    public AudioTranscriptionChoice()
+    public AudioTranscription()
     {
     }
 
-    /// <summary>Initializes a new instance of the <see cref="AudioTranscriptionChoice"/> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="AudioTranscription"/> class.</summary>
     /// <param name="content">Content of the message.</param>
-    public AudioTranscriptionChoice(string? content)
+    public AudioTranscription(string? content)
         : this(content is null ? [] : [new TextContent(content)])
     {
     }
 
-    /// <summary>Initializes a new instance of the <see cref="AudioTranscriptionChoice"/> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="AudioTranscription"/> class.</summary>
     /// <param name="contents">The contents for this message.</param>
-    public AudioTranscriptionChoice(
+    public AudioTranscription(
         IList<AIContent> contents)
     {
         _contents = Throw.IfNull(contents);
@@ -80,7 +80,7 @@ public class AudioTranscriptionChoice
 
     /// <summary>Gets or sets the raw representation of the audio transcription choice from an underlying implementation.</summary>
     /// <remarks>
-    /// If a <see cref="AudioTranscriptionChoice"/> is created to represent some underlying object from another object
+    /// If a <see cref="AudioTranscription"/> is created to represent some underlying object from another object
     /// model, this property can be used to store that original object. This can be useful for debugging or
     /// for enabling a consumer to access the underlying object model if needed.
     /// </remarks>

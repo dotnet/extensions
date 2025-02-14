@@ -40,7 +40,7 @@ public abstract class AudioTranscriptionClientIntegrationTests : IDisposable
         using var audioStream = GetAudioStream("audio001.wav");
         var response = await _client.TranscribeAsync([audioStream.ToAsyncEnumerable()]);
 
-        Assert.Contains("gym", response.FirstChoice.Text, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("gym", response.AudioTranscription.Text, StringComparison.OrdinalIgnoreCase);
     }
 
     [ConditionalFact]

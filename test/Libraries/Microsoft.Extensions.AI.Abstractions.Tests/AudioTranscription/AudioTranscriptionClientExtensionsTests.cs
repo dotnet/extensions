@@ -34,11 +34,6 @@ public class AudioTranscriptionClientExtensionsTests
         {
             _ = AudioTranscriptionClientExtensions.TranscribeAsync(new TestAudioTranscriptionClient(), (DataContent)null!);
         });
-
-        Assert.Throws<ArgumentNullException>("audioContent", () =>
-        {
-            _ = AudioTranscriptionClientExtensions.TranscribeAsync(new TestAudioTranscriptionClient(), (IAsyncEnumerable<DataContent>)null!);
-        });
     }
 
     [Fact]
@@ -52,12 +47,7 @@ public class AudioTranscriptionClientExtensionsTests
 
         Assert.Throws<ArgumentNullException>("audioContent", () =>
         {
-            _ = AudioTranscriptionClientExtensions.TranscribeStreamingAsync(new TestAudioTranscriptionClient(), (DataContent)null!);
-        });
-
-        Assert.Throws<ArgumentNullException>("audioContent", () =>
-        {
-            _ = AudioTranscriptionClientExtensions.TranscribeStreamingAsync(new TestAudioTranscriptionClient(), (IAsyncEnumerable<DataContent>)null!);
+            _ = AudioTranscriptionClientExtensions.TranscribeStreamingAsync(new TestAudioTranscriptionClient(), audioContent: null!);
         });
     }
 
@@ -75,7 +65,7 @@ public class AudioTranscriptionClientExtensionsTests
                 Assert.Single(audioContents);
 
                 // For testing, return an async enumerable yielding one streaming update with text "world".
-                return YieldAsync(new StreamingAudioTranscriptionUpdate { Text = "world" });
+                return YieldAsync(new AudioTranscriptionResponseUpdate { Text = "world" });
             },
         };
 
@@ -94,7 +84,7 @@ public class AudioTranscriptionClientExtensionsTests
         Assert.Equal(1, count);
     }
 
-    private static async IAsyncEnumerable<StreamingAudioTranscriptionUpdate> YieldAsync(params StreamingAudioTranscriptionUpdate[] updates)
+    private static async IAsyncEnumerable<AudioTranscriptionResponseUpdate> YieldAsync(params AudioTranscriptionResponseUpdate[] updates)
     {
         await Task.Yield();
         foreach (var update in updates)
