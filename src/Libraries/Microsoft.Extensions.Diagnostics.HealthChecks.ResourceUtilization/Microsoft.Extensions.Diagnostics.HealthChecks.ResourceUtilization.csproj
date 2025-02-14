@@ -8,7 +8,10 @@
   <PropertyGroup>
     <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
     <InjectSharedDataValidation>true</InjectSharedDataValidation>
+    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <InjectObsoleteAttributeOnLegacy>true</InjectObsoleteAttributeOnLegacy>
+    <InjectSharedInstruments>true</InjectSharedInstruments>
   </PropertyGroup>
 
   <PropertyGroup>

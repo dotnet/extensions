@@ -27,13 +27,13 @@ public class ReducingChatClientTests
     {
         using var innerClient = new TestChatClient
         {
-            CompleteAsyncCallback = (messages, options, cancellationToken) =>
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
                 Assert.Equal(2, messages.Count);
                 Assert.Collection(messages,
                     m => Assert.StartsWith("Golden retrievers are quite active", m.Text, StringComparison.Ordinal),
                     m => Assert.StartsWith("Are they good with kids?", m.Text, StringComparison.Ordinal));
-                return Task.FromResult(new ChatCompletion([]));
+                return Task.FromResult(new ChatResponse([]));
             }
         };
 
@@ -51,7 +51,7 @@ public class ReducingChatClientTests
             new ChatMessage(ChatRole.User, "Are they good with kids?"),
         ];
 
-        await client.CompleteAsync(messages);
+        await client.GetResponseAsync(messages);
 
         Assert.Equal(5, messages.Count);
     }
@@ -78,21 +78,21 @@ public sealed class ReducingChatClient : DelegatingChatClient
     }
 
     /// <inheritdoc />
-    public override async Task<ChatCompletion> CompleteAsync(
+    public override async Task<ChatResponse> GetResponseAsync(
         IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         chatMessages = await GetChatMessagesToPropagate(chatMessages, cancellationToken).ConfigureAwait(false);
 
-        return await base.CompleteAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
+        return await base.GetResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public override async IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(
+    public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         chatMessages = await GetChatMessagesToPropagate(chatMessages, cancellationToken).ConfigureAwait(false);
 
-        await foreach (var update in base.CompleteStreamingAsync(chatMessages, options, cancellationToken).ConfigureAwait(false))
+        await foreach (var update in base.GetStreamingResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false))
         {
             yield return update;
         }

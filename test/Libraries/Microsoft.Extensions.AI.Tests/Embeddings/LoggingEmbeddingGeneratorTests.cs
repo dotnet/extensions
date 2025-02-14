@@ -20,11 +20,30 @@ public class LoggingEmbeddingGeneratorTests
         Assert.Throws<ArgumentNullException>("logger", () => new LoggingEmbeddingGenerator<string, Embedding<float>>(new TestEmbeddingGenerator(), null!));
     }
 
+    [Fact]
+    public void UseLogging_AvoidsInjectingNopClient()
+    {
+        using var innerGenerator = new TestEmbeddingGenerator();
+
+        Assert.Null(innerGenerator.AsBuilder().UseLogging(NullLoggerFactory.Instance).Build().GetService(typeof(LoggingEmbeddingGenerator<string, Embedding<float>>)));
+        Assert.Same(innerGenerator, innerGenerator.AsBuilder().UseLogging(NullLoggerFactory.Instance).Build().GetService(typeof(IEmbeddingGenerator<string, Embedding<float>>)));
+
+        using var factory = LoggerFactory.Create(b => b.AddFakeLogging());
+        Assert.NotNull(innerGenerator.AsBuilder().UseLogging(factory).Build().GetService(typeof(LoggingEmbeddingGenerator<string, Embedding<float>>)));
+
+        ServiceCollection c = new();
+        c.AddFakeLogging();
+        var services = c.BuildServiceProvider();
+        Assert.NotNull(innerGenerator.AsBuilder().UseLogging().Build(services).GetService(typeof(LoggingEmbeddingGenerator<string, Embedding<float>>)));
+        Assert.NotNull(innerGenerator.AsBuilder().UseLogging(null).Build(services).GetService(typeof(LoggingEmbeddingGenerator<string, Embedding<float>>)));
+        Assert.Null(innerGenerator.AsBuilder().UseLogging(NullLoggerFactory.Instance).Build(services).GetService(typeof(LoggingEmbeddingGenerator<string, Embedding<float>>)));
+    }
+
     [Theory]
     [InlineData(LogLevel.Trace)]
     [InlineData(LogLevel.Debug)]
     [InlineData(LogLevel.Information)]
-    public async Task CompleteAsync_LogsStartAndCompletion(LogLevel level)
+    public async Task GetResponseAsync_LogsResponseInvocationAndCompletion(LogLevel level)
     {
         var collector = new FakeLogCollector();
 

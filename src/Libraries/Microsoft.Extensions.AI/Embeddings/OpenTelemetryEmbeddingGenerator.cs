@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -15,8 +16,8 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a delegating embedding generator that implements the OpenTelemetry Semantic Conventions for Generative AI systems.</summary>
 /// <remarks>
-/// The draft specification this follows is available at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
-/// The specification is still experimental and subject to change; as such, the telemetry output by this generator is also subject to change.
+/// This class provides an implementation of the Semantic Conventions for Generative AI systems v1.30, defined at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
+/// The specification is still experimental and subject to change; as such, the telemetry output by this client is also subject to change.
 /// </remarks>
 /// <typeparam name="TInput">The type of input used to produce embeddings.</typeparam>
 /// <typeparam name="TEmbedding">The type of embedding generated.</typeparam>
@@ -29,6 +30,7 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
     private readonly Histogram<int> _tokenUsageHistogram;
     private readonly Histogram<double> _operationDurationHistogram;
 
+    private readonly string? _system;
     private readonly string? _modelId;
     private readonly string? _modelProvider;
     private readonly string? _endpointAddress;
@@ -48,12 +50,15 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
     {
         Debug.Assert(innerGenerator is not null, "Should have been validated by the base ctor.");
 
-        EmbeddingGeneratorMetadata metadata = innerGenerator!.Metadata;
-        _modelId = metadata.ModelId;
-        _modelProvider = metadata.ProviderName;
-        _endpointAddress = metadata.ProviderUri?.GetLeftPart(UriPartial.Path);
-        _endpointPort = metadata.ProviderUri?.Port ?? 0;
-        _dimensions = metadata.Dimensions;
+        if (innerGenerator!.GetService<TInput, TEmbedding, EmbeddingGeneratorMetadata>() is EmbeddingGeneratorMetadata metadata)
+        {
+            _system = metadata.ProviderName;
+            _modelId = metadata.ModelId;
+            _modelProvider = metadata.ProviderName;
+            _endpointAddress = metadata.ProviderUri?.GetLeftPart(UriPartial.Path);
+            _endpointPort = metadata.ProviderUri?.Port ?? 0;
+            _dimensions = metadata.Dimensions;
+        }
 
         string name = string.IsNullOrEmpty(sourceName) ? OpenTelemetryConsts.DefaultSourceName : sourceName!;
         _activitySource = new(name);
@@ -99,7 +104,7 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
         }
         finally
         {
-            TraceCompletion(activity, requestModelId, response, error, stopwatch);
+            TraceResponse(activity, requestModelId, response, error, stopwatch);
         }
 
         return response;
@@ -126,11 +131,11 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
             string? modelId = options?.ModelId ?? _modelId;
 
             activity = _activitySource.StartActivity(
-                string.IsNullOrWhiteSpace(modelId) ? OpenTelemetryConsts.GenAI.Embed : $"{OpenTelemetryConsts.GenAI.Embed} {modelId}",
+                string.IsNullOrWhiteSpace(modelId) ? OpenTelemetryConsts.GenAI.Embeddings : $"{OpenTelemetryConsts.GenAI.Embeddings} {modelId}",
                 ActivityKind.Client,
                 default(ActivityContext),
                 [
-                    new(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.Embed),
+                    new(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.Embeddings),
                     new(OpenTelemetryConsts.GenAI.Request.Model, modelId),
                     new(OpenTelemetryConsts.GenAI.SystemName, _modelProvider),
                 ]);
@@ -148,6 +153,23 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
                 {
                     _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.EmbeddingDimensions, dimensions);
                 }
+
+                if (options is not null &&
+                    _system is not null)
+                {
+                    // Log all additional request options as per-provider tags. This is non-normative, but it covers cases where
+                    // there's a per-provider specification in a best-effort manner (e.g. gen_ai.openai.request.service_tier),
+                    // and more generally cases where there's additional useful information to be logged.
+                    if (options.AdditionalProperties is { } props)
+                    {
+                        foreach (KeyValuePair<string, object?> prop in props)
+                        {
+                            _ = activity.AddTag(
+                                OpenTelemetryConsts.GenAI.Request.PerProvider(_system, JsonNamingPolicy.SnakeCaseLower.ConvertName(prop.Key)),
+                                prop.Value);
+                        }
+                    }
+                }
             }
         }
 
@@ -155,7 +177,7 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
     }
 
     /// <summary>Adds embedding generation response information to the activity.</summary>
-    private void TraceCompletion(
+    private void TraceResponse(
         Activity? activity,
         string? requestModelId,
         GeneratedEmbeddings<TEmbedding>? embeddings,
@@ -167,9 +189,9 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
         if (embeddings is not null)
         {
             responseModelId = embeddings.FirstOrDefault()?.ModelId;
-            if (embeddings.Usage?.InputTokenCount is int i)
+            if (embeddings.Usage?.InputTokenCount is long i)
             {
-                inputTokens = inputTokens.GetValueOrDefault() + i;
+                inputTokens = inputTokens.GetValueOrDefault() + (int)i;
             }
         }
 
@@ -212,12 +234,26 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
             {
                 _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.Model, responseModelId);
             }
+
+            // Log all additional response properties as per-provider tags. This is non-normative, but it covers cases where
+            // there's a per-provider specification in a best-effort manner (e.g. gen_ai.openai.response.system_fingerprint),
+            // and more generally cases where there's additional useful information to be logged.
+            if (_system is not null &&
+                embeddings?.AdditionalProperties is { } props)
+            {
+                foreach (KeyValuePair<string, object?> prop in props)
+                {
+                    _ = activity.AddTag(
+                        OpenTelemetryConsts.GenAI.Response.PerProvider(_system, JsonNamingPolicy.SnakeCaseLower.ConvertName(prop.Key)),
+                        prop.Value);
+                }
+            }
         }
     }
 
     private void AddMetricTags(ref TagList tags, string? requestModelId, string? responseModelId)
     {
-        tags.Add(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.Embed);
+        tags.Add(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.Embeddings);
 
         if (requestModelId is not null)
         {

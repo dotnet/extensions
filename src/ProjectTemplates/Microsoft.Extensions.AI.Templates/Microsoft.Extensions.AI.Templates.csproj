@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageType>Template</PackageType>
+    <TargetFrameworks>$(NetCoreTargetFrameworks);netstandard2.0</TargetFrameworks>
+    <Description>Project templates for Microsoft.Extensions.AI.</Description>
+    <PackageTags>dotnet-new;templates;ai</PackageTags>
+
+    <Stage>preview</Stage>
+    <Workstream>AI</Workstream>
+    <MinCodeCoverage>0</MinCodeCoverage>
+    <MinMutationScore>0</MinMutationScore>
+
+    <IsPackable>true</IsPackable>
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="src\ChatWithCustomData\**\*" Exclude="**\bin\**;**\obj\**;**\node_modules\**;**\*.user;**\*.csproj.in;**\*.out.js;**\*.generated.css;**\package-lock.json" />
+    <Compile Remove="**\*" />
+  </ItemGroup>
+
+  <!-- Copy the .csproj.in files to corresponding .csproj files -->
+  <!-- The reason they are initially .csproj.in is that there's no other way to exclude them from the main build -->
+  <Target Name="PrepareCsprojFiles" BeforeTargets="PrepareForBuild">
+    <ItemGroup>
+      <_CsprojFiles Include="src\**\*.csproj.in" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_CsprojFiles)" DestinationFiles="@(_CsprojFiles->'$([System.String]::Copy('%(Identity)').Replace('.csproj.in', '.csproj'))')" SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>

@@ -1,0 +1,262 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [ "Common", "AI", "Web" ],
+  "identity": "Microsoft.Extensions.AI.Templates.Chat.CSharp",
+  "name": "AI Chat with Custom Data",
+  "description": "A project template for creating an AI chat application. It can perform retrieval-augmented generation (RAG) using your own data.",
+  "shortName": "chat",
+  "defaultName": "ChatApp",
+  "sourceName": "ChatWithCustomData.Web", // TODO: When we support multi-project output, this needs to change to ChatWithCustomData, then we need some other technique to make it avoid emitting a .Web suffix in the single-project case
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "guids": [
+    "d5681fae-b21b-4114-b781-48180f08c0c4"
+  ],
+  "sources": [{
+    "source": "./",
+    "target": "./",
+    "modifiers": [
+      {
+        // For now, we only produce single-project output.
+        // Later when we support multi-project output with Qdrant on Docker, we'll also emit
+        // a second project ChatWithCustomData.AppHost and hence will suppress this renaming.
+        "rename": {
+          "ChatWithCustomData.Web/": "./"
+        }
+      }
+    ]
+  }],
+  "symbols": {
+    "framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "net9.0",
+          "description": "Target net9.0"
+        }
+      ],
+      "replaces": "net9.0",
+      "defaultValue": "net9.0"
+    },
+    "hostIdentifier": {
+      "type": "bind",
+      "binding": "HostIdentifier"
+    },
+    "AiServiceProvider": {
+      "type": "parameter",
+      "displayName": "_AI service provider",
+      "datatype": "choice",
+      "defaultValue": "azureopenai",
+      "choices": [
+        // {
+        //   "choice": "githubmodels",
+        //   "displayName": "GitHub Models",
+        //   "description": "Uses GitHub Models"
+        // },
+        {
+          "choice": "azureopenai",
+          "displayName": "Azure OpenAI",
+          "description": "Uses Azure OpenAI service"
+        },
+        {
+          "choice": "openai",
+          "displayName": "OpenAI Platform",
+          "description": "Uses the OpenAI Platform"
+        },
+        {
+          "choice": "ollama",
+          "displayName": "Ollama (for local development)",
+          "description": "Uses Ollama with the llama3.2 model for local development"
+        }
+        // {
+        //   "choice": "azureaifoundry",
+        //   "displayName": "Azure AI Foundry (Preview)",
+        //   "description": "Uses Azure AI Foundry (Preview)"
+        // }
+      ]
+    },
+    "UseManagedIdentity": {
+      "type": "parameter",
+      "displayName": "Use managed identity",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "isEnabled": "(AiServiceProvider == \"azureopenai\")",
+      "description": "Use managed identity to access Azure services"
+    },
+    "VectorStore": {
+      "type": "parameter",
+      "displayName": "_Vector store",
+      "datatype": "choice",
+      "defaultValue": "local",
+      "choices": [
+        {
+          "choice": "local",
+          "displayName": "Local on-disk (for prototyping)",
+          "description": "Uses a JSON file on disk. You can change the implementation to a real vector database before publishing."
+        },
+        {
+          "choice": "azureaisearch",
+          "displayName": "Azure AI Search",
+          "description": "Uses Azure AI Search. This also avoids the need to define a data ingestion pipeline, since it's managed by Azure AI Search."
+        }
+      ]
+    },
+    "IsAzureOpenAi": {
+      "type": "computed",
+      "value": "(AiServiceProvider == \"azureopenai\")"
+    },
+    "IsOpenAi": {
+      "type": "computed",
+      "value": "(AiServiceProvider == \"openai\")"
+    },
+    "IsGHModels": {
+      "type": "computed",
+      "value": "(AiServiceProvider == \"githubmodels\")"
+    },
+    "IsOllama": {
+      "type": "computed",
+      "value": "(AiServiceProvider == \"ollama\")"
+    },
+    "IsAzureAiFoundry": {
+      "type": "computed",
+      "value": "(AiServiceProvider == \"azureaifoundry\")"
+    },
+    "UseAzureAISearch": {
+      "type": "computed",
+      "value": "(VectorStore == \"azureaisearch\")"
+    },
+    "UseLocalVectorStore": {
+      "type": "computed",
+      "value": "(VectorStore == \"local\")"
+    },
+    "ChatModel": {
+      "type": "parameter",
+      "displayName": "Model/deployment for chat completions. Example: gpt-4o-mini",
+      "description": "Model/deployment for chat completions. Example: gpt-4o-mini"
+    },
+    "EmbeddingModel": {
+      "type": "parameter",
+      "displayName": "Model/deployment for embeddings. Example: text-embedding-3-small",
+      "description": "Model/deployment for embeddings. Example: text-embedding-3-small"
+    },
+    "OpenAiChatModelDefault": {
+      "type": "generated",
+      "generator": "constant",
+      "parameters": {
+        "value": "gpt-4o-mini"
+      }
+    },
+    "OpenAiEmbeddingModelDefault": {
+      "type": "generated",
+      "generator": "constant",
+      "parameters": {
+        "value": "text-embedding-3-small"
+      }
+    },
+    "OpenAiChatModel": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "ChatModel",
+        "fallbackVariableName": "OpenAiChatModelDefault"
+      },
+      "replaces": "gpt-4o-mini"
+    },
+    "OpenAiEmbeddingModel": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "EmbeddingModel",
+        "fallbackVariableName": "OpenAiEmbeddingModelDefault"
+      },
+      "replaces": "text-embedding-3-small"
+    },
+    "OllamaChatModelDefault": {
+      "type": "generated",
+      "generator": "constant",
+      "parameters": {
+        "value": "llama3.2"
+      }
+    },
+    "OllamaEmbeddingModelDefault": {
+      "type": "generated",
+      "generator": "constant",
+      "parameters": {
+        "value": "all-minilm"
+      }
+    },
+    "OllamaChatModel": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "ChatModel",
+        "fallbackVariableName": "OllamaChatModelDefault"
+      },
+      "replaces": "llama3.2"
+    },
+    "OllamaEmbeddingModel": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "EmbeddingModel",
+        "fallbackVariableName": "OllamaEmbeddingModelDefault"
+      },
+      "replaces": "all-minilm"
+    },
+    "kestrelHttpPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the HTTP endpoint in launchSettings.json."
+    },
+    "kestrelHttpPortGenerated": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 5000,
+        "high": 5300
+      }
+    },
+    "kestrelHttpPortReplacer": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "kestrelHttpPort",
+        "fallbackVariableName": "kestrelHttpPortGenerated"
+      },
+      "replaces": "5000",
+      "onlyIf": [{
+        "after": "localhost:"
+      }]
+    },
+    "kestrelHttpsPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the HTTPS endpoint in launchSettings.json."
+    },
+    "kestrelHttpsPortGenerated": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 7000,
+        "high": 7300
+      }
+    },
+    "kestrelHttpsPortReplacer": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "kestrelHttpsPort",
+        "fallbackVariableName": "kestrelHttpsPortGenerated"
+      },
+      "replaces": "5001",
+      "onlyIf": [{
+        "after": "localhost:"
+      }]
+    }
+  }
+}

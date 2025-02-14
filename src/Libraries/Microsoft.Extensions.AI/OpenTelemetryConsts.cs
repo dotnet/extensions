@@ -30,7 +30,7 @@ internal static class OpenTelemetryConsts
         public const string SystemName = "gen_ai.system";
 
         public const string Chat = "chat";
-        public const string Embed = "embed";
+        public const string Embeddings = "embeddings";
 
         public static class Assistant
         {
@@ -66,6 +66,7 @@ internal static class OpenTelemetryConsts
             public const string Model = "gen_ai.request.model";
             public const string MaxTokens = "gen_ai.request.max_tokens";
             public const string PresencePenalty = "gen_ai.request.presence_penalty";
+            public const string Seed = "gen_ai.request.seed";
             public const string StopSequences = "gen_ai.request.stop_sequences";
             public const string Temperature = "gen_ai.request.temperature";
             public const string TopK = "gen_ai.request.top_k";
@@ -81,6 +82,8 @@ internal static class OpenTelemetryConsts
             public const string InputTokens = "gen_ai.response.input_tokens";
             public const string Model = "gen_ai.response.model";
             public const string OutputTokens = "gen_ai.response.output_tokens";
+
+            public static string PerProvider(string providerName, string parameterName) => $"gen_ai.{providerName}.response.{parameterName}";
         }
 
         public static class System

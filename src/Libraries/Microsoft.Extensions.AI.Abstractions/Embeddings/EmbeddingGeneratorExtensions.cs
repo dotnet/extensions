@@ -54,7 +54,7 @@ public static class EmbeddingGeneratorExtensions
 
     /// <summary>Generates an embedding vector from the specified <paramref name="value"/>.</summary>
     /// <typeparam name="TInput">The type from which embeddings will be generated.</typeparam>
-    /// <typeparam name="TEmbedding">The numeric type of the embedding data.</typeparam>
+    /// <typeparam name="TEmbeddingElement">The numeric type of the embedding data.</typeparam>
     /// <param name="generator">The embedding generator.</param>
     /// <param name="value">A value from which an embedding will be generated.</param>
     /// <param name="options">The embedding generation options to configure the request.</param>
@@ -64,8 +64,8 @@ public static class EmbeddingGeneratorExtensions
     /// This operation is equivalent to using <see cref="GenerateEmbeddingAsync"/> and returning the
     /// resulting <see cref="Embedding{T}"/>'s <see cref="Embedding{T}.Vector"/> property.
     /// </remarks>
-    public static async Task<ReadOnlyMemory<TEmbedding>> GenerateEmbeddingVectorAsync<TInput, TEmbedding>(
-        this IEmbeddingGenerator<TInput, Embedding<TEmbedding>> generator,
+    public static async Task<ReadOnlyMemory<TEmbeddingElement>> GenerateEmbeddingVectorAsync<TInput, TEmbeddingElement>(
+        this IEmbeddingGenerator<TInput, Embedding<TEmbeddingElement>> generator,
         TInput value,
         EmbeddingGenerationOptions? options = null,
         CancellationToken cancellationToken = default)

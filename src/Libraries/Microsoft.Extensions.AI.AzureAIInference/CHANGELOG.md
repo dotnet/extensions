@@ -1,5 +1,9 @@
 # Release History
 
+## 9.1.0-preview.1.25064.3
+
+- Fixed handling of text-only user messages.
+
 ## 9.0.1-preview.1.24570.5
 
   - Made the `ToolCallJsonSerializerOptions` property non-nullable.

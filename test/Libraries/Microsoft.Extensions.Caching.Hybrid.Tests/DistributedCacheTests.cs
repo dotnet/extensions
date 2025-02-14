@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.Caching.Hybrid.Tests;
 /// <summary>
 /// Validate over-arching expectations of DC implementations, in particular behaviour re IBufferDistributedCache added for HybridCache.
 /// </summary>
-public abstract class DistributedCacheTests
+public abstract class DistributedCacheTests : IClassFixture<TestEventListener>
 {
     protected DistributedCacheTests(ITestOutputHelper log)
     {
@@ -26,18 +26,17 @@ public abstract class DistributedCacheTests
     protected abstract ValueTask ConfigureAsync(IServiceCollection services);
     protected abstract bool CustomClockSupported { get; }
 
-    protected FakeTime Clock { get; } = new();
+    internal FakeTime Clock { get; } = new();
 
-    protected sealed class FakeTime : TimeProvider, ISystemClock
+    internal sealed class FakeTime : TimeProvider, ISystemClock
     {
-        private DateTimeOffset _now = DateTimeOffset.UtcNow;
-        public void Reset() => _now = DateTimeOffset.UtcNow;
+        public void Reset() => UtcNow = DateTimeOffset.UtcNow;
 
-        DateTimeOffset ISystemClock.UtcNow => _now;
+        public DateTimeOffset UtcNow { get; private set; } = DateTimeOffset.UtcNow;
 
-        public override DateTimeOffset GetUtcNow() => _now;
+        public override DateTimeOffset GetUtcNow() => UtcNow;
 
-        public void Add(TimeSpan delta) => _now += delta;
+        public void Add(TimeSpan delta) => UtcNow += delta;
     }
 
     private async ValueTask<IServiceCollection> InitAsync()
@@ -185,7 +184,7 @@ public abstract class DistributedCacheTests
         Assert.Equal(size, expected.Length);
         cache.Set(key, payload, _fiveMinutes);
 
-        RecyclableArrayBufferWriter<byte> writer = RecyclableArrayBufferWriter<byte>.Create(int.MaxValue);
+        var writer = RecyclableArrayBufferWriter<byte>.Create(int.MaxValue);
         Assert.True(cache.TryGet(key, writer));
         Assert.True(expected.Span.SequenceEqual(writer.GetCommittedMemory().Span));
         writer.ResetInPlace();
@@ -247,7 +246,7 @@ public abstract class DistributedCacheTests
         Assert.Equal(size, expected.Length);
         await cache.SetAsync(key, payload, _fiveMinutes);
 
-        RecyclableArrayBufferWriter<byte> writer = RecyclableArrayBufferWriter<byte>.Create(int.MaxValue);
+        var writer = RecyclableArrayBufferWriter<byte>.Create(int.MaxValue);
         Assert.True(await cache.TryGetAsync(key, writer));
         Assert.True(expected.Span.SequenceEqual(writer.GetCommittedMemory().Span));
         writer.ResetInPlace();

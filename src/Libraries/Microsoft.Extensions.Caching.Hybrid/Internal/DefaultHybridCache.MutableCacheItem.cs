@@ -8,11 +8,16 @@ namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
 internal partial class DefaultHybridCache
 {
-    private sealed partial class MutableCacheItem<T> : CacheItem<T> // used to hold types that require defensive copies
+    internal sealed partial class MutableCacheItem<T> : CacheItem<T> // used to hold types that require defensive copies
     {
         private IHybridCacheSerializer<T>? _serializer;
         private BufferChunk _buffer;
         private T? _fallbackValue; // only used in the case of serialization failures
+
+        public MutableCacheItem(long creationTimestamp, TagSet tags)
+            : base(creationTimestamp, tags)
+        {
+        }
 
         public override bool NeedsEvictionCallback => _buffer.ReturnToPool;
 

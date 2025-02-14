@@ -11,13 +11,15 @@ using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Publishers;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Testing;
 using Microsoft.Extensions.Options;
+using Microsoft.TestUtilities;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test;
 
+[OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Not supported on MacOs.")]
 public sealed class ResourceMonitoringExtensionsTests
 {
-    [Fact]
+    [ConditionalFact]
     public void Throw_Null_When_Registration_Ingredients_Null()
     {
         var services = new ServiceCollection();
@@ -28,8 +30,8 @@ public sealed class ResourceMonitoringExtensionsTests
         Assert.Throws<ArgumentNullException>(() => services.AddResourceMonitoring((b) => b.ConfigureMonitor((Action<ResourceMonitoringOptions>)null!)));
     }
 
-    [Fact]
-    public void AddResourceUtilization_AddsResourceMonitoringService_ToServicesCollection()
+    [ConditionalFact]
+    public void AddsResourceMonitoringService_ToServicesCollection()
     {
         using var provider = new ServiceCollection()
             .AddLogging()
@@ -48,8 +50,8 @@ public sealed class ResourceMonitoringExtensionsTests
         Assert.IsAssignableFrom<IResourceMonitor>(trackerService);
     }
 
-    [Fact]
-    public void AddResourceUtilization_AddsResourceMonitoringService_ToServicesCollection_NoArgs()
+    [ConditionalFact]
+    public void AddsResourceMonitoringService_ToServicesCollection_NoArgs()
     {
         using var provider = new ServiceCollection()
             .AddLogging()
@@ -64,8 +66,8 @@ public sealed class ResourceMonitoringExtensionsTests
         Assert.IsAssignableFrom<IResourceMonitor>(trackerService);
     }
 
-    [Fact]
-    public void AddResourceUtilization_AddsResourceMonitoringService_AsHostedService()
+    [ConditionalFact]
+    public void AddsResourceMonitoringService_AsHostedService()
     {
         using var provider = new ServiceCollection()
             .AddLogging()
@@ -85,7 +87,7 @@ public sealed class ResourceMonitoringExtensionsTests
         Assert.IsAssignableFrom<IResourceMonitor>(trackerService);
     }
 
-    [Fact]
+    [ConditionalFact]
     public void ConfigureResourceUtilization_InitializeTrackerProperly()
     {
         using var host = FakeHost.CreateBuilder()
@@ -111,8 +113,8 @@ public sealed class ResourceMonitoringExtensionsTests
         Assert.NotNull(publisher);
     }
 
-    [Fact]
-    public void ConfigureTracker_GivenOptionsDelegate_InitializeTrackerWithOptionsProperly()
+    [ConditionalFact]
+    public void ConfigureMonitor_GivenOptionsDelegate_InitializeTrackerWithOptionsProperly()
     {
         const int SamplingWindowValue = 3;
         const int CalculationPeriodValue = 2;
@@ -139,8 +141,8 @@ public sealed class ResourceMonitoringExtensionsTests
         Assert.Equal(TimeSpan.FromSeconds(CalculationPeriodValue), options!.Value.PublishingWindow);
     }
 
-    [Fact]
-    public void ConfigureTracker_GivenIConfigurationSection_InitializeTrackerWithOptionsProperly()
+    [ConditionalFact]
+    public void ConfigureMonitor_GivenIConfigurationSection_InitializeTrackerWithOptionsProperly()
     {
         const int SamplingWindowValue = 3;
         const int CalculationPeriod = 2;
@@ -180,7 +182,7 @@ public sealed class ResourceMonitoringExtensionsTests
         Assert.Equal(TimeSpan.FromSeconds(CalculationPeriod), options!.Value.PublishingWindow);
     }
 
-    [Fact]
+    [ConditionalFact]
     public void Registering_Resource_Utilization_Adds_Only_One_Object_Of_Type_ResourceUtilizationService_To_DI_Container()
     {
         using var host = FakeHost.CreateBuilder()

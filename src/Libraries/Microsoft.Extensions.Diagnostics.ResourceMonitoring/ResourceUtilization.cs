@@ -12,6 +12,9 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 /// Captures resource usage at a given point in time.
 /// </summary>
 [SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "Comparing instances is not an expected scenario")]
+[Obsolete(DiagnosticIds.Obsoletions.NonObservableResourceMonitoringApiMessage,
+    DiagnosticId = DiagnosticIds.Obsoletions.NonObservableResourceMonitoringApiDiagId,
+    UrlFormat = DiagnosticIds.UrlFormat)]
 public readonly struct ResourceUtilization
 {
     private const double Hundred = 100.0;

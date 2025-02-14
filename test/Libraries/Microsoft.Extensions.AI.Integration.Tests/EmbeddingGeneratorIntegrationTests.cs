@@ -50,7 +50,7 @@ public abstract class EmbeddingGeneratorIntegrationTests : IDisposable
         Assert.NotNull(embeddings.Usage.InputTokenCount);
         Assert.NotNull(embeddings.Usage.TotalTokenCount);
         Assert.Single(embeddings);
-        Assert.Equal(_embeddingGenerator.Metadata.ModelId, embeddings[0].ModelId);
+        Assert.Equal(_embeddingGenerator.GetService<EmbeddingGeneratorMetadata>()?.ModelId, embeddings[0].ModelId);
         Assert.NotEmpty(embeddings[0].Vector.ToArray());
     }
 
@@ -71,7 +71,7 @@ public abstract class EmbeddingGeneratorIntegrationTests : IDisposable
         Assert.NotNull(embeddings.Usage.TotalTokenCount);
         Assert.All(embeddings, embedding =>
         {
-            Assert.Equal(_embeddingGenerator.Metadata.ModelId, embedding.ModelId);
+            Assert.Equal(_embeddingGenerator.GetService<EmbeddingGeneratorMetadata>()?.ModelId, embedding.ModelId);
             Assert.NotEmpty(embedding.Vector.ToArray());
         });
     }
@@ -122,7 +122,7 @@ public abstract class EmbeddingGeneratorIntegrationTests : IDisposable
         var activity = activities.Single();
         Assert.StartsWith("embed", activity.DisplayName);
         Assert.StartsWith("http", (string)activity.GetTagItem("server.address")!);
-        Assert.Equal(embeddingGenerator.Metadata.ProviderUri?.Port, (int)activity.GetTagItem("server.port")!);
+        Assert.Equal(embeddingGenerator.GetService<EmbeddingGeneratorMetadata>()?.ProviderUri?.Port, (int)activity.GetTagItem("server.port")!);
         Assert.NotNull(activity.Id);
         Assert.NotEmpty(activity.Id);
         Assert.NotEqual(0, (int)activity.GetTagItem("gen_ai.response.input_tokens")!);

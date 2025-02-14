@@ -4,6 +4,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -32,6 +33,14 @@ public static class LoggingEmbeddingGeneratorBuilderExtensions
         return builder.Use((innerGenerator, services) =>
         {
             loggerFactory ??= services.GetRequiredService<ILoggerFactory>();
+
+            // If the factory we resolve is for the null logger, the LoggingEmbeddingGenerator will end up
+            // being an expensive nop, so skip adding it and just return the inner generator.
+            if (loggerFactory == NullLoggerFactory.Instance)
+            {
+                return innerGenerator;
+            }
+
             var generator = new LoggingEmbeddingGenerator<TInput, TEmbedding>(innerGenerator, loggerFactory.CreateLogger(typeof(LoggingEmbeddingGenerator<TInput, TEmbedding>)));
             configure?.Invoke(generator);
             return generator;

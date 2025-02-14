@@ -22,7 +22,7 @@ Or directly in the C# project file:
 
 ### `IChatClient`
 
-The `IChatClient` interface defines a client abstraction responsible for interacting with AI services that provide chat capabilities. It defines methods for sending and receiving messages comprised of multi-modal content (text, images, audio, etc.), either as a complete set or streamed incrementally. Additionally, it provides metadata information about the client and allows for retrieving strongly-typed services that may be provided by the client or its underlying services.
+The `IChatClient` interface defines a client abstraction responsible for interacting with AI services that provide chat capabilities. It defines methods for sending and receiving messages comprised of multi-modal content (text, images, audio, etc.), either as a complete set or streamed incrementally. Additionally, it allows for retrieving strongly-typed services that may be provided by the client or its underlying services.
 
 #### Sample Implementation
 
@@ -40,12 +40,12 @@ using Microsoft.Extensions.AI;
 
 public class SampleChatClient : IChatClient
 {
-    public ChatClientMetadata Metadata { get; }
+    private readonly ChatClientMetadata _metadata;
 
     public SampleChatClient(Uri endpoint, string modelId) =>
-        Metadata = new("SampleChatClient", endpoint, modelId);
+        _metadata = new("SampleChatClient", endpoint, modelId);
 
-    public async Task<ChatCompletion> CompleteAsync(
+    public async Task<ChatResponse> GetResponseAsync(
         IList<ChatMessage> chatMessages,
         ChatOptions? options = null,
         CancellationToken cancellationToken = default)
@@ -53,7 +53,7 @@ public class SampleChatClient : IChatClient
         // Simulate some operation.
         await Task.Delay(300, cancellationToken);
 
-        // Return a sample chat completion response randomly.
+        // Return a sample chat response randomly.
         string[] responses =
         [
             "This is the first sample response.",
@@ -61,14 +61,14 @@ public class SampleChatClient : IChatClient
             "This is yet another response message."
         ];
 
-        return new([new ChatMessage()
+        return new(new ChatMessage()
         {
             Role = ChatRole.Assistant,
             Text = responses[Random.Shared.Next(responses.Length)],
-        }]);
+        });
     }
 
-    public async IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(
+    public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IList<ChatMessage> chatMessages,
         ChatOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -81,7 +81,7 @@ public class SampleChatClient : IChatClient
             await Task.Delay(100, cancellationToken);
 
             // Yield the next message in the response.
-            yield return new StreamingChatCompletionUpdate
+            yield return new ChatResponseUpdate
             {
                 Role = ChatRole.Assistant,
                 Text = word,
@@ -89,51 +89,54 @@ public class SampleChatClient : IChatClient
         }
     }
 
-    public TService? GetService<TService>(object? key = null) where TService : class =>
-        this as TService;
-
+    object? IChatClient.GetService(Type serviceType, object? serviceKey = null) =>
+        serviceKey is not null ? null :
+        serviceType == typeof(ChatClientMetadata) ? _metadata :
+        serviceType?.IsInstanceOfType(this) is true ? this :
+        null;
+        
     void IDisposable.Dispose() { }
 }
 ```
 
-#### Requesting a Chat Completion: `CompleteAsync`
+#### Requesting a Chat Response: `GetResponseAsync`
 
-With an instance of `IChatClient`, the `CompleteAsync` method may be used to send a request. The request is composed of one or more messages, each of which is composed of one or more pieces of content. Accelerator methods exist to simplify common cases, such as constructing a request for a single piece of text content.
+With an instance of `IChatClient`, the `GetResponseAsync` method may be used to send a request and get a response. The request is composed of one or more messages, each of which is composed of one or more pieces of content. Accelerator methods exist to simplify common cases, such as constructing a request for a single piece of text content.
 
 ```csharp
 using Microsoft.Extensions.AI;
 
 IChatClient client = new SampleChatClient(new Uri("http://coolsite.ai"), "my-custom-model");
 
-var response = await client.CompleteAsync("What is AI?");
+var response = await client.GetResponseAsync("What is AI?");
 
 Console.WriteLine(response.Message);
 ```
 
-The core `CompleteAsync` method on the `IChatClient` interface accepts a list of messages. This list represents the history of all messages that are part of the conversation.
+The core `GetResponseAsync` method on the `IChatClient` interface accepts a list of messages. This list represents the history of all messages that are part of the conversation.
 
 ```csharp
 using Microsoft.Extensions.AI;
 
 IChatClient client = new SampleChatClient(new Uri("http://coolsite.ai"), "my-custom-model");
 
-Console.WriteLine(await client.CompleteAsync(
+Console.WriteLine(await client.GetResponseAsync(
 [
     new(ChatRole.System, "You are a helpful AI assistant"),
     new(ChatRole.User, "What is AI?"),
 ]));
 ```
 
-#### Requesting a Streaming Chat Completion: `CompleteStreamingAsync`
+#### Requesting a Streaming Chat Response: `GetStreamingResponseAsync`
 
-The inputs to `CompleteStreamingAsync` are identical to those of `CompleteAsync`. However, rather than returning the complete response as part of a `ChatCompletion` object, the method returns an `IAsyncEnumerable<StreamingChatCompletionUpdate>`, providing a stream of updates that together form the single response.
+The inputs to `GetStreamingResponseAsync` are identical to those of `GetResponseAsync`. However, rather than returning the complete response as part of a `ChatResponse` object, the method returns an `IAsyncEnumerable<ChatResponseUpdate>`, providing a stream of updates that together form the single response.
 
 ```csharp
 using Microsoft.Extensions.AI;
 
 IChatClient client = new SampleChatClient(new Uri("http://coolsite.ai"), "my-custom-model");
 
-await foreach (var update in client.CompleteStreamingAsync("What is AI?"))
+await foreach (var update in client.GetStreamingResponseAsync("What is AI?"))
 {
     Console.Write(update);
 }
@@ -154,7 +157,7 @@ IChatClient client = new ChatClientBuilder(new OllamaChatClient(new Uri("http://
     .UseFunctionInvocation()
     .Build();
 
-var response = client.CompleteStreamingAsync(
+var response = client.GetStreamingResponseAsync(
     "Should I wear a rain coat?",
     new() { Tools = [AIFunctionFactory.Create(GetCurrentWeather)] });
 
@@ -182,7 +185,7 @@ string[] prompts = ["What is AI?", "What is .NET?", "What is AI?"];
 
 foreach (var prompt in prompts)
 {
-    await foreach (var update in client.CompleteStreamingAsync(prompt))
+    await foreach (var update in client.GetStreamingResponseAsync(prompt))
     {
         Console.Write(update);
     }
@@ -209,12 +212,12 @@ IChatClient client = new ChatClientBuilder(new SampleChatClient(new Uri("http://
     .UseOpenTelemetry(sourceName, c => c.EnableSensitiveData = true)
     .Build();
 
-Console.WriteLine((await client.CompleteAsync("What is AI?")).Message);
+Console.WriteLine((await client.GetResponseAsync("What is AI?")).Message);
 ```
 
 #### Options
 
-Every call to `CompleteAsync` or `CompleteStreamingAsync` may optionally supply a `ChatOptions` instance containing additional parameters for the operation. The most common parameters that are common amongst AI models and services show up as strongly-typed properties on the type, such as `ChatOptions.Temperature`. Other parameters may be supplied by name in a weakly-typed manner via the `ChatOptions.AdditionalProperties` dictionary.
+Every call to `GetResponseAsync` or `GetStreamingResponseAsync` may optionally supply a `ChatOptions` instance containing additional parameters for the operation. The most common parameters that are common amongst AI models and services show up as strongly-typed properties on the type, such as `ChatOptions.Temperature`. Other parameters may be supplied by name in a weakly-typed manner via the `ChatOptions.AdditionalProperties` dictionary.
 
 Options may also be baked into an `IChatClient` via the `ConfigureOptions` extension method on `ChatClientBuilder`. This delegating client wraps another client and invokes the supplied delegate to populate a `ChatOptions` instance for every call. For example, to ensure that the `ChatOptions.ModelId` property defaults to a particular model name, code like the following may be used:
 ```csharp
@@ -224,8 +227,8 @@ IChatClient client = new ChatClientBuilder(new OllamaChatClient(new Uri("http://
     .ConfigureOptions(options => options.ModelId ??= "phi3")
     .Build();
 
-Console.WriteLine(await client.CompleteAsync("What is AI?")); // will request "phi3"
-Console.WriteLine(await client.CompleteAsync("What is AI?", new() { ModelId = "llama3.1" })); // will request "llama3.1"
+Console.WriteLine(await client.GetResponseAsync("What is AI?")); // will request "phi3"
+Console.WriteLine(await client.GetResponseAsync("What is AI?", new() { ModelId = "llama3.1" })); // will request "llama3.1"
 ```
 
 #### Pipelines of Functionality
@@ -270,13 +273,13 @@ for (int i = 0; i < 3; i++)
         new ChatMessage(ChatRole.User, "Do I need an umbrella?")
     ];
 
-    Console.WriteLine(await client.CompleteAsync(history, options));
+    Console.WriteLine(await client.GetResponseAsync(history, options));
 }
 ```
 
 #### Custom `IChatClient` Middleware
 
-Anyone can layer in such additional functionality. While it's possible to implement `IChatClient` directly, the `DelegatingChatClient` class is an implementation of the `IChatClient` interface that serves as a base class for creating chat clients that delegate their operations to another `IChatClient` instance. It is designed to facilitate the chaining of multiple clients, allowing calls to be passed through to an underlying client. The class provides default implementations for methods such as `CompleteAsync`, `CompleteStreamingAsync`, and `Dispose`, simply forwarding the calls to the inner client instance. A derived type may then override just the methods it needs to in order to augment the behavior, delegating to the base implementation in order to forward the call along to the wrapped client. This setup is useful for creating flexible and modular chat clients that can be easily extended and composed.
+Anyone can layer in such additional functionality. While it's possible to implement `IChatClient` directly, the `DelegatingChatClient` class is an implementation of the `IChatClient` interface that serves as a base class for creating chat clients that delegate their operations to another `IChatClient` instance. It is designed to facilitate the chaining of multiple clients, allowing calls to be passed through to an underlying client. The class provides default implementations for methods such as `GetResponseAsync`, `GetStreamingResponseAsync`, and `Dispose`, simply forwarding the calls to the inner client instance. A derived type may then override just the methods it needs to in order to augment the behavior, delegating to the base implementation in order to forward the call along to the wrapped client. This setup is useful for creating flexible and modular chat clients that can be easily extended and composed.
 
 Here is an example class derived from `DelegatingChatClient` to provide rate limiting functionality, utilizing the [System.Threading.RateLimiting](https://www.nuget.org/packages/System.Threading.RateLimiting) library:
 ```csharp
@@ -285,24 +288,24 @@ using System.Threading.RateLimiting;
 
 public sealed class RateLimitingChatClient(IChatClient innerClient, RateLimiter rateLimiter) : DelegatingChatClient(innerClient)
 {
-    public override async Task<ChatCompletion> CompleteAsync(
+    public override async Task<ChatResponse> GetResponseAsync(
         IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         using var lease = await rateLimiter.AcquireAsync(permitCount: 1, cancellationToken).ConfigureAwait(false);
         if (!lease.IsAcquired)
             throw new InvalidOperationException("Unable to acquire lease.");
 
-        return await base.CompleteAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
+        return await base.GetResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
     }
 
-    public override async IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(
+    public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var lease = await rateLimiter.AcquireAsync(permitCount: 1, cancellationToken).ConfigureAwait(false);
         if (!lease.IsAcquired)
             throw new InvalidOperationException("Unable to acquire lease.");
 
-        await foreach (var update in base.CompleteStreamingAsync(chatMessages, options, cancellationToken).ConfigureAwait(false))
+        await foreach (var update in base.GetStreamingResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false))
             yield return update;
     }
 
@@ -326,7 +329,7 @@ var client = new RateLimitingChatClient(
     new SampleChatClient(new Uri("http://localhost"), "test"),
     new ConcurrencyLimiter(new() { PermitLimit = 1, QueueLimit = int.MaxValue }));
 
-await client.CompleteAsync("What color is the sky?");
+await client.GetResponseAsync("What color is the sky?");
 ```
 
 To make it easier to compose such components with others, the author of the component is recommended to create a "Use" extension method for registering this component into a pipeline, e.g.
@@ -358,9 +361,9 @@ var client = new SampleChatClient(new Uri("http://localhost"), "test")
 ```
 
 The above extension methods demonstrate using a `Use` method on `ChatClientBuilder`. `ChatClientBuilder` also provides `Use` overloads that make it easier to
-write such delegating handlers. For example, in the earlier `RateLimitingChatClient` example, the overrides of `CompleteAsync` and `CompleteStreamingAsync` only
+write such delegating handlers. For example, in the earlier `RateLimitingChatClient` example, the overrides of `GetResponseAsync` and `GetStreamingResponseAsync` only
 need to do work before and after delegating to the next client in the pipeline. To achieve the same thing without writing a custom class, an overload of `Use` may
-be used that accepts a delegate which is used for both `CompleteAsync` and `CompleteStreamingAsync`, reducing the boilderplate required:
+be used that accepts a delegate which is used for both `GetResponseAsync` and `GetStreamingResponseAsync`, reducing the boilderplate required:
 ```csharp
 RateLimiter rateLimiter = ...;
 var client = new SampleChatClient(new Uri("http://localhost"), "test")
@@ -399,7 +402,7 @@ var client = new SampleChatClient(new Uri("http://localhost"), "test")
     .Build();
 ```
 
-For scenarios where the developer would like to specify delegating implementations of `CompleteAsync` and `CompleteStreamingAsync` inline,
+For scenarios where the developer would like to specify delegating implementations of `GetResponseAsync` and `GetStreamingResponseAsync` inline,
 and where it's important to be able to write a different implementation for each in order to handle their unique return types specially,
 another overload of `Use` exists that accepts a delegate for each.
 
@@ -421,7 +424,7 @@ var host = builder.Build();
 
 // Elsewhere in the app
 var chatClient = host.Services.GetRequiredService<IChatClient>();
-Console.WriteLine(await chatClient.CompleteAsync("What is AI?"));
+Console.WriteLine(await chatClient.GetResponseAsync("What is AI?"));
 ```
 
 What instance and configuration is injected may differ based on the current needs of the application, and multiple pipelines may be injected with different keys.
@@ -446,7 +449,7 @@ using Microsoft.Extensions.AI;
 
 public class SampleEmbeddingGenerator(Uri endpoint, string modelId) : IEmbeddingGenerator<string, Embedding<float>>
 {
-    public EmbeddingGeneratorMetadata Metadata { get; } = new("SampleEmbeddingGenerator", endpoint, modelId);
+    private readonly EmbeddingGeneratorMetadata _metadata = new("SampleEmbeddingGenerator", endpoint, modelId);
 
     public async Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(
         IEnumerable<string> values,
@@ -463,8 +466,11 @@ public class SampleEmbeddingGenerator(Uri endpoint, string modelId) : IEmbedding
                 Enumerable.Range(0, 384).Select(_ => Random.Shared.NextSingle()).ToArray()));
     }
 
-    public TService? GetService<TService>(object? key = null) where TService : class =>
-        this as TService;
+    object? IChatClient.GetService(Type serviceType, object? serviceKey = null) =>
+        serviceKey is not null ? null :
+        serviceType == typeof(EmbeddingGeneratorMetadata) ? _metadata :
+        serviceType?.IsInstanceOfType(this) is true ? this :
+        null;
 
     void IDisposable.Dispose() { }
 }
