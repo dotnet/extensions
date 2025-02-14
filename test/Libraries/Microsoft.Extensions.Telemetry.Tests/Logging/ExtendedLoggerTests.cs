@@ -128,7 +128,7 @@ public static class ExtendedLoggerTests
              builder =>
              {
                  builder.AddProvider(provider);
-                 builder.AddGlobalBuffer(LogLevel.Warning);
+                 builder.AddGlobalBuffering(LogLevel.Warning);
              });
 
         var logger = factory.CreateLogger("my category");
@@ -138,9 +138,9 @@ public static class ExtendedLoggerTests
         // nothing is logged because the buffer not flushed yet
         Assert.Equal(0, provider.Logger!.Collector.Count);
 
-        // instead of this, users would get IBufferManager from DI and call Flush on it
+        // instead of this, users would get LogBuffer from DI and call Flush on it
         var dlf = (Utils.DisposingLoggerFactory)factory;
-        var bufferManager = dlf.ServiceProvider.GetRequiredService<IGlobalBufferManager>();
+        var bufferManager = dlf.ServiceProvider.GetRequiredService<LogBuffer>();
 
         bufferManager.Flush();
 

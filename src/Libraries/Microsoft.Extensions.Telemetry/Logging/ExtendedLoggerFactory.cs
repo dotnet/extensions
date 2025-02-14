@@ -24,7 +24,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
     private readonly IDisposable? _enrichmentOptionsChangeTokenRegistration;
     private readonly IDisposable? _redactionOptionsChangeTokenRegistration;
     private readonly Action<IEnrichmentTagCollector>[] _enrichers;
-    private readonly IBufferManager? _bufferManager;
+    private readonly LogBuffer? _bufferingManager;
     private readonly KeyValuePair<string, object?>[] _staticTags;
     private readonly Func<DataClassificationSet, Redactor> _redactorProvider;
     private volatile bool _disposed;
@@ -42,11 +42,11 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
         IOptionsMonitor<LoggerEnrichmentOptions>? enrichmentOptions = null,
         IOptionsMonitor<LoggerRedactionOptions>? redactionOptions = null,
         IRedactorProvider? redactorProvider = null,
-        IBufferManager? bufferManager = null)
+        LogBuffer? bufferingManager = null)
 #pragma warning restore S107 // Methods should not have too many parameters
     {
         _scopeProvider = scopeProvider;
-        _bufferManager = bufferManager;
+        _bufferingManager = bufferingManager;
 
         _factoryOptions = factoryOptions == null || factoryOptions.Value == null ? new LoggerFactoryOptions() : factoryOptions.Value;
 
@@ -294,7 +294,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
                 enrichmentOptions.MaxStackTraceLength,
                 _redactorProvider,
                 redactionOptions.ApplyDiscriminator,
-                _bufferManager);
+                _bufferingManager);
     }
 
     private void UpdateEnrichmentOptions(LoggerEnrichmentOptions enrichmentOptions) => Config = ComputeConfig(enrichmentOptions, null);

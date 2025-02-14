@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.Diagnostics.Buffering;
 /// <summary>
 /// Selects the best rule from the list of rules for a given log event.
 /// </summary>
-internal static class BufferFilterRuleSelector
+internal static class LogBufferingFilterRuleSelector
 {
     private static readonly IEqualityComparer<KeyValuePair<string, object?>> _stringifyComparer = new StringifyComprarer();
 
@@ -28,8 +28,8 @@ internal static class BufferFilterRuleSelector
     /// <param name="eventId">The event id of the log event.</param>
     /// <param name="attributes">The log state attributes of the log event.</param>
     /// <param name="bestRule">The best rule that matches the log event.</param>
-    public static void Select(IList<BufferFilterRule> rules, string category, LogLevel logLevel,
-        EventId eventId, IReadOnlyList<KeyValuePair<string, object?>>? attributes, out BufferFilterRule? bestRule)
+    public static void Select(IList<LogBufferingFilterRule> rules, string category, LogLevel logLevel,
+        EventId eventId, IReadOnlyList<KeyValuePair<string, object?>>? attributes, out LogBufferingFilterRule? bestRule)
     {
         bestRule = null;
 
@@ -40,10 +40,10 @@ internal static class BufferFilterRuleSelector
         // 3. If there is only one rule use it
         // 4. If there are multiple rules use last
 
-        BufferFilterRule? current = null;
+        LogBufferingFilterRule? current = null;
         if (rules is not null)
         {
-            foreach (BufferFilterRule rule in rules)
+            foreach (LogBufferingFilterRule rule in rules)
             {
                 if (IsBetter(rule, current, category, logLevel, eventId, attributes))
                 {
@@ -58,7 +58,7 @@ internal static class BufferFilterRuleSelector
         }
     }
 
-    private static bool IsBetter(BufferFilterRule rule, BufferFilterRule? current, string category,
+    private static bool IsBetter(LogBufferingFilterRule rule, LogBufferingFilterRule? current, string category,
         LogLevel logLevel, EventId eventId, IReadOnlyList<KeyValuePair<string, object?>>? attributes)
     {
         // Skip rules with inapplicable log level
@@ -74,7 +74,7 @@ internal static class BufferFilterRuleSelector
         }
 
         // Skip rules with inapplicable category
-        string? categoryName = rule.Category;
+        string? categoryName = rule.CategoryName;
         if (categoryName != null)
         {
             const char WildcardChar = '*';
@@ -106,7 +106,7 @@ internal static class BufferFilterRuleSelector
         }
 
         // Skip rules with inapplicable attributes
-        if (rule.Attributes.Count > 0 && attributes?.Count > 0)
+        if (rule.Attributes?.Count > 0 && attributes?.Count > 0)
         {
             foreach (KeyValuePair<string, object?> ruleAttribute in rule.Attributes)
             {
@@ -118,14 +118,14 @@ internal static class BufferFilterRuleSelector
         }
 
         // Decide whose category is better - rule vs current
-        if (current?.Category != null)
+        if (current?.CategoryName != null)
         {
-            if (rule.Category == null)
+            if (rule.CategoryName == null)
             {
                 return false;
             }
 
-            if (current.Category.Length > rule.Category.Length)
+            if (current.CategoryName.Length > rule.CategoryName.Length)
             {
                 return false;
             }
@@ -155,9 +155,9 @@ internal static class BufferFilterRuleSelector
         }
 
         // Decide whose attributes are better - rule vs current
-        if (current?.Attributes.Count > 0)
+        if (current?.Attributes?.Count > 0)
         {
-            if (rule.Attributes.Count == 0)
+            if (rule.Attributes is null || rule.Attributes.Count == 0)
             {
                 return false;
             }

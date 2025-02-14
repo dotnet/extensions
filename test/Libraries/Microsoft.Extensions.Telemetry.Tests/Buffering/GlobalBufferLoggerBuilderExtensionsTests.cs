@@ -19,11 +19,11 @@ public class GlobalBufferLoggerBuilderExtensionsTests
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging(builder =>
         {
-            builder.AddGlobalBuffer(LogLevel.Warning);
+            builder.AddGlobalBuffering(LogLevel.Warning);
         });
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
-        var bufferManager = serviceProvider.GetService<IBufferManager>();
+        var bufferManager = serviceProvider.GetService<LogBuffer>();
 
         Assert.NotNull(bufferManager);
         Assert.IsAssignableFrom<GlobalBufferManager>(bufferManager);
@@ -35,17 +35,17 @@ public class GlobalBufferLoggerBuilderExtensionsTests
         var builder = null as ILoggingBuilder;
         var configuration = null as IConfiguration;
 
-        Assert.Throws<ArgumentNullException>(() => builder!.AddGlobalBuffer(LogLevel.Warning));
-        Assert.Throws<ArgumentNullException>(() => builder!.AddGlobalBuffer(configuration!));
+        Assert.Throws<ArgumentNullException>(() => builder!.AddGlobalBuffering(LogLevel.Warning));
+        Assert.Throws<ArgumentNullException>(() => builder!.AddGlobalBuffering(configuration!));
     }
 
     [Fact]
     public void AddGlobalBuffer_WithConfiguration_RegistersInDI()
     {
-        List<BufferFilterRule> expectedData =
+        List<LogBufferingFilterRule> expectedData =
         [
-            new BufferFilterRule("Program.MyLogger", LogLevel.Information, 1, [new("region", "westus2"), new ("priority", 1)]),
-            new BufferFilterRule(null, LogLevel.Information, null, null),
+            new LogBufferingFilterRule("Program.MyLogger",  LogLevel.Information, 1, "number one", [new("region", "westus2"), new ("priority", 1)]),
+            new LogBufferingFilterRule(logLevel : LogLevel.Information),
         ];
         ConfigurationBuilder configBuilder = new ConfigurationBuilder();
         configBuilder.AddJsonFile("appsettings.json");
@@ -53,18 +53,18 @@ public class GlobalBufferLoggerBuilderExtensionsTests
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging(builder =>
         {
-            builder.AddGlobalBuffer(configuration);
-            builder.Services.Configure<GlobalBufferOptions>(options =>
+            builder.AddGlobalBuffering(configuration);
+            builder.Services.Configure<GlobalLogBufferingOptions>(options =>
             {
                 options.MaxLogRecordSizeInBytes = 33;
             });
         });
         var serviceProvider = serviceCollection.BuildServiceProvider();
-        var options = serviceProvider.GetService<IOptionsMonitor<GlobalBufferOptions>>();
+        var options = serviceProvider.GetService<IOptionsMonitor<GlobalLogBufferingOptions>>();
         Assert.NotNull(options);
         Assert.NotNull(options.CurrentValue);
-        Assert.Equal(33, options.CurrentValue.MaxLogRecordSizeInBytes); // value comes from the Configure<GlobalBufferOptions>()  call
-        Assert.Equal(1000, options.CurrentValue.BufferSizeInBytes); // value comes from appsettings.json
+        Assert.Equal(33, options.CurrentValue.MaxLogRecordSizeInBytes); // value comes from the Configure<GlobalLogBufferingOptions>()  call
+        Assert.Equal(1000, options.CurrentValue.MaxBufferSizeInBytes); // value comes from appsettings.json
         Assert.Equal(TimeSpan.FromSeconds(30), options.CurrentValue.SuspendAfterFlushDuration); // value comes from default
         Assert.Equivalent(expectedData, options.CurrentValue.Rules);
     }

@@ -9,10 +9,10 @@ using Microsoft.Shared.DiagnosticIds;
 namespace Microsoft.Extensions.Diagnostics.Buffering;
 
 /// <summary>
-/// The options for LoggerBuffer.
+/// The options for global log buffering.
 /// </summary>
 [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
-public class GlobalBufferOptions
+public class GlobalLogBufferingOptions
 {
     /// <summary>
     /// Gets or sets the time to suspend the buffering after flushing.
@@ -34,12 +34,12 @@ public class GlobalBufferOptions
     /// the oldest buffered log records will be dropped to make room.
     /// </summary>
     /// TO DO: add validation.
-    public int BufferSizeInBytes { get; set; } = 500_000_000;
+    public int MaxBufferSizeInBytes { get; set; } = 500_000_000;
 
-#pragma warning disable CA1002 // Do not expose generic lists - List is necessary to be able to call .AddRange()
+#pragma warning disable CA2227 // Collection properties should be read only - setter is necessary for options pattern
     /// <summary>
-    /// Gets the collection of <see cref="BufferFilterRule"/> used for filtering log messages for the purpose of further buffering.
+    /// Gets or sets the collection of <see cref="LogBufferingFilterRule"/> used for filtering log messages for the purpose of further buffering.
     /// </summary>
-    public List<BufferFilterRule> Rules { get; } = [];
-#pragma warning restore CA1002 // Do not expose generic lists
+    public IList<LogBufferingFilterRule> Rules { get; set; } = [];
+#pragma warning restore CA2227
 }

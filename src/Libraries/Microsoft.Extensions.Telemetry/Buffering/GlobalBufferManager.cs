@@ -3,30 +3,29 @@
 
 using System;
 using System.Collections.Concurrent;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Diagnostics.Buffering;
 
-internal sealed class GlobalBufferManager : IGlobalBufferManager
+internal sealed class GlobalBufferManager : LogBuffer
 {
     internal readonly ConcurrentDictionary<string, ILoggingBuffer> Buffers = [];
-    private readonly IOptionsMonitor<GlobalBufferOptions> _options;
+    private readonly IOptionsMonitor<GlobalLogBufferingOptions> _options;
     private readonly TimeProvider _timeProvider = TimeProvider.System;
 
-    public GlobalBufferManager(IOptionsMonitor<GlobalBufferOptions> options)
+    public GlobalBufferManager(IOptionsMonitor<GlobalLogBufferingOptions> options)
     {
         _options = options;
     }
 
-    internal GlobalBufferManager(IOptionsMonitor<GlobalBufferOptions> options, TimeProvider timeProvider)
+    internal GlobalBufferManager(IOptionsMonitor<GlobalLogBufferingOptions> options, TimeProvider timeProvider)
     {
         _timeProvider = timeProvider;
         _options = options;
     }
 
-    public void Flush()
+    public override void Flush()
     {
         foreach (var buffer in Buffers.Values)
         {
@@ -34,15 +33,9 @@ internal sealed class GlobalBufferManager : IGlobalBufferManager
         }
     }
 
-    public bool TryEnqueue<TState>(
-        IBufferedLogger bufferedLogger,
-        LogLevel logLevel,
-        string category,
-        EventId eventId, TState state,
-        Exception? exception,
-        Func<TState, Exception?, string> formatter)
+    public override bool TryEnqueue<TState>(IBufferedLogger bufferedLogger, in LogEntry<TState> logEntry)
     {
-        var buffer = Buffers.GetOrAdd(category, _ => new GlobalBuffer(bufferedLogger, _options, _timeProvider));
-        return buffer.TryEnqueue(logLevel, category, eventId, state, exception, formatter);
+        var buffer = Buffers.GetOrAdd(logEntry.Category, _ => new GlobalBuffer(bufferedLogger, _options, _timeProvider));
+        return buffer.TryEnqueue(logEntry);
     }
 }

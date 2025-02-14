@@ -6,17 +6,17 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Diagnostics.Buffering;
 
-internal sealed class GlobalBufferConfigureOptions : IConfigureOptions<GlobalBufferOptions>
+internal sealed class GlobalLogBufferingConfigureOptions : IConfigureOptions<GlobalLogBufferingOptions>
 {
     private const string BufferingKey = "Buffering";
     private readonly IConfiguration _configuration;
 
-    public GlobalBufferConfigureOptions(IConfiguration configuration)
+    public GlobalLogBufferingConfigureOptions(IConfiguration configuration)
     {
         _configuration = configuration;
     }
 
-    public void Configure(GlobalBufferOptions options)
+    public void Configure(GlobalLogBufferingOptions options)
     {
         if (_configuration == null)
         {
@@ -29,7 +29,7 @@ internal sealed class GlobalBufferConfigureOptions : IConfigureOptions<GlobalBuf
             return;
         }
 
-        var parsedOptions = section.Get<GlobalBufferOptions>();
+        var parsedOptions = section.Get<GlobalLogBufferingOptions>();
         if (parsedOptions is null)
         {
             return;
@@ -40,11 +40,14 @@ internal sealed class GlobalBufferConfigureOptions : IConfigureOptions<GlobalBuf
             options.MaxLogRecordSizeInBytes = parsedOptions.MaxLogRecordSizeInBytes;
         }
 
-        if (parsedOptions.BufferSizeInBytes > 0)
+        if (parsedOptions.MaxBufferSizeInBytes > 0)
         {
-            options.BufferSizeInBytes = parsedOptions.BufferSizeInBytes;
+            options.MaxBufferSizeInBytes = parsedOptions.MaxBufferSizeInBytes;
         }
 
-        options.Rules.AddRange(parsedOptions.Rules);
+        foreach (var rule in parsedOptions.Rules)
+        {
+            options.Rules.Add(rule);
+        }
     }
 }

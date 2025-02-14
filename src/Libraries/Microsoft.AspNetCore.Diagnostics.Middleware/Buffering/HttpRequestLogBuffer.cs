@@ -2,18 +2,19 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Diagnostics.Buffering;
 using Microsoft.Shared.DiagnosticIds;
 
-namespace Microsoft.Extensions.Diagnostics.Buffering;
+namespace Microsoft.AspNetCore.Diagnostics.Buffering;
 
 /// <summary>
-/// Interface for a global buffer manager.
+/// Buffers HTTP request logs into circular buffers and drops them after some time if not flushed.
 /// </summary>
 [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
-public interface IGlobalBufferManager : IBufferManager
+public abstract class HttpRequestLogBuffer : LogBuffer
 {
     /// <summary>
-    /// Flushes the buffer and emits all buffered logs.
+    /// Flushes buffers and emits buffered logs for the current HTTP request.
     /// </summary>
-    void Flush();
+    public abstract void FlushCurrentRequestLogs();
 }

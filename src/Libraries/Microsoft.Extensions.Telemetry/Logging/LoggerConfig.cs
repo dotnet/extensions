@@ -22,7 +22,7 @@ internal sealed class LoggerConfig
         int maxStackTraceLength,
         Func<DataClassificationSet, Redactor> getRedactor,
         bool addRedactionDiscriminator,
-        IBufferManager? bufferManager)
+        LogBuffer? bufferingManager)
     {
 #pragma warning restore S107 // Methods should not have too many parameters
         StaticTags = staticTags;
@@ -33,7 +33,7 @@ internal sealed class LoggerConfig
         IncludeExceptionMessage = includeExceptionMessage;
         GetRedactor = getRedactor;
         AddRedactionDiscriminator = addRedactionDiscriminator;
-        BufferManager = bufferManager;
+        BufferingManager = bufferingManager;
     }
 
     public KeyValuePair<string, object?>[] StaticTags { get; }
@@ -44,5 +44,5 @@ internal sealed class LoggerConfig
     public int MaxStackTraceLength { get; }
     public Func<DataClassificationSet, Redactor> GetRedactor { get; }
     public bool AddRedactionDiscriminator { get; }
-    public IBufferManager? BufferManager { get; }
+    public LogBuffer? BufferingManager { get; }
 }

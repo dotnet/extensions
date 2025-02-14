@@ -16,8 +16,8 @@ namespace Microsoft.AspNetCore.Diagnostics.Buffering;
 
 internal sealed class HttpRequestBuffer : ILoggingBuffer
 {
-    private readonly IOptionsMonitor<HttpRequestBufferOptions> _options;
-    private readonly IOptionsMonitor<GlobalBufferOptions> _globalOptions;
+    private readonly IOptionsMonitor<HttpRequestLogBufferingOptions> _options;
+    private readonly IOptionsMonitor<GlobalLogBufferingOptions> _globalOptions;
     private readonly ConcurrentQueue<SerializedLogRecord> _buffer;
     private readonly TimeProvider _timeProvider = TimeProvider.System;
     private readonly IBufferedLogger _bufferedLogger;
@@ -26,8 +26,8 @@ internal sealed class HttpRequestBuffer : ILoggingBuffer
     private int _bufferSize;
 
     public HttpRequestBuffer(IBufferedLogger bufferedLogger,
-        IOptionsMonitor<HttpRequestBufferOptions> options,
-        IOptionsMonitor<GlobalBufferOptions> globalOptions)
+        IOptionsMonitor<HttpRequestLogBufferingOptions> options,
+        IOptionsMonitor<GlobalLogBufferingOptions> globalOptions)
     {
         _options = options;
         _globalOptions = globalOptions;
@@ -35,38 +35,32 @@ internal sealed class HttpRequestBuffer : ILoggingBuffer
         _buffer = new ConcurrentQueue<SerializedLogRecord>();
     }
 
-    public bool TryEnqueue<TState>(
-        LogLevel logLevel,
-        string category,
-        EventId eventId,
-        TState state,
-        Exception? exception,
-        Func<TState, Exception?, string> formatter)
+    public bool TryEnqueue<TState>(LogEntry<TState> logEntry)
     {
         SerializedLogRecord serializedLogRecord = default;
-        if (state is ModernTagJoiner modernTagJoiner)
+        if (logEntry.State is ModernTagJoiner modernTagJoiner)
         {
-            if (!IsEnabled(category, logLevel, eventId, modernTagJoiner))
+            if (!IsEnabled(logEntry.Category, logEntry.LogLevel, logEntry.EventId, modernTagJoiner))
             {
                 return false;
             }
 
-            serializedLogRecord = new SerializedLogRecord(logLevel, eventId, _timeProvider.GetUtcNow(), modernTagJoiner, exception,
-                ((Func<ModernTagJoiner, Exception?, string>)(object)formatter)(modernTagJoiner, exception));
+            serializedLogRecord = new SerializedLogRecord(logEntry.LogLevel, logEntry.EventId, _timeProvider.GetUtcNow(), modernTagJoiner, logEntry.Exception,
+                ((Func<ModernTagJoiner, Exception?, string>)(object)logEntry.Formatter)(modernTagJoiner, logEntry.Exception));
         }
-        else if (state is LegacyTagJoiner legacyTagJoiner)
+        else if (logEntry.State is LegacyTagJoiner legacyTagJoiner)
         {
-            if (!IsEnabled(category, logLevel, eventId, legacyTagJoiner))
+            if (!IsEnabled(logEntry.Category, logEntry.LogLevel, logEntry.EventId, legacyTagJoiner))
             {
                 return false;
             }
 
-            serializedLogRecord = new SerializedLogRecord(logLevel, eventId, _timeProvider.GetUtcNow(), legacyTagJoiner, exception,
-                ((Func<LegacyTagJoiner, Exception?, string>)(object)formatter)(legacyTagJoiner, exception));
+            serializedLogRecord = new SerializedLogRecord(logEntry.LogLevel, logEntry.EventId, _timeProvider.GetUtcNow(), legacyTagJoiner, logEntry.Exception,
+                ((Func<LegacyTagJoiner, Exception?, string>)(object)logEntry.Formatter)(legacyTagJoiner, logEntry.Exception));
         }
         else
         {
-            Throw.ArgumentException(nameof(state), $"Unsupported type of the log state object detected: {typeof(TState)}");
+            Throw.InvalidOperationException($"Unsupported type of the log state object detected: {typeof(TState)}");
         }
 
         if (serializedLogRecord.SizeInBytes > _globalOptions.CurrentValue.MaxLogRecordSizeInBytes)
@@ -113,14 +107,14 @@ internal sealed class HttpRequestBuffer : ILoggingBuffer
             return false;
         }
 
-        BufferFilterRuleSelector.Select(_options.CurrentValue.Rules, category, logLevel, eventId, attributes, out BufferFilterRule? rule);
+        LogBufferingFilterRuleSelector.Select(_options.CurrentValue.Rules, category, logLevel, eventId, attributes, out LogBufferingFilterRule? rule);
 
         return rule is not null;
     }
 
     private void Trim()
     {
-        while (_bufferSize > _options.CurrentValue.PerRequestBufferSizeInBytes && _buffer.TryDequeue(out var item))
+        while (_bufferSize > _options.CurrentValue.MaxPerRequestBufferSizeInBytes && _buffer.TryDequeue(out var item))
         {
             _ = Interlocked.Add(ref _bufferSize, -item.SizeInBytes);
         }

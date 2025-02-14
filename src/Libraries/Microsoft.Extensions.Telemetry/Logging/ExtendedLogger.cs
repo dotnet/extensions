@@ -32,7 +32,7 @@ internal sealed partial class ExtendedLogger : ILogger
     public MessageLogger[] MessageLoggers { get; set; } = Array.Empty<MessageLogger>();
     public ScopeLogger[] ScopeLoggers { get; set; } = Array.Empty<ScopeLogger>();
 
-    private readonly IBufferManager? _bufferManager;
+    private readonly LogBuffer? _bufferingManager;
     private readonly IBufferedLogger? _bufferedLogger;
 
     public ExtendedLogger(ExtendedLoggerFactory factory, LoggerInformation[] loggers)
@@ -40,8 +40,8 @@ internal sealed partial class ExtendedLogger : ILogger
         _factory = factory;
         Loggers = loggers;
 
-        _bufferManager = _factory.Config.BufferManager;
-        if (_bufferManager is not null)
+        _bufferingManager = _factory.Config.BufferingManager;
+        if (_bufferingManager is not null)
         {
             _bufferedLogger = new BufferedLoggerProxy(this);
         }
@@ -279,18 +279,19 @@ internal sealed partial class ExtendedLogger : ILogger
             {
                 if (shouldBuffer)
                 {
-                    if (_bufferManager is not null)
+                    if (_bufferingManager is not null)
                     {
-                        var wasBuffered = _bufferManager.TryEnqueue(_bufferedLogger!, logLevel, loggerInfo.Category!, eventId, joiner, exception, static (s, e) =>
+                        var logEntry = new LogEntry<ModernTagJoiner>(logLevel, loggerInfo.Category!, eventId, joiner, exception, static (s, e) =>
                         {
                             var fmt = s.Formatter!;
                             return fmt(s.State!, e);
                         });
+                        var wasBuffered = _bufferingManager.TryEnqueue(_bufferedLogger!, logEntry);
 
                         if (wasBuffered)
                         {
                             // The record was buffered, so we skip logging it here and for all other loggers.
-                            // When a caller needs to flush the buffer and calls IBufferManager.Flush(),
+                            // When a caller needs to flush the buffer and calls Flush(),
                             // the buffer manager will internally call IBufferedLogger.LogRecords to emit log records.
                             break;
                         }
@@ -386,18 +387,19 @@ internal sealed partial class ExtendedLogger : ILogger
             {
                 if (shouldBuffer)
                 {
-                    if (_bufferManager is not null)
+                    if (_bufferingManager is not null)
                     {
-                        bool wasBuffered = _bufferManager.TryEnqueue(_bufferedLogger!, logLevel, loggerInfo.Category!, eventId, joiner, exception, static (s, e) =>
+                        var logEntry = new LogEntry<LegacyTagJoiner>(logLevel, loggerInfo.Category!, eventId, joiner, exception, static (s, e) =>
                         {
                             var fmt = (Func<TState, Exception?, string>)s.Formatter!;
                             return fmt((TState)s.State!, e);
                         });
+                        bool wasBuffered = _bufferingManager.TryEnqueue(_bufferedLogger!, in logEntry);
 
                         if (wasBuffered)
                         {
                             // The record was buffered, so we skip logging it here and for all other loggers.
-                            // When a caller needs to flush the buffer and calls IBufferManager.Flush(),
+                            // When a caller needs to flush the buffer and calls Flush(),
                             // the buffer manager will internally call IBufferedLogger.LogRecords to emit log records.
                             break;
                         }

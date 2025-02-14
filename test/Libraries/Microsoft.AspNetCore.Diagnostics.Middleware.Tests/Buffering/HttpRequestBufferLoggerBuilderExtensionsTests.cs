@@ -24,7 +24,7 @@ public class HttpRequestBufferLoggerBuilderExtensionsTests
         });
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
-        var buffer = serviceProvider.GetService<IHttpRequestBufferManager>();
+        var buffer = serviceProvider.GetService<HttpRequestLogBuffer>();
 
         Assert.NotNull(buffer);
         Assert.IsAssignableFrom<HttpRequestBufferManager>(buffer);
@@ -43,21 +43,18 @@ public class HttpRequestBufferLoggerBuilderExtensionsTests
     [Fact]
     public void AddHttpRequestBufferConfiguration_RegistersInDI()
     {
-        List<BufferFilterRule> expectedData =
+        List<LogBufferingFilterRule> expectedData =
         [
-            new BufferFilterRule("Program.MyLogger", LogLevel.Information, 1, null),
-            new BufferFilterRule(null, LogLevel.Information, null, null),
+            new LogBufferingFilterRule(categoryName: "Program.MyLogger", logLevel: LogLevel.Information, eventId: 1, eventName: "number one"),
+            new LogBufferingFilterRule(logLevel: LogLevel.Information),
         ];
         ConfigurationBuilder configBuilder = new ConfigurationBuilder();
         configBuilder.AddJsonFile("appsettings.json");
         IConfigurationRoot configuration = configBuilder.Build();
         var serviceCollection = new ServiceCollection();
-        serviceCollection.AddLogging(builder =>
-        {
-            builder.AddHttpRequestBufferConfiguration(configuration);
-        });
+        serviceCollection.AddLogging(b => b.AddHttpRequestBuffering(configuration));
         var serviceProvider = serviceCollection.BuildServiceProvider();
-        var options = serviceProvider.GetService<IOptionsMonitor<HttpRequestBufferOptions>>();
+        var options = serviceProvider.GetService<IOptionsMonitor<HttpRequestLogBufferingOptions>>();
         Assert.NotNull(options);
         Assert.NotNull(options.CurrentValue);
         Assert.Equivalent(expectedData, options.CurrentValue.Rules);

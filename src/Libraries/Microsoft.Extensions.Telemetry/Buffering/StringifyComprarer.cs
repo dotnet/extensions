@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 
 namespace Microsoft.Extensions.Diagnostics.Buffering;
+
 internal sealed class StringifyComprarer : IEqualityComparer<KeyValuePair<string, object?>>
 {
     public bool Equals(KeyValuePair<string, object?> x, KeyValuePair<string, object?> y)

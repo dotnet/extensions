@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.Diagnostics.Buffering;
 
 internal sealed class GlobalBuffer : ILoggingBuffer
 {
-    private readonly IOptionsMonitor<GlobalBufferOptions> _options;
+    private readonly IOptionsMonitor<GlobalLogBufferingOptions> _options;
     private readonly ConcurrentQueue<SerializedLogRecord> _buffer;
     private readonly IBufferedLogger _bufferedLogger;
     private readonly TimeProvider _timeProvider;
@@ -26,7 +26,7 @@ internal sealed class GlobalBuffer : ILoggingBuffer
     private object _netfxBufferLocker = new();
 #endif
 
-    public GlobalBuffer(IBufferedLogger bufferedLogger, IOptionsMonitor<GlobalBufferOptions> options, TimeProvider timeProvider)
+    public GlobalBuffer(IBufferedLogger bufferedLogger, IOptionsMonitor<GlobalLogBufferingOptions> options, TimeProvider timeProvider)
     {
         _options = options;
         _timeProvider = timeProvider;
@@ -34,38 +34,32 @@ internal sealed class GlobalBuffer : ILoggingBuffer
         _bufferedLogger = bufferedLogger;
     }
 
-    public bool TryEnqueue<T>(
-        LogLevel logLevel,
-        string category,
-        EventId eventId,
-        T attributes,
-        Exception? exception,
-        Func<T, Exception?, string> formatter)
+    public bool TryEnqueue<TState>(LogEntry<TState> logEntry)
     {
         SerializedLogRecord serializedLogRecord = default;
-        if (attributes is ModernTagJoiner modernTagJoiner)
+        if (logEntry.State is ModernTagJoiner modernTagJoiner)
         {
-            if (!IsEnabled(category, logLevel, eventId, modernTagJoiner))
+            if (!IsEnabled(logEntry.Category, logEntry.LogLevel, logEntry.EventId, modernTagJoiner))
             {
                 return false;
             }
 
-            serializedLogRecord = new SerializedLogRecord(logLevel, eventId, _timeProvider.GetUtcNow(), modernTagJoiner, exception,
-                ((Func<ModernTagJoiner, Exception?, string>)(object)formatter)(modernTagJoiner, exception));
+            serializedLogRecord = new SerializedLogRecord(logEntry.LogLevel, logEntry.EventId, _timeProvider.GetUtcNow(), modernTagJoiner, logEntry.Exception,
+                ((Func<ModernTagJoiner, Exception?, string>)(object)logEntry.Formatter)(modernTagJoiner, logEntry.Exception));
         }
-        else if (attributes is LegacyTagJoiner legacyTagJoiner)
+        else if (logEntry.State is LegacyTagJoiner legacyTagJoiner)
         {
-            if (!IsEnabled(category, logLevel, eventId, legacyTagJoiner))
+            if (!IsEnabled(logEntry.Category, logEntry.LogLevel, logEntry.EventId, legacyTagJoiner))
             {
                 return false;
             }
 
-            serializedLogRecord = new SerializedLogRecord(logLevel, eventId, _timeProvider.GetUtcNow(), legacyTagJoiner, exception,
-                ((Func<LegacyTagJoiner, Exception?, string>)(object)formatter)(legacyTagJoiner, exception));
+            serializedLogRecord = new SerializedLogRecord(logEntry.LogLevel, logEntry.EventId, _timeProvider.GetUtcNow(), legacyTagJoiner, logEntry.Exception,
+                ((Func<LegacyTagJoiner, Exception?, string>)(object)logEntry.Formatter)(legacyTagJoiner, logEntry.Exception));
         }
         else
         {
-            Throw.ArgumentException(nameof(attributes), $"Unsupported type of the log attributes object detected: {typeof(T)}");
+            Throw.InvalidOperationException($"Unsupported type of the log state detected: {typeof(TState)}");
         }
 
         if (serializedLogRecord.SizeInBytes > _options.CurrentValue.MaxLogRecordSizeInBytes)
@@ -113,11 +107,13 @@ internal sealed class GlobalBuffer : ILoggingBuffer
         }
 
         _bufferedLogger.LogRecords(deserializedLogRecords);
+
+        // TO DO: adjust _buffersize after flushing.
     }
 
     private void Trim()
     {
-        while (_bufferSize > _options.CurrentValue.BufferSizeInBytes && _buffer.TryDequeue(out var item))
+        while (_bufferSize > _options.CurrentValue.MaxBufferSizeInBytes && _buffer.TryDequeue(out var item))
         {
             _ = Interlocked.Add(ref _bufferSize, -item.SizeInBytes);
         }
@@ -130,7 +126,7 @@ internal sealed class GlobalBuffer : ILoggingBuffer
             return false;
         }
 
-        BufferFilterRuleSelector.Select(_options.CurrentValue.Rules, category, logLevel, eventId, attributes, out BufferFilterRule? rule);
+        LogBufferingFilterRuleSelector.Select(_options.CurrentValue.Rules, category, logLevel, eventId, attributes, out LogBufferingFilterRule? rule);
 
         return rule is not null;
     }

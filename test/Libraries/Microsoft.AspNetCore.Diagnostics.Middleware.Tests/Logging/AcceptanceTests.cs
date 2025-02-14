@@ -61,8 +61,8 @@ public partial class AcceptanceTests
                 {
                     await context.Request.Body.DrainAsync(default);
 
-                    // normally, this would be a Middleware and IHttpRequestBufferManager would be injected via constructor
-                    var bufferManager = context.RequestServices.GetService<IHttpRequestBufferManager>();
+                    // normally, this would be a Middleware and HttpRequestLogBuffer would be injected via constructor
+                    var bufferManager = context.RequestServices.GetService<HttpRequestLogBuffer>();
                     bufferManager?.FlushCurrentRequestLogs();
                 }));
 
@@ -71,12 +71,12 @@ public partial class AcceptanceTests
                 {
                     await context.Request.Body.DrainAsync(default);
 
-                    // normally, this would be a Middleware and IHttpRequestBufferManager would be injected via constructor
-                    var bufferManager = context.RequestServices.GetService<IHttpRequestBufferManager>();
+                    // normally, this would be a Middleware and HttpRequestLogBuffer would be injected via constructor
+                    var bufferManager = context.RequestServices.GetService<HttpRequestLogBuffer>();
                     if (bufferManager is not null)
                     {
                         bufferManager.FlushCurrentRequestLogs();
-                        bufferManager.FlushNonRequestLogs();
+                        bufferManager.Flush();
                     }
                 }));
 
