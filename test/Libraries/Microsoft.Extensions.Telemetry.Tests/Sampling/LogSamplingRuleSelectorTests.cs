@@ -17,22 +17,22 @@ public class LogSamplingRuleSelectorTests
         // Arrange
         var rules = new List<ILogSamplingFilterRule>
         {
-            new ProbabilisticSamplerFilterRule { Probability = 0 },
-            new ProbabilisticSamplerFilterRule { Probability = 0, EventId = 1 },
-            new ProbabilisticSamplerFilterRule { Probability = 0, LogLevel = LogLevel.Information, EventId = 1 },
-            new ProbabilisticSamplerFilterRule { Probability = 0, LogLevel = LogLevel.Information, EventId = 1 },
-            new ProbabilisticSamplerFilterRule { Probability = 0, LogLevel = LogLevel.Warning },
-            new ProbabilisticSamplerFilterRule { Probability = 0, LogLevel = LogLevel.Warning, EventId = 2 },
-            new ProbabilisticSamplerFilterRule { Probability = 0, LogLevel = LogLevel.Warning, EventId = 1 },
-            new ProbabilisticSamplerFilterRule { Probability = 0, Category = "Program1.MyLogger", LogLevel = LogLevel.Warning, EventId = 1 },
-            new ProbabilisticSamplerFilterRule { Probability = 0, Category = "Program.*MyLogger1", LogLevel = LogLevel.Warning, EventId = 1 },
-            new ProbabilisticSamplerFilterRule { Probability = 0, Category = "Program.MyLogger", LogLevel = LogLevel.Warning, EventId = 1 }, // the best rule
-            new ProbabilisticSamplerFilterRule { Probability = 0, Category = "Program.MyLogger", LogLevel = LogLevel.Warning, EventId = 2 },
-            new ProbabilisticSamplerFilterRule { Probability = 0, Category = "Program.MyLogger", EventId = 1 },
-            new ProbabilisticSamplerFilterRule { Probability = 0, LogLevel = LogLevel.Warning, EventId = 1 },
-            new ProbabilisticSamplerFilterRule { Probability = 0, Category = "Program", LogLevel = LogLevel.Warning, EventId = 1 },
-            new ProbabilisticSamplerFilterRule { Probability = 0, Category = "Program.MyLogger", LogLevel = LogLevel.Warning },
-            new ProbabilisticSamplerFilterRule { Probability = 0, Category = "Program.MyLogger", LogLevel = LogLevel.Error, EventId = 1 },
+            new ProbabilisticSamplerFilterRule (probability: 0),
+            new ProbabilisticSamplerFilterRule (probability: 0, eventId: 1),
+            new ProbabilisticSamplerFilterRule (probability: 0, logLevel: LogLevel.Information, eventId: 1 ),
+            new ProbabilisticSamplerFilterRule (probability: 0, logLevel: LogLevel.Information, eventId: 1 ),
+            new ProbabilisticSamplerFilterRule (probability: 0, logLevel: LogLevel.Warning),
+            new ProbabilisticSamplerFilterRule (probability: 0, logLevel : LogLevel.Warning, eventId : 2),
+            new ProbabilisticSamplerFilterRule (probability: 0, logLevel : LogLevel.Warning, eventId : 1),
+            new ProbabilisticSamplerFilterRule (probability: 0, categoryName: "Program1.MyLogger", logLevel: LogLevel.Warning, eventId: 1),
+            new ProbabilisticSamplerFilterRule (probability : 0, categoryName : "Program.*MyLogger1", logLevel : LogLevel.Warning, eventId : 1),
+            new ProbabilisticSamplerFilterRule (probability : 0, categoryName : "Program.MyLogger", logLevel : LogLevel.Warning, eventId : 1), // the best rule
+            new ProbabilisticSamplerFilterRule (probability : 0, categoryName : "Program.MyLogger", logLevel : LogLevel.Warning, eventId : 2),
+            new ProbabilisticSamplerFilterRule (probability : 0, categoryName : "Program.MyLogger", eventId : 1),
+            new ProbabilisticSamplerFilterRule (probability : 0, logLevel : LogLevel.Warning, eventId : 1),
+            new ProbabilisticSamplerFilterRule (probability : 0, categoryName : "Program", logLevel : LogLevel.Warning, eventId : 1),
+            new ProbabilisticSamplerFilterRule (probability : 0, categoryName : "Program.MyLogger", logLevel : LogLevel.Warning),
+            new ProbabilisticSamplerFilterRule (probability : 0, categoryName : "Program.MyLogger", logLevel : LogLevel.Error, eventId : 1),
         };
 
         // Act
@@ -48,18 +48,15 @@ public class LogSamplingRuleSelectorTests
         // Arrange
         var rules = new List<ILogSamplingFilterRule>
         {
-            new ProbabilisticSamplerFilterRule { Probability = 0, LogLevel = LogLevel.Information, EventId = 1 },
-            new ProbabilisticSamplerFilterRule { Probability = 0, LogLevel = LogLevel.Information, EventId = 1 },
-            new ProbabilisticSamplerFilterRule { Probability = 0, LogLevel = LogLevel.Warning },
-            new ProbabilisticSamplerFilterRule { Probability = 0, LogLevel = LogLevel.Warning, EventId = 2 },
-            new ProbabilisticSamplerFilterRule { Probability = 0, LogLevel = LogLevel.Warning, EventId = 1 },
-            new ProbabilisticSamplerFilterRule { Probability = 0, Category = "Program1.MyLogger", LogLevel = LogLevel.Warning, EventId = 1 },
-            new ProbabilisticSamplerFilterRule { Probability = 0, Category = "Program.*MyLogger1", LogLevel = LogLevel.Warning, EventId = 1 },
-            new ProbabilisticSamplerFilterRule { Probability = 0, Category = "Program.MyLogger", LogLevel = LogLevel.Warning, EventId = 1 }, // the best rule
-            new ProbabilisticSamplerFilterRule
-            {
-                Probability = 0, Category = "Program.MyLogger*", LogLevel = LogLevel.Warning, EventId = 1
-            }, // same as the best, but last, and should be selected
+            new ProbabilisticSamplerFilterRule(probability : 0, logLevel : LogLevel.Information, eventId : 1),
+            new ProbabilisticSamplerFilterRule(probability : 0, logLevel : LogLevel.Information, eventId : 1),
+            new ProbabilisticSamplerFilterRule(probability: 0, logLevel: LogLevel.Warning),
+            new ProbabilisticSamplerFilterRule(probability : 0, logLevel : LogLevel.Warning, eventId : 2),
+            new ProbabilisticSamplerFilterRule(probability : 0, logLevel : LogLevel.Warning, eventId : 1),
+            new ProbabilisticSamplerFilterRule(probability : 0, categoryName : "Program1.MyLogger", logLevel : LogLevel.Warning, eventId : 1),
+            new ProbabilisticSamplerFilterRule(probability : 0, categoryName : "Program.*MyLogger1", logLevel : LogLevel.Warning, eventId : 1),
+            new ProbabilisticSamplerFilterRule(probability : 0, categoryName : "Program.MyLogger", logLevel : LogLevel.Warning, eventId : 1), // the best rule
+            new ProbabilisticSamplerFilterRule(probability: 0, categoryName: "Program.MyLogger*", logLevel: LogLevel.Warning, eventId: 1), // same as the best, but last, and should be selected
         };
 
         // Act

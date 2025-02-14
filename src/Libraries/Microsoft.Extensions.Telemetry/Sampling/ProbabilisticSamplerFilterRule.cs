@@ -13,20 +13,42 @@ namespace Microsoft.Extensions.Diagnostics.Sampling;
 [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
 public class ProbabilisticSamplerFilterRule : ILogSamplingFilterRule
 {
-    /// <inheritdoc/>
-    public string? Category { get; set; }
-
-    /// <inheritdoc/>
-    public LogLevel? LogLevel { get; set; }
-
-    /// <inheritdoc/>
-    public int? EventId { get; set; }
-
-    /// <inheritdoc/>
-    public string? EventName { get; set; }
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ProbabilisticSamplerFilterRule"/> class.
+    /// </summary>
+    /// <param name="probability">The probability for sampling in if this rule applies.</param>
+    /// <param name="categoryName">The category name to use in this filter rule.</param>
+    /// <param name="logLevel">The <see cref="LogLevel"/> to use in this filter rule.</param>
+    /// <param name="eventId">The event ID to use in this filter rule.</param>
+    /// <param name="eventName">The event name to use in this filter rule.</param>
+    public ProbabilisticSamplerFilterRule(
+        double probability,
+        string? categoryName = null,
+        LogLevel? logLevel = null,
+        int? eventId = null,
+        string? eventName = null)
+    {
+        Probability = probability;
+        CategoryName = categoryName;
+        LogLevel = logLevel;
+        EventId = eventId;
+        EventName = eventName;
+    }
 
     /// <summary>
-    /// Gets or sets the probability for sampling in if this rule applies.
+    /// Gets the probability for sampling in if this rule applies.
     /// </summary>
-    public double Probability { get; set; }
+    public double Probability { get; }
+
+    /// <inheritdoc/>
+    public string? CategoryName { get; }
+
+    /// <inheritdoc/>
+    public LogLevel? LogLevel { get; }
+
+    /// <inheritdoc/>
+    public int? EventId { get; }
+
+    /// <inheritdoc/>
+    public string? EventName { get; }
 }

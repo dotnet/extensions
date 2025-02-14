@@ -13,7 +13,7 @@ internal interface ILogSamplingFilterRule
     /// <summary>
     /// Gets the logger category this rule applies to.
     /// </summary>
-    string? Category { get; }
+    string? CategoryName { get; }
 
     /// <summary>
     /// Gets the maximum <see cref="LogLevel"/> of messages.

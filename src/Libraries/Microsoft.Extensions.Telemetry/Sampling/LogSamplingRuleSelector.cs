@@ -57,7 +57,7 @@ internal static class LogSamplingRuleSelector
         }
 
         // Skip rules with inapplicable category
-        string? categoryName = rule.Category;
+        string? categoryName = rule.CategoryName;
         if (categoryName != null)
         {
             const char WildcardChar = '*';
@@ -89,14 +89,14 @@ internal static class LogSamplingRuleSelector
         }
 
         // Decide whose category is better - rule vs current
-        if (current?.Category != null)
+        if (current?.CategoryName != null)
         {
-            if (rule.Category == null)
+            if (rule.CategoryName == null)
             {
                 return false;
             }
 
-            if (current.Category.Length > rule.Category.Length)
+            if (current.CategoryName.Length > rule.CategoryName.Length)
             {
                 return false;
             }

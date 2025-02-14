@@ -52,9 +52,9 @@ public class SamplingLoggerBuilderExtensionsTests
     {
         List<ProbabilisticSamplerFilterRule> expectedData =
         [
-            new ProbabilisticSamplerFilterRule { Probability = 1.0, Category = "Program.MyLogger", LogLevel = LogLevel.Information, EventId = 1, EventName = "number one" },
-            new ProbabilisticSamplerFilterRule { Probability = 0.01, LogLevel = LogLevel.Information },
-            new ProbabilisticSamplerFilterRule { Probability = 0.1, LogLevel = LogLevel.Warning }
+            new ProbabilisticSamplerFilterRule (probability: 1.0, categoryName: "Program.MyLogger", logLevel: LogLevel.Information, eventId: 1, eventName: "number one"),
+            new ProbabilisticSamplerFilterRule (probability : 0.01, logLevel : LogLevel.Information),
+            new ProbabilisticSamplerFilterRule (probability : 0.1, logLevel : LogLevel.Warning)
         ];
         ConfigurationBuilder configBuilder = new ConfigurationBuilder();
         configBuilder.AddJsonFile("appsettings.json");
@@ -76,9 +76,9 @@ public class SamplingLoggerBuilderExtensionsTests
     {
         List<ProbabilisticSamplerFilterRule> expectedData =
         [
-            new ProbabilisticSamplerFilterRule { Probability = 1.0, Category = "Program.MyLogger", LogLevel = LogLevel.Information, EventId = 1, EventName = "number one" },
-            new ProbabilisticSamplerFilterRule { Probability = 0.01, LogLevel = LogLevel.Information },
-            new ProbabilisticSamplerFilterRule { Probability = 0.1, LogLevel = LogLevel.Warning }
+            new ProbabilisticSamplerFilterRule (probability: 1.0, categoryName: "Program.MyLogger", logLevel: LogLevel.Information, eventId: 1, eventName: "number one"),
+            new ProbabilisticSamplerFilterRule (probability : 0.01, logLevel : LogLevel.Information),
+            new ProbabilisticSamplerFilterRule (probability : 0.1, logLevel : LogLevel.Warning)
         ];
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging(builder =>
