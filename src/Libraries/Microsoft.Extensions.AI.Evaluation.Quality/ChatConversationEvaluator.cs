@@ -108,10 +108,10 @@ public abstract class ChatConversationEvaluator : IEvaluator
             {
                 if (history.Count == 1)
                 {
-                    bool canRender =
+                    (bool canRender, tokenBudget) =
                         await CanRenderAsync(
                             history[0],
-                            ref tokenBudget,
+                            tokenBudget,
                             chatConfiguration,
                             cancellationToken).ConfigureAwait(false);
 
@@ -132,10 +132,10 @@ public abstract class ChatConversationEvaluator : IEvaluator
                     {
                         cancellationToken.ThrowIfCancellationRequested();
 
-                        bool canRender =
+                        (bool canRender, tokenBudget) =
                             await CanRenderAsync(
                                 message,
-                                ref tokenBudget,
+                                tokenBudget,
                                 chatConfiguration,
                                 cancellationToken).ConfigureAwait(false);
 
@@ -214,7 +214,7 @@ public abstract class ChatConversationEvaluator : IEvaluator
     /// as part of the evaluation prompt.
     /// </param>
     /// <param name="tokenBudget">
-    /// The remaining number of tokens available for the rendering additional content as part of the evaluation prompt.
+    /// The number of tokens available for the rendering additional content as part of the evaluation prompt.
     /// </param>
     /// <param name="chatConfiguration">
     /// A <see cref="ChatConfiguration"/> that specifies the <see cref="IChatClient"/> and the
@@ -222,12 +222,14 @@ public abstract class ChatConversationEvaluator : IEvaluator
     /// </param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can cancel the operation.</param>
     /// <returns>
-    /// <see langword="true"/> if there is sufficient <paramref name="tokenBudget"/> remaining to render the supplied
-    /// <paramref name="message"/> as part of the evaluation prompt; <see langword="false"/> otherwise.
+    /// A tuple containing a <see langword="bool"/> indicating whether there is sufficient
+    /// <paramref name="tokenBudget"/> remaining to render the supplied <paramref name="message"/> as part of the
+    /// evaluation prompt, and an <see langword="int"/> containing the remaining token budget that would be available
+    /// once this <paramref name="message"/> is rendered.
     /// </returns>
-    protected virtual ValueTask<bool> CanRenderAsync(
+    protected virtual ValueTask<(bool canRender, int remainingTokenBudget)> CanRenderAsync(
         ChatMessage message,
-        ref int tokenBudget,
+        int tokenBudget,
         ChatConfiguration chatConfiguration,
         CancellationToken cancellationToken)
     {
@@ -237,7 +239,7 @@ public abstract class ChatConversationEvaluator : IEvaluator
         IEvaluationTokenCounter? tokenCounter = chatConfiguration.TokenCounter;
         if (tokenCounter is null)
         {
-            return new ValueTask<bool>(true);
+            return new ValueTask<(bool, int)>((true, tokenBudget));
         }
 
         string? author = message.AuthorName;
@@ -261,12 +263,11 @@ public abstract class ChatConversationEvaluator : IEvaluator
 
         if (tokenCount > tokenBudget)
         {
-            return new ValueTask<bool>(false);
+            return new ValueTask<(bool, int)>((false, tokenBudget));
         }
         else
         {
-            tokenBudget -= tokenCount;
-            return new ValueTask<bool>(true);
+            return new ValueTask<(bool, int)>((true, tokenBudget - tokenCount));
         }
     }
 

@@ -304,7 +304,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         var response = await chatClient.GetResponseAsync("What's the current secret number?", new()
         {
             Tools = [getSecretNumberTool, shieldsUpTool],
-            ToolMode = ChatToolMode.RequireSpecific(shieldsUpTool.Metadata.Name),
+            ToolMode = ChatToolMode.RequireSpecific(shieldsUpTool.Name),
         });
 
         Assert.True(shieldsUp);

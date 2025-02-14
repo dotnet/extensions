@@ -6,40 +6,34 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Text.Json;
-using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
 /// Represents options that can be provided when creating an <see cref="AIFunction"/> from a method.
 /// </summary>
-public sealed class AIFunctionFactoryCreateOptions
+public sealed class AIFunctionFactoryOptions
 {
-    private JsonSerializerOptions _options = AIJsonUtilities.DefaultOptions;
-    private AIJsonSchemaCreateOptions _schemaCreateOptions = AIJsonSchemaCreateOptions.Default;
-
     /// <summary>
-    /// Initializes a new instance of the <see cref="AIFunctionFactoryCreateOptions"/> class.
+    /// Initializes a new instance of the <see cref="AIFunctionFactoryOptions"/> class.
     /// </summary>
-    public AIFunctionFactoryCreateOptions()
+    public AIFunctionFactoryOptions()
     {
     }
 
     /// <summary>Gets or sets the <see cref="JsonSerializerOptions"/> used to marshal .NET values being passed to the underlying delegate.</summary>
-    public JsonSerializerOptions SerializerOptions
-    {
-        get => _options;
-        set => _options = Throw.IfNull(value);
-    }
+    /// <remarks>
+    /// If no value has been specified, the <see cref="AIJsonUtilities.DefaultOptions"/> instance will be used.
+    /// </remarks>
+    public JsonSerializerOptions? SerializerOptions { get; set; }
 
     /// <summary>
     /// Gets or sets the <see cref="AIJsonSchemaCreateOptions"/> governing the generation of JSON schemas for the function.
     /// </summary>
-    public AIJsonSchemaCreateOptions SchemaCreateOptions
-    {
-        get => _schemaCreateOptions;
-        set => _schemaCreateOptions = Throw.IfNull(value);
-    }
+    /// <remarks>
+    /// If no value has been specified, the <see cref="AIJsonSchemaCreateOptions.Default"/> instance will be used.
+    /// </remarks>
+    public AIJsonSchemaCreateOptions? JsonSchemaCreateOptions { get; set; }
 
     /// <summary>Gets or sets the name to use for the function.</summary>
     /// <value>
@@ -54,20 +48,8 @@ public sealed class AIFunctionFactoryCreateOptions
     /// </value>
     public string? Description { get; set; }
 
-    /// <summary>Gets or sets metadata for the parameters of the function.</summary>
-    /// <value>
-    /// Metadata for the function's parameters. The default value is metadata derived from the passed <see cref="Delegate"/> or <see cref="MethodInfo"/>.
-    /// </value>
-    public IReadOnlyList<AIFunctionParameterMetadata>? Parameters { get; set; }
-
-    /// <summary>Gets or sets metadata for function's return parameter.</summary>
-    /// <value>
-    /// Metadata for the function's return parameter. The default value is metadata derived from the passed <see cref="Delegate"/> or <see cref="MethodInfo"/>.
-    /// </value>
-    public AIFunctionReturnParameterMetadata? ReturnParameter { get; set; }
-
     /// <summary>
-    /// Gets or sets additional values to store on the resulting <see cref="AIFunctionMetadata.AdditionalProperties" /> property.
+    /// Gets or sets additional values to store on the resulting <see cref="AITool.AdditionalProperties" /> property.
     /// </summary>
     /// <remarks>
     /// This property can be used to provide arbitrary information about the function.
