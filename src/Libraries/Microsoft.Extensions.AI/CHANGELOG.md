@@ -1,5 +1,9 @@
 # Release History
 
+## 9.3.0-TODO
+
+- Updated `OpenTelemetryChatClient`/`OpenTelemetryEmbeddingGenerator` to conform to the latest 1.30.0 draft specification of the Semantic Conventions for Generative AI systems.
+
 ## 9.1.0-preview.1.25064.3
 
 - Added `FunctionInvokingChatClient.CurrentContext` to give functions access to detailed function invocation information.
