@@ -426,21 +426,16 @@ public static partial class AIJsonUtilities
     private static JsonElement GetOrAddSchema(JsonSerializerOptions serializerOptions, JsonSchemaCacheKey cacheKey, Func<JsonSchemaCacheKey, JsonSerializerOptions, JsonElement> schemaFactory)
     {
         ConcurrentDictionary<JsonSchemaCacheKey, JsonElement> innerCache = _schemaCache.GetOrCreateValue(serializerOptions);
-        if (innerCache.TryGetValue(cacheKey, out JsonElement schema))
+        if (!innerCache.TryGetValue(cacheKey, out JsonElement schema))
         {
-            return schema;
+            schema = schemaFactory(cacheKey, serializerOptions);
+            if (innerCache.Count < InnerCacheSoftLimit)
+            {
+                _ = innerCache.TryAdd(cacheKey, schema);
+            }
         }
 
-        if (innerCache.Count >= InnerCacheSoftLimit)
-        {
-            return schemaFactory(cacheKey, serializerOptions);
-        }
-
-#if NET
-        return innerCache.GetOrAdd(cacheKey, schemaFactory, serializerOptions);
-#else
-        return innerCache.GetOrAdd(cacheKey, cacheKey => schemaFactory(cacheKey, serializerOptions));
-#endif
+        return schema;
     }
 
     private readonly struct JsonSchemaCacheKey : IEquatable<JsonSchemaCacheKey>
