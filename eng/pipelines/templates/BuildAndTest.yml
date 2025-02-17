@@ -23,6 +23,12 @@ parameters:
     default: false
 
 steps:
+  - task: NodeTool@0
+    displayName: Add NodeJS/npm
+    inputs:
+      versionSpec: "20.x"
+      checkLatest: true
+
   - script: ${{ parameters.buildScript }}
             -restore
             /bl:${{ parameters.repoLogPath }}/restore.binlog
@@ -37,13 +43,27 @@ steps:
             /bl:${{ parameters.repoLogPath }}/restore2.binlog
     displayName: Restore solution
 
+  # Temporarily pre-build the TypeScript bundle as a workaround to make the build more reliable.
+  - pwsh: |
+        cd $(Build.SourcesDirectory)/src/Libraries/Microsoft.Extensions.AI.Evaluation.Reporting/TypeScript
+        npm install
+        node html-report/reset-devdata.js
+        npm run build
+    displayName: Pre-Build TypeScript Bundle
+
   - script: ${{ parameters.buildScript }}
             -build
             -configuration ${{ parameters.buildConfig }}
             -warnAsError ${{ parameters.warnAsError }}
             /bl:${{ parameters.repoLogPath }}/build.binlog
+            /p:EnableEvaluationReportBuild=true
             $(_OfficialBuildIdArgs)
     displayName: Build
+
+  - ${{ if eq(parameters.isWindows, 'true') }}:
+    - pwsh: |
+          $(Build.SourcesDirectory)/src/Libraries/Microsoft.Extensions.AI.Evaluation.Reporting/TypeScript/azure-devops-report/build.ps1 -OutputPath $(Build.Arcade.ArtifactsPath)/packages
+      displayName: Build Azure DevOps plugin
 
   - ${{ if ne(parameters.skipTests, 'true') }}:
     - script: $(Build.SourcesDirectory)/.dotnet/dotnet dotnet-coverage collect
@@ -107,5 +127,6 @@ steps:
               -warnAsError 1
               /bl:${{ parameters.repoLogPath }}/pack.binlog
               /p:Restore=false /p:Build=false
+              /p:EnableEvaluationReportBuild=true
               $(_OfficialBuildIdArgs)
       displayName: Pack, sign, and publish

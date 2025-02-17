@@ -11,7 +11,6 @@
     <InjectTrimAttributesOnLegacy Condition="'$(InjectTrimAttributesOnLegacy)' == ''">true</InjectTrimAttributesOnLegacy>
     <InjectSkipLocalsInitAttributeOnLegacy Condition="'$(InjectSkipLocalsInitAttributeOnLegacy)' == ''">true</InjectSkipLocalsInitAttributeOnLegacy>
     <InjectCallerAttributesOnLegacy Condition="'$(InjectCallerAttributesOnLegacy)' == ''">true</InjectCallerAttributesOnLegacy>
-    <InjectDiagnosticAttributesOnLegacy Condition="'$(InjectDiagnosticAttributesOnLegacy)' == ''">true</InjectDiagnosticAttributesOnLegacy>
     <InjectSharedThrow Condition="'$(InjectSharedThrow)' == ''">true</InjectSharedThrow>
   </PropertyGroup>
 </Project>

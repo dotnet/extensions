@@ -1,0 +1,41 @@
+{
+  "name": "html-report",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --config html-report/vite.config.ts",
+    "build": "tsc -b && vite build --config html-report/vite.config.ts",
+    "buildtask": "pushd azure-devops-report\\tasks\\PublishAIEvaluationReport && npm install && npm build && popd"
+  },
+  "dependencies": {
+    "azure-devops-extension-api": "^4.243.0",
+    "azure-devops-extension-sdk": "^4.0.2",
+    "@fluentui/react": "^8.120.7",
+    "@fluentui/react-components": "^9.54.13",
+    "@fluentui/react-icons": "^2.0.256",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-markdown": "^9.0.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.9.0",
+    "@types/node": "^22.5.3",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "babel-plugin-transform-amd-to-commonjs": "^1.6.0",
+    "eslint": "^9.9.0",
+    "eslint-plugin-react-hooks": "^5.1.0-rc.0",
+    "eslint-plugin-react-refresh": "^0.4.9",
+    "glob": "^11.0.0",
+    "globals": "^15.9.0",
+    "tfx-cli": "^0.17.0",
+    "typescript": "^5.5.3",
+    "typescript-eslint": "^8.0.1",
+    "vite": "^5.4.1",
+    "vite-plugin-singlefile": "^2.0.2",
+    "vite-plugin-babel": "^1.2.0",
+    "vite-plugin-commonjs": "^0.10.3"
+  }
+}

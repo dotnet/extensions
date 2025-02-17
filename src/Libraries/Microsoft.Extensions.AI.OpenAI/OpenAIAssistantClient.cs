@@ -212,19 +212,25 @@ internal sealed class OpenAIAssistantClient : IChatClient
             {
                 foreach (AITool tool in tools)
                 {
-                    if (tool is AIFunction aiFunction)
+                    switch (tool)
                     {
-                        bool? strict =
-                            aiFunction.Metadata.AdditionalProperties.TryGetValue("Strict", out object? strictObj) &&
-                            strictObj is bool strictValue ?
-                            strictValue : null;
+                        case AIFunction aiFunction:
+                            bool? strict =
+                                aiFunction.AdditionalProperties.TryGetValue("Strict", out object? strictObj) &&
+                                strictObj is bool strictValue ?
+                                strictValue : null;
 
-                        var functionParameters = BinaryData.FromBytes(
-                            JsonSerializer.SerializeToUtf8Bytes(
-                                JsonSerializer.Deserialize(aiFunction.Metadata.Schema, OpenAIJsonContext.Default.OpenAIChatToolJson)!,
-                                OpenAIJsonContext.Default.OpenAIChatToolJson));
+                            var functionParameters = BinaryData.FromBytes(
+                                JsonSerializer.SerializeToUtf8Bytes(
+                                    JsonSerializer.Deserialize(aiFunction.JsonSchema, OpenAIJsonContext.Default.OpenAIChatToolJson)!,
+                                    OpenAIJsonContext.Default.OpenAIChatToolJson));
 
-                        runOptions.ToolsOverride.Add(ToolDefinition.CreateFunction(aiFunction.Metadata.Name, aiFunction.Metadata.Description, functionParameters, strict));
+                            runOptions.ToolsOverride.Add(ToolDefinition.CreateFunction(aiFunction.Name, aiFunction.Description, functionParameters, strict));
+                            break;
+
+                        case CodeInterpreterTool:
+                            runOptions.ToolsOverride.Add(ToolDefinition.CreateCodeInterpreter());
+                            break;
                     }
                 }
             }
@@ -232,6 +238,11 @@ internal sealed class OpenAIAssistantClient : IChatClient
             // Store the tool mode.
             switch (options.ToolMode)
             {
+                case NoneChatToolMode:
+                    runOptions.ToolConstraint = ToolConstraint.None;
+                    break;
+
+                case null:
                 case AutoChatToolMode:
                     runOptions.ToolConstraint = ToolConstraint.Auto;
                     break;

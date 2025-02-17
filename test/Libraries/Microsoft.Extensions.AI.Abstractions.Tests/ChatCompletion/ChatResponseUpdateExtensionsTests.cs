@@ -42,7 +42,7 @@ public class ChatResponseUpdateExtensionsTests
             new() { ChoiceIndex = 1, Text = "Hey", ResponseId = "12345", CreatedAt = new DateTimeOffset(1, 2, 3, 4, 5, 6, TimeSpan.Zero), ModelId = "model124" },
 
             new() { ChoiceIndex = 0, Text = ", ", AuthorName = "Someone", Role = ChatRole.User, AdditionalProperties = new() { ["a"] = "b" } },
-            new() { ChoiceIndex = 1, Text = ", ", AuthorName = "Else", Role = ChatRole.System, AdditionalProperties = new() { ["g"] = "h" } },
+            new() { ChoiceIndex = 1, Text = ", ", AuthorName = "Else", Role = ChatRole.System, ChatThreadId = "123", AdditionalProperties = new() { ["g"] = "h" } },
 
             new() { ChoiceIndex = 0, Text = "world!", CreatedAt = new DateTimeOffset(2, 2, 3, 4, 5, 6, TimeSpan.Zero), AdditionalProperties = new() { ["c"] = "d" } },
             new() { ChoiceIndex = 1, Text = "you!", Role = ChatRole.Tool, CreatedAt = new DateTimeOffset(3, 2, 3, 4, 5, 6, TimeSpan.Zero), AdditionalProperties = new() { ["e"] = "f", ["i"] = 42 } },
@@ -68,6 +68,8 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal("12345", response.ResponseId);
         Assert.Equal(new DateTimeOffset(1, 2, 3, 4, 5, 6, TimeSpan.Zero), response.CreatedAt);
         Assert.Equal("model123", response.ModelId);
+
+        Assert.Equal("123", response.ChatThreadId);
 
         Assert.Equal(3, response.Choices.Count);
 

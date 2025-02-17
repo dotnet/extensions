@@ -341,12 +341,14 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             functionCallContents.Clear();
             await foreach (var update in base.GetStreamingResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false))
             {
-                // We're going to emit all StreamingChatMessage items upstream, even ones that represent
-                // function calls, because a given StreamingChatMessage can contain other content, too.
-                // And if we yield the function calls, and the consumer adds all the content into a message
-                // that's then added into history, they'll end up with function call contents that aren't
-                // directly paired with function result contents, which may cause issues for some models
-                // when the history is later sent again.
+                // We're going to emit all ChatResponseUpdates upstream, even ones that contain function call
+                // content, because a given ChatResponseUpdate can contain other content/metadata. But if we
+                // yield the function calls, and the consumer adds all the content into a message that's then
+                // added into history, they'll end up with function call contents that aren't directly paired
+                // with function result contents, which may cause issues for some models when the history is
+                // later sent again. We thus remove the FunctionCallContent instances from the updates before
+                // yielding them, tracking those FunctionCallContents separately so they can be processed and
+                // added to the chat history.
 
                 // Find all the FCCs. We need to track these separately in order to be able to process them later.
                 int preFccCount = functionCallContents.Count;
@@ -555,7 +557,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         int iteration, int functionCallIndex, int totalFunctionCount, CancellationToken cancellationToken)
     {
         // Look up the AIFunction for the function call. If the requested function isn't available, send back an error.
-        AIFunction? function = options.Tools!.OfType<AIFunction>().FirstOrDefault(t => t.Metadata.Name == functionCallContent.Name);
+        AIFunction? function = options.Tools!.OfType<AIFunction>().FirstOrDefault(t => t.Name == functionCallContent.Name);
         if (function is null)
         {
             return new(ContinueMode.Continue, FunctionStatus.NotFound, functionCallContent, result: null, exception: null);
@@ -661,7 +663,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     {
         _ = Throw.IfNull(context);
 
-        using Activity? activity = _activitySource?.StartActivity(context.Function.Metadata.Name);
+        using Activity? activity = _activitySource?.StartActivity(context.Function.Name);
 
         long startingTimestamp = 0;
         if (_logger.IsEnabled(LogLevel.Debug))
@@ -669,11 +671,11 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             startingTimestamp = Stopwatch.GetTimestamp();
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokingSensitive(context.Function.Metadata.Name, LoggingHelpers.AsJson(context.CallContent.Arguments, context.Function.Metadata.JsonSerializerOptions));
+                LogInvokingSensitive(context.Function.Name, LoggingHelpers.AsJson(context.CallContent.Arguments, context.Function.JsonSerializerOptions));
             }
             else
             {
-                LogInvoking(context.Function.Metadata.Name);
+                LogInvoking(context.Function.Name);
             }
         }
 
@@ -693,11 +695,11 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
             if (e is OperationCanceledException)
             {
-                LogInvocationCanceled(context.Function.Metadata.Name);
+                LogInvocationCanceled(context.Function.Name);
             }
             else
             {
-                LogInvocationFailed(context.Function.Metadata.Name, e);
+                LogInvocationFailed(context.Function.Name, e);
             }
 
             throw;
@@ -710,11 +712,11 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
                 if (result is not null && _logger.IsEnabled(LogLevel.Trace))
                 {
-                    LogInvocationCompletedSensitive(context.Function.Metadata.Name, elapsed, LoggingHelpers.AsJson(result, context.Function.Metadata.JsonSerializerOptions));
+                    LogInvocationCompletedSensitive(context.Function.Name, elapsed, LoggingHelpers.AsJson(result, context.Function.JsonSerializerOptions));
                 }
                 else
                 {
-                    LogInvocationCompleted(context.Function.Metadata.Name, elapsed);
+                    LogInvocationCompleted(context.Function.Name, elapsed);
                 }
             }
         }
