@@ -61,7 +61,7 @@ public static class AudioTranscriptionClientExtensions
         CancellationToken cancellationToken = default)
         => Throw.IfNull(client)
             .TranscribeAsync(
-                [audioStream.ToAsyncEnumerable<DataContent>(mediaType: null, cancellationToken)],
+                [audioStream.ToAsyncEnumerable(cancellationToken: cancellationToken)],
                 options,
                 cancellationToken);
 
@@ -78,7 +78,7 @@ public static class AudioTranscriptionClientExtensions
         CancellationToken cancellationToken = default)
         => Throw.IfNull(client)
             .TranscribeStreamingAsync(
-                [audioStream.ToAsyncEnumerable<DataContent>(mediaType: null, cancellationToken)],
+                [audioStream.ToAsyncEnumerable(cancellationToken: cancellationToken)],
                 options,
                 cancellationToken);
 
