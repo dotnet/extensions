@@ -3,7 +3,9 @@
 
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Compliance.Classification;
@@ -11,6 +13,7 @@ namespace Microsoft.Extensions.Compliance.Classification;
 /// <summary>
 /// Provides a way to convert a <see cref="DataClassification"/> to and from a string.
 /// </summary>
+[Experimental(DiagnosticIds.Experiments.Compliance, UrlFormat = DiagnosticIds.UrlFormat)]
 public class DataClassificationTypeConverter : TypeConverter
 {
     private const char Delimiter = ':';
