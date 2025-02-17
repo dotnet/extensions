@@ -341,12 +341,14 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             functionCallContents.Clear();
             await foreach (var update in base.GetStreamingResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false))
             {
-                // We're going to emit all StreamingChatMessage items upstream, even ones that represent
-                // function calls, because a given StreamingChatMessage can contain other content, too.
-                // And if we yield the function calls, and the consumer adds all the content into a message
-                // that's then added into history, they'll end up with function call contents that aren't
-                // directly paired with function result contents, which may cause issues for some models
-                // when the history is later sent again.
+                // We're going to emit all ChatResponseUpdates upstream, even ones that contain function call
+                // content, because a given ChatResponseUpdate can contain other content/metadata. But if we
+                // yield the function calls, and the consumer adds all the content into a message that's then
+                // added into history, they'll end up with function call contents that aren't directly paired
+                // with function result contents, which may cause issues for some models when the history is
+                // later sent again. We thus remove the FunctionCallContent instances from the updates before
+                // yielding them, tracking those FunctionCallContents separately so they can be processed and
+                // added to the chat history.
 
                 // Find all the FCCs. We need to track these separately in order to be able to process them later.
                 int preFccCount = functionCallContents.Count;
