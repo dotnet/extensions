@@ -31,14 +31,14 @@ public class DataClassificationTypeConverter : TypeConverter
     }
 
     /// <inheritdoc/>
+    [SuppressMessage("Performance",
+        "LA0001:Use the 'Microsoft.Shared.Diagnostics.Throws' class instead of explicitly throwing exception for improved performance",
+        Justification = "Using the Throws class causes static analysis to incorrectly assume that code after the throw is reachable.")]
     public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
     {
         if (value is not string stringValue)
         {
-            Throw.ArgumentException(nameof(value), "Value must be a string.");
-
-            // unreachable, but need to satisfy static analysis
-            return DataClassification.Unknown;
+            throw new ArgumentException("Value must be a string.", nameof(value));
         }
 
         if (stringValue == nameof(DataClassification.None))
