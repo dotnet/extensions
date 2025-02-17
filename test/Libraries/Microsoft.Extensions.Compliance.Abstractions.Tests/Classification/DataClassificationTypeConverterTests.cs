@@ -61,7 +61,7 @@ public class DataClassificationTypeConverterTests
         options.Value.Example.Should().NotBeNull().And.Be(new DataClassification("Example", "Test"));
         options.Value.Facts.Should().NotBeEmpty().And.Equal(expected);
 
-        // Odd quirk: binding to dictionary succeeds but not doesn't invalid values
+        // Odd quirk: binding to dictionary succeeds but doesn't include invalid values
         options.Value.Facts.Should().NotContainKey("Invalid");
     }
 
