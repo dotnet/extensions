@@ -58,14 +58,14 @@ public class OpenAIAudioTranscriptionClientTests
             new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
 
         IAudioTranscriptionClient client = openAIClient.AsAudioTranscriptionClient(model);
-        var metadata = client.GetService<ChatClientMetadata>();
+        var metadata = client.GetService<AudioTranscriptionClientMetadata>();
         Assert.NotNull(metadata);
         Assert.Equal("openai", metadata.ProviderName);
         Assert.Equal(endpoint, metadata.ProviderUri);
         Assert.Equal(model, metadata.ModelId);
 
         client = openAIClient.GetAudioClient(model).AsAudioTranscriptionClient();
-        metadata = client.GetService<ChatClientMetadata>();
+        metadata = client.GetService<AudioTranscriptionClientMetadata>();
         Assert.NotNull(metadata);
         Assert.Equal("openai", metadata.ProviderName);
         Assert.Equal(endpoint, metadata.ProviderUri);
