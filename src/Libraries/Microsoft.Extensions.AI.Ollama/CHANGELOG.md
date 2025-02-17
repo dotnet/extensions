@@ -1,6 +1,6 @@
 # Release History
 
-## 9.3.0-TODO
+## 9.3.0-preview.1.25114.11
 
 - Ensures that all yielded `ChatResponseUpdates` include a `ResponseId`.
 - Ensures that error HTTP status codes are correctly propagated as exceptions.

@@ -1,6 +1,6 @@
 # Release History
 
-## 9.3.0-TODO
+## 9.3.0-preview.1.25114.11
 
 - Renamed `IChatClient.Complete{Streaming}Async` to `IChatClient.Get{Streaming}ResponseAsync`. This is to avoid confusion with "Complete" being about stopping an operation, as well as to avoid tying the methods to a particular implementation detail of how responses are generated. Along with this, renamed `ChatCompletion` to `ChatResponse`, `StreamingChatCompletionUpdate` to `ChatResponseUpdate`, `CompletionId` to `ResponseId`, `ToStreamingChatCompletionUpdates` to `ToChatResponseUpdates`, and `ToChatCompletion{Async}` to `ToChatResponse{Async}`.
 - Removed `IChatClient.Metadata` and `IEmbeddingGenerator.Metadata`. The `GetService` method may be used to retrieve `ChatClientMetadata` and `EmbeddingGeneratorMetadata`, respectively.

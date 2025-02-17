@@ -1,6 +1,6 @@
 # Release History
 
-## 9.3.0-TODO
+## 9.3.0-preview.1.25114.11
 
 - Updated to depend on OpenAI 2.2.0-beta.1, updating with support for the Developer role, audio input and output, and additional options like output prediction. It is now also compatible with NativeAOT.
 - Added an `AsChatClient` extension method for OpenAI's `AssistantClient`, enabling `IChatClient` to be used with OpenAI Assistants.

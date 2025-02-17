@@ -1,6 +1,6 @@
 # Release History
 
-## 9.3.0-TODO
+## 9.3.0-preview.1.25114.11
 
 - Updated to use Azure.AI.Inference 1.0.0-beta.3, adding support for structured output and audio input.
 

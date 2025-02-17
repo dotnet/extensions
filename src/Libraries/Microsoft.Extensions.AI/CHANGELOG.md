@@ -1,6 +1,6 @@
 # Release History
 
-## 9.3.0-TODO
+## 9.3.0-preview.1.25114.11
 
 - Updated `OpenTelemetryChatClient`/`OpenTelemetryEmbeddingGenerator` to conform to the latest 1.30.0 draft specification of the Semantic Conventions for Generative AI systems.
 
