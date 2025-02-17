@@ -17,7 +17,6 @@ public class DataClassificationTypeConverterTests
     {
         yield return new object[] { "None", DataClassification.None };
         yield return new object[] { "Unknown", DataClassification.Unknown };
-        yield return new object[] { "Invalid", DataClassification.Unknown };
     }
 
     public static IEnumerable<object[]> CustomDataClassificationTestData()
@@ -56,166 +55,113 @@ public class DataClassificationTypeConverterTests
            { "Data", new DataClassification("Custom", "Data") },
            { "None", DataClassification.None },
            { "Unknown", DataClassification.Unknown },
-           { "Invalid", DataClassification.Unknown },
         };
 
         // Assert
         options.Value.Example.Should().NotBeNull().And.Be(new DataClassification("Example", "Test"));
         options.Value.Facts.Should().NotBeEmpty().And.Equal(expected);
-    }
 
-    [Fact]
-    public void CanConvertTo_ShouldReturnTrue_WhenDestinationTypeIsDataClassification()
-    {
-        // Arrange
-        var converter = new DataClassificationTypeConverter();
-
-        // Act
-        var canConvert = converter.CanConvertTo(null, typeof(DataClassification));
-
-        // Assert
-        canConvert.Should().BeTrue();
-    }
-
-    [Fact]
-    public void CanConvertTo_ShouldReturnFalse_WhenDestinationTypeIsNotDataClassification()
-    {
-        // Arrange
-        var converter = new DataClassificationTypeConverter();
-
-        // Act
-        var canConvert = converter.CanConvertTo(null, typeof(DateTimeOffset));
-
-        // Assert
-        canConvert.Should().BeFalse();
-    }
-
-    [Fact]
-    public void ConvertFrom_ShouldReturnDataClassificationUnknown_WhenValueIsNotString()
-    {
-        // Arrange
-        var converter = new DataClassificationTypeConverter();
-
-        // Act
-        var result = converter.ConvertFrom(null, null, 123);
-
-        // Assert
-        result.Should().Be(DataClassification.Unknown);
-    }
-
-    [Fact]
-    public void CanConvertFrom_ShouldReturnTrue_WhenSourceTypeIsString()
-    {
-        // Arrange
-        var converter = new DataClassificationTypeConverter();
-
-        // Act
-        var canConvert = converter.CanConvertFrom(null, typeof(string));
-
-        // Assert
-        canConvert.Should().BeTrue();
-    }
-
-    [Fact]
-    public void CanConvertFrom_ShouldReturnFalse_WhenSourceTypeIsNotString()
-    {
-        // Arrange
-        var converter = new DataClassificationTypeConverter();
-
-        // Act
-        var canConvert = converter.CanConvertFrom(null, typeof(int));
-
-        // Assert
-        canConvert.Should().BeFalse();
+        // Odd quirk: binding to dictionary succeed but not include invalid values
+        options.Value.Facts.Should().NotContainKey("Invalid");
     }
 
     [Theory]
-    [MemberData(nameof(DefaultDataClassificationTestData))]
-    [MemberData(nameof(CustomDataClassificationTestData))]
-    public void ConvertFrom_ShouldReturnCorrectDataClassification_WhenValueIsValidString(string input, DataClassification expected)
+    [InlineData(typeof(string), true)]
+    [InlineData(typeof(int), false)]
+    [InlineData(typeof(DataClassification), false)]
+    public void CanConvertFrom_ShouldReturnExpectedResult(Type sourceType, bool expected)
     {
         // Arrange
         var converter = new DataClassificationTypeConverter();
 
         // Act
-        var result = converter.ConvertFrom(null, null, input);
+        var result = converter.CanConvertFrom(null, sourceType);
 
         // Assert
         result.Should().Be(expected);
     }
 
-    [Fact]
-    public void ConvertFrom_ShouldReturnUnknown_WhenInputIsInvalidFormat()
+    [Theory]
+    [InlineData(typeof(DataClassification), true)]
+    [InlineData(typeof(int), false)]
+    [InlineData(typeof(string), false)]
+    public void CanConvertTo_ShouldReturnExpectedResult(Type destinationType, bool expected)
     {
         // Arrange
         var converter = new DataClassificationTypeConverter();
-        string input = "InvalidFormatWithoutDelimiter";
+
+        // Act
+        var result = converter.CanConvertTo(null, destinationType);
+
+        // Assert
+        result.Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData("None", "", "None")]
+    [InlineData("Unknown", "", "Unknown")]
+    [InlineData("Example:Test", "Example", "Test")]
+    public void ConvertFrom_ShouldReturnExpectedResult_ForValidInput(string input, string expectedTaxonomyName, string expectedValue)
+    {
+        // Arrange
+        var converter = new DataClassificationTypeConverter();
 
         // Act
         var result = converter.ConvertFrom(null, null, input);
 
         // Assert
-        result.Should().Be(DataClassification.Unknown);
+        result.Should().NotBeNull();
+        result.Should().BeOfType<DataClassification>();
+
+#pragma warning disable CS8605 // Unboxing a possibly null value.
+        var dataClassification = (DataClassification)result;
+#pragma warning restore CS8605 // Unboxing a possibly null value.
+
+        dataClassification.TaxonomyName.Should().Be(expectedTaxonomyName);
+        dataClassification.Value.Should().Be(expectedValue);
     }
 
     [Theory]
-    [InlineData("None")]
-    [InlineData("ValidString")]
-    public void IsValid_ShouldReturnTrue_ForValidStringWithoutDelimiter(string input)
+    [InlineData("InvalidFormat", typeof(FormatException))]
+    [InlineData("InvalidFormat:", typeof(FormatException))]
+    [InlineData(":InvalidFormat", typeof(FormatException))]
+    [InlineData(":", typeof(FormatException))]
+    [InlineData("", typeof(FormatException))]
+    [InlineData(42, typeof(ArgumentException))]
+    [InlineData(false, typeof(ArgumentException))]
+    public void ConvertFrom_ShouldThrowException_ForInvalidInput(object input, Type expectedException)
     {
         // Arrange
         var converter = new DataClassificationTypeConverter();
 
         // Act
-        var isValid = converter.IsValid(null, input);
+        var act = () => converter.ConvertFrom(null, null, input);
 
         // Assert
-        isValid.Should().BeTrue();
-    }
-
-    [Fact]
-    public void IsValid_ShouldReturnTrue_ForValidStringWithDelimiter()
-    {
-        // Arrange
-        var converter = new DataClassificationTypeConverter();
-        string input = "Taxonomy:Value";
-
-        // Act
-        var isValid = converter.IsValid(null, input);
-
-        // Assert
-        isValid.Should().BeTrue();
+        Assert.Throws(expectedException, act);
     }
 
     [Theory]
-    [InlineData("", false)]
+    [InlineData("None", true)]
+    [InlineData("Unknown", true)]
+    [InlineData("Example:Test", true)]
+    [InlineData("InvalidFormat", false)]
+    [InlineData("InvalidFormat:", false)]
+    [InlineData(":InvalidFormat", false)]
     [InlineData(":", false)]
-    [InlineData("A:", false)]
-    [InlineData(":A", false)]
-    public void IsValid_ShouldReturnExpectedResult_ForInsufficientLengthInput(string input, bool expected)
-    {
-        // Arrange  
-        var converter = new DataClassificationTypeConverter();
-
-        // Act  
-        var isValid = converter.IsValid(null, input);
-
-        // Assert  
-        isValid.Should().Be(expected);
-    }
-
-    [Fact]
-    public void IsValid_ShouldReturnFalse_ForNonStringInput()
+    [InlineData("", false)]
+    [InlineData(42, false)]
+    [InlineData(false, false)]
+    public void IsValid_ShouldReturnExpectedResult(object input, bool expected)
     {
         // Arrange
         var converter = new DataClassificationTypeConverter();
-        int input = 456;
 
         // Act
-        var isValid = converter.IsValid(null, input);
+        var result = converter.IsValid(null, input);
 
         // Assert
-        isValid.Should().BeFalse();
+        result.Should().Be(expected);
     }
 
     private class TestOptions

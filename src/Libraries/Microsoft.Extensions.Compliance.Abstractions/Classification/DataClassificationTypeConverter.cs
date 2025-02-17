@@ -14,7 +14,6 @@ namespace Microsoft.Extensions.Compliance.Classification;
 public class DataClassificationTypeConverter : TypeConverter
 {
     private const char Delimiter = ':';
-    private const int MinimumCharactersWithDelimiter = 3;
 
     /// <inheritdoc/>
     public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
@@ -31,30 +30,30 @@ public class DataClassificationTypeConverter : TypeConverter
     /// <inheritdoc/>
     public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
     {
-        if (value is string stringValue)
+        if (value is not string stringValue)
         {
-            if (stringValue == nameof(DataClassification.None))
-            {
-                return DataClassification.None;
-            }
+            Throw.ArgumentException(nameof(value), "Value must be a string.");
 
-            ReadOnlySpan<char> valueSpan = stringValue.AsSpan();
-            int index = valueSpan.IndexOf(Delimiter);
-
-            if (index >= 0)
-            {
-                // Convert the string with format "TaxonomyName:Value" to a DataClassification
-                string taxonomyName = valueSpan.Slice(0, index).ToString();
-                string taxonomyValue = valueSpan.Slice(index + 1).ToString();
-
-                _ = Throw.IfNullOrWhitespace(taxonomyName);
-                _ = Throw.IfNullOrWhitespace(taxonomyValue);
-
-                return new DataClassification(taxonomyName, taxonomyValue);
-            }
+            // unreachable, but need to satisfy static analysis
+            return DataClassification.Unknown;
         }
 
-        return DataClassification.Unknown;
+        if (stringValue == nameof(DataClassification.None))
+        {
+            return DataClassification.None;
+        }
+
+        if (stringValue == nameof(DataClassification.Unknown))
+        {
+            return DataClassification.Unknown;
+        }
+
+        if (TryParse(stringValue, out var taxonomyName, out var taxonomyValue))
+        {
+            return new DataClassification(taxonomyName, taxonomyValue);
+        }
+
+        throw new FormatException($"Invalid data classification format: '{stringValue}'.");
     }
 
     /// <inheritdoc/>
@@ -65,20 +64,43 @@ public class DataClassificationTypeConverter : TypeConverter
             return false;
         }
 
-        if (stringValue == nameof(DataClassification.None))
+        if (stringValue == nameof(DataClassification.None) ||
+            stringValue == nameof(DataClassification.Unknown))
         {
             return true;
         }
 
-#if !NET8_0_OR_GREATER
-        if (stringValue.Contains($"{Delimiter}"))
-#else
-        if (stringValue.Contains(Delimiter, StringComparison.Ordinal))
-#endif
+        return TryParse(stringValue, out var taxonomyName, out var taxonomyValue);
+    }
+
+    /// <summary>
+    /// Attempts to parse a string in the format "TaxonomyName:Value".
+    /// </summary>
+    /// <param name="value">The input string to parse.</param>
+    /// <param name="taxonomyName">When this method returns, contains the parsed taxonomy name if the parsing succeeded, or an empty string if it failed.</param>
+    /// <param name="taxonomyValue">When this method returns, contains the parsed taxonomy value if the parsing succeeded, or the original input string if it failed.</param>
+    /// <returns><see langword="true"/> if the string was successfully parsed; otherwise, <see langword="false"/>.</returns>
+    private static bool TryParse(string value, out string taxonomyName, out string taxonomyValue)
+    {
+        taxonomyName = string.Empty;
+        taxonomyValue = value;
+
+        if (value.Length <= 1)
         {
-            return stringValue.Length >= MinimumCharactersWithDelimiter;
+            return false;
         }
 
-        return stringValue.Length > 0;
+        ReadOnlySpan<char> valueSpan = value.AsSpan();
+        int index = valueSpan.IndexOf(Delimiter);
+
+        if (index <= 0 || index >= (value.Length - 1))
+        {
+            return false;
+        }
+
+        taxonomyName = valueSpan.Slice(0, index).ToString();
+        taxonomyValue = valueSpan.Slice(index + 1).ToString();
+
+        return true;
     }
 }
