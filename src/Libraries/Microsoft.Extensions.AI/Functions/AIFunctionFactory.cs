@@ -353,7 +353,7 @@ public static partial class AIFunctionFactory
             JsonTypeInfo typeInfo = serializerOptions.GetTypeInfo(parameterType);
 
             // Create a marshaller that simply looks up the parameter by name in the arguments dictionary.
-            return (IReadOnlyDictionary<string, object?> arguments, AIFunctionContext? _) =>
+            return (arguments, _) =>
             {
                 // If the parameter has an argument specified in the dictionary, return that argument.
                 if (arguments.TryGetValue(parameter.Name, out object? value))

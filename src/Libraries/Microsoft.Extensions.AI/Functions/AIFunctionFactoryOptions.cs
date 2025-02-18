@@ -49,7 +49,7 @@ public sealed class AIFunctionFactoryOptions
     public string? Description { get; set; }
 
     /// <summary>
-    /// Gets or sets additional values to store on the resulting <see cref="AIFunction.AdditionalProperties" /> property.
+    /// Gets or sets additional values to store on the resulting <see cref="AITool.AdditionalProperties" /> property.
     /// </summary>
     /// <remarks>
     /// This property can be used to provide arbitrary information about the function.
