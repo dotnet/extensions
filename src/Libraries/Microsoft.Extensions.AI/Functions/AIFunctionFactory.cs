@@ -441,7 +441,7 @@ public static partial class AIFunctionFactory
                     {
                         await ((Task)ThrowIfNullResult(taskObj)).ConfigureAwait(false);
                         object? result = ReflectionInvoke(taskResultGetter, taskObj, null);
-                        return await SerializeAsync(result, returnTypeInfo, cancellationToken).ConfigureAwait(false);
+                        return await SerializeResultAsync(result, returnTypeInfo, cancellationToken).ConfigureAwait(false);
                     };
                 }
 
@@ -456,16 +456,16 @@ public static partial class AIFunctionFactory
                         var task = (Task)ReflectionInvoke(valueTaskAsTask, ThrowIfNullResult(taskObj), null)!;
                         await task.ConfigureAwait(false);
                         object? result = ReflectionInvoke(asTaskResultGetter, task, null);
-                        return await SerializeAsync(result, returnTypeInfo, cancellationToken).ConfigureAwait(false);
+                        return await SerializeResultAsync(result, returnTypeInfo, cancellationToken).ConfigureAwait(false);
                     };
                 }
             }
 
             // For everything else, just serialize the result as-is.
             returnTypeInfo = serializerOptions.GetTypeInfo(returnType);
-            return (result, cancellationToken) => SerializeAsync(result, returnTypeInfo, cancellationToken);
+            return (result, cancellationToken) => SerializeResultAsync(result, returnTypeInfo, cancellationToken);
 
-            static async ValueTask<object?> SerializeAsync(object? result, JsonTypeInfo returnTypeInfo, CancellationToken cancellationToken)
+            static async ValueTask<object?> SerializeResultAsync(object? result, JsonTypeInfo returnTypeInfo, CancellationToken cancellationToken)
             {
                 if (returnTypeInfo.Kind is JsonTypeInfoKind.None)
                 {
