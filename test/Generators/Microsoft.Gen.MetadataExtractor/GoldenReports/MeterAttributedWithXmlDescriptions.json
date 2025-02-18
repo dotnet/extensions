@@ -1,4 +1,7 @@
-{ "Name": "test.dll", "ComplianceReport": {} , "MetricReport": [
+{
+"Name":"test.dll",
+"ComplianceReport": {},
+"MetricReport": [
  {
   "TestClasses":
   [
@@ -28,4 +31,5 @@
     }
   ]
  }
-] }
+]
+}

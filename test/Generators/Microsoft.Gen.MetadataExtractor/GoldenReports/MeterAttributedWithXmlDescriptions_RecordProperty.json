@@ -1,4 +1,6 @@
-{ "Name": "test.dll", "ComplianceReport": 
+{
+"Name":"test.dll",
+"ComplianceReport": 
 {
     "Types": [
         {
@@ -197,7 +199,8 @@
             ]
         }
     ]
-} , "MetricReport": [
+},
+"MetricReport": [
  {
   "TestClasses":
   [
@@ -227,4 +230,5 @@
     }
   ]
  }
-] }
+]
+}
