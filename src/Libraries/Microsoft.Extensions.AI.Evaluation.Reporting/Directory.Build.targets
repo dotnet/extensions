@@ -26,15 +26,17 @@
     <Exec Command="node build-if-out-of-date.js" WorkingDirectory="$(_TypescriptRootPath)" />
   </Target>
 
-  <Target Name="_BuildTypeScriptBundleBeforeInnerBuilds" 
+  <Target Name="_BuildTypeScriptBundleBeforeOuterBuild"
     DependsOnTargets="BuildTypescriptBundle"
     BeforeTargets="DispatchToInnerBuilds"
   />
 
-  <Target Name="_BuildTypeScriptBundleBeforeCoreBuilds" 
-    DependsOnTargets="BuildTypescriptBundle"
-    BeforeTargets="CoreCompile"
-  />
+  <Target Name="_BuildTypeScriptBundleBeforeInnerBuild"
+    BeforeTargets="CoreCompile">
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="BuildTypescriptBundle"
+             RemoveProperties="TargetFramework" />
+  </Target>
 
   <!-- Generate a version constant that can be accessed from the C# code. -->
   <Target Name="GenerateVersionConstant" BeforeTargets="CoreCompile">
