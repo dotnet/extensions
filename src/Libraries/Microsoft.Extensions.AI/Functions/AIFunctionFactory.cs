@@ -179,12 +179,12 @@ public static partial class AIFunctionFactory
 
         public ReflectionAIFunctionDescriptor FunctionDescriptor { get; }
         public object? Target { get; }
+        public override IReadOnlyDictionary<string, object?> AdditionalProperties { get; }
         public override string Name => FunctionDescriptor.Name;
         public override string Description => FunctionDescriptor.Description;
         public override MethodInfo UnderlyingMethod => FunctionDescriptor.Method;
         public override JsonElement JsonSchema => FunctionDescriptor.JsonSchema;
         public override JsonSerializerOptions JsonSerializerOptions => FunctionDescriptor.JsonSerializerOptions;
-        public override IReadOnlyDictionary<string, object?> AdditionalProperties { get; }
         protected override async Task<object?> InvokeCoreAsync(
             IEnumerable<KeyValuePair<string, object?>>? arguments,
             CancellationToken cancellationToken)
