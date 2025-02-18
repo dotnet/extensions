@@ -7,16 +7,13 @@
   </PropertyGroup>
 
   <Target Name="NpmInstall"
-          Condition="'$(EnableEvaluationReportBuild)'=='true'"
           Inputs="$(_TypescriptRootPath)\package.json"
           Outputs="$(_NpmInstallStampFile)">
     <Exec Command="npm install" WorkingDirectory="$(_TypescriptRootPath)" />
     <Touch Files="$(_NpmInstallStampFile)" AlwaysCreate="true" />
   </Target>
 
-  <!-- Build the report code before this, so it can be embedded.
-  Setting the BeforeTargets=DispatchToInnerBuilds allows it to build only once before
-  the multiple parallel builds are invoked for each target framework. -->
+  <!-- Build the report code before the C# project builds, so report HTML can be embedded. -->
   <Target Name="BuildTypescriptBundle"
           DependsOnTargets="NpmInstall"
           Condition="'$(EnableEvaluationReportBuild)'=='true'"
@@ -26,11 +23,13 @@
     <Exec Command="node build-if-out-of-date.js" WorkingDirectory="$(_TypescriptRootPath)" />
   </Target>
 
+  <!-- Make sure the typescript build is up to date before the the multi-targetted builds. -->
   <Target Name="_BuildTypeScriptBundleBeforeOuterBuild"
     DependsOnTargets="BuildTypescriptBundle"
     BeforeTargets="DispatchToInnerBuilds"
   />
 
+  <!-- Delegate inner builds back to the outer build in case it tries to finish before the outer build -->
   <Target Name="_BuildTypeScriptBundleBeforeInnerBuild"
     BeforeTargets="CoreCompile">
     <MSBuild Projects="$(MSBuildProjectFullPath)"
