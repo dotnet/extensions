@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -20,7 +19,6 @@ using Microsoft.Shared.Diagnostics;
 #pragma warning disable S1075 // URIs should not be hardcoded
 #pragma warning disable SA1118 // Parameter should not span multiple lines
 #pragma warning disable S109 // Magic numbers should not be used
-#pragma warning disable S1067 // Expressions should not be too complex
 
 namespace Microsoft.Extensions.AI;
 
@@ -42,12 +40,6 @@ public static partial class AIJsonUtilities
 
     /// <summary>The uri used when populating the $schema keyword in inferred schemas.</summary>
     private const string SchemaKeywordUri = "https://json-schema.org/draft/2020-12/schema";
-
-    /// <summary>The maximum number of schema entries to cache per JsonSerializerOptions instance.</summary>
-    private const int InnerCacheSoftLimit = 512;
-
-    /// <summary>A global cache for generated schemas, weakly keyed on JsonSerializerOptions instances.</summary>
-    private static readonly ConditionalWeakTable<JsonSerializerOptions, ConcurrentDictionary<JsonSchemaCacheKey, JsonElement>> _schemaCache = new();
 
     // List of keywords used by JsonSchemaExporter but explicitly disallowed by some AI vendors.
     // cf. https://platform.openai.com/docs/guides/structured-outputs#some-type-specific-keywords-are-not-yet-supported
@@ -73,64 +65,58 @@ public static partial class AIJsonUtilities
         serializerOptions ??= DefaultOptions;
         inferenceOptions ??= AIJsonSchemaCreateOptions.Default;
         title ??= method.Name;
+        description ??= method.GetCustomAttribute<DescriptionAttribute>()?.Description;
 
-        JsonSchemaCacheKey cacheKey = new(member: method, title, description, hasDefaultValue: false, defaultValue: null, inferenceOptions);
-        return GetOrAddSchema(serializerOptions, cacheKey, CreateSchema);
-
-        static JsonElement CreateSchema(JsonSchemaCacheKey key, JsonSerializerOptions serializerOptions)
+        JsonObject parameterSchemas = new();
+        JsonArray? requiredProperties = null;
+        foreach (ParameterInfo parameter in method.GetParameters())
         {
-            JsonObject parameterSchemas = new();
-            JsonArray? requiredProperties = null;
-            foreach (ParameterInfo parameter in ((MethodBase)key.Member!).GetParameters())
+            if (string.IsNullOrWhiteSpace(parameter.Name))
             {
-                if (string.IsNullOrWhiteSpace(parameter.Name))
-                {
-                    Throw.ArgumentException(nameof(parameter), "Parameter is missing a name.");
-                }
-
-                JsonNode parameterSchema = CreateJsonSchemaCore(
-                    type: parameter.ParameterType,
-                    parameterName: parameter.Name,
-                    description: parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
-                    hasDefaultValue: parameter.HasDefaultValue,
-                    defaultValue: parameter.HasDefaultValue ? parameter.DefaultValue : null,
-                    serializerOptions,
-                    key.Options);
-
-                parameterSchemas.Add(parameter.Name, parameterSchema);
-                if (!parameter.IsOptional)
-                {
-                    (requiredProperties ??= []).Add((JsonNode)parameter.Name);
-                }
+                Throw.ArgumentException(nameof(parameter), "Parameter is missing a name.");
             }
 
-            JsonObject schema = new();
-            if (key.Options.IncludeSchemaKeyword)
+            JsonNode parameterSchema = CreateJsonSchemaCore(
+                type: parameter.ParameterType,
+                parameterName: parameter.Name,
+                description: parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
+                hasDefaultValue: parameter.HasDefaultValue,
+                defaultValue: parameter.HasDefaultValue ? parameter.DefaultValue : null,
+                serializerOptions,
+                inferenceOptions);
+
+            parameterSchemas.Add(parameter.Name, parameterSchema);
+            if (!parameter.IsOptional)
             {
-                schema[SchemaPropertyName] = SchemaKeywordUri;
+                (requiredProperties ??= []).Add((JsonNode)parameter.Name);
             }
-
-            if (!string.IsNullOrWhiteSpace(key.Title))
-            {
-                schema[TitlePropertyName] = key.Title;
-            }
-
-            string? description = key.Description ?? key.Member.GetCustomAttribute<DescriptionAttribute>()?.Description;
-            if (!string.IsNullOrWhiteSpace(description))
-            {
-                schema[DescriptionPropertyName] = description;
-            }
-
-            schema[TypePropertyName] = "object"; // Method schemas always hardcode the type as "object".
-            schema[PropertiesPropertyName] = parameterSchemas;
-
-            if (requiredProperties is not null)
-            {
-                schema[RequiredPropertyName] = requiredProperties;
-            }
-
-            return JsonSerializer.SerializeToElement(schema, JsonContext.Default.JsonNode);
         }
+
+        JsonObject schema = new();
+        if (inferenceOptions.IncludeSchemaKeyword)
+        {
+            schema[SchemaPropertyName] = SchemaKeywordUri;
+        }
+
+        if (!string.IsNullOrWhiteSpace(title))
+        {
+            schema[TitlePropertyName] = title;
+        }
+
+        if (!string.IsNullOrWhiteSpace(description))
+        {
+            schema[DescriptionPropertyName] = description;
+        }
+
+        schema[TypePropertyName] = "object"; // Method schemas always hardcode the type as "object".
+        schema[PropertiesPropertyName] = parameterSchemas;
+
+        if (requiredProperties is not null)
+        {
+            schema[RequiredPropertyName] = requiredProperties;
+        }
+
+        return JsonSerializer.SerializeToElement(schema, JsonContext.Default.JsonNode);
     }
 
     /// <summary>Creates a JSON schema for the specified type.</summary>
@@ -151,18 +137,21 @@ public static partial class AIJsonUtilities
     {
         serializerOptions ??= DefaultOptions;
         inferenceOptions ??= AIJsonSchemaCreateOptions.Default;
-
-        JsonSchemaCacheKey cacheKey = new(member: type, title: null, description, hasDefaultValue, defaultValue, inferenceOptions);
-        return GetOrAddSchema(serializerOptions, cacheKey, CreateSchema);
-        static JsonElement CreateSchema(JsonSchemaCacheKey key, JsonSerializerOptions serializerOptions)
-        {
-            JsonNode schema = CreateJsonSchemaCore((Type?)key.Member, parameterName: null, key.Description, key.HasDefaultValue, key.DefaultValue, serializerOptions, key.Options);
-            return JsonSerializer.SerializeToElement(schema, JsonContext.Default.JsonNode);
-        }
+        JsonNode schema = CreateJsonSchemaCore(type, parameterName: null, description, hasDefaultValue, defaultValue, serializerOptions, inferenceOptions);
+        return JsonSerializer.SerializeToElement(schema, JsonContext.Default.JsonNode);
     }
 
     /// <summary>Gets the default JSON schema to be used by types or functions.</summary>
     internal static JsonElement DefaultJsonSchema { get; } = ParseJsonElement("{}"u8);
+
+    /// <summary>Validates the provided JSON schema document.</summary>
+    internal static void ValidateSchemaDocument(JsonElement document, [CallerArgumentExpression("document")] string? paramName = null)
+    {
+        if (document.ValueKind is not JsonValueKind.Object or JsonValueKind.False or JsonValueKind.True)
+        {
+            Throw.ArgumentException(paramName ?? "schema", "The schema document must be an object or a boolean value.");
+        }
+    }
 
 #if !NET9_0_OR_GREATER
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access",
@@ -422,63 +411,6 @@ public static partial class AIJsonUtilities
         return -1;
     }
 #endif
-
-    private static JsonElement GetOrAddSchema(JsonSerializerOptions serializerOptions, JsonSchemaCacheKey cacheKey, Func<JsonSchemaCacheKey, JsonSerializerOptions, JsonElement> schemaFactory)
-    {
-        ConcurrentDictionary<JsonSchemaCacheKey, JsonElement> innerCache = _schemaCache.GetOrCreateValue(serializerOptions);
-        if (!innerCache.TryGetValue(cacheKey, out JsonElement schema))
-        {
-            schema = schemaFactory(cacheKey, serializerOptions);
-            if (innerCache.Count < InnerCacheSoftLimit)
-            {
-                _ = innerCache.TryAdd(cacheKey, schema);
-            }
-        }
-
-        return schema;
-    }
-
-    private readonly struct JsonSchemaCacheKey : IEquatable<JsonSchemaCacheKey>
-    {
-        public JsonSchemaCacheKey(MemberInfo? member, string? title, string? description, bool hasDefaultValue, object? defaultValue, AIJsonSchemaCreateOptions options)
-        {
-            Debug.Assert(member is Type or MethodBase or null, "Must be type or method");
-            Member = member;
-            Title = title;
-            Description = description;
-            HasDefaultValue = hasDefaultValue;
-            DefaultValue = defaultValue;
-            Options = options;
-        }
-
-        public MemberInfo? Member { get; }
-        public string? Title { get; }
-        public string? Description { get; }
-        public bool HasDefaultValue { get; }
-        public object? DefaultValue { get; }
-        public AIJsonSchemaCreateOptions Options { get; }
-
-        public override bool Equals(object? obj) => obj is JsonSchemaCacheKey key && Equals(key);
-        public bool Equals(JsonSchemaCacheKey other) =>
-            Member == other.Member &&
-            Title == other.Title &&
-            Description == other.Description &&
-            HasDefaultValue == other.HasDefaultValue &&
-            Equals(DefaultValue, other.DefaultValue) &&
-            Options.TransformSchemaNode == other.Options.TransformSchemaNode &&
-            Options.IncludeTypeInEnumSchemas == other.Options.IncludeTypeInEnumSchemas &&
-            Options.DisallowAdditionalProperties == other.Options.DisallowAdditionalProperties &&
-            Options.IncludeSchemaKeyword == other.Options.IncludeSchemaKeyword &&
-            Options.RequireAllProperties == other.Options.RequireAllProperties;
-
-        public override int GetHashCode() =>
-            (Member, Title, Description, HasDefaultValue, DefaultValue,
-             Options.TransformSchemaNode, Options.IncludeTypeInEnumSchemas,
-             Options.DisallowAdditionalProperties, Options.IncludeSchemaKeyword,
-             Options.RequireAllProperties)
-            .GetHashCode();
-    }
-
     private static JsonElement ParseJsonElement(ReadOnlySpan<byte> utf8Json)
     {
         Utf8JsonReader reader = new(utf8Json);
