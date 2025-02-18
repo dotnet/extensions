@@ -176,7 +176,7 @@ public class GeneratorTests(ITestOutputHelper output)
             var options = new Dictionary<string, string>
             {
                 ["build_property.projectdir"] = projectDir,
-                ["build_property.MetadataReportOutputPath"] = fullReportPath
+                ["build_property.outputpath"] = outputPath
             };
 
             var diags = await RunGenerator(await File.ReadAllTextAsync(inputFile), options);
