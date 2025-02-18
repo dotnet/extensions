@@ -127,15 +127,18 @@ public class DataClassificationTypeConverterTests
     [InlineData(":InvalidFormat", typeof(FormatException))]
     [InlineData(":", typeof(FormatException))]
     [InlineData("", typeof(FormatException))]
+    [InlineData("\t", typeof(FormatException))]
+    [InlineData("\n", typeof(FormatException))]
     [InlineData(42, typeof(ArgumentException))]
     [InlineData(false, typeof(ArgumentException))]
-    public void ConvertFrom_ShouldThrowException_ForInvalidInput(object input, Type expectedException)
+    [InlineData(null, typeof(ArgumentException))]
+    public void ConvertFrom_ShouldThrowException_ForInvalidInput(object? input, Type expectedException)
     {
         // Arrange
         var converter = new DataClassificationTypeConverter();
 
         // Act
-        var act = () => converter.ConvertFrom(null, null, input);
+        var act = () => converter.ConvertFrom(null, null, input!);
 
         // Assert
         Assert.Throws(expectedException, act);
@@ -150,9 +153,12 @@ public class DataClassificationTypeConverterTests
     [InlineData(":InvalidFormat", false)]
     [InlineData(":", false)]
     [InlineData("", false)]
+    [InlineData("\t", false)]
+    [InlineData("\n", false)]
     [InlineData(42, false)]
     [InlineData(false, false)]
-    public void IsValid_ShouldReturnExpectedResult(object input, bool expected)
+    [InlineData(null, false)]
+    public void IsValid_ShouldReturnExpectedResult(object? input, bool expected)
     {
         // Arrange
         var converter = new DataClassificationTypeConverter();
