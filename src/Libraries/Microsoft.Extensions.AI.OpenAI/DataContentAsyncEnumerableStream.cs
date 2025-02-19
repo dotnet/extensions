@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -57,6 +58,26 @@ internal sealed class DataContentAsyncEnumerableStream : Stream
 
     /// <inheritdoc/>
     public override long Length => throw new NotSupportedException();
+
+    /// <inheritdoc/>
+    public override async Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
+    {
+        _ = Throw.IfNull(destination);
+
+        byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+        try
+        {
+            int bytesRead;
+            while ((bytesRead = await ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false)) != 0)
+            {
+                await destination.WriteAsync(new ReadOnlyMemory<byte>(buffer, 0, bytesRead), cancellationToken).ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
+        }
+    }
 
     /// <inheritdoc/>
     public override long Position
