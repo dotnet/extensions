@@ -96,16 +96,16 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
         metadataReport.complianceReport = HandleComplianceReportGeneration(context, (TypeDeclarationSyntaxReceiver)context.SyntaxReceiver);
 
         StringBuilder reportStringBuilder = new StringBuilder()
-            .Append("{\r\n")
+            .Append("{\n")
             .Append("\"Name\":")
             .Append($"\"{context.Compilation.AssemblyName!}\"")
-            .Append(",\r\n")
+            .Append(",\n")
             .Append("\"ComplianceReport\": ")
             .Append((string.IsNullOrEmpty(metadataReport.complianceReport) ? "{}" : metadataReport.complianceReport))
-            .Append(",\r\n")
+            .Append(",\n")
             .Append("\"MetricReport\": ")
             .Append((string.IsNullOrEmpty(metadataReport.metricReport) ? "[]" : metadataReport.metricReport))
-            .Append("\r\n}\r\n");
+            .Append("\n}\n");
 
 #pragma warning disable RS1035 // Do not use APIs banned for analyzers
         File.WriteAllText(Path.Combine(path, _fileName), reportStringBuilder.ToString(), Encoding.UTF8);

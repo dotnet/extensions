@@ -7,6 +7,7 @@ using System.Diagnostics.Metrics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -87,8 +88,8 @@ public class GeneratorTests(ITestOutputHelper output)
                 var d = await RunGenerator(await File.ReadAllTextAsync(inputFile), options);
                 Assert.Empty(d);
 
-                var golden = await File.ReadAllTextAsync(goldenReportPath);
-                var generated = await File.ReadAllTextAsync(generatedReportPath);
+                var golden = await File.ReadAllTextAsync(goldenReportPath, Encoding.UTF8);
+                var generated = await File.ReadAllTextAsync(generatedReportPath, Encoding.UTF8);
 
                 if (golden != generated)
                 {
@@ -104,7 +105,7 @@ public class GeneratorTests(ITestOutputHelper output)
 
                 File.Delete(generatedReportPath);
 
-                Assert.Equal(golden, generated);
+                Assert.Equal(NormalizeEscapes(golden), NormalizeEscapes(generated));
             }
             else
             {
@@ -256,4 +257,5 @@ public class GeneratorTests(ITestOutputHelper output)
         public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => throw new NotSupportedException();
         public override AnalyzerConfigOptions GetOptions(AdditionalText textFile) => throw new NotSupportedException();
     }
+    private string NormalizeEscapes(string input) => input.Replace("\r\n", "\n").Replace("\r", "\n");
 }
