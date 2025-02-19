@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -185,7 +184,7 @@ public static partial class AIFunctionFactory
         public override MethodInfo UnderlyingMethod => FunctionDescriptor.Method;
         public override JsonElement JsonSchema => FunctionDescriptor.JsonSchema;
         public override JsonSerializerOptions JsonSerializerOptions => FunctionDescriptor.JsonSerializerOptions;
-        protected override async Task<object?> InvokeCoreAsync(
+        protected override Task<object?> InvokeCoreAsync(
             IEnumerable<KeyValuePair<string, object?>>? arguments,
             CancellationToken cancellationToken)
         {
@@ -210,7 +209,7 @@ public static partial class AIFunctionFactory
                 args[i] = paramMarshallers[i](argDict, context);
             }
 
-            return await FunctionDescriptor.ReturnParameterMarshaller(ReflectionInvoke(FunctionDescriptor.Method, Target, args), cancellationToken).ConfigureAwait(false);
+            return FunctionDescriptor.ReturnParameterMarshaller(ReflectionInvoke(FunctionDescriptor.Method, Target, args), cancellationToken);
         }
     }
 
@@ -277,7 +276,7 @@ public static partial class AIFunctionFactory
         public JsonSerializerOptions JsonSerializerOptions { get; }
         public JsonElement JsonSchema { get; }
         public Func<IReadOnlyDictionary<string, object?>, AIFunctionContext?, object?>[] ParameterMarshallers { get; }
-        public Func<object?, CancellationToken, ValueTask<object?>> ReturnParameterMarshaller { get; }
+        public Func<object?, CancellationToken, Task<object?>> ReturnParameterMarshaller { get; }
         public bool RequiresAIFunctionContext { get; }
         public ReflectionAIFunction? CachedDefaultInstance { get; set; }
 
@@ -399,7 +398,7 @@ public static partial class AIFunctionFactory
         /// <summary>
         /// Gets a delegate for handling the result value of a method, converting it into the <see cref="Task{FunctionResult}"/> to return from the invocation.
         /// </summary>
-        private static Func<object?, CancellationToken, ValueTask<object?>> GetReturnParameterMarshaller(MethodInfo method, JsonSerializerOptions serializerOptions)
+        private static Func<object?, CancellationToken, Task<object?>> GetReturnParameterMarshaller(MethodInfo method, JsonSerializerOptions serializerOptions)
         {
             Type returnType = method.ReturnType;
             JsonTypeInfo returnTypeInfo;
@@ -407,7 +406,7 @@ public static partial class AIFunctionFactory
             // Void
             if (returnType == typeof(void))
             {
-                return static (_, _) => default;
+                return static (_, _) => Task.FromResult<object?>(null);
             }
 
             // Task
@@ -465,7 +464,7 @@ public static partial class AIFunctionFactory
             returnTypeInfo = serializerOptions.GetTypeInfo(returnType);
             return (result, cancellationToken) => SerializeResultAsync(result, returnTypeInfo, cancellationToken);
 
-            static async ValueTask<object?> SerializeResultAsync(object? result, JsonTypeInfo returnTypeInfo, CancellationToken cancellationToken)
+            static async Task<object?> SerializeResultAsync(object? result, JsonTypeInfo returnTypeInfo, CancellationToken cancellationToken)
             {
                 if (returnTypeInfo.Kind is JsonTypeInfoKind.None)
                 {
@@ -474,9 +473,9 @@ public static partial class AIFunctionFactory
                 }
 
                 // Serialize asynchronously to support potential IAsyncEnumerable responses.
-                using MemoryStream stream = new();
+                using PooledMemoryStream stream = new();
                 await JsonSerializer.SerializeAsync(stream, result, returnTypeInfo, cancellationToken).ConfigureAwait(false);
-                Utf8JsonReader reader = new(stream.GetBuffer().AsSpan(0, (int)stream.Length));
+                Utf8JsonReader reader = new(stream.GetBuffer());
                 return JsonElement.ParseValue(ref reader);
             }
 
