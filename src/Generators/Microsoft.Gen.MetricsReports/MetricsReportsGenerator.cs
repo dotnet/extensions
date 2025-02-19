@@ -52,7 +52,6 @@ public class MetricsReportsGenerator : ISourceGenerator
             return;
         }
 
-
         var options = context.AnalyzerConfigOptions.GlobalOptions;
         _directory ??= GeneratorUtilities.TryRetrieveOptionsValue(options, ReportOutputPath, out var reportOutputPath)
             ? reportOutputPath!
