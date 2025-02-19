@@ -5,7 +5,10 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Logging.Testing;
@@ -17,7 +20,7 @@ namespace Microsoft.Extensions.Logging.Testing;
 /// This type is intended for use in unit tests. It captures all the log state to memory and lets you inspect it
 /// to validate that your code is logging what it should.
 /// </remarks>
-public class FakeLogger : ILogger
+public class FakeLogger : ILogger, IBufferedLogger
 {
     private readonly ConcurrentDictionary<LogLevel, bool> _disabledLevels = new();  // used as a set, the value is ignored
 
@@ -104,6 +107,25 @@ public class FakeLogger : ILogger
     /// Gets this logger's category, as specified when the logger was created.
     /// </summary>
     public string? Category { get; }
+
+    /// <inheritdoc/>
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
+    public void LogRecords(IEnumerable<BufferedLogRecord> records)
+    {
+        _ = Throw.IfNull(records);
+
+        var l = new List<object?>();
+
+        foreach (var rec in records)
+        {
+#pragma warning disable CA2201 // Do not raise reserved exception types
+            var exception = rec.Exception is not null ? new Exception(rec.Exception) : null;
+#pragma warning restore CA2201 // Do not raise reserved exception types
+            var record = new FakeLogRecord(rec.LogLevel, rec.EventId, ConsumeTState(rec.Attributes), exception, rec.FormattedMessage ?? string.Empty,
+    l.ToArray(), Category, !_disabledLevels.ContainsKey(rec.LogLevel), rec.Timestamp);
+            Collector.AddRecord(record);
+        }
+    }
 
     internal IExternalScopeProvider ScopeProvider { get; set; } = new LoggerExternalScopeProvider();
 

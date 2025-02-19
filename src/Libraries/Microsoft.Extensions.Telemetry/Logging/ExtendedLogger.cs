@@ -4,7 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Diagnostics.Buffering;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Logging;
@@ -31,10 +32,19 @@ internal sealed partial class ExtendedLogger : ILogger
     public MessageLogger[] MessageLoggers { get; set; } = Array.Empty<MessageLogger>();
     public ScopeLogger[] ScopeLoggers { get; set; } = Array.Empty<ScopeLogger>();
 
+    private readonly LogBuffer? _bufferingManager;
+    private readonly IBufferedLogger? _bufferedLogger;
+
     public ExtendedLogger(ExtendedLoggerFactory factory, LoggerInformation[] loggers)
     {
         _factory = factory;
         Loggers = loggers;
+
+        _bufferingManager = _factory.Config.BufferingManager;
+        if (_bufferingManager is not null)
+        {
+            _bufferedLogger = new BufferedLoggerProxy(this);
+        }
     }
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
@@ -261,11 +271,35 @@ internal sealed partial class ExtendedLogger : ILogger
             RecordException(exception, joiner.EnrichmentTagCollector, config);
         }
 
+        bool shouldBuffer = true;
         for (int i = 0; i < loggers.Length; i++)
         {
             ref readonly MessageLogger loggerInfo = ref loggers[i];
             if (loggerInfo.IsNotFilteredOut(logLevel))
             {
+                if (shouldBuffer)
+                {
+                    if (_bufferingManager is not null)
+                    {
+                        var logEntry = new LogEntry<ModernTagJoiner>(logLevel, loggerInfo.Category!, eventId, joiner, exception, static (s, e) =>
+                        {
+                            var fmt = s.Formatter!;
+                            return fmt(s.State!, e);
+                        });
+                        var wasBuffered = _bufferingManager.TryEnqueue(_bufferedLogger!, logEntry);
+
+                        if (wasBuffered)
+                        {
+                            // The record was buffered, so we skip logging it here and for all other loggers.
+                            // When a caller needs to flush the buffer and calls Flush(),
+                            // the buffer manager will internally call IBufferedLogger.LogRecords to emit log records.
+                            break;
+                        }
+                    }
+
+                    shouldBuffer = false;
+                }
+
                 try
                 {
                     loggerInfo.LoggerLog(logLevel, eventId, joiner, exception, static (s, e) =>
@@ -345,11 +379,36 @@ internal sealed partial class ExtendedLogger : ILogger
             RecordException(exception, joiner.EnrichmentTagCollector, config);
         }
 
+        bool shouldBuffer = true;
         for (int i = 0; i < loggers.Length; i++)
         {
             ref readonly MessageLogger loggerInfo = ref loggers[i];
             if (loggerInfo.IsNotFilteredOut(logLevel))
             {
+                if (shouldBuffer)
+                {
+                    if (_bufferingManager is not null)
+                    {
+                        var logEntry = new LogEntry<LegacyTagJoiner>(logLevel, loggerInfo.Category!, eventId, joiner, exception, static (s, e) =>
+                        {
+                            var fmt = (Func<TState, Exception?, string>)s.Formatter!;
+                            return fmt((TState)s.State!, e);
+                        });
+                        bool wasBuffered = _bufferingManager.TryEnqueue(_bufferedLogger!, in logEntry);
+
+                        if (wasBuffered)
+                        {
+                            // The record was buffered, so we skip logging it here and for all other loggers.
+                            // When a caller needs to flush the buffer and calls Flush(),
+                            // the buffer manager will internally call IBufferedLogger.LogRecords to emit log records.
+                            break;
+                        }
+
+                    }
+
+                    shouldBuffer = false;
+                }
+
                 try
                 {
                     loggerInfo.Logger.Log(logLevel, eventId, joiner, exception, static (s, e) =>

@@ -2,6 +2,7 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Diagnostics.Probes.Test</RootNamespace>
     <Description>Unit tests for Microsoft.Extensions.Diagnostics.Probes</Description>
+    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
   </PropertyGroup>
 
   <ItemGroup>

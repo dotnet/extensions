@@ -4,7 +4,6 @@
 using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Diagnostics;
 
@@ -34,8 +33,9 @@ public static class LoggingRedactionExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);
 
-        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerFactory, ExtendedLoggerFactory>());
-        _ = builder.Services.Configure(configure);
+        _ = builder.Services
+                .AddExtendedLoggerFeactory()
+                .Configure(configure);
 
         return builder;
     }
@@ -51,8 +51,9 @@ public static class LoggingRedactionExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(section);
 
-        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerFactory, ExtendedLoggerFactory>());
-        _ = builder.Services.AddOptions<LoggerRedactionOptions>().Bind(section);
+        _ = builder.Services
+                .AddExtendedLoggerFeactory()
+                .AddOptions<LoggerRedactionOptions>().Bind(section);
 
         return builder;
     }

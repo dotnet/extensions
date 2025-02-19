@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Buffering;
 using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
@@ -117,6 +118,34 @@ public static class ExtendedLoggerTests
             Assert.Null(snap[1].GetStructuredStateValue("SEK1"));
             Assert.Null(snap[1].GetStructuredStateValue("EK1"));
         }
+    }
+
+    [Fact]
+    public static void GlobalBuffering_CanonicalUsecase()
+    {
+        using var provider = new Provider();
+        using var factory = Utils.CreateLoggerFactory(
+             builder =>
+             {
+                 builder.AddProvider(provider);
+                 builder.AddGlobalBuffering(LogLevel.Warning);
+             });
+
+        var logger = factory.CreateLogger("my category");
+        logger.LogWarning("MSG0");
+        logger.Log(LogLevel.Warning, new EventId(2, "ID2"), "some state", null, (_, _) => "MSG2");
+
+        // nothing is logged because the buffer not flushed yet
+        Assert.Equal(0, provider.Logger!.Collector.Count);
+
+        // instead of this, users would get LogBuffer from DI and call Flush on it
+        var dlf = (Utils.DisposingLoggerFactory)factory;
+        var bufferManager = dlf.ServiceProvider.GetRequiredService<LogBuffer>();
+
+        bufferManager.Flush();
+
+        // 2 log records emitted because the buffer has been flushed
+        Assert.Equal(2, provider.Logger!.Collector.Count);
     }
 
     [Theory]
