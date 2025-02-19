@@ -44,20 +44,18 @@ public class GeneratorTests(ITestOutputHelper output)
             var stem = Path.GetFileNameWithoutExtension(inputFile);
             var goldenFileName = Path.ChangeExtension(stem, ".json");
             var goldenReportPath = Path.Combine("GoldenReports", goldenFileName);
-
-            var generatedReportPath = Path.Combine(Directory.GetCurrentDirectory(), ReportFilename);
-
+            var tmp = Path.GetTempFileName();
             if (File.Exists(goldenReportPath))
             {
-                var d = await RunGenerator(await File.ReadAllTextAsync(inputFile), options);
+                var d = await RunGenerator(await File.ReadAllTextAsync(inputFile), tmp, options);
                 Assert.Empty(d);
 
                 var golden = await File.ReadAllTextAsync(goldenReportPath);
-                var generated = await File.ReadAllTextAsync(generatedReportPath);
+                var generated = await File.ReadAllTextAsync(tmp);
 
                 if (golden != generated)
                 {
-                    output.WriteLine($"MISMATCH: golden report {goldenReportPath}, generated {generatedReportPath}");
+                    output.WriteLine($"MISMATCH: golden report {goldenReportPath}, generated {tmp}");
                     output.WriteLine("----");
                     output.WriteLine("golden:");
                     output.WriteLine(golden);
@@ -67,14 +65,14 @@ public class GeneratorTests(ITestOutputHelper output)
                     output.WriteLine("----");
                 }
 
-                File.Delete(generatedReportPath);
+                File.Delete(tmp);
                 Assert.Equal(golden, generated);
             }
             else
             {
                 // generate the golden file if it doesn't already exist
                 output.WriteLine($"Generating golden report: {goldenReportPath}");
-                _ = await RunGenerator(await File.ReadAllTextAsync(inputFile), options, reportFileName: goldenFileName);
+                _ = await RunGenerator(await File.ReadAllTextAsync(inputFile), tmp, options);
             }
         }
     }
@@ -89,7 +87,7 @@ public class GeneratorTests(ITestOutputHelper output)
             ["build_property.MetricsReportOutputPath"] = Path.GetTempPath()
         };
 
-        var d = await RunGenerator(await File.ReadAllTextAsync(inputFile), options);
+        var d = await RunGenerator(await File.ReadAllTextAsync(inputFile), options: options);
         Assert.Empty(d);
         Assert.False(File.Exists(Path.Combine(Path.GetTempPath(), ReportFilename)));
     }
@@ -109,7 +107,7 @@ public class GeneratorTests(ITestOutputHelper output)
             options.Add("build_property.MetricsReportOutputPath", string.Empty);
         }
 
-        var diags = await RunGenerator(await File.ReadAllTextAsync(inputFile), options);
+        var diags = await RunGenerator(await File.ReadAllTextAsync(inputFile), options: options);
         var diag = Assert.Single(diags);
         Assert.Equal("AUDREPGEN000", diag.Id);
         Assert.Equal(DiagnosticSeverity.Info, diag.Severity);
@@ -132,7 +130,7 @@ public class GeneratorTests(ITestOutputHelper output)
                 ["build_property.outputpath"] = outputPath
             };
 
-            var diags = await RunGenerator(await File.ReadAllTextAsync(inputFile), options);
+            var diags = await RunGenerator(await File.ReadAllTextAsync(inputFile), options: options);
             Assert.Empty(diags);
             Assert.True(File.Exists(Path.Combine(fullReportPath, ReportFilename)));
         }
@@ -141,12 +139,18 @@ public class GeneratorTests(ITestOutputHelper output)
             Directory.Delete(fullReportPath, recursive: true);
         }
     }
-
+    /// <summary>
+    /// Runs the generator on the given code.
+    /// </summary>
+    /// <param name="code">The coded that the generation will be based-on.</param>
+    /// <param name="outputFile">The output file.</param>
+    /// <param name="options">The analyzer options.</param>
+    /// <param name="cancellationToken">The cancellation Token.</param>
     private static async Task<IReadOnlyList<Diagnostic>> RunGenerator(
         string code,
-        Dictionary<string, string>? analyzerOptions = null,
-        CancellationToken cancellationToken = default,
-        string? reportFileName = null)
+        string? outputFile = null,
+        Dictionary<string, string>? options = null,
+        CancellationToken cancellationToken = default)
     {
         Assembly[] refs =
         [
@@ -156,15 +160,13 @@ public class GeneratorTests(ITestOutputHelper output)
             Assembly.GetAssembly(typeof(GaugeAttribute))!
        ];
 
-        var generator = reportFileName is null
-            ? new MetricsReportsGenerator()
-            : new MetricsReportsGenerator(reportFileName);
+
 
         var (d, _) = await RoslynTestUtils.RunGenerator(
-            generator,
+            new MetricsReportsGenerator(outputFile),
             refs,
             new[] { code },
-            new OptionsProvider(analyzerOptions),
+            new OptionsProvider(options),
             includeBaseReferences: true,
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
