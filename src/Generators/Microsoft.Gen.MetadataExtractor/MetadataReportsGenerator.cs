@@ -23,22 +23,30 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
     private const string RootNamespace = "build_property.rootnamespace";
     private const string FallbackFileName = "MetadataReport.json";
     private readonly string _fileName;
-
+    private string? _directory;
     /// <summary>
     /// Initializes a new instance of the <see cref="MetadataReportsGenerator"/> class.
     /// </summary>
     public MetadataReportsGenerator()
-    : this(FallbackFileName)
+    : this(null)
     {
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MetadataReportsGenerator"/> class.
     /// </summary>
-    /// <param name="reportFileName">The report file name.</param>
-    public MetadataReportsGenerator(string reportFileName)
+    /// <param name="filePath">The report file name.</param>
+    public MetadataReportsGenerator(string? filePath)
     {
-        _fileName = reportFileName;
+        if (filePath is not null)
+        {
+            _directory = Path.GetDirectoryName(filePath);
+            _fileName = Path.GetFileName(filePath);
+        }
+        else
+        {
+            _fileName = FallbackFileName;
+        }
     }
 
     /// <summary>
@@ -72,10 +80,12 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
         }
 
         var options = context.AnalyzerConfigOptions.GlobalOptions;
-        var path = GeneratorUtilities.TryRetrieveOptionsValue(options, ReportOutputPathMSBuildProperty, out var reportOutputPath)
+        _directory ??= GeneratorUtilities.TryRetrieveOptionsValue(options, ReportOutputPathMSBuildProperty, out var reportOutputPath)
             ? reportOutputPath!
             : GeneratorUtilities.GetDefaultReportOutputPath(options);
-        if (string.IsNullOrWhiteSpace(path))
+
+
+        if (string.IsNullOrWhiteSpace(_directory))
         {
             // Report diagnostic:
             var diagnostic = new DiagnosticDescriptor(
@@ -96,21 +106,21 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
         metadataReport.complianceReport = HandleComplianceReportGeneration(context, (TypeDeclarationSyntaxReceiver)context.SyntaxReceiver);
 
         StringBuilder reportStringBuilder = new StringBuilder()
-            .Append("{\n")
+            .AppendLine("{")
             .Append("\"Name\":")
             .Append($"\"{context.Compilation.AssemblyName!}\"")
-            .Append(",\n")
+            .AppendLine(",")
             .Append("\"ComplianceReport\": ")
             .Append((string.IsNullOrEmpty(metadataReport.complianceReport) ? "{}" : metadataReport.complianceReport))
-            .Append(",\n")
+            .AppendLine(",")
             .Append("\"MetricReport\": ")
-            .Append((string.IsNullOrEmpty(metadataReport.metricReport) ? "[]" : metadataReport.metricReport))
-            .Append("\n}\n");
+            .AppendLine((string.IsNullOrEmpty(metadataReport.metricReport) ? "[]" : metadataReport.metricReport))
+            .AppendLine("}");
 
 #pragma warning disable RS1035 // Do not use APIs banned for analyzers
-        _ = Directory.CreateDirectory(path);
+        _ = Directory.CreateDirectory(_directory);
 
-        File.WriteAllText(Path.Combine(path, _fileName), reportStringBuilder.ToString(), Encoding.UTF8);
+        File.WriteAllText(Path.Combine(_directory, _fileName), reportStringBuilder.ToString(), Encoding.UTF8);
 #pragma warning restore RS1035 // Do not use APIs banned for analyzers
 
     }
