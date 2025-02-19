@@ -1,6 +1,6 @@
 # AI Chat with Custom Data
 
-This project is an AI chat application that demonstrates how to chat with custom data using an AI language model. This was created using an early preview version of a new AI Starter Web App template for .NET, thanks for trying it out!
+This project is an AI chat application that demonstrates how to chat with custom data using an AI language model. Please note that this template is currently at an early preview stage. If you have feedback, please let us know!
 
 >[!NOTE]
 > Before you can run this project you'll need to configure API keys or endpoints to work with the providers you have chosen. See below for the details specific to your choices.
@@ -21,7 +21,7 @@ To call the OpenAI REST API, you will need an API key. To obtain one, first [cre
 Configure your API key for this project, using .NET User Secrets:
 
 1. In Visual Studio, right-click on your project in the Solution Explorer and select "Manage User Secrets".
-2. This will open a secrets.json file where you can store your API key securely, add the following key & value to the file:
+2. This will open a secrets.json file where you can store your API key without them being tracked in source control. Add the following key and value to the file:
    
 ```json
 {
@@ -41,13 +41,13 @@ dotnet user-secrets set OpenAI:Key YOUR-API-KEY
 #### ---#endif
 #### ---#if (IsOllama)
 ## Setting up a local environment using Ollama
-To enable a fully offline/local workflow, the .NET AI templates support Ollama, an application that allows you to run a set of AI models locally on your machine. Note: Ollama is an excellent open source product, but it is not maintained by Microsoft.
+This project is configured to use Ollama, an application that allows you to run AI models locally on your workstation. Note: Ollama is an excellent open source product, but it is not maintained by Microsoft.
 
-### 1. Install Ollama & Run
+### 1. Install Ollama
 First, download and install Ollama from their [official website](https://www.ollama.com). Follow the installation instructions specific to your operating system.
 
 ### 2. Choose and Install Models
-This project uses the `llama3.2` and `all-minilm` language modes. To install these models, use the following commands in your terminal once Ollama has been started:
+This project uses the `llama3.2` and `all-minilm` language modes. To install these models, use the following commands in your terminal once Ollama has been installed:
 
 ```sh
 ollama pull llama3.2
@@ -64,10 +64,10 @@ Once the models are installed, you can start using them in your application. Ref
 To use Azure OpenAI, you will need an Azure account and an Azure OpenAI Service resource. For detailed instructions, see the [Azure OpenAI Service documentation](https://learn.microsoft.com/azure/ai-services/openai/how-to/create-resource).
 
 ### 1. Create an Azure OpenAI Service Resource
-Follow the instructions in the [Azure portal](https://portal.azure.com/) to create an Azure OpenAI Service resource.
+[Create an Azure OpenAI Service resource](https://learn.microsoft.com/azure/ai-services/openai/how-to/create-resource?pivots=web-portal).
 
 ### 2. Deploy the Models
-Deploy the `gpt-4o-mini` and `text-embedding-3-small` models to your Azure OpenAI Service resource. When creating those deployments, give them the same names as the models (`gpt-40-mini` and `text-embedding-3-small`). See the Azure OpenAI documentation to learn how to [Deploy a model](https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/create-resource?pivots=web-portal#deploy-a-model).
+Deploy the `gpt-4o-mini` and `text-embedding-3-small` models to your Azure OpenAI Service resource. When creating those deployments, give them the same names as the models (`gpt-4o-mini` and `text-embedding-3-small`). See the Azure OpenAI documentation to learn how to [Deploy a model](https://learn.microsoft.com/azure/ai-services/openai/how-to/create-resource?pivots=web-portal#deploy-a-model).
 
 #### ---#if (UseManagedIdentity)
 ### 3. Configure Azure OpenAI for Keyless Authentication
@@ -76,14 +76,14 @@ This template is configured to use keyless authentication (also known as Managed
 ### 4. Configure Azure OpenAI Endpoint
 Configure your Azure OpenAI endpoint for this project, using .NET User Secrets:
    1.  In the Azure Portal, navigate to your Azure OpenAI resource.
-   2.  Copy the "Endpoint" URL from the "Keys & Endpoint" section.
+   2.  Copy the "Endpoint" URL from the "Keys and Endpoint" section.
 #### ---#if (hostIdentifier == "vs")
    3.  In Visual Studio, right-click on your project in the Solution Explorer and select "Manage User Secrets".
-   4.  This will open a `secrets.json` file where you can store your Azure OpenAI endpoint securely. Add the following key & value to the file:
+   4.  This will open a `secrets.json` file where you can store your Azure OpenAI endpoint without it being tracked in source control. Add the following key and value to the file:
 
    ```json
    {
-   "AzureOpenAI:Endpoint": "YOUR-AZURE-OPENAI-ENDPOINT"
+  "AzureOpenAI:Endpoint": "YOUR-AZURE-OPENAI-ENDPOINT"
    }
    ```
 #### ---#else
@@ -100,10 +100,10 @@ Configure your Azure OpenAI endpoint for this project, using .NET User Secrets:
 ### 3. Configure API Key and Endpoint
 Configure your Azure OpenAI API key and endpoint for this project, using .NET User Secrets:
    1.  In the Azure Portal, navigate to your Azure OpenAI resource.
-   2.  Copy the "Endpoint" URL and "Key 1" from the "Keys & Endpoint" section.
+   2.  Copy the "Endpoint" URL and "Key 1" from the "Keys and Endpoint" section.
 #### ---#if (hostIdentifier == "vs")
    3. In Visual Studio, right-click on your project in the Solution Explorer and select "Manage User Secrets".
-   4. This will open a secrets.json file where you can store your API key and endpoint securely, add the following keys & values to the file:
+   4. This will open a secrets.json file where you can store your API key and endpoint without it being tracked in source control. Add the following keys & values to the file:
    
    ```json
    {
@@ -168,7 +168,7 @@ This template is configured to use keyless authentication (also known as Managed
    2.  Copy the "Endpoint" URL and "Primary admin key" from the "Keys" section.
 #### ---#if (hostIdentifier == "vs")
    3. In Visual Studio, right-click on your project in the Solution Explorer and select "Manage User Secrets".
-   4. This will open a `secrets.json` file where you can store your API key and endpoint securely, add the following keys & values to the file:
+   4. This will open a `secrets.json` file where you can store your API key and endpoint without them being tracked in source control. Add the following keys and values to the file:
 
    ```json
    {
