@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,7 +25,32 @@ public static class ChatClientExtensions
     {
         _ = Throw.IfNull(client);
 
-        return (TService?)client.GetService(typeof(TService), serviceKey);
+        return client.GetService(typeof(TService), serviceKey) is TService service ? service : default;
+    }
+
+    /// <summary>
+    /// Asks the <see cref="IChatClient"/> for an object of type <typeparamref name="TService"/>
+    /// and throws an exception if one isn't available.
+    /// </summary>
+    /// <typeparam name="TService">The type of the object to be retrieved.</typeparam>
+    /// <param name="client">The client.</param>
+    /// <param name="serviceKey">An optional key that can be used to help identify the target service.</param>
+    /// <returns>The found object.</returns>
+    /// <exception cref="InvalidOperationException">No service of the requested type for the specified key is available.</exception>
+    /// <remarks>
+    /// The purpose of this method is to allow for the retrieval of strongly typed services that may be provided by the <see cref="IChatClient"/>,
+    /// including itself or any services it might be wrapping.
+    /// </remarks>
+    public static TService GetRequiredService<TService>(this IChatClient client, object? serviceKey = null)
+    {
+        _ = Throw.IfNull(client);
+
+        if (client.GetService(typeof(TService), serviceKey) is TService service)
+        {
+            return service;
+        }
+
+        throw Throw.CreateMissingServiceException<TService>(serviceKey);
     }
 
     /// <summary>Sends a user chat text message and returns the response messages.</summary>

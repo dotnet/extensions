@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable S2302 // "nameof" should be used
+#pragma warning disable S4136 // Method overloads should be grouped together
 
 namespace Microsoft.Extensions.AI;
 
@@ -31,7 +32,35 @@ public static class EmbeddingGeneratorExtensions
     {
         _ = Throw.IfNull(generator);
 
-        return (TService?)generator.GetService(typeof(TService), serviceKey);
+        return generator.GetService(typeof(TService), serviceKey) is TService service ? service : default;
+    }
+
+    /// <summary>
+    /// Asks the <see cref="IEmbeddingGenerator{TInput,TEmbedding}"/> for an object of type <typeparamref name="TService"/>
+    /// and throws an exception if one isn't available.
+    /// </summary>
+    /// <typeparam name="TInput">The type from which embeddings will be generated.</typeparam>
+    /// <typeparam name="TEmbedding">The numeric type of the embedding data.</typeparam>
+    /// <typeparam name="TService">The type of the object to be retrieved.</typeparam>
+    /// <param name="generator">The generator.</param>
+    /// <param name="serviceKey">An optional key that can be used to help identify the target service.</param>
+    /// <returns>The found object.</returns>
+    /// <exception cref="InvalidOperationException">No service of the requested type for the specified key is available.</exception>
+    /// <remarks>
+    /// The purpose of this method is to allow for the retrieval of strongly typed services that may be provided by the
+    /// <see cref="IEmbeddingGenerator{TInput,TEmbedding}"/>, including itself or any services it might be wrapping.
+    /// </remarks>
+    public static TService GetRequiredService<TInput, TEmbedding, TService>(this IEmbeddingGenerator<TInput, TEmbedding> generator, object? serviceKey = null)
+        where TEmbedding : Embedding
+    {
+        _ = Throw.IfNull(generator);
+
+        if (generator.GetService(typeof(TService), serviceKey) is TService service)
+        {
+            return service;
+        }
+
+        throw Throw.CreateMissingServiceException<TService>(serviceKey);
     }
 
     // The following overload exists purely to work around the lack of partial generic type inference.
@@ -51,6 +80,22 @@ public static class EmbeddingGeneratorExtensions
     /// </remarks>
     public static TService? GetService<TService>(this IEmbeddingGenerator<string, Embedding<float>> generator, object? serviceKey = null) =>
         GetService<string, Embedding<float>, TService>(generator, serviceKey);
+
+    /// <summary>
+    /// Asks the <see cref="IEmbeddingGenerator{TInput,TEmbedding}"/> for an object of type <typeparamref name="TService"/>
+    /// and throws an exception if one isn't available.
+    /// </summary>
+    /// <typeparam name="TService">The type of the object to be retrieved.</typeparam>
+    /// <param name="generator">The generator.</param>
+    /// <param name="serviceKey">An optional key that can be used to help identify the target service.</param>
+    /// <returns>The found object.</returns>
+    /// <exception cref="InvalidOperationException">No service of the requested type for the specified key is available.</exception>
+    /// <remarks>
+    /// The purpose of this method is to allow for the retrieval of strongly typed services that may be provided by the
+    /// <see cref="IEmbeddingGenerator{TInput,TEmbedding}"/>, including itself or any services it might be wrapping.
+    /// </remarks>
+    public static TService GetRequiredService<TService>(this IEmbeddingGenerator<string, Embedding<float>> generator, object? serviceKey = null) =>
+        GetRequiredService<string, Embedding<float>, TService>(generator, serviceKey);
 
     /// <summary>Generates an embedding vector from the specified <paramref name="value"/>.</summary>
     /// <typeparam name="TInput">The type from which embeddings will be generated.</typeparam>
