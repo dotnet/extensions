@@ -88,8 +88,8 @@ public class GeneratorTests(ITestOutputHelper output)
                 var d = await RunGenerator(await File.ReadAllTextAsync(inputFile), options);
                 Assert.Empty(d);
 
-                var golden = await File.ReadAllTextAsync(goldenReportPath, Encoding.UTF8);
-                var generated = await File.ReadAllTextAsync(generatedReportPath, Encoding.UTF8);
+                var golden = await File.ReadAllTextAsync(goldenReportPath);
+                var generated = await File.ReadAllTextAsync(generatedReportPath);
 
                 if (golden != generated)
                 {
