@@ -7,7 +7,6 @@ using System.Diagnostics.Metrics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -257,5 +256,10 @@ public class GeneratorTests(ITestOutputHelper output)
         public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => throw new NotSupportedException();
         public override AnalyzerConfigOptions GetOptions(AdditionalText textFile) => throw new NotSupportedException();
     }
-    private string NormalizeEscapes(string input) => input.Replace("\r\n", "\n").Replace("\r", "\n");
+
+    /// <summary>
+    /// Standardizes line endings by replacing \r\n with \n across different operating systems.
+    /// </summary>
+    private static string NormalizeEscapes(string input) => input.Replace("\r\n", "\n").Replace("\r", "\n");
+
 }
