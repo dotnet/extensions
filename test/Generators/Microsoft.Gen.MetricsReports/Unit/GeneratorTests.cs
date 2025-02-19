@@ -139,6 +139,7 @@ public class GeneratorTests(ITestOutputHelper output)
             Directory.Delete(fullReportPath, recursive: true);
         }
     }
+
     /// <summary>
     /// Runs the generator on the given code.
     /// </summary>
@@ -159,8 +160,6 @@ public class GeneratorTests(ITestOutputHelper output)
             Assembly.GetAssembly(typeof(HistogramAttribute))!,
             Assembly.GetAssembly(typeof(GaugeAttribute))!
        ];
-
-
 
         var (d, _) = await RoslynTestUtils.RunGenerator(
             new MetricsReportsGenerator(outputFile),
