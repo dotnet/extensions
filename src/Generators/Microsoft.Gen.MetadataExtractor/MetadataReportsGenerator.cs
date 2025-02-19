@@ -24,6 +24,7 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
     private const string FallbackFileName = "MetadataReport.json";
     private readonly string _fileName;
     private string? _directory;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="MetadataReportsGenerator"/> class.
     /// </summary>
