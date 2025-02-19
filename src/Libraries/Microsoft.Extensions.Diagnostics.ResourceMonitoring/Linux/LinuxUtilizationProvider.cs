@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -14,6 +15,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 {
     private const double One = 1.0;
     private const long Hundred = 100L;
+    private const double NanosecondsInSecond = 1_000_000_000;
 
     private readonly object _cpuLocker = new();
     private readonly object _memoryLocker = new();
@@ -66,6 +68,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         var meter = meterFactory.Create(ResourceUtilizationInstruments.MeterName);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
+        _ = meter.CreateObservableCounter(name: ResourceUtilizationInstruments.ContainerCpuTime, observeValues: GetCpuTime, unit: "s", description: "CPU time used by the container.");
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization, observeValue: () => CpuUtilization() * _scaleRelativeToCpuLimit, unit: "1");
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization, observeValue: MemoryUtilization, unit: "1");
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuRequestUtilization, observeValue: () => CpuUtilization() * _scaleRelativeToCpuRequest, unit: "1");
@@ -166,5 +169,14 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
             kernelTimeSinceStart: TimeSpan.Zero,
             userTimeSinceStart: TimeSpan.FromTicks((long)(cgroupTime / Hundred * _scaleRelativeToCpuRequestForTrackerApi)),
             memoryUsageInBytes: memoryUsed);
+    }
+
+    private IEnumerable<Measurement<double>> GetCpuTime()
+    {
+        long hostCpuTime = _parser.GetHostCpuUsageInNanoseconds();
+        long cgroupCpuTime = _parser.GetCgroupCpuUsageInNanoseconds();
+
+        yield return new(cgroupCpuTime / NanosecondsInSecond, [new KeyValuePair<string, object?>("cpu.mode", "user")]);
+        yield return new(hostCpuTime / NanosecondsInSecond, [new KeyValuePair<string, object?>("cpu.mode", "system")]);
     }
 }
