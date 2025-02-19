@@ -41,7 +41,7 @@ public static class ChatClientExtensions
     /// <exception cref="ArgumentNullException"><paramref name="serviceType"/> is <see langword="null"/>.</exception>
     /// <exception cref="InvalidOperationException">No service of the requested type for the specified key is available.</exception>
     /// <remarks>
-    /// The purpose of this method is to allow for the retrieval of strongly typed services that may be provided by the <see cref="IChatClient"/>,
+    /// The purpose of this method is to allow for the retrieval of services that are required to be provided by the <see cref="IChatClient"/>,
     /// including itself or any services it might be wrapping.
     /// </remarks>
     public static object GetRequiredService(this IChatClient client, Type serviceType, object? serviceKey = null)
@@ -65,7 +65,7 @@ public static class ChatClientExtensions
     /// <exception cref="ArgumentNullException"><paramref name="client"/> is <see langword="null"/>.</exception>
     /// <exception cref="InvalidOperationException">No service of the requested type for the specified key is available.</exception>
     /// <remarks>
-    /// The purpose of this method is to allow for the retrieval of strongly typed services that may be provided by the <see cref="IChatClient"/>,
+    /// The purpose of this method is to allow for the retrieval of strongly typed services that are required to be provided by the <see cref="IChatClient"/>,
     /// including itself or any services it might be wrapping.
     /// </remarks>
     public static TService GetRequiredService<TService>(this IChatClient client, object? serviceKey = null)
