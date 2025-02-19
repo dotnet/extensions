@@ -31,13 +31,13 @@ public class EvaluatorTests
                 ResponseFormat = ChatResponseFormat.Text
             };
 
-        var options = new RelevanceTruthAndCompletenessEvaluatorOptions(includeReasoning: true);
-        IEvaluator rtcEvaluator = new RelevanceTruthAndCompletenessEvaluator(options);
-        IEvaluator coherenceEvaluator = new CoherenceEvaluator();
-        IEvaluator fluencyEvaluator = new FluencyEvaluator();
-
         if (Settings.Current.Configured)
         {
+            var options = new RelevanceTruthAndCompletenessEvaluatorOptions(includeReasoning: true);
+            IEvaluator rtcEvaluator = new RelevanceTruthAndCompletenessEvaluator(options);
+            IEvaluator coherenceEvaluator = new CoherenceEvaluator();
+            IEvaluator fluencyEvaluator = new FluencyEvaluator();
+
             _reportingConfiguration =
                 DiskBasedReportingConfiguration.Create(
                     storageRootPath: Settings.Current.StorageRootPath,
