@@ -65,6 +65,53 @@ public static class AIJsonUtilitiesTests
     }
 
     [Fact]
+    public static void AIJsonSchemaCreateOptions_UsesStructuralEquality()
+    {
+        AssertEqual(new AIJsonSchemaCreateOptions(), new AIJsonSchemaCreateOptions());
+
+        foreach (PropertyInfo property in typeof(AIJsonSchemaCreateOptions).GetProperties(BindingFlags.Instance | BindingFlags.Public))
+        {
+            AIJsonSchemaCreateOptions options1 = new AIJsonSchemaCreateOptions();
+            AIJsonSchemaCreateOptions options2 = new AIJsonSchemaCreateOptions();
+            switch (property.GetValue(AIJsonSchemaCreateOptions.Default))
+            {
+                case bool booleanFlag:
+                    property.SetValue(options1, !booleanFlag);
+                    property.SetValue(options2, !booleanFlag);
+                    break;
+
+                case null when property.PropertyType == typeof(Func<AIJsonSchemaCreateContext, JsonNode, JsonNode>):
+                    Func<AIJsonSchemaCreateContext, JsonNode, JsonNode> transformer = static (context, schema) => (JsonNode)true;
+                    property.SetValue(options1, transformer);
+                    property.SetValue(options2, transformer);
+                    break;
+
+                default:
+                    Assert.Fail($"Unexpected property type: {property.PropertyType}");
+                    break;
+            }
+
+            AssertEqual(options1, options2);
+            AssertNotEqual(AIJsonSchemaCreateOptions.Default, options1);
+        }
+
+        static void AssertEqual(AIJsonSchemaCreateOptions x, AIJsonSchemaCreateOptions y)
+        {
+            Assert.Equal(x.GetHashCode(), y.GetHashCode());
+            Assert.Equal(x, x);
+            Assert.Equal(y, y);
+            Assert.Equal(x, y);
+            Assert.Equal(y, x);
+        }
+
+        static void AssertNotEqual(AIJsonSchemaCreateOptions x, AIJsonSchemaCreateOptions y)
+        {
+            Assert.NotEqual(x, y);
+            Assert.NotEqual(y, x);
+        }
+    }
+
+    [Fact]
     public static void CreateJsonSchema_DefaultParameters_GeneratesExpectedJsonSchema()
     {
         JsonElement expected = JsonDocument.Parse("""
