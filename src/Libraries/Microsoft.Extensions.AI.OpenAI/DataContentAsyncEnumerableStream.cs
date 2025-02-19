@@ -68,7 +68,7 @@ internal sealed class DataContentAsyncEnumerableStream : Stream
         try
         {
             int bytesRead;
-            while ((bytesRead = await ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false)) != 0)
+            while ((bytesRead = await ReadAsync(new Memory<byte>(buffer), cancellationToken).ConfigureAwait(false)) != 0)
             {
                 await destination.WriteAsync(new ReadOnlyMemory<byte>(buffer, 0, bytesRead), cancellationToken).ConfigureAwait(false);
             }
