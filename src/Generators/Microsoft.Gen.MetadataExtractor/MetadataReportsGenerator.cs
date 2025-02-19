@@ -80,7 +80,7 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
             // Report diagnostic:
             var diagnostic = new DiagnosticDescriptor(
                 DiagnosticIds.AuditReports.AUDREPGEN000,
-                "MetricsReports generator couldn't resolve output path for the report. It won't be generated.",
+                "MetadataReport generator couldn't resolve output path for the report. It won't be generated.",
                 "Both <MetadataReportOutputPath> and <OutputPath> MSBuild properties are not set. The report won't be generated.",
                 nameof(DiagnosticIds.AuditReports),
                 DiagnosticSeverity.Info,
@@ -108,6 +108,8 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
             .Append("\n}\n");
 
 #pragma warning disable RS1035 // Do not use APIs banned for analyzers
+        _ = Directory.CreateDirectory(path);
+
         File.WriteAllText(Path.Combine(path, _fileName), reportStringBuilder.ToString(), Encoding.UTF8);
 #pragma warning restore RS1035 // Do not use APIs banned for analyzers
 
