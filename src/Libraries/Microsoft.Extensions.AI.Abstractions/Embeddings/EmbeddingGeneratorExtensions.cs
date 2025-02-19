@@ -23,16 +23,47 @@ public static class EmbeddingGeneratorExtensions
     /// <param name="generator">The generator.</param>
     /// <param name="serviceKey">An optional key that can be used to help identify the target service.</param>
     /// <returns>The found object, otherwise <see langword="null"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
     /// <remarks>
     /// The purpose of this method is to allow for the retrieval of strongly typed services that may be provided by the
     /// <see cref="IEmbeddingGenerator{TInput,TEmbedding}"/>, including itself or any services it might be wrapping.
     /// </remarks>
-    public static TService? GetService<TInput, TEmbedding, TService>(this IEmbeddingGenerator<TInput, TEmbedding> generator, object? serviceKey = null)
+    public static TService? GetService<TInput, TEmbedding, TService>(
+        this IEmbeddingGenerator<TInput, TEmbedding> generator, object? serviceKey = null)
         where TEmbedding : Embedding
     {
         _ = Throw.IfNull(generator);
 
         return generator.GetService(typeof(TService), serviceKey) is TService service ? service : default;
+    }
+
+    /// <summary>
+    /// Asks the <see cref="IEmbeddingGenerator{TInput,TEmbedding}"/> for an object of the specified type <paramref name="serviceType"/>
+    /// and throws an exception if one isn't available.
+    /// </summary>
+    /// <typeparam name="TInput">The type from which embeddings will be generated.</typeparam>
+    /// <typeparam name="TEmbedding">The numeric type of the embedding data.</typeparam>
+    /// <param name="generator">The generator.</param>
+    /// <param name="serviceType">The type of object being requested.</param>
+    /// <param name="serviceKey">An optional key that can be used to help identify the target service.</param>
+    /// <returns>The found object.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceType"/> is <see langword="null"/>.</exception>
+    /// <exception cref="InvalidOperationException">No service of the requested type for the specified key is available.</exception>
+    /// <remarks>
+    /// The purpose of this method is to allow for the retrieval of strongly typed services that may be provided by the
+    /// <see cref="IEmbeddingGenerator{TInput,TEmbedding}"/>, including itself or any services it might be wrapping.
+    /// </remarks>
+    public static object GetRequiredService<TInput, TEmbedding>(
+        this IEmbeddingGenerator<TInput, TEmbedding> generator, Type serviceType, object? serviceKey = null)
+        where TEmbedding : Embedding
+    {
+        _ = Throw.IfNull(generator);
+        _ = Throw.IfNull(serviceType);
+
+        return
+            generator.GetService(serviceType, serviceKey) ??
+            throw Throw.CreateMissingServiceException(serviceType, serviceKey);
     }
 
     /// <summary>
@@ -45,25 +76,27 @@ public static class EmbeddingGeneratorExtensions
     /// <param name="generator">The generator.</param>
     /// <param name="serviceKey">An optional key that can be used to help identify the target service.</param>
     /// <returns>The found object.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
     /// <exception cref="InvalidOperationException">No service of the requested type for the specified key is available.</exception>
     /// <remarks>
     /// The purpose of this method is to allow for the retrieval of strongly typed services that may be provided by the
     /// <see cref="IEmbeddingGenerator{TInput,TEmbedding}"/>, including itself or any services it might be wrapping.
     /// </remarks>
-    public static TService GetRequiredService<TInput, TEmbedding, TService>(this IEmbeddingGenerator<TInput, TEmbedding> generator, object? serviceKey = null)
+    public static TService GetRequiredService<TInput, TEmbedding, TService>(
+        this IEmbeddingGenerator<TInput, TEmbedding> generator, object? serviceKey = null)
         where TEmbedding : Embedding
     {
         _ = Throw.IfNull(generator);
 
-        if (generator.GetService(typeof(TService), serviceKey) is TService service)
+        if (generator.GetService(typeof(TService), serviceKey) is not TService service)
         {
-            return service;
+            throw Throw.CreateMissingServiceException(typeof(TService), serviceKey);
         }
 
-        throw Throw.CreateMissingServiceException<TService>(serviceKey);
+        return service;
     }
 
-    // The following overload exists purely to work around the lack of partial generic type inference.
+    // The following overloads exist purely to work around the lack of partial generic type inference.
     // Given an IEmbeddingGenerator<TInput, TEmbedding> generator, to call GetService with TService, you still need
     // to re-specify both TInput and TEmbedding, e.g. generator.GetService<string, Embedding<float>, TService>.
     // The case of string/Embedding<float> is by far the most common case today, so this overload exists as an
@@ -74,6 +107,7 @@ public static class EmbeddingGeneratorExtensions
     /// <param name="generator">The generator.</param>
     /// <param name="serviceKey">An optional key that can be used to help identify the target service.</param>
     /// <returns>The found object, otherwise <see langword="null"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
     /// <remarks>
     /// The purpose of this method is to allow for the retrieval of strongly typed services that may be provided by the
     /// <see cref="IEmbeddingGenerator{TInput,TEmbedding}"/>, including itself or any services it might be wrapping.
@@ -89,6 +123,7 @@ public static class EmbeddingGeneratorExtensions
     /// <param name="generator">The generator.</param>
     /// <param name="serviceKey">An optional key that can be used to help identify the target service.</param>
     /// <returns>The found object.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
     /// <exception cref="InvalidOperationException">No service of the requested type for the specified key is available.</exception>
     /// <remarks>
     /// The purpose of this method is to allow for the retrieval of strongly typed services that may be provided by the
@@ -105,6 +140,9 @@ public static class EmbeddingGeneratorExtensions
     /// <param name="options">The embedding generation options to configure the request.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The generated embedding for the specified <paramref name="value"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/>.</exception>
+    /// <exception cref="InvalidOperationException">The generator did not produce exactly one embedding.</exception>
     /// <remarks>
     /// This operation is equivalent to using <see cref="GenerateEmbeddingAsync"/> and returning the
     /// resulting <see cref="Embedding{T}"/>'s <see cref="Embedding{T}.Vector"/> property.
@@ -129,6 +167,9 @@ public static class EmbeddingGeneratorExtensions
     /// <returns>
     /// The generated embedding for the specified <paramref name="value"/>.
     /// </returns>
+    /// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/>.</exception>
+    /// <exception cref="InvalidOperationException">The generator did not produce exactly one embedding.</exception>
     /// <remarks>
     /// This operations is equivalent to using <see cref="IEmbeddingGenerator{TInput, TEmbedding}.GenerateAsync"/> with a
     /// collection composed of the single <paramref name="value"/> and then returning the first embedding element from the
@@ -170,6 +211,9 @@ public static class EmbeddingGeneratorExtensions
     /// <param name="options">The embedding generation options to configure the request.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An array containing tuples of the input values and the associated generated embeddings.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="values"/> is <see langword="null"/>.</exception>
+    /// <exception cref="InvalidOperationException">The generator did not produce one embedding for each input value.</exception>
     public static async Task<(TInput Value, TEmbedding Embedding)[]> GenerateAndZipAsync<TInput, TEmbedding>(
         this IEmbeddingGenerator<TInput, TEmbedding> generator,
         IEnumerable<TInput> values,
