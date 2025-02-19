@@ -21,19 +21,19 @@ internal partial class DefaultHybridCache
 
     internal IHybridCacheSerializer<T> GetSerializer<T>()
     {
-        return _serializers.TryGetValue(typeof(T), out var serializer)
+        return _serializers.TryGetValue(typeof(T), out object? serializer)
             ? Unsafe.As<IHybridCacheSerializer<T>>(serializer) : ResolveAndAddSerializer(this);
 
         static IHybridCacheSerializer<T> ResolveAndAddSerializer(DefaultHybridCache @this)
         {
             // It isn't critical that we get only one serializer instance during start-up; what matters
             // is that we don't get a new serializer instance *every time*.
-            var serializer = @this._services.GetService<IHybridCacheSerializer<T>>();
+            IHybridCacheSerializer<T>? serializer = @this._services.GetService<IHybridCacheSerializer<T>>();
             if (serializer is null)
             {
-                foreach (var factory in @this._serializerFactories)
+                foreach (IHybridCacheSerializerFactory factory in @this._serializerFactories)
                 {
-                    if (factory.TryCreateSerializer<T>(out var current))
+                    if (factory.TryCreateSerializer<T>(out IHybridCacheSerializer<T>? current))
                     {
                         serializer = current;
                         break; // we've already reversed the factories, so: the first hit is what we want
@@ -67,7 +67,7 @@ internal partial class DefaultHybridCache
 
             serializer.Serialize(value, writer);
 
-            buffer = new(writer.DetachCommitted(out var length), 0, length, returnToPool: true); // remove buffer ownership from the writer
+            buffer = new(writer.DetachCommitted(out int length), 0, length, returnToPool: true); // remove buffer ownership from the writer
             writer.Dispose(); // we're done with the writer
             return true;
         }

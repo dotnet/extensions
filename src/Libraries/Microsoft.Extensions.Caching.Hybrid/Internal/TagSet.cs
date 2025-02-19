@@ -33,7 +33,7 @@ internal readonly struct TagSet
     internal TagSet(string[] tags)
     {
         Debug.Assert(tags is { Length: > 1 }, "should be non-trivial array");
-        foreach (var tag in tags)
+        foreach (string tag in tags)
         {
             Validate(tag);
         }
@@ -111,7 +111,7 @@ internal readonly struct TagSet
                     return new TagSet(list[0]);
                 case 1:
                     // avoid the GetEnumerator() alloc
-                    var arr = _perThreadSingleLengthArray ??= new string[1];
+                    string[] arr = _perThreadSingleLengthArray ??= new string[1];
                     collection.CopyTo(arr, 0);
                     return new TagSet(arr[0]);
                 default:
@@ -122,13 +122,13 @@ internal readonly struct TagSet
         }
 
         // perhaps overkill, but: avoid as much as possible when unrolling
-        using var iterator = tags.GetEnumerator();
+        using IEnumerator<string> iterator = tags.GetEnumerator();
         if (!iterator.MoveNext())
         {
             return Empty;
         }
 
-        var firstTag = iterator.Current;
+        string firstTag = iterator.Current;
         if (!iterator.MoveNext())
         {
             return new TagSet(firstTag);
@@ -142,7 +142,7 @@ internal readonly struct TagSet
             if (count == oversized.Length)
             {
                 // grow
-                var bigger = ArrayPool<string>.Shared.Rent(count * 2);
+                string[] bigger = ArrayPool<string>.Shared.Rent(count * 2);
                 oversized.CopyTo(bigger, 0);
                 ArrayPool<string>.Shared.Return(oversized);
                 oversized = bigger;
@@ -158,7 +158,7 @@ internal readonly struct TagSet
         }
         else
         {
-            var final = oversized.AsSpan(0, count).ToArray();
+            string[] final = oversized.AsSpan(0, count).ToArray();
             ArrayPool<string>.Shared.Return(oversized);
             return new TagSet(final);
         }
@@ -166,7 +166,7 @@ internal readonly struct TagSet
 
     internal string[] ToArray() // for testing only
     {
-        var arr = new string[Count];
+        string[] arr = new string[Count];
         CopyTo(arr);
         return arr;
     }

@@ -81,7 +81,7 @@ internal static class HybridCachePayload
                 length += GetMaxStringLength(tags.GetSinglePrechecked().Length);
                 break;
             default:
-                foreach (var tag in tags.GetSpanPrechecked())
+                foreach (string tag in tags.GetSpanPrechecked())
                 {
                     length += GetMaxStringLength(tag.Length);
                 }
@@ -103,12 +103,12 @@ internal static class HybridCachePayload
     public static int Write(byte[] destination,
         string key, long creationTime, TimeSpan duration, PayloadFlags flags, TagSet tags, ReadOnlySequence<byte> payload)
     {
-        var payloadLength = checked((int)payload.Length);
+        int payloadLength = checked((int)payload.Length);
 
         BinaryPrimitives.WriteUInt16LittleEndian(destination.AsSpan(0, 2), UInt16SentinelPrefixPair);
         BinaryPrimitives.WriteUInt16LittleEndian(destination.AsSpan(2, 2), (ushort)_entropySource.Next(0, 0x010000)); // Next is exclusive at RHS
         BinaryPrimitives.WriteInt64LittleEndian(destination.AsSpan(4, 8), creationTime);
-        var len = 12;
+        int len = 12;
 
         long durationTicks = duration.Ticks;
         if (durationTicks < 0)
@@ -129,7 +129,7 @@ internal static class HybridCachePayload
                 WriteString(destination, ref len, tags.GetSinglePrechecked());
                 break;
             default:
-                foreach (var tag in tags.GetSpanPrechecked())
+                foreach (string tag in tags.GetSpanPrechecked())
                 {
                     WriteString(destination, ref len, tag);
                 }
@@ -161,7 +161,7 @@ internal static class HybridCachePayload
 
         static void WriteString(byte[] target, ref int offset, string value)
         {
-            var len = Encoding.GetByteCount(value);
+            int len = Encoding.GetByteCount(value);
             Write7BitEncodedInt64(target, ref offset, (ulong)len);
             offset += Encoding.GetBytes(value, 0, value.Length, target, offset);
         }
@@ -194,7 +194,7 @@ internal static class HybridCachePayload
             return HybridCachePayloadParseResult.FormatNotRecognized;
         }
 
-        var now = cache.CurrentTimestamp();
+        long now = cache.CurrentTimestamp();
         char[] scratch = [];
         try
         {
@@ -202,7 +202,7 @@ internal static class HybridCachePayload
             {
                 case UInt16SentinelPrefixPair:
                     entropy = BinaryPrimitives.ReadUInt16LittleEndian(bytes.Slice(2));
-                    var creationTime = BinaryPrimitives.ReadInt64LittleEndian(bytes.Slice(4));
+                    long creationTime = BinaryPrimitives.ReadInt64LittleEndian(bytes.Slice(4));
                     bytes = bytes.Slice(12); // the end of the fixed part
 
                     if (cache.IsWildcardExpired(creationTime))
@@ -210,7 +210,7 @@ internal static class HybridCachePayload
                         return HybridCachePayloadParseResult.ExpiredByWildcard;
                     }
 
-                    if (!TryRead7BitEncodedInt64(ref bytes, out var u64)) // flags
+                    if (!TryRead7BitEncodedInt64(ref bytes, out ulong u64)) // flags
                     {
                         return HybridCachePayloadParseResult.InvalidData;
                     }
@@ -222,9 +222,9 @@ internal static class HybridCachePayload
                         return HybridCachePayloadParseResult.InvalidData;
                     }
 
-                    var payloadLength = (int)u64;
+                    int payloadLength = (int)u64;
 
-                    if (!TryRead7BitEncodedInt64(ref bytes, out var duration)) // duration
+                    if (!TryRead7BitEncodedInt64(ref bytes, out ulong duration)) // duration
                     {
                         return HybridCachePayloadParseResult.InvalidData;
                     }
@@ -239,9 +239,9 @@ internal static class HybridCachePayload
                         return HybridCachePayloadParseResult.InvalidData;
                     }
 
-                    var tagCount = (int)u64;
+                    int tagCount = (int)u64;
 
-                    if (!TryReadString(ref bytes, ref scratch, out var stringSpan))
+                    if (!TryReadString(ref bytes, ref scratch, out ReadOnlySpan<char> stringSpan))
                     {
                         return HybridCachePayloadParseResult.InvalidData;
                     }
@@ -260,7 +260,7 @@ internal static class HybridCachePayload
 
                         bool isTagExpired;
                         bool isPending;
-                        if (knownTags.TryFind(stringSpan, out var tagString))
+                        if (knownTags.TryFind(stringSpan, out string? tagString))
                         {
                             // prefer to re-use existing tag strings when they exist
                             isTagExpired = cache.IsTagExpired(tagString, creationTime, out isPending);
@@ -276,7 +276,7 @@ internal static class HybridCachePayload
                             // might be expired, but the operation is still in-flight
                             if (pendingTagsCount == pendingTagBuffer.Length)
                             {
-                                var newBuffer = ArrayPool<string>.Shared.Rent(Math.Max(4, pendingTagsCount * 2));
+                                string[] newBuffer = ArrayPool<string>.Shared.Rent(Math.Max(4, pendingTagsCount * 2));
                                 pendingTagBuffer.CopyTo(newBuffer, 0);
                                 ArrayPool<string>.Shared.Return(pendingTagBuffer);
                                 pendingTagBuffer = newBuffer;
@@ -297,7 +297,7 @@ internal static class HybridCachePayload
                         return HybridCachePayloadParseResult.InvalidData;
                     }
 
-                    var start = source.Offset + source.Count - (payloadLength + 2);
+                    int start = source.Offset + source.Count - (payloadLength + 2);
                     payload = new(source.Array!, start, payloadLength);
 
                     // finalize the pending tag buffer (in-flight tag expirations)
@@ -309,7 +309,7 @@ internal static class HybridCachePayload
                             pendingTags = new(pendingTagBuffer[0]);
                             break;
                         default:
-                            var final = new string[pendingTagsCount];
+                            string[] final = new string[pendingTagsCount];
                             pendingTagBuffer.CopyTo(final, 0);
                             pendingTags = new(final);
                             break;
@@ -334,7 +334,7 @@ internal static class HybridCachePayload
         static bool TryReadString(ref ReadOnlySpan<byte> buffer, ref char[] scratch, out ReadOnlySpan<char> value)
         {
             int length;
-            if (!TryRead7BitEncodedInt64(ref buffer, out var u64Length)
+            if (!TryRead7BitEncodedInt64(ref buffer, out ulong u64Length)
                 || u64Length > int.MaxValue
                 || buffer.Length < (length = (int)u64Length)) // note buffer is now past the prefix via "ref"
             {
@@ -343,7 +343,7 @@ internal static class HybridCachePayload
             }
 
             // make sure we have enough buffer space
-            var maxChars = Encoding.GetMaxCharCount(length);
+            int maxChars = Encoding.GetMaxCharCount(length);
             if (scratch.Length < maxChars)
             {
                 ArrayPool<char>.Shared.Return(scratch);

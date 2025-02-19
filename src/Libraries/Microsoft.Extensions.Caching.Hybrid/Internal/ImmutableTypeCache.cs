@@ -30,7 +30,7 @@ internal static class ImmutableTypeCache
         {
             // get a typed, zeroed, non-null boxed instance of the appropriate type
             // (can't use (object)default(T), as that would box to null for nullable types)
-            var obj = FormatterServices.GetUninitializedObject(Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T));
+            object obj = FormatterServices.GetUninitializedObject(Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T));
             GCHandle.Alloc(obj, GCHandleType.Pinned).Free();
             return true;
         }

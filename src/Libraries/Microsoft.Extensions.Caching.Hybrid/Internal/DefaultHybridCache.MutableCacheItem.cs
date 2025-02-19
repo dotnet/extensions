@@ -42,7 +42,7 @@ internal partial class DefaultHybridCache
             {
                 try
                 {
-                    var serializer = _serializer;
+                    IHybridCacheSerializer<T>? serializer = _serializer;
                     value = serializer is null ? _fallbackValue! : serializer.Deserialize(_buffer.AsSequence());
                     return true;
                 }
