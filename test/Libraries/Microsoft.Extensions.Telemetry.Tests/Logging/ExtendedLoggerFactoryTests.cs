@@ -449,10 +449,10 @@ public static class ExtendedLoggerFactoryTests
         Assert.Equal(loggerProvider.LogText,
             new[]
             {
-                    "Message",
-                    "Scope",
-                    "Scope2",
-                    "Message2",
+                "Message",
+                "Scope",
+                "Scope2",
+                "Message2",
             });
         Assert.NotNull(loggerProvider.ScopeProvider);
         Assert.Equal(0, loggerProvider.BeginScopeCalledTimes);
@@ -507,19 +507,19 @@ public static class ExtendedLoggerFactoryTests
         Assert.Equal(loggerProvider.LogText,
             new[]
             {
-                    "Message",
-                    "Scope",
-                    "Scope2",
-                    "Message2",
+                "Message",
+                "Scope",
+                "Scope2",
+                "Message2",
             });
 
         Assert.Equal(loggerProvider2.LogText,
             new[]
             {
-                    "Message",
-                    "Scope",
-                    "Scope2",
-                    "Message2",
+                "Message",
+                "Scope",
+                "Scope2",
+                "Message2",
             });
     }
 
