@@ -3,7 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 
 #pragma warning disable CA2227 // Collection properties should be read only
 
@@ -33,6 +34,17 @@ public class FakeLogCollectorOptions
     /// If not empty, only records with the given level will be collected by the fake logger.
     /// </remarks>
     public ISet<LogLevel> FilteredLevels { get; set; } = new HashSet<LogLevel>();
+
+    /// <summary>
+    /// Gets or sets custom filters used to filter out records to be collected.
+    /// </summary>
+    /// <value>Default is an empty array.</value>
+    /// <remarks>
+    /// Defaults to an empty array, which doesn't filter any records.
+    /// If not empty, only records for which the filter function returns <see langword="true" /> will be collected by the fake logger.
+    /// </remarks>
+    [Experimental(DiagnosticIds.Experiments.Telemetry)]
+    public IEnumerable<Func<FakeLogRecord, bool>> CustomFilters { get; set; } = Array.Empty<Func<FakeLogRecord, bool>>();
 
     /// <summary>
     /// Gets or sets a value indicating whether to collect records that are logged when the associated log level is currently disabled.
