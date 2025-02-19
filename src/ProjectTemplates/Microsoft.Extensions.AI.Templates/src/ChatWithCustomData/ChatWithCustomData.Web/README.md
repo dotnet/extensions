@@ -3,7 +3,7 @@
 This project is an AI chat application that demonstrates how to chat with custom data using an AI language model. This was created using an early preview version of a new AI Starter Web App template for .NET, thanks for trying it out!
 
 >[!NOTE]
-> Before you can run this project you'll need to setup your environment to work with the providers you configured in the template options. See below for the details specific to your choices.
+> Before you can run this project you'll need to configure API keys or endpoints to work with the providers you have chosen. See below for the details specific to your choices.
 
 #### ---#if (UseAzure)
 ### Prerequisites
