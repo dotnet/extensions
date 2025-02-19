@@ -32,8 +32,6 @@ builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 #if (IsOllama)
 await ValidatePrerequisitesAsync(builder.Configuration);
-#else
-ValidatePrerequisites(builder.Configuration);
 #endif
 
 #if (IsGHModels)
@@ -41,9 +39,7 @@ ValidatePrerequisites(builder.Configuration);
 // You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
 //   cd this-project-directory
 //   dotnet user-secrets set GitHubModels:Token YOUR-GITHUB-TOKEN
-var ghToken = builder.Configuration["GitHubModels:Token"];
-
-var credential = new ApiKeyCredential(ghToken);
+var credential = new ApiKeyCredential(builder.Configuration["GitHubModels:Token"] ?? throw new InvalidOperationException("Missing configuration: GitHubModels:Token. See the README for details."));
 var openAIOptions = new OpenAIClientOptions()
 {
     Endpoint = new Uri("https://models.inference.ai.azure.com")
@@ -63,7 +59,7 @@ IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator = new OllamaApi
 //   cd this-project-directory
 //   dotnet user-secrets set OpenAI:Key YOUR-API-KEY
 var openAIClient = new OpenAIClient(
-    new ApiKeyCredential(builder.Configuration["OpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: OpenAI:Key")));
+    new ApiKeyCredential(builder.Configuration["OpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: OpenAI:Key. See the README for details.")));
 var chatClient = openAIClient.AsChatClient("gpt-4o-mini");
 var embeddingGenerator = openAIClient.AsEmbeddingGenerator("text-embedding-3-small");
 #elif (IsAzureAiFoundry)
@@ -72,16 +68,16 @@ var embeddingGenerator = openAIClient.AsEmbeddingGenerator("text-embedding-3-sma
 // You will need to set the endpoint and key to your own values
 // You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
 //   cd this-project-directory
-//   dotnet user-secrets set AzureOpenAi:Endpoint https://YOUR-DEPLOYMENT-NAME.openai.azure.com
+//   dotnet user-secrets set AzureOpenAI:Endpoint https://YOUR-DEPLOYMENT-NAME.openai.azure.com
 #if (!UseManagedIdentity)
-//   dotnet user-secrets set AzureOpenAi:Key YOUR-API-KEY
+//   dotnet user-secrets set AzureOpenAI:Key YOUR-API-KEY
 #endif
 var azureOpenAi = new AzureOpenAIClient(
-    new Uri(builder.Configuration["AzureOpenAi:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAi:Endpoint")),
+    new Uri(builder.Configuration["AzureOpenAI:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAi:Endpoint. See the README for details.")),
 #if (UseManagedIdentity)
     new DefaultAzureCredential());
 #else
-    new ApiKeyCredential(builder.Configuration["AzureOpenAi:Key"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAi:Key")));
+    new ApiKeyCredential(builder.Configuration["AzureOpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAi:Key. See the README for details.")));
 #endif
 var chatClient = azureOpenAi.AsChatClient("gpt-4o-mini");
 var embeddingGenerator = azureOpenAi.AsEmbeddingGenerator("text-embedding-3-small");
@@ -95,11 +91,11 @@ var embeddingGenerator = azureOpenAi.AsEmbeddingGenerator("text-embedding-3-smal
 //   dotnet user-secrets set AzureAISearch:Key YOUR-API-KEY
 var vectorStore = new AzureAISearchVectorStore(
     new SearchIndexClient(
-        new Uri(builder.Configuration["AzureAISearch:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Endpoint")),
+        new Uri(builder.Configuration["AzureAISearch:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Endpoint. See the README for details.")),
 #if (UseManagedIdentity)
         new DefaultAzureCredential()));
 #else
-        new AzureKeyCredential(builder.Configuration["AzureAISearch:Key"] ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Key"))));
+        new AzureKeyCredential(builder.Configuration["AzureAISearch:Key"] ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Key. See the README for details."))));
 #endif
 #else
 var vectorStore = new JsonVectorStore(Path.Combine(AppContext.BaseDirectory, "vector-store"));
@@ -148,11 +144,7 @@ app.Run();
 
 #if (IsOllama)
 async Task ValidatePrerequisitesAsync(IConfiguration configuration)
-#else
-void ValidatePrerequisites(IConfiguration configuration)
-#endif
 {
-#if (IsOllama)
     var client = new OllamaApiClient(new Uri("http://localhost:11434"));
     
     try
@@ -174,44 +166,5 @@ void ValidatePrerequisites(IConfiguration configuration)
             $"Required Ollama models are not installed: {string.Join(", ", missingModels)}. " +
             "Please install the missing models, by using your terminal and running: 'ollama pull <model>'. See the README for details.");
     }
-#elif (IsOpenAI)
-    if (string.IsNullOrEmpty(configuration["OpenAI:ApiKey"]))
-    {
-        throw new InvalidOperationException("Missing configuration: OpenAI:ApiKey. See the README for details.");
-    }
-#else
-#if (UseManagedIdentity)
-    if (string.IsNullOrEmpty(configuration["AzureOpenAI:Endpoint"]))
-    {
-        throw new InvalidOperationException("Missing configuration: AzureOpenAI:Endpoint. See the README for details.");
-    }
-#else
-    if (string.IsNullOrEmpty(configuration["AzureOpenAI:Endpoint"]))
-    {
-        throw new InvalidOperationException("Missing configuration: AzureOpenAI:Endpoint. See the README for details.");
-    }
-    if (string.IsNullOrEmpty(configuration["AzureOpenAI:Key"]))
-    {
-        throw new InvalidOperationException("Missing configuration: AzureOpenAI:Key. See the README for details.");
-    }
-#endif
-#endif
-#if (UseAzureAISearch)
-
-#if (UseManagedIdentity)
-    if (string.IsNullOrEmpty(configuration["AzureAISearch:Endpoint"]))
-    {
-        throw new InvalidOperationException("Missing configuration: AzureAISearch:Endpoint. See the README for details.");
-    }
-#else
-    if (string.IsNullOrEmpty(configuration["AzureAISearch:Endpoint"]))
-    {
-        throw new InvalidOperationException("Missing configuration: AzureAISearch:Endpoint. See the README for details.");
-    }
-    if (string.IsNullOrEmpty(configuration["AzureAISearch:Key"]))
-    {
-        throw new InvalidOperationException("Missing configuration: AzureAISearch:Key. See the README for details.");
-    }
-#endif
-#endif
 }
+#endif

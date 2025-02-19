@@ -95,7 +95,7 @@ Configure your Azure OpenAI endpoint for this project, using .NET User Secrets:
    ```
 #### ---#endif
 
-   Make sure to replace `YOUR-AZURE-OPENAI-ENDPOINT` with your actual Azure OpenAI endpoint.
+Make sure to replace `YOUR-AZURE-OPENAI-ENDPOINT` with your actual Azure OpenAI endpoint, formatted like https://YOUR-DEPLOYMENT-NAME.openai.azure.com/ (do not include any path after .openai.azure.com/).
 #### ---#else
 ### 3. Configure API Key and Endpoint
 Configure your Azure OpenAI API key and endpoint for this project, using .NET User Secrets:
@@ -121,7 +121,7 @@ Configure your Azure OpenAI API key and endpoint for this project, using .NET Us
    ```
 #### ---#endif
 
-Make sure to replace `YOUR-AZURE-OPENAI-KEY` and `YOUR-AZURE-OPENAI-ENDPOINT` with your actual Azure OpenAI key and endpoint.
+Make sure to replace `YOUR-AZURE-OPENAI-KEY` and `YOUR-AZURE-OPENAI-ENDPOINT` with your actual Azure OpenAI key and endpoint. Make sure your endpoint URL is formatted like https://YOUR-DEPLOYMENT-NAME.openai.azure.com/ (do not include any path after .openai.azure.com/).
 
 #### ---#endif
 #### ---#endif
@@ -159,7 +159,7 @@ This template is configured to use keyless authentication (also known as Managed
    ```
 #### ---#endif
 
-   Make sure to replace `YOUR-AZURE-AI-SEARCH-ENDPOINT` with your actual Azure AI Search endpoint.
+Make sure to replace `YOUR-AZURE-AI-SEARCH-ENDPOINT` with your actual Azure AI Search endpoint.
 
 #### ---#else
 ### 3. Configure API Key and Endpoint
@@ -185,7 +185,7 @@ This template is configured to use keyless authentication (also known as Managed
    dotnet user-secrets set AzureAISearch:Endpoint YOUR-AZURE-AI-SEARCH-ENDPOINT
    ```
 #### ---#endif
-   Make sure to replace `YOUR-AZURE-AI-SEARCH-KEY` and `YOUR-AZURE-AI-SEARCH-ENDPOINT` with your actual Azure AI Search key and endpoint.
+Make sure to replace `YOUR-AZURE-AI-SEARCH-KEY` and `YOUR-AZURE-AI-SEARCH-ENDPOINT` with your actual Azure AI Search key and endpoint.
 
 #### ---#endif
 
