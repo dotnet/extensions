@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.AI;
 
-public sealed class TestAudioTranscriptionClient : IAudioTranscriptionClient
+public sealed class TestSpeechToTextClient : ISpeechToTextClient
 {
-    public TestAudioTranscriptionClient()
+    public TestSpeechToTextClient()
     {
         GetServiceCallback = DefaultGetServiceCallback;
     }
@@ -20,17 +20,17 @@ public sealed class TestAudioTranscriptionClient : IAudioTranscriptionClient
     // Callbacks for asynchronous operations.
     public Func<IList<
         IAsyncEnumerable<DataContent>>,
-        AudioTranscriptionOptions,
+        SpeechToTextOptions,
         CancellationToken,
-        Task<AudioTranscriptionResponse>>?
-        TranscribeAsyncCallback
+        Task<SpeechToTextResponse>>?
+        GetResponseAsyncCallback
     { get; set; }
 
     public Func<IList<IAsyncEnumerable<DataContent>>,
-        AudioTranscriptionOptions,
+        SpeechToTextOptions,
         CancellationToken,
-        IAsyncEnumerable<AudioTranscriptionResponseUpdate>>?
-        TranscribeStreamingAsyncCallback
+        IAsyncEnumerable<SpeechToTextResponseUpdate>>?
+        GetStreamingResponseAsyncCallback
     { get; set; }
 
     // A GetService callback similar to the one used in TestChatClient.
@@ -39,17 +39,17 @@ public sealed class TestAudioTranscriptionClient : IAudioTranscriptionClient
     private object? DefaultGetServiceCallback(Type serviceType, object? serviceKey)
         => serviceType is not null && serviceKey is null && serviceType.IsInstanceOfType(this) ? this : null;
 
-    public Task<AudioTranscriptionResponse> TranscribeAsync(
-        IList<IAsyncEnumerable<DataContent>> audioContents,
-        AudioTranscriptionOptions? options = null,
+    public Task<SpeechToTextResponse> GetResponseAsync(
+        IList<IAsyncEnumerable<DataContent>> speechContents,
+        SpeechToTextOptions? options = null,
         CancellationToken cancellationToken = default)
-        => TranscribeAsyncCallback!(audioContents, options ?? new AudioTranscriptionOptions(), cancellationToken);
+        => GetResponseAsyncCallback!(speechContents, options ?? new SpeechToTextOptions(), cancellationToken);
 
-    public IAsyncEnumerable<AudioTranscriptionResponseUpdate> TranscribeStreamingAsync(
-        IList<IAsyncEnumerable<DataContent>> audioContents,
-        AudioTranscriptionOptions? options = null,
+    public IAsyncEnumerable<SpeechToTextResponseUpdate> GetStreamingResponseAsync(
+        IList<IAsyncEnumerable<DataContent>> speechContents,
+        SpeechToTextOptions? options = null,
         CancellationToken cancellationToken = default)
-        => TranscribeStreamingAsyncCallback!(audioContents, options ?? new AudioTranscriptionOptions(), cancellationToken);
+        => GetStreamingResponseAsyncCallback!(speechContents, options ?? new SpeechToTextOptions(), cancellationToken);
 
     public object? GetService(Type serviceType, object? serviceKey = null)
         => GetServiceCallback(serviceType, serviceKey);

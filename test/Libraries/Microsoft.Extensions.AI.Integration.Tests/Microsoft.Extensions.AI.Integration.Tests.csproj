@@ -29,7 +29,7 @@
 
   <ItemGroup>
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestChatClient.cs" />
-    <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestAudioTranscriptionClient.cs" />
+    <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestSpeechToTextClient.cs" />
   </ItemGroup>
 
   <ItemGroup>

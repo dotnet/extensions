@@ -9,12 +9,12 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class AudioTranscriptionChoiceTests
+public class SpeechToTextMessageTests
 {
     [Fact]
     public void Constructor_Parameterless_PropsDefaulted()
     {
-        AudioTranscription choice = new();
+        SpeechToTextMessage choice = new();
         Assert.Empty(choice.Contents);
         Assert.Null(choice.Text);
         Assert.NotNull(choice.Contents);
@@ -32,7 +32,7 @@ public class AudioTranscriptionChoiceTests
     [InlineData("text")]
     public void Constructor_String_PropsRoundtrip(string? text)
     {
-        AudioTranscription choice = new(text);
+        SpeechToTextMessage choice = new(text);
 
         Assert.Same(choice.Contents, choice.Contents);
         if (text is null)
@@ -54,7 +54,7 @@ public class AudioTranscriptionChoiceTests
     [Fact]
     public void Constructor_List_InvalidArgs_Throws()
     {
-        Assert.Throws<ArgumentNullException>("contents", () => new AudioTranscription((IList<AIContent>)null!));
+        Assert.Throws<ArgumentNullException>("contents", () => new SpeechToTextMessage((IList<AIContent>)null!));
     }
 
     [Theory]
@@ -69,7 +69,7 @@ public class AudioTranscriptionChoiceTests
             content.Add(new TextContent($"text-{i}"));
         }
 
-        AudioTranscription choice = new(content);
+        SpeechToTextMessage choice = new(content);
 
         Assert.Same(choice.Contents, choice.Contents);
         if (choiceCount == 0)
@@ -97,7 +97,7 @@ public class AudioTranscriptionChoiceTests
     [Fact]
     public void Text_GetSet_UsesFirstTextContent()
     {
-        AudioTranscription choice = new(
+        SpeechToTextMessage choice = new(
         [
             new DataContent("http://localhost/audio"),
             new DataContent("http://localhost/image"),
@@ -122,7 +122,7 @@ public class AudioTranscriptionChoiceTests
     [Fact]
     public void Text_Set_AddsTextToEmptyList()
     {
-        AudioTranscription choice = new([]);
+        SpeechToTextMessage choice = new([]);
         Assert.Empty(choice.Contents);
 
         choice.Text = "text-1";
@@ -136,7 +136,7 @@ public class AudioTranscriptionChoiceTests
     [Fact]
     public void Text_Set_AddsTextToListWithNoText()
     {
-        AudioTranscription choice = new(
+        SpeechToTextMessage choice = new(
         [
             new DataContent("http://localhost/audio"),
             new DataContent("http://localhost/image"),
@@ -165,13 +165,13 @@ public class AudioTranscriptionChoiceTests
     {
         // This is an implementation detail, but if this test starts failing, we need to ensure
         // tests are in place for whatever possibly-custom implementation of IList is being used.
-        Assert.IsType<List<AIContent>>(new AudioTranscription().Contents);
+        Assert.IsType<List<AIContent>>(new SpeechToTextMessage().Contents);
     }
 
     [Fact]
     public void Contents_Roundtrips()
     {
-        AudioTranscription choice = new();
+        SpeechToTextMessage choice = new();
         Assert.Empty(choice.Contents);
 
         List<AIContent> contents = [];
@@ -191,7 +191,7 @@ public class AudioTranscriptionChoiceTests
     [Fact]
     public void RawRepresentation_Roundtrips()
     {
-        AudioTranscription choice = new();
+        SpeechToTextMessage choice = new();
         Assert.Null(choice.RawRepresentation);
 
         object raw = new();
@@ -213,7 +213,7 @@ public class AudioTranscriptionChoiceTests
     [Fact]
     public void AdditionalProperties_Roundtrips()
     {
-        AudioTranscription choice = new();
+        SpeechToTextMessage choice = new();
         Assert.Null(choice.RawRepresentation);
 
         AdditionalPropertiesDictionary props = [];
@@ -235,7 +235,7 @@ public class AudioTranscriptionChoiceTests
     [Fact]
     public void StartTime_Roundtrips()
     {
-        AudioTranscription choice = new();
+        SpeechToTextMessage choice = new();
         Assert.Null(choice.StartTime);
 
         TimeSpan startTime = TimeSpan.FromSeconds(10);
@@ -249,7 +249,7 @@ public class AudioTranscriptionChoiceTests
     [Fact]
     public void EndTime_Roundtrips()
     {
-        AudioTranscription choice = new();
+        SpeechToTextMessage choice = new();
         Assert.Null(choice.EndTime);
 
         TimeSpan endTime = TimeSpan.FromSeconds(20);
@@ -287,7 +287,7 @@ public class AudioTranscriptionChoiceTests
         ];
 
         // Act
-        var audioTranscriptionChoiceJson = JsonSerializer.Serialize(new AudioTranscription(contents: items)
+        var message = JsonSerializer.Serialize(new SpeechToTextMessage(contents: items)
         {
             Text = "content-1-override", // Override the content of the first text content item that has the "content-1" content
             AdditionalProperties = new() { ["choice-metadata-key-1"] = "choice-metadata-value-1" },
@@ -295,7 +295,7 @@ public class AudioTranscriptionChoiceTests
             EndTime = TimeSpan.FromSeconds(20)
         }, TestJsonSerializerContext.Default.Options);
 
-        var deserializedChoice = JsonSerializer.Deserialize<AudioTranscription>(audioTranscriptionChoiceJson, TestJsonSerializerContext.Default.Options)!;
+        var deserializedChoice = JsonSerializer.Deserialize<SpeechToTextMessage>(message, TestJsonSerializerContext.Default.Options)!;
 
         // Assert
         Assert.NotNull(deserializedChoice.AdditionalProperties);

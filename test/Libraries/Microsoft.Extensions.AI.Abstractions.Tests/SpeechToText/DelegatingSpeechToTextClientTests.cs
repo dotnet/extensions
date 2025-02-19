@@ -9,38 +9,38 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class DelegatingAudioTranscriptionClientTests
+public class DelegatingSpeechToTextClientTests
 {
     [Fact]
     public void RequiresInnerChatClient()
     {
-        Assert.Throws<ArgumentNullException>("innerClient", () => new NoOpDelegatingAudioTranscriptionClient(null!));
+        Assert.Throws<ArgumentNullException>("innerClient", () => new NoOpDelegatingSpeechToTextClient(null!));
     }
 
     [Fact]
-    public async Task TranscribeAsyncDefaultsToInnerClientAsync()
+    public async Task GetResponseAsyncDefaultsToInnerClientAsync()
     {
         // Arrange
         var expectedContents = new List<IAsyncEnumerable<DataContent>>();
-        var expectedOptions = new AudioTranscriptionOptions();
+        var expectedOptions = new SpeechToTextOptions();
         var expectedCancellationToken = CancellationToken.None;
-        var expectedResult = new TaskCompletionSource<AudioTranscriptionResponse>();
-        var expectedResponse = new AudioTranscriptionResponse([]);
-        using var inner = new TestAudioTranscriptionClient
+        var expectedResult = new TaskCompletionSource<SpeechToTextResponse>();
+        var expectedResponse = new SpeechToTextResponse([]);
+        using var inner = new TestSpeechToTextClient
         {
-            TranscribeAsyncCallback = (audioContents, options, cancellationToken) =>
+            GetResponseAsyncCallback = (speechContents, options, cancellationToken) =>
             {
-                Assert.Same(expectedContents, audioContents);
+                Assert.Same(expectedContents, speechContents);
                 Assert.Same(expectedOptions, options);
                 Assert.Equal(expectedCancellationToken, cancellationToken);
                 return expectedResult.Task;
             }
         };
 
-        using var delegating = new NoOpDelegatingAudioTranscriptionClient(inner);
+        using var delegating = new NoOpDelegatingSpeechToTextClient(inner);
 
         // Act
-        var resultTask = delegating.TranscribeAsync(expectedContents, expectedOptions, expectedCancellationToken);
+        var resultTask = delegating.GetResponseAsync(expectedContents, expectedOptions, expectedCancellationToken);
 
         // Assert
         Assert.False(resultTask.IsCompleted);
@@ -50,21 +50,21 @@ public class DelegatingAudioTranscriptionClientTests
     }
 
     [Fact]
-    public async Task ChatStreamingAsyncDefaultsToInnerClientAsync()
+    public async Task GetStreamingAsyncDefaultsToInnerClientAsync()
     {
         // Arrange
         var expectedContents = new List<IAsyncEnumerable<DataContent>>();
-        var expectedOptions = new AudioTranscriptionOptions();
+        var expectedOptions = new SpeechToTextOptions();
         var expectedCancellationToken = CancellationToken.None;
-        AudioTranscriptionResponseUpdate[] expectedResults =
+        SpeechToTextResponseUpdate[] expectedResults =
         [
-            new() { Text = "Transcription update 1" },
-            new() { Text = "Transcription update 2" }
+            new() { Text = "Text update 1" },
+            new() { Text = "Text update 2" }
         ];
 
-        using var inner = new TestAudioTranscriptionClient
+        using var inner = new TestSpeechToTextClient
         {
-            TranscribeStreamingAsyncCallback = (chatContents, options, cancellationToken) =>
+            GetStreamingResponseAsyncCallback = (chatContents, options, cancellationToken) =>
             {
                 Assert.Same(expectedContents, chatContents);
                 Assert.Same(expectedOptions, options);
@@ -73,10 +73,10 @@ public class DelegatingAudioTranscriptionClientTests
             }
         };
 
-        using var delegating = new NoOpDelegatingAudioTranscriptionClient(inner);
+        using var delegating = new NoOpDelegatingSpeechToTextClient(inner);
 
         // Act
-        var resultAsyncEnumerable = delegating.TranscribeStreamingAsync(expectedContents, expectedOptions, expectedCancellationToken);
+        var resultAsyncEnumerable = delegating.GetStreamingResponseAsync(expectedContents, expectedOptions, expectedCancellationToken);
 
         // Assert
         var enumerator = resultAsyncEnumerable.GetAsyncEnumerator();
@@ -90,8 +90,8 @@ public class DelegatingAudioTranscriptionClientTests
     [Fact]
     public void GetServiceThrowsForNullType()
     {
-        using var inner = new TestAudioTranscriptionClient();
-        using var delegating = new NoOpDelegatingAudioTranscriptionClient(inner);
+        using var inner = new TestSpeechToTextClient();
+        using var delegating = new NoOpDelegatingSpeechToTextClient(inner);
         Assert.Throws<ArgumentNullException>("serviceType", () => delegating.GetService(null!));
     }
 
@@ -99,11 +99,11 @@ public class DelegatingAudioTranscriptionClientTests
     public void GetServiceReturnsSelfIfCompatibleWithRequestAndKeyIsNull()
     {
         // Arrange
-        using var inner = new TestAudioTranscriptionClient();
-        using var delegating = new NoOpDelegatingAudioTranscriptionClient(inner);
+        using var inner = new TestSpeechToTextClient();
+        using var delegating = new NoOpDelegatingSpeechToTextClient(inner);
 
         // Act
-        var client = delegating.GetService<DelegatingAudioTranscriptionClient>();
+        var client = delegating.GetService<DelegatingSpeechToTextClient>();
 
         // Assert
         Assert.Same(delegating, client);
@@ -115,15 +115,15 @@ public class DelegatingAudioTranscriptionClientTests
         // Arrange
         var expectedParam = new object();
         var expectedKey = new object();
-        using var expectedResult = new TestAudioTranscriptionClient();
-        using var inner = new TestAudioTranscriptionClient
+        using var expectedResult = new TestSpeechToTextClient();
+        using var inner = new TestSpeechToTextClient
         {
             GetServiceCallback = (_, _) => expectedResult
         };
-        using var delegating = new NoOpDelegatingAudioTranscriptionClient(inner);
+        using var delegating = new NoOpDelegatingSpeechToTextClient(inner);
 
         // Act
-        var client = delegating.GetService<IAudioTranscriptionClient>(expectedKey);
+        var client = delegating.GetService<ISpeechToTextClient>(expectedKey);
 
         // Assert
         Assert.Same(expectedResult, client);
@@ -136,13 +136,13 @@ public class DelegatingAudioTranscriptionClientTests
         var expectedParam = new object();
         var expectedResult = TimeZoneInfo.Local;
         var expectedKey = new object();
-        using var inner = new TestAudioTranscriptionClient
+        using var inner = new TestSpeechToTextClient
         {
             GetServiceCallback = (type, key) => type == expectedResult.GetType() && key == expectedKey
                 ? expectedResult
                 : throw new InvalidOperationException("Unexpected call")
         };
-        using var delegating = new NoOpDelegatingAudioTranscriptionClient(inner);
+        using var delegating = new NoOpDelegatingSpeechToTextClient(inner);
 
         // Act
         var tzi = delegating.GetService<TimeZoneInfo>(expectedKey);
@@ -160,6 +160,6 @@ public class DelegatingAudioTranscriptionClientTests
         }
     }
 
-    private sealed class NoOpDelegatingAudioTranscriptionClient(IAudioTranscriptionClient innerClient)
-        : DelegatingAudioTranscriptionClient(innerClient);
+    private sealed class NoOpDelegatingSpeechToTextClient(ISpeechToTextClient innerClient)
+        : DelegatingSpeechToTextClient(innerClient);
 }

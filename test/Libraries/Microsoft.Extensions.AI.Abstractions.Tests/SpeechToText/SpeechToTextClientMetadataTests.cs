@@ -6,12 +6,12 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class AudioTranscriptionClientMetadataTests
+public class SpeechToTextClientMetadataTests
 {
     [Fact]
     public void Constructor_NullValues_AllowedAndRoundtrip()
     {
-        AudioTranscriptionClientMetadata metadata = new(null, null, null);
+        SpeechToTextClientMetadata metadata = new(null, null, null);
         Assert.Null(metadata.ProviderName);
         Assert.Null(metadata.ProviderUri);
         Assert.Null(metadata.ModelId);
@@ -21,7 +21,7 @@ public class AudioTranscriptionClientMetadataTests
     public void Constructor_Value_Roundtrips()
     {
         var uri = new Uri("https://example.com");
-        AudioTranscriptionClientMetadata metadata = new("providerName", uri, "theModel");
+        SpeechToTextClientMetadata metadata = new("providerName", uri, "theModel");
         Assert.Equal("providerName", metadata.ProviderName);
         Assert.Same(uri, metadata.ProviderUri);
         Assert.Equal("theModel", metadata.ModelId);

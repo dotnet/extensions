@@ -8,17 +8,17 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class StreamingAudioTranscriptionUpdateTests
+public class SpeechToTextResponseUpdateTests
 {
     [Fact]
     public void Constructor_PropsDefaulted()
     {
-        AudioTranscriptionResponseUpdate update = new();
+        SpeechToTextResponseUpdate update = new();
 
-        Assert.Equal(AudioTranscriptionResponseUpdateKind.Transcribing, update.Kind);
+        Assert.Equal(SpeechToTextResponseUpdateKind.TextUpdating, update.Kind);
         Assert.Null(update.Text);
         Assert.Empty(update.Contents);
-        Assert.Null(update.TranscriptionId);
+        Assert.Null(update.ResponseId);
         Assert.Equal(0, update.ChoiceIndex);
         Assert.Null(update.StartTime);
         Assert.Null(update.EndTime);
@@ -28,11 +28,11 @@ public class StreamingAudioTranscriptionUpdateTests
     [Fact]
     public void Properties_Roundtrip()
     {
-        AudioTranscriptionResponseUpdate update = new()
+        SpeechToTextResponseUpdate update = new()
         {
             InputIndex = 5,
             ChoiceIndex = 42,
-            Kind = new AudioTranscriptionResponseUpdateKind("custom"),
+            Kind = new SpeechToTextResponseUpdateKind("custom"),
         };
 
         Assert.Equal(5, update.InputIndex);
@@ -53,8 +53,8 @@ public class StreamingAudioTranscriptionUpdateTests
         Assert.NotNull(update.Contents);
         Assert.Empty(update.Contents);
 
-        update.TranscriptionId = "comp123";
-        Assert.Equal("comp123", update.TranscriptionId);
+        update.ResponseId = "comp123";
+        Assert.Equal("comp123", update.ResponseId);
 
         update.StartTime = TimeSpan.FromSeconds(10);
         update.EndTime = TimeSpan.FromSeconds(20);
@@ -65,7 +65,7 @@ public class StreamingAudioTranscriptionUpdateTests
     [Fact]
     public void Text_GetSet_UsesFirstTextContent()
     {
-        AudioTranscriptionResponseUpdate update = new(
+        SpeechToTextResponseUpdate update = new(
         [
             new DataContent("http://localhost/audio", "application/octet-stream"),
             new DataContent("http://localhost/image", "application/octet-stream"),
@@ -94,7 +94,7 @@ public class StreamingAudioTranscriptionUpdateTests
     [Fact]
     public void Text_Set_AddsTextMessageToEmptyList()
     {
-        AudioTranscriptionResponseUpdate update = new();
+        SpeechToTextResponseUpdate update = new();
         Assert.Empty(update.Contents);
 
         update.Text = "text-1";
@@ -108,7 +108,7 @@ public class StreamingAudioTranscriptionUpdateTests
     [Fact]
     public void Text_Set_AddsTextMessageToListWithNoText()
     {
-        AudioTranscriptionResponseUpdate update = new(
+        SpeechToTextResponseUpdate update = new(
         [
             new DataContent("http://localhost/audio", "application/octet-stream"),
             new DataContent("http://localhost/image", "application/octet-stream"),
@@ -135,12 +135,12 @@ public class StreamingAudioTranscriptionUpdateTests
     [Fact]
     public void JsonSerialization_Roundtrips()
     {
-        AudioTranscriptionResponseUpdate original = new()
+        SpeechToTextResponseUpdate original = new()
         {
             InputIndex = 7,
             ChoiceIndex = 3,
-            Kind = new AudioTranscriptionResponseUpdateKind("transcribed"),
-            TranscriptionId = "id123",
+            Kind = new SpeechToTextResponseUpdateKind("transcribed"),
+            ResponseId = "id123",
             StartTime = TimeSpan.FromSeconds(5),
             EndTime = TimeSpan.FromSeconds(10),
             Contents = new List<AIContent>
@@ -150,14 +150,14 @@ public class StreamingAudioTranscriptionUpdateTests
             }
         };
 
-        string json = JsonSerializer.Serialize(original, TestJsonSerializerContext.Default.AudioTranscriptionResponseUpdate);
-        AudioTranscriptionResponseUpdate? result = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.AudioTranscriptionResponseUpdate);
+        string json = JsonSerializer.Serialize(original, TestJsonSerializerContext.Default.SpeechToTextResponseUpdate);
+        SpeechToTextResponseUpdate? result = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.SpeechToTextResponseUpdate);
         Assert.NotNull(result);
 
         Assert.Equal(original.InputIndex, result.InputIndex);
         Assert.Equal(original.ChoiceIndex, result.ChoiceIndex);
         Assert.Equal(original.Kind, result.Kind);
-        Assert.Equal(original.TranscriptionId, result.TranscriptionId);
+        Assert.Equal(original.ResponseId, result.ResponseId);
         Assert.Equal(original.StartTime, result.StartTime);
         Assert.Equal(original.EndTime, result.EndTime);
         Assert.Equal(original.Contents.Count, result.Contents.Count);

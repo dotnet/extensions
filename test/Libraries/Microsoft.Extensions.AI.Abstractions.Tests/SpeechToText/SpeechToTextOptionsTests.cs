@@ -7,81 +7,81 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class AudioTranscriptionOptionsTests
+public class SpeechToTextOptionsTests
 {
     [Fact]
     public void Constructor_Parameterless_PropsDefaulted()
     {
-        AudioTranscriptionOptions options = new();
-        Assert.Null(options.TranscriptionId);
+        SpeechToTextOptions options = new();
+        Assert.Null(options.ResponseId);
         Assert.Null(options.ModelId);
-        Assert.Null(options.AudioLanguage);
-        Assert.Null(options.AudioSampleRate);
+        Assert.Null(options.SpeechLanguage);
+        Assert.Null(options.SpeechSampleRate);
         Assert.Null(options.AdditionalProperties);
 
-        AudioTranscriptionOptions clone = options.Clone();
-        Assert.Null(clone.TranscriptionId);
+        SpeechToTextOptions clone = options.Clone();
+        Assert.Null(clone.ResponseId);
         Assert.Null(clone.ModelId);
-        Assert.Null(clone.AudioLanguage);
-        Assert.Null(clone.AudioSampleRate);
+        Assert.Null(clone.SpeechLanguage);
+        Assert.Null(clone.SpeechSampleRate);
         Assert.Null(clone.AdditionalProperties);
     }
 
     [Fact]
     public void Properties_Roundtrip()
     {
-        AudioTranscriptionOptions options = new();
+        SpeechToTextOptions options = new();
 
         AdditionalPropertiesDictionary additionalProps = new()
         {
             ["key"] = "value",
         };
 
-        options.TranscriptionId = "completionId";
+        options.ResponseId = "completionId";
         options.ModelId = "modelId";
-        options.AudioLanguage = "en-US";
-        options.AudioSampleRate = 44100;
+        options.SpeechLanguage = "en-US";
+        options.SpeechSampleRate = 44100;
         options.AdditionalProperties = additionalProps;
 
-        Assert.Equal("completionId", options.TranscriptionId);
+        Assert.Equal("completionId", options.ResponseId);
         Assert.Equal("modelId", options.ModelId);
-        Assert.Equal("en-US", options.AudioLanguage);
-        Assert.Equal(44100, options.AudioSampleRate);
+        Assert.Equal("en-US", options.SpeechLanguage);
+        Assert.Equal(44100, options.SpeechSampleRate);
         Assert.Same(additionalProps, options.AdditionalProperties);
 
-        AudioTranscriptionOptions clone = options.Clone();
-        Assert.Equal("completionId", clone.TranscriptionId);
+        SpeechToTextOptions clone = options.Clone();
+        Assert.Equal("completionId", clone.ResponseId);
         Assert.Equal("modelId", clone.ModelId);
-        Assert.Equal("en-US", clone.AudioLanguage);
-        Assert.Equal(44100, clone.AudioSampleRate);
+        Assert.Equal("en-US", clone.SpeechLanguage);
+        Assert.Equal(44100, clone.SpeechSampleRate);
         Assert.Equal(additionalProps, clone.AdditionalProperties);
     }
 
     [Fact]
     public void JsonSerialization_Roundtrips()
     {
-        AudioTranscriptionOptions options = new();
+        SpeechToTextOptions options = new();
 
         AdditionalPropertiesDictionary additionalProps = new()
         {
             ["key"] = "value",
         };
 
-        options.TranscriptionId = "completionId";
+        options.ResponseId = "completionId";
         options.ModelId = "modelId";
-        options.AudioLanguage = "en-US";
-        options.AudioSampleRate = 44100;
+        options.SpeechLanguage = "en-US";
+        options.SpeechSampleRate = 44100;
         options.AdditionalProperties = additionalProps;
 
-        string json = JsonSerializer.Serialize(options, TestJsonSerializerContext.Default.AudioTranscriptionOptions);
+        string json = JsonSerializer.Serialize(options, TestJsonSerializerContext.Default.SpeechToTextOptions);
 
-        AudioTranscriptionOptions? deserialized = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.AudioTranscriptionOptions);
+        SpeechToTextOptions? deserialized = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.SpeechToTextOptions);
         Assert.NotNull(deserialized);
 
-        Assert.Equal("completionId", deserialized.TranscriptionId);
+        Assert.Equal("completionId", deserialized.ResponseId);
         Assert.Equal("modelId", deserialized.ModelId);
-        Assert.Equal("en-US", deserialized.AudioLanguage);
-        Assert.Equal(44100, deserialized.AudioSampleRate);
+        Assert.Equal("en-US", deserialized.SpeechLanguage);
+        Assert.Equal(44100, deserialized.SpeechSampleRate);
 
         Assert.NotNull(deserialized.AdditionalProperties);
         Assert.Single(deserialized.AdditionalProperties);
@@ -95,19 +95,19 @@ public class AudioTranscriptionOptionsTests
     [InlineData("   ")]
     public void AudioLanguage_InvalidCulture_ThrowsCultureNotFoundException(string invalidCulture)
     {
-        AudioTranscriptionOptions options = new();
-        Assert.Throws<CultureNotFoundException>(() => options.AudioLanguage = invalidCulture);
+        SpeechToTextOptions options = new();
+        Assert.Throws<CultureNotFoundException>(() => options.SpeechLanguage = invalidCulture);
     }
 
     [Fact]
     public void AudioLanguage_EmptyString_SetsInvariantCulture()
     {
-        AudioTranscriptionOptions options = new()
+        SpeechToTextOptions options = new()
         {
-            AudioLanguage = string.Empty,
+            SpeechLanguage = string.Empty,
         };
 
         // InvariantCulture's Name is returned when an empty string is used.
-        Assert.Equal(CultureInfo.InvariantCulture.Name, options.AudioLanguage);
+        Assert.Equal(CultureInfo.InvariantCulture.Name, options.SpeechLanguage);
     }
 }

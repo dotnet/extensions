@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.AI;
 
 public abstract class AudioTranscriptionClientIntegrationTests : IDisposable
 {
-    private readonly IAudioTranscriptionClient? _client;
+    private readonly ISpeechToTextClient? _client;
 
     protected AudioTranscriptionClientIntegrationTests()
     {
@@ -30,7 +30,7 @@ public abstract class AudioTranscriptionClientIntegrationTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    protected abstract IAudioTranscriptionClient? CreateClient();
+    protected abstract ISpeechToTextClient? CreateClient();
 
     [ConditionalFact]
     public virtual async Task TranscribeAsync_SingleAudioRequestMessage()
@@ -38,9 +38,9 @@ public abstract class AudioTranscriptionClientIntegrationTests : IDisposable
         SkipIfNotEnabled();
 
         using var audioStream = GetAudioStream("audio001.wav");
-        var response = await _client.TranscribeAsync([audioStream.ToAsyncEnumerable()]);
+        var response = await _client.GetResponseAsync([audioStream.ToAsyncEnumerable()]);
 
-        Assert.Contains("gym", response.AudioTranscription.Text, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("gym", response.Message.Text, StringComparison.OrdinalIgnoreCase);
     }
 
     [ConditionalFact]
@@ -51,7 +51,7 @@ public abstract class AudioTranscriptionClientIntegrationTests : IDisposable
         using var firstAudioStream = GetAudioStream("audio001.wav");
         using var secondAudioStream = GetAudioStream("audio002.wav");
 
-        var response = await _client.TranscribeAsync([firstAudioStream.ToAsyncEnumerable(), secondAudioStream.ToAsyncEnumerable()]);
+        var response = await _client.GetResponseAsync([firstAudioStream.ToAsyncEnumerable(), secondAudioStream.ToAsyncEnumerable()]);
 
         var firstFileChoice = Assert.Single(response.Choices.Where(c => c.InputIndex == 0));
         var secondFileChoice = Assert.Single(response.Choices.Where(c => c.InputIndex == 1));
@@ -68,7 +68,7 @@ public abstract class AudioTranscriptionClientIntegrationTests : IDisposable
         using var audioStream = GetAudioStream("audio001.wav");
 
         StringBuilder sb = new();
-        await foreach (var chunk in _client.TranscribeStreamingAsync([audioStream.ToAsyncEnumerable()]))
+        await foreach (var chunk in _client.GetStreamingResponseAsync([audioStream.ToAsyncEnumerable()]))
         {
             sb.Append(chunk.Text);
         }
@@ -88,7 +88,7 @@ public abstract class AudioTranscriptionClientIntegrationTests : IDisposable
 
         StringBuilder firstSb = new();
         StringBuilder secondSb = new();
-        await foreach (var chunk in _client.TranscribeStreamingAsync([firstAudioStream.ToAsyncEnumerable(), secondAudioStream.ToAsyncEnumerable()]))
+        await foreach (var chunk in _client.GetStreamingResponseAsync([firstAudioStream.ToAsyncEnumerable(), secondAudioStream.ToAsyncEnumerable()]))
         {
             if (chunk.InputIndex == 0)
             {

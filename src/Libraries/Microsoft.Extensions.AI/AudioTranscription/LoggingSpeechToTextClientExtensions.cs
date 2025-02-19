@@ -9,21 +9,21 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Provides extensions for configuring <see cref="LoggingAudioTranscriptionClient"/> instances.</summary>
-public static class LoggingAudioTranscriptionClientExtensions
+/// <summary>Provides extensions for configuring <see cref="LoggingSpeechToTextClient"/> instances.</summary>
+public static class LoggingSpeechToTextClientExtensions
 {
     /// <summary>Adds logging to the audio transcription client pipeline.</summary>
-    /// <param name="builder">The <see cref="AudioTranscriptionClientBuilder"/>.</param>
+    /// <param name="builder">The <see cref="SpeechToTextClientBuilder"/>.</param>
     /// <param name="loggerFactory">
     /// An optional <see cref="ILoggerFactory"/> used to create a logger with which logging should be performed.
     /// If not supplied, a required instance will be resolved from the service provider.
     /// </param>
-    /// <param name="configure">An optional callback that can be used to configure the <see cref="LoggingAudioTranscriptionClient"/> instance.</param>
+    /// <param name="configure">An optional callback that can be used to configure the <see cref="LoggingSpeechToTextClient"/> instance.</param>
     /// <returns>The <paramref name="builder"/>.</returns>
-    public static AudioTranscriptionClientBuilder UseLogging(
-        this AudioTranscriptionClientBuilder builder,
+    public static SpeechToTextClientBuilder UseLogging(
+        this SpeechToTextClientBuilder builder,
         ILoggerFactory? loggerFactory = null,
-        Action<LoggingAudioTranscriptionClient>? configure = null)
+        Action<LoggingSpeechToTextClient>? configure = null)
     {
         _ = Throw.IfNull(builder);
 
@@ -38,7 +38,7 @@ public static class LoggingAudioTranscriptionClientExtensions
                 return innerClient;
             }
 
-            var audioClient = new LoggingAudioTranscriptionClient(innerClient, loggerFactory.CreateLogger(typeof(LoggingAudioTranscriptionClient)));
+            var audioClient = new LoggingSpeechToTextClient(innerClient, loggerFactory.CreateLogger(typeof(LoggingSpeechToTextClient)));
             configure?.Invoke(audioClient);
             return audioClient;
         });

@@ -57,15 +57,15 @@ public class OpenAIAudioTranscriptionClientTests
             new AzureOpenAIClient(endpoint, new ApiKeyCredential("key")) :
             new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
 
-        IAudioTranscriptionClient client = openAIClient.AsAudioTranscriptionClient(model);
-        var metadata = client.GetService<AudioTranscriptionClientMetadata>();
+        ISpeechToTextClient client = openAIClient.AsAudioTranscriptionClient(model);
+        var metadata = client.GetService<SpeechToTextClientMetadata>();
         Assert.NotNull(metadata);
         Assert.Equal("openai", metadata.ProviderName);
         Assert.Equal(endpoint, metadata.ProviderUri);
         Assert.Equal(model, metadata.ModelId);
 
         client = openAIClient.GetAudioClient(model).AsAudioTranscriptionClient();
-        metadata = client.GetService<AudioTranscriptionClientMetadata>();
+        metadata = client.GetService<SpeechToTextClientMetadata>();
         Assert.NotNull(metadata);
         Assert.Equal("openai", metadata.ProviderName);
         Assert.Equal(endpoint, metadata.ProviderUri);
@@ -76,9 +76,9 @@ public class OpenAIAudioTranscriptionClientTests
     public void GetService_OpenAIClient_SuccessfullyReturnsUnderlyingClient()
     {
         OpenAIClient openAIClient = new(new ApiKeyCredential("key"));
-        IAudioTranscriptionClient client = openAIClient.AsAudioTranscriptionClient("model");
+        ISpeechToTextClient client = openAIClient.AsAudioTranscriptionClient("model");
 
-        Assert.Same(client, client.GetService<IAudioTranscriptionClient>());
+        Assert.Same(client, client.GetService<ISpeechToTextClient>());
         Assert.Same(client, client.GetService<OpenAIAudioTranscriptionClient>());
 
         Assert.Same(openAIClient, client.GetService<OpenAIClient>());
@@ -87,37 +87,37 @@ public class OpenAIAudioTranscriptionClientTests
         var mockLoggerFactory = new Mock<ILoggerFactory>();
         mockLoggerFactory.Setup(f => f.CreateLogger(It.IsAny<string>())).Returns(new Mock<ILogger>().Object);
 
-        using IAudioTranscriptionClient pipeline = client
+        using ISpeechToTextClient pipeline = client
             .AsBuilder()
             .UseLogging(mockLoggerFactory.Object)
             .Build();
 
-        Assert.NotNull(pipeline.GetService<LoggingAudioTranscriptionClient>());
+        Assert.NotNull(pipeline.GetService<LoggingSpeechToTextClient>());
 
         Assert.Same(openAIClient, pipeline.GetService<OpenAIClient>());
-        Assert.IsType<LoggingAudioTranscriptionClient>(pipeline.GetService<IAudioTranscriptionClient>());
+        Assert.IsType<LoggingSpeechToTextClient>(pipeline.GetService<ISpeechToTextClient>());
     }
 
     [Fact]
     public void GetService_AudioClient_SuccessfullyReturnsUnderlyingClient()
     {
         AudioClient openAIClient = new OpenAIClient(new ApiKeyCredential("key")).GetAudioClient("model");
-        IAudioTranscriptionClient audioClient = openAIClient.AsAudioTranscriptionClient();
+        ISpeechToTextClient audioClient = openAIClient.AsAudioTranscriptionClient();
 
-        Assert.Same(audioClient, audioClient.GetService<IAudioTranscriptionClient>());
+        Assert.Same(audioClient, audioClient.GetService<ISpeechToTextClient>());
         Assert.Same(openAIClient, audioClient.GetService<AudioClient>());
 
         var mockLoggerFactory = new Mock<ILoggerFactory>();
         mockLoggerFactory.Setup(f => f.CreateLogger(It.IsAny<string>())).Returns(new Mock<ILogger>().Object);
-        using IAudioTranscriptionClient pipeline = audioClient
+        using ISpeechToTextClient pipeline = audioClient
             .AsBuilder()
             .UseLogging(mockLoggerFactory.Object)
             .Build();
 
-        Assert.NotNull(pipeline.GetService<LoggingAudioTranscriptionClient>());
+        Assert.NotNull(pipeline.GetService<LoggingSpeechToTextClient>());
 
         Assert.Same(openAIClient, pipeline.GetService<AudioClient>());
-        Assert.IsType<LoggingAudioTranscriptionClient>(pipeline.GetService<IAudioTranscriptionClient>());
+        Assert.IsType<LoggingSpeechToTextClient>(pipeline.GetService<ISpeechToTextClient>());
     }
 
     [Fact]
@@ -147,17 +147,17 @@ public class OpenAIAudioTranscriptionClientTests
 
         using DelegatedHttpHandler handler = new(SendAsync);
         using HttpClient httpClient = new(handler);
-        using IAudioTranscriptionClient client = CreateAudioTranscriptionClient(httpClient, "gpt-4o-mini");
+        using ISpeechToTextClient client = CreateAudioTranscriptionClient(httpClient, "gpt-4o-mini");
 
         using var fileStream = GetAudioStream("audio001.wav");
-        var response = await client.TranscribeAsync(fileStream, new()
+        var response = await client.GetResponseAsync(fileStream, new()
         {
-            AudioLanguage = "en-US",
+            SpeechLanguage = "en-US",
         });
         Assert.NotNull(response);
 
         Assert.Single(response.Choices);
-        Assert.Contains("I finally got back to the gym the other day", response.AudioTranscription.Text);
+        Assert.Contains("I finally got back to the gym the other day", response.Message.Text);
 
         Assert.NotNull(response.RawRepresentation);
         Assert.IsType<OpenAI.Audio.AudioTranscription>(response.RawRepresentation);
@@ -193,10 +193,10 @@ public class OpenAIAudioTranscriptionClientTests
 
         using DelegatedHttpHandler handler = new(SendAsync);
         using HttpClient httpClient = new(handler);
-        using IAudioTranscriptionClient client = CreateAudioTranscriptionClient(httpClient, "gpt-4o-mini");
+        using ISpeechToTextClient client = CreateAudioTranscriptionClient(httpClient, "gpt-4o-mini");
 
         using var fileStream = GetAudioStream("audio001.wav");
-        await foreach (var update in client.TranscribeStreamingAsync(fileStream, new() { AudioLanguage = "en-US" }))
+        await foreach (var update in client.GetStreamingResponseAsync(fileStream, new() { SpeechLanguage = "en-US" }))
         {
             Assert.Contains("I finally got back to the gym the other day", update.Text);
             Assert.NotNull(update.RawRepresentation);
@@ -389,7 +389,7 @@ public class OpenAIAudioTranscriptionClientTests
         return ms;
     }
 
-    private static IAudioTranscriptionClient CreateAudioTranscriptionClient(HttpClient httpClient, string modelId) =>
+    private static ISpeechToTextClient CreateAudioTranscriptionClient(HttpClient httpClient, string modelId) =>
         new OpenAIClient(new ApiKeyCredential("apikey"), new OpenAIClientOptions { Transport = new HttpClientPipelineTransport(httpClient) })
         .AsAudioTranscriptionClient(modelId);
 }

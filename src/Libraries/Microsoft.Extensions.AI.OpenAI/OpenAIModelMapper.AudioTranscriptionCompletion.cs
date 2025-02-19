@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.AI;
 
 internal static partial class OpenAIModelMappers
 {
-    public static AudioTranscription FromOpenAIAudioTranscription(OpenAI.Audio.AudioTranscription audioTranscription, int inputIndex)
+    public static SpeechToTextMessage FromOpenAIAudioTranscription(OpenAI.Audio.AudioTranscription audioTranscription, int inputIndex)
     {
         _ = Throw.IfNull(audioTranscription);
 
@@ -37,7 +37,7 @@ internal static partial class OpenAIModelMappers
         }
 
         // Create the return choice.
-        return new AudioTranscription
+        return new SpeechToTextMessage
         {
             RawRepresentation = audioTranscription,
             InputIndex = inputIndex,
@@ -47,9 +47,9 @@ internal static partial class OpenAIModelMappers
         };
     }
 
-    public static AudioTranscriptionOptions FromOpenAIOptions(OpenAI.Audio.AudioTranscriptionOptions options)
+    public static SpeechToTextOptions FromOpenAIOptions(OpenAI.Audio.AudioTranscriptionOptions options)
     {
-        AudioTranscriptionOptions result = new();
+        SpeechToTextOptions result = new();
 
         if (options is not null)
         {
@@ -84,13 +84,13 @@ internal static partial class OpenAIModelMappers
     }
 
     /// <summary>Converts an extensions options instance to an OpenAI options instance.</summary>
-    public static OpenAI.Audio.AudioTranscriptionOptions ToOpenAIOptions(AudioTranscriptionOptions? options)
+    public static OpenAI.Audio.AudioTranscriptionOptions ToOpenAIOptions(SpeechToTextOptions? options)
     {
         OpenAI.Audio.AudioTranscriptionOptions result = new();
 
         if (options is not null)
         {
-            result.Language = options.AudioLanguage;
+            result.Language = options.SpeechLanguage;
 
             if (options.AdditionalProperties is { Count: > 0 } additionalProperties)
             {

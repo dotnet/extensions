@@ -10,67 +10,67 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class AudioTranscriptionClientExtensionsTests
+public class SpeechToTextClientExtensionsTests
 {
     [Fact]
     public void GetService_InvalidArgs_Throws()
     {
         Assert.Throws<ArgumentNullException>("client", () =>
         {
-            _ = AudioTranscriptionClientExtensions.GetService<object>(null!);
+            _ = SpeechToTextClientExtensions.GetService<object>(null!);
         });
     }
 
     [Fact]
-    public void TranscribeAsync_InvalidArgs_Throws()
+    public void GetResponseAsync_InvalidArgs_Throws()
     {
         // Note: the extension method now requires a DataContent (not a string).
         Assert.Throws<ArgumentNullException>("client", () =>
         {
-            _ = AudioTranscriptionClientExtensions.TranscribeAsync(null!, new DataContent("data:,hello"));
+            _ = SpeechToTextClientExtensions.GetResponseAsync(null!, new DataContent("data:,hello"));
         });
 
-        Assert.Throws<ArgumentNullException>("audioContent", () =>
+        Assert.Throws<ArgumentNullException>("speechContent", () =>
         {
-            _ = AudioTranscriptionClientExtensions.TranscribeAsync(new TestAudioTranscriptionClient(), (DataContent)null!);
+            _ = SpeechToTextClientExtensions.GetResponseAsync(new TestSpeechToTextClient(), (DataContent)null!);
         });
     }
 
     [Fact]
-    public void TranscribeStreamingAsync_InvalidArgs_Throws()
+    public void GetStreamingResponseAsync_InvalidArgs_Throws()
     {
         Assert.Throws<ArgumentNullException>("client", () =>
         {
             using var stream = new MemoryStream();
-            _ = AudioTranscriptionClientExtensions.TranscribeStreamingAsync(client: null!, new DataContent("data:,hello"));
+            _ = SpeechToTextClientExtensions.GetStreamingResponseAsync(client: null!, new DataContent("data:,hello"));
         });
 
-        Assert.Throws<ArgumentNullException>("audioContent", () =>
+        Assert.Throws<ArgumentNullException>("speechContent", () =>
         {
-            _ = AudioTranscriptionClientExtensions.TranscribeStreamingAsync(new TestAudioTranscriptionClient(), audioContent: null!);
+            _ = SpeechToTextClientExtensions.GetStreamingResponseAsync(new TestSpeechToTextClient(), speechContent: null!);
         });
     }
 
     [Fact]
-    public async Task TranscribeStreamingAsync_CreatesTextMessageAsync()
+    public async Task GetStreamingResponseAsync_CreatesTextMessageAsync()
     {
         // Arrange
-        var expectedOptions = new AudioTranscriptionOptions();
+        var expectedOptions = new SpeechToTextOptions();
         using var cts = new CancellationTokenSource();
 
-        using TestAudioTranscriptionClient client = new()
+        using TestSpeechToTextClient client = new()
         {
-            TranscribeStreamingAsyncCallback = (audioContents, options, cancellationToken) =>
+            GetStreamingResponseAsyncCallback = (speechContents, options, cancellationToken) =>
             {
-                Assert.Single(audioContents);
+                Assert.Single(speechContents);
 
                 // For testing, return an async enumerable yielding one streaming update with text "world".
-                return YieldAsync(new AudioTranscriptionResponseUpdate { Text = "world" });
+                return YieldAsync(new SpeechToTextResponseUpdate { Text = "world" });
             },
         };
 
         int count = 0;
-        await foreach (var update in AudioTranscriptionClientExtensions.TranscribeStreamingAsync(
+        await foreach (var update in SpeechToTextClientExtensions.GetStreamingResponseAsync(
             client,
             new DataContent("data:,hello"),
             expectedOptions,
@@ -84,7 +84,7 @@ public class AudioTranscriptionClientExtensionsTests
         Assert.Equal(1, count);
     }
 
-    private static async IAsyncEnumerable<AudioTranscriptionResponseUpdate> YieldAsync(params AudioTranscriptionResponseUpdate[] updates)
+    private static async IAsyncEnumerable<SpeechToTextResponseUpdate> YieldAsync(params SpeechToTextResponseUpdate[] updates)
     {
         await Task.Yield();
         foreach (var update in updates)

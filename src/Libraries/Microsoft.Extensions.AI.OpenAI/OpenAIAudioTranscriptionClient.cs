@@ -16,14 +16,14 @@ using OpenAI.Audio;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Represents an <see cref="IAudioTranscriptionClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="OpenAI.Audio.AudioClient"/>.</summary>
-public sealed class OpenAIAudioTranscriptionClient : IAudioTranscriptionClient
+/// <summary>Represents an <see cref="ISpeechToTextClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="OpenAI.Audio.AudioClient"/>.</summary>
+public sealed class OpenAIAudioTranscriptionClient : ISpeechToTextClient
 {
     /// <summary>Default OpenAI endpoint.</summary>
     private static readonly Uri _defaultOpenAIEndpoint = new("https://api.openai.com/v1");
 
     /// <summary>Metadata about the client.</summary>
-    private readonly AudioTranscriptionClientMetadata _metadata;
+    private readonly SpeechToTextClientMetadata _metadata;
 
     /// <summary>The underlying <see cref="OpenAIClient" />.</summary>
     private readonly OpenAIClient? _openAIClient;
@@ -79,7 +79,7 @@ public sealed class OpenAIAudioTranscriptionClient : IAudioTranscriptionClient
 
         return
             serviceKey is not null ? null :
-            serviceType == typeof(AudioTranscriptionClientMetadata) ? _metadata :
+            serviceType == typeof(SpeechToTextClientMetadata) ? _metadata :
             serviceType == typeof(OpenAIClient) ? _openAIClient :
             serviceType == typeof(AudioClient) ? _audioClient :
             serviceType.IsInstanceOfType(this) ? this :
@@ -87,20 +87,20 @@ public sealed class OpenAIAudioTranscriptionClient : IAudioTranscriptionClient
     }
 
     /// <inheritdoc />
-    public async Task<AudioTranscriptionResponse> TranscribeAsync(
-        IList<IAsyncEnumerable<DataContent>> audioContents, AudioTranscriptionOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<SpeechToTextResponse> GetResponseAsync(
+        IList<IAsyncEnumerable<DataContent>> speechContents, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNullOrEmpty(audioContents);
+        _ = Throw.IfNullOrEmpty(speechContents);
 
         var openAIOptions = OpenAIModelMappers.ToOpenAIOptions(options);
-        List<AudioTranscription> choices = [];
+        List<SpeechToTextMessage> choices = [];
 
-        for (var inputIndex = 0; inputIndex < audioContents.Count; inputIndex++)
+        for (var inputIndex = 0; inputIndex < speechContents.Count; inputIndex++)
         {
-            var audioContent = audioContents[inputIndex];
-            _ = Throw.IfNull(audioContent);
+            var speechContent = speechContents[inputIndex];
+            _ = Throw.IfNull(speechContent);
 
-            var enumerator = audioContent.GetAsyncEnumerator(cancellationToken);
+            var enumerator = speechContent.GetAsyncEnumerator(cancellationToken);
             if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
             {
                 throw new InvalidOperationException($"The audio content provided in the index: {inputIndex} is empty.");
@@ -125,7 +125,7 @@ public sealed class OpenAIAudioTranscriptionClient : IAudioTranscriptionClient
             }
             else
             {
-                using var audioFileStream = audioContent.ToStream(firstChunk, cancellationToken);
+                using var audioFileStream = speechContent.ToStream(firstChunk, cancellationToken);
                 transcriptionResult = (await _audioClient.TranscribeAudioAsync(
                     audioFileStream,
                     "file.wav", // this information internally is required but is only being used to create a header name in the multipart request.
@@ -136,7 +136,7 @@ public sealed class OpenAIAudioTranscriptionClient : IAudioTranscriptionClient
             choices.Add(choice);
         }
 
-        return new AudioTranscriptionResponse(choices)
+        return new SpeechToTextResponse(choices)
         {
             RawRepresentation = choices[0].RawRepresentation,
         };
@@ -149,24 +149,24 @@ public sealed class OpenAIAudioTranscriptionClient : IAudioTranscriptionClient
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<AudioTranscriptionResponseUpdate> TranscribeStreamingAsync(
-        IList<IAsyncEnumerable<DataContent>> audioContents, AudioTranscriptionOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<SpeechToTextResponseUpdate> GetStreamingResponseAsync(
+        IList<IAsyncEnumerable<DataContent>> speechContents, SpeechToTextOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNullOrEmpty(audioContents);
+        _ = Throw.IfNullOrEmpty(speechContents);
 
-        for (var inputIndex = 0; inputIndex < audioContents.Count; inputIndex++)
+        for (var inputIndex = 0; inputIndex < speechContents.Count; inputIndex++)
         {
-            var audioContent = audioContents[inputIndex];
-            _ = Throw.IfNull(audioContent);
+            var speechContent = speechContents[inputIndex];
+            _ = Throw.IfNull(speechContent);
 
-            var transcriptionCompletion = await TranscribeAsync([audioContent], options, cancellationToken).ConfigureAwait(false);
+            var transcriptionCompletion = await GetResponseAsync([speechContent], options, cancellationToken).ConfigureAwait(false);
 
             foreach (var choice in transcriptionCompletion.Choices)
             {
-                yield return new AudioTranscriptionResponseUpdate(choice.Contents)
+                yield return new SpeechToTextResponseUpdate(choice.Contents)
                 {
                     InputIndex = inputIndex,
-                    Kind = AudioTranscriptionResponseUpdateKind.Transcribed,
+                    Kind = SpeechToTextResponseUpdateKind.TextUpdated,
                     RawRepresentation = choice.RawRepresentation
                 };
             }

@@ -10,90 +10,89 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class AudioTranscriptionCompletionTests
+public class SpeechToTextResponseTests
 {
     [Fact]
     public void Constructor_InvalidArgs_Throws()
     {
-        Assert.Throws<ArgumentNullException>("audioTranscription", () => new AudioTranscriptionResponse((AudioTranscription)null!));
-        Assert.Throws<ArgumentNullException>("choices", () => new AudioTranscriptionResponse((IList<AudioTranscription>)null!));
+        Assert.Throws<ArgumentNullException>("message", () => new SpeechToTextResponse((SpeechToTextMessage)null!));
+        Assert.Throws<ArgumentNullException>("choices", () => new SpeechToTextResponse((IList<SpeechToTextMessage>)null!));
     }
 
     [Fact]
     public void Constructor_Choice_Roundtrips()
     {
-        AudioTranscription choice = new();
-        AudioTranscriptionResponse completion = new(choice);
+        SpeechToTextMessage choice = new();
+        SpeechToTextResponse completion = new(choice);
 
         // The choice property returns the first (and only) choice.
-        Assert.Same(choice, completion.AudioTranscription);
+        Assert.Same(choice, completion.Message);
         Assert.Same(choice, Assert.Single(completion.Choices));
     }
 
     [Fact]
     public void Constructor_Choices_Roundtrips()
     {
-        List<AudioTranscription> choices =
+        List<SpeechToTextMessage> choices =
         [
-            new AudioTranscription(),
-            new AudioTranscription(),
-            new AudioTranscription(),
+            new SpeechToTextMessage(),
+            new SpeechToTextMessage(),
+            new SpeechToTextMessage(),
         ];
 
-        AudioTranscriptionResponse completion = new(choices);
+        SpeechToTextResponse completion = new(choices);
         Assert.Same(choices, completion.Choices);
         Assert.Equal(3, choices.Count);
     }
 
     [Fact]
-    public void Transcription_EmptyChoices_Throws()
+    public void Response_EmptyChoices_Throws()
     {
-        AudioTranscriptionResponse completion = new([]);
+        SpeechToTextResponse completion = new([]);
         Assert.Empty(completion.Choices);
-        Assert.Throws<InvalidOperationException>(() => completion.AudioTranscription);
+        Assert.Throws<InvalidOperationException>(() => completion.Message);
     }
 
     [Fact]
-    public void Transcription_SingleChoice_Returned()
+    public void Response_SingleChoice_Returned()
     {
-        AudioTranscription choice = new();
-        AudioTranscriptionResponse completion = new([choice]);
-        Assert.Same(choice, completion.AudioTranscription);
+        SpeechToTextMessage choice = new();
+        SpeechToTextResponse completion = new([choice]);
+        Assert.Same(choice, completion.Message);
         Assert.Same(choice, completion.Choices[0]);
     }
 
     [Fact]
-    public void Transcription_MultipleChoices_ReturnsFirst()
+    public void Response_MultipleChoices_ReturnsFirst()
     {
-        AudioTranscription first = new();
-        AudioTranscriptionResponse completion = new([
+        SpeechToTextMessage first = new();
+        SpeechToTextResponse completion = new([
             first,
-            new AudioTranscription(),
+            new SpeechToTextMessage(),
         ]);
-        Assert.Same(first, completion.AudioTranscription);
+        Assert.Same(first, completion.Message);
         Assert.Same(first, completion.Choices[0]);
     }
 
     [Fact]
     public void Choices_SetNull_Throws()
     {
-        AudioTranscriptionResponse completion = new([]);
+        SpeechToTextResponse completion = new([]);
         Assert.Throws<ArgumentNullException>("value", () => completion.Choices = null!);
     }
 
     [Fact]
     public void Properties_Roundtrip()
     {
-        AudioTranscriptionResponse completion = new([]);
-        Assert.Null(completion.TranscriptionId);
-        completion.TranscriptionId = "id";
-        Assert.Equal("id", completion.TranscriptionId);
+        SpeechToTextResponse completion = new([]);
+        Assert.Null(completion.ResponseId);
+        completion.ResponseId = "id";
+        Assert.Equal("id", completion.ResponseId);
 
         Assert.Null(completion.ModelId);
         completion.ModelId = "modelId";
         Assert.Equal("modelId", completion.ModelId);
 
-        // AudioTranscriptionResponse does not support CreatedAt, FinishReason or Usage.
         Assert.Null(completion.RawRepresentation);
         object raw = new();
         completion.RawRepresentation = raw;
@@ -104,7 +103,7 @@ public class AudioTranscriptionCompletionTests
         completion.AdditionalProperties = additionalProps;
         Assert.Same(additionalProps, completion.AdditionalProperties);
 
-        List<AudioTranscription> newChoices = [new AudioTranscription(), new AudioTranscription()];
+        List<SpeechToTextMessage> newChoices = [new SpeechToTextMessage(), new SpeechToTextMessage()];
         completion.Choices = newChoices;
         Assert.Same(newChoices, completion.Choices);
     }
@@ -112,23 +111,23 @@ public class AudioTranscriptionCompletionTests
     [Fact]
     public void JsonSerialization_Roundtrips()
     {
-        AudioTranscriptionResponse original = new(
+        SpeechToTextResponse original = new(
         [
-            new AudioTranscription("Choice1"),
-            new AudioTranscription("Choice2"),
-            new AudioTranscription("Choice3"),
-            new AudioTranscription("Choice4"),
+            new SpeechToTextMessage("Choice1"),
+            new SpeechToTextMessage("Choice2"),
+            new SpeechToTextMessage("Choice3"),
+            new SpeechToTextMessage("Choice4"),
         ])
         {
-            TranscriptionId = "id",
+            ResponseId = "id",
             ModelId = "modelId",
             RawRepresentation = new(),
             AdditionalProperties = new() { ["key"] = "value" },
         };
 
-        string json = JsonSerializer.Serialize(original, TestJsonSerializerContext.Default.AudioTranscriptionResponse);
+        string json = JsonSerializer.Serialize(original, TestJsonSerializerContext.Default.SpeechToTextResponse);
 
-        AudioTranscriptionResponse? result = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.AudioTranscriptionResponse);
+        SpeechToTextResponse? result = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.SpeechToTextResponse);
 
         Assert.NotNull(result);
         Assert.Equal(4, result.Choices.Count);
@@ -138,7 +137,7 @@ public class AudioTranscriptionCompletionTests
             Assert.Equal($"Choice{i + 1}", result.Choices[i].Text);
         }
 
-        Assert.Equal("id", result.TranscriptionId);
+        Assert.Equal("id", result.ResponseId);
         Assert.Equal("modelId", result.ModelId);
 
         Assert.NotNull(result.AdditionalProperties);
@@ -151,9 +150,9 @@ public class AudioTranscriptionCompletionTests
     [Fact]
     public void ToString_SingleChoice_OutputsChoiceText()
     {
-        AudioTranscriptionResponse completion = new(
+        SpeechToTextResponse completion = new(
         [
-            new AudioTranscription("This is a test." + Environment.NewLine + "It's multiple lines.")
+            new SpeechToTextMessage("This is a test." + Environment.NewLine + "It's multiple lines.")
         ]);
         Assert.Equal(completion.Choices[0].Text, completion.ToString());
     }
@@ -161,11 +160,11 @@ public class AudioTranscriptionCompletionTests
     [Fact]
     public void ToString_MultipleChoices_OutputsAllChoicesWithPrefix()
     {
-        AudioTranscriptionResponse completion = new(
+        SpeechToTextResponse completion = new(
         [
-            new AudioTranscription("This is a test." + Environment.NewLine + "It's multiple lines."),
-            new AudioTranscription("So is" + Environment.NewLine + " this."),
-            new AudioTranscription("And this."),
+            new SpeechToTextMessage("This is a test." + Environment.NewLine + "It's multiple lines."),
+            new SpeechToTextMessage("So is" + Environment.NewLine + " this."),
+            new SpeechToTextMessage("And this."),
         ]);
 
         StringBuilder sb = new();
@@ -185,42 +184,42 @@ public class AudioTranscriptionCompletionTests
     }
 
     [Fact]
-    public void ToStreamingAudioTranscriptionUpdates_SingleChoice_ReturnsExpectedUpdates()
+    public void ToSpeechToTextResponseUpdates_SingleChoice_ReturnsExpectedUpdates()
     {
         // Arrange: create a completion with one choice.
-        AudioTranscription choice = new("Text")
+        SpeechToTextMessage choice = new("Text")
         {
             InputIndex = 0,
             StartTime = TimeSpan.FromSeconds(1),
             EndTime = TimeSpan.FromSeconds(2)
         };
 
-        AudioTranscriptionResponse completion = new(choice)
+        SpeechToTextResponse completion = new(choice)
         {
-            TranscriptionId = "12345",
+            ResponseId = "12345",
             ModelId = "someModel",
             AdditionalProperties = new() { ["key1"] = "value1", ["key2"] = 42 },
         };
 
         // Act: convert to streaming updates.
-        AudioTranscriptionResponseUpdate[] updates = completion.ToStreamingAudioTranscriptionUpdates();
+        SpeechToTextResponseUpdate[] updates = completion.ToSpeechToTextResponseUpdates();
 
         // Filter out any null entries (if any).
-        AudioTranscriptionResponseUpdate[] nonNullUpdates = updates.Where(u => u is not null).ToArray();
+        SpeechToTextResponseUpdate[] nonNullUpdates = updates.Where(u => u is not null).ToArray();
 
         // Our implementation creates one update per choice plus an extra update if AdditionalProperties exists.
         Assert.Equal(2, nonNullUpdates.Length);
 
-        AudioTranscriptionResponseUpdate update0 = nonNullUpdates[0];
-        Assert.Equal("12345", update0.TranscriptionId);
+        SpeechToTextResponseUpdate update0 = nonNullUpdates[0];
+        Assert.Equal("12345", update0.ResponseId);
         Assert.Equal("someModel", update0.ModelId);
-        Assert.Equal(AudioTranscriptionResponseUpdateKind.Transcribed, update0.Kind);
+        Assert.Equal(SpeechToTextResponseUpdateKind.TextUpdated, update0.Kind);
         Assert.Equal(choice.Text, update0.Text);
         Assert.Equal(choice.InputIndex, update0.InputIndex);
         Assert.Equal(choice.StartTime, update0.StartTime);
         Assert.Equal(choice.EndTime, update0.EndTime);
 
-        AudioTranscriptionResponseUpdate updateExtra = nonNullUpdates[1];
+        SpeechToTextResponseUpdate updateExtra = nonNullUpdates[1];
 
         // The extra update carries the AdditionalProperties from the completion.
         Assert.Null(updateExtra.Text);
@@ -229,10 +228,10 @@ public class AudioTranscriptionCompletionTests
     }
 
     [Fact]
-    public void ToStreamingAudioTranscriptionUpdates_MultiChoice_ReturnsExpectedUpdates()
+    public void ToSpeechToTextResponseUpdates_MultiChoice_ReturnsExpectedUpdates()
     {
         // Arrange: create two choices.
-        AudioTranscription choice1 = new(
+        SpeechToTextMessage choice1 = new(
         [
             new TextContent("Hello, "),
             new DataContent("http://localhost/image.png", mediaType: "image/png"),
@@ -243,7 +242,7 @@ public class AudioTranscriptionCompletionTests
             InputIndex = 0
         };
 
-        AudioTranscription choice2 = new(
+        SpeechToTextMessage choice2 = new(
         [
             new FunctionCallContent("call123", "name"),
             new FunctionResultContent("call123", 42),
@@ -253,25 +252,25 @@ public class AudioTranscriptionCompletionTests
             InputIndex = 1
         };
 
-        AudioTranscriptionResponse completion = new([choice1, choice2])
+        SpeechToTextResponse completion = new([choice1, choice2])
         {
-            TranscriptionId = "12345",
+            ResponseId = "12345",
             ModelId = "someModel",
             AdditionalProperties = new() { ["key1"] = "value1", ["key2"] = 42 },
         };
 
         // Act: convert to streaming updates.
-        AudioTranscriptionResponseUpdate[] updates = completion.ToStreamingAudioTranscriptionUpdates();
-        AudioTranscriptionResponseUpdate[] nonNullUpdates = updates.Where(u => u is not null).ToArray();
+        SpeechToTextResponseUpdate[] updates = completion.ToSpeechToTextResponseUpdates();
+        SpeechToTextResponseUpdate[] nonNullUpdates = updates.Where(u => u is not null).ToArray();
 
         // Two choices plus an extra update should yield 3 updates.
         Assert.Equal(3, nonNullUpdates.Length);
 
         // Validate update from first choice.
-        AudioTranscriptionResponseUpdate update0 = nonNullUpdates[0];
-        Assert.Equal("12345", update0.TranscriptionId);
+        SpeechToTextResponseUpdate update0 = nonNullUpdates[0];
+        Assert.Equal("12345", update0.ResponseId);
         Assert.Equal("someModel", update0.ModelId);
-        Assert.Equal(AudioTranscriptionResponseUpdateKind.Transcribed, update0.Kind);
+        Assert.Equal(SpeechToTextResponseUpdateKind.TextUpdated, update0.Kind);
         Assert.Equal("Hello, ", Assert.IsType<TextContent>(update0.Contents[0]).Text);
         Assert.Equal("image/png", Assert.IsType<DataContent>(update0.Contents[1]).MediaType);
         Assert.Equal("world!", Assert.IsType<TextContent>(update0.Contents[2]).Text);
@@ -279,10 +278,10 @@ public class AudioTranscriptionCompletionTests
         Assert.Equal("choice1Value", update0.AdditionalProperties?["choice1Key"]);
 
         // Validate update from second choice.
-        AudioTranscriptionResponseUpdate update1 = nonNullUpdates[1];
-        Assert.Equal("12345", update1.TranscriptionId);
+        SpeechToTextResponseUpdate update1 = nonNullUpdates[1];
+        Assert.Equal("12345", update1.ResponseId);
         Assert.Equal("someModel", update1.ModelId);
-        Assert.Equal(AudioTranscriptionResponseUpdateKind.Transcribed, update1.Kind);
+        Assert.Equal(SpeechToTextResponseUpdateKind.TextUpdated, update1.Kind);
 
         // For choice2 (function call and result), we do not expect a concatenated text.
         Assert.True(update1.Contents.Count >= 2);
@@ -291,7 +290,7 @@ public class AudioTranscriptionCompletionTests
         Assert.Equal("choice2Value", update1.AdditionalProperties?["choice2Key"]);
 
         // Validate the extra update.
-        AudioTranscriptionResponseUpdate updateExtra = nonNullUpdates[2];
+        SpeechToTextResponseUpdate updateExtra = nonNullUpdates[2];
         Assert.Null(updateExtra.Text);
         Assert.Equal("value1", updateExtra.AdditionalProperties?["key1"]);
         Assert.Equal(42, updateExtra.AdditionalProperties?["key2"]);

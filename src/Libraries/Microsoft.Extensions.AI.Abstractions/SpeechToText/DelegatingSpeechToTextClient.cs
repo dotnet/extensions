@@ -10,19 +10,19 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// Provides an optional base class for an <see cref="IChatClient"/> that passes through calls to another instance.
+/// Provides an optional base class for an <see cref="ISpeechToTextClient"/> that passes through calls to another instance.
 /// </summary>
 /// <remarks>
-/// This is recommended as a base type when building clients that can be chained in any order around an underlying <see cref="IChatClient"/>.
+/// This is recommended as a base type when building clients that can be chained in any order around an underlying <see cref="ISpeechToTextClient"/>.
 /// The default implementation simply passes each call to the inner client instance.
 /// </remarks>
-public class DelegatingAudioTranscriptionClient : IAudioTranscriptionClient
+public class DelegatingSpeechToTextClient : ISpeechToTextClient
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="DelegatingAudioTranscriptionClient"/> class.
+    /// Initializes a new instance of the <see cref="DelegatingSpeechToTextClient"/> class.
     /// </summary>
     /// <param name="innerClient">The wrapped client instance.</param>
-    protected DelegatingAudioTranscriptionClient(IAudioTranscriptionClient innerClient)
+    protected DelegatingSpeechToTextClient(ISpeechToTextClient innerClient)
     {
         InnerClient = Throw.IfNull(innerClient);
     }
@@ -34,21 +34,21 @@ public class DelegatingAudioTranscriptionClient : IAudioTranscriptionClient
         GC.SuppressFinalize(this);
     }
 
-    /// <summary>Gets the inner <see cref="IAudioTranscriptionClient" />.</summary>
-    protected IAudioTranscriptionClient InnerClient { get; }
+    /// <summary>Gets the inner <see cref="ISpeechToTextClient" />.</summary>
+    protected ISpeechToTextClient InnerClient { get; }
 
     /// <inheritdoc />
-    public virtual Task<AudioTranscriptionResponse> TranscribeAsync(
-        IList<IAsyncEnumerable<DataContent>> audioContents, AudioTranscriptionOptions? options = null, CancellationToken cancellationToken = default)
+    public virtual Task<SpeechToTextResponse> GetResponseAsync(
+        IList<IAsyncEnumerable<DataContent>> speechContents, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return InnerClient.TranscribeAsync(audioContents, options, cancellationToken);
+        return InnerClient.GetResponseAsync(speechContents, options, cancellationToken);
     }
 
     /// <inheritdoc />
-    public virtual IAsyncEnumerable<AudioTranscriptionResponseUpdate> TranscribeStreamingAsync(
-        IList<IAsyncEnumerable<DataContent>> audioContents, AudioTranscriptionOptions? options = null, CancellationToken cancellationToken = default)
+    public virtual IAsyncEnumerable<SpeechToTextResponseUpdate> GetStreamingResponseAsync(
+        IList<IAsyncEnumerable<DataContent>> speechContents, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return InnerClient.TranscribeStreamingAsync(audioContents, options, cancellationToken);
+        return InnerClient.GetStreamingResponseAsync(speechContents, options, cancellationToken);
     }
 
     /// <inheritdoc />

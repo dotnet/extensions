@@ -14,10 +14,10 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>A delegating chat client that logs chat operations to an <see cref="ILogger"/>.</summary>
 /// <para>
-/// The provided implementation of <see cref="IAudioTranscriptionClient"/> is thread-safe for concurrent use so long as the
+/// The provided implementation of <see cref="ISpeechToTextClient"/> is thread-safe for concurrent use so long as the
 /// <see cref="ILogger"/> employed is also thread-safe for concurrent use.
 /// </para>
-public partial class LoggingAudioTranscriptionClient : DelegatingAudioTranscriptionClient
+public partial class LoggingSpeechToTextClient : DelegatingSpeechToTextClient
 {
     /// <summary>An <see cref="ILogger"/> instance used for all logging.</summary>
     private readonly ILogger _logger;
@@ -25,10 +25,10 @@ public partial class LoggingAudioTranscriptionClient : DelegatingAudioTranscript
     /// <summary>The <see cref="JsonSerializerOptions"/> to use for serialization of state written to the logger.</summary>
     private JsonSerializerOptions _jsonSerializerOptions;
 
-    /// <summary>Initializes a new instance of the <see cref="LoggingAudioTranscriptionClient"/> class.</summary>
-    /// <param name="innerClient">The underlying <see cref="IAudioTranscriptionClient"/>.</param>
+    /// <summary>Initializes a new instance of the <see cref="LoggingSpeechToTextClient"/> class.</summary>
+    /// <param name="innerClient">The underlying <see cref="ISpeechToTextClient"/>.</param>
     /// <param name="logger">An <see cref="ILogger"/> instance that will be used for all logging.</param>
-    public LoggingAudioTranscriptionClient(IAudioTranscriptionClient innerClient, ILogger logger)
+    public LoggingSpeechToTextClient(ISpeechToTextClient innerClient, ILogger logger)
         : base(innerClient)
     {
         _logger = Throw.IfNull(logger);
@@ -43,34 +43,34 @@ public partial class LoggingAudioTranscriptionClient : DelegatingAudioTranscript
     }
 
     /// <inheritdoc/>
-    public override async Task<AudioTranscriptionResponse> TranscribeAsync(
-        IList<IAsyncEnumerable<DataContent>> audioContents, AudioTranscriptionOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<SpeechToTextResponse> GetResponseAsync(
+        IList<IAsyncEnumerable<DataContent>> speechContents, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
         {
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokedSensitive(nameof(TranscribeAsync), AsJson(audioContents), AsJson(options), AsJson(this.GetService<AudioTranscriptionClientMetadata>()));
+                LogInvokedSensitive(nameof(GetResponseAsync), AsJson(speechContents), AsJson(options), AsJson(this.GetService<SpeechToTextClientMetadata>()));
             }
             else
             {
-                LogInvoked(nameof(TranscribeAsync));
+                LogInvoked(nameof(GetResponseAsync));
             }
         }
 
         try
         {
-            var completion = await base.TranscribeAsync(audioContents, options, cancellationToken).ConfigureAwait(false);
+            var completion = await base.GetResponseAsync(speechContents, options, cancellationToken).ConfigureAwait(false);
 
             if (_logger.IsEnabled(LogLevel.Debug))
             {
                 if (_logger.IsEnabled(LogLevel.Trace))
                 {
-                    LogCompletedSensitive(nameof(TranscribeAsync), AsJson(completion));
+                    LogCompletedSensitive(nameof(GetResponseAsync), AsJson(completion));
                 }
                 else
                 {
-                    LogCompleted(nameof(TranscribeAsync));
+                    LogCompleted(nameof(GetResponseAsync));
                 }
             }
 
@@ -78,51 +78,51 @@ public partial class LoggingAudioTranscriptionClient : DelegatingAudioTranscript
         }
         catch (OperationCanceledException)
         {
-            LogInvocationCanceled(nameof(TranscribeAsync));
+            LogInvocationCanceled(nameof(GetResponseAsync));
             throw;
         }
         catch (Exception ex)
         {
-            LogInvocationFailed(nameof(TranscribeAsync), ex);
+            LogInvocationFailed(nameof(GetResponseAsync), ex);
             throw;
         }
     }
 
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<AudioTranscriptionResponseUpdate> TranscribeStreamingAsync(
-        IList<IAsyncEnumerable<DataContent>> audioContents, AudioTranscriptionOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public override async IAsyncEnumerable<SpeechToTextResponseUpdate> GetStreamingResponseAsync(
+        IList<IAsyncEnumerable<DataContent>> speechContents, SpeechToTextOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
         {
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokedSensitive(nameof(TranscribeStreamingAsync), AsJson(audioContents), AsJson(options), AsJson(this.GetService<AudioTranscriptionClientMetadata>()));
+                LogInvokedSensitive(nameof(GetStreamingResponseAsync), AsJson(speechContents), AsJson(options), AsJson(this.GetService<SpeechToTextClientMetadata>()));
             }
             else
             {
-                LogInvoked(nameof(TranscribeStreamingAsync));
+                LogInvoked(nameof(GetStreamingResponseAsync));
             }
         }
 
-        IAsyncEnumerator<AudioTranscriptionResponseUpdate> e;
+        IAsyncEnumerator<SpeechToTextResponseUpdate> e;
         try
         {
-            e = base.TranscribeStreamingAsync(audioContents, options, cancellationToken).GetAsyncEnumerator(cancellationToken);
+            e = base.GetStreamingResponseAsync(speechContents, options, cancellationToken).GetAsyncEnumerator(cancellationToken);
         }
         catch (OperationCanceledException)
         {
-            LogInvocationCanceled(nameof(TranscribeStreamingAsync));
+            LogInvocationCanceled(nameof(GetStreamingResponseAsync));
             throw;
         }
         catch (Exception ex)
         {
-            LogInvocationFailed(nameof(TranscribeStreamingAsync), ex);
+            LogInvocationFailed(nameof(GetStreamingResponseAsync), ex);
             throw;
         }
 
         try
         {
-            AudioTranscriptionResponseUpdate? update = null;
+            SpeechToTextResponseUpdate? update = null;
             while (true)
             {
                 try
@@ -136,12 +136,12 @@ public partial class LoggingAudioTranscriptionClient : DelegatingAudioTranscript
                 }
                 catch (OperationCanceledException)
                 {
-                    LogInvocationCanceled(nameof(TranscribeStreamingAsync));
+                    LogInvocationCanceled(nameof(GetStreamingResponseAsync));
                     throw;
                 }
                 catch (Exception ex)
                 {
-                    LogInvocationFailed(nameof(TranscribeStreamingAsync), ex);
+                    LogInvocationFailed(nameof(GetStreamingResponseAsync), ex);
                     throw;
                 }
 
@@ -160,7 +160,7 @@ public partial class LoggingAudioTranscriptionClient : DelegatingAudioTranscript
                 yield return update;
             }
 
-            LogCompleted(nameof(TranscribeStreamingAsync));
+            LogCompleted(nameof(GetStreamingResponseAsync));
         }
         finally
         {

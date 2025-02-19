@@ -16,13 +16,13 @@ namespace Microsoft.Extensions.AI;
 public static class StreamExtensions
 {
     /// <summary>Converts a <see cref="Stream"/> to an <see cref="IAsyncEnumerable{DataContent}"/>.</summary>
-    /// <param name="audioStream">The audio stream to convert.</param>
+    /// <param name="stream">The <see cref="Stream"/> to convert.</param>
     /// <param name="mediaType">The optional media type of the audio stream.</param>
     /// <param name="bufferSize">The optional buffer size to use when reading from the audio stream. The default is 4096.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="IAsyncEnumerable{DataContent}"/>.</returns>
     public static async IAsyncEnumerable<DataContent> ToAsyncEnumerable(
-        this Stream audioStream,
+        this Stream stream,
         string? mediaType = null,
         int bufferSize = 4096,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -30,13 +30,13 @@ public static class StreamExtensions
         int bytesRead;
 #if NET8_0_OR_GREATER
         Memory<byte> buffer = new byte[bufferSize];
-        while ((bytesRead = await Throw.IfNull(audioStream).ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) > 0)
+        while ((bytesRead = await Throw.IfNull(stream).ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) > 0)
         {
             yield return new DataContent(buffer.Slice(0, bytesRead), mediaType)!;
         }
 #else
         var buffer = new byte[bufferSize];
-        while ((bytesRead = await Throw.IfNull(audioStream).ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false)) > 0)
+        while ((bytesRead = await Throw.IfNull(stream).ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false)) > 0)
         {
             byte[] chunk = new byte[bytesRead];
             Array.Copy(buffer, 0, chunk, 0, bytesRead);

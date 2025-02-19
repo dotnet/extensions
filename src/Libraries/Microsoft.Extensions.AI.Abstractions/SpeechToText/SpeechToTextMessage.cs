@@ -9,38 +9,38 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Represents a choice in an audio transcription.</summary>
-public class AudioTranscription
+/// <summary>Represents a choice in an speech to text.</summary>
+public class SpeechToTextMessage
 {
     private IList<AIContent>? _contents;
 
-    /// <summary>Initializes a new instance of the <see cref="AudioTranscription"/> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="SpeechToTextMessage"/> class.</summary>
     [JsonConstructor]
-    public AudioTranscription()
+    public SpeechToTextMessage()
     {
     }
 
-    /// <summary>Initializes a new instance of the <see cref="AudioTranscription"/> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="SpeechToTextMessage"/> class.</summary>
     /// <param name="content">Content of the message.</param>
-    public AudioTranscription(string? content)
+    public SpeechToTextMessage(string? content)
         : this(content is null ? [] : [new TextContent(content)])
     {
     }
 
-    /// <summary>Initializes a new instance of the <see cref="AudioTranscription"/> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="SpeechToTextMessage"/> class.</summary>
     /// <param name="contents">The contents for this message.</param>
-    public AudioTranscription(
+    public SpeechToTextMessage(
         IList<AIContent> contents)
     {
         _contents = Throw.IfNull(contents);
     }
 
-    /// <summary>Gets or sets the start time of the audio transcription choice.</summary>
-    /// <remarks>This represents the start of the transcription in relation to the original audio source length.</remarks>
+    /// <summary>Gets or sets the start time of the speech to text choice.</summary>
+    /// <remarks>This represents the start of the generated text in relation to the original speech audio source length.</remarks>
     public TimeSpan? StartTime { get; set; }
 
-    /// <summary>Gets or sets the end time of the audio transcription choice.</summary>
-    /// <remarks>This represents the end of the transcription in relation to the original audio source length.</remarks>
+    /// <summary>Gets or sets the end time of the speech to text choice.</summary>
+    /// <remarks>This represents the end of the generated text in relation to the original speech audio source length.</remarks>
     public TimeSpan? EndTime { get; set; }
 
     /// <summary>
@@ -67,7 +67,7 @@ public class AudioTranscription
         }
     }
 
-    /// <summary>Gets or sets the transcription content items.</summary>
+    /// <summary>Gets or sets the generated content items.</summary>
     [AllowNull]
     public IList<AIContent> Contents
     {
@@ -78,9 +78,9 @@ public class AudioTranscription
     /// <summary>Gets or sets the zero-based index of the input list with which this choice is associated.</summary>
     public int InputIndex { get; set; }
 
-    /// <summary>Gets or sets the raw representation of the audio transcription choice from an underlying implementation.</summary>
+    /// <summary>Gets or sets the raw representation of the speech to text choice from an underlying implementation.</summary>
     /// <remarks>
-    /// If a <see cref="AudioTranscription"/> is created to represent some underlying object from another object
+    /// If a <see cref="SpeechToTextMessage"/> is created to represent some underlying object from another object
     /// model, this property can be used to store that original object. This can be useful for debugging or
     /// for enabling a consumer to access the underlying object model if needed.
     /// </remarks>
