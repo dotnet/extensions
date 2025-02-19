@@ -84,7 +84,6 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
             ? reportOutputPath!
             : GeneratorUtilities.GetDefaultReportOutputPath(options);
 
-
         if (string.IsNullOrWhiteSpace(_directory))
         {
             // Report diagnostic:
