@@ -9,27 +9,27 @@
 
   <ItemGroup>
 <!--#if (IsOllama)
-    <PackageReference Include="OllamaSharp" Version="5.0.7" />
+    <PackageReference Include="OllamaSharp" Version="${OllamaSharpVersion}" />
 #elif (IsGHModels)
-    <PackageReference Include="OpenAI" Version="2.2.0-beta.1" />
+    <PackageReference Include="OpenAI" Version="${OpenAIVersion}" />
 #elif (IsAzureAiFoundry)
-    <PackageReference Include="Azure.AI.Projects" Version="1.0.0-beta.3" />
-    <PackageReference Include="Azure.AI.OpenAI" Version="2.2.0-beta.1" />
+    <PackageReference Include="Azure.AI.Projects" Version="${AzureAIProjectsVersion}" />
+    <PackageReference Include="Azure.AI.OpenAI" Version="${AzureAIOpenAIVersion}" />
 #else -->
-    <PackageReference Include="Azure.AI.OpenAI" Version="2.2.0-beta.1" />
-    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.3.0-preview.1.25114.11" />
+    <PackageReference Include="Azure.AI.OpenAI" Version="${AzureAIOpenAIVersion}" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${RepoVersion}" />
 <!--#endif -->
 <!--#if (UseManagedIdentity) -->
-    <PackageReference Include="Azure.Identity" Version="1.13.2" />
+    <PackageReference Include="Azure.Identity" Version="${AzureIdentityVersion}" />
 <!--#endif -->
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.2" />
-    <PackageReference Include="Microsoft.Extensions.AI" Version="9.3.0-preview.1.25114.11" />
-    <PackageReference Include="Microsoft.SemanticKernel.Core" Version="1.37.0" />
-    <PackageReference Include="PdfPig" Version="0.1.9" />
-    <PackageReference Include="System.Linq.Async" Version="6.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="${MicrosoftEntityFrameworkCoreSqliteVersion}" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="${RepoVersion}" />
+    <PackageReference Include="Microsoft.SemanticKernel.Core" Version="${MicrosoftSemanticKernelCoreVersion}" />
+    <PackageReference Include="PdfPig" Version="${PdfPigVersion}" />
+    <PackageReference Include="System.Linq.Async" Version="${SystemLinqAsyncVersion}" />
 <!--#if (UseAzureAISearch)
-    <PackageReference Include="Azure.Search.Documents" Version="11.6.0" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureAISearch" Version="1.37.0-preview" />
+    <PackageReference Include="Azure.Search.Documents" Version="${AzureSearchDocumentsVersion}" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureAISearch" Version="${MicrosoftSemanticKernelConnectorsAzureAISearchVersion}" />
 #endif -->
   </ItemGroup>
 
