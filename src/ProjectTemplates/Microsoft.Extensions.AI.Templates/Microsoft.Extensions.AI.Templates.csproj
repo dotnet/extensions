@@ -51,12 +51,15 @@
       Include="src\ChatWithCustomData\ChatWithCustomData.Web\ChatWithCustomData.Web.csproj.in"
       OutputPath="src\ChatWithCustomData\ChatWithCustomData.Web\ChatWithCustomData.Web.csproj" />
     <_GeneratedContent
+      Include="src\ChatWithCustomData\ChatWithCustomData.Web\Directory.Build.targets.in"
+      OutputPath="src\ChatWithCustomData\ChatWithCustomData.Web\Directory.Build.targets" />
+    <_GeneratedContent
       Include="src\ChatWithCustomData\ChatWithCustomData.Web\NuGet.config.in"
       OutputPath="src\ChatWithCustomData\ChatWithCustomData.Web\NuGet.config" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="src\ChatWithCustomData\**\*" Exclude="**\bin\**;**\obj\**;**\node_modules\**;**\*.user;**\*.csproj.in;**\*.out.js;**\*.generated.css;**\package-lock.json" />
+    <Content Include="src\ChatWithCustomData\**\*" Exclude="**\bin\**;**\obj\**;**\node_modules\**;**\*.user;**\*.in;**\*.out.js;**\*.generated.css;**\package-lock.json;**\NuGet.Config;**\Directory.Build.targets" />
     <Compile Remove="**\*" />
   </ItemGroup>
 
@@ -66,7 +69,7 @@
       <!-- We do this after the initial evaluation of this project file so all properties have been initialized. -->
       <_GeneratedContentRepoProperties>
         ArtifactsShippingPackagesDir=$(ArtifactsShippingPackagesDir);
-        RepoVersion=$(Version);
+        RepoPackageVersion=$(Version);
       </_GeneratedContentRepoProperties>
     </PropertyGroup>
 

@@ -17,13 +17,13 @@
     <PackageReference Include="Azure.AI.OpenAI" Version="${AzureAIOpenAIVersion}" />
 #else -->
     <PackageReference Include="Azure.AI.OpenAI" Version="${AzureAIOpenAIVersion}" />
-    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${RepoVersion}" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${RepoPackageVersion}" />
 <!--#endif -->
 <!--#if (UseManagedIdentity) -->
     <PackageReference Include="Azure.Identity" Version="${AzureIdentityVersion}" />
 <!--#endif -->
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="${MicrosoftEntityFrameworkCoreSqliteVersion}" />
-    <PackageReference Include="Microsoft.Extensions.AI" Version="${RepoVersion}" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="${RepoPackageVersion}" />
     <PackageReference Include="Microsoft.SemanticKernel.Core" Version="${MicrosoftSemanticKernelCoreVersion}" />
     <PackageReference Include="PdfPig" Version="${PdfPigVersion}" />
     <PackageReference Include="System.Linq.Async" Version="${SystemLinqAsyncVersion}" />
