@@ -102,6 +102,11 @@
     <UseVSTestRunner>true</UseVSTestRunner>
   </PropertyGroup>
 
+  <!-- Enable the Evaluation report builds on all CI builds -->
+  <PropertyGroup>
+    <EnableEvaluationReportBuild Condition="'$(ContinuousIntegrationBuild)'!=''">true</EnableEvaluationReportBuild>
+  </PropertyGroup>
+
   <!-- Common properties -->
   <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\Analyzers.props" />
   <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\Packaging.props" />
