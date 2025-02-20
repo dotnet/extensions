@@ -18,21 +18,22 @@ Or directly in the C# project file:
 </ItemGroup>
 ```
 
+To also have access to higher-level utilities for working with such components, instead reference the [Microsoft.Extensions.AI](https://www.nuget.org/packages/Microsoft.Extensions.AI)
+package. Libraries providing implementations of the abstractions will typically only reference `Microsoft.Extensions.AI.Abstractions`, whereas most consuming applications and services
+will reference the `Microsoft.Extensions.AI` package (which itself references `Microsoft.Extensions.AI.Abstractions`) along with one or more libraries that provide concrete implementations
+of the abstractions.
+
 ## Usage Examples
 
 ### `IChatClient`
 
-The `IChatClient` interface defines a client abstraction responsible for interacting with AI services that provide chat capabilities. It defines methods for sending and receiving messages comprised of multi-modal content (text, images, audio, etc.), either as a complete set or streamed incrementally. Additionally, it allows for retrieving strongly-typed services that may be provided by the client or its underlying services.
+The `IChatClient` interface defines a client abstraction responsible for interacting with AI services that provide "chat" capabilities. It defines methods for sending and receiving messages comprised of multi-modal content (text, images, audio, etc.), with responses being either as a complete result or streamed incrementally. Additionally, it allows for retrieving strongly-typed services that may be provided by the client or its underlying services.
 
 #### Sample Implementation
 
 .NET libraries that provide clients for language models and services may provide an implementation of the `IChatClient` interface. Any consumers of the interface are then able to interoperate seamlessly with these models and services via the abstractions.
 
-Here is a sample implementation of an `IChatClient` to show the general structure. You can find other concrete implementations in the following packages:
-
-- [Microsoft.Extensions.AI.AzureAIInference](https://aka.ms/meai-azaiinference-nuget)
-- [Microsoft.Extensions.AI.OpenAI](https://aka.ms/meai-openai-nuget)
-- [Microsoft.Extensions.AI.Ollama](https://aka.ms/meai-ollama-nuget)
+Here is a sample implementation of an `IChatClient` to show the general structure.
 
 ```csharp
 using System.Runtime.CompilerServices;
@@ -99,6 +100,12 @@ public class SampleChatClient : IChatClient
 }
 ```
 
+As further examples, you can find other concrete implementations in the following packages (but many more such implementations for a large variety of services are available on NuGet):
+
+- [Microsoft.Extensions.AI.AzureAIInference](https://aka.ms/meai-azaiinference-nuget)
+- [Microsoft.Extensions.AI.OpenAI](https://aka.ms/meai-openai-nuget)
+- [Microsoft.Extensions.AI.Ollama](https://aka.ms/meai-ollama-nuget)
+
 #### Requesting a Chat Response: `GetResponseAsync`
 
 With an instance of `IChatClient`, the `GetResponseAsync` method may be used to send a request and get a response. The request is composed of one or more messages, each of which is composed of one or more pieces of content. Accelerator methods exist to simplify common cases, such as constructing a request for a single piece of text content.
@@ -127,6 +134,22 @@ Console.WriteLine(await client.GetResponseAsync(
 ]));
 ```
 
+The `ChatResponse` that's returned from `GetResponseAsync` exposes a `ChatMessage` representing the response message. It may be added back into the history in order to provide this response back to the service in a subsequent request, e.g.
+
+```csharp
+List<ChatMessage> history = [];
+while (true)
+{
+    Console.Write("Q: ");
+    history.Add(new(ChatRole.User, Console.ReadLine()));
+
+    ChatResponse response = await client.GetResponseAsync(history);
+
+    Console.WriteLine(response);
+    history.Add(response.Message);
+}
+```
+
 #### Requesting a Streaming Chat Response: `GetStreamingResponseAsync`
 
 The inputs to `GetStreamingResponseAsync` are identical to those of `GetResponseAsync`. However, rather than returning the complete response as part of a `ChatResponse` object, the method returns an `IAsyncEnumerable<ChatResponseUpdate>`, providing a stream of updates that together form the single response.
@@ -142,9 +165,30 @@ await foreach (var update in client.GetStreamingResponseAsync("What is AI?"))
 }
 ```
 
-#### Tool calling
+Such a stream of response updates may be combined into a single response object via the `ToChatResponse` and `ToChatResponseAsync` helper methods, e.g.
 
-Some models and services support the notion of tool calling, where requests may include information about tools that the model may request be invoked in order to gather additional information, in particular functions. Rather than sending back a response message that represents the final response to the input, the model sends back a request to invoke a given function with a given set of arguments; the client may then find and invoke the relevant function and send back the results to the model (along with all the rest of the history). The abstractions in Microsoft.Extensions.AI include representations for various forms of content that may be included in messages, and this includes representations for these function call requests and results. While it's possible for the consumer of the `IChatClient` to interact with this content directly, `Microsoft.Extensions.AI` supports automating these interactions. It provides an `AIFunction` that represents an invocable function along with metadata for describing the function to the AI model, along with an `AIFunctionFactory` for creating `AIFunction`s to represent .NET methods. It also provides a `FunctionInvokingChatClient` that both is an `IChatClient` and also wraps an `IChatClient`, enabling layering automatic function invocation capabilities around an arbitrary `IChatClient` implementation.
+```csharp
+List<ChatMessage> history = [];
+List<ChatResponseUpdate> updates = [];
+while (true)
+{
+    Console.Write("Q: ");
+    history.Add(new(ChatRole.User, Console.ReadLine()));
+
+    updates.Clear();
+    await foreach (var update in client.GetStreamingResponseAsync(history))
+    {
+        Console.Write(update);
+        updates.Add(update);
+    }
+
+    history.Add(updates.ToChatResponse().Message));
+}
+```
+
+#### Tool Calling
+
+Some models and services support the notion of tool calling, where requests may include information about tools (in particular .NET methods) that the model may request be invoked in order to gather additional information. Rather than sending back a response message that represents the final response to the input, the model sends back a request to invoke a given function with a given set of arguments; the client may then find and invoke the relevant function and send back the results to the model (along with all the rest of the history). The abstractions in Microsoft.Extensions.AI include representations for various forms of content that may be included in messages, and this includes representations for these function call requests and results. While it's possible for the consumer of the `IChatClient` to interact with this content directly, `Microsoft.Extensions.AI` supports automating these interactions. It provides an `AIFunction` that represents an invocable function along with metadata for describing the function to the AI model, along with an `AIFunctionFactory` for creating `AIFunction`s to represent .NET methods. It also provides a `FunctionInvokingChatClient` that both is an `IChatClient` and also wraps an `IChatClient`, enabling layering automatic function invocation capabilities around an arbitrary `IChatClient` implementation.
 
 ```csharp
 using System.ComponentModel;
@@ -215,6 +259,8 @@ IChatClient client = new ChatClientBuilder(new SampleChatClient(new Uri("http://
 Console.WriteLine((await client.GetResponseAsync("What is AI?")).Message);
 ```
 
+Alternatively, the `LoggingChatClient` and corresponding `UseLogging` method provide a simple way to write log entries to an `ILogger` for every request and response.
+
 #### Options
 
 Every call to `GetResponseAsync` or `GetStreamingResponseAsync` may optionally supply a `ChatOptions` instance containing additional parameters for the operation. The most common parameters that are common amongst AI models and services show up as strongly-typed properties on the type, such as `ChatOptions.Temperature`. Other parameters may be supplied by name in a weakly-typed manner via the `ChatOptions.AdditionalProperties` dictionary.
@@ -231,7 +277,7 @@ Console.WriteLine(await client.GetResponseAsync("What is AI?")); // will request
 Console.WriteLine(await client.GetResponseAsync("What is AI?", new() { ModelId = "llama3.1" })); // will request "llama3.1"
 ```
 
-#### Pipelines of Functionality
+#### Pipelines of Chat Functionality
 
 All of these `IChatClient`s may be layered, creating a pipeline of any number of components that all add additional functionality. Such components may come from `Microsoft.Extensions.AI`, may come from other NuGet packages, or may be your own custom implementations that augment the behavior in whatever ways you need.
 
@@ -249,7 +295,7 @@ var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
     .AddConsoleExporter()
     .Build();
 
-// Explore changing the order of the intermediate "Use" calls to see that impact
+// Explore changing the order of the intermediate "Use" calls to see the impact
 // that has on what gets cached, traced, etc.
 IChatClient client = new ChatClientBuilder(new OllamaChatClient(new Uri("http://localhost:11434"), "llama3.1"))
     .UseDistributedCache(new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions())))
@@ -408,7 +454,7 @@ another overload of `Use` exists that accepts a delegate for each.
 
 #### Dependency Injection
 
-`IChatClient` implementations will typically be provided to an application via dependency injection (DI). In this example, an `IDistributedCache` is added into the DI container, as is an `IChatClient`. The registration for the `IChatClient` employs a builder that creates a pipeline containing a caching client (which will then use an `IDistributedCache` retrieved from DI) and the sample client. Elsewhere in the app, the injected `IChatClient` may be retrieved and used.
+While not required, `IChatClient` implementations will often be provided to an application via dependency injection (DI). In this example, an `IDistributedCache` is added into the DI container, as is an `IChatClient`. The registration for the `IChatClient` employs a builder that creates a pipeline containing a caching client (which will then use an `IDistributedCache` retrieved from DI) and the sample client. Elsewhere in the app, the injected `IChatClient` may be retrieved and used.
 
 ```csharp
 using Microsoft.Extensions.AI;
@@ -428,6 +474,81 @@ Console.WriteLine(await chatClient.GetResponseAsync("What is AI?"));
 ```
 
 What instance and configuration is injected may differ based on the current needs of the application, and multiple pipelines may be injected with different keys.
+
+#### Stateless vs Stateful Clients
+
+"Stateless" services require all relevant conversation history to sent back on every request, while "stateful" services keep track of the history and instead
+require only additional messages be sent with a request. The `IChatClient` interface is designed to handle both stateless and stateful AI services.
+
+If you know you're working with a stateless service (currently the most common form), responses may be added back into a message history for sending back to the server.
+```csharp
+List<ChatMessage> history = [];
+while (true)
+{
+    Console.Write("Q: ");
+    history.Add(new(ChatRole.User, Console.ReadLine()));
+
+    ChatResponse response = await client.GetResponseAsync(history);
+
+    Console.WriteLine(response);
+    history.Add(response.Message);
+}
+```
+
+For stateful services, you may know ahead of time an identifier used for the relevant conversation. That identifier can be put into `ChatOptions.ChatThreadId`:
+```csharp
+ChatOptions options = new() { ChatThreadId = "my-conversation-id" };
+while (true)
+{
+    Console.Write("Q: ");
+
+    ChatResponse response = await client.GetResponseAsync(Console.ReadLine(), options);
+
+    Console.WriteLine(response);
+}
+```
+
+Some services may support automatically creating a thread ID for a request that doesn't have one. In such cases, you can transfer the `ChatResponse.ChatThreadId` over
+to the `ChatOptions.ChatThreadId` for subsequent requests, e.g.
+```csharp
+ChatOptions options = new();
+while (true)
+{
+    Console.Write("Q: ");
+
+    ChatResponse response = await client.GetResponseAsync(Console.ReadLine(), options);
+
+    Console.WriteLine(response);
+    options.ChatThreadId = response.ChatThreadId;
+}
+```
+
+If you don't know ahead of time whether the service is stateless or stateful, both can be accomodated by checking the response `ChatThreadId`
+and acting based on its value. Here, if the response `ChatThreadId` is set, then that value is propagated to the options and the history
+cleared so as to not resend the same history again. If, however, the `ChatThreadId` is not set, then the response message is added to the
+history so that it's sent back to the service on the next turn.
+```csharp
+List<ChatMessage> history = [];
+ChatOptions options = new();
+while (true)
+{
+    Console.Write("Q: ");
+    history.Add(new(ChatRole.User, Console.ReadLine()));
+
+    ChatResponse response = await client.GetResponseAsync(history);
+
+    Console.WriteLine(response);
+    options.ChatThreadId = response.ChatThreadId;
+    if (response.ChatThreadId is not null)
+    {
+        history.Clear();
+    }
+    else
+    {
+        history.Add(response.Message);
+    }
+}
+```
 
 ### IEmbeddingGenerator
 
@@ -476,7 +597,7 @@ public class SampleEmbeddingGenerator(Uri endpoint, string modelId) : IEmbedding
 }
 ```
 
-#### Creating an embedding: `GenerateAsync`
+#### Creating an Embedding: `GenerateAsync`
 
 The primary operation performed with an `IEmbeddingGenerator` is generating embeddings, which is accomplished with its `GenerateAsync` method.
 
@@ -492,7 +613,17 @@ foreach (var embedding in await generator.GenerateAsync(["What is AI?", "What is
 }
 ```
 
-#### Middleware
+Accelerator extension methods also exist to simplify common cases, such as generating an embedding vector from a single input, e.g.
+```csharp
+using Microsoft.Extensions.AI;
+
+IEmbeddingGenerator<string, Embedding<float>> generator =
+    new SampleEmbeddingGenerator(new Uri("http://coolsite.ai"), "my-custom-model");
+
+ReadOnlyMemory<float> vector = generator.GenerateEmbeddingVectorAsync("What is AI?");
+```
+
+#### Pipelines of Functionality
 
 As with `IChatClient`, `IEmbeddingGenerator` implementations may be layered. Just as `Microsoft.Extensions.AI` provides delegating implementations of `IChatClient` for caching and telemetry, it does so for `IEmbeddingGenerator` as well.
 
