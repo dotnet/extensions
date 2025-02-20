@@ -12,7 +12,7 @@
     <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
     <EnablePackageValidation>false</EnablePackageValidation>
     <!-- The evaluators in this assembly need AI and the tests that cover them are not being run in CI at the moment. -->
-    <MinCodeCoverage>0</MinCodeCoverage>
+    <MinCodeCoverage>4</MinCodeCoverage>
     <MinMutationScore>0</MinMutationScore>
   </PropertyGroup>
 
