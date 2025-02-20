@@ -40,7 +40,7 @@ dotnet run
 
 ## Installing the templates locally
 
-First, create the template NuGet package by project by navigating to the `Microsoft.Extensions.AI.Templates` folder and running:
+First, create the template NuGet package by navigating to the `Microsoft.Extensions.AI.Templates` folder and running:
 ```sh
 dotnet pack
 ```
