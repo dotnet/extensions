@@ -104,7 +104,7 @@
 
   <!-- Enable the Evaluation report builds on all CI builds -->
   <PropertyGroup>
-    <EnableEvaluationReportBuild Condition="'$(ContinuousIntegrationBuild)'!=''">true</EnableEvaluationReportBuild>
+    <EnableEvaluationReportBuild Condition="'$(ContinuousIntegrationBuild)'=='true'">true</EnableEvaluationReportBuild>
   </PropertyGroup>
 
   <!-- Common properties -->
