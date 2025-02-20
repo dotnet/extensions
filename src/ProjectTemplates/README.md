@@ -15,8 +15,13 @@ To add a new dependency, run `npm install <package-name>` and update the `script
 
 Regardless of how you run AI templates locally, you must first generate NuGet packages for `Microsoft.Extensions.AI` projects defined within this repo:
 ```sh
-.\build.cmd -vs AI -noLaunch # Generate an SDK.sln for `Microsoft.Extensions.AI*` projects
+.\build.cmd -vs AI -noLaunch # Generate an SDK.sln for Microsoft.Extensions.AI* projects
 .\build.cmd -build -pack     # Build a NuGet package for each project
+```
+
+**Note:** Since package versions don't change between local builds, it may be necessary to occasionally delete `Microsoft.Extensions.AI*` packages from your local nuget cache, especially if you're making changes to these packages. An example of how to do this in PowerShell is:
+```pwsh
+Remove-Item ~\.nuget\packages\microsoft.extensions.ai* -Recurse -Force
 ```
 
 ## Running directly within the repo
