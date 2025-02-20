@@ -74,12 +74,6 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
             return;
         }
 
-        if ((context.SyntaxReceiver is not TypeDeclarationSyntaxReceiver || ((TypeDeclarationSyntaxReceiver)context.SyntaxReceiver).TypeDeclarations.Count == 0))
-        {
-            // nothing to do yet
-            return;
-        }
-
         var options = context.AnalyzerConfigOptions.GlobalOptions;
         _directory ??= GeneratorUtilities.TryRetrieveOptionsValue(options, ReportOutputPathMSBuildProperty, out var reportOutputPath)
             ? reportOutputPath!
