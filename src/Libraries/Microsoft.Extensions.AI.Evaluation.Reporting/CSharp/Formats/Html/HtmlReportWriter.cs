@@ -68,8 +68,8 @@ public sealed class HtmlReportWriter(string reportFilePath) : IEvaluationReportW
 #endif
     }
 
-    private static string HtmlTemplateBefore { get; }
-    private static string HtmlTemplateAfter { get; }
+    internal static string HtmlTemplateBefore { get; }
+    internal static string HtmlTemplateAfter { get; }
 
 #pragma warning disable CA1065, S3877
     // CA1065, S3877: Do not raise exceptions in static constructors.
