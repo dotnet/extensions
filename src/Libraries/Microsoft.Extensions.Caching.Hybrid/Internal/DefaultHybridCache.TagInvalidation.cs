@@ -28,21 +28,21 @@ internal partial class DefaultHybridCache
             return default; // nothing sensible to do
         }
 
-        var now = CurrentTimestamp();
+        long now = CurrentTimestamp();
         InvalidateTagLocalCore(tag, now, isNow: true); // isNow to be 100% explicit
         return InvalidateL2TagAsync(tag, now, token);
     }
 
     public bool IsValid(CacheItem cacheItem)
     {
-        var timestamp = cacheItem.CreationTimestamp;
+        long timestamp = cacheItem.CreationTimestamp;
 
         if (IsWildcardExpired(timestamp))
         {
             return false;
         }
 
-        var tags = cacheItem.Tags;
+        TagSet tags = cacheItem.Tags;
         switch (tags.Count)
         {
             case 0:
@@ -53,7 +53,7 @@ internal partial class DefaultHybridCache
 
             default:
                 bool allValid = true;
-                foreach (var tag in tags.GetSpanPrechecked())
+                foreach (string tag in tags.GetSpanPrechecked())
                 {
                     if (IsTagExpired(tag, timestamp, out _))
                     {
@@ -111,7 +111,7 @@ internal partial class DefaultHybridCache
     public bool IsTagExpired(string tag, long timestamp, out bool isPending)
     {
         isPending = false;
-        if (!_tagInvalidationTimes.TryGetValue(tag, out var pending))
+        if (!_tagInvalidationTimes.TryGetValue(tag, out Task<long>? pending))
         {
             // not in the tag invalidation cache; if we have L2, need to check there
             if (HasBackendCache)
@@ -167,7 +167,7 @@ internal partial class DefaultHybridCache
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "Manual async unwrap")]
     public ValueTask<bool> IsTagExpiredAsync(string tag, long timestamp)
     {
-        if (!_tagInvalidationTimes.TryGetValue(tag, out var pending))
+        if (!_tagInvalidationTimes.TryGetValue(tag, out Task<long>? pending))
         {
             // not in the tag invalidation cache; if we have L2, need to check there
             if (HasBackendCache)
@@ -219,7 +219,7 @@ internal partial class DefaultHybridCache
                     PrefetchTagWithBackendCache(tags.GetSinglePrechecked());
                     break;
                 default:
-                    foreach (var tag in tags.GetSpanPrechecked())
+                    foreach (string tag in tags.GetSpanPrechecked())
                     {
                         PrefetchTagWithBackendCache(tag);
                     }
@@ -231,7 +231,7 @@ internal partial class DefaultHybridCache
 
     private void PrefetchTagWithBackendCache(string tag)
     {
-        if (!_tagInvalidationTimes.TryGetValue(tag, out var pending))
+        if (!_tagInvalidationTimes.TryGetValue(tag, out Task<long>? pending))
         {
             _ = _tagInvalidationTimes.TryAdd(tag, SafeReadTagInvalidationAsync(tag));
         }
@@ -239,7 +239,7 @@ internal partial class DefaultHybridCache
 
     private void InvalidateTagLocalCore(string tag, long timestamp, bool isNow)
     {
-        var timestampTask = Task.FromResult<long>(timestamp);
+        Task<long> timestampTask = Task.FromResult<long>(timestamp);
         if (tag == TagSet.WildcardTag)
         {
             _globalInvalidateTimestamp = timestampTask;

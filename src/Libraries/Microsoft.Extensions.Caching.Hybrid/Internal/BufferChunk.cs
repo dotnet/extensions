@@ -55,14 +55,14 @@ internal readonly struct BufferChunk
 
     public byte[] ToArray()
     {
-        var length = Length;
+        int length = Length;
         if (length == 0)
         {
             return [];
         }
 
-        var copy = new byte[length];
-        Buffer.BlockCopy(OversizedArray!, Offset, copy, 0, length);
+        byte[] copy = new byte[length];
+        OversizedArray.AsSpan(Offset, length).CopyTo(copy);
         return copy;
 
         // Note on nullability of Array; the usage here is that a non-null array
@@ -93,7 +93,7 @@ internal readonly struct BufferChunk
 
     internal BufferChunk DoNotReturnToPool()
     {
-        var copy = this;
+        BufferChunk copy = this;
         Unsafe.AsRef(in copy._lengthAndPoolFlag) &= ~FlagReturnToPool;
         Debug.Assert(copy.Length == Length, "same length expected");
         Debug.Assert(!copy.ReturnToPool, "do not return to pool");

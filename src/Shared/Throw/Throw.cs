@@ -279,7 +279,7 @@ internal static partial class Throw
 
                     break;
                 default:
-                    using (var enumerator = argument.GetEnumerator())
+                    using (IEnumerator<T> enumerator = argument.GetEnumerator())
                     {
                         if (!enumerator.MoveNext())
                         {
