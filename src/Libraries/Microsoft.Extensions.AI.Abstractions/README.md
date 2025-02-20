@@ -277,7 +277,7 @@ Console.WriteLine(await client.GetResponseAsync("What is AI?")); // will request
 Console.WriteLine(await client.GetResponseAsync("What is AI?", new() { ModelId = "llama3.1" })); // will request "llama3.1"
 ```
 
-#### Pipelines of Client Functionality
+#### Pipelines of Chat Functionality
 
 All of these `IChatClient`s may be layered, creating a pipeline of any number of components that all add additional functionality. Such components may come from `Microsoft.Extensions.AI`, may come from other NuGet packages, or may be your own custom implementations that augment the behavior in whatever ways you need.
 
