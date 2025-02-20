@@ -5,10 +5,10 @@
 -->
 <configuration>
   <packageSources>
-    <add key="repo" value="${ArtifactsShippingPackagesDir}" />
+    <add key="local-shipping" value="${ArtifactsShippingPackagesDir}" />
   </packageSources>
   <packageSourceMapping>
-    <packageSource key="repo">
+    <packageSource key="local-shipping">
       <package pattern="*" />
     </packageSource>
   </packageSourceMapping>

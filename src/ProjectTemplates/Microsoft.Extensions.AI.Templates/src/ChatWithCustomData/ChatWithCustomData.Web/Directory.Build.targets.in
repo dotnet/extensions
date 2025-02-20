@@ -1,3 +1,7 @@
+<!--
+  This file only exists to support functionality allowing running the template locally.
+  It will not get included in the built project template.
+-->
 <Project>
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
 
