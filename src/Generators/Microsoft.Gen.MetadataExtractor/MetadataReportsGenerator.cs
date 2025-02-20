@@ -71,6 +71,7 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
             ((TypeDeclarationSyntaxReceiver)context.SyntaxReceiver).TypeDeclarations.Count == 0 ||
             !GeneratorUtilities.ShouldGenerateReport(context, GenerateMetadataMSBuildProperty))
         {
+            // nothing to do yet
             return;
         }
 
