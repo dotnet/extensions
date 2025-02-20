@@ -11,7 +11,7 @@ To update project template JavaScript dependencies:
 
 To add a new dependency, run `npm install <package-name>` and update the `scripts` section in `package.json` to specify how the new dependency should be copied into its template.
 
-## Testing AI templates locally
+# Testing AI templates locally
 
 Regardless of how you run AI templates locally, you must first generate NuGet packages for `Microsoft.Extensions.AI` projects defined within this repo:
 ```sh
@@ -19,7 +19,7 @@ Regardless of how you run AI templates locally, you must first generate NuGet pa
 .\build.cmd -build -pack     # Build a NuGet package for each project
 ```
 
-### Running directly within the repo
+## Running directly within the repo
 
 Navigate to the `Microsoft.Extensions.AI.Templates` folder and run:
 ```sh
@@ -33,7 +33,7 @@ Now, you can navigate to a folder containg a template's `.csproj` file and run:
 dotnet run
 ```
 
-### Installing and testing the templates locally
+## Installing the templates locally
 
 First, create the template NuGet package by project by navigating to the `Microsoft.Extensions.AI.Templates` folder and running:
 ```sh
