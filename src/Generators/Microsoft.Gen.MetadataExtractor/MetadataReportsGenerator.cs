@@ -29,14 +29,14 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
     /// Initializes a new instance of the <see cref="MetadataReportsGenerator"/> class.
     /// </summary>
     public MetadataReportsGenerator()
-    : this(null)
+    : this(filePath: null)
     {
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MetadataReportsGenerator"/> class.
     /// </summary>
-    /// <param name="filePath">The report file name.</param>
+    /// <param name="filePath">The report path and name.</param>
     public MetadataReportsGenerator(string? filePath)
     {
         if (filePath is not null)

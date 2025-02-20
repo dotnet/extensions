@@ -19,11 +19,19 @@ public class MetricsReportsGenerator : ISourceGenerator
     private const string FallbackFileName = "MetricsReport.json";
     private readonly string _fileName;
     private string? _directory;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MetricsReportsGenerator"/> class.
+    /// </summary>
     public MetricsReportsGenerator()
-        : this(null)
+        : this(filePath: null)
     {
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MetricsReportsGenerator"/> class.
+    /// </summary>
+    /// <param name="filePath">The report path and name.</param>
     internal MetricsReportsGenerator(string? filePath)
     {
         if (filePath is not null)
