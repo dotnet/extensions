@@ -22,7 +22,7 @@
     <NoPackageAnalysis>true</NoPackageAnalysis>
 
     <!-- Use for incremental builds. When versions or dependencies of templates change, this file is updated and causes a re-build. -->
-    <_GenerateContentPropertiesHashFile>$(IntermediateOutputPath)$(MSBuildProjectName).content.g.cache</_GenerateContentPropertiesHashFile>
+    <_GeneratedContentPropertiesHashFile>$(IntermediateOutputPath)$(MSBuildProjectName).content.g.cache</_GeneratedContentPropertiesHashFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -84,7 +84,7 @@
       <Output TaskParameter="HashResult" PropertyName="_GeneratedContentPropertiesHash" />
     </Hash>
 
-    <WriteLinesToFile Overwrite="true" Lines="$(_GeneratedContentPropertiesHash)" File="$(_GenerateContentPropertiesHashFile)" WriteOnlyWhenDifferent="true" />
+    <WriteLinesToFile Overwrite="true" Lines="$(_GeneratedContentPropertiesHash)" File="$(_GeneratedContentPropertiesHashFile)" WriteOnlyWhenDifferent="true" />
   </Target>
 
   <Target Name="_GenerateContent"
