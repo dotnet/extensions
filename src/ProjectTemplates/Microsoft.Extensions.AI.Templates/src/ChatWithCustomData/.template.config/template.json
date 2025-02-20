@@ -3,9 +3,9 @@
   "author": "Microsoft",
   "classifications": [ "Common", "AI", "Web" ],
   "identity": "Microsoft.Extensions.AI.Templates.Chat.CSharp",
-  "name": "AI Chat with Custom Data",
-  "description": "A project template for creating an AI chat application. It can perform retrieval-augmented generation (RAG) using your own data.",
-  "shortName": "chat",
+  "name": "AI Starter Web App",
+  "description": "A project template for creating an AI chat application, which uses retrieval-augmented generation (RAG) to chat with your own data.",
+  "shortName": "aistarterweb",
   "defaultName": "ChatApp",
   "sourceName": "ChatWithCustomData.Web", // TODO: When we support multi-project output, this needs to change to ChatWithCustomData, then we need some other technique to make it avoid emitting a .Web suffix in the single-project case
   "tags": {
@@ -14,6 +14,10 @@
   },
   "guids": [
     "d5681fae-b21b-4114-b781-48180f08c0c4"
+  ],
+  "primaryOutputs": [
+    {"path": "./ChatWithCustomData.Web.csproj"},
+    {"path": "./README.md"}
   ],
   "sources": [{
     "source": "./",
@@ -41,7 +45,8 @@
         }
       ],
       "replaces": "net9.0",
-      "defaultValue": "net9.0"
+      "defaultValue": "net9.0",
+      "displayName": "Framework"
     },
     "hostIdentifier": {
       "type": "bind",
@@ -71,7 +76,7 @@
         {
           "choice": "ollama",
           "displayName": "Ollama (for local development)",
-          "description": "Uses Ollama with the llama3.2 model for local development"
+          "description": "Uses Ollama with the llama3.2 and all-minilm models"
         }
         // {
         //   "choice": "azureaifoundry",
@@ -79,14 +84,6 @@
         //   "description": "Uses Azure AI Foundry (Preview)"
         // }
       ]
-    },
-    "UseManagedIdentity": {
-      "type": "parameter",
-      "displayName": "Use managed identity",
-      "datatype": "bool",
-      "defaultValue": "true",
-      "isEnabled": "(AiServiceProvider == \"azureopenai\")",
-      "description": "Use managed identity to access Azure services"
     },
     "VectorStore": {
       "type": "parameter",
@@ -106,11 +103,19 @@
         }
       ]
     },
-    "IsAzureOpenAi": {
+    "UseManagedIdentity": {
+      "type": "parameter",
+      "displayName": "Use keyless authentication for Azure services",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "isEnabled": "(AiServiceProvider == \"azureopenai\" || AiServiceProvider == \"azureaifoundry\" || VectorStore == \"azureaisearch\")",
+      "description": "Use managed identity to access Azure services"
+    },
+    "IsAzureOpenAI": {
       "type": "computed",
       "value": "(AiServiceProvider == \"azureopenai\")"
     },
-    "IsOpenAi": {
+    "IsOpenAI": {
       "type": "computed",
       "value": "(AiServiceProvider == \"openai\")"
     },
@@ -122,7 +127,7 @@
       "type": "computed",
       "value": "(AiServiceProvider == \"ollama\")"
     },
-    "IsAzureAiFoundry": {
+    "IsAzureAIFoundry": {
       "type": "computed",
       "value": "(AiServiceProvider == \"azureaifoundry\")"
     },
@@ -133,6 +138,10 @@
     "UseLocalVectorStore": {
       "type": "computed",
       "value": "(VectorStore == \"local\")"
+    },
+    "UseAzure": {
+      "type": "computed",
+      "value": "(IsAzureOpenAI || IsAzureAiFoundry || UseAzureAISearch)"
     },
     "ChatModel": {
       "type": "parameter",
@@ -257,6 +266,35 @@
       "onlyIf": [{
         "after": "localhost:"
       }]
+    }
+  },
+  
+  "postActions": [{
+    "condition": "(hostIdentifier != \"dotnetcli\")",
+    "description": "Opens README file in the editor",
+    "manualInstructions": [ ],
+    "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+    "args": {
+      "files": "1"
+    },
+    "continueOnError": true
+  }],
+  "SpecialCustomOperations": {
+    "**/*.md": {
+      "operations": [
+        {
+          "type": "conditional",
+          "configuration": {
+            "if": ["#### ---#if"],
+            "else": ["#### ---#else"],
+            "elseif": ["#### ---#elseif", "#### ---#elif"],
+            "endif": ["#### ---#endif"],
+            "trim" : "true",
+            "wholeLine": "true",
+            "evaluator": "C++"
+          }
+        }
+      ]
     }
   }
 }
