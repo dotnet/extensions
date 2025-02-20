@@ -48,9 +48,8 @@ steps:
             -configuration ${{ parameters.buildConfig }}
             -warnAsError ${{ parameters.warnAsError }}
             /bl:${{ parameters.repoLogPath }}/build.binlog
+            /p:EnableEvaluationReportBuild=true
             $(_OfficialBuildIdArgs)
-    env:
-      EnableEvaluationReportBuild: "true"
     displayName: Build
 
   - ${{ if eq(parameters.isWindows, 'true') }}:
@@ -63,8 +62,6 @@ steps:
               --settings $(Build.SourcesDirectory)/eng/CodeCoverage.config
               --output ${{ parameters.repoTestResultsPath }}/$(Agent.JobName)_CodeCoverageResults/$(Agent.JobName)_cobertura.xml
               "${{ parameters.buildScript }} -test -configuration ${{ parameters.buildConfig }} /bl:${{ parameters.repoLogPath }}/tests.binlog $(_OfficialBuildIdArgs)"
-      env:
-        EnableEvaluationReportBuild: "true"
       displayName: Run tests
 
     - pwsh: |
@@ -122,8 +119,6 @@ steps:
               -warnAsError 1
               /bl:${{ parameters.repoLogPath }}/pack.binlog
               /p:Restore=false /p:Build=false
+              /p:EnableEvaluationReportBuild=true
               $(_OfficialBuildIdArgs)
-      env:
-        EnableEvaluationReportBuild: "true"
       displayName: Pack, sign, and publish
-  
