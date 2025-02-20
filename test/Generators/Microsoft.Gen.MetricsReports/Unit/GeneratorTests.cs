@@ -41,21 +41,22 @@ public class GeneratorTests(ITestOutputHelper output)
 
         foreach (var inputFile in Directory.GetFiles("TestClasses"))
         {
-            var stem = Path.GetFileNameWithoutExtension(inputFile);
-            var goldenFileName = Path.ChangeExtension(stem, ".json");
-            var goldenReportPath = Path.Combine("GoldenReports", goldenFileName);
-            var tmp = Path.GetTempFileName();
+            string stem = Path.GetFileNameWithoutExtension(inputFile);
+            string goldenFileName = Path.ChangeExtension(stem, ".json");
+            string goldenReportPath = Path.Combine("GoldenReports", goldenFileName);
+
             if (File.Exists(goldenReportPath))
             {
-                var d = await RunGenerator(await File.ReadAllTextAsync(inputFile), tmp, options);
-                Assert.Empty(d);
+                string temporaryReportFile = Path.GetTempFileName();
+                var diagnostic = await RunGenerator(await File.ReadAllTextAsync(inputFile), temporaryReportFile, options);
+                Assert.Empty(diagnostic);
 
-                var golden = await File.ReadAllTextAsync(goldenReportPath);
-                var generated = await File.ReadAllTextAsync(tmp);
+                string golden = await File.ReadAllTextAsync(goldenReportPath);
+                string generated = await File.ReadAllTextAsync(temporaryReportFile);
 
                 if (golden != generated)
                 {
-                    output.WriteLine($"MISMATCH: golden report {goldenReportPath}, generated {tmp}");
+                    output.WriteLine($"MISMATCH: golden report {goldenReportPath}, generated {temporaryReportFile}");
                     output.WriteLine("----");
                     output.WriteLine("golden:");
                     output.WriteLine(golden);
@@ -65,14 +66,14 @@ public class GeneratorTests(ITestOutputHelper output)
                     output.WriteLine("----");
                 }
 
-                File.Delete(tmp);
+                File.Delete(temporaryReportFile);
                 Assert.Equal(golden, generated);
             }
             else
             {
                 // generate the golden file if it doesn't already exist
                 output.WriteLine($"Generating golden report: {goldenReportPath}");
-                _ = await RunGenerator(await File.ReadAllTextAsync(inputFile), tmp, options);
+                _ = await RunGenerator(await File.ReadAllTextAsync(inputFile), goldenFileName, options);
             }
         }
     }
