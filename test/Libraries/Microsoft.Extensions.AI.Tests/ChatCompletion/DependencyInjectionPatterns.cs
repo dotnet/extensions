@@ -2,8 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+
+#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
 
 namespace Microsoft.Extensions.AI;
 
@@ -199,9 +204,53 @@ public class DependencyInjectionPatterns
         Assert.Equal(expectedLifetime, sd.Lifetime);
     }
 
+    [Fact]
+    public void AddChatClient_GenericRegistration()
+    {
+        ServiceCollection sc = new();
+        ChatClientBuilder builder = sc.AddChatClient<ServiceWithDependency>();
+        sc.AddSingleton<IDependency, Dependency>();
+
+        var serviceProvider = sc.BuildServiceProvider();
+        var service = Assert.IsType<ServiceWithDependency>(serviceProvider.GetRequiredService<IChatClient>());
+        Assert.IsType<Dependency>(service.Dependency);
+    }
+
+    [Fact]
+    public void AddEmbeddingGenerator_GenericRegistration()
+    {
+        ServiceCollection sc = new();
+        EmbeddingGeneratorBuilder<string, Embedding<float>> builder = sc.AddEmbeddingGenerator<string, Embedding<float>, ServiceWithDependency>();
+        sc.AddSingleton<IDependency, Dependency>();
+
+        var serviceProvider = sc.BuildServiceProvider();
+        var service = Assert.IsType<ServiceWithDependency>(serviceProvider.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>());
+        Assert.IsType<Dependency>(service.Dependency);
+    }
+
     public class SingletonMiddleware(IChatClient inner, IServiceProvider services) : DelegatingChatClient(inner)
     {
         public new IChatClient InnerClient => base.InnerClient;
         public IServiceProvider Services => services;
+    }
+
+    public interface IDependency;
+    public class Dependency : IDependency;
+
+    public class ServiceWithDependency(IDependency dependency) : IChatClient, IEmbeddingGenerator<string, Embedding<float>>
+    {
+        public IDependency Dependency => dependency;
+        public Task<ChatResponse> GetResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+        public object? GetService(Type serviceType, object? serviceKey = null) => throw new NotSupportedException();
+        public Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(IEnumerable<string> values, EmbeddingGenerationOptions? options = null, CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
+
+        public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
+
+        public void Dispose()
+        {
+            (dependency as IDisposable)?.Dispose();
+        }
     }
 }
