@@ -52,7 +52,8 @@ variables:
     value: $(Build.Arcade.ArtifactsPath)log/$(_BuildConfig)/
   - name: Build.Arcade.TestResultsPath
     value: $(Build.Arcade.ArtifactsPath)TestResults/$(_BuildConfig)/
-
+  - name: Build.Arcade.VSIXOutputPath
+    value: $(Build.Arcade.ArtifactsPath)VSSetup/$(_BuildConfig)/
   - name: SkipQualityGates
     value: false
   - name: _TeamName
