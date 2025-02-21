@@ -52,7 +52,7 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
 
     public static RecyclableArrayBufferWriter<T> Create(int maxLength)
     {
-        var obj = Interlocked.Exchange(ref _spare, null) ?? new();
+        RecyclableArrayBufferWriter<T> obj = Interlocked.Exchange(ref _spare, null) ?? new();
         obj.Initialize(maxLength);
         return obj;
     }
@@ -69,7 +69,7 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
         _index = 0;
         if (Interlocked.CompareExchange(ref _spare, this, null) != null)
         {
-            var tmp = _buffer;
+            T[] tmp = _buffer;
             _buffer = [];
             if (tmp.Length != 0)
             {
@@ -138,7 +138,7 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
     /// </summary>
     internal T[] DetachCommitted(out int length)
     {
-        var tmp = _index == 0 ? [] : _buffer;
+        T[] tmp = _index == 0 ? [] : _buffer;
         length = _index;
 
         _buffer = [];
@@ -162,22 +162,22 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
 
         if (sizeHint > FreeCapacity)
         {
-            var currentLength = _buffer.Length;
+            int currentLength = _buffer.Length;
 
             // Attempt to grow by the larger of the sizeHint and double the current size.
-            var growBy = Math.Max(sizeHint, currentLength);
+            int growBy = Math.Max(sizeHint, currentLength);
 
             if (currentLength == 0)
             {
                 growBy = Math.Max(growBy, DefaultInitialBufferSize);
             }
 
-            var newSize = currentLength + growBy;
+            int newSize = currentLength + growBy;
 
             if ((uint)newSize > int.MaxValue)
             {
                 // Attempt to grow to ArrayMaxLength.
-                var needed = (uint)(currentLength - FreeCapacity + sizeHint);
+                uint needed = (uint)(currentLength - FreeCapacity + sizeHint);
                 Debug.Assert(needed > currentLength, "should need to grow");
 
                 if (needed > ArrayMaxLength)
@@ -189,7 +189,7 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
             }
 
             // resize the backing buffer
-            var oldArray = _buffer;
+            T[] oldArray = _buffer;
             _buffer = ArrayPool<T>.Shared.Rent(newSize);
             oldArray.AsSpan(0, _index).CopyTo(_buffer);
             if (oldArray.Length != 0)

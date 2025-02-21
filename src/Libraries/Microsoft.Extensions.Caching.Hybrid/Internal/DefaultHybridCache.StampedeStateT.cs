@@ -89,7 +89,7 @@ internal partial class DefaultHybridCache
             static async ValueTask<T> WithCancellationAsync(ILogger log, StampedeState<TState, T> stampede, CancellationToken token)
             {
                 var cancelStub = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-                using var reg = token.Register(static obj =>
+                using CancellationTokenRegistration reg = token.Register(static obj =>
                 {
                     _ = ((TaskCompletionSource<bool>)obj!).TrySetResult(true);
                 }, cancelStub);
@@ -97,7 +97,7 @@ internal partial class DefaultHybridCache
                 CacheItem<T> result;
                 try
                 {
-                    var first = await System.Threading.Tasks.Task.WhenAny(stampede.Task, cancelStub.Task).ConfigureAwait(false);
+                    Task first = await System.Threading.Tasks.Task.WhenAny(stampede.Task, cancelStub.Task).ConfigureAwait(false);
                     if (ReferenceEquals(first, cancelStub.Task))
                     {
                         // we expect this to throw, because otherwise we wouldn't have gotten here
@@ -139,7 +139,7 @@ internal partial class DefaultHybridCache
         [SuppressMessage("Major Code Smell", "S1121:Assignments should not be made from within sub-expressions", Justification = "Unusual, but legit here")]
         internal ValueTask<T> UnwrapReservedAsync(ILogger log)
         {
-            var task = Task;
+            Task<CacheItem<T>> task = Task;
 #if NETCOREAPP2_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
             if (task.IsCompletedSuccessfully)
 #else
@@ -151,7 +151,7 @@ internal partial class DefaultHybridCache
 
             // if the type is immutable, callers can share the final step too (this may leave dangling
             // reservation counters, but that's OK)
-            var result = ImmutableTypeCache<T>.IsImmutable ? (_sharedUnwrap ??= AwaitedAsync(log, Task)) : AwaitedAsync(log, Task);
+            Task<T> result = ImmutableTypeCache<T>.IsImmutable ? (_sharedUnwrap ??= AwaitedAsync(log, Task)) : AwaitedAsync(log, Task);
             return new(result);
 
             static async Task<T> AwaitedAsync(ILogger log, Task<CacheItem<T>> task)
@@ -169,7 +169,7 @@ internal partial class DefaultHybridCache
             bool eventSourceEnabled = HybridCacheEventSource.Log.IsEnabled();
             try
             {
-                var activeFlags = Key.Flags;
+                HybridCacheEntryFlags activeFlags = Key.Flags;
                 if ((activeFlags & HybridCacheEntryFlags.DisableDistributedCache) != HybridCacheEntryFlags.DisableDistributedCache)
                 {
                     // in order to use distributed cache, the tags and keys must be valid unicode, to avoid security complications
@@ -229,8 +229,9 @@ internal partial class DefaultHybridCache
                     if (result.HasValue)
                     {
                         // result is the wider payload including HC headers; unwrap it:
-                        var parseResult = HybridCachePayload.TryParse(result.AsArraySegment(), Key.Key, CacheItem.Tags, Cache, out var payload,
-                            out var flags, out var entropy, out var pendingTags, out var fault);
+                        HybridCachePayload.HybridCachePayloadParseResult parseResult = HybridCachePayload.TryParse(
+                            result.AsArraySegment(), Key.Key, CacheItem.Tags, Cache, out ArraySegment<byte> payload,
+                            out HybridCachePayload.PayloadFlags flags, out ushort entropy, out TagSet pendingTags, out Exception? fault);
                         switch (parseResult)
                         {
                             case HybridCachePayload.HybridCachePayloadParseResult.Success:
@@ -307,7 +308,7 @@ internal partial class DefaultHybridCache
                         // Both A and B have the same timestamp as the invalidated one; to avoid this problem,
                         // we need to detect this (very rare) scenario, and inject an artificial delay, such that
                         // B effectively gets written at a later time.
-                        var time = Cache.CurrentTimestamp();
+                        long time = Cache.CurrentTimestamp();
                         if (time <= CacheItem.CreationTimestamp)
                         {
                             // Clock hasn't changed; this is *very rare*, and honestly mostly applies to
@@ -344,7 +345,7 @@ internal partial class DefaultHybridCache
                         // In particular, if this cache item is somehow so short-lived that the buffers would be released *before* we're
                         // done writing them to L2, which happens *after* we've provided the value to consumers.
                         BufferChunk bufferToRelease = default;
-                        if (Cache.TrySerialize(newValue, out var buffer, out var serializer))
+                        if (Cache.TrySerialize(newValue, out BufferChunk buffer, out IHybridCacheSerializer<T>? serializer))
                         {
                             // note we also capture the resolved serializer ^^^ - we'll need it again later
 
@@ -544,8 +545,8 @@ internal partial class DefaultHybridCache
     [SuppressMessage("Major Code Smell", "S1121:Assignments should not be made from within sub-expressions", Justification = "Reasonable in this case, due to stack alloc scope.")]
     private static bool ValidateUnicodeCorrectness(ILogger logger, string key, TagSet tags)
     {
-        var maxChars = Math.Max(key.Length, tags.MaxLength());
-        var maxBytes = HybridCachePayload.Encoding.GetMaxByteCount(maxChars);
+        int maxChars = Math.Max(key.Length, tags.MaxLength());
+        int maxBytes = HybridCachePayload.Encoding.GetMaxByteCount(maxChars);
 
         byte[] leasedBytes = [];
         char[] leasedChars = [];
@@ -577,7 +578,7 @@ internal partial class DefaultHybridCache
 
                     break;
                 default:
-                    foreach (var tag in tags.GetSpanPrechecked())
+                    foreach (string tag in tags.GetSpanPrechecked())
                     {
                         if (!Test(tag, byteBuffer, charBuffer))
                         {

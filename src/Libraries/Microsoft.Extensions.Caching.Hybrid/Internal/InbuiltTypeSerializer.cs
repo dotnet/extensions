@@ -33,16 +33,16 @@ internal sealed class InbuiltTypeSerializer : IHybridCacheSerializer<string>, IH
 #if NET5_0_OR_GREATER
         return Encoding.UTF8.GetString(source);
 #else
-        if (source.IsSingleSegment && MemoryMarshal.TryGetArray(source.First, out var segment))
+        if (source.IsSingleSegment && MemoryMarshal.TryGetArray(source.First, out ArraySegment<byte> segment))
         {
             // we can use the existing single chunk as-is
             return Encoding.UTF8.GetString(segment.Array, segment.Offset, segment.Count);
         }
 
-        var length = checked((int)source.Length);
-        var oversized = ArrayPool<byte>.Shared.Rent(length);
+        int length = checked((int)source.Length);
+        byte[] oversized = ArrayPool<byte>.Shared.Rent(length);
         source.CopyTo(oversized);
-        var s = Encoding.UTF8.GetString(oversized, 0, length);
+        string s = Encoding.UTF8.GetString(oversized, 0, length);
         ArrayPool<byte>.Shared.Return(oversized);
         return s;
 #endif
@@ -53,9 +53,9 @@ internal sealed class InbuiltTypeSerializer : IHybridCacheSerializer<string>, IH
 #if NET5_0_OR_GREATER
         Encoding.UTF8.GetBytes(value, target);
 #else
-        var length = Encoding.UTF8.GetByteCount(value);
-        var oversized = ArrayPool<byte>.Shared.Rent(length);
-        var actual = Encoding.UTF8.GetBytes(value, 0, value.Length, oversized, 0);
+        int length = Encoding.UTF8.GetByteCount(value);
+        byte[] oversized = ArrayPool<byte>.Shared.Rent(length);
+        int actual = Encoding.UTF8.GetBytes(value, 0, value.Length, oversized, 0);
         Debug.Assert(actual == length, "encoding length mismatch");
         target.Write(new(oversized, 0, length));
         ArrayPool<byte>.Shared.Return(oversized);

@@ -20,7 +20,7 @@ internal partial class DefaultHybridCache
 
         // Double-checked locking to try to avoid unnecessary sessions in race conditions,
         // while avoiding the lock completely whenever possible.
-        if (TryJoinExistingSession(this, stampedeKey, out var existing))
+        if (TryJoinExistingSession(this, stampedeKey, out StampedeState<TState, T>? existing))
         {
             stampedeState = existing;
             return false; // someone ELSE is running the work
@@ -58,7 +58,7 @@ internal partial class DefaultHybridCache
             // and for *them* to have updated needs local-cache-write, but since the shared us/them key includes flags,
             // we can skip this if *either* flag is set).
             if ((flags & HybridCacheEntryFlags.DisableLocalCache) == 0
-                && TryGetExisting<T>(key, out var typed)
+                && TryGetExisting<T>(key, out CacheItem<T>? typed)
                 && typed.TryReserve())
             {
                 stampedeState.SetResultDirect(typed);
@@ -74,7 +74,7 @@ internal partial class DefaultHybridCache
         static bool TryJoinExistingSession(DefaultHybridCache @this, in StampedeKey stampedeKey,
             [NotNullWhen(true)] out StampedeState<TState, T>? stampedeState)
         {
-            if (@this._currentOperations.TryGetValue(stampedeKey, out var found))
+            if (@this._currentOperations.TryGetValue(stampedeKey, out StampedeState? found))
             {
                 if (found is not StampedeState<TState, T> tmp)
                 {
@@ -108,6 +108,6 @@ internal partial class DefaultHybridCache
     internal int DebugGetCallerCount(string key, HybridCacheEntryFlags? flags = null)
     {
         var stampedeKey = new StampedeKey(key, flags ?? _defaultFlags);
-        return _currentOperations.TryGetValue(stampedeKey, out var state) ? state.DebugCallerCount : 0;
+        return _currentOperations.TryGetValue(stampedeKey, out StampedeState? state) ? state.DebugCallerCount : 0;
     }
 }
