@@ -11,6 +11,7 @@ using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.Buffering;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpLogging;
@@ -54,6 +55,30 @@ public partial class AcceptanceTests
         {
             app.UseRouting();
             app.UseHttpLogging();
+
+            app.Map("/flushrequestlogs", static x =>
+                x.Run(static async context =>
+                {
+                    await context.Request.Body.DrainAsync(default);
+
+                    // normally, this would be a Middleware and HttpRequestLogBuffer would be injected via constructor
+                    var bufferManager = context.RequestServices.GetService<HttpRequestLogBuffer>();
+                    bufferManager?.FlushCurrentRequestLogs();
+                }));
+
+            app.Map("/flushalllogs", static x =>
+                x.Run(static async context =>
+                {
+                    await context.Request.Body.DrainAsync(default);
+
+                    // normally, this would be a Middleware and HttpRequestLogBuffer would be injected via constructor
+                    var bufferManager = context.RequestServices.GetService<HttpRequestLogBuffer>();
+                    if (bufferManager is not null)
+                    {
+                        bufferManager.FlushCurrentRequestLogs();
+                        bufferManager.Flush();
+                    }
+                }));
 
             app.Map("/error", static x =>
                 x.Run(static async context =>
@@ -711,6 +736,50 @@ public partial class AcceptanceTests
                     Assert.Equal(1, logCollector.Count);
                     Assert.Equal(7, logCollector.GetSnapshot()[0].StructuredState!.Count);
                 }
+            });
+    }
+
+    [Fact]
+    public async Task HttpRequestBuffering()
+    {
+        await RunAsync<TestStartup>(
+            LogLevel.Trace,
+            services => services
+            .AddLogging(builder =>
+            {
+                // enable Microsoft.AspNetCore.Routing.Matching.DfaMatcher debug logs
+                // which are produced by ASP.NET Core within HTTP context.
+                // This is what is going to be buffered and tested.
+                builder.AddFilter("Microsoft.AspNetCore.Routing.Matching.DfaMatcher", LogLevel.Debug);
+
+                // Disable HTTP logging middleware, otherwise even though they are not buffered,
+                // they will be logged as usual and contaminate test results:
+                builder.AddFilter("Microsoft.AspNetCore.HttpLogging", LogLevel.None);
+
+                builder.AddHttpRequestBuffering(LogLevel.Debug);
+            }),
+            async (logCollector, client, sp) =>
+            {
+                // just HTTP request logs:
+                using var response = await client.GetAsync("/flushrequestlogs").ConfigureAwait(false);
+                Assert.True(response.IsSuccessStatusCode);
+                await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout);
+                Assert.Equal(1, logCollector.Count);
+                Assert.Equal(LogLevel.Debug, logCollector.LatestRecord.Level);
+                Assert.Equal("Microsoft.AspNetCore.Routing.Matching.DfaMatcher", logCollector.LatestRecord.Category);
+
+                // HTTP request logs + global logs:
+                using var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+                var logger = loggerFactory.CreateLogger("test");
+                logger.LogTrace("This is a log message");
+                using var response2 = await client.GetAsync("/flushalllogs").ConfigureAwait(false);
+                Assert.True(response2.IsSuccessStatusCode);
+                await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout);
+
+                // 1 and 2 records are from DfaMatcher, and 3rd is from our test category
+                Assert.Equal(3, logCollector.Count);
+                Assert.Equal(LogLevel.Trace, logCollector.LatestRecord.Level);
+                Assert.Equal("test", logCollector.LatestRecord.Category);
             });
     }
 
