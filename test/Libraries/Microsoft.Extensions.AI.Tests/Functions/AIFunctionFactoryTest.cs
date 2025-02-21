@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -132,66 +133,62 @@ public class AIFunctionFactoryTest
     {
         AIFunction func;
 
-        func = AIFunctionFactory.Create(() => "test");
-        Assert.Contains("Metadata_DerivedFromLambda", func.Metadata.Name);
-        Assert.Empty(func.Metadata.Description);
-        Assert.Empty(func.Metadata.Parameters);
-        Assert.Equal(typeof(string), func.Metadata.ReturnParameter.ParameterType);
+        Func<string> dotnetFunc = () => "test";
+        func = AIFunctionFactory.Create(dotnetFunc);
+        Assert.Contains("Metadata_DerivedFromLambda", func.Name);
+        Assert.Empty(func.Description);
+        Assert.Same(dotnetFunc.Method, func.UnderlyingMethod);
 
-        func = AIFunctionFactory.Create((string a) => a + " " + a);
-        Assert.Contains("Metadata_DerivedFromLambda", func.Metadata.Name);
-        Assert.Empty(func.Metadata.Description);
-        Assert.Single(func.Metadata.Parameters);
+        Func<string, string> dotnetFunc2 = (string a) => a + " " + a;
+        func = AIFunctionFactory.Create(dotnetFunc2);
+        Assert.Contains("Metadata_DerivedFromLambda", func.Name);
+        Assert.Empty(func.Description);
+        Assert.Same(dotnetFunc2.Method, func.UnderlyingMethod);
 
-        func = AIFunctionFactory.Create(
-            [Description("This is a test function")] ([Description("This is A")] string a, [Description("This is B")] string b) => b + " " + a);
-        Assert.Contains("Metadata_DerivedFromLambda", func.Metadata.Name);
-        Assert.Equal("This is a test function", func.Metadata.Description);
-        Assert.Collection(func.Metadata.Parameters,
-            p => Assert.Equal("This is A", p.Description),
-            p => Assert.Equal("This is B", p.Description));
+        Func<string, string, string> dotnetFunc3 = [Description("This is a test function")] ([Description("This is A")] string a, [Description("This is B")] string b) => b + " " + a;
+        func = AIFunctionFactory.Create(dotnetFunc3);
+        Assert.Contains("Metadata_DerivedFromLambda", func.Name);
+        Assert.Equal("This is a test function", func.Description);
+        Assert.Same(dotnetFunc3.Method, func.UnderlyingMethod);
+        Assert.Collection(func.UnderlyingMethod!.GetParameters(),
+            p => Assert.Equal("This is A", p.GetCustomAttribute<DescriptionAttribute>()?.Description),
+            p => Assert.Equal("This is B", p.GetCustomAttribute<DescriptionAttribute>()?.Description));
     }
 
     [Fact]
     public void AIFunctionFactoryCreateOptions_ValuesPropagateToAIFunction()
     {
-        IReadOnlyList<AIFunctionParameterMetadata> parameterMetadata = [new AIFunctionParameterMetadata("a")];
-        AIFunctionReturnParameterMetadata returnParameterMetadata = new() { ParameterType = typeof(string) };
         IReadOnlyDictionary<string, object?> metadata = new Dictionary<string, object?> { ["a"] = "b" };
 
-        var options = new AIFunctionFactoryCreateOptions
+        var options = new AIFunctionFactoryOptions
         {
             Name = "test name",
             Description = "test description",
-            Parameters = parameterMetadata,
-            ReturnParameter = returnParameterMetadata,
             AdditionalProperties = metadata,
         };
 
         Assert.Equal("test name", options.Name);
         Assert.Equal("test description", options.Description);
-        Assert.Same(parameterMetadata, options.Parameters);
-        Assert.Same(returnParameterMetadata, options.ReturnParameter);
         Assert.Same(metadata, options.AdditionalProperties);
 
-        AIFunction func = AIFunctionFactory.Create(() => { }, options);
+        Action dotnetFunc = () => { };
+        AIFunction func = AIFunctionFactory.Create(dotnetFunc, options);
 
-        Assert.Equal("test name", func.Metadata.Name);
-        Assert.Equal("test description", func.Metadata.Description);
-        Assert.Equal(parameterMetadata, func.Metadata.Parameters);
-        Assert.Equal(returnParameterMetadata, func.Metadata.ReturnParameter);
-        Assert.Equal(metadata, func.Metadata.AdditionalProperties);
+        Assert.Equal("test name", func.Name);
+        Assert.Equal("test description", func.Description);
+        Assert.Same(dotnetFunc.Method, func.UnderlyingMethod);
+        Assert.Equal(metadata, func.AdditionalProperties);
     }
 
     [Fact]
-    public void AIFunctionFactoryCreateOptions_SchemaOptions_HasExpectedDefaults()
+    public void AIFunctionFactoryOptions_DefaultValues()
     {
-        var options = new AIFunctionFactoryCreateOptions();
-        var schemaOptions = options.SchemaCreateOptions;
+        AIFunctionFactoryOptions options = new();
 
-        Assert.NotNull(schemaOptions);
-        Assert.True(schemaOptions.IncludeTypeInEnumSchemas);
-        Assert.True(schemaOptions.RequireAllProperties);
-        Assert.True(schemaOptions.DisallowAdditionalProperties);
+        Assert.Null(options.Name);
+        Assert.Null(options.Description);
+        Assert.Null(options.AdditionalProperties);
+        Assert.Null(options.SerializerOptions);
+        Assert.Null(options.JsonSchemaCreateOptions);
     }
 }

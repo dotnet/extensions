@@ -107,7 +107,12 @@ public class AzureAIInferenceChatClientTests
     public async Task BasicRequestResponse_NonStreaming(bool multiContent)
     {
         const string Input = """
-            {"messages":[{"content":"hello","role":"user"}],"max_tokens":10,"temperature":0.5,"model":"gpt-4o-mini"}
+            {
+                "messages": [{"role":"user", "content":"hello"}],
+                "max_tokens":10,
+                "temperature":0.5,
+                "model":"gpt-4o-mini"
+            }
             """;
 
         const string Output = """
@@ -178,7 +183,12 @@ public class AzureAIInferenceChatClientTests
     public async Task BasicRequestResponse_Streaming(bool multiContent)
     {
         const string Input = """
-            {"messages":[{"content":"hello","role":"user"}],"max_tokens":20,"temperature":0.5,"stream":true,"model":"gpt-4o-mini"}
+            {
+                "messages": [{"role":"user", "content":"hello"}],
+                "max_tokens":20,
+                "temperature":0.5,
+                "stream":true,
+                "model":"gpt-4o-mini"}
             """;
 
         const string Output = """
@@ -248,7 +258,7 @@ public class AzureAIInferenceChatClientTests
     {
         const string Input = """
             {
-                "messages":[{"content":"hello","role":"user"}],
+                "messages":[{"role":"user", "content":"hello"}],
                 "max_tokens":10,
                 "temperature":0.5,
                 "top_p":0.5,
@@ -305,7 +315,7 @@ public class AzureAIInferenceChatClientTests
     {
         const string Input = """
             {
-                "messages":[{"content":"hello","role":"user"}],
+                "messages":[{"role":"user", "content":"hello"}],
                 "model":"gpt-4o-mini",
                 "response_format":{"type":"text"}
             }
@@ -341,7 +351,7 @@ public class AzureAIInferenceChatClientTests
     {
         const string Input = """
             {
-                "messages":[{"content":"hello","role":"user"}],
+                "messages":[{"role":"user", "content":"hello"}],
                 "model":"gpt-4o-mini",
                 "response_format":{"type":"json_object"}
             }
@@ -375,14 +385,32 @@ public class AzureAIInferenceChatClientTests
     [Fact]
     public async Task ResponseFormat_JsonSchema_NonStreaming()
     {
-        // NOTE: Azure.AI.Inference doesn't yet expose JSON schema support, so it's currently
-        // mapped to "json_object" for the time being.
-
         const string Input = """
             {
-                "messages":[{"content":"hello","role":"user"}],
+                "messages":[{"role":"user", "content":"hello"}],
                 "model":"gpt-4o-mini",
-                "response_format":{"type":"json_object"}
+                "response_format":
+                {
+                    "type":"json_schema",
+                    "json_schema":
+                    {
+                        "name": "DescribedObject",
+                        "schema":
+                        {
+                            "type":"object",
+                            "properties":
+                            {
+                                "description":
+                                {
+                                    "type":"string"
+                                }
+                            },
+                            "required":["description"],
+                            "additionalProperties":false
+                         },
+                         "description":"An object with a description"
+                    }
+                }
             }
             """;
 
@@ -428,30 +456,30 @@ public class AzureAIInferenceChatClientTests
             {
                 "messages": [
                     {
-                        "content": "You are a really nice friend.",
-                        "role": "system"
+                        "role": "system",
+                        "content": "You are a really nice friend."
                     },
                     {
-                        "content": "hello!",
-                        "role": "user"
+                        "role": "user",
+                        "content": "hello!"
                     },
                     {
-                        "content": "hi, how are you?",
-                        "role": "assistant"
+                        "role": "assistant",
+                        "content": "hi, how are you?"
                     },
                     {
-                        "content": "i\u0027m good. how are you?",
-                        "role": "user"
+                        "role": "user",
+                        "content": "i\u0027m good. how are you?"
                     },
                     {
+                        "role": "assistant",
                         "content": "",
-                        "tool_calls": [{"id":"abcd123","type":"function","function":{"name":"GetMood","arguments":"null"}}],
-                        "role": "assistant"
+                        "tool_calls": [{"id":"abcd123","type":"function","function":{"name":"GetMood","arguments":"null"}}]
                     },
                     {
+                        "role": "tool",
                         "content": "happy",
-                        "tool_call_id": "abcd123",
-                        "role": "tool"
+                        "tool_call_id": "abcd123"
                     }
                 ],
                 "temperature": 0.25,
@@ -544,21 +572,21 @@ public class AzureAIInferenceChatClientTests
                 "messages":
                 [
                     {
+                        "role": "user",
                         "content":
                         [
                             {
-                                "text": "Describe this picture.",
-                                "type": "text"
+                                "type": "text",
+                                "text": "Describe this picture."
                             },
                             {
+                                "type": "image_url",
                                 "image_url":
                                 {
                                     "url": "http://dot.net/someimage.png"
-                                },
-                                "type": "image_url"
+                                }
                             }
-                        ],
-                        "role":"user"
+                        ]
                     }
                 ],
                 "model": "gpt-4o-mini"
@@ -598,12 +626,12 @@ public class AzureAIInferenceChatClientTests
             {
                 "messages": [
                     {
-                        "content": "",
-                        "role": "assistant"
+                        "role": "assistant",
+                        "content": ""
                     },
                     {
-                        "content": "hello!",
-                        "role": "user"
+                        "role": "user",
+                        "content": "hello!"
                     }
                 ],
                 "model": "gpt-4o-mini"
@@ -686,8 +714,8 @@ public class AzureAIInferenceChatClientTests
             {
                 "messages": [
                     {
-                        "content": "How old is Alice?",
-                        "role": "user"
+                        "role": "user",
+                        "content": "How old is Alice?"
                     }
                 ],
                 "model": "gpt-4o-mini",
@@ -797,8 +825,8 @@ public class AzureAIInferenceChatClientTests
             {
                 "messages": [
                     {
-                        "content": "How old is Alice?",
-                        "role": "user"
+                        "role": "user",
+                        "content": "How old is Alice?"
                     }
                 ],
                 "stream": true,

@@ -426,7 +426,7 @@ public sealed class OllamaChatClient : IChatClient
                         currentTextMessage = new OllamaChatRequestMessage
                         {
                             Role = content.Role.Value,
-                            Content = textContent.Text ?? string.Empty,
+                            Content = textContent.Text,
                         };
                         break;
 
@@ -476,9 +476,9 @@ public sealed class OllamaChatClient : IChatClient
             Type = "function",
             Function = new OllamaFunctionTool
             {
-                Name = function.Metadata.Name,
-                Description = function.Metadata.Description,
-                Parameters = JsonSerializer.Deserialize(function.Metadata.Schema, JsonContext.Default.OllamaFunctionToolParameters)!,
+                Name = function.Name,
+                Description = function.Description,
+                Parameters = JsonSerializer.Deserialize(function.JsonSchema, JsonContext.Default.OllamaFunctionToolParameters)!,
             }
         };
     }

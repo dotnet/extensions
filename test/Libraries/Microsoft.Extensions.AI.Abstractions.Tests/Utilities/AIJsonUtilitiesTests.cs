@@ -4,6 +4,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -61,6 +62,53 @@ public static class AIJsonUtilitiesTests
         Assert.False(options.IncludeSchemaKeyword);
         Assert.True(options.RequireAllProperties);
         Assert.Null(options.TransformSchemaNode);
+    }
+
+    [Fact]
+    public static void AIJsonSchemaCreateOptions_UsesStructuralEquality()
+    {
+        AssertEqual(new AIJsonSchemaCreateOptions(), new AIJsonSchemaCreateOptions());
+
+        foreach (PropertyInfo property in typeof(AIJsonSchemaCreateOptions).GetProperties(BindingFlags.Instance | BindingFlags.Public))
+        {
+            AIJsonSchemaCreateOptions options1 = new AIJsonSchemaCreateOptions();
+            AIJsonSchemaCreateOptions options2 = new AIJsonSchemaCreateOptions();
+            switch (property.GetValue(AIJsonSchemaCreateOptions.Default))
+            {
+                case bool booleanFlag:
+                    property.SetValue(options1, !booleanFlag);
+                    property.SetValue(options2, !booleanFlag);
+                    break;
+
+                case null when property.PropertyType == typeof(Func<AIJsonSchemaCreateContext, JsonNode, JsonNode>):
+                    Func<AIJsonSchemaCreateContext, JsonNode, JsonNode> transformer = static (context, schema) => (JsonNode)true;
+                    property.SetValue(options1, transformer);
+                    property.SetValue(options2, transformer);
+                    break;
+
+                default:
+                    Assert.Fail($"Unexpected property type: {property.PropertyType}");
+                    break;
+            }
+
+            AssertEqual(options1, options2);
+            AssertNotEqual(AIJsonSchemaCreateOptions.Default, options1);
+        }
+
+        static void AssertEqual(AIJsonSchemaCreateOptions x, AIJsonSchemaCreateOptions y)
+        {
+            Assert.Equal(x.GetHashCode(), y.GetHashCode());
+            Assert.Equal(x, x);
+            Assert.Equal(y, y);
+            Assert.Equal(x, y);
+            Assert.Equal(y, x);
+        }
+
+        static void AssertNotEqual(AIJsonSchemaCreateOptions x, AIJsonSchemaCreateOptions y)
+        {
+            Assert.NotEqual(x, y);
+            Assert.NotEqual(y, x);
+        }
     }
 
     [Fact]
@@ -230,11 +278,10 @@ public static class AIJsonUtilitiesTests
         JsonSerializerOptions options = new(JsonSerializerOptions.Default);
         AIFunction func = AIFunctionFactory.Create((int x, int y) => x + y, serializerOptions: options);
 
-        AIFunctionMetadata metadata = func.Metadata;
-        AIFunctionParameterMetadata param = metadata.Parameters[0];
+        Assert.NotNull(func.UnderlyingMethod);
 
-        JsonElement resolvedSchema = AIJsonUtilities.CreateFunctionJsonSchema(title: func.Metadata.Name, description: func.Metadata.Description, parameters: func.Metadata.Parameters);
-        Assert.True(JsonElement.DeepEquals(resolvedSchema, func.Metadata.Schema));
+        JsonElement resolvedSchema = AIJsonUtilities.CreateFunctionJsonSchema(func.UnderlyingMethod, title: func.Name);
+        Assert.True(JsonElement.DeepEquals(resolvedSchema, func.JsonSchema));
     }
 
     [Fact]
@@ -243,14 +290,15 @@ public static class AIJsonUtilitiesTests
         JsonSerializerOptions options = new(JsonSerializerOptions.Default) { NumberHandling = JsonNumberHandling.AllowReadingFromString };
         AIFunction func = AIFunctionFactory.Create((int a, int? b, long c, short d, float e, double f, decimal g) => { }, serializerOptions: options);
 
-        AIFunctionMetadata metadata = func.Metadata;
-        JsonElement schemaParameters = func.Metadata.Schema.GetProperty("properties");
-        Assert.Equal(metadata.Parameters.Count, schemaParameters.GetPropertyCount());
+        JsonElement schemaParameters = func.JsonSchema.GetProperty("properties");
+        Assert.NotNull(func.UnderlyingMethod);
+        ParameterInfo[] parameters = func.UnderlyingMethod.GetParameters();
+        Assert.Equal(parameters.Length, schemaParameters.GetPropertyCount());
 
         int i = 0;
         foreach (JsonProperty property in schemaParameters.EnumerateObject())
         {
-            string numericType = Type.GetTypeCode(metadata.Parameters[i].ParameterType) is TypeCode.Double or TypeCode.Single or TypeCode.Decimal
+            string numericType = Type.GetTypeCode(parameters[i].ParameterType) is TypeCode.Double or TypeCode.Single or TypeCode.Decimal
                 ? "number"
                 : "integer";
 
