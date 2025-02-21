@@ -32,29 +32,29 @@ public class SamplingLoggerBuilderExtensionsTests
     }
 
     [Fact]
-    public void AddProbabilisticSampler_RegistersInDI()
+    public void AddRandomProbabilisticSampler_RegistersInDI()
     {
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging(builder =>
         {
-            builder.AddProbabilisticSampler(1.0);
+            builder.AddRandomProbabilisticSampler(1.0);
         });
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
         var sampler = serviceProvider.GetService<LoggingSampler>();
 
         Assert.NotNull(sampler);
-        Assert.IsType<ProbabilisticSampler>(sampler);
+        Assert.IsType<RandomProbabilisticSampler>(sampler);
     }
 
     [Fact]
-    public void AddProbabilisticSamplerFromConfiguration_RegistersInDI()
+    public void AddRandomProbabilisticSamplerFromConfiguration_RegistersInDI()
     {
-        List<ProbabilisticSamplerFilterRule> expectedData =
+        List<RandomProbabilisticSamplerFilterRule> expectedData =
         [
-            new ProbabilisticSamplerFilterRule (probability: 1.0, categoryName: "Program.MyLogger", logLevel: LogLevel.Information, eventId: 1, eventName: "number one"),
-            new ProbabilisticSamplerFilterRule (probability : 0.01, logLevel : LogLevel.Information),
-            new ProbabilisticSamplerFilterRule (probability : 0.1, logLevel : LogLevel.Warning)
+            new RandomProbabilisticSamplerFilterRule (probability: 1.0, categoryName: "Program.MyLogger", logLevel: LogLevel.Information, eventId: 1, eventName: "number one"),
+            new RandomProbabilisticSamplerFilterRule (probability : 0.01, logLevel : LogLevel.Information),
+            new RandomProbabilisticSamplerFilterRule (probability : 0.1, logLevel : LogLevel.Warning)
         ];
         ConfigurationBuilder configBuilder = new ConfigurationBuilder();
         configBuilder.AddJsonFile("appsettings.json");
@@ -62,34 +62,34 @@ public class SamplingLoggerBuilderExtensionsTests
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging(builder =>
         {
-            builder.AddProbabilisticSampler(configuration);
+            builder.AddRandomProbabilisticSampler(configuration);
         });
         var serviceProvider = serviceCollection.BuildServiceProvider();
-        var options = serviceProvider.GetService<IOptionsMonitor<ProbabilisticSamplerOptions>>();
+        var options = serviceProvider.GetService<IOptionsMonitor<RandomProbabilisticSamplerOptions>>();
         Assert.NotNull(options);
         Assert.NotNull(options.CurrentValue);
         Assert.Equivalent(expectedData, options.CurrentValue.Rules);
     }
 
     [Fact]
-    public void AddProbabilisticSamplerFromDelegate_RegistersInDI()
+    public void AddRandomProbabilisticSamplerFromDelegate_RegistersInDI()
     {
-        List<ProbabilisticSamplerFilterRule> expectedData =
+        List<RandomProbabilisticSamplerFilterRule> expectedData =
         [
-            new ProbabilisticSamplerFilterRule (probability: 1.0, categoryName: "Program.MyLogger", logLevel: LogLevel.Information, eventId: 1, eventName: "number one"),
-            new ProbabilisticSamplerFilterRule (probability : 0.01, logLevel : LogLevel.Information),
-            new ProbabilisticSamplerFilterRule (probability : 0.1, logLevel : LogLevel.Warning)
+            new RandomProbabilisticSamplerFilterRule (probability: 1.0, categoryName: "Program.MyLogger", logLevel: LogLevel.Information, eventId: 1, eventName: "number one"),
+            new RandomProbabilisticSamplerFilterRule (probability : 0.01, logLevel : LogLevel.Information),
+            new RandomProbabilisticSamplerFilterRule (probability : 0.1, logLevel : LogLevel.Warning)
         ];
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging(builder =>
         {
-            builder.AddProbabilisticSampler(opts =>
+            builder.AddRandomProbabilisticSampler(opts =>
             {
                 opts.Rules = expectedData;
             });
         });
         var serviceProvider = serviceCollection.BuildServiceProvider();
-        var options = serviceProvider.GetService<IOptionsMonitor<ProbabilisticSamplerOptions>>();
+        var options = serviceProvider.GetService<IOptionsMonitor<RandomProbabilisticSamplerOptions>>();
         Assert.NotNull(options);
         Assert.NotNull(options.CurrentValue);
         Assert.Equivalent(expectedData, options.CurrentValue.Rules);
@@ -134,7 +134,7 @@ public class SamplingLoggerBuilderExtensionsTests
         var action = () => SamplingLoggerBuilderExtensions.AddTraceBasedSampler(builder!);
         Assert.Throws<ArgumentNullException>(action);
 
-        var action2 = () => SamplingLoggerBuilderExtensions.AddProbabilisticSampler(builder!, 1.0);
+        var action2 = () => SamplingLoggerBuilderExtensions.AddRandomProbabilisticSampler(builder!, 1.0);
         Assert.Throws<ArgumentNullException>(action);
 
         var action3 = () => SamplingLoggerBuilderExtensions.AddSampler<MySampler>(builder!);

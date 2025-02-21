@@ -11,7 +11,7 @@ using static Microsoft.Extensions.Logging.Test.ExtendedLoggerTests;
 
 namespace Microsoft.Extensions.Telemetry.Sampling;
 
-public class ProbabilisticSamplerTests
+public class RandomProbabilisticSamplerTests
 {
     private readonly InvalidOperationException _dummyException = new("test.");
     private readonly IReadOnlyList<KeyValuePair<string, object?>> _dummyState = [];
@@ -23,9 +23,9 @@ public class ProbabilisticSamplerTests
     public void SamplesAsConfigured(double probability, bool expectedSamplingDecision)
     {
         // Arrange
-        ProbabilisticSamplerOptions options = new();
-        options.Rules.Add(new ProbabilisticSamplerFilterRule(probability: probability, logLevel: LogLevel.Trace));
-        var sampler = new ProbabilisticSampler(new StaticOptionsMonitor<ProbabilisticSamplerOptions>(options));
+        RandomProbabilisticSamplerOptions options = new();
+        options.Rules.Add(new RandomProbabilisticSamplerFilterRule(probability: probability, logLevel: LogLevel.Trace));
+        var sampler = new RandomProbabilisticSampler(new StaticOptionsMonitor<RandomProbabilisticSamplerOptions>(options));
 
         // Act
         var actualDecision = sampler.ShouldSample(
@@ -43,9 +43,9 @@ public class ProbabilisticSamplerTests
         const double Probability = 0.0;
         var logEntry = new LogEntry<IReadOnlyList<KeyValuePair<string, object?>>>(
             LogLevel.Warning, nameof(WhenParametersNotMatch_AlwaysSamples), 0, _dummyState, _dummyException, _dummyFormatter);
-        ProbabilisticSamplerOptions options = new();
-        options.Rules.Add(new ProbabilisticSamplerFilterRule(probability: Probability, logLevel: LogLevel.Information));
-        var sampler = new ProbabilisticSampler(new StaticOptionsMonitor<ProbabilisticSamplerOptions>(options));
+        RandomProbabilisticSamplerOptions options = new();
+        options.Rules.Add(new RandomProbabilisticSamplerFilterRule(probability: Probability, logLevel: LogLevel.Information));
+        var sampler = new RandomProbabilisticSampler(new StaticOptionsMonitor<RandomProbabilisticSamplerOptions>(options));
 
         // Act
         var actualDecision = sampler.ShouldSample(logEntry);
@@ -61,9 +61,9 @@ public class ProbabilisticSamplerTests
         const double Probability = 0.0;
         var logEntry = new LogEntry<IReadOnlyList<KeyValuePair<string, object?>>>(
             LogLevel.Information, nameof(WhenParametersMatch_UsesProvidedProbability), 0, _dummyState, _dummyException, _dummyFormatter);
-        ProbabilisticSamplerOptions options = new();
-        options.Rules.Add(new ProbabilisticSamplerFilterRule(probability: Probability, logLevel: LogLevel.Information));
-        var sampler = new ProbabilisticSampler(new StaticOptionsMonitor<ProbabilisticSamplerOptions>(options));
+        RandomProbabilisticSamplerOptions options = new();
+        options.Rules.Add(new RandomProbabilisticSamplerFilterRule(probability: Probability, logLevel: LogLevel.Information));
+        var sampler = new RandomProbabilisticSampler(new StaticOptionsMonitor<RandomProbabilisticSamplerOptions>(options));
 
         // Act
         var actualDecision = sampler.ShouldSample(logEntry);

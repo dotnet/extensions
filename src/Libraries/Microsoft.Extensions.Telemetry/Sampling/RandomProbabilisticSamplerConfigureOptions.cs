@@ -7,30 +7,30 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Diagnostics.Sampling;
 
-internal sealed class ProbabilisticSamplerConfigureOptions : IConfigureOptions<ProbabilisticSamplerOptions>
+internal sealed class RandomProbabilisticSamplerConfigureOptions : IConfigureOptions<RandomProbabilisticSamplerOptions>
 {
-    private const string ProbabilisticSamplerKey = "ProbabilisticSampler";
+    private const string RandomProbabilisticSamplerKey = "RandomProbabilisticSampler";
     private readonly IConfiguration _configuration;
 
-    public ProbabilisticSamplerConfigureOptions(IConfiguration configuration)
+    public RandomProbabilisticSamplerConfigureOptions(IConfiguration configuration)
     {
         _configuration = configuration;
     }
 
-    public void Configure(ProbabilisticSamplerOptions options)
+    public void Configure(RandomProbabilisticSamplerOptions options)
     {
         if (_configuration == null)
         {
             return;
         }
 
-        var section = _configuration.GetSection(ProbabilisticSamplerKey);
+        var section = _configuration.GetSection(RandomProbabilisticSamplerKey);
         if (!section.Exists())
         {
             return;
         }
 
-        var parsedOptions = section.Get<ProbabilisticSamplerOptions>();
+        var parsedOptions = section.Get<RandomProbabilisticSamplerOptions>();
         if (parsedOptions is null)
         {
             return;

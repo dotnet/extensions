@@ -11,17 +11,17 @@ namespace Microsoft.Extensions.Diagnostics.Sampling;
 /// Defines a rule used to filter log messages for purposes of sampling.
 /// </summary>
 [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
-public class ProbabilisticSamplerFilterRule : ILogSamplingFilterRule
+public class RandomProbabilisticSamplerFilterRule : ILogSamplingFilterRule
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="ProbabilisticSamplerFilterRule"/> class.
+    /// Initializes a new instance of the <see cref="RandomProbabilisticSamplerFilterRule"/> class.
     /// </summary>
     /// <param name="probability">The probability for sampling in if this rule applies.</param>
     /// <param name="categoryName">The category name to use in this filter rule.</param>
     /// <param name="logLevel">The <see cref="LogLevel"/> to use in this filter rule.</param>
     /// <param name="eventId">The event ID to use in this filter rule.</param>
     /// <param name="eventName">The event name to use in this filter rule.</param>
-    public ProbabilisticSamplerFilterRule(
+    public RandomProbabilisticSamplerFilterRule(
         double probability,
         string? categoryName = null,
         LogLevel? logLevel = null,

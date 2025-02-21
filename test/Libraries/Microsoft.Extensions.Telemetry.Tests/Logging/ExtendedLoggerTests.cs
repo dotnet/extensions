@@ -125,16 +125,16 @@ public static class ExtendedLoggerTests
     {
         const string Category = "C1";
 
-        ProbabilisticSamplerOptions options = new();
-        options.Rules.Add(new ProbabilisticSamplerFilterRule(probability: 0, logLevel: LogLevel.Warning));
-        var sampler = new ProbabilisticSampler(new StaticOptionsMonitor<ProbabilisticSamplerOptions>(options));
+        RandomProbabilisticSamplerOptions options = new();
+        options.Rules.Add(new RandomProbabilisticSamplerFilterRule(probability: 0, logLevel: LogLevel.Warning));
+        var sampler = new RandomProbabilisticSampler(new StaticOptionsMonitor<RandomProbabilisticSamplerOptions>(options));
 
         using var provider = new Provider();
         using var factory = Utils.CreateLoggerFactory(
              builder =>
              {
                  builder.AddProvider(provider);
-                 builder.AddProbabilisticSampler(0, LogLevel.Warning);
+                 builder.AddRandomProbabilisticSampler(0, LogLevel.Warning);
              });
         var logger = factory.CreateLogger(Category);
 

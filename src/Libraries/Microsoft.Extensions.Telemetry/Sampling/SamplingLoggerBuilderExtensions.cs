@@ -36,47 +36,47 @@ public static class SamplingLoggerBuilderExtensions
     }
 
     /// <summary>
-    /// Adds Probabilistic logging sampler to the logging infrastructure.
+    /// Adds Random Probabilistic logging sampler to the logging infrastructure.
     /// </summary>
     /// <param name="builder">The dependency injection container to add logging to.</param>
     /// <param name="configuration">The <see cref="IConfiguration" /> to add.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
     /// <remarks>
-    /// Matched logs will be sampled according to the configured probability.
+    /// Matched logs will be randomly sampled according to the configured probability.
     /// Higher the probability value, higher is the probability of a given log record to be sampled in.
     /// </remarks>
-    public static ILoggingBuilder AddProbabilisticSampler(this ILoggingBuilder builder, IConfiguration configuration)
+    public static ILoggingBuilder AddRandomProbabilisticSampler(this ILoggingBuilder builder, IConfiguration configuration)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configuration);
 
-        _ = builder.Services.AddSingleton<IConfigureOptions<ProbabilisticSamplerOptions>>(new ProbabilisticSamplerConfigureOptions(configuration));
-        return builder.AddSampler<ProbabilisticSampler>();
+        _ = builder.Services.AddSingleton<IConfigureOptions<RandomProbabilisticSamplerOptions>>(new RandomProbabilisticSamplerConfigureOptions(configuration));
+        return builder.AddSampler<RandomProbabilisticSampler>();
     }
 
     /// <summary>
-    /// Adds Probabilistic logging sampler to the logging infrastructure.
+    /// Adds Random Probabilistic logging sampler to the logging infrastructure.
     /// </summary>
     /// <param name="builder">The dependency injection container to add logging to.</param>
-    /// <param name="configure">The <see cref="ProbabilisticSamplerOptions"/> configuration delegate.</param>
+    /// <param name="configure">The <see cref="RandomProbabilisticSamplerOptions"/> configuration delegate.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> or <paramref name="configure"/> is <see langword="null"/>.</exception>
     /// <remarks>
-    /// Matched logs will be sampled according to the configured probability.
+    /// Matched logs will be randmoly sampled according to the configured probability.
     /// Higher the probability value, higher is the probability of a given log record to be sampled in.
     /// </remarks>
-    public static ILoggingBuilder AddProbabilisticSampler(this ILoggingBuilder builder, Action<ProbabilisticSamplerOptions> configure)
+    public static ILoggingBuilder AddRandomProbabilisticSampler(this ILoggingBuilder builder, Action<RandomProbabilisticSamplerOptions> configure)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);
 
         _ = builder.Services.Configure(configure);
-        return builder.AddSampler<ProbabilisticSampler>();
+        return builder.AddSampler<RandomProbabilisticSampler>();
     }
 
     /// <summary>
-    /// Adds Probabilistic logging sampler to the logging infrastructure.
+    /// Adds Random Probabilistic logging sampler to the logging infrastructure.
     /// </summary>
     /// <param name="builder">The dependency injection container to add logging to.</param>
     /// <param name="probability">Probability from 0.0 to 1.0.</param>
@@ -85,18 +85,18 @@ public static class SamplingLoggerBuilderExtensions
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="probability"/> is less than 0 or greater than 1.</exception>
     /// <remarks>
-    /// Matched logs will be sampled according to the configured <paramref name="probability"/>.
+    /// Matched logs will be randomly sampled according to the configured <paramref name="probability"/>.
     /// Higher the probability value, higher is the probability of a given log record to be sampled in.
     /// </remarks>
-    public static ILoggingBuilder AddProbabilisticSampler(this ILoggingBuilder builder, double probability, LogLevel? level = null)
+    public static ILoggingBuilder AddRandomProbabilisticSampler(this ILoggingBuilder builder, double probability, LogLevel? level = null)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfOutOfRange(probability, 0, 1, nameof(probability));
 
-        _ = builder.Services.Configure<ProbabilisticSamplerOptions>(options =>
-                options.Rules.Add(new ProbabilisticSamplerFilterRule(probability, logLevel: level)));
+        _ = builder.Services.Configure<RandomProbabilisticSamplerOptions>(options =>
+                options.Rules.Add(new RandomProbabilisticSamplerFilterRule(probability, logLevel: level)));
 
-        return builder.AddSampler<ProbabilisticSampler>();
+        return builder.AddSampler<RandomProbabilisticSampler>();
     }
 
     /// <summary>
