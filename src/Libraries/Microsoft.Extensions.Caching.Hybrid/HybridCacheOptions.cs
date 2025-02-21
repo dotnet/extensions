@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.Caching.Hybrid;
 /// </summary>
 public class HybridCacheOptions
 {
-    private const int ShiftBytesToMibiBytes = 20;
+    private const int ShiftBytesToMebiBytes = 20;
 
     /// <summary>
     /// Gets or sets the default global options to be applied to <see cref="HybridCache"/> operations.
@@ -35,7 +35,7 @@ public class HybridCacheOptions
     /// Attempts to store values over this size are logged,
     /// and the value isn't stored in the cache.
     /// </remarks>
-    public long MaximumPayloadBytes { get; set; } = 1 << ShiftBytesToMibiBytes; // 1MiB
+    public long MaximumPayloadBytes { get; set; } = 1 << ShiftBytesToMebiBytes; // 1MiB
 
     /// <summary>
     /// Gets or sets the maximum permitted length (in characters) of keys.

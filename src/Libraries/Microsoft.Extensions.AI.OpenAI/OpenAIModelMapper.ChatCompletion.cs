@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -12,28 +13,30 @@ using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 using OpenAI.Chat;
 
+#pragma warning disable CA1308 // Normalize strings to uppercase
+#pragma warning disable CA1859 // Use concrete types when possible for improved performance
 #pragma warning disable SA1204 // Static elements should appear before instance elements
 #pragma warning disable S103 // Lines should not be too long
-#pragma warning disable CA1859 // Use concrete types when possible for improved performance
 #pragma warning disable S1067 // Expressions should not be too complex
+#pragma warning disable S2178 // Short-circuit logic should be used in boolean contexts
+#pragma warning disable S3440 // Variables should not be checked against the values they're about to be assigned
+#pragma warning disable EA0011 // Consider removing unnecessary conditional access operator (?)
 
 namespace Microsoft.Extensions.AI;
 
 internal static partial class OpenAIModelMappers
 {
-    private static readonly JsonElement _defaultParameterSchema = JsonDocument.Parse("{}").RootElement;
-
-    public static OpenAI.Chat.ChatCompletion ToOpenAIChatCompletion(ChatCompletion chatCompletion, JsonSerializerOptions options)
+    public static ChatCompletion ToOpenAIChatCompletion(ChatResponse response, JsonSerializerOptions options)
     {
-        _ = Throw.IfNull(chatCompletion);
+        _ = Throw.IfNull(response);
 
-        if (chatCompletion.Choices.Count > 1)
+        if (response.Choices.Count > 1)
         {
             throw new NotSupportedException("Creating OpenAI ChatCompletion models with multiple choices is currently not supported.");
         }
 
-        List<OpenAI.Chat.ChatToolCall>? toolCalls = null;
-        foreach (AIContent content in chatCompletion.Message.Contents)
+        List<ChatToolCall>? toolCalls = null;
+        foreach (AIContent content in response.Message.Contents)
         {
             if (content is FunctionCallContent callRequest)
             {
@@ -47,28 +50,28 @@ internal static partial class OpenAIModelMappers
             }
         }
 
-        OpenAI.Chat.ChatTokenUsage? chatTokenUsage = null;
-        if (chatCompletion.Usage is UsageDetails usageDetails)
+        ChatTokenUsage? chatTokenUsage = null;
+        if (response.Usage is UsageDetails usageDetails)
         {
             chatTokenUsage = ToOpenAIUsage(usageDetails);
         }
 
         return OpenAIChatModelFactory.ChatCompletion(
-            id: chatCompletion.CompletionId,
-            model: chatCompletion.ModelId,
-            createdAt: chatCompletion.CreatedAt ?? default,
-            role: ToOpenAIChatRole(chatCompletion.Message.Role).Value,
-            finishReason: ToOpenAIFinishReason(chatCompletion.FinishReason),
-            content: new(ToOpenAIChatContent(chatCompletion.Message.Contents)),
+            id: response.ResponseId ?? CreateCompletionId(),
+            model: response.ModelId,
+            createdAt: response.CreatedAt ?? DateTimeOffset.UtcNow,
+            role: ToOpenAIChatRole(response.Message.Role).Value,
+            finishReason: ToOpenAIFinishReason(response.FinishReason),
+            content: new(ToOpenAIChatContent(response.Message.Contents)),
             toolCalls: toolCalls,
-            refusal: chatCompletion.AdditionalProperties.GetValueOrDefault<string>(nameof(OpenAI.Chat.ChatCompletion.Refusal)),
-            contentTokenLogProbabilities: chatCompletion.AdditionalProperties.GetValueOrDefault<IReadOnlyList<ChatTokenLogProbabilityDetails>>(nameof(OpenAI.Chat.ChatCompletion.ContentTokenLogProbabilities)),
-            refusalTokenLogProbabilities: chatCompletion.AdditionalProperties.GetValueOrDefault<IReadOnlyList<ChatTokenLogProbabilityDetails>>(nameof(OpenAI.Chat.ChatCompletion.RefusalTokenLogProbabilities)),
-            systemFingerprint: chatCompletion.AdditionalProperties.GetValueOrDefault<string>(nameof(OpenAI.Chat.ChatCompletion.SystemFingerprint)),
+            refusal: response.AdditionalProperties.GetValueOrDefault<string>(nameof(ChatCompletion.Refusal)),
+            contentTokenLogProbabilities: response.AdditionalProperties.GetValueOrDefault<IReadOnlyList<ChatTokenLogProbabilityDetails>>(nameof(ChatCompletion.ContentTokenLogProbabilities)),
+            refusalTokenLogProbabilities: response.AdditionalProperties.GetValueOrDefault<IReadOnlyList<ChatTokenLogProbabilityDetails>>(nameof(ChatCompletion.RefusalTokenLogProbabilities)),
+            systemFingerprint: response.AdditionalProperties.GetValueOrDefault<string>(nameof(ChatCompletion.SystemFingerprint)),
             usage: chatTokenUsage);
     }
 
-    public static ChatCompletion FromOpenAIChatCompletion(OpenAI.Chat.ChatCompletion openAICompletion, ChatOptions? options)
+    public static ChatResponse FromOpenAIChatCompletion(ChatCompletion openAICompletion, ChatOptions? options, ChatCompletionOptions chatCompletionOptions)
     {
         _ = Throw.IfNull(openAICompletion);
 
@@ -88,6 +91,37 @@ internal static partial class OpenAIModelMappers
             }
         }
 
+        // Output audio is handled separately from message content parts.
+        if (openAICompletion.OutputAudio is ChatOutputAudio audio)
+        {
+            string mimeType = chatCompletionOptions?.AudioOptions?.OutputAudioFormat.ToString()?.ToLowerInvariant() switch
+            {
+                "opus" => "audio/opus",
+                "aac" => "audio/aac",
+                "flac" => "audio/flac",
+                "wav" => "audio/wav",
+                "pcm" => "audio/pcm",
+                "mp3" or _ => "audio/mpeg",
+            };
+
+            var dc = new DataContent(audio.AudioBytes.ToMemory(), mimeType)
+            {
+                AdditionalProperties = new() { [nameof(audio.ExpiresAt)] = audio.ExpiresAt },
+            };
+
+            if (audio.Id is string id)
+            {
+                dc.AdditionalProperties[nameof(audio.Id)] = id;
+            }
+
+            if (audio.Transcript is string transcript)
+            {
+                dc.AdditionalProperties[nameof(audio.Transcript)] = transcript;
+            }
+
+            returnMessage.Contents.Add(dc);
+        }
+
         // Also manufacture function calling content items from any tool calls in the response.
         if (options?.Tools is { Count: > 0 })
         {
@@ -103,51 +137,56 @@ internal static partial class OpenAIModelMappers
             }
         }
 
-        // Wrap the content in a ChatCompletion to return.
-        var completion = new ChatCompletion([returnMessage])
+        // Wrap the content in a ChatResponse to return.
+        var response = new ChatResponse([returnMessage])
         {
-            RawRepresentation = openAICompletion,
-            CompletionId = openAICompletion.Id,
             CreatedAt = openAICompletion.CreatedAt,
-            ModelId = openAICompletion.Model,
             FinishReason = FromOpenAIFinishReason(openAICompletion.FinishReason),
+            ModelId = openAICompletion.Model,
+            RawRepresentation = openAICompletion,
+            ResponseId = openAICompletion.Id,
         };
 
         if (openAICompletion.Usage is ChatTokenUsage tokenUsage)
         {
-            completion.Usage = FromOpenAIUsage(tokenUsage);
+            response.Usage = FromOpenAIUsage(tokenUsage);
         }
 
         if (openAICompletion.ContentTokenLogProbabilities is { Count: > 0 } contentTokenLogProbs)
         {
-            (completion.AdditionalProperties ??= [])[nameof(openAICompletion.ContentTokenLogProbabilities)] = contentTokenLogProbs;
+            (response.AdditionalProperties ??= [])[nameof(openAICompletion.ContentTokenLogProbabilities)] = contentTokenLogProbs;
         }
 
         if (openAICompletion.Refusal is string refusal)
         {
-            (completion.AdditionalProperties ??= [])[nameof(openAICompletion.Refusal)] = refusal;
+            (response.AdditionalProperties ??= [])[nameof(openAICompletion.Refusal)] = refusal;
         }
 
         if (openAICompletion.RefusalTokenLogProbabilities is { Count: > 0 } refusalTokenLogProbs)
         {
-            (completion.AdditionalProperties ??= [])[nameof(openAICompletion.RefusalTokenLogProbabilities)] = refusalTokenLogProbs;
+            (response.AdditionalProperties ??= [])[nameof(openAICompletion.RefusalTokenLogProbabilities)] = refusalTokenLogProbs;
         }
 
         if (openAICompletion.SystemFingerprint is string systemFingerprint)
         {
-            (completion.AdditionalProperties ??= [])[nameof(openAICompletion.SystemFingerprint)] = systemFingerprint;
+            (response.AdditionalProperties ??= [])[nameof(openAICompletion.SystemFingerprint)] = systemFingerprint;
         }
 
-        return completion;
+        return response;
     }
 
-    public static ChatOptions FromOpenAIOptions(OpenAI.Chat.ChatCompletionOptions? options)
+    public static ChatOptions FromOpenAIOptions(ChatCompletionOptions? options)
     {
         ChatOptions result = new();
 
         if (options is not null)
         {
-            result.ModelId = _getModelIdAccessor.Invoke(options, null)?.ToString();
+            result.ModelId = _getModelIdAccessor.Invoke(options, null)?.ToString() switch
+            {
+                null or "" => null,
+                var modelId => modelId,
+            };
+
             result.FrequencyPenalty = options.FrequencyPenalty;
             result.MaxOutputTokens = options.MaxOutputTokenCount;
             result.TopP = options.TopP;
@@ -201,8 +240,10 @@ internal static partial class OpenAIModelMappers
             {
                 foreach (ChatTool tool in tools)
                 {
-                    result.Tools ??= [];
-                    result.Tools.Add(FromOpenAIChatTool(tool));
+                    if (FromOpenAIChatTool(tool) is { } convertedTool)
+                    {
+                        (result.Tools ??= []).Add(convertedTool);
+                    }
                 }
 
                 using var toolChoiceJson = JsonDocument.Parse(JsonModelHelpers.Serialize(options.ToolChoice).ToMemory());
@@ -213,6 +254,7 @@ internal static partial class OpenAIModelMappers
                         result.ToolMode = jsonElement.GetString() switch
                         {
                             "required" => ChatToolMode.RequireAny,
+                            "none" => ChatToolMode.None,
                             _ => ChatToolMode.Auto,
                         };
 
@@ -232,7 +274,7 @@ internal static partial class OpenAIModelMappers
     }
 
     /// <summary>Converts an extensions options instance to an OpenAI options instance.</summary>
-    public static OpenAI.Chat.ChatCompletionOptions ToOpenAIOptions(ChatOptions? options)
+    public static ChatCompletionOptions ToOpenAIOptions(ChatOptions? options)
     {
         ChatCompletionOptions result = new();
 
@@ -257,6 +299,16 @@ internal static partial class OpenAIModelMappers
 
             if (options.AdditionalProperties is { Count: > 0 } additionalProperties)
             {
+                if (additionalProperties.TryGetValue(nameof(result.AllowParallelToolCalls), out bool allowParallelToolCalls))
+                {
+                    result.AllowParallelToolCalls = allowParallelToolCalls;
+                }
+
+                if (additionalProperties.TryGetValue(nameof(result.AudioOptions), out ChatAudioOptions? audioOptions))
+                {
+                    result.AudioOptions = audioOptions;
+                }
+
                 if (additionalProperties.TryGetValue(nameof(result.EndUserId), out string? endUserId))
                 {
                     result.EndUserId = endUserId;
@@ -275,16 +327,6 @@ internal static partial class OpenAIModelMappers
                     }
                 }
 
-                if (additionalProperties.TryGetValue(nameof(result.AllowParallelToolCalls), out bool allowParallelToolCalls))
-                {
-                    result.AllowParallelToolCalls = allowParallelToolCalls;
-                }
-
-                if (additionalProperties.TryGetValue(nameof(result.TopLogProbabilityCount), out int topLogProbabilityCountInt))
-                {
-                    result.TopLogProbabilityCount = topLogProbabilityCountInt;
-                }
-
                 if (additionalProperties.TryGetValue(nameof(result.Metadata), out IDictionary<string, string>? metadata))
                 {
                     foreach (KeyValuePair<string, string> kvp in metadata)
@@ -293,9 +335,29 @@ internal static partial class OpenAIModelMappers
                     }
                 }
 
+                if (additionalProperties.TryGetValue(nameof(result.OutputPrediction), out ChatOutputPrediction? outputPrediction))
+                {
+                    result.OutputPrediction = outputPrediction;
+                }
+
+                if (additionalProperties.TryGetValue(nameof(result.ReasoningEffortLevel), out ChatReasoningEffortLevel reasoningEffortLevel))
+                {
+                    result.ReasoningEffortLevel = reasoningEffortLevel;
+                }
+
+                if (additionalProperties.TryGetValue(nameof(result.ResponseModalities), out ChatResponseModalities responseModalities))
+                {
+                    result.ResponseModalities = responseModalities;
+                }
+
                 if (additionalProperties.TryGetValue(nameof(result.StoredOutputEnabled), out bool storeOutputEnabled))
                 {
                     result.StoredOutputEnabled = storeOutputEnabled;
+                }
+
+                if (additionalProperties.TryGetValue(nameof(result.TopLogProbabilityCount), out int topLogProbabilityCountInt))
+                {
+                    result.TopLogProbabilityCount = topLogProbabilityCountInt;
                 }
             }
 
@@ -311,7 +373,12 @@ internal static partial class OpenAIModelMappers
 
                 switch (options.ToolMode)
                 {
+                    case NoneChatToolMode:
+                        result.ToolChoice = ChatToolChoice.CreateNoneChoice();
+                        break;
+
                     case AutoChatToolMode:
+                    case null:
                         result.ToolChoice = ChatToolChoice.CreateAutoChoice();
                         break;
 
@@ -342,77 +409,48 @@ internal static partial class OpenAIModelMappers
         return result;
     }
 
-    private static AITool FromOpenAIChatTool(ChatTool chatTool)
+    private static AITool? FromOpenAIChatTool(ChatTool chatTool)
     {
-        AdditionalPropertiesDictionary additionalProperties = new();
-        if (chatTool.FunctionSchemaIsStrict is bool strictValue)
+        switch (chatTool.Kind)
         {
-            additionalProperties["Strict"] = strictValue;
+            case ChatToolKind.Function:
+                AdditionalPropertiesDictionary additionalProperties = [];
+                if (chatTool.FunctionSchemaIsStrict is bool strictValue)
+                {
+                    additionalProperties["Strict"] = strictValue;
+                }
+
+                OpenAIChatToolJson openAiChatTool = JsonSerializer.Deserialize(chatTool.FunctionParameters.ToMemory().Span, OpenAIJsonContext.Default.OpenAIChatToolJson)!;
+                JsonElement schema = JsonSerializer.SerializeToElement(openAiChatTool, OpenAIJsonContext.Default.OpenAIChatToolJson);
+                return new MetadataOnlyAIFunction(chatTool.FunctionName, chatTool.FunctionDescription, schema, additionalProperties);
+
+            default:
+                return null;
         }
-
-        OpenAIChatToolJson openAiChatTool = JsonSerializer.Deserialize(chatTool.FunctionParameters.ToMemory().Span, OpenAIJsonContext.Default.OpenAIChatToolJson)!;
-        List<AIFunctionParameterMetadata> parameters = new(openAiChatTool.Properties.Count);
-        foreach (KeyValuePair<string, JsonElement> property in openAiChatTool.Properties)
-        {
-            parameters.Add(new(property.Key)
-            {
-                Schema = property.Value,
-                IsRequired = openAiChatTool.Required.Contains(property.Key),
-            });
-        }
-
-        AIFunctionMetadata metadata = new(chatTool.FunctionName)
-        {
-            Description = chatTool.FunctionDescription,
-            AdditionalProperties = additionalProperties,
-            Parameters = parameters,
-            ReturnParameter = new()
-            {
-                Description = "Return parameter",
-                Schema = _defaultParameterSchema,
-            }
-        };
-
-        return new MetadataOnlyAIFunction(metadata);
     }
 
-    private sealed class MetadataOnlyAIFunction(AIFunctionMetadata metadata) : AIFunction
+    private sealed class MetadataOnlyAIFunction(string name, string description, JsonElement schema, IReadOnlyDictionary<string, object?> additionalProps) : AIFunction
     {
-        public override AIFunctionMetadata Metadata => metadata;
+        public override string Name => name;
+        public override string Description => description;
+        public override JsonElement JsonSchema => schema;
+        public override IReadOnlyDictionary<string, object?> AdditionalProperties => additionalProps;
         protected override Task<object?> InvokeCoreAsync(IEnumerable<KeyValuePair<string, object?>> arguments, CancellationToken cancellationToken) =>
-            throw new InvalidOperationException($"The AI function '{metadata.Name}' does not support being invoked.");
+            throw new InvalidOperationException($"The AI function '{Name}' does not support being invoked.");
     }
 
     /// <summary>Converts an Extensions function to an OpenAI chat tool.</summary>
     private static ChatTool ToOpenAIChatTool(AIFunction aiFunction)
     {
         bool? strict =
-            aiFunction.Metadata.AdditionalProperties.TryGetValue("Strict", out object? strictObj) &&
+            aiFunction.AdditionalProperties.TryGetValue("Strict", out object? strictObj) &&
             strictObj is bool strictValue ?
             strictValue : null;
 
-        BinaryData resultParameters = OpenAIChatToolJson.ZeroFunctionParametersSchema;
-
-        var parameters = aiFunction.Metadata.Parameters;
-        if (parameters is { Count: > 0 })
-        {
-            OpenAIChatToolJson tool = new();
-
-            foreach (AIFunctionParameterMetadata parameter in parameters)
-            {
-                tool.Properties.Add(parameter.Name, parameter.Schema is JsonElement e ? e : _defaultParameterSchema);
-
-                if (parameter.IsRequired)
-                {
-                    _ = tool.Required.Add(parameter.Name);
-                }
-            }
-
-            resultParameters = BinaryData.FromBytes(
-                JsonSerializer.SerializeToUtf8Bytes(tool, OpenAIJsonContext.Default.OpenAIChatToolJson));
-        }
-
-        return ChatTool.CreateFunctionTool(aiFunction.Metadata.Name, aiFunction.Metadata.Description, resultParameters, strict);
+        // Map to an intermediate model so that redundant properties are skipped.
+        var tool = JsonSerializer.Deserialize(aiFunction.JsonSchema, OpenAIJsonContext.Default.OpenAIChatToolJson)!;
+        var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool, OpenAIJsonContext.Default.OpenAIChatToolJson));
+        return ChatTool.CreateFunctionTool(aiFunction.Name, aiFunction.Description, functionParameters, strict);
     }
 
     private static UsageDetails FromOpenAIUsage(ChatTokenUsage tokenUsage)
@@ -422,29 +460,25 @@ internal static partial class OpenAIModelMappers
             InputTokenCount = tokenUsage.InputTokenCount,
             OutputTokenCount = tokenUsage.OutputTokenCount,
             TotalTokenCount = tokenUsage.TotalTokenCount,
-            AdditionalCounts = new(),
+            AdditionalCounts = [],
         };
+
+        var counts = destination.AdditionalCounts;
 
         if (tokenUsage.InputTokenDetails is ChatInputTokenUsageDetails inputDetails)
         {
-            destination.AdditionalCounts.Add(
-                $"{nameof(ChatTokenUsage.InputTokenDetails)}.{nameof(ChatInputTokenUsageDetails.AudioTokenCount)}",
-                inputDetails.AudioTokenCount);
-
-            destination.AdditionalCounts.Add(
-                $"{nameof(ChatTokenUsage.InputTokenDetails)}.{nameof(ChatInputTokenUsageDetails.CachedTokenCount)}",
-                inputDetails.CachedTokenCount);
+            const string InputDetails = nameof(ChatTokenUsage.InputTokenDetails);
+            counts.Add($"{InputDetails}.{nameof(ChatInputTokenUsageDetails.AudioTokenCount)}", inputDetails.AudioTokenCount);
+            counts.Add($"{InputDetails}.{nameof(ChatInputTokenUsageDetails.CachedTokenCount)}", inputDetails.CachedTokenCount);
         }
 
         if (tokenUsage.OutputTokenDetails is ChatOutputTokenUsageDetails outputDetails)
         {
-            destination.AdditionalCounts.Add(
-                $"{nameof(ChatTokenUsage.OutputTokenDetails)}.{nameof(ChatOutputTokenUsageDetails.AudioTokenCount)}",
-                outputDetails.AudioTokenCount);
-
-            destination.AdditionalCounts.Add(
-                $"{nameof(ChatTokenUsage.OutputTokenDetails)}.{nameof(ChatOutputTokenUsageDetails.ReasoningTokenCount)}",
-                outputDetails.ReasoningTokenCount);
+            const string OutputDetails = nameof(ChatTokenUsage.OutputTokenDetails);
+            counts.Add($"{OutputDetails}.{nameof(ChatOutputTokenUsageDetails.ReasoningTokenCount)}", outputDetails.ReasoningTokenCount);
+            counts.Add($"{OutputDetails}.{nameof(ChatOutputTokenUsageDetails.AudioTokenCount)}", outputDetails.AudioTokenCount);
+            counts.Add($"{OutputDetails}.{nameof(ChatOutputTokenUsageDetails.AcceptedPredictionTokenCount)}", outputDetails.AcceptedPredictionTokenCount);
+            counts.Add($"{OutputDetails}.{nameof(ChatOutputTokenUsageDetails.RejectedPredictionTokenCount)}", outputDetails.RejectedPredictionTokenCount);
         }
 
         return destination;
@@ -457,43 +491,41 @@ internal static partial class OpenAIModelMappers
 
         if (usageDetails.AdditionalCounts is { Count: > 0 } additionalCounts)
         {
-            int? inputAudioTokenCount = additionalCounts.TryGetValue(
-                $"{nameof(ChatTokenUsage.InputTokenDetails)}.{nameof(ChatInputTokenUsageDetails.AudioTokenCount)}",
-                out int value) ? value : null;
-
-            int? inputCachedTokenCount = additionalCounts.TryGetValue(
-                $"{nameof(ChatTokenUsage.InputTokenDetails)}.{nameof(ChatInputTokenUsageDetails.CachedTokenCount)}",
-                out value) ? value : null;
-
-            int? outputAudioTokenCount = additionalCounts.TryGetValue(
-                $"{nameof(ChatTokenUsage.OutputTokenDetails)}.{nameof(ChatOutputTokenUsageDetails.AudioTokenCount)}",
-                out value) ? value : null;
-
-            int? outputReasoningTokenCount = additionalCounts.TryGetValue(
-                $"{nameof(ChatTokenUsage.OutputTokenDetails)}.{nameof(ChatOutputTokenUsageDetails.ReasoningTokenCount)}",
-                out value) ? value : null;
-
-            if (inputAudioTokenCount is not null || inputCachedTokenCount is not null)
+            const string InputDetails = nameof(ChatTokenUsage.InputTokenDetails);
+            if (additionalCounts.TryGetValue($"{InputDetails}.{nameof(ChatInputTokenUsageDetails.AudioTokenCount)}", out int inputAudioTokenCount) |
+                additionalCounts.TryGetValue($"{InputDetails}.{nameof(ChatInputTokenUsageDetails.CachedTokenCount)}", out int inputCachedTokenCount))
             {
                 inputTokenUsageDetails = OpenAIChatModelFactory.ChatInputTokenUsageDetails(
-                    audioTokenCount: inputAudioTokenCount ?? 0,
-                    cachedTokenCount: inputCachedTokenCount ?? 0);
+                    audioTokenCount: inputAudioTokenCount,
+                    cachedTokenCount: inputCachedTokenCount);
             }
 
-            if (outputAudioTokenCount is not null || outputReasoningTokenCount is not null)
+            const string OutputDetails = nameof(ChatTokenUsage.OutputTokenDetails);
+            if (additionalCounts.TryGetValue($"{OutputDetails}.{nameof(ChatOutputTokenUsageDetails.ReasoningTokenCount)}", out int outputReasoningTokenCount) |
+                additionalCounts.TryGetValue($"{OutputDetails}.{nameof(ChatOutputTokenUsageDetails.AudioTokenCount)}", out int outputAudioTokenCount) |
+                additionalCounts.TryGetValue($"{OutputDetails}.{nameof(ChatOutputTokenUsageDetails.AcceptedPredictionTokenCount)}", out int outputAcceptedPredictionCount) |
+                additionalCounts.TryGetValue($"{OutputDetails}.{nameof(ChatOutputTokenUsageDetails.RejectedPredictionTokenCount)}", out int outputRejectedPredictionCount))
             {
                 outputTokenUsageDetails = OpenAIChatModelFactory.ChatOutputTokenUsageDetails(
-                    audioTokenCount: outputAudioTokenCount ?? 0,
-                    reasoningTokenCount: outputReasoningTokenCount ?? 0);
+                    reasoningTokenCount: outputReasoningTokenCount,
+                    audioTokenCount: outputAudioTokenCount,
+                    acceptedPredictionTokenCount: outputAcceptedPredictionCount,
+                    rejectedPredictionTokenCount: outputRejectedPredictionCount);
             }
         }
 
         return OpenAIChatModelFactory.ChatTokenUsage(
-            inputTokenCount: usageDetails.InputTokenCount ?? 0,
-            outputTokenCount: usageDetails.OutputTokenCount ?? 0,
-            totalTokenCount: usageDetails.TotalTokenCount ?? 0,
+            inputTokenCount: ToInt32Saturate(usageDetails.InputTokenCount),
+            outputTokenCount: ToInt32Saturate(usageDetails.OutputTokenCount),
+            totalTokenCount: ToInt32Saturate(usageDetails.TotalTokenCount),
             outputTokenDetails: outputTokenUsageDetails,
             inputTokenDetails: inputTokenUsageDetails);
+
+        static int ToInt32Saturate(long? value) =>
+            value is null ? 0 :
+            value > int.MaxValue ? int.MaxValue :
+            value < int.MinValue ? int.MinValue :
+            (int)value;
     }
 
     /// <summary>Converts an OpenAI role to an Extensions role.</summary>
@@ -504,6 +536,7 @@ internal static partial class OpenAIModelMappers
             ChatMessageRole.User => ChatRole.User,
             ChatMessageRole.Assistant => ChatRole.Assistant,
             ChatMessageRole.Tool => ChatRole.Tool,
+            ChatMessageRole.Developer => ChatRoleDeveloper,
             _ => new ChatRole(role.ToString()),
         };
 
@@ -514,7 +547,9 @@ internal static partial class OpenAIModelMappers
         role == ChatRole.System ? ChatMessageRole.System :
         role == ChatRole.User ? ChatMessageRole.User :
         role == ChatRole.Assistant ? ChatMessageRole.Assistant :
-        role == ChatRole.Tool ? ChatMessageRole.Tool : ChatMessageRole.User;
+        role == ChatRole.Tool ? ChatMessageRole.Tool :
+        role == OpenAIModelMappers.ChatRoleDeveloper ? ChatMessageRole.Developer :
+        ChatMessageRole.User;
 
     /// <summary>Creates an <see cref="AIContent"/> from a <see cref="ChatMessageContentPart"/>.</summary>
     /// <param name="contentPart">The content part to convert into a content.</param>
@@ -529,10 +564,10 @@ internal static partial class OpenAIModelMappers
         }
         else if (contentPart.Kind == ChatMessageContentPartKind.Image)
         {
-            ImageContent? imageContent;
+            DataContent? imageContent;
             aiContent = imageContent =
-                contentPart.ImageUri is not null ? new ImageContent(contentPart.ImageUri, contentPart.ImageBytesMediaType) :
-                contentPart.ImageBytes is not null ? new ImageContent(contentPart.ImageBytes.ToMemory(), contentPart.ImageBytesMediaType) :
+                contentPart.ImageUri is not null ? new DataContent(contentPart.ImageUri, contentPart.ImageBytesMediaType) :
+                contentPart.ImageBytes is not null ? new DataContent(contentPart.ImageBytes.ToMemory(), contentPart.ImageBytesMediaType) :
                 null;
 
             if (imageContent is not null && contentPart.ImageDetailLevel?.ToString() is string detail)
@@ -584,12 +619,11 @@ internal static partial class OpenAIModelMappers
     private static T? GetValueOrDefault<T>(this AdditionalPropertiesDictionary? dict, string key) =>
         dict?.TryGetValue(key, out T? value) is true ? value : default;
 
+    private static string CreateCompletionId() => $"chatcmpl-{Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture)}";
+
     /// <summary>Used to create the JSON payload for an OpenAI chat tool description.</summary>
     public sealed class OpenAIChatToolJson
     {
-        /// <summary>Gets a singleton JSON data for empty parameters. Optimization for the reasonably common case of a parameterless function.</summary>
-        public static BinaryData ZeroFunctionParametersSchema { get; } = new("""{"type":"object","required":[],"properties":{}}"""u8.ToArray());
-
         [JsonPropertyName("type")]
         public string Type { get; set; } = "object";
 

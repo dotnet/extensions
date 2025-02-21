@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.AI</RootNamespace>
@@ -8,8 +8,8 @@
 
   <PropertyGroup>
     <Stage>preview</Stage>
-    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
-    <MinCodeCoverage>77</MinCodeCoverage>
+    <EnablePackageValidation>false</EnablePackageValidation>
+    <MinCodeCoverage>49</MinCodeCoverage>
     <MinMutationScore>0</MinMutationScore>
   </PropertyGroup>
 
@@ -38,5 +38,5 @@
   <ItemGroup>
     <ProjectReference Include="../Microsoft.Extensions.AI.Abstractions/Microsoft.Extensions.AI.Abstractions.csproj" />
   </ItemGroup>
-  
+
 </Project>

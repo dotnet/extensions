@@ -1,5 +1,15 @@
 # Release History
 
+## 9.3.0-preview.1.25114.11
+
+- Updated `OpenTelemetryChatClient`/`OpenTelemetryEmbeddingGenerator` to conform to the latest 1.30.0 draft specification of the Semantic Conventions for Generative AI systems.
+
+## 9.1.0-preview.1.25064.3
+
+- Added `FunctionInvokingChatClient.CurrentContext` to give functions access to detailed function invocation information.
+- Updated `OpenTelemetryChatClient`/`OpenTelemetryEmbeddingGenerator` to conform to the latest 1.29.0 draft specification of the Semantic Conventions for Generative AI systems.
+- Updated `FunctionInvokingChatClient` to emit an `Activity`/span around all interactions related to a single chat operation.
+
 ## 9.0.1-preview.1.24570.5
 
 - Moved the `AddChatClient`, `AddKeyedChatClient`, `AddEmbeddingGenerator`, and `AddKeyedEmbeddingGenerator` extension methods to the `Microsoft.Extensions.DependencyInjection` namespace, changed them to register singleton instances instead of scoped instances, and changed them to support lambda-less chaining.

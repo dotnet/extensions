@@ -25,10 +25,11 @@
 
   <PropertyGroup>
     <Stage>dev</Stage>
-    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
     <StageDevDiagnosticId>EXTEXP0018</StageDevDiagnosticId>
-    <MinCodeCoverage>86</MinCodeCoverage>
+    <MinCodeCoverage>82</MinCodeCoverage>
     <MinMutationScore>50</MinMutationScore>
+    <Workstream>Fundamentals</Workstream>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>

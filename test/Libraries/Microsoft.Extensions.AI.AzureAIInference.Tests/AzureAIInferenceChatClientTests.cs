@@ -63,9 +63,10 @@ public class AzureAIInferenceChatClientTests
         ChatCompletionsClient client = new(endpoint, new AzureKeyCredential("key"));
 
         IChatClient chatClient = client.AsChatClient(model);
-        Assert.Equal("az.ai.inference", chatClient.Metadata.ProviderName);
-        Assert.Equal(endpoint, chatClient.Metadata.ProviderUri);
-        Assert.Equal(model, chatClient.Metadata.ModelId);
+        var metadata = chatClient.GetService<ChatClientMetadata>();
+        Assert.Equal("az.ai.inference", metadata?.ProviderName);
+        Assert.Equal(endpoint, metadata?.ProviderUri);
+        Assert.Equal(model, metadata?.ModelId);
     }
 
     [Fact]
@@ -106,7 +107,12 @@ public class AzureAIInferenceChatClientTests
     public async Task BasicRequestResponse_NonStreaming(bool multiContent)
     {
         const string Input = """
-            {"messages":[{"content":"hello","role":"user"}],"max_tokens":10,"temperature":0.5,"model":"gpt-4o-mini"}
+            {
+                "messages": [{"role":"user", "content":"hello"}],
+                "max_tokens":10,
+                "temperature":0.5,
+                "model":"gpt-4o-mini"
+            }
             """;
 
         const string Output = """
@@ -150,14 +156,14 @@ public class AzureAIInferenceChatClientTests
             [new ChatMessage(ChatRole.User, "hello".Select(c => (AIContent)new TextContent(c.ToString())).ToList())] :
             [new ChatMessage(ChatRole.User, "hello")];
 
-        var response = await client.CompleteAsync(chatMessages, new()
+        var response = await client.GetResponseAsync(chatMessages, new()
         {
             MaxOutputTokens = 10,
             Temperature = 0.5f,
         });
         Assert.NotNull(response);
 
-        Assert.Equal("chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI", response.CompletionId);
+        Assert.Equal("chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI", response.ResponseId);
         Assert.Equal("Hello! How can I assist you today?", response.Message.Text);
         Assert.Single(response.Message.Contents);
         Assert.Equal(ChatRole.Assistant, response.Message.Role);
@@ -177,7 +183,12 @@ public class AzureAIInferenceChatClientTests
     public async Task BasicRequestResponse_Streaming(bool multiContent)
     {
         const string Input = """
-            {"messages":[{"content":"hello","role":"user"}],"max_tokens":20,"temperature":0.5,"stream":true,"model":"gpt-4o-mini"}
+            {
+                "messages": [{"role":"user", "content":"hello"}],
+                "max_tokens":20,
+                "temperature":0.5,
+                "stream":true,
+                "model":"gpt-4o-mini"}
             """;
 
         const string Output = """
@@ -217,8 +228,8 @@ public class AzureAIInferenceChatClientTests
             [new ChatMessage(ChatRole.User, "hello".Select(c => (AIContent)new TextContent(c.ToString())).ToList())] :
             [new ChatMessage(ChatRole.User, "hello")];
 
-        List<StreamingChatCompletionUpdate> updates = [];
-        await foreach (var update in client.CompleteStreamingAsync(chatMessages, new()
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync(chatMessages, new()
         {
             MaxOutputTokens = 20,
             Temperature = 0.5f,
@@ -233,7 +244,7 @@ public class AzureAIInferenceChatClientTests
         Assert.Equal(12, updates.Count);
         for (int i = 0; i < updates.Count; i++)
         {
-            Assert.Equal("chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK", updates[i].CompletionId);
+            Assert.Equal("chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK", updates[i].ResponseId);
             Assert.Equal(createdAt, updates[i].CreatedAt);
             Assert.Equal("gpt-4o-mini-2024-07-18", updates[i].ModelId);
             Assert.Equal(ChatRole.Assistant, updates[i].Role);
@@ -247,7 +258,7 @@ public class AzureAIInferenceChatClientTests
     {
         const string Input = """
             {
-                "messages":[{"content":"hello","role":"user"}],
+                "messages":[{"role":"user", "content":"hello"}],
                 "max_tokens":10,
                 "temperature":0.5,
                 "top_p":0.5,
@@ -281,7 +292,7 @@ public class AzureAIInferenceChatClientTests
         using HttpClient httpClient = new(handler);
         using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
 
-        Assert.NotNull(await client.CompleteAsync("hello", new()
+        Assert.NotNull(await client.GetResponseAsync("hello", new()
         {
             MaxOutputTokens = 10,
             Temperature = 0.5f,
@@ -304,7 +315,7 @@ public class AzureAIInferenceChatClientTests
     {
         const string Input = """
             {
-                "messages":[{"content":"hello","role":"user"}],
+                "messages":[{"role":"user", "content":"hello"}],
                 "model":"gpt-4o-mini",
                 "response_format":{"type":"text"}
             }
@@ -329,7 +340,7 @@ public class AzureAIInferenceChatClientTests
         using HttpClient httpClient = new(handler);
         using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
 
-        Assert.NotNull(await client.CompleteAsync("hello", new()
+        Assert.NotNull(await client.GetResponseAsync("hello", new()
         {
             ResponseFormat = ChatResponseFormat.Text,
         }));
@@ -340,7 +351,7 @@ public class AzureAIInferenceChatClientTests
     {
         const string Input = """
             {
-                "messages":[{"content":"hello","role":"user"}],
+                "messages":[{"role":"user", "content":"hello"}],
                 "model":"gpt-4o-mini",
                 "response_format":{"type":"json_object"}
             }
@@ -365,7 +376,7 @@ public class AzureAIInferenceChatClientTests
         using HttpClient httpClient = new(handler);
         using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
 
-        Assert.NotNull(await client.CompleteAsync("hello", new()
+        Assert.NotNull(await client.GetResponseAsync("hello", new()
         {
             ResponseFormat = ChatResponseFormat.Json,
         }));
@@ -374,14 +385,32 @@ public class AzureAIInferenceChatClientTests
     [Fact]
     public async Task ResponseFormat_JsonSchema_NonStreaming()
     {
-        // NOTE: Azure.AI.Inference doesn't yet expose JSON schema support, so it's currently
-        // mapped to "json_object" for the time being.
-
         const string Input = """
             {
-                "messages":[{"content":"hello","role":"user"}],
+                "messages":[{"role":"user", "content":"hello"}],
                 "model":"gpt-4o-mini",
-                "response_format":{"type":"json_object"}
+                "response_format":
+                {
+                    "type":"json_schema",
+                    "json_schema":
+                    {
+                        "name": "DescribedObject",
+                        "schema":
+                        {
+                            "type":"object",
+                            "properties":
+                            {
+                                "description":
+                                {
+                                    "type":"string"
+                                }
+                            },
+                            "required":["description"],
+                            "additionalProperties":false
+                         },
+                         "description":"An object with a description"
+                    }
+                }
             }
             """;
 
@@ -404,7 +433,7 @@ public class AzureAIInferenceChatClientTests
         using HttpClient httpClient = new(handler);
         using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
 
-        Assert.NotNull(await client.CompleteAsync("hello", new()
+        Assert.NotNull(await client.GetResponseAsync("hello", new()
         {
             ResponseFormat = ChatResponseFormat.ForJsonSchema(JsonSerializer.Deserialize<JsonElement>("""
                 {
@@ -427,30 +456,30 @@ public class AzureAIInferenceChatClientTests
             {
                 "messages": [
                     {
-                        "content": "You are a really nice friend.",
-                        "role": "system"
+                        "role": "system",
+                        "content": "You are a really nice friend."
                     },
                     {
-                        "content": "hello!",
-                        "role": "user"
+                        "role": "user",
+                        "content": "hello!"
                     },
                     {
-                        "content": "hi, how are you?",
-                        "role": "assistant"
+                        "role": "assistant",
+                        "content": "hi, how are you?"
                     },
                     {
-                        "content": "i\u0027m good. how are you?",
-                        "role": "user"
+                        "role": "user",
+                        "content": "i\u0027m good. how are you?"
                     },
                     {
+                        "role": "assistant",
                         "content": "",
-                        "tool_calls": [{"id":"abcd123","type":"function","function":{"name":"GetMood","arguments":"null"}}],
-                        "role": "assistant"
+                        "tool_calls": [{"id":"abcd123","type":"function","function":{"name":"GetMood","arguments":"null"}}]
                     },
                     {
+                        "role": "tool",
                         "content": "happy",
-                        "tool_call_id": "abcd123",
-                        "role": "tool"
+                        "tool_call_id": "abcd123"
                     }
                 ],
                 "temperature": 0.25,
@@ -508,10 +537,10 @@ public class AzureAIInferenceChatClientTests
             new(ChatRole.Assistant, "hi, how are you?"),
             new(ChatRole.User, "i'm good. how are you?"),
             new(ChatRole.Assistant, [new FunctionCallContent("abcd123", "GetMood")]),
-            new(ChatRole.Tool, [new FunctionResultContent("abcd123", "GetMood", "happy")]),
+            new(ChatRole.Tool, [new FunctionResultContent("abcd123", "happy")]),
         ];
 
-        var response = await client.CompleteAsync(messages, new()
+        var response = await client.GetResponseAsync(messages, new()
         {
             Temperature = 0.25f,
             FrequencyPenalty = 0.75f,
@@ -521,7 +550,7 @@ public class AzureAIInferenceChatClientTests
         });
         Assert.NotNull(response);
 
-        Assert.Equal("chatcmpl-ADyV17bXeSm5rzUx3n46O7m3M0o3P", response.CompletionId);
+        Assert.Equal("chatcmpl-ADyV17bXeSm5rzUx3n46O7m3M0o3P", response.ResponseId);
         Assert.Equal("I’m doing well, thank you! What’s on your mind today?", response.Message.Text);
         Assert.Single(response.Message.Contents);
         Assert.Equal(ChatRole.Assistant, response.Message.Role);
@@ -543,21 +572,21 @@ public class AzureAIInferenceChatClientTests
                 "messages":
                 [
                     {
+                        "role": "user",
                         "content":
                         [
                             {
-                                "text": "Describe this picture.",
-                                "type": "text"
+                                "type": "text",
+                                "text": "Describe this picture."
                             },
                             {
+                                "type": "image_url",
                                 "image_url":
                                 {
                                     "url": "http://dot.net/someimage.png"
-                                },
-                                "type": "image_url"
+                                }
                             }
-                        ],
-                        "role":"user"
+                        ]
                     }
                 ],
                 "model": "gpt-4o-mini"
@@ -583,10 +612,10 @@ public class AzureAIInferenceChatClientTests
         using HttpClient httpClient = new(handler);
         using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
 
-        Assert.NotNull(await client.CompleteAsync([new(ChatRole.User,
+        Assert.NotNull(await client.GetResponseAsync([new(ChatRole.User,
         [
             new TextContent("Describe this picture."),
-            new ImageContent("http://dot.net/someimage.png"),
+            new DataContent("http://dot.net/someimage.png", mediaType: "image/png"),
         ])]));
     }
 
@@ -597,12 +626,12 @@ public class AzureAIInferenceChatClientTests
             {
                 "messages": [
                     {
-                        "content": "",
-                        "role": "assistant"
+                        "role": "assistant",
+                        "content": ""
                     },
                     {
-                        "content": "hello!",
-                        "role": "user"
+                        "role": "user",
+                        "content": "hello!"
                     }
                 ],
                 "model": "gpt-4o-mini"
@@ -652,10 +681,10 @@ public class AzureAIInferenceChatClientTests
             new(ChatRole.User, "hello!"),
         ];
 
-        var response = await client.CompleteAsync(messages);
+        var response = await client.GetResponseAsync(messages);
         Assert.NotNull(response);
 
-        Assert.Equal("chatcmpl-ADyV17bXeSm5rzUx3n46O7m3M0o3P", response.CompletionId);
+        Assert.Equal("chatcmpl-ADyV17bXeSm5rzUx3n46O7m3M0o3P", response.ResponseId);
         Assert.Equal("Hello.", response.Message.Text);
         Assert.Single(response.Message.Contents);
         Assert.Equal(ChatRole.Assistant, response.Message.Role);
@@ -672,6 +701,7 @@ public class AzureAIInferenceChatClientTests
     public static IEnumerable<object[]> FunctionCallContent_NonStreaming_MemberData()
     {
         yield return [ChatToolMode.Auto];
+        yield return [ChatToolMode.None];
         yield return [ChatToolMode.RequireAny];
         yield return [ChatToolMode.RequireSpecific("GetPersonAge")];
     }
@@ -684,8 +714,8 @@ public class AzureAIInferenceChatClientTests
             {
                 "messages": [
                     {
-                        "content": "How old is Alice?",
-                        "role": "user"
+                        "role": "user",
+                        "content": "How old is Alice?"
                     }
                 ],
                 "model": "gpt-4o-mini",
@@ -709,6 +739,7 @@ public class AzureAIInferenceChatClientTests
                     }
                 ],
                 "tool_choice": {{(
+                    mode is NoneChatToolMode ? "\"none\"" :
                     mode is AutoChatToolMode ? "\"auto\"" :
                     mode is RequiredChatToolMode { RequiredFunctionName: not null } f ? "{\"type\":\"function\",\"function\":{\"name\":\"GetPersonAge\"}}" :
                     "\"required\""
@@ -763,7 +794,7 @@ public class AzureAIInferenceChatClientTests
         using HttpClient httpClient = new(handler);
         using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
 
-        var response = await client.CompleteAsync("How old is Alice?", new()
+        var response = await client.GetResponseAsync("How old is Alice?", new()
         {
             Tools = [AIFunctionFactory.Create(([Description("The person whose age is being requested")] string personName) => 42, "GetPersonAge", "Gets the age of the specified person.")],
             ToolMode = mode,
@@ -794,8 +825,8 @@ public class AzureAIInferenceChatClientTests
             {
                 "messages": [
                     {
-                        "content": "How old is Alice?",
-                        "role": "user"
+                        "role": "user",
+                        "content": "How old is Alice?"
                     }
                 ],
                 "stream": true,
@@ -850,8 +881,8 @@ public class AzureAIInferenceChatClientTests
         using HttpClient httpClient = new(handler);
         using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
 
-        List<StreamingChatCompletionUpdate> updates = [];
-        await foreach (var update in client.CompleteStreamingAsync("How old is Alice?", new()
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("How old is Alice?", new()
         {
             Tools = [AIFunctionFactory.Create(([Description("The person whose age is being requested")] string personName) => 42, "GetPersonAge", "Gets the age of the specified person.")],
         }))
@@ -865,7 +896,7 @@ public class AzureAIInferenceChatClientTests
         Assert.Equal(10, updates.Count);
         for (int i = 0; i < updates.Count; i++)
         {
-            Assert.Equal("chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl", updates[i].CompletionId);
+            Assert.Equal("chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl", updates[i].ResponseId);
             Assert.Equal(createdAt, updates[i].CreatedAt);
             Assert.Equal("gpt-4o-mini-2024-07-18", updates[i].ModelId);
             Assert.Equal(ChatRole.Assistant, updates[i].Role);

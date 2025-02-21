@@ -8,15 +8,15 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Represents a chat completion client.</summary>
+/// <summary>Represents a chat client.</summary>
 /// <remarks>
 /// <para>
 /// Unless otherwise specified, all members of <see cref="IChatClient"/> are thread-safe for concurrent use.
 /// It is expected that all implementations of <see cref="IChatClient"/> support being used by multiple requests concurrently.
 /// </para>
 /// <para>
-/// However, implementations of <see cref="IChatClient"/> might mutate the arguments supplied to <see cref="CompleteAsync"/> and
-/// <see cref="CompleteStreamingAsync"/>, such as by adding additional messages to the messages list or configuring the options
+/// However, implementations of <see cref="IChatClient"/> might mutate the arguments supplied to <see cref="GetResponseAsync"/> and
+/// <see cref="GetStreamingResponseAsync"/>, such as by adding additional messages to the messages list or configuring the options
 /// instance. Thus, consumers of the interface either should avoid using shared instances of these arguments for concurrent
 /// invocations or should otherwise ensure by construction that no <see cref="IChatClient"/> instances are used which might employ
 /// such mutation. For example, the WithChatOptions method be provided with a callback that could mutate the supplied options
@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.AI;
 /// </remarks>
 public interface IChatClient : IDisposable
 {
-    /// <summary>Sends chat messages to the model and returns the response messages.</summary>
+    /// <summary>Sends chat messages and returns the response.</summary>
     /// <param name="chatMessages">The chat content to send.</param>
     /// <param name="options">The chat options to configure the request.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -34,12 +34,12 @@ public interface IChatClient : IDisposable
     /// The returned messages aren't added to <paramref name="chatMessages"/>. However, any intermediate messages generated implicitly
     /// by the client, including any messages for roundtrips to the model as part of the implementation of this request, are included.
     /// </remarks>
-    Task<ChatCompletion> CompleteAsync(
+    Task<ChatResponse> GetResponseAsync(
         IList<ChatMessage> chatMessages,
         ChatOptions? options = null,
         CancellationToken cancellationToken = default);
 
-    /// <summary>Sends chat messages to the model and streams the response messages.</summary>
+    /// <summary>Sends chat messages and streams the response.</summary>
     /// <param name="chatMessages">The chat content to send.</param>
     /// <param name="options">The chat options to configure the request.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -48,18 +48,16 @@ public interface IChatClient : IDisposable
     /// The returned messages aren't added to <paramref name="chatMessages"/>. However, any intermediate messages generated implicitly
     /// by the client, including any messages for roundtrips to the model as part of the implementation of this request, are included.
     /// </remarks>
-    IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(
+    IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IList<ChatMessage> chatMessages,
         ChatOptions? options = null,
         CancellationToken cancellationToken = default);
-
-    /// <summary>Gets metadata that describes the <see cref="IChatClient"/>.</summary>
-    ChatClientMetadata Metadata { get; }
 
     /// <summary>Asks the <see cref="IChatClient"/> for an object of the specified type <paramref name="serviceType"/>.</summary>
     /// <param name="serviceType">The type of object being requested.</param>
     /// <param name="serviceKey">An optional key that can be used to help identify the target service.</param>
     /// <returns>The found object, otherwise <see langword="null"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceType"/> is <see langword="null"/>.</exception>
     /// <remarks>
     /// The purpose of this method is to allow for the retrieval of strongly typed services that might be provided by the <see cref="IChatClient"/>,
     /// including itself or any services it might be wrapping.

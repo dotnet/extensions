@@ -18,43 +18,95 @@ public class ChatClientExtensionsTests
     }
 
     [Fact]
-    public void CompleteAsync_InvalidArgs_Throws()
+    public void GetRequiredService_InvalidArgs_Throws()
+    {
+        Assert.Throws<ArgumentNullException>("client", () => ChatClientExtensions.GetRequiredService(null!, typeof(string)));
+        Assert.Throws<ArgumentNullException>("client", () => ChatClientExtensions.GetRequiredService<object>(null!));
+
+        using var client = new TestChatClient();
+        Assert.Throws<ArgumentNullException>("serviceType", () => client.GetRequiredService(null!));
+    }
+
+    [Fact]
+    public void GetService_ValidService_Returned()
+    {
+        using var client = new TestChatClient
+        {
+            GetServiceCallback = (Type serviceType, object? serviceKey) =>
+            {
+                if (serviceType == typeof(string))
+                {
+                    return serviceKey == null ? "null key" : "non-null key";
+                }
+
+                if (serviceType == typeof(IChatClient))
+                {
+                    return new object();
+                }
+
+                return null;
+            },
+        };
+
+        Assert.Equal("null key", client.GetService<string>());
+        Assert.Equal("null key", client.GetService<string>(null));
+        Assert.Equal("non-null key", client.GetService<string>("key"));
+
+        Assert.Null(client.GetService<object>());
+        Assert.Null(client.GetService<object>("key"));
+        Assert.Null(client.GetService<IChatClient>());
+
+        Assert.Equal("null key", client.GetRequiredService(typeof(string)));
+        Assert.Equal("null key", client.GetRequiredService<string>());
+        Assert.Equal("null key", client.GetRequiredService<string>(null));
+        Assert.Equal("non-null key", client.GetRequiredService(typeof(string), "key"));
+        Assert.Equal("non-null key", client.GetRequiredService<string>("key"));
+
+        Assert.Throws<InvalidOperationException>(() => client.GetRequiredService(typeof(object)));
+        Assert.Throws<InvalidOperationException>(() => client.GetRequiredService<object>());
+        Assert.Throws<InvalidOperationException>(() => client.GetRequiredService(typeof(object), "key"));
+        Assert.Throws<InvalidOperationException>(() => client.GetRequiredService<object>("key"));
+        Assert.Throws<InvalidOperationException>(() => client.GetRequiredService<IChatClient>());
+    }
+
+    [Fact]
+    public void GetResponseAsync_InvalidArgs_Throws()
     {
         Assert.Throws<ArgumentNullException>("client", () =>
         {
-            _ = ChatClientExtensions.CompleteAsync(null!, "hello");
+            _ = ChatClientExtensions.GetResponseAsync(null!, "hello");
         });
 
         Assert.Throws<ArgumentNullException>("chatMessage", () =>
         {
-            _ = ChatClientExtensions.CompleteAsync(new TestChatClient(), null!);
+            _ = ChatClientExtensions.GetResponseAsync(new TestChatClient(), (ChatMessage)null!);
         });
     }
 
     [Fact]
-    public void CompleteStreamingAsync_InvalidArgs_Throws()
+    public void GetStreamingResponseAsync_InvalidArgs_Throws()
     {
         Assert.Throws<ArgumentNullException>("client", () =>
         {
-            _ = ChatClientExtensions.CompleteStreamingAsync(null!, "hello");
+            _ = ChatClientExtensions.GetStreamingResponseAsync(null!, "hello");
         });
 
         Assert.Throws<ArgumentNullException>("chatMessage", () =>
         {
-            _ = ChatClientExtensions.CompleteStreamingAsync(new TestChatClient(), null!);
+            _ = ChatClientExtensions.GetStreamingResponseAsync(new TestChatClient(), (ChatMessage)null!);
         });
     }
 
     [Fact]
-    public async Task CompleteAsync_CreatesTextMessageAsync()
+    public async Task GetResponseAsync_CreatesTextMessageAsync()
     {
-        var expectedResponse = new ChatCompletion([new ChatMessage()]);
+        var expectedResponse = new ChatResponse([new ChatMessage()]);
         var expectedOptions = new ChatOptions();
         using var cts = new CancellationTokenSource();
 
         using TestChatClient client = new()
         {
-            CompleteAsyncCallback = (chatMessages, options, cancellationToken) =>
+            GetResponseAsyncCallback = (chatMessages, options, cancellationToken) =>
             {
                 ChatMessage m = Assert.Single(chatMessages);
                 Assert.Equal(ChatRole.User, m.Role);
@@ -68,20 +120,20 @@ public class ChatClientExtensionsTests
             },
         };
 
-        ChatCompletion response = await client.CompleteAsync("hello", expectedOptions, cts.Token);
+        ChatResponse response = await client.GetResponseAsync("hello", expectedOptions, cts.Token);
 
         Assert.Same(expectedResponse, response);
     }
 
     [Fact]
-    public async Task CompleteStreamingAsync_CreatesTextMessageAsync()
+    public async Task GetStreamingResponseAsync_CreatesTextMessageAsync()
     {
         var expectedOptions = new ChatOptions();
         using var cts = new CancellationTokenSource();
 
         using TestChatClient client = new()
         {
-            CompleteStreamingAsyncCallback = (chatMessages, options, cancellationToken) =>
+            GetStreamingResponseAsyncCallback = (chatMessages, options, cancellationToken) =>
             {
                 ChatMessage m = Assert.Single(chatMessages);
                 Assert.Equal(ChatRole.User, m.Role);
@@ -91,12 +143,12 @@ public class ChatClientExtensionsTests
 
                 Assert.Equal(cts.Token, cancellationToken);
 
-                return YieldAsync([new StreamingChatCompletionUpdate { Text = "world" }]);
+                return YieldAsync([new ChatResponseUpdate { Text = "world" }]);
             },
         };
 
         int count = 0;
-        await foreach (var update in client.CompleteStreamingAsync("hello", expectedOptions, cts.Token))
+        await foreach (var update in client.GetStreamingResponseAsync("hello", expectedOptions, cts.Token))
         {
             Assert.Equal(0, count);
             Assert.Equal("world", update.Text);
@@ -106,7 +158,7 @@ public class ChatClientExtensionsTests
         Assert.Equal(1, count);
     }
 
-    private static async IAsyncEnumerable<StreamingChatCompletionUpdate> YieldAsync(params StreamingChatCompletionUpdate[] updates)
+    private static async IAsyncEnumerable<ChatResponseUpdate> YieldAsync(params ChatResponseUpdate[] updates)
     {
         await Task.Yield();
         foreach (var update in updates)

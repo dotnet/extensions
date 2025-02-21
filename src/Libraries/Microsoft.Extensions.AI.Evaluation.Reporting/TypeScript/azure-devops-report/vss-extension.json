@@ -1,0 +1,57 @@
+{
+    "manifestVersion": 1,
+    "id": "microsoft-extensions-ai-evaluation-report",
+    "publisher": "pbw",
+    "version": "42.42.42",
+    "name": "Azure DevOps AI Evaluation Report",
+    "description": "Display an AI Evaluation report tab in Azure DevOps build results",
+    "public": false,
+    "categories": ["Azure Pipelines"],
+    "tags": ["Preview"],
+    "targets": [
+        {
+            "id": "Microsoft.VisualStudio.Services"
+        }
+    ],
+    "scopes": [
+        "vso.build"
+    ],
+    "demands": [
+        "api-version/3.0"
+    ],
+    "contributions": [
+        {
+            "id": "build-results-html",
+            "type": "ms.vss-build-web.build-results-tab",
+            "description": "Add AI Evaluation report tab to the build results view",
+            "targets": ["ms.vss-build-web.build-results-view"],
+            "properties": {
+                "name": "AI Evaluation Report",
+                "uri": "dist/index.html",
+                "supportsTasks": ["15352e60-718d-42d6-b725-6bd515f7e302"]
+            },
+            "includes": ["ms.vss-releaseManagement-web.release-service-data-external"]
+        },
+        {
+            "id": "PublishAIEvaluationReport",
+            "type": "ms.vss-distributed-task.task",
+            "targets": [
+                "ms.vss-distributed-task.tasks"
+            ],
+            "properties": {
+                "name": "tasks/PublishAIEvaluationReport"
+            }
+        }
+    ],
+    "files": [
+        {
+            "path": "dist",
+            "addressable": true
+        },
+        {
+            "packagePath": "tasks/PublishAIEvaluationReport",
+            "path": "tasks/PublishAIEvaluationReport/dist",
+            "addressable": false
+        }
+    ]
+}

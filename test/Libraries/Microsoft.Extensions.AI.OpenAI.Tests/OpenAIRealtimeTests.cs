@@ -72,18 +72,13 @@ public class OpenAIRealtimeTests
     {
         var conversationSession = (RealtimeConversationSession)default!;
 
-        // Null RealtimeConversationSession
-        await Assert.ThrowsAsync<ArgumentNullException>(() => conversationSession.HandleToolCallsAsync(
-            new TestConversationUpdate(), []));
+        // There's currently no way to create a ConversationUpdate instance from outside of the OpenAI
+        // library, so we can't validate behavior when a valid ConversationUpdate instance is passed in.
 
         // Null ConversationUpdate
         using var session = TestRealtimeConversationSession.CreateTestInstance();
         await Assert.ThrowsAsync<ArgumentNullException>(() => conversationSession.HandleToolCallsAsync(
             null!, []));
-
-        // Null tools
-        await Assert.ThrowsAsync<ArgumentNullException>(() => conversationSession.HandleToolCallsAsync(
-            new TestConversationUpdate(), null!));
     }
 
     [Description("This is a description")]
@@ -108,14 +103,6 @@ public class OpenAIRealtimeTests
             return new TestRealtimeConversationSession(
                 new RealtimeConversationClient("model", credential),
                 new Uri("http://endpoint"), credential);
-        }
-    }
-
-    private class TestConversationUpdate : ConversationUpdate
-    {
-        public TestConversationUpdate()
-            : base("eventId")
-        {
         }
     }
 }

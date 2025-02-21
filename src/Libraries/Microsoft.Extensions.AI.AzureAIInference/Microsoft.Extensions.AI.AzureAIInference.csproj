@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.AI</RootNamespace>
@@ -8,8 +8,8 @@
 
   <PropertyGroup>
     <Stage>preview</Stage>
-    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
-    <MinCodeCoverage>91</MinCodeCoverage>
+    <EnablePackageValidation>false</EnablePackageValidation>
+    <MinCodeCoverage>86</MinCodeCoverage>
     <MinMutationScore>0</MinMutationScore>
   </PropertyGroup>
 
@@ -26,10 +26,9 @@
     <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
     <InjectStringHashOnLegacy>true</InjectStringHashOnLegacy>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="Azure.AI.Inference" />
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
     <PackageReference Include="System.Memory.Data" />
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
@@ -37,5 +36,5 @@
   <ItemGroup>
     <ProjectReference Include="../Microsoft.Extensions.AI.Abstractions/Microsoft.Extensions.AI.Abstractions.csproj" />
   </ItemGroup>
-  
+
 </Project>

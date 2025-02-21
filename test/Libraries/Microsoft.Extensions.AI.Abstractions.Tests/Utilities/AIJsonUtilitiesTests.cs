@@ -4,6 +4,8 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
@@ -33,6 +35,20 @@ public static class AIJsonUtilitiesTests
         // Additional settings
         Assert.Equal(JsonIgnoreCondition.WhenWritingNull, options.DefaultIgnoreCondition);
         Assert.True(options.WriteIndented);
+        Assert.Same(JavaScriptEncoder.UnsafeRelaxedJsonEscaping, options.Encoder);
+    }
+
+    [Theory]
+    [InlineData("<script>alert('XSS')</script>", "<script>alert('XSS')</script>")]
+    [InlineData("""{"forecast":"sunny", "temperature":"75"}""", """{\"forecast\":\"sunny\", \"temperature\":\"75\"}""")]
+    [InlineData("""{"message":"Πάντα ῥεῖ."}""", """{\"message\":\"Πάντα ῥεῖ.\"}""")]
+    [InlineData("""{"message":"七転び八起き"}""", """{\"message\":\"七転び八起き\"}""")]
+    [InlineData("""☺️🤖🌍𝄞""", """☺️\uD83E\uDD16\uD83C\uDF0D\uD834\uDD1E""")]
+    public static void DefaultOptions_UsesExpectedEscaping(string input, string expectedJsonString)
+    {
+        var options = AIJsonUtilities.DefaultOptions;
+        string json = JsonSerializer.Serialize(input, options);
+        Assert.Equal($@"""{expectedJsonString}""", json);
     }
 
     [Theory]
@@ -46,6 +62,53 @@ public static class AIJsonUtilitiesTests
         Assert.False(options.IncludeSchemaKeyword);
         Assert.True(options.RequireAllProperties);
         Assert.Null(options.TransformSchemaNode);
+    }
+
+    [Fact]
+    public static void AIJsonSchemaCreateOptions_UsesStructuralEquality()
+    {
+        AssertEqual(new AIJsonSchemaCreateOptions(), new AIJsonSchemaCreateOptions());
+
+        foreach (PropertyInfo property in typeof(AIJsonSchemaCreateOptions).GetProperties(BindingFlags.Instance | BindingFlags.Public))
+        {
+            AIJsonSchemaCreateOptions options1 = new AIJsonSchemaCreateOptions();
+            AIJsonSchemaCreateOptions options2 = new AIJsonSchemaCreateOptions();
+            switch (property.GetValue(AIJsonSchemaCreateOptions.Default))
+            {
+                case bool booleanFlag:
+                    property.SetValue(options1, !booleanFlag);
+                    property.SetValue(options2, !booleanFlag);
+                    break;
+
+                case null when property.PropertyType == typeof(Func<AIJsonSchemaCreateContext, JsonNode, JsonNode>):
+                    Func<AIJsonSchemaCreateContext, JsonNode, JsonNode> transformer = static (context, schema) => (JsonNode)true;
+                    property.SetValue(options1, transformer);
+                    property.SetValue(options2, transformer);
+                    break;
+
+                default:
+                    Assert.Fail($"Unexpected property type: {property.PropertyType}");
+                    break;
+            }
+
+            AssertEqual(options1, options2);
+            AssertNotEqual(AIJsonSchemaCreateOptions.Default, options1);
+        }
+
+        static void AssertEqual(AIJsonSchemaCreateOptions x, AIJsonSchemaCreateOptions y)
+        {
+            Assert.Equal(x.GetHashCode(), y.GetHashCode());
+            Assert.Equal(x, x);
+            Assert.Equal(y, y);
+            Assert.Equal(x, y);
+            Assert.Equal(y, x);
+        }
+
+        static void AssertNotEqual(AIJsonSchemaCreateOptions x, AIJsonSchemaCreateOptions y)
+        {
+            Assert.NotEqual(x, y);
+            Assert.NotEqual(y, x);
+        }
     }
 
     [Fact]
@@ -210,37 +273,44 @@ public static class AIJsonUtilitiesTests
     }
 
     [Fact]
-    public static void ResolveParameterJsonSchema_ReturnsExpectedValue()
+    public static void CreateFunctionJsonSchema_ReturnsExpectedValue()
     {
         JsonSerializerOptions options = new(JsonSerializerOptions.Default);
         AIFunction func = AIFunctionFactory.Create((int x, int y) => x + y, serializerOptions: options);
 
-        AIFunctionMetadata metadata = func.Metadata;
-        AIFunctionParameterMetadata param = metadata.Parameters[0];
-        JsonElement generatedSchema = Assert.IsType<JsonElement>(param.Schema);
+        Assert.NotNull(func.UnderlyingMethod);
 
-        JsonElement resolvedSchema;
-        resolvedSchema = AIJsonUtilities.ResolveParameterJsonSchema(param, metadata, options);
-        Assert.True(JsonElement.DeepEquals(generatedSchema, resolvedSchema));
+        JsonElement resolvedSchema = AIJsonUtilities.CreateFunctionJsonSchema(func.UnderlyingMethod, title: func.Name);
+        Assert.True(JsonElement.DeepEquals(resolvedSchema, func.JsonSchema));
     }
 
     [Fact]
-    public static void CreateParameterJsonSchema_TreatsIntegralTypesAsInteger_EvenWithAllowReadingFromString()
+    public static void CreateFunctionJsonSchema_TreatsIntegralTypesAsInteger_EvenWithAllowReadingFromString()
     {
-        JsonElement expected = JsonDocument.Parse("""
-            {
-              "type": "integer"
-            }
-            """).RootElement;
-
         JsonSerializerOptions options = new(JsonSerializerOptions.Default) { NumberHandling = JsonNumberHandling.AllowReadingFromString };
-        AIFunction func = AIFunctionFactory.Create((int a, int? b, long c, short d) => { }, serializerOptions: options);
+        AIFunction func = AIFunctionFactory.Create((int a, int? b, long c, short d, float e, double f, decimal g) => { }, serializerOptions: options);
 
-        AIFunctionMetadata metadata = func.Metadata;
-        foreach (var param in metadata.Parameters)
+        JsonElement schemaParameters = func.JsonSchema.GetProperty("properties");
+        Assert.NotNull(func.UnderlyingMethod);
+        ParameterInfo[] parameters = func.UnderlyingMethod.GetParameters();
+        Assert.Equal(parameters.Length, schemaParameters.GetPropertyCount());
+
+        int i = 0;
+        foreach (JsonProperty property in schemaParameters.EnumerateObject())
         {
-            JsonElement actualSchema = Assert.IsType<JsonElement>(param.Schema);
+            string numericType = Type.GetTypeCode(parameters[i].ParameterType) is TypeCode.Double or TypeCode.Single or TypeCode.Decimal
+                ? "number"
+                : "integer";
+
+            JsonElement expected = JsonDocument.Parse($$"""
+                {
+                  "type": "{{numericType}}"
+                }
+                """).RootElement;
+
+            JsonElement actualSchema = property.Value;
             Assert.True(JsonElement.DeepEquals(expected, actualSchema));
+            i++;
         }
     }
 
@@ -291,5 +361,69 @@ public static class AIJsonUtilitiesTests
 
         JsonNode? serializedValue = JsonSerializer.SerializeToNode(testData.Value, testData.Type, options);
         SchemaTestHelpers.AssertDocumentMatchesSchema(schemaAsNode, serializedValue);
+    }
+
+    [Fact]
+    public static void AddAIContentType_DerivedAIContent()
+    {
+        JsonSerializerOptions options = new();
+        options.AddAIContentType<DerivedAIContent>("derivativeContent");
+
+        AIContent c = new DerivedAIContent { DerivedValue = 42 };
+        string json = JsonSerializer.Serialize(c, options);
+        Assert.Equal("""{"$type":"derivativeContent","DerivedValue":42,"AdditionalProperties":null}""", json);
+
+        AIContent? deserialized = JsonSerializer.Deserialize<AIContent>(json, options);
+        Assert.IsType<DerivedAIContent>(deserialized);
+    }
+
+    [Fact]
+    public static void AddAIContentType_ReadOnlyJsonSerializerOptions_ThrowsInvalidOperationException()
+    {
+        Assert.Throws<InvalidOperationException>(() => AIJsonUtilities.DefaultOptions.AddAIContentType<DerivedAIContent>("derivativeContent"));
+    }
+
+    [Fact]
+    public static void AddAIContentType_NonAIContent_ThrowsArgumentException()
+    {
+        JsonSerializerOptions options = new();
+        Assert.Throws<ArgumentException>(() => options.AddAIContentType(typeof(int), "discriminator"));
+        Assert.Throws<ArgumentException>(() => options.AddAIContentType(typeof(object), "discriminator"));
+        Assert.Throws<ArgumentException>(() => options.AddAIContentType(typeof(ChatMessage), "discriminator"));
+    }
+
+    [Fact]
+    public static void AddAIContentType_BuiltInAIContent_ThrowsArgumentException()
+    {
+        JsonSerializerOptions options = new();
+        Assert.Throws<ArgumentException>(() => options.AddAIContentType<AIContent>("discriminator"));
+        Assert.Throws<ArgumentException>(() => options.AddAIContentType<TextContent>("discriminator"));
+    }
+
+    [Fact]
+    public static void AddAIContentType_ConflictingIdentifier_ThrowsInvalidOperationException()
+    {
+        JsonSerializerOptions options = new();
+        options.AddAIContentType<DerivedAIContent>("text");
+        options.AddAIContentType<DerivedAIContent>("audio");
+
+        AIContent c = new DerivedAIContent();
+        Assert.Throws<InvalidOperationException>(() => JsonSerializer.Serialize(c, options));
+    }
+
+    [Fact]
+    public static void AddAIContentType_NullArguments_ThrowsArgumentNullException()
+    {
+        JsonSerializerOptions options = new();
+        Assert.Throws<ArgumentNullException>(() => ((JsonSerializerOptions)null!).AddAIContentType<DerivedAIContent>("discriminator"));
+        Assert.Throws<ArgumentNullException>(() => ((JsonSerializerOptions)null!).AddAIContentType(typeof(DerivedAIContent), "discriminator"));
+        Assert.Throws<ArgumentNullException>(() => options.AddAIContentType<DerivedAIContent>(null!));
+        Assert.Throws<ArgumentNullException>(() => options.AddAIContentType(typeof(DerivedAIContent), null!));
+        Assert.Throws<ArgumentNullException>(() => options.AddAIContentType(null!, "discriminator"));
+    }
+
+    private class DerivedAIContent : AIContent
+    {
+        public int DerivedValue { get; set; }
     }
 }

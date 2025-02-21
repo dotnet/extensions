@@ -25,20 +25,20 @@ public sealed class FunctionCallContent : AIContent
     [JsonConstructor]
     public FunctionCallContent(string callId, string name, IDictionary<string, object?>? arguments = null)
     {
+        CallId = Throw.IfNull(callId);
         Name = Throw.IfNull(name);
-        CallId = callId;
         Arguments = arguments;
     }
 
     /// <summary>
-    /// Gets or sets the function call ID.
+    /// Gets the function call ID.
     /// </summary>
-    public string CallId { get; set; }
+    public string CallId { get; }
 
     /// <summary>
-    /// Gets or sets the name of the function requested.
+    /// Gets the name of the function requested.
     /// </summary>
-    public string Name { get; set; }
+    public string Name { get; }
 
     /// <summary>
     /// Gets or sets the arguments requested to be provided to the function.

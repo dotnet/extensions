@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a delegating chat client that implements the OpenTelemetry Semantic Conventions for Generative AI systems.</summary>
 /// <remarks>
-/// This class provides an implementation of the Semantic Conventions for Generative AI systems v1.29, defined at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
+/// This class provides an implementation of the Semantic Conventions for Generative AI systems v1.30, defined at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
 /// The specification is still experimental and subject to change; as such, the telemetry output by this client is also subject to change.
 /// </remarks>
 public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
@@ -55,11 +55,13 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
         _logger = logger ?? NullLogger.Instance;
 
-        ChatClientMetadata metadata = innerClient!.Metadata;
-        _modelId = metadata.ModelId;
-        _system = metadata.ProviderName;
-        _serverAddress = metadata.ProviderUri?.GetLeftPart(UriPartial.Path);
-        _serverPort = metadata.ProviderUri?.Port ?? 0;
+        if (innerClient!.GetService<ChatClientMetadata>() is ChatClientMetadata metadata)
+        {
+            _modelId = metadata.ModelId;
+            _system = metadata.ProviderName;
+            _serverAddress = metadata.ProviderUri?.GetLeftPart(UriPartial.Path);
+            _serverPort = metadata.ProviderUri?.Port ?? 0;
+        }
 
         string name = string.IsNullOrEmpty(sourceName) ? OpenTelemetryConsts.DefaultSourceName : sourceName!;
         _activitySource = new(name);
@@ -119,7 +121,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         base.GetService(serviceType, serviceKey);
 
     /// <inheritdoc/>
-    public override async Task<ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<ChatResponse> GetResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(chatMessages);
         _jsonSerializerOptions.MakeReadOnly();
@@ -130,12 +132,12 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
         LogChatMessages(chatMessages);
 
-        ChatCompletion? completion = null;
+        ChatResponse? response = null;
         Exception? error = null;
         try
         {
-            completion = await base.CompleteAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
-            return completion;
+            response = await base.GetResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
+            return response;
         }
         catch (Exception ex)
         {
@@ -144,12 +146,12 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         }
         finally
         {
-            TraceCompletion(activity, requestModelId, completion, error, stopwatch);
+            TraceResponse(activity, requestModelId, response, error, stopwatch);
         }
     }
 
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(
+    public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(chatMessages);
@@ -161,25 +163,25 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
         LogChatMessages(chatMessages);
 
-        IAsyncEnumerable<StreamingChatCompletionUpdate> updates;
+        IAsyncEnumerable<ChatResponseUpdate> updates;
         try
         {
-            updates = base.CompleteStreamingAsync(chatMessages, options, cancellationToken);
+            updates = base.GetStreamingResponseAsync(chatMessages, options, cancellationToken);
         }
         catch (Exception ex)
         {
-            TraceCompletion(activity, requestModelId, completion: null, ex, stopwatch);
+            TraceResponse(activity, requestModelId, response: null, ex, stopwatch);
             throw;
         }
 
         var responseEnumerator = updates.ConfigureAwait(false).GetAsyncEnumerator();
-        List<StreamingChatCompletionUpdate> trackedUpdates = [];
+        List<ChatResponseUpdate> trackedUpdates = [];
         Exception? error = null;
         try
         {
             while (true)
             {
-                StreamingChatCompletionUpdate update;
+                ChatResponseUpdate update;
                 try
                 {
                     if (!await responseEnumerator.MoveNextAsync())
@@ -197,17 +199,18 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
                 trackedUpdates.Add(update);
                 yield return update;
+                Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
             }
         }
         finally
         {
-            TraceCompletion(activity, requestModelId, trackedUpdates.ToChatCompletion(), error, stopwatch);
+            TraceResponse(activity, requestModelId, trackedUpdates.ToChatResponse(), error, stopwatch);
 
             await responseEnumerator.DisposeAsync();
         }
     }
 
-    /// <summary>Creates an activity for a chat completion request, or returns null if not enabled.</summary>
+    /// <summary>Creates an activity for a chat request, or returns <see langword="null"/> if not enabled.</summary>
     private Activity? CreateAndConfigureActivity(ChatOptions? options)
     {
         Activity? activity = null;
@@ -250,6 +253,11 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                         _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.PresencePenalty, presencePenalty);
                     }
 
+                    if (options.Seed is long seed)
+                    {
+                        _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.Seed, seed);
+                    }
+
                     if (options.StopSequences is IList<string> stopSequences)
                     {
                         _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.StopSequences, $"[{string.Join(", ", stopSequences.Select(s => $"\"{s}\""))}]");
@@ -284,11 +292,6 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                             _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.PerProvider(_system, "response_format"), responseFormat);
                         }
 
-                        if (options.Seed is long seed)
-                        {
-                            _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.PerProvider(_system, "seed"), seed);
-                        }
-
                         if (options.AdditionalProperties is { } props)
                         {
                             // Log all additional request options as per-provider tags. This is non-normative, but it covers cases where
@@ -309,11 +312,11 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         return activity;
     }
 
-    /// <summary>Adds chat completion information to the activity.</summary>
-    private void TraceCompletion(
+    /// <summary>Adds chat response information to the activity.</summary>
+    private void TraceResponse(
         Activity? activity,
         string? requestModelId,
-        ChatCompletion? completion,
+        ChatResponse? response,
         Exception? error,
         Stopwatch? stopwatch)
     {
@@ -321,7 +324,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         {
             TagList tags = default;
 
-            AddMetricTags(ref tags, requestModelId, completion);
+            AddMetricTags(ref tags, requestModelId, response);
             if (error is not null)
             {
                 tags.Add(OpenTelemetryConsts.Error.Type, error.GetType().FullName);
@@ -330,22 +333,22 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
             _operationDurationHistogram.Record(stopwatch.Elapsed.TotalSeconds, tags);
         }
 
-        if (_tokenUsageHistogram.Enabled && completion?.Usage is { } usage)
+        if (_tokenUsageHistogram.Enabled && response?.Usage is { } usage)
         {
-            if (usage.InputTokenCount is int inputTokens)
+            if (usage.InputTokenCount is long inputTokens)
             {
                 TagList tags = default;
                 tags.Add(OpenTelemetryConsts.GenAI.Token.Type, "input");
-                AddMetricTags(ref tags, requestModelId, completion);
-                _tokenUsageHistogram.Record(inputTokens);
+                AddMetricTags(ref tags, requestModelId, response);
+                _tokenUsageHistogram.Record((int)inputTokens);
             }
 
-            if (usage.OutputTokenCount is int outputTokens)
+            if (usage.OutputTokenCount is long outputTokens)
             {
                 TagList tags = default;
                 tags.Add(OpenTelemetryConsts.GenAI.Token.Type, "output");
-                AddMetricTags(ref tags, requestModelId, completion);
-                _tokenUsageHistogram.Record(outputTokens);
+                AddMetricTags(ref tags, requestModelId, response);
+                _tokenUsageHistogram.Record((int)outputTokens);
             }
         }
 
@@ -356,37 +359,37 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                 .SetStatus(ActivityStatusCode.Error, error.Message);
         }
 
-        if (completion is not null)
+        if (response is not null)
         {
-            LogChatCompletion(completion);
+            LogChatResponse(response);
 
             if (activity is not null)
             {
-                if (completion.FinishReason is ChatFinishReason finishReason)
+                if (response.FinishReason is ChatFinishReason finishReason)
                 {
 #pragma warning disable CA1308 // Normalize strings to uppercase
                     _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.FinishReasons, $"[\"{finishReason.Value.ToLowerInvariant()}\"]");
 #pragma warning restore CA1308
                 }
 
-                if (!string.IsNullOrWhiteSpace(completion.CompletionId))
+                if (!string.IsNullOrWhiteSpace(response.ResponseId))
                 {
-                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.Id, completion.CompletionId);
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.Id, response.ResponseId);
                 }
 
-                if (completion.ModelId is not null)
+                if (response.ModelId is not null)
                 {
-                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.Model, completion.ModelId);
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.Model, response.ModelId);
                 }
 
-                if (completion.Usage?.InputTokenCount is int inputTokens)
+                if (response.Usage?.InputTokenCount is long inputTokens)
                 {
-                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.InputTokens, inputTokens);
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.InputTokens, (int)inputTokens);
                 }
 
-                if (completion.Usage?.OutputTokenCount is int outputTokens)
+                if (response.Usage?.OutputTokenCount is long outputTokens)
                 {
-                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.OutputTokens, outputTokens);
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.OutputTokens, (int)outputTokens);
                 }
 
                 if (_system is not null)
@@ -394,7 +397,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                     // Log all additional response properties as per-provider tags. This is non-normative, but it covers cases where
                     // there's a per-provider specification in a best-effort manner (e.g. gen_ai.openai.response.system_fingerprint),
                     // and more generally cases where there's additional useful information to be logged.
-                    if (completion.AdditionalProperties is { } props)
+                    if (response.AdditionalProperties is { } props)
                     {
                         foreach (KeyValuePair<string, object?> prop in props)
                         {
@@ -407,7 +410,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
             }
         }
 
-        void AddMetricTags(ref TagList tags, string? requestModelId, ChatCompletion? completions)
+        void AddMetricTags(ref TagList tags, string? requestModelId, ChatResponse? response)
         {
             tags.Add(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.Chat);
 
@@ -424,7 +427,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                 tags.Add(OpenTelemetryConsts.Server.Port, _serverPort);
             }
 
-            if (completions?.ModelId is string responseModel)
+            if (response?.ModelId is string responseModel)
             {
                 tags.Add(OpenTelemetryConsts.GenAI.Response.Model, responseModel);
             }
@@ -471,7 +474,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         }
     }
 
-    private void LogChatCompletion(ChatCompletion completion)
+    private void LogChatResponse(ChatResponse response)
     {
         if (!_logger.IsEnabled(EventLogLevel))
         {
@@ -479,14 +482,14 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         }
 
         EventId id = new(1, OpenTelemetryConsts.GenAI.Choice);
-        int choiceCount = completion.Choices.Count;
+        int choiceCount = response.Choices.Count;
         for (int choiceIndex = 0; choiceIndex < choiceCount; choiceIndex++)
         {
             Log(id, JsonSerializer.Serialize(new()
             {
-                FinishReason = completion.FinishReason?.Value ?? "error",
+                FinishReason = response.FinishReason?.Value ?? "error",
                 Index = choiceIndex,
-                Message = CreateAssistantEvent(completion.Choices[choiceIndex]),
+                Message = CreateAssistantEvent(response.Choices[choiceIndex]),
             }, OtelContext.Default.ChoiceEvent));
         }
     }

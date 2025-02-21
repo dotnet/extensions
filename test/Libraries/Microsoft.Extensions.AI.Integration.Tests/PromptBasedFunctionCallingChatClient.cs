@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -37,7 +39,7 @@ internal sealed class PromptBasedFunctionCallingChatClient(IChatClient innerClie
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     };
 
-    public override async Task<ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<ChatResponse> GetResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         // Our goal is to convert tools into a prompt describing them, then to detect tool calls in the
         // response and convert those into FunctionCallContent.
@@ -78,7 +80,7 @@ internal sealed class PromptBasedFunctionCallingChatClient(IChatClient innerClie
             }
         }
 
-        var result = await base.CompleteAsync(chatMessages, options, cancellationToken);
+        var result = await base.GetResponseAsync(chatMessages, options, cancellationToken);
 
         if (result.Choices.FirstOrDefault()?.Text is { } content && content.IndexOf("<tool_call_json>", StringComparison.Ordinal) is int startPos
             && startPos >= 0)
@@ -179,17 +181,17 @@ internal sealed class PromptBasedFunctionCallingChatClient(IChatClient innerClie
 
     private static ToolDescriptor ToToolDescriptor(AIFunction tool) => new()
     {
-        Name = tool.Metadata.Name,
-        Description = tool.Metadata.Description,
-        Arguments = tool.Metadata.Parameters.ToDictionary(
-            p => p.Name,
+        Name = tool.Name,
+        Description = tool.Description,
+        Arguments = tool.UnderlyingMethod?.GetParameters().ToDictionary(
+            p => p.Name!,
             p => new ToolParameterDescriptor
             {
-                Type = p.ParameterType?.Name,
-                Description = p.Description,
-                Enum = p.ParameterType?.IsEnum == true ? Enum.GetNames(p.ParameterType) : null,
-                Required = p.IsRequired,
-            }),
+                Type = p.Name!,
+                Description = p.GetCustomAttribute<DescriptionAttribute>()?.Description,
+                Enum = p.ParameterType.IsEnum ? Enum.GetNames(p.ParameterType) : null,
+                Required = !p.IsOptional,
+            }) ?? [],
     };
 
     private sealed class ToolDescriptor
