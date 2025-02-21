@@ -16,7 +16,7 @@ public abstract class LoggingSampler
 #pragma warning restore S1694 // An abstract class should have both abstract and concrete methods
 {
     /// <summary>
-    /// Makes a sampling decision based on the provided <paramref name="logEntry"/>.
+    /// Makes a sampling decision for the provided <paramref name="logEntry"/>.
     /// </summary>
     /// <param name="logEntry">The log entry used to make the sampling decision for.</param>
     /// <typeparam name="TState">The type of the log entry state.</typeparam>

@@ -25,9 +25,9 @@ public static class SamplingLoggerBuilderExtensions
     /// </summary>
     /// <param name="builder">The dependency injection container to add logging to.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
     /// <remarks>Sampling decisions for logs match exactly the sampling decisions for the underlying <see cref="System.Diagnostics.Activity"/>.
     /// You may want to configure Tracing Sampling separately as part of OpenTelemetry .NET.</remarks>
-    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
     public static ILoggingBuilder AddTraceBasedSampler(this ILoggingBuilder builder)
     {
         _ = Throw.IfNull(builder);
@@ -61,7 +61,7 @@ public static class SamplingLoggerBuilderExtensions
     /// <param name="builder">The dependency injection container to add logging to.</param>
     /// <param name="configure">The <see cref="ProbabilisticSamplerOptions"/> configuration delegate.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> or <paramref name="configure"/> is <see langword="null"/>.</exception>
     /// <remarks>
     /// Matched logs will be sampled according to the configured probability.
     /// Higher the probability value, higher is the probability of a given log record to be sampled in.
@@ -83,6 +83,7 @@ public static class SamplingLoggerBuilderExtensions
     /// <param name="level">The log level (and below) to apply the sampler to.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="probability"/> is less than 0 or greater than 1.</exception>
     /// <remarks>
     /// Matched logs will be sampled according to the configured <paramref name="probability"/>.
     /// Higher the probability value, higher is the probability of a given log record to be sampled in.
