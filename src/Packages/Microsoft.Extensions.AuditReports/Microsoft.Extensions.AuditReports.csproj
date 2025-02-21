@@ -14,14 +14,11 @@
     <MinMutationScore>n/a</MinMutationScore>
   </PropertyGroup>
 
+  <ItemGroup>
+    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.MetadataExtractor\Microsoft.Gen.MetadataExtractor.csproj" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Include="buildTransitive\*" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="buildTransitive" />
   </ItemGroup>
-
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\Generators\Microsoft.Gen.MetadataExtractor\Microsoft.Gen.MetadataExtractor.csproj" />
-  </ItemGroup>
-
 </Project>

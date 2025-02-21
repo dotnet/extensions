@@ -1,5 +1,9 @@
 # Release History
 
+## 9.3.0-preview.1.25114.11
+
+- Updated to use Azure.AI.Inference 1.0.0-beta.3, adding support for structured output and audio input.
+
 ## 9.1.0-preview.1.25064.3
 
 - Fixed handling of text-only user messages.

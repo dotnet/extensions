@@ -4,12 +4,14 @@
 using System;
 using System.Text.Json.Nodes;
 
+#pragma warning disable S1067 // Expressions should not be too complex
+
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
 /// Provides options for configuring the behavior of <see cref="AIJsonUtilities"/> JSON schema creation functionality.
 /// </summary>
-public sealed class AIJsonSchemaCreateOptions
+public sealed class AIJsonSchemaCreateOptions : IEquatable<AIJsonSchemaCreateOptions>
 {
     /// <summary>
     /// Gets the default options instance.
@@ -40,4 +42,21 @@ public sealed class AIJsonSchemaCreateOptions
     /// Gets a value indicating whether to mark all properties as required in the schema.
     /// </summary>
     public bool RequireAllProperties { get; init; } = true;
+
+    /// <inheritdoc/>
+    public bool Equals(AIJsonSchemaCreateOptions? other)
+    {
+        return other is not null &&
+            TransformSchemaNode == other.TransformSchemaNode &&
+            IncludeTypeInEnumSchemas == other.IncludeTypeInEnumSchemas &&
+            DisallowAdditionalProperties == other.DisallowAdditionalProperties &&
+            IncludeSchemaKeyword == other.IncludeSchemaKeyword &&
+            RequireAllProperties == other.RequireAllProperties;
+    }
+
+    /// <inheritdoc />
+    public override bool Equals(object? obj) => obj is AIJsonSchemaCreateOptions other && Equals(other);
+
+    /// <inheritdoc />
+    public override int GetHashCode() => (TransformSchemaNode, IncludeTypeInEnumSchemas, DisallowAdditionalProperties, IncludeSchemaKeyword, RequireAllProperties).GetHashCode();
 }

@@ -9,27 +9,27 @@
 
   <ItemGroup>
 <!--#if (IsOllama)
-    <PackageReference Include="OllamaSharp" Version="5.0.5" />
+    <PackageReference Include="OllamaSharp" Version="5.0.7" />
 #elif (IsGHModels)
-    <PackageReference Include="OpenAI" Version="2.1.0" />
+    <PackageReference Include="OpenAI" Version="2.2.0-beta.1" />
 #elif (IsAzureAiFoundry)
     <PackageReference Include="Azure.AI.Projects" Version="1.0.0-beta.3" />
-    <PackageReference Include="Azure.AI.OpenAI" Version="2.1.0" />
+    <PackageReference Include="Azure.AI.OpenAI" Version="2.2.0-beta.1" />
 #else -->
-    <PackageReference Include="Azure.AI.OpenAI" Version="2.1.0" />
-    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.1.0-preview.1.25064.3" />
+    <PackageReference Include="Azure.AI.OpenAI" Version="2.2.0-beta.1" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.3.0-preview.1.25114.11" />
 <!--#endif -->
 <!--#if (UseManagedIdentity) -->
     <PackageReference Include="Azure.Identity" Version="1.13.2" />
 <!--#endif -->
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0" />
-    <PackageReference Include="Microsoft.Extensions.AI" Version="9.1.0-preview.1.25064.3" />
-    <PackageReference Include="Microsoft.SemanticKernel.Core" Version="1.34.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.2" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="9.3.0-preview.1.25114.11" />
+    <PackageReference Include="Microsoft.SemanticKernel.Core" Version="1.37.0" />
     <PackageReference Include="PdfPig" Version="0.1.9" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
 <!--#if (UseAzureAISearch)
     <PackageReference Include="Azure.Search.Documents" Version="11.6.0" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureAISearch" Version="1.34.0-preview" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureAISearch" Version="1.37.0-preview" />
 #endif -->
   </ItemGroup>
 

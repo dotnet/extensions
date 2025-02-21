@@ -60,7 +60,7 @@
         // Display a new response from the IChatClient, streaming responses
         // aren't supported because Ollama will not support both streaming and using Tools
         currentResponseCancellation = new();
-        ChatCompletion response = await ChatClient.CompleteAsync(messages, chatOptions, currentResponseCancellation.Token);
+        var response = await ChatClient.GetResponseAsync(messages, chatOptions, currentResponseCancellation.Token);
         currentResponseMessage = response.Message;
         ChatMessageItem.NotifyChanged(currentResponseMessage);
 #else*@
@@ -68,7 +68,7 @@
         var responseText = new TextContent("");
         currentResponseMessage = new ChatMessage(ChatRole.Assistant, [responseText]);
         currentResponseCancellation = new();
-        await foreach (var chunk in ChatClient.CompleteStreamingAsync(messages, chatOptions, currentResponseCancellation.Token))
+        await foreach (var chunk in ChatClient.GetStreamingResponseAsync(messages, chatOptions, currentResponseCancellation.Token))
         {
             responseText.Text += chunk.Text;
             ChatMessageItem.NotifyChanged(currentResponseMessage);

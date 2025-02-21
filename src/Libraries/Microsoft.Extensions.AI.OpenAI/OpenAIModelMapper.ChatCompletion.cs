@@ -240,8 +240,10 @@ internal static partial class OpenAIModelMappers
             {
                 foreach (ChatTool tool in tools)
                 {
-                    result.Tools ??= [];
-                    result.Tools.Add(FromOpenAIChatTool(tool));
+                    if (FromOpenAIChatTool(tool) is { } convertedTool)
+                    {
+                        (result.Tools ??= []).Add(convertedTool);
+                    }
                 }
 
                 using var toolChoiceJson = JsonDocument.Parse(JsonModelHelpers.Serialize(options.ToolChoice).ToMemory());
@@ -407,17 +409,24 @@ internal static partial class OpenAIModelMappers
         return result;
     }
 
-    private static AITool FromOpenAIChatTool(ChatTool chatTool)
+    private static AITool? FromOpenAIChatTool(ChatTool chatTool)
     {
-        AdditionalPropertiesDictionary additionalProperties = [];
-        if (chatTool.FunctionSchemaIsStrict is bool strictValue)
+        switch (chatTool.Kind)
         {
-            additionalProperties["Strict"] = strictValue;
-        }
+            case ChatToolKind.Function:
+                AdditionalPropertiesDictionary additionalProperties = [];
+                if (chatTool.FunctionSchemaIsStrict is bool strictValue)
+                {
+                    additionalProperties["Strict"] = strictValue;
+                }
 
-        OpenAIChatToolJson openAiChatTool = JsonSerializer.Deserialize(chatTool.FunctionParameters.ToMemory().Span, OpenAIJsonContext.Default.OpenAIChatToolJson)!;
-        JsonElement schema = JsonSerializer.SerializeToElement(openAiChatTool, OpenAIJsonContext.Default.OpenAIChatToolJson);
-        return new MetadataOnlyAIFunction(chatTool.FunctionName, chatTool.FunctionDescription, schema, additionalProperties);
+                OpenAIChatToolJson openAiChatTool = JsonSerializer.Deserialize(chatTool.FunctionParameters.ToMemory().Span, OpenAIJsonContext.Default.OpenAIChatToolJson)!;
+                JsonElement schema = JsonSerializer.SerializeToElement(openAiChatTool, OpenAIJsonContext.Default.OpenAIChatToolJson);
+                return new MetadataOnlyAIFunction(chatTool.FunctionName, chatTool.FunctionDescription, schema, additionalProperties);
+
+            default:
+                return null;
+        }
     }
 
     private sealed class MetadataOnlyAIFunction(string name, string description, JsonElement schema, IReadOnlyDictionary<string, object?> additionalProps) : AIFunction
