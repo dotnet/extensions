@@ -60,9 +60,16 @@
         // Display a new response from the IChatClient, streaming responses
         // aren't supported because Ollama will not support both streaming and using Tools
         currentResponseCancellation = new();
-        var response = await ChatClient.GetResponseAsync(messages, chatOptions, currentResponseCancellation.Token);
-        currentResponseMessage = response.Message;
-        ChatMessageItem.NotifyChanged(currentResponseMessage);
+        try
+        {
+            var response = await ChatClient.GetResponseAsync(messages, chatOptions, currentResponseCancellation.Token);
+            currentResponseMessage = response.Message;
+            ChatMessageItem.NotifyChanged(currentResponseMessage);
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            throw new Exception("Failed to generate embeddings. Your workstation may need additional setup, see the README for details.", ex);
+        }
 #else*@
         // Stream and display a new response from the IChatClient
         var responseText = new TextContent("");

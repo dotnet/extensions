@@ -52,16 +52,24 @@ public class PDFDirectorySource(string sourceDirectory) : IIngestionSource
     {
         using var pdf = PdfDocument.Open(Path.Combine(sourceDirectory, documentId));
         var paragraphs = pdf.GetPages().SelectMany(GetPageParagraphs).ToList();
-        var embeddings = await embeddingGenerator.GenerateAsync(paragraphs.Select(c => c.Text));
-
-        return paragraphs.Zip(embeddings).Select((pair, index) => new SemanticSearchRecord
+        
+        try
         {
-            Key = $"{Path.GetFileNameWithoutExtension(documentId)}_{pair.First.PageNumber}_{pair.First.IndexOnPage}",
-            FileName = documentId,
-            PageNumber = pair.First.PageNumber,
-            Text = pair.First.Text,
-            Vector = pair.Second.Vector,
-        });
+            var embeddings = await embeddingGenerator.GenerateAsync(paragraphs.Select(c => c.Text));
+    
+            return paragraphs.Zip(embeddings).Select((pair, index) => new SemanticSearchRecord
+            {
+                Key = $"{Path.GetFileNameWithoutExtension(documentId)}_{pair.First.PageNumber}_{pair.First.IndexOnPage}",
+                FileName = documentId,
+                PageNumber = pair.First.PageNumber,
+                Text = pair.First.Text,
+                Vector = pair.Second.Vector,
+            });
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            throw new Exception("Failed to generate embeddings. Your workstation may need additional setup, see the README for details.", ex);
+        }
     }
 
     private static IEnumerable<(int PageNumber, int IndexOnPage, string Text)> GetPageParagraphs(Page pdfPage)
