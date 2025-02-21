@@ -24,18 +24,6 @@ public abstract class SingleNumericMetricEvaluator : ChatConversationEvaluator
     protected abstract string MetricName { get; }
 
     /// <inheritdoc/>
-    protected override ChatOptions? ChatOptions { get; } =
-        new ChatOptions
-        {
-            MaxOutputTokens = 1,
-            Temperature = 0.0f,
-            TopP = 1.0f,
-            PresencePenalty = 0.0f,
-            FrequencyPenalty = 0.0f,
-            ResponseFormat = ChatResponseFormat.Text
-        };
-
-    /// <inheritdoc/>
     protected sealed override string? SystemPrompt =>
         $"""
         You are an AI assistant. You will be given the definition of an evaluation metric for assessing the quality of
@@ -49,8 +37,16 @@ public abstract class SingleNumericMetricEvaluator : ChatConversationEvaluator
         in your response besides the evaluation score.
         """;
 
-    // TASK: Explore using structured output and providing a JSON schema to better enforce the LLM response format
-    // requirements above. Tracked by https://github.com/dotnet/extensions/issues/5888.
+    private readonly ChatOptions _chatOptions =
+        new ChatOptions
+        {
+            MaxOutputTokens = 1,
+            Temperature = 0.0f,
+            TopP = 1.0f,
+            PresencePenalty = 0.0f,
+            FrequencyPenalty = 0.0f,
+            ResponseFormat = ChatResponseFormat.Text
+        };
 
     /// <inheritdoc/>
     protected sealed override EvaluationResult InitializeResult()
@@ -60,20 +56,32 @@ public abstract class SingleNumericMetricEvaluator : ChatConversationEvaluator
     }
 
     /// <inheritdoc/>
-    protected sealed override ValueTask ParseEvaluationResponseAsync(
-        string modelResponseForEvaluationPrompt,
-        EvaluationResult result,
+    protected sealed override async ValueTask PerformEvaluationAsync(
         ChatConfiguration chatConfiguration,
+        IList<ChatMessage> evaluationMessages,
+        EvaluationResult result,
         CancellationToken cancellationToken)
     {
-        _ = Throw.IfNull(modelResponseForEvaluationPrompt, nameof(modelResponseForEvaluationPrompt));
+        _ = Throw.IfNull(chatConfiguration, nameof(chatConfiguration));
         _ = Throw.IfNull(result, nameof(result));
 
-        modelResponseForEvaluationPrompt = modelResponseForEvaluationPrompt.Trim();
+        ChatResponse evaluationResponse =
+            await chatConfiguration.ChatClient.GetResponseAsync(
+                evaluationMessages,
+                _chatOptions,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        string? evaluationResponseText = evaluationResponse.Message.Text?.Trim();
 
         NumericMetric metric = result.Get<NumericMetric>(MetricName);
 
-        if (int.TryParse(modelResponseForEvaluationPrompt, out int score))
+        if (string.IsNullOrWhiteSpace(evaluationResponseText))
+        {
+            metric.AddDiagnostic(
+                EvaluationDiagnostic.Error(
+                    "Evaluation failed because the model failed to produce a valid evaluation response."));
+        }
+        else if (int.TryParse(evaluationResponseText, out int score))
         {
             metric.Value = score;
         }
@@ -81,11 +89,9 @@ public abstract class SingleNumericMetricEvaluator : ChatConversationEvaluator
         {
             metric.AddDiagnostic(
                 EvaluationDiagnostic.Error(
-                    $"Failed to parse '{modelResponseForEvaluationPrompt}' as an integer score for '{MetricName}'."));
+                    $"Failed to parse '{evaluationResponseText!}' as an integer score for '{MetricName}'."));
         }
 
         metric.Interpretation = metric.InterpretScore();
-
-        return default;
     }
 }
