@@ -65,4 +65,110 @@ public class LogSamplingRuleSelectorTests
         // Assert
         Assert.Same(rules.Last(), actualResult);
     }
+
+    [Fact]
+    public void SelectsRuleBasedOnLogLevel()
+    {
+        // Arrange
+        var rules = new List<ILogSamplingFilterRule>
+        {
+            new RandomProbabilisticSamplerFilterRule(probability: 0, logLevel: LogLevel.Information),
+            new RandomProbabilisticSamplerFilterRule(probability: 0, logLevel: LogLevel.Warning), // the best rule
+            new RandomProbabilisticSamplerFilterRule(probability: 0, logLevel: LogLevel.Error),
+        };
+
+        // Act
+        LogSamplingRuleSelector.Select(rules, "AnyCategory", LogLevel.Warning, 0, out var actualResult);
+
+        // Assert
+        Assert.Same(rules[1], actualResult);
+    }
+
+    [Fact]
+    public void SelectsRuleBasedOnEventId()
+    {
+        // Arrange
+        var rules = new List<ILogSamplingFilterRule>
+        {
+            new RandomProbabilisticSamplerFilterRule(probability: 0, eventId: 1),
+            new RandomProbabilisticSamplerFilterRule(probability: 0, eventId: 2), // the best rule
+            new RandomProbabilisticSamplerFilterRule(probability: 0, eventId: 3),
+        };
+
+        // Act
+        LogSamplingRuleSelector.Select(rules, "AnyCategory", LogLevel.Information, 2, out var actualResult);
+
+        // Assert
+        Assert.Same(rules[1], actualResult);
+    }
+
+    [Fact]
+    public void SelectsRuleBasedOnLogLevelAndEventId()
+    {
+        // Arrange
+        var rules = new List<ILogSamplingFilterRule>
+        {
+            new RandomProbabilisticSamplerFilterRule(probability: 0, logLevel: LogLevel.Information, eventId: 1),
+            new RandomProbabilisticSamplerFilterRule(probability: 0, logLevel: LogLevel.Warning, eventId: 2), // the best rule
+            new RandomProbabilisticSamplerFilterRule(probability: 0, logLevel: LogLevel.Error, eventId: 3),
+        };
+
+        // Act
+        LogSamplingRuleSelector.Select(rules, "AnyCategory", LogLevel.Warning, 2, out var actualResult);
+
+        // Assert
+        Assert.Same(rules[1], actualResult);
+    }
+
+    [Fact]
+    public void SelectsRuleWithWildcardCategory()
+    {
+        // Arrange
+        var rules = new List<ILogSamplingFilterRule>
+        {
+            new RandomProbabilisticSamplerFilterRule(probability: 0, categoryName: "Program.*"),
+            new RandomProbabilisticSamplerFilterRule(probability: 0, categoryName: "Program.MyLogger*"), // the best rule
+            new RandomProbabilisticSamplerFilterRule(probability: 0, categoryName: "Program.MyLogger"),
+        };
+
+        // Act
+        LogSamplingRuleSelector.Select(rules, "Program.MyLogger", LogLevel.Information, 0, out var actualResult);
+
+        // Assert
+        Assert.Same(rules[1], actualResult);
+    }
+
+    [Fact]
+    public void SelectsRuleWithoutCategory()
+    {
+        // Arrange
+        var rules = new List<ILogSamplingFilterRule>
+        {
+            new RandomProbabilisticSamplerFilterRule(probability: 0),
+            new RandomProbabilisticSamplerFilterRule(probability: 0, categoryName: "Program.MyLogger"),
+        };
+
+        // Act
+        LogSamplingRuleSelector.Select(rules, "AnyCategory", LogLevel.Information, 0, out var actualResult);
+
+        // Assert
+        Assert.Same(rules[0], actualResult);
+    }
+
+    [Fact]
+    public void SelectsRuleWithHigherLogLevelWhenNoExactMatch()
+    {
+        // Arrange
+        var rules = new List<ILogSamplingFilterRule>
+        {
+            new RandomProbabilisticSamplerFilterRule(probability: 0, logLevel: LogLevel.Error), // the best rule
+            new RandomProbabilisticSamplerFilterRule(probability: 0, logLevel: LogLevel.Critical),
+        };
+
+        // Act
+        LogSamplingRuleSelector.Select(rules, "AnyCategory", LogLevel.Warning, 0, out var actualResult);
+
+        // Assert
+        Assert.Same(rules[0], actualResult);
+    }
 }

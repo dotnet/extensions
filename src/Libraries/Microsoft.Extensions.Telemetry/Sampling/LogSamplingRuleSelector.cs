@@ -19,12 +19,13 @@ internal static class LogSamplingRuleSelector
     {
         bestRule = null;
 
-        // TO DO: update the comment and logic 
         // Filter rule selection:
-        // 1. Select rules with longest matching categories
-        // 2. If there is nothing matched by category take all rules without category
-        // 3. If there is only one rule use it
-        // 4. If there are multiple rules use last
+        // 0. Ignore rules whose LogLevel is defined but lower than the requested logLevel
+        // 1. Ignore rules whose EventId is defined but different from the requested eventId
+        // 2. For category filtering, handle optional wildcards (only one '*' allowed) and match the prefix/suffix ignoring case
+        // 3. Out of the matched set, pick the rule with the longest matching category
+        // 4. If no rules match by category, accept rules without a category
+        // 5. If exactly one rule remains, use it; if multiple remain, select the last in the list
 
         T? current = null;
         foreach (T rule in rules)
