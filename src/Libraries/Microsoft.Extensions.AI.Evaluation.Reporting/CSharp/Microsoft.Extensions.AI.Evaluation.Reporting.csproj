@@ -20,7 +20,7 @@
     <Stage>preview</Stage>
     <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
     <EnablePackageValidation>false</EnablePackageValidation>
-    <MinCodeCoverage>64</MinCodeCoverage>
+    <MinCodeCoverage>66</MinCodeCoverage>
     <MinMutationScore>0</MinMutationScore>
   </PropertyGroup>
 
