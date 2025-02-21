@@ -129,6 +129,15 @@ public class FakeLogCollector
             return;
         }
 
+        foreach (var condition in _options.CustomFilters)
+        {
+            if (!condition(record))
+            {
+                // record was filtered out by a custom filter
+                return;
+            }
+        }
+
         lock (_records)
         {
             _records.Add(record);
