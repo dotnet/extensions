@@ -14,8 +14,13 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Shared.Collections;
 using Microsoft.Shared.Diagnostics;
+
+#pragma warning disable CA1031 // Do not catch general exception types
+#pragma warning disable S2302 // "nameof" should be used
+#pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 
 namespace Microsoft.Extensions.AI;
 
@@ -328,6 +333,7 @@ public static partial class AIFunctionFactory
             // Resolve the contract used to marshal the value from JSON -- can throw if not supported or not found.
             Type parameterType = parameter.ParameterType;
             JsonTypeInfo typeInfo = serializerOptions.GetTypeInfo(parameterType);
+            FromServiceProviderAttribute? fspAttr = parameter.GetCustomAttribute<FromServiceProviderAttribute>(inherit: true);
 
             // For CancellationToken parameters, we always bind to the token passed directly to InvokeAsync.
             if (parameterType == typeof(CancellationToken))
@@ -340,6 +346,25 @@ public static partial class AIFunctionFactory
             // For all other parameters, create a marshaller that tries to extract the value from the arguments dictionary.
             return (arguments, _) =>
             {
+                // If the parameter is [FromServiceProvider], try to satisfy it from the service provider
+                // provided via arguments.
+                if (fspAttr is not null &&
+                    (arguments as AIFunctionArguments)?.ServiceProvider is IServiceProvider services)
+                {
+                    if (fspAttr.ServiceKey is object serviceKey)
+                    {
+                        if (services is IKeyedServiceProvider ksp &&
+                            ksp.GetKeyedService(parameterType, serviceKey) is object keyedService)
+                        {
+                            return keyedService;
+                        }
+                    }
+                    else if (services.GetService(parameterType) is object service)
+                    {
+                        return service;
+                    }
+                }
+
                 // If the parameter has an argument specified in the dictionary, return that argument.
                 if (arguments.TryGetValue(parameter.Name, out object? value))
                 {
@@ -355,7 +380,6 @@ public static partial class AIFunctionFactory
 
                     object? MarshallViaJsonRoundtrip(object value)
                     {
-#pragma warning disable CA1031 // Do not catch general exception types
                         try
                         {
                             string json = JsonSerializer.Serialize(value, serializerOptions.GetTypeInfo(value.GetType()));
@@ -366,7 +390,6 @@ public static partial class AIFunctionFactory
                             // Eat any exceptions and fall back to the original value to force a cast exception later on.
                             return value;
                         }
-#pragma warning restore CA1031
                     }
                 }
 
@@ -479,9 +502,7 @@ public static partial class AIFunctionFactory
 #if NET
             return (MethodInfo)specializedType.GetMemberWithSameMetadataDefinitionAs(genericMethodDefinition);
 #else
-#pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
             const BindingFlags All = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance;
-#pragma warning restore S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
             return specializedType.GetMethods(All).First(m => m.MetadataToken == genericMethodDefinition.MetadataToken);
 #endif
         }

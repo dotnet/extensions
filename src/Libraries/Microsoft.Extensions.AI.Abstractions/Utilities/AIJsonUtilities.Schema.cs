@@ -85,6 +85,12 @@ public static partial class AIJsonUtilities
                 continue;
             }
 
+            if (parameter.GetCustomAttribute<SkipJsonFunctionSchemaParameterAttribute>(inherit: true) is not null)
+            {
+                // Skip anything explicitly requested to not be included in the schema.
+                continue;
+            }
+
             JsonNode parameterSchema = CreateJsonSchemaCore(
                 type: parameter.ParameterType,
                 parameterName: parameter.Name,
