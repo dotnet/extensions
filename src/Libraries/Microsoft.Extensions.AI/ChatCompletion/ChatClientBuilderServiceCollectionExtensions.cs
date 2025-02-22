@@ -50,7 +50,7 @@ public static class ChatClientBuilderServiceCollectionExtensions
     /// <remarks>The client is registered as a scoped service.</remarks>
     public static ChatClientBuilder AddKeyedChatClient(
         this IServiceCollection serviceCollection,
-        object serviceKey,
+        object? serviceKey,
         IChatClient innerClient,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         => AddKeyedChatClient(serviceCollection, serviceKey, _ => innerClient, lifetime);
@@ -64,7 +64,7 @@ public static class ChatClientBuilderServiceCollectionExtensions
     /// <remarks>The client is registered as a scoped service.</remarks>
     public static ChatClientBuilder AddKeyedChatClient(
         this IServiceCollection serviceCollection,
-        object serviceKey,
+        object? serviceKey,
         Func<IServiceProvider, IChatClient> innerClientFactory,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
