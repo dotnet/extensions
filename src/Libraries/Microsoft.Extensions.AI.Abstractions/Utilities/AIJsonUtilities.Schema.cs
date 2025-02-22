@@ -12,6 +12,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Schema;
 using System.Text.Json.Serialization;
+using System.Threading;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable S1121 // Assignments should not be made from within sub-expressions
@@ -74,6 +75,22 @@ public static partial class AIJsonUtilities
             if (string.IsNullOrWhiteSpace(parameter.Name))
             {
                 Throw.ArgumentException(nameof(parameter), "Parameter is missing a name.");
+            }
+
+            if (parameter.ParameterType == typeof(CancellationToken))
+            {
+                // CancellationToken is a special case that, by convention, we don't want to include in the schema.
+                // Invocations of methods that include a CancellationToken argument should also special-case CancellationToken
+                // to pass along what relevant token into the method's invocation.
+                continue;
+            }
+
+            if (parameter.GetCustomAttribute<FromServiceProviderAttribute>(inherit: true) is not null)
+            {
+                // Parameters attributed as [FromServiceProvider] are not logically part of the function's
+                // signature as they aren't sourced from arguments and instead from any associated IServiceProvider.
+                // As such, they're ignored.
+                continue;
             }
 
             JsonNode parameterSchema = CreateJsonSchemaCore(

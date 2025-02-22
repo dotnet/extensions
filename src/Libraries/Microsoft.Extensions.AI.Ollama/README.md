@@ -129,7 +129,7 @@ var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
 IChatClient ollamaClient = new OllamaChatClient(new Uri("http://localhost:11434/"), "llama3.1");
 
 IChatClient client = new ChatClientBuilder(ollamaClient)
-    .UseOpenTelemetry(sourceName, c => c.EnableSensitiveData = true)
+    .UseOpenTelemetry(sourceName: sourceName, configure: c => c.EnableSensitiveData = true)
     .Build();
 
 Console.WriteLine(await client.GetResponseAsync("What is AI?"));
@@ -166,7 +166,7 @@ IChatClient ollamaClient = new OllamaChatClient(new Uri("http://localhost:11434/
 IChatClient client = new ChatClientBuilder(ollamaClient)
     .UseDistributedCache(cache)
     .UseFunctionInvocation()
-    .UseOpenTelemetry(sourceName, c => c.EnableSensitiveData = true)
+    .UseOpenTelemetry(sourceName: sourceName, configure: c => c.EnableSensitiveData = true)
     .Build();
 
 for (int i = 0; i < 3; i++)

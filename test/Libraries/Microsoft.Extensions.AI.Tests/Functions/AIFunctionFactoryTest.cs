@@ -47,7 +47,7 @@ public class AIFunctionFactoryTest
     }
 
     [Fact]
-    public async Task Parameters_AIFunctionContextMappedByType_Async()
+    public async Task Parameters_MappedByType_Async()
     {
         using var cts = new CancellationTokenSource();
         CancellationToken written;
@@ -55,33 +55,26 @@ public class AIFunctionFactoryTest
 
         // As the only parameter
         written = default;
-        func = AIFunctionFactory.Create((AIFunctionContext ctx) =>
+        func = AIFunctionFactory.Create((int value1 = 1, string value2 = "2", CancellationToken cancellationToken = default) =>
         {
-            Assert.NotNull(ctx);
-            written = ctx.CancellationToken;
+            written = cancellationToken;
+            return 42;
         });
-        AssertExtensions.EqualFunctionCallResults(null, await func.InvokeAsync(cancellationToken: cts.Token));
+        AssertExtensions.EqualFunctionCallResults(42, await func.InvokeAsync(cancellationToken: cts.Token));
         Assert.Equal(cts.Token, written);
+        Assert.DoesNotContain("cancellationToken", func.JsonSchema.ToString(), StringComparison.OrdinalIgnoreCase);
 
-        // As the last
+        // Overridden by dictionary
+        using var cts2 = new CancellationTokenSource();
         written = default;
-        func = AIFunctionFactory.Create((int somethingFirst, AIFunctionContext ctx) =>
+        func = AIFunctionFactory.Create((int somethingFirst, CancellationToken cancellationToken) =>
         {
-            Assert.NotNull(ctx);
-            written = ctx.CancellationToken;
+            written = cancellationToken;
+            return 43;
         });
-        AssertExtensions.EqualFunctionCallResults(null, await func.InvokeAsync(new Dictionary<string, object?> { ["somethingFirst"] = 1, ["ctx"] = new AIFunctionContext() }, cts.Token));
-        Assert.Equal(cts.Token, written);
-
-        // As the first
-        written = default;
-        func = AIFunctionFactory.Create((AIFunctionContext ctx, int somethingAfter = 0) =>
-        {
-            Assert.NotNull(ctx);
-            written = ctx.CancellationToken;
-        });
-        AssertExtensions.EqualFunctionCallResults(null, await func.InvokeAsync(cancellationToken: cts.Token));
-        Assert.Equal(cts.Token, written);
+        AssertExtensions.EqualFunctionCallResults(43, await func.InvokeAsync(new Dictionary<string, object?> { ["somethingFirst"] = 1, ["cancellationToken"] = cts2.Token }, cts.Token));
+        Assert.Equal(cts2.Token, written);
+        Assert.DoesNotContain("cancellationToken", func.JsonSchema.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
