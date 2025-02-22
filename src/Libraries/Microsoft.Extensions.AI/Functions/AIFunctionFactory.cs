@@ -200,13 +200,9 @@ public static partial class AIFunctionFactory
 #else
                     ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 #endif
-            AIFunctionContext? context = FunctionDescriptor.RequiresAIFunctionContext ?
-                new() { CancellationToken = cancellationToken } :
-                null;
-
             for (int i = 0; i < args.Length; i++)
             {
-                args[i] = paramMarshallers[i](argDict, context);
+                args[i] = paramMarshallers[i](argDict, cancellationToken);
             }
 
             return FunctionDescriptor.ReturnParameterMarshaller(ReflectionInvoke(FunctionDescriptor.Method, Target, args), cancellationToken);
@@ -247,11 +243,10 @@ public static partial class AIFunctionFactory
         {
             // Get marshaling delegates for parameters.
             ParameterInfo[] parameters = key.Method.GetParameters();
-            ParameterMarshallers = new Func<IReadOnlyDictionary<string, object?>, AIFunctionContext?, object?>[parameters.Length];
-            bool foundAIFunctionContextParameter = false;
+            ParameterMarshallers = new Func<IReadOnlyDictionary<string, object?>, CancellationToken, object?>[parameters.Length];
             for (int i = 0; i < parameters.Length; i++)
             {
-                ParameterMarshallers[i] = GetParameterMarshaller(serializerOptions, parameters[i], ref foundAIFunctionContextParameter);
+                ParameterMarshallers[i] = GetParameterMarshaller(serializerOptions, parameters[i]);
             }
 
             // Get a marshaling delegate for the return value.
@@ -260,7 +255,6 @@ public static partial class AIFunctionFactory
             Method = key.Method;
             Name = key.Name ?? GetFunctionName(key.Method);
             Description = key.Description ?? key.Method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? string.Empty;
-            RequiresAIFunctionContext = foundAIFunctionContextParameter;
             JsonSerializerOptions = serializerOptions;
             JsonSchema = AIJsonUtilities.CreateFunctionJsonSchema(
                 key.Method,
@@ -275,9 +269,8 @@ public static partial class AIFunctionFactory
         public MethodInfo Method { get; }
         public JsonSerializerOptions JsonSerializerOptions { get; }
         public JsonElement JsonSchema { get; }
-        public Func<IReadOnlyDictionary<string, object?>, AIFunctionContext?, object?>[] ParameterMarshallers { get; }
+        public Func<IReadOnlyDictionary<string, object?>, CancellationToken, object?>[] ParameterMarshallers { get; }
         public Func<object?, CancellationToken, Task<object?>> ReturnParameterMarshaller { get; }
-        public bool RequiresAIFunctionContext { get; }
         public ReflectionAIFunction? CachedDefaultInstance { get; set; }
 
         private static string GetFunctionName(MethodInfo method)
@@ -320,39 +313,22 @@ public static partial class AIFunctionFactory
         /// <summary>
         /// Gets a delegate for handling the marshaling of a parameter.
         /// </summary>
-        private static Func<IReadOnlyDictionary<string, object?>, AIFunctionContext?, object?> GetParameterMarshaller(
+        private static Func<IReadOnlyDictionary<string, object?>, CancellationToken, object?> GetParameterMarshaller(
             JsonSerializerOptions serializerOptions,
-            ParameterInfo parameter,
-            ref bool foundAIFunctionContextParameter)
+            ParameterInfo parameter)
         {
             if (string.IsNullOrWhiteSpace(parameter.Name))
             {
                 Throw.ArgumentException(nameof(parameter), "Parameter is missing a name.");
             }
 
-            // Special-case an AIFunctionContext parameter.
-            if (parameter.ParameterType == typeof(AIFunctionContext))
-            {
-                if (foundAIFunctionContextParameter)
-                {
-                    Throw.ArgumentException(nameof(parameter), $"Only one {nameof(AIFunctionContext)} parameter is permitted.");
-                }
-
-                foundAIFunctionContextParameter = true;
-
-                return static (_, ctx) =>
-                {
-                    Debug.Assert(ctx is not null, "Expected a non-null context object.");
-                    return ctx;
-                };
-            }
-
             // Resolve the contract used to marshal the value from JSON -- can throw if not supported or not found.
             Type parameterType = parameter.ParameterType;
             JsonTypeInfo typeInfo = serializerOptions.GetTypeInfo(parameterType);
 
-            // Create a marshaller that simply looks up the parameter by name in the arguments dictionary.
-            return (arguments, _) =>
+            // Create a marshaller for the parameter. This produces a value for the parameter based on an ordered
+            // collection of rules.
+            return (arguments, cancellationToken) =>
             {
                 // If the parameter has an argument specified in the dictionary, return that argument.
                 if (arguments.TryGetValue(parameter.Name, out object? value))
@@ -380,17 +356,25 @@ public static partial class AIFunctionFactory
                             // Eat any exceptions and fall back to the original value to force a cast exception later on.
                             return value;
                         }
-#pragma warning restore CA1031 // Do not catch general exception types
+#pragma warning restore CA1031
                     }
                 }
 
-                // There was no argument for the parameter. Try to use a default value.
+                // There was no argument for the parameter in the dictionary.
+
+                // Is the type of the parameter special-cased?
+                if (parameterType == typeof(CancellationToken))
+                {
+                    return cancellationToken;
+                }
+
+                // Or does it have a default value?
                 if (parameter.HasDefaultValue)
                 {
                     return parameter.DefaultValue;
                 }
 
-                // No default either. Leave it empty.
+                // Leave it empty.
                 return null;
             };
         }
