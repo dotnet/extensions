@@ -139,7 +139,7 @@ public class ChatClientStructuredOutputExtensionsTests
         var response = await client.GetResponseAsync<Animal>(chatHistory);
 
         var ex = Assert.Throws<InvalidOperationException>(() => response.Result);
-        Assert.Equal("The deserialized response is null", ex.Message);
+        Assert.Equal("The deserialized response is null.", ex.Message);
 
         Assert.False(response.TryGetResult(out var tryGetResult));
         Assert.Null(tryGetResult);
@@ -158,7 +158,7 @@ public class ChatClientStructuredOutputExtensionsTests
         var response = await client.GetResponseAsync<Animal>(chatHistory);
 
         var ex = Assert.Throws<InvalidOperationException>(() => response.Result);
-        Assert.Equal("The response did not contain text to be deserialized", ex.Message);
+        Assert.Equal("The response did not contain JSON to be deserialized.", ex.Message);
 
         Assert.False(response.TryGetResult(out var tryGetResult));
         Assert.Null(tryGetResult);

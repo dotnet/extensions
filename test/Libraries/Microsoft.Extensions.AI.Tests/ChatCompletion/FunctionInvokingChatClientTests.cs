@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.AI;
 public class FunctionInvokingChatClientTests
 {
     private readonly Func<ChatClientBuilder, ChatClientBuilder> _keepMessagesConfigure =
-        b => b.Use(client => new FunctionInvokingChatClient(client) { KeepFunctionCallingMessages = true });
+        b => b.Use(client => new FunctionInvokingChatClient(client) { KeepFunctionCallingContent = true });
 
     [Fact]
     public void InvalidArgs_Throws()
@@ -35,9 +35,9 @@ public class FunctionInvokingChatClientTests
         using TestChatClient innerClient = new();
         using FunctionInvokingChatClient client = new(innerClient);
 
-        Assert.False(client.ConcurrentInvocation);
-        Assert.False(client.DetailedErrors);
-        Assert.True(client.KeepFunctionCallingMessages);
+        Assert.False(client.AllowConcurrentInvocation);
+        Assert.False(client.IncludeDetailedErrors);
+        Assert.True(client.KeepFunctionCallingContent);
         Assert.Null(client.MaximumIterationsPerRequest);
         Assert.False(client.RetryOnError);
     }
@@ -115,7 +115,7 @@ public class FunctionInvokingChatClientTests
         ];
 
         Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(
-            s => new FunctionInvokingChatClient(s) { ConcurrentInvocation = concurrentInvocation, KeepFunctionCallingMessages = true });
+            s => new FunctionInvokingChatClient(s) { AllowConcurrentInvocation = concurrentInvocation, KeepFunctionCallingContent = true });
 
         await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
 
@@ -156,7 +156,7 @@ public class FunctionInvokingChatClientTests
         ];
 
         Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(
-            s => new FunctionInvokingChatClient(s) { ConcurrentInvocation = true, KeepFunctionCallingMessages = true });
+            s => new FunctionInvokingChatClient(s) { AllowConcurrentInvocation = true, KeepFunctionCallingContent = true });
 
         await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
 
@@ -238,7 +238,7 @@ public class FunctionInvokingChatClientTests
         ];
 
         Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(
-            client => new FunctionInvokingChatClient(client) { KeepFunctionCallingMessages = keepFunctionCallingMessages });
+            client => new FunctionInvokingChatClient(client) { KeepFunctionCallingContent = keepFunctionCallingMessages });
 
         Validate(await InvokeAndAssertAsync(options, plan, expected, configure));
         Validate(await InvokeAndAssertStreamingAsync(options, plan, expected, configure));
@@ -285,7 +285,7 @@ public class FunctionInvokingChatClientTests
         ];
 
         Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(
-            client => new FunctionInvokingChatClient(client) { KeepFunctionCallingMessages = keepFunctionCallingMessages });
+            client => new FunctionInvokingChatClient(client) { KeepFunctionCallingContent = keepFunctionCallingMessages });
 
 #pragma warning disable SA1005, S125
         Validate(await InvokeAndAssertAsync(options, plan, keepFunctionCallingMessages ? null :
@@ -348,7 +348,7 @@ public class FunctionInvokingChatClientTests
         ];
 
         Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(
-            s => new FunctionInvokingChatClient(s) { DetailedErrors = detailedErrors, KeepFunctionCallingMessages = true });
+            s => new FunctionInvokingChatClient(s) { IncludeDetailedErrors = detailedErrors, KeepFunctionCallingContent = true });
 
         await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
 
@@ -415,7 +415,7 @@ public class FunctionInvokingChatClientTests
         Func<ChatClientBuilder, ChatClientBuilder> configure = b =>
             b.Use((c, services) => new FunctionInvokingChatClient(c, services.GetRequiredService<ILogger<FunctionInvokingChatClient>>())
             {
-                KeepFunctionCallingMessages = true,
+                KeepFunctionCallingContent = true,
             });
 
         await InvokeAsync(services => InvokeAndAssertAsync(options, plan, configurePipeline: configure, services: services));
@@ -474,7 +474,7 @@ public class FunctionInvokingChatClientTests
         Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(c =>
             new FunctionInvokingChatClient(new OpenTelemetryChatClient(c, sourceName: sourceName))
             {
-                KeepFunctionCallingMessages = true,
+                KeepFunctionCallingContent = true,
             });
 
         await InvokeAsync(() => InvokeAndAssertAsync(options, plan, configurePipeline: configure));
@@ -542,7 +542,7 @@ public class FunctionInvokingChatClientTests
             }
         };
 
-        using var client = new FunctionInvokingChatClient(innerClient) { KeepFunctionCallingMessages = true };
+        using var client = new FunctionInvokingChatClient(innerClient) { KeepFunctionCallingContent = true };
 
         var updates = new List<ChatResponseUpdate>();
         await foreach (var update in client.GetStreamingResponseAsync(messages, options, CancellationToken.None))
@@ -569,7 +569,7 @@ public class FunctionInvokingChatClientTests
     [Fact]
     public async Task CanAccesssFunctionInvocationContextFromFunctionCall()
     {
-        var invocationContexts = new List<FunctionInvokingChatClient.FunctionInvocationContext>();
+        var invocationContexts = new List<FunctionInvocationContext>();
         var function = AIFunctionFactory.Create(async (int i) =>
         {
             // The context should propogate across async calls
@@ -639,7 +639,7 @@ public class FunctionInvokingChatClientTests
                 c => AssertInvocationContext(c, iteration: 0, terminate: false),
                 c => AssertInvocationContext(c, iteration: 1, terminate: true));
 
-            void AssertInvocationContext(FunctionInvokingChatClient.FunctionInvocationContext context, int iteration, bool terminate)
+            void AssertInvocationContext(FunctionInvocationContext context, int iteration, bool terminate)
             {
                 Assert.NotNull(context);
                 Assert.Same(chatMessages, context.ChatMessages);
