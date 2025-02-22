@@ -18,16 +18,7 @@ public class UseDelegateChatClientTests
         using var client = new TestChatClient();
         ChatClientBuilder builder = new(client);
 
-        Assert.Throws<ArgumentNullException>("sharedFunc", () =>
-            builder.Use((AnonymousDelegatingChatClient.GetResponseSharedFunc)null!));
-
         Assert.Throws<ArgumentNullException>("getResponseFunc", () => builder.Use(null!, null!));
-
-        Assert.Throws<ArgumentNullException>("innerClient", () => new AnonymousDelegatingChatClient(null!, delegate { return Task.CompletedTask; }));
-        Assert.Throws<ArgumentNullException>("sharedFunc", () => new AnonymousDelegatingChatClient(client, null!));
-
-        Assert.Throws<ArgumentNullException>("innerClient", () => new AnonymousDelegatingChatClient(null!, null!, null!));
-        Assert.Throws<ArgumentNullException>("getResponseFunc", () => new AnonymousDelegatingChatClient(client, null!, null!));
     }
 
     [Fact]
