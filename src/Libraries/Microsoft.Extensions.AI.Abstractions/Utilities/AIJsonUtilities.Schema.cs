@@ -85,6 +85,14 @@ public static partial class AIJsonUtilities
                 continue;
             }
 
+            if (parameter.GetCustomAttribute<FromServiceProviderAttribute>(inherit: true) is not null)
+            {
+                // Parameters attributed as [FromServiceProvider] are not logically part of the function's
+                // signature as they aren't sourced from arguments and instead from any associated IServiceProvider.
+                // As such, they're ignored.
+                continue;
+            }
+
             JsonNode parameterSchema = CreateJsonSchemaCore(
                 type: parameter.ParameterType,
                 parameterName: parameter.Name,
