@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.Shared.Diagnostics;
 using OpenAI.Audio;
 
@@ -12,43 +11,37 @@ namespace Microsoft.Extensions.AI;
 
 internal static partial class OpenAIModelMappers
 {
-    public static SpeechToTextMessage FromOpenAIAudioTranscription(OpenAI.Audio.AudioTranscription audioTranscription, int inputIndex)
+    public static SpeechToTextMessage FromOpenAIAudioTranslation(OpenAI.Audio.AudioTranslation audioTranslation, int inputIndex)
     {
-        _ = Throw.IfNull(audioTranscription);
+        _ = Throw.IfNull(audioTranslation);
 
-        var segmentCount = audioTranscription.Segments.Count;
-        var wordCount = audioTranscription.Words.Count;
+        var segmentCount = audioTranslation.Segments.Count;
 
         TimeSpan? endTime = null;
         TimeSpan? startTime = null;
         if (segmentCount > 0)
         {
-            endTime = audioTranscription.Segments[segmentCount - 1].EndTime;
-            startTime = audioTranscription.Segments[0].StartTime;
-        }
-        else if (wordCount > 0)
-        {
-            endTime = audioTranscription.Words[wordCount - 1].EndTime;
-            startTime = audioTranscription.Words[0].StartTime;
+            endTime = audioTranslation.Segments[segmentCount - 1].EndTime;
+            startTime = audioTranslation.Segments[0].StartTime;
         }
 
         // Create the return choice.
         return new SpeechToTextMessage
         {
-            RawRepresentation = audioTranscription,
+            RawRepresentation = audioTranslation,
             InputIndex = inputIndex,
-            Text = audioTranscription.Text,
+            Text = audioTranslation.Text,
             StartTime = startTime,
             EndTime = endTime,
             AdditionalProperties = new AdditionalPropertiesDictionary
             {
-                [nameof(audioTranscription.Language)] = audioTranscription.Language,
-                [nameof(audioTranscription.Duration)] = audioTranscription.Duration
+                [nameof(audioTranslation.Language)] = audioTranslation.Language,
+                [nameof(audioTranslation.Duration)] = audioTranslation.Duration
             },
         };
     }
 
-    public static SpeechToTextOptions FromOpenAITranscriptionOptions(OpenAI.Audio.AudioTranscriptionOptions options)
+    public static SpeechToTextOptions FromOpenAITranslationOptions(OpenAI.Audio.AudioTranslationOptions options)
     {
         SpeechToTextOptions result = new();
 
@@ -60,16 +53,9 @@ internal static partial class OpenAIModelMappers
                 var modelId => modelId,
             };
 
-            result.SpeechLanguage = options.Language;
-
             if (options.Temperature is float temperature)
             {
                 (result.AdditionalProperties ??= [])[nameof(options.Temperature)] = temperature;
-            }
-
-            if (options.TimestampGranularities is AudioTimestampGranularities timestampGranularities)
-            {
-                (result.AdditionalProperties ??= [])[nameof(options.TimestampGranularities)] = timestampGranularities;
             }
 
             if (options.Prompt is string prompt)
@@ -77,7 +63,7 @@ internal static partial class OpenAIModelMappers
                 (result.AdditionalProperties ??= [])[nameof(options.Prompt)] = prompt;
             }
 
-            if (options.ResponseFormat is AudioTranscriptionFormat jsonFormat)
+            if (options.ResponseFormat is AudioTranslationFormat jsonFormat)
             {
                 (result.AdditionalProperties ??= [])[nameof(options.ResponseFormat)] = jsonFormat;
             }
@@ -87,17 +73,12 @@ internal static partial class OpenAIModelMappers
     }
 
     /// <summary>Converts an extensions options instance to an OpenAI options instance.</summary>
-    public static OpenAI.Audio.AudioTranscriptionOptions ToOpenAITranscriptionOptions(SpeechToTextOptions? options)
+    public static OpenAI.Audio.AudioTranslationOptions ToOpenAITranslationOptions(SpeechToTextOptions? options)
     {
-        OpenAI.Audio.AudioTranscriptionOptions result = new();
+        OpenAI.Audio.AudioTranslationOptions result = new();
 
         if (options is not null)
         {
-            if (options.SpeechLanguage is not null)
-            {
-                result.Language = options.SpeechLanguage;
-            }
-
             if (options.AdditionalProperties is { Count: > 0 } additionalProperties)
             {
                 if (additionalProperties.TryGetValue(nameof(result.Temperature), out float? temperature))
@@ -105,17 +86,12 @@ internal static partial class OpenAIModelMappers
                     result.Temperature = temperature;
                 }
 
-                if (additionalProperties.TryGetValue(nameof(result.TimestampGranularities), out object? timestampGranularities))
-                {
-                    result.TimestampGranularities = timestampGranularities is AudioTimestampGranularities granularities ? granularities : default;
-                }
-
                 if (additionalProperties.TryGetValue(nameof(result.Prompt), out string? prompt))
                 {
                     result.Prompt = prompt;
                 }
 
-                if (additionalProperties.TryGetValue(nameof(result.ResponseFormat), out AudioTranscriptionFormat? responseFormat))
+                if (additionalProperties.TryGetValue(nameof(result.ResponseFormat), out AudioTranslationFormat? responseFormat))
                 {
                     result.ResponseFormat = responseFormat;
                 }

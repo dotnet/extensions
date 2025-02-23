@@ -118,12 +118,17 @@ public class OpenAISpeechToTextClientTests
         Assert.IsType<LoggingSpeechToTextClient>(pipeline.GetService<ISpeechToTextClient>());
     }
 
-    [Fact]
-    public async Task BasicRequestResponse_NonStreaming()
+    [Theory]
+    [InlineData("pt", null)]
+    [InlineData("en", null)]
+    [InlineData("en", "en")]
+    [InlineData("pt", "pt")]
+    public async Task BasicTranscribeRequestResponse_NonStreaming(string? speechLanguage, string? textLanguage)
     {
-        const string Input = """
+        string input = $$"""
                 {
-                    "model": "whisper-1"
+                    "model": "whisper-1",
+                    "language": "{{speechLanguage}}"
                 }
                 """;
 
@@ -133,28 +138,111 @@ public class OpenAISpeechToTextClientTests
                 }
                 """;
 
-        using VerbatimMultiPartHttpHandler handler = new(Input, Output);
+        using VerbatimMultiPartHttpHandler handler = new(input, Output) { ExpectedRequestUriContains = "audio/transcriptions" };
         using HttpClient httpClient = new(handler);
         using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
 
         using var fileStream = GetAudioStream("audio001.wav");
-        var response = await client.GetResponseAsync(fileStream);
+        var response = await client.GetResponseAsync(fileStream, new SpeechToTextOptions
+        {
+            SpeechLanguage = speechLanguage,
+            TextLanguage = textLanguage
+        });
+
         Assert.NotNull(response);
 
         Assert.Single(response.Choices);
         Assert.Contains("I finally got back to the gym the other day", response.Message.Text);
 
-        Assert.NotNull(response.RawRepresentation);
-        Assert.IsType<OpenAI.Audio.AudioTranscription>(response.RawRepresentation);
+        Assert.NotNull(response.Message.RawRepresentation);
+        Assert.IsType<OpenAI.Audio.AudioTranscription>(response.Message.RawRepresentation);
     }
 
-    [Fact]
-    public async Task BasicRequestResponse_Streaming()
+    [Theory]
+    [InlineData("pt", null)]
+    [InlineData("en", null)]
+    [InlineData("en", "en")]
+    [InlineData("pt", "pt")]
+    public async Task BasicTranscribeRequestResponse_Streaming(string? speechLanguage, string? textLanguage)
     {
         // There's no support for streaming audio in the OpenAI API,
         // so we're just testing the client's ability to handle streaming responses.
 
-        const string Input = """
+        string input = $$"""
+                {
+                    "model": "whisper-1",
+                    "language": "{{speechLanguage}}"
+                }
+                """;
+
+        const string Output = """
+                {
+                    "text":"I finally got back to the gym the other day."
+                }
+                """;
+
+        using VerbatimMultiPartHttpHandler handler = new(input, Output) { ExpectedRequestUriContains = "audio/transcriptions" };
+        using HttpClient httpClient = new(handler);
+        using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
+
+        using var fileStream = GetAudioStream("audio001.mp3");
+        await foreach (var update in client.GetStreamingResponseAsync(fileStream, new SpeechToTextOptions
+        {
+            SpeechLanguage = speechLanguage,
+            TextLanguage = textLanguage
+        }))
+        {
+            Assert.Contains("I finally got back to the gym the other day", update.Text);
+            Assert.NotNull(update.RawRepresentation);
+            Assert.IsType<OpenAI.Audio.AudioTranscription>(update.RawRepresentation);
+            Assert.Equal(0, update.InputIndex);
+        }
+    }
+
+    [Theory]
+    [InlineData(null, "pt")]
+    [InlineData(null, "it")]
+    [InlineData("en", "pt")]
+    public async Task NonSupportedTranslation_Streaming_Throws(string? speechLanguage, string? textLanguage)
+    {
+        using HttpClient httpClient = new();
+        using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
+
+        using var fileStream = GetAudioStream("audio001.mp3");
+        var asyncEnumerator = client.GetStreamingResponseAsync(fileStream, new SpeechToTextOptions
+        {
+            SpeechLanguage = speechLanguage,
+            TextLanguage = textLanguage
+        }).GetAsyncEnumerator();
+
+        await Assert.ThrowsAsync<NotSupportedException>(() => asyncEnumerator.MoveNextAsync().AsTask());
+    }
+
+    [Theory]
+    [InlineData(null, "pt")]
+    [InlineData(null, "it")]
+    [InlineData("en", "pt")]
+    public async Task NonSupportedTranslation_NonStreaming_Throws(string? speechLanguage, string? textLanguage)
+    {
+        using HttpClient httpClient = new();
+        using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
+
+        using var fileStream = GetAudioStream("audio001.mp3");
+
+        await Assert.ThrowsAsync<NotSupportedException>(() => client.GetResponseAsync(fileStream, new SpeechToTextOptions
+        {
+            SpeechLanguage = speechLanguage,
+            TextLanguage = textLanguage
+        }));
+    }
+
+    [Fact]
+    public async Task BasicTranslateRequestResponse_Streaming()
+    {
+        string textLanguage = "en";
+
+        // There's no support for non english translations, so no language is passed to the API.
+        const string Input = $$"""
                 {
                     "model": "whisper-1"
                 }
@@ -166,16 +254,20 @@ public class OpenAISpeechToTextClientTests
                 }
                 """;
 
-        using VerbatimMultiPartHttpHandler handler = new(Input, Output);
+        using VerbatimMultiPartHttpHandler handler = new(Input, Output) { ExpectedRequestUriContains = "audio/translations" };
         using HttpClient httpClient = new(handler);
         using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
 
         using var fileStream = GetAudioStream("audio001.mp3");
-        await foreach (var update in client.GetStreamingResponseAsync(fileStream))
+        await foreach (var update in client.GetStreamingResponseAsync(fileStream, new SpeechToTextOptions
+        {
+            SpeechLanguage = "pt",
+            TextLanguage = textLanguage
+        }))
         {
             Assert.Contains("I finally got back to the gym the other day", update.Text);
             Assert.NotNull(update.RawRepresentation);
-            Assert.IsType<OpenAI.Audio.AudioTranscription>(update.RawRepresentation);
+            Assert.IsType<OpenAI.Audio.AudioTranslation>(update.RawRepresentation);
             Assert.Equal(0, update.InputIndex);
         }
     }

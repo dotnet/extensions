@@ -13,6 +13,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
+#pragma warning disable S3996 // URI properties should not be strings
+
 /// <summary>
 /// An <see cref="HttpMessageHandler"/> that checks the multi-part request body as a root
 /// JSON structure of properties and sends back an expected JSON response.
@@ -37,101 +39,108 @@ using Xunit;
 /// </param>
 public class VerbatimMultiPartHttpHandler(string expectedInput, string sentJsonOutput) : HttpClientHandler
 {
+    public string? ExpectedRequestUriContains { get; init; }
+
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
-        Dictionary<string, object> parameters = [];
-        if (request.Content != null &&
-            request.Content.Headers.ContentType?.MediaType == "multipart/form-data")
-        {
-            // Extract the boundary
-            string? boundary = request.Content.Headers.ContentType.Parameters
-                .FirstOrDefault(p => p.Name == "boundary")?.Value;
+        Assert.NotNull(request.Content);
+        Assert.NotNull(request.Content.Headers.ContentType);
+        Assert.Equal("multipart/form-data", request.Content.Headers.ContentType.MediaType);
 
-            if (string.IsNullOrEmpty(boundary))
+        Assert.NotNull(request.RequestUri);
+        if (!string.IsNullOrEmpty(ExpectedRequestUriContains))
+        {
+            Assert.Contains(ExpectedRequestUriContains!, request.RequestUri!.ToString());
+        }
+
+        Dictionary<string, object> parameters = [];
+
+        // Extract the boundary
+        string? boundary = request.Content.Headers.ContentType.Parameters
+            .FirstOrDefault(p => p.Name == "boundary")?.Value;
+
+        if (string.IsNullOrEmpty(boundary))
+        {
+            throw new InvalidOperationException("Boundary not found.");
+        }
+
+        string fullBoundary = $"--{boundary!.Trim('"')}";
+
+        // Read the entire body into memory (for simplicity; stream in production for large data)
+#if NET
+        byte[] bodyBytes = await request.Content.ReadAsByteArrayAsync(cancellationToken);
+#else
+        byte[] bodyBytes = await request.Content.ReadAsByteArrayAsync();
+#endif
+        using var stream = new MemoryStream(bodyBytes);
+        using var reader = new StreamReader(stream, Encoding.UTF8);
+#if NET
+
+        string bodyText = await reader.ReadToEndAsync(cancellationToken);
+#else
+        string bodyText = await reader.ReadToEndAsync();
+#endif
+
+        // Make it legible for debugging and splitting
+        bodyText = RemoveSpecialCharacters(bodyText);
+
+        string[] parts = bodyText.Split(new string[] { fullBoundary }, StringSplitOptions.None);
+
+        foreach (string part in parts)
+        {
+            if (part.Trim() == "--")
             {
-                throw new InvalidOperationException("Boundary not found.");
+                continue; // End boundary
             }
 
-            string fullBoundary = $"--{boundary!.Trim('"')}";
-
-            // Read the entire body into memory (for simplicity; stream in production for large data)
-#if NET
-            byte[] bodyBytes = await request.Content.ReadAsByteArrayAsync(cancellationToken);
-#else
-            byte[] bodyBytes = await request.Content.ReadAsByteArrayAsync();
-#endif
-            using var stream = new MemoryStream(bodyBytes);
-            using var reader = new StreamReader(stream, Encoding.UTF8);
-#if NET
-
-            string bodyText = await reader.ReadToEndAsync(cancellationToken);
-#else
-            string bodyText = await reader.ReadToEndAsync();
-#endif
-
-            // Make it legible for debugging and splitting
-            bodyText = RemoveSpecialCharacters(bodyText);
-
-            string[] parts = bodyText.Split(new string[] { fullBoundary }, StringSplitOptions.None);
-
-            foreach (string part in parts)
+            // Parse headers and body
+            int headerEnd = part.IndexOf("\r\n\r\n");
+            if (headerEnd < 0)
             {
-                if (part.Trim() == "--")
+                continue;
+            }
+
+            string headers = part.Substring(0, headerEnd).Trim();
+            string rawValue = part.Substring(headerEnd + 4).TrimEnd('\r', '\n');
+
+            // Get the parameter name and value
+            if (headers.Contains("name="))
+            {
+                // Text field
+                string name = ExtractNameFromHeaders(headers);
+
+                // Skip file fields
+                if (!name.StartsWith("file"))
                 {
-                    continue; // End boundary
-                }
-
-                // Parse headers and body
-                int headerEnd = part.IndexOf("\r\n\r\n");
-                if (headerEnd < 0)
-                {
-                    continue;
-                }
-
-                string headers = part.Substring(0, headerEnd).Trim();
-                string rawValue = part.Substring(headerEnd + 4).TrimEnd('\r', '\n');
-
-                // Get the parameter name and value
-                if (headers.Contains("name="))
-                {
-                    // Text field
-                    string name = ExtractNameFromHeaders(headers);
-
-                    // Skip file fields
-                    if (!name.StartsWith("file"))
+                    if (parameters.ContainsKey(name))
                     {
-                        if (parameters.ContainsKey(name))
-                        {
-                            ((List<JsonElement>)parameters[name]).Add(ParseContentToJsonElement(rawValue));
-                        }
-                        else
-                        {
-                            parameters.Add(name, new List<JsonElement> { ParseContentToJsonElement(rawValue) });
-                        }
+                        ((List<JsonElement>)parameters[name]).Add(ParseContentToJsonElement(rawValue));
+                    }
+                    else
+                    {
+                        parameters.Add(name, new List<JsonElement> { ParseContentToJsonElement(rawValue) });
                     }
                 }
             }
-
-            // Transform one value lists into single values
-            foreach (var key in parameters.Keys.ToList())
-            {
-                if (parameters[key] is List<JsonElement> list && list.Count == 1)
-                {
-                    parameters[key] = list[0];
-                }
-            }
-
-            var jsonParameters = JsonSerializer.Serialize(parameters);
-            Assert.NotNull(jsonParameters);
-
-            AssertJsonEquals(expectedInput, jsonParameters);
-
-            return new() { Content = new StringContent(sentJsonOutput, Encoding.UTF8, "application/json") };
         }
 
-        return await base.SendAsync(request, cancellationToken);
+        // Transform one value lists into single values
+        foreach (var key in parameters.Keys.ToList())
+        {
+            if (parameters[key] is List<JsonElement> list && list.Count == 1)
+            {
+                parameters[key] = list[0];
+            }
+        }
+
+        var jsonParameters = JsonSerializer.Serialize(parameters);
+        Assert.NotNull(jsonParameters);
+
+        AssertJsonEquals(expectedInput, jsonParameters);
+
+        return new() { Content = new StringContent(sentJsonOutput, Encoding.UTF8, "application/json") };
     }
 
     private static string RemoveSpecialCharacters(string input)
