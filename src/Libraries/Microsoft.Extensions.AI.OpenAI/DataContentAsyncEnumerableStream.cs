@@ -21,7 +21,6 @@ internal sealed class DataContentAsyncEnumerableStream : Stream
 #endif
 {
     private readonly IAsyncEnumerator<DataContent> _enumerator;
-    private bool _asyncDisposed;
     private bool _isCompleted;
     private ReadOnlyMemory<byte>? _remainingData;
     private int _remainingDataOffset;
@@ -68,9 +67,13 @@ internal sealed class DataContentAsyncEnumerableStream : Stream
         try
         {
             int bytesRead;
-            while ((bytesRead = await ReadAsync(new Memory<byte>(buffer), cancellationToken).ConfigureAwait(false)) != 0)
+            while ((bytesRead = await EnumeratorReadAsync(new Memory<byte>(buffer), cancellationToken).ConfigureAwait(false)) != 0)
             {
+#if NET
                 await destination.WriteAsync(new ReadOnlyMemory<byte>(buffer, 0, bytesRead), cancellationToken).ConfigureAwait(false);
+#else
+                await destination.WriteAsync(buffer, 0, bytesRead, cancellationToken).ConfigureAwait(false);
+#endif
             }
         }
         finally
@@ -103,29 +106,6 @@ internal sealed class DataContentAsyncEnumerableStream : Stream
         throw new NotSupportedException("Use ReadAsync instead for asynchronous reading.");
     }
 
-#if NET8_0_OR_GREATER
-    /// <inheritdoc/>
-    public override async ValueTask DisposeAsync()
-    {
-        await _enumerator.DisposeAsync().ConfigureAwait(false);
-
-        await base.DisposeAsync().ConfigureAwait(false);
-
-        _asyncDisposed = true;
-
-        Dispose();
-    }
-#else
-    public async ValueTask DisposeAsync()
-    {
-        await _enumerator.DisposeAsync().ConfigureAwait(false);
-
-        _asyncDisposed = true;
-
-        Dispose();
-    }
-#endif
-
     /// <inheritdoc/>
     public override void Write(byte[] buffer, int offset, int count)
     {
@@ -134,14 +114,42 @@ internal sealed class DataContentAsyncEnumerableStream : Stream
 
     /// <inheritdoc/>
     public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-        => ReadAsync(new Memory<byte>(buffer, offset, count), cancellationToken).AsTask();
+        => EnumeratorReadAsync(new Memory<byte>(buffer, offset, count), cancellationToken).AsTask();
 
 #if NET8_0_OR_GREATER
     /// <inheritdoc/>
-    public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+    public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        => EnumeratorReadAsync(buffer, cancellationToken);
+
+    /// <inheritdoc/>
+    public override async ValueTask DisposeAsync()
+    {
+        await _enumerator.DisposeAsync().ConfigureAwait(false);
+
+        await base.DisposeAsync().ConfigureAwait(false);
+    }
 #else
-    private async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken)
+    /// <inheritdoc/>
+    public async ValueTask DisposeAsync()
+    {
+        await _enumerator.DisposeAsync().ConfigureAwait(false);
+    }
+
+#pragma warning disable SA1202 // "protected" methods should come before "private" members
+#pragma warning disable VSTHRD002 // Synchrnously waiting on tasks or awaiters may cause deadlocks.
+    /// <inheritdoc/>
+    protected override void Dispose(bool disposing)
+    {
+        _enumerator.DisposeAsync().AsTask().GetAwaiter().GetResult();
+
+        base.Dispose(disposing);
+    }
+#pragma warning restore SA1202 // "protected" methods should come before "private" members
+#pragma warning restore VSTHRD002
+
 #endif
+
+    private async ValueTask<int> EnumeratorReadAsync(Memory<byte> buffer, CancellationToken cancellationToken)
     {
         if (_isCompleted)
         {
@@ -194,24 +202,5 @@ internal sealed class DataContentAsyncEnumerableStream : Stream
 
         return bytesRead;
     }
-
-#pragma warning disable SA1202 // "protected" methods should come before "private" members
-#pragma warning disable VSTHRD002 // Synchrnously waiting on tasks or awaiters may cause deadlocks.
-    /// <inheritdoc/>
-    protected override void Dispose(bool disposing)
-    {
-        if (!_asyncDisposed)
-        {
-            var valueTask = DisposeAsync();
-            if (!valueTask.IsCompleted)
-            {
-                valueTask.AsTask().GetAwaiter().GetResult();
-            }
-        }
-
-        base.Dispose(disposing);
-    }
-#pragma warning restore SA1202 // "protected" methods should come before "private" members
-#pragma warning restore VSTHRD002
 }
 

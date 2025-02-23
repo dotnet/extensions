@@ -10,16 +10,15 @@ using System.Threading.Tasks;
 using Microsoft.TestUtilities;
 using Xunit;
 
-#pragma warning disable CA2000 // Dispose objects before losing scope
 #pragma warning disable CA2214 // Do not call overridable methods in constructors
 
 namespace Microsoft.Extensions.AI;
 
-public abstract class AudioTranscriptionClientIntegrationTests : IDisposable
+public abstract class SpeechToTextClientIntegrationTests : IDisposable
 {
     private readonly ISpeechToTextClient? _client;
 
-    protected AudioTranscriptionClientIntegrationTests()
+    protected SpeechToTextClientIntegrationTests()
     {
         _client = CreateClient();
     }
@@ -33,7 +32,7 @@ public abstract class AudioTranscriptionClientIntegrationTests : IDisposable
     protected abstract ISpeechToTextClient? CreateClient();
 
     [ConditionalFact]
-    public virtual async Task TranscribeAsync_SingleAudioRequestMessage()
+    public virtual async Task GetResponseAsync_SingleAudioRequestMessage()
     {
         SkipIfNotEnabled();
 
@@ -44,7 +43,7 @@ public abstract class AudioTranscriptionClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
-    public virtual async Task TranscribeAsync_MultipleAudioRequestMessage()
+    public virtual async Task GetResponseAsync_MultipleAudioRequestMessage()
     {
         SkipIfNotEnabled();
 
@@ -61,7 +60,7 @@ public abstract class AudioTranscriptionClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
-    public virtual async Task TranscribeStreamingAsync_SingleStreamingResponseChoice()
+    public virtual async Task GetStreamingResponseAsync_SingleStreamingResponseChoice()
     {
         SkipIfNotEnabled();
 
@@ -79,7 +78,7 @@ public abstract class AudioTranscriptionClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
-    public virtual async Task TranscribeStreamingAsync_MultipleStreamingResponseChoice()
+    public virtual async Task GetStreamingResponseAsync_MultipleStreamingResponseChoice()
     {
         SkipIfNotEnabled();
 
@@ -111,7 +110,7 @@ public abstract class AudioTranscriptionClientIntegrationTests : IDisposable
 
     private static Stream GetAudioStream(string fileName)
     {
-        using Stream? s = typeof(AudioTranscriptionClientIntegrationTests).Assembly.GetManifestResourceStream($"Microsoft.Extensions.AI.Resources.{fileName}");
+        using Stream? s = typeof(SpeechToTextClientIntegrationTests).Assembly.GetManifestResourceStream($"Microsoft.Extensions.AI.Resources.{fileName}");
         Assert.NotNull(s);
         MemoryStream ms = new();
         s.CopyTo(ms);

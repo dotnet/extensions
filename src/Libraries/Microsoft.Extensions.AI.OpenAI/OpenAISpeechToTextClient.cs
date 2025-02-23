@@ -17,7 +17,7 @@ using OpenAI.Audio;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="ISpeechToTextClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="OpenAI.Audio.AudioClient"/>.</summary>
-public sealed class OpenAIAudioTranscriptionClient : ISpeechToTextClient
+public sealed class OpenAISpeechToTextClient : ISpeechToTextClient
 {
     /// <summary>Default OpenAI endpoint.</summary>
     private static readonly Uri _defaultOpenAIEndpoint = new("https://api.openai.com/v1");
@@ -31,10 +31,10 @@ public sealed class OpenAIAudioTranscriptionClient : ISpeechToTextClient
     /// <summary>The underlying <see cref="AudioClient" />.</summary>
     private readonly AudioClient _audioClient;
 
-    /// <summary>Initializes a new instance of the <see cref="OpenAIAudioTranscriptionClient"/> class for the specified <see cref="OpenAIClient"/>.</summary>
+    /// <summary>Initializes a new instance of the <see cref="OpenAISpeechToTextClient"/> class for the specified <see cref="OpenAIClient"/>.</summary>
     /// <param name="openAIClient">The underlying client.</param>
     /// <param name="modelId">The model to use.</param>
-    public OpenAIAudioTranscriptionClient(OpenAIClient openAIClient, string modelId)
+    public OpenAISpeechToTextClient(OpenAIClient openAIClient, string modelId)
     {
         _ = Throw.IfNull(openAIClient);
         _ = Throw.IfNullOrWhitespace(modelId);
@@ -52,9 +52,9 @@ public sealed class OpenAIAudioTranscriptionClient : ISpeechToTextClient
         _metadata = new("openai", providerUrl, modelId);
     }
 
-    /// <summary>Initializes a new instance of the <see cref="OpenAIAudioTranscriptionClient"/> class for the specified <see cref="AudioClient"/>.</summary>
+    /// <summary>Initializes a new instance of the <see cref="OpenAISpeechToTextClient"/> class for the specified <see cref="AudioClient"/>.</summary>
     /// <param name="audioClient">The underlying client.</param>
-    public OpenAIAudioTranscriptionClient(AudioClient audioClient)
+    public OpenAISpeechToTextClient(AudioClient audioClient)
     {
         _ = Throw.IfNull(audioClient);
 
@@ -121,7 +121,7 @@ public sealed class OpenAIAudioTranscriptionClient : ISpeechToTextClient
                 var filePath = uri.LocalPath;
                 transcriptionResult = (await _audioClient.TranscribeAudioAsync(
                     audioFilePath: filePath,
-                    options: OpenAIModelMappers.ToOpenAIOptions(options)).ConfigureAwait(false)).Value;
+                    options: openAIOptions).ConfigureAwait(false)).Value;
             }
             else
             {
@@ -129,7 +129,7 @@ public sealed class OpenAIAudioTranscriptionClient : ISpeechToTextClient
                 transcriptionResult = (await _audioClient.TranscribeAudioAsync(
                     audioFileStream,
                     "file.wav", // this information internally is required but is only being used to create a header name in the multipart request.
-                    OpenAIModelMappers.ToOpenAIOptions(options), cancellationToken).ConfigureAwait(false)).Value;
+                    openAIOptions, cancellationToken).ConfigureAwait(false)).Value;
             }
 
             var choice = OpenAIModelMappers.FromOpenAIAudioTranscription(transcriptionResult, inputIndex);

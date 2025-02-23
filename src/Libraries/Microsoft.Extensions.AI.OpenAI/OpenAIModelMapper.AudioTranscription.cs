@@ -6,10 +6,6 @@ using System.Collections.Generic;
 using Microsoft.Shared.Diagnostics;
 using OpenAI.Audio;
 
-#pragma warning disable SA1204 // Static elements should appear before instance elements
-#pragma warning disable S103 // Lines should not be too long
-#pragma warning disable CA1859 // Use concrete types when possible for improved performance
-#pragma warning disable S1067 // Expressions should not be too complex
 #pragma warning disable S3440 // Variables should not be checked against the values they're about to be assigned
 
 namespace Microsoft.Extensions.AI;
@@ -59,6 +55,8 @@ internal static partial class OpenAIModelMappers
                 var modelId => modelId,
             };
 
+            result.SpeechLanguage = options.Language;
+
             if (options.Temperature is float temperature)
             {
                 (result.AdditionalProperties ??= [])[nameof(options.Temperature)] = temperature;
@@ -90,7 +88,10 @@ internal static partial class OpenAIModelMappers
 
         if (options is not null)
         {
-            result.Language = options.SpeechLanguage;
+            if (options.SpeechLanguage is not null)
+            {
+                result.Language = options.SpeechLanguage;
+            }
 
             if (options.AdditionalProperties is { Count: > 0 } additionalProperties)
             {

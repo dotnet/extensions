@@ -1,6 +1,3 @@
 {
-  "dotnet.automaticallyCreateSolutionInWorkspace": false,
-  "github.copilot.enable": {
-    "markdown": true
-  }
+  "dotnet.automaticallyCreateSolutionInWorkspace": false
 }

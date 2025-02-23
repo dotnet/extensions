@@ -3,9 +3,9 @@
 
 namespace Microsoft.Extensions.AI;
 
-public class OpenAIAudioTranscriptionClientIntegrationTests : AudioTranscriptionClientIntegrationTests
+public class OpenAISpeechToTextClientIntegrationTests : SpeechToTextClientIntegrationTests
 {
     protected override ISpeechToTextClient? CreateClient()
         => IntegrationTestHelpers.GetOpenAIClient()
-        ?.AsAudioTranscriptionClient(TestRunnerConfiguration.Instance["OpenAI:AudioTranscriptionModel"] ?? "whisper-1");
+        ?.AsSpeechToTextClient(TestRunnerConfiguration.Instance["OpenAI:AudioTranscriptionModel"] ?? "whisper-1");
 }
