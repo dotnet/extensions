@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Sampling;
@@ -69,6 +70,59 @@ public class SamplingLoggerBuilderExtensionsTests
         Assert.NotNull(options);
         Assert.NotNull(options.CurrentValue);
         Assert.Equivalent(expectedData, options.CurrentValue.Rules);
+    }
+
+    [Fact]
+    public void AddRandomProbabilisticSampler_WhenRulesIsNull_ValidationFails()
+    {
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddLogging(builder =>
+        {
+            builder.AddRandomProbabilisticSampler(o => o.Rules = null!);
+        });
+        var serviceProvider = serviceCollection.BuildServiceProvider();
+        var options = serviceProvider.GetService<IOptionsMonitor<RandomProbabilisticSamplerOptions>>();
+        Assert.Throws<OptionsValidationException>(() => options?.CurrentValue.Rules);
+    }
+
+    [Theory]
+    [InlineData(1.1)]
+    [InlineData(-0.1)]
+    [InlineData(2)]
+    [InlineData(100)]
+    public void AddRandomProbabilisticSampler_WhenDelegateIsInvalid_ValidationFails(double invalidProbabilityValue)
+    {
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddLogging(builder =>
+        {
+            builder.AddRandomProbabilisticSampler(o => o.Rules.Add(new RandomProbabilisticSamplerFilterRule(invalidProbabilityValue)));
+        });
+        var serviceProvider = serviceCollection.BuildServiceProvider();
+        var options = serviceProvider.GetService<IOptionsMonitor<RandomProbabilisticSamplerOptions>>();
+        Assert.Throws<OptionsValidationException>(() => options?.CurrentValue.Rules);
+    }
+
+    [Theory]
+    [InlineData(1.1)]
+    [InlineData(-0.1)]
+    [InlineData(2)]
+    [InlineData(100)]
+    public void AddRandomProbabilisticSampler_WhenConfigInvalid_ValidationFails(double invalidProbabilityValue)
+    {
+        ConfigurationBuilder configBuilder = new ConfigurationBuilder();
+        configBuilder.AddInMemoryCollection(new List<KeyValuePair<string, string?>>
+        {
+            new KeyValuePair<string, string?>("RandomProbabilisticSampler:Rules:0:Probability", invalidProbabilityValue.ToString(CultureInfo.InvariantCulture))
+        });
+        IConfigurationRoot configuration = configBuilder.Build();
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddLogging(builder =>
+        {
+            builder.AddRandomProbabilisticSampler(configuration);
+        });
+        var serviceProvider = serviceCollection.BuildServiceProvider();
+        var options = serviceProvider.GetService<IOptionsMonitor<RandomProbabilisticSamplerOptions>>();
+        Assert.Throws<OptionsValidationException>(() => options?.CurrentValue.Rules);
     }
 
     [Fact]

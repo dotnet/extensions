@@ -51,7 +51,10 @@ public static class SamplingLoggerBuilderExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configuration);
 
-        _ = builder.Services.AddSingleton<IConfigureOptions<RandomProbabilisticSamplerOptions>>(new RandomProbabilisticSamplerConfigureOptions(configuration));
+        _ = builder.Services.AddOptionsWithValidateOnStart<RandomProbabilisticSamplerOptions, RandomProbabilisticSamplerOptionsValidator>();
+        _ = builder.Services.AddSingleton<IConfigureOptions<RandomProbabilisticSamplerOptions>>(
+                new RandomProbabilisticSamplerConfigureOptions(configuration));
+
         return builder.AddSampler<RandomProbabilisticSampler>();
     }
 
@@ -71,7 +74,9 @@ public static class SamplingLoggerBuilderExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);
 
-        _ = builder.Services.Configure(configure);
+        _ = builder.Services
+            .AddOptionsWithValidateOnStart<RandomProbabilisticSamplerOptions, RandomProbabilisticSamplerOptionsValidator>()
+            .Configure(configure);
         return builder.AddSampler<RandomProbabilisticSampler>();
     }
 
@@ -93,8 +98,9 @@ public static class SamplingLoggerBuilderExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfOutOfRange(probability, 0, 1, nameof(probability));
 
-        _ = builder.Services.Configure<RandomProbabilisticSamplerOptions>(options =>
-                options.Rules.Add(new RandomProbabilisticSamplerFilterRule(probability, logLevel: level)));
+        _ = builder.Services
+            .AddOptionsWithValidateOnStart<RandomProbabilisticSamplerOptions, RandomProbabilisticSamplerOptionsValidator>()
+            .Configure(options => options.Rules.Add(new RandomProbabilisticSamplerFilterRule(probability, logLevel: level)));
 
         return builder.AddSampler<RandomProbabilisticSampler>();
     }
