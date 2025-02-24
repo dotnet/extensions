@@ -128,54 +128,62 @@ public class EmitterTests
     [Fact]
     public void EmitterShouldOutputInJSONFormat()
     {
-        string newLine = Environment.NewLine;
-        string expected =
-            "[" +
-            newLine + " {" +
-            newLine + "  \"MetricContainingAssembly1\":" +
-            newLine + "  [" +
-            newLine + "    {" +
-            newLine + "     \"MetricName\": \"Requests\"," +
-            newLine + "     \"MetricDescription\": \"Requests summary.\"," +
-            newLine + "     \"InstrumentName\": \"Counter\"," +
-            newLine + "     \"Dimensions\": {" +
-            newLine + "      \"StatusCode\": \"Status code for request.\"," +
-            newLine + "      \"ErrorCode\": \"Error code for request.\"" +
-            newLine + "      }" +
-            newLine + "    }," +
-            newLine + "    {" +
-            newLine + "     \"MetricName\": \"Latency\"," +
-            newLine + "     \"MetricDescription\": \"Latency summary.\"," +
-            newLine + "     \"InstrumentName\": \"Histogram\"," +
-            newLine + "     \"Dimensions\": {" +
-            newLine + "      \"Dim1\": \"\"" +
-            newLine + "      }" +
-            newLine + "    }," +
-            newLine + "    {" +
-            newLine + "     \"MetricName\": \"MemoryUsage\"," +
-            newLine + "     \"InstrumentName\": \"Gauge\"" +
-            newLine + "    }" +
-            newLine + "  ]" +
-            newLine + " }," +
-            newLine + " {" +
-            newLine + "  \"MetricContainingAssembly2\":" +
-            newLine + "  [" +
-            newLine + "    {" +
-            newLine + "     \"MetricName\": \"Counter\"," +
-            newLine + "     \"MetricDescription\": \"Counter summary.\"," +
-            newLine + "     \"InstrumentName\": \"Counter\"" +
-            newLine + "    }," +
-            newLine + "    {" +
-            newLine + "     \"MetricName\": \"Test\\\\MemoryUsage\"," +
-            newLine + "     \"MetricDescription\": \"MemoryUsage summary.\"," +
-            newLine + "     \"InstrumentName\": \"Gauge\"," +
-            newLine + "     \"Dimensions\": {" +
-            newLine + "      \"Path\": \"Test\\\\Description\\\\Path\"" +
-            newLine + "      }" +
-            newLine + "    }" +
-            newLine + "  ]" +
-            newLine + " }" +
-            newLine + "]";
+        string expected = @"[
+    {
+     ""MetricContainingAssembly1"":
+            [
+                {
+                     ""MetricName"": ""Requests"",
+                     ""MetricDescription"": ""Requests summary."",
+                     ""InstrumentName"": ""Counter"",
+                     ""Dimensions"":
+                            {
+                                ""StatusCode"": ""Status code for request."",
+                                ""ErrorCode"": ""Error code for request.""
+                            }
+                }
+                ,
+                {
+                     ""MetricName"": ""Latency"",
+                     ""MetricDescription"": ""Latency summary."",
+                     ""InstrumentName"": ""Histogram"",
+                     ""Dimensions"":
+                            {
+                                ""Dim1"": """"
+                            }
+                }
+                ,
+                {
+                     ""MetricName"": ""MemoryUsage"",
+                     ""InstrumentName"": ""Gauge""
+
+                }
+            ]
+    }
+,
+    {
+     ""MetricContainingAssembly2"":
+            [
+                {
+                     ""MetricName"": ""Counter"",
+                     ""MetricDescription"": ""Counter summary."",
+                     ""InstrumentName"": ""Counter""
+
+                }
+                ,
+                {
+                     ""MetricName"": ""Test\\MemoryUsage"",
+                     ""MetricDescription"": ""MemoryUsage summary."",
+                     ""InstrumentName"": ""Gauge"",
+                     ""Dimensions"":
+                            {
+                                ""Path"": ""Test\\Description\\Path""
+                            }
+                }
+            ]
+    }
+]
+";
 
         var emitter = new MetricDefinitionEmitter();
         string json = emitter.GenerateReport(_metricClasses, CancellationToken.None);
