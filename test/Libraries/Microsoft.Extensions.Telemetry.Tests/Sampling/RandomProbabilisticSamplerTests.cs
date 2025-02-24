@@ -25,7 +25,7 @@ public class RandomProbabilisticSamplerTests
         // Arrange
         RandomProbabilisticSamplerOptions options = new();
         options.Rules.Add(new RandomProbabilisticSamplerFilterRule(probability: probability, logLevel: LogLevel.Trace));
-        var sampler = new RandomProbabilisticSampler(new StaticOptionsMonitor<RandomProbabilisticSamplerOptions>(options));
+        using var sampler = new RandomProbabilisticSampler(new StaticOptionsMonitor<RandomProbabilisticSamplerOptions>(options));
 
         // Act
         var actualDecision = sampler.ShouldSample(
@@ -45,7 +45,7 @@ public class RandomProbabilisticSamplerTests
             LogLevel.Warning, nameof(WhenParametersNotMatch_AlwaysSamples), 0, _dummyState, _dummyException, _dummyFormatter);
         RandomProbabilisticSamplerOptions options = new();
         options.Rules.Add(new RandomProbabilisticSamplerFilterRule(probability: Probability, logLevel: LogLevel.Information));
-        var sampler = new RandomProbabilisticSampler(new StaticOptionsMonitor<RandomProbabilisticSamplerOptions>(options));
+        using var sampler = new RandomProbabilisticSampler(new StaticOptionsMonitor<RandomProbabilisticSamplerOptions>(options));
 
         // Act
         var actualDecision = sampler.ShouldSample(logEntry);
@@ -63,7 +63,7 @@ public class RandomProbabilisticSamplerTests
             LogLevel.Information, nameof(WhenParametersMatch_UsesProvidedProbability), 0, _dummyState, _dummyException, _dummyFormatter);
         RandomProbabilisticSamplerOptions options = new();
         options.Rules.Add(new RandomProbabilisticSamplerFilterRule(probability: Probability, logLevel: LogLevel.Information));
-        var sampler = new RandomProbabilisticSampler(new StaticOptionsMonitor<RandomProbabilisticSamplerOptions>(options));
+        using var sampler = new RandomProbabilisticSampler(new StaticOptionsMonitor<RandomProbabilisticSamplerOptions>(options));
 
         // Act
         var actualDecision = sampler.ShouldSample(logEntry);
