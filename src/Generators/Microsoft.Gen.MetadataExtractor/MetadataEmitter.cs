@@ -37,8 +37,7 @@ internal sealed class MetadataEmitter : EmitterBase
         Out((string.IsNullOrEmpty(metadataReport.complianceReport) ? "{}" : metadataReport.complianceReport));
         OutLn(",");
         Out("\"MetricReport\": ");
-        Out((string.IsNullOrEmpty(metadataReport.metricReport) ? "[]" : metadataReport.metricReport));
-        OutLn();
+        OutLn((string.IsNullOrEmpty(metadataReport.metricReport) ? "[]" : metadataReport.metricReport));
         OutLn("}");
 
         var xx = Capture();
