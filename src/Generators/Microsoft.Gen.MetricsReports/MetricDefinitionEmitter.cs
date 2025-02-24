@@ -123,7 +123,9 @@ internal sealed class MetricDefinitionEmitter : EmitterBase
                     if (metricMethod.Dimensions.Count > 0)
                     {
                         OutLn($"     \"InstrumentName\": \"{metricMethod.Kind}\",");
-                        OutLn("     \"Dimensions\": {");
+                        OutLn("     \"Dimensions\":");
+                        IndentMany(3);
+                        OutLn("{");
                         Indent();
                         int k = 0;
                         foreach (var dimension in metricMethod.Dimensions)
@@ -143,6 +145,7 @@ internal sealed class MetricDefinitionEmitter : EmitterBase
 
                         Unindent();
                         OutLn("}");
+                        UnindentMany(3);
                     }
                     else
                     {
