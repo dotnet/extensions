@@ -10,12 +10,12 @@ using Microsoft.Gen.Shared;
 
 namespace Microsoft.Gen.ComplianceReports;
 
-internal sealed class Emitter : EmitterBase
+internal sealed class ComplianceReportEmitter : EmitterBase
 {
     private readonly Stack<int> _itemCounts = new();
     private int _itemCount;
 
-    public Emitter()
+    public ComplianceReportEmitter()
         : base(false)
     {
     }

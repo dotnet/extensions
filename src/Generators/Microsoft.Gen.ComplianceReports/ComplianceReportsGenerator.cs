@@ -83,7 +83,7 @@ public sealed class ComplianceReportsGenerator : ISourceGenerator
             return;
         }
 
-        var emitter = new Emitter();
+        var emitter = new ComplianceReportEmitter();
         string report = emitter.Emit(classifiedTypes, context.Compilation.AssemblyName!);
 
         context.CancellationToken.ThrowIfCancellationRequested();
