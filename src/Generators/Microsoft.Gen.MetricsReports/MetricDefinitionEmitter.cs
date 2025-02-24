@@ -123,9 +123,10 @@ internal sealed class MetricDefinitionEmitter : EmitterBase
 
                     if (metricMethod.Dimensions.Count > 0)
                     {
+                        const int IndentLevel = 3;
                         OutLn($"     \"InstrumentName\": \"{metricMethod.Kind}\",");
                         OutLn("     \"Dimensions\":");
-                        IndentMany(3);
+                        IndentMany(IndentLevel);
                         OutLn("{");
                         Indent();
                         int k = 0;
@@ -146,7 +147,7 @@ internal sealed class MetricDefinitionEmitter : EmitterBase
 
                         Unindent();
                         OutLn("}");
-                        UnindentMany(3);
+                        UnindentMany(IndentLevel);
                     }
                     else
                     {

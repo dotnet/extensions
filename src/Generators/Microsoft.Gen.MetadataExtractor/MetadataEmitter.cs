@@ -1,6 +1,5 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.Gen.ComplianceReports;
@@ -26,8 +25,13 @@ internal sealed class MetadataEmitter : EmitterBase
     public string Emit(GeneratorExecutionContext context)
     {
         (string metricReport, string complianceReport) metadataReport = (string.Empty, string.Empty);
-        metadataReport.metricReport = HandleMetricReportGeneration(context, (TypeDeclarationSyntaxReceiver)context.SyntaxReceiver);
-        metadataReport.complianceReport = HandleComplianceReportGeneration(context, (TypeDeclarationSyntaxReceiver)context.SyntaxReceiver);
+
+        var receiver = context.SyntaxReceiver as TypeDeclarationSyntaxReceiver;
+        if (receiver != null)
+        {
+            metadataReport.metricReport = HandleMetricReportGeneration(context, receiver);
+            metadataReport.complianceReport = HandleComplianceReportGeneration(context, receiver);
+        }
 
         OutLn("{");
         Out("\"Name\":" + $"\"{context.Compilation.AssemblyName!}\"");
