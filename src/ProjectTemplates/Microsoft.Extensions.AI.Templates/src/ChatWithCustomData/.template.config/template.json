@@ -3,9 +3,9 @@
   "author": "Microsoft",
   "classifications": [ "Common", "AI", "Web" ],
   "identity": "Microsoft.Extensions.AI.Templates.Chat.CSharp",
-  "name": "AI Starter Web App",
+  "name": "AI Chat Web App",
   "description": "A project template for creating an AI chat application, which uses retrieval-augmented generation (RAG) to chat with your own data.",
-  "shortName": "aistarterweb",
+  "shortName": "aichatweb",
   "defaultName": "ChatApp",
   "sourceName": "ChatWithCustomData.Web", // TODO: When we support multi-project output, this needs to change to ChatWithCustomData, then we need some other technique to make it avoid emitting a .Web suffix in the single-project case
   "tags": {
