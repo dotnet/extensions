@@ -145,7 +145,7 @@ IChatClient openaiClient =
         .AsChatClient("gpt-4o-mini");
 
 IChatClient client = new ChatClientBuilder(openaiClient)
-    .UseOpenTelemetry(sourceName, c => c.EnableSensitiveData = true)
+    .UseOpenTelemetry(sourceName: sourceName, configure: c => c.EnableSensitiveData = true)
     .Build();
 
 Console.WriteLine(await client.GetResponseAsync("What is AI?"));
@@ -185,7 +185,7 @@ IChatClient openaiClient =
 IChatClient client = new ChatClientBuilder(openaiClient)
     .UseDistributedCache(cache)
     .UseFunctionInvocation()
-    .UseOpenTelemetry(sourceName, c => c.EnableSensitiveData = true)
+    .UseOpenTelemetry(sourceName: sourceName, configure: c => c.EnableSensitiveData = true)
     .Build();
 
 for (int i = 0; i < 3; i++)

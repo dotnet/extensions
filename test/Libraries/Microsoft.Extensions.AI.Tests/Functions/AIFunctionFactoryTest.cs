@@ -47,41 +47,22 @@ public class AIFunctionFactoryTest
     }
 
     [Fact]
-    public async Task Parameters_AIFunctionContextMappedByType_Async()
+    public async Task Parameters_MappedByType_Async()
     {
         using var cts = new CancellationTokenSource();
-        CancellationToken written;
-        AIFunction func;
 
-        // As the only parameter
-        written = default;
-        func = AIFunctionFactory.Create((AIFunctionContext ctx) =>
+        foreach (CancellationToken ctArg in new[] { cts.Token, default })
         {
-            Assert.NotNull(ctx);
-            written = ctx.CancellationToken;
-        });
-        AssertExtensions.EqualFunctionCallResults(null, await func.InvokeAsync(cancellationToken: cts.Token));
-        Assert.Equal(cts.Token, written);
-
-        // As the last
-        written = default;
-        func = AIFunctionFactory.Create((int somethingFirst, AIFunctionContext ctx) =>
-        {
-            Assert.NotNull(ctx);
-            written = ctx.CancellationToken;
-        });
-        AssertExtensions.EqualFunctionCallResults(null, await func.InvokeAsync(new Dictionary<string, object?> { ["somethingFirst"] = 1, ["ctx"] = new AIFunctionContext() }, cts.Token));
-        Assert.Equal(cts.Token, written);
-
-        // As the first
-        written = default;
-        func = AIFunctionFactory.Create((AIFunctionContext ctx, int somethingAfter = 0) =>
-        {
-            Assert.NotNull(ctx);
-            written = ctx.CancellationToken;
-        });
-        AssertExtensions.EqualFunctionCallResults(null, await func.InvokeAsync(cancellationToken: cts.Token));
-        Assert.Equal(cts.Token, written);
+            CancellationToken written = default;
+            AIFunction func = AIFunctionFactory.Create((int value1 = 1, string value2 = "2", CancellationToken cancellationToken = default) =>
+            {
+                written = cancellationToken;
+                return 42;
+            });
+            AssertExtensions.EqualFunctionCallResults(42, await func.InvokeAsync(cancellationToken: ctArg));
+            Assert.Equal(ctArg, written);
+            Assert.DoesNotContain("cancellationToken", func.JsonSchema.ToString(), StringComparison.OrdinalIgnoreCase);
+        }
     }
 
     [Fact]
