@@ -58,7 +58,7 @@ public static class EmbeddingGeneratorBuilderServiceCollectionExtensions
     /// <remarks>The generator is registered as a singleton service.</remarks>
     public static EmbeddingGeneratorBuilder<TInput, TEmbedding> AddKeyedEmbeddingGenerator<TInput, TEmbedding>(
         this IServiceCollection serviceCollection,
-        object serviceKey,
+        object? serviceKey,
         IEmbeddingGenerator<TInput, TEmbedding> innerGenerator,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TEmbedding : Embedding
@@ -75,7 +75,7 @@ public static class EmbeddingGeneratorBuilderServiceCollectionExtensions
     /// <remarks>The generator is registered as a singleton service.</remarks>
     public static EmbeddingGeneratorBuilder<TInput, TEmbedding> AddKeyedEmbeddingGenerator<TInput, TEmbedding>(
         this IServiceCollection serviceCollection,
-        object serviceKey,
+        object? serviceKey,
         Func<IServiceProvider, IEmbeddingGenerator<TInput, TEmbedding>> innerGeneratorFactory,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TEmbedding : Embedding

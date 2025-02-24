@@ -253,7 +253,7 @@ var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
     .Build();
 
 IChatClient client = new ChatClientBuilder(new SampleChatClient(new Uri("http://coolsite.ai"), "my-custom-model"))
-    .UseOpenTelemetry(sourceName, c => c.EnableSensitiveData = true)
+    .UseOpenTelemetry(sourceName: sourceName, configure: c => c.EnableSensitiveData = true)
     .Build();
 
 Console.WriteLine((await client.GetResponseAsync("What is AI?")).Message);
@@ -300,7 +300,7 @@ var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
 IChatClient client = new ChatClientBuilder(new OllamaChatClient(new Uri("http://localhost:11434"), "llama3.1"))
     .UseDistributedCache(new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions())))
     .UseFunctionInvocation()
-    .UseOpenTelemetry(sourceName, c => c.EnableSensitiveData = true)
+    .UseOpenTelemetry(sourceName: sourceName, configure: c => c.EnableSensitiveData = true)
     .Build();
 
 ChatOptions options = new()
@@ -422,27 +422,6 @@ var client = new SampleChatClient(new Uri("http://localhost"), "test")
             throw new InvalidOperationException("Unable to acquire lease.");
 
         await nextAsync(chatMessages, options, cancellationToken);
-    })
-    .UseOpenTelemetry()
-    .Build();
-```
-This overload internally uses a public `AnonymousDelegatingChatClient`, which enables more complicated patterns with only a little additional code.
-For example, to achieve the same as above but with the `RateLimiter` retrieved from DI:
-```csharp
-var client = new SampleChatClient(new Uri("http://localhost"), "test")
-    .AsBuilder()
-    .UseDistributedCache()
-    .Use((innerClient, services) =>
-    {
-        RateLimiter rateLimiter = services.GetRequiredService<RateLimiter>();
-        return new AnonymousDelegatingChatClient(innerClient, async (chatMessages, options, next, cancellationToken) =>
-        {
-            using var lease = await rateLimiter.AcquireAsync(permitCount: 1, cancellationToken).ConfigureAwait(false);
-            if (!lease.IsAcquired)
-                throw new InvalidOperationException("Unable to acquire lease.");
-
-            await next(chatMessages, options, cancellationToken);
-        });
     })
     .UseOpenTelemetry()
     .Build();
@@ -646,7 +625,7 @@ var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
 var generator = new EmbeddingGeneratorBuilder<string, Embedding<float>>(
         new SampleEmbeddingGenerator(new Uri("http://coolsite.ai"), "my-custom-model"))
     .UseDistributedCache(new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions())))
-    .UseOpenTelemetry(sourceName)
+    .UseOpenTelemetry(sourceName: sourceName)
     .Build();
 
 var embeddings = await generator.GenerateAsync(
