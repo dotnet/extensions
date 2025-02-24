@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.AI.Evaluation.Quality;
 /// </remarks>
 /// <param name="options">Options for <see cref="RelevanceTruthAndCompletenessEvaluator"/>.</param>
 public sealed partial class RelevanceTruthAndCompletenessEvaluator(
-        RelevanceTruthAndCompletenessEvaluatorOptions? options = null) : ChatConversationEvaluator
+    RelevanceTruthAndCompletenessEvaluatorOptions? options = null) : ChatConversationEvaluator
 {
     /// <summary>
     /// Gets the <see cref="EvaluationMetric.Name"/> of the <see cref="NumericMetric"/> returned by
@@ -51,7 +51,9 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator(
         [RelevanceMetricName, TruthMetricName, CompletenessMetricName];
 
     /// <inheritdoc/>
-    protected override ChatOptions? ChatOptions { get; } =
+    protected override bool IgnoresHistory => false;
+
+    private readonly ChatOptions _chatOptions =
         new ChatOptions
         {
             Temperature = 0.0f,
@@ -60,9 +62,6 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator(
 
     private readonly RelevanceTruthAndCompletenessEvaluatorOptions _options =
         options ?? RelevanceTruthAndCompletenessEvaluatorOptions.Default;
-
-    /// <inheritdoc/>
-    protected override bool IgnoresHistory => false;
 
     /// <inheritdoc/>
     protected override EvaluationResult InitializeResult()
@@ -114,37 +113,69 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator(
     }
 
     /// <inheritdoc/>
-    protected override async ValueTask ParseEvaluationResponseAsync(
-        string modelResponseForEvaluationPrompt,
-        EvaluationResult result,
+    protected override async ValueTask PerformEvaluationAsync(
         ChatConfiguration chatConfiguration,
+        IList<ChatMessage> evaluationMessages,
+        EvaluationResult result,
         CancellationToken cancellationToken)
     {
-        modelResponseForEvaluationPrompt = modelResponseForEvaluationPrompt.Trim();
+        ChatResponse<Rating> evaluationResponse =
+            await chatConfiguration.ChatClient.GetResponseAsync<Rating>(
+                evaluationMessages,
+                _chatOptions,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        try
+        if (!evaluationResponse.TryGetResult(out Rating? rating))
         {
-            Rating rating = Rating.FromJson(modelResponseForEvaluationPrompt);
-            UpdateResult(rating);
-        }
-        catch (JsonException)
-        {
-            try
-            {
-                string? repairedJson =
-                    await JsonOutputFixer.RepairJsonAsync(
-                        chatConfiguration,
-                        modelResponseForEvaluationPrompt,
-                        cancellationToken).ConfigureAwait(false);
+            string? evaluationResponseText = evaluationResponse.Message.Text?.Trim();
 
-                Rating rating = repairedJson is null ? Rating.Inconclusive : Rating.FromJson(repairedJson);
-                UpdateResult(rating);
-            }
-            catch (JsonException ex)
+            if (string.IsNullOrWhiteSpace(evaluationResponseText))
             {
-                result.AddDiagnosticToAllMetrics(EvaluationDiagnostic.Error(ex.ToString()));
+                rating = Rating.Inconclusive;
+                result.AddDiagnosticToAllMetrics(
+                    EvaluationDiagnostic.Error(
+                        "Evaluation failed because the model failed to produce a valid evaluation response."));
+            }
+            else
+            {
+                try
+                {
+                    string? repairedJson =
+                        await JsonOutputFixer.RepairJsonAsync(
+                            chatConfiguration,
+                            evaluationResponseText!,
+                            cancellationToken).ConfigureAwait(false);
+
+                    if (string.IsNullOrWhiteSpace(repairedJson))
+                    {
+                        rating = Rating.Inconclusive;
+                        result.AddDiagnosticToAllMetrics(
+                            EvaluationDiagnostic.Error(
+                                $"""
+                                Failed to repair the following response from the model and parse scores for '{RelevanceMetricName}', '{TruthMetricName}' and '{CompletenessMetricName}'.:
+                                {evaluationResponseText}
+                                """));
+                    }
+                    else
+                    {
+                        rating = Rating.FromJson(repairedJson!);
+                    }
+                }
+                catch (JsonException ex)
+                {
+                    rating = Rating.Inconclusive;
+                    result.AddDiagnosticToAllMetrics(
+                        EvaluationDiagnostic.Error(
+                            $"""
+                            Failed to repair the following response from the model and parse scores for '{RelevanceMetricName}', '{TruthMetricName}' and '{CompletenessMetricName}'.:
+                            {evaluationResponseText}
+                            {ex}
+                            """));
+                }
             }
         }
+
+        UpdateResult(rating);
 
         void UpdateResult(Rating rating)
         {
