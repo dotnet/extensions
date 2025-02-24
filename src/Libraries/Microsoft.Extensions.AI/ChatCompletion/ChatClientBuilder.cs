@@ -85,8 +85,9 @@ public sealed class ChatClientBuilder
     /// </summary>
     /// <param name="sharedFunc">
     /// A delegate that provides the implementation for both <see cref="IChatClient.GetResponseAsync"/> and
-    /// <see cref="IChatClient.GetStreamingResponseAsync"/>. In addition to the arguments for the operation, it's
-    /// provided with a delegate to the inner client that should be used to perform the operation on the inner client.
+    /// <see cref="IChatClient.GetStreamingResponseAsync"/>. This delegate is invoked with the list of chat messages, the chat
+    /// options, a delegate that represents invoking the inner client, and a cancellation token. The delegate should be passed
+    /// whatever chat messages, options, and cancellation token should be passed along to the next stage in the pipeline.
     /// It will handle both the non-streaming and streaming cases.
     /// </param>
     /// <returns>The updated <see cref="ChatClientBuilder"/> instance.</returns>
@@ -95,7 +96,7 @@ public sealed class ChatClientBuilder
     /// need to interact with the results of the operation, which will come from the inner client.
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="sharedFunc"/> is <see langword="null"/>.</exception>
-    public ChatClientBuilder Use(AnonymousDelegatingChatClient.GetResponseSharedFunc sharedFunc)
+    public ChatClientBuilder Use(Func<IList<ChatMessage>, ChatOptions?, Func<IList<ChatMessage>, ChatOptions?, CancellationToken, Task>, CancellationToken, Task> sharedFunc)
     {
         _ = Throw.IfNull(sharedFunc);
 

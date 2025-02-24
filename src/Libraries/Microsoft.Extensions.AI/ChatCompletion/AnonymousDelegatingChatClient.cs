@@ -14,7 +14,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a delegating chat client that wraps an inner client with implementations provided by delegates.</summary>
-public sealed class AnonymousDelegatingChatClient : DelegatingChatClient
+internal sealed class AnonymousDelegatingChatClient : DelegatingChatClient
 {
     /// <summary>The delegate to use as the implementation of <see cref="GetResponseAsync"/>.</summary>
     private readonly Func<IList<ChatMessage>, ChatOptions?, IChatClient, CancellationToken, Task<ChatResponse>>? _getResponseFunc;
@@ -28,7 +28,7 @@ public sealed class AnonymousDelegatingChatClient : DelegatingChatClient
     private readonly Func<IList<ChatMessage>, ChatOptions?, IChatClient, CancellationToken, IAsyncEnumerable<ChatResponseUpdate>>? _getStreamingResponseFunc;
 
     /// <summary>The delegate to use as the implementation of both <see cref="GetResponseAsync"/> and <see cref="GetStreamingResponseAsync"/>.</summary>
-    private readonly GetResponseSharedFunc? _sharedFunc;
+    private readonly Func<IList<ChatMessage>, ChatOptions?, Func<IList<ChatMessage>, ChatOptions?, CancellationToken, Task>, CancellationToken, Task>? _sharedFunc;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AnonymousDelegatingChatClient"/> class.
@@ -45,7 +45,9 @@ public sealed class AnonymousDelegatingChatClient : DelegatingChatClient
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="innerClient"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="sharedFunc"/> is <see langword="null"/>.</exception>
-    public AnonymousDelegatingChatClient(IChatClient innerClient, GetResponseSharedFunc sharedFunc)
+    public AnonymousDelegatingChatClient(
+        IChatClient innerClient,
+        Func<IList<ChatMessage>, ChatOptions?, Func<IList<ChatMessage>, ChatOptions?, CancellationToken, Task>, CancellationToken, Task> sharedFunc)
         : base(innerClient)
     {
         _ = Throw.IfNull(sharedFunc);
@@ -186,28 +188,4 @@ public sealed class AnonymousDelegatingChatClient : DelegatingChatClient
             Throw.ArgumentNullException(nameof(getResponseFunc), $"At least one of the {nameof(getResponseFunc)} or {nameof(getStreamingResponseFunc)} delegates must be non-null.");
         }
     }
-
-    // Design note:
-    // The following delegate could juse use Func<...>, but it's defined as a custom delegate type
-    // in order to provide better discoverability / documentation / usability around its complicated
-    // signature with the nextAsync delegate parameter.
-
-    /// <summary>
-    /// Represents a method used to call <see cref="IChatClient.GetResponseAsync"/> or <see cref="IChatClient.GetStreamingResponseAsync"/>.
-    /// </summary>
-    /// <param name="chatMessages">The chat content to send.</param>
-    /// <param name="options">The chat options to configure the request.</param>
-    /// <param name="nextAsync">
-    /// A delegate that provides the implementation for the inner client's <see cref="IChatClient.GetResponseAsync"/> or
-    /// <see cref="IChatClient.GetStreamingResponseAsync"/>. It should be invoked to continue the pipeline. It accepts
-    /// the chat messages, options, and cancellation token, which are typically the same instances as provided to this method
-    /// but need not be.
-    /// </param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>A <see cref="Task"/> that represents the completion of the operation.</returns>
-    public delegate Task GetResponseSharedFunc(
-        IList<ChatMessage> chatMessages,
-        ChatOptions? options,
-        Func<IList<ChatMessage>, ChatOptions?, CancellationToken, Task> nextAsync,
-        CancellationToken cancellationToken);
 }
