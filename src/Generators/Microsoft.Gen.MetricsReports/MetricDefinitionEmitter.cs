@@ -18,6 +18,8 @@ internal sealed class MetricDefinitionEmitter : EmitterBase
     {
     }
 
+    private readonly int _indentLevel = 2;
+
     /// <summary>
     /// Generates JSON object containing the <see cref="ReportedMetricClass"/> for metrics report.
     /// </summary>
@@ -69,7 +71,7 @@ internal sealed class MetricDefinitionEmitter : EmitterBase
 
         if (metricClass.Methods.Length > 0)
         {
-            IndentMany(2);
+            IndentMany(_indentLevel);
             OutLn("[");
 
             for (int j = 0; j < metricClass.Methods.Length; j++)
@@ -88,7 +90,7 @@ internal sealed class MetricDefinitionEmitter : EmitterBase
             }
 
             OutLn("]");
-            UnindentMany(2);
+            UnindentMany(_indentLevel);
         }
 
         OutLn("}");
@@ -105,7 +107,6 @@ internal sealed class MetricDefinitionEmitter : EmitterBase
                 try
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    //Indent();
                     OutLn("{");
 
                     OutLn($"     \"MetricName\": \"{metricMethod.MetricName.Replace("\\", "\\\\").Replace("\"", "\\\"")}\",");

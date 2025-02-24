@@ -13,7 +13,7 @@ internal sealed class MetadataEmitter : EmitterBase
     private readonly MetricDefinitionEmitter _metricDefinitionEmitter;
     private readonly ComplianceReportEmitter _complianceReportEmitter;
     private readonly string _rootNamespace;
-
+    private readonly int _indentationLevel = 4;
     public MetadataEmitter(string rootNamespace)
         : base(emitPreamble: false)
     {
@@ -40,8 +40,7 @@ internal sealed class MetadataEmitter : EmitterBase
         OutLn((string.IsNullOrEmpty(metadataReport.metricReport) ? "[]" : metadataReport.metricReport));
         OutLn("}");
 
-        var xx = Capture();
-        return xx;
+        return Capture();
     }
 
     /// <summary>
@@ -62,7 +61,7 @@ internal sealed class MetadataEmitter : EmitterBase
 
         _ = context.AnalyzerConfigOptions.GlobalOptions.TryGetValue(_rootNamespace, out var rootNamespace);
         var reportedMetrics = MetricsReportsHelpers.MapToCommonModel(meteringClasses, rootNamespace);
-        var report = _metricDefinitionEmitter.GenerateReport(reportedMetrics, context.CancellationToken, indentationLevel: 4);
+        var report = _metricDefinitionEmitter.GenerateReport(reportedMetrics, context.CancellationToken, _indentationLevel);
         return report;
     }
 
@@ -87,7 +86,7 @@ internal sealed class MetadataEmitter : EmitterBase
             return string.Empty;
         }
 
-        string report = _complianceReportEmitter.Emit(classifiedTypes, context.Compilation.AssemblyName!, false, indentationLevel: 4);
+        string report = _complianceReportEmitter.Emit(classifiedTypes, context.Compilation.AssemblyName!, false, _indentationLevel);
         return report;
     }
 }
