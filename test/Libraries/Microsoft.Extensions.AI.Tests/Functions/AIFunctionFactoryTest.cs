@@ -50,31 +50,19 @@ public class AIFunctionFactoryTest
     public async Task Parameters_MappedByType_Async()
     {
         using var cts = new CancellationTokenSource();
-        CancellationToken written;
-        AIFunction func;
 
-        // As the only parameter
-        written = default;
-        func = AIFunctionFactory.Create((int value1 = 1, string value2 = "2", CancellationToken cancellationToken = default) =>
+        foreach (CancellationToken ctArg in new[] { cts.Token, default })
         {
-            written = cancellationToken;
-            return 42;
-        });
-        AssertExtensions.EqualFunctionCallResults(42, await func.InvokeAsync(cancellationToken: cts.Token));
-        Assert.Equal(cts.Token, written);
-        Assert.DoesNotContain("cancellationToken", func.JsonSchema.ToString(), StringComparison.OrdinalIgnoreCase);
-
-        // Overridden by dictionary
-        using var cts2 = new CancellationTokenSource();
-        written = default;
-        func = AIFunctionFactory.Create((int somethingFirst, CancellationToken cancellationToken) =>
-        {
-            written = cancellationToken;
-            return 43;
-        });
-        AssertExtensions.EqualFunctionCallResults(43, await func.InvokeAsync(new Dictionary<string, object?> { ["somethingFirst"] = 1, ["cancellationToken"] = cts2.Token }, cts.Token));
-        Assert.Equal(cts2.Token, written);
-        Assert.DoesNotContain("cancellationToken", func.JsonSchema.ToString(), StringComparison.OrdinalIgnoreCase);
+            CancellationToken written = default;
+            AIFunction func = AIFunctionFactory.Create((int value1 = 1, string value2 = "2", CancellationToken cancellationToken = default) =>
+            {
+                written = cancellationToken;
+                return 42;
+            });
+            AssertExtensions.EqualFunctionCallResults(42, await func.InvokeAsync(cancellationToken: ctArg));
+            Assert.Equal(ctArg, written);
+            Assert.DoesNotContain("cancellationToken", func.JsonSchema.ToString(), StringComparison.OrdinalIgnoreCase);
+        }
     }
 
     [Fact]

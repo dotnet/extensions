@@ -217,6 +217,9 @@ public static partial class AIFunctionFactory
         private const int InnerCacheSoftLimit = 512;
         private static readonly ConditionalWeakTable<JsonSerializerOptions, ConcurrentDictionary<DescriptorKey, ReflectionAIFunctionDescriptor>> _descriptorCache = new();
 
+        /// <summary>A boxed <see cref="CancellationToken.None"/>.</summary>
+        private static readonly object? _boxedDefaultCancellationToken = default(CancellationToken);
+
         /// <summary>
         /// Gets or creates a descriptors using the specified method and options.
         /// </summary>
@@ -326,9 +329,16 @@ public static partial class AIFunctionFactory
             Type parameterType = parameter.ParameterType;
             JsonTypeInfo typeInfo = serializerOptions.GetTypeInfo(parameterType);
 
-            // Create a marshaller for the parameter. This produces a value for the parameter based on an ordered
-            // collection of rules.
-            return (arguments, cancellationToken) =>
+            // For CancellationToken parameters, we always bind to the token passed directly to InvokeAsync.
+            if (parameterType == typeof(CancellationToken))
+            {
+                return static (_, cancellationToken) =>
+                    cancellationToken == default ? _boxedDefaultCancellationToken : // optimize common case of a default CT to avoid boxing
+                    cancellationToken;
+            }
+
+            // For all other parameters, create a marshaller that tries to extract the value from the arguments dictionary.
+            return (arguments, _) =>
             {
                 // If the parameter has an argument specified in the dictionary, return that argument.
                 if (arguments.TryGetValue(parameter.Name, out object? value))
@@ -361,14 +371,7 @@ public static partial class AIFunctionFactory
                 }
 
                 // There was no argument for the parameter in the dictionary.
-
-                // Is the type of the parameter special-cased?
-                if (parameterType == typeof(CancellationToken))
-                {
-                    return cancellationToken;
-                }
-
-                // Or does it have a default value?
+                // Does it have a default value?
                 if (parameter.HasDefaultValue)
                 {
                     return parameter.DefaultValue;
