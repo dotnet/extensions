@@ -100,6 +100,8 @@ internal class EmitterBase
     protected void Out(char ch) => _ = _sb.Append(ch);
     protected void Indent() => _indent++;
     protected void Unindent() => _indent--;
+    protected void IndentMany(int times) => _indent += times;
+    protected void UnindentMany(int times) => _indent -= times;
     protected void OutGeneratedCodeAttribute() => OutLn($"[{GeneratorUtilities.GeneratedCodeAttribute}]");
     protected string Capture() => _sb.ToString();
 }

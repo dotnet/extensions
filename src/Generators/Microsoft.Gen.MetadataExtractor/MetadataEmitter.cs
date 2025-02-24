@@ -37,7 +37,8 @@ internal sealed class MetadataEmitter : EmitterBase
         Out((string.IsNullOrEmpty(metadataReport.complianceReport) ? "{}" : metadataReport.complianceReport));
         OutLn(",");
         Out("\"MetricReport\": ");
-        OutLn((string.IsNullOrEmpty(metadataReport.metricReport) ? "[]" : metadataReport.metricReport));
+        Out((string.IsNullOrEmpty(metadataReport.metricReport) ? "[]" : metadataReport.metricReport));
+        OutLn();
         OutLn("}");
 
         var xx = Capture();
@@ -62,7 +63,7 @@ internal sealed class MetadataEmitter : EmitterBase
 
         _ = context.AnalyzerConfigOptions.GlobalOptions.TryGetValue(_rootNamespace, out var rootNamespace);
         var reportedMetrics = MetricsReportsHelpers.MapToCommonModel(meteringClasses, rootNamespace);
-        var report = _metricDefinitionEmitter.GenerateReport(reportedMetrics, context.CancellationToken);
+        var report = _metricDefinitionEmitter.GenerateReport(reportedMetrics, context.CancellationToken, indentationLevel: 4);
         return report;
     }
 
@@ -87,7 +88,7 @@ internal sealed class MetadataEmitter : EmitterBase
             return string.Empty;
         }
 
-        string report = _complianceReportEmitter.Emit(classifiedTypes, context.Compilation.AssemblyName!, false);
+        string report = _complianceReportEmitter.Emit(classifiedTypes, context.Compilation.AssemblyName!, false, indentationLevel: 4);
         return report;
     }
 }

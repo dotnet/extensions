@@ -20,9 +20,19 @@ internal sealed class ComplianceReportEmitter : EmitterBase
     {
     }
 
+    /// <summary>
+    /// Generates JSON object containing the <see cref="ClassifiedTypes"/> for compliance report.
+    /// </summary>
+    /// <param name="classifiedTypes">The classified types.</param>
+    /// <param name="assemblyName">The assembly name.</param>
+    /// <param name="includeName">Whether to include the assembly name in the report. Defaulted to true.</param>
+    /// <param name="indentationLevel">The number of indentations in case its nested in other reports like <see cref="MetadataReportsGenerator"/>.Defaulted to zero.</param>
+    /// <returns>string report as json or String.Empty.</returns>
     [SuppressMessage("Performance", "LA0002:Use 'Microsoft.Extensions.Text.NumericExtensions.ToInvariantString' for improved performance", Justification = "Can't use that in a generator")]
-    public string Emit(IReadOnlyCollection<ClassifiedType> classifiedTypes, string assemblyName, bool includeName = true) // show or hide assemblyName in the report,defaulted to true.
+    public string Emit(IReadOnlyCollection<ClassifiedType> classifiedTypes, string assemblyName,
+        bool includeName = true, int indentationLevel = 0) // show or hide assemblyName in the report,defaulted to true.
     {
+        IndentMany(indentationLevel);
         OutObject(() =>
         {
             // this is only for not displaying a name as part of ComplianceReport properties,it should be at the root of the report, defaulted to true for beackward compatibility
@@ -125,6 +135,7 @@ internal sealed class ComplianceReportEmitter : EmitterBase
                 }
             });
         });
+        UnindentMany(indentationLevel);
 
         return Capture();
     }

@@ -96,12 +96,12 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
             return;
         }
 
-        MetadataEmitter Emitter = new MetadataEmitter(RootNamespace);
+        MetadataEmitter emitter = new MetadataEmitter(RootNamespace);
 
 #pragma warning disable RS1035 // Do not use APIs banned for analyzers
         _ = Directory.CreateDirectory(_directory);
 
-        File.WriteAllText(Path.Combine(_directory, _fileName), Emitter.Emit(context), Encoding.UTF8);
+        File.WriteAllText(Path.Combine(_directory, _fileName), emitter.Emit(context), Encoding.UTF8);
 #pragma warning restore RS1035 // Do not use APIs banned for analyzers
 
     }
