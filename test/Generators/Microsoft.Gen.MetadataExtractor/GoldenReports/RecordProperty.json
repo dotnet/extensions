@@ -1,204 +1,204 @@
 {
 "Name":"test.dll",
 "ComplianceReport": 
-{
-    "Types": [
-        {
-            "Name": "Test.DerivedRecordProperty",
-            "Members": [
                 {
-                    "Name": "EqualityContract",
-                    "Type": "System.Type",
-                    "File": "src-0.cs",
-                    "Line": "14",
-                    "Classifications": [
+                    "Types": [
                         {
-                            "Name": "C1"
-                        }
-                    ]
-                },
-                {
-                    "Name": "F3",
-                    "Type": "int",
-                    "File": "src-0.cs",
-                    "Line": "17",
-                    "Classifications": [
-                        {
-                            "Name": "C2",
-                            "Notes": "Note 1"
-                        }
-                    ]
-                },
-                {
-                    "Name": "F4",
-                    "Type": "int",
-                    "File": "src-0.cs",
-                    "Line": "20",
-                    "Classifications": [
-                        {
-                            "Name": "C2"
-                        }
-                    ]
-                },
-                {
-                    "Name": "P0",
-                    "Type": "int",
-                    "File": "src-0.cs",
-                    "Line": "23",
-                    "Classifications": [
-                        {
-                            "Name": "C1"
-                        },
-                        {
-                            "Name": "C2",
-                            "Notes": "Note 2"
-                        },
-                        {
-                            "Name": "C3",
-                            "Notes": "Note 3"
-                        },
-                        {
-                            "Name": "C4"
-                        }
-                    ]
-                },
-                {
-                    "Name": "P1",
-                    "Type": "int",
-                    "File": "src-0.cs",
-                    "Line": "26",
-                    "Classifications": [
-                        {
-                            "Name": "C3"
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "Name": "Test.RecordProperty",
-            "Members": [
-                {
-                    "Name": "F0",
-                    "Type": "string",
-                    "File": "src-0.cs",
-                    "Line": "14",
-                    "Classifications": [
-                        {
-                            "Name": "C2"
-                        }
-                    ]
-                },
-                {
-                    "Name": "F2",
-                    "Type": "int",
-                    "File": "src-0.cs",
-                    "Line": "14",
-                    "Classifications": [
-                        {
-                            "Name": "C3"
-                        }
-                    ]
-                },
-                {
-                    "Name": "F3",
-                    "Type": "int",
-                    "File": "src-0.cs",
-                    "Line": "17",
-                    "Classifications": [
-                        {
-                            "Name": "C2",
-                            "Notes": "Note 1"
-                        }
-                    ]
-                },
-                {
-                    "Name": "F4",
-                    "Type": "int",
-                    "File": "src-0.cs",
-                    "Line": "20",
-                    "Classifications": [
-                        {
-                            "Name": "C2"
-                        }
-                    ]
-                },
-                {
-                    "Name": "P0",
-                    "Type": "int",
-                    "File": "src-0.cs",
-                    "Line": "11",
-                    "Classifications": [
-                        {
-                            "Name": "C3",
-                            "Notes": "Note 3"
-                        },
-                        {
-                            "Name": "C4"
-                        }
-                    ]
-                },
-                {
-                    "Name": "P1",
-                    "Type": "int",
-                    "File": "src-0.cs",
-                    "Line": "26",
-                    "Classifications": [
-                        {
-                            "Name": "C3"
-                        }
-                    ]
-                }
-            ],
-            "Logging Methods": [
-                {
-                    "Name": "LogHello",
-                    "Parameters": [
-                        {
-                            "Name": "user",
-                            "Type": "string",
-                            "File": "src-0.cs",
-                            "Line": "29",
-                            "Classifications": [
+                            "Name": "Test.DerivedRecordProperty",
+                            "Members": [
                                 {
-                                    "Name": "C3",
-                                    "Notes": "Note 3"
+                                    "Name": "EqualityContract",
+                                    "Type": "System.Type",
+                                    "File": "src-0.cs",
+                                    "Line": "14",
+                                    "Classifications": [
+                                        {
+                                            "Name": "C1"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "Name": "F3",
+                                    "Type": "int",
+                                    "File": "src-0.cs",
+                                    "Line": "17",
+                                    "Classifications": [
+                                        {
+                                            "Name": "C2",
+                                            "Notes": "Note 1"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "Name": "F4",
+                                    "Type": "int",
+                                    "File": "src-0.cs",
+                                    "Line": "20",
+                                    "Classifications": [
+                                        {
+                                            "Name": "C2"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "Name": "P0",
+                                    "Type": "int",
+                                    "File": "src-0.cs",
+                                    "Line": "23",
+                                    "Classifications": [
+                                        {
+                                            "Name": "C1"
+                                        },
+                                        {
+                                            "Name": "C2",
+                                            "Notes": "Note 2"
+                                        },
+                                        {
+                                            "Name": "C3",
+                                            "Notes": "Note 3"
+                                        },
+                                        {
+                                            "Name": "C4"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "Name": "P1",
+                                    "Type": "int",
+                                    "File": "src-0.cs",
+                                    "Line": "26",
+                                    "Classifications": [
+                                        {
+                                            "Name": "C3"
+                                        }
+                                    ]
                                 }
                             ]
                         },
                         {
-                            "Name": "port",
-                            "Type": "int",
-                            "File": "src-0.cs",
-                            "Line": "29"
+                            "Name": "Test.RecordProperty",
+                            "Members": [
+                                {
+                                    "Name": "F0",
+                                    "Type": "string",
+                                    "File": "src-0.cs",
+                                    "Line": "14",
+                                    "Classifications": [
+                                        {
+                                            "Name": "C2"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "Name": "F2",
+                                    "Type": "int",
+                                    "File": "src-0.cs",
+                                    "Line": "14",
+                                    "Classifications": [
+                                        {
+                                            "Name": "C3"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "Name": "F3",
+                                    "Type": "int",
+                                    "File": "src-0.cs",
+                                    "Line": "17",
+                                    "Classifications": [
+                                        {
+                                            "Name": "C2",
+                                            "Notes": "Note 1"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "Name": "F4",
+                                    "Type": "int",
+                                    "File": "src-0.cs",
+                                    "Line": "20",
+                                    "Classifications": [
+                                        {
+                                            "Name": "C2"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "Name": "P0",
+                                    "Type": "int",
+                                    "File": "src-0.cs",
+                                    "Line": "11",
+                                    "Classifications": [
+                                        {
+                                            "Name": "C3",
+                                            "Notes": "Note 3"
+                                        },
+                                        {
+                                            "Name": "C4"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "Name": "P1",
+                                    "Type": "int",
+                                    "File": "src-0.cs",
+                                    "Line": "26",
+                                    "Classifications": [
+                                        {
+                                            "Name": "C3"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "Logging Methods": [
+                                {
+                                    "Name": "LogHello",
+                                    "Parameters": [
+                                        {
+                                            "Name": "user",
+                                            "Type": "string",
+                                            "File": "src-0.cs",
+                                            "Line": "29",
+                                            "Classifications": [
+                                                {
+                                                    "Name": "C3",
+                                                    "Notes": "Note 3"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "Name": "port",
+                                            "Type": "int",
+                                            "File": "src-0.cs",
+                                            "Line": "29"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "Name": "LogWorld",
+                                    "Parameters": [
+                                        {
+                                            "Name": "user",
+                                            "Type": "string",
+                                            "File": "src-0.cs",
+                                            "Line": "32",
+                                            "Classifications": [
+                                                {
+                                                    "Name": "C2"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "Name": "port",
+                                            "Type": "int",
+                                            "File": "src-0.cs",
+                                            "Line": "32"
+                                        }
+                                    ]
+                                }
+                            ]
                         }
                     ]
                 },
-                {
-                    "Name": "LogWorld",
-                    "Parameters": [
-                        {
-                            "Name": "user",
-                            "Type": "string",
-                            "File": "src-0.cs",
-                            "Line": "32",
-                            "Classifications": [
-                                {
-                                    "Name": "C2"
-                                }
-                            ]
-                        },
-                        {
-                            "Name": "port",
-                            "Type": "int",
-                            "File": "src-0.cs",
-                            "Line": "32"
-                        }
-                    ]
-                }
-            ]
-        }
-    ]
-},
 "MetricReport": []
 }

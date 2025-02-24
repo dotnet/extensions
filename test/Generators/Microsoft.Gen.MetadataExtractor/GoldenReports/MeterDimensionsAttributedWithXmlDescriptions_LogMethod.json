@@ -1,75 +1,82 @@
 {
 "Name":"test.dll",
 "ComplianceReport": 
-{
-    "Types": [
-        {
-            "Name": "Test.LogMethod",
-            "Logging Methods": [
                 {
-                    "Name": "LogHello",
-                    "Parameters": [
+                    "Types": [
                         {
-                            "Name": "user",
-                            "Type": "string",
-                            "File": "src-0.cs",
-                            "Line": "14",
-                            "Classifications": [
+                            "Name": "Test.LogMethod",
+                            "Logging Methods": [
                                 {
-                                    "Name": "C2",
-                                    "Notes": "Note 3"
+                                    "Name": "LogHello",
+                                    "Parameters": [
+                                        {
+                                            "Name": "user",
+                                            "Type": "string",
+                                            "File": "src-0.cs",
+                                            "Line": "14",
+                                            "Classifications": [
+                                                {
+                                                    "Name": "C2",
+                                                    "Notes": "Note 3"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "Name": "port",
+                                            "Type": "int",
+                                            "File": "src-0.cs",
+                                            "Line": "14"
+                                        }
+                                    ]
                                 }
                             ]
-                        },
-                        {
-                            "Name": "port",
-                            "Type": "int",
-                            "File": "src-0.cs",
-                            "Line": "14"
                         }
                     ]
-                }
-            ]
-        }
-    ]
-},
-"MetricReport": [
- {
-  "TestClasses":
-  [
-    {
-     "MetricName": "DescribedDimensionCounter",
-     "MetricDescription": "(Missing Summary)",
-     "InstrumentName": "Counter",
-     "Dimensions": {
-      "Dimension1": "Dimension1 description.",
-      "Dim1": ""
-      }
-    },
-    {
-     "MetricName": "DescribedDimensionHistogram",
-     "MetricDescription": "(Missing Summary)",
-     "InstrumentName": "Histogram",
-     "Dimensions": {
-      "Dimension2": "Dimension2 description.",
-      "DimensionDefinedInMetricClass": "DimensionDefinedInMetricClass description."
-      }
-    },
-    {
-     "MetricName": "MyStrongTypeMetricWithDescription",
-     "MetricDescription": "(Missing Summary)",
-     "InstrumentName": "Counter",
-     "Dimensions": {
-      "AnotherDimension": "Gets or sets anotherDimension.",
-      "MetricEnum": "Gets or sets MetricEnum.",
-      "MetricEnum2": "Gets or sets MetricEnum2.",
-      "Dim2": "Gets or sets Dim2.",
-      "SomeDim": "Gets or sets SomeDim.",
-      "Dim4Struct": "Gets or sets Dim4Struct.",
-      "Dim5Struct": "Gets or sets Dim5Struct."
-      }
-    }
-  ]
- }
-]
+                },
+"MetricReport": 
+                [
+                    {
+                     "TestClasses":
+                            [
+                                {
+                                     "MetricName": "DescribedDimensionCounter",
+                                     "MetricDescription": "(Missing Summary)",
+                                     "InstrumentName": "Counter",
+                                     "Dimensions":
+                                            {
+                                                "Dimension1": "Dimension1 description.",
+                                                "Dim1": ""
+                                            }
+                                }
+                                ,
+                                {
+                                     "MetricName": "DescribedDimensionHistogram",
+                                     "MetricDescription": "(Missing Summary)",
+                                     "InstrumentName": "Histogram",
+                                     "Dimensions":
+                                            {
+                                                "Dimension2": "Dimension2 description.",
+                                                "DimensionDefinedInMetricClass": "DimensionDefinedInMetricClass description."
+                                            }
+                                }
+                                ,
+                                {
+                                     "MetricName": "MyStrongTypeMetricWithDescription",
+                                     "MetricDescription": "(Missing Summary)",
+                                     "InstrumentName": "Counter",
+                                     "Dimensions":
+                                            {
+                                                "AnotherDimension": "Gets or sets anotherDimension.",
+                                                "MetricEnum": "Gets or sets MetricEnum.",
+                                                "MetricEnum2": "Gets or sets MetricEnum2.",
+                                                "Dim2": "Gets or sets Dim2.",
+                                                "SomeDim": "Gets or sets SomeDim.",
+                                                "Dim4Struct": "Gets or sets Dim4Struct.",
+                                                "Dim5Struct": "Gets or sets Dim5Struct."
+                                            }
+                                }
+                            ]
+                    }
+                ]
+
 }
