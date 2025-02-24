@@ -97,7 +97,7 @@ var vectorStore = new JsonVectorStore(Path.Combine(AppContext.BaseDirectory, "ve
 builder.Services.AddSingleton<IVectorStore>(vectorStore);
 builder.Services.AddScoped<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();
-builder.Services.AddChatClient(chatClient).UseFunctionInvocation();
+builder.Services.AddChatClient(chatClient).UseFunctionInvocation().UseLogging();
 builder.Services.AddEmbeddingGenerator(embeddingGenerator);
 
 builder.Services.AddDbContext<IngestionCacheDbContext>(options =>
