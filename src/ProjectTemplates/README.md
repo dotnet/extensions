@@ -48,7 +48,7 @@ dotnet pack
 Then, navigate to the directory where you'd like to create the test project and run the following commands:
 ```sh
 dotnet new uninstall Microsoft.Extensions.AI.Templates       # Uninstall any existing version of the templates
-dontet new install "<PATH_TO_TEMPLATE_NUPKG>" --debug:reinit # Install the template from the generated .nupkg file (in the artifacts/packages folder)
+dotnet new install "<PATH_TO_TEMPLATE_NUPKG>" --debug:reinit # Install the template from the generated .nupkg file (in the artifacts/packages folder)
 ```
 
 Then, create a project from the template and run it:
