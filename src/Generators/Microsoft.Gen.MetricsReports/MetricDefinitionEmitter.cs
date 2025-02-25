@@ -39,7 +39,7 @@ internal sealed class MetricDefinitionEmitter : EmitterBase
             OutLn();
         }
 
-        IndentMany(indentationLevel);
+        Indent(indentationLevel);
         OutLn("[");
 
         for (int i = 0; i < metricClasses.Count; i++)
@@ -56,7 +56,7 @@ internal sealed class MetricDefinitionEmitter : EmitterBase
         }
 
         OutLn("]");
-        UnindentMany(indentationLevel);
+        Unindent(indentationLevel);
 
         return Capture();
     }
@@ -71,7 +71,7 @@ internal sealed class MetricDefinitionEmitter : EmitterBase
 
         if (metricClass.Methods.Length > 0)
         {
-            IndentMany(_indentLevel);
+            Indent(_indentLevel);
             OutLn("[");
 
             for (int j = 0; j < metricClass.Methods.Length; j++)
@@ -90,7 +90,7 @@ internal sealed class MetricDefinitionEmitter : EmitterBase
             }
 
             OutLn("]");
-            UnindentMany(_indentLevel);
+            Unindent(_indentLevel);
         }
 
         OutLn("}");
@@ -126,7 +126,7 @@ internal sealed class MetricDefinitionEmitter : EmitterBase
                         const int IndentLevel = 3;
                         OutLn($"     \"InstrumentName\": \"{metricMethod.Kind}\",");
                         OutLn("     \"Dimensions\":");
-                        IndentMany(IndentLevel);
+                        Indent(IndentLevel);
                         OutLn("{");
                         Indent();
                         int k = 0;
@@ -147,7 +147,7 @@ internal sealed class MetricDefinitionEmitter : EmitterBase
 
                         Unindent();
                         OutLn("}");
-                        UnindentMany(IndentLevel);
+                        Unindent(IndentLevel);
                     }
                     else
                     {

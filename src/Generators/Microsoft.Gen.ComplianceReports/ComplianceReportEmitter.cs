@@ -32,7 +32,7 @@ internal sealed class ComplianceReportEmitter : EmitterBase
     public string Emit(IReadOnlyCollection<ClassifiedType> classifiedTypes, string assemblyName,
         bool includeName = true, int indentationLevel = 0) // show or hide assemblyName in the report,defaulted to true.
     {
-        IndentMany(indentationLevel);
+        Indent(indentationLevel);
         OutObject(() =>
         {
             // this is only for not displaying a name as part of ComplianceReport properties,it should be at the root of the report, defaulted to true for beackward compatibility
@@ -135,7 +135,7 @@ internal sealed class ComplianceReportEmitter : EmitterBase
                 }
             });
         });
-        UnindentMany(indentationLevel);
+        Unindent(indentationLevel);
 
         return Capture();
     }
