@@ -74,6 +74,6 @@ internal static class JsonOutputFixer
                 chatOptions,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        return response.Message.Text;
+        return response.Message.Text?.Trim();
     }
 }
