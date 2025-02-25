@@ -15,6 +15,7 @@ To add a new dependency, run `npm install <package-name>` and update the `script
 
 First, create the template NuGet package by running the following from the repo root:
 ```pwsh
+.\build.cmd # If not done already
 .\build.cmd -pack -projects .\src\ProjectTemplates\Microsoft.Extensions.AI.Templates\Microsoft.Extensions.AI.Templates.csproj
 ```
 
@@ -23,13 +24,13 @@ First, create the template NuGet package by running the following from the repo 
 Remove-Item ~\.nuget\packages\microsoft.extensions.ai* -Recurse -Force
 ```
 
+**Note:** For the following commands to succeed, you'll need to either install a compatible .NET SDK globally or prepend the repo's generated `.dotnet` folder to the PATH environment variable.
+
 Then, navigate to the directory where you'd like to create the test project and run the following commands:
 ```sh
 dotnet new uninstall Microsoft.Extensions.AI.Templates       # Uninstall any existing version of the templates
 dotnet new install "<PATH_TO_TEMPLATE_NUPKG>" --debug:reinit # Install the template from the generated .nupkg file (in the artifacts/packages folder)
 ```
-
-**Note:** You'll need to have a compatible .NET SDK installed globally for the above commands to succeed.
 
 Finally, create a project from the template and run it:
 ```sh
