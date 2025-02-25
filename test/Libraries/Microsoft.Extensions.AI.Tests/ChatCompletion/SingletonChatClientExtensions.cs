@@ -7,5 +7,5 @@ public static class SingletonChatClientExtensions
 {
     public static ChatClientBuilder UseSingletonMiddleware(this ChatClientBuilder builder)
         => builder.Use((inner, services)
-            => new DependencyInjectionPatterns.SingletonMiddleware(inner, services));
+            => new ChatClientDependencyInjectionPatterns.SingletonMiddleware(inner, services));
 }
