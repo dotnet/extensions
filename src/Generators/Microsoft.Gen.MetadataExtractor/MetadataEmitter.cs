@@ -12,7 +12,7 @@ internal sealed class MetadataEmitter : EmitterBase
     private readonly MetricDefinitionEmitter _metricDefinitionEmitter;
     private readonly ComplianceReportEmitter _complianceReportEmitter;
     private readonly string _rootNamespace;
-    private readonly int _indentationLevel = 4;
+    private readonly int _indentationLevel = 2;
     public MetadataEmitter(string rootNamespace)
         : base(emitPreamble: false)
     {
@@ -34,14 +34,17 @@ internal sealed class MetadataEmitter : EmitterBase
         }
 
         OutLn("{");
-        Out("\"Name\":" + $"\"{context.Compilation.AssemblyName!}\"");
-        OutLn(",");
+        Indent();
+        OutLn("\"Name\":" + $"\"{context.Compilation.AssemblyName!}\",");
         OutIndent();
         Out("\"ComplianceReport\": ");
         Out((string.IsNullOrEmpty(metadataReport.complianceReport) ? "{}" : metadataReport.complianceReport));
         OutLn(",");
+        OutIndent();
         Out("\"MetricReport\": ");
-        OutLn((string.IsNullOrEmpty(metadataReport.metricReport) ? "[]" : metadataReport.metricReport));
+        Out((string.IsNullOrEmpty(metadataReport.metricReport) ? "[]" : metadataReport.metricReport));
+        OutLn();
+        Unindent();
         OutLn("}");
 
         return Capture();
