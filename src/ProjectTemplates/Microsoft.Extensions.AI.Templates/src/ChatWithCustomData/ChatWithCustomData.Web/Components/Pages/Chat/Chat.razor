@@ -3,6 +3,7 @@
 @inject IChatClient ChatClient
 @inject NavigationManager Nav
 @inject SemanticSearch Search
+@implements IDisposable
 
 <PageTitle>Chat</PageTitle>
 
@@ -112,4 +113,7 @@
         return results.Select(result =>
             $"<result filename=\"{result.FileName}\" page_number=\"{result.PageNumber}\">{result.Text}</result>");
     }
+
+    public void Dispose()
+        => currentResponseCancellation?.Cancel();
 }
