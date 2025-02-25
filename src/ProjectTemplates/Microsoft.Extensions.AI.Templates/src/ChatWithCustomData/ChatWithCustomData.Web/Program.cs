@@ -4,8 +4,6 @@ using Microsoft.Extensions.VectorData;
 using ChatWithCustomData.Web.Components;
 using ChatWithCustomData.Web.Services;
 using ChatWithCustomData.Web.Services.Ingestion;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.FileProviders.Physical;
 #if(IsAzureOpenAI || UseAzureAISearch)
 using Azure;
 #if (UseManagedIdentity)
@@ -21,6 +19,7 @@ using OpenAI;
 using System.ClientModel;
 #else
 using Azure.AI.OpenAI;
+using System.ClientModel;
 #endif
 #if (UseAzureAISearch)
 using Azure.Search.Documents.Indexes;
