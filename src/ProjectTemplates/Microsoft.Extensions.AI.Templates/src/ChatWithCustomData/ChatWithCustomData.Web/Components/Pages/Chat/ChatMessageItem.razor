@@ -56,7 +56,7 @@ else if (Message.Role == ChatRole.Assistant)
 
 @code {
     private static readonly ConditionalWeakTable<ChatMessage, ChatMessageItem> SubscribersLookup = new();
-    private static readonly Regex CitationRegex = new(@"<citation filename='(?<file>[^']*)' page_number='(?<page>\d*)'>(?<quote>.*?)</citation>", RegexOptions.Compiled);
+    private static readonly Regex CitationRegex = new(@"<citation filename='(?<file>[^']*)' page_number='(?<page>\d*)'>(?<quote>.*?)</citation>", RegexOptions.NonBacktracking);
 
     private List<(string File, int? Page, string Quote)>? citations;
 
