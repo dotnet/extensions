@@ -20,14 +20,14 @@ public sealed class TestSpeechToTextClient : ISpeechToTextClient
     // Callbacks for asynchronous operations.
     public Func<IList<
         IAsyncEnumerable<DataContent>>,
-        SpeechToTextOptions,
+        SpeechToTextOptions?,
         CancellationToken,
         Task<SpeechToTextResponse>>?
         GetResponseAsyncCallback
     { get; set; }
 
     public Func<IList<IAsyncEnumerable<DataContent>>,
-        SpeechToTextOptions,
+        SpeechToTextOptions?,
         CancellationToken,
         IAsyncEnumerable<SpeechToTextResponseUpdate>>?
         GetStreamingResponseAsyncCallback
@@ -43,16 +43,16 @@ public sealed class TestSpeechToTextClient : ISpeechToTextClient
         IList<IAsyncEnumerable<DataContent>> speechContents,
         SpeechToTextOptions? options = null,
         CancellationToken cancellationToken = default)
-        => GetResponseAsyncCallback!(speechContents, options ?? new SpeechToTextOptions(), cancellationToken);
+        => GetResponseAsyncCallback!.Invoke(speechContents, options, cancellationToken);
 
     public IAsyncEnumerable<SpeechToTextResponseUpdate> GetStreamingResponseAsync(
         IList<IAsyncEnumerable<DataContent>> speechContents,
         SpeechToTextOptions? options = null,
         CancellationToken cancellationToken = default)
-        => GetStreamingResponseAsyncCallback!(speechContents, options ?? new SpeechToTextOptions(), cancellationToken);
+        => GetStreamingResponseAsyncCallback!.Invoke(speechContents, options, cancellationToken);
 
     public object? GetService(Type serviceType, object? serviceKey = null)
-        => GetServiceCallback(serviceType, serviceKey);
+        => GetServiceCallback!.Invoke(serviceType, serviceKey);
 
     public void Dispose()
     {

@@ -4,8 +4,10 @@
 using System;
 using System.ClientModel;
 using System.ClientModel.Primitives;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
@@ -156,6 +158,38 @@ public class OpenAISpeechToTextClientTests
 
         Assert.NotNull(response.Message.RawRepresentation);
         Assert.IsType<OpenAI.Audio.AudioTranscription>(response.Message.RawRepresentation);
+    }
+
+    [Fact]
+    public async Task CancelledBasicTranscribeRequestResponse_NonStreaming_Throw()
+    {
+        using HttpClient httpClient = new();
+        using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
+
+        using var fileStream = GetAudioStream("audio001.wav");
+        using var cancellationTokenSource = new CancellationTokenSource();
+        cancellationTokenSource.Cancel();
+
+        await Assert.ThrowsAsync<TaskCanceledException>(()
+            => client.GetResponseAsync(fileStream, cancellationToken: cancellationTokenSource.Token));
+    }
+
+    [Fact]
+    public async Task CancelledBasicTranscribeRequestResponse_Streaming_Throw()
+    {
+        using HttpClient httpClient = new();
+        using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
+
+        using var fileStream = GetAudioStream("audio001.wav");
+        using var cancellationTokenSource = new CancellationTokenSource();
+        cancellationTokenSource.Cancel();
+
+        await Assert.ThrowsAsync<TaskCanceledException>(()
+            => client
+                .GetStreamingResponseAsync(fileStream, cancellationToken: cancellationTokenSource.Token)
+                .GetAsyncEnumerator()
+                .MoveNextAsync()
+                .AsTask());
     }
 
     [Theory]

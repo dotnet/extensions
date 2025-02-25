@@ -95,7 +95,7 @@ public sealed class SpeechToTextClientBuilder
     /// need to interact with the results of the operation, which will come from the inner client.
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="sharedFunc"/> is <see langword="null"/>.</exception>
-    public SpeechToTextClientBuilder Use(AnonymousDelegatingSpeechToTextClient.TranscribeSharedFunc sharedFunc)
+    public SpeechToTextClientBuilder Use(AnonymousDelegatingSpeechToTextClient.GetResponseSharedFunc sharedFunc)
     {
         _ = Throw.IfNull(sharedFunc);
 

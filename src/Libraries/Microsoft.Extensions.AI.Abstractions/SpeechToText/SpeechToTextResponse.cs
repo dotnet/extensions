@@ -104,7 +104,7 @@ public class SpeechToTextResponse
         }
 
         int choicesCount = Choices.Count;
-        var updates = new SpeechToTextResponseUpdate[choicesCount + 1 + (extra is null ? 0 : 1)];
+        var updates = new SpeechToTextResponseUpdate[choicesCount + (extra is null ? 0 : 1)];
 
         for (int choiceIndex = 0; choiceIndex < choicesCount; choiceIndex++)
         {

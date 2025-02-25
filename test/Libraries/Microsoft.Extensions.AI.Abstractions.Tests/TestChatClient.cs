@@ -33,7 +33,7 @@ public sealed class TestChatClient : IChatClient
         => GetStreamingResponseAsyncCallback!.Invoke(chatMessages, options, cancellationToken);
 
     public object? GetService(Type serviceType, object? serviceKey = null)
-        => GetServiceCallback(serviceType, serviceKey);
+        => GetServiceCallback.Invoke(serviceType, serviceKey);
 
     void IDisposable.Dispose()
     {

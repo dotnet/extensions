@@ -13,11 +13,11 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>A delegating audio transcription client that wraps an inner client with implementations provided by delegates.</summary>
+/// <summary>A delegating speech to text client that wraps an inner client with implementations provided by delegates.</summary>
 public sealed class AnonymousDelegatingSpeechToTextClient : DelegatingSpeechToTextClient
 {
     /// <summary>The delegate to use as the implementation of <see cref="GetResponseAsync"/>.</summary>
-    private readonly Func<IList<IAsyncEnumerable<DataContent>>, SpeechToTextOptions?, ISpeechToTextClient, CancellationToken, Task<SpeechToTextResponse>>? _transcribeFunc;
+    private readonly Func<IList<IAsyncEnumerable<DataContent>>, SpeechToTextOptions?, ISpeechToTextClient, CancellationToken, Task<SpeechToTextResponse>>? _getResponseFunc;
 
     /// <summary>The delegate to use as the implementation of <see cref="GetStreamingResponseAsync"/>.</summary>
     /// <remarks>
@@ -26,10 +26,10 @@ public sealed class AnonymousDelegatingSpeechToTextClient : DelegatingSpeechToTe
     /// When <see langword="null"/>, <see cref="GetStreamingResponseAsync"/> will delegate directly to the inner client.
     /// </remarks>
     private readonly Func<
-        IList<IAsyncEnumerable<DataContent>>, SpeechToTextOptions?, ISpeechToTextClient, CancellationToken, IAsyncEnumerable<SpeechToTextResponseUpdate>>? _transcribeStreamingFunc;
+        IList<IAsyncEnumerable<DataContent>>, SpeechToTextOptions?, ISpeechToTextClient, CancellationToken, IAsyncEnumerable<SpeechToTextResponseUpdate>>? _getStreamingResponseFunc;
 
     /// <summary>The delegate to use as the implementation of both <see cref="GetResponseAsync"/> and <see cref="GetStreamingResponseAsync"/>.</summary>
-    private readonly TranscribeSharedFunc? _sharedFunc;
+    private readonly GetResponseSharedFunc? _sharedFunc;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AnonymousDelegatingSpeechToTextClient"/> class.
@@ -46,7 +46,7 @@ public sealed class AnonymousDelegatingSpeechToTextClient : DelegatingSpeechToTe
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="innerClient"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="sharedFunc"/> is <see langword="null"/>.</exception>
-    public AnonymousDelegatingSpeechToTextClient(ISpeechToTextClient innerClient, TranscribeSharedFunc sharedFunc)
+    public AnonymousDelegatingSpeechToTextClient(ISpeechToTextClient innerClient, GetResponseSharedFunc sharedFunc)
         : base(innerClient)
     {
         _ = Throw.IfNull(sharedFunc);
@@ -58,30 +58,30 @@ public sealed class AnonymousDelegatingSpeechToTextClient : DelegatingSpeechToTe
     /// Initializes a new instance of the <see cref="AnonymousDelegatingSpeechToTextClient"/> class.
     /// </summary>
     /// <param name="innerClient">The inner client.</param>
-    /// <param name="transcribeFunc">
+    /// <param name="getResponseFunc">
     /// A delegate that provides the implementation for <see cref="GetResponseAsync"/>. When <see langword="null"/>,
-    /// <paramref name="transcribeStreamingFunc"/> must be non-null, and the implementation of <see cref="GetResponseAsync"/>
-    /// will use <paramref name="transcribeStreamingFunc"/> for the implementation.
+    /// <paramref name="getStreamingResponseFunc"/> must be non-null, and the implementation of <see cref="GetResponseAsync"/>
+    /// will use <paramref name="getStreamingResponseFunc"/> for the implementation.
     /// </param>
-    /// <param name="transcribeStreamingFunc">
+    /// <param name="getStreamingResponseFunc">
     /// A delegate that provides the implementation for <see cref="GetStreamingResponseAsync"/>. When <see langword="null"/>,
-    /// <paramref name="transcribeFunc"/> must be non-null, and the implementation of <see cref="GetStreamingResponseAsync"/>
-    /// will use <paramref name="transcribeFunc"/> for the implementation.
+    /// <paramref name="getResponseFunc"/> must be non-null, and the implementation of <see cref="GetStreamingResponseAsync"/>
+    /// will use <paramref name="getResponseFunc"/> for the implementation.
     /// </param>
     /// <exception cref="ArgumentNullException"><paramref name="innerClient"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentNullException">Both <paramref name="transcribeFunc"/> and <paramref name="transcribeStreamingFunc"/> are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">Both <paramref name="getResponseFunc"/> and <paramref name="getStreamingResponseFunc"/> are <see langword="null"/>.</exception>
     public AnonymousDelegatingSpeechToTextClient(
         ISpeechToTextClient innerClient,
-        Func<IList<IAsyncEnumerable<DataContent>>, SpeechToTextOptions?, ISpeechToTextClient, CancellationToken, Task<SpeechToTextResponse>>? transcribeFunc,
+        Func<IList<IAsyncEnumerable<DataContent>>, SpeechToTextOptions?, ISpeechToTextClient, CancellationToken, Task<SpeechToTextResponse>>? getResponseFunc,
         Func<
             IList<IAsyncEnumerable<DataContent>>,
-            SpeechToTextOptions?, ISpeechToTextClient, CancellationToken, IAsyncEnumerable<SpeechToTextResponseUpdate>>? transcribeStreamingFunc)
+            SpeechToTextOptions?, ISpeechToTextClient, CancellationToken, IAsyncEnumerable<SpeechToTextResponseUpdate>>? getStreamingResponseFunc)
         : base(innerClient)
     {
-        ThrowIfBothDelegatesNull(transcribeFunc, transcribeStreamingFunc);
+        ThrowIfBothDelegatesNull(getResponseFunc, getStreamingResponseFunc);
 
-        _transcribeFunc = transcribeFunc;
-        _transcribeStreamingFunc = transcribeStreamingFunc;
+        _getResponseFunc = getResponseFunc;
+        _getStreamingResponseFunc = getStreamingResponseFunc;
     }
 
     /// <inheritdoc/>
@@ -92,9 +92,9 @@ public sealed class AnonymousDelegatingSpeechToTextClient : DelegatingSpeechToTe
 
         if (_sharedFunc is not null)
         {
-            return TranscribeViaSharedAsync(speechContents, options, cancellationToken);
+            return RespondViaSharedAsync(speechContents, options, cancellationToken);
 
-            async Task<SpeechToTextResponse> TranscribeViaSharedAsync(
+            async Task<SpeechToTextResponse> RespondViaSharedAsync(
                 IList<IAsyncEnumerable<DataContent>> audioContents, SpeechToTextOptions? options, CancellationToken cancellationToken)
             {
                 SpeechToTextResponse? completion = null;
@@ -105,20 +105,20 @@ public sealed class AnonymousDelegatingSpeechToTextClient : DelegatingSpeechToTe
 
                 if (completion is null)
                 {
-                    throw new InvalidOperationException("The wrapper completed successfully without producing a AudioTranscriptionResponse.");
+                    throw new InvalidOperationException("The wrapper completed successfully without producing a SpeechToTextResponse.");
                 }
 
                 return completion;
             }
         }
-        else if (_transcribeFunc is not null)
+        else if (_getResponseFunc is not null)
         {
-            return _transcribeFunc(speechContents, options, InnerClient, cancellationToken);
+            return _getResponseFunc(speechContents, options, InnerClient, cancellationToken);
         }
         else
         {
-            Debug.Assert(_transcribeStreamingFunc is not null, "Expected non-null streaming delegate.");
-            return _transcribeStreamingFunc!(speechContents, options, InnerClient, cancellationToken)
+            Debug.Assert(_getStreamingResponseFunc is not null, "Expected non-null streaming delegate.");
+            return _getStreamingResponseFunc!(speechContents, options, InnerClient, cancellationToken)
                 .ToSpeechToTextResponseAsync(coalesceContent: true, cancellationToken);
         }
     }
@@ -140,9 +140,9 @@ public sealed class AnonymousDelegatingSpeechToTextClient : DelegatingSpeechToTe
                 Exception? error = null;
                 try
                 {
-                    await _sharedFunc(speechContents, options, async (audioContents, options, cancellationToken) =>
+                    await _sharedFunc(speechContents, options, async (speechContents, options, cancellationToken) =>
                     {
-                        await foreach (var update in InnerClient.GetStreamingResponseAsync(audioContents, options, cancellationToken).ConfigureAwait(false))
+                        await foreach (var update in InnerClient.GetStreamingResponseAsync(speechContents, options, cancellationToken).ConfigureAwait(false))
                         {
                             await updates.Writer.WriteAsync(update, cancellationToken).ConfigureAwait(false);
                         }
@@ -161,16 +161,16 @@ public sealed class AnonymousDelegatingSpeechToTextClient : DelegatingSpeechToTe
 
             return updates.Reader.ReadAllAsync(cancellationToken);
         }
-        else if (_transcribeStreamingFunc is not null)
+        else if (_getStreamingResponseFunc is not null)
         {
-            return _transcribeStreamingFunc(speechContents, options, InnerClient, cancellationToken);
+            return _getStreamingResponseFunc(speechContents, options, InnerClient, cancellationToken);
         }
         else
         {
-            Debug.Assert(_transcribeFunc is not null, "Expected non-null non-streaming delegate.");
-            return TranscribeStreamingAsyncViaTranscribeAsync(_transcribeFunc!(speechContents, options, InnerClient, cancellationToken));
+            Debug.Assert(_getResponseFunc is not null, "Expected non-null non-streaming delegate.");
+            return GetStreamingResponseAsyncViaGetResponseAsync(_getResponseFunc!(speechContents, options, InnerClient, cancellationToken));
 
-            static async IAsyncEnumerable<SpeechToTextResponseUpdate> TranscribeStreamingAsyncViaTranscribeAsync(Task<SpeechToTextResponse> task)
+            static async IAsyncEnumerable<SpeechToTextResponseUpdate> GetStreamingResponseAsyncViaGetResponseAsync(Task<SpeechToTextResponse> task)
             {
                 SpeechToTextResponse completion = await task.ConfigureAwait(false);
                 foreach (var update in completion.ToSpeechToTextResponseUpdates())
@@ -182,12 +182,12 @@ public sealed class AnonymousDelegatingSpeechToTextClient : DelegatingSpeechToTe
     }
 
     /// <summary>Throws an exception if both of the specified delegates are null.</summary>
-    /// <exception cref="ArgumentNullException">Both <paramref name="transcribeFunc"/> and <paramref name="transcribeStreamingFunc"/> are <see langword="null"/>.</exception>
-    internal static void ThrowIfBothDelegatesNull(object? transcribeFunc, object? transcribeStreamingFunc)
+    /// <exception cref="ArgumentNullException">Both <paramref name="getResponseFunc"/> and <paramref name="getStreamingResponseFunc"/> are <see langword="null"/>.</exception>
+    internal static void ThrowIfBothDelegatesNull(object? getResponseFunc, object? getStreamingResponseFunc)
     {
-        if (transcribeFunc is null && transcribeStreamingFunc is null)
+        if (getResponseFunc is null && getStreamingResponseFunc is null)
         {
-            Throw.ArgumentNullException(nameof(transcribeFunc), $"At least one of the {nameof(transcribeFunc)} or {nameof(transcribeStreamingFunc)} delegates must be non-null.");
+            Throw.ArgumentNullException(nameof(getResponseFunc), $"At least one of the {nameof(getResponseFunc)} or {nameof(getStreamingResponseFunc)} delegates must be non-null.");
         }
     }
 
@@ -199,8 +199,8 @@ public sealed class AnonymousDelegatingSpeechToTextClient : DelegatingSpeechToTe
     /// <summary>
     /// Represents a method used to call <see cref="ISpeechToTextClient.GetResponseAsync"/> or <see cref="ISpeechToTextClient.GetStreamingResponseAsync"/>.
     /// </summary>
-    /// <param name="audioContents">The audio contents to send.</param>
-    /// <param name="options">The audio transcription options to configure the request.</param>
+    /// <param name="speechContents">The audio contents to send.</param>
+    /// <param name="options">The speech to text options to configure the request.</param>
     /// <param name="nextAsync">
     /// A delegate that provides the implementation for the inner client's <see cref="ISpeechToTextClient.GetResponseAsync"/> or
     /// <see cref="ISpeechToTextClient.GetStreamingResponseAsync"/>. It should be invoked to continue the pipeline. It accepts
@@ -209,8 +209,8 @@ public sealed class AnonymousDelegatingSpeechToTextClient : DelegatingSpeechToTe
     /// </param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A <see cref="Task"/> that represents the completion of the operation.</returns>
-    public delegate Task TranscribeSharedFunc(
-        IList<IAsyncEnumerable<DataContent>> audioContents,
+    public delegate Task GetResponseSharedFunc(
+        IList<IAsyncEnumerable<DataContent>> speechContents,
         SpeechToTextOptions? options,
         Func<IList<IAsyncEnumerable<DataContent>>, SpeechToTextOptions?, CancellationToken, Task> nextAsync,
         CancellationToken cancellationToken);

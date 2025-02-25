@@ -195,11 +195,18 @@ public sealed class OpenAISpeechToTextClient : ISpeechToTextClient
         }
         else
         {
-            using var audioFileStream = speechContent.ToStream(firstChunk, cancellationToken);
-            transcriptionResult = (await _audioClient.TranscribeAudioAsync(
-                audioFileStream,
-                "file.wav", // this information internally is required but is only being used to create a header name in the multipart request.
-                openAIOptions, cancellationToken).ConfigureAwait(false)).Value;
+            var audioFileStream = speechContent.ToStream(firstChunk, cancellationToken);
+#if NET
+            await using (audioFileStream.ConfigureAwait(false))
+#else
+            using (audioFileStream)
+#endif
+            {
+                transcriptionResult = (await _audioClient.TranscribeAudioAsync(
+                    audioFileStream,
+                    "file.wav", // this information internally is required but is only being used to create a header name in the multipart request.
+                    openAIOptions, cancellationToken).ConfigureAwait(false)).Value;
+            }
         }
 
         return transcriptionResult;
@@ -227,11 +234,18 @@ public sealed class OpenAISpeechToTextClient : ISpeechToTextClient
         }
         else
         {
-            using var audioFileStream = speechContent.ToStream(firstChunk, cancellationToken);
-            translationResult = (await _audioClient.TranslateAudioAsync(
-                audioFileStream,
-                "file.wav", // this information internally is required but is only being used to create a header name in the multipart request.
-                openAIOptions, cancellationToken).ConfigureAwait(false)).Value;
+            var audioFileStream = speechContent.ToStream(firstChunk, cancellationToken);
+#if NET
+            await using (audioFileStream.ConfigureAwait(false))
+#else
+            using (audioFileStream)
+#endif
+            {
+                translationResult = (await _audioClient.TranslateAudioAsync(
+                    audioFileStream,
+                    "file.wav", // this information internally is required but is only being used to create a header name in the multipart request.
+                    openAIOptions, cancellationToken).ConfigureAwait(false)).Value;
+            }
         }
 
         return translationResult;
