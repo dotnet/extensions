@@ -1,7 +1,7 @@
-import { GlobalWorkerOptions } from '../lib/pdfjs-dist/dist/build/pdf.min.mjs';
-import { EventBus, PDFLinkService, PDFFindController, PDFViewer } from '../lib/pdfjs-dist/dist/web/pdf_viewer.mjs';
+import { GlobalWorkerOptions } from '../pdfjs-dist/dist/build/pdf.min.mjs';
+import { EventBus, PDFLinkService, PDFFindController, PDFViewer } from '../pdfjs-dist/dist/web/pdf_viewer.mjs';
 
-GlobalWorkerOptions.workerSrc = '../lib/pdfjs-dist/dist/build/pdf.worker.min.mjs';
+GlobalWorkerOptions.workerSrc = '../pdfjs-dist/dist/build/pdf.worker.min.mjs';
 
 // Extract the file path from the URL query string.
 const url = new URL(window.location);
