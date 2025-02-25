@@ -4,7 +4,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Microsoft.Extensions.AI.Embeddings;
+namespace Microsoft.Extensions.AI;
 
 public class EmbeddingGeneratorDependencyInjectionPatterns
 {

@@ -173,20 +173,20 @@ public partial class LoggingSpeechToTextClient : DelegatingSpeechToTextClient
     [LoggerMessage(LogLevel.Debug, "{MethodName} invoked.")]
     private partial void LogInvoked(string methodName);
 
-    [LoggerMessage(LogLevel.Trace, "{MethodName} invoked: Audio contents: {AudioContents}. Options: {AudioTranscriptionOptions}. Metadata: {AudioTranscriptionClientMetadata}.")]
-    private partial void LogInvokedSensitive(string methodName, string audioContents, string audioTranscriptionOptions, string audioTranscriptionClientMetadata);
+    [LoggerMessage(LogLevel.Trace, "{MethodName} invoked: Audio contents: {AudioContents}. Options: {SpeechToTextOptions}. Metadata: {SpeechToTextClientMetadata}.")]
+    private partial void LogInvokedSensitive(string methodName, string audioContents, string SpeechToTextOptions, string SpeechToTextClientMetadata);
 
     [LoggerMessage(LogLevel.Debug, "{MethodName} completed.")]
     private partial void LogCompleted(string methodName);
 
-    [LoggerMessage(LogLevel.Trace, "{MethodName} completed: {AudioTranscriptionResponse}.")]
-    private partial void LogCompletedSensitive(string methodName, string audioTranscriptionResponse);
+    [LoggerMessage(LogLevel.Trace, "{MethodName} completed: {SpeechToTextResponse}.")]
+    private partial void LogCompletedSensitive(string methodName, string SpeechToTextResponse);
 
-    [LoggerMessage(LogLevel.Debug, "TranscribeStreamingAsync received update.")]
+    [LoggerMessage(LogLevel.Debug, "GetStreamingResponseAsync received update.")]
     private partial void LogStreamingUpdate();
 
-    [LoggerMessage(LogLevel.Trace, "TranscribeStreamingAsync received update: {StreamingAudioTranscriptionResponseUpdate}")]
-    private partial void LogStreamingUpdateSensitive(string streamingAudioTranscriptionResponseUpdate);
+    [LoggerMessage(LogLevel.Trace, "GetStreamingResponseAsync received update: {SpeechToTextResponseUpdate}")]
+    private partial void LogStreamingUpdateSensitive(string speechToTextResponseUpdate);
 
     [LoggerMessage(LogLevel.Debug, "{MethodName} canceled.")]
     private partial void LogInvocationCanceled(string methodName);
