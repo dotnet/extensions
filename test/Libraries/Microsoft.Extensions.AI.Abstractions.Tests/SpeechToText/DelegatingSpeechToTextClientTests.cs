@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.AI;
 public class DelegatingSpeechToTextClientTests
 {
     [Fact]
-    public void RequiresInnerChatClient()
+    public void RequiresInnerSpeechToTextClient()
     {
         Assert.Throws<ArgumentNullException>("innerClient", () => new NoOpDelegatingSpeechToTextClient(null!));
     }
@@ -64,9 +64,9 @@ public class DelegatingSpeechToTextClientTests
 
         using var inner = new TestSpeechToTextClient
         {
-            GetStreamingResponseAsyncCallback = (chatContents, options, cancellationToken) =>
+            GetStreamingResponseAsyncCallback = (speechContents, options, cancellationToken) =>
             {
-                Assert.Same(expectedContents, chatContents);
+                Assert.Same(expectedContents, speechContents);
                 Assert.Same(expectedOptions, options);
                 Assert.Equal(expectedCancellationToken, cancellationToken);
                 return YieldAsync(expectedResults);

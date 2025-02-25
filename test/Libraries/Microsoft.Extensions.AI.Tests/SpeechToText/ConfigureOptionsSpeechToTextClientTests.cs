@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.AI;
 public class ConfigureOptionsSpeechToTextClientTests
 {
     [Fact]
-    public void ConfigureOptionsChatClient_InvalidArgs_Throws()
+    public void ConfigureOptionsSpeechToTextClient_InvalidArgs_Throws()
     {
         Assert.Throws<ArgumentNullException>("innerClient", () => new ConfigureOptionsSpeechToTextClient(null!, _ => { }));
         Assert.Throws<ArgumentNullException>("configure", () => new ConfigureOptionsSpeechToTextClient(new TestSpeechToTextClient(), null!));

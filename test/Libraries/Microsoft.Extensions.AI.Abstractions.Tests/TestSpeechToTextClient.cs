@@ -33,7 +33,6 @@ public sealed class TestSpeechToTextClient : ISpeechToTextClient
         GetStreamingResponseAsyncCallback
     { get; set; }
 
-    // A GetService callback similar to the one used in TestChatClient.
     public Func<Type, object?, object?> GetServiceCallback { get; set; }
 
     private object? DefaultGetServiceCallback(Type serviceType, object? serviceKey)

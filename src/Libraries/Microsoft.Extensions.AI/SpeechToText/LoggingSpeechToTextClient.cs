@@ -12,7 +12,7 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>A delegating chat client that logs chat operations to an <see cref="ILogger"/>.</summary>
+/// <summary>A delegating speech to text client that logs speech to text operations to an <see cref="ILogger"/>.</summary>
 /// <para>
 /// The provided implementation of <see cref="ISpeechToTextClient"/> is thread-safe for concurrent use so long as the
 /// <see cref="ILogger"/> employed is also thread-safe for concurrent use.
