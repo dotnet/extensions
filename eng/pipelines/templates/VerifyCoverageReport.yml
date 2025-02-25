@@ -18,6 +18,10 @@ steps:
       itemPattern: '*_cobertura.xml'
       targetPath: $(Build.SourcesDirectory)
 
+  - pwsh: |
+        Get-ChildItem -Path $(Build.SourcesDirectory) -Recurse -Force
+    displayName: List all files in the repo root
+
   # Merge the downloaded files (Windows_cobertura.xml and Ubuntu_cobertura.xml) as one (merged.cobertura.xml)
   - script: $(Build.SourcesDirectory)/.dotnet/dotnet dotnet-coverage merge
             $(Build.SourcesDirectory)/*_cobertura.xml
