@@ -50,7 +50,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="src\ChatWithCustomData\**\*" Exclude="**\bin\**;**\obj\**;**\node_modules\**;**\*.user;**\*.in;**\*.out.js;**\*.generated.css;**\package-lock.json;**\NuGet.Config;**\Directory.Build.targets" />
+    <Content
+      Include="src\ChatWithCustomData\**\*"
+      Exclude="
+        **\bin\**;
+        **\obj\**;
+        **\node_modules\**;
+        **\*.user;**\*.in;
+        **\*.out.js;
+        **\*.generated.css;
+        **\package-lock.json;" />
     <Compile Remove="**\*" />
   </ItemGroup>
 
