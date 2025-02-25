@@ -9,7 +9,11 @@
 <ChatHeader OnNewChat="@ResetConversationAsync" />
 
 <ChatMessageList Messages="@messages" InProgressMessage="@currentResponseMessage">
-    <NoMessagesContent>Ask me anything about ChatWithCustomData.Web.</NoMessagesContent>
+    <NoMessagesContent>
+        <div>Ask me anything about the example PDFs.</div>
+        <ChatCitation File="Example - Emergency Survival Kit.pdf"/>
+        <ChatCitation File="Example - GPS Watch.pdf"/>
+    </NoMessagesContent>
 </ChatMessageList>
 
 <div class="chat-container">

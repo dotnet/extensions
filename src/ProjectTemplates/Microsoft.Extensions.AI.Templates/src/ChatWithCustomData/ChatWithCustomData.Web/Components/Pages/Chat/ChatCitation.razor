@@ -28,7 +28,7 @@
         // If you ingest other types of content besides PDF files, construct a URL to an appropriate viewer here
         if (File.EndsWith(".pdf"))
         {
-            var search = Quote.Trim('.', ',', ' ', '\n', '\r', '\t', '"', '\'');
+            var search = Quote?.Trim('.', ',', ' ', '\n', '\r', '\t', '"', '\'');
             viewerUrl = $"pdf_viewer/viewer.html?file=/citation/{HttpUtility.UrlEncode(File)}#page={PageNumber}&search={HttpUtility.UrlEncode(search)}&phrase=true";
         }
     }
