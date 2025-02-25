@@ -20,42 +20,33 @@
     <EnableDefaultItems>false</EnableDefaultItems>
     <NoDefaultExcludes>true</NoDefaultExcludes>
     <NoPackageAnalysis>true</NoPackageAnalysis>
-
-    <!-- Use for incremental builds. When versions or dependencies of templates change, this file is updated and causes a re-build. -->
-    <_GeneratedContentPropertiesHashFile>$(IntermediateOutputPath)$(MSBuildProjectName).content.g.cache</_GeneratedContentPropertiesHashFile>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Templating" Version="$(MicrosoftDotNetBuildTasksTemplatingVersion)" AllowExplicitReference="true" PrivateAssets="All" IsImplicitlyDefined="true" />
-  </ItemGroup>
-
   <PropertyGroup>
+    <_MicrosoftExtensionsAIVersion>9.3.0-preview.1.25114.11</_MicrosoftExtensionsAIVersion>
+
     <!-- Specify package version variables used in template content. -->
-    <_GeneratedContentPackageVersionProperties>
+    <GeneratedContentProperties>
+      $(GeneratedContentProperties);
       OllamaSharpVersion=$(OllamaSharpVersion);
       OpenAIVersion=$(OpenAIVersion);
       AzureAIProjectsVersion=$(AzureAIProjectsVersion);
       AzureAIOpenAIVersion=$(AzureAIOpenAIVersion);
       AzureIdentityVersion=$(AzureIdentityVersion);
       MicrosoftEntityFrameworkCoreSqliteVersion=$(MicrosoftEntityFrameworkCoreSqliteVersion);
+      MicrosoftExtensionsAIVersion=$(_MicrosoftExtensionsAIVersion);
       MicrosoftSemanticKernelCoreVersion=$(MicrosoftSemanticKernelCoreVersion);
       PdfPigVersion=$(PdfPigVersion);
       SystemLinqAsyncVersion=$(SystemLinqAsyncVersion);
       AzureSearchDocumentsVersion=$(AzureSearchDocumentsVersion);
       MicrosoftSemanticKernelConnectorsAzureAISearchVersion=$(MicrosoftSemanticKernelConnectorsAzureAISearchVersion);
-    </_GeneratedContentPackageVersionProperties>
+    </GeneratedContentProperties>
   </PropertyGroup>
 
   <ItemGroup>
-    <_GeneratedContent
+    <GeneratedContent
       Include="src\ChatWithCustomData\ChatWithCustomData.Web\ChatWithCustomData.Web.csproj.in"
       OutputPath="src\ChatWithCustomData\ChatWithCustomData.Web\ChatWithCustomData.Web.csproj" />
-    <_GeneratedContent
-      Include="src\ChatWithCustomData\ChatWithCustomData.Web\Directory.Build.targets.in"
-      OutputPath="src\ChatWithCustomData\ChatWithCustomData.Web\Directory.Build.targets" />
-    <_GeneratedContent
-      Include="src\ChatWithCustomData\ChatWithCustomData.Web\NuGet.config.in"
-      OutputPath="src\ChatWithCustomData\ChatWithCustomData.Web\NuGet.config" />
   </ItemGroup>
 
   <ItemGroup>
@@ -63,43 +54,4 @@
     <Compile Remove="**\*" />
   </ItemGroup>
 
-  <Target Name="_ComputeGeneratedContentPropertiesHash">
-    <PropertyGroup>
-      <!-- Specify additional repo properties used by template content. -->
-      <!-- We do this after the initial evaluation of this project file so all properties have been initialized. -->
-      <_GeneratedContentRepoProperties>
-        ArtifactsShippingPackagesDir=$(ArtifactsShippingPackagesDir);
-        RepoPackageVersion=$(Version);
-      </_GeneratedContentRepoProperties>
-    </PropertyGroup>
-
-    <PropertyGroup>
-      <_GeneratedContentProperties>
-        $(_GeneratedContentPackageVersionProperties);
-        $(_GeneratedContentRepoProperties);
-      </_GeneratedContentProperties>
-    </PropertyGroup>
-
-    <Hash ItemsToHash="$(_GeneratedContentProperties)">
-      <Output TaskParameter="HashResult" PropertyName="_GeneratedContentPropertiesHash" />
-    </Hash>
-
-    <WriteLinesToFile Overwrite="true" Lines="$(_GeneratedContentPropertiesHash)" File="$(_GeneratedContentPropertiesHashFile)" WriteOnlyWhenDifferent="true" />
-  </Target>
-
-  <Target Name="_GenerateContent"
-          DependsOnTargets="_ComputeGeneratedContentPropertiesHash"
-          BeforeTargets="CoreCompile"
-          Inputs="$(MSBuildAllProjects);$(_GeneratedContentPropertiesHashFile);@(_GeneratedContent)"
-          Outputs="@(_GeneratedContent->'%(OutputPath)')">
-
-    <GenerateFileFromTemplate
-      TemplateFile="%(_GeneratedContent.Identity)"
-      Properties="$(_GeneratedContentProperties);%(_GeneratedContent.AdditionalProperties)"
-      OutputPath="%(_GeneratedContent.OutputPath)">
-
-      <Output TaskParameter="ResolvedOutputPath" ItemName="FileWrites" />
-      <Output TaskParameter="ResolvedOutputPath" ItemName="Content" />
-    </GenerateFileFromTemplate>
-  </Target>
 </Project>
