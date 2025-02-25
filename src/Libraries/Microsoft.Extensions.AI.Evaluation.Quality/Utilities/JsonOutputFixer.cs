@@ -68,9 +68,6 @@ internal static class JsonOutputFixer
             new ChatMessage(ChatRole.User, fixPrompt)
         };
 
-        // TASK: Explore supplying the target json type as a type parameter to the IChatClient.GetResponseAsync<T>()
-        // extension method. Tracked by https://github.com/dotnet/extensions/issues/5888.
-
         ChatResponse response =
             await chatConfig.ChatClient.GetResponseAsync(
                 messages,

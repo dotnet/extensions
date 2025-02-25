@@ -11,12 +11,14 @@
     <Stage>preview</Stage>
     <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
     <EnablePackageValidation>false</EnablePackageValidation>
-    <MinCodeCoverage>7</MinCodeCoverage>
+    <!-- The evaluators in this assembly need AI and the tests that cover them are not being run in CI at the moment. -->
+    <MinCodeCoverage>4</MinCodeCoverage>
     <MinMutationScore>0</MinMutationScore>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Extensions.AI.Evaluation\Microsoft.Extensions.AI.Evaluation.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.AI\Microsoft.Extensions.AI.csproj" />
   </ItemGroup>
 
   <ItemGroup>

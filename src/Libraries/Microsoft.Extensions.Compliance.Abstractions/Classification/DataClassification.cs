@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.ComponentModel;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Compliance.Classification;
@@ -9,6 +10,7 @@ namespace Microsoft.Extensions.Compliance.Classification;
 /// <summary>
 /// Represents a single classification which is part of a data taxonomy.
 /// </summary>
+[TypeConverter(typeof(DataClassificationTypeConverter))]
 public readonly struct DataClassification : IEquatable<DataClassification>
 {
     /// <summary>

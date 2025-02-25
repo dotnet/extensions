@@ -18,13 +18,14 @@ namespace Microsoft.Shared.Diagnostics;
 /// messages.
 /// </remarks>
 [SuppressMessage("Minor Code Smell", "S4136:Method overloads should be grouped together", Justification = "Doesn't work with the region layout")]
+[SuppressMessage("Minor Code Smell", "S2333:Partial is gratuitous in this context", Justification = "Some projects add additional partial parts.")]
 [SuppressMessage("Design", "CA1716", Justification = "Not part of an API")]
 
 #if !SHARED_PROJECT
 [ExcludeFromCodeCoverage]
 #endif
 
-internal static class Throw
+internal static partial class Throw
 {
     #region For Object
 

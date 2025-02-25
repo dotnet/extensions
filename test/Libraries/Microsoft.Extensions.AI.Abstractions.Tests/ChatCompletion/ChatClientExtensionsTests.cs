@@ -18,6 +18,58 @@ public class ChatClientExtensionsTests
     }
 
     [Fact]
+    public void GetRequiredService_InvalidArgs_Throws()
+    {
+        Assert.Throws<ArgumentNullException>("client", () => ChatClientExtensions.GetRequiredService(null!, typeof(string)));
+        Assert.Throws<ArgumentNullException>("client", () => ChatClientExtensions.GetRequiredService<object>(null!));
+
+        using var client = new TestChatClient();
+        Assert.Throws<ArgumentNullException>("serviceType", () => client.GetRequiredService(null!));
+    }
+
+    [Fact]
+    public void GetService_ValidService_Returned()
+    {
+        using var client = new TestChatClient
+        {
+            GetServiceCallback = (Type serviceType, object? serviceKey) =>
+            {
+                if (serviceType == typeof(string))
+                {
+                    return serviceKey == null ? "null key" : "non-null key";
+                }
+
+                if (serviceType == typeof(IChatClient))
+                {
+                    return new object();
+                }
+
+                return null;
+            },
+        };
+
+        Assert.Equal("null key", client.GetService<string>());
+        Assert.Equal("null key", client.GetService<string>(null));
+        Assert.Equal("non-null key", client.GetService<string>("key"));
+
+        Assert.Null(client.GetService<object>());
+        Assert.Null(client.GetService<object>("key"));
+        Assert.Null(client.GetService<IChatClient>());
+
+        Assert.Equal("null key", client.GetRequiredService(typeof(string)));
+        Assert.Equal("null key", client.GetRequiredService<string>());
+        Assert.Equal("null key", client.GetRequiredService<string>(null));
+        Assert.Equal("non-null key", client.GetRequiredService(typeof(string), "key"));
+        Assert.Equal("non-null key", client.GetRequiredService<string>("key"));
+
+        Assert.Throws<InvalidOperationException>(() => client.GetRequiredService(typeof(object)));
+        Assert.Throws<InvalidOperationException>(() => client.GetRequiredService<object>());
+        Assert.Throws<InvalidOperationException>(() => client.GetRequiredService(typeof(object), "key"));
+        Assert.Throws<InvalidOperationException>(() => client.GetRequiredService<object>("key"));
+        Assert.Throws<InvalidOperationException>(() => client.GetRequiredService<IChatClient>());
+    }
+
+    [Fact]
     public void GetResponseAsync_InvalidArgs_Throws()
     {
         Assert.Throws<ArgumentNullException>("client", () =>

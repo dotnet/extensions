@@ -43,20 +43,11 @@ steps:
             /bl:${{ parameters.repoLogPath }}/restore2.binlog
     displayName: Restore solution
 
-  # Temporarily pre-build the TypeScript bundle as a workaround to make the build more reliable.
-  - pwsh: |
-        cd $(Build.SourcesDirectory)/src/Libraries/Microsoft.Extensions.AI.Evaluation.Reporting/TypeScript
-        npm install
-        node html-report/reset-devdata.js
-        npm run build
-    displayName: Pre-Build TypeScript Bundle
-
   - script: ${{ parameters.buildScript }}
             -build
             -configuration ${{ parameters.buildConfig }}
             -warnAsError ${{ parameters.warnAsError }}
             /bl:${{ parameters.repoLogPath }}/build.binlog
-            /p:EnableEvaluationReportBuild=true
             $(_OfficialBuildIdArgs)
     displayName: Build
 
@@ -127,6 +118,5 @@ steps:
               -warnAsError 1
               /bl:${{ parameters.repoLogPath }}/pack.binlog
               /p:Restore=false /p:Build=false
-              /p:EnableEvaluationReportBuild=true
               $(_OfficialBuildIdArgs)
       displayName: Pack, sign, and publish
