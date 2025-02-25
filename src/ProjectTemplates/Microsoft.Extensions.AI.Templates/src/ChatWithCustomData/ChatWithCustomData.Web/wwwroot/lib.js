@@ -8,7 +8,8 @@ customElements.define('assistant-message', class extends HTMLElement {
 
     attributeChangedCallback(name, oldValue, newValue) {
         if (name === 'markdown') {
-            const elements = marked.parse(newValue);
+            newValue = newValue.replace(/<citation.*?<\/citation>/gs, '');
+            const elements = marked.parse(newValue.replace(/</g, '&lt;'));
             this.innerHTML = purify.sanitize(elements, { KEEP_CONTENT: false });
         }
     }
