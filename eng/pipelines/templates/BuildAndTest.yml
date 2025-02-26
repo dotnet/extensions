@@ -51,11 +51,6 @@ steps:
             $(_OfficialBuildIdArgs)
     displayName: Build
 
-  - ${{ if eq(parameters.isWindows, 'true') }}:
-    - pwsh: |
-          $(Build.SourcesDirectory)/src/Libraries/Microsoft.Extensions.AI.Evaluation.Reporting/TypeScript/azure-devops-report/build.ps1 -OutputPath $(Build.Arcade.VSIXOutputPath)
-      displayName: Build Azure DevOps plugin
-
   - ${{ if ne(parameters.skipTests, 'true') }}:
     - script: $(Build.SourcesDirectory)/.dotnet/dotnet dotnet-coverage collect
               --settings $(Build.SourcesDirectory)/eng/CodeCoverage.config
@@ -109,6 +104,10 @@ steps:
               /bl:${{ parameters.repoLogPath }}/transport.binlog
               $(_OfficialBuildIdArgs)
       displayName: Build and publish docs transport package
+
+    - pwsh: |
+          $(Build.SourcesDirectory)/src/Libraries/Microsoft.Extensions.AI.Evaluation.Reporting/TypeScript/azure-devops-report/build.ps1 -OutputPath $(Build.Arcade.VSIXOutputPath)
+      displayName: Build Azure DevOps plugin
 
     - script: ${{ parameters.buildScript }}
               -pack
