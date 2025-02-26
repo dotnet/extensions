@@ -56,27 +56,27 @@
       "type": "parameter",
       "displayName": "_AI service provider",
       "datatype": "choice",
-      "defaultValue": "azureopenai",
+      "defaultValue": "githubmodels",
       "choices": [
-        // {
-        //   "choice": "githubmodels",
-        //   "displayName": "GitHub Models",
-        //   "description": "Uses GitHub Models"
-        // },
         {
           "choice": "azureopenai",
           "displayName": "Azure OpenAI",
           "description": "Uses Azure OpenAI service"
         },
         {
-          "choice": "openai",
-          "displayName": "OpenAI Platform",
-          "description": "Uses the OpenAI Platform"
+          "choice": "githubmodels",
+          "displayName": "GitHub Models",
+          "description": "Uses GitHub Models"
         },
         {
           "choice": "ollama",
           "displayName": "Ollama (for local development)",
           "description": "Uses Ollama with the llama3.2 and all-minilm models"
+        },
+        {
+          "choice": "openai",
+          "displayName": "OpenAI Platform",
+          "description": "Uses the OpenAI Platform"
         }
         // {
         //   "choice": "azureaifoundry",
