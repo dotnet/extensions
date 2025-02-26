@@ -68,7 +68,7 @@ internal static class Constants
   </Target>
 
   <!-- Generate a version file that can be accessed from the script that builds the Azure DevOps Extension pacakge. -->
-  <Target Name="StampVSIXPackageVersion" BeforeTargets="CoreCompile">
+  <Target Name="StampVSIXPackageVersion" BeforeTargets="DispatchToInnerBuilds">
     <PropertyGroup>
       <_VSIXPackageVersionFile>$(MSBuildThisFileDirectory)\TypeScript\azure-devops-report\VSIXPackageVersion.json</_VSIXPackageVersionFile>
 

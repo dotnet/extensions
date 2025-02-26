@@ -101,7 +101,7 @@ public class AdditionalContextTests
             new EquivalenceEvaluatorContext(
                 """
                 The distance between Earth and Venus varies significantly due to the elliptical orbits of both planets
-                around the Sun. At their closest approach, known as inferior conjunction, Venus can be about 23.6
+                around the Sun. At their closest approach, known as inferior conjunction, Venus can be about 24.8
                 million miles away from Earth. At their furthest point, when Venus is on the opposite side of the Sun
                 from Earth, known as superior conjunction, the distance can be about 162 million miles. These distances
                 can vary slightly due to the specific orbital positions of the planets at any given time.
@@ -110,7 +110,7 @@ public class AdditionalContextTests
         var groundingContextForGroundednessEvaluator =
             new GroundednessEvaluatorContext(
                 """
-                Distance between Venus and Earth at inferior conjunction: About 23.6 million miles.
+                Distance between Venus and Earth at inferior conjunction: About 24.8 million miles.
                 Distance between Venus and Earth at superior conjunction: About 162 million miles.
                 """);
 

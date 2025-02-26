@@ -86,7 +86,7 @@ internal partial class DefaultHybridCache
                     return false; // already burned, or about to roll around back to zero
                 }
 
-                var updated = Interlocked.CompareExchange(ref _refCount, oldValue + 1, oldValue);
+                int updated = Interlocked.CompareExchange(ref _refCount, oldValue + 1, oldValue);
                 if (updated == oldValue)
                 {
                     return true; // we exchanged
@@ -122,7 +122,7 @@ internal partial class DefaultHybridCache
         // get a value that *was* reserved, countermanding our reservation in the process
         public T GetReservedValue(ILogger log)
         {
-            if (!TryGetValue(log, out var value))
+            if (!TryGetValue(log, out T? value))
             {
                 Throw();
             }

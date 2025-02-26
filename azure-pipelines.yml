@@ -71,6 +71,8 @@ variables:
     value: $(Build.Arcade.ArtifactsPath)log/$(_BuildConfig)/
   - name: Build.Arcade.TestResultsPath
     value: $(Build.Arcade.ArtifactsPath)TestResults/$(_BuildConfig)/
+  - name: Build.Arcade.VSIXOutputPath
+    value: $(Build.Arcade.ArtifactsPath)VSSetup/$(_BuildConfig)/
 
   - ${{ if or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), eq(variables['Build.Reason'], 'Manual')) }}:
     - name: PostBuildSign
@@ -171,6 +173,14 @@ extends:
 
             variables:
             - _buildScript: $(Build.SourcesDirectory)/build.cmd -ci -NativeToolsOnMachine
+
+            templateContext:
+              outputs:
+              - output: pipelineArtifact
+                displayName: 'Publish Azure DevOps extension artifacts'
+                condition: succeeded()
+                targetPath: '$(Build.Arcade.VSIXOutputPath)'
+                artifactName: 'VSIXArtifacts'
 
             preSteps:
             - checkout: self

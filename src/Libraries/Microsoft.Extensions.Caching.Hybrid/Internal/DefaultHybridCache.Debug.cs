@@ -17,7 +17,7 @@ internal partial class DefaultHybridCache
     /// </summary>
     internal bool DebugTryGetCacheItem(string key, [NotNullWhen(true)] out CacheItem? value)
     {
-        if (_localCache.TryGetValue(key, out var untyped) && untyped is CacheItem typed)
+        if (_localCache.TryGetValue(key, out object? untyped) && untyped is CacheItem typed)
         {
             value = typed;
             return true;
