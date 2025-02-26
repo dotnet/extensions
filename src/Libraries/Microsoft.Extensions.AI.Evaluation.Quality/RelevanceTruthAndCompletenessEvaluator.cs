@@ -119,24 +119,29 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator(
         EvaluationResult result,
         CancellationToken cancellationToken)
     {
-        ChatResponse<Rating> evaluationResponse =
-            await chatConfiguration.ChatClient.GetResponseAsync<Rating>(
+        ChatResponse evaluationResponse =
+            await chatConfiguration.ChatClient.GetResponseAsync(
                 evaluationMessages,
                 _chatOptions,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        if (!evaluationResponse.TryGetResult(out Rating? rating))
-        {
-            string? evaluationResponseText = evaluationResponse.Message.Text?.Trim();
+        string? evaluationResponseText = evaluationResponse.Message.Text?.Trim();
+        Rating rating;
 
-            if (string.IsNullOrWhiteSpace(evaluationResponseText))
+        if (string.IsNullOrWhiteSpace(evaluationResponseText))
+        {
+            rating = Rating.Inconclusive;
+            result.AddDiagnosticToAllMetrics(
+                EvaluationDiagnostic.Error(
+                    "Evaluation failed because the model failed to produce a valid evaluation response."));
+        }
+        else
+        {
+            try
             {
-                rating = Rating.Inconclusive;
-                result.AddDiagnosticToAllMetrics(
-                    EvaluationDiagnostic.Error(
-                        "Evaluation failed because the model failed to produce a valid evaluation response."));
+                rating = Rating.FromJson(evaluationResponseText!);
             }
-            else
+            catch (JsonException)
             {
                 try
                 {
