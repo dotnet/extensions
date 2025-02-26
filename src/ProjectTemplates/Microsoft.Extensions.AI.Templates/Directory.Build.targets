@@ -8,7 +8,12 @@
 
   <ItemGroup>
     <!-- Provides the GenerateFileFromTemplate task. -->
-    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Templating" Version="$(MicrosoftDotNetBuildTasksTemplatingVersion)" AllowExplicitReference="true" PrivateAssets="All" IsImplicitlyDefined="true" />
+    <PackageReference
+      Include="Microsoft.DotNet.Build.Tasks.Templating"
+      Version="$(MicrosoftDotNetBuildTasksTemplatingVersion)"
+      AllowExplicitReference="true"
+      PrivateAssets="All"
+      IsImplicitlyDefined="true" />
   </ItemGroup>
 
   <!--
@@ -21,7 +26,11 @@
       <Output TaskParameter="HashResult" PropertyName="_GeneratedContentPropertiesHash" />
     </Hash>
 
-    <WriteLinesToFile Overwrite="true" Lines="$(_GeneratedContentPropertiesHash)" File="$(_GeneratedContentPropertiesHashFile)" WriteOnlyWhenDifferent="true" />
+    <WriteLinesToFile
+      Overwrite="true"
+      Lines="$(_GeneratedContentPropertiesHash)"
+      File="$(_GeneratedContentPropertiesHashFile)"
+      WriteOnlyWhenDifferent="true" />
   </Target>
 
   <!--
