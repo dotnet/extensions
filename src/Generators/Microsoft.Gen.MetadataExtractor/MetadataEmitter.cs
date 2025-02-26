@@ -41,8 +41,8 @@ internal sealed class MetadataEmitter : EmitterBase
         OutLn($"\"Name\":\"{context.Compilation.AssemblyName!}\",");
         OutIndent();
         Out("\"ComplianceReport\": ");
-        Out((string.IsNullOrEmpty(metadataReport.complianceReport) ? "{}" : metadataReport.complianceReport));
-        OutLn(",");
+        Out($"{(string.IsNullOrEmpty(metadataReport.complianceReport) ? "{}" : metadataReport.complianceReport)},");
+        OutLn();
         OutIndent();
         Out("\"MetricReport\": ");
         Out((string.IsNullOrEmpty(metadataReport.metricReport) ? "[]" : metadataReport.metricReport));
