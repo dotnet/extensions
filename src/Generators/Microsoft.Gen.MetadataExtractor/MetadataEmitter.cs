@@ -1,18 +1,21 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.Gen.ComplianceReports;
+using Microsoft.Gen.Metrics.Model;
 using Microsoft.Gen.MetricsReports;
 using Microsoft.Gen.Shared;
 
 namespace Microsoft.Gen.MetadataExtractor;
 internal sealed class MetadataEmitter : EmitterBase
 {
+    private const int IndentationLevel = 2;
     private readonly MetricDefinitionEmitter _metricDefinitionEmitter;
     private readonly ComplianceReportEmitter _complianceReportEmitter;
     private readonly string _rootNamespace;
-    private readonly int _indentationLevel = 2;
+
     public MetadataEmitter(string rootNamespace)
         : base(emitPreamble: false)
     {
@@ -27,7 +30,7 @@ internal sealed class MetadataEmitter : EmitterBase
         (string metricReport, string complianceReport) metadataReport = (string.Empty, string.Empty);
 
         var receiver = context.SyntaxReceiver as TypeDeclarationSyntaxReceiver;
-        if (receiver != null)
+        if (receiver is not null)
         {
             metadataReport.metricReport = HandleMetricReportGeneration(context, receiver);
             metadataReport.complianceReport = HandleComplianceReportGeneration(context, receiver);
@@ -35,7 +38,7 @@ internal sealed class MetadataEmitter : EmitterBase
 
         OutLn("{");
         Indent();
-        OutLn("\"Name\":" + $"\"{context.Compilation.AssemblyName!}\",");
+        OutLn($"\"Name\":\"{context.Compilation.AssemblyName!}\",");
         OutIndent();
         Out("\"ComplianceReport\": ");
         Out((string.IsNullOrEmpty(metadataReport.complianceReport) ? "{}" : metadataReport.complianceReport));
@@ -58,8 +61,8 @@ internal sealed class MetadataEmitter : EmitterBase
     /// <returns>string report as json or String.Empty.</returns>
     private string HandleMetricReportGeneration(GeneratorExecutionContext context, TypeDeclarationSyntaxReceiver receiver)
     {
-        var meteringParser = new Metrics.Parser(context.Compilation, context.ReportDiagnostic, context.CancellationToken);
-        var meteringClasses = meteringParser.GetMetricClasses(receiver.TypeDeclarations);
+        Metrics.Parser meteringParser = new Metrics.Parser(context.Compilation, context.ReportDiagnostic, context.CancellationToken);
+        IReadOnlyList<MetricType> meteringClasses = meteringParser.GetMetricClasses(receiver.TypeDeclarations);
 
         if (meteringClasses.Count == 0)
         {
@@ -67,9 +70,8 @@ internal sealed class MetadataEmitter : EmitterBase
         }
 
         _ = context.AnalyzerConfigOptions.GlobalOptions.TryGetValue(_rootNamespace, out var rootNamespace);
-        var reportedMetrics = MetricsReportsHelpers.MapToCommonModel(meteringClasses, rootNamespace);
-        var report = _metricDefinitionEmitter.GenerateReport(reportedMetrics, context.CancellationToken, _indentationLevel);
-        return report;
+        ReportedMetricClass[] reportedMetrics = MetricsReportsHelpers.MapToCommonModel(meteringClasses, rootNamespace);
+        return _metricDefinitionEmitter.GenerateReport(reportedMetrics, context.CancellationToken, IndentationLevel);
     }
 
     /// <summary>
@@ -85,15 +87,14 @@ internal sealed class MetadataEmitter : EmitterBase
             return string.Empty;
         }
 
-        var parser = new Parser(context.Compilation, symbolHolder!, context.CancellationToken);
-        var classifiedTypes = parser.GetClassifiedTypes(receiver.TypeDeclarations);
+        Parser parser = new Parser(context.Compilation, symbolHolder!, context.CancellationToken);
+        IReadOnlyList<ClassifiedType> classifiedTypes = parser.GetClassifiedTypes(receiver.TypeDeclarations);
         if (classifiedTypes.Count == 0)
         {
             // nothing to do
             return string.Empty;
         }
 
-        string report = _complianceReportEmitter.Emit(classifiedTypes, context.Compilation.AssemblyName!, false, _indentationLevel);
-        return report;
+        return _complianceReportEmitter.Emit(classifiedTypes, context.Compilation.AssemblyName!, false, IndentationLevel);
     }
 }
