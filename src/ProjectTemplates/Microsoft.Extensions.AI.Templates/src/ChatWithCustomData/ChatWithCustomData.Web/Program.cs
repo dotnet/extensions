@@ -4,8 +4,6 @@ using Microsoft.Extensions.VectorData;
 using ChatWithCustomData.Web.Components;
 using ChatWithCustomData.Web.Services;
 using ChatWithCustomData.Web.Services.Ingestion;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.FileProviders.Physical;
 #if(IsAzureOpenAI || UseAzureAISearch)
 using Azure;
 #if (UseManagedIdentity)
@@ -21,6 +19,7 @@ using OpenAI;
 using System.ClientModel;
 #else
 using Azure.AI.OpenAI;
+using System.ClientModel;
 #endif
 #if (UseAzureAISearch)
 using Azure.Search.Documents.Indexes;
@@ -100,7 +99,7 @@ var vectorStore = new JsonVectorStore(Path.Combine(AppContext.BaseDirectory, "ve
 builder.Services.AddSingleton<IVectorStore>(vectorStore);
 builder.Services.AddScoped<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();
-builder.Services.AddChatClient(chatClient).UseFunctionInvocation();
+builder.Services.AddChatClient(chatClient).UseFunctionInvocation().UseLogging();
 builder.Services.AddEmbeddingGenerator(embeddingGenerator);
 
 builder.Services.AddDbContext<IngestionCacheDbContext>(options =>
@@ -120,20 +119,16 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAntiforgery();
 
-// Serve any file in the /Data directory for the purpose of showing citations
-// Caution: only place files in this directory that you want to be publicly accessible
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = new PhysicalFileProvider(Path.Combine(builder.Environment.ContentRootPath, "Data")),
-    RequestPath = "/citation"
-});
-
 app.UseStaticFiles();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
+// By default, we ingest PDF files from the /wwwroot/Data directory. You can ingest from
+// other sources by implementing IIngestionSource.
+// Important: ensure that any content you ingest is trusted, as it may be reflected back
+// to users or could be a source of prompt injection risk.
 await DataIngestor.IngestDataAsync(
     app.Services,
-    new PDFDirectorySource(Path.Combine(builder.Environment.ContentRootPath, "Data")));
+    new PDFDirectorySource(Path.Combine(builder.Environment.WebRootPath, "Data")));
 
 app.Run();
