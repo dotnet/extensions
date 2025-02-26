@@ -83,12 +83,4 @@ internal static class Constants
                       Overwrite="true"
                       WriteOnlyWhenDifferent="true" />
   </Target>
-
-  <!-- Add the VSIX to the list of items to push to the blob feed. 
-    Without this, main branch official builds fail the PushToBuildStorage target. -->
-  <Target Name="AddVSIXToArcadeItemsToPushToBlobFeed" BeforeTargets="BeforePublish" >
-    <ItemGroup>
-      <ItemsToPushToBlobFeed Include="$(VisualStudioSetupOutputPath)*.vsix" Exclude="@(ItemsToPushToBlobFeed)" />
-    </ItemGroup>
-  </Target>
 </Project>
