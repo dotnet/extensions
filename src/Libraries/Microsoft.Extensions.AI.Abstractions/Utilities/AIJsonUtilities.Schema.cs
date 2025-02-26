@@ -12,7 +12,6 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Schema;
 using System.Text.Json.Serialization;
-using System.Threading;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable S1121 // Assignments should not be made from within sub-expressions
@@ -77,17 +76,11 @@ public static partial class AIJsonUtilities
                 Throw.ArgumentException(nameof(parameter), "Parameter is missing a name.");
             }
 
-            if (parameter.ParameterType == typeof(CancellationToken))
+            if (inferenceOptions.IncludeParameter is { } includeParameter &&
+                !includeParameter(parameter))
             {
-                // CancellationToken is a special case that, by convention, we don't want to include in the schema.
-                // Invocations of methods that include a CancellationToken argument should also special-case CancellationToken
-                // to pass along what relevant token into the method's invocation.
-                continue;
-            }
-
-            if (parameter.GetCustomAttribute<SkipJsonFunctionSchemaParameterAttribute>(inherit: true) is not null)
-            {
-                // Skip anything explicitly requested to not be included in the schema.
+                // Skip parameters that should not be included in the schema.
+                // By default, all parameters are included.
                 continue;
             }
 

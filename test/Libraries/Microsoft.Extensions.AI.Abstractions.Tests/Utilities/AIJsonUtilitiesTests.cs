@@ -86,6 +86,12 @@ public static class AIJsonUtilitiesTests
                     property.SetValue(options2, transformer);
                     break;
 
+                case null when property.PropertyType == typeof(Func<ParameterInfo, bool>):
+                    Func<ParameterInfo, bool> includeParameter = static (parameter) => true;
+                    property.SetValue(options1, includeParameter);
+                    property.SetValue(options2, includeParameter);
+                    break;
+
                 default:
                     Assert.Fail($"Unexpected property type: {property.PropertyType}");
                     break;

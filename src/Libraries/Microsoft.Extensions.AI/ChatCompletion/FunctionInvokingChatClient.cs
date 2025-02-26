@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Diagnostics;
@@ -62,7 +63,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     public FunctionInvokingChatClient(IChatClient innerClient, ILogger? logger = null, IServiceProvider? services = null)
         : base(innerClient)
     {
-        _logger = logger ?? (ILogger?)services?.GetService(typeof(ILogger<FunctionInvokingChatClient>)) ?? NullLogger.Instance;
+        _logger = logger ?? (ILogger?)services?.GetService<ILogger<FunctionInvokingChatClient>>() ?? NullLogger.Instance;
         _activitySource = innerClient.GetService<ActivitySource>();
         Services = services;
     }
