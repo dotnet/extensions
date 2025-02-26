@@ -13,12 +13,12 @@ namespace Microsoft.Gen.MetricsReports;
 
 internal sealed class MetricDefinitionEmitter : EmitterBase
 {
+    private const int IndentLevel = 2;
+
     internal MetricDefinitionEmitter()
         : base(false)
     {
     }
-
-    private readonly int _indentLevel = 2;
 
     /// <summary>
     /// Generates JSON object containing the <see cref="ReportedMetricClass"/> for metrics report.
@@ -71,7 +71,7 @@ internal sealed class MetricDefinitionEmitter : EmitterBase
 
         if (metricClass.Methods.Length > 0)
         {
-            Indent(_indentLevel);
+            Indent(IndentLevel);
             OutLn("[");
 
             for (int j = 0; j < metricClass.Methods.Length; j++)
@@ -90,7 +90,7 @@ internal sealed class MetricDefinitionEmitter : EmitterBase
             }
 
             OutLn("]");
-            Unindent(_indentLevel);
+            Unindent(IndentLevel);
         }
 
         OutLn("}");
