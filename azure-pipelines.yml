@@ -72,7 +72,7 @@ variables:
   - name: Build.Arcade.TestResultsPath
     value: $(Build.Arcade.ArtifactsPath)TestResults/$(_BuildConfig)/
   - name: Build.Arcade.VSIXOutputPath
-    value: $(Build.Arcade.ArtifactsPath)VSSetup/$(_BuildConfig)/
+    value: $(Build.Arcade.ArtifactsPath)VSIX
 
   - ${{ if or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), eq(variables['Build.Reason'], 'Manual')) }}:
     - name: PostBuildSign
