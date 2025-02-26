@@ -35,6 +35,10 @@
 
     <!-- Legacy targets do not support attributes for a nullable context thus suppressing null check warnings -->
     <NoWarn Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0'">$(NoWarn);CA1062</NoWarn>
+
+    <!-- Workaround https://github.com/dotnet/sdk/issues/36122 -->
+    <!-- Set the namespaces emitted by the ConfigurationBindingGenerator for interception when applicable. -->
+    <InterceptorsPreviewNamespaces Condition="'$(EnableConfigurationBindingGenerator)' == 'true'">$(InterceptorsPreviewNamespaces);Microsoft.Extensions.Configuration.Binder.SourceGeneration</InterceptorsPreviewNamespaces>
   </PropertyGroup>
 
   <ItemGroup Condition="('$(Stage)' == 'normal' OR '$(Stage)' == 'obsolete') AND '$(OutputType)' != 'Exe' AND '$(IsPackable)' == 'true' AND '$(Api)' != 'false'">
