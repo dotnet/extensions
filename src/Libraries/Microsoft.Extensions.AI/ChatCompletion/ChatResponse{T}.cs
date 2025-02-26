@@ -57,9 +57,9 @@ public class ChatResponse<T> : ChatResponse
             var result = GetResultCore(out var failureReason);
             return failureReason switch
             {
-                FailureReason.ResultDidNotContainJson => throw new InvalidOperationException("The response did not contain text to be deserialized"),
-                FailureReason.DeserializationProducedNull => throw new InvalidOperationException("The deserialized response is null"),
-                FailureReason.ResultDidNotContainDataProperty => throw new InvalidOperationException("The response did not contain the expected 'data' property"),
+                FailureReason.ResultDidNotContainJson => throw new InvalidOperationException("The response did not contain JSON to be deserialized."),
+                FailureReason.DeserializationProducedNull => throw new InvalidOperationException("The deserialized response is null."),
+                FailureReason.ResultDidNotContainDataProperty => throw new InvalidOperationException("The response did not contain the expected 'data' property."),
                 _ => result!,
             };
         }

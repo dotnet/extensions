@@ -29,12 +29,12 @@ namespace Microsoft.Extensions.AI;
 /// <para>
 /// The provided implementation of <see cref="IChatClient"/> is thread-safe for concurrent use so long as the
 /// <see cref="AIFunction"/> instances employed as part of the supplied <see cref="ChatOptions"/> are also safe.
-/// The <see cref="ConcurrentInvocation"/> property can be used to control whether multiple function invocation
+/// The <see cref="AllowConcurrentInvocation"/> property can be used to control whether multiple function invocation
 /// requests as part of the same request are invocable concurrently, but even with that set to <see langword="false"/>
 /// (the default), multiple concurrent requests to this same instance and using the same tools could result in those
 /// tools being used concurrently (one per request). For example, a function that accesses the HttpContext of a specific
 /// ASP.NET web request should only be used as part of a single <see cref="ChatOptions"/> at a time, and only with
-/// <see cref="ConcurrentInvocation"/> set to <see langword="false"/>, in case the inner client decided to issue multiple
+/// <see cref="AllowConcurrentInvocation"/> set to <see langword="false"/>, in case the inner client decided to issue multiple
 /// invocation requests to that same function.
 /// </para>
 /// </remarks>
@@ -54,18 +54,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     private int? _maximumIterationsPerRequest;
 
     /// <summary>
-    /// Gets or sets the <see cref="FunctionInvocationContext"/> for the current function invocation.
-    /// </summary>
-    /// <remarks>
-    /// This value flows across async calls.
-    /// </remarks>
-    public static FunctionInvocationContext? CurrentContext
-    {
-        get => _currentContext.Value;
-        set => _currentContext.Value = value;
-    }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvokingChatClient"/> class.
     /// </summary>
     /// <param name="innerClient">The underlying <see cref="IChatClient"/>, or the next instance in a chain of clients.</param>
@@ -75,6 +63,18 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     {
         _logger = logger ?? NullLogger.Instance;
         _activitySource = innerClient.GetService<ActivitySource>();
+    }
+
+    /// <summary>
+    /// Gets or sets the <see cref="FunctionInvocationContext"/> for the current function invocation.
+    /// </summary>
+    /// <remarks>
+    /// This value flows across async calls.
+    /// </remarks>
+    public static FunctionInvocationContext? CurrentContext
+    {
+        get => _currentContext.Value;
+        protected set => _currentContext.Value = value;
     }
 
     /// <summary>
@@ -122,7 +122,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// as to whether detailed errors are provided during an in-flight request.
     /// </para>
     /// </remarks>
-    public bool DetailedErrors { get; set; }
+    public bool IncludeDetailedErrors { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether to allow concurrent invocation of functions.
@@ -134,10 +134,10 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// </value>
     /// <remarks>
     /// An individual response from the inner client might contain multiple function call requests.
-    /// By default, such function calls are processed serially. Set <see cref="ConcurrentInvocation"/> to
+    /// By default, such function calls are processed serially. Set <see cref="AllowConcurrentInvocation"/> to
     /// <see langword="true"/> to enable concurrent invocation such that multiple function calls can execute in parallel.
     /// </remarks>
-    public bool ConcurrentInvocation { get; set; }
+    public bool AllowConcurrentInvocation { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether to keep intermediate function calling request
@@ -158,7 +158,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// list of messages is then passed to the inner client in order to send the results back.
     /// By default, those messages persist in the <see cref="IList{ChatMessage}"/> list provided to
     /// <see cref="GetResponseAsync"/> and <see cref="GetStreamingResponseAsync"/> by the caller, such that those
-    /// messages are available to the caller. Set <see cref="KeepFunctionCallingMessages"/> to avoid including
+    /// messages are available to the caller. Set <see cref="KeepFunctionCallingContent"/> to avoid including
     /// those messages in the caller-provided <see cref="IList{ChatMessage}"/>.
     /// </para>
     /// <para>
@@ -171,7 +171,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <see langword="false"/>, with any such intermediate messages not stored in the messages list.
     /// </para>
     /// </remarks>
-    public bool KeepFunctionCallingMessages { get; set; } = true;
+    public bool KeepFunctionCallingContent { get; set; } = true;
 
     /// <summary>
     /// Gets or sets the maximum number of iterations per request.
@@ -278,7 +278,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 {
                     // Otherwise, we need to add the response message to the history we're sending back. However, if the caller
                     // doesn't want the intermediate messages, create a new list that we mutate instead of mutating the original.
-                    if (!KeepFunctionCallingMessages)
+                    if (!KeepFunctionCallingContent)
                     {
                         // Create a new list that will include the message with the function call contents.
                         if (chatMessages == originalChatMessages)
@@ -405,7 +405,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             {
                 // Otherwise, we need to add the response message to the history we're sending back. However, if the caller
                 // doesn't want the intermediate messages, create a new list that we mutate instead of mutating the original.
-                if (chatMessages == originalChatMessages && !KeepFunctionCallingMessages)
+                if (chatMessages == originalChatMessages && !KeepFunctionCallingContent)
                 {
                     chatMessages = [.. chatMessages];
                 }
@@ -512,7 +512,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         {
             FunctionInvocationResult[] results;
 
-            if (ConcurrentInvocation)
+            if (AllowConcurrentInvocation)
             {
                 // Schedule the invocation of every function.
                 results = await Task.WhenAll(
@@ -543,52 +543,57 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         }
     }
 
-    /// <summary>Processes the function call described in <paramref name="functionCallContent"/>.</summary>
+    /// <summary>Processes the function call described in <paramref name="callContent"/>.</summary>
     /// <param name="chatMessages">The current chat contents, inclusive of the function call contents being processed.</param>
     /// <param name="options">The options used for the response being processed.</param>
-    /// <param name="functionCallContent">The function call content representing the function to be invoked.</param>
+    /// <param name="callContent">The function call content representing the function to be invoked.</param>
     /// <param name="iteration">The iteration number of how many roundtrips have been made to the inner client.</param>
     /// <param name="functionCallIndex">The 0-based index of the function being called out of <paramref name="totalFunctionCount"/> total functions.</param>
     /// <param name="totalFunctionCount">The number of function call requests made, of which this is one.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>A <see cref="ContinueMode"/> value indicating how the caller should proceed.</returns>
     private async Task<FunctionInvocationResult> ProcessFunctionCallAsync(
-        IList<ChatMessage> chatMessages, ChatOptions options, FunctionCallContent functionCallContent,
+        IList<ChatMessage> chatMessages, ChatOptions options, FunctionCallContent callContent,
         int iteration, int functionCallIndex, int totalFunctionCount, CancellationToken cancellationToken)
     {
         // Look up the AIFunction for the function call. If the requested function isn't available, send back an error.
-        AIFunction? function = options.Tools!.OfType<AIFunction>().FirstOrDefault(t => t.Name == functionCallContent.Name);
+        AIFunction? function = options.Tools!.OfType<AIFunction>().FirstOrDefault(t => t.Name == callContent.Name);
         if (function is null)
         {
-            return new(ContinueMode.Continue, FunctionStatus.NotFound, functionCallContent, result: null, exception: null);
+            return new(ContinueMode.Continue, FunctionInvocationStatus.NotFound, callContent, result: null, exception: null);
         }
 
-        FunctionInvocationContext context = new(chatMessages, functionCallContent, function)
+        FunctionInvocationContext context = new()
         {
+            ChatMessages = chatMessages,
+            CallContent = callContent,
+            Function = function,
             Iteration = iteration,
             FunctionCallIndex = functionCallIndex,
             FunctionCount = totalFunctionCount,
         };
 
+        object? result;
         try
         {
-            object? result = await InvokeFunctionAsync(context, cancellationToken).ConfigureAwait(false);
-            return new(
-                context.Terminate ? ContinueMode.Terminate : ContinueMode.Continue,
-                FunctionStatus.CompletedSuccessfully,
-                functionCallContent,
-                result,
-                exception: null);
+            result = await InvokeFunctionAsync(context, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception e) when (!cancellationToken.IsCancellationRequested)
         {
             return new(
                 RetryOnError ? ContinueMode.Continue : ContinueMode.AllowOneMoreRoundtrip, // We won't allow further function calls, hence the LLM will just get one more chance to give a final answer.
-                FunctionStatus.Failed,
-                functionCallContent,
+                FunctionInvocationStatus.Exception,
+                callContent,
                 result: null,
                 exception: e);
         }
+
+        return new(
+            context.Terminate ? ContinueMode.Terminate : ContinueMode.Continue,
+            FunctionInvocationStatus.RanToCompletion,
+            callContent,
+            result,
+            exception: null);
     }
 
     /// <summary>Represents the return value of <see cref="ProcessFunctionCallsAsync"/>, dictating how the loop should behave.</summary>
@@ -606,12 +611,12 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     }
 
     /// <summary>Adds one or more response messages for function invocation results.</summary>
-    /// <param name="chat">The chat to which to add the one or more response messages.</param>
+    /// <param name="chatMessages">The chat to which to add the one or more response messages.</param>
     /// <param name="results">Information about the function call invocations and results.</param>
-    /// <returns>A list of all chat messages added to <paramref name="chat"/>.</returns>
-    protected virtual IList<ChatMessage> AddResponseMessages(IList<ChatMessage> chat, ReadOnlySpan<FunctionInvocationResult> results)
+    /// <returns>A list of all chat messages added to <paramref name="chatMessages"/>.</returns>
+    protected virtual IList<ChatMessage> AddResponseMessages(IList<ChatMessage> chatMessages, ReadOnlySpan<FunctionInvocationResult> results)
     {
-        _ = Throw.IfNull(chat);
+        _ = Throw.IfNull(chatMessages);
 
         var contents = new AIContent[results.Length];
         for (int i = 0; i < results.Length; i++)
@@ -620,7 +625,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         }
 
         ChatMessage message = new(ChatRole.Tool, contents);
-        chat.Add(message);
+        chatMessages.Add(message);
         return [message];
 
         FunctionResultContent CreateFunctionResultContent(FunctionInvocationResult result)
@@ -628,7 +633,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             _ = Throw.IfNull(result);
 
             object? functionResult;
-            if (result.Status == FunctionStatus.CompletedSuccessfully)
+            if (result.Status == FunctionInvocationStatus.RanToCompletion)
             {
                 functionResult = result.Result ?? "Success: Function completed.";
             }
@@ -636,12 +641,12 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             {
                 string message = result.Status switch
                 {
-                    FunctionStatus.NotFound => $"Error: Requested function \"{result.CallContent.Name}\" not found.",
-                    FunctionStatus.Failed => "Error: Function failed.",
+                    FunctionInvocationStatus.NotFound => $"Error: Requested function \"{result.CallContent.Name}\" not found.",
+                    FunctionInvocationStatus.Exception => "Error: Function failed.",
                     _ => "Error: Unknown error.",
                 };
 
-                if (DetailedErrors && result.Exception is not null)
+                if (IncludeDetailedErrors && result.Exception is not null)
                 {
                     message = $"{message} Exception: {result.Exception.Message}";
                 }
@@ -749,67 +754,10 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     [LoggerMessage(LogLevel.Error, "{MethodName} invocation failed.")]
     private partial void LogInvocationFailed(string methodName, Exception error);
 
-    /// <summary>Provides context for a function invocation.</summary>
-    public sealed class FunctionInvocationContext
-    {
-        /// <summary>Initializes a new instance of the <see cref="FunctionInvocationContext"/> class.</summary>
-        /// <param name="chatMessages">The chat contents associated with the operation that initiated this function call request.</param>
-        /// <param name="functionCallContent">The AI function to be invoked.</param>
-        /// <param name="function">The function call content information associated with this invocation.</param>
-        internal FunctionInvocationContext(
-            IList<ChatMessage> chatMessages,
-            FunctionCallContent functionCallContent,
-            AIFunction function)
-        {
-            Function = function;
-            CallContent = functionCallContent;
-            ChatMessages = chatMessages;
-        }
-
-        /// <summary>Gets or sets the AI function to be invoked.</summary>
-        public AIFunction Function { get; set; }
-
-        /// <summary>Gets or sets the function call content information associated with this invocation.</summary>
-        public FunctionCallContent CallContent { get; set; }
-
-        /// <summary>Gets or sets the chat contents associated with the operation that initiated this function call request.</summary>
-        public IList<ChatMessage> ChatMessages { get; set; }
-
-        /// <summary>Gets or sets the number of this iteration with the underlying client.</summary>
-        /// <remarks>
-        /// The initial request to the client that passes along the chat contents provided to the <see cref="FunctionInvokingChatClient"/>
-        /// is iteration 1. If the client responds with a function call request, the next request to the client is iteration 2, and so on.
-        /// </remarks>
-        public int Iteration { get; set; }
-
-        /// <summary>Gets or sets the index of the function call within the iteration.</summary>
-        /// <remarks>
-        /// The response from the underlying client may include multiple function call requests.
-        /// This index indicates the position of the function call within the iteration.
-        /// </remarks>
-        public int FunctionCallIndex { get; set; }
-
-        /// <summary>Gets or sets the total number of function call requests within the iteration.</summary>
-        /// <remarks>
-        /// The response from the underlying client might include multiple function call requests.
-        /// This count indicates how many there were.
-        /// </remarks>
-        public int FunctionCount { get; set; }
-
-        /// <summary>Gets or sets a value indicating whether to terminate the request.</summary>
-        /// <remarks>
-        /// In response to a function call request, the function might be invoked, its result added to the chat contents,
-        /// and a new request issued to the wrapped client. If this property is set to <see langword="true"/>, that subsequent request
-        /// will not be issued and instead the loop immediately terminated rather than continuing until there are no
-        /// more function call requests in responses.
-        /// </remarks>
-        public bool Terminate { get; set; }
-    }
-
     /// <summary>Provides information about the invocation of a function call.</summary>
     public sealed class FunctionInvocationResult
     {
-        internal FunctionInvocationResult(ContinueMode continueMode, FunctionStatus status, FunctionCallContent callContent, object? result, Exception? exception)
+        internal FunctionInvocationResult(ContinueMode continueMode, FunctionInvocationStatus status, FunctionCallContent callContent, object? result, Exception? exception)
         {
             ContinueMode = continueMode;
             Status = status;
@@ -819,7 +767,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         }
 
         /// <summary>Gets status about how the function invocation completed.</summary>
-        public FunctionStatus Status { get; }
+        public FunctionInvocationStatus Status { get; }
 
         /// <summary>Gets the function call content information associated with this invocation.</summary>
         public FunctionCallContent CallContent { get; }
@@ -835,15 +783,15 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     }
 
     /// <summary>Provides error codes for when errors occur as part of the function calling loop.</summary>
-    public enum FunctionStatus
+    public enum FunctionInvocationStatus
     {
         /// <summary>The operation completed successfully.</summary>
-        CompletedSuccessfully,
+        RanToCompletion,
 
         /// <summary>The requested function could not be found.</summary>
         NotFound,
 
         /// <summary>The function call failed with an exception.</summary>
-        Failed,
+        Exception,
     }
 }
