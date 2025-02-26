@@ -271,7 +271,7 @@ internal sealed partial class ExtendedLogger : ILogger
                 {
                     var logEntry = new LogEntry<ModernTagJoiner>(logLevel, loggerInfo.Category, eventId, joiner, exception, static (s, e) =>
                     {
-                        var fmt = s.Formatter!;
+                        Func<LoggerMessageState, Exception?, string>? fmt = s.Formatter!;
                         return fmt(s.State!, e);
                     });
                     samplingDecision = config.Sampler.ShouldSample(in logEntry);
@@ -287,7 +287,7 @@ internal sealed partial class ExtendedLogger : ILogger
                 {
                     loggerInfo.LoggerLog(logLevel, eventId, joiner, exception, static (s, e) =>
                     {
-                        var fmt = s.Formatter!;
+                        Func<LoggerMessageState, Exception?, string>? fmt = s.Formatter!;
                         return fmt(s.State!, e);
                     });
                 }

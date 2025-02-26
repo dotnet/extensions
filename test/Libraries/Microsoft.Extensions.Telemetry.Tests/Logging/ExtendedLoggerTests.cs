@@ -130,21 +130,21 @@ public static class ExtendedLoggerTests
         using var sampler = new RandomProbabilisticSampler(new StaticOptionsMonitor<RandomProbabilisticSamplerOptions>(options));
 
         using var provider = new Provider();
-        using var factory = Utils.CreateLoggerFactory(
+        using ILoggerFactory factory = Utils.CreateLoggerFactory(
              builder =>
              {
                  builder.AddProvider(provider);
                  builder.AddRandomProbabilisticSampler(0, LogLevel.Warning);
              });
-        var logger = factory.CreateLogger(Category);
+        ILogger logger = factory.CreateLogger(Category);
 
         // Act
         // 1, no state (legacy path)
         logger.LogWarning("MSG0");
 
         // 2, with Modern state
-        var lms = LoggerMessageHelper.ThreadLocalState;
-        var index = lms.ReserveTagSpace(1);
+        LoggerMessageState lms = LoggerMessageHelper.ThreadLocalState;
+        int index = lms.ReserveTagSpace(1);
         lms.TagArray[index] = new("PK2", "PV2");
         logger.Log(LogLevel.Warning, new EventId(2, "ID2"), lms, null, (_, _) => "MSG2");
 

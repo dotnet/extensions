@@ -19,18 +19,18 @@ internal sealed class RandomProbabilisticSamplerConfigureOptions : IConfigureOpt
 
     public void Configure(RandomProbabilisticSamplerOptions options)
     {
-        if (_configuration == null)
+        if (_configuration is null)
         {
             return;
         }
 
-        var section = _configuration.GetSection(RandomProbabilisticSamplerKey);
+        IConfigurationSection section = _configuration.GetSection(RandomProbabilisticSamplerKey);
         if (!section.Exists())
         {
             return;
         }
 
-        var parsedOptions = section.Get<RandomProbabilisticSamplerOptions>();
+        RandomProbabilisticSamplerOptions? parsedOptions = section.Get<RandomProbabilisticSamplerOptions>();
         if (parsedOptions is null)
         {
             return;

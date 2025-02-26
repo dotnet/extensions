@@ -25,8 +25,8 @@ public class SamplingLoggerBuilderExtensionsTests
             builder.AddTraceBasedSampler();
         });
 
-        var serviceProvider = serviceCollection.BuildServiceProvider();
-        var sampler = serviceProvider.GetService<LoggingSampler>();
+        ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
+        LoggingSampler? sampler = serviceProvider.GetService<LoggingSampler>();
 
         Assert.NotNull(sampler);
         Assert.IsType<TraceBasedSampler>(sampler);
@@ -41,8 +41,8 @@ public class SamplingLoggerBuilderExtensionsTests
             builder.AddRandomProbabilisticSampler(1.0);
         });
 
-        var serviceProvider = serviceCollection.BuildServiceProvider();
-        var sampler = serviceProvider.GetService<LoggingSampler>();
+        ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
+        LoggingSampler? sampler = serviceProvider.GetService<LoggingSampler>();
 
         Assert.NotNull(sampler);
         Assert.IsType<RandomProbabilisticSampler>(sampler);
@@ -65,8 +65,8 @@ public class SamplingLoggerBuilderExtensionsTests
         {
             builder.AddRandomProbabilisticSampler(configuration);
         });
-        var serviceProvider = serviceCollection.BuildServiceProvider();
-        var options = serviceProvider.GetService<IOptionsMonitor<RandomProbabilisticSamplerOptions>>();
+        ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
+        IOptionsMonitor<RandomProbabilisticSamplerOptions>? options = serviceProvider.GetService<IOptionsMonitor<RandomProbabilisticSamplerOptions>>();
         Assert.NotNull(options);
         Assert.NotNull(options.CurrentValue);
         Assert.Equivalent(expectedData, options.CurrentValue.Rules);
@@ -80,8 +80,8 @@ public class SamplingLoggerBuilderExtensionsTests
         {
             builder.AddRandomProbabilisticSampler(o => o.Rules = null!);
         });
-        var serviceProvider = serviceCollection.BuildServiceProvider();
-        var options = serviceProvider.GetService<IOptionsMonitor<RandomProbabilisticSamplerOptions>>();
+        ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
+        IOptionsMonitor<RandomProbabilisticSamplerOptions>? options = serviceProvider.GetService<IOptionsMonitor<RandomProbabilisticSamplerOptions>>();
         Assert.Throws<OptionsValidationException>(() => options?.CurrentValue.Rules);
     }
 
@@ -97,8 +97,8 @@ public class SamplingLoggerBuilderExtensionsTests
         {
             builder.AddRandomProbabilisticSampler(o => o.Rules.Add(new RandomProbabilisticSamplerFilterRule(invalidProbabilityValue)));
         });
-        var serviceProvider = serviceCollection.BuildServiceProvider();
-        var options = serviceProvider.GetService<IOptionsMonitor<RandomProbabilisticSamplerOptions>>();
+        ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
+        IOptionsMonitor<RandomProbabilisticSamplerOptions>? options = serviceProvider.GetService<IOptionsMonitor<RandomProbabilisticSamplerOptions>>();
         Assert.Throws<OptionsValidationException>(() => options?.CurrentValue.Rules);
     }
 
@@ -120,8 +120,8 @@ public class SamplingLoggerBuilderExtensionsTests
         {
             builder.AddRandomProbabilisticSampler(configuration);
         });
-        var serviceProvider = serviceCollection.BuildServiceProvider();
-        var options = serviceProvider.GetService<IOptionsMonitor<RandomProbabilisticSamplerOptions>>();
+        ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
+        IOptionsMonitor<RandomProbabilisticSamplerOptions>? options = serviceProvider.GetService<IOptionsMonitor<RandomProbabilisticSamplerOptions>>();
         Assert.Throws<OptionsValidationException>(() => options?.CurrentValue.Rules);
     }
 
@@ -142,8 +142,8 @@ public class SamplingLoggerBuilderExtensionsTests
                 opts.Rules = expectedData;
             });
         });
-        var serviceProvider = serviceCollection.BuildServiceProvider();
-        var options = serviceProvider.GetService<IOptionsMonitor<RandomProbabilisticSamplerOptions>>();
+        ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
+        IOptionsMonitor<RandomProbabilisticSamplerOptions>? options = serviceProvider.GetService<IOptionsMonitor<RandomProbabilisticSamplerOptions>>();
         Assert.NotNull(options);
         Assert.NotNull(options.CurrentValue);
         Assert.Equivalent(expectedData, options.CurrentValue.Rules);
@@ -157,8 +157,8 @@ public class SamplingLoggerBuilderExtensionsTests
         {
             builder.AddSampler<MySampler>();
         });
-        var serviceProvider = serviceCollection.BuildServiceProvider();
-        var sampler = serviceProvider.GetService<LoggingSampler>();
+        ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
+        LoggingSampler? sampler = serviceProvider.GetService<LoggingSampler>();
 
         Assert.NotNull(sampler);
         Assert.IsType<MySampler>(sampler);
@@ -173,8 +173,8 @@ public class SamplingLoggerBuilderExtensionsTests
             builder.AddSampler(new MySampler());
         });
 
-        var serviceProvider = serviceCollection.BuildServiceProvider();
-        var sampler = serviceProvider.GetService<LoggingSampler>();
+        ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
+        LoggingSampler? sampler = serviceProvider.GetService<LoggingSampler>();
 
         Assert.NotNull(sampler);
         Assert.IsType<MySampler>(sampler);
@@ -185,16 +185,16 @@ public class SamplingLoggerBuilderExtensionsTests
     {
         var builder = null as ILoggingBuilder;
 
-        var action = () => SamplingLoggerBuilderExtensions.AddTraceBasedSampler(builder!);
+        Func<ILoggingBuilder> action = () => SamplingLoggerBuilderExtensions.AddTraceBasedSampler(builder!);
         Assert.Throws<ArgumentNullException>(action);
 
-        var action2 = () => SamplingLoggerBuilderExtensions.AddRandomProbabilisticSampler(builder!, 1.0);
+        Func<ILoggingBuilder> action2 = () => SamplingLoggerBuilderExtensions.AddRandomProbabilisticSampler(builder!, 1.0);
         Assert.Throws<ArgumentNullException>(action);
 
-        var action3 = () => SamplingLoggerBuilderExtensions.AddSampler<MySampler>(builder!);
+        Func<ILoggingBuilder> action3 = () => SamplingLoggerBuilderExtensions.AddSampler<MySampler>(builder!);
         Assert.Throws<ArgumentNullException>(action);
 
-        var action4 = () => SamplingLoggerBuilderExtensions.AddSampler(builder!, new MySampler());
+        Func<ILoggingBuilder> action4 = () => SamplingLoggerBuilderExtensions.AddSampler(builder!, new MySampler());
         Assert.Throws<ArgumentNullException>(action);
     }
 

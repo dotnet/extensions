@@ -36,7 +36,7 @@ internal static class LogSamplingRuleSelector
             }
         }
 
-        if (current != null)
+        if (current is not null)
         {
             bestRule = current;
         }
@@ -46,20 +46,20 @@ internal static class LogSamplingRuleSelector
         where T : class, ILogSamplingFilterRule
     {
         // Skip rules with inapplicable log level
-        if (rule.LogLevel != null && rule.LogLevel < logLevel)
+        if (rule.LogLevel is not null && rule.LogLevel < logLevel)
         {
             return false;
         }
 
         // Skip rules with inapplicable event id
-        if (rule.EventId != null && rule.EventId != eventId)
+        if (rule.EventId is not null && rule.EventId != eventId)
         {
             return false;
         }
 
         // Skip rules with inapplicable category
         string? categoryName = rule.CategoryName;
-        if (categoryName != null)
+        if (categoryName is not null)
         {
             const char WildcardChar = '*';
 
@@ -90,9 +90,9 @@ internal static class LogSamplingRuleSelector
         }
 
         // Decide whose category is better - rule vs current
-        if (current?.CategoryName != null)
+        if (current?.CategoryName is not null)
         {
-            if (rule.CategoryName == null)
+            if (rule.CategoryName is null)
             {
                 return false;
             }
@@ -104,9 +104,9 @@ internal static class LogSamplingRuleSelector
         }
 
         // Decide whose log level is better - rule vs current
-        if (current?.LogLevel != null)
+        if (current?.LogLevel is not null)
         {
-            if (rule.LogLevel == null)
+            if (rule.LogLevel is null)
             {
                 return false;
             }
@@ -120,7 +120,7 @@ internal static class LogSamplingRuleSelector
         // Decide whose event id is better - rule vs current
         if (rule.EventId is null)
         {
-            if (current?.EventId != null)
+            if (current?.EventId is not null)
             {
                 return false;
             }

@@ -28,7 +28,7 @@ public class RandomProbabilisticSamplerTests
         using var sampler = new RandomProbabilisticSampler(new StaticOptionsMonitor<RandomProbabilisticSamplerOptions>(options));
 
         // Act
-        var actualDecision = sampler.ShouldSample(
+        bool actualDecision = sampler.ShouldSample(
             new LogEntry<IReadOnlyList<KeyValuePair<string, object?>>>(
                 LogLevel.Trace, nameof(SamplesAsConfigured), 0, _dummyState, _dummyException, _dummyFormatter));
 
@@ -48,7 +48,7 @@ public class RandomProbabilisticSamplerTests
         using var sampler = new RandomProbabilisticSampler(new StaticOptionsMonitor<RandomProbabilisticSamplerOptions>(options));
 
         // Act
-        var actualDecision = sampler.ShouldSample(logEntry);
+        bool actualDecision = sampler.ShouldSample(logEntry);
 
         // Assert
         Assert.True(actualDecision);
@@ -66,7 +66,7 @@ public class RandomProbabilisticSamplerTests
         using var sampler = new RandomProbabilisticSampler(new StaticOptionsMonitor<RandomProbabilisticSamplerOptions>(options));
 
         // Act
-        var actualDecision = sampler.ShouldSample(logEntry);
+        bool actualDecision = sampler.ShouldSample(logEntry);
 
         // Assert
         Assert.False(actualDecision);

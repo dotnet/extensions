@@ -24,7 +24,7 @@ public class TraceBasedSamplerTests
         var sampler = new TraceBasedSampler();
 
         // Act
-        var shouldSample = sampler.ShouldSample(
+        bool shouldSample = sampler.ShouldSample(
             new LogEntry<IReadOnlyList<KeyValuePair<string, object?>>>(
                 LogLevel.Trace, nameof(WhenNoActivity_SamplesIn), 0, _dummyState, _dummyException, _dummyFormatter));
 
@@ -43,7 +43,7 @@ public class TraceBasedSamplerTests
         activity.ActivityTraceFlags |= ActivityTraceFlags.Recorded;
         activity.Start();
 
-        var shouldSample = sampler.ShouldSample(
+        bool shouldSample = sampler.ShouldSample(
             new LogEntry<IReadOnlyList<KeyValuePair<string, object?>>>(
                 LogLevel.Trace, nameof(WhenActivityIsRecorded_SamplesIn), 0, _dummyState, _dummyException, _dummyFormatter));
 
@@ -64,7 +64,7 @@ public class TraceBasedSamplerTests
         activity.ActivityTraceFlags &= ~ActivityTraceFlags.Recorded;
         activity.Start();
 
-        var shouldSample = sampler.ShouldSample(
+        bool shouldSample = sampler.ShouldSample(
             new LogEntry<IReadOnlyList<KeyValuePair<string, object?>>>(
                 LogLevel.Trace, nameof(WhenActivityIsNotRecorded_SamplesOut), 0, _dummyState, _dummyException, _dummyFormatter));
 
