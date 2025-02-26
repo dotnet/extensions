@@ -249,6 +249,32 @@ public static partial class AIFunctionFactory
 
         private ReflectionAIFunctionDescriptor(DescriptorKey key, JsonSerializerOptions serializerOptions)
         {
+            AIJsonSchemaCreateOptions schemaOptions = new()
+            {
+                // This needs to be kept in sync with the shape of AIJsonSchemaCreateOptions.
+                TransformSchemaNode = key.SchemaOptions.TransformSchemaNode,
+                IncludeParameter = parameterInfo =>
+                {
+                    // Explicitly exclude from the schema CancellationToken parameters as well
+                    // as those annotated as [FromServices] or [FromKeyedServices]. These will be satisfied
+                    // from sources other than arguments to InvokeAsync.
+                    if (parameterInfo.ParameterType == typeof(CancellationToken) ||
+                        parameterInfo.GetCustomAttribute<FromServicesAttribute>(inherit: true) is not null ||
+                        parameterInfo.GetCustomAttribute<FromKeyedServicesAttribute>(inherit: true) is not null)
+                    {
+                        return false;
+                    }
+
+                    // For all other parameters, delegate to whatever behavior is specified in the options.
+                    // If none is specified, include the parameter.
+                    return key.SchemaOptions.IncludeParameter?.Invoke(parameterInfo) ?? true;
+                },
+                IncludeTypeInEnumSchemas = key.SchemaOptions.IncludeTypeInEnumSchemas,
+                DisallowAdditionalProperties = key.SchemaOptions.DisallowAdditionalProperties,
+                IncludeSchemaKeyword = key.SchemaOptions.IncludeSchemaKeyword,
+                RequireAllProperties = key.SchemaOptions.RequireAllProperties,
+            };
+
             // Get marshaling delegates for parameters.
             ParameterInfo[] parameters = key.Method.GetParameters();
             ParameterMarshallers = new Func<IReadOnlyDictionary<string, object?>, CancellationToken, object?>[parameters.Length];
@@ -269,7 +295,7 @@ public static partial class AIFunctionFactory
                 Name,
                 Description,
                 serializerOptions,
-                key.SchemaOptions);
+                schemaOptions);
         }
 
         public string Name { get; }
@@ -343,33 +369,36 @@ public static partial class AIFunctionFactory
             }
 
             // For DI-based parameters, try to resolve from the service provider.
-            if (parameter.GetCustomAttribute<FromServiceProviderAttribute>(inherit: true) is FromServiceProviderAttribute fspAttr)
+            if (parameter.GetCustomAttribute<FromServicesAttribute>(inherit: true) is { } fsAttr)
             {
                 return (arguments, _) =>
                 {
-                    if ((arguments as AIFunctionArguments)?.ServiceProvider is IServiceProvider services)
+                    if ((arguments as AIFunctionArguments)?.ServiceProvider is IServiceProvider services &&
+                        services.GetService(parameterType) is object service)
                     {
-                        if (fspAttr.ServiceKey is object serviceKey)
-                        {
-                            if ((services as IKeyedServiceProvider)?.GetKeyedService(parameterType, serviceKey) is object keyedService)
-                            {
-                                return keyedService;
-                            }
-                        }
-                        else if (services.GetService(parameterType) is object service)
-                        {
-                            return service;
-                        }
+                        return service;
                     }
 
-                    // No service could be resolved. Does it have a default value?
-                    if (parameter.HasDefaultValue)
+                    // No service could be resolved. Return a default value if it's optional, otherwise throw.
+                    return parameter.HasDefaultValue ?
+                        parameter.DefaultValue :
+                        throw new InvalidOperationException($"Unable to resolve service of type '{parameterType}' for parameter '{parameter.Name}'.");
+                };
+            }
+            else if (parameter.GetCustomAttribute<FromKeyedServicesAttribute>(inherit: true) is { } fksAttr)
+            {
+                return (arguments, _) =>
+                {
+                    if ((arguments as AIFunctionArguments)?.ServiceProvider is IKeyedServiceProvider services &&
+                        services.GetKeyedService(parameterType, fksAttr.Key) is object service)
                     {
-                        return parameter.DefaultValue;
+                        return service;
                     }
 
-                    // It's a required argument, and we couldn't resolve a service. Throw.
-                    throw new InvalidOperationException($"Unable to resolve service of type '{parameterType}' for parameter '{parameter.Name}'.");
+                    // No service could be resolved. Return a default value if it's optional, otherwise throw.
+                    return parameter.HasDefaultValue ?
+                        parameter.DefaultValue :
+                        throw new InvalidOperationException($"Unable to resolve service of type '{parameterType}' with key '{fksAttr.Key}' for parameter '{parameter.Name}'.");
                 };
             }
 
