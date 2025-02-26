@@ -25,14 +25,18 @@ internal sealed class RandomProbabilisticSampler : LoggingSampler, IDisposable
 #endif
 
     private readonly IDisposable? _samplerOptionsChangeTokenRegistration;
+    private readonly LogSamplingRuleSelector<RandomProbabilisticSamplerFilterRule> _ruleSelector;
     private RandomProbabilisticSamplerFilterRule[] _lastKnownGoodSamplerRules;
     private volatile bool _disposed;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RandomProbabilisticSampler"/> class.
     /// </summary>
-    public RandomProbabilisticSampler(IOptionsMonitor<RandomProbabilisticSamplerOptions> options)
+    public RandomProbabilisticSampler(
+        LogSamplingRuleSelector<RandomProbabilisticSamplerFilterRule> ruleSelector,
+        IOptionsMonitor<RandomProbabilisticSamplerOptions> options)
     {
+        _ruleSelector = Throw.IfNull(ruleSelector);
         _lastKnownGoodSamplerRules = Throw.IfNullOrMemberNull(options, options!.CurrentValue).Rules.ToArray();
         _samplerOptionsChangeTokenRegistration = options.OnChange(OnSamplerOptionsChanged);
     }
@@ -72,13 +76,21 @@ internal sealed class RandomProbabilisticSampler : LoggingSampler, IDisposable
         {
             _lastKnownGoodSamplerRules = updatedOptions.Rules.ToArray();
         }
+
+        _ruleSelector.InvalidateCache();
     }
 
     private bool TryApply<TState>(in LogEntry<TState> logEntry, out double probability)
     {
         probability = 0.0;
 
-        LogSamplingRuleSelector.Select(_lastKnownGoodSamplerRules, logEntry.Category, logEntry.LogLevel, logEntry.EventId, out RandomProbabilisticSamplerFilterRule? rule);
+        _ruleSelector.Select(
+            _lastKnownGoodSamplerRules,
+            logEntry.Category,
+            logEntry.LogLevel,
+            logEntry.EventId,
+            out RandomProbabilisticSamplerFilterRule? rule);
+
         if (rule is not null)
         {
             probability = rule.Probability;

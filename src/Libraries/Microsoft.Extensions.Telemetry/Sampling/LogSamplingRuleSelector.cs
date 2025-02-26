@@ -6,44 +6,48 @@
 #pragma warning disable S2302 // "nameof" should be used
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Microsoft.Extensions.Diagnostics.Sampling;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Diagnostics.Sampling;
 
-internal static class LogSamplingRuleSelector
+internal sealed class LogSamplingRuleSelector<T>
+    where T : class, ILogSamplingFilterRule
 {
-    public static void Select<T>(IList<T> rules, string category, LogLevel logLevel, EventId eventId, out T? bestRule)
-        where T : class, ILogSamplingFilterRule
+    private readonly ConcurrentDictionary<(string, LogLevel, EventId), T?> _ruleCache = new();
+
+    public void InvalidateCache()
     {
-        bestRule = null;
-
-        // Filter rule selection:
-        // 0. Ignore rules whose LogLevel is defined but lower than the requested logLevel
-        // 1. Ignore rules whose EventId is defined but different from the requested eventId
-        // 2. For category filtering, handle optional wildcards (only one '*' allowed) and match the prefix/suffix ignoring case
-        // 3. Out of the matched set, pick the rule with the longest matching category
-        // 4. If no rules match by category, accept rules without a category
-        // 5. If exactly one rule remains, use it; if multiple remain, select the last in the list
-
-        T? current = null;
-        foreach (T rule in rules)
-        {
-            if (IsBetter(rule, current, category, logLevel, eventId))
-            {
-                current = rule;
-            }
-        }
-
-        if (current is not null)
-        {
-            bestRule = current;
-        }
+        _ruleCache.Clear();
     }
 
-    private static bool IsBetter<T>(T rule, T? current, string category, LogLevel logLevel, EventId eventId)
-        where T : class, ILogSamplingFilterRule
+    public void Select(IList<T> rules, string category, LogLevel logLevel, EventId eventId, out T? bestRule)
+    {
+        bestRule = _ruleCache.GetOrAdd((category, logLevel, eventId), _ =>
+        {
+            // Filter rule selection:
+            // 0. Ignore rules whose LogLevel is defined but lower than the requested logLevel
+            // 1. Ignore rules whose EventId is defined but different from the requested eventId
+            // 2. For category filtering, handle optional wildcards (only one '*' allowed) and match the prefix/suffix ignoring case
+            // 3. Out of the matched set, pick the rule with the longest matching category
+            // 4. If no rules match by category, accept rules without a category
+            // 5. If exactly one rule remains, use it; if multiple remain, select the last in the list
+            T? current = null;
+            foreach (T rule in rules)
+            {
+                if (IsBetter(rule, current, category, logLevel, eventId))
+                {
+                    current = rule;
+                }
+            }
+
+            return current;
+        });
+    }
+
+    private static bool IsBetter(T rule, T? current, string category, LogLevel logLevel, EventId eventId)
     {
         // Skip rules with inapplicable log level
         if (rule.LogLevel is not null && rule.LogLevel < logLevel)

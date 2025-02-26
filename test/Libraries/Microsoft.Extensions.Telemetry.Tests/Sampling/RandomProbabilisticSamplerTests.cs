@@ -16,6 +16,7 @@ public class RandomProbabilisticSamplerTests
     private readonly InvalidOperationException _dummyException = new("test.");
     private readonly IReadOnlyList<KeyValuePair<string, object?>> _dummyState = [];
     private readonly Func<IReadOnlyList<KeyValuePair<string, object?>>, Exception?, string> _dummyFormatter = (_, _) => string.Empty;
+    private readonly LogSamplingRuleSelector<RandomProbabilisticSamplerFilterRule> _ruleSelector = new();
 
     [Theory]
     [InlineData(1.0, true)]
@@ -25,7 +26,7 @@ public class RandomProbabilisticSamplerTests
         // Arrange
         RandomProbabilisticSamplerOptions options = new();
         options.Rules.Add(new RandomProbabilisticSamplerFilterRule(probability: probability, logLevel: LogLevel.Trace));
-        using var sampler = new RandomProbabilisticSampler(new StaticOptionsMonitor<RandomProbabilisticSamplerOptions>(options));
+        using var sampler = new RandomProbabilisticSampler(_ruleSelector, new StaticOptionsMonitor<RandomProbabilisticSamplerOptions>(options));
 
         // Act
         bool actualDecision = sampler.ShouldSample(
@@ -45,7 +46,7 @@ public class RandomProbabilisticSamplerTests
             LogLevel.Warning, nameof(WhenParametersNotMatch_AlwaysSamples), 0, _dummyState, _dummyException, _dummyFormatter);
         RandomProbabilisticSamplerOptions options = new();
         options.Rules.Add(new RandomProbabilisticSamplerFilterRule(probability: Probability, logLevel: LogLevel.Information));
-        using var sampler = new RandomProbabilisticSampler(new StaticOptionsMonitor<RandomProbabilisticSamplerOptions>(options));
+        using var sampler = new RandomProbabilisticSampler(_ruleSelector, new StaticOptionsMonitor<RandomProbabilisticSamplerOptions>(options));
 
         // Act
         bool actualDecision = sampler.ShouldSample(logEntry);
@@ -63,7 +64,7 @@ public class RandomProbabilisticSamplerTests
             LogLevel.Information, nameof(WhenParametersMatch_UsesProvidedProbability), 0, _dummyState, _dummyException, _dummyFormatter);
         RandomProbabilisticSamplerOptions options = new();
         options.Rules.Add(new RandomProbabilisticSamplerFilterRule(probability: Probability, logLevel: LogLevel.Information));
-        using var sampler = new RandomProbabilisticSampler(new StaticOptionsMonitor<RandomProbabilisticSamplerOptions>(options));
+        using var sampler = new RandomProbabilisticSampler(_ruleSelector, new StaticOptionsMonitor<RandomProbabilisticSamplerOptions>(options));
 
         // Act
         bool actualDecision = sampler.ShouldSample(logEntry);

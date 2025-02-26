@@ -127,7 +127,8 @@ public static class ExtendedLoggerTests
 
         RandomProbabilisticSamplerOptions options = new();
         options.Rules.Add(new RandomProbabilisticSamplerFilterRule(probability: 0, logLevel: LogLevel.Warning));
-        using var sampler = new RandomProbabilisticSampler(new StaticOptionsMonitor<RandomProbabilisticSamplerOptions>(options));
+        LogSamplingRuleSelector<RandomProbabilisticSamplerFilterRule> ruleSelector = new();
+        using var sampler = new RandomProbabilisticSampler(ruleSelector, new StaticOptionsMonitor<RandomProbabilisticSamplerOptions>(options));
 
         using var provider = new Provider();
         using ILoggerFactory factory = Utils.CreateLoggerFactory(
