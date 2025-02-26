@@ -73,15 +73,15 @@ public class RelevanceTruthAndCompletenessEvaluatorTests
 
         EvaluationResult result = await scenarioRun.EvaluateAsync(promptMessage, responseMessage);
 
-        Assert.False(result.ContainsDiagnostics(d => d.Severity >= EvaluationDiagnosticSeverity.Warning));
+        Assert.False(result.ContainsDiagnostics(d => d.Severity >= EvaluationDiagnosticSeverity.Informational));
 
         NumericMetric relevance = result.Get<NumericMetric>(RelevanceTruthAndCompletenessEvaluator.RelevanceMetricName);
         NumericMetric truth = result.Get<NumericMetric>(RelevanceTruthAndCompletenessEvaluator.TruthMetricName);
         NumericMetric completeness = result.Get<NumericMetric>(RelevanceTruthAndCompletenessEvaluator.CompletenessMetricName);
 
-        Assert.True(relevance.Value >= 4, string.Format("Relevance - Reasoning: {0}", relevance.Diagnostics.Single().Message));
-        Assert.True(truth.Value >= 4, string.Format("Truth - Reasoning: {0}", truth.Diagnostics.Single().Message));
-        Assert.True(completeness.Value >= 4, string.Format("Completeness - Reasoning: {0}", completeness.Diagnostics.Single().Message));
+        Assert.True(relevance.Value >= 4);
+        Assert.True(truth.Value >= 4);
+        Assert.True(completeness.Value >= 4);
     }
 
     [ConditionalFact]
@@ -106,6 +106,7 @@ public class RelevanceTruthAndCompletenessEvaluatorTests
 
         EvaluationResult result = await scenarioRun.EvaluateAsync(promptMessage, responseMessage);
 
+        Assert.True(result.ContainsDiagnostics(d => d.Severity == EvaluationDiagnosticSeverity.Informational));
         Assert.False(result.ContainsDiagnostics(d => d.Severity >= EvaluationDiagnosticSeverity.Warning));
 
         NumericMetric relevance = result.Get<NumericMetric>(RelevanceTruthAndCompletenessEvaluator.RelevanceMetricName);

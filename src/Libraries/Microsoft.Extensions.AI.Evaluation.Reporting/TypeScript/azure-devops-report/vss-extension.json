@@ -19,6 +19,14 @@
     "demands": [
         "api-version/3.0"
     ],
+    "icons": {
+        "default": "logo.png"
+    },
+    "content": {
+        "details": {
+            "path": "overview.md"
+        }
+    },
     "contributions": [
         {
             "id": "build-results-html",

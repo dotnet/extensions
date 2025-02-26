@@ -24,12 +24,12 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Stage>dev</Stage>
-    <StageDevDiagnosticId>EXTEXP0018</StageDevDiagnosticId>
+    <Stage>normal</Stage>
     <MinCodeCoverage>82</MinCodeCoverage>
     <MinMutationScore>50</MinMutationScore>
     <Workstream>Fundamentals</Workstream>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EnablePackageValidation>false</EnablePackageValidation>
   </PropertyGroup>
 
   <ItemGroup>
