@@ -333,7 +333,6 @@ public static partial class AIFunctionFactory
             // Resolve the contract used to marshal the value from JSON -- can throw if not supported or not found.
             Type parameterType = parameter.ParameterType;
             JsonTypeInfo typeInfo = serializerOptions.GetTypeInfo(parameterType);
-            FromServiceProviderAttribute? fspAttr = parameter.GetCustomAttribute<FromServiceProviderAttribute>(inherit: true);
 
             // For CancellationToken parameters, we always bind to the token passed directly to InvokeAsync.
             if (parameterType == typeof(CancellationToken))
@@ -343,28 +342,40 @@ public static partial class AIFunctionFactory
                     cancellationToken;
             }
 
+            // For DI-based parameters, try to resolve from the service provider.
+            if (parameter.GetCustomAttribute<FromServiceProviderAttribute>(inherit: true) is FromServiceProviderAttribute fspAttr)
+            {
+                return (arguments, _) =>
+                {
+                    if ((arguments as AIFunctionArguments)?.ServiceProvider is IServiceProvider services)
+                    {
+                        if (fspAttr.ServiceKey is object serviceKey)
+                        {
+                            if ((services as IKeyedServiceProvider)?.GetKeyedService(parameterType, serviceKey) is object keyedService)
+                            {
+                                return keyedService;
+                            }
+                        }
+                        else if (services.GetService(parameterType) is object service)
+                        {
+                            return service;
+                        }
+                    }
+
+                    // No service could be resolved. Does it have a default value?
+                    if (parameter.HasDefaultValue)
+                    {
+                        return parameter.DefaultValue;
+                    }
+
+                    // It's a required argument, and we couldn't resolve a service. Throw.
+                    throw new InvalidOperationException($"Unable to resolve service of type '{parameterType}' for parameter '{parameter.Name}'.");
+                };
+            }
+
             // For all other parameters, create a marshaller that tries to extract the value from the arguments dictionary.
             return (arguments, _) =>
             {
-                // If the parameter is [FromServiceProvider], try to satisfy it from the service provider
-                // provided via arguments.
-                if (fspAttr is not null &&
-                    (arguments as AIFunctionArguments)?.ServiceProvider is IServiceProvider services)
-                {
-                    if (fspAttr.ServiceKey is object serviceKey)
-                    {
-                        if (services is IKeyedServiceProvider ksp &&
-                            ksp.GetKeyedService(parameterType, serviceKey) is object keyedService)
-                        {
-                            return keyedService;
-                        }
-                    }
-                    else if (services.GetService(parameterType) is object service)
-                    {
-                        return service;
-                    }
-                }
-
                 // If the parameter has an argument specified in the dictionary, return that argument.
                 if (arguments.TryGetValue(parameter.Name, out object? value))
                 {
