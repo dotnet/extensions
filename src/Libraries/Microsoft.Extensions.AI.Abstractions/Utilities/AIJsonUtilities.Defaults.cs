@@ -91,7 +91,6 @@ public static partial class AIJsonUtilities
     [JsonSerializable(typeof(SpeechToTextResponseUpdate))]
     [JsonSerializable(typeof(IReadOnlyList<SpeechToTextResponseUpdate>))]
     [JsonSerializable(typeof(Dictionary<string, object>))]
-    [JsonSerializable(typeof(IDictionary<int, int>))]
     [JsonSerializable(typeof(IDictionary<string, object?>))]
     [JsonSerializable(typeof(JsonDocument))]
     [JsonSerializable(typeof(JsonElement))]

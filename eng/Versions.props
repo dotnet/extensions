@@ -75,6 +75,10 @@
     <MicrosoftExtensionsDiagnosticsHealthChecksVersion>9.0.2</MicrosoftExtensionsDiagnosticsHealthChecksVersion>
     <MicrosoftExtensionsHttpPollyVersion>9.0.2</MicrosoftExtensionsHttpPollyVersion>
     <MicrosoftExtensionsObjectPoolVersion>9.0.2</MicrosoftExtensionsObjectPoolVersion>
+    <!-- Dependencies from https://github.com/dotnet/efcore -->
+    <MicrosoftEntityFrameworkCoreSqliteVersion>9.0.2</MicrosoftEntityFrameworkCoreSqliteVersion>
+    <!-- Dependencies from https://github.com/dotnet/arcade -->
+    <MicrosoftDotNetBuildTasksTemplatingVersion>9.0.0-beta.25111.5</MicrosoftDotNetBuildTasksTemplatingVersion>
   </PropertyGroup>
   <PropertyGroup Label="Manual">
     <!-- Packages from dotnet/runtime -->
@@ -125,6 +129,17 @@
     <MicrosoftExtensionsDiagnosticsHealthChecksLTSVersion>8.0.13</MicrosoftExtensionsDiagnosticsHealthChecksLTSVersion>
     <MicrosoftExtensionsHttpPollyLTSVersion>8.0.13</MicrosoftExtensionsHttpPollyLTSVersion>
     <MicrosoftExtensionsObjectPoolLTSVersion>8.0.13</MicrosoftExtensionsObjectPoolLTSVersion>
+    <!-- 3rd party dependencies -->
+    <AzureAIProjectsVersion>1.0.0-beta.3</AzureAIProjectsVersion>
+    <AzureAIOpenAIVersion>2.2.0-beta.1</AzureAIOpenAIVersion>
+    <AzureIdentityVersion>1.13.2</AzureIdentityVersion>
+    <AzureSearchDocumentsVersion>11.6.0</AzureSearchDocumentsVersion>
+    <MicrosoftSemanticKernelConnectorsAzureAISearchVersion>1.37.0-preview</MicrosoftSemanticKernelConnectorsAzureAISearchVersion>
+    <MicrosoftSemanticKernelCoreVersion>1.37.0</MicrosoftSemanticKernelCoreVersion>
+    <OllamaSharpVersion>5.0.7</OllamaSharpVersion>
+    <OpenAIVersion>2.2.0-beta.1</OpenAIVersion>
+    <PdfPigVersion>0.1.9</PdfPigVersion>
+    <SystemLinqAsyncVersion>6.0.1</SystemLinqAsyncVersion>
   </PropertyGroup>
   <!--
 
