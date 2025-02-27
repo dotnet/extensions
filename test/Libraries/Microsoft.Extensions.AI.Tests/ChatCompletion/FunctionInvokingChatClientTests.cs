@@ -19,9 +19,6 @@ namespace Microsoft.Extensions.AI;
 
 public class FunctionInvokingChatClientTests
 {
-    private readonly Func<ChatClientBuilder, ChatClientBuilder> _keepMessagesConfigure =
-        b => b.Use(client => new FunctionInvokingChatClient(client) { KeepFunctionCallingContent = true });
-
     [Fact]
     public void InvalidArgs_Throws()
     {
@@ -37,7 +34,6 @@ public class FunctionInvokingChatClientTests
 
         Assert.False(client.AllowConcurrentInvocation);
         Assert.False(client.IncludeDetailedErrors);
-        Assert.True(client.KeepFunctionCallingContent);
         Assert.Null(client.MaximumIterationsPerRequest);
         Assert.False(client.RetryOnError);
     }
@@ -67,9 +63,9 @@ public class FunctionInvokingChatClientTests
             new ChatMessage(ChatRole.Assistant, "world"),
         ];
 
-        await InvokeAndAssertAsync(options, plan, configurePipeline: _keepMessagesConfigure);
+        await InvokeAndAssertAsync(options, plan);
 
-        await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: _keepMessagesConfigure);
+        await InvokeAndAssertStreamingAsync(options, plan);
     }
 
     [Theory]
@@ -115,7 +111,7 @@ public class FunctionInvokingChatClientTests
         ];
 
         Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(
-            s => new FunctionInvokingChatClient(s) { AllowConcurrentInvocation = concurrentInvocation, KeepFunctionCallingContent = true });
+            s => new FunctionInvokingChatClient(s) { AllowConcurrentInvocation = concurrentInvocation });
 
         await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
 
@@ -156,7 +152,7 @@ public class FunctionInvokingChatClientTests
         ];
 
         Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(
-            s => new FunctionInvokingChatClient(s) { AllowConcurrentInvocation = true, KeepFunctionCallingContent = true });
+            s => new FunctionInvokingChatClient(s) { AllowConcurrentInvocation = true });
 
         await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
 
@@ -199,68 +195,13 @@ public class FunctionInvokingChatClientTests
             new ChatMessage(ChatRole.Assistant, "done"),
         ];
 
-        await InvokeAndAssertAsync(options, plan, configurePipeline: _keepMessagesConfigure);
+        await InvokeAndAssertAsync(options, plan);
 
-        await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: _keepMessagesConfigure);
+        await InvokeAndAssertStreamingAsync(options, plan);
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task RemovesFunctionCallingMessagesWhenRequestedAsync(bool keepFunctionCallingMessages)
-    {
-        var options = new ChatOptions
-        {
-            Tools =
-            [
-                AIFunctionFactory.Create(() => "Result 1", "Func1"),
-                AIFunctionFactory.Create((int i) => $"Result 2: {i}", "Func2"),
-                AIFunctionFactory.Create((int i) => { }, "VoidReturn"),
-            ]
-        };
-
-        List<ChatMessage> plan =
-        [
-            new ChatMessage(ChatRole.User, "hello"),
-            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
-            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", result: "Result 2: 42")]),
-            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId3", "VoidReturn", arguments: new Dictionary<string, object?> { { "i", 43 } })]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId3", result: "Success: Function completed.")]),
-            new ChatMessage(ChatRole.Assistant, "world"),
-        ];
-
-        List<ChatMessage>? expected = keepFunctionCallingMessages ? null :
-        [
-            new ChatMessage(ChatRole.User, "hello"),
-            new ChatMessage(ChatRole.Assistant, "world")
-        ];
-
-        Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(
-            client => new FunctionInvokingChatClient(client) { KeepFunctionCallingContent = keepFunctionCallingMessages });
-
-        Validate(await InvokeAndAssertAsync(options, plan, expected, configure));
-        Validate(await InvokeAndAssertStreamingAsync(options, plan, expected, configure));
-
-        void Validate(List<ChatMessage> finalChat)
-        {
-            IEnumerable<AIContent> content = finalChat.SelectMany(m => m.Contents);
-            if (keepFunctionCallingMessages)
-            {
-                Assert.Contains(content, c => c is FunctionCallContent or FunctionResultContent);
-            }
-            else
-            {
-                Assert.All(content, c => Assert.False(c is FunctionCallContent or FunctionResultContent));
-            }
-        }
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task KeepsFunctionCallingContentWhenRequestedAsync(bool keepFunctionCallingMessages)
+    [Fact]
+    public async Task KeepsFunctionCallingContent()
     {
         var options = new ChatOptions
         {
@@ -285,18 +226,12 @@ public class FunctionInvokingChatClientTests
         ];
 
         Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(
-            client => new FunctionInvokingChatClient(client) { KeepFunctionCallingContent = keepFunctionCallingMessages });
+            client => new FunctionInvokingChatClient(client));
 
 #pragma warning disable SA1005, S125
-        Validate(await InvokeAndAssertAsync(options, plan, keepFunctionCallingMessages ? null :
-        [
-            new ChatMessage(ChatRole.User, "hello"),
-            new ChatMessage(ChatRole.Assistant, [new TextContent("extra"), new TextContent("stuff")]),
-            new ChatMessage(ChatRole.Assistant, "more"),
-            new ChatMessage(ChatRole.Assistant, "world"),
-        ], configure));
+        Validate(await InvokeAndAssertAsync(options, plan, null, configure));
 
-        Validate(await InvokeAndAssertStreamingAsync(options, plan, keepFunctionCallingMessages ?
+        Validate(await InvokeAndAssertStreamingAsync(options, plan,
         [
             new ChatMessage(ChatRole.User, "hello"),
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
@@ -306,23 +241,12 @@ public class FunctionInvokingChatClientTests
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId3", "VoidReturn", arguments: new Dictionary<string, object?> { { "i", 43 } })]),
             new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId3", result: "Success: Function completed.")]),
             new ChatMessage(ChatRole.Assistant, "extrastuffmoreworld"),
-        ] :
-        [
-            new ChatMessage(ChatRole.User, "hello"),
-            new ChatMessage(ChatRole.Assistant, "extrastuffmoreworld"),
         ], configure));
 
-        void Validate(List<ChatMessage> finalChat)
+        static void Validate(List<ChatMessage> finalChat)
         {
             IEnumerable<AIContent> content = finalChat.SelectMany(m => m.Contents);
-            if (keepFunctionCallingMessages)
-            {
-                Assert.Contains(content, c => c is FunctionCallContent or FunctionResultContent);
-            }
-            else
-            {
-                Assert.All(content, c => Assert.False(c is FunctionCallContent or FunctionResultContent));
-            }
+            Assert.Contains(content, c => c is FunctionCallContent or FunctionResultContent);
         }
     }
 
@@ -348,49 +272,11 @@ public class FunctionInvokingChatClientTests
         ];
 
         Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(
-            s => new FunctionInvokingChatClient(s) { IncludeDetailedErrors = detailedErrors, KeepFunctionCallingContent = true });
+            s => new FunctionInvokingChatClient(s) { IncludeDetailedErrors = detailedErrors });
 
         await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
 
         await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configure);
-    }
-
-    [Fact]
-    public async Task RejectsMultipleChoicesAsync()
-    {
-        var func1 = AIFunctionFactory.Create(() => "Some result 1", "Func1");
-        var func2 = AIFunctionFactory.Create(() => "Some result 2", "Func2");
-
-        var expected = new ChatResponse(
-        [
-            new(ChatRole.Assistant, [new FunctionCallContent("callId1", func1.Name)]),
-            new(ChatRole.Assistant, [new FunctionCallContent("callId2", func2.Name)]),
-        ]);
-
-        using var innerClient = new TestChatClient
-        {
-            GetResponseAsyncCallback = async (chatContents, options, cancellationToken) =>
-            {
-                await Task.Yield();
-                return expected;
-            },
-            GetStreamingResponseAsyncCallback = (chatContents, options, cancellationToken) =>
-              YieldAsync(expected.ToChatResponseUpdates()),
-        };
-
-        IChatClient service = innerClient.AsBuilder().UseFunctionInvocation().Build();
-
-        List<ChatMessage> chat = [new ChatMessage(ChatRole.User, "hello")];
-        ChatOptions options = new() { Tools = [func1, func2] };
-
-        Validate(await Assert.ThrowsAsync<InvalidOperationException>(() => service.GetResponseAsync(chat, options)));
-        Validate(await Assert.ThrowsAsync<InvalidOperationException>(() => service.GetStreamingResponseAsync(chat, options).ToChatResponseAsync()));
-
-        void Validate(Exception ex)
-        {
-            Assert.Contains("only accepts a single choice", ex.Message);
-            Assert.Single(chat); // It didn't add anything to the chat history
-        }
     }
 
     [Theory]
@@ -413,10 +299,7 @@ public class FunctionInvokingChatClientTests
         };
 
         Func<ChatClientBuilder, ChatClientBuilder> configure = b =>
-            b.Use((c, services) => new FunctionInvokingChatClient(c, services.GetRequiredService<ILogger<FunctionInvokingChatClient>>())
-            {
-                KeepFunctionCallingContent = true,
-            });
+            b.Use((c, services) => new FunctionInvokingChatClient(c, services.GetRequiredService<ILogger<FunctionInvokingChatClient>>()));
 
         await InvokeAsync(services => InvokeAndAssertAsync(options, plan, configurePipeline: configure, services: services));
 
@@ -472,10 +355,7 @@ public class FunctionInvokingChatClientTests
         };
 
         Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(c =>
-            new FunctionInvokingChatClient(new OpenTelemetryChatClient(c, sourceName: sourceName))
-            {
-                KeepFunctionCallingContent = true,
-            });
+            new FunctionInvokingChatClient(new OpenTelemetryChatClient(c, sourceName: sourceName)));
 
         await InvokeAsync(() => InvokeAndAssertAsync(options, plan, configurePipeline: configure));
 
@@ -542,7 +422,7 @@ public class FunctionInvokingChatClientTests
             }
         };
 
-        using var client = new FunctionInvokingChatClient(innerClient) { KeepFunctionCallingContent = true };
+        using var client = new FunctionInvokingChatClient(innerClient);
 
         var updates = new List<ChatResponseUpdate>();
         await foreach (var update in client.GetStreamingResponseAsync(messages, options, CancellationToken.None))
@@ -616,7 +496,7 @@ public class FunctionInvokingChatClientTests
             // The last message is the one returned by the chat client
             // This message's content should contain the last function call before the termination
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId2", "Func1", new Dictionary<string, object?> { ["i"] = 42 })]),
-        ], configurePipeline: _keepMessagesConfigure));
+        ]));
 
         await InvokeAsync(() => InvokeAndAssertStreamingAsync(options, plan, expected: [
             .. planBeforeTermination,
@@ -624,7 +504,7 @@ public class FunctionInvokingChatClientTests
             // The last message is the one returned by the chat client
             // When streaming, function call content is removed from this message
             new ChatMessage(ChatRole.Assistant, []),
-        ], configurePipeline: _keepMessagesConfigure));
+        ]));
 
         // The current context should be null outside the async call stack for the function invocation
         Assert.Null(FunctionInvokingChatClient.CurrentContext);

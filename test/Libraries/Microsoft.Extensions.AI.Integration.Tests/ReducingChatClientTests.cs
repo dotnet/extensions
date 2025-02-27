@@ -33,7 +33,7 @@ public class ReducingChatClientTests
                 Assert.Collection(messages,
                     m => Assert.StartsWith("Golden retrievers are quite active", m.Text, StringComparison.Ordinal),
                     m => Assert.StartsWith("Are they good with kids?", m.Text, StringComparison.Ordinal));
-                return Task.FromResult(new ChatResponse([]));
+                return Task.FromResult(new ChatResponse());
             }
         };
 

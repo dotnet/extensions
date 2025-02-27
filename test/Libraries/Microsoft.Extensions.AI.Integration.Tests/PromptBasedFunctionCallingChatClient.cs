@@ -82,10 +82,10 @@ internal sealed class PromptBasedFunctionCallingChatClient(IChatClient innerClie
 
         var result = await base.GetResponseAsync(chatMessages, options, cancellationToken);
 
-        if (result.Choices.FirstOrDefault()?.Text is { } content && content.IndexOf("<tool_call_json>", StringComparison.Ordinal) is int startPos
+        if (result.Message.Text is { } content && content.IndexOf("<tool_call_json>", StringComparison.Ordinal) is int startPos
             && startPos >= 0)
         {
-            var message = result.Choices.First();
+            var message = result.Message;
             var contentItem = message.Contents.SingleOrDefault();
             content = content.Substring(startPos);
 

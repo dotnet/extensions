@@ -38,17 +38,12 @@ public class ChatResponseUpdateExtensionsTests
     {
         ChatResponseUpdate[] updates =
         [
-            new() { ChoiceIndex = 0, Text = "Hello", ResponseId = "12345", CreatedAt = new DateTimeOffset(1, 2, 3, 4, 5, 6, TimeSpan.Zero), ModelId = "model123" },
-            new() { ChoiceIndex = 1, Text = "Hey", ResponseId = "12345", CreatedAt = new DateTimeOffset(1, 2, 3, 4, 5, 6, TimeSpan.Zero), ModelId = "model124" },
+            new() { Text = "Hello", ResponseId = "12345", CreatedAt = new DateTimeOffset(1, 2, 3, 4, 5, 6, TimeSpan.Zero), ModelId = "model123" },
+            new() { Text = ", ", AuthorName = "Someone", Role = new ChatRole("human"), AdditionalProperties = new() { ["a"] = "b" } },
+            new() { Text = "world!", CreatedAt = new DateTimeOffset(2, 2, 3, 4, 5, 6, TimeSpan.Zero), ChatThreadId = "123", AdditionalProperties = new() { ["c"] = "d" } },
 
-            new() { ChoiceIndex = 0, Text = ", ", AuthorName = "Someone", Role = ChatRole.User, AdditionalProperties = new() { ["a"] = "b" } },
-            new() { ChoiceIndex = 1, Text = ", ", AuthorName = "Else", Role = ChatRole.System, ChatThreadId = "123", AdditionalProperties = new() { ["g"] = "h" } },
-
-            new() { ChoiceIndex = 0, Text = "world!", CreatedAt = new DateTimeOffset(2, 2, 3, 4, 5, 6, TimeSpan.Zero), AdditionalProperties = new() { ["c"] = "d" } },
-            new() { ChoiceIndex = 1, Text = "you!", Role = ChatRole.Tool, CreatedAt = new DateTimeOffset(3, 2, 3, 4, 5, 6, TimeSpan.Zero), AdditionalProperties = new() { ["e"] = "f", ["i"] = 42 } },
-
-            new() { ChoiceIndex = 0, Contents = new[] { new UsageContent(new() { InputTokenCount = 1, OutputTokenCount = 2 }) } },
-            new() { ChoiceIndex = 3, Contents = new[] { new UsageContent(new() { InputTokenCount = 4, OutputTokenCount = 5 }) } },
+            new() { Contents = new[] { new UsageContent(new() { InputTokenCount = 1, OutputTokenCount = 2 }) } },
+            new() { Contents = new[] { new UsageContent(new() { InputTokenCount = 4, OutputTokenCount = 5 }) } },
         ];
 
         ChatResponse response = (coalesceContent is bool, useAsync) switch
@@ -71,48 +66,25 @@ public class ChatResponseUpdateExtensionsTests
 
         Assert.Equal("123", response.ChatThreadId);
 
-        Assert.Equal(3, response.Choices.Count);
-
-        ChatMessage message = response.Choices[0];
-        Assert.Equal(ChatRole.User, message.Role);
+        ChatMessage message = response.Message;
+        Assert.Equal(new ChatRole("human"), message.Role);
         Assert.Equal("Someone", message.AuthorName);
-        Assert.NotNull(message.AdditionalProperties);
-        Assert.Equal(2, message.AdditionalProperties.Count);
-        Assert.Equal("b", message.AdditionalProperties["a"]);
-        Assert.Equal("d", message.AdditionalProperties["c"]);
-
-        message = response.Choices[1];
-        Assert.Equal(ChatRole.System, message.Role);
-        Assert.Equal("Else", message.AuthorName);
-        Assert.NotNull(message.AdditionalProperties);
-        Assert.Equal(3, message.AdditionalProperties.Count);
-        Assert.Equal("h", message.AdditionalProperties["g"]);
-        Assert.Equal("f", message.AdditionalProperties["e"]);
-        Assert.Equal(42, message.AdditionalProperties["i"]);
-
-        message = response.Choices[2];
-        Assert.Equal(ChatRole.Assistant, message.Role);
-        Assert.Null(message.AuthorName);
         Assert.Null(message.AdditionalProperties);
-        Assert.Empty(message.Contents);
+
+        Assert.NotNull(response.AdditionalProperties);
+        Assert.Equal(2, response.AdditionalProperties.Count);
+        Assert.Equal("b", response.AdditionalProperties["a"]);
+        Assert.Equal("d", response.AdditionalProperties["c"]);
 
         if (coalesceContent is null or true)
         {
-            Assert.Equal("Hello, world!", response.Choices[0].Text);
-            Assert.Equal("Hey, you!", response.Choices[1].Text);
-            Assert.Null(response.Choices[2].Text);
+            Assert.Equal("Hello, world!", response.Message.Text);
         }
         else
         {
-            Assert.Equal("Hello", response.Choices[0].Contents[0].ToString());
-            Assert.Equal(", ", response.Choices[0].Contents[1].ToString());
-            Assert.Equal("world!", response.Choices[0].Contents[2].ToString());
-
-            Assert.Equal("Hey", response.Choices[1].Contents[0].ToString());
-            Assert.Equal(", ", response.Choices[1].Contents[1].ToString());
-            Assert.Equal("you!", response.Choices[1].Contents[2].ToString());
-
-            Assert.Null(response.Choices[2].Text);
+            Assert.Equal("Hello", response.Message.Contents[0].ToString());
+            Assert.Equal(", ", response.Message.Contents[1].ToString());
+            Assert.Equal("world!", response.Message.Contents[2].ToString());
         }
     }
 
@@ -181,9 +153,11 @@ public class ChatResponseUpdateExtensionsTests
         }
 
         ChatResponse response = useAsync ? await YieldAsync(updates).ToChatResponseAsync() : updates.ToChatResponse();
-        Assert.Single(response.Choices);
+        Assert.NotNull(response);
 
         ChatMessage message = response.Message;
+        Assert.NotNull(message);
+
         Assert.Equal(expected.Count + (gapLength * ((numSequences - 1) + (gapBeginningEnd ? 2 : 0))), message.Contents.Count);
 
         TextContent[] contents = message.Contents.OfType<TextContent>().ToArray();

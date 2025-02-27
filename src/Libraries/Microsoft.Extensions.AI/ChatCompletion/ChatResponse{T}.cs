@@ -31,7 +31,7 @@ public class ChatResponse<T> : ChatResponse
     /// <param name="response">The unstructured <see cref="ChatResponse"/> that is being wrapped.</param>
     /// <param name="serializerOptions">The <see cref="JsonSerializerOptions"/> to use when deserializing the result.</param>
     public ChatResponse(ChatResponse response, JsonSerializerOptions serializerOptions)
-        : base(Throw.IfNull(response).Choices)
+        : base(Throw.IfNull(response).Message)
     {
         _serializerOptions = Throw.IfNull(serializerOptions);
         AdditionalProperties = response.AdditionalProperties;
@@ -116,8 +116,7 @@ public class ChatResponse<T> : ChatResponse
 
     private string? GetResultAsJson()
     {
-        var choice = Choices.Count == 1 ? Choices[0] : null;
-        var content = choice?.Contents.Count == 1 ? choice.Contents[0] : null;
+        var content = Message.Contents.Count == 1 ? Message.Contents[0] : null;
         return (content as TextContent)?.Text;
     }
 
