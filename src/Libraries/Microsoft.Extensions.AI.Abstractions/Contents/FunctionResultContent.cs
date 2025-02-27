@@ -67,13 +67,16 @@ public sealed class FunctionResultContent : AIContent
     {
         get
         {
-            string display = CallId is not null ?
-                $"CallId = {CallId}, " :
-                string.Empty;
+            string display = "FunctionResult = ";
+
+            if (CallId is not null)
+            {
+                display += $"{CallId}, ";
+            }
 
             display += Exception is not null ?
-                $"Error = {Exception.Message}" :
-                $"Result = {Result?.ToString() ?? string.Empty}";
+                $"{Exception.GetType().Name}(\"{Exception.Message}\")" :
+                $"{Result?.ToString() ?? "(null)"}";
 
             return display;
         }
