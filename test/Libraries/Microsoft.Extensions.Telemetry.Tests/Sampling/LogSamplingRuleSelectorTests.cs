@@ -38,7 +38,7 @@ public class LogSamplingRuleSelectorTests
         };
 
         // Act
-        _ruleSelector.Select(rules, "Program.MyLogger", LogLevel.Warning, 1, out var actualResult);
+        RandomProbabilisticSamplerFilterRule? actualResult = _ruleSelector.Select(rules, "Program.MyLogger", LogLevel.Warning, 1);
 
         // Assert
         Assert.Same(rules[9], actualResult);
@@ -62,7 +62,7 @@ public class LogSamplingRuleSelectorTests
         };
 
         // Act
-        _ruleSelector.Select(rules, "Program.MyLogger", LogLevel.Warning, 1, out var actualResult);
+        RandomProbabilisticSamplerFilterRule? actualResult = _ruleSelector.Select(rules, "Program.MyLogger", LogLevel.Warning, 1);
 
         // Assert
         Assert.Same(rules.Last(), actualResult);
@@ -80,7 +80,7 @@ public class LogSamplingRuleSelectorTests
         };
 
         // Act
-        _ruleSelector.Select(rules, "AnyCategory", LogLevel.Warning, 0, out var actualResult);
+        RandomProbabilisticSamplerFilterRule? actualResult = _ruleSelector.Select(rules, "AnyCategory", LogLevel.Warning, 0);
 
         // Assert
         Assert.Same(rules[1], actualResult);
@@ -98,7 +98,7 @@ public class LogSamplingRuleSelectorTests
         };
 
         // Act
-        _ruleSelector.Select(rules, "AnyCategory", LogLevel.Information, 2, out var actualResult);
+        RandomProbabilisticSamplerFilterRule? actualResult = _ruleSelector.Select(rules, "AnyCategory", LogLevel.Information, 2);
 
         // Assert
         Assert.Same(rules[1], actualResult);
@@ -116,7 +116,7 @@ public class LogSamplingRuleSelectorTests
         };
 
         // Act
-        _ruleSelector.Select(rules, "AnyCategory", LogLevel.Warning, 2, out var actualResult);
+        RandomProbabilisticSamplerFilterRule? actualResult = _ruleSelector.Select(rules, "AnyCategory", LogLevel.Warning, 2);
 
         // Assert
         Assert.Same(rules[1], actualResult);
@@ -134,7 +134,7 @@ public class LogSamplingRuleSelectorTests
         };
 
         // Act
-        _ruleSelector.Select(rules, "Program.MyLogger", LogLevel.Information, 0, out var actualResult);
+        RandomProbabilisticSamplerFilterRule? actualResult = _ruleSelector.Select(rules, "Program.MyLogger", LogLevel.Information, 0);
 
         // Assert
         Assert.Same(rules[1], actualResult);
@@ -151,7 +151,7 @@ public class LogSamplingRuleSelectorTests
         };
 
         // Act
-        _ruleSelector.Select(rules, "AnyCategory", LogLevel.Information, 0, out var actualResult);
+        RandomProbabilisticSamplerFilterRule? actualResult = _ruleSelector.Select(rules, "AnyCategory", LogLevel.Information, 0);
 
         // Assert
         Assert.Same(rules[0], actualResult);
@@ -168,7 +168,7 @@ public class LogSamplingRuleSelectorTests
         };
 
         // Act
-        _ruleSelector.Select(rules, "AnyCategory", LogLevel.Warning, 0, out var actualResult);
+        RandomProbabilisticSamplerFilterRule? actualResult = _ruleSelector.Select(rules, "AnyCategory", LogLevel.Warning, 0);
 
         // Assert
         Assert.Same(rules[0], actualResult);

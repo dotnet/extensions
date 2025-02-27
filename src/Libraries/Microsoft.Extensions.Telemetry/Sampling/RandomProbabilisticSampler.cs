@@ -84,19 +84,14 @@ internal sealed class RandomProbabilisticSampler : LoggingSampler, IDisposable
     {
         probability = 0.0;
 
-        _ruleSelector.Select(
-            _lastKnownGoodSamplerRules,
-            logEntry.Category,
-            logEntry.LogLevel,
-            logEntry.EventId,
-            out RandomProbabilisticSamplerFilterRule? rule);
+        RandomProbabilisticSamplerFilterRule? rule = _ruleSelector.Select(_lastKnownGoodSamplerRules, logEntry.Category, logEntry.LogLevel, logEntry.EventId);
 
-        if (rule is not null)
+        if (rule is null)
         {
-            probability = rule.Probability;
-            return true;
+            return false;
         }
 
-        return false;
+        probability = rule.Probability;
+        return true;
     }
 }

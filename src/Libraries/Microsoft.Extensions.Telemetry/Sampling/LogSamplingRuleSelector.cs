@@ -23,9 +23,9 @@ internal sealed class LogSamplingRuleSelector<T>
         _ruleCache.Clear();
     }
 
-    public void Select(IList<T> rules, string category, LogLevel logLevel, EventId eventId, out T? bestRule)
+    public T? Select(IList<T> rules, string category, LogLevel logLevel, EventId eventId)
     {
-        bestRule = _ruleCache.GetOrAdd((category, logLevel, eventId), _ =>
+        return _ruleCache.GetOrAdd((category, logLevel, eventId), _ =>
         {
             // Filter rule selection:
             // 0. Ignore rules whose LogLevel is defined but lower than the requested logLevel
@@ -68,8 +68,8 @@ internal sealed class LogSamplingRuleSelector<T>
             const char WildcardChar = '*';
 
             int wildcardIndex = categoryName.IndexOf(WildcardChar);
-            if (wildcardIndex != -1 &&
-                categoryName.IndexOf(WildcardChar, wildcardIndex + 1) != -1)
+            if (wildcardIndex >= 0 &&
+                categoryName.IndexOf(WildcardChar, wildcardIndex + 1) >= 0)
             {
                 throw new InvalidOperationException("Only one wildcard character is allowed in category name.");
             }
