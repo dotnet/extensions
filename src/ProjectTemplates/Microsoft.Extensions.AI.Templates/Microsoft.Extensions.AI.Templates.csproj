@@ -22,18 +22,46 @@
     <NoPackageAnalysis>true</NoPackageAnalysis>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <_MicrosoftExtensionsAIVersion>9.3.0-preview.1.25114.11</_MicrosoftExtensionsAIVersion>
+
+    <!-- Specify package version variables used in template content. -->
+    <GeneratedContentProperties>
+      $(GeneratedContentProperties);
+      OllamaSharpVersion=$(OllamaSharpVersion);
+      OpenAIVersion=$(OpenAIVersion);
+      AzureAIProjectsVersion=$(AzureAIProjectsVersion);
+      AzureAIOpenAIVersion=$(AzureAIOpenAIVersion);
+      AzureIdentityVersion=$(AzureIdentityVersion);
+      MicrosoftEntityFrameworkCoreSqliteVersion=$(MicrosoftEntityFrameworkCoreSqliteVersion);
+      MicrosoftExtensionsAIVersion=$(_MicrosoftExtensionsAIVersion);
+      MicrosoftSemanticKernelCoreVersion=$(MicrosoftSemanticKernelCoreVersion);
+      PdfPigVersion=$(PdfPigVersion);
+      SystemLinqAsyncVersion=$(SystemLinqAsyncVersion);
+      AzureSearchDocumentsVersion=$(AzureSearchDocumentsVersion);
+      MicrosoftSemanticKernelConnectorsAzureAISearchVersion=$(MicrosoftSemanticKernelConnectorsAzureAISearchVersion);
+    </GeneratedContentProperties>
+  </PropertyGroup>
+
   <ItemGroup>
-    <Content Include="src\ChatWithCustomData\**\*" Exclude="**\bin\**;**\obj\**;**\node_modules\**;**\*.user;**\*.csproj.in;**\*.out.js;**\*.generated.css;**\package-lock.json" />
-    <Compile Remove="**\*" />
+    <GeneratedContent
+      Include="src\ChatWithCustomData\ChatWithCustomData.Web\ChatWithCustomData.Web.csproj.in"
+      OutputPath="src\ChatWithCustomData\ChatWithCustomData.Web\ChatWithCustomData.Web.csproj" />
   </ItemGroup>
 
-  <!-- Copy the .csproj.in files to corresponding .csproj files -->
-  <!-- The reason they are initially .csproj.in is that there's no other way to exclude them from the main build -->
-  <Target Name="PrepareCsprojFiles" BeforeTargets="PrepareForBuild">
-    <ItemGroup>
-      <_CsprojFiles Include="src\**\*.csproj.in" />
-    </ItemGroup>
-    <Copy SourceFiles="@(_CsprojFiles)" DestinationFiles="@(_CsprojFiles->'$([System.String]::Copy('%(Identity)').Replace('.csproj.in', '.csproj'))')" SkipUnchangedFiles="true" />
-  </Target>
+  <ItemGroup>
+    <Content
+      Include="src\ChatWithCustomData\**\*"
+      Exclude="
+        **\bin\**;
+        **\obj\**;
+        **\node_modules\**;
+        **\*.user;**\*.in;
+        **\*.out.js;
+        **\*.generated.css;
+        **\package-lock.json;" />
+    <None Include="THIRD-PARTY-NOTICES.TXT" Pack="true" PackagePath="." />
+    <Compile Remove="**\*" />
+  </ItemGroup>
 
 </Project>
