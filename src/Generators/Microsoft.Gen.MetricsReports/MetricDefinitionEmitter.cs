@@ -13,7 +13,8 @@ namespace Microsoft.Gen.MetricsReports;
 
 internal sealed class MetricDefinitionEmitter : EmitterBase
 {
-    private const int IndentLevel = 2;
+    private const int RootIndentLevel = 2;
+    private const int DimensionsIndentLevel = 3;
 
     internal MetricDefinitionEmitter()
         : base(false)
@@ -71,7 +72,7 @@ internal sealed class MetricDefinitionEmitter : EmitterBase
 
         if (metricClass.Methods.Length > 0)
         {
-            Indent(IndentLevel);
+            Indent(RootIndentLevel);
             OutLn("[");
 
             for (int j = 0; j < metricClass.Methods.Length; j++)
@@ -90,7 +91,7 @@ internal sealed class MetricDefinitionEmitter : EmitterBase
             }
 
             OutLn("]");
-            Unindent(IndentLevel);
+            Unindent(RootIndentLevel);
         }
 
         OutLn("}");
@@ -123,10 +124,9 @@ internal sealed class MetricDefinitionEmitter : EmitterBase
 
                     if (metricMethod.Dimensions.Count > 0)
                     {
-                        const int IndentLevel = 3;
                         OutLn($"     \"InstrumentName\": \"{metricMethod.Kind}\",");
                         OutLn("     \"Dimensions\":");
-                        Indent(IndentLevel);
+                        Indent(DimensionsIndentLevel);
                         OutLn("{");
                         Indent();
                         int k = 0;
@@ -147,7 +147,7 @@ internal sealed class MetricDefinitionEmitter : EmitterBase
 
                         Unindent();
                         OutLn("}");
-                        Unindent(IndentLevel);
+                        Unindent(DimensionsIndentLevel);
                     }
                     else
                     {
