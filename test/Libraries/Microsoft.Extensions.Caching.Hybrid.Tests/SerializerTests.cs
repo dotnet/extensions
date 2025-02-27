@@ -40,67 +40,97 @@ public class SerializerTests
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void RoundTripPoco(bool addCustomJsonOptions)
+    [InlineData(JsonSerializer.None, JsonSerializer.Default)]
+    [InlineData(JsonSerializer.CustomGlobal, JsonSerializer.CustomGlobal)]
+    [InlineData(JsonSerializer.CustomPerType, JsonSerializer.CustomPerType)]
+    [InlineData(JsonSerializer.CustomPerType | JsonSerializer.CustomGlobal, JsonSerializer.CustomPerType)]
+    public void RoundTripPoco(JsonSerializer addSerializers, JsonSerializer expectedSerializer)
     {
-        var obj = RoundTrip(new MyPoco { X = 42, Y = "abc" }, """{"X":42,"Y":"abc"}"""u8, addCustomJsonOptions: addCustomJsonOptions);
+        var obj = RoundTrip(new MyPoco { X = 42, Y = "abc" }, """{"X":42,"Y":"abc"}"""u8, expectedSerializer, addSerializers);
         Assert.Equal(42, obj.X);
         Assert.Equal("abc", obj.Y);
+    }
+
+    [Flags]
+    public enum JsonSerializer
+    {
+        None = 0,
+        CustomGlobal = 1 << 0,
+        CustomPerType = 1 << 1,
+        Default = 1 << 2,
+        FieldEnabled = 1 << 3,
     }
 
     public class MyPoco
     {
         public int X { get; set; }
-        public string Y { get; set; }
+        public string Y { get; set; } = "";
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void RoundTripTuple(bool addCustomJsonOptions)
+    [InlineData(JsonSerializer.None, JsonSerializer.Default)]
+    [InlineData(JsonSerializer.CustomGlobal, JsonSerializer.CustomGlobal)]
+    [InlineData(JsonSerializer.CustomPerType, JsonSerializer.CustomPerType)]
+    [InlineData(JsonSerializer.CustomPerType | JsonSerializer.CustomGlobal, JsonSerializer.CustomPerType)]
+    public void RoundTripTuple(JsonSerializer addSerializers, JsonSerializer expectedSerializer)
     {
-        var obj = RoundTrip(Tuple.Create(42, "abc"), """{"Item1":42,"Item2":"abc"}"""u8, addCustomJsonOptions: addCustomJsonOptions);
+        var obj = RoundTrip(Tuple.Create(42, "abc"), """{"Item1":42,"Item2":"abc"}"""u8, expectedSerializer, addSerializers);
         Assert.Equal(42, obj.Item1);
         Assert.Equal("abc", obj.Item2);
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void RoundTripValueTuple(bool addCustomJsonOptions)
+    [InlineData(JsonSerializer.None, JsonSerializer.FieldEnabled)]
+    [InlineData(JsonSerializer.CustomGlobal, JsonSerializer.FieldEnabled)]
+    [InlineData(JsonSerializer.CustomPerType, JsonSerializer.FieldEnabled)]
+    [InlineData(JsonSerializer.CustomPerType | JsonSerializer.CustomGlobal, JsonSerializer.FieldEnabled)]
+    public void RoundTripValueTuple(JsonSerializer addSerializers, JsonSerializer expectedSerializer)
     {
-        var obj = RoundTrip((42, "abc"), """{"Item1":42,"Item2":"abc"}"""u8, addCustomJsonOptions: addCustomJsonOptions);
+        var obj = RoundTrip((42, "abc"), """{"Item1":42,"Item2":"abc"}"""u8, expectedSerializer, addSerializers);
         Assert.Equal(42, obj.Item1);
         Assert.Equal("abc", obj.Item2);
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void RoundTripNamedValueTuple(bool addCustomJsonOptions)
+    [InlineData(JsonSerializer.None, JsonSerializer.FieldEnabled)]
+    [InlineData(JsonSerializer.CustomGlobal, JsonSerializer.FieldEnabled)]
+    [InlineData(JsonSerializer.CustomPerType, JsonSerializer.FieldEnabled)]
+    [InlineData(JsonSerializer.CustomPerType | JsonSerializer.CustomGlobal, JsonSerializer.FieldEnabled)]
+    public void RoundTripNamedValueTuple(JsonSerializer addSerializers, JsonSerializer expectedSerializer)
     {
-        var obj = RoundTrip((X: 42, Y: "abc"), """{"Item1":42,"Item2":"abc"}"""u8, addCustomJsonOptions: addCustomJsonOptions);
+        var obj = RoundTrip((X: 42, Y: "abc"), """{"Item1":42,"Item2":"abc"}"""u8, expectedSerializer, addSerializers);
         Assert.Equal(42, obj.X);
         Assert.Equal("abc", obj.Y);
     }
 
-    private static T RoundTrip<T>(T value, ReadOnlySpan<byte> expectedBytes = default, bool binary = false, bool addCustomJsonOptions = false)
+    private static T RoundTrip<T>(T value, ReadOnlySpan<byte> expectedBytes, JsonSerializer expectedJsonOptions, JsonSerializer addSerializers = JsonSerializer.None, bool binary = false)
     {
         var services = new ServiceCollection();
         services.AddHybridCache();
-        JsonSerializerOptions expectedJsonOptions = JsonSerializerOptions.Default;
-        if (addCustomJsonOptions)
+        JsonSerializerOptions? globalOptions = null;
+        JsonSerializerOptions? perTypeOptions = null;
+
+        if ((addSerializers & JsonSerializer.CustomGlobal) != JsonSerializer.None)
         {
-            expectedJsonOptions = new JsonSerializerOptions();
-            services.AddKeyedSingleton<JsonSerializerOptions>(typeof(HybridCache), expectedJsonOptions);
+            globalOptions = new();
+            services.AddKeyedSingleton<JsonSerializerOptions>(typeof(IHybridCacheSerializer<>), globalOptions);
         }
-        // for for value-tuple, we *expect special handling*
-        if (typeof(T).IsValueType && typeof(T).IsGenericType && typeof(T).Namespace == "System"
-            && typeof(T).Name!.StartsWith("ValueTuple`", StringComparison.Ordinal))
+
+        if ((addSerializers & JsonSerializer.CustomPerType) != JsonSerializer.None)
         {
-            expectedJsonOptions = DefaultJsonSerializerFactory.FieldEnabledJsonOptions;
+            perTypeOptions = new();
+            services.AddKeyedSingleton<JsonSerializerOptions>(typeof(IHybridCacheSerializer<T>), perTypeOptions);
         }
+
+        JsonSerializerOptions? expectedOptionsObj = expectedJsonOptions switch
+        {
+            JsonSerializer.Default => JsonSerializerOptions.Default,
+            JsonSerializer.FieldEnabled => DefaultJsonSerializerFactory.FieldEnabledJsonOptions,
+            JsonSerializer.CustomGlobal => globalOptions,
+            JsonSerializer.CustomPerType => perTypeOptions,
+            _ => throw new ArgumentOutOfRangeException(nameof(expectedJsonOptions))
+        };
+        Assert.NotNull(expectedOptionsObj);
 
         using var provider = services.BuildServiceProvider();
         var cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
@@ -109,8 +139,7 @@ public class SerializerTests
 
         if (serializer is DefaultJsonSerializerFactory.DefaultJsonSerializer<T> json)
         {
-            // check the correct options were discovered
-            Assert.Same(expectedJsonOptions, json.Options);
+            Assert.Same(expectedOptionsObj, json.Options);
         }
 
         using var target = RecyclableArrayBufferWriter<byte>.Create(int.MaxValue);

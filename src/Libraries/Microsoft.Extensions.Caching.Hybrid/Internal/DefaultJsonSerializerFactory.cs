@@ -11,24 +11,30 @@ namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
 internal sealed class DefaultJsonSerializerFactory : IHybridCacheSerializerFactory
 {
+    private readonly IServiceProvider _serviceProvider;
+
     internal static JsonSerializerOptions FieldEnabledJsonOptions { get; } = new() { IncludeFields = true };
 
     internal JsonSerializerOptions Options { get; }
 
-    public DefaultJsonSerializerFactory([FromKeyedServices(typeof(HybridCache))] JsonSerializerOptions? options = null)
+    public DefaultJsonSerializerFactory(IServiceProvider serviceProvider)
     {
+        // store the service provider and obtain the default JSON options, keyed by the **open** generic interface type
+        _serviceProvider = serviceProvider;
+
 #pragma warning disable IDE0079 // unnecessary suppression: TFM-dependent
 #pragma warning disable IL2026, IL3050 // AOT bits
-        Options = options ?? JsonSerializerOptions.Default;
+        Options = serviceProvider.GetKeyedService<JsonSerializerOptions>(typeof(IHybridCacheSerializer<>)) ?? JsonSerializerOptions.Default;
 #pragma warning restore IL2026, IL3050
 #pragma warning restore IDE0079
     }
 
     public bool TryCreateSerializer<T>([NotNullWhen(true)] out IHybridCacheSerializer<T>? serializer)
     {
-        // no restriction - accept any type
+        // no restriction - accept any type (i.e. always return true)
 
-        var options = Options;
+        // see if there is a per-type options registered (keyed by the **closed** generic type), otherwise use the default
+        JsonSerializerOptions options = _serviceProvider.GetKeyedService<JsonSerializerOptions>(typeof(IHybridCacheSerializer<T>)) ?? Options;
         if (IsValueTuple(typeof(T)) && !options.IncludeFields)
         {
             // value-tuples expose fields, not properties; special-case this as a common scenario
