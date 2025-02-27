@@ -10,8 +10,6 @@
   <ItemGroup>
 <!--#if (IsOllama)
     <PackageReference Include="OllamaSharp" Version="${OllamaSharpVersion}" />
-#elif (IsGHModels)
-    <PackageReference Include="OpenAI" Version="${OpenAIVersion}" />
 #elif (IsAzureAiFoundry)
     <PackageReference Include="Azure.AI.Projects" Version="${AzureAIProjectsVersion}" />
     <PackageReference Include="Azure.AI.OpenAI" Version="${AzureAIOpenAIVersion}" />
