@@ -3,6 +3,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -14,6 +15,7 @@ namespace Microsoft.Extensions.AI;
 /// Describes the intended purpose of a message within a chat interaction.
 /// </summary>
 [JsonConverter(typeof(Converter))]
+[DebuggerDisplay("{Value,nq}")]
 public readonly struct ChatRole : IEquatable<ChatRole>
 {
     /// <summary>Gets the role that instructs or sets the behavior of the system.</summary>

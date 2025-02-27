@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
@@ -9,6 +10,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a chat message used by an <see cref="IChatClient" />.</summary>
+[DebuggerDisplay("[{Role}] {ContentForDebuggerDisplay}{EllipsesForDebuggerDisplay,nq}")]
 public class ChatMessage
 {
     private IList<AIContent>? _contents;
@@ -111,4 +113,12 @@ public class ChatMessage
 
     /// <inheritdoc/>
     public override string ToString() => Contents.ConcatText();
+
+    /// <summary>Gets a <see cref="AIContent"/> object to display in the debugger display.</summary>
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private AIContent? ContentForDebuggerDisplay => _contents is { Count: > 0 } ? _contents[0] : null;
+
+    /// <summary>Gets an indication for the debugger display of whether there's more content.</summary>
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private string EllipsesForDebuggerDisplay => _contents is { Count: > 1 } ? ", ..." : string.Empty;
 }
