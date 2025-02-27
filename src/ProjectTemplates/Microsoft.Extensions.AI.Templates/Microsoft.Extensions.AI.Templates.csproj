@@ -60,6 +60,7 @@
         **\*.out.js;
         **\*.generated.css;
         **\package-lock.json;" />
+    <None Include="THIRD-PARTY-NOTICES.TXT" Pack="true" PackagePath="." />
     <Compile Remove="**\*" />
   </ItemGroup>
 
