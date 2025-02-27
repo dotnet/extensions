@@ -141,8 +141,7 @@ public class EmitterTests
                                 ""StatusCode"": ""Status code for request."",
                                 ""ErrorCode"": ""Error code for request.""
                             }
-                }
-                ,
+                },
                 {
                      ""MetricName"": ""Latency"",
                      ""MetricDescription"": ""Latency summary."",
@@ -151,8 +150,7 @@ public class EmitterTests
                             {
                                 ""Dim1"": """"
                             }
-                }
-                ,
+                },
                 {
                      ""MetricName"": ""MemoryUsage"",
                      ""InstrumentName"": ""Gauge""
@@ -169,8 +167,7 @@ public class EmitterTests
                      ""MetricDescription"": ""Counter summary."",
                      ""InstrumentName"": ""Counter""
 
-                }
-                ,
+                },
                 {
                      ""MetricName"": ""Test\\MemoryUsage"",
                      ""MetricDescription"": ""MemoryUsage summary."",

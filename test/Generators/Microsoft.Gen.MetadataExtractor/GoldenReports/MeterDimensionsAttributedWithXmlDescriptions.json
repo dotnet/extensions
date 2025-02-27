@@ -15,8 +15,7 @@
                                         "Dimension1": "Dimension1 description.",
                                         "Dim1": ""
                                     }
-                        }
-                        ,
+                        },
                         {
                              "MetricName": "DescribedDimensionHistogram",
                              "MetricDescription": "(Missing Summary)",
@@ -26,8 +25,7 @@
                                         "Dimension2": "Dimension2 description.",
                                         "DimensionDefinedInMetricClass": "DimensionDefinedInMetricClass description."
                                     }
-                        }
-                        ,
+                        },
                         {
                              "MetricName": "MyStrongTypeMetricWithDescription",
                              "MetricDescription": "(Missing Summary)",

@@ -78,13 +78,15 @@ internal sealed class MetricDefinitionEmitter : EmitterBase
             for (int j = 0; j < metricClass.Methods.Length; j++)
             {
                 Indent();
-                var metricMethod = metricClass.Methods[j];
+                ReportedMetricMethod metricMethod = metricClass.Methods[j];
+                bool isLastReportedMetricMethod = (j == metricClass.Methods.Length - 1);
 
-                GenMetricMethodDefinition(metricMethod, cancellationToken);
+                GenMetricMethodDefinition(metricMethod, isLastReportedMetricMethod, cancellationToken);
 
-                if (j < metricClass.Methods.Length - 1)
+                if (!isLastReportedMetricMethod)
                 {
-                    OutLn(",");
+                    Out(",");
+                    OutLn();
                 }
 
                 Unindent();
@@ -98,7 +100,7 @@ internal sealed class MetricDefinitionEmitter : EmitterBase
         Unindent();
     }
 
-    private void GenMetricMethodDefinition(ReportedMetricMethod metricMethod, CancellationToken cancellationToken)
+    private void GenMetricMethodDefinition(ReportedMetricMethod metricMethod, bool isLastReportedMetricMethod, CancellationToken cancellationToken)
     {
         switch (metricMethod.Kind)
         {
@@ -154,7 +156,16 @@ internal sealed class MetricDefinitionEmitter : EmitterBase
                         OutLn();
                     }
 
-                    OutLn("}");
+                    if (isLastReportedMetricMethod)
+                    {
+                        OutLn("}");
+                    }
+                    else
+                    {
+                        OutIndent();
+                        Out("}");
+                    }
+
                 }
                 catch (Exception e)
                 {
