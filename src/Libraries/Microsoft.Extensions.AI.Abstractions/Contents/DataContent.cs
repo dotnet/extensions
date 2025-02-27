@@ -203,7 +203,9 @@ public class DataContent : AIContent
             const int MaxLength = 80;
 
             string uri = Uri;
-            return uri.Length <= MaxLength ? uri : $"{uri.Substring(0, MaxLength)}...";
+            return uri.Length <= MaxLength ?
+                $"Data = {uri}" :
+                $"Data = {uri.Substring(0, MaxLength)}...";
         }
     }
 }
