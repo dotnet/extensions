@@ -1,7 +1,10 @@
-<Project>
-  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="$(MSBuildThisFileDirectory)..\GeneratedContent.props" />
 
   <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+
     <!-- Used for incremental builds. When versions or dependencies of templates change, this file is updated and causes a re-build. -->
     <_GeneratedContentPropertiesHashFile>$(IntermediateOutputPath)$(MSBuildProjectName).content.g.cache</_GeneratedContentPropertiesHashFile>
   </PropertyGroup>
@@ -38,7 +41,7 @@
   -->
   <Target Name="_GenerateContent"
           DependsOnTargets="_ComputeGeneratedContentPropertiesHash"
-          BeforeTargets="CoreCompile"
+          BeforeTargets="PrepareForBuild"
           Inputs="$(MSBuildAllProjects);$(_GeneratedContentPropertiesHashFile);@(GeneratedContent)"
           Outputs="@(GeneratedContent->'%(OutputPath)')">
 
@@ -51,4 +54,5 @@
       <Output TaskParameter="ResolvedOutputPath" ItemName="Content" />
     </GenerateFileFromTemplate>
   </Target>
+
 </Project>
