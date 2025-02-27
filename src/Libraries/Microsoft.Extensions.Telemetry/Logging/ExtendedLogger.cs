@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Logging;
@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.Logging;
 //       redactor code calls recursively back into the logger. Don't do that.
 //
 // NOTE: Unlike the original logger in dotnet/runtime, this logger eats exceptions thrown from invoked loggers, enrichers,
-//       and redactors, rather than forwarding the exceptions to the caller. The fact an exception occured is recorded in
+//       and redactors, rather than forwarding the exceptions to the caller. The fact an exception occurred is recorded in
 //       the event log instead. The idea is that failures in the telemetry stack should not lead to failures in the
 //       application. It's better to keep running with missing telemetry rather than crashing the process completely.
 
@@ -49,7 +49,7 @@ internal sealed partial class ExtendedLogger : ILogger
             }
         }
 
-        LegacyPath<TState>(logLevel, eventId, state, exception, formatter);
+        LegacyPath(logLevel, eventId, state, exception, formatter);
     }
 
     public IDisposable? BeginScope<TState>(TState state)
@@ -261,16 +261,33 @@ internal sealed partial class ExtendedLogger : ILogger
             RecordException(exception, joiner.EnrichmentTagCollector, config);
         }
 
+        bool? samplingDecision = null;
         for (int i = 0; i < loggers.Length; i++)
         {
             ref readonly MessageLogger loggerInfo = ref loggers[i];
             if (loggerInfo.IsNotFilteredOut(logLevel))
             {
+                if (samplingDecision is null && config.Sampler is not null)
+                {
+                    var logEntry = new LogEntry<ModernTagJoiner>(logLevel, loggerInfo.Category, eventId, joiner, exception, static (s, e) =>
+                    {
+                        Func<LoggerMessageState, Exception?, string> fmt = s.Formatter!;
+                        return fmt(s.State!, e);
+                    });
+                    samplingDecision = config.Sampler.ShouldSample(in logEntry);
+                }
+
+                if (samplingDecision is false)
+                {
+                    // the record was not selected for being sampled in, so we drop it.
+                    break;
+                }
+
                 try
                 {
                     loggerInfo.LoggerLog(logLevel, eventId, joiner, exception, static (s, e) =>
                     {
-                        var fmt = s.Formatter!;
+                        Func<LoggerMessageState, Exception?, string>? fmt = s.Formatter!;
                         return fmt(s.State!, e);
                     });
                 }
@@ -345,11 +362,28 @@ internal sealed partial class ExtendedLogger : ILogger
             RecordException(exception, joiner.EnrichmentTagCollector, config);
         }
 
+        bool? samplingDecision = null;
         for (int i = 0; i < loggers.Length; i++)
         {
             ref readonly MessageLogger loggerInfo = ref loggers[i];
             if (loggerInfo.IsNotFilteredOut(logLevel))
             {
+                if (samplingDecision is null && config.Sampler is not null)
+                {
+                    var logEntry = new LogEntry<LegacyTagJoiner>(logLevel, loggerInfo.Category, eventId, joiner, exception, static (s, e) =>
+                    {
+                        var fmt = (Func<TState, Exception?, string>)s.Formatter!;
+                        return fmt((TState)s.State!, e);
+                    });
+                    samplingDecision = config.Sampler.ShouldSample(in logEntry);
+                }
+
+                if (samplingDecision is false)
+                {
+                    // the record was not selected for being sampled in, so we drop it.
+                    break;
+                }
+
                 try
                 {
                     loggerInfo.Logger.Log(logLevel, eventId, joiner, exception, static (s, e) =>
