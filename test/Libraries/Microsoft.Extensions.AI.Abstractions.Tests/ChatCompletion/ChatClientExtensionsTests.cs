@@ -100,7 +100,7 @@ public class ChatClientExtensionsTests
     [Fact]
     public async Task GetResponseAsync_CreatesTextMessageAsync()
     {
-        var expectedResponse = new ChatResponse([new ChatMessage()]);
+        var expectedResponse = new ChatResponse();
         var expectedOptions = new ChatOptions();
         using var cts = new CancellationTokenSource();
 

@@ -15,9 +15,7 @@ namespace Microsoft.Extensions.AI;
 /// <para>
 /// <see cref="ChatResponseUpdate"/> is so named because it represents updates
 /// that layer on each other to form a single chat response. Conceptually, this combines the roles of
-/// <see cref="ChatResponse"/> and <see cref="ChatMessage"/> in streaming output. For ease of consumption,
-/// it also flattens the nested structure you see on streaming chunks in some AI services, so instead of a
-/// dictionary of choices, each update is part of a single choice (and hence has its own role, choice ID, etc.).
+/// <see cref="ChatResponse"/> and <see cref="ChatMessage"/> in streaming output.
 /// </para>
 /// <para>
 /// The relationship between <see cref="ChatResponse"/> and <see cref="ChatResponseUpdate"/> is
@@ -26,7 +24,7 @@ namespace Microsoft.Extensions.AI;
 /// between the two. Note, however, that the provided conversions may be lossy, for example if multiple
 /// updates all have different <see cref="RawRepresentation"/> objects whereas there's only one slot for
 /// such an object available in <see cref="ChatResponse.RawRepresentation"/>. Similarly, if different
-/// updates that are part of the same choice provide different values for properties like <see cref="ModelId"/>,
+/// updates provide different values for properties like <see cref="ModelId"/>,
 /// only one of the values will be used to populate <see cref="ChatResponse.ModelId"/>.
 /// </para>
 /// </remarks>
@@ -107,9 +105,6 @@ public class ChatResponseUpdate
 
     /// <summary>Gets or sets a timestamp for the response update.</summary>
     public DateTimeOffset? CreatedAt { get; set; }
-
-    /// <summary>Gets or sets the zero-based index of the choice with which this update is associated in the streaming sequence.</summary>
-    public int ChoiceIndex { get; set; }
 
     /// <summary>Gets or sets the finish reason for the operation.</summary>
     public ChatFinishReason? FinishReason { get; set; }

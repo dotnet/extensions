@@ -39,7 +39,7 @@ public class DistributedCachingChatClientTest
 
         // Verify that all the expected properties will round-trip through the cache,
         // even if this involves serialization
-        var expectedResponse = new ChatResponse([
+        var expectedResponse = new ChatResponse(
             new(new ChatRole("fakeRole"), "This is some content")
             {
                 AdditionalProperties = new() { ["a"] = "b" },
@@ -52,8 +52,7 @@ public class DistributedCachingChatClientTest
                     ["arg5"] = false,
                     ["arg6"] = null
                 })]
-            }
-        ])
+            })
         {
             ResponseId = "someId",
             Usage = new()
@@ -111,7 +110,7 @@ public class DistributedCachingChatClientTest
             {
                 innerCallCount++;
                 await completionTcs.Task;
-                return new ChatResponse([new(ChatRole.Assistant, "Hello")]);
+                return new ChatResponse(new(ChatRole.Assistant, "Hello"));
             }
         };
         using var outer = new DistributedCachingChatClient(testClient, _storage)
@@ -185,7 +184,7 @@ public class DistributedCachingChatClientTest
                     await resolutionTcs.Task;
                 }
 
-                return new ChatResponse([new(ChatRole.Assistant, "A good result")]);
+                return new ChatResponse(new(ChatRole.Assistant, "A good result"));
             }
         };
         using var outer = new DistributedCachingChatClient(testClient, _storage)
@@ -219,13 +218,6 @@ public class DistributedCachingChatClientTest
         [
             new()
             {
-                Role = new ChatRole("fakeRole1"),
-                ChoiceIndex = 1,
-                AdditionalProperties = new() { ["a"] = "b" },
-                Contents = [new TextContent("Chunk1")]
-            },
-            new()
-            {
                 Role = new ChatRole("fakeRole2"),
                 Contents =
                 [
@@ -241,13 +233,6 @@ public class DistributedCachingChatClientTest
             {
                 Role = new ChatRole("fakeRole2"),
                 Contents = [new FunctionCallContent("someCallId", "someFn", new Dictionary<string, object?> { ["arg1"] = "value1" })],
-            },
-            new()
-            {
-                Role = new ChatRole("fakeRole1"),
-                ChoiceIndex = 1,
-                AdditionalProperties = new() { ["a"] = "b" },
-                Contents = [new TextContent("Chunk1")]
             },
             new()
             {
@@ -539,7 +524,7 @@ public class DistributedCachingChatClientTest
             {
                 innerCallCount++;
                 await Task.Yield();
-                return new([new(ChatRole.Assistant, options!.AdditionalProperties!["someKey"]!.ToString())]);
+                return new(new(ChatRole.Assistant, options!.AdditionalProperties!["someKey"]!.ToString()));
             }
         };
         using var outer = new DistributedCachingChatClient(testClient, _storage)
@@ -590,7 +575,7 @@ public class DistributedCachingChatClientTest
             {
                 innerCallCount++;
                 await Task.Yield();
-                return new([new(ChatRole.Assistant, options!.AdditionalProperties!["someKey"]!.ToString())]);
+                return new(new(ChatRole.Assistant, options!.AdditionalProperties!["someKey"]!.ToString()));
             }
         };
         using var outer = new CachingChatClientWithCustomKey(testClient, _storage)
@@ -618,13 +603,12 @@ public class DistributedCachingChatClientTest
     public async Task CanCacheCustomContentTypesAsync()
     {
         // Arrange
-        var expectedResponse = new ChatResponse([
+        var expectedResponse = new ChatResponse(
             new(new ChatRole("fakeRole"),
             [
                 new CustomAIContent1("Hello", DateTime.Now),
                 new CustomAIContent2("Goodbye", 42),
-            ])
-        ]);
+            ]));
 
         var serializerOptions = new JsonSerializerOptions(TestJsonSerializerContext.Default.Options);
         serializerOptions.TypeInfoResolver = serializerOptions.TypeInfoResolver!.WithAddedModifier(typeInfo =>
@@ -678,8 +662,8 @@ public class DistributedCachingChatClientTest
         {
             GetResponseAsyncCallback = delegate
             {
-                return Task.FromResult(new ChatResponse([
-                    new(ChatRole.Assistant, [new TextContent("Hey")])]));
+                return Task.FromResult(new ChatResponse(
+                    new(ChatRole.Assistant, [new TextContent("Hey")])));
             }
         };
         using var outer = testClient
@@ -739,33 +723,29 @@ public class DistributedCachingChatClientTest
         Assert.Equal(
             JsonSerializer.Serialize(expected.AdditionalProperties, TestJsonSerializerContext.Default.Options),
             JsonSerializer.Serialize(actual.AdditionalProperties, TestJsonSerializerContext.Default.Options));
-        Assert.Equal(expected.Choices.Count, actual.Choices.Count);
 
-        for (var i = 0; i < expected.Choices.Count; i++)
+        Assert.IsType(expected.Message.GetType(), actual.Message);
+        Assert.Equal(expected.Message.Role, actual.Message.Role);
+        Assert.Equal(expected.Message.Text, actual.Message.Text);
+        Assert.Equal(expected.Message.Contents.Count, actual.Message.Contents.Count);
+
+        for (var itemIndex = 0; itemIndex < expected.Message.Contents.Count; itemIndex++)
         {
-            Assert.IsType(expected.Choices[i].GetType(), actual.Choices[i]);
-            Assert.Equal(expected.Choices[i].Role, actual.Choices[i].Role);
-            Assert.Equal(expected.Choices[i].Text, actual.Choices[i].Text);
-            Assert.Equal(expected.Choices[i].Contents.Count, actual.Choices[i].Contents.Count);
+            var expectedItem = expected.Message.Contents[itemIndex];
+            var actualItem = actual.Message.Contents[itemIndex];
+            Assert.IsType(expectedItem.GetType(), actualItem);
 
-            for (var itemIndex = 0; itemIndex < expected.Choices[i].Contents.Count; itemIndex++)
+            if (expectedItem is FunctionCallContent expectedFcc)
             {
-                var expectedItem = expected.Choices[i].Contents[itemIndex];
-                var actualItem = actual.Choices[i].Contents[itemIndex];
-                Assert.IsType(expectedItem.GetType(), actualItem);
+                var actualFcc = (FunctionCallContent)actualItem;
+                Assert.Equal(expectedFcc.Name, actualFcc.Name);
+                Assert.Equal(expectedFcc.CallId, actualFcc.CallId);
 
-                if (expectedItem is FunctionCallContent expectedFcc)
-                {
-                    var actualFcc = (FunctionCallContent)actualItem;
-                    Assert.Equal(expectedFcc.Name, actualFcc.Name);
-                    Assert.Equal(expectedFcc.CallId, actualFcc.CallId);
-
-                    // The correct JSON-round-tripping of AIContent/AIContent is not
-                    // the responsibility of CachingChatClient, so not testing that here.
-                    Assert.Equal(
-                        JsonSerializer.Serialize(expectedFcc.Arguments, TestJsonSerializerContext.Default.Options),
-                        JsonSerializer.Serialize(actualFcc.Arguments, TestJsonSerializerContext.Default.Options));
-                }
+                // The correct JSON-round-tripping of AIContent/AIContent is not
+                // the responsibility of CachingChatClient, so not testing that here.
+                Assert.Equal(
+                    JsonSerializer.Serialize(expectedFcc.Arguments, TestJsonSerializerContext.Default.Options),
+                    JsonSerializer.Serialize(actualFcc.Arguments, TestJsonSerializerContext.Default.Options));
             }
         }
     }
@@ -780,7 +760,6 @@ public class DistributedCachingChatClientTest
 
             var actualItem = actualEnumerator.Current;
             Assert.Equal(expectedItem.Text, actualItem.Text);
-            Assert.Equal(expectedItem.ChoiceIndex, actualItem.ChoiceIndex);
             Assert.Equal(expectedItem.Role, actualItem.Role);
             Assert.Equal(expectedItem.Contents.Count, actualItem.Contents.Count);
 

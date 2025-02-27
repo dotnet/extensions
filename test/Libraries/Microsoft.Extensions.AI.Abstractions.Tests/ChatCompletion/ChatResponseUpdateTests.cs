@@ -23,7 +23,6 @@ public class ChatResponseUpdateTests
         Assert.Null(update.ResponseId);
         Assert.Null(update.CreatedAt);
         Assert.Null(update.FinishReason);
-        Assert.Equal(0, update.ChoiceIndex);
         Assert.Equal(string.Empty, update.ToString());
     }
 
@@ -73,10 +72,6 @@ public class ChatResponseUpdateTests
         Assert.Null(update.CreatedAt);
         update.CreatedAt = new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero);
         Assert.Equal(new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero), update.CreatedAt);
-
-        Assert.Equal(0, update.ChoiceIndex);
-        update.ChoiceIndex = 42;
-        Assert.Equal(42, update.ChoiceIndex);
 
         Assert.Null(update.FinishReason);
         update.FinishReason = ChatFinishReason.ContentFilter;
@@ -179,7 +174,6 @@ public class ChatResponseUpdateTests
             CreatedAt = new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero),
             FinishReason = ChatFinishReason.ContentFilter,
             AdditionalProperties = new() { ["key"] = "value" },
-            ChoiceIndex = 42,
         };
 
         string json = JsonSerializer.Serialize(original, TestJsonSerializerContext.Default.ChatResponseUpdate);
@@ -209,7 +203,6 @@ public class ChatResponseUpdateTests
         Assert.Equal("id", result.ResponseId);
         Assert.Equal(new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero), result.CreatedAt);
         Assert.Equal(ChatFinishReason.ContentFilter, result.FinishReason);
-        Assert.Equal(42, result.ChoiceIndex);
 
         Assert.NotNull(result.AdditionalProperties);
         Assert.Single(result.AdditionalProperties);

@@ -791,7 +791,6 @@ public class OpenAIChatClientTests
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, response.Usage.AdditionalCounts);
 
-        Assert.Single(response.Choices);
         Assert.Single(response.Message.Contents);
         FunctionCallContent fcc = Assert.IsType<FunctionCallContent>(response.Message.Contents[0]);
         Assert.Equal("GetPersonAge", fcc.Name);

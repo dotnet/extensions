@@ -102,7 +102,7 @@ public sealed class OllamaChatClient : IChatClient
             throw new InvalidOperationException($"Ollama error: {response.Error}");
         }
 
-        return new([FromOllamaMessage(response.Message!)])
+        return new(FromOllamaMessage(response.Message!))
         {
             CreatedAt = DateTimeOffset.TryParse(response.CreatedAt, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset createdAt) ? createdAt : null,
             FinishReason = ToFinishReason(response),

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
 
@@ -12,50 +11,28 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents the response to a chat request.</summary>
 public class ChatResponse
 {
-    /// <summary>The list of choices in the response.</summary>
-    private IList<ChatMessage> _choices;
+    /// <summary>The response message.</summary>
+    private ChatMessage _message;
 
     /// <summary>Initializes a new instance of the <see cref="ChatResponse"/> class.</summary>
-    /// <param name="choices">The list of choices in the response, one message per choice.</param>
-    [JsonConstructor]
-    public ChatResponse(IList<ChatMessage> choices)
+    public ChatResponse()
     {
-        _choices = Throw.IfNull(choices);
+        _message = new(ChatRole.Assistant, []);
     }
 
     /// <summary>Initializes a new instance of the <see cref="ChatResponse"/> class.</summary>
-    /// <param name="message">The chat message representing the singular choice in the response.</param>
+    /// <param name="message">The response message.</param>
     public ChatResponse(ChatMessage message)
     {
         _ = Throw.IfNull(message);
-        _choices = [message];
+        _message = message;
     }
 
-    /// <summary>Gets or sets the list of chat response choices.</summary>
-    public IList<ChatMessage> Choices
-    {
-        get => _choices;
-        set => _choices = Throw.IfNull(value);
-    }
-
-    /// <summary>Gets the chat response message.</summary>
-    /// <remarks>
-    /// If there are multiple choices, this property returns the first choice.
-    /// If <see cref="Choices"/> is empty, this property will throw. Use <see cref="Choices"/> to access all choices directly.
-    /// </remarks>
-    [JsonIgnore]
+    /// <summary>Gets or sets the chat response message.</summary>
     public ChatMessage Message
     {
-        get
-        {
-            var choices = Choices;
-            if (choices.Count == 0)
-            {
-                throw new InvalidOperationException($"The {nameof(ChatResponse)} instance does not contain any {nameof(ChatMessage)} choices.");
-            }
-
-            return choices[0];
-        }
+        get => _message;
+        set => _message = Throw.IfNull(value);
     }
 
     /// <summary>Gets or sets the ID of the chat response.</summary>
@@ -96,26 +73,7 @@ public class ChatResponse
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
 
     /// <inheritdoc />
-    public override string ToString()
-    {
-        if (Choices.Count == 1)
-        {
-            return Choices[0].ToString();
-        }
-
-        StringBuilder sb = new();
-        for (int i = 0; i < Choices.Count; i++)
-        {
-            if (i > 0)
-            {
-                _ = sb.AppendLine().AppendLine();
-            }
-
-            _ = sb.Append("Choice ").Append(i).AppendLine(":").Append(Choices[i]);
-        }
-
-        return sb.ToString();
-    }
+    public override string ToString() => _message.ToString();
 
     /// <summary>Creates an array of <see cref="ChatResponseUpdate" /> instances that represent this <see cref="ChatResponse" />.</summary>
     /// <returns>An array of <see cref="ChatResponseUpdate" /> instances that may be used to represent this <see cref="ChatResponse" />.</returns>
@@ -135,33 +93,27 @@ public class ChatResponse
             }
         }
 
-        int choicesCount = Choices.Count;
-        var updates = new ChatResponseUpdate[choicesCount + (extra is null ? 0 : 1)];
+        var updates = new ChatResponseUpdate[extra is null ? 1 : 2];
 
-        for (int choiceIndex = 0; choiceIndex < choicesCount; choiceIndex++)
+        updates[0] = new ChatResponseUpdate
         {
-            ChatMessage choice = Choices[choiceIndex];
-            updates[choiceIndex] = new ChatResponseUpdate
-            {
-                ChatThreadId = ChatThreadId,
-                ChoiceIndex = choiceIndex,
+            ChatThreadId = ChatThreadId,
 
-                AdditionalProperties = choice.AdditionalProperties,
-                AuthorName = choice.AuthorName,
-                Contents = choice.Contents,
-                RawRepresentation = choice.RawRepresentation,
-                Role = choice.Role,
+            AdditionalProperties = _message.AdditionalProperties,
+            AuthorName = _message.AuthorName,
+            Contents = _message.Contents,
+            RawRepresentation = _message.RawRepresentation,
+            Role = _message.Role,
 
-                ResponseId = ResponseId,
-                CreatedAt = CreatedAt,
-                FinishReason = FinishReason,
-                ModelId = ModelId
-            };
-        }
+            ResponseId = ResponseId,
+            CreatedAt = CreatedAt,
+            FinishReason = FinishReason,
+            ModelId = ModelId
+        };
 
         if (extra is not null)
         {
-            updates[choicesCount] = extra;
+            updates[1] = extra;
         }
 
         return updates;

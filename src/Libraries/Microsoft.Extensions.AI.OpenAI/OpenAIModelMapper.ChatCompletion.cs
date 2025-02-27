@@ -30,11 +30,6 @@ internal static partial class OpenAIModelMappers
     {
         _ = Throw.IfNull(response);
 
-        if (response.Choices.Count > 1)
-        {
-            throw new NotSupportedException("Creating OpenAI ChatCompletion models with multiple choices is currently not supported.");
-        }
-
         List<ChatToolCall>? toolCalls = null;
         foreach (AIContent content in response.Message.Contents)
         {
@@ -138,7 +133,7 @@ internal static partial class OpenAIModelMappers
         }
 
         // Wrap the content in a ChatResponse to return.
-        var response = new ChatResponse([returnMessage])
+        var response = new ChatResponse(returnMessage)
         {
             CreatedAt = openAICompletion.CreatedAt,
             FinishReason = FromOpenAIFinishReason(openAICompletion.FinishReason),

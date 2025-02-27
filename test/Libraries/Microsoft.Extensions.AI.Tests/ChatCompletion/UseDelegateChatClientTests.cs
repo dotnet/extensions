@@ -99,7 +99,7 @@ public class UseDelegateChatClientTests
                 Assert.Equal(expectedCts.Token, cancellationToken);
                 asyncLocal.Value = 42;
                 var cc = await innerClient.GetResponseAsync(chatMessages, options, cancellationToken);
-                cc.Choices[0].Text += " world";
+                cc.Message.Text += " world";
                 return cc;
             }, null)
             .Build();
@@ -202,7 +202,7 @@ public class UseDelegateChatClientTests
                     Assert.Equal(expectedCts.Token, cancellationToken);
                     asyncLocal.Value = 42;
                     var cc = await innerClient.GetResponseAsync(chatMessages, options, cancellationToken);
-                    cc.Choices[0].Text += " world (non-streaming)";
+                    cc.Message.Text += " world (non-streaming)";
                     return cc;
                 },
                 (chatMessages, options, innerClient, cancellationToken) =>

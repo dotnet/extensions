@@ -140,40 +140,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     public bool AllowConcurrentInvocation { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether to keep intermediate function calling request
-    /// and response messages in the chat history.
-    /// </summary>
-    /// <value>
-    /// <see langword="true"/> if intermediate messages persist in the <see cref="IList{ChatMessage}"/> list provided
-    /// to <see cref="GetResponseAsync"/> and <see cref="GetStreamingResponseAsync"/> by the caller.
-    /// <see langword="false"/> if intermediate messages are removed prior to completing the operation.
-    /// The default value is <see langword="true"/>.
-    /// </value>
-    /// <remarks>
-    /// <para>
-    /// When the inner <see cref="IChatClient"/> returns <see cref="FunctionCallContent"/> to the
-    /// <see cref="FunctionInvokingChatClient"/>, the <see cref="FunctionInvokingChatClient"/> adds
-    /// those messages to the list of messages, along with <see cref="FunctionResultContent"/> instances
-    /// it creates with the results of invoking the requested functions. The resulting augmented
-    /// list of messages is then passed to the inner client in order to send the results back.
-    /// By default, those messages persist in the <see cref="IList{ChatMessage}"/> list provided to
-    /// <see cref="GetResponseAsync"/> and <see cref="GetStreamingResponseAsync"/> by the caller, such that those
-    /// messages are available to the caller. Set <see cref="KeepFunctionCallingContent"/> to avoid including
-    /// those messages in the caller-provided <see cref="IList{ChatMessage}"/>.
-    /// </para>
-    /// <para>
-    /// Changing the value of this property while the client is in use might result in inconsistencies
-    /// as to whether function calling messages are kept during an in-flight request.
-    /// </para>
-    /// <para>
-    /// If the underlying <see cref="IChatClient"/> responds with <see cref="ChatResponse.ChatThreadId"/>
-    /// set to a non-<see langword="null"/> value, this property may be ignored and behave as if it is
-    /// <see langword="false"/>, with any such intermediate messages not stored in the messages list.
-    /// </para>
-    /// </remarks>
-    public bool KeepFunctionCallingContent { get; set; } = true;
-
-    /// <summary>
     /// Gets or sets the maximum number of iterations per request.
     /// </summary>
     /// <value>
@@ -237,24 +203,12 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 // If there are no tools to call, or for any other reason we should stop, return the response.
                 if (options is null
                     || options.Tools is not { Count: > 0 }
-                    || response.Choices.Count == 0
                     || (MaximumIterationsPerRequest is { } maxIterations && iteration >= maxIterations))
                 {
                     break;
                 }
 
-                // If there's more than one choice, we don't know which one to add to chat history, or which
-                // of their function calls to process. This should not happen except if the developer has
-                // explicitly requested multiple choices. We fail aggressively to avoid cases where a developer
-                // doesn't realize this and is wasting their budget requesting extra choices we'd never use.
-                if (response.Choices.Count > 1)
-                {
-                    ThrowForMultipleChoices();
-                }
-
-                // Extract any function call contents on the first choice. If there are none, we're done.
-                // We don't have any way to express a preference to use a different choice, since this
-                // is a niche case especially with function calling.
+                // Extract any function call contents. If there are none, we're done.
                 FunctionCallContent[] functionCallContents = response.Message.Contents.OfType<FunctionCallContent>().ToArray();
                 if (functionCallContents.Length == 0)
                 {
@@ -276,27 +230,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 }
                 else
                 {
-                    // Otherwise, we need to add the response message to the history we're sending back. However, if the caller
-                    // doesn't want the intermediate messages, create a new list that we mutate instead of mutating the original.
-                    if (!KeepFunctionCallingContent)
-                    {
-                        // Create a new list that will include the message with the function call contents.
-                        if (chatMessages == originalChatMessages)
-                        {
-                            chatMessages = [.. chatMessages];
-                        }
-
-                        // We want to include any non-functional calling content, if there is any,
-                        // in the caller's list so that they don't lose out on actual content.
-                        // This can happen but is relatively rare.
-                        if (response.Message.Contents.Any(c => c is not FunctionCallContent))
-                        {
-                            var clone = response.Message.Clone();
-                            clone.Contents = clone.Contents.Where(c => c is not FunctionCallContent).ToList();
-                            originalChatMessages.Add(clone);
-                        }
-                    }
-
                     // Add the original response message into the history.
                     chatMessages.Add(response.Message);
                 }
@@ -332,11 +265,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         using Activity? activity = _activitySource?.StartActivity(nameof(FunctionInvokingChatClient));
 
         List<FunctionCallContent> functionCallContents = [];
-        int? choice;
         IList<ChatMessage> originalChatMessages = chatMessages;
         for (int iteration = 0; ; iteration++)
         {
-            choice = null;
             string? chatThreadId = null;
             functionCallContents.Clear();
             await foreach (var update in base.GetStreamingResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false))
@@ -361,16 +292,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 {
                     update.Contents = addedFccs == update.Contents.Count ?
                         [] : update.Contents.Where(c => c is not FunctionCallContent).ToList();
-                }
-
-                // Only one choice is allowed with automatic function calling.
-                if (choice is null)
-                {
-                    choice = update.ChoiceIndex;
-                }
-                else if (choice != update.ChoiceIndex)
-                {
-                    ThrowForMultipleChoices();
                 }
 
                 chatThreadId ??= update.ChatThreadId;
@@ -403,13 +324,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             }
             else
             {
-                // Otherwise, we need to add the response message to the history we're sending back. However, if the caller
-                // doesn't want the intermediate messages, create a new list that we mutate instead of mutating the original.
-                if (chatMessages == originalChatMessages && !KeepFunctionCallingContent)
-                {
-                    chatMessages = [.. chatMessages];
-                }
-
                 // Add a manufactured response message containing the function call contents to the chat history.
                 chatMessages.Add(new(ChatRole.Assistant, [.. functionCallContents]));
             }
@@ -422,16 +336,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 yield break;
             }
         }
-    }
-
-    /// <summary>Throws an exception when multiple choices are received.</summary>
-    private static void ThrowForMultipleChoices()
-    {
-        // If there's more than one choice, we don't know which one to add to chat history, or which
-        // of their function calls to process. This should not happen except if the developer has
-        // explicitly requested multiple choices. We fail aggressively to avoid cases where a developer
-        // doesn't realize this and is wasting their budget requesting extra choices we'd never use.
-        throw new InvalidOperationException("Automatic function call invocation only accepts a single choice, but multiple choices were received.");
     }
 
     /// <summary>Updates <paramref name="options"/> for the response.</summary>

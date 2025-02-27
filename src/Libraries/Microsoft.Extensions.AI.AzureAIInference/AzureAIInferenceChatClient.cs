@@ -91,9 +91,6 @@ public sealed class AzureAIInferenceChatClient : IChatClient
             cancellationToken: cancellationToken).ConfigureAwait(false)).Value;
 
         // Create the return message.
-        List<ChatMessage> returnMessages = [];
-
-        // Populate its content from those in the response content.
         ChatMessage message = new()
         {
             RawRepresentation = response,
@@ -119,8 +116,6 @@ public sealed class AzureAIInferenceChatClient : IChatClient
             }
         }
 
-        returnMessages.Add(message);
-
         UsageDetails? usage = null;
         if (response.Usage is CompletionsUsage completionsUsage)
         {
@@ -133,7 +128,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
         }
 
         // Wrap the content in a ChatResponse to return.
-        return new ChatResponse(returnMessages)
+        return new ChatResponse(message)
         {
             CreatedAt = response.Created,
             ModelId = response.Model,

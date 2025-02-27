@@ -47,7 +47,6 @@ public class OllamaChatClientIntegrationTests : ChatClientIntegrationTests
             Seed = 0,
         });
 
-        Assert.Single(response.Choices);
         Assert.Contains(secretNumber.ToString(), response.Message.Text);
     }
 
@@ -82,7 +81,6 @@ public class OllamaChatClientIntegrationTests : ChatClientIntegrationTests
             Seed = 0,
         });
 
-        Assert.Single(response.Choices);
         Assert.Contains("999", response.Message.Text);
         Assert.False(didCallIrrelevantTool);
     }

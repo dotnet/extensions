@@ -482,16 +482,12 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         }
 
         EventId id = new(1, OpenTelemetryConsts.GenAI.Choice);
-        int choiceCount = response.Choices.Count;
-        for (int choiceIndex = 0; choiceIndex < choiceCount; choiceIndex++)
+        Log(id, JsonSerializer.Serialize(new()
         {
-            Log(id, JsonSerializer.Serialize(new()
-            {
-                FinishReason = response.FinishReason?.Value ?? "error",
-                Index = choiceIndex,
-                Message = CreateAssistantEvent(response.Choices[choiceIndex]),
-            }, OtelContext.Default.ChoiceEvent));
-        }
+            FinishReason = response.FinishReason?.Value ?? "error",
+            Index = 0,
+            Message = CreateAssistantEvent(response.Message),
+        }, OtelContext.Default.ChoiceEvent));
     }
 
     private void Log(EventId id, [StringSyntax(StringSyntaxAttribute.Json)] string eventBodyJson)

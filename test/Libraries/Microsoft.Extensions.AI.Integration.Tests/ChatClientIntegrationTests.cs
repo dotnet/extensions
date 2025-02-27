@@ -65,13 +65,12 @@ public abstract class ChatClientIntegrationTests : IDisposable
             new(ChatRole.User, "What continent are they each in?"),
         ]);
 
-        Assert.Single(response.Choices);
         Assert.Contains("America", response.Message.Text);
         Assert.Contains("Asia", response.Message.Text);
     }
 
     [ConditionalFact]
-    public virtual async Task GetStreamingResponseAsync_SingleStreamingResponseChoice()
+    public virtual async Task GetStreamingResponseAsync()
     {
         SkipIfNotEnabled();
 
@@ -101,7 +100,6 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         var response = await _chatClient.GetResponseAsync("Explain in 10 words how AI works");
 
-        Assert.Single(response.Choices);
         Assert.True(response.Usage?.InputTokenCount > 1);
         Assert.True(response.Usage?.OutputTokenCount > 1);
         Assert.Equal(response.Usage?.InputTokenCount + response.Usage?.OutputTokenCount, response.Usage?.TotalTokenCount);
@@ -151,7 +149,6 @@ public abstract class ChatClientIntegrationTests : IDisposable
             ],
             new() { ModelId = GetModel_MultiModal_DescribeImage() });
 
-        Assert.Single(response.Choices);
         Assert.True(response.Message.Text?.IndexOf("net", StringComparison.OrdinalIgnoreCase) >= 0, response.Message.Text);
     }
 
@@ -182,7 +179,6 @@ public abstract class ChatClientIntegrationTests : IDisposable
             Tools = [AIFunctionFactory.Create(() => secretNumber, "GetSecretNumber")]
         });
 
-        Assert.Single(response.Choices);
         Assert.Contains(secretNumber.ToString(), response.Message.Text);
 
         // If the underlying IChatClient provides usage data, function invocation should aggregate the
@@ -208,7 +204,6 @@ public abstract class ChatClientIntegrationTests : IDisposable
             Tools = [AIFunctionFactory.Create((int a, int b) => a * b, "SecretComputation")]
         });
 
-        Assert.Single(response.Choices);
         Assert.Contains("3528", response.Message.Text);
     }
 
@@ -285,7 +280,6 @@ public abstract class ChatClientIntegrationTests : IDisposable
             ToolMode = ChatToolMode.RequireAny,
         });
 
-        Assert.Single(response.Choices);
         Assert.True(callCount >= 1);
     }
 
@@ -317,7 +311,6 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         var message = new ChatMessage(ChatRole.User, "Pick a random number, uniformly distributed between 1 and 1000000");
         var firstResponse = await _chatClient.GetResponseAsync([message]);
-        Assert.Single(firstResponse.Choices);
 
         var secondResponse = await _chatClient.GetResponseAsync([message]);
         Assert.NotEqual(firstResponse.Message.Text, secondResponse.Message.Text);
@@ -334,7 +327,6 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         var message = new ChatMessage(ChatRole.User, "Pick a random number, uniformly distributed between 1 and 1000000");
         var firstResponse = await chatClient.GetResponseAsync([message]);
-        Assert.Single(firstResponse.Choices);
 
         // No matter what it said before, we should see identical output due to caching
         for (int i = 0; i < 3; i++)
