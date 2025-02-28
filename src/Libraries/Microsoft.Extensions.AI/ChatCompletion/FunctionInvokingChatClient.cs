@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable CA2213 // Disposable fields should be disposed
+#pragma warning disable EA0002 // Use 'System.TimeProvider' to make the code easier to test
 
 namespace Microsoft.Extensions.AI;
 
@@ -186,10 +187,13 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         ChatResponse? response = null;
         UsageDetails? totalUsage = null;
         IList<ChatMessage> originalChatMessages = chatMessages;
+        List<FunctionCallContent>? functionCallContents = null;
         try
         {
             for (int iteration = 0; ; iteration++)
             {
+                functionCallContents?.Clear();
+
                 // Make the call to the handler.
                 response = await base.GetResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
 
@@ -209,14 +213,14 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 }
 
                 // Extract any function call contents. If there are none, we're done.
-                FunctionCallContent[] functionCallContents = response.Message.Contents.OfType<FunctionCallContent>().ToArray();
-                if (functionCallContents.Length == 0)
+                CopyFunctionCalls(response.Message.Contents, ref functionCallContents);
+                if (functionCallContents is not { Count: > 0 })
                 {
                     break;
                 }
 
-                // Update the chat history. If the underlying client is tracking the state, then we want to avoid re-sending
-                // what we already sent as well as this response message, so create a new list to store the response message(s).
+                // If the response indicates the inner client is tracking the history, clear it to avoid re-sending the state.
+                // In that case, we also avoid touching the user's history, so that we don't need to clear it.
                 if (response.ChatThreadId is not null)
                 {
                     if (chatMessages == originalChatMessages)
@@ -227,11 +231,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     {
                         chatMessages.Clear();
                     }
-                }
-                else
-                {
-                    // Add the original response message into the history.
-                    chatMessages.Add(response.Message);
                 }
 
                 // Add the responses from the function calls into the history.
@@ -264,53 +263,33 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         // Create an activity to group them together for better observability.
         using Activity? activity = _activitySource?.StartActivity(nameof(FunctionInvokingChatClient));
 
-        List<FunctionCallContent> functionCallContents = [];
+        List<FunctionCallContent>? functionCallContents = null;
         IList<ChatMessage> originalChatMessages = chatMessages;
         for (int iteration = 0; ; iteration++)
         {
+            functionCallContents?.Clear();
             string? chatThreadId = null;
-            functionCallContents.Clear();
+
             await foreach (var update in base.GetStreamingResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false))
             {
-                // We're going to emit all ChatResponseUpdates upstream, even ones that contain function call
-                // content, because a given ChatResponseUpdate can contain other content/metadata. But if we
-                // yield the function calls, and the consumer adds all the content into a message that's then
-                // added into history, they'll end up with function call contents that aren't directly paired
-                // with function result contents, which may cause issues for some models when the history is
-                // later sent again. We thus remove the FunctionCallContent instances from the updates before
-                // yielding them, tracking those FunctionCallContents separately so they can be processed and
-                // added to the chat history.
-
-                // Find all the FCCs. We need to track these separately in order to be able to process them later.
-                int preFccCount = functionCallContents.Count;
-                functionCallContents.AddRange(update.Contents.OfType<FunctionCallContent>());
-
-                // If there were any, remove them from the update. We do this before yielding the update so
-                // that we're not modifying an instance already provided back to the caller.
-                int addedFccs = functionCallContents.Count - preFccCount;
-                if (addedFccs > 0)
-                {
-                    update.Contents = addedFccs == update.Contents.Count ?
-                        [] : update.Contents.Where(c => c is not FunctionCallContent).ToList();
-                }
-
                 chatThreadId ??= update.ChatThreadId;
+                CopyFunctionCalls(update.Contents, ref functionCallContents);
 
                 yield return update;
                 Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
             }
 
             // If there are no tools to call, or for any other reason we should stop, return the response.
-            if (options is null
+            if (functionCallContents is not { Count: > 0 }
+                || options is null
                 || options.Tools is not { Count: > 0 }
-                || (MaximumIterationsPerRequest is { } maxIterations && iteration >= maxIterations)
-                || functionCallContents is not { Count: > 0 })
+                || (MaximumIterationsPerRequest is { } maxIterations && iteration >= maxIterations))
             {
                 break;
             }
 
-            // Update the chat history. If the underlying client is tracking the state, then we want to avoid re-sending
-            // what we already sent as well as this response message, so create a new list to store the response message(s).
+            // If the response indicates the inner client is tracking the history, clear it to avoid re-sending the state.
+            // In that case, we also avoid touching the user's history, so that we don't need to clear it.
             if (chatThreadId is not null)
             {
                 if (chatMessages == originalChatMessages)
@@ -322,11 +301,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     chatMessages.Clear();
                 }
             }
-            else
-            {
-                // Add a manufactured response message containing the function call contents to the chat history.
-                chatMessages.Add(new(ChatRole.Assistant, [.. functionCallContents]));
-            }
 
             // Process all of the functions, adding their results into the history.
             var modeAndMessages = await ProcessFunctionCallsAsync(chatMessages, options, functionCallContents, iteration, cancellationToken).ConfigureAwait(false);
@@ -334,6 +308,38 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             {
                 // Terminate
                 yield break;
+            }
+
+            // Stream any generated function results. These are already part of the history,
+            // but we stream them out for informational purposes.
+            foreach (var message in modeAndMessages.MessagesAdded)
+            {
+                var toolResultUpdate = new ChatResponseUpdate
+                {
+                    AdditionalProperties = message.AdditionalProperties,
+                    AuthorName = message.AuthorName,
+                    ChatThreadId = chatThreadId,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    Contents = message.Contents,
+                    RawRepresentation = message.RawRepresentation,
+                    Role = message.Role,
+                };
+
+                yield return toolResultUpdate;
+                Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
+            }
+        }
+    }
+
+    /// <summary>Copies any <see cref="FunctionCallContent"/> from <paramref name="content"/> to <paramref name="functionCalls"/>.</summary>
+    private static void CopyFunctionCalls(IList<AIContent> content, ref List<FunctionCallContent>? functionCalls)
+    {
+        int count = content.Count;
+        for (int i = 0; i < count; i++)
+        {
+            if (content[i] is FunctionCallContent functionCall)
+            {
+                (functionCalls ??= []).Add(functionCall);
             }
         }
     }
@@ -397,18 +403,18 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>A <see cref="ContinueMode"/> value indicating how the caller should proceed.</returns>
     private async Task<(ContinueMode Mode, IList<ChatMessage> MessagesAdded)> ProcessFunctionCallsAsync(
-        IList<ChatMessage> chatMessages, ChatOptions options, IReadOnlyList<FunctionCallContent> functionCallContents, int iteration, CancellationToken cancellationToken)
+        IList<ChatMessage> chatMessages, ChatOptions options, List<FunctionCallContent> functionCallContents, int iteration, CancellationToken cancellationToken)
     {
         // We must add a response for every tool call, regardless of whether we successfully executed it or not.
         // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
 
-        int functionCount = functionCallContents.Count;
-        Debug.Assert(functionCount > 0, $"Expecteded {nameof(functionCount)} to be > 0, got {functionCount}.");
+        Debug.Assert(functionCallContents.Count > 0, "Expecteded at least one function call.");
 
         // Process all functions. If there's more than one and concurrent invocation is enabled, do so in parallel.
-        if (functionCount == 1)
+        if (functionCallContents.Count == 1)
         {
-            FunctionInvocationResult result = await ProcessFunctionCallAsync(chatMessages, options, functionCallContents[0], iteration, 0, 1, cancellationToken).ConfigureAwait(false);
+            FunctionInvocationResult result = await ProcessFunctionCallAsync(
+                chatMessages, options, functionCallContents, iteration, 0, cancellationToken).ConfigureAwait(false);
             IList<ChatMessage> added = AddResponseMessages(chatMessages, [result]);
             return (result.ContinueMode, added);
         }
@@ -420,16 +426,20 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             {
                 // Schedule the invocation of every function.
                 results = await Task.WhenAll(
-                    from i in Enumerable.Range(0, functionCount)
-                    select Task.Run(() => ProcessFunctionCallAsync(chatMessages, options, functionCallContents[i], iteration, i, functionCount, cancellationToken))).ConfigureAwait(false);
+                    from i in Enumerable.Range(0, functionCallContents.Count)
+                    select Task.Run(() => ProcessFunctionCallAsync(
+                        chatMessages, options, functionCallContents,
+                        iteration, i, cancellationToken))).ConfigureAwait(false);
             }
             else
             {
                 // Invoke each function serially.
-                results = new FunctionInvocationResult[functionCount];
-                for (int i = 0; i < functionCount; i++)
+                results = new FunctionInvocationResult[functionCallContents.Count];
+                for (int i = 0; i < results.Length; i++)
                 {
-                    results[i] = await ProcessFunctionCallAsync(chatMessages, options, functionCallContents[i], iteration, i, functionCount, cancellationToken).ConfigureAwait(false);
+                    results[i] = await ProcessFunctionCallAsync(
+                        chatMessages, options, functionCallContents,
+                        iteration, i, cancellationToken).ConfigureAwait(false);
                 }
             }
 
@@ -447,19 +457,20 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         }
     }
 
-    /// <summary>Processes the function call described in <paramref name="callContent"/>.</summary>
+    /// <summary>Processes the function call described in <paramref name="callContents"/>[<paramref name="iteration"/>].</summary>
     /// <param name="chatMessages">The current chat contents, inclusive of the function call contents being processed.</param>
     /// <param name="options">The options used for the response being processed.</param>
-    /// <param name="callContent">The function call content representing the function to be invoked.</param>
+    /// <param name="callContents">The function call contents representing all the functions being invoked.</param>
     /// <param name="iteration">The iteration number of how many roundtrips have been made to the inner client.</param>
-    /// <param name="functionCallIndex">The 0-based index of the function being called out of <paramref name="totalFunctionCount"/> total functions.</param>
-    /// <param name="totalFunctionCount">The number of function call requests made, of which this is one.</param>
+    /// <param name="functionCallIndex">The 0-based index of the function being called out of <paramref name="callContents"/>.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>A <see cref="ContinueMode"/> value indicating how the caller should proceed.</returns>
     private async Task<FunctionInvocationResult> ProcessFunctionCallAsync(
-        IList<ChatMessage> chatMessages, ChatOptions options, FunctionCallContent callContent,
-        int iteration, int functionCallIndex, int totalFunctionCount, CancellationToken cancellationToken)
+        IList<ChatMessage> chatMessages, ChatOptions options, List<FunctionCallContent> callContents,
+        int iteration, int functionCallIndex, CancellationToken cancellationToken)
     {
+        var callContent = callContents[functionCallIndex];
+
         // Look up the AIFunction for the function call. If the requested function isn't available, send back an error.
         AIFunction? function = options.Tools!.OfType<AIFunction>().FirstOrDefault(t => t.Name == callContent.Name);
         if (function is null)
@@ -474,7 +485,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             Function = function,
             Iteration = iteration,
             FunctionCallIndex = functionCallIndex,
-            FunctionCount = totalFunctionCount,
+            FunctionCount = callContents.Count,
         };
 
         object? result;
