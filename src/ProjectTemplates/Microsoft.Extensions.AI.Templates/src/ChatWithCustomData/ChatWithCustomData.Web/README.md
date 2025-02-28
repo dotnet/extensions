@@ -19,7 +19,7 @@ Configure your token for this project, using .NET User Secrets:
 
 1. In Visual Studio, right-click on your project in the Solution Explorer and select "Manage User Secrets".
 2. This will open a secrets.json file where you can store your API key without them being tracked in source control. Add the following key and value to the file:
-   
+
 ```json
 {
    "GitHubModels:Token": "YOUR-TOKEN"
@@ -47,7 +47,7 @@ Configure your API key for this project, using .NET User Secrets:
 
 1. In Visual Studio, right-click on your project in the Solution Explorer and select "Manage User Secrets".
 2. This will open a secrets.json file where you can store your API key without them being tracked in source control. Add the following key and value to the file:
-   
+
 ```json
 {
    "OpenAI:Key": "YOUR-API-KEY"
@@ -129,7 +129,7 @@ Configure your Azure OpenAI API key and endpoint for this project, using .NET Us
 #### ---#if (hostIdentifier == "vs")
    3. In Visual Studio, right-click on your project in the Solution Explorer and select "Manage User Secrets".
    4. This will open a secrets.json file where you can store your API key and endpoint without it being tracked in source control. Add the following keys & values to the file:
-   
+
    ```json
    {
       "AzureOpenAI:Key": "YOUR-AZURE-OPENAI-KEY",
@@ -138,7 +138,7 @@ Configure your Azure OpenAI API key and endpoint for this project, using .NET Us
    ```
 #### ---#else
    3. From the command line, configure your API key and endpoint for this project using .NET User Secrets by running the following commands:
-    
+
    ```sh
    cd <<your-project-directory>>
    dotnet user-secrets set AzureOpenAI:Key YOUR-AZURE-OPENAI-KEY
@@ -156,11 +156,11 @@ Make sure to replace `YOUR-AZURE-OPENAI-KEY` and `YOUR-AZURE-OPENAI-ENDPOINT` wi
 To use Azure AI Search, you will need an Azure account and an Azure AI Search resource. For detailed instructions, see the [Azure AI Search documentation](https://learn.microsoft.com/azure/search/search-create-service-portal).
 
 ### 1. Create an Azure AI Search Resource
-Follow the instructions in the [Azure portal](https://portal.azure.com/) to create an Azure AI Search resource.
+Follow the instructions in the [Azure portal](https://portal.azure.com/) to create an Azure AI Search resource. Note that there is a free tier for the service but it is not currently the default setting on the portal.
 
 #### ---#if (UseManagedIdentity)
 ### 2. Configure Azure AI Search for Keyless Authentication
-This template is configured to use keyless authentication (also known as Managed Identity, with Entra ID). Before continuing, you'll need to configure your Azure AI Search resource to support this. [Learn more](https://learn.microsoft.com/azure/search/keyless-connections).
+This template is configured to use keyless authentication (also known as Managed Identity, with Entra ID). Before continuing, you'll need to configure your Azure AI Search resource to support this. [Learn more](https://learn.microsoft.com/azure/search/keyless-connections).  After creation, ensure that you have selected Role-Based Access Control (RBAC) under Settings > Keys, as this is not the default. Assign yourself the roles called out for local development. [Learn more](https://learn.microsoft.com/en-us/azure/search/keyless-connections?tabs=csharp%2Cazure-cli#roles-for-local-development).
 
 ### 3. Set the Azure AI Search Endpoint for this app
    Configure your Azure AI Search endpoint for this project, using .NET User Secrets:
