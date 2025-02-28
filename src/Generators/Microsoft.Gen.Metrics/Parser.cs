@@ -22,7 +22,7 @@ internal sealed class Parser
     private const int MaxTagNames = 30;
 
     private static readonly Regex _regex = new("^[A-Z]+[A-za-z0-9]*$", RegexOptions.Compiled);
-    private static readonly Regex _regexTagNames = new("^[A-Za-z]+[A-Za-z0-9_.:-]*$", RegexOptions.Compiled);
+    private static readonly Regex _regexTagNames = new("^[A-Za-z_]+[A-Za-z0-9_.:-]*$", RegexOptions.Compiled);
     private static readonly SymbolDisplayFormat _typeSymbolFormat =
         SymbolDisplayFormat.FullyQualifiedFormat.WithMiscellaneousOptions(
             SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);

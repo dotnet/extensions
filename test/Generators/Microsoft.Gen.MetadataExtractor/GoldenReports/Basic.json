@@ -1,0 +1,118 @@
+{ "Name": "test.dll", "ComplianceReport": 
+{
+    "Types": [
+        {
+            "Name": "Test.Basic",
+            "Members": [
+                {
+                    "Name": "F0",
+                    "Type": "int",
+                    "File": "src-0.cs",
+                    "Line": "18",
+                    "Classifications": [
+                        {
+                            "Name": "C1"
+                        },
+                        {
+                            "Name": "C2",
+                            "Notes": "Note 1"
+                        }
+                    ]
+                },
+                {
+                    "Name": "F1",
+                    "Type": "int",
+                    "File": "src-0.cs",
+                    "Line": "21",
+                    "Classifications": [
+                        {
+                            "Name": "C1"
+                        },
+                        {
+                            "Name": "C2"
+                        }
+                    ]
+                },
+                {
+                    "Name": "P0",
+                    "Type": "int",
+                    "File": "src-0.cs",
+                    "Line": "11",
+                    "Classifications": [
+                        {
+                            "Name": "C1"
+                        },
+                        {
+                            "Name": "C3",
+                            "Notes": "Note 2"
+                        },
+                        {
+                            "Name": "C4"
+                        }
+                    ]
+                },
+                {
+                    "Name": "P1",
+                    "Type": "int",
+                    "File": "src-0.cs",
+                    "Line": "27",
+                    "Classifications": [
+                        {
+                            "Name": "C1"
+                        },
+                        {
+                            "Name": "C3"
+                        }
+                    ]
+                }
+            ],
+            "Logging Methods": [
+                {
+                    "Name": "LogHello",
+                    "Parameters": [
+                        {
+                            "Name": "user",
+                            "Type": "string",
+                            "File": "src-0.cs",
+                            "Line": "30",
+                            "Classifications": [
+                                {
+                                    "Name": "C2",
+                                    "Notes": "Note 3"
+                                }
+                            ]
+                        },
+                        {
+                            "Name": "port",
+                            "Type": "int",
+                            "File": "src-0.cs",
+                            "Line": "30"
+                        }
+                    ]
+                },
+                {
+                    "Name": "LogWorld",
+                    "Parameters": [
+                        {
+                            "Name": "user",
+                            "Type": "string",
+                            "File": "src-0.cs",
+                            "Line": "33",
+                            "Classifications": [
+                                {
+                                    "Name": "C2"
+                                }
+                            ]
+                        },
+                        {
+                            "Name": "port",
+                            "Type": "int",
+                            "File": "src-0.cs",
+                            "Line": "33"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+} , "MetricReport": [] }

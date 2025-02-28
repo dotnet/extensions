@@ -24,13 +24,14 @@ The following reports are available in this package:
 
 - **Metrics**: Reports on the use of source-generated metric definitions in the code.
 - **Compliance**: Reports on the use of privacy-sensitive data in the code, including source-generated logging methods.
+- **Metadata** : Is a Combination of both reports above.
 
 The table below shows various MSBuild properties that you can use to control the behavior of the reports generation:
 
-| Metrics report generator | Compliance report generator | Description |
-| --- | --- | --- |
-| `<GenerateMetricsReport>` | `<GenerateComplianceReport>` | Controls whether the report is generated. |
-| `<MetricsReportOutputPath>` | `<ComplianceReportOutputPath>` | The path to the directory where the report will be generated. |
+| Metrics report generator | Compliance report generator | Metadata report generator | Description |
+| --- | --- | --- | --- |
+| `<GenerateMetricsReport>` | `<GenerateComplianceReport>` | `<GenerateMetadataReport>` | Controls whether the report is generated. |
+| `<MetricsReportOutputPath>` | `<ComplianceReportOutputPath>`  | `<MetadataReportOutputPath>`| The path to the directory where the report will be generated. |
 
 The file names of the reports are defined by the corresponding report generator.
 The metrics report will be generated in a file named `MetricsReport.json`.
@@ -152,6 +153,93 @@ A metrics report for the code listed above might look like this:
  }
 ]
 ```
+
+
+## Example of a metadata report
+
+Let's assume we have a project with a class that contains a metric definition:
+
+```csharp
+internal sealed partial class Metric
+{
+    internal static class Tags
+    {
+        /// <summary>
+        /// The target of the metric, e.g. the name of the service or the name of the method.
+        /// </summary>
+        public const string Target = nameof(Target);
+
+        /// <summary>
+        /// The reason for the failure, e.g. the exception message or the HTTP status code.
+        /// </summary>
+        public const string FailureReason = nameof(FailureReason);
+    }
+
+    /// <summary>
+    /// The counter metric for the number of failed requests.
+    /// </summary>
+    [Counter(Tags.Target, Tags.FailureReason)]
+    public static partial FailedRequestCounter CreateFailedRequestCounter(Meter meter);
+}
+```
+and let's also assume we have a project with a class that contains privacy-sensitive data:
+```csharp
+namespace ComplianceTesting
+{
+    internal sealed class User
+    {
+        internal User(string name, DateTimeOffset registeredAt)
+        {
+            Name = name;
+            RegisteredAt = registeredAt;
+        }
+
+        [PrivateData]
+        public string Name { get; }
+
+        public DateTimeOffset RegisteredAt { get; }
+    }
+}
+```
+
+`Microsoft.Extensions.Compliance.Testing` package contains a definition for `[PrivateData]` attribute, we use it here for demonstration purposes only.
+
+A metadata report for the code listed above might look like this:
+
+```json
+{ "Name": "MyAssembly", "ComplianceReport":
+{
+    "Types": [
+        {
+            "Name": "ComplianceTesting.User",
+            "Members": [
+                {
+                    "Name": "Name",
+                    "Type": "string",
+                    "File": "C:\\source\\samples\\src\\MyAssembly\\User.cs",
+                    "Line": "12",
+                    "Classifications": [
+                        {
+                            "Name": "PrivateData"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+} , "MetricReport":  [
+    {
+     "MetricName": "FailedRequestCounter",
+     "MetricDescription": "The counter metric for the number of failed requests.",
+     "InstrumentName": "Counter",
+     "Dimensions": {
+      "Target": "The target of the metric, e.g. the name of the service or the name of the method.",
+      "FailureReason": "The reason for the failure, e.g. the exception message or the HTTP status code."
+      }
+    }
+  ] }
+```
+
 
 ## Feedback & Contributing
 

@@ -46,20 +46,20 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
     public int CommittedBytes => _index;
     public int FreeCapacity => _buffer.Length - _index;
 
+    public bool QuotaExceeded { get; private set; }
+
     private static RecyclableArrayBufferWriter<T>? _spare;
+
     public static RecyclableArrayBufferWriter<T> Create(int maxLength)
     {
-        var obj = Interlocked.Exchange(ref _spare, null) ?? new();
-        Debug.Assert(obj._index == 0, "index should be zero initially");
-        obj._maxLength = maxLength;
+        RecyclableArrayBufferWriter<T> obj = Interlocked.Exchange(ref _spare, null) ?? new();
+        obj.Initialize(maxLength);
         return obj;
     }
 
     private RecyclableArrayBufferWriter()
     {
         _buffer = [];
-        _index = 0;
-        _maxLength = int.MaxValue;
     }
 
     public void Dispose()
@@ -69,7 +69,7 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
         _index = 0;
         if (Interlocked.CompareExchange(ref _spare, this, null) != null)
         {
-            var tmp = _buffer;
+            T[] tmp = _buffer;
             _buffer = [];
             if (tmp.Length != 0)
             {
@@ -91,6 +91,7 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
 
         if (_index + count > _maxLength)
         {
+            QuotaExceeded = true;
             ThrowQuota();
         }
 
@@ -130,12 +131,14 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
     // create a standalone isolated copy of the buffer
     public T[] ToArray() => _buffer.AsSpan(0, _index).ToArray();
 
+    public ReadOnlySequence<T> AsSequence() => new(_buffer, 0, _index);
+
     /// <summary>
     /// Disconnect the current buffer so that we can store it without it being recycled.
     /// </summary>
     internal T[] DetachCommitted(out int length)
     {
-        var tmp = _index == 0 ? [] : _buffer;
+        T[] tmp = _index == 0 ? [] : _buffer;
         length = _index;
 
         _buffer = [];
@@ -159,22 +162,22 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
 
         if (sizeHint > FreeCapacity)
         {
-            var currentLength = _buffer.Length;
+            int currentLength = _buffer.Length;
 
             // Attempt to grow by the larger of the sizeHint and double the current size.
-            var growBy = Math.Max(sizeHint, currentLength);
+            int growBy = Math.Max(sizeHint, currentLength);
 
             if (currentLength == 0)
             {
                 growBy = Math.Max(growBy, DefaultInitialBufferSize);
             }
 
-            var newSize = currentLength + growBy;
+            int newSize = currentLength + growBy;
 
             if ((uint)newSize > int.MaxValue)
             {
                 // Attempt to grow to ArrayMaxLength.
-                var needed = (uint)(currentLength - FreeCapacity + sizeHint);
+                uint needed = (uint)(currentLength - FreeCapacity + sizeHint);
                 Debug.Assert(needed > currentLength, "should need to grow");
 
                 if (needed > ArrayMaxLength)
@@ -186,7 +189,7 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
             }
 
             // resize the backing buffer
-            var oldArray = _buffer;
+            T[] oldArray = _buffer;
             _buffer = ArrayPool<T>.Shared.Rent(newSize);
             oldArray.AsSpan(0, _index).CopyTo(_buffer);
             if (oldArray.Length != 0)
@@ -198,5 +201,13 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
         Debug.Assert(FreeCapacity > 0 && FreeCapacity >= sizeHint, "should be space");
 
         static void ThrowOutOfMemoryException() => throw new InvalidOperationException("Unable to grow buffer as requested");
+    }
+
+    private void Initialize(int maxLength)
+    {
+        // think .ctor, but with pooled object re-use
+        _index = 0;
+        _maxLength = maxLength;
+        QuotaExceeded = false;
     }
 }

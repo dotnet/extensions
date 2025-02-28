@@ -23,11 +23,8 @@ internal sealed class ResourceMonitorBuilder : IResourceMonitorBuilder
         Services = services;
     }
 
-#if !NET5_0_OR_GREATER
-#pragma warning disable CS0436 // Type conflicts with imported type
-#endif
-    [Obsolete(DiagnosticIds.Obsoletions.IResourceUtilizationPublisherMessage,
-        DiagnosticId = DiagnosticIds.Obsoletions.IResourceUtilizationPublisherDiagId,
+    [Obsolete(DiagnosticIds.Obsoletions.NonObservableResourceMonitoringApiMessage,
+        DiagnosticId = DiagnosticIds.Obsoletions.NonObservableResourceMonitoringApiDiagId,
         UrlFormat = DiagnosticIds.UrlFormat)]
     public IResourceMonitorBuilder AddPublisher<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>()
         where T : class, IResourceUtilizationPublisher

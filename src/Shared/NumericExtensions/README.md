@@ -6,6 +6,6 @@ To use this in your project, add the following to your `.csproj` file:
 
 ```xml
 <PropertyGroup>
-  <InjectNumericExtensions>true</InjectNumericExtensions>
+  <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>
 </PropertyGroup>
 ```

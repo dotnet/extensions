@@ -24,6 +24,7 @@ internal sealed class ConditionalFactDiscoverer : FactDiscoverer
         var skipReason = testMethod.EvaluateSkipConditions();
         return skipReason != null
             ? new SkippedTestCase(skipReason, _diagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), TestMethodDisplayOptions.None, testMethod)
-            : base.CreateTestCase(discoveryOptions, testMethod, factAttribute);
+            : new SkippedFactTestCase(DiagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(),
+                discoveryOptions.MethodDisplayOptionsOrDefault(), testMethod); // Test case skippable at runtime.
     }
 }

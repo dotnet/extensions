@@ -175,7 +175,8 @@ public class FakeTimeProvider : TimeProvider
 #pragma warning disable S3236 // Caller information arguments should not be provided explicitly
         Debug.Assert(TimestampFrequency == TimeSpan.TicksPerSecond, "Assuming frequency equals ticks per second");
 #pragma warning restore S3236 // Caller information arguments should not be provided explicitly
-        return _now.Ticks;
+
+        return GetUtcNow().Ticks;
     }
 
     /// <inheritdoc />
