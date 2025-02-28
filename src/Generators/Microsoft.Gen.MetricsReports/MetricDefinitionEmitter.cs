@@ -13,70 +13,94 @@ namespace Microsoft.Gen.MetricsReports;
 
 internal sealed class MetricDefinitionEmitter : EmitterBase
 {
+    private const int RootIndentLevel = 2;
+    private const int DimensionsIndentLevel = 3;
+
     internal MetricDefinitionEmitter()
         : base(false)
     {
     }
 
-    public string GenerateReport(IReadOnlyList<ReportedMetricClass> metricClasses, CancellationToken cancellationToken)
+    /// <summary>
+    /// Generates JSON object containing the <see cref="ReportedMetricClass"/> for metrics report.
+    /// </summary>
+    /// <param name="metricClasses">The reported metric classes.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <param name="indentationLevel">The number of indentations in case its nested in other reports like <see cref="MetadataReportsGenerator"/>.Defaulted to zero.</param>
+    /// <returns>string report as json or String.Empty.</returns>
+    public string GenerateReport(IReadOnlyList<ReportedMetricClass> metricClasses, CancellationToken cancellationToken = default, int indentationLevel = 0)
     {
         if (metricClasses == null || metricClasses.Count == 0)
         {
             return string.Empty;
         }
 
+        if (indentationLevel > 0)
+        {
+            OutLn();
+        }
+
+        Indent(indentationLevel);
         OutLn("[");
 
         for (int i = 0; i < metricClasses.Count; i++)
         {
             cancellationToken.ThrowIfCancellationRequested();
             var metricClass = metricClasses[i];
+
             GenMetricClassDefinition(metricClass, cancellationToken);
 
             if (i < metricClasses.Count - 1)
             {
-                Out(",");
+                OutLn(",");
             }
-
-            OutLn();
         }
 
-        Out("]");
+        OutLn("]");
+        Unindent(indentationLevel);
+
         return Capture();
     }
 
     private void GenMetricClassDefinition(ReportedMetricClass metricClass, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        OutLn(" {");
+        Indent();
+        OutLn("{");
 
-        OutLn($"  \"{metricClass.RootNamespace}\":");
+        OutLn($" \"{metricClass.RootNamespace}\":");
 
         if (metricClass.Methods.Length > 0)
         {
-            OutLn("  [");
+            Indent(RootIndentLevel);
+            OutLn("[");
 
             for (int j = 0; j < metricClass.Methods.Length; j++)
             {
-                var metricMethod = metricClass.Methods[j];
+                Indent();
+                ReportedMetricMethod metricMethod = metricClass.Methods[j];
+                bool isLastReportedMetricMethod = (j == metricClass.Methods.Length - 1);
 
-                GenMetricMethodDefinition(metricMethod, cancellationToken);
+                GenMetricMethodDefinition(metricMethod, isLastReportedMetricMethod, cancellationToken);
 
-                if (j < metricClass.Methods.Length - 1)
+                if (!isLastReportedMetricMethod)
                 {
                     Out(",");
+                    OutLn();
                 }
 
-                OutLn();
+                Unindent();
             }
 
-            OutLn("  ]");
+            OutLn("]");
+            Unindent(RootIndentLevel);
         }
 
-        Out(" }");
+        OutLn("}");
+        Unindent();
     }
 
-    private void GenMetricMethodDefinition(ReportedMetricMethod metricMethod, CancellationToken cancellationToken)
+    private void GenMetricMethodDefinition(ReportedMetricMethod metricMethod, bool isLastReportedMetricMethod, CancellationToken cancellationToken)
     {
         switch (metricMethod.Kind)
         {
@@ -86,8 +110,7 @@ internal sealed class MetricDefinitionEmitter : EmitterBase
                 try
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-
-                    OutLn("    {");
+                    OutLn("{");
 
                     OutLn($"     \"MetricName\": \"{metricMethod.MetricName.Replace("\\", "\\\\").Replace("\"", "\\\"")}\",");
 
@@ -96,46 +119,53 @@ internal sealed class MetricDefinitionEmitter : EmitterBase
                         OutLn($"     \"MetricDescription\": \"{metricMethod.Summary.Replace("\\", "\\\\").Replace("\"", "\\\"")}\",");
                     }
 
-                    Out($"     \"InstrumentName\": \"{metricMethod.Kind}\"");
+                    if (metricMethod.Dimensions.Count == 0)
+                    {
+                        OutLn($"     \"InstrumentName\": \"{metricMethod.Kind}\"");
+                    }
 
                     if (metricMethod.Dimensions.Count > 0)
                     {
-                        OutLn(",");
-
-                        Out("     \"Dimensions\": {");
-
+                        OutLn($"     \"InstrumentName\": \"{metricMethod.Kind}\",");
+                        OutLn("     \"Dimensions\":");
+                        Indent(DimensionsIndentLevel);
+                        OutLn("{");
+                        Indent();
                         int k = 0;
-
                         foreach (var dimension in metricMethod.Dimensions)
                         {
-                            OutLn();
+                            bool commaCondition = k < metricMethod.Dimensions.Count - 1;
                             if (metricMethod.DimensionsDescriptions.TryGetValue(dimension, out var description))
                             {
-                                Out($"      \"{dimension}\": \"{description.Replace("\\", "\\\\").Replace("\"", "\\\"")}\"");
+                                OutLn($"\"{dimension}\": \"{description.Replace("\\", "\\\\").Replace("\"", "\\\"")}\"{(commaCondition ? "," : string.Empty)}");
                             }
                             else
                             {
-                                Out($"      \"{dimension}\": \"\"");
-                            }
-
-                            if (k < metricMethod.Dimensions.Count - 1)
-                            {
-                                Out(",");
+                                OutLn($"\"{dimension}\": \"\"{(commaCondition ? "," : string.Empty)}");
                             }
 
                             k++;
                         }
 
-                        OutLn();
-                        Out("      }");
-                        OutLn();
+                        Unindent();
+                        OutLn("}");
+                        Unindent(DimensionsIndentLevel);
                     }
                     else
                     {
                         OutLn();
                     }
 
-                    Out("    }");
+                    if (isLastReportedMetricMethod)
+                    {
+                        OutLn("}");
+                    }
+                    else
+                    {
+                        OutIndent();
+                        Out("}");
+                    }
+
                 }
                 catch (Exception e)
                 {
