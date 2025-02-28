@@ -63,6 +63,12 @@ public static class ResourceMonitoringServiceCollectionExtensions
         this IServiceCollection services,
         Action<IResourceMonitorBuilder> configure)
     {
+        bool isSupportedOs = OperatingSystem.IsWindows() || OperatingSystem.IsLinux();
+        if (!isSupportedOs)
+        {
+            return services;
+        }
+
         var builder = new ResourceMonitorBuilder(services);
 
         _ = services.AddMetrics();
@@ -77,10 +83,6 @@ public static class ResourceMonitoringServiceCollectionExtensions
         else if (OperatingSystem.IsLinux())
         {
             _ = builder.AddLinuxProvider();
-        }
-        else
-        {
-            throw new PlatformNotSupportedException();
         }
 #endif
 
