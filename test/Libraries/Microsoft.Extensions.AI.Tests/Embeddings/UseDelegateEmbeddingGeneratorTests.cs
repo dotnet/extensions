@@ -19,13 +19,6 @@ public class UseDelegateEmbeddingGeneratorTests
 
         Assert.Throws<ArgumentNullException>("generateFunc", () =>
             builder.Use((Func<IEnumerable<string>, EmbeddingGenerationOptions?, IEmbeddingGenerator<string, Embedding<float>>, CancellationToken, Task<GeneratedEmbeddings<Embedding<float>>>>)null!));
-
-        Assert.Throws<ArgumentNullException>("innerGenerator", () =>
-            new AnonymousDelegatingEmbeddingGenerator<string, Embedding<float>>(
-                null!, (values, options, innerGenerator, cancellationToken) => Task.FromResult(new GeneratedEmbeddings<Embedding<float>>(Array.Empty<Embedding<float>>()))));
-
-        Assert.Throws<ArgumentNullException>("generateFunc", () =>
-            new AnonymousDelegatingEmbeddingGenerator<string, Embedding<float>>(generator, null!));
     }
 
     [Fact]
