@@ -1,0 +1,34 @@
+<Project>
+
+  <PropertyGroup>
+    <_MicrosoftExtensionsAIVersion>9.3.0-preview.1.25114.11</_MicrosoftExtensionsAIVersion>
+
+    <!-- Specify package version variables used in template content. -->
+    <GeneratedContentProperties>
+      $(GeneratedContentProperties);
+      OllamaSharpVersion=$(OllamaSharpVersion);
+      OpenAIVersion=$(OpenAIVersion);
+      AzureAIProjectsVersion=$(AzureAIProjectsVersion);
+      AzureAIOpenAIVersion=$(AzureAIOpenAIVersion);
+      AzureIdentityVersion=$(AzureIdentityVersion);
+      MicrosoftEntityFrameworkCoreSqliteVersion=$(MicrosoftEntityFrameworkCoreSqliteVersion);
+      MicrosoftExtensionsAIVersion=$(_MicrosoftExtensionsAIVersion);
+      MicrosoftSemanticKernelCoreVersion=$(MicrosoftSemanticKernelCoreVersion);
+      PdfPigVersion=$(PdfPigVersion);
+      SystemLinqAsyncVersion=$(SystemLinqAsyncVersion);
+      AzureSearchDocumentsVersion=$(AzureSearchDocumentsVersion);
+      MicrosoftSemanticKernelConnectorsAzureAISearchVersion=$(MicrosoftSemanticKernelConnectorsAzureAISearchVersion);
+    </GeneratedContentProperties>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <_ChatWithCustomDataWebContentRoot>$(MSBuildThisFileDirectory)Microsoft.Extensions.AI.Templates\src\ChatWithCustomData\ChatWithCustomData.Web\</_ChatWithCustomDataWebContentRoot>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <GeneratedContent
+      Include="$(_ChatWithCustomDataWebContentRoot)ChatWithCustomData.Web.csproj.in"
+      OutputPath="$(_ChatWithCustomDataWebContentRoot)ChatWithCustomData.Web.csproj" />
+  </ItemGroup>
+
+</Project>
