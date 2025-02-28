@@ -128,6 +128,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
         }
 
         // Wrap the content in a ChatResponse to return.
+        chatMessages.Add(message);
         return new ChatResponse(message)
         {
             CreatedAt = response.Created,
@@ -152,6 +153,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
         DateTimeOffset? createdAt = null;
         string? modelId = null;
         string lastCallId = string.Empty;
+        List<ChatResponseUpdate> responseUpdates = [];
 
         // Process each update as it arrives
         var updates = await _chatCompletionsClient.CompleteStreamingAsync(ToAzureAIOptions(chatMessages, options), cancellationToken).ConfigureAwait(false);
@@ -220,6 +222,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
             }
 
             // Now yield the item.
+            responseUpdates.Add(responseUpdate);
             yield return responseUpdate;
         }
 
@@ -248,8 +251,11 @@ public sealed class AzureAIInferenceChatClient : IChatClient
                 }
             }
 
+            responseUpdates.Add(responseUpdate);
             yield return responseUpdate;
         }
+
+        chatMessages.Add(responseUpdates.ToChatMessage());
     }
 
     /// <inheritdoc />

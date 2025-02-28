@@ -32,6 +32,7 @@ public interface IEmbeddingGenerator<in TInput, TEmbedding> : IDisposable
     /// <param name="options">The embedding generation options to configure the request.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The generated embeddings.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="values"/> is <see langword="null"/>.</exception>
     Task<GeneratedEmbeddings<TEmbedding>> GenerateAsync(
         IEnumerable<TInput> values,
         EmbeddingGenerationOptions? options = null,
@@ -45,6 +46,8 @@ public interface IEmbeddingGenerator<in TInput, TEmbedding> : IDisposable
     /// <remarks>
     /// The purpose of this method is to allow for the retrieval of strongly typed services that might be provided by the
     /// <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/>, including itself or any services it might be wrapping.
+    /// For example, to access the <see cref="EmbeddingGeneratorMetadata"/> for the instance, <see cref="GetService"/> may
+    /// be used to request it.
     /// </remarks>
     object? GetService(Type serviceType, object? serviceKey = null);
 }

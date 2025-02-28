@@ -102,7 +102,11 @@ public sealed class OllamaChatClient : IChatClient
             throw new InvalidOperationException($"Ollama error: {response.Error}");
         }
 
-        return new(FromOllamaMessage(response.Message!))
+        var responseMessage = FromOllamaMessage(response.Message!);
+
+        chatMessages.Add(responseMessage);
+
+        return new(responseMessage)
         {
             CreatedAt = DateTimeOffset.TryParse(response.CreatedAt, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset createdAt) ? createdAt : null,
             FinishReason = ToFinishReason(response),
@@ -137,6 +141,7 @@ public sealed class OllamaChatClient : IChatClient
 #endif
             .ConfigureAwait(false);
 
+        List<ChatResponseUpdate> updates = [];
         using var streamReader = new StreamReader(httpResponseStream);
 #if NET
         while ((await streamReader.ReadLineAsync(cancellationToken).ConfigureAwait(false)) is { } line)
@@ -186,8 +191,11 @@ public sealed class OllamaChatClient : IChatClient
                 update.Contents.Add(new UsageContent(usage));
             }
 
+            updates.Add(update);
             yield return update;
         }
+
+        chatMessages.Add(updates.ToChatMessage());
     }
 
     /// <inheritdoc />
