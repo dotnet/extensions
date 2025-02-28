@@ -18,12 +18,39 @@ namespace Microsoft.Extensions.AI;
 /// </summary>
 public static class ChatResponseUpdateExtensions
 {
+    /// <summary>Combines <see cref="ChatResponseUpdate"/> instances into a single <see cref="ChatMessage"/>.</summary>
+    /// <param name="updates">The updates to be combined.</param>
+    /// <param name="coalesceContent">
+    /// <see langword="true"/> to attempt to coalesce contiguous <see cref="AIContent"/> items, where applicable,
+    /// into a single <see cref="AIContent"/>, in order to reduce the number of individual content items that are included in
+    /// the manufactured <see cref="ChatMessage"/> instance. When <see langword="false"/>, the original content items are used.
+    /// The default is <see langword="true"/>.
+    /// </param>
+    /// <returns>The combined <see cref="ChatResponse"/>.</returns>
+    public static ChatMessage ToChatMessage(
+        this IEnumerable<ChatResponseUpdate> updates, bool coalesceContent = true) =>
+        ToChatResponse(updates, coalesceContent).Message; // TO DO: More efficient implementation
+
+    /// <summary>Combines <see cref="ChatResponseUpdate"/> instances into a single <see cref="ChatMessage"/>.</summary>
+    /// <param name="updates">The updates to be combined.</param>
+    /// <param name="coalesceContent">
+    /// <see langword="true"/> to attempt to coalesce contiguous <see cref="AIContent"/> items, where applicable,
+    /// into a single <see cref="AIContent"/>, in order to reduce the number of individual content items that are included in
+    /// the manufactured <see cref="ChatMessage"/> instance. When <see langword="false"/>, the original content items are used.
+    /// The default is <see langword="true"/>.
+    /// </param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The combined <see cref="ChatResponse"/>.</returns>
+    public static async Task<ChatMessage> ToChatMessageAsync(
+        this IAsyncEnumerable<ChatResponseUpdate> updates, bool coalesceContent = true, CancellationToken cancellationToken = default) =>
+        (await ToChatResponseAsync(updates, coalesceContent, cancellationToken).ConfigureAwait(false)).Message; // TO DO: More efficient implementation
+
     /// <summary>Combines <see cref="ChatResponseUpdate"/> instances into a single <see cref="ChatResponse"/>.</summary>
     /// <param name="updates">The updates to be combined.</param>
     /// <param name="coalesceContent">
     /// <see langword="true"/> to attempt to coalesce contiguous <see cref="AIContent"/> items, where applicable,
     /// into a single <see cref="AIContent"/>, in order to reduce the number of individual content items that are included in
-    /// the manufactured <see cref="ChatMessage"/> instances. When <see langword="false"/>, the original content items are used.
+    /// the manufactured <see cref="ChatMessage"/> instance. When <see langword="false"/>, the original content items are used.
     /// The default is <see langword="true"/>.
     /// </param>
     /// <returns>The combined <see cref="ChatResponse"/>.</returns>
@@ -49,7 +76,7 @@ public static class ChatResponseUpdateExtensions
     /// <param name="coalesceContent">
     /// <see langword="true"/> to attempt to coalesce contiguous <see cref="AIContent"/> items, where applicable,
     /// into a single <see cref="AIContent"/>, in order to reduce the number of individual content items that are included in
-    /// the manufactured <see cref="ChatMessage"/> instances. When <see langword="false"/>, the original content items are used.
+    /// the manufactured <see cref="ChatMessage"/> instance. When <see langword="false"/>, the original content items are used.
     /// The default is <see langword="true"/>.
     /// </param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>

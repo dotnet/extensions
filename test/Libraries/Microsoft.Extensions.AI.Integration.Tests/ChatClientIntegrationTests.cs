@@ -88,9 +88,6 @@ public abstract class ChatClientIntegrationTests : IDisposable
         string responseText = sb.ToString();
         Assert.Contains("one small step", responseText, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("one giant leap", responseText, StringComparison.OrdinalIgnoreCase);
-
-        // The input list is left unaugmented.
-        Assert.Single(chatHistory);
     }
 
     [ConditionalFact]

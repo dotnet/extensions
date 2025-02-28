@@ -62,6 +62,7 @@ internal static partial class OpenAIModelMappers
     }
 
     public static async IAsyncEnumerable<ChatResponseUpdate> FromOpenAIStreamingChatCompletionAsync(
+        IList<ChatMessage> chatMessages,
         IAsyncEnumerable<StreamingChatCompletionUpdate> updates,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -73,6 +74,8 @@ internal static partial class OpenAIModelMappers
         DateTimeOffset? createdAt = null;
         string? modelId = null;
         string? fingerprint = null;
+
+        List<ChatResponseUpdate> responseUpdates = [];
 
         // Process each update as it arrives
         await foreach (StreamingChatCompletionUpdate update in updates.WithCancellation(cancellationToken).ConfigureAwait(false))
@@ -158,6 +161,7 @@ internal static partial class OpenAIModelMappers
             }
 
             // Now yield the item.
+            responseUpdates.Add(responseUpdate);
             yield return responseUpdate;
         }
 
@@ -199,7 +203,10 @@ internal static partial class OpenAIModelMappers
                 (responseUpdate.AdditionalProperties ??= [])[nameof(ChatCompletion.SystemFingerprint)] = fingerprint;
             }
 
+            responseUpdates.Add(responseUpdate);
             yield return responseUpdate;
         }
+
+        chatMessages.Add(responseUpdates.ToChatMessage());
     }
 }

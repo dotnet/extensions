@@ -54,7 +54,11 @@ public abstract class CachingChatClient : DelegatingChatClient
         // concurrent callers might trigger duplicate requests, but that's acceptable.
         var cacheKey = GetCacheKey(_boxedFalse, chatMessages, options);
 
-        if (await ReadCacheAsync(cacheKey, cancellationToken).ConfigureAwait(false) is not { } result)
+        if (await ReadCacheAsync(cacheKey, cancellationToken).ConfigureAwait(false) is { } result)
+        {
+            chatMessages.Add(result.Message);
+        }
+        else
         {
             result = await base.GetResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
             await WriteCacheAsync(cacheKey, result, cancellationToken).ConfigureAwait(false);
@@ -83,6 +87,11 @@ public abstract class CachingChatClient : DelegatingChatClient
                 {
                     yield return chunk;
                 }
+
+                if (chatResponse.ChatThreadId is null)
+                {
+                    chatMessages.Add(chatResponse.Message);
+                }
             }
             else
             {
@@ -104,9 +113,16 @@ public abstract class CachingChatClient : DelegatingChatClient
             if (await ReadCacheStreamingAsync(cacheKey, cancellationToken).ConfigureAwait(false) is { } existingChunks)
             {
                 // Yield all of the cached items.
+                string? chatThreadId = null;
                 foreach (var chunk in existingChunks)
                 {
+                    chatThreadId ??= chunk.ChatThreadId;
                     yield return chunk;
+                }
+
+                if (chatThreadId is null)
+                {
+                    chatMessages.Add(existingChunks.ToChatMessage());
                 }
             }
             else
