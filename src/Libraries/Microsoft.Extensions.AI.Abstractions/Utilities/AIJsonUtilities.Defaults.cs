@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -79,12 +79,17 @@ public static partial class AIJsonUtilities
         WriteIndented = true)]
     [JsonSerializable(typeof(IList<ChatMessage>))]
     [JsonSerializable(typeof(ChatOptions))]
+    [JsonSerializable(typeof(SpeechToTextOptions))]
     [JsonSerializable(typeof(EmbeddingGenerationOptions))]
     [JsonSerializable(typeof(ChatClientMetadata))]
+    [JsonSerializable(typeof(SpeechToTextClientMetadata))]
     [JsonSerializable(typeof(EmbeddingGeneratorMetadata))]
     [JsonSerializable(typeof(ChatResponse))]
     [JsonSerializable(typeof(ChatResponseUpdate))]
     [JsonSerializable(typeof(IReadOnlyList<ChatResponseUpdate>))]
+    [JsonSerializable(typeof(SpeechToTextResponse))]
+    [JsonSerializable(typeof(SpeechToTextResponseUpdate))]
+    [JsonSerializable(typeof(IReadOnlyList<SpeechToTextResponseUpdate>))]
     [JsonSerializable(typeof(Dictionary<string, object>))]
     [JsonSerializable(typeof(IDictionary<string, object?>))]
     [JsonSerializable(typeof(JsonDocument))]
