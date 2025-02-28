@@ -20,6 +20,7 @@
 <div class="chat-container">
     <ChatSuggestions OnSelected="@AddUserMessageAsync" @ref="@chatSuggestions" />
     <ChatInput OnSend="@AddUserMessageAsync" @ref="@chatInput" />
+    <SurveyPrompt Title="How well is this template working for you?" />
 </div>
 
 @code {
