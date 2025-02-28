@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -33,12 +34,17 @@ public class ChatMessage
     /// <summary>Initializes a new instance of the <see cref="ChatMessage"/> class.</summary>
     /// <param name="role">The role of the author of the message.</param>
     /// <param name="contents">The contents for this message.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="contents"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="contents"/> must not be read-only.</exception>
     public ChatMessage(
         ChatRole role,
         IList<AIContent> contents)
     {
+        _ = Throw.IfNull(contents);
+        _ = Throw.IfReadOnly(contents);
+
         Role = role;
-        _contents = Throw.IfNull(contents);
+        _contents = contents;
     }
 
     /// <summary>Clones the <see cref="ChatMessage"/> to a new <see cref="ChatMessage"/> instance.</summary>
@@ -92,11 +98,20 @@ public class ChatMessage
     }
 
     /// <summary>Gets or sets the chat message content items.</summary>
+    /// <exception cref="ArgumentException">The <see cref="IList{T}"/> must not be read-only.</exception>
     [AllowNull]
     public IList<AIContent> Contents
     {
         get => _contents ??= [];
-        set => _contents = value;
+        set
+        {
+            if (value is not null)
+            {
+                _ = Throw.IfReadOnly(value);
+            }
+
+            _contents = value;
+        }
     }
 
     /// <summary>Gets or sets the raw representation of the chat message from an underlying implementation.</summary>

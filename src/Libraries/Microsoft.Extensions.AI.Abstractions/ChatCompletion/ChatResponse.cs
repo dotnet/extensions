@@ -9,30 +9,95 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents the response to a chat request.</summary>
+/// <remarks>
+/// <see cref="ChatResponse"/> provides one or more response messages and metadata about the response.
+/// A typical response will contain a single message, however a response may contain multiple messages
+/// in a variety of scenarios. For example, if automatic function calling is employed, such that a single
+/// request to a <see cref="IChatClient"/> may actually generate multiple roundtrips to an inner <see cref="IChatClient"/>
+/// it uses, all of the involved messages may be surfaced as part of the final <see cref="ChatResponse"/>.
+/// The messages are ordered, such that <see cref="Message"/> returns the last message in the list.
+/// </remarks>
 public class ChatResponse
 {
-    /// <summary>The response message.</summary>
-    private ChatMessage _message;
+    /// <summary>The response messages.</summary>
+    private IList<ChatMessage>? _messages;
 
     /// <summary>Initializes a new instance of the <see cref="ChatResponse"/> class.</summary>
     public ChatResponse()
     {
-        _message = new(ChatRole.Assistant, []);
     }
 
     /// <summary>Initializes a new instance of the <see cref="ChatResponse"/> class.</summary>
     /// <param name="message">The response message.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="message"/> is <see langword="null"/>.</exception>
     public ChatResponse(ChatMessage message)
     {
         _ = Throw.IfNull(message);
-        _message = message;
+        Messages.Add(message);
     }
 
-    /// <summary>Gets or sets the chat response message.</summary>
+    /// <summary>Initializes a new instance of the <see cref="ChatResponse"/> class.</summary>
+    /// <param name="messages">The response messages.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="messages"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="messages"/> must not be read-only.</exception>
+    public ChatResponse(IList<ChatMessage> messages)
+    {
+        _ = Throw.IfNull(messages);
+        _ = Throw.IfReadOnly(messages);
+
+        _messages = messages;
+    }
+
+    /// <summary>Gets or sets the chat response messages.</summary>
+    /// <remarks>
+    /// The last message in the list maps to <see cref="Message"/>. It should represent
+    /// the final result message of the operation.
+    /// </remarks>
+    /// <exception cref="ArgumentException">The <see cref="IList{T}"/> must not be read-only.</exception>
+    public IList<ChatMessage> Messages
+    {
+        get => _messages ??= new List<ChatMessage>(1);
+        set
+        {
+            if (value is not null)
+            {
+                _ = Throw.IfReadOnly(value);
+            }
+
+            _messages = value;
+        }
+    }
+
+    /// <summary>Gets or sets the last chat response message.</summary>
+    /// <remarks>
+    /// When getting <see cref="Message"/>, if there are no messages, <see cref="Message"/> will add a new
+    /// empty message to the list and return that message; if there are messages, the last will be returned.
+    /// When setting <see cref="Message"/>, if there are messages, the last message will be replaced by the
+    /// newly set instance; if there are no messages, the newly set instance will be added to the list.
+    /// </remarks>
+    [JsonIgnore]
     public ChatMessage Message
     {
-        get => _message;
-        set => _message = Throw.IfNull(value);
+        get
+        {
+            if (Messages.Count == 0)
+            {
+                Messages.Add(new ChatMessage(ChatRole.Assistant, []));
+            }
+
+            return Messages[Messages.Count - 1];
+        }
+        set
+        {
+            if (Messages.Count > 0)
+            {
+                Messages[Messages.Count - 1] = value;
+            }
+            else
+            {
+                Messages.Add(value);
+            }
+        }
     }
 
     /// <summary>Gets or sets the ID of the chat response.</summary>
@@ -73,7 +138,9 @@ public class ChatResponse
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
 
     /// <inheritdoc />
-    public override string ToString() => _message.ToString();
+    public override string ToString() =>
+        _messages is null || _messages.Count == 0 ? string.Empty :
+        Message.ToString();
 
     /// <summary>Creates an array of <see cref="ChatResponseUpdate" /> instances that represent this <see cref="ChatResponse" />.</summary>
     /// <returns>An array of <see cref="ChatResponseUpdate" /> instances that may be used to represent this <see cref="ChatResponse" />.</returns>
@@ -93,27 +160,33 @@ public class ChatResponse
             }
         }
 
-        var updates = new ChatResponseUpdate[extra is null ? 1 : 2];
+        int messageCount = _messages?.Count ?? 0;
+        var updates = new ChatResponseUpdate[messageCount + (extra is not null ? 1 : 0)];
 
-        updates[0] = new ChatResponseUpdate
+        int i;
+        for (i = 0; i < messageCount; i++)
         {
-            ChatThreadId = ChatThreadId,
+            ChatMessage message = _messages![i];
+            updates[i] = new ChatResponseUpdate
+            {
+                ChatThreadId = ChatThreadId,
 
-            AdditionalProperties = _message.AdditionalProperties,
-            AuthorName = _message.AuthorName,
-            Contents = _message.Contents,
-            RawRepresentation = _message.RawRepresentation,
-            Role = _message.Role,
+                AdditionalProperties = message.AdditionalProperties,
+                AuthorName = message.AuthorName,
+                Contents = message.Contents,
+                RawRepresentation = message.RawRepresentation,
+                Role = message.Role,
 
-            ResponseId = ResponseId,
-            CreatedAt = CreatedAt,
-            FinishReason = FinishReason,
-            ModelId = ModelId
-        };
+                ResponseId = ResponseId,
+                CreatedAt = CreatedAt,
+                FinishReason = FinishReason,
+                ModelId = ModelId
+            };
+        }
 
         if (extra is not null)
         {
-            updates[1] = extra;
+            updates[i] = extra;
         }
 
         return updates;

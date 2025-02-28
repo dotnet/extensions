@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable S109 // Magic numbers should not be used
-#pragma warning disable S127 // "for" loop stop conditions should be invariant
 #pragma warning disable S1121 // Assignments should not be made from within sub-expressions
 
 namespace Microsoft.Extensions.AI;
@@ -59,7 +58,7 @@ public static class ChatResponseUpdateExtensions
     {
         _ = Throw.IfNull(updates);
 
-        ChatResponse response = new(new(default, []));
+        ChatResponse response = new();
 
         foreach (var update in updates)
         {
@@ -91,7 +90,7 @@ public static class ChatResponseUpdateExtensions
         static async Task<ChatResponse> ToChatResponseAsync(
             IAsyncEnumerable<ChatResponseUpdate> updates, bool coalesceContent, CancellationToken cancellationToken)
         {
-            ChatResponse response = new(new(default, []));
+            ChatResponse response = new();
 
             await foreach (var update in updates.WithCancellation(cancellationToken).ConfigureAwait(false))
             {
@@ -104,18 +103,45 @@ public static class ChatResponseUpdateExtensions
         }
     }
 
+    /// <summary>Finalizes the <paramref name="response"/> object.</summary>
+    private static void FinalizeResponse(ChatResponse response, bool coalesceContent)
+    {
+        if (coalesceContent)
+        {
+            foreach (ChatMessage message in response.Messages)
+            {
+                CoalesceTextContent((List<AIContent>)message.Contents);
+            }
+        }
+    }
+
     /// <summary>Processes the <see cref="ChatResponseUpdate"/>, incorporating its contents into <paramref name="response"/>.</summary>
     /// <param name="update">The update to process.</param>
     /// <param name="response">The <see cref="ChatResponse"/> object that should be updated based on <paramref name="update"/>.</param>
     private static void ProcessUpdate(ChatResponseUpdate update, ChatResponse response)
     {
-        response.ChatThreadId ??= update.ChatThreadId;
-        response.CreatedAt ??= update.CreatedAt;
-        response.FinishReason ??= update.FinishReason;
-        response.ModelId ??= update.ModelId;
-        response.ResponseId ??= update.ResponseId;
+        // If there is no message created yet, or if the last update we saw had a different
+        // response ID than the newest update, create a new message.
+        if (response.Messages.Count == 0 ||
+            (update.ResponseId is string updateId && response.ResponseId is string responseId && updateId != responseId))
+        {
+            response.Messages.Add(new ChatMessage(ChatRole.Assistant, []));
+        }
 
-        // Incorporate all content from the update into the response.
+        // Some members on ChatResponseUpdate map to members of ChatMessage.
+        // Incorporate those into the latest message; in cases where the message
+        // stores a single value, prefer the latest update's value over anything
+        // stored in the message.
+        if (update.AuthorName is not null)
+        {
+            response.Message.AuthorName = update.AuthorName;
+        }
+
+        if (update.Role is ChatRole role)
+        {
+            response.Message.Role = role;
+        }
+
         foreach (var content in update.Contents)
         {
             switch (content)
@@ -131,10 +157,33 @@ public static class ChatResponseUpdateExtensions
             }
         }
 
-        response.Message.AuthorName ??= update.AuthorName;
-        if (update.Role is ChatRole role && response.Message.Role == default)
+        // Other members on a ChatResponseUpdate map to members of the ChatResponse.
+        // Update the response object with those, preferring the values from later updates.
+        if (update.ChatThreadId is not null)
         {
-            response.Message.Role = role;
+            response.ChatThreadId = update.ChatThreadId;
+        }
+
+        if (update.CreatedAt is not null)
+        {
+            response.CreatedAt = update.CreatedAt;
+        }
+
+        if (update.FinishReason is not null)
+        {
+            response.FinishReason = update.FinishReason;
+        }
+
+        if (update.ModelId is not null)
+        {
+            response.ModelId = update.ModelId;
+        }
+
+        if (update.ResponseId is not null)
+        {
+            // Note that this must come after the message checks earlier, as they depend
+            // on this value for change detection.
+            response.ResponseId = update.ResponseId;
         }
 
         if (update.AdditionalProperties is not null)
@@ -145,26 +194,8 @@ public static class ChatResponseUpdateExtensions
             }
             else
             {
-                foreach (var entry in update.AdditionalProperties)
-                {
-                    // Use first-wins behavior to match the behavior of the other properties.
-                    _ = response.AdditionalProperties.TryAdd(entry.Key, entry.Value);
-                }
+                response.AdditionalProperties.SetAll(update.AdditionalProperties);
             }
-        }
-    }
-
-    /// <summary>Finalizes the <paramref name="response"/> object.</summary>
-    private static void FinalizeResponse(ChatResponse response, bool coalesceContent)
-    {
-        if (response.Message.Role == default)
-        {
-            response.Message.Role = ChatRole.Assistant;
-        }
-
-        if (coalesceContent)
-        {
-            CoalesceTextContent((List<AIContent>)response.Message.Contents);
         }
     }
 
