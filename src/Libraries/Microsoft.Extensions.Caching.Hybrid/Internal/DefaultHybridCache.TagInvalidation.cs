@@ -194,6 +194,10 @@ internal partial class DefaultHybridCache
         static async ValueTask<bool> AwaitedAsync(Task<long> pending, long timestamp) => timestamp <= await pending.ConfigureAwait(false);
     }
 
+    internal static TimeSpan TicksToTimeSpan(long ticks) => TimeSpan.FromTicks(ticks);
+
+    internal long CurrentTimestamp() => _clock.GetUtcNow().UtcTicks;
+
     internal void DebugInvalidateTag(string tag, Task<long> pending)
     {
         if (tag == TagSet.WildcardTag)
@@ -205,8 +209,6 @@ internal partial class DefaultHybridCache
             _tagInvalidationTimes[tag] = pending;
         }
     }
-
-    internal long CurrentTimestamp() => _clock.GetUtcNow().UtcTicks;
 
     internal void PrefetchTags(TagSet tags)
     {

@@ -179,7 +179,7 @@ internal partial class DefaultHybridCache
         }
     }
 
-    internal void SetL1<T>(string key, CacheItem<T> value, HybridCacheEntryOptions? options)
+    internal void SetL1<T>(string key, CacheItem<T> value, HybridCacheEntryOptions? options, TimeSpan maxRelativeTime)
     {
         // incr ref-count for the the cache itself; this *may* be released via the NeedsEvictionCallback path
         if (value.TryReserve())
@@ -190,7 +190,15 @@ internal partial class DefaultHybridCache
             // that actually commits the add - so: if we fault, we don't want to try
             // committing a partially configured cache entry
             ICacheEntry cacheEntry = _localCache.CreateEntry(key);
-            cacheEntry.AbsoluteExpirationRelativeToNow = GetL1AbsoluteExpirationRelativeToNow(options);
+
+            var expiry = GetL1AbsoluteExpirationRelativeToNow(options);
+            if (expiry > maxRelativeTime)
+            {
+                // enforce "not exceeding the remaining overall cache lifetime" that we got from L2
+                expiry = maxRelativeTime;
+            }
+
+            cacheEntry.AbsoluteExpirationRelativeToNow = expiry;
             cacheEntry.Value = value;
 
             if (value.TryGetSize(out long size))
