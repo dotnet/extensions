@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
 
@@ -35,6 +37,7 @@ internal sealed partial class DefaultHybridCache : HybridCache
     private readonly IHybridCacheSerializerFactory[] _serializerFactories;
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0032:Use auto property", Justification = "Keep usage explicit")]
     private readonly HybridCacheOptions _options;
+    private readonly ILogger _logger;
     private readonly CacheFeatures _features; // used to avoid constant type-testing
     private readonly TimeProvider _clock;
 
@@ -69,6 +72,7 @@ internal sealed partial class DefaultHybridCache : HybridCache
         _services = Throw.IfNull(services);
         _localCache = services.GetRequiredService<IMemoryCache>();
         _options = options.Value;
+        _logger = services.GetService<ILoggerFactory>()?.CreateLogger(typeof(HybridCache)) ?? NullLogger.Instance;
         _clock = services.GetService<TimeProvider>() ?? TimeProvider.System;
         _backendCache = services.GetService<IDistributedCache>(); // note optional
 
