@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
@@ -71,11 +72,20 @@ public class ChatResponseUpdate
     }
 
     /// <summary>Gets or sets the chat response update content items.</summary>
+    /// <exception cref="ArgumentException">The <see cref="IList{T}"/> must not be read-only.</exception>
     [AllowNull]
     public IList<AIContent> Contents
     {
         get => _contents ??= [];
-        set => _contents = value;
+        set
+        {
+            if (value is not null)
+            {
+                _ = Throw.IfReadOnly(value);
+            }
+
+            _contents = value;
+        }
     }
 
     /// <summary>Gets or sets the raw representation of the response update from an underlying implementation.</summary>

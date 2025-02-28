@@ -445,6 +445,48 @@ public class FunctionInvokingChatClientTests
     }
 
     [Fact]
+    public async Task AllResponseMessagesReturned()
+    {
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(() => "doesn't matter", "Func1")]
+        };
+
+        var messages = new List<ChatMessage>
+        {
+            new(ChatRole.User, "Hello"),
+        };
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (chatContents, chatOptions, cancellationToken) =>
+            {
+                await Task.Yield();
+
+                ChatMessage message = chatContents.Count is 1 or 3 ?
+                    new(ChatRole.Assistant, [new FunctionCallContent($"callId{chatContents.Count}", "Func1")]) :
+                    new(ChatRole.Assistant, "The answer is 42.");
+
+                chatContents.Add(message);
+
+                return new(message);
+            }
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient);
+
+        ChatResponse response = await client.GetResponseAsync(messages, options);
+
+        Assert.Equal(5, response.Messages.Count);
+        Assert.Equal("The answer is 42.", response.Message.Text);
+        Assert.IsType<FunctionCallContent>(Assert.Single(response.Messages[0].Contents));
+        Assert.IsType<FunctionResultContent>(Assert.Single(response.Messages[1].Contents));
+        Assert.IsType<FunctionCallContent>(Assert.Single(response.Messages[2].Contents));
+        Assert.IsType<FunctionResultContent>(Assert.Single(response.Messages[3].Contents));
+        Assert.IsType<TextContent>(Assert.Single(response.Messages[4].Contents));
+    }
+
+    [Fact]
     public async Task CanAccesssFunctionInvocationContextFromFunctionCall()
     {
         var invocationContexts = new List<FunctionInvocationContext>();

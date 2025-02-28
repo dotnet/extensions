@@ -294,6 +294,24 @@ internal static partial class Throw
         return argument;
     }
 
+    /// <summary>
+    /// Throws an <see cref="System.ArgumentNullException"/> if the collection's <see cref="ICollection{T}.IsReadOnly"/>
+    /// is <see langword="true"/>.
+    /// </summary>
+    /// <param name="argument">The collection to evaluate.</param>
+    /// <param name="paramName">The name of the parameter being checked.</param>
+    /// <typeparam name="T">The type of objects in the collection.</typeparam>
+    /// <returns>The original value of <paramref name="argument"/>.</returns>
+    public static ICollection<T> IfReadOnly<T>(ICollection<T> argument, [CallerArgumentExpression(nameof(argument))] string paramName = "")
+    {
+        if (argument.IsReadOnly)
+        {
+            ArgumentException(paramName, "Collection is read-only");
+        }
+
+        return argument;
+    }
+
     #endregion
 
     #region Exceptions
