@@ -77,11 +77,11 @@ public static partial class AIJsonUtilities
                 Throw.ArgumentException(nameof(parameter), "Parameter is missing a name.");
             }
 
-            if (parameter.ParameterType == typeof(CancellationToken))
+            if (inferenceOptions.IncludeParameter is { } includeParameter &&
+                !includeParameter(parameter))
             {
-                // CancellationToken is a special case that, by convention, we don't want to include in the schema.
-                // Invocations of methods that include a CancellationToken argument should also special-case CancellationToken
-                // to pass along what relevant token into the method's invocation.
+                // Skip parameters that should not be included in the schema.
+                // By default, all parameters are included.
                 continue;
             }
 

@@ -32,7 +32,7 @@ public static class FunctionInvokingChatClientBuilderExtensions
         {
             loggerFactory ??= services.GetService<ILoggerFactory>();
 
-            var chatClient = new FunctionInvokingChatClient(innerClient, loggerFactory?.CreateLogger(typeof(FunctionInvokingChatClient)));
+            var chatClient = new FunctionInvokingChatClient(innerClient, loggerFactory?.CreateLogger(typeof(FunctionInvokingChatClient)), services);
             configure?.Invoke(chatClient);
             return chatClient;
         });

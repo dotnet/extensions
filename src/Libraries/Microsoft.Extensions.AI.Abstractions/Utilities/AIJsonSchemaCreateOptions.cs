@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Reflection;
 using System.Text.Json.Nodes;
 
 #pragma warning disable S1067 // Expressions should not be too complex
@@ -24,6 +25,17 @@ public sealed class AIJsonSchemaCreateOptions : IEquatable<AIJsonSchemaCreateOpt
     public Func<AIJsonSchemaCreateContext, JsonNode, JsonNode>? TransformSchemaNode { get; init; }
 
     /// <summary>
+    /// Gets a callback that is invoked for every parameter in the <see cref="MethodBase"/> provided to
+    /// <see cref="AIJsonUtilities.CreateFunctionJsonSchema"/> in order to determine whether it should
+    /// be included in the generated schema.
+    /// </summary>
+    /// <remarks>
+    /// By default, when <see cref="IncludeParameter"/> is <see langword="null"/>,
+    /// all parameters are included in the generated schema.
+    /// </remarks>
+    public Func<ParameterInfo, bool>? IncludeParameter { get; init; }
+
+    /// <summary>
     /// Gets a value indicating whether to include the type keyword in inferred schemas for .NET enums.
     /// </summary>
     public bool IncludeTypeInEnumSchemas { get; init; } = true;
@@ -44,19 +56,24 @@ public sealed class AIJsonSchemaCreateOptions : IEquatable<AIJsonSchemaCreateOpt
     public bool RequireAllProperties { get; init; } = true;
 
     /// <inheritdoc/>
-    public bool Equals(AIJsonSchemaCreateOptions? other)
-    {
-        return other is not null &&
-            TransformSchemaNode == other.TransformSchemaNode &&
-            IncludeTypeInEnumSchemas == other.IncludeTypeInEnumSchemas &&
-            DisallowAdditionalProperties == other.DisallowAdditionalProperties &&
-            IncludeSchemaKeyword == other.IncludeSchemaKeyword &&
-            RequireAllProperties == other.RequireAllProperties;
-    }
+    public bool Equals(AIJsonSchemaCreateOptions? other) =>
+        other is not null &&
+        TransformSchemaNode == other.TransformSchemaNode &&
+        IncludeParameter == other.IncludeParameter &&
+        IncludeTypeInEnumSchemas == other.IncludeTypeInEnumSchemas &&
+        DisallowAdditionalProperties == other.DisallowAdditionalProperties &&
+        IncludeSchemaKeyword == other.IncludeSchemaKeyword &&
+        RequireAllProperties == other.RequireAllProperties;
 
     /// <inheritdoc />
     public override bool Equals(object? obj) => obj is AIJsonSchemaCreateOptions other && Equals(other);
 
     /// <inheritdoc />
-    public override int GetHashCode() => (TransformSchemaNode, IncludeTypeInEnumSchemas, DisallowAdditionalProperties, IncludeSchemaKeyword, RequireAllProperties).GetHashCode();
+    public override int GetHashCode() =>
+        (TransformSchemaNode,
+         IncludeParameter,
+         IncludeTypeInEnumSchemas,
+         DisallowAdditionalProperties,
+         IncludeSchemaKeyword,
+         RequireAllProperties).GetHashCode();
 }

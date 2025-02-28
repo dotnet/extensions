@@ -14,8 +14,13 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Shared.Collections;
 using Microsoft.Shared.Diagnostics;
+
+#pragma warning disable CA1031 // Do not catch general exception types
+#pragma warning disable S2302 // "nameof" should be used
+#pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 
 namespace Microsoft.Extensions.AI;
 
@@ -244,6 +249,32 @@ public static partial class AIFunctionFactory
 
         private ReflectionAIFunctionDescriptor(DescriptorKey key, JsonSerializerOptions serializerOptions)
         {
+            AIJsonSchemaCreateOptions schemaOptions = new()
+            {
+                // This needs to be kept in sync with the shape of AIJsonSchemaCreateOptions.
+                TransformSchemaNode = key.SchemaOptions.TransformSchemaNode,
+                IncludeParameter = parameterInfo =>
+                {
+                    // Explicitly exclude from the schema CancellationToken parameters as well
+                    // as those annotated as [FromServices] or [FromKeyedServices]. These will be satisfied
+                    // from sources other than arguments to InvokeAsync.
+                    if (parameterInfo.ParameterType == typeof(CancellationToken) ||
+                        parameterInfo.GetCustomAttribute<FromServicesAttribute>(inherit: true) is not null ||
+                        parameterInfo.GetCustomAttribute<FromKeyedServicesAttribute>(inherit: true) is not null)
+                    {
+                        return false;
+                    }
+
+                    // For all other parameters, delegate to whatever behavior is specified in the options.
+                    // If none is specified, include the parameter.
+                    return key.SchemaOptions.IncludeParameter?.Invoke(parameterInfo) ?? true;
+                },
+                IncludeTypeInEnumSchemas = key.SchemaOptions.IncludeTypeInEnumSchemas,
+                DisallowAdditionalProperties = key.SchemaOptions.DisallowAdditionalProperties,
+                IncludeSchemaKeyword = key.SchemaOptions.IncludeSchemaKeyword,
+                RequireAllProperties = key.SchemaOptions.RequireAllProperties,
+            };
+
             // Get marshaling delegates for parameters.
             ParameterInfo[] parameters = key.Method.GetParameters();
             ParameterMarshallers = new Func<IReadOnlyDictionary<string, object?>, CancellationToken, object?>[parameters.Length];
@@ -264,7 +295,7 @@ public static partial class AIFunctionFactory
                 Name,
                 Description,
                 serializerOptions,
-                key.SchemaOptions);
+                schemaOptions);
         }
 
         public string Name { get; }
@@ -337,6 +368,40 @@ public static partial class AIFunctionFactory
                     cancellationToken;
             }
 
+            // For DI-based parameters, try to resolve from the service provider.
+            if (parameter.GetCustomAttribute<FromServicesAttribute>(inherit: true) is { } fsAttr)
+            {
+                return (arguments, _) =>
+                {
+                    if ((arguments as AIFunctionArguments)?.ServiceProvider is IServiceProvider services &&
+                        services.GetService(parameterType) is object service)
+                    {
+                        return service;
+                    }
+
+                    // No service could be resolved. Return a default value if it's optional, otherwise throw.
+                    return parameter.HasDefaultValue ?
+                        parameter.DefaultValue :
+                        throw new InvalidOperationException($"Unable to resolve service of type '{parameterType}' for parameter '{parameter.Name}'.");
+                };
+            }
+            else if (parameter.GetCustomAttribute<FromKeyedServicesAttribute>(inherit: true) is { } fksAttr)
+            {
+                return (arguments, _) =>
+                {
+                    if ((arguments as AIFunctionArguments)?.ServiceProvider is IKeyedServiceProvider services &&
+                        services.GetKeyedService(parameterType, fksAttr.Key) is object service)
+                    {
+                        return service;
+                    }
+
+                    // No service could be resolved. Return a default value if it's optional, otherwise throw.
+                    return parameter.HasDefaultValue ?
+                        parameter.DefaultValue :
+                        throw new InvalidOperationException($"Unable to resolve service of type '{parameterType}' with key '{fksAttr.Key}' for parameter '{parameter.Name}'.");
+                };
+            }
+
             // For all other parameters, create a marshaller that tries to extract the value from the arguments dictionary.
             return (arguments, _) =>
             {
@@ -355,7 +420,6 @@ public static partial class AIFunctionFactory
 
                     object? MarshallViaJsonRoundtrip(object value)
                     {
-#pragma warning disable CA1031 // Do not catch general exception types
                         try
                         {
                             string json = JsonSerializer.Serialize(value, serializerOptions.GetTypeInfo(value.GetType()));
@@ -366,7 +430,6 @@ public static partial class AIFunctionFactory
                             // Eat any exceptions and fall back to the original value to force a cast exception later on.
                             return value;
                         }
-#pragma warning restore CA1031
                     }
                 }
 
@@ -479,9 +542,7 @@ public static partial class AIFunctionFactory
 #if NET
             return (MethodInfo)specializedType.GetMemberWithSameMetadataDefinitionAs(genericMethodDefinition);
 #else
-#pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
             const BindingFlags All = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance;
-#pragma warning restore S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
             return specializedType.GetMethods(All).First(m => m.MetadataToken == genericMethodDefinition.MetadataToken);
 #endif
         }
