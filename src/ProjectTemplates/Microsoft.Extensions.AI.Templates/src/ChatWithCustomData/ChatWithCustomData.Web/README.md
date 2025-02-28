@@ -160,7 +160,7 @@ Follow the instructions in the [Azure portal](https://portal.azure.com/) to crea
 
 #### ---#if (UseManagedIdentity)
 ### 2. Configure Azure AI Search for Keyless Authentication
-This template is configured to use keyless authentication (also known as Managed Identity, with Entra ID). Before continuing, you'll need to configure your Azure AI Search resource to support this. [Learn more](https://learn.microsoft.com/azure/search/keyless-connections).  After creation, ensure that you have selected Role-Based Access Control (RBAC) under Settings > Keys, as this is not the default. Assign yourself the roles called out for local development. [Learn more](https://learn.microsoft.com/en-us/azure/search/keyless-connections?tabs=csharp%2Cazure-cli#roles-for-local-development).
+This template is configured to use keyless authentication (also known as Managed Identity, with Entra ID). Before continuing, you'll need to configure your Azure AI Search resource to support this. [Learn more](https://learn.microsoft.com/azure/search/keyless-connections).  After creation, ensure that you have selected Role-Based Access Control (RBAC) under Settings > Keys, as this is not the default. Assign yourself the roles called out for local development. [Learn more](https://learn.microsoft.com/azure/search/keyless-connections#roles-for-local-development).
 
 ### 3. Set the Azure AI Search Endpoint for this app
    Configure your Azure AI Search endpoint for this project, using .NET User Secrets:
