@@ -17,12 +17,12 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI.Evaluation.Integration.Tests;
 
-public class EvaluatorTests
+public class EndToEndTests
 {
     private static readonly ChatOptions _chatOptions;
     private static readonly ReportingConfiguration? _reportingConfiguration;
 
-    static EvaluatorTests()
+    static EndToEndTests()
     {
         _chatOptions =
             new ChatOptions
@@ -31,13 +31,13 @@ public class EvaluatorTests
                 ResponseFormat = ChatResponseFormat.Text
             };
 
-        var options = new RelevanceTruthAndCompletenessEvaluatorOptions(includeReasoning: true);
-        IEvaluator rtcEvaluator = new RelevanceTruthAndCompletenessEvaluator(options);
-        IEvaluator coherenceEvaluator = new CoherenceEvaluator();
-        IEvaluator fluencyEvaluator = new FluencyEvaluator();
-
         if (Settings.Current.Configured)
         {
+            var options = new RelevanceTruthAndCompletenessEvaluatorOptions(includeReasoning: true);
+            IEvaluator rtcEvaluator = new RelevanceTruthAndCompletenessEvaluator(options);
+            IEvaluator coherenceEvaluator = new CoherenceEvaluator();
+            IEvaluator fluencyEvaluator = new FluencyEvaluator();
+
             _reportingConfiguration =
                 DiskBasedReportingConfiguration.Create(
                     storageRootPath: Settings.Current.StorageRootPath,
@@ -60,14 +60,14 @@ public class EvaluatorTests
         {
             await using ScenarioRun scenarioRun =
                 await _reportingConfiguration.CreateScenarioRunAsync(
-                    scenarioName: $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(EvaluatorTests)}.{nameof(DistanceBetweenEarthAndMoon)}",
+                    scenarioName: $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(EndToEndTests)}.{nameof(DistanceBetweenEarthAndMoon)}",
                     iterationName: i.ToString());
 
             IChatClient chatClient = scenarioRun.ChatConfiguration!.ChatClient;
 
             var messages = new List<ChatMessage>();
             string prompt = "How far in miles is the moon from the earth at its closest and furthest points?";
-            ChatMessage promptMessage = new ChatMessage(ChatRole.User, prompt);
+            ChatMessage promptMessage = prompt.ToUserMessage();
             messages.Add(promptMessage);
 
             ChatResponse response = await chatClient.GetResponseAsync(messages, _chatOptions);
@@ -111,7 +111,7 @@ public class EvaluatorTests
         {
             await using ScenarioRun scenarioRun =
                 await _reportingConfiguration.CreateScenarioRunAsync(
-                    scenarioName: $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(EvaluatorTests)}.{nameof(DistanceBetweenEarthAndVenus)}",
+                    scenarioName: $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(EndToEndTests)}.{nameof(DistanceBetweenEarthAndVenus)}",
                     iterationName: i.ToString());
 
             IChatClient chatClient = scenarioRun.ChatConfiguration!.ChatClient;

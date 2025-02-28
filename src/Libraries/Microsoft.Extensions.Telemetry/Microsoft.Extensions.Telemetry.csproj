@@ -8,10 +8,12 @@
   <PropertyGroup>
     <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
+    <InjectSharedText>true</InjectSharedText>
     <InjectGetOrAddOnLegacy>true</InjectGetOrAddOnLegacy>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectSharedDataValidation>true</InjectSharedDataValidation>
-    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectSharedLoggingBuffering>true</InjectSharedLoggingBuffering>
     <InjectSharedMemoization>true</InjectSharedMemoization>
     <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>

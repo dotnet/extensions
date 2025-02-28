@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading;
@@ -12,15 +11,8 @@ using Microsoft.Shared.Collections;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a function that can be described to an AI service and invoked.</summary>
-[DebuggerDisplay("{DebuggerDisplay,nq}")]
 public abstract class AIFunction : AITool
 {
-    /// <summary>Gets the name of the function.</summary>
-    public abstract string Name { get; }
-
-    /// <summary>Gets a description of the function, suitable for use in describing the purpose to a model.</summary>
-    public abstract string Description { get; }
-
     /// <summary>Gets a JSON Schema describing the function and its input parameters.</summary>
     /// <remarks>
     /// <para>
@@ -56,11 +48,8 @@ public abstract class AIFunction : AITool
     /// </remarks>
     public virtual MethodInfo? UnderlyingMethod => null;
 
-    /// <summary>Gets any additional properties associated with the function.</summary>
-    public virtual IReadOnlyDictionary<string, object?> AdditionalProperties => EmptyReadOnlyDictionary<string, object?>.Instance;
-
     /// <summary>Gets a <see cref="JsonSerializerOptions"/> that can be used to marshal function parameters.</summary>
-    public virtual JsonSerializerOptions? JsonSerializerOptions => AIJsonUtilities.DefaultOptions;
+    public virtual JsonSerializerOptions JsonSerializerOptions => AIJsonUtilities.DefaultOptions;
 
     /// <summary>Invokes the <see cref="AIFunction"/> and returns its result.</summary>
     /// <param name="arguments">The arguments to pass to the function's invocation.</param>
@@ -75,9 +64,6 @@ public abstract class AIFunction : AITool
         return InvokeCoreAsync(arguments, cancellationToken);
     }
 
-    /// <inheritdoc/>
-    public override string ToString() => Name;
-
     /// <summary>Invokes the <see cref="AIFunction"/> and returns its result.</summary>
     /// <param name="arguments">The arguments to pass to the function's invocation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
@@ -85,8 +71,4 @@ public abstract class AIFunction : AITool
     protected abstract Task<object?> InvokeCoreAsync(
         IEnumerable<KeyValuePair<string, object?>> arguments,
         CancellationToken cancellationToken);
-
-    /// <summary>Gets the string to display in the debugger for this instance.</summary>
-    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private string DebuggerDisplay => string.IsNullOrWhiteSpace(Description) ? Name : $"{Name} ({Description})";
 }

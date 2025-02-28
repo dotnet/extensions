@@ -18,11 +18,6 @@ public abstract class ChatConversationEvaluator : IEvaluator
     public abstract IReadOnlyCollection<string> EvaluationMetricNames { get; }
 
     /// <summary>
-    /// Gets the <see cref="AI.ChatOptions"/> that this <see cref="IEvaluator"/> uses when performing evaluations.
-    /// </summary>
-    protected virtual ChatOptions? ChatOptions => null;
-
-    /// <summary>
     /// Gets a value indicating whether this <see cref="IEvaluator"/> considers the entire conversation history (in
     /// addition to the request and response being evaluated) as part of the evaluation it performs.
     /// </summary>
@@ -170,28 +165,11 @@ public abstract class ChatConversationEvaluator : IEvaluator
 
         evaluationMessages.Add(new ChatMessage(ChatRole.User, evaluationPrompt));
 
-        ChatResponse evaluationResponse =
-            await chatConfiguration.ChatClient.GetResponseAsync(
-                evaluationMessages,
-                ChatOptions,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
-
-        string? evaluationResponseContent = evaluationResponse.Message.Text;
-
-        if (string.IsNullOrWhiteSpace(evaluationResponseContent))
-        {
-            result.AddDiagnosticToAllMetrics(
-                EvaluationDiagnostic.Error(
-                    "Evaluation failed because the model failed to produce a valid evaluation response."));
-        }
-        else
-        {
-            await ParseEvaluationResponseAsync(
-                evaluationResponseContent!,
-                result,
-                chatConfiguration,
-                cancellationToken).ConfigureAwait(false);
-        }
+        await PerformEvaluationAsync(
+            chatConfiguration,
+            evaluationMessages,
+            result,
+            cancellationToken).ConfigureAwait(false);
 
         if (inputTokenLimit > 0 && ignoredMessagesCount > 0)
         {
@@ -338,26 +316,28 @@ public abstract class ChatConversationEvaluator : IEvaluator
     protected abstract EvaluationResult InitializeResult();
 
     /// <summary>
-    /// Parses the evaluation result present in <paramref name="modelResponseForEvaluationPrompt"/> into the
-    /// <see cref="EvaluationMetric"/>s present in the supplied <paramref name="result"/>.
+    /// Invokes the supplied <see cref="ChatConfiguration.ChatClient"/> with the supplied
+    /// <paramref name="evaluationMessages"/> to perform the evaluation, and includes the results as one or more
+    /// <see cref="EvaluationMetric"/>s in the supplied <paramref name="result"/>.
     /// </summary>
-    /// <param name="modelResponseForEvaluationPrompt">
-    /// An AI-generated response that contains the result of the current evaluation.
+    /// <param name="chatConfiguration">
+    /// A <see cref="ChatConfiguration"/> that specifies the <see cref="IChatClient"/> and the
+    /// <see cref="IEvaluationTokenCounter"/> that this <see cref="IEvaluator"/> uses to perform the evaluation.
+    /// </param>
+    /// <param name="evaluationMessages">
+    /// The set of messages that are to be sent to the supplied <see cref="ChatConfiguration.ChatClient"/> to perform
+    /// the evaluation.
     /// </param>
     /// <param name="result">
     /// An <see cref="EvaluationResult"/> that includes a collection of <see cref="EvaluationMetric"/>s that are
     /// supported by this <see cref="IEvaluator"/>.
     /// </param>
-    /// <param name="chatConfiguration">
-    /// A <see cref="ChatConfiguration"/> that specifies the <see cref="IChatClient"/> and the
-    /// <see cref="IEvaluationTokenCounter"/> that this <see cref="IEvaluator"/> uses to perform the evaluation.
-    /// </param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can cancel the operation.</param>
     /// <returns>A <see cref="ValueTask"/> that represents the asynchronous operation.</returns>
-    protected abstract ValueTask ParseEvaluationResponseAsync(
-        string modelResponseForEvaluationPrompt,
-        EvaluationResult result,
+    protected abstract ValueTask PerformEvaluationAsync(
         ChatConfiguration chatConfiguration,
+        IList<ChatMessage> evaluationMessages,
+        EvaluationResult result,
         CancellationToken cancellationToken);
 
     private (ChatMessage? userRequest, List<ChatMessage> history) GetUserRequestAndHistory(

@@ -1,5 +1,10 @@
 # Release History
 
+## 9.3.0-preview.1.25114.11
+
+- Ensures that all yielded `ChatResponseUpdates` include a `ResponseId`.
+- Ensures that error HTTP status codes are correctly propagated as exceptions.
+
 ## 9.1.0-preview.1.25064.3
 
 - Added support for function calling when doing streaming operations.

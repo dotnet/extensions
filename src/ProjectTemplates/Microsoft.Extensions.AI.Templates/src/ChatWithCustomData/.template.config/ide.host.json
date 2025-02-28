@@ -1,7 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/ide.host",
   "order": 0,
-  "icon": "icon.png",
+  "icon": "ide/icon.ico",
+  "displayOverviewPage": "",
   "symbolInfo": [
     {
       "id": "AiServiceProvider",

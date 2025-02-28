@@ -33,6 +33,9 @@ public sealed class AzureAIInferenceChatClient : IChatClient
     /// <summary>The <see cref="JsonSerializerOptions"/> use for any serialization activities related to tool call arguments and results.</summary>
     private JsonSerializerOptions _toolCallJsonSerializerOptions = AIJsonUtilities.DefaultOptions;
 
+    /// <summary>Gets a ChatRole.Developer value.</summary>
+    private static ChatRole ChatRoleDeveloper { get; } = new("developer");
+
     /// <summary>Initializes a new instance of the <see cref="AzureAIInferenceChatClient"/> class for the specified <see cref="ChatCompletionsClient"/>.</summary>
     /// <param name="chatCompletionsClient">The underlying client.</param>
     /// <param name="modelId">The ID of the model to use. If null, it can be provided per request via <see cref="ChatOptions.ModelId"/>.</param>
@@ -273,6 +276,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
         role.Equals(global::Azure.AI.Inference.ChatRole.User) ? ChatRole.User :
         role.Equals(global::Azure.AI.Inference.ChatRole.Assistant) ? ChatRole.Assistant :
         role.Equals(global::Azure.AI.Inference.ChatRole.Tool) ? ChatRole.Tool :
+        role.Equals(global::Azure.AI.Inference.ChatRole.Developer) ? ChatRoleDeveloper :
         new ChatRole(role.ToString());
 
     /// <summary>Converts an AzureAI finish reason to an Extensions finish reason.</summary>
@@ -365,16 +369,39 @@ public sealed class AzureAIInferenceChatClient : IChatClient
 
             if (options.ResponseFormat is ChatResponseFormatText)
             {
-                result.ResponseFormat = new ChatCompletionsResponseFormatText();
+                result.ResponseFormat = ChatCompletionsResponseFormat.CreateTextFormat();
             }
-            else if (options.ResponseFormat is ChatResponseFormatJson)
+            else if (options.ResponseFormat is ChatResponseFormatJson json)
             {
-                result.ResponseFormat = new ChatCompletionsResponseFormatJSON();
+                if (json.Schema is { } schema)
+                {
+                    var tool = JsonSerializer.Deserialize(schema, JsonContext.Default.AzureAIChatToolJson)!;
+                    result.ResponseFormat = ChatCompletionsResponseFormat.CreateJsonFormat(
+                        json.SchemaName ?? "json_schema",
+                        new Dictionary<string, BinaryData>
+                        {
+                            ["type"] = _objectString,
+                            ["properties"] = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool.Properties, JsonContext.Default.DictionaryStringJsonElement)),
+                            ["required"] = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool.Required, JsonContext.Default.ListString)),
+                            ["additionalProperties"] = _falseString,
+                        },
+                        json.SchemaDescription);
+                }
+                else
+                {
+                    result.ResponseFormat = ChatCompletionsResponseFormat.CreateJsonFormat();
+                }
             }
         }
 
         return result;
     }
+
+    /// <summary>Cached <see cref="BinaryData"/> for "object".</summary>
+    private static readonly BinaryData _objectString = BinaryData.FromString("\"object\"");
+
+    /// <summary>Cached <see cref="BinaryData"/> for "false".</summary>
+    private static readonly BinaryData _falseString = BinaryData.FromString("false");
 
     /// <summary>Converts an Extensions function to an AzureAI chat tool.</summary>
     private static ChatCompletionsToolDefinition ToAzureAIChatTool(AIFunction aiFunction)
@@ -400,6 +427,10 @@ public sealed class AzureAIInferenceChatClient : IChatClient
             if (input.Role == ChatRole.System)
             {
                 yield return new ChatRequestSystemMessage(input.Text ?? string.Empty);
+            }
+            else if (input.Role == ChatRoleDeveloper)
+            {
+                yield return new ChatRequestDeveloperMessage(input.Text ?? string.Empty);
             }
             else if (input.Role == ChatRole.Tool)
             {
@@ -475,6 +506,32 @@ public sealed class AzureAIInferenceChatClient : IChatClient
                     else if (dataContent.Uri is string uri)
                     {
                         parts.Add(new ChatMessageImageContentItem(new Uri(uri)));
+                    }
+
+                    break;
+
+                case DataContent dataContent when dataContent.MediaTypeStartsWith("audio/"):
+                    if (dataContent.Data.HasValue)
+                    {
+                        AudioContentFormat format;
+                        if (dataContent.MediaTypeStartsWith("audio/mpeg"))
+                        {
+                            format = AudioContentFormat.Mp3;
+                        }
+                        else if (dataContent.MediaTypeStartsWith("audio/wav"))
+                        {
+                            format = AudioContentFormat.Wav;
+                        }
+                        else
+                        {
+                            break;
+                        }
+
+                        parts.Add(new ChatMessageAudioContentItem(BinaryData.FromBytes(dataContent.Data.Value), format));
+                    }
+                    else if (dataContent.Uri is string uri)
+                    {
+                        parts.Add(new ChatMessageAudioContentItem(new Uri(uri)));
                     }
 
                     break;

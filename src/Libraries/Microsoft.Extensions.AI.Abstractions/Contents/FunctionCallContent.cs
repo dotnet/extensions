@@ -102,13 +102,16 @@ public sealed class FunctionCallContent : AIContent
     {
         get
         {
-            string display = CallId is not null ?
-                $"CallId = {CallId}, " :
-                string.Empty;
+            string display = "FunctionCall = ";
+
+            if (CallId is not null)
+            {
+                display += $"{CallId}, ";
+            }
 
             display += Arguments is not null ?
-                $"Call = {Name}({string.Join(", ", Arguments)})" :
-                $"Call = {Name}()";
+                $"{Name}({string.Join(", ", Arguments)})" :
+                $"{Name}()";
 
             return display;
         }

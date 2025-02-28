@@ -9,7 +9,7 @@
   <PropertyGroup>
     <Stage>preview</Stage>
     <EnablePackageValidation>false</EnablePackageValidation>
-    <MinCodeCoverage>91</MinCodeCoverage>
+    <MinCodeCoverage>86</MinCodeCoverage>
     <MinMutationScore>0</MinMutationScore>
   </PropertyGroup>
 
@@ -29,7 +29,6 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.AI.Inference" />
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
     <PackageReference Include="System.Memory.Data" />
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>

@@ -46,7 +46,7 @@
 
         try
         {
-            var response = await ChatClient.CompleteAsync<string[]>(
+            var response = await ChatClient.GetResponseAsync<string[]>(
                 [.. ReduceMessages(messages), new(ChatRole.User, Prompt)],
                 useNativeJsonSchema: true, cancellationToken: cancellation.Token);
             if (!response.TryGetResult(out suggestions))

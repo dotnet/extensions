@@ -22,18 +22,30 @@
     <NoPackageAnalysis>true</NoPackageAnalysis>
   </PropertyGroup>
 
+  <!--
+    Reference the GenerateTemplateContent project so that template content gets generated prior
+    to building this project.
+  -->
   <ItemGroup>
-    <Content Include="src\ChatWithCustomData\**\*" Exclude="**\bin\**;**\obj\**;**\node_modules\**;**\*.user;**\*.csproj.in;**\*.out.js;**\*.generated.css;**\package-lock.json" />
-    <Compile Remove="**\*" />
+    <ProjectReference
+      Include="..\GenerateTemplateContent\GenerateTemplateContent.csproj"
+      ReferenceOutputAssembly="false"
+      PrivateAssets="all" />
   </ItemGroup>
 
-  <!-- Copy the .csproj.in files to corresponding .csproj files -->
-  <!-- The reason they are initially .csproj.in is that there's no other way to exclude them from the main build -->
-  <Target Name="PrepareCsprojFiles" BeforeTargets="PrepareForBuild">
-    <ItemGroup>
-      <_CsprojFiles Include="src\**\*.csproj.in" />
-    </ItemGroup>
-    <Copy SourceFiles="@(_CsprojFiles)" DestinationFiles="@(_CsprojFiles->'$([System.String]::Copy('%(Identity)').Replace('.csproj.in', '.csproj'))')" SkipUnchangedFiles="true" />
-  </Target>
+  <ItemGroup>
+    <Content
+      Include="src\ChatWithCustomData\**\*"
+      Exclude="
+        **\bin\**;
+        **\obj\**;
+        **\node_modules\**;
+        **\*.user;**\*.in;
+        **\*.out.js;
+        **\*.generated.css;
+        **\package-lock.json;" />
+    <None Include="THIRD-PARTY-NOTICES.TXT" Pack="true" PackagePath="." />
+    <Compile Remove="**\*" />
+  </ItemGroup>
 
 </Project>
