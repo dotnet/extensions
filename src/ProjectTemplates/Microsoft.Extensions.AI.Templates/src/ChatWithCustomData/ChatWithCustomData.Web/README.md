@@ -231,4 +231,4 @@ Make sure to replace `YOUR-AZURE-AI-SEARCH-KEY` and `YOUR-AZURE-AI-SEARCH-ENDPOI
 # Learn More
 To learn more about development with .NET and AI, check out the following links:
 
-* [AI for .NET Developers](https://learn.microsoft.com/en-us/dotnet/ai/)
+* [AI for .NET Developers](https://learn.microsoft.com/dotnet/ai/)
