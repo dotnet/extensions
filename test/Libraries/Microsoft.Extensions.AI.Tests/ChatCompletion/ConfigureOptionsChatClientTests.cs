@@ -34,7 +34,7 @@ public class ConfigureOptionsChatClientTests
     {
         ChatOptions? providedOptions = nullProvidedOptions ? null : new() { ModelId = "test" };
         ChatOptions? returnedOptions = null;
-        ChatResponse expectedResponse = new(Array.Empty<ChatMessage>());
+        ChatResponse expectedResponse = new();
         var expectedUpdates = Enumerable.Range(0, 3).Select(i => new ChatResponseUpdate()).ToArray();
         using CancellationTokenSource cts = new();
 

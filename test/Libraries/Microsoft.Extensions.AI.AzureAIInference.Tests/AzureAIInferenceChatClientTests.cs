@@ -811,7 +811,6 @@ public class AzureAIInferenceChatClientTests
         Assert.Equal(16, response.Usage.OutputTokenCount);
         Assert.Equal(77, response.Usage.TotalTokenCount);
 
-        Assert.Single(response.Choices);
         Assert.Single(response.Message.Contents);
         FunctionCallContent fcc = Assert.IsType<FunctionCallContent>(response.Message.Contents[0]);
         Assert.Equal("GetPersonAge", fcc.Name);

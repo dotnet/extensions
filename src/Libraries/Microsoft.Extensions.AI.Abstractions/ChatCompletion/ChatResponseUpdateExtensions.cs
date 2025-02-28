@@ -2,17 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
-using System.Linq;
-#if NET
-using System.Runtime.InteropServices;
-#endif
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable S109 // Magic numbers should not be used
-#pragma warning disable S127 // "for" loop stop conditions should be invariant
 #pragma warning disable S1121 // Assignments should not be made from within sub-expressions
 
 namespace Microsoft.Extensions.AI;
@@ -22,12 +17,39 @@ namespace Microsoft.Extensions.AI;
 /// </summary>
 public static class ChatResponseUpdateExtensions
 {
+    /// <summary>Combines <see cref="ChatResponseUpdate"/> instances into a single <see cref="ChatMessage"/>.</summary>
+    /// <param name="updates">The updates to be combined.</param>
+    /// <param name="coalesceContent">
+    /// <see langword="true"/> to attempt to coalesce contiguous <see cref="AIContent"/> items, where applicable,
+    /// into a single <see cref="AIContent"/>, in order to reduce the number of individual content items that are included in
+    /// the manufactured <see cref="ChatMessage"/> instance. When <see langword="false"/>, the original content items are used.
+    /// The default is <see langword="true"/>.
+    /// </param>
+    /// <returns>The combined <see cref="ChatResponse"/>.</returns>
+    public static ChatMessage ToChatMessage(
+        this IEnumerable<ChatResponseUpdate> updates, bool coalesceContent = true) =>
+        ToChatResponse(updates, coalesceContent).Message; // TO DO: More efficient implementation
+
+    /// <summary>Combines <see cref="ChatResponseUpdate"/> instances into a single <see cref="ChatMessage"/>.</summary>
+    /// <param name="updates">The updates to be combined.</param>
+    /// <param name="coalesceContent">
+    /// <see langword="true"/> to attempt to coalesce contiguous <see cref="AIContent"/> items, where applicable,
+    /// into a single <see cref="AIContent"/>, in order to reduce the number of individual content items that are included in
+    /// the manufactured <see cref="ChatMessage"/> instance. When <see langword="false"/>, the original content items are used.
+    /// The default is <see langword="true"/>.
+    /// </param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The combined <see cref="ChatResponse"/>.</returns>
+    public static async Task<ChatMessage> ToChatMessageAsync(
+        this IAsyncEnumerable<ChatResponseUpdate> updates, bool coalesceContent = true, CancellationToken cancellationToken = default) =>
+        (await ToChatResponseAsync(updates, coalesceContent, cancellationToken).ConfigureAwait(false)).Message; // TO DO: More efficient implementation
+
     /// <summary>Combines <see cref="ChatResponseUpdate"/> instances into a single <see cref="ChatResponse"/>.</summary>
     /// <param name="updates">The updates to be combined.</param>
     /// <param name="coalesceContent">
     /// <see langword="true"/> to attempt to coalesce contiguous <see cref="AIContent"/> items, where applicable,
     /// into a single <see cref="AIContent"/>, in order to reduce the number of individual content items that are included in
-    /// the manufactured <see cref="ChatMessage"/> instances. When <see langword="false"/>, the original content items are used.
+    /// the manufactured <see cref="ChatMessage"/> instance. When <see langword="false"/>, the original content items are used.
     /// The default is <see langword="true"/>.
     /// </param>
     /// <returns>The combined <see cref="ChatResponse"/>.</returns>
@@ -36,15 +58,14 @@ public static class ChatResponseUpdateExtensions
     {
         _ = Throw.IfNull(updates);
 
-        ChatResponse response = new([]);
-        Dictionary<int, ChatMessage> messages = [];
+        ChatResponse response = new();
 
         foreach (var update in updates)
         {
-            ProcessUpdate(update, messages, response);
+            ProcessUpdate(update, response);
         }
 
-        AddMessagesToResponse(messages, response, coalesceContent);
+        FinalizeResponse(response, coalesceContent);
 
         return response;
     }
@@ -54,7 +75,7 @@ public static class ChatResponseUpdateExtensions
     /// <param name="coalesceContent">
     /// <see langword="true"/> to attempt to coalesce contiguous <see cref="AIContent"/> items, where applicable,
     /// into a single <see cref="AIContent"/>, in order to reduce the number of individual content items that are included in
-    /// the manufactured <see cref="ChatMessage"/> instances. When <see langword="false"/>, the original content items are used.
+    /// the manufactured <see cref="ChatMessage"/> instance. When <see langword="false"/>, the original content items are used.
     /// The default is <see langword="true"/>.
     /// </param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -69,43 +90,58 @@ public static class ChatResponseUpdateExtensions
         static async Task<ChatResponse> ToChatResponseAsync(
             IAsyncEnumerable<ChatResponseUpdate> updates, bool coalesceContent, CancellationToken cancellationToken)
         {
-            ChatResponse response = new([]);
-            Dictionary<int, ChatMessage> messages = [];
+            ChatResponse response = new();
 
             await foreach (var update in updates.WithCancellation(cancellationToken).ConfigureAwait(false))
             {
-                ProcessUpdate(update, messages, response);
+                ProcessUpdate(update, response);
             }
 
-            AddMessagesToResponse(messages, response, coalesceContent);
+            FinalizeResponse(response, coalesceContent);
 
             return response;
         }
     }
 
-    /// <summary>Processes the <see cref="ChatResponseUpdate"/>, incorporating its contents into <paramref name="messages"/> and <paramref name="response"/>.</summary>
-    /// <param name="update">The update to process.</param>
-    /// <param name="messages">The dictionary mapping <see cref="ChatResponseUpdate.ChoiceIndex"/> to the <see cref="ChatMessage"/> being built for that choice.</param>
-    /// <param name="response">The <see cref="ChatResponse"/> object whose properties should be updated based on <paramref name="update"/>.</param>
-    private static void ProcessUpdate(ChatResponseUpdate update, Dictionary<int, ChatMessage> messages, ChatResponse response)
+    /// <summary>Finalizes the <paramref name="response"/> object.</summary>
+    private static void FinalizeResponse(ChatResponse response, bool coalesceContent)
     {
-        response.ChatThreadId ??= update.ChatThreadId;
-        response.CreatedAt ??= update.CreatedAt;
-        response.FinishReason ??= update.FinishReason;
-        response.ModelId ??= update.ModelId;
-        response.ResponseId ??= update.ResponseId;
-
-#if NET
-        ChatMessage message = CollectionsMarshal.GetValueRefOrAddDefault(messages, update.ChoiceIndex, out _) ??=
-            new(default, new List<AIContent>());
-#else
-        if (!messages.TryGetValue(update.ChoiceIndex, out ChatMessage? message))
+        if (coalesceContent)
         {
-            messages[update.ChoiceIndex] = message = new(default, new List<AIContent>());
+            foreach (ChatMessage message in response.Messages)
+            {
+                CoalesceTextContent((List<AIContent>)message.Contents);
+            }
         }
-#endif
+    }
 
-        // Incorporate all content from the update into the response.
+    /// <summary>Processes the <see cref="ChatResponseUpdate"/>, incorporating its contents into <paramref name="response"/>.</summary>
+    /// <param name="update">The update to process.</param>
+    /// <param name="response">The <see cref="ChatResponse"/> object that should be updated based on <paramref name="update"/>.</param>
+    private static void ProcessUpdate(ChatResponseUpdate update, ChatResponse response)
+    {
+        // If there is no message created yet, or if the last update we saw had a different
+        // response ID than the newest update, create a new message.
+        if (response.Messages.Count == 0 ||
+            (update.ResponseId is string updateId && response.ResponseId is string responseId && updateId != responseId))
+        {
+            response.Messages.Add(new ChatMessage(ChatRole.Assistant, []));
+        }
+
+        // Some members on ChatResponseUpdate map to members of ChatMessage.
+        // Incorporate those into the latest message; in cases where the message
+        // stores a single value, prefer the latest update's value over anything
+        // stored in the message.
+        if (update.AuthorName is not null)
+        {
+            response.Message.AuthorName = update.AuthorName;
+        }
+
+        if (update.Role is ChatRole role)
+        {
+            response.Message.Role = role;
+        }
+
         foreach (var content in update.Contents)
         {
             switch (content)
@@ -116,84 +152,50 @@ public static class ChatResponseUpdateExtensions
                     break;
 
                 default:
-                    message.Contents.Add(content);
+                    response.Message.Contents.Add(content);
                     break;
             }
         }
 
-        message.AuthorName ??= update.AuthorName;
-        if (update.Role is ChatRole role && message.Role == default)
+        // Other members on a ChatResponseUpdate map to members of the ChatResponse.
+        // Update the response object with those, preferring the values from later updates.
+        if (update.ChatThreadId is not null)
         {
-            message.Role = role;
+            response.ChatThreadId = update.ChatThreadId;
+        }
+
+        if (update.CreatedAt is not null)
+        {
+            response.CreatedAt = update.CreatedAt;
+        }
+
+        if (update.FinishReason is not null)
+        {
+            response.FinishReason = update.FinishReason;
+        }
+
+        if (update.ModelId is not null)
+        {
+            response.ModelId = update.ModelId;
+        }
+
+        if (update.ResponseId is not null)
+        {
+            // Note that this must come after the message checks earlier, as they depend
+            // on this value for change detection.
+            response.ResponseId = update.ResponseId;
         }
 
         if (update.AdditionalProperties is not null)
         {
-            if (message.AdditionalProperties is null)
+            if (response.AdditionalProperties is null)
             {
-                message.AdditionalProperties = new(update.AdditionalProperties);
+                response.AdditionalProperties = new(update.AdditionalProperties);
             }
             else
             {
-                foreach (var entry in update.AdditionalProperties)
-                {
-                    // Use first-wins behavior to match the behavior of the other properties.
-                    _ = message.AdditionalProperties.TryAdd(entry.Key, entry.Value);
-                }
+                response.AdditionalProperties.SetAll(update.AdditionalProperties);
             }
-        }
-    }
-
-    /// <summary>Finalizes the <paramref name="response"/> object by transferring the <paramref name="messages"/> into it.</summary>
-    /// <param name="messages">The messages to process further and transfer into <paramref name="response"/>.</param>
-    /// <param name="response">The result <see cref="ChatResponse"/> being built.</param>
-    /// <param name="coalesceContent">The corresponding option value provided to <see cref="ToChatResponse"/> or <see cref="ToChatResponseAsync"/>.</param>
-    private static void AddMessagesToResponse(Dictionary<int, ChatMessage> messages, ChatResponse response, bool coalesceContent)
-    {
-        if (messages.Count <= 1)
-        {
-            // Add the single message if there is one.
-            foreach (var entry in messages)
-            {
-                AddMessage(response, coalesceContent, entry);
-            }
-
-            // In the vast majority case where there's only one choice, promote any additional properties
-            // from the single message to the chat response, making them more discoverable and more similar
-            // to how they're typically surfaced from non-streaming services.
-            if (response.Choices.Count == 1 &&
-                response.Choices[0].AdditionalProperties is { } messageProps)
-            {
-                response.Choices[0].AdditionalProperties = null;
-                response.AdditionalProperties = messageProps;
-            }
-        }
-        else
-        {
-            // Add all of the messages, sorted by choice index.
-            foreach (var entry in messages.OrderBy(entry => entry.Key))
-            {
-                AddMessage(response, coalesceContent, entry);
-            }
-
-            // If there are multiple choices, we don't promote additional properties from the individual messages.
-            // At a minimum, we'd want to know which choice the additional properties applied to, and if there were
-            // conflicting values across the choices, it would be unclear which one should be used.
-        }
-
-        static void AddMessage(ChatResponse response, bool coalesceContent, KeyValuePair<int, ChatMessage> entry)
-        {
-            if (entry.Value.Role == default)
-            {
-                entry.Value.Role = ChatRole.Assistant;
-            }
-
-            if (coalesceContent)
-            {
-                CoalesceTextContent((List<AIContent>)entry.Value.Contents);
-            }
-
-            response.Choices.Add(entry.Value);
         }
     }
 

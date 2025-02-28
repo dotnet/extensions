@@ -25,7 +25,7 @@ public class DelegatingChatClientTests
         var expectedChatOptions = new ChatOptions();
         var expectedCancellationToken = CancellationToken.None;
         var expectedResult = new TaskCompletionSource<ChatResponse>();
-        var expectedResponse = new ChatResponse([]);
+        var expectedResponse = new ChatResponse();
         using var inner = new TestChatClient
         {
             GetResponseAsyncCallback = (chatContents, options, cancellationToken) =>

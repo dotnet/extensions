@@ -91,9 +91,6 @@ public sealed class AzureAIInferenceChatClient : IChatClient
             cancellationToken: cancellationToken).ConfigureAwait(false)).Value;
 
         // Create the return message.
-        List<ChatMessage> returnMessages = [];
-
-        // Populate its content from those in the response content.
         ChatMessage message = new()
         {
             RawRepresentation = response,
@@ -119,8 +116,6 @@ public sealed class AzureAIInferenceChatClient : IChatClient
             }
         }
 
-        returnMessages.Add(message);
-
         UsageDetails? usage = null;
         if (response.Usage is CompletionsUsage completionsUsage)
         {
@@ -133,7 +128,8 @@ public sealed class AzureAIInferenceChatClient : IChatClient
         }
 
         // Wrap the content in a ChatResponse to return.
-        return new ChatResponse(returnMessages)
+        chatMessages.Add(message);
+        return new ChatResponse(message)
         {
             CreatedAt = response.Created,
             ModelId = response.Model,
@@ -157,6 +153,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
         DateTimeOffset? createdAt = null;
         string? modelId = null;
         string lastCallId = string.Empty;
+        List<ChatResponseUpdate> responseUpdates = [];
 
         // Process each update as it arrives
         var updates = await _chatCompletionsClient.CompleteStreamingAsync(ToAzureAIOptions(chatMessages, options), cancellationToken).ConfigureAwait(false);
@@ -225,6 +222,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
             }
 
             // Now yield the item.
+            responseUpdates.Add(responseUpdate);
             yield return responseUpdate;
         }
 
@@ -253,8 +251,11 @@ public sealed class AzureAIInferenceChatClient : IChatClient
                 }
             }
 
+            responseUpdates.Add(responseUpdate);
             yield return responseUpdate;
         }
+
+        chatMessages.Add(responseUpdates.ToChatMessage());
     }
 
     /// <inheritdoc />
