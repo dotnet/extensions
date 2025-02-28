@@ -12,7 +12,6 @@
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectSharedText>true</InjectSharedText>
     <InjectGetOrAddOnLegacy>true</InjectGetOrAddOnLegacy>
-    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectSharedDataValidation>true</InjectSharedDataValidation>
     <InjectSharedLoggingBuffering>true</InjectSharedLoggingBuffering>
     <InjectSharedMemoization>true</InjectSharedMemoization>
