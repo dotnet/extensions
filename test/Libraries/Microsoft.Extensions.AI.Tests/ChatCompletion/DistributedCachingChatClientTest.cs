@@ -579,6 +579,22 @@ public class DistributedCachingChatClientTest
     }
 
     [Fact]
+    public void GetDefaultCacheKey_Idempotent()
+    {
+        foreach (JsonSerializerOptions? options in new[] { AIJsonUtilities.DefaultOptions, null })
+        {
+            string key1 = DistributedCachingChatClient.GetDefaultCacheKey(["a", 'b', 42], options);
+            string key2 = DistributedCachingChatClient.GetDefaultCacheKey(["a", 'b', 42], options);
+            string key3 = DistributedCachingChatClient.GetDefaultCacheKey([TimeSpan.FromSeconds(1), 1.23], options);
+            string key4 = DistributedCachingChatClient.GetDefaultCacheKey([TimeSpan.FromSeconds(1), 1.23], options);
+
+            Assert.Equal(key1, key2);
+            Assert.Equal(key3, key4);
+            Assert.NotEqual(key1, key3);
+        }
+    }
+
+    [Fact]
     public async Task SubclassCanOverrideCacheKeyToVaryByChatOptionsAsync()
     {
         // Arrange
