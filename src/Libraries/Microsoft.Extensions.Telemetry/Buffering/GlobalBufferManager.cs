@@ -1,5 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+#if NET9_0_OR_GREATER
 
 using System;
 using System.Collections.Concurrent;
@@ -8,7 +9,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Diagnostics.Buffering;
 
-internal sealed class GlobalBufferManager : LogBuffer
+internal sealed class GlobalBufferManager : GlobalLogBuffer
 {
     internal readonly ConcurrentDictionary<string, ILoggingBuffer> Buffers = [];
     private readonly IOptionsMonitor<GlobalLogBufferingOptions> _options;
@@ -39,3 +40,5 @@ internal sealed class GlobalBufferManager : LogBuffer
         return buffer.TryEnqueue(logEntry);
     }
 }
+
+#endif

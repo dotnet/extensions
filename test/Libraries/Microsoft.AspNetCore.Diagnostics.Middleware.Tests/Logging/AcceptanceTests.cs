@@ -11,7 +11,6 @@ using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics.Buffering;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpLogging;
@@ -19,6 +18,9 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.DependencyInjection;
+#if NET9_0_OR_GREATER
+using Microsoft.Extensions.Diagnostics.Buffering;
+#endif
 using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Testing;
@@ -55,15 +57,15 @@ public partial class AcceptanceTests
         {
             app.UseRouting();
             app.UseHttpLogging();
-
+#if NET9_0_OR_GREATER
             app.Map("/flushrequestlogs", static x =>
                 x.Run(static async context =>
                 {
                     await context.Request.Body.DrainAsync(default);
 
                     // normally, this would be a Middleware and HttpRequestLogBuffer would be injected via constructor
-                    var bufferManager = context.RequestServices.GetService<HttpRequestLogBuffer>();
-                    bufferManager?.FlushCurrentRequestLogs();
+                    var bufferManager = context.RequestServices.GetService<PerRequestLogBuffer>();
+                    bufferManager?.Flush();
                 }));
 
             app.Map("/flushalllogs", static x =>
@@ -72,14 +74,10 @@ public partial class AcceptanceTests
                     await context.Request.Body.DrainAsync(default);
 
                     // normally, this would be a Middleware and HttpRequestLogBuffer would be injected via constructor
-                    var bufferManager = context.RequestServices.GetService<HttpRequestLogBuffer>();
-                    if (bufferManager is not null)
-                    {
-                        bufferManager.FlushCurrentRequestLogs();
-                        bufferManager.Flush();
-                    }
+                    var bufferManager = context.RequestServices.GetService<PerRequestLogBuffer>();
+                    bufferManager?.Flush();
                 }));
-
+#endif
             app.Map("/error", static x =>
                 x.Run(static async context =>
                 {
@@ -738,7 +736,7 @@ public partial class AcceptanceTests
                 }
             });
     }
-
+#if NET9_0_OR_GREATER
     [Fact]
     public async Task HttpRequestBuffering()
     {
@@ -782,7 +780,7 @@ public partial class AcceptanceTests
                 Assert.Equal("test", logCollector.LatestRecord.Category);
             });
     }
-
+#endif
     [Fact]
     public async Task HttpLogging_LogRecordIsNotCreated_If_Disabled()
     {

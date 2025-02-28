@@ -1,5 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+#if NET9_0_OR_GREATER
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -41,7 +42,7 @@ public static class HttpRequestBufferingLoggingBuilderExtensions
 
         return builder
             .AddHttpRequestBufferManager()
-            .AddGlobalBuffering(configuration);
+            .AddGlobalBuffer(configuration);
     }
 
     /// <summary>
@@ -66,7 +67,7 @@ public static class HttpRequestBufferingLoggingBuilderExtensions
 
         return builder
             .AddHttpRequestBufferManager()
-            .AddGlobalBuffering(opts => opts.Rules = options.Rules);
+            .AddGlobalBuffer(opts => opts.Rules = options.Rules);
     }
 
     /// <summary>
@@ -87,7 +88,7 @@ public static class HttpRequestBufferingLoggingBuilderExtensions
 
         return builder
             .AddHttpRequestBufferManager()
-            .AddGlobalBuffering(logLevel);
+            .AddGlobalBuffer(logLevel);
     }
 
     internal static ILoggingBuilder AddHttpRequestBufferManager(this ILoggingBuilder builder)
@@ -100,8 +101,10 @@ public static class HttpRequestBufferingLoggingBuilderExtensions
             return ActivatorUtilities.CreateInstance<HttpRequestBufferManager>(sp, globalBufferManager);
         });
         builder.Services.TryAddSingleton<LogBuffer>(sp => sp.GetRequiredService<HttpRequestBufferManager>());
-        builder.Services.TryAddSingleton<HttpRequestLogBuffer>(sp => sp.GetRequiredService<HttpRequestBufferManager>());
+        builder.Services.TryAddSingleton<PerRequestLogBuffer>(sp => sp.GetRequiredService<HttpRequestBufferManager>());
 
         return builder;
     }
 }
+
+#endif

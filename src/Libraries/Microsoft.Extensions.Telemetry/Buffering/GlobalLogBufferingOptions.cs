@@ -1,5 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+#if NET9_0_OR_GREATER
 
 using System;
 using System.Collections.Generic;
@@ -19,9 +20,9 @@ public class GlobalLogBufferingOptions
     /// </summary>
     /// <remarks>
     /// Use this to temporarily suspend buffering after a flush, e.g. in case of an incident you may want all logs to be emitted immediately,
-    /// so the buffering will be suspended for the <see paramref="SuspendAfterFlushDuration"/> time.
+    /// so the buffering will be suspended for the <see paramref="AutoFlushDuration"/> time.
     /// </remarks>
-    public TimeSpan SuspendAfterFlushDuration { get; set; } = TimeSpan.FromSeconds(30);
+    public TimeSpan AutoFlushDuration { get; set; } = TimeSpan.FromSeconds(30);
 
     /// <summary>
     /// Gets or sets the maxiumum size of each individual log record in bytes. If the size of a log record exceeds this limit, it won't be buffered.
@@ -43,3 +44,5 @@ public class GlobalLogBufferingOptions
     public IList<LogBufferingFilterRule> Rules { get; set; } = [];
 #pragma warning restore CA2227
 }
+
+#endif

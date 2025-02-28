@@ -1,5 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+#if NET9_0_OR_GREATER
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,15 +10,15 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Diagnostics.Buffering;
 
-internal sealed class HttpRequestBufferManager : HttpRequestLogBuffer
+internal sealed class HttpRequestBufferManager : PerRequestLogBuffer
 {
-    private readonly LogBuffer _globalBuffer;
+    private readonly GlobalLogBuffer _globalBuffer;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IOptionsMonitor<HttpRequestLogBufferingOptions> _requestOptions;
     private readonly IOptionsMonitor<GlobalLogBufferingOptions> _globalOptions;
 
     public HttpRequestBufferManager(
-        LogBuffer globalBuffer,
+        GlobalLogBuffer globalBuffer,
         IHttpContextAccessor httpContextAccessor,
         IOptionsMonitor<HttpRequestLogBufferingOptions> requestOptions,
         IOptionsMonitor<GlobalLogBufferingOptions> globalOptions)
@@ -28,11 +29,10 @@ internal sealed class HttpRequestBufferManager : HttpRequestLogBuffer
         _globalOptions = globalOptions;
     }
 
-    public override void Flush() => _globalBuffer.Flush();
-
-    public override void FlushCurrentRequestLogs()
+    public override void Flush()
     {
         _httpContextAccessor.HttpContext?.RequestServices.GetService<HttpRequestBufferHolder>()?.Flush();
+        _globalBuffer.Flush();
     }
 
     public override bool TryEnqueue<TState>(IBufferedLogger bufferedLogger, in LogEntry<TState> logEntry)
@@ -54,3 +54,5 @@ internal sealed class HttpRequestBufferManager : HttpRequestLogBuffer
         return buffer.TryEnqueue(logEntry);
     }
 }
+
+#endif

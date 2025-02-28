@@ -1,5 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+#if NET9_0_OR_GREATER
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -18,7 +19,7 @@ namespace Microsoft.Extensions.Logging;
 /// Lets you register log buffering in a dependency injection container.
 /// </summary>
 [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
-public static class GlobalBufferingLoggingBuilderExtensions
+public static class GlobalBufferLoggingBuilderExtensions
 {
     /// <summary>
     /// Adds global log buffering to the logging infrastructure.
@@ -30,7 +31,7 @@ public static class GlobalBufferingLoggingBuilderExtensions
     /// <remarks>
     /// Matched logs will be buffered and can optionally be flushed and emitted.
     /// </remarks>
-    public static ILoggingBuilder AddGlobalBuffering(this ILoggingBuilder builder, IConfiguration configuration)
+    public static ILoggingBuilder AddGlobalBuffer(this ILoggingBuilder builder, IConfiguration configuration)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configuration);
@@ -50,7 +51,7 @@ public static class GlobalBufferingLoggingBuilderExtensions
     /// <remarks>
     /// Matched logs will be buffered and can optionally be flushed and emitted.
     /// </remarks>
-    public static ILoggingBuilder AddGlobalBuffering(this ILoggingBuilder builder, Action<GlobalLogBufferingOptions> configure)
+    public static ILoggingBuilder AddGlobalBuffer(this ILoggingBuilder builder, Action<GlobalLogBufferingOptions> configure)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);
@@ -70,7 +71,7 @@ public static class GlobalBufferingLoggingBuilderExtensions
     /// <remarks>
     /// Matched logs will be buffered and can optionally be flushed and emitted.
     /// </remarks>
-    public static ILoggingBuilder AddGlobalBuffering(this ILoggingBuilder builder, LogLevel? logLevel = null)
+    public static ILoggingBuilder AddGlobalBuffer(this ILoggingBuilder builder, LogLevel? logLevel = null)
     {
         _ = Throw.IfNull(builder);
 
@@ -84,8 +85,11 @@ public static class GlobalBufferingLoggingBuilderExtensions
         _ = builder.Services.AddExtendedLoggerFeactory();
 
         builder.Services.TryAddSingleton<GlobalBufferManager>();
+        builder.Services.TryAddSingleton<GlobalLogBuffer>(static sp => sp.GetRequiredService<GlobalBufferManager>());
         builder.Services.TryAddSingleton<LogBuffer>(static sp => sp.GetRequiredService<GlobalBufferManager>());
 
         return builder;
     }
 }
+
+#endif

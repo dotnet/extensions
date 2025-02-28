@@ -1,5 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+#if NET9_0_OR_GREATER
 
 using System;
 using System.Collections.Concurrent;
@@ -22,9 +23,6 @@ internal sealed class GlobalBuffer : ILoggingBuffer
     private DateTimeOffset _lastFlushTimestamp;
 
     private int _bufferSize;
-#if NETFRAMEWORK
-    private object _netfxBufferLocker = new();
-#endif
 
     public GlobalBuffer(IBufferedLogger bufferedLogger, IOptionsMonitor<GlobalLogBufferingOptions> options, TimeProvider timeProvider)
     {
@@ -80,18 +78,7 @@ internal sealed class GlobalBuffer : ILoggingBuffer
         _lastFlushTimestamp = _timeProvider.GetUtcNow();
 
         SerializedLogRecord[] bufferedRecords = _buffer.ToArray();
-
-#if NETFRAMEWORK
-        lock (_netfxBufferLocker)
-        {
-            while (_buffer.TryDequeue(out _))
-            {
-                // Clear the buffer
-            }
-        }
-#else
         _buffer.Clear();
-#endif
 
         var deserializedLogRecords = new List<DeserializedLogRecord>(bufferedRecords.Length);
         foreach (var bufferedRecord in bufferedRecords)
@@ -121,7 +108,7 @@ internal sealed class GlobalBuffer : ILoggingBuffer
 
     private bool IsEnabled(string category, LogLevel logLevel, EventId eventId, IReadOnlyList<KeyValuePair<string, object?>> attributes)
     {
-        if (_timeProvider.GetUtcNow() < _lastFlushTimestamp + _options.CurrentValue.SuspendAfterFlushDuration)
+        if (_timeProvider.GetUtcNow() < _lastFlushTimestamp + _options.CurrentValue.AutoFlushDuration)
         {
             return false;
         }
@@ -131,3 +118,5 @@ internal sealed class GlobalBuffer : ILoggingBuffer
         return rule is not null;
     }
 }
+
+#endif

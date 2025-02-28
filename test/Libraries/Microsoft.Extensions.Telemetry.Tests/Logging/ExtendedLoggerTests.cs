@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
+#if NET9_0_OR_GREATER
 using Microsoft.Extensions.Diagnostics.Buffering;
+#endif
 using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Extensions.Diagnostics.Sampling;
 using Microsoft.Extensions.Logging.Testing;
@@ -152,7 +154,7 @@ public static class ExtendedLoggerTests
 
         Assert.Equal(0, provider.Logger!.Collector.Count);
     }
-
+#if NET9_0_OR_GREATER
     [Fact]
     public static void GlobalBuffering_CanonicalUsecase()
     {
@@ -161,7 +163,7 @@ public static class ExtendedLoggerTests
              builder =>
              {
                  builder.AddProvider(provider);
-                 builder.AddGlobalBuffering(LogLevel.Warning);
+                 builder.AddGlobalBuffer(LogLevel.Warning);
              });
 
         var logger = factory.CreateLogger("my category");
@@ -173,14 +175,14 @@ public static class ExtendedLoggerTests
 
         // instead of this, users would get LogBuffer from DI and call Flush on it
         var dlf = (Utils.DisposingLoggerFactory)factory;
-        var bufferManager = dlf.ServiceProvider.GetRequiredService<LogBuffer>();
+        var bufferManager = dlf.ServiceProvider.GetRequiredService<GlobalLogBuffer>();
 
         bufferManager.Flush();
 
         // 2 log records emitted because the buffer has been flushed
         Assert.Equal(2, provider.Logger!.Collector.Count);
     }
-
+#endif
     [Theory]
     [CombinatorialData]
     public static void BagAndJoiner(bool objectVersion)

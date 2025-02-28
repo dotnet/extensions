@@ -1,6 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-
+#if NET9_0_OR_GREATER
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
@@ -19,11 +19,11 @@ public class GlobalBufferLoggerBuilderExtensionsTests
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging(builder =>
         {
-            builder.AddGlobalBuffering(LogLevel.Warning);
+            builder.AddGlobalBuffer(LogLevel.Warning);
         });
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
-        var bufferManager = serviceProvider.GetService<LogBuffer>();
+        var bufferManager = serviceProvider.GetService<GlobalLogBuffer>();
 
         Assert.NotNull(bufferManager);
         Assert.IsAssignableFrom<GlobalBufferManager>(bufferManager);
@@ -35,8 +35,8 @@ public class GlobalBufferLoggerBuilderExtensionsTests
         var builder = null as ILoggingBuilder;
         var configuration = null as IConfiguration;
 
-        Assert.Throws<ArgumentNullException>(() => builder!.AddGlobalBuffering(LogLevel.Warning));
-        Assert.Throws<ArgumentNullException>(() => builder!.AddGlobalBuffering(configuration!));
+        Assert.Throws<ArgumentNullException>(() => builder!.AddGlobalBuffer(LogLevel.Warning));
+        Assert.Throws<ArgumentNullException>(() => builder!.AddGlobalBuffer(configuration!));
     }
 
     [Fact]
@@ -53,7 +53,7 @@ public class GlobalBufferLoggerBuilderExtensionsTests
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging(builder =>
         {
-            builder.AddGlobalBuffering(configuration);
+            builder.AddGlobalBuffer(configuration);
             builder.Services.Configure<GlobalLogBufferingOptions>(options =>
             {
                 options.MaxLogRecordSizeInBytes = 33;
@@ -65,7 +65,9 @@ public class GlobalBufferLoggerBuilderExtensionsTests
         Assert.NotNull(options.CurrentValue);
         Assert.Equal(33, options.CurrentValue.MaxLogRecordSizeInBytes); // value comes from the Configure<GlobalLogBufferingOptions>()  call
         Assert.Equal(1000, options.CurrentValue.MaxBufferSizeInBytes); // value comes from appsettings.json
-        Assert.Equal(TimeSpan.FromSeconds(30), options.CurrentValue.SuspendAfterFlushDuration); // value comes from default
+        Assert.Equal(TimeSpan.FromSeconds(30), options.CurrentValue.AutoFlushDuration); // value comes from default
         Assert.Equivalent(expectedData, options.CurrentValue.Rules);
     }
 }
+
+#endif

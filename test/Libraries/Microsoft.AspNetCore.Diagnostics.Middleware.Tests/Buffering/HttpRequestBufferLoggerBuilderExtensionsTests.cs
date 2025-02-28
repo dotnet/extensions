@@ -1,6 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-
+#if NET9_0_OR_GREATER
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
@@ -24,7 +24,7 @@ public class HttpRequestBufferLoggerBuilderExtensionsTests
         });
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
-        var buffer = serviceProvider.GetService<HttpRequestLogBuffer>();
+        var buffer = serviceProvider.GetService<PerRequestLogBuffer>();
 
         Assert.NotNull(buffer);
         Assert.IsAssignableFrom<HttpRequestBufferManager>(buffer);
@@ -60,3 +60,4 @@ public class HttpRequestBufferLoggerBuilderExtensionsTests
         Assert.Equivalent(expectedData, options.CurrentValue.Rules);
     }
 }
+#endif
