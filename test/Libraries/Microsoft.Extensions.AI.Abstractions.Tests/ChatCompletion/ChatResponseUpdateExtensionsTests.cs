@@ -42,8 +42,8 @@ public class ChatResponseUpdateExtensionsTests
             new() { Text = ", ", AuthorName = "Someone", Role = new ChatRole("human"), AdditionalProperties = new() { ["a"] = "b" } },
             new() { Text = "world!", CreatedAt = new DateTimeOffset(2, 2, 3, 4, 5, 6, TimeSpan.Zero), ChatThreadId = "123", AdditionalProperties = new() { ["c"] = "d" } },
 
-            new() { Contents = new[] { new UsageContent(new() { InputTokenCount = 1, OutputTokenCount = 2 }) } },
-            new() { Contents = new[] { new UsageContent(new() { InputTokenCount = 4, OutputTokenCount = 5 }) } },
+            new() { Contents = [new UsageContent(new() { InputTokenCount = 1, OutputTokenCount = 2 })] },
+            new() { Contents = [new UsageContent(new() { InputTokenCount = 4, OutputTokenCount = 5 })] },
         ];
 
         ChatResponse response = (coalesceContent is bool, useAsync) switch
@@ -61,7 +61,7 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal(7, response.Usage.OutputTokenCount);
 
         Assert.Equal("12345", response.ResponseId);
-        Assert.Equal(new DateTimeOffset(1, 2, 3, 4, 5, 6, TimeSpan.Zero), response.CreatedAt);
+        Assert.Equal(new DateTimeOffset(2, 2, 3, 4, 5, 6, TimeSpan.Zero), response.CreatedAt);
         Assert.Equal("model123", response.ModelId);
 
         Assert.Equal("123", response.ChatThreadId);

@@ -107,6 +107,18 @@ public class AdditionalPropertiesDictionary<TValue> : IDictionary<string, TValue
 #endif
     }
 
+    /// <summary>Copies all of the entries from <paramref name="items"/> into the dictionary, overwriting any existing items in the dictionary with the same key.</summary>
+    /// <param name="items">The items to add.</param>
+    public void SetAll(IEnumerable<KeyValuePair<string, TValue>> items)
+    {
+        _ = Throw.IfNull(items);
+
+        foreach (var item in items)
+        {
+            _dictionary[item.Key] = item.Value;
+        }
+    }
+
     /// <inheritdoc />
     void ICollection<KeyValuePair<string, TValue>>.Add(KeyValuePair<string, TValue> item) => ((ICollection<KeyValuePair<string, TValue>>)_dictionary).Add(item);
 

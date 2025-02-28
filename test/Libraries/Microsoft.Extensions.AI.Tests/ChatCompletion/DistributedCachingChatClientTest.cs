@@ -40,7 +40,7 @@ public class DistributedCachingChatClientTest
         // Verify that all the expected properties will round-trip through the cache,
         // even if this involves serialization
         var expectedResponse = new ChatResponse(
-            new(new ChatRole("fakeRole"), "This is some content")
+            new ChatMessage(new ChatRole("fakeRole"), "This is some content")
             {
                 AdditionalProperties = new() { ["a"] = "b" },
                 Contents = [new FunctionCallContent("someCallId", "functionName", new Dictionary<string, object?>
@@ -110,7 +110,7 @@ public class DistributedCachingChatClientTest
             {
                 innerCallCount++;
                 await completionTcs.Task;
-                return new ChatResponse(new(ChatRole.Assistant, "Hello"));
+                return new ChatResponse(new ChatMessage(ChatRole.Assistant, "Hello"));
             }
         };
         using var outer = new DistributedCachingChatClient(testClient, _storage)
@@ -184,7 +184,7 @@ public class DistributedCachingChatClientTest
                     await resolutionTcs.Task;
                 }
 
-                return new ChatResponse(new(ChatRole.Assistant, "A good result"));
+                return new ChatResponse(new ChatMessage(ChatRole.Assistant, "A good result"));
             }
         };
         using var outer = new DistributedCachingChatClient(testClient, _storage)
@@ -524,7 +524,7 @@ public class DistributedCachingChatClientTest
             {
                 innerCallCount++;
                 await Task.Yield();
-                return new(new(ChatRole.Assistant, options!.AdditionalProperties!["someKey"]!.ToString()));
+                return new(new ChatMessage(ChatRole.Assistant, options!.AdditionalProperties!["someKey"]!.ToString()));
             }
         };
         using var outer = new DistributedCachingChatClient(testClient, _storage)
@@ -575,7 +575,7 @@ public class DistributedCachingChatClientTest
             {
                 innerCallCount++;
                 await Task.Yield();
-                return new(new(ChatRole.Assistant, options!.AdditionalProperties!["someKey"]!.ToString()));
+                return new(new ChatMessage(ChatRole.Assistant, options!.AdditionalProperties!["someKey"]!.ToString()));
             }
         };
         using var outer = new CachingChatClientWithCustomKey(testClient, _storage)
@@ -604,7 +604,7 @@ public class DistributedCachingChatClientTest
     {
         // Arrange
         var expectedResponse = new ChatResponse(
-            new(new ChatRole("fakeRole"),
+            new ChatMessage(new ChatRole("fakeRole"),
             [
                 new CustomAIContent1("Hello", DateTime.Now),
                 new CustomAIContent2("Goodbye", 42),
@@ -663,7 +663,7 @@ public class DistributedCachingChatClientTest
             GetResponseAsyncCallback = delegate
             {
                 return Task.FromResult(new ChatResponse(
-                    new(ChatRole.Assistant, [new TextContent("Hey")])));
+                    new ChatMessage(ChatRole.Assistant, [new TextContent("Hey")])));
             }
         };
         using var outer = testClient

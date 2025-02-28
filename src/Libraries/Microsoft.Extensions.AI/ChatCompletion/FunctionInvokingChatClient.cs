@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -11,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Diagnostics;
+using static Microsoft.Extensions.AI.OpenTelemetryConsts.GenAI;
 
 #pragma warning disable CA2213 // Disposable fields should be disposed
 #pragma warning disable EA0002 // Use 'System.TimeProvider' to make the code easier to test
@@ -24,8 +26,10 @@ namespace Microsoft.Extensions.AI;
 /// <remarks>
 /// <para>
 /// When this client receives a <see cref="FunctionCallContent"/> in a chat response, it responds
-/// by calling the corresponding <see cref="AIFunction"/> defined in <see cref="ChatOptions"/>,
-/// producing a <see cref="FunctionResultContent"/>.
+/// by calling the corresponding <see cref="AIFunction"/> defined in <see cref="ChatOptions.Tools"/>,
+/// producing a <see cref="FunctionResultContent"/> that it sends back to the inner client. This loop
+/// is repeated until there are no more function calls to make, or until another stop condition is met,
+/// such as hitting <see cref="MaximumIterationsPerRequest"/>.
 /// </para>
 /// <para>
 /// The provided implementation of <see cref="IChatClient"/> is thread-safe for concurrent use so long as the
@@ -179,78 +183,100 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     public override async Task<ChatResponse> GetResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(chatMessages);
+        _ = Throw.IfReadOnly(chatMessages);
 
         // A single request into this GetResponseAsync may result in multiple requests to the inner client.
         // Create an activity to group them together for better observability.
         using Activity? activity = _activitySource?.StartActivity(nameof(FunctionInvokingChatClient));
 
-        ChatResponse? response = null;
-        UsageDetails? totalUsage = null;
         IList<ChatMessage> originalChatMessages = chatMessages;
+        ChatResponse? response = null;
+        List<ChatMessage>? responseMessages = null;
+        UsageDetails? totalUsage = null;
         List<FunctionCallContent>? functionCallContents = null;
-        try
+
+        for (int iteration = 0; ; iteration++)
         {
-            for (int iteration = 0; ; iteration++)
+            functionCallContents?.Clear();
+
+            // Make the call to the handler.
+            response = await base.GetResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
+            if (response is null)
             {
-                functionCallContents?.Clear();
+                throw new InvalidOperationException($"The inner {nameof(IChatClient)} returned a null {nameof(ChatResponse)}.");
+            }
 
-                // Make the call to the handler.
-                response = await base.GetResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
+            // Any function call work to do? If yes, ensure we're tracking that work in functionCallContents.
+            bool requiresFunctionInvocation =
+                options?.Tools is { Count: > 0 } &&
+                (!MaximumIterationsPerRequest.HasValue || iteration < MaximumIterationsPerRequest.GetValueOrDefault()) &&
+                CopyFunctionCalls(response.Message.Contents, ref functionCallContents);
 
-                // Aggregate usage data over all calls
-                if (response.Usage is not null)
+            // In the common case where we make a request and there's no function calling work required,
+            // fast path out by just returning the original response.
+            if (iteration == 0 && !requiresFunctionInvocation)
+            {
+                return response;
+            }
+
+            // Track aggregatable details from the response.
+            (responseMessages ??= []).AddRange(response.Messages);
+            if (response.Usage is not null)
+            {
+                if (totalUsage is not null)
                 {
-                    totalUsage ??= new();
                     totalUsage.Add(response.Usage);
                 }
-
-                // If there are no tools to call, or for any other reason we should stop, return the response.
-                if (options is null
-                    || options.Tools is not { Count: > 0 }
-                    || (MaximumIterationsPerRequest is { } maxIterations && iteration >= maxIterations))
+                else
                 {
-                    break;
+                    totalUsage = response.Usage;
                 }
+            }
 
-                // Extract any function call contents. If there are none, we're done.
-                CopyFunctionCalls(response.Message.Contents, ref functionCallContents);
-                if (functionCallContents is not { Count: > 0 })
+            // If there are no tools to call, or for any other reason we should stop, we're done.
+            if (!requiresFunctionInvocation)
+            {
+                // If this is the first request, we can just return the response, as we don't need to
+                // incorporate any information from previous requests.
+                if (iteration == 0)
                 {
-                    break;
-                }
-
-                // If the response indicates the inner client is tracking the history, clear it to avoid re-sending the state.
-                // In that case, we also avoid touching the user's history, so that we don't need to clear it.
-                if (response.ChatThreadId is not null)
-                {
-                    if (chatMessages == originalChatMessages)
-                    {
-                        chatMessages = [];
-                    }
-                    else
-                    {
-                        chatMessages.Clear();
-                    }
-                }
-
-                // Add the responses from the function calls into the history.
-                var modeAndMessages = await ProcessFunctionCallsAsync(chatMessages, options, functionCallContents, iteration, cancellationToken).ConfigureAwait(false);
-                if (UpdateOptionsForMode(modeAndMessages.Mode, ref options, response.ChatThreadId))
-                {
-                    // Terminate
                     return response;
                 }
+
+                // Otherwise, break out of the loop and allow the handling at the end to configure
+                // the response with aggregated data from previous requests.
+                break;
             }
 
-            return response;
-        }
-        finally
-        {
-            if (response is not null)
+            // If the response indicates the inner client is tracking the history, clear it to avoid re-sending the state.
+            // In that case, we also avoid touching the user's history, so that we don't need to clear it.
+            if (response.ChatThreadId is not null)
             {
-                response.Usage = totalUsage;
+                if (chatMessages == originalChatMessages)
+                {
+                    chatMessages = [];
+                }
+                else
+                {
+                    chatMessages.Clear();
+                }
+            }
+
+            // Add the responses from the function calls into the history.
+            var modeAndMessages = await ProcessFunctionCallsAsync(chatMessages, options!, functionCallContents!, iteration, cancellationToken).ConfigureAwait(false);
+            responseMessages.AddRange(modeAndMessages.MessagesAdded);
+            if (UpdateOptionsForMode(modeAndMessages.Mode, ref options!, response.ChatThreadId))
+            {
+                // Terminate
+                break;
             }
         }
+
+        Debug.Assert(responseMessages is not null, "Expected to only be here if we have response messages.");
+        response.Messages = responseMessages!;
+        response.Usage = totalUsage;
+
+        return response;
     }
 
     /// <inheritdoc/>
@@ -258,6 +284,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(chatMessages);
+        _ = Throw.IfReadOnly(chatMessages);
 
         // A single request into this GetStreamingResponseAsync may result in multiple requests to the inner client.
         // Create an activity to group them together for better observability.
@@ -272,18 +299,22 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
             await foreach (var update in base.GetStreamingResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false))
             {
+                if (update is null)
+                {
+                    throw new InvalidOperationException($"The inner {nameof(IChatClient)} streamed a null {nameof(ChatResponseUpdate)}.");
+                }
+
                 chatThreadId ??= update.ChatThreadId;
-                CopyFunctionCalls(update.Contents, ref functionCallContents);
+                _ = CopyFunctionCalls(update.Contents, ref functionCallContents);
 
                 yield return update;
                 Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
             }
 
             // If there are no tools to call, or for any other reason we should stop, return the response.
-            if (functionCallContents is not { Count: > 0 }
-                || options is null
-                || options.Tools is not { Count: > 0 }
-                || (MaximumIterationsPerRequest is { } maxIterations && iteration >= maxIterations))
+            if (functionCallContents is not { Count: > 0 } ||
+                options?.Tools is not { Count: > 0 } ||
+                (MaximumIterationsPerRequest is { } maxIterations && iteration >= maxIterations))
             {
                 break;
             }
@@ -312,6 +343,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
             // Stream any generated function results. These are already part of the history,
             // but we stream them out for informational purposes.
+            string toolResponseId = Guid.NewGuid().ToString("N");
             foreach (var message in modeAndMessages.MessagesAdded)
             {
                 var toolResultUpdate = new ChatResponseUpdate
@@ -322,6 +354,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     CreatedAt = DateTimeOffset.UtcNow,
                     Contents = message.Contents,
                     RawRepresentation = message.RawRepresentation,
+                    ResponseId = toolResponseId,
                     Role = message.Role,
                 };
 
@@ -332,16 +365,21 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     }
 
     /// <summary>Copies any <see cref="FunctionCallContent"/> from <paramref name="content"/> to <paramref name="functionCalls"/>.</summary>
-    private static void CopyFunctionCalls(IList<AIContent> content, ref List<FunctionCallContent>? functionCalls)
+    private static bool CopyFunctionCalls(
+        IList<AIContent> content, [NotNullWhen(true)] ref List<FunctionCallContent>? functionCalls)
     {
+        bool any = false;
         int count = content.Count;
         for (int i = 0; i < count; i++)
         {
             if (content[i] is FunctionCallContent functionCall)
             {
                 (functionCalls ??= []).Add(functionCall);
+                any = true;
             }
         }
+
+        return any;
     }
 
     /// <summary>Updates <paramref name="options"/> for the response.</summary>
@@ -533,10 +571,10 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     {
         _ = Throw.IfNull(chatMessages);
 
-        var contents = new AIContent[results.Length];
+        var contents = new List<AIContent>(results.Length);
         for (int i = 0; i < results.Length; i++)
         {
-            contents[i] = CreateFunctionResultContent(results[i]);
+            contents.Add(CreateFunctionResultContent(results[i]));
         }
 
         ChatMessage message = new(ChatRole.Tool, contents);

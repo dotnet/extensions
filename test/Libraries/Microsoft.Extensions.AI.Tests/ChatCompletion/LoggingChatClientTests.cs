@@ -56,7 +56,7 @@ public class LoggingChatClientTests
         {
             GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
-                return Task.FromResult(new ChatResponse(new(ChatRole.Assistant, "blue whale")));
+                return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "blue whale")));
             },
         };
 
