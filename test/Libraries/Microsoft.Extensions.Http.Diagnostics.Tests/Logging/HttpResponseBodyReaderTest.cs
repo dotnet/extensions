@@ -20,6 +20,7 @@ namespace Microsoft.Extensions.Http.Logging.Test;
 
 public class HttpResponseBodyReaderTest
 {
+    private const string TextPlain = "text/plain";
     private readonly Fixture _fixture;
 
     public HttpResponseBodyReaderTest()
@@ -28,18 +29,25 @@ public class HttpResponseBodyReaderTest
     }
 
     [Fact]
+    public void Reader_NullOptions_Throws()
+    {
+        var act = () => new HttpResponseBodyReader(null!);
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
     public async Task Reader_SimpleContent_ReadsContent()
     {
         var options = new LoggingOptions
         {
-            ResponseBodyContentTypes = new HashSet<string> { "text/plain" }
+            ResponseBodyContentTypes = new HashSet<string> { TextPlain }
         };
 
         var httpResponseBodyReader = new HttpResponseBodyReader(options);
         var expectedContentBody = _fixture.Create<string>();
         using var httpResponse = new HttpResponseMessage
         {
-            Content = new StringContent(expectedContentBody, Encoding.UTF8, "text/plain")
+            Content = new StringContent(expectedContentBody, Encoding.UTF8, TextPlain)
         };
 
         var responseBody = await httpResponseBodyReader.ReadAsync(httpResponse, CancellationToken.None);
@@ -48,11 +56,11 @@ public class HttpResponseBodyReaderTest
     }
 
     [Fact]
-    public async Task Reader_EmptyContent_ErrorMessage()
+    public async Task Reader_NoContentType_ErrorMessage()
     {
         var options = new LoggingOptions
         {
-            ResponseBodyContentTypes = new HashSet<string> { "text/plain" }
+            ResponseBodyContentTypes = new HashSet<string> { TextPlain }
         };
 
         using var httpResponse = new HttpResponseMessage
@@ -66,6 +74,24 @@ public class HttpResponseBodyReaderTest
         responseBody.Should().Be(Constants.NoContent);
     }
 
+    [Fact]
+    public async Task Reader_EmptyContent_ReturnsEmptyString()
+    {
+        var options = new LoggingOptions
+        {
+            ResponseBodyContentTypes = new HashSet<string> { TextPlain }
+        };
+        using var httpResponse = new HttpResponseMessage
+        {
+            Content = new StringContent(string.Empty, Encoding.UTF8, TextPlain)
+        };
+
+        var httpResponseBodyReader = new HttpResponseBodyReader(options);
+        var responseBody = await httpResponseBodyReader.ReadAsync(httpResponse, CancellationToken.None);
+
+        responseBody.Should().BeEmpty();
+    }
+
     [Theory]
     [CombinatorialData]
     public async Task Reader_UnreadableContent_ErrorMessage(
@@ -75,7 +101,7 @@ public class HttpResponseBodyReaderTest
     {
         var options = new LoggingOptions
         {
-            ResponseBodyContentTypes = new HashSet<string> { "text/plain" }
+            ResponseBodyContentTypes = new HashSet<string> { TextPlain }
         };
 
         var httpResponseBodyReader = new HttpResponseBodyReader(options);
@@ -95,14 +121,14 @@ public class HttpResponseBodyReaderTest
     {
         var options = new LoggingOptions
         {
-            ResponseBodyContentTypes = new HashSet<string> { "text/plain" }
+            ResponseBodyContentTypes = new HashSet<string> { TextPlain }
         };
 
         var httpResponseBodyReader = new HttpResponseBodyReader(options);
         var input = _fixture.Create<string>();
         using var httpResponse = new HttpResponseMessage
         {
-            Content = new StringContent(input, Encoding.UTF8, "text/plain")
+            Content = new StringContent(input, Encoding.UTF8, TextPlain)
         };
 
         var token = new CancellationToken(true);
@@ -119,19 +145,60 @@ public class HttpResponseBodyReaderTest
         var options = new LoggingOptions
         {
             BodySizeLimit = limit,
-            ResponseBodyContentTypes = new HashSet<string> { "text/plain" }
+            ResponseBodyContentTypes = new HashSet<string> { TextPlain }
         };
 
         var httpResponseBodyReader = new HttpResponseBodyReader(options);
         var bigContent = RandomStringGenerator.Generate(limit * 2);
         using var httpResponse = new HttpResponseMessage
         {
-            Content = new StringContent(bigContent, Encoding.UTF8, "text/plain")
+            Content = new StreamContent(new NotSeekableStream(new(Encoding.UTF8.GetBytes(bigContent))))
         };
+        httpResponse.Content.Headers.Add("Content-Type", TextPlain);
 
         var responseBody = await httpResponseBodyReader.ReadAsync(httpResponse, CancellationToken.None);
 
         responseBody.Should().Be(bigContent.Substring(0, limit));
+
+        // This should read from piped stream
+        var response = await httpResponse.Content.ReadAsStringAsync();
+
+        response.Should().Be(bigContent);
+    }
+
+    [Fact]
+    public async Task Reader_ReaderCancelledAfterBuffering_ShouldCancelPipeReader()
+    {
+        const int BodySize = 10_000_000;
+        var options = new LoggingOptions
+        {
+            BodySizeLimit = 1,
+            ResponseBodyContentTypes = new HashSet<string> { TextPlain }
+        };
+        var httpResponseBodyReader = new HttpResponseBodyReader(options);
+        var bigContent = RandomStringGenerator.Generate(BodySize);
+        using var httpResponse = new HttpResponseMessage
+        {
+            Content = new StreamContent(new NotSeekableStream(new(Encoding.UTF8.GetBytes(bigContent))))
+        };
+        httpResponse.Content.Headers.Add("Content-Type", TextPlain);
+
+        using var cts = new CancellationTokenSource();
+
+        var responseBody = await httpResponseBodyReader.ReadAsync(httpResponse, cts.Token);
+
+        responseBody.Should().HaveLength(1);
+
+        // This should read from piped stream
+        var responseStream = await httpResponse.Content.ReadAsStreamAsync();
+
+        var buffer = new byte[BodySize];
+
+        cts.Cancel(false);
+
+        var act = async () => await responseStream.ReadAsync(buffer, 0, BodySize, cts.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>().Where(e => e.CancellationToken.IsCancellationRequested);
     }
 
     [Fact]
@@ -139,12 +206,13 @@ public class HttpResponseBodyReaderTest
     {
         var options = new LoggingOptions
         {
-            ResponseBodyContentTypes = new HashSet<string> { "text/plain" }
+            ResponseBodyContentTypes = new HashSet<string> { TextPlain },
+            BodyReadTimeout = TimeSpan.Zero
         };
 
         var httpResponseBodyReader = new HttpResponseBodyReader(options);
         var streamMock = new Mock<Stream>();
-#if NETCOREAPP3_1_OR_GREATER
+#if NET6_0_OR_GREATER
         streamMock.Setup(x => x.ReadAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>())).Throws<OperationCanceledException>();
 #else
         streamMock.Setup(x => x.ReadAsync(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>())).Throws<OperationCanceledException>();
@@ -154,11 +222,39 @@ public class HttpResponseBodyReaderTest
             Content = new StreamContent(streamMock.Object)
         };
 
-        httpResponse.Content.Headers.Add("Content-type", "text/plain");
+        httpResponse.Content.Headers.Add("Content-type", TextPlain);
 
-        var requestBody = await httpResponseBodyReader.ReadAsync(httpResponse, CancellationToken.None);
+        var responseBody = await httpResponseBodyReader.ReadAsync(httpResponse, CancellationToken.None);
 
-        requestBody.Should().Be(Constants.ReadCancelled);
+        responseBody.Should().Be(Constants.ReadCancelledByTimeout);
+    }
+
+    [Fact]
+    public async Task Reader_ReadingTakesTooLongAndOperationCancelled_Throws()
+    {
+        var options = new LoggingOptions
+        {
+            ResponseBodyContentTypes = new HashSet<string> { TextPlain },
+            BodyReadTimeout = TimeSpan.Zero
+        };
+        var httpResponseBodyReader = new HttpResponseBodyReader(options);
+        var streamMock = new Mock<Stream>();
+        var token = new CancellationToken(true);
+        var exception = new OperationCanceledException(token);
+#if NET6_0_OR_GREATER
+        streamMock.Setup(x => x.ReadAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>())).Throws(exception);
+#else
+        streamMock.Setup(x => x.ReadAsync(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>())).Throws(exception);
+#endif
+        using var httpResponse = new HttpResponseMessage
+        {
+            Content = new StreamContent(streamMock.Object)
+        };
+        httpResponse.Content.Headers.Add("Content-type", TextPlain);
+
+        var act = async () => await httpResponseBodyReader.ReadAsync(httpResponse, token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>().Where(e => e.CancellationToken.IsCancellationRequested);
     }
 
     [Fact]

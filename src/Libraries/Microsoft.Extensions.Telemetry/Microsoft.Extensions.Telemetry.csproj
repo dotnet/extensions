@@ -7,6 +7,8 @@
 
   <PropertyGroup>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectSharedText>true</InjectSharedText>
     <InjectSharedDataValidation>true</InjectSharedDataValidation>
     <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>

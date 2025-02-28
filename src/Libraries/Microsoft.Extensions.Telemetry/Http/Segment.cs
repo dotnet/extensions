@@ -24,9 +24,10 @@ internal readonly struct Segment
     /// <param name="isParam">If the segment is a param.</param>
     /// <param name="paramName">Name of the parameter.</param>
     /// <param name="defaultValue">Default value of the parameter.</param>
+    /// <param name="isCatchAll">If the segment is a catch-all parameter.</param>
     public Segment(
         int start, int end, string content, bool isParam,
-        string paramName = "", string defaultValue = "")
+        string paramName = "", string defaultValue = "", bool isCatchAll = false)
     {
         Start = start;
         End = end;
@@ -34,6 +35,7 @@ internal readonly struct Segment
         IsParam = isParam;
         ParamName = paramName;
         DefaultValue = defaultValue;
+        IsCatchAll = isCatchAll;
     }
 
     /// <summary>
@@ -65,6 +67,11 @@ internal readonly struct Segment
     /// Gets a default value of the parameter.
     /// </summary>
     public string DefaultValue { get; } = string.Empty;
+
+    /// <summary>
+    /// Gets a value indicating whether the segment is a catch-all parameter.
+    /// </summary>
+    public bool IsCatchAll { get; }
 
     internal static bool IsKnownUnredactableParameter(string parameter) =>
         parameter.Equals(ControllerParameter, StringComparison.OrdinalIgnoreCase) ||

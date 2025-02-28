@@ -6,7 +6,7 @@ using Microsoft.Extensions.Caching.Hybrid.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
-public class FunctionalTests
+public class FunctionalTests : IClassFixture<TestEventListener>
 {
     private static ServiceProvider GetDefaultCache(out DefaultHybridCache cache, Action<ServiceCollection>? config = null)
     {

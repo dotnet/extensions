@@ -6,6 +6,7 @@
     <TargetFrameworks />
 
     <Stage>transport</Stage>
+    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
     <IsShipping>false</IsShipping>
 
     <PackageDescription>Internal transport package to provide dotnet-api-docs with the reference assemblies and compiler generated documentation files from dotnet/extensions.</PackageDescription>
@@ -27,6 +28,10 @@
       Private="false"
       Include="$(SrcLibrariesDir)\*\*.*proj"
       Exclude="$(MSBuildProjectFullPath)" />
+
+    <!-- This is needed in order to avoid a version conflict between some dependencies bringing in the 6.0 version of the assembly
+    and some others depending on the 9.0 version. -->
+    <PackageReference Include="System.Text.Encodings.Web" />
   </ItemGroup>
 
   <!-- Include the reference assembly and put the documentation file next to it. -->

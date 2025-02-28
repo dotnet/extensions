@@ -2,7 +2,7 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Diagnostics.HealthChecks</RootNamespace>
     <Description>Health check implementations.</Description>
-    <Workstream>Resilience</Workstream>
+    <Workstream>ResourceMonitoring</Workstream>
   </PropertyGroup>
 
   <PropertyGroup>

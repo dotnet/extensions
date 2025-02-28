@@ -38,7 +38,7 @@ internal static class RoslynExtensions
     /// </list>
     /// </summary>
     /// <param name="compilation">The <see cref="Compilation"/> to consider for analysis.</param>
-    /// <param name="fullyQualifiedMetadataName">The fully-qualified metadata type name to find.</param>
+    /// <param name="fullyQualifiedMetadataName">The fully qualified metadata type name to find.</param>
     /// <returns>The symbol to use for code analysis; otherwise, <see langword="null"/>.</returns>
     // Copied from: https://github.com/dotnet/roslyn/blob/af7b0ebe2b0ed5c335a928626c25620566372dd1/src/Workspaces/SharedUtilitiesAndExtensions/Compiler/Core/Extensions/CompilationExtensions.cs
     public static INamedTypeSymbol? GetBestTypeByMetadataName(this Compilation compilation, string fullyQualifiedMetadataName)
@@ -94,7 +94,7 @@ internal static class RoslynExtensions
 
     /// <summary>
     /// A thin wrapper over <see cref="GetBestTypeByMetadataName(Compilation, string)"/>,
-    /// but taking the type itself rather than the fully-qualified metadata type name.
+    /// but taking the type itself rather than the fully qualified metadata type name.
     /// </summary>
     /// <param name="compilation">The <see cref="Compilation"/> to consider for analysis.</param>
     /// <param name="type">The type to find.</param>

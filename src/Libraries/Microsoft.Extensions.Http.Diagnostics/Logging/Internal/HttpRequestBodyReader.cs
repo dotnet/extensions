@@ -79,7 +79,7 @@ internal sealed class HttpRequestBodyReader
         // when readTimeout occurred:
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
-            return Constants.ReadCancelled;
+            return Constants.ReadCancelledByTimeout;
         }
     }
 

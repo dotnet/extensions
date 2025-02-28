@@ -2,7 +2,7 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.ExtraAnalyzers</RootNamespace>
     <Description>Code analyzers and fixers</Description>
-    <Workstream>Fundamentals</Workstream>
+    <Workstream>Analyzers</Workstream>
   </PropertyGroup>
 
   <PropertyGroup>

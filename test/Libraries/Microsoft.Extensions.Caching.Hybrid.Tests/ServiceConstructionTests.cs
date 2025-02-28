@@ -20,7 +20,7 @@ using Microsoft.Extensions.Configuration.Json;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
 
-public class ServiceConstructionTests
+public class ServiceConstructionTests : IClassFixture<TestEventListener>
 {
     [Fact]
     public void CanCreateDefaultService()
@@ -202,6 +202,82 @@ public class ServiceConstructionTests
         var cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
 
         Assert.NotNull(cache.BackendCache);
+    }
+
+    [Theory]
+
+    // first 4 tests; regardless of which options objects are supplied, since nothing specified: defaults are assumed
+    [InlineData(false, null, null, null, false, null, null, null)]
+    [InlineData(true, null, null, null, false, null, null, null)]
+    [InlineData(false, null, null, null, true, null, null, null)]
+    [InlineData(true, null, null, null, true, null, null, null)]
+
+    // flags; per-item wins, without merge
+    [InlineData(false, null, null, null, true, null, null, HybridCacheEntryFlags.None)]
+    [InlineData(false, null, null, null, true, null, null, HybridCacheEntryFlags.DisableLocalCacheRead, null, null, HybridCacheEntryFlags.DisableLocalCacheRead)]
+    [InlineData(true, null, null, HybridCacheEntryFlags.None, true, null, null, HybridCacheEntryFlags.DisableLocalCacheRead, null, null, HybridCacheEntryFlags.DisableLocalCacheRead)]
+    [InlineData(true, null, null, HybridCacheEntryFlags.DisableLocalCacheWrite, true, null, null, HybridCacheEntryFlags.DisableLocalCacheRead, null, null, HybridCacheEntryFlags.DisableLocalCacheRead)]
+
+    // flags; global wins if per-item omits, or no per-item flags
+    [InlineData(true, null, null, HybridCacheEntryFlags.DisableLocalCacheWrite, true, null, null, null, null, null, HybridCacheEntryFlags.DisableLocalCacheWrite)]
+    [InlineData(true, null, null, HybridCacheEntryFlags.DisableLocalCacheWrite, false, null, null, null, null, null, HybridCacheEntryFlags.DisableLocalCacheWrite)]
+
+    // local expiration; per-item wins; expiration bleeds into local expiration (but not the other way around)
+    [InlineData(false, null, null, null, true, 42, null, null, 42, 42)]
+    [InlineData(false, null, null, null, true, 42, 43, null, 42, 43)]
+    [InlineData(false, null, null, null, true, null, 43, null, null, 43)]
+
+    // global expiration; expiration bleeds into local expiration (but not the other way around)
+    [InlineData(true, 42, null, null, false, null, null, null, 42, 42)]
+    [InlineData(true, 42, 43, null, false, null, null, null, 42, 43)]
+    [InlineData(true, null, 43, null, false, null, null, null, null, 43)]
+
+    // both expirations specified; expiration bleeds into local expiration (but not the other way around)
+    [InlineData(true, 42, 43, null, true, null, null, null, 42, 43)]
+    [InlineData(true, 42, 43, null, true, 44, null, null, 44, 44)]
+    [InlineData(true, 42, 43, null, true, 44, 45, null, 44, 45)]
+    [InlineData(true, 42, 43, null, true, null, 45, null, 42, 45)]
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S107:Methods should not have too many parameters",
+        Justification = "Most pragmatic and readable way of expressing multiple scenarios.")]
+    public void VerifyCacheEntryOptionsScenarios(
+        bool defaultsSpecified, int? defaultExpiration, int? defaultLocalCacheExpiration, HybridCacheEntryFlags? defaultFlags,
+        bool perItemSpecified, int? perItemExpiration, int? perItemLocalCacheExpiration, HybridCacheEntryFlags? perItemFlags,
+        int? expectedExpiration = null, int? expectedLocalCacheExpiration = null, HybridCacheEntryFlags expectedFlags = HybridCacheEntryFlags.None)
+    {
+        expectedFlags |= HybridCacheEntryFlags.DisableDistributedCache; // hard flag because no L2 present
+
+        var services = new ServiceCollection();
+        services.AddHybridCache(options =>
+        {
+            if (defaultsSpecified)
+            {
+                options.DefaultEntryOptions = new()
+                {
+                    Expiration = defaultExpiration is null ? null : TimeSpan.FromMinutes(defaultExpiration.GetValueOrDefault()),
+                    LocalCacheExpiration = defaultLocalCacheExpiration is null ? null : TimeSpan.FromMinutes(defaultLocalCacheExpiration.GetValueOrDefault()),
+                    Flags = defaultFlags,
+                };
+            }
+        });
+
+        using ServiceProvider provider = services.BuildServiceProvider();
+        var cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
+
+        HybridCacheEntryOptions? itemOptions = null;
+        if (perItemSpecified)
+        {
+            itemOptions = new()
+            {
+                Expiration = perItemExpiration is null ? null : TimeSpan.FromMinutes(perItemExpiration.GetValueOrDefault()),
+                LocalCacheExpiration = perItemLocalCacheExpiration is null ? null : TimeSpan.FromMinutes(perItemLocalCacheExpiration.GetValueOrDefault()),
+                Flags = perItemFlags,
+            };
+        }
+
+        Assert.Equal(expectedFlags, cache.GetEffectiveFlags(itemOptions));
+        Assert.Equal(TimeSpan.FromMinutes(expectedExpiration ?? DefaultHybridCache.DefaultExpirationMinutes), cache.GetL2AbsoluteExpirationRelativeToNow(itemOptions));
+        Assert.Equal(TimeSpan.FromMinutes(expectedLocalCacheExpiration ?? DefaultHybridCache.DefaultExpirationMinutes), cache.GetL1AbsoluteExpirationRelativeToNow(itemOptions));
     }
 
     private class CustomMemoryCache : MemoryCache

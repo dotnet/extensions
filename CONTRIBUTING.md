@@ -186,6 +186,6 @@ You don't have to do this up-front. You can simply clone, fork, and submit your 
 [coding-style]: https://github.com/dotnet/runtime/blob/master/docs/coding-guidelines/coding-style.md
 [copyright-guide]: https://github.com/dotnet/runtime/blob/main/docs/project/copyright.md
 [github-keywords]: https://docs.github.com/get-started/writing-on-github/working-with-advanced-formatting/using-keywords-in-issues-and-pull-requests#linking-a-pull-request-to-an-issue
-[net-contributing]: https://github.com/dotnet/extensions/blob/main/CONTRIBUTING.md
+[net-contributing]: https://github.com/dotnet/runtime/blob/main/CONTRIBUTING.md
 [note-about-git-commit-messages]: http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
-[pr-guide]: https://github.com/dotnet/runtime/blob/main/docs/pr-guide.md
+[pr-guide]: https://github.com/dotnet/runtime/blob/main/docs/workflow/ci/pr-guide.md

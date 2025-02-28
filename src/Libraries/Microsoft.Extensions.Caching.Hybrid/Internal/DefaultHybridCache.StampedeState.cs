@@ -74,8 +74,6 @@ internal partial class DefaultHybridCache
 
         public abstract void Execute();
 
-        protected int MaximumPayloadBytes => _cache.MaximumPayloadBytes;
-
         public override string ToString() => Key.ToString();
 
         public abstract void SetCanceled();

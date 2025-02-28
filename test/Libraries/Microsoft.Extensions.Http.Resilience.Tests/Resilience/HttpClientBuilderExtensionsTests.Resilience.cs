@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -284,6 +285,77 @@ public sealed partial class HttpClientBuilderExtensionsTests
         var factory = serviceProvider.GetRequiredService<IHttpClientFactory>();
 
         Assert.NotNull(factory.CreateClient("my-client"));
+    }
+
+    [Fact]
+    public void RemoveAllResilienceHandlers_ArgumentValidation()
+    {
+        var services = new ServiceCollection();
+        IHttpClientBuilder? builder = null;
+        Assert.Throws<ArgumentNullException>(() => builder!.RemoveAllResilienceHandlers());
+    }
+
+    [Fact]
+    public void RemoveAllResilienceHandlers_EnsureHandlersRemoved()
+    {
+        var services = new ServiceCollection();
+
+        IHttpClientBuilder? builder = services.AddHttpClient("custom");
+
+        builder.AddStandardResilienceHandler();
+
+        builder.ConfigureAdditionalHttpMessageHandlers((handlers, _) =>
+        {
+            Assert.Single(handlers);
+        });
+
+        builder.RemoveAllResilienceHandlers();
+
+        builder.ConfigureAdditionalHttpMessageHandlers((handlers, _) =>
+        {
+            Assert.Empty(handlers);
+        });
+
+        using ServiceProvider serviceProvider = services.BuildServiceProvider();
+        serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("custom");
+    }
+
+    [Fact]
+    public void RemoveAllResilienceHandlers_AddHandlersAfterRemoval()
+    {
+        var services = new ServiceCollection();
+
+        IHttpClientBuilder? builder = services.AddHttpClient("custom");
+        builder.RemoveAllResilienceHandlers().AddStandardResilienceHandler();
+        builder.ConfigureAdditionalHttpMessageHandlers((handlers, _) =>
+        {
+            Assert.Single(handlers);
+        });
+
+        using ServiceProvider serviceProvider = services.BuildServiceProvider();
+        serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("custom");
+    }
+
+    [Fact]
+    public void RemoveAllResilienceHandlers_EnsureOnlyResilienceHandlersRemoved()
+    {
+        var services = new ServiceCollection();
+
+        IHttpClientBuilder? builder = services.AddHttpClient("custom");
+
+        builder.AddHttpMessageHandler(() => new TestHandlerStub(HttpStatusCode.OK));
+        builder.AddStandardResilienceHandler();
+
+        builder.RemoveAllResilienceHandlers();
+
+        builder.ConfigureAdditionalHttpMessageHandlers((handlers, _) =>
+        {
+            Assert.Single(handlers);
+            Assert.Equal(typeof(TestHandlerStub), handlers.First().GetType());
+        });
+
+        using ServiceProvider serviceProvider = services.BuildServiceProvider();
+        serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("custom");
     }
 
     private void ConfigureBuilder(ResiliencePipelineBuilder<HttpResponseMessage> builder) => builder.AddTimeout(TimeSpan.FromSeconds(1));

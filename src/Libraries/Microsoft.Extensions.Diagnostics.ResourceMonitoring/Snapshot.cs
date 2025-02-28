@@ -13,6 +13,9 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 /// </summary>
 [SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "Comparing instances is not an expected scenario")]
 [Experimental(diagnosticId: DiagnosticIds.Experiments.ResourceMonitoring, UrlFormat = DiagnosticIds.UrlFormat)]
+[Obsolete(DiagnosticIds.Obsoletions.NonObservableResourceMonitoringApiMessage,
+    DiagnosticId = DiagnosticIds.Obsoletions.NonObservableResourceMonitoringApiDiagId,
+    UrlFormat = DiagnosticIds.UrlFormat)]
 public readonly struct Snapshot
 {
     /// <summary>

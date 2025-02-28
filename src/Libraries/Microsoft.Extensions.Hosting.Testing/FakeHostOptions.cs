@@ -43,10 +43,10 @@ public class FakeHostOptions
     /// </value>
     public bool FakeLogging { get; set; } = true;
 
-    /// <inheritdoc cref="ServiceProviderOptions"/>
+    /// <inheritdoc cref="ServiceProviderOptions.ValidateScopes"/>
     public bool ValidateScopes { get; set; } = true;
 
-    /// <inheritdoc cref="ServiceProviderOptions"/>
+    /// <inheritdoc cref="ServiceProviderOptions.ValidateOnBuild"/>
     public bool ValidateOnBuild { get; set; } = true;
 
     /// <summary>

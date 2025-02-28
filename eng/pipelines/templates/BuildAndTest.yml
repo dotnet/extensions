@@ -23,6 +23,12 @@ parameters:
     default: false
 
 steps:
+  - task: NodeTool@0
+    displayName: Add NodeJS/npm
+    inputs:
+      versionSpec: "20.x"
+      checkLatest: true
+
   - script: ${{ parameters.buildScript }}
             -restore
             /bl:${{ parameters.repoLogPath }}/restore.binlog
@@ -68,6 +74,10 @@ steps:
       condition: always()
       continueOnError: true
 
+    - script: $(Build.SourcesDirectory)/.dotnet/dotnet publish
+      workingDirectory: $(Build.SourcesDirectory)/test/Libraries/Microsoft.Extensions.AotCompatibility.TestApp
+      displayName: Publish AOT Test
+      
     - ${{ if ne(parameters.skipQualityGates, 'true') }}:
       - ${{ if eq(parameters.runAsPublic, 'true') }}:
         - task: PublishPipelineArtifact@1
@@ -94,6 +104,10 @@ steps:
               /bl:${{ parameters.repoLogPath }}/transport.binlog
               $(_OfficialBuildIdArgs)
       displayName: Build and publish docs transport package
+
+    - pwsh: |
+          $(Build.SourcesDirectory)/src/Libraries/Microsoft.Extensions.AI.Evaluation.Reporting/TypeScript/azure-devops-report/build.ps1 -OutputPath $(Build.Arcade.VSIXOutputPath)
+      displayName: Build Azure DevOps plugin
 
     - script: ${{ parameters.buildScript }}
               -pack

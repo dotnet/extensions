@@ -1,0 +1,42 @@
+<Project>
+  
+  <!-- The items in this ItemGroup are packages coming from aspnetcore and runtime repos. When an asset is targeting net9.0 version
+  of the framework, the following versions should be used. -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0' And '$(ForceLatestDotnetVersions)' != 'true'">
+    <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="$(MicrosoftBclTimeProvider80Version)" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="$(MicrosoftExtensionsCachingAbstractions80Version)" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftExtensionsCachingMemory80Version)" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.SqlServer" Version="$(MicrosoftExtensionsCachingSqlServer80Version)" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="$(MicrosoftExtensionsCachingStackExchangeRedis80Version)" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(MicrosoftExtensionsConfigurationAbstractions80Version)" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="$(MicrosoftExtensionsConfigurationBinder80Version)" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsConfigurationJson80Version)" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsConfiguration80Version)" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(MicrosoftExtensionsDependencyInjectionAbstractions80Version)" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjection80Version)" />
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics" Version="$(MicrosoftExtensionsDiagnostics80Version)" />
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="$(MicrosoftExtensionsDiagnosticsHealthChecks80Version)" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(MicrosoftExtensionsHostingAbstractions80Version)" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="$(MicrosoftExtensionsHosting80Version)" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Polly" Version="$(MicrosoftExtensionsHttpPolly80Version)" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="$(MicrosoftExtensionsHttp80Version)" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsLoggingAbstractions80Version)" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="$(MicrosoftExtensionsLoggingConfiguration80Version)" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="$(MicrosoftExtensionsLoggingConsole80Version)" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsLogging80Version)" />
+    <PackageVersion Include="Microsoft.Extensions.ObjectPool" Version="$(MicrosoftExtensionsObjectPool80Version)" />
+    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(MicrosoftExtensionsOptionsConfigurationExtensions80Version)" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="$(MicrosoftExtensionsOptions80Version)" />
+    <PackageVersion Include="System.Collections.Immutable" Version="$(SystemCollectionsImmutable80Version)" />
+    <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="$(SystemDiagnosticsDiagnosticSource80Version)" />
+    <PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="$(SystemDiagnosticsPerformanceCounter80Version)" />
+    <PackageVersion Include="System.IO.Hashing" Version="$(SystemIOHashing80Version)" />
+    <PackageVersion Include="System.IO.Pipelines" Version="$(SystemIOPipelines80Version)" />
+    <PackageVersion Include="System.Memory.Data" Version="$(SystemMemoryData80Version)" />
+    <PackageVersion Include="System.Net.Http.Json" Version="$(SystemNetHttpJson80Version)" />
+    <PackageVersion Include="System.Text.Encodings.Web" Version="$(SystemTextEncodingsWeb80Version)" />
+    <PackageVersion Include="System.Text.Json" Version="$(SystemTextJson80Version)" />
+    <PackageVersion Include="System.Threading.Channels" Version="$(SystemThreadingChannels80Version)" />
+  </ItemGroup>
+
+</Project>

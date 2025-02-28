@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.Http.Diagnostics;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Http.Diagnostics;
 
@@ -56,16 +57,22 @@ internal sealed class HttpRouteParser : IHttpRouteParser
                 {
                     var startIndex = segment.Start + offset;
 
-                    string parameterValue;
+                    // If we exceed a length of the http path it means that the appropriate http route
+                    // has optional parameters or parameters with default values, and these parameters
+                    // are omitted in the http path. In this case we return a default value of the
+                    // omitted parameter.
+                    string parameterValue = segment.DefaultValue;
+
                     bool isRedacted = false;
 
                     if (startIndex < httpPathAsSpan.Length)
                     {
                         var parameterContent = segment.Content;
                         var parameterTemplateLength = parameterContent.Length + 2;
+
                         var length = httpPathAsSpan.Slice(startIndex).IndexOf(ForwardSlash);
 
-                        if (length == -1)
+                        if (segment.IsCatchAll || length == -1)
                         {
                             length = httpPathAsSpan.Slice(startIndex).Length;
                         }
@@ -73,15 +80,6 @@ internal sealed class HttpRouteParser : IHttpRouteParser
                         offset += length - parameterTemplateLength;
 
                         parameterValue = GetRedactedParameterValue(httpPathAsSpan, segment, startIndex, length, redactionMode, parametersToRedact, ref isRedacted);
-                    }
-
-                    // If we exceed a length of the http path it means that the appropriate http route
-                    // has optional parameters or parameters with default values, and these parameters
-                    // are omitted in the http path. In this case we return a default value of the
-                    // omitted parameter.
-                    else
-                    {
-                        parameterValue = segment.DefaultValue;
                     }
 
                     httpRouteParameters[index++] = new HttpRouteParameter(segment.ParamName, parameterValue, isRedacted);
@@ -157,6 +155,8 @@ internal sealed class HttpRouteParser : IHttpRouteParser
 
         int start = pos++;
         int paramNameEnd = PositionNotFound;
+        int paramNameStart = start + 1;
+        bool catchAllParamFound = false;
         int defaultValueStart = PositionNotFound;
 
         char ch;
@@ -187,13 +187,42 @@ internal sealed class HttpRouteParser : IHttpRouteParser
                 }
             }
 
+            // The segment has '*' catch all parameter.
+            // When we meet the character it indicates param start position needs to be adjusted, so that we capture 'param' instead of '*param'
+            // *param can only appear after opening curly brace and position needs to be adjusted only once
+            else if (!catchAllParamFound && ch == '*' && pos > 0 && httpRoute[pos - 1] == '{')
+            {
+                paramNameStart++;
+
+                // Catch all parameters can start with one or two '*' characters.
+                if (httpRoute[paramNameStart] == '*')
+                {
+                    paramNameStart++;
+                }
+
+                catchAllParamFound = true;
+            }
+
             pos++;
         }
 
-        string content = GetSegmentContent(httpRoute, start + 1, pos);
+        // Throw an ArgumentException if the segment is a catch-all parameter and not the last segment.
+        // The current position should be either the end of the route or the second to last position followed by a '/'.
+        if (catchAllParamFound)
+        {
+            bool isLastPosition = pos == httpRoute.Length - 1;
+            bool isSecondToLastPosition = pos == httpRoute.Length - 2;
+
+            if (!(isLastPosition || (isSecondToLastPosition && httpRoute[pos + 1] == '/')))
+            {
+                Throw.ArgumentException(nameof(httpRoute), "A catch-all parameter must be the last segment in the route.");
+            }
+        }
+
+        string content = GetSegmentContent(httpRoute, paramNameStart, pos);
         string paramName = paramNameEnd == PositionNotFound
             ? content
-            : GetSegmentContent(httpRoute, start + 1, paramNameEnd);
+            : GetSegmentContent(httpRoute, paramNameStart, paramNameEnd);
         string defaultValue = defaultValueStart == PositionNotFound
             ? string.Empty
             : GetSegmentContent(httpRoute, defaultValueStart, pos);
@@ -205,7 +234,8 @@ internal sealed class HttpRouteParser : IHttpRouteParser
             content: content,
             isParam: true,
             paramName: paramName,
-            defaultValue: defaultValue);
+            defaultValue: defaultValue,
+            isCatchAll: catchAllParamFound);
     }
 
     private static string GetSegmentContent(string httpRoute, int start, int end)

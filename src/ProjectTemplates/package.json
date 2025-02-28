@@ -1,0 +1,34 @@
+{
+  "name": "@microsoft/extensions-project-templates",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Project template dependencies",
+  "main": "index.js",
+  "config": {
+    "destRoot": {
+      "chat": "./Microsoft.Extensions.AI.Templates/src/ChatWithCustomData/ChatWithCustomData.Web/wwwroot/lib"
+    }
+  },
+  "scripts": {
+    "copy-dependency": "node copyDependency.mjs",
+    "copy-dependencies": "npm run copy-dompurify && npm run copy-marked && npm run copy-tailwindcss && npm run copy-pdfjs",
+    "copy-dompurify": "npm run copy-dependency -- --name dompurify --dest-root chat --src-root dist --files purify.es.mjs",
+    "copy-marked": "npm run copy-dependency -- --name marked --dest-root chat --src-root lib --files marked.esm.js",
+    "copy-tailwindcss": "npm run copy-dependency -- --name tailwindcss --dest-root chat --files preflight.css",
+    "copy-pdfjs": "npm run copy-dependency -- --name pdfjs-dist --dest-root chat --files build/pdf.min.mjs;build/pdf.worker.min.mjs;web/pdf_viewer.css;web/pdf_viewer.mjs;web/images/loading-icon.gif"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dotnet/extensions.git"
+  },
+  "homepage": "https://github.com/dotnet/extensions#readme",
+  "dependencies": {
+    "dompurify": "^3.2.4",
+    "marked": "^15.0.6",
+    "tailwindcss": "^4.0.3",
+    "pdfjs-dist": "^4.10.38"
+  },
+  "devDependencies": {
+    "commander": "^13.1.0"
+  }
+}

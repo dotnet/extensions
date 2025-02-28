@@ -377,6 +377,97 @@ public class HttpParserTests
         ValidateRouteParameter(httpRouteParameters[1], "chatId", "", false);
     }
 
+    [Theory]
+    [CombinatorialData]
+    public void TryExtractParameters_WhenRouteHasCatchAllParameter_ReturnsCorrectParameters(
+        bool routeHasMessageSegment,
+        bool roundTripSyntax,
+        HttpRouteParameterRedactionMode redactionMode)
+    {
+        bool isRedacted = redactionMode != HttpRouteParameterRedactionMode.None;
+        string redactedPrefix = isRedacted ? "Redacted:" : string.Empty;
+
+        HttpRouteParser httpParser = CreateHttpRouteParser();
+        Dictionary<string, DataClassification> parametersToRedact = new()
+        {
+            { "routeId", FakeTaxonomy.PrivateData },
+            { "chatId", FakeTaxonomy.PrivateData },
+            { "catchAll", FakeTaxonomy.PrivateData },
+        };
+
+        string httpPath = "api/routes/routeId123/chats/chatId123/messages/1/2/3/";
+
+        var paramName = "*catchAll";
+        if (roundTripSyntax)
+        {
+            paramName = "**catchAll";
+        }
+
+        var expectedValue = "messages/1/2/3/";
+        var segment = string.Empty;
+        if (routeHasMessageSegment)
+        {
+            segment = "/messages";
+            expectedValue = "1/2/3/";
+        }
+
+        string httpRoute = $"api/routes/{{routeId}}/chats/{{chatId}}{segment}/{{{paramName}}}/";
+
+        var routeSegments = httpParser.ParseRoute(httpRoute);
+        var httpRouteParameters = new HttpRouteParameter[3];
+        var success = httpParser.TryExtractParameters(httpPath, routeSegments, redactionMode, parametersToRedact, ref httpRouteParameters);
+
+        Assert.True(success);
+        ValidateRouteParameter(httpRouteParameters[0], "routeId", $"{redactedPrefix}routeId123", isRedacted);
+        ValidateRouteParameter(httpRouteParameters[1], "chatId", $"{redactedPrefix}chatId123", isRedacted);
+        ValidateRouteParameter(httpRouteParameters[2], "catchAll", $"{redactedPrefix}{expectedValue}", isRedacted);
+    }
+
+    [Theory]
+    [CombinatorialData]
+    public void TryExtractParameters_WhenRouteHasCatchAllParameter_Optional_ReturnsCorrectParameters(
+        bool routeHasDefaultValue,
+        bool useRoundTripSyntax,
+        HttpRouteParameterRedactionMode redactionMode)
+    {
+        bool isRedacted = redactionMode != HttpRouteParameterRedactionMode.None;
+        string redactedPrefix = isRedacted ? "Redacted:" : string.Empty;
+
+        HttpRouteParser httpParser = CreateHttpRouteParser();
+        Dictionary<string, DataClassification> parametersToRedact = new()
+        {
+            { "routeId", FakeTaxonomy.PrivateData },
+            { "chatId", FakeTaxonomy.PrivateData },
+            { "catchAll", FakeTaxonomy.PrivateData },
+        };
+
+        var httpPath = "api/routes/routeId123/chats/chatId123";
+
+        var paramName = "*catchAll";
+        if (useRoundTripSyntax)
+        {
+            paramName = "**catchAll";
+        }
+
+        var expectedValue = string.Empty;
+        if (routeHasDefaultValue)
+        {
+            expectedValue = nameof(routeHasDefaultValue);
+            paramName += $"={expectedValue}";
+        }
+
+        var httpRoute = $"api/routes/{{routeId}}/chats/{{chatId}}/{{{paramName}}}";
+
+        var routeSegments = httpParser.ParseRoute(httpRoute);
+        var httpRouteParameters = new HttpRouteParameter[3];
+        var success = httpParser.TryExtractParameters(httpPath, routeSegments, redactionMode, parametersToRedact, ref httpRouteParameters);
+
+        Assert.True(success);
+        ValidateRouteParameter(httpRouteParameters[0], "routeId", $"{redactedPrefix}routeId123", isRedacted);
+        ValidateRouteParameter(httpRouteParameters[1], "chatId", $"{redactedPrefix}chatId123", isRedacted);
+        ValidateRouteParameter(httpRouteParameters[2], "catchAll", expectedValue, false);
+    }
+
     [Fact]
     public void ParseRoute_WithRouteParameter_ReturnsRouteSegments()
     {
@@ -389,10 +480,10 @@ public class HttpParserTests
         Assert.Equal(4, routeSegments.Segments.Length);
         Assert.Equal("api/routes/{routeId}/chats/{chatId}", routeSegments.RouteTemplate);
 
-        ValidateRouteSegment(routeSegments.Segments[0], "api/routes/", false, "", "", 0, 11);
-        ValidateRouteSegment(routeSegments.Segments[1], "routeId", true, "routeId", "", 11, 20);
-        ValidateRouteSegment(routeSegments.Segments[2], "/chats/", false, "", "", 20, 27);
-        ValidateRouteSegment(routeSegments.Segments[3], "chatId", true, "chatId", "", 27, 35);
+        ValidateRouteSegment(routeSegments.Segments[0], ("api/routes/", false, "", "", 0, 11, false));
+        ValidateRouteSegment(routeSegments.Segments[1], ("routeId", true, "routeId", "", 11, 20, false));
+        ValidateRouteSegment(routeSegments.Segments[2], ("/chats/", false, "", "", 20, 27, false));
+        ValidateRouteSegment(routeSegments.Segments[3], ("chatId", true, "chatId", "", 27, 35, false));
 
         // An http route has parameters and ends with text.
         httpRoute = "/api/routes/{routeId}/chats/{chatId}/messages";
@@ -401,11 +492,11 @@ public class HttpParserTests
         Assert.Equal(5, routeSegments.Segments.Length);
         Assert.Equal("api/routes/{routeId}/chats/{chatId}/messages", routeSegments.RouteTemplate);
 
-        ValidateRouteSegment(routeSegments.Segments[0], "api/routes/", false, "", "", 0, 11);
-        ValidateRouteSegment(routeSegments.Segments[1], "routeId", true, "routeId", "", 11, 20);
-        ValidateRouteSegment(routeSegments.Segments[2], "/chats/", false, "", "", 20, 27);
-        ValidateRouteSegment(routeSegments.Segments[3], "chatId", true, "chatId", "", 27, 35);
-        ValidateRouteSegment(routeSegments.Segments[4], "/messages", false, "", "", 35, 44);
+        ValidateRouteSegment(routeSegments.Segments[0], ("api/routes/", false, "", "", 0, 11, false));
+        ValidateRouteSegment(routeSegments.Segments[1], ("routeId", true, "routeId", "", 11, 20, false));
+        ValidateRouteSegment(routeSegments.Segments[2], ("/chats/", false, "", "", 20, 27, false));
+        ValidateRouteSegment(routeSegments.Segments[3], ("chatId", true, "chatId", "", 27, 35, false));
+        ValidateRouteSegment(routeSegments.Segments[4], ("/messages", false, "", "", 35, 44, false));
     }
 
     [Fact]
@@ -419,11 +510,11 @@ public class HttpParserTests
         Assert.Equal(5, routeSegments.Segments.Length);
         Assert.Equal("api/routes/{routeId}/chats/{chatId}/messages", routeSegments.RouteTemplate);
 
-        ValidateRouteSegment(routeSegments.Segments[0], "api/routes/", false, "", "", 0, 11);
-        ValidateRouteSegment(routeSegments.Segments[1], "routeId", true, "routeId", "", 11, 20);
-        ValidateRouteSegment(routeSegments.Segments[2], "/chats/", false, "", "", 20, 27);
-        ValidateRouteSegment(routeSegments.Segments[3], "chatId", true, "chatId", "", 27, 35);
-        ValidateRouteSegment(routeSegments.Segments[4], "/messages", false, "", "", 35, 44);
+        ValidateRouteSegment(routeSegments.Segments[0], ("api/routes/", false, "", "", 0, 11, false));
+        ValidateRouteSegment(routeSegments.Segments[1], ("routeId", true, "routeId", "", 11, 20, false));
+        ValidateRouteSegment(routeSegments.Segments[2], ("/chats/", false, "", "", 20, 27, false));
+        ValidateRouteSegment(routeSegments.Segments[3], ("chatId", true, "chatId", "", 27, 35, false));
+        ValidateRouteSegment(routeSegments.Segments[4], ("/messages", false, "", "", 35, 44, false));
 
         // Route doesn't start with forward slash, the final result should begin with forward slash.
         httpRoute = "api/routes/{routeId}/chats/{chatId}/messages?from=7";
@@ -432,11 +523,11 @@ public class HttpParserTests
         Assert.Equal(5, routeSegments.Segments.Length);
         Assert.Equal("api/routes/{routeId}/chats/{chatId}/messages", routeSegments.RouteTemplate);
 
-        ValidateRouteSegment(routeSegments.Segments[0], "api/routes/", false, "", "", 0, 11);
-        ValidateRouteSegment(routeSegments.Segments[1], "routeId", true, "routeId", "", 11, 20);
-        ValidateRouteSegment(routeSegments.Segments[2], "/chats/", false, "", "", 20, 27);
-        ValidateRouteSegment(routeSegments.Segments[3], "chatId", true, "chatId", "", 27, 35);
-        ValidateRouteSegment(routeSegments.Segments[4], "/messages", false, "", "", 35, 44);
+        ValidateRouteSegment(routeSegments.Segments[0], ("api/routes/", false, "", "", 0, 11, false));
+        ValidateRouteSegment(routeSegments.Segments[1], ("routeId", true, "routeId", "", 11, 20, false));
+        ValidateRouteSegment(routeSegments.Segments[2], ("/chats/", false, "", "", 20, 27, false));
+        ValidateRouteSegment(routeSegments.Segments[3], ("chatId", true, "chatId", "", 27, 35, false));
+        ValidateRouteSegment(routeSegments.Segments[4], ("/messages", false, "", "", 35, 44, false));
     }
 
     [Fact]
@@ -450,14 +541,101 @@ public class HttpParserTests
         Assert.Equal(8, routeSegments.Segments.Length);
         Assert.Equal(httpRoute, routeSegments.RouteTemplate);
 
-        ValidateRouteSegment(routeSegments.Segments[0], "api/", false, "", "", 0, 4);
-        ValidateRouteSegment(routeSegments.Segments[1], "controller=home", true, "controller", "home", 4, 21);
-        ValidateRouteSegment(routeSegments.Segments[2], "/", false, "", "", 21, 22);
-        ValidateRouteSegment(routeSegments.Segments[3], "action=index", true, "action", "index", 22, 36);
-        ValidateRouteSegment(routeSegments.Segments[4], "/", false, "", "", 36, 37);
-        ValidateRouteSegment(routeSegments.Segments[5], "routeId:int:min(1)", true, "routeId", "", 37, 57);
-        ValidateRouteSegment(routeSegments.Segments[6], "/", false, "", "", 57, 58);
-        ValidateRouteSegment(routeSegments.Segments[7], "chatId?", true, "chatId", "", 58, 67);
+        ValidateRouteSegment(routeSegments.Segments[0], ("api/", false, "", "", 0, 4, false));
+        ValidateRouteSegment(routeSegments.Segments[1], ("controller=home", true, "controller", "home", 4, 21, false));
+        ValidateRouteSegment(routeSegments.Segments[2], ("/", false, "", "", 21, 22, false));
+        ValidateRouteSegment(routeSegments.Segments[3], ("action=index", true, "action", "index", 22, 36, false));
+        ValidateRouteSegment(routeSegments.Segments[4], ("/", false, "", "", 36, 37, false));
+        ValidateRouteSegment(routeSegments.Segments[5], ("routeId:int:min(1)", true, "routeId", "", 37, 57, false));
+        ValidateRouteSegment(routeSegments.Segments[6], ("/", false, "", "", 57, 58, false));
+        ValidateRouteSegment(routeSegments.Segments[7], ("chatId?", true, "chatId", "", 58, 67, false));
+    }
+
+    [Theory]
+    [InlineData("api/{controller=home}/{action=index}/{*url}/{invalid}")]
+    [InlineData("api/{controller=home}/{action=index}/{**url}/{invalid}")]
+    public void ParseRoute_WhenRouteHasCatchAllParameter_OutOfOrder(string httpRoute)
+    {
+        HttpRouteParser httpParser = CreateHttpRouteParser();
+
+        var exception = Assert.Throws<ArgumentException>(() => httpParser.ParseRoute(httpRoute));
+
+        Assert.StartsWith("A catch-all parameter must be the last segment in the route.", exception.Message);
+    }
+
+    [Theory]
+    [InlineData("api/{controller=home}/{action=index}/{*url}")]
+    [InlineData("api/{controller=home}/{action=index}/{*url}/")]
+    [InlineData("api/{controller=home}/{action=index}/{**url}")]
+    [InlineData("api/{controller=home}/{action=index}/{**url}/")]
+    public void ParseRoute_WhenRouteHasCatchAllParameter_InCorrectPosition(string httpRoute)
+    {
+        HttpRouteParser httpParser = CreateHttpRouteParser();
+
+        ParsedRouteSegments routeSegments = httpParser.ParseRoute(httpRoute);
+
+        Assert.Equal(3, routeSegments.ParameterCount);
+        Assert.Equal(httpRoute, routeSegments.RouteTemplate);
+    }
+
+    [Theory]
+    [InlineData("api/{controller=home}/{action=index}/{*url}", 37, 43)]
+    [InlineData("api/{controller=home}/{action=index}/{**url}", 37, 44)]
+    public void ParseRoute_WhenRouteHasCatchAllParameter_ReturnsRouteSegments(string httpRoute, int start, int end)
+    {
+        HttpRouteParser httpParser = CreateHttpRouteParser();
+
+        ParsedRouteSegments routeSegments = httpParser.ParseRoute(httpRoute);
+
+        Assert.Equal(6, routeSegments.Segments.Length);
+        Assert.Equal(httpRoute, routeSegments.RouteTemplate);
+
+        ValidateRouteSegment(routeSegments.Segments[0], ("api/", false, "", "", 0, 4, false));
+        ValidateRouteSegment(routeSegments.Segments[1], ("controller=home", true, "controller", "home", 4, 21, false));
+        ValidateRouteSegment(routeSegments.Segments[2], ("/", false, "", "", 21, 22, false));
+        ValidateRouteSegment(routeSegments.Segments[3], ("action=index", true, "action", "index", 22, 36, false));
+        ValidateRouteSegment(routeSegments.Segments[4], ("/", false, "", "", 36, 37, false));
+        ValidateRouteSegment(routeSegments.Segments[5], ("url", true, "url", "", start, end, true));
+    }
+
+    [Theory]
+    [InlineData("api/{controller=home}/{action=index}/{*url:int:min(1)}", 37, 54)]
+    [InlineData("api/{controller=home}/{action=index}/{**url:int:min(1)}", 37, 55)]
+    public void ParseRoute_WhenRouteHasCatchAllParameterWithRouteConstraint_ReturnsRouteSegments(string httpRoute, int start, int end)
+    {
+        HttpRouteParser httpParser = CreateHttpRouteParser();
+
+        ParsedRouteSegments routeSegments = httpParser.ParseRoute(httpRoute);
+
+        Assert.Equal(6, routeSegments.Segments.Length);
+        Assert.Equal(httpRoute, routeSegments.RouteTemplate);
+
+        ValidateRouteSegment(routeSegments.Segments[0], ("api/", false, "", "", 0, 4, false));
+        ValidateRouteSegment(routeSegments.Segments[1], ("controller=home", true, "controller", "home", 4, 21, false));
+        ValidateRouteSegment(routeSegments.Segments[2], ("/", false, "", "", 21, 22, false));
+        ValidateRouteSegment(routeSegments.Segments[3], ("action=index", true, "action", "index", 22, 36, false));
+        ValidateRouteSegment(routeSegments.Segments[4], ("/", false, "", "", 36, 37, false));
+        ValidateRouteSegment(routeSegments.Segments[5], ("url:int:min(1)", true, "url", "", start, end, true));
+    }
+
+    [Theory]
+    [InlineData("api/{controller=home}/{action=index}/{*url:regex(^(web|shared*)$)}", 37, 66)]
+    [InlineData("api/{controller=home}/{action=index}/{**url:regex(^(web|shared*)$)}", 37, 67)]
+    public void ParseRoute_WhenRouteHasCatchAllParameterWithRouteConstraintContainingRegexWithStar_ReturnsRouteSegments(string httpRoute, int start, int end)
+    {
+        HttpRouteParser httpParser = CreateHttpRouteParser();
+
+        ParsedRouteSegments routeSegments = httpParser.ParseRoute(httpRoute);
+
+        Assert.Equal(6, routeSegments.Segments.Length);
+        Assert.Equal(httpRoute, routeSegments.RouteTemplate);
+
+        ValidateRouteSegment(routeSegments.Segments[0], ("api/", false, "", "", 0, 4, false));
+        ValidateRouteSegment(routeSegments.Segments[1], ("controller=home", true, "controller", "home", 4, 21, false));
+        ValidateRouteSegment(routeSegments.Segments[2], ("/", false, "", "", 21, 22, false));
+        ValidateRouteSegment(routeSegments.Segments[3], ("action=index", true, "action", "index", 22, 36, false));
+        ValidateRouteSegment(routeSegments.Segments[4], ("/", false, "", "", 36, 37, false));
+        ValidateRouteSegment(routeSegments.Segments[5], ("url:regex(^(web|shared*)$)", true, "url", "", start, end, true));
     }
 
     [Fact]
@@ -488,13 +666,16 @@ public class HttpParserTests
     }
 
     private static void ValidateRouteSegment(
-        Segment segment, string content, bool isParam, string paramName, string defaultValue, int start, int end)
+        Segment segment, (string content, bool isParam, string paramName, string defaultValue, int start, int end, bool isCatchAll) values)
     {
+        var (content, isParam, paramName, defaultValue, start, end, isCatchAll) = values;
+
         Assert.Equal(content, segment.Content);
         Assert.Equal(isParam, segment.IsParam);
         Assert.Equal(paramName, segment.ParamName);
         Assert.Equal(defaultValue, segment.DefaultValue);
         Assert.Equal(start, segment.Start);
         Assert.Equal(end, segment.End);
+        Assert.Equal(isCatchAll, segment.IsCatchAll);
     }
 }

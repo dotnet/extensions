@@ -419,7 +419,7 @@ public partial class AcceptanceTests
 
                 Assert.Equal(9, state!.Count);
                 Assert.Single(state, x => x.Key == TestHttpLogEnricher.Key1 && x.Value == TestHttpLogEnricher.Value1);
-                Assert.Single(state, x => x.Key == TestHttpLogEnricher.Key2 && x.Value == TestHttpLogEnricher.Value2.ToString(CultureInfo.CurrentCulture));
+                Assert.Single(state, x => x.Key == TestHttpLogEnricher.Key2 && x.Value == TestHttpLogEnricher.Value2.ToString(CultureInfo.InvariantCulture));
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.Method && x.Value == HttpMethod.Delete.ToString());
                 Assert.DoesNotContain(state, x => x.Key == HttpLoggingTagNames.RequestBody);
                 Assert.DoesNotContain(state, x => x.Key == HttpLoggingTagNames.ResponseBody);
@@ -493,11 +493,11 @@ public partial class AcceptanceTests
 
                 Assert.Equal(5, firstState!.Count);
                 Assert.DoesNotContain(firstState, x => x.Key == TestHttpLogEnricher.Key1 && x.Value == TestHttpLogEnricher.Value1);
-                Assert.DoesNotContain(firstState, x => x.Key == TestHttpLogEnricher.Key2 && x.Value == TestHttpLogEnricher.Value2.ToString(CultureInfo.CurrentCulture));
+                Assert.DoesNotContain(firstState, x => x.Key == TestHttpLogEnricher.Key2 && x.Value == TestHttpLogEnricher.Value2.ToString(CultureInfo.InvariantCulture));
 
                 Assert.Equal(3, secondState!.Count);
                 Assert.Single(secondState, x => x.Key == TestHttpLogEnricher.Key1 && x.Value == TestHttpLogEnricher.Value1);
-                Assert.Single(secondState, x => x.Key == TestHttpLogEnricher.Key2 && x.Value == TestHttpLogEnricher.Value2.ToString(CultureInfo.CurrentCulture));
+                Assert.Single(secondState, x => x.Key == TestHttpLogEnricher.Key2 && x.Value == TestHttpLogEnricher.Value2.ToString(CultureInfo.InvariantCulture));
             });
     }
 

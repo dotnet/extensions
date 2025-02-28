@@ -9,11 +9,13 @@ using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Shared.Instruments;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows;
 
 internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 {
+    private const double One = 1.0d;
     private const double Hundred = 100.0d;
 
     private readonly Lazy<MEMORYSTATUSEX> _memoryStatus;
@@ -32,6 +34,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
     private readonly double _cpuLimit;
     private readonly TimeSpan _cpuRefreshInterval;
     private readonly TimeSpan _memoryRefreshInterval;
+    private readonly double _metricValueMultiplier;
 
     private long _oldCpuUsageTicks;
     private long _oldCpuTimeTicks;
@@ -71,6 +74,8 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
     {
         _logger = logger ?? NullLogger<WindowsContainerSnapshotProvider>.Instance;
         Log.RunningInsideJobObject(_logger);
+
+        _metricValueMultiplier = options.UseZeroToOneRangeForMetrics ? One : Hundred;
 
         _memoryStatus = new Lazy<MEMORYSTATUSEX>(
             memoryInfo.GetMemoryStatus,
@@ -195,7 +200,8 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         {
             if (now >= _refreshAfterMemory)
             {
-                _memoryPercentage = Math.Min(Hundred, memoryUsage / _memoryLimit * Hundred); // Don't change calculation order, otherwise we loose some precision
+                // Don't change calculation order, otherwise we loose some precision:
+                _memoryPercentage = Math.Min(_metricValueMultiplier, memoryUsage / _memoryLimit * _metricValueMultiplier);
                 _refreshAfterMemory = now.Add(_memoryRefreshInterval);
             }
 
@@ -229,7 +235,8 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
                 var timeTickDelta = (now.Ticks - _oldCpuTimeTicks) * _cpuLimit;
                 if (usageTickDelta > 0 && timeTickDelta > 0)
                 {
-                    _cpuPercentage = Math.Min(Hundred, usageTickDelta / timeTickDelta * Hundred); // Don't change calculation order, otherwise precision is lost.
+                    // Don't change calculation order, otherwise precision is lost:
+                    _cpuPercentage = Math.Min(_metricValueMultiplier, usageTickDelta / timeTickDelta * _metricValueMultiplier);
 
                     Log.CpuContainerUsageData(
                         _logger, basicAccountingInfo.TotalKernelTime, basicAccountingInfo.TotalUserTime, _oldCpuUsageTicks, timeTickDelta, _cpuLimit, _cpuPercentage);

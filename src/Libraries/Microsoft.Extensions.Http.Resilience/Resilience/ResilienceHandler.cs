@@ -2,13 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Http.Resilience.Internal;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using Polly;
 
@@ -17,7 +15,6 @@ namespace Microsoft.Extensions.Http.Resilience;
 /// <summary>
 /// Base class for resilience handler, i.e. handlers that use resilience strategies to send the requests.
 /// </summary>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.Resilience, UrlFormat = DiagnosticIds.UrlFormat)]
 public class ResilienceHandler : DelegatingHandler
 {
     private readonly Func<HttpRequestMessage, ResiliencePipeline<HttpResponseMessage>> _pipelineProvider;

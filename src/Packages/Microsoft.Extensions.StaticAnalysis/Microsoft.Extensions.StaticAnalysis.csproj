@@ -2,7 +2,7 @@
   <PropertyGroup>
     <PackageId>Microsoft.Extensions.StaticAnalysis</PackageId>
     <Description>A curated set of code analyzers and code analyzer settings.</Description>
-    <Workstream>Fundamentals</Workstream>
+    <Workstream>Analyzers</Workstream>
     <Category>Static Analysis</Category>
   </PropertyGroup>
 

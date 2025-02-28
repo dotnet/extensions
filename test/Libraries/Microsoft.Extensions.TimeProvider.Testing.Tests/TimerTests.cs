@@ -18,7 +18,7 @@ public class TimerTests
     }
 
     [Fact]
-    public void TimerNonPeriodicPeriodZero()
+    public void CreateTimer_PeriodZero_FiresOnceAndDoesNotRepeat()
     {
         var counter = 0;
         var timeProvider = new FakeTimeProvider();
@@ -40,7 +40,7 @@ public class TimerTests
     }
 
     [Fact]
-    public void TimerNonPeriodicPeriodInfinite()
+    public void CreateTimer_PeriodInfinite_FiresOnceAndDoesNotRepeat()
     {
         var counter = 0;
         var timeProvider = new FakeTimeProvider();
@@ -62,7 +62,7 @@ public class TimerTests
     }
 
     [Fact]
-    public void TimerStartsImmediately()
+    public void CreateTimer_ImmediateStart_FiresOnceAndDoesNotRepeat()
     {
         var counter = 0;
         var timeProvider = new FakeTimeProvider();
@@ -84,7 +84,7 @@ public class TimerTests
     }
 
     [Fact]
-    public void NoDueTime_TimerDoesntStart()
+    public void CreateTimer_InfiniteTimeSpan_DoesNotFire()
     {
         var counter = 0;
         var timeProvider = new FakeTimeProvider();
@@ -106,7 +106,7 @@ public class TimerTests
     }
 
     [Fact]
-    public void TimerTriggersPeriodically()
+    public void CreateTimer_PeriodicTrigger_FiresAtSpecifiedIntervals()
     {
         var counter = 0;
         var timeProvider = new FakeTimeProvider();
@@ -133,37 +133,7 @@ public class TimerTests
     }
 
     [Fact]
-    public async Task TaskDelayWithFakeTimeProviderAdvanced()
-    {
-        var fakeTimeProvider = new FakeTimeProvider();
-        using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(1000));
-
-        var task = fakeTimeProvider.Delay(TimeSpan.FromMilliseconds(10000), cancellationTokenSource.Token);
-
-        fakeTimeProvider.Advance(TimeSpan.FromMilliseconds(10000));
-
-        await task;
-
-        Assert.False(cancellationTokenSource.Token.IsCancellationRequested);
-    }
-
-    [Fact]
-    public async Task TaskDelayWithFakeTimeProviderStopped()
-    {
-        var fakeTimeProvider = new FakeTimeProvider();
-        using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
-
-        await Assert.ThrowsAsync<TaskCanceledException>(async () =>
-        {
-            await fakeTimeProvider.Delay(
-                TimeSpan.FromMilliseconds(10000),
-                cancellationTokenSource.Token)
-            .ConfigureAwait(false);
-        });
-    }
-
-    [Fact]
-    public void TimerChangeDueTimeOutOfRangeThrows()
+    public void Change_WhenDueTimeIsOutOfRange_ThrowsArgumentOutOfRangeException()
     {
         using var t = new Timer(new FakeTimeProvider(), new TimerCallback(EmptyTimerTarget), null);
         _ = t.Change(TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1));
@@ -175,7 +145,7 @@ public class TimerTests
     }
 
     [Fact]
-    public void TimerChangePeriodOutOfRangeThrows()
+    public void Change_WhenPeriodIsOutOfRange_ThrowsArgumentOutOfRangeException()
     {
         using var t = new Timer(new FakeTimeProvider(), new TimerCallback(EmptyTimerTarget), null);
         _ = t.Change(TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1));
@@ -187,7 +157,7 @@ public class TimerTests
     }
 
     [Fact]
-    public void Timer_Change_AfterDispose_Test()
+    public void Change_WhenCalledAfterDispose_ReturnsFalse()
     {
         var t = new Timer(new FakeTimeProvider(), new TimerCallback(EmptyTimerTarget), null);
         _ = t.Change(TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1));
@@ -198,7 +168,7 @@ public class TimerTests
     }
 
     [Fact]
-    public async Task Timer_Change_AfterDisposeAsync_Test()
+    public async Task Change_WhenCalledAfterDisposeAsync_ReturnsFalse()
     {
         var t = new Timer(new FakeTimeProvider(), new TimerCallback(EmptyTimerTarget), null);
         _ = t.Change(TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1));
@@ -209,7 +179,7 @@ public class TimerTests
     }
 
     [Fact]
-    public void WaiterRemovedAfterDispose()
+    public void CreateTimer_WhenDisposed_RemovesWaiterFromQueue()
     {
         var timer1Counter = 0;
         var timer2Counter = 0;
@@ -226,20 +196,23 @@ public class TimerTests
 
         timer1.Dispose();
 
+        var waitersCountAfterDispose = timeProvider.Waiters.Count;
+
         timeProvider.Advance(TimeSpan.FromMilliseconds(1));
 
-        var waitersCountAfter = timeProvider.Waiters.Count;
+        var waitersCountOnFinish = timeProvider.Waiters.Count;
 
         Assert.Equal(0, waitersCountStart);
         Assert.Equal(2, waitersCountDuring);
+        Assert.Equal(1, waitersCountAfterDispose);
+        Assert.Equal(1, waitersCountOnFinish);
         Assert.Equal(1, timer1Counter);
         Assert.Equal(2, timer2Counter);
-        Assert.Equal(1, waitersCountAfter);
     }
 
 #if RELEASE // In Release only since this might not work if the timer reference being tracked by the debugger
     [Fact(Skip = "Flaky on .NET Framework")]
-    public void WaiterRemovedWhenCollectedWithoutDispose()
+    public void CreateTimer_WhenCollectedWithoutDispose_RemovesWaiterFromQueue()
     {
         var timer1Counter = 0;
         var timer2Counter = 0;
@@ -273,7 +246,7 @@ public class TimerTests
 #endif
 
     [Fact]
-    public void UtcNowUpdatedBeforeTimerCallback()
+    public void CreateTimer_WhenUtcNowUpdatedBeforeCallback_UpdatesCallbackTime()
     {
         var timeProvider = new FakeTimeProvider(DateTimeOffset.UtcNow);
         var callbackTime = DateTimeOffset.MinValue;
@@ -295,7 +268,7 @@ public class TimerTests
     }
 
     [Fact]
-    public void LongPausesTriggerMultipleCallbacks()
+    public void CreateTimer_WhenLongPauses_TriggersMultipleCallbacks()
     {
         var callbackTimes = new List<DateTimeOffset>();
         var timeProvider = new FakeTimeProvider(DateTimeOffset.UtcNow);
@@ -320,7 +293,7 @@ public class TimerTests
     }
 
     [Fact]
-    public void MultipleTimersCallbackInvokedInScheduledOrder()
+    public void CreateMultipleTimers_WhenAdvanced_InvokesCallbacksInScheduledOrder()
     {
         var callbacks = new List<(int timerId, TimeSpan callbackTime)>();
         var timeProvider = new FakeTimeProvider();
@@ -349,7 +322,7 @@ public class TimerTests
     }
 
     [Fact]
-    public void OutOfOrderWakeTimes()
+    public void CreateMultipleTimers_WhenAdvanced_TriggersCallbacksInOrder()
     {
         const int MaxDueTime = 10;
         const int TotalTimers = 128;

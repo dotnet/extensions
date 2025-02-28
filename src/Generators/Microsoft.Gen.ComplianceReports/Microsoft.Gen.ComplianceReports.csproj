@@ -2,7 +2,7 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Gen.ComplianceReports</RootNamespace>
     <Description>Produces compliance reports based on data classification annotations in the code.</Description>
-    <Workstream>Fundamentals</Workstream>
+    <Workstream>Compliance</Workstream>
   </PropertyGroup>
 
   <PropertyGroup>

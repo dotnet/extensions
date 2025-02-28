@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Helpers;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Shared.Instruments;
 using Microsoft.TestUtilities;
 using Moq;
 using VerifyXunit;

@@ -2,7 +2,7 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.AmbientMetadata</RootNamespace>
     <Description>Runtime information provider for application-level ambient metadata.</Description>
-    <Workstream>Fundamentals</Workstream>
+    <Workstream>Telemetry</Workstream>
   </PropertyGroup>
 
   <PropertyGroup>

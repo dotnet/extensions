@@ -4,13 +4,15 @@
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Publishers;
+using Microsoft.TestUtilities;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test;
 
+[OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Not supported on MacOs.")]
 public sealed class ResourceMonitoringBuilderTests
 {
-    [Fact]
+    [ConditionalFact(Skip = "Not supported on MacOs.")]
     public void AddPublisher_CalledOnce_AddsSinglePublisherToServiceCollection()
     {
         using var provider = new ServiceCollection()
@@ -31,7 +33,7 @@ public sealed class ResourceMonitoringBuilderTests
         Assert.IsAssignableFrom<EmptyPublisher>(publishersArray.First());
     }
 
-    [Fact]
+    [ConditionalFact]
     public void AddPublisher_CalledMultipleTimes_AddsMultiplePublishersToServiceCollection()
     {
         using var provider = new ServiceCollection()

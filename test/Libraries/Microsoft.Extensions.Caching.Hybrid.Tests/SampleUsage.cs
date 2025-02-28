@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
 
-public class SampleUsage
+public class SampleUsage : IClassFixture<TestEventListener>
 {
     [Fact]
     public async Task DistributedCacheWorks()

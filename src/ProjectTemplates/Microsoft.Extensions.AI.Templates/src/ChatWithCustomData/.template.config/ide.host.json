@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json.schemastore.org/ide.host",
+  "order": 0,
+  "icon": "ide/icon.ico",
+  "displayOverviewPage": "",
+  "symbolInfo": [
+    {
+      "id": "AiServiceProvider",
+      "isVisible": true
+    },
+    {
+      "id": "UseManagedIdentity",
+      "isVisible": true
+    },
+    {
+      "id": "VectorStore",
+      "isVisible": true
+    }
+  ]
+}

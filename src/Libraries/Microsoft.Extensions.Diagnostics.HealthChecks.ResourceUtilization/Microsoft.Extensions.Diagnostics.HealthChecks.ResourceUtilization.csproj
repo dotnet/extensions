@@ -2,13 +2,16 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Diagnostics.HealthChecks</RootNamespace>
     <Description>Resource utilization health check.</Description>
-    <Workstream>Resilience</Workstream>
+    <Workstream>ResourceMonitoring</Workstream>
   </PropertyGroup>
 
   <PropertyGroup>
     <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
     <InjectSharedDataValidation>true</InjectSharedDataValidation>
+    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <InjectObsoleteAttributeOnLegacy>true</InjectObsoleteAttributeOnLegacy>
+    <InjectSharedInstruments>true</InjectSharedInstruments>
   </PropertyGroup>
 
   <PropertyGroup>

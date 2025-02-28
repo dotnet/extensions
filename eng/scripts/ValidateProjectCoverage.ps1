@@ -59,6 +59,8 @@ $Errors = New-Object System.Collections.ArrayList
 $Kudos = New-Object System.Collections.ArrayList
 $ErrorsMarkdown = @();
 $KudosMarkdown = @();
+$FatalErrors = 0;
+$Warnings = 0;
 
 Write-Verbose "Collecting projects from code coverage report..."
 $CoberturaReport.coverage.packages.package | ForEach-Object {
@@ -66,6 +68,7 @@ $CoberturaReport.coverage.packages.package | ForEach-Object {
     $LineCoverage = [math]::Round([double]$_.'line-rate' * 100, 2)
     $BranchCoverage = [math]::Round([double]$_.'branch-rate' * 100, 2)
     $IsFailed = $false
+    $IsWarning = $false
 
     Write-Verbose "Project $Name with line coverage $LineCoverage and branch coverage $BranchCoverage"
 
@@ -80,7 +83,17 @@ $CoberturaReport.coverage.packages.package | ForEach-Object {
 
         # Detect the under-coverage
         if ($MinCodeCoverage -gt $LineCoverage) {
-            $IsFailed = $true
+            if ($MinCodeCoverage -eq 100) {
+                $ansiEscapeCode = "$esc[1m$esc[0;31m";
+                $IsFailed = $true
+                $FatalErrors++;
+            }
+            else {
+                $ansiEscapeCode = "$esc[1m$esc[0;33m";
+                $IsWarning = $true;
+                $Warnings++;
+            }
+
             $ErrorsMarkdown += "| $Name | Line | **$MinCodeCoverage** | $LineCoverage :small_red_triangle_down: |"
             [void]$Errors.Add(
                 (
@@ -88,14 +101,24 @@ $CoberturaReport.coverage.packages.package | ForEach-Object {
                         "Project" = $Name.Replace('Microsoft.Extensions.', 'M.E.').Replace('Microsoft.AspNetCore.', 'M.AC.');
                         "Coverage Type" = "Line";
                         "Expected" = $MinCodeCoverage;
-                        "Actual" = "$esc[1m$esc[0;31m$($LineCoverage)$esc[0m"
+                        "Actual" = "$($ansiEscapeCode)$($LineCoverage)$esc[0m"
                     }
                 )
             )
         }
 
         if ($MinCodeCoverage -gt $BranchCoverage) {
-            $IsFailed = $true
+            if ($MinCodeCoverage -eq 100) {
+                $ansiEscapeCode = "$esc[1m$esc[0;31m";
+                $IsFailed = $true
+                $FatalErrors++;
+            }
+            else {
+                $ansiEscapeCode = "$esc[1m$esc[0;33m";
+                $IsWarning = $true;
+                $Warnings++;
+            }
+
             $ErrorsMarkdown += "| $Name | Branch | **$MinCodeCoverage** | $BranchCoverage :small_red_triangle_down: |"
             [void]$Errors.Add(
                 (
@@ -103,7 +126,7 @@ $CoberturaReport.coverage.packages.package | ForEach-Object {
                         "Project" = $Name.Replace('Microsoft.Extensions.', 'M.E.').Replace('Microsoft.AspNetCore.', 'M.AC.');
                         "Coverage Type" = "Branch";
                         "Expected" = $MinCodeCoverage;
-                        "Actual" = "$esc[1m$esc[0;31m$($BranchCoverage)$esc[0m"
+                        "Actual" = "$($ansiEscapeCode)$($BranchCoverage)$esc[0m"
                     }
                 )
             )
@@ -125,8 +148,9 @@ $CoberturaReport.coverage.packages.package | ForEach-Object {
             )
         }
 
-        if ($IsFailed) { Write-Host "$Name" -NoNewline; Write-Host " ...failed validation" -ForegroundColor Red }
-                  else { Write-Host "$Name" -NoNewline; Write-Host " ...ok" -ForegroundColor Green }
+        if    ($IsWarning) { Write-Host "$Name" -NoNewline; Write-Host " ...missed the mark" -ForegroundColor Yellow }
+        elseif ($IsFailed) { Write-Host "$Name" -NoNewline; Write-Host " ...failed validation" -ForegroundColor Red }
+                      else { Write-Host "$Name" -NoNewline; Write-Host " ...ok" -ForegroundColor Green }
     }
     else {
         Write-Host "$Name ...skipping"
@@ -175,10 +199,20 @@ if (![string]::IsNullOrWhiteSpace($markdown)) {
     Write-Host $gitHubCommentVar
 }
 
-if ($Errors.Count -eq 0)
+if ($FatalErrors -gt 0)
 {
-    Write-Host "`r`nAll good, no issues found."
+    Write-Host "`r`nBreaking issues detected."
+    exit -1;
+}
+
+if ($Warnings -gt 0)
+{
+    Write-Host "`r`nNon-breaking issues detected."
+}
+
+if ($FatalErrors -eq 0)
+{
+    Write-Host "`r`nAll good, no issues detected."
     exit 0;
 }
 
-exit -1;

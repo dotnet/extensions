@@ -144,7 +144,7 @@ public partial class ParserTests
         var d = await RunGenerator(@"
             partial class C
             {
-                [Counter(""Env.Name"", ""clustr:region"", ""Req_Name"", ""Req-Status"")]
+                [Counter(""Env.Name"", ""clustr:region"", ""Req_Name"", ""Req-Status"", ""_microsoft_metrics_namespace"")]
                 static partial TestCounter CreateMetricName(Meter meter, string env, string region);
             }");
 

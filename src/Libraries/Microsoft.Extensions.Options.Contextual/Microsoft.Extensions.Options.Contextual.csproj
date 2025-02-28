@@ -2,7 +2,7 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Options.Contextual</RootNamespace>
     <Description>A common abstraction for contextual options.</Description>
-    <Workstream>Config and Experimentation</Workstream>
+    <Workstream>Configuration</Workstream>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -11,6 +11,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <Stage>dev</Stage>
+    <StageDevDiagnosticId>EXTEXP0017</StageDevDiagnosticId>
     <MinCodeCoverage>100</MinCodeCoverage>
     <MinMutationScore>80</MinMutationScore>
   </PropertyGroup>
