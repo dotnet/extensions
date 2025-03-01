@@ -130,54 +130,54 @@ public class EmitterTests
     {
         string expected = @"[
     {
-     ""MetricContainingAssembly1"":
+        ""MetricContainingAssembly1"":
             [
                 {
-                     ""MetricName"": ""Requests"",
-                     ""MetricDescription"": ""Requests summary."",
-                     ""InstrumentName"": ""Counter"",
-                     ""Dimensions"":
-                            {
-                                ""StatusCode"": ""Status code for request."",
-                                ""ErrorCode"": ""Error code for request.""
-                            }
+                    ""MetricName"": ""Requests"",
+                    ""MetricDescription"": ""Requests summary."",
+                    ""InstrumentName"": ""Counter"",
+                    ""Dimensions"":
+                        {
+                            ""StatusCode"": ""Status code for request."",
+                            ""ErrorCode"": ""Error code for request.""
+                        }
                 },
                 {
-                     ""MetricName"": ""Latency"",
-                     ""MetricDescription"": ""Latency summary."",
-                     ""InstrumentName"": ""Histogram"",
-                     ""Dimensions"":
-                            {
-                                ""Dim1"": """"
-                            }
+                    ""MetricName"": ""Latency"",
+                    ""MetricDescription"": ""Latency summary."",
+                    ""InstrumentName"": ""Histogram"",
+                    ""Dimensions"":
+                        {
+                            ""Dim1"": """"
+                        }
                 },
                 {
-                     ""MetricName"": ""MemoryUsage"",
-                     ""InstrumentName"": ""Gauge""
+                    ""MetricName"": ""MemoryUsage"",
+                    ""InstrumentName"": ""Gauge""
 
                 }
-            ]
+        ]
     }
 ,
     {
-     ""MetricContainingAssembly2"":
+        ""MetricContainingAssembly2"":
             [
                 {
-                     ""MetricName"": ""Counter"",
-                     ""MetricDescription"": ""Counter summary."",
-                     ""InstrumentName"": ""Counter""
+                    ""MetricName"": ""Counter"",
+                    ""MetricDescription"": ""Counter summary."",
+                    ""InstrumentName"": ""Counter""
 
                 },
                 {
-                     ""MetricName"": ""Test\\MemoryUsage"",
-                     ""MetricDescription"": ""MemoryUsage summary."",
-                     ""InstrumentName"": ""Gauge"",
-                     ""Dimensions"":
-                            {
-                                ""Path"": ""Test\\Description\\Path""
-                            }
+                    ""MetricName"": ""Test\\MemoryUsage"",
+                    ""MetricDescription"": ""MemoryUsage summary."",
+                    ""InstrumentName"": ""Gauge"",
+                    ""Dimensions"":
+                        {
+                            ""Path"": ""Test\\Description\\Path""
+                        }
                 }
-            ]
+        ]
     }
 ]
 ";
