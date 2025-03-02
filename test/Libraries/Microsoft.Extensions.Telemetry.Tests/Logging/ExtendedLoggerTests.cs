@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Enrichment;
+using Microsoft.Extensions.Diagnostics.Sampling;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -117,6 +118,38 @@ public static class ExtendedLoggerTests
             Assert.Null(snap[1].GetStructuredStateValue("SEK1"));
             Assert.Null(snap[1].GetStructuredStateValue("EK1"));
         }
+    }
+
+    [Fact]
+    public static void Sampling()
+    {
+        const string Category = "C1";
+
+        RandomProbabilisticSamplerOptions options = new();
+        options.Rules.Add(new RandomProbabilisticSamplerFilterRule(probability: 0, logLevel: LogLevel.Warning));
+        LogSamplingRuleSelector<RandomProbabilisticSamplerFilterRule> ruleSelector = new();
+        using var sampler = new RandomProbabilisticSampler(ruleSelector, new StaticOptionsMonitor<RandomProbabilisticSamplerOptions>(options));
+
+        using var provider = new Provider();
+        using ILoggerFactory factory = Utils.CreateLoggerFactory(
+             builder =>
+             {
+                 builder.AddProvider(provider);
+                 builder.AddRandomProbabilisticSampler(0, LogLevel.Warning);
+             });
+        ILogger logger = factory.CreateLogger(Category);
+
+        // Act
+        // 1, no state (legacy path)
+        logger.LogWarning("MSG0");
+
+        // 2, with Modern state
+        LoggerMessageState lms = LoggerMessageHelper.ThreadLocalState;
+        int index = lms.ReserveTagSpace(1);
+        lms.TagArray[index] = new("PK2", "PV2");
+        logger.Log(LogLevel.Warning, new EventId(2, "ID2"), lms, null, (_, _) => "MSG2");
+
+        Assert.Equal(0, provider.Logger!.Collector.Count);
     }
 
     [Theory]
@@ -946,7 +979,7 @@ public static class ExtendedLoggerTests
         }
     }
 
-    private sealed class StaticOptionsMonitor<T> : IOptionsMonitor<T>
+    public sealed class StaticOptionsMonitor<T> : IOptionsMonitor<T>
     {
         public StaticOptionsMonitor(T currentValue)
         {
