@@ -1,13 +1,13 @@
 # AI Chat with Custom Data
 
-This project is an AI chat application that demonstrates how to chat with custom data using an AI language model. Please note that this template is currently at an early preview stage. If you have feedback, please let us know!
+This project is an AI chat application that demonstrates how to chat with custom data using an AI language model. Please note that this template is currently in an early preview stage. If you have feedback, please let us know!
 
 >[!NOTE]
-> Before you can run this project you'll need to configure API keys or endpoints to work with the providers you have chosen. See below for the details specific to your choices.
+> Before running this project you need to configure the API keys or endpoints for the providers you have chosen. See below for details specific to your choices.
 
 #### ---#if (UseAzure)
 ### Prerequisites
-To use Azure OpenAI or Azure AI Search, you will need an Azure account. If you don't have one already, [create an Azure account](https://azure.microsoft.com/free/).
+To use Azure OpenAI or Azure AI Search, you need an Azure account. If you don't already have one, [create an Azure account](https://azure.microsoft.com/free/).
 
 #### ---#endif
 # Configure the AI Model Provider
@@ -15,10 +15,10 @@ To use Azure OpenAI or Azure AI Search, you will need an Azure account. If you d
 To use models hosted by GitHub Models, you will need to create a GitHub personal access token. The token should not have any scopes or permissions. See [Managing your personal access tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens).
 
 #### ---#if (hostIdentifier == "vs")
-Configure your token for this project, using .NET User Secrets:
+Configure your token for this project using .NET User Secrets:
 
 1. In Visual Studio, right-click on your project in the Solution Explorer and select "Manage User Secrets".
-2. This will open a secrets.json file where you can store your API key without them being tracked in source control. Add the following key and value to the file:
+2. This opens a `secrets.json` file where you can store your API keys without them being tracked in source control. Add the following key and value:
 
 ```json
 {
@@ -72,7 +72,7 @@ This project is configured to use Ollama, an application that allows you to run 
 First, download and install Ollama from their [official website](https://www.ollama.com). Follow the installation instructions specific to your operating system.
 
 ### 2. Choose and Install Models
-This project uses the `llama3.2` and `all-minilm` language modes. To install these models, use the following commands in your terminal once Ollama has been installed:
+This project uses the `llama3.2` and `all-minilm` language models. To install these models, use the following commands in your terminal once Ollama has been installed:
 
 ```sh
 ollama pull llama3.2
