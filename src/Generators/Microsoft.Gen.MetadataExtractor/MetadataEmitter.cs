@@ -38,9 +38,7 @@ internal sealed class MetadataEmitter : JsonEmitterBase
         }
 
         OutOpenBrace(isRoot: true);
-        OutNameValue("Name", context.Compilation.AssemblyName!);
-        Out(",");
-        OutLn();
+        OutNameValue("Name", context.Compilation.AssemblyName!, isSingle: true);
         OutIndent();
         Out("\"ComplianceReport\": ");
         Out($"{(string.IsNullOrEmpty(metadataReport.complianceReport) ? "{}" : metadataReport.complianceReport)},");

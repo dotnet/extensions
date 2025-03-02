@@ -56,7 +56,7 @@ internal class JsonEmitterBase : EmitterBase
         _itemCount = _itemCounts.Pop();
     }
 
-    protected void OutNameValue(string name, string value)
+    protected void OutNameValue(string name, string value, bool isSingle = false)
     {
         value = value
             .Replace("\\", "\\\\")
@@ -64,7 +64,12 @@ internal class JsonEmitterBase : EmitterBase
 
         NewItem();
         OutIndent();
-        Out($"\"{name}\": \"{value}\"");
+        Out($"\"{name}\": \"{value}\"{(isSingle ? "," : string.Empty)}");
+
+        if (isSingle)
+        {
+            OutLn();
+        }
     }
 
     protected void OutEmptyObject()
