@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.Gen.ComplianceReports;
 using Microsoft.Gen.Metrics.Model;
@@ -37,17 +36,17 @@ internal sealed class MetadataEmitter : JsonEmitterBase
             metadataReport.complianceReport = HandleComplianceReportGeneration(context, receiver);
         }
 
-        OutOpenBrace(isRoot: true);
-        OutNameValue("Name", context.Compilation.AssemblyName!, isSingle: true);
-        OutIndent();
-        Out("\"ComplianceReport\": ");
-        Out($"{(string.IsNullOrEmpty(metadataReport.complianceReport) ? "{}" : metadataReport.complianceReport)},");
-        OutLn();
-        OutIndent();
-        Out("\"MetricReport\": ");
-        Out((string.IsNullOrEmpty(metadataReport.metricReport) ? "[]" : metadataReport.metricReport));
-        OutLn();
-        OutCloseBrace(isRoot: true);
+        OutObject(() =>
+        {
+            OutNameValue("Name", context.Compilation.AssemblyName!, isSingle: true);
+            OutIndent();
+            Out("\"ComplianceReport\": ");
+            Out($"{(string.IsNullOrEmpty(metadataReport.complianceReport) ? "{}" : metadataReport.complianceReport)},");
+            OutLn();
+            OutIndent();
+            Out("\"MetricReport\": ");
+            Out((string.IsNullOrEmpty(metadataReport.metricReport) ? "[]" : metadataReport.metricReport));
+        });
 
         return Capture();
     }

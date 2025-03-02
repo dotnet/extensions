@@ -62,7 +62,7 @@ internal class JsonEmitterBase : EmitterBase
             .Replace("\\", "\\\\")
             .Replace("\"", "\\\"");
 
-        NewItem();
+        NewItem(preAppendComma: !isSingle);
         OutIndent();
         Out($"\"{name}\": \"{value}\"{(isSingle ? "," : string.Empty)}");
 
@@ -82,9 +82,9 @@ internal class JsonEmitterBase : EmitterBase
         Out("[]");
     }
 
-    private void NewItem()
+    private void NewItem(bool preAppendComma = true)
     {
-        if (_itemCount > 0)
+        if (preAppendComma && _itemCount > 0)
         {
             Out(",");
         }
