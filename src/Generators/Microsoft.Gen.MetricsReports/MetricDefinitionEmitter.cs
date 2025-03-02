@@ -11,7 +11,7 @@ namespace Microsoft.Gen.MetricsReports;
 
 // Stryker disable all
 
-internal sealed class MetricDefinitionEmitter : EmitterBase
+internal sealed class MetricDefinitionEmitter : JsonEmitterBase
 {
     private const int RootIndentLevel = 2;
     private const int DimensionsIndentLevel = 3;
@@ -40,24 +40,22 @@ internal sealed class MetricDefinitionEmitter : EmitterBase
             OutLn();
         }
 
-        Indent(indentationLevel);
-        OutLn("[");
-
-        for (int i = 0; i < metricClasses.Count; i++)
+        OutArray(string.Empty, () =>
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            var metricClass = metricClasses[i];
-
-            GenMetricClassDefinition(metricClass, cancellationToken);
-
-            if (i < metricClasses.Count - 1)
+            for (int i = 0; i < metricClasses.Count; i++)
             {
-                OutLn(",");
-            }
-        }
+                cancellationToken.ThrowIfCancellationRequested();
+                var metricClass = metricClasses[i];
 
-        OutLn("]");
-        Unindent(indentationLevel);
+                GenMetricClassDefinition(metricClass, cancellationToken);
+
+                if (i < metricClasses.Count - 1)
+                {
+                    OutLn(",");
+                }
+            }
+
+        });
 
         return Capture();
     }
@@ -65,7 +63,7 @@ internal sealed class MetricDefinitionEmitter : EmitterBase
     private void GenMetricClassDefinition(ReportedMetricClass metricClass, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        Indent();
+        //Indent();
         OutLn("{");
 
         OutLn($" \"{metricClass.RootNamespace}\":");
@@ -97,7 +95,7 @@ internal sealed class MetricDefinitionEmitter : EmitterBase
         }
 
         OutLn("}");
-        Unindent();
+      //  Unindent();
     }
 
     private void GenMetricMethodDefinition(ReportedMetricMethod metricMethod, bool isLastReportedMetricMethod, CancellationToken cancellationToken)
