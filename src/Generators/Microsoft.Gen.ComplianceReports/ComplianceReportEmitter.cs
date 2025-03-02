@@ -10,10 +10,9 @@ using Microsoft.Gen.Shared;
 
 namespace Microsoft.Gen.ComplianceReports;
 
-internal sealed class ComplianceReportEmitter : EmitterBase
+internal sealed class ComplianceReportEmitter : JsonEmitterBase
 {
-    private readonly Stack<int> _itemCounts = new();
-    private int _itemCount;
+
 
     public ComplianceReportEmitter()
         : base(false)
@@ -35,7 +34,7 @@ internal sealed class ComplianceReportEmitter : EmitterBase
         Indent(indentationLevel);
         OutObject(() =>
         {
-            // this is only for not displaying a name as part of ComplianceReport properties,it should be at the root of the report, defaulted to true for beackward compatibility
+            // this is only for not displaying a name as part of ComplianceReport properties,it should be at the root of the report, defaulted to true for backward compatibility
             if (includeName)
             {
                 OutNameValue("Name", assemblyName);
@@ -140,61 +139,4 @@ internal sealed class ComplianceReportEmitter : EmitterBase
         return Capture();
     }
 
-    private void NewItem()
-    {
-        if (_itemCount > 0)
-        {
-            Out(",");
-        }
-
-        OutLn();
-        _itemCount++;
-    }
-
-    private void OutObject(Action action)
-    {
-        NewItem();
-        _itemCounts.Push(_itemCount);
-        _itemCount = 0;
-
-        OutIndent();
-        Out("{");
-        Indent();
-        action();
-        OutLn();
-        Unindent();
-        OutIndent();
-        Out("}");
-
-        _itemCount = _itemCounts.Pop();
-    }
-
-    private void OutArray(string name, Action action)
-    {
-        NewItem();
-        _itemCounts.Push(_itemCount);
-        _itemCount = 0;
-
-        OutIndent();
-        Out($"\"{name}\": [");
-        Indent();
-        action();
-        OutLn();
-        Unindent();
-        OutIndent();
-        Out("]");
-
-        _itemCount = _itemCounts.Pop();
-    }
-
-    private void OutNameValue(string name, string value)
-    {
-        value = value
-            .Replace("\\", "\\\\")
-            .Replace("\"", "\\\"");
-
-        NewItem();
-        OutIndent();
-        Out($"\"{name}\": \"{value}\"");
-    }
 }

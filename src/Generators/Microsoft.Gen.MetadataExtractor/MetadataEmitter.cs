@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.Gen.ComplianceReports;
 using Microsoft.Gen.Metrics.Model;
@@ -9,7 +10,7 @@ using Microsoft.Gen.MetricsReports;
 using Microsoft.Gen.Shared;
 
 namespace Microsoft.Gen.MetadataExtractor;
-internal sealed class MetadataEmitter : EmitterBase
+internal sealed class MetadataEmitter : JsonEmitterBase
 {
     private const int IndentationLevel = 2;
     private readonly MetricDefinitionEmitter _metricDefinitionEmitter;
@@ -36,9 +37,10 @@ internal sealed class MetadataEmitter : EmitterBase
             metadataReport.complianceReport = HandleComplianceReportGeneration(context, receiver);
         }
 
-        OutLn("{");
-        Indent();
-        OutLn($"\"Name\":\"{context.Compilation.AssemblyName!}\",");
+        OutOpenBrace(isRoot: true);
+        OutNameValue("Name", context.Compilation.AssemblyName!);
+        Out(",");
+        OutLn();
         OutIndent();
         Out("\"ComplianceReport\": ");
         Out($"{(string.IsNullOrEmpty(metadataReport.complianceReport) ? "{}" : metadataReport.complianceReport)},");
@@ -47,8 +49,7 @@ internal sealed class MetadataEmitter : EmitterBase
         Out("\"MetricReport\": ");
         Out((string.IsNullOrEmpty(metadataReport.metricReport) ? "[]" : metadataReport.metricReport));
         OutLn();
-        Unindent();
-        OutLn("}");
+        OutCloseBrace(isRoot: true);
 
         return Capture();
     }

@@ -11,10 +11,9 @@ namespace Microsoft.Gen.MetricsReports;
 
 // Stryker disable all
 
-internal sealed class MetricDefinitionEmitter : EmitterBase
+internal sealed class MetricDefinitionEmitter : JsonEmitterBase
 {
     private const int DimensionsIndentLevel = 2;
-
     internal MetricDefinitionEmitter()
         : base(false)
     {
