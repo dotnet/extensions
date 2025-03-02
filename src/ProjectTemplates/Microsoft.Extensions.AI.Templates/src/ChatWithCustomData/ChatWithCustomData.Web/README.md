@@ -3,7 +3,7 @@
 This project is an AI chat application that demonstrates how to chat with custom data using an AI language model. Please note that this template is currently at an early preview stage. If you have feedback, please let us know!
 
 >[!NOTE]
-> Before you can run this project you'll need to configure API keys or endpoints to work with the providers you have chosen. See below for the details specific to your choices.
+> Before you can run this project you'll need to configure API keys or endpoints to work the providers you have chosen. See below for the details specific to your choices.
 
 #### ---#if (UseAzure)
 ### Prerequisites
@@ -72,7 +72,7 @@ This project is configured to use Ollama, an application that allows you to run 
 First, download and install Ollama from their [official website](https://www.ollama.com). Follow the installation instructions specific to your operating system.
 
 ### 2. Choose and Install Models
-This project uses the `llama3.2` and `all-minilm` language modes. To install these models, use the following commands in your terminal once Ollama has been installed:
+This project uses the `llama3.2` and `all-minilm` language models. To install these models, use the following commands in your terminal once Ollama has been installed:
 
 ```sh
 ollama pull llama3.2
