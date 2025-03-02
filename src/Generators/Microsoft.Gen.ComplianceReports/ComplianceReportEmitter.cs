@@ -12,8 +12,6 @@ namespace Microsoft.Gen.ComplianceReports;
 
 internal sealed class ComplianceReportEmitter : JsonEmitterBase
 {
-
-
     public ComplianceReportEmitter()
         : base(false)
     {

@@ -34,7 +34,6 @@ internal class EmitterBase
         }
     }
 
-
     protected void OutOpenBrace(bool isRoot = false) // isRoot is used to neglect any extra indentation before the brace, root has no indentation, defaulted to false for backward compatibility.
     {
         if (isRoot)
