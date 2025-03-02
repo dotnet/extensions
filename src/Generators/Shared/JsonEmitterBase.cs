@@ -11,6 +11,7 @@ namespace Microsoft.Gen.Shared;
 #if !SHARED_PROJECT
 [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 #endif
+
 internal class JsonEmitterBase : EmitterBase
 {
     private readonly Stack<int> _itemCounts = new();
