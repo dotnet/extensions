@@ -45,13 +45,17 @@ internal class JsonEmitterBase : EmitterBase
         _itemCounts.Push(_itemCount);
         _itemCount = 0;
 
-        if (!string.IsNullOrEmpty(name))
+        OutIndent();
+
+        if (string.IsNullOrEmpty(name))
         {
-            OutIndent();
+            OutLn("[");
+        }
+        else
+        {
+            Out($"\"{name}\": [");
         }
 
-        Out($"{(string.IsNullOrEmpty(name) ? "[" : "\"{name}\": [)")}");
-        OutLn();
         Indent();
         action();
         OutLn();

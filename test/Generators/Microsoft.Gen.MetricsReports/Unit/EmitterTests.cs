@@ -128,59 +128,53 @@ public class EmitterTests
     [Fact]
     public void EmitterShouldOutputInJSONFormat()
     {
-        string expected = @"[
-    {
-     ""MetricContainingAssembly1"":
-            [
-                {
-                     ""MetricName"": ""Requests"",
-                     ""MetricDescription"": ""Requests summary."",
-                     ""InstrumentName"": ""Counter"",
-                     ""Dimensions"":
-                            {
-                                ""StatusCode"": ""Status code for request."",
-                                ""ErrorCode"": ""Error code for request.""
-                            }
-                },
-                {
-                     ""MetricName"": ""Latency"",
-                     ""MetricDescription"": ""Latency summary."",
-                     ""InstrumentName"": ""Histogram"",
-                     ""Dimensions"":
-                            {
-                                ""Dim1"": """"
-                            }
-                },
-                {
-                     ""MetricName"": ""MemoryUsage"",
-                     ""InstrumentName"": ""Gauge""
+        string expected = @"
+[
 
-                }
-            ]
-    }
+    {
+        ""MetricContainingAssembly1"":        
+                [
+
+                    {
+                        ""MetricName"": ""Requests"",
+                        ""MetricDescription"": ""Requests summary.""""Dimensions"":                        ,
+                        {
+                            ""StatusCode"": ""Status code for request."",
+                            ""ErrorCode"": ""Error code for request.""
+                        }
+                    },
+                    {
+                        ""MetricName"": ""Latency"",
+                        ""MetricDescription"": ""Latency summary.""""Dimensions"":                        ,
+                        {
+                        }
+                    },
+                    {
+                        ""MetricName"": ""MemoryUsage"",
+                        ""InstrumentName"": ""Gauge""
+                    }
+                ]
+    }    ,
 ,
     {
-     ""MetricContainingAssembly2"":
-            [
-                {
-                     ""MetricName"": ""Counter"",
-                     ""MetricDescription"": ""Counter summary."",
-                     ""InstrumentName"": ""Counter""
+        ""MetricContainingAssembly2"":        
+                [
 
-                },
-                {
-                     ""MetricName"": ""Test\\MemoryUsage"",
-                     ""MetricDescription"": ""MemoryUsage summary."",
-                     ""InstrumentName"": ""Gauge"",
-                     ""Dimensions"":
-                            {
-                                ""Path"": ""Test\\Description\\Path""
-                            }
-                }
-            ]
+                    {
+                        ""MetricName"": ""Counter"",
+                        ""MetricDescription"": ""Counter summary."",
+                        ""InstrumentName"": ""Counter""
+                    },
+                    {
+                        ""MetricName"": ""Test\\\\MemoryUsage"",
+                        ""MetricDescription"": ""MemoryUsage summary.""""Dimensions"":                        ,
+                        {
+                            ""Path"": ""Test\\\\Description\\\\Path""
+                        }
+                    }
+                ]
     }
-]
-";
+]";
 
         var emitter = new MetricDefinitionEmitter();
         string json = emitter.GenerateReport(_metricClasses, CancellationToken.None);

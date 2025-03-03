@@ -13,8 +13,7 @@ namespace Microsoft.Gen.MetricsReports;
 
 internal sealed class MetricDefinitionEmitter : JsonEmitterBase
 {
-    private const int RootIndentLevel = 2;
-    private const int DimensionsIndentLevel = 3;
+    private const int IndentLevel = 2;
 
     internal MetricDefinitionEmitter()
         : base(false)
@@ -37,7 +36,7 @@ internal sealed class MetricDefinitionEmitter : JsonEmitterBase
 
         if (indentationLevel > 0)
         {
-            OutLn();
+            Indent(indentationLevel);
         }
 
         OutArray(string.Empty, () =>
@@ -46,9 +45,7 @@ internal sealed class MetricDefinitionEmitter : JsonEmitterBase
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var metricClass = metricClasses[i];
-
                 GenMetricClassDefinition(metricClass, cancellationToken);
-
                 if (i < metricClasses.Count - 1)
                 {
                     OutLn(",");
@@ -57,45 +54,45 @@ internal sealed class MetricDefinitionEmitter : JsonEmitterBase
 
         });
 
+        if (indentationLevel > 0)
+        {
+            Unindent(indentationLevel);
+        }
+
         return Capture();
     }
 
     private void GenMetricClassDefinition(ReportedMetricClass metricClass, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        //Indent();
-        OutLn("{");
 
-        OutLn($" \"{metricClass.RootNamespace}\":");
-
-        if (metricClass.Methods.Length > 0)
+        OutObject(() =>
         {
-            Indent(RootIndentLevel);
-            OutLn("[");
+            OutLn();
+            OutIndent();
+            Out($"\"{metricClass.RootNamespace}\":");
 
-            for (int j = 0; j < metricClass.Methods.Length; j++)
+            if (metricClass.Methods.Length > 0)
             {
-                Indent();
-                ReportedMetricMethod metricMethod = metricClass.Methods[j];
-                bool isLastReportedMetricMethod = (j == metricClass.Methods.Length - 1);
-
-                GenMetricMethodDefinition(metricMethod, isLastReportedMetricMethod, cancellationToken);
-
-                if (!isLastReportedMetricMethod)
+                OutIndent();
+                OutArray(string.Empty, () =>
                 {
-                    Out(",");
-                    OutLn();
-                }
+                    for (int j = 0; j < metricClass.Methods.Length; j++)
+                    {
+                        ReportedMetricMethod metricMethod = metricClass.Methods[j];
+                        bool isLastReportedMetricMethod = (j == metricClass.Methods.Length - 1);
+                        Indent(IndentLevel);
+                        GenMetricMethodDefinition(metricMethod, isLastReportedMetricMethod, cancellationToken);
+                        Unindent(IndentLevel);
+                    }
 
-                Unindent();
+                    Indent(IndentLevel);
+                });
+                Unindent(IndentLevel);
             }
 
-            OutLn("]");
-            Unindent(RootIndentLevel);
-        }
+        });
 
-        OutLn("}");
-      //  Unindent();
     }
 
     private void GenMetricMethodDefinition(ReportedMetricMethod metricMethod, bool isLastReportedMetricMethod, CancellationToken cancellationToken)
@@ -108,61 +105,36 @@ internal sealed class MetricDefinitionEmitter : JsonEmitterBase
                 try
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    OutLn("{");
 
-                    OutLn($"     \"MetricName\": \"{metricMethod.MetricName.Replace("\\", "\\\\").Replace("\"", "\\\"")}\",");
-
-                    if (!string.IsNullOrEmpty(metricMethod.Summary))
+                    OutObject(() =>
                     {
-                        OutLn($"     \"MetricDescription\": \"{metricMethod.Summary.Replace("\\", "\\\\").Replace("\"", "\\\"")}\",");
-                    }
+                        OutNameValue("MetricName", $"{metricMethod.MetricName.Replace("\\", "\\\\").Replace("\"", "\\\"")}");
 
-                    if (metricMethod.Dimensions.Count == 0)
-                    {
-                        OutLn($"     \"InstrumentName\": \"{metricMethod.Kind}\"");
-                    }
-
-                    if (metricMethod.Dimensions.Count > 0)
-                    {
-                        OutLn($"     \"InstrumentName\": \"{metricMethod.Kind}\",");
-                        OutLn("     \"Dimensions\":");
-                        Indent(DimensionsIndentLevel);
-                        OutLn("{");
-                        Indent();
-                        int k = 0;
-                        foreach (var dimension in metricMethod.Dimensions)
+                        if (!string.IsNullOrEmpty(metricMethod.Summary))
                         {
-                            bool commaCondition = k < metricMethod.Dimensions.Count - 1;
-                            if (metricMethod.DimensionsDescriptions.TryGetValue(dimension, out var description))
-                            {
-                                OutLn($"\"{dimension}\": \"{description.Replace("\\", "\\\\").Replace("\"", "\\\"")}\"{(commaCondition ? "," : string.Empty)}");
-                            }
-                            else
-                            {
-                                OutLn($"\"{dimension}\": \"\"{(commaCondition ? "," : string.Empty)}");
-                            }
-
-                            k++;
+                            OutNameValue("MetricDescription", $"{metricMethod.Summary.Replace("\\", "\\\\").Replace("\"", "\\\"")}");
+                        }
+                        if (metricMethod.Dimensions.Count == 0)
+                        {
+                            OutNameValue($"InstrumentName", $"{metricMethod.Kind}");
                         }
 
-                        Unindent();
-                        OutLn("}");
-                        Unindent(DimensionsIndentLevel);
-                    }
-                    else
-                    {
-                        OutLn();
-                    }
-
-                    if (isLastReportedMetricMethod)
-                    {
-                        OutLn("}");
-                    }
-                    else
-                    {
-                        OutIndent();
-                        Out("}");
-                    }
+                        if (metricMethod.Dimensions.Count > 0)
+                        {
+                            Out("\"Dimensions\":");
+                            OutIndent();
+                            OutObject(() =>
+                            {
+                                foreach (var dimension in metricMethod.Dimensions)
+                                {
+                                    if (metricMethod.DimensionsDescriptions.TryGetValue(dimension, out var description))
+                                    {
+                                        OutNameValue($"{dimension}", $"{description.Replace("\\", "\\\\").Replace("\"", "\\\"")}");
+                                    }
+                                }
+                            });
+                        }
+                    });
 
                 }
                 catch (Exception e)
