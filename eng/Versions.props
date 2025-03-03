@@ -77,9 +77,8 @@
     <!-- Dependencies from https://github.com/dotnet/efcore -->
     <MicrosoftEntityFrameworkCoreSqliteVersion>9.0.2</MicrosoftEntityFrameworkCoreSqliteVersion>
     <!-- Dependencies from https://github.com/dotnet/arcade -->
-    <MicrosoftDotNetBuildTasksTemplatingVersion>10.0.0-beta.25126.7</MicrosoftDotNetBuildTasksTemplatingVersion>
+    <MicrosoftDotNetBuildTasksTemplatingVersion>10.0.0-beta.25126.4</MicrosoftDotNetBuildTasksTemplatingVersion>
   </PropertyGroup>
-
   <PropertyGroup Label="Manual 9.0">
     <!-- Packages from dotnet/runtime -->
     <MicrosoftBclAsyncInterfaces90Version>9.0.2</MicrosoftBclAsyncInterfaces90Version>
@@ -134,7 +133,6 @@
     <!-- Dependencies from https://github.com/dotnet/arcade -->
     <MicrosoftDotNetBuildTasksTemplating90Version>9.0.0-beta.25111.5</MicrosoftDotNetBuildTasksTemplating90Version>
   </PropertyGroup>
-
   <PropertyGroup Label="Manual 8.0">
     <!-- Packages from dotnet/runtime -->
     <MicrosoftBclAsyncInterfaces80Version>8.0.0</MicrosoftBclAsyncInterfaces80Version>
