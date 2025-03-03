@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>A delegating embedding generator that wraps an inner generator with implementations provided by delegates.</summary>
 /// <typeparam name="TInput">The type from which embeddings will be generated.</typeparam>
 /// <typeparam name="TEmbedding">The type of embeddings to generate.</typeparam>
-public sealed class AnonymousDelegatingEmbeddingGenerator<TInput, TEmbedding> : DelegatingEmbeddingGenerator<TInput, TEmbedding>
+internal sealed class AnonymousDelegatingEmbeddingGenerator<TInput, TEmbedding> : DelegatingEmbeddingGenerator<TInput, TEmbedding>
     where TEmbedding : Embedding
 {
     /// <summary>The delegate to use as the implementation of <see cref="GenerateAsync"/>.</summary>
