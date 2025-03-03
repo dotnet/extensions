@@ -86,5 +86,5 @@ public class DistributedCachingEmbeddingGenerator<TInput, TEmbedding> : CachingE
     /// </para>
     /// </remarks>
     protected override string GetCacheKey(params ReadOnlySpan<object?> values) =>
-        DistributedCachingChatClient.GetDefaultCacheKey(values, _jsonSerializerOptions);
+        AIJsonUtilities.HashDataToString(values, _jsonSerializerOptions);
 }
