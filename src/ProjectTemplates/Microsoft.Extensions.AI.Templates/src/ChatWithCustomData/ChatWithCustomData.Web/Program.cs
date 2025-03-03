@@ -83,7 +83,9 @@ var embeddingGenerator = azureOpenAi.AsEmbeddingGenerator("text-embedding-3-smal
 // You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
 //   cd this-project-directory
 //   dotnet user-secrets set AzureAISearch:Endpoint https://YOUR-DEPLOYMENT-NAME.search.windows.net
+#if (!UseManagedIdentity)
 //   dotnet user-secrets set AzureAISearch:Key YOUR-API-KEY
+#endif
 var vectorStore = new AzureAISearchVectorStore(
     new SearchIndexClient(
         new Uri(builder.Configuration["AzureAISearch:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Endpoint. See the README for details.")),

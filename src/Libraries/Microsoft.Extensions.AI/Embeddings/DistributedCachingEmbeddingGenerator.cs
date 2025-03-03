@@ -77,10 +77,14 @@ public class DistributedCachingEmbeddingGenerator<TInput, TEmbedding> : CachingE
     /// <summary>Computes a cache key for the specified values.</summary>
     /// <param name="values">The values to inform the key.</param>
     /// <returns>The computed key.</returns>
-    /// <remarks>The <paramref name="values"/> are serialized to JSON using <see cref="JsonSerializerOptions"/> in order to compute the key.</remarks>
-    protected override string GetCacheKey(params ReadOnlySpan<object?> values)
-    {
-        _jsonSerializerOptions.MakeReadOnly();
-        return CachingHelpers.GetCacheKey(values, _jsonSerializerOptions);
-    }
+    /// <remarks>
+    /// <para>
+    /// The <paramref name="values"/> are serialized to JSON using <see cref="JsonSerializerOptions"/> in order to compute the key.
+    /// </para>
+    /// <para>
+    /// The generated cache key is not guaranteed to be stable across releases of the library.
+    /// </para>
+    /// </remarks>
+    protected override string GetCacheKey(params ReadOnlySpan<object?> values) =>
+        AIJsonUtilities.HashDataToString(values, _jsonSerializerOptions);
 }

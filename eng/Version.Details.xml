@@ -1,5 +1,9 @@
 <Dependencies>
   <ProductDependencies>
+    <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="10.0.0-preview.3.25128.5" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>77115c33ec4fb8688e4803cd8f76cd0fa4bff7d7</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Bcl.TimeProvider" Version="10.0.0-preview.3.25128.5" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>77115c33ec4fb8688e4803cd8f76cd0fa4bff7d7</Sha>
@@ -114,15 +118,19 @@
     </Dependency>
     <Dependency Name="System.Memory.Data" Version="10.0.0-preview.3.25128.5" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>8d3b24598a268ae00664a7dbeb792791ecde5231</Sha>
+      <Sha>77115c33ec4fb8688e4803cd8f76cd0fa4bff7d7</Sha>
     </Dependency>
     <Dependency Name="System.Net.Http.Json" Version="10.0.0-preview.3.25128.5" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>8d3b24598a268ae00664a7dbeb792791ecde5231</Sha>
+      <Sha>77115c33ec4fb8688e4803cd8f76cd0fa4bff7d7</Sha>
     </Dependency>
     <Dependency Name="System.Numerics.Tensors" Version="10.0.0-preview.3.25128.5" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>8d3b24598a268ae00664a7dbeb792791ecde5231</Sha>
+      <Sha>77115c33ec4fb8688e4803cd8f76cd0fa4bff7d7</Sha>
+    </Dependency>
+    <Dependency Name="System.Runtime.Caching" Version="10.0.0-preview.3.25128.5" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>77115c33ec4fb8688e4803cd8f76cd0fa4bff7d7</Sha>
     </Dependency>
     <Dependency Name="System.Security.Cryptography.Pkcs" Version="10.0.0-preview.3.25128.5" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -141,10 +149,6 @@
       <Sha>77115c33ec4fb8688e4803cd8f76cd0fa4bff7d7</Sha>
     </Dependency>
     <Dependency Name="System.Threading.Channels" Version="10.0.0-preview.3.25128.5" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>8d3b24598a268ae00664a7dbeb792791ecde5231</Sha>
-    </Dependency>
-    <Dependency Name="System.Runtime.Caching" Version="10.0.0-preview.3.25128.5" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>77115c33ec4fb8688e4803cd8f76cd0fa4bff7d7</Sha>
     </Dependency>
