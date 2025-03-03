@@ -130,52 +130,49 @@ public class EmitterTests
     {
         string expected = @"
 [
-
     {
-        ""MetricContainingAssembly1"":        
-                [
-
+        ""MetricContainingAssembly1"":
+        [
+            {
+                ""MetricName"": ""Requests"",
+                ""MetricDescription"": ""Requests summary."",
+                ""Dimensions"":
                     {
-                        ""MetricName"": ""Requests"",
-                        ""MetricDescription"": ""Requests summary."",
-                        ""Dimensions"":
-                            {
-                                ""StatusCode"": ""Status code for request."",
-                                ""ErrorCode"": ""Error code for request.""
-                            }
-                    },
-                    {
-                        ""MetricName"": ""Latency"",
-                        ""MetricDescription"": ""Latency summary."",
-                        ""Dimensions"":
-                            {
-                            }
-                    },
-                    {
-                        ""MetricName"": ""MemoryUsage"",
-                        ""InstrumentName"": ""Gauge""
+                        ""StatusCode"": ""Status code for request."",
+                        ""ErrorCode"": ""Error code for request.""
                     }
-                ]
+            },
+            {
+                ""MetricName"": ""Latency"",
+                ""MetricDescription"": ""Latency summary."",
+                ""Dimensions"":
+                    {
+                    }
+            },
+            {
+                ""MetricName"": ""MemoryUsage"",
+                ""InstrumentName"": ""Gauge""
+            }
+        ]
     }    ,
 ,
     {
-        ""MetricContainingAssembly2"":        
-                [
-
+        ""MetricContainingAssembly2"":
+        [
+            {
+                ""MetricName"": ""Counter"",
+                ""MetricDescription"": ""Counter summary."",
+                ""InstrumentName"": ""Counter""
+            },
+            {
+                ""MetricName"": ""Test\\\\MemoryUsage"",
+                ""MetricDescription"": ""MemoryUsage summary."",
+                ""Dimensions"":
                     {
-                        ""MetricName"": ""Counter"",
-                        ""MetricDescription"": ""Counter summary."",
-                        ""InstrumentName"": ""Counter""
-                    },
-                    {
-                        ""MetricName"": ""Test\\\\MemoryUsage"",
-                        ""MetricDescription"": ""MemoryUsage summary."",
-                        ""Dimensions"":
-                            {
-                                ""Path"": ""Test\\\\Description\\\\Path""
-                            }
+                        ""Path"": ""Test\\\\Description\\\\Path""
                     }
-                ]
+            }
+        ]
     }
 ]";
 

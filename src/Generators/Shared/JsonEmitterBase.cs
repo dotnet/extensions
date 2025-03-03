@@ -21,9 +21,9 @@ internal class JsonEmitterBase : EmitterBase
     {
     }
 
-    protected void OutObject(Action action, bool proprietyObject = false)
+    protected void OutObject(Action action, bool proprietyDependent = false)
     {
-        NewItem(!proprietyObject);
+        NewItem(!proprietyDependent);
         _itemCounts.Push(_itemCount);
         _itemCount = 0;
 
@@ -39,9 +39,9 @@ internal class JsonEmitterBase : EmitterBase
         _itemCount = _itemCounts.Pop();
     }
 
-    protected void OutArray(string name, Action action)
+    protected void OutArray(string name, Action action, bool proprietyDependent = false)
     {
-        NewItem();
+        NewItem(!proprietyDependent);
         _itemCounts.Push(_itemCount);
         _itemCount = 0;
 
@@ -49,7 +49,7 @@ internal class JsonEmitterBase : EmitterBase
 
         if (string.IsNullOrEmpty(name))
         {
-            OutLn("[");
+            Out("[");
         }
         else
         {

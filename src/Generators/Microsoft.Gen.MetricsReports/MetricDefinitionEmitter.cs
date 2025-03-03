@@ -13,8 +13,6 @@ namespace Microsoft.Gen.MetricsReports;
 
 internal sealed class MetricDefinitionEmitter : JsonEmitterBase
 {
-    private const int IndentLevel = 2;
-
     internal MetricDefinitionEmitter()
         : base(false)
     {
@@ -45,53 +43,38 @@ internal sealed class MetricDefinitionEmitter : JsonEmitterBase
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var metricClass = metricClasses[i];
-                GenMetricClassDefinition(metricClass, cancellationToken);
+                GenMetricClassDefinition(metricClass, indentationLevel, cancellationToken);
                 if (i < metricClasses.Count - 1)
                 {
                     OutLn(",");
                 }
             }
-
         });
-
-        if (indentationLevel > 0)
-        {
-            Unindent(indentationLevel);
-        }
 
         return Capture();
     }
 
-    private void GenMetricClassDefinition(ReportedMetricClass metricClass, CancellationToken cancellationToken)
+    private void GenMetricClassDefinition(ReportedMetricClass metricClass, int indentationLevel = 0, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-
         OutObject(() =>
         {
             OutLn();
             OutIndent();
             Out($"\"{metricClass.RootNamespace}\":");
-
             if (metricClass.Methods.Length > 0)
             {
-                OutIndent();
                 OutArray(string.Empty, () =>
                 {
                     for (int j = 0; j < metricClass.Methods.Length; j++)
                     {
                         ReportedMetricMethod metricMethod = metricClass.Methods[j];
-                        Indent(IndentLevel);
                         GenMetricMethodDefinition(metricMethod, cancellationToken);
-                        Unindent(IndentLevel);
                     }
 
-                    Indent(IndentLevel);
-                });
-                Unindent(IndentLevel);
+                }, proprietyDependent: true);
             }
-
         });
-
     }
 
     private void GenMetricMethodDefinition(ReportedMetricMethod metricMethod, CancellationToken cancellationToken)
