@@ -1,12 +1,11 @@
 ﻿.surveyContainer {
-    align-items: center;
     display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 0.9em;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 0.75rem;
+    margin: 0.5rem auto -0.7rem auto;
     max-width: 1024px;
-    padding: 0.5rem;
+    color: #444;
 }
 
     .surveyContainer a {
