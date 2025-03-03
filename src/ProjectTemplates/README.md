@@ -34,6 +34,6 @@ dotnet new install "<PATH_TO_TEMPLATE_NUPKG>" --debug:reinit # Install the templ
 
 Finally, create a project from the template and run it:
 ```sh
-dotnet new chat # (specify options as necessary)
+dotnet new aichatweb # (specify options as necessary)
 dotnet run
 ```
