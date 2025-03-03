@@ -2,7 +2,7 @@
   "$schema": "http://json.schemastore.org/template",
   "author": "Microsoft",
   "classifications": [ "Common", "AI", "Web" ],
-  "identity": "Microsoft.Extensions.AI.Templates.Chat.CSharp",
+  "identity": "Microsoft.Extensions.AI.Templates.WebChat.CSharp",
   "name": "AI Chat Web App",
   "description": "A project template for creating an AI chat application, which uses retrieval-augmented generation (RAG) to chat with your own data.",
   "shortName": "aichatweb",
