@@ -13,6 +13,9 @@ namespace Microsoft.Gen.Shared;
 #endif
 internal class EmitterBase
 {
+    protected readonly Stack<int> ItemCounts = new();
+    protected int ItemCount;
+
     private const int DefaultStringBuilderCapacity = 1024;
     private const int IndentChars = 4;
 

@@ -43,7 +43,7 @@ internal sealed class MetricDefinitionEmitter : JsonEmitterBase
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var metricClass = metricClasses[i];
-                GenMetricClassDefinition(metricClass, indentationLevel, cancellationToken);
+                GenMetricClassDefinition(metricClass, cancellationToken);
                 if (i < metricClasses.Count - 1)
                 {
                     OutLn(",");
@@ -54,7 +54,7 @@ internal sealed class MetricDefinitionEmitter : JsonEmitterBase
         return Capture();
     }
 
-    private void GenMetricClassDefinition(ReportedMetricClass metricClass, int indentationLevel = 0, CancellationToken cancellationToken = default)
+    private void GenMetricClassDefinition(ReportedMetricClass metricClass, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         OutObject(() =>
@@ -72,7 +72,7 @@ internal sealed class MetricDefinitionEmitter : JsonEmitterBase
                         GenMetricMethodDefinition(metricMethod, cancellationToken);
                     }
 
-                }, proprietyDependent: true);
+                }, isProprietyDependent: true);
             }
         });
     }
@@ -118,7 +118,7 @@ internal sealed class MetricDefinitionEmitter : JsonEmitterBase
                                         OutNameValue($"{dimension}", $"{description.Replace("\\", "\\\\").Replace("\"", "\\\"")}");
                                     }
                                 }
-                            }, true);
+                            }, isProprietyDependent: true);
                             Unindent();
                         }
                     });

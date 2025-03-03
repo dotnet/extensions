@@ -14,18 +14,16 @@ namespace Microsoft.Gen.Shared;
 
 internal class JsonEmitterBase : EmitterBase
 {
-    private readonly Stack<int> _itemCounts = new();
-    private int _itemCount;
     public JsonEmitterBase(bool emitPreamble = true)
         : base(emitPreamble)
     {
     }
 
-    protected void OutObject(Action action, bool proprietyDependent = false)
+    protected void OutObject(Action action, bool isProprietyDependent = false)
     {
-        NewItem(!proprietyDependent);
-        _itemCounts.Push(_itemCount);
-        _itemCount = 0;
+        NewItem(!isProprietyDependent);
+        ItemCounts.Push(ItemCount);
+        ItemCount = 0;
 
         OutIndent();
         Out("{");
@@ -36,14 +34,14 @@ internal class JsonEmitterBase : EmitterBase
         OutIndent();
         Out("}");
 
-        _itemCount = _itemCounts.Pop();
+        ItemCount = ItemCounts.Pop();
     }
 
-    protected void OutArray(string name, Action action, bool proprietyDependent = false)
+    protected void OutArray(string name, Action action, bool isProprietyDependent = false)
     {
-        NewItem(!proprietyDependent);
-        _itemCounts.Push(_itemCount);
-        _itemCount = 0;
+        NewItem(!isProprietyDependent);
+        ItemCounts.Push(ItemCount);
+        ItemCount = 0;
 
         OutIndent();
 
@@ -63,7 +61,7 @@ internal class JsonEmitterBase : EmitterBase
         OutIndent();
         Out("]");
 
-        _itemCount = _itemCounts.Pop();
+        ItemCount = ItemCounts.Pop();
     }
 
     protected void OutNameValue(string name, string value, bool isSingle = false)
@@ -94,13 +92,13 @@ internal class JsonEmitterBase : EmitterBase
 
     private void NewItem(bool preAppendComma = true)
     {
-        if (preAppendComma && _itemCount > 0)
+        if (preAppendComma && ItemCount > 0)
         {
             Out(",");
         }
 
         OutLn();
-        _itemCount++;
+        ItemCount++;
     }
 
 }
