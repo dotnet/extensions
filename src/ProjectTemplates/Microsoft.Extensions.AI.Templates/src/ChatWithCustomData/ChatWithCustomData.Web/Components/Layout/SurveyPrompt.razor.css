@@ -1,7 +1,7 @@
 ﻿.surveyContainer {
     align-items: center;
-    background-color: rgb(254 249 195);
     display: flex;
+    font-size: 0.9em;
     margin-left: auto;
     margin-right: auto;
     margin-top: 0.75rem;
