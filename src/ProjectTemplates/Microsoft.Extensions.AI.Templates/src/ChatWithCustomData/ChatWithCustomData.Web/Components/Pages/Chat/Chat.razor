@@ -3,13 +3,18 @@
 @inject IChatClient ChatClient
 @inject NavigationManager Nav
 @inject SemanticSearch Search
+@implements IDisposable
 
 <PageTitle>Chat</PageTitle>
 
 <ChatHeader OnNewChat="@ResetConversationAsync" />
 
 <ChatMessageList Messages="@messages" InProgressMessage="@currentResponseMessage">
-    <NoMessagesContent>Ask me anything about ChatWithCustomData.Web.</NoMessagesContent>
+    <NoMessagesContent>
+        <div>To get started, try asking about these example documents. You can replace these with your own data and remove or replace this message.</div>
+        <ChatCitation File="Example_Emergency_Survival_Kit.pdf"/>
+        <ChatCitation File="Example_GPS_Watch.pdf"/>
+    </NoMessagesContent>
 </ChatMessageList>
 
 <div class="chat-container">
@@ -112,4 +117,7 @@
         return results.Select(result =>
             $"<result filename=\"{result.FileName}\" page_number=\"{result.PageNumber}\">{result.Text}</result>");
     }
+
+    public void Dispose()
+        => currentResponseCancellation?.Cancel();
 }

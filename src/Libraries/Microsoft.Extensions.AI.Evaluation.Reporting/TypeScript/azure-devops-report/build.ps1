@@ -1,6 +1,7 @@
 param (
     [string]$OutputPath,
-    [string]$Version = $null
+    [string]$Version = $null,
+    [bool]$IncludeTestPackage = $false
 )
 
 # if version is not set, then run a script to get it
@@ -30,7 +31,11 @@ copy-item -Path ./index.js -Destination ./dist/ -Force
 copy-item -Path ./package.json -Destination ./dist/ -Force
 copy-item -Path ./node_modules -Destination ./dist/node_modules -Force -Recurse
 
-@{version = $PackageVersion} | ConvertTo-Json -Compress | Out-File -FilePath $PSScriptRoot/override.json
+# remove the test files from resolve package because they are currently breaking vsix signing (zero length)
+remove-item -Path ./dist/node_modules/resolve/test -Recurse -Force
+
+@{  version = $PackageVersion
+    public = $true } | ConvertTo-Json -Compress | Out-File -FilePath $PSScriptRoot/override.json
 
 # Write-Information "Building Extension Package" 
 Set-Location $PSScriptRoot
@@ -40,9 +45,11 @@ npx vite build
 
 npx tfx-cli extension create --overrides-file $PSScriptRoot/override.json --output-path $OutputPath
 
-@{  version = $PackageVersion
-    id = "microsoft-extensions-ai-evaluation-report-test" 
-    name = "[TEST] Azure DevOps AI Evaluation Report" } | ConvertTo-Json -Compress | Out-File -FilePath $PSScriptRoot/override.json
+if ($true -eq $IncludeTestPackage) {
+    @{  version = $PackageVersion
+        id = "microsoft-extensions-ai-evaluation-report-test" 
+        name = "[TEST] Azure DevOps AI Evaluation Report" } | ConvertTo-Json -Compress | Out-File -FilePath $PSScriptRoot/override.json
 
-# Build Preview version of the extension for testing
-npx tfx-cli extension create --overrides-file $PSScriptRoot/override.json --output-path $OutputPath
+    # Build Preview version of the extension for testing
+    npx tfx-cli extension create --overrides-file $PSScriptRoot/override.json --output-path $OutputPath
+}
