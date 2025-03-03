@@ -188,12 +188,8 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
       <Sha>704f7cb1d2cea33afb00c2097731216f121c2c73</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.2">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.2" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha />
-    </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Templating" Version="9.0.0-beta.25111.5">
-      <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha />
     </Dependency>
   </ProductDependencies>
@@ -205,6 +201,10 @@
     <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="9.0.0-beta.25111.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>5da211e1c42254cb35e7ef3d5a8428fb24853169</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Templating" Version="9.0.0-beta.25111.5">
+      <Uri>https://github.com/dotnet/arcade</Uri>
+      <Sha />
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
