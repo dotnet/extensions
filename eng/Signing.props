@@ -1,0 +1,6 @@
+<!-- This file gets automatically imported by Arcade infrastructure when calling the build scripts -->
+<Project>
+    <ItemGroup>
+        <ItemsToSign Include="$(ArtifactsDir)VSIX\*.vsix" />
+    </ItemGroup>
+</Project>

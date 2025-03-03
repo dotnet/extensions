@@ -20,6 +20,90 @@ Or directly in the C# project file:
 
 ## Usage Example
 
+### Data Classification
+
+The `DataClassification` structure encapsulates a classification label within a specific taxonomy for your data. It allows you to mark sensitive information and enforce policies based on classifications.
+
+- **Taxonomy Name:** Identifies the classification system.
+- **Value:** Represents the specific label within the taxonomy.
+
+#### Creating Custom Classifications
+
+You can define custom classifications by creating static members that represent different types of sensitive data. This provides a consistent way to label and handle data across your application.
+
+Example:
+```csharp
+using Microsoft.Extensions.Compliance.Classification;
+
+public static class MyTaxonomyClassifications
+{
+    public static string Name => "MyTaxonomy";
+
+    public static DataClassification PrivateInformation => new DataClassification(Name, nameof(PrivateInformation));
+    public static DataClassification CreditCardNumber => new DataClassification(Name, nameof(CreditCardNumber));
+    public static DataClassification SocialSecurityNumber => new DataClassification(Name, nameof(SocialSecurityNumber));
+}
+```
+
+#### Binding Data Classification Settings
+
+You can bind data classification settings directly from your configuration using the options pattern. For example:
+
+appsettings.json
+```json
+{
+    "Key": {
+        "PhoneNumber": "MyTaxonomy:PrivateInformation",
+        "ExampleDictionary": {
+            "CreditCard": "MyTaxonomy:CreditCardNumber",
+            "SSN": "MyTaxonomy:SocialSecurityNumber",
+        }
+    }
+}
+```
+
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Compliance.Classification;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+
+public class TestOptions
+{
+    public DataClassification? PhoneNumber { get; set; }
+    public IDictionary<string, DataClassification> ExampleDictionary { get; set; } = new Dictionary<string, DataClassification>();
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        // Build configuration from an external json file.
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .Build();
+
+        // Setup DI container and bind the configuration section "Key" to TestOptions.
+        IServiceCollection services = new ServiceCollection();
+        services.Configure<TestOptions>(configuration.GetSection("Key"));
+
+        // Build the service provider.
+        IServiceProvider serviceProvider = services.BuildServiceProvider();
+
+        // Get the bound options.
+        TestOptions options = serviceProvider.GetRequiredService<IOptions<TestOptions>>().Value;
+
+        // Simple output demonstrating binding results.
+        Console.WriteLine("Configuration bound to TestOptions:");
+        Console.WriteLine($"PhoneNumber: {options.PhoneNumber}");
+        foreach (var item in options.ExampleDictionary)
+        {
+            Console.WriteLine($"{item.Key}: {item.Value}");
+        }
+    }
+}
+```
+
 ### Implementing Redactors
 
 Redactors can be implemented by inheriting from `Microsoft.Extensions.Compliance.Redaction.Redactor`. For example:

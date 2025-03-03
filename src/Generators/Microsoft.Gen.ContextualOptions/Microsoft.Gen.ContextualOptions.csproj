@@ -2,7 +2,7 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Gen.ContextualOptions</RootNamespace>
     <Description>Code generator to support Microsoft.Extensions.Options.Contextual.</Description>
-    <Workstream>Fundamentals</Workstream>
+    <Workstream>Configuration</Workstream>
   </PropertyGroup>
 
   <PropertyGroup>

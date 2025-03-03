@@ -7,6 +7,7 @@ using System.IO;
 using System.Threading;
 using FluentAssertions;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Network;
+using Microsoft.Shared.Instruments;
 using Moq;
 using Xunit;
 

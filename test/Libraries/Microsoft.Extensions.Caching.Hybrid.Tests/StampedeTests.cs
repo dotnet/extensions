@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
 
-public class StampedeTests
+public class StampedeTests : IClassFixture<TestEventListener>
 {
     private static ServiceProvider GetDefaultCache(out DefaultHybridCache cache)
     {
@@ -57,6 +57,24 @@ public class StampedeTests
         Task IDistributedCache.SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token) => throw new NotSupportedException("Intentionally not provided");
 
         bool IMemoryCache.TryGetValue(object key, out object? value) => throw new NotSupportedException("Intentionally not provided");
+    }
+
+    [Fact]
+    public void ToString_Key()
+    {
+        var services = new ServiceCollection();
+        services.AddHybridCache();
+        using var provider = services.BuildServiceProvider();
+        var cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
+
+        var key = new DefaultHybridCache.StampedeKey("test_key", HybridCacheEntryFlags.DisableLocalCache);
+
+        const string Expected = "test_key (DisableLocalCache)";
+
+        Assert.Equal(Expected, key.ToString());
+
+        var state = new DefaultHybridCache.StampedeState<string, string>(cache, in key, TagSet.Empty, true);
+        Assert.Equal(Expected, state.ToString());
     }
 
     [Theory]
@@ -436,6 +454,8 @@ public class StampedeTests
         for (int i = 0; i < 1024; i++)
         {
             var key = new DefaultHybridCache.StampedeKey(Guid.NewGuid().ToString(), default);
+            Assert.True(key.Equals(key), "typed equality self");
+            Assert.True(key.Equals((object)key), "object equality self");
             var obj = cache.GetPartitionedSyncLock(in key);
             if (!counts.TryGetValue(obj, out var count))
             {

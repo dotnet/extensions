@@ -32,6 +32,15 @@
     <None Condition=" '$(IsPackable)' == 'true' and '$(IsShipping)' == 'true' " Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
+
+  <PropertyGroup Condition=" '$(EnablePackageValidation)' != 'false' and '$(IsPackable)' == 'true' and '$(IsShipping)' == 'true' and '$(Api)' != 'false' ">
+    <!-- https://learn.microsoft.com/dotnet/fundamentals/package-validation/overview -->
+    <EnablePackageValidation>true</EnablePackageValidation>
+
+    <PackageValidationBaselineVersion Condition=" '$(Stage)' == 'normal' ">$(ApiCompatBaselineVersion)</PackageValidationBaselineVersion> 
+    <PackageValidationBaselineVersion Condition=" '$(Stage)' == 'preview' ">$(ApiCompatBaselineVersion)$(ApiCompatBaselineSuffix)</PackageValidationBaselineVersion> 
+  </PropertyGroup>
+
   <!-- Verify that the minimum supported TFM is actually used. -->
   <Target Name="_VerifyMinimumSupportedTfmForPackagingIsUsed"
           Condition="'$(IsPackable)' == 'true' and '$(DisableNETStandardCompatErrors)' != 'true'">
