@@ -112,6 +112,18 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>77115c33ec4fb8688e4803cd8f76cd0fa4bff7d7</Sha>
     </Dependency>
+    <Dependency Name="System.Memory.Data" Version="10.0.0-preview.3.25128.5" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>8d3b24598a268ae00664a7dbeb792791ecde5231</Sha>
+    </Dependency>
+    <Dependency Name="System.Net.Http.Json" Version="10.0.0-preview.3.25128.5" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>8d3b24598a268ae00664a7dbeb792791ecde5231</Sha>
+    </Dependency>
+    <Dependency Name="System.Numerics.Tensors" Version="10.0.0-preview.3.25128.5" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>8d3b24598a268ae00664a7dbeb792791ecde5231</Sha>
+    </Dependency>
     <Dependency Name="System.Security.Cryptography.Pkcs" Version="10.0.0-preview.3.25128.5" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>77115c33ec4fb8688e4803cd8f76cd0fa4bff7d7</Sha>
@@ -127,6 +139,10 @@
     <Dependency Name="System.Text.Json" Version="10.0.0-preview.3.25128.5" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>77115c33ec4fb8688e4803cd8f76cd0fa4bff7d7</Sha>
+    </Dependency>
+    <Dependency Name="System.Threading.Channels" Version="10.0.0-preview.3.25128.5" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>8d3b24598a268ae00664a7dbeb792791ecde5231</Sha>
     </Dependency>
     <Dependency Name="System.Runtime.Caching" Version="10.0.0-preview.3.25128.5" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -167,6 +183,14 @@
     <Dependency Name="Microsoft.Extensions.ObjectPool" Version="10.0.0-preview.3.25151.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>7f26caa86f90cb81efa98839c57417ef3d4d8154</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.0-preview.3.25126.101">
+      <Uri>https://github.com/dotnet/efcore</Uri>
+      <Sha />
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Templating" Version="10.0.0-beta.25126.7">
+      <Uri>https://github.com/dotnet/arcade</Uri>
+      <Sha />
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>

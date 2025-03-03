@@ -7,5 +7,5 @@ internal static class Constants
 {
     public const string NoContent = "[no-content-type]";
     public const string UnreadableContent = "[unreadable-content-type]";
-    public const string ReadCancelled = "[read-cancelled]";
+    public const string ReadCancelledByTimeout = "[read-timeout]";
 }

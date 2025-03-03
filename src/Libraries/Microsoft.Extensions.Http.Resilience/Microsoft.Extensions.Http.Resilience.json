@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.Http.Resilience, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.Http.Resilience, Version=9.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "class Microsoft.Extensions.Http.Resilience.HedgingEndpointOptions",
@@ -42,6 +42,10 @@
         {
           "Member": "static bool Microsoft.Extensions.Http.Resilience.HttpClientHedgingResiliencePredicates.IsTransient(Polly.Outcome<System.Net.Http.HttpResponseMessage> outcome);",
           "Stage": "Stable"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.Http.Resilience.HttpClientHedgingResiliencePredicates.IsTransient(Polly.Outcome<System.Net.Http.HttpResponseMessage> outcome, System.Threading.CancellationToken cancellationToken);",
+          "Stage": "Experimental"
         }
       ]
     },
@@ -52,6 +56,10 @@
         {
           "Member": "static bool Microsoft.Extensions.Http.Resilience.HttpClientResiliencePredicates.IsTransient(Polly.Outcome<System.Net.Http.HttpResponseMessage> outcome);",
           "Stage": "Stable"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.Http.Resilience.HttpClientResiliencePredicates.IsTransient(Polly.Outcome<System.Net.Http.HttpResponseMessage> outcome, System.Threading.CancellationToken cancellationToken);",
+          "Stage": "Experimental"
         }
       ]
     },
@@ -72,6 +80,20 @@
         {
           "Member": "Microsoft.Extensions.Http.Resilience.HttpRateLimiterStrategyOptions.HttpRateLimiterStrategyOptions();",
           "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Polly.HttpResilienceContextExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static System.Net.Http.HttpRequestMessage? Polly.HttpResilienceContextExtensions.GetRequestMessage(this Polly.ResilienceContext context);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static void Polly.HttpResilienceContextExtensions.SetRequestMessage(this Polly.ResilienceContext context, System.Net.Http.HttpRequestMessage? requestMessage);",
+          "Stage": "Experimental"
         }
       ]
     },
@@ -283,6 +305,28 @@
       "Properties": [
         {
           "Member": "System.Collections.Generic.IList<Microsoft.Extensions.Http.Resilience.UriEndpointGroup> Microsoft.Extensions.Http.Resilience.OrderedGroupsRoutingOptions.Groups { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Http.Resilience.ResilienceHandler : System.Net.Http.DelegatingHandler",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Http.Resilience.ResilienceHandler.ResilienceHandler(System.Func<System.Net.Http.HttpRequestMessage, Polly.ResiliencePipeline<System.Net.Http.HttpResponseMessage>> pipelineProvider);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Http.Resilience.ResilienceHandler.ResilienceHandler(Polly.ResiliencePipeline<System.Net.Http.HttpResponseMessage> pipeline);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Net.Http.HttpResponseMessage Microsoft.Extensions.Http.Resilience.ResilienceHandler.Send(System.Net.Http.HttpRequestMessage request, System.Threading.CancellationToken cancellationToken);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage> Microsoft.Extensions.Http.Resilience.ResilienceHandler.SendAsync(System.Net.Http.HttpRequestMessage request, System.Threading.CancellationToken cancellationToken);",
           "Stage": "Stable"
         }
       ]

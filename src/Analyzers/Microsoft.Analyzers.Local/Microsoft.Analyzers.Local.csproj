@@ -2,7 +2,7 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.LocalAnalyzers</RootNamespace>
     <Description>Analyzers used only in this repo</Description>
-    <Workstream>Fundamentals</Workstream>
+    <Workstream>Analyzers</Workstream>
     <Category>Static Analysis</Category>
   </PropertyGroup>
 

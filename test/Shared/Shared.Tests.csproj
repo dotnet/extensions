@@ -2,12 +2,18 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Shared.Test</RootNamespace>
     <Description>Unit tests for Microsoft.Shared</Description>
+    <DefineConstants>$(DefineConstants);TESTS_JSON_SCHEMA_EXPORTER_POLYFILL</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup>
-    <NoWarn>$(NoWarn);CA1716</NoWarn>
+    <NoWarn>$(NoWarn);CA1716;S104</NoWarn>
     <TargetFrameworks>$(TestNetCoreTargetFrameworks)</TargetFrameworks>
     <TargetFrameworks Condition=" '$(IsWindowsBuild)' == 'true' ">$(TestNetCoreTargetFrameworks)$(ConditionalNet462)</TargetFrameworks>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <InjectCompilerFeatureRequiredOnLegacy>true</InjectCompilerFeatureRequiredOnLegacy>
+    <InjectRequiredMemberOnLegacy>true</InjectRequiredMemberOnLegacy>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,5 +22,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="JsonSchema.Net" />
   </ItemGroup>
 </Project>

@@ -171,9 +171,9 @@ public class AcceptanceTests
         var collector = provider.GetFakeLogCollector();
         var logRecord = collector.GetSnapshot().Single(l => l.Category == LoggingCategory);
         var state = logRecord.StructuredState;
-        state.Should().Contain(kvp => kvp.Value == responseString);
-        state.Should().Contain(kvp => kvp.Value == "Request Value");
-        state.Should().Contain(kvp => kvp.Value == "Request Value 2,Request Value 3");
+        state.Should().ContainValue(responseString);
+        state.Should().ContainValue("Request Value");
+        state.Should().ContainValue("Request Value 2,Request Value 3");
 
         using var httpRequestMessage2 = new HttpRequestMessage
         {
@@ -187,9 +187,9 @@ public class AcceptanceTests
         responseString = await SendRequest(namedClient2, httpRequestMessage2);
         logRecord = collector.GetSnapshot().Single(l => l.Category == LoggingCategory);
         state = logRecord.StructuredState;
-        state.Should().Contain(kvp => kvp.Value == responseString);
-        state.Should().Contain(kvp => kvp.Value == "Request Value");
-        state.Should().Contain(kvp => kvp.Value == "Request Value 2,Request Value 3");
+        state.Should().ContainValue(responseString);
+        state.Should().ContainValue("Request Value");
+        state.Should().ContainValue("Request Value 2,Request Value 3");
     }
 
     private static async Task<string> SendRequest(HttpClient httpClient, HttpRequestMessage httpRequestMessage)
@@ -258,9 +258,9 @@ public class AcceptanceTests
         var logRecord = collector.GetSnapshot().Single(l => l.Category == LoggingCategory);
         var state = logRecord.StructuredState;
         state.Should().NotBeNull();
-        state.Should().Contain(kvp => kvp.Value == responseString);
-        state.Should().Contain(kvp => kvp.Value == "Request Value");
-        state.Should().Contain(kvp => kvp.Value == "Request Value 2,Request Value 3");
+        state.Should().ContainValue(responseString);
+        state.Should().ContainValue("Request Value");
+        state.Should().ContainValue("Request Value 2,Request Value 3");
 
         using var httpRequestMessage2 = new HttpRequestMessage
         {
@@ -279,9 +279,9 @@ public class AcceptanceTests
 
         logRecord = collector.GetSnapshot().Single(l => l.Category == LoggingCategory);
         state = logRecord.StructuredState;
-        state.Should().Contain(kvp => kvp.Value == responseString);
-        state.Should().Contain(kvp => kvp.Value == "Request Value");
-        state.Should().Contain(kvp => kvp.Value == "Request Value 2,Request Value 3");
+        state.Should().ContainValue(responseString);
+        state.Should().ContainValue("Request Value");
+        state.Should().ContainValue("Request Value 2,Request Value 3");
     }
 
     [Theory]
@@ -654,6 +654,8 @@ public class AcceptanceTests
     [InlineData(315_883)]
     public async Task HttpClientLoggingHandler_LogsBodyDataUpToSpecifiedLimit(int limit)
     {
+        const int LengthOfContentInTextFile = 64_751;
+
         await using var provider = new ServiceCollection()
              .AddFakeLogging()
              .AddFakeRedaction()
@@ -686,17 +688,18 @@ public class AcceptanceTests
         httpRequestMessage.Headers.Add("ReQuEStHeAdEr2", new List<string> { "Request Value 2", "Request Value 3" });
 
         var content = await client.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead);
-        var responseStream = await content.Content.ReadAsStreamAsync();
-        var length = (int)responseStream.Length > limit ? limit : (int)responseStream.Length;
-        var buffer = new byte[length];
-        _ = await responseStream.ReadAsync(buffer, 0, length);
-        var responseString = Encoding.UTF8.GetString(buffer);
+        var responseString = await content.Content.ReadAsStringAsync();
+        var length = Math.Min(limit, responseString.Length);
+        var loggedBodyString = responseString.Substring(0, length);
+
+        // length of the content in the Text.txt file
+        responseString.Length.Should().Be(LengthOfContentInTextFile);
 
         var collector = provider.GetFakeLogCollector();
         var logRecord = collector.GetSnapshot().Single(l => l.Category == LoggingCategory);
         var state = logRecord.StructuredState;
-        state.Should().Contain(kvp => kvp.Value == responseString);
-        state.Should().Contain(kvp => kvp.Value == "Request Value");
-        state.Should().Contain(kvp => kvp.Value == "Request Value 2,Request Value 3");
+        state.Should().ContainValue(loggedBodyString);
+        state.Should().ContainValue("Request Value");
+        state.Should().ContainValue("Request Value 2,Request Value 3");
     }
 }

@@ -2,18 +2,19 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Compliance.Redaction</RootNamespace>
     <Description>Redaction engine and canonical redactors.</Description>
-    <Workstream>Fundamentals</Workstream>
+    <Workstream>Compliance</Workstream>
   </PropertyGroup>
 
   <PropertyGroup>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
     <InjectStringSyntaxAttributeOnLegacy>true</InjectStringSyntaxAttributeOnLegacy>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>
     <InjectSharedDataValidation>true</InjectSharedDataValidation>
 
-    <!-- using the ConfigurationBinder source generator is blocked by https://github.com/dotnet/runtime/issues/94547 -->
+    <!-- https://github.com/dotnet/extensions/issues/5623 -->
     <IsAotCompatible>false</IsAotCompatible>
     <NoWarn>$(NoWarn);IL2026</NoWarn>
   </PropertyGroup>
