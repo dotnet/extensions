@@ -22,11 +22,12 @@
                     },
                     {
                         "MetricName": "ConstDescribedCounter",
-                        "MetricDescription": "CreateConstDescribedCounter description.""Dimensions":                        ,
-                        {
-                            "Dim4": "Dim4 description.",
-                            "InClassDim": "InClassDim description."
-                        }
+                        "MetricDescription": "CreateConstDescribedCounter description.",
+                        "Dimensions":
+                            {
+                                "Dim4": "Dim4 description.",
+                                "InClassDim": "InClassDim description."
+                            }
                     }
                 ]
     }

@@ -80,9 +80,8 @@ internal sealed class MetricDefinitionEmitter : JsonEmitterBase
                     for (int j = 0; j < metricClass.Methods.Length; j++)
                     {
                         ReportedMetricMethod metricMethod = metricClass.Methods[j];
-                        bool isLastReportedMetricMethod = (j == metricClass.Methods.Length - 1);
                         Indent(IndentLevel);
-                        GenMetricMethodDefinition(metricMethod, isLastReportedMetricMethod, cancellationToken);
+                        GenMetricMethodDefinition(metricMethod, cancellationToken);
                         Unindent(IndentLevel);
                     }
 
@@ -95,7 +94,7 @@ internal sealed class MetricDefinitionEmitter : JsonEmitterBase
 
     }
 
-    private void GenMetricMethodDefinition(ReportedMetricMethod metricMethod, bool isLastReportedMetricMethod, CancellationToken cancellationToken)
+    private void GenMetricMethodDefinition(ReportedMetricMethod metricMethod, CancellationToken cancellationToken)
     {
         switch (metricMethod.Kind)
         {
@@ -114,6 +113,7 @@ internal sealed class MetricDefinitionEmitter : JsonEmitterBase
                         {
                             OutNameValue("MetricDescription", $"{metricMethod.Summary.Replace("\\", "\\\\").Replace("\"", "\\\"")}");
                         }
+
                         if (metricMethod.Dimensions.Count == 0)
                         {
                             OutNameValue($"InstrumentName", $"{metricMethod.Kind}");
@@ -121,8 +121,11 @@ internal sealed class MetricDefinitionEmitter : JsonEmitterBase
 
                         if (metricMethod.Dimensions.Count > 0)
                         {
-                            Out("\"Dimensions\":");
+                            Out(",");
+                            OutLn();
                             OutIndent();
+                            Out("\"Dimensions\":");
+                            Indent();
                             OutObject(() =>
                             {
                                 foreach (var dimension in metricMethod.Dimensions)
@@ -132,7 +135,8 @@ internal sealed class MetricDefinitionEmitter : JsonEmitterBase
                                         OutNameValue($"{dimension}", $"{description.Replace("\\", "\\\\").Replace("\"", "\\\"")}");
                                     }
                                 }
-                            });
+                            }, true);
+                            Unindent();
                         }
                     });
 

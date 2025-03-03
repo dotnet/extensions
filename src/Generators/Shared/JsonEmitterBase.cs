@@ -21,9 +21,9 @@ internal class JsonEmitterBase : EmitterBase
     {
     }
 
-    protected void OutObject(Action action)
+    protected void OutObject(Action action, bool proprietyObject = false)
     {
-        NewItem();
+        NewItem(!proprietyObject);
         _itemCounts.Push(_itemCount);
         _itemCount = 0;
 
