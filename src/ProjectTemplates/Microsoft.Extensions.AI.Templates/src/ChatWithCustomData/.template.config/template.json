@@ -272,9 +272,54 @@
       "onlyIf": [{
         "after": "localhost:"
       }]
+    },
+    "vectorStoreIndexNameReplacer": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "vectorStoreIndexNameTransform",
+      "replaces": "$$VectorStoreIndexName$$"
     }
   },
-  
+  "forms": {
+    "vectorStoreIndexNameTransform": {
+      "identifier": "chain",
+      "steps": [
+        "vectorStoreIndexName_PrefixSuffix",
+        "lowerCaseForm",
+        "vectorStoreIndexName_ReplaceIllegalCharacters",
+        "vectoreStoreIndexName_CollapseConsecutiveDashesUnderscores",
+        "truncateTo128Characters"
+      ],
+      "description": "See https://learn.microsoft.com/rest/api/searchservice/naming-rules"
+    },
+    "vectorStoreIndexName_PrefixSuffix": {
+      "identifier": "replace",
+      "pattern": "^(.*)$",
+      "replacement": "data-$1-ingested",
+      "description": "Produces a meaningful name parameterized by project name; ensures first, second, and last characters are valid"
+    },
+    "lowerCaseForm": {
+      "identifier": "lowerCase"
+    },
+    "vectorStoreIndexName_ReplaceIllegalCharacters": {
+      "identifier": "replace",
+      "pattern": "[^a-z0-9-_]",
+      "replacement": "_",
+      "description": "Only letters, numbers, dashes, and underscores are allowed"
+    },
+    "vectoreStoreIndexName_CollapseConsecutiveDashesUnderscores": {
+      "identifier": "replace",
+      "pattern": "([-_])\\1+",
+      "replacement": "$1",
+      "description": "No consecutive dashes are underscores are allowed"
+    },
+    "truncateTo128Characters": {
+      "identifier": "replace",
+      "pattern": "^(.{0,128}).*",
+      "replacement": "$1",
+      "description": "Length is limited to 128 characters"
+    }
+  },
   "postActions": [{
     "condition": "(hostIdentifier != \"dotnetcli\")",
     "description": "Opens README file in the editor",
