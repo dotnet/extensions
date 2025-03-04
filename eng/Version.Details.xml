@@ -206,5 +206,9 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha />
     </Dependency>
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Templating" Version="9.0.0-beta.25111.5">
+      <Uri>https://github.com/dotnet/arcade</Uri>
+      <Sha />
+    </Dependency>
   </ToolsetDependencies>
 </Dependencies>
