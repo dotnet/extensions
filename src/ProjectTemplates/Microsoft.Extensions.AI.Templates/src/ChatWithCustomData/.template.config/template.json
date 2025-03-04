@@ -52,6 +52,12 @@
       "type": "bind",
       "binding": "HostIdentifier"
     },
+    "assemblyName": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "identity", // Avoids transformation,
+      "replaces": "$$AssemblyName$$"
+    },
     "AiServiceProvider": {
       "type": "parameter",
       "displayName": "_AI service provider",
