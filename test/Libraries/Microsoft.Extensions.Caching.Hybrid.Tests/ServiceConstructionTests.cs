@@ -224,19 +224,19 @@ public class ServiceConstructionTests : IClassFixture<TestEventListener>
 
     // local expiration; per-item wins; expiration bleeds into local expiration (but not the other way around)
     [InlineData(false, null, null, null, true, 42, null, null, 42, 42)]
-    [InlineData(false, null, null, null, true, 42, 43, null, 42, 43)]
+    [InlineData(false, null, null, null, true, 43, 42, null, 43, 42)]
     [InlineData(false, null, null, null, true, null, 43, null, null, 43)]
 
     // global expiration; expiration bleeds into local expiration (but not the other way around)
     [InlineData(true, 42, null, null, false, null, null, null, 42, 42)]
-    [InlineData(true, 42, 43, null, false, null, null, null, 42, 43)]
+    [InlineData(true, 43, 42, null, false, null, null, null, 43, 42)]
     [InlineData(true, null, 43, null, false, null, null, null, null, 43)]
 
     // both expirations specified; expiration bleeds into local expiration (but not the other way around)
-    [InlineData(true, 42, 43, null, true, null, null, null, 42, 43)]
-    [InlineData(true, 42, 43, null, true, 44, null, null, 44, 44)]
-    [InlineData(true, 42, 43, null, true, 44, 45, null, 44, 45)]
-    [InlineData(true, 42, 43, null, true, null, 45, null, 42, 45)]
+    [InlineData(true, 43, 42, null, true, null, null, null, 43, 42)]
+    [InlineData(true, 43, 42, null, true, 44, null, null, 44, 44)]
+    [InlineData(true, 43, 42, null, true, 45, 44, null, 45, 44)]
+    [InlineData(true, 43, 42, null, true, null, 45, null, 43, 45)]
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S107:Methods should not have too many parameters",
         Justification = "Most pragmatic and readable way of expressing multiple scenarios.")]
@@ -293,7 +293,7 @@ public class ServiceConstructionTests : IClassFixture<TestEventListener>
         }
     }
 
-    private class CustomMemoryDistributedCache : MemoryDistributedCache
+    internal class CustomMemoryDistributedCache : MemoryDistributedCache
     {
         public CustomMemoryDistributedCache(IOptions<MemoryDistributedCacheOptions> options)
             : base(options)
