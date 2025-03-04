@@ -281,19 +281,13 @@
     "vectorStoreIndexNameTransform": {
       "identifier": "chain",
       "steps": [
-        "vectorStoreIndexName_PrefixSuffix",
         "lowerCaseForm",
         "vectorStoreIndexName_ReplaceIllegalCharacters",
         "vectoreStoreIndexName_CollapseConsecutiveDashesUnderscores",
-        "truncateTo128Characters"
+        "vectorStoreIndexName_LengthLimit",
+        "vectorStoreIndexName_PrefixSuffix"
       ],
       "description": "See https://learn.microsoft.com/rest/api/searchservice/naming-rules"
-    },
-    "vectorStoreIndexName_PrefixSuffix": {
-      "identifier": "replace",
-      "pattern": "^(.*)$",
-      "replacement": "data-$1-ingested",
-      "description": "Produces a meaningful name parameterized by project name; ensures first, second, and last characters are valid"
     },
     "lowerCaseForm": {
       "identifier": "lowerCase"
@@ -310,11 +304,17 @@
       "replacement": "$1",
       "description": "No consecutive dashes are underscores are allowed"
     },
-    "truncateTo128Characters": {
+    "vectorStoreIndexName_LengthLimit": {
       "identifier": "replace",
-      "pattern": "^(.{0,128}).*",
+      "pattern": "^(.{0,114}).*",
       "replacement": "$1",
-      "description": "Length is limited to 128 characters"
+      "description": "Length is limited to 128 characters, including the 14 characters of prefix and suffix to be added."
+    },
+    "vectorStoreIndexName_PrefixSuffix": {
+      "identifier": "replace",
+      "pattern": "^(.*)$",
+      "replacement": "data-$1-ingested",
+      "description": "Produces a meaningful name parameterized by project name; ensures first, second, and last characters are valid"
     }
   },
   "postActions": [{
