@@ -63,19 +63,17 @@ public static class ResourceMonitoringServiceCollectionExtensions
         this IServiceCollection services,
         Action<IResourceMonitorBuilder> configure)
     {
+        _ = services.AddMetrics();
+        var builder = new ResourceMonitorBuilder(services);
+#if NETFRAMEWORK
+        _ = builder.AddWindowsProvider();
+#else
         bool isSupportedOs = OperatingSystem.IsWindows() || OperatingSystem.IsLinux();
         if (!isSupportedOs)
         {
             return services;
         }
 
-        var builder = new ResourceMonitorBuilder(services);
-
-        _ = services.AddMetrics();
-
-#if NETFRAMEWORK
-        _ = builder.AddWindowsProvider();
-#else
         if (OperatingSystem.IsWindows())
         {
             _ = builder.AddWindowsProvider();
