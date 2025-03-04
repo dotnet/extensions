@@ -277,7 +277,7 @@
       "type": "derived",
       "valueSource": "name",
       "valueTransform": "vectorStoreIndexNameTransform",
-      "replaces": "$$VectorStoreIndexName$$"
+      "replaces": "data-ChatWithCustomData.Web-ingestion"
     }
   },
   "forms": {
