@@ -85,7 +85,7 @@ public class ChatResponse
             {
                 0 => string.Empty,
                 1 => messages[0].Text,
-                _ => messages.SelectMany(m => m.Contents).ConcatText(),
+                _ => string.Join(Environment.NewLine, messages.Select(m => m.Text).Where(s => !string.IsNullOrEmpty(s))),
             };
         }
     }

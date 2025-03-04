@@ -45,6 +45,9 @@ public sealed class FunctionInvocationContext
         set => _chatMessages = Throw.IfNull(value);
     }
 
+    /// <summary>Gets or sets the chat options associated with the operation that initiated this function call request.</summary>
+    public ChatOptions? Options { get; set; }
+
     /// <summary>Gets or sets the AI function to be invoked.</summary>
     public AIFunction Function
     {

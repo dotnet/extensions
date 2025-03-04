@@ -10,7 +10,7 @@ From the command-line:
 dotnet add package Microsoft.Extensions.AI.Abstractions
 ```
 
-Or directly in the C# project file:
+or directly in the C# project file:
 
 ```xml
 <ItemGroup>
