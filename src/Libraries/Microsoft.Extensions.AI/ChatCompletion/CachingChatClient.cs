@@ -56,12 +56,9 @@ public abstract class CachingChatClient : DelegatingChatClient
 
         if (await ReadCacheAsync(cacheKey, cancellationToken).ConfigureAwait(false) is { } result)
         {
-            if (options?.ChatThreadId is null)
+            foreach (ChatMessage message in result.Messages)
             {
-                foreach (ChatMessage message in result.Messages)
-                {
-                    chatMessages.Add(message);
-                }
+                chatMessages.Add(message);
             }
         }
         else
@@ -94,12 +91,9 @@ public abstract class CachingChatClient : DelegatingChatClient
                     yield return chunk;
                 }
 
-                if (chatResponse.ChatThreadId is null)
+                foreach (ChatMessage message in chatResponse.Messages)
                 {
-                    foreach (ChatMessage message in chatResponse.Messages)
-                    {
-                        chatMessages.Add(message);
-                    }
+                    chatMessages.Add(message);
                 }
             }
             else

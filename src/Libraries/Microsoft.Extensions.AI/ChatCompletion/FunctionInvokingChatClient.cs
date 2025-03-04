@@ -216,7 +216,17 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             // fast path out by just returning the original response.
             if (iteration == 0 && !requiresFunctionInvocation)
             {
+                Debug.Assert(originalChatMessages == chatMessages,
+                    "Expected the history to be the original, such that there's no additional work to do to keep it up to date.");
                 return response;
+            }
+
+            // If chatMessages is different from originalChatMessages, we previously created a different history
+            // in order to avoid sending state back to an inner client that was already tracking it. But we still
+            // need that original history to contain all the state. So copy it over if necessary.
+            if (chatMessages != originalChatMessages)
+            {
+                AddRange(originalChatMessages, response.Messages);
             }
 
             // Track aggregatable details from the response.
@@ -249,7 +259,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             }
 
             // If the response indicates the inner client is tracking the history, clear it to avoid re-sending the state.
-            // In that case, we also avoid touching the user's history, so that we don't need to clear it.
             if (response.ChatThreadId is not null)
             {
                 if (chatMessages == originalChatMessages)
@@ -261,10 +270,24 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     chatMessages.Clear();
                 }
             }
+            else if (chatMessages != originalChatMessages)
+            {
+                // This should be a very rare case. In a previous iteration, we got back a non-null
+                // chatThreadId, so we forked chatMessages. But now, we got back a null chatThreadId,
+                // and chatMessages is no longer the full history. Thankfully, we've been keeping
+                // originalChatMessages up to date; we can just switch back to use it.
+                chatMessages = originalChatMessages;
+            }
 
             // Add the responses from the function calls into the history.
             var modeAndMessages = await ProcessFunctionCallsAsync(chatMessages, options!, functionCallContents!, iteration, cancellationToken).ConfigureAwait(false);
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
+
+            if (chatMessages != originalChatMessages)
+            {
+                AddRange(originalChatMessages, modeAndMessages.MessagesAdded);
+            }
+
             if (UpdateOptionsForMode(modeAndMessages.Mode, ref options!, response.ChatThreadId))
             {
                 // Terminate
@@ -311,6 +334,19 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
             }
 
+            // Make sure that any of the response messages that were added to the chat history also get
+            // added to the original history if it's different.
+            if (chatMessages != originalChatMessages)
+            {
+                // If chatThreadId was null previously, then we would have added any function result content into
+                // the original chat messages, passed those chat messages to GetStreamingResponseAsync, and it would
+                // have added all the new response messages into the original chat messages. But chatThreadId was
+                // non-null, hence we forked chatMessages. chatMessages then included only the function result content
+                // and should now include that function result content plus the response messages. None of that is
+                // in the original, so we can just add everything from chatMessages into the original.
+                AddRange(originalChatMessages, chatMessages);
+            }
+
             // If there are no tools to call, or for any other reason we should stop, return the response.
             if (functionCallContents is not { Count: > 0 } ||
                 options?.Tools is not { Count: > 0 } ||
@@ -332,14 +368,17 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     chatMessages.Clear();
                 }
             }
+            else if (chatMessages != originalChatMessages)
+            {
+                // This should be a very rare case. In a previous iteration, we got back a non-null
+                // chatThreadId, so we forked chatMessages. But now, we got back a null chatThreadId,
+                // and chatMessages is no longer the full history. Thankfully, we've been keeping
+                // originalChatMessages up to date; we can just switch back to use it.
+                chatMessages = originalChatMessages;
+            }
 
             // Process all of the functions, adding their results into the history.
             var modeAndMessages = await ProcessFunctionCallsAsync(chatMessages, options, functionCallContents, iteration, cancellationToken).ConfigureAwait(false);
-            if (UpdateOptionsForMode(modeAndMessages.Mode, ref options, chatThreadId))
-            {
-                // Terminate
-                yield break;
-            }
 
             // Stream any generated function results. These are already part of the history,
             // but we stream them out for informational purposes.
@@ -360,6 +399,12 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
                 yield return toolResultUpdate;
                 Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
+            }
+
+            if (UpdateOptionsForMode(modeAndMessages.Mode, ref options, chatThreadId))
+            {
+                // Terminate
+                yield break;
             }
         }
     }
@@ -407,10 +452,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 // as otherwise we'll be in an infinite loop.
                 options = options.Clone();
                 options.ToolMode = null;
-                if (chatThreadId is not null)
-                {
-                    options.ChatThreadId = chatThreadId;
-                }
+                options.ChatThreadId = chatThreadId;
 
                 break;
 
@@ -419,10 +461,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 options = options.Clone();
                 options.Tools = null;
                 options.ToolMode = null;
-                if (chatThreadId is not null)
-                {
-                    options.ChatThreadId = chatThreadId;
-                }
+                options.ChatThreadId = chatThreadId;
 
                 break;
 
@@ -433,7 +472,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             default:
                 // As with the other modes, ensure we've propagated the chat thread ID to the options.
                 // We only need to clone the options if we're actually mutating it.
-                if (chatThreadId is not null && options.ChatThreadId != chatThreadId)
+                if (options.ChatThreadId != chatThreadId)
                 {
                     options = options.Clone();
                     options.ChatThreadId = chatThreadId;
@@ -468,6 +507,8 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             FunctionInvocationResult result = await ProcessFunctionCallAsync(
                 chatMessages, options, functionCallContents, iteration, 0, cancellationToken).ConfigureAwait(false);
             IList<ChatMessage> added = AddResponseMessages(chatMessages, [result]);
+
+            ThrowIfNoFunctionResultsAdded(added);
             return (result.ContinueMode, added);
         }
         else
@@ -505,7 +546,20 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 }
             }
 
+            ThrowIfNoFunctionResultsAdded(added);
             return (continueMode, added);
+        }
+    }
+
+    /// <summary>
+    /// Throws an exception if <paramref name="chatMessages"/> is empty due to an override of
+    /// <see cref="AddResponseMessages"/> not having added any messages.
+    /// </summary>
+    private void ThrowIfNoFunctionResultsAdded(IList<ChatMessage> chatMessages)
+    {
+        if (chatMessages.Count == 0)
+        {
+            Throw.InvalidOperationException($"{GetType().Name}.{nameof(AddResponseMessages)} did not add any function result messages.");
         }
     }
 
@@ -533,6 +587,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         FunctionInvocationContext context = new()
         {
             ChatMessages = chatMessages,
+            Options = options,
             CallContent = callContent,
             Function = function,
             Iteration = iteration,
@@ -696,6 +751,22 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         }
 
         return result;
+    }
+
+    /// <summary>Adds all messages from <paramref name="source"/> into <paramref name="destination"/>.</summary>
+    private static void AddRange(IList<ChatMessage> destination, IEnumerable<ChatMessage> source)
+    {
+        if (destination is List<ChatMessage> list)
+        {
+            list.AddRange(source);
+        }
+        else
+        {
+            foreach (var message in source)
+            {
+                destination.Add(message);
+            }
+        }
     }
 
     private static TimeSpan GetElapsedTime(long startingTimestamp) =>

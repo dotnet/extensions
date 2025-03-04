@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Xunit;
 
 namespace Microsoft.Shared.Diagnostics.Test;
@@ -388,10 +389,10 @@ public class ThrowTest
         _ = Throw.IfReadOnly(new List<int>());
 
         IList<int> list = new int[4];
-        Assert.Throws<ArgumentException>("list", () => Throw.IfReadOnly(list);
+        Assert.Throws<ArgumentException>("list", () => Throw.IfReadOnly(list));
 
-        list = new ReadOnlyCollection<int>();
-        Assert.Throws<ArgumentException>("list", () => Throw.IfReadOnly(list);
+        list = new ReadOnlyCollection<int>(new List<int>());
+        Assert.Throws<ArgumentException>("list", () => Throw.IfReadOnly(list));
     }
 
     #endregion
