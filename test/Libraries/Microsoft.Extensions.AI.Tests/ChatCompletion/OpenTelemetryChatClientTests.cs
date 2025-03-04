@@ -69,10 +69,8 @@ public class OpenTelemetryChatClientTests
             foreach (string text in new[] { "The ", "blue ", "whale,", " ", "", "I", " think." })
             {
                 await Task.Yield();
-                yield return new ChatResponseUpdate
+                yield return new ChatResponseUpdate(ChatRole.Assistant, text)
                 {
-                    Role = ChatRole.Assistant,
-                    Text = text,
                     ResponseId = "id123",
                 };
             }

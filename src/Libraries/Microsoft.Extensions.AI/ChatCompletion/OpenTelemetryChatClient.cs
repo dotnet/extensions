@@ -446,7 +446,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
             if (message.Role == ChatRole.Assistant)
             {
                 Log(new(1, OpenTelemetryConsts.GenAI.Assistant.Message),
-                    JsonSerializer.Serialize(CreateAssistantEvent(message), OtelContext.Default.AssistantEvent));
+                    JsonSerializer.Serialize(CreateAssistantEvent(message.Contents), OtelContext.Default.AssistantEvent));
             }
             else if (message.Role == ChatRole.Tool)
             {
@@ -468,7 +468,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                     JsonSerializer.Serialize(new()
                     {
                         Role = message.Role != ChatRole.System && message.Role != ChatRole.User && !string.IsNullOrWhiteSpace(message.Role.Value) ? message.Role.Value : null,
-                        Content = GetMessageContent(message),
+                        Content = GetMessageContent(message.Contents),
                     }, OtelContext.Default.SystemOrUserEvent));
             }
         }
@@ -486,7 +486,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         {
             FinishReason = response.FinishReason?.Value ?? "error",
             Index = 0,
-            Message = CreateAssistantEvent(response.Message),
+            Message = CreateAssistantEvent(response.Messages is { Count: 1 } ? response.Messages[0].Contents : response.Messages.SelectMany(m => m.Contents)),
         }, OtelContext.Default.ChoiceEvent));
     }
 
@@ -505,9 +505,9 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         _logger.Log(EventLogLevel, id, tags, null, (_, __) => eventBodyJson);
     }
 
-    private AssistantEvent CreateAssistantEvent(ChatMessage message)
+    private AssistantEvent CreateAssistantEvent(IEnumerable<AIContent> contents)
     {
-        var toolCalls = message.Contents.OfType<FunctionCallContent>().Select(fc => new ToolCall
+        var toolCalls = contents.OfType<FunctionCallContent>().Select(fc => new ToolCall
         {
             Id = fc.CallId,
             Function = new()
@@ -521,16 +521,16 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
         return new()
         {
-            Content = GetMessageContent(message),
+            Content = GetMessageContent(contents),
             ToolCalls = toolCalls.Length > 0 ? toolCalls : null,
         };
     }
 
-    private string? GetMessageContent(ChatMessage message)
+    private string? GetMessageContent(IEnumerable<AIContent> contents)
     {
         if (EnableSensitiveData)
         {
-            string content = string.Concat(message.Contents.OfType<TextContent>());
+            string content = string.Concat(contents.OfType<TextContent>());
             if (content.Length > 0)
             {
                 return content;

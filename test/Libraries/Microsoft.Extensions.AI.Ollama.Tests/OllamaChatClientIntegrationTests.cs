@@ -47,7 +47,7 @@ public class OllamaChatClientIntegrationTests : ChatClientIntegrationTests
             Seed = 0,
         });
 
-        Assert.Contains(secretNumber.ToString(), response.Message.Text);
+        Assert.Contains(secretNumber.ToString(), response.Text);
     }
 
     [ConditionalFact]
@@ -81,7 +81,7 @@ public class OllamaChatClientIntegrationTests : ChatClientIntegrationTests
             Seed = 0,
         });
 
-        Assert.Contains("999", response.Message.Text);
+        Assert.Contains("999", response.Text);
         Assert.False(didCallIrrelevantTool);
     }
 

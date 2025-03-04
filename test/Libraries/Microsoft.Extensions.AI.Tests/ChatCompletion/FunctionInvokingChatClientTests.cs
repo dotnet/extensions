@@ -414,7 +414,8 @@ public class FunctionInvokingChatClientTests
                     updates = [new() { Contents = [new TextContent("OK bye")] }];
                 }
 
-                chatContents.Add(updates.ToChatMessage());
+                chatContents.AddRangeFromUpdates(updates);
+
                 return YieldAsync(updates);
             }
         };
@@ -478,7 +479,7 @@ public class FunctionInvokingChatClientTests
         ChatResponse response = await client.GetResponseAsync(messages, options);
 
         Assert.Equal(5, response.Messages.Count);
-        Assert.Equal("The answer is 42.", response.Message.Text);
+        Assert.Equal("The answer is 42.", response.Text);
         Assert.IsType<FunctionCallContent>(Assert.Single(response.Messages[0].Contents));
         Assert.IsType<FunctionResultContent>(Assert.Single(response.Messages[1].Contents));
         Assert.IsType<FunctionCallContent>(Assert.Single(response.Messages[2].Contents));

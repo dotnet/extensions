@@ -143,7 +143,7 @@ public class ChatClientExtensionsTests
 
                 Assert.Equal(cts.Token, cancellationToken);
 
-                return YieldAsync([new ChatResponseUpdate { Text = "world" }]);
+                return YieldAsync([new ChatResponseUpdate(ChatRole.Assistant, "world")]);
             },
         };
 

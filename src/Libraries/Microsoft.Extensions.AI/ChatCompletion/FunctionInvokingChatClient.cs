@@ -210,7 +210,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             bool requiresFunctionInvocation =
                 options?.Tools is { Count: > 0 } &&
                 (!MaximumIterationsPerRequest.HasValue || iteration < MaximumIterationsPerRequest.GetValueOrDefault()) &&
-                CopyFunctionCalls(response.Message.Contents, ref functionCallContents);
+                CopyFunctionCalls(response.Messages, ref functionCallContents);
 
             // In the common case where we make a request and there's no function calling work required,
             // fast path out by just returning the original response.
@@ -362,6 +362,20 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
             }
         }
+    }
+
+    /// <summary>Copies any <see cref="FunctionCallContent"/> from <paramref name="messages"/> to <paramref name="functionCalls"/>.</summary>
+    private static bool CopyFunctionCalls(
+        IList<ChatMessage> messages, [NotNullWhen(true)] ref List<FunctionCallContent>? functionCalls)
+    {
+        bool any = false;
+        int count = messages.Count;
+        for (int i = 0; i < count; i++)
+        {
+            any |= CopyFunctionCalls(messages[i].Contents, ref functionCalls);
+        }
+
+        return any;
     }
 
     /// <summary>Copies any <see cref="FunctionCallContent"/> from <paramref name="content"/> to <paramref name="functionCalls"/>.</summary>
@@ -567,6 +581,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <param name="chatMessages">The chat to which to add the one or more response messages.</param>
     /// <param name="results">Information about the function call invocations and results.</param>
     /// <returns>A list of all chat messages added to <paramref name="chatMessages"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="chatMessages"/> is <see langword="null"/>.</exception>
     protected virtual IList<ChatMessage> AddResponseMessages(IList<ChatMessage> chatMessages, ReadOnlySpan<FunctionInvocationResult> results)
     {
         _ = Throw.IfNull(chatMessages);
@@ -617,6 +632,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// </param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function invocation, or <see langword="null"/> if the function invocation returned <see langword="null"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
     protected virtual async Task<object?> InvokeFunctionAsync(FunctionInvocationContext context, CancellationToken cancellationToken)
     {
         _ = Throw.IfNull(context);

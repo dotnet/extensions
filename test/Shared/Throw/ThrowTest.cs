@@ -382,6 +382,18 @@ public class ThrowTest
         Assert.Contains(nameof(listButActuallyNull), exceptionImplicitArgumentName.Message);
     }
 
+    [Fact]
+    public void Collection_IfReadOnly()
+    {
+        _ = Throw.IfReadOnly(new List<int>());
+
+        IList<int> list = new int[4];
+        Assert.Throws<ArgumentException>("list", () => Throw.IfReadOnly(list);
+
+        list = new ReadOnlyCollection<int>();
+        Assert.Throws<ArgumentException>("list", () => Throw.IfReadOnly(list);
+    }
+
     #endregion
 
     #region For Enums

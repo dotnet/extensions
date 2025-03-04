@@ -26,6 +26,7 @@ public sealed class RequiredChatToolMode : ChatToolMode
     /// Initializes a new instance of the <see cref="RequiredChatToolMode"/> class that requires a specific function to be called.
     /// </summary>
     /// <param name="requiredFunctionName">The name of the function that must be called.</param>
+    /// <exception cref="ArgumentException"><paramref name="requiredFunctionName"/> is empty or composed entirely of whitespace.</exception>
     /// <remarks>
     /// <paramref name="requiredFunctionName"/> can be <see langword="null"/>. However, it's preferable to use
     /// <see cref="ChatToolMode.RequireAny"/> when any function can be selected.

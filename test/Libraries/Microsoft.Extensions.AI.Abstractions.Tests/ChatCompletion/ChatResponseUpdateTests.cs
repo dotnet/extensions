@@ -16,7 +16,7 @@ public class ChatResponseUpdateTests
         ChatResponseUpdate update = new();
         Assert.Null(update.AuthorName);
         Assert.Null(update.Role);
-        Assert.Null(update.Text);
+        Assert.Empty(update.Text);
         Assert.Empty(update.Contents);
         Assert.Null(update.RawRepresentation);
         Assert.Null(update.AdditionalProperties);
@@ -51,9 +51,7 @@ public class ChatResponseUpdateTests
         Assert.NotNull(update.Contents);
         Assert.Empty(update.Contents);
 
-        Assert.Null(update.Text);
-        update.Text = "text";
-        Assert.Equal("text", update.Text);
+        Assert.Empty(update.Text);
 
         Assert.Null(update.RawRepresentation);
         object raw = new();
@@ -79,7 +77,7 @@ public class ChatResponseUpdateTests
     }
 
     [Fact]
-    public void Text_GetSet_UsesFirstTextContent()
+    public void Text_Get_UsesAllTextContent()
     {
         ChatResponseUpdate update = new()
         {
@@ -97,61 +95,13 @@ public class ChatResponseUpdateTests
 
         TextContent textContent = Assert.IsType<TextContent>(update.Contents[3]);
         Assert.Equal("text-1", textContent.Text);
-        Assert.Equal("text-1", update.Text);
+        Assert.Equal("text-1text-2", update.Text);
         Assert.Equal("text-1text-2", update.ToString());
 
-        update.Text = "text-3";
-        Assert.Equal("text-3", update.Text);
-        Assert.Equal("text-3", update.Text);
+        ((TextContent)update.Contents[3]).Text = "text-3";
+        Assert.Equal("text-3text-2", update.Text);
         Assert.Same(textContent, update.Contents[3]);
         Assert.Equal("text-3text-2", update.ToString());
-    }
-
-    [Fact]
-    public void Text_Set_AddsTextMessageToEmptyList()
-    {
-        ChatResponseUpdate update = new()
-        {
-            Role = ChatRole.User,
-        };
-        Assert.Empty(update.Contents);
-
-        update.Text = "text-1";
-        Assert.Equal("text-1", update.Text);
-
-        Assert.Single(update.Contents);
-        TextContent textContent = Assert.IsType<TextContent>(update.Contents[0]);
-        Assert.Equal("text-1", textContent.Text);
-    }
-
-    [Fact]
-    public void Text_Set_AddsTextMessageToListWithNoText()
-    {
-        ChatResponseUpdate update = new()
-        {
-            Contents =
-            [
-                new DataContent("http://localhost/audio"),
-                new DataContent("http://localhost/image"),
-                new FunctionCallContent("callId1", "fc1"),
-            ]
-        };
-        Assert.Equal(3, update.Contents.Count);
-
-        update.Text = "text-1";
-        Assert.Equal("text-1", update.Text);
-        Assert.Equal(4, update.Contents.Count);
-
-        update.Text = "text-2";
-        Assert.Equal("text-2", update.Text);
-        Assert.Equal(4, update.Contents.Count);
-
-        update.Contents.RemoveAt(3);
-        Assert.Equal(3, update.Contents.Count);
-
-        update.Text = "text-3";
-        Assert.Equal("text-3", update.Text);
-        Assert.Equal(4, update.Contents.Count);
     }
 
     [Fact]

@@ -65,15 +65,19 @@ public sealed class FunctionCallContent : AIContent
     /// <param name="name">The function name.</param>
     /// <param name="argumentParser">The parsing implementation converting the encoding to a dictionary of arguments.</param>
     /// <returns>A new instance of <see cref="FunctionCallContent"/> containing the parse result.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="callId"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="name"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="encodedArguments"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="argumentParser"/> is <see langword="null"/>.</exception>
     public static FunctionCallContent CreateFromParsedArguments<TEncoding>(
         TEncoding encodedArguments,
         string callId,
         string name,
         Func<TEncoding, IDictionary<string, object?>?> argumentParser)
     {
+        _ = Throw.IfNull(encodedArguments);
         _ = Throw.IfNull(callId);
         _ = Throw.IfNull(name);
-        _ = Throw.IfNull(encodedArguments);
         _ = Throw.IfNull(argumentParser);
 
         IDictionary<string, object?>? arguments = null;

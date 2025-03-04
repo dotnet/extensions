@@ -127,13 +127,13 @@ public class DistributedCachingChatClientTest
         Assert.False(result1.IsCompleted);
         Assert.False(result2.IsCompleted);
         completionTcs.SetResult(true);
-        Assert.Equal("Hello", (await result1).Message.Text);
-        Assert.Equal("Hello", (await result2).Message.Text);
+        Assert.Equal("Hello", (await result1).Text);
+        Assert.Equal("Hello", (await result2).Text);
 
         // Act 2: Subsequent calls after completion are resolved from the cache
         var result3 = outer.GetResponseAsync("some input");
         Assert.Equal(2, innerCallCount);
-        Assert.Equal("Hello", (await result3).Message.Text);
+        Assert.Equal("Hello", (await result3).Text);
     }
 
     [Fact]
@@ -204,7 +204,7 @@ public class DistributedCachingChatClientTest
         // Act/Assert: Second call can succeed
         var result2 = await outer.GetResponseAsync([input]);
         Assert.Equal(2, innerCallCount);
-        Assert.Equal("A good result", result2.Message.Text);
+        Assert.Equal("A good result", result2.Text);
     }
 
     [Fact]
@@ -280,12 +280,12 @@ public class DistributedCachingChatClientTest
         // Arrange
         List<ChatResponseUpdate> expectedResponse =
         [
-            new() { Role = ChatRole.Assistant, Text = "This" },
-            new() { Role = ChatRole.Assistant, Text = " becomes one chunk" },
+            new(ChatRole.Assistant, "This"),
+            new(ChatRole.Assistant, " becomes one chunk"),
             new() { Role = ChatRole.Assistant, Contents = [new FunctionCallContent("callId1", "separator")] },
-            new() { Role = ChatRole.Assistant, Text = "... and this" },
-            new() { Role = ChatRole.Assistant, Text = " becomes another" },
-            new() { Role = ChatRole.Assistant, Text = " one." },
+            new(ChatRole.Assistant, "... and this"),
+            new(ChatRole.Assistant, " becomes another"),
+            new(ChatRole.Assistant, " one."),
         ];
 
         using var testClient = new TestChatClient
@@ -401,7 +401,7 @@ public class DistributedCachingChatClientTest
         var completionTcs = new TaskCompletionSource<bool>();
         List<ChatResponseUpdate> expectedResponse =
         [
-            new() { Role = ChatRole.Assistant, Text = "Chunk 1" },
+            new(ChatRole.Assistant, "Chunk 1"),
         ];
         using var testClient = new TestChatClient
         {
@@ -449,7 +449,7 @@ public class DistributedCachingChatClientTest
                 innerCallCount++;
                 return ToAsyncEnumerableAsync<ChatResponseUpdate>(Task.CompletedTask,
                 [
-                    () => new() { Role = ChatRole.Assistant, Text = "Chunk 1" },
+                    () => new(ChatRole.Assistant, "Chunk 1"),
                     () => throw new InvalidTimeZoneException("some failure"),
                 ]);
             }
@@ -488,7 +488,7 @@ public class DistributedCachingChatClientTest
                 innerCallCount++;
                 return ToAsyncEnumerableAsync<ChatResponseUpdate>(
                     innerCallCount == 1 ? completionTcs.Task : Task.CompletedTask,
-                    [() => new() { Role = ChatRole.Assistant, Text = "A good result" }]);
+                    [() => new(ChatRole.Assistant, "A good result")]);
             }
         };
         using var outer = new DistributedCachingChatClient(testClient, _storage)
@@ -544,8 +544,8 @@ public class DistributedCachingChatClientTest
 
         // Assert: Same result
         Assert.Equal(1, innerCallCount);
-        Assert.Equal("value 1", result1.Message.Text);
-        Assert.Equal("value 1", result2.Message.Text);
+        Assert.Equal("value 1", result1.Text);
+        Assert.Equal("value 1", result2.Text);
 
         // Act: Call with two different ChatOptions that have different values
         var result3 = await outer.GetResponseAsync([], new ChatOptions
@@ -559,8 +559,8 @@ public class DistributedCachingChatClientTest
 
         // Assert: Different results
         Assert.Equal(2, innerCallCount);
-        Assert.Equal("value 1", result3.Message.Text);
-        Assert.Equal("value 2", result4.Message.Text);
+        Assert.Equal("value 1", result3.Text);
+        Assert.Equal("value 2", result4.Text);
     }
 
     [Fact]
@@ -595,8 +595,8 @@ public class DistributedCachingChatClientTest
 
         // Assert: Different results
         Assert.Equal(2, innerCallCount);
-        Assert.Equal("value 1", result1.Message.Text);
-        Assert.Equal("value 2", result2.Message.Text);
+        Assert.Equal("value 1", result1.Text);
+        Assert.Equal("value 2", result2.Text);
     }
 
     [Fact]
@@ -647,8 +647,8 @@ public class DistributedCachingChatClientTest
         // Assert
         Assert.Equal(1, innerCallCount);
         AssertResponsesEqual(expectedResponse, result2);
-        Assert.NotSame(result2.Message.Contents[0], expectedResponse.Message.Contents[0]);
-        Assert.NotSame(result2.Message.Contents[1], expectedResponse.Message.Contents[1]);
+        Assert.NotSame(result2.Messages.Last().Contents[0], expectedResponse.Messages.Last().Contents[0]);
+        Assert.NotSame(result2.Messages.Last().Contents[1], expectedResponse.Messages.Last().Contents[1]);
     }
 
     [Fact]
@@ -724,15 +724,17 @@ public class DistributedCachingChatClientTest
             JsonSerializer.Serialize(expected.AdditionalProperties, TestJsonSerializerContext.Default.Options),
             JsonSerializer.Serialize(actual.AdditionalProperties, TestJsonSerializerContext.Default.Options));
 
-        Assert.IsType(expected.Message.GetType(), actual.Message);
-        Assert.Equal(expected.Message.Role, actual.Message.Role);
-        Assert.Equal(expected.Message.Text, actual.Message.Text);
-        Assert.Equal(expected.Message.Contents.Count, actual.Message.Contents.Count);
+        ChatMessage expectedMessage = expected.Messages.Last();
+        ChatMessage actualMessage = actual.Messages.Last();
+        Assert.IsType(expectedMessage.GetType(), actualMessage);
+        Assert.Equal(expectedMessage.Role, actualMessage.Role);
+        Assert.Equal(expectedMessage.Text, actualMessage.Text);
+        Assert.Equal(expectedMessage.Contents.Count, actualMessage.Contents.Count);
 
-        for (var itemIndex = 0; itemIndex < expected.Message.Contents.Count; itemIndex++)
+        for (var itemIndex = 0; itemIndex < expectedMessage.Contents.Count; itemIndex++)
         {
-            var expectedItem = expected.Message.Contents[itemIndex];
-            var actualItem = actual.Message.Contents[itemIndex];
+            var expectedItem = expectedMessage.Contents[itemIndex];
+            var actualItem = actualMessage.Contents[itemIndex];
             Assert.IsType(expectedItem.GetType(), actualItem);
 
             if (expectedItem is FunctionCallContent expectedFcc)

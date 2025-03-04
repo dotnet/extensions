@@ -105,8 +105,8 @@ public class LoggingChatClientTests
         static async IAsyncEnumerable<ChatResponseUpdate> GetUpdatesAsync()
         {
             await Task.Yield();
-            yield return new ChatResponseUpdate { Role = ChatRole.Assistant, Text = "blue " };
-            yield return new ChatResponseUpdate { Role = ChatRole.Assistant, Text = "whale" };
+            yield return new(ChatRole.Assistant, "blue ");
+            yield return new(ChatRole.Assistant, "whale");
         }
 
         using IChatClient client = innerClient

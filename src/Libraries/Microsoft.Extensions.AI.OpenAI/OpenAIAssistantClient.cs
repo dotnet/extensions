@@ -71,7 +71,7 @@ internal sealed class OpenAIAssistantClient : IChatClient
     /// <inheritdoc />
     public Task<ChatResponse> GetResponseAsync(
         IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default) =>
-        GetStreamingResponseAsync(chatMessages, options, cancellationToken).ToChatResponseAsync(coalesceContent: true, cancellationToken);
+        GetStreamingResponseAsync(chatMessages, options, cancellationToken).ToChatResponseAsync(cancellationToken);
 
     /// <inheritdoc />
     public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
@@ -117,12 +117,10 @@ internal sealed class OpenAIAssistantClient : IChatClient
             switch (update)
             {
                 case MessageContentUpdate mcu:
-                    yield return new()
+                    yield return new(mcu.Role == MessageRole.User ? ChatRole.User : ChatRole.Assistant, mcu.Text)
                     {
                         ChatThreadId = threadId,
                         RawRepresentation = mcu,
-                        Role = mcu.Role == MessageRole.User ? ChatRole.User : ChatRole.Assistant,
-                        Text = mcu.Text,
                     };
                     break;
 

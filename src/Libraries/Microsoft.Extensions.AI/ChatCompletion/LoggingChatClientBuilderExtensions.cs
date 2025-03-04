@@ -20,6 +20,7 @@ public static class LoggingChatClientBuilderExtensions
     /// </param>
     /// <param name="configure">An optional callback that can be used to configure the <see cref="LoggingChatClient"/> instance.</param>
     /// <returns>The <paramref name="builder"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
     public static ChatClientBuilder UseLogging(
         this ChatClientBuilder builder,
         ILoggerFactory? loggerFactory = null,

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using Xunit;
 
@@ -18,69 +19,20 @@ public class ChatResponseTests
     }
 
     [Fact]
-    public void Constructor_Message_Roundtrips()
-    {
-        ChatResponse response = new();
-        Assert.NotNull(response.Message);
-        Assert.Same(response.Message, response.Message);
-
-        ChatMessage message = new();
-        response = new(message);
-        Assert.Same(message, response.Message);
-
-        message = new();
-        response.Message = message;
-        Assert.Same(message, response.Message);
-    }
-
-    [Fact]
     public void Constructor_Messages_Roundtrips()
     {
         ChatResponse response = new();
         Assert.NotNull(response.Messages);
         Assert.Same(response.Messages, response.Messages);
 
-        List<ChatMessage> messages = new();
+        List<ChatMessage> messages = [];
         response = new(messages);
         Assert.Same(messages, response.Messages);
 
-        messages = new();
+        messages = [];
+        Assert.NotSame(messages, response.Messages);
         response.Messages = messages;
         Assert.Same(messages, response.Messages);
-    }
-
-    [Fact]
-    public void Message_LastMessageOfMessages()
-    {
-        ChatResponse response = new();
-
-        Assert.Empty(response.Messages);
-        Assert.NotNull(response.Message);
-        Assert.NotEmpty(response.Messages);
-
-        for (int i = 1; i < 3; i++)
-        {
-            Assert.Same(response.Messages[response.Messages.Count - 1], response.Message);
-            response.Messages.Add(new ChatMessage(ChatRole.User, $"Message {i}"));
-        }
-    }
-
-    [Fact]
-    public void Message_SetterSetsLast()
-    {
-        ChatResponse response = new();
-
-        Assert.Empty(response.Messages);
-        ChatMessage message = new();
-        response.Message = message;
-        Assert.NotEmpty(response.Messages);
-        Assert.Same(message, response.Messages[0]);
-
-        message = new();
-        response.Message = message;
-        Assert.Single(response.Messages);
-        Assert.Same(message, response.Messages[0]);
-        Assert.Same(message, response.Message);
     }
 
     [Fact]
@@ -139,8 +91,8 @@ public class ChatResponseTests
         ChatResponse? result = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.ChatResponse);
 
         Assert.NotNull(result);
-        Assert.Equal(ChatRole.Assistant, result.Message.Role);
-        Assert.Equal("the message", result.Message.Text);
+        Assert.Equal(ChatRole.Assistant, result.Messages.Single().Role);
+        Assert.Equal("the message", result.Messages.Single().Text);
 
         Assert.Equal("id", result.ResponseId);
         Assert.Equal("modelId", result.ModelId);
@@ -156,11 +108,11 @@ public class ChatResponseTests
     }
 
     [Fact]
-    public void ToString_OutputsChatMessageToString()
+    public void ToString_OutputsText()
     {
         ChatResponse response = new(new ChatMessage(ChatRole.Assistant, $"This is a test.{Environment.NewLine}It's multiple lines."));
 
-        Assert.Equal(response.Message.ToString(), response.ToString());
+        Assert.Equal(response.Text, response.ToString());
     }
 
     [Fact]

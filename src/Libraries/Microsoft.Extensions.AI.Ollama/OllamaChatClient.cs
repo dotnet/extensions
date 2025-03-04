@@ -56,6 +56,8 @@ public sealed class OllamaChatClient : IChatClient
     /// Either this parameter or <see cref="ChatOptions.ModelId"/> must provide a valid model ID.
     /// </param>
     /// <param name="httpClient">An <see cref="HttpClient"/> instance to use for HTTP operations.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="endpoint"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="modelId"/> is empty or composed entirely of whitespace.</exception>
     public OllamaChatClient(Uri endpoint, string? modelId = null, HttpClient? httpClient = null)
     {
         _ = Throw.IfNull(endpoint);
@@ -142,60 +144,65 @@ public sealed class OllamaChatClient : IChatClient
             .ConfigureAwait(false);
 
         List<ChatResponseUpdate> updates = [];
-        using var streamReader = new StreamReader(httpResponseStream);
-#if NET
-        while ((await streamReader.ReadLineAsync(cancellationToken).ConfigureAwait(false)) is { } line)
-#else
-        while ((await streamReader.ReadLineAsync().ConfigureAwait(false)) is { } line)
-#endif
+        try
         {
-            var chunk = JsonSerializer.Deserialize(line, JsonContext.Default.OllamaChatResponse);
-            if (chunk is null)
+            using var streamReader = new StreamReader(httpResponseStream);
+#if NET
+            while ((await streamReader.ReadLineAsync(cancellationToken).ConfigureAwait(false)) is { } line)
+#else
+            while ((await streamReader.ReadLineAsync().ConfigureAwait(false)) is { } line)
+#endif
             {
-                continue;
-            }
-
-            string? modelId = chunk.Model ?? _metadata.ModelId;
-
-            ChatResponseUpdate update = new()
-            {
-                CreatedAt = DateTimeOffset.TryParse(chunk.CreatedAt, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset createdAt) ? createdAt : null,
-                FinishReason = ToFinishReason(chunk),
-                ModelId = modelId,
-                ResponseId = chunk.CreatedAt,
-                Role = chunk.Message?.Role is not null ? new ChatRole(chunk.Message.Role) : null,
-            };
-
-            if (chunk.Message is { } message)
-            {
-                if (message.ToolCalls is { Length: > 0 })
+                var chunk = JsonSerializer.Deserialize(line, JsonContext.Default.OllamaChatResponse);
+                if (chunk is null)
                 {
-                    foreach (var toolCall in message.ToolCalls)
+                    continue;
+                }
+
+                string? modelId = chunk.Model ?? _metadata.ModelId;
+
+                ChatResponseUpdate update = new()
+                {
+                    CreatedAt = DateTimeOffset.TryParse(chunk.CreatedAt, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset createdAt) ? createdAt : null,
+                    FinishReason = ToFinishReason(chunk),
+                    ModelId = modelId,
+                    ResponseId = chunk.CreatedAt,
+                    Role = chunk.Message?.Role is not null ? new ChatRole(chunk.Message.Role) : null,
+                };
+
+                if (chunk.Message is { } message)
+                {
+                    if (message.ToolCalls is { Length: > 0 })
                     {
-                        if (toolCall.Function is { } function)
+                        foreach (var toolCall in message.ToolCalls)
                         {
-                            update.Contents.Add(ToFunctionCallContent(function));
+                            if (toolCall.Function is { } function)
+                            {
+                                update.Contents.Add(ToFunctionCallContent(function));
+                            }
                         }
+                    }
+
+                    // Equivalent rule to the nonstreaming case
+                    if (message.Content?.Length > 0 || update.Contents.Count == 0)
+                    {
+                        update.Contents.Insert(0, new TextContent(message.Content));
                     }
                 }
 
-                // Equivalent rule to the nonstreaming case
-                if (message.Content?.Length > 0 || update.Contents.Count == 0)
+                if (ParseOllamaChatResponseUsage(chunk) is { } usage)
                 {
-                    update.Contents.Insert(0, new TextContent(message.Content));
+                    update.Contents.Add(new UsageContent(usage));
                 }
-            }
 
-            if (ParseOllamaChatResponseUsage(chunk) is { } usage)
-            {
-                update.Contents.Add(new UsageContent(usage));
+                updates.Add(update);
+                yield return update;
             }
-
-            updates.Add(update);
-            yield return update;
         }
-
-        chatMessages.Add(updates.ToChatMessage());
+        finally
+        {
+            chatMessages.AddRangeFromUpdates(updates);
+        }
     }
 
     /// <inheritdoc />

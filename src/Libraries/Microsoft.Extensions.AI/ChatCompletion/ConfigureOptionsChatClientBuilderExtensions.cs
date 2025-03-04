@@ -25,6 +25,8 @@ public static class ConfigureOptionsChatClientBuilderExtensions
     /// of the caller-supplied instance if one was supplied.
     /// </remarks>
     /// <returns>The <paramref name="builder"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="configure"/> is <see langword="null"/>.</exception>
     public static ChatClientBuilder ConfigureOptions(
         this ChatClientBuilder builder, Action<ChatOptions> configure)
     {

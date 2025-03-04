@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
@@ -29,6 +30,7 @@ namespace Microsoft.Extensions.AI;
 /// only one of the values will be used to populate <see cref="ChatResponse.ModelId"/>.
 /// </para>
 /// </remarks>
+[DebuggerDisplay("[{Role}] {ContentForDebuggerDisplay}{EllipsesForDebuggerDisplay,nq}")]
 public class ChatResponseUpdate
 {
     /// <summary>The response update content items.</summary>
@@ -36,6 +38,35 @@ public class ChatResponseUpdate
 
     /// <summary>The name of the author of the update.</summary>
     private string? _authorName;
+
+    /// <summary>Initializes a new instance of the <see cref="ChatResponseUpdate"/> class.</summary>
+    [JsonConstructor]
+    public ChatResponseUpdate()
+    {
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="ChatResponseUpdate"/> class.</summary>
+    /// <param name="role">The role of the author of the update.</param>
+    /// <param name="contents">The text contents of the update.</param>
+    public ChatResponseUpdate(ChatRole? role, string? contents)
+        : this(role, contents is null ? null : [new TextContent(contents)])
+    {
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="ChatResponseUpdate"/> class.</summary>
+    /// <param name="role">The role of the author of the update.</param>
+    /// <param name="contents">The contents of the update.</param>
+    /// <exception cref="ArgumentException"><paramref name="contents"/> must not be read-only.</exception>
+    public ChatResponseUpdate(ChatRole? role, IList<AIContent>? contents)
+    {
+        if (contents is not null)
+        {
+            _ = Throw.IfReadOnly(contents);
+            _contents = contents;
+        }
+
+        Role = role;
+    }
 
     /// <summary>Gets or sets the name of the author of the response update.</summary>
     public string? AuthorName
@@ -47,29 +78,12 @@ public class ChatResponseUpdate
     /// <summary>Gets or sets the role of the author of the response update.</summary>
     public ChatRole? Role { get; set; }
 
-    /// <summary>
-    /// Gets or sets the text of the first <see cref="TextContent"/> instance in <see cref="Contents" />.
-    /// </summary>
+    /// <summary>Gets the text of this update.</summary>
     /// <remarks>
-    /// If there is no <see cref="TextContent"/> instance in <see cref="Contents" />, then the getter returns <see langword="null" />,
-    /// and the setter will add new <see cref="TextContent"/> instance with the provided value.
+    /// This property concatenates the text of all <see cref="TextContent"/> objects in <see cref="Contents"/>.
     /// </remarks>
     [JsonIgnore]
-    public string? Text
-    {
-        get => Contents.FindFirst<TextContent>()?.Text;
-        set
-        {
-            if (Contents.FindFirst<TextContent>() is { } textContent)
-            {
-                textContent.Text = value;
-            }
-            else if (value is not null)
-            {
-                Contents.Add(new TextContent(value));
-            }
-        }
-    }
+    public string Text => _contents is not null ? _contents.ConcatText() : string.Empty;
 
     /// <summary>Gets or sets the chat response update content items.</summary>
     /// <exception cref="ArgumentException">The <see cref="IList{T}"/> must not be read-only.</exception>
@@ -123,5 +137,13 @@ public class ChatResponseUpdate
     public string? ModelId { get; set; }
 
     /// <inheritdoc/>
-    public override string ToString() => Contents.ConcatText();
+    public override string ToString() => Text;
+
+    /// <summary>Gets a <see cref="AIContent"/> object to display in the debugger display.</summary>
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private AIContent? ContentForDebuggerDisplay => _contents is { Count: > 0 } ? _contents[0] : null;
+
+    /// <summary>Gets an indication for the debugger display of whether there's more content.</summary>
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private string EllipsesForDebuggerDisplay => _contents is { Count: > 1 } ? ", ..." : string.Empty;
 }

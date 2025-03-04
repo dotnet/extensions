@@ -55,6 +55,7 @@ public static partial class AIJsonUtilities
     /// <param name="serializerOptions">The options used to extract the schema from the specified type.</param>
     /// <param name="inferenceOptions">The options controlling schema inference.</param>
     /// <returns>A JSON schema document encoded as a <see cref="JsonElement"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
     public static JsonElement CreateFunctionJsonSchema(
         MethodBase method,
         string? title = null,
@@ -63,6 +64,7 @@ public static partial class AIJsonUtilities
         AIJsonSchemaCreateOptions? inferenceOptions = null)
     {
         _ = Throw.IfNull(method);
+
         serializerOptions ??= DefaultOptions;
         inferenceOptions ??= AIJsonSchemaCreateOptions.Default;
         title ??= method.Name;

@@ -25,6 +25,7 @@ public static class OpenAISerializationHelpers
     /// <param name="stream">The stream containing a message using the OpenAI wire format.</param>
     /// <param name="cancellationToken">A token used to cancel the operation.</param>
     /// <returns>The deserialized list of chat messages and chat options.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
     public static async Task<OpenAIChatCompletionRequest> DeserializeChatCompletionRequestAsync(
         Stream stream, CancellationToken cancellationToken = default)
     {
@@ -43,6 +44,8 @@ public static class OpenAISerializationHelpers
     /// <param name="options">The <see cref="JsonSerializerOptions"/> governing function call content serialization.</param>
     /// <param name="cancellationToken">A token used to cancel the serialization operation.</param>
     /// <returns>A task tracking the serialization operation.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="response"/> is <see langword="null"/>.</exception>
     public static async Task SerializeAsync(
         Stream stream,
         ChatResponse response,
@@ -66,6 +69,8 @@ public static class OpenAISerializationHelpers
     /// <param name="options">The <see cref="JsonSerializerOptions"/> governing function call content serialization.</param>
     /// <param name="cancellationToken">A token used to cancel the serialization operation.</param>
     /// <returns>A task tracking the serialization operation.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="updates"/> is <see langword="null"/>.</exception>
     public static Task SerializeStreamingAsync(
         Stream stream,
         IAsyncEnumerable<ChatResponseUpdate> updates,

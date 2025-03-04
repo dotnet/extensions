@@ -18,6 +18,7 @@ public class ChatMessage
     private string? _authorName;
 
     /// <summary>Initializes a new instance of the <see cref="ChatMessage"/> class.</summary>
+    /// <remarks>The instance defaults to having a role of <see cref="ChatRole.User"/>.</remarks>
     [JsonConstructor]
     public ChatMessage()
     {
@@ -25,26 +26,25 @@ public class ChatMessage
 
     /// <summary>Initializes a new instance of the <see cref="ChatMessage"/> class.</summary>
     /// <param name="role">The role of the author of the message.</param>
-    /// <param name="content">The contents of the message.</param>
-    public ChatMessage(ChatRole role, string? content)
-        : this(role, content is null ? [] : [new TextContent(content)])
+    /// <param name="contents">The text contents of the message.</param>
+    public ChatMessage(ChatRole role, string? contents)
+        : this(role, contents is null ? [] : [new TextContent(contents)])
     {
     }
 
     /// <summary>Initializes a new instance of the <see cref="ChatMessage"/> class.</summary>
     /// <param name="role">The role of the author of the message.</param>
     /// <param name="contents">The contents for this message.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="contents"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="contents"/> must not be read-only.</exception>
-    public ChatMessage(
-        ChatRole role,
-        IList<AIContent> contents)
+    public ChatMessage(ChatRole role, IList<AIContent>? contents)
     {
-        _ = Throw.IfNull(contents);
-        _ = Throw.IfReadOnly(contents);
+        if (contents is not null)
+        {
+            _ = Throw.IfReadOnly(contents);
+            _contents = contents;
+        }
 
         Role = role;
-        _contents = contents;
     }
 
     /// <summary>Clones the <see cref="ChatMessage"/> to a new <see cref="ChatMessage"/> instance.</summary>
@@ -73,29 +73,12 @@ public class ChatMessage
     /// <summary>Gets or sets the role of the author of the message.</summary>
     public ChatRole Role { get; set; } = ChatRole.User;
 
-    /// <summary>
-    /// Gets or sets the text of the first <see cref="TextContent"/> instance in <see cref="Contents" />.
-    /// </summary>
+    /// <summary>Gets the text of this message.</summary>
     /// <remarks>
-    /// If there is no <see cref="TextContent"/> instance in <see cref="Contents" />, then the getter returns <see langword="null" />,
-    /// and the setter adds a new <see cref="TextContent"/> instance with the provided value.
+    /// This property concatenates the text of all <see cref="TextContent"/> objects in <see cref="Contents"/>.
     /// </remarks>
     [JsonIgnore]
-    public string? Text
-    {
-        get => Contents.FindFirst<TextContent>()?.Text;
-        set
-        {
-            if (Contents.FindFirst<TextContent>() is { } textContent)
-            {
-                textContent.Text = value;
-            }
-            else if (value is not null)
-            {
-                Contents.Add(new TextContent(value));
-            }
-        }
-    }
+    public string Text => Contents.ConcatText();
 
     /// <summary>Gets or sets the chat message content items.</summary>
     /// <exception cref="ArgumentException">The <see cref="IList{T}"/> must not be read-only.</exception>
@@ -127,7 +110,7 @@ public class ChatMessage
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
 
     /// <inheritdoc/>
-    public override string ToString() => Contents.ConcatText();
+    public override string ToString() => Text;
 
     /// <summary>Gets a <see cref="AIContent"/> object to display in the debugger display.</summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]

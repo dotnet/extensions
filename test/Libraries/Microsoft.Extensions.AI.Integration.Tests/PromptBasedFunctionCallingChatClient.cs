@@ -18,8 +18,8 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.AI;
 
-// This isn't a feature we're planning to ship, but demonstrates how custom clients can
-// layer in non-trivial functionality. In this case we're able to upgrade non-function-calling models
+// Demonstrates how custom clients can layer in non-trivial functionality.
+// In this case we're able to upgrade non-function-calling models
 // to behaving as if they do support function calling.
 //
 // In practice:
@@ -82,10 +82,10 @@ internal sealed class PromptBasedFunctionCallingChatClient(IChatClient innerClie
 
         var result = await base.GetResponseAsync(chatMessages, options, cancellationToken);
 
-        if (result.Message.Text is { } content && content.IndexOf("<tool_call_json>", StringComparison.Ordinal) is int startPos
+        if (result.Text is { } content && content.IndexOf("<tool_call_json>", StringComparison.Ordinal) is int startPos
             && startPos >= 0)
         {
-            var message = result.Message;
+            var message = result.Messages.Last();
             var contentItem = message.Contents.SingleOrDefault();
             content = content.Substring(startPos);
 
@@ -153,7 +153,7 @@ internal sealed class PromptBasedFunctionCallingChatClient(IChatClient innerClie
 
     private static void AddOrUpdateToolPrompt(IList<ChatMessage> chatMessages, IList<AITool> tools)
     {
-        var existingToolPrompt = chatMessages.FirstOrDefault(c => c.Text?.StartsWith(MessageIntro, StringComparison.Ordinal) is true);
+        var existingToolPrompt = chatMessages.FirstOrDefault(c => c.Text.StartsWith(MessageIntro, StringComparison.Ordinal) is true);
         if (existingToolPrompt is null)
         {
             existingToolPrompt = new ChatMessage(ChatRole.System, (string?)null);
@@ -161,7 +161,7 @@ internal sealed class PromptBasedFunctionCallingChatClient(IChatClient innerClie
         }
 
         var toolDescriptorsJson = JsonSerializer.Serialize(tools.OfType<AIFunction>().Select(ToToolDescriptor), _jsonOptions);
-        existingToolPrompt.Text = $$"""
+        existingToolPrompt.Contents.OfType<TextContent>().First().Text = $$"""
             {{MessageIntro}}
 
             For each function call, return a JSON object with the function name and arguments within <tool_call_json></tool_call_json> XML tags

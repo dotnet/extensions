@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
 
@@ -15,7 +16,6 @@ namespace Microsoft.Extensions.AI;
 /// in a variety of scenarios. For example, if automatic function calling is employed, such that a single
 /// request to a <see cref="IChatClient"/> may actually generate multiple roundtrips to an inner <see cref="IChatClient"/>
 /// it uses, all of the involved messages may be surfaced as part of the final <see cref="ChatResponse"/>.
-/// The messages are ordered, such that <see cref="Message"/> returns the last message in the list.
 /// </remarks>
 public class ChatResponse
 {
@@ -49,10 +49,6 @@ public class ChatResponse
     }
 
     /// <summary>Gets or sets the chat response messages.</summary>
-    /// <remarks>
-    /// The last message in the list maps to <see cref="Message"/>. It should represent
-    /// the final result message of the operation.
-    /// </remarks>
     /// <exception cref="ArgumentException">The <see cref="IList{T}"/> must not be read-only.</exception>
     public IList<ChatMessage> Messages
     {
@@ -68,35 +64,29 @@ public class ChatResponse
         }
     }
 
-    /// <summary>Gets or sets the last chat response message.</summary>
+    /// <summary>Gets the text of the response.</summary>
     /// <remarks>
-    /// When getting <see cref="Message"/>, if there are no messages, <see cref="Message"/> will add a new
-    /// empty message to the list and return that message; if there are messages, the last will be returned.
-    /// When setting <see cref="Message"/>, if there are messages, the last message will be replaced by the
-    /// newly set instance; if there are no messages, the newly set instance will be added to the list.
+    /// This property concatenates the <see cref="ChatMessage.Text"/> of all <see cref="ChatMessage"/>
+    /// instances in <see cref="Messages"/>.
     /// </remarks>
     [JsonIgnore]
-    public ChatMessage Message
+    public string Text
     {
         get
         {
-            if (Messages.Count == 0)
+            IList<ChatMessage>? messages = _messages;
+            if (messages is null)
             {
-                Messages.Add(new ChatMessage(ChatRole.Assistant, []));
+                return string.Empty;
             }
 
-            return Messages[Messages.Count - 1];
-        }
-        set
-        {
-            if (Messages.Count > 0)
+            int count = messages.Count;
+            return count switch
             {
-                Messages[Messages.Count - 1] = value;
-            }
-            else
-            {
-                Messages.Add(value);
-            }
+                0 => string.Empty,
+                1 => messages[0].Text,
+                _ => messages.SelectMany(m => m.Contents).ConcatText(),
+            };
         }
     }
 
@@ -138,9 +128,7 @@ public class ChatResponse
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
 
     /// <inheritdoc />
-    public override string ToString() =>
-        _messages is null || _messages.Count == 0 ? string.Empty :
-        Message.ToString();
+    public override string ToString() => Text;
 
     /// <summary>Creates an array of <see cref="ChatResponseUpdate" /> instances that represent this <see cref="ChatResponse" />.</summary>
     /// <returns>An array of <see cref="ChatResponseUpdate" /> instances that may be used to represent this <see cref="ChatResponse" />.</returns>

@@ -31,17 +31,24 @@ internal static partial class OpenAIModelMappers
         _ = Throw.IfNull(response);
 
         List<ChatToolCall>? toolCalls = null;
-        foreach (AIContent content in response.Message.Contents)
+        ChatRole? role = null;
+        List<AIContent> allContents = [];
+        foreach (ChatMessage message in response.Messages)
         {
-            if (content is FunctionCallContent callRequest)
+            role = message.Role;
+            foreach (AIContent content in message.Contents)
             {
-                toolCalls ??= [];
-                toolCalls.Add(ChatToolCall.CreateFunctionToolCall(
-                    callRequest.CallId,
-                    callRequest.Name,
-                    new(JsonSerializer.SerializeToUtf8Bytes(
-                        callRequest.Arguments,
-                        options.GetTypeInfo(typeof(IDictionary<string, object?>))))));
+                allContents.Add(content);
+                if (content is FunctionCallContent callRequest)
+                {
+                    toolCalls ??= [];
+                    toolCalls.Add(ChatToolCall.CreateFunctionToolCall(
+                        callRequest.CallId,
+                        callRequest.Name,
+                        new(JsonSerializer.SerializeToUtf8Bytes(
+                            callRequest.Arguments,
+                            options.GetTypeInfo(typeof(IDictionary<string, object?>))))));
+                }
             }
         }
 
@@ -55,9 +62,9 @@ internal static partial class OpenAIModelMappers
             id: response.ResponseId ?? CreateCompletionId(),
             model: response.ModelId,
             createdAt: response.CreatedAt ?? DateTimeOffset.UtcNow,
-            role: ToOpenAIChatRole(response.Message.Role).Value,
+            role: ToOpenAIChatRole(role) ?? ChatMessageRole.Assistant,
             finishReason: ToOpenAIFinishReason(response.FinishReason),
-            content: new(ToOpenAIChatContent(response.Message.Contents)),
+            content: new(ToOpenAIChatContent(allContents)),
             toolCalls: toolCalls,
             refusal: response.AdditionalProperties.GetValueOrDefault<string>(nameof(ChatCompletion.Refusal)),
             contentTokenLogProbabilities: response.AdditionalProperties.GetValueOrDefault<IReadOnlyList<ChatTokenLogProbabilityDetails>>(nameof(ChatCompletion.ContentTokenLogProbabilities)),
