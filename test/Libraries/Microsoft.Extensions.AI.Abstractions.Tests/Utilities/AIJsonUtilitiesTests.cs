@@ -422,6 +422,27 @@ public static class AIJsonUtilitiesTests
         Assert.Throws<ArgumentNullException>(() => options.AddAIContentType(null!, "discriminator"));
     }
 
+    [Fact]
+    public static void HashData_Idempotent()
+    {
+        JsonSerializerOptions customOptions = new()
+        {
+            TypeInfoResolver = AIJsonUtilities.DefaultOptions.TypeInfoResolver
+        };
+
+        foreach (JsonSerializerOptions? options in new[] { AIJsonUtilities.DefaultOptions, null, customOptions })
+        {
+            string key1 = AIJsonUtilities.HashDataToString(["a", 'b', 42], options);
+            string key2 = AIJsonUtilities.HashDataToString(["a", 'b', 42], options);
+            string key3 = AIJsonUtilities.HashDataToString([TimeSpan.FromSeconds(1), null, 1.23], options);
+            string key4 = AIJsonUtilities.HashDataToString([TimeSpan.FromSeconds(1), null, 1.23], options);
+
+            Assert.Equal(key1, key2);
+            Assert.Equal(key3, key4);
+            Assert.NotEqual(key1, key3);
+        }
+    }
+
     private class DerivedAIContent : AIContent
     {
         public int DerivedValue { get; set; }
