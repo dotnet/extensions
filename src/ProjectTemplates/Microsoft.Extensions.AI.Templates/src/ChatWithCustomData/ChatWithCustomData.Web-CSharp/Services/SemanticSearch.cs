@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
-namespace ChatWithCustomData.Web.Services;
+namespace ChatWithCustomData.Web_CSharp.Services;
 
 public class SemanticSearch(
     IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
@@ -10,7 +10,7 @@ public class SemanticSearch(
     public async Task<IReadOnlyList<SemanticSearchRecord>> SearchAsync(string text, string? filenameFilter, int maxResults)
     {
         var queryEmbedding = await embeddingGenerator.GenerateEmbeddingVectorAsync(text);
-        var vectorCollection = vectorStore.GetCollection<string, SemanticSearchRecord>("data-ChatWithCustomData.Web-ingestion");
+        var vectorCollection = vectorStore.GetCollection<string, SemanticSearchRecord>("data-ChatWithCustomData.Web-CSharp-ingestion");
         var filter = filenameFilter is { Length: > 0 }
             ? new VectorSearchFilter().EqualTo(nameof(SemanticSearchRecord.FileName), filenameFilter)
             : null;

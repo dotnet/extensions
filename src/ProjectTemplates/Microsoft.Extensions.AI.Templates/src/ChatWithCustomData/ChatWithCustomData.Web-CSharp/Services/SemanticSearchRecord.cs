@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.VectorData;
 
-namespace ChatWithCustomData.Web.Services;
+namespace ChatWithCustomData.Web_CSharp.Services;
 
 public class SemanticSearchRecord
 {

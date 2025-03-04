@@ -7,7 +7,10 @@
   "description": "A project template for creating an AI chat application, which uses retrieval-augmented generation (RAG) to chat with your own data.",
   "shortName": "aichatweb",
   "defaultName": "ChatApp",
-  "sourceName": "ChatWithCustomData.Web", // TODO: When we support multi-project output, this needs to change to ChatWithCustomData, then we need some other technique to make it avoid emitting a .Web suffix in the single-project case
+  // The placeholder sourceName needs to contain a dash to ensure the CSS bundle asset uses the assembly identity name
+  // TODO: When we support multi-project output, this needs to change to ChatWithCustomData, then we need some other
+  // technique to make it avoid emitting a .Web suffix in the single-project case.
+  "sourceName": "ChatWithCustomData.Web-CSharp",
   "tags": {
     "language": "C#",
     "type": "project"
@@ -16,7 +19,7 @@
     "d5681fae-b21b-4114-b781-48180f08c0c4"
   ],
   "primaryOutputs": [
-    {"path": "./ChatWithCustomData.Web.csproj"},
+    {"path": "./ChatWithCustomData.Web-CSharp.csproj"},
     {"path": "./README.md"}
   ],
   "sources": [{
@@ -28,7 +31,7 @@
         // Later when we support multi-project output with Qdrant on Docker, we'll also emit
         // a second project ChatWithCustomData.AppHost and hence will suppress this renaming.
         "rename": {
-          "ChatWithCustomData.Web/": "./"
+          "ChatWithCustomData.Web-CSharp/": "./"
         }
       }
     ]
@@ -51,12 +54,6 @@
     "hostIdentifier": {
       "type": "bind",
       "binding": "HostIdentifier"
-    },
-    "assemblyName": {
-      "type": "derived",
-      "valueSource": "name",
-      "valueTransform": "identity", // Avoids transformation,
-      "replaces": "$$AssemblyName$$"
     },
     "AiServiceProvider": {
       "type": "parameter",
@@ -277,7 +274,7 @@
       "type": "derived",
       "valueSource": "name",
       "valueTransform": "vectorStoreIndexNameTransform",
-      "replaces": "data-ChatWithCustomData.Web-ingestion"
+      "replaces": "data-ChatWithCustomData.Web-CSharp-ingestion"
     }
   },
   "forms": {
