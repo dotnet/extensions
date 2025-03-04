@@ -150,6 +150,9 @@ public static class ChatClientStructuredOutputExtensions
     /// by the client, including any messages for roundtrips to the model as part of the implementation of this request, will be included.
     /// </remarks>
     /// <typeparam name="T">The type of structured output to request.</typeparam>
+    /// <exception cref="ArgumentNullException"><paramref name="chatClient"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="chatMessages"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="serializerOptions"/> is <see langword="null"/>.</exception>
     public static async Task<ChatResponse<T>> GetResponseAsync<T>(
         this IChatClient chatClient,
         IList<ChatMessage> chatMessages,

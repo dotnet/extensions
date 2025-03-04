@@ -22,6 +22,7 @@ public sealed class EmbeddingGeneratorBuilder<TInput, TEmbedding>
 
     /// <summary>Initializes a new instance of the <see cref="EmbeddingGeneratorBuilder{TInput, TEmbedding}"/> class.</summary>
     /// <param name="innerGenerator">The inner <see cref="EmbeddingGeneratorBuilder{TInput, TEmbedding}"/> that represents the underlying backend.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="innerGenerator"/> is <see langword="null"/>.</exception>
     public EmbeddingGeneratorBuilder(IEmbeddingGenerator<TInput, TEmbedding> innerGenerator)
     {
         _ = Throw.IfNull(innerGenerator);
@@ -66,6 +67,7 @@ public sealed class EmbeddingGeneratorBuilder<TInput, TEmbedding>
     /// <summary>Adds a factory for an intermediate embedding generator to the embedding generator pipeline.</summary>
     /// <param name="generatorFactory">The generator factory function.</param>
     /// <returns>The updated <see cref="EmbeddingGeneratorBuilder{TInput, TEmbedding}"/> instance.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="generatorFactory"/> is <see langword="null"/>.</exception>
     public EmbeddingGeneratorBuilder<TInput, TEmbedding> Use(Func<IEmbeddingGenerator<TInput, TEmbedding>, IEmbeddingGenerator<TInput, TEmbedding>> generatorFactory)
     {
         _ = Throw.IfNull(generatorFactory);
@@ -76,6 +78,7 @@ public sealed class EmbeddingGeneratorBuilder<TInput, TEmbedding>
     /// <summary>Adds a factory for an intermediate embedding generator to the embedding generator pipeline.</summary>
     /// <param name="generatorFactory">The generator factory function.</param>
     /// <returns>The updated <see cref="EmbeddingGeneratorBuilder{TInput, TEmbedding}"/> instance.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="generatorFactory"/> is <see langword="null"/>.</exception>
     public EmbeddingGeneratorBuilder<TInput, TEmbedding> Use(
         Func<IEmbeddingGenerator<TInput, TEmbedding>, IServiceProvider, IEmbeddingGenerator<TInput, TEmbedding>> generatorFactory)
     {

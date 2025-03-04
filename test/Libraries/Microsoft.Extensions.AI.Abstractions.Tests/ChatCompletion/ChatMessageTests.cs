@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using Xunit;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Microsoft.Extensions.AI;
 
@@ -18,7 +19,7 @@ public class ChatMessageTests
         Assert.Null(message.AuthorName);
         Assert.Empty(message.Contents);
         Assert.Equal(ChatRole.User, message.Role);
-        Assert.Null(message.Text);
+        Assert.Empty(message.Text);
         Assert.NotNull(message.Contents);
         Assert.Same(message.Contents, message.Contents);
         Assert.Empty(message.Contents);
@@ -55,9 +56,23 @@ public class ChatMessageTests
     }
 
     [Fact]
-    public void Constructor_RoleList_InvalidArgs_Throws()
+    public void Constructor_NullArgs_Valid()
     {
-        Assert.Throws<ArgumentNullException>("contents", () => new ChatMessage(ChatRole.User, (IList<AIContent>)null!));
+        ChatMessage message;
+
+        message = new();
+        Assert.Empty(message.Text);
+        Assert.Empty(message.Contents);
+
+        message = new(ChatRole.User, (string?)null);
+        Assert.Empty(message.Text);
+        Assert.Empty(message.Contents);
+
+        message = new(ChatRole.User, (IList<AIContent>?)null);
+        Assert.Empty(message.Text);
+        Assert.Empty(message.Contents);
+
+        Assert.Throws<ArgumentException>(() => new ChatMessage(ChatRole.User, Array.Empty<AIContent>()));
     }
 
     [Theory]
@@ -80,7 +95,7 @@ public class ChatMessageTests
         if (messageCount == 0)
         {
             Assert.Empty(message.Contents);
-            Assert.Null(message.Text);
+            Assert.Empty(message.Text);
         }
         else
         {
@@ -91,7 +106,7 @@ public class ChatMessageTests
                 Assert.Equal($"text-{i}", tc.Text);
             }
 
-            Assert.Equal("text-0", message.Text);
+            Assert.Equal(string.Concat(Enumerable.Range(0, messageCount).Select(i => $"text-{i}")), message.Text);
             Assert.Equal(string.Concat(Enumerable.Range(0, messageCount).Select(i => $"text-{i}")), message.ToString());
         }
 
@@ -120,7 +135,7 @@ public class ChatMessageTests
     }
 
     [Fact]
-    public void Text_GetSet_UsesFirstTextContent()
+    public void Text_ConcatsAllTextContent()
     {
         ChatMessage message = new(ChatRole.User,
         [
@@ -134,55 +149,13 @@ public class ChatMessageTests
 
         TextContent textContent = Assert.IsType<TextContent>(message.Contents[3]);
         Assert.Equal("text-1", textContent.Text);
-        Assert.Equal("text-1", message.Text);
+        Assert.Equal("text-1text-2", message.Text);
         Assert.Equal("text-1text-2", message.ToString());
 
-        message.Text = "text-3";
-        Assert.Equal("text-3", message.Text);
-        Assert.Equal("text-3", message.Text);
-        Assert.Same(textContent, message.Contents[3]);
+        ((TextContent)message.Contents[3]).Text = "text-3";
+        Assert.Equal("text-3", textContent.Text);
+        Assert.Equal("text-3text-2", message.Text);
         Assert.Equal("text-3text-2", message.ToString());
-    }
-
-    [Fact]
-    public void Text_Set_AddsTextMessageToEmptyList()
-    {
-        ChatMessage message = new(ChatRole.User, []);
-        Assert.Empty(message.Contents);
-
-        message.Text = "text-1";
-        Assert.Equal("text-1", message.Text);
-
-        Assert.Single(message.Contents);
-        TextContent textContent = Assert.IsType<TextContent>(message.Contents[0]);
-        Assert.Equal("text-1", textContent.Text);
-    }
-
-    [Fact]
-    public void Text_Set_AddsTextMessageToListWithNoText()
-    {
-        ChatMessage message = new(ChatRole.User,
-        [
-            new DataContent("http://localhost/audio"),
-            new DataContent("http://localhost/image"),
-            new FunctionCallContent("callId1", "fc1"),
-        ]);
-        Assert.Equal(3, message.Contents.Count);
-
-        message.Text = "text-1";
-        Assert.Equal("text-1", message.Text);
-        Assert.Equal(4, message.Contents.Count);
-
-        message.Text = "text-2";
-        Assert.Equal("text-2", message.Text);
-        Assert.Equal(4, message.Contents.Count);
-
-        message.Contents.RemoveAt(3);
-        Assert.Equal(3, message.Contents.Count);
-
-        message.Text = "text-3";
-        Assert.Equal("text-3", message.Text);
-        Assert.Equal(4, message.Contents.Count);
     }
 
     [Fact]
@@ -282,12 +255,13 @@ public class ChatMessageTests
         ];
 
         // Act
-        var chatMessageJson = JsonSerializer.Serialize(new ChatMessage(ChatRole.User, contents: items)
+        var chatMessage = new ChatMessage(ChatRole.User, contents: items)
         {
-            Text = "content-1-override", // Override the content of the first text content item that has the "content-1" content
             AuthorName = "Fred",
             AdditionalProperties = new() { ["message-metadata-key-1"] = "message-metadata-value-1" },
-        }, TestJsonSerializerContext.Default.Options);
+        };
+        ((TextContent)chatMessage.Contents[0]).Text = "content-1-override"; // Override the content of the first text content item that has the "content-1" content
+        var chatMessageJson = JsonSerializer.Serialize(chatMessage, TestJsonSerializerContext.Default.Options);
 
         var deserializedMessage = JsonSerializer.Deserialize<ChatMessage>(chatMessageJson, TestJsonSerializerContext.Default.Options)!;
 

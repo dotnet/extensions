@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -47,7 +48,7 @@ public class UseDelegateChatClientTests
                 Assert.Same(expectedOptions, options);
                 Assert.Equal(expectedCts.Token, cancellationToken);
                 Assert.Equal(42, asyncLocal.Value);
-                return YieldUpdates(new ChatResponseUpdate { Text = "world" });
+                return YieldUpdates(new ChatResponseUpdate(null, "world"));
             },
         };
 
@@ -64,11 +65,11 @@ public class UseDelegateChatClientTests
 
         Assert.Equal(0, asyncLocal.Value);
         ChatResponse response = await client.GetResponseAsync(expectedMessages, expectedOptions, expectedCts.Token);
-        Assert.Equal("hello", response.Message.Text);
+        Assert.Equal("hello", response.Text);
 
         Assert.Equal(0, asyncLocal.Value);
         response = await client.GetStreamingResponseAsync(expectedMessages, expectedOptions, expectedCts.Token).ToChatResponseAsync();
-        Assert.Equal("world", response.Message.Text);
+        Assert.Equal("world", response.Text);
     }
 
     [Fact]
@@ -99,7 +100,7 @@ public class UseDelegateChatClientTests
                 Assert.Equal(expectedCts.Token, cancellationToken);
                 asyncLocal.Value = 42;
                 var cc = await innerClient.GetResponseAsync(chatMessages, options, cancellationToken);
-                cc.Message.Text += " world";
+                cc.Messages.SelectMany(c => c.Contents).OfType<TextContent>().Last().Text += " world";
                 return cc;
             }, null)
             .Build();
@@ -107,10 +108,10 @@ public class UseDelegateChatClientTests
         Assert.Equal(0, asyncLocal.Value);
 
         ChatResponse response = await client.GetResponseAsync(expectedMessages, expectedOptions, expectedCts.Token);
-        Assert.Equal("hello world", response.Message.Text);
+        Assert.Equal("hello world", response.Text);
 
         response = await client.GetStreamingResponseAsync(expectedMessages, expectedOptions, expectedCts.Token).ToChatResponseAsync();
-        Assert.Equal("hello world", response.Message.Text);
+        Assert.Equal("hello world", response.Text);
     }
 
     [Fact]
@@ -129,7 +130,7 @@ public class UseDelegateChatClientTests
                 Assert.Same(expectedOptions, options);
                 Assert.Equal(expectedCts.Token, cancellationToken);
                 Assert.Equal(42, asyncLocal.Value);
-                return YieldUpdates(new ChatResponseUpdate { Text = "hello" });
+                return YieldUpdates(new ChatResponseUpdate(null, "hello"));
             },
         };
 
@@ -150,7 +151,7 @@ public class UseDelegateChatClientTests
                         yield return update;
                     }
 
-                    yield return new() { Text = " world" };
+                    yield return new(null, " world");
                 }
             })
             .Build();
@@ -158,10 +159,10 @@ public class UseDelegateChatClientTests
         Assert.Equal(0, asyncLocal.Value);
 
         ChatResponse response = await client.GetResponseAsync(expectedMessages, expectedOptions, expectedCts.Token);
-        Assert.Equal("hello world", response.Message.Text);
+        Assert.Equal("hello world", response.Text);
 
         response = await client.GetStreamingResponseAsync(expectedMessages, expectedOptions, expectedCts.Token).ToChatResponseAsync();
-        Assert.Equal("hello world", response.Message.Text);
+        Assert.Equal("hello world", response.Text);
     }
 
     [Fact]
@@ -189,7 +190,7 @@ public class UseDelegateChatClientTests
                 Assert.Same(expectedOptions, options);
                 Assert.Equal(expectedCts.Token, cancellationToken);
                 Assert.Equal(42, asyncLocal.Value);
-                return YieldUpdates(new ChatResponseUpdate { Text = "streaming hello" });
+                return YieldUpdates(new ChatResponseUpdate(null, "streaming hello"));
             },
         };
 
@@ -202,7 +203,7 @@ public class UseDelegateChatClientTests
                     Assert.Equal(expectedCts.Token, cancellationToken);
                     asyncLocal.Value = 42;
                     var cc = await innerClient.GetResponseAsync(chatMessages, options, cancellationToken);
-                    cc.Message.Text += " world (non-streaming)";
+                    cc.Messages.SelectMany(c => c.Contents).OfType<TextContent>().Last().Text += " world (non-streaming)";
                     return cc;
                 },
                 (chatMessages, options, innerClient, cancellationToken) =>
@@ -221,7 +222,7 @@ public class UseDelegateChatClientTests
                             yield return update;
                         }
 
-                        yield return new() { Text = " world (streaming)" };
+                        yield return new(null, " world (streaming)");
                     }
                 })
             .Build();
@@ -229,10 +230,10 @@ public class UseDelegateChatClientTests
         Assert.Equal(0, asyncLocal.Value);
 
         ChatResponse response = await client.GetResponseAsync(expectedMessages, expectedOptions, expectedCts.Token);
-        Assert.Equal("non-streaming hello world (non-streaming)", response.Message.Text);
+        Assert.Equal("non-streaming hello world (non-streaming)", response.Text);
 
         response = await client.GetStreamingResponseAsync(expectedMessages, expectedOptions, expectedCts.Token).ToChatResponseAsync();
-        Assert.Equal("streaming hello world (streaming)", response.Message.Text);
+        Assert.Equal("streaming hello world (streaming)", response.Text);
     }
 
     private static async IAsyncEnumerable<ChatResponseUpdate> YieldUpdates(params ChatResponseUpdate[] updates)

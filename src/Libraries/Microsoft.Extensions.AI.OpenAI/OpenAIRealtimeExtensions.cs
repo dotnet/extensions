@@ -23,6 +23,7 @@ public static class OpenAIRealtimeExtensions
     /// it can be used with <see cref="RealtimeConversationClient"/>.
     /// </summary>
     /// <returns>A <see cref="ConversationFunctionTool"/> that can be used with <see cref="RealtimeConversationClient"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="aiFunction"/> is <see langword="null"/>.</exception>
     public static ConversationFunctionTool ToConversationFunctionTool(this AIFunction aiFunction)
     {
         _ = Throw.IfNull(aiFunction);
@@ -53,6 +54,9 @@ public static class OpenAIRealtimeExtensions
     /// <param name="jsonSerializerOptions">An optional <see cref="JsonSerializerOptions"/> that controls JSON handling.</param>
     /// <param name="cancellationToken">An optional <see cref="CancellationToken"/>.</param>
     /// <returns>A <see cref="Task"/> that represents the completion of processing, including invoking any asynchronous tools.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="session"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="update"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="tools"/> is <see langword="null"/>.</exception>
     public static async Task HandleToolCallsAsync(
         this RealtimeConversationSession session,
         ConversationUpdate update,

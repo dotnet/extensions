@@ -21,39 +21,24 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Throws<ArgumentNullException>("updates", () => ((List<ChatResponseUpdate>)null!).ToChatResponse());
     }
 
-    public static IEnumerable<object?[]> ToChatResponse_SuccessfullyCreatesResponse_MemberData()
-    {
-        foreach (bool useAsync in new[] { false, true })
-        {
-            foreach (bool? coalesceContent in new bool?[] { null, false, true })
-            {
-                yield return new object?[] { useAsync, coalesceContent };
-            }
-        }
-    }
-
     [Theory]
-    [MemberData(nameof(ToChatResponse_SuccessfullyCreatesResponse_MemberData))]
-    public async Task ToChatResponse_SuccessfullyCreatesResponse(bool useAsync, bool? coalesceContent)
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ToChatResponse_SuccessfullyCreatesResponse(bool useAsync)
     {
         ChatResponseUpdate[] updates =
         [
-            new() { Text = "Hello", ResponseId = "12345", CreatedAt = new DateTimeOffset(1, 2, 3, 4, 5, 6, TimeSpan.Zero), ModelId = "model123" },
-            new() { Text = ", ", AuthorName = "Someone", Role = new ChatRole("human"), AdditionalProperties = new() { ["a"] = "b" } },
-            new() { Text = "world!", CreatedAt = new DateTimeOffset(2, 2, 3, 4, 5, 6, TimeSpan.Zero), ChatThreadId = "123", AdditionalProperties = new() { ["c"] = "d" } },
+            new(ChatRole.Assistant, "Hello") { ResponseId = "12345", CreatedAt = new DateTimeOffset(1, 2, 3, 4, 5, 6, TimeSpan.Zero), ModelId = "model123" },
+            new(new("human"), ", ") { AuthorName = "Someone", AdditionalProperties = new() { ["a"] = "b" } },
+            new(null, "world!") { CreatedAt = new DateTimeOffset(2, 2, 3, 4, 5, 6, TimeSpan.Zero), ChatThreadId = "123", AdditionalProperties = new() { ["c"] = "d" } },
 
             new() { Contents = [new UsageContent(new() { InputTokenCount = 1, OutputTokenCount = 2 })] },
             new() { Contents = [new UsageContent(new() { InputTokenCount = 4, OutputTokenCount = 5 })] },
         ];
 
-        ChatResponse response = (coalesceContent is bool, useAsync) switch
-        {
-            (false, false) => updates.ToChatResponse(),
-            (false, true) => await YieldAsync(updates).ToChatResponseAsync(),
-
-            (true, false) => updates.ToChatResponse(coalesceContent.GetValueOrDefault()),
-            (true, true) => await YieldAsync(updates).ToChatResponseAsync(coalesceContent.GetValueOrDefault()),
-        };
+        ChatResponse response = useAsync ?
+            updates.ToChatResponse() :
+            await YieldAsync(updates).ToChatResponseAsync();
         Assert.NotNull(response);
 
         Assert.NotNull(response.Usage);
@@ -66,7 +51,7 @@ public class ChatResponseUpdateExtensionsTests
 
         Assert.Equal("123", response.ChatThreadId);
 
-        ChatMessage message = response.Message;
+        ChatMessage message = response.Messages.Last();
         Assert.Equal(new ChatRole("human"), message.Role);
         Assert.Equal("Someone", message.AuthorName);
         Assert.Null(message.AdditionalProperties);
@@ -76,16 +61,7 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal("b", response.AdditionalProperties["a"]);
         Assert.Equal("d", response.AdditionalProperties["c"]);
 
-        if (coalesceContent is null or true)
-        {
-            Assert.Equal("Hello, world!", response.Message.Text);
-        }
-        else
-        {
-            Assert.Equal("Hello", response.Message.Contents[0].ToString());
-            Assert.Equal(", ", response.Message.Contents[1].ToString());
-            Assert.Equal("world!", response.Message.Contents[2].ToString());
-        }
+        Assert.Equal("Hello, world!", response.Text);
     }
 
     public static IEnumerable<object[]> ToChatResponse_Coalescing_VariousSequenceAndGapLengths_MemberData()
@@ -127,7 +103,7 @@ public class ChatResponseUpdateExtensionsTests
             for (int i = 0; i < sequenceLength; i++)
             {
                 string text = $"{(char)('A' + sequenceNum)}{i}";
-                updates.Add(new() { Text = text });
+                updates.Add(new(null, text));
                 sb.Append(text);
             }
 
@@ -155,7 +131,7 @@ public class ChatResponseUpdateExtensionsTests
         ChatResponse response = useAsync ? await YieldAsync(updates).ToChatResponseAsync() : updates.ToChatResponse();
         Assert.NotNull(response);
 
-        ChatMessage message = response.Message;
+        ChatMessage message = response.Messages.Single();
         Assert.NotNull(message);
 
         Assert.Equal(expected.Count + (gapLength * ((numSequences - 1) + (gapBeginningEnd ? 2 : 0))), message.Contents.Count);
@@ -173,8 +149,8 @@ public class ChatResponseUpdateExtensionsTests
     {
         ChatResponseUpdate[] updates =
         {
-            new() { Text = "Hello, " },
-            new() { Text = "world!" },
+            new(null, "Hello, "),
+            new(null, "world!"),
             new() { Contents = [new UsageContent(new() { TotalTokenCount = 42 })] },
         };
 
@@ -185,7 +161,7 @@ public class ChatResponseUpdateExtensionsTests
         Assert.NotNull(response.Usage);
         Assert.Equal(42, response.Usage.TotalTokenCount);
 
-        Assert.Equal("Hello, world!", Assert.IsType<TextContent>(Assert.Single(response.Message.Contents)).Text);
+        Assert.Equal("Hello, world!", Assert.IsType<TextContent>(Assert.Single(Assert.Single(response.Messages).Contents)).Text);
     }
 
     private static async IAsyncEnumerable<ChatResponseUpdate> YieldAsync(IEnumerable<ChatResponseUpdate> updates)

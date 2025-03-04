@@ -56,7 +56,13 @@ public abstract class CachingChatClient : DelegatingChatClient
 
         if (await ReadCacheAsync(cacheKey, cancellationToken).ConfigureAwait(false) is { } result)
         {
-            chatMessages.Add(result.Message);
+            if (options?.ChatThreadId is null)
+            {
+                foreach (ChatMessage message in result.Messages)
+                {
+                    chatMessages.Add(message);
+                }
+            }
         }
         else
         {
@@ -90,7 +96,10 @@ public abstract class CachingChatClient : DelegatingChatClient
 
                 if (chatResponse.ChatThreadId is null)
                 {
-                    chatMessages.Add(chatResponse.Message);
+                    foreach (ChatMessage message in chatResponse.Messages)
+                    {
+                        chatMessages.Add(message);
+                    }
                 }
             }
             else
@@ -122,7 +131,7 @@ public abstract class CachingChatClient : DelegatingChatClient
 
                 if (chatThreadId is null)
                 {
-                    chatMessages.Add(existingChunks.ToChatMessage());
+                    chatMessages.AddRangeFromUpdates(existingChunks);
                 }
             }
             else
@@ -153,6 +162,7 @@ public abstract class CachingChatClient : DelegatingChatClient
     /// <param name="key">The cache key.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>The previously cached data, if available, otherwise <see langword="null"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="key"/> is <see langword="null"/>.</exception>
     protected abstract Task<ChatResponse?> ReadCacheAsync(string key, CancellationToken cancellationToken);
 
     /// <summary>
@@ -162,6 +172,7 @@ public abstract class CachingChatClient : DelegatingChatClient
     /// <param name="key">The cache key.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>The previously cached data, if available, otherwise <see langword="null"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="key"/> is <see langword="null"/>.</exception>
     protected abstract Task<IReadOnlyList<ChatResponseUpdate>?> ReadCacheStreamingAsync(string key, CancellationToken cancellationToken);
 
     /// <summary>
@@ -172,6 +183,8 @@ public abstract class CachingChatClient : DelegatingChatClient
     /// <param name="value">The <see cref="ChatResponse"/> to be stored.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>A <see cref="Task"/> representing the completion of the operation.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="key"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/>.</exception>
     protected abstract Task WriteCacheAsync(string key, ChatResponse value, CancellationToken cancellationToken);
 
     /// <summary>
@@ -182,5 +195,7 @@ public abstract class CachingChatClient : DelegatingChatClient
     /// <param name="value">The <see cref="ChatResponse"/> to be stored.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>A <see cref="Task"/> representing the completion of the operation.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="key"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/>.</exception>
     protected abstract Task WriteCacheStreamingAsync(string key, IReadOnlyList<ChatResponseUpdate> value, CancellationToken cancellationToken);
 }

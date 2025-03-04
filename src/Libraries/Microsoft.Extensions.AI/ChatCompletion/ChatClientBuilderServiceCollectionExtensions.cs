@@ -16,11 +16,18 @@ public static class ChatClientBuilderServiceCollectionExtensions
     /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>A <see cref="ChatClientBuilder"/> that can be used to build a pipeline around the inner client.</returns>
     /// <remarks>The client is registered as a singleton service.</remarks>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceCollection"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="innerClient"/> is <see langword="null"/>.</exception>
     public static ChatClientBuilder AddChatClient(
         this IServiceCollection serviceCollection,
         IChatClient innerClient,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        => AddChatClient(serviceCollection, _ => innerClient, lifetime);
+    {
+        _ = Throw.IfNull(serviceCollection);
+        _ = Throw.IfNull(innerClient);
+
+        return AddChatClient(serviceCollection, _ => innerClient, lifetime);
+    }
 
     /// <summary>Registers a singleton <see cref="IChatClient"/> in the <see cref="IServiceCollection"/>.</summary>
     /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the client should be added.</param>
@@ -28,6 +35,8 @@ public static class ChatClientBuilderServiceCollectionExtensions
     /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>A <see cref="ChatClientBuilder"/> that can be used to build a pipeline around the inner client.</returns>
     /// <remarks>The client is registered as a singleton service.</remarks>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceCollection"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="innerClientFactory"/> is <see langword="null"/>.</exception>
     public static ChatClientBuilder AddChatClient(
         this IServiceCollection serviceCollection,
         Func<IServiceProvider, IChatClient> innerClientFactory,
@@ -48,12 +57,19 @@ public static class ChatClientBuilderServiceCollectionExtensions
     /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>A <see cref="ChatClientBuilder"/> that can be used to build a pipeline around the inner client.</returns>
     /// <remarks>The client is registered as a scoped service.</remarks>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceCollection"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="innerClient"/> is <see langword="null"/>.</exception>
     public static ChatClientBuilder AddKeyedChatClient(
         this IServiceCollection serviceCollection,
         object? serviceKey,
         IChatClient innerClient,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        => AddKeyedChatClient(serviceCollection, serviceKey, _ => innerClient, lifetime);
+    {
+        _ = Throw.IfNull(serviceCollection);
+        _ = Throw.IfNull(innerClient);
+
+        return AddKeyedChatClient(serviceCollection, serviceKey, _ => innerClient, lifetime);
+    }
 
     /// <summary>Registers a keyed singleton <see cref="IChatClient"/> in the <see cref="IServiceCollection"/>.</summary>
     /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the client should be added.</param>
@@ -62,6 +78,8 @@ public static class ChatClientBuilderServiceCollectionExtensions
     /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>A <see cref="ChatClientBuilder"/> that can be used to build a pipeline around the inner client.</returns>
     /// <remarks>The client is registered as a scoped service.</remarks>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceCollection"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="innerClientFactory"/> is <see langword="null"/>.</exception>
     public static ChatClientBuilder AddKeyedChatClient(
         this IServiceCollection serviceCollection,
         object? serviceKey,
@@ -69,7 +87,6 @@ public static class ChatClientBuilderServiceCollectionExtensions
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
         _ = Throw.IfNull(serviceCollection);
-        _ = Throw.IfNull(serviceKey);
         _ = Throw.IfNull(innerClientFactory);
 
         var builder = new ChatClientBuilder(innerClientFactory);

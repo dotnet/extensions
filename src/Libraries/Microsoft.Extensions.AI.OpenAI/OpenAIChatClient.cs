@@ -39,6 +39,8 @@ public sealed class OpenAIChatClient : IChatClient
     /// <summary>Initializes a new instance of the <see cref="OpenAIChatClient"/> class for the specified <see cref="OpenAIClient"/>.</summary>
     /// <param name="openAIClient">The underlying client.</param>
     /// <param name="modelId">The model to use.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="openAIClient"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="modelId"/> is empty or composed entirely of whitespace.</exception>
     public OpenAIChatClient(OpenAIClient openAIClient, string modelId)
     {
         _ = Throw.IfNull(openAIClient);
@@ -59,6 +61,7 @@ public sealed class OpenAIChatClient : IChatClient
 
     /// <summary>Initializes a new instance of the <see cref="OpenAIChatClient"/> class for the specified <see cref="ChatClient"/>.</summary>
     /// <param name="chatClient">The underlying client.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="chatClient"/> is <see langword="null"/>.</exception>
     public OpenAIChatClient(ChatClient chatClient)
     {
         _ = Throw.IfNull(chatClient);
@@ -111,7 +114,10 @@ public sealed class OpenAIChatClient : IChatClient
         var response = await _chatClient.CompleteChatAsync(openAIChatMessages, openAIOptions, cancellationToken).ConfigureAwait(false);
 
         ChatResponse chatResponse = OpenAIModelMappers.FromOpenAIChatCompletion(response.Value, options, openAIOptions);
-        chatMessages.Add(chatResponse.Message);
+        foreach (ChatMessage message in chatResponse.Messages)
+        {
+            chatMessages.Add(message);
+        }
 
         return chatResponse;
     }

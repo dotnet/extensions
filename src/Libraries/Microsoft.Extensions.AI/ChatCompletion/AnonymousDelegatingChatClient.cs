@@ -117,7 +117,7 @@ internal sealed class AnonymousDelegatingChatClient : DelegatingChatClient
         {
             Debug.Assert(_getStreamingResponseFunc is not null, "Expected non-null streaming delegate.");
             return _getStreamingResponseFunc!(chatMessages, options, InnerClient, cancellationToken)
-                .ToChatResponseAsync(coalesceContent: true, cancellationToken);
+                .ToChatResponseAsync(cancellationToken);
         }
     }
 
