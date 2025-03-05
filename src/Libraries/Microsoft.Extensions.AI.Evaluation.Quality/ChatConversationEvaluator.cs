@@ -254,7 +254,7 @@ public abstract class ChatConversationEvaluator : IEvaluator
     /// prompt that this <see cref="IEvaluator"/> uses.
     /// </summary>
     /// <param name="messages">
-    /// Messages that are part of the conversation history for the response being evaluated and that is to be rendered
+    /// Messages that are part of the conversation history for the response being evaluated and that are to be rendered
     /// as part of the evaluation prompt.
     /// </param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can cancel the operation.</param>
