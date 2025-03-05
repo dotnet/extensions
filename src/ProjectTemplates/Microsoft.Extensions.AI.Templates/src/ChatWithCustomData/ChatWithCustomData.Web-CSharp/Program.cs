@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using ChatWithCustomData.Web.Components;
-using ChatWithCustomData.Web.Services;
-using ChatWithCustomData.Web.Services.Ingestion;
+using ChatWithCustomData.Web_CSharp.Components;
+using ChatWithCustomData.Web_CSharp.Services;
+using ChatWithCustomData.Web_CSharp.Services.Ingestion;
 #if(IsAzureOpenAI || UseAzureAISearch)
 using Azure;
 #if (UseManagedIdentity)
