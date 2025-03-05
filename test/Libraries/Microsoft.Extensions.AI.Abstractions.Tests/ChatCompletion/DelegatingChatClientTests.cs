@@ -25,7 +25,7 @@ public class DelegatingChatClientTests
         var expectedChatOptions = new ChatOptions();
         var expectedCancellationToken = CancellationToken.None;
         var expectedResult = new TaskCompletionSource<ChatResponse>();
-        var expectedResponse = new ChatResponse([]);
+        var expectedResponse = new ChatResponse();
         using var inner = new TestChatClient
         {
             GetResponseAsyncCallback = (chatContents, options, cancellationToken) =>
@@ -58,8 +58,8 @@ public class DelegatingChatClientTests
         var expectedCancellationToken = CancellationToken.None;
         ChatResponseUpdate[] expectedResults =
         [
-            new() { Role = ChatRole.User, Text = "Message 1" },
-            new() { Role = ChatRole.User, Text = "Message 2" }
+            new(ChatRole.User, "Message 1"),
+            new(ChatRole.User, "Message 2")
         ];
 
         using var inner = new TestChatClient

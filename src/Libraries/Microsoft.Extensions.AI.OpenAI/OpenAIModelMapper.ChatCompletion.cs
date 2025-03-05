@@ -30,23 +30,25 @@ internal static partial class OpenAIModelMappers
     {
         _ = Throw.IfNull(response);
 
-        if (response.Choices.Count > 1)
-        {
-            throw new NotSupportedException("Creating OpenAI ChatCompletion models with multiple choices is currently not supported.");
-        }
-
         List<ChatToolCall>? toolCalls = null;
-        foreach (AIContent content in response.Message.Contents)
+        ChatRole? role = null;
+        List<AIContent> allContents = [];
+        foreach (ChatMessage message in response.Messages)
         {
-            if (content is FunctionCallContent callRequest)
+            role = message.Role;
+            foreach (AIContent content in message.Contents)
             {
-                toolCalls ??= [];
-                toolCalls.Add(ChatToolCall.CreateFunctionToolCall(
-                    callRequest.CallId,
-                    callRequest.Name,
-                    new(JsonSerializer.SerializeToUtf8Bytes(
-                        callRequest.Arguments,
-                        options.GetTypeInfo(typeof(IDictionary<string, object?>))))));
+                allContents.Add(content);
+                if (content is FunctionCallContent callRequest)
+                {
+                    toolCalls ??= [];
+                    toolCalls.Add(ChatToolCall.CreateFunctionToolCall(
+                        callRequest.CallId,
+                        callRequest.Name,
+                        new(JsonSerializer.SerializeToUtf8Bytes(
+                            callRequest.Arguments,
+                            options.GetTypeInfo(typeof(IDictionary<string, object?>))))));
+                }
             }
         }
 
@@ -60,9 +62,9 @@ internal static partial class OpenAIModelMappers
             id: response.ResponseId ?? CreateCompletionId(),
             model: response.ModelId,
             createdAt: response.CreatedAt ?? DateTimeOffset.UtcNow,
-            role: ToOpenAIChatRole(response.Message.Role).Value,
+            role: ToOpenAIChatRole(role) ?? ChatMessageRole.Assistant,
             finishReason: ToOpenAIFinishReason(response.FinishReason),
-            content: new(ToOpenAIChatContent(response.Message.Contents)),
+            content: new(ToOpenAIChatContent(allContents)),
             toolCalls: toolCalls,
             refusal: response.AdditionalProperties.GetValueOrDefault<string>(nameof(ChatCompletion.Refusal)),
             contentTokenLogProbabilities: response.AdditionalProperties.GetValueOrDefault<IReadOnlyList<ChatTokenLogProbabilityDetails>>(nameof(ChatCompletion.ContentTokenLogProbabilities)),
@@ -138,7 +140,7 @@ internal static partial class OpenAIModelMappers
         }
 
         // Wrap the content in a ChatResponse to return.
-        var response = new ChatResponse([returnMessage])
+        var response = new ChatResponse(returnMessage)
         {
             CreatedAt = openAICompletion.CreatedAt,
             FinishReason = FromOpenAIFinishReason(openAICompletion.FinishReason),

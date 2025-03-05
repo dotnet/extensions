@@ -38,6 +38,9 @@ public sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Embed
     /// <param name="openAIClient">The underlying client.</param>
     /// <param name="modelId">The model to use.</param>
     /// <param name="dimensions">The number of dimensions to generate in each embedding.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="openAIClient"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="modelId"/> is empty or composed entirely of whitespace.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="dimensions"/> is not positive.</exception>
     public OpenAIEmbeddingGenerator(
         OpenAIClient openAIClient, string modelId, int? dimensions = null)
     {
@@ -66,6 +69,8 @@ public sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Embed
     /// <summary>Initializes a new instance of the <see cref="OpenAIEmbeddingGenerator"/> class.</summary>
     /// <param name="embeddingClient">The underlying client.</param>
     /// <param name="dimensions">The number of dimensions to generate in each embedding.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="embeddingClient"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="dimensions"/> is not positive.</exception>
     public OpenAIEmbeddingGenerator(EmbeddingClient embeddingClient, int? dimensions = null)
     {
         _ = Throw.IfNull(embeddingClient);

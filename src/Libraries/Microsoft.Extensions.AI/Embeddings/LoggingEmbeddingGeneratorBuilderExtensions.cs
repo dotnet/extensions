@@ -22,6 +22,7 @@ public static class LoggingEmbeddingGeneratorBuilderExtensions
     /// </param>
     /// <param name="configure">An optional callback that can be used to configure the <see cref="LoggingEmbeddingGenerator{TInput, TEmbedding}"/> instance.</param>
     /// <returns>The <paramref name="builder"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
     public static EmbeddingGeneratorBuilder<TInput, TEmbedding> UseLogging<TInput, TEmbedding>(
         this EmbeddingGeneratorBuilder<TInput, TEmbedding> builder,
         ILoggerFactory? loggerFactory = null,

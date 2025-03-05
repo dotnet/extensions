@@ -152,11 +152,11 @@ public class AzureAIInferenceChatClientTests
         using HttpClient httpClient = new(handler);
         using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
 
-        List<ChatMessage> chatMessages = multiContent ?
+        List<ChatMessage> messages = multiContent ?
             [new ChatMessage(ChatRole.User, "hello".Select(c => (AIContent)new TextContent(c.ToString())).ToList())] :
             [new ChatMessage(ChatRole.User, "hello")];
 
-        var response = await client.GetResponseAsync(chatMessages, new()
+        var response = await client.GetResponseAsync(messages, new()
         {
             MaxOutputTokens = 10,
             Temperature = 0.5f,
@@ -164,9 +164,9 @@ public class AzureAIInferenceChatClientTests
         Assert.NotNull(response);
 
         Assert.Equal("chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI", response.ResponseId);
-        Assert.Equal("Hello! How can I assist you today?", response.Message.Text);
-        Assert.Single(response.Message.Contents);
-        Assert.Equal(ChatRole.Assistant, response.Message.Role);
+        Assert.Equal("Hello! How can I assist you today?", response.Text);
+        Assert.Single(response.Messages.Single().Contents);
+        Assert.Equal(ChatRole.Assistant, response.Messages.Single().Role);
         Assert.Equal("gpt-4o-mini-2024-07-18", response.ModelId);
         Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_727_888_631), response.CreatedAt);
         Assert.Equal(ChatFinishReason.Stop, response.FinishReason);
@@ -224,12 +224,12 @@ public class AzureAIInferenceChatClientTests
         using HttpClient httpClient = new(handler);
         using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
 
-        List<ChatMessage> chatMessages = multiContent ?
+        List<ChatMessage> messages = multiContent ?
             [new ChatMessage(ChatRole.User, "hello".Select(c => (AIContent)new TextContent(c.ToString())).ToList())] :
             [new ChatMessage(ChatRole.User, "hello")];
 
         List<ChatResponseUpdate> updates = [];
-        await foreach (var update in client.GetStreamingResponseAsync(chatMessages, new()
+        await foreach (var update in client.GetStreamingResponseAsync(messages, new()
         {
             MaxOutputTokens = 20,
             Temperature = 0.5f,
@@ -551,9 +551,9 @@ public class AzureAIInferenceChatClientTests
         Assert.NotNull(response);
 
         Assert.Equal("chatcmpl-ADyV17bXeSm5rzUx3n46O7m3M0o3P", response.ResponseId);
-        Assert.Equal("I’m doing well, thank you! What’s on your mind today?", response.Message.Text);
-        Assert.Single(response.Message.Contents);
-        Assert.Equal(ChatRole.Assistant, response.Message.Role);
+        Assert.Equal("I’m doing well, thank you! What’s on your mind today?", response.Text);
+        Assert.Single(response.Messages.Single().Contents);
+        Assert.Equal(ChatRole.Assistant, response.Messages.Single().Role);
         Assert.Equal("gpt-4o-mini-2024-07-18", response.ModelId);
         Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_727_894_187), response.CreatedAt);
         Assert.Equal(ChatFinishReason.Stop, response.FinishReason);
@@ -685,9 +685,9 @@ public class AzureAIInferenceChatClientTests
         Assert.NotNull(response);
 
         Assert.Equal("chatcmpl-ADyV17bXeSm5rzUx3n46O7m3M0o3P", response.ResponseId);
-        Assert.Equal("Hello.", response.Message.Text);
-        Assert.Single(response.Message.Contents);
-        Assert.Equal(ChatRole.Assistant, response.Message.Role);
+        Assert.Equal("Hello.", response.Text);
+        Assert.Single(response.Messages.Single().Contents);
+        Assert.Equal(ChatRole.Assistant, response.Messages.Single().Role);
         Assert.Equal("gpt-4o-mini-2024-07-18", response.ModelId);
         Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_727_894_187), response.CreatedAt);
         Assert.Equal(ChatFinishReason.Stop, response.FinishReason);
@@ -801,9 +801,9 @@ public class AzureAIInferenceChatClientTests
         });
         Assert.NotNull(response);
 
-        Assert.Null(response.Message.Text);
+        Assert.Empty(response.Text);
         Assert.Equal("gpt-4o-mini-2024-07-18", response.ModelId);
-        Assert.Equal(ChatRole.Assistant, response.Message.Role);
+        Assert.Equal(ChatRole.Assistant, response.Messages.Single().Role);
         Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_727_894_702), response.CreatedAt);
         Assert.Equal(ChatFinishReason.ToolCalls, response.FinishReason);
         Assert.NotNull(response.Usage);
@@ -811,9 +811,8 @@ public class AzureAIInferenceChatClientTests
         Assert.Equal(16, response.Usage.OutputTokenCount);
         Assert.Equal(77, response.Usage.TotalTokenCount);
 
-        Assert.Single(response.Choices);
-        Assert.Single(response.Message.Contents);
-        FunctionCallContent fcc = Assert.IsType<FunctionCallContent>(response.Message.Contents[0]);
+        Assert.Single(response.Messages.Single().Contents);
+        FunctionCallContent fcc = Assert.IsType<FunctionCallContent>(response.Messages.Single().Contents[0]);
         Assert.Equal("GetPersonAge", fcc.Name);
         AssertExtensions.EqualFunctionCallParameters(new Dictionary<string, object?> { ["personName"] = "Alice" }, fcc.Arguments);
     }

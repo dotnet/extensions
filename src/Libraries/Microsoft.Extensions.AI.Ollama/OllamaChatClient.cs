@@ -56,6 +56,8 @@ public sealed class OllamaChatClient : IChatClient
     /// Either this parameter or <see cref="ChatOptions.ModelId"/> must provide a valid model ID.
     /// </param>
     /// <param name="httpClient">An <see cref="HttpClient"/> instance to use for HTTP operations.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="endpoint"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="modelId"/> is empty or composed entirely of whitespace.</exception>
     public OllamaChatClient(Uri endpoint, string? modelId = null, HttpClient? httpClient = null)
     {
         _ = Throw.IfNull(endpoint);
@@ -78,13 +80,14 @@ public sealed class OllamaChatClient : IChatClient
     }
 
     /// <inheritdoc />
-    public async Task<ChatResponse> GetResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<ChatResponse> GetResponseAsync(
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(chatMessages);
+        _ = Throw.IfNull(messages);
 
         using var httpResponse = await _httpClient.PostAsJsonAsync(
             _apiChatEndpoint,
-            ToOllamaChatRequest(chatMessages, options, stream: false),
+            ToOllamaChatRequest(messages, options, stream: false),
             JsonContext.Default.OllamaChatRequest,
             cancellationToken).ConfigureAwait(false);
 
@@ -102,7 +105,7 @@ public sealed class OllamaChatClient : IChatClient
             throw new InvalidOperationException($"Ollama error: {response.Error}");
         }
 
-        return new([FromOllamaMessage(response.Message!)])
+        return new(FromOllamaMessage(response.Message!))
         {
             CreatedAt = DateTimeOffset.TryParse(response.CreatedAt, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset createdAt) ? createdAt : null,
             FinishReason = ToFinishReason(response),
@@ -114,13 +117,13 @@ public sealed class OllamaChatClient : IChatClient
 
     /// <inheritdoc />
     public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-        IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(chatMessages);
+        _ = Throw.IfNull(messages);
 
         using HttpRequestMessage request = new(HttpMethod.Post, _apiChatEndpoint)
         {
-            Content = JsonContent.Create(ToOllamaChatRequest(chatMessages, options, stream: true), JsonContext.Default.OllamaChatRequest)
+            Content = JsonContent.Create(ToOllamaChatRequest(messages, options, stream: true), JsonContext.Default.OllamaChatRequest)
         };
         using var httpResponse = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
@@ -290,12 +293,12 @@ public sealed class OllamaChatClient : IChatClient
         }
     }
 
-    private OllamaChatRequest ToOllamaChatRequest(IList<ChatMessage> chatMessages, ChatOptions? options, bool stream)
+    private OllamaChatRequest ToOllamaChatRequest(IEnumerable<ChatMessage> messages, ChatOptions? options, bool stream)
     {
         OllamaChatRequest request = new()
         {
             Format = ToOllamaChatResponseFormat(options?.ResponseFormat),
-            Messages = chatMessages.SelectMany(ToOllamaChatRequestMessages).ToArray(),
+            Messages = messages.SelectMany(ToOllamaChatRequestMessages).ToArray(),
             Model = options?.ModelId ?? _metadata.ModelId ?? string.Empty,
             Stream = stream,
             Tools = options?.ToolMode is not NoneChatToolMode && options?.Tools is { Count: > 0 } tools ? tools.OfType<AIFunction>().Select(ToOllamaTool) : null,

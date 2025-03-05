@@ -3,7 +3,6 @@
 
 using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
@@ -17,7 +16,7 @@ namespace Microsoft.Extensions.AI;
 /// <remarks>
 /// Language models are not guaranteed to honor the requested schema. If the model's output is not
 /// parseable as the expected type, then <see cref="TryGetResult(out T)"/> will return <see langword="false"/>.
-/// You can access the underlying JSON response on the <see cref="ChatResponse.Message"/> property.
+/// You can access the underlying JSON response on the <see cref="ChatResponse.Text"/> property.
 /// </remarks>
 public class ChatResponse<T> : ChatResponse
 {
@@ -31,10 +30,11 @@ public class ChatResponse<T> : ChatResponse
     /// <param name="response">The unstructured <see cref="ChatResponse"/> that is being wrapped.</param>
     /// <param name="serializerOptions">The <see cref="JsonSerializerOptions"/> to use when deserializing the result.</param>
     public ChatResponse(ChatResponse response, JsonSerializerOptions serializerOptions)
-        : base(Throw.IfNull(response).Choices)
+        : base(Throw.IfNull(response).Messages)
     {
         _serializerOptions = Throw.IfNull(serializerOptions);
         AdditionalProperties = response.AdditionalProperties;
+        ChatThreadId = response.ChatThreadId;
         CreatedAt = response.CreatedAt;
         FinishReason = response.FinishReason;
         ModelId = response.ModelId;
@@ -114,13 +114,6 @@ public class ChatResponse<T> : ChatResponse
     /// </remarks>
     internal bool IsWrappedInObject { get; set; }
 
-    private string? GetResultAsJson()
-    {
-        var choice = Choices.Count == 1 ? Choices[0] : null;
-        var content = choice?.Contents.Count == 1 ? choice.Contents[0] : null;
-        return (content as TextContent)?.Text;
-    }
-
     private T? GetResultCore(out FailureReason? failureReason)
     {
         if (_hasDeserializedResult)
@@ -129,7 +122,7 @@ public class ChatResponse<T> : ChatResponse
             return _deserializedResult;
         }
 
-        var json = GetResultAsJson();
+        var json = Text;
         if (string.IsNullOrEmpty(json))
         {
             failureReason = FailureReason.ResultDidNotContainJson;

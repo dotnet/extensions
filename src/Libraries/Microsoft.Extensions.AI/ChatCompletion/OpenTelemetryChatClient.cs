@@ -121,22 +121,23 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         base.GetService(serviceType, serviceKey);
 
     /// <inheritdoc/>
-    public override async Task<ChatResponse> GetResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<ChatResponse> GetResponseAsync(
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(chatMessages);
+        _ = Throw.IfNull(messages);
         _jsonSerializerOptions.MakeReadOnly();
 
         using Activity? activity = CreateAndConfigureActivity(options);
         Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
         string? requestModelId = options?.ModelId ?? _modelId;
 
-        LogChatMessages(chatMessages);
+        LogChatMessages(messages);
 
         ChatResponse? response = null;
         Exception? error = null;
         try
         {
-            response = await base.GetResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
+            response = await base.GetResponseAsync(messages, options, cancellationToken).ConfigureAwait(false);
             return response;
         }
         catch (Exception ex)
@@ -152,21 +153,21 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
     /// <inheritdoc/>
     public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-        IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(chatMessages);
+        _ = Throw.IfNull(messages);
         _jsonSerializerOptions.MakeReadOnly();
 
         using Activity? activity = CreateAndConfigureActivity(options);
         Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
         string? requestModelId = options?.ModelId ?? _modelId;
 
-        LogChatMessages(chatMessages);
+        LogChatMessages(messages);
 
         IAsyncEnumerable<ChatResponseUpdate> updates;
         try
         {
-            updates = base.GetStreamingResponseAsync(chatMessages, options, cancellationToken);
+            updates = base.GetStreamingResponseAsync(messages, options, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -446,7 +447,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
             if (message.Role == ChatRole.Assistant)
             {
                 Log(new(1, OpenTelemetryConsts.GenAI.Assistant.Message),
-                    JsonSerializer.Serialize(CreateAssistantEvent(message), OtelContext.Default.AssistantEvent));
+                    JsonSerializer.Serialize(CreateAssistantEvent(message.Contents), OtelContext.Default.AssistantEvent));
             }
             else if (message.Role == ChatRole.Tool)
             {
@@ -468,7 +469,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                     JsonSerializer.Serialize(new()
                     {
                         Role = message.Role != ChatRole.System && message.Role != ChatRole.User && !string.IsNullOrWhiteSpace(message.Role.Value) ? message.Role.Value : null,
-                        Content = GetMessageContent(message),
+                        Content = GetMessageContent(message.Contents),
                     }, OtelContext.Default.SystemOrUserEvent));
             }
         }
@@ -482,16 +483,12 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         }
 
         EventId id = new(1, OpenTelemetryConsts.GenAI.Choice);
-        int choiceCount = response.Choices.Count;
-        for (int choiceIndex = 0; choiceIndex < choiceCount; choiceIndex++)
+        Log(id, JsonSerializer.Serialize(new()
         {
-            Log(id, JsonSerializer.Serialize(new()
-            {
-                FinishReason = response.FinishReason?.Value ?? "error",
-                Index = choiceIndex,
-                Message = CreateAssistantEvent(response.Choices[choiceIndex]),
-            }, OtelContext.Default.ChoiceEvent));
-        }
+            FinishReason = response.FinishReason?.Value ?? "error",
+            Index = 0,
+            Message = CreateAssistantEvent(response.Messages is { Count: 1 } ? response.Messages[0].Contents : response.Messages.SelectMany(m => m.Contents)),
+        }, OtelContext.Default.ChoiceEvent));
     }
 
     private void Log(EventId id, [StringSyntax(StringSyntaxAttribute.Json)] string eventBodyJson)
@@ -509,9 +506,9 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         _logger.Log(EventLogLevel, id, tags, null, (_, __) => eventBodyJson);
     }
 
-    private AssistantEvent CreateAssistantEvent(ChatMessage message)
+    private AssistantEvent CreateAssistantEvent(IEnumerable<AIContent> contents)
     {
-        var toolCalls = message.Contents.OfType<FunctionCallContent>().Select(fc => new ToolCall
+        var toolCalls = contents.OfType<FunctionCallContent>().Select(fc => new ToolCall
         {
             Id = fc.CallId,
             Function = new()
@@ -525,16 +522,16 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
         return new()
         {
-            Content = GetMessageContent(message),
+            Content = GetMessageContent(contents),
             ToolCalls = toolCalls.Length > 0 ? toolCalls : null,
         };
     }
 
-    private string? GetMessageContent(ChatMessage message)
+    private string? GetMessageContent(IEnumerable<AIContent> contents)
     {
         if (EnableSensitiveData)
         {
-            string content = string.Concat(message.Contents.OfType<TextContent>());
+            string content = string.Concat(contents.OfType<TextContent>());
             if (content.Length > 0)
             {
                 return content;

@@ -29,9 +29,12 @@ public class UsageDetails
     public AdditionalPropertiesDictionary<long>? AdditionalCounts { get; set; }
 
     /// <summary>Adds usage data from another <see cref="UsageDetails"/> into this instance.</summary>
+    /// <param name="usage">The source <see cref="UsageDetails"/> with which to augment this instance.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="usage"/> is <see langword="null"/>.</exception>
     public void Add(UsageDetails usage)
     {
         _ = Throw.IfNull(usage);
+
         InputTokenCount = NullableSum(InputTokenCount, usage.InputTokenCount);
         OutputTokenCount = NullableSum(OutputTokenCount, usage.OutputTokenCount);
         TotalTokenCount = NullableSum(TotalTokenCount, usage.TotalTokenCount);

@@ -126,7 +126,7 @@ public sealed class ScenarioRun : IAsyncDisposable
     /// <returns>An <see cref="EvaluationResult"/> containing one or more <see cref="EvaluationMetric"/>s.</returns>
     public async ValueTask<EvaluationResult> EvaluateAsync(
         IEnumerable<ChatMessage> messages,
-        ChatMessage modelResponse,
+        ChatResponse modelResponse,
         IEnumerable<EvaluationContext>? additionalContext = null,
         CancellationToken cancellationToken = default)
     {

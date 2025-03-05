@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI.Evaluation.Quality;
 
@@ -35,11 +36,13 @@ public sealed class GroundednessEvaluator : SingleNumericMetricEvaluator
     /// <inheritdoc/>
     protected override async ValueTask<string> RenderEvaluationPromptAsync(
         ChatMessage? userRequest,
-        ChatMessage modelResponse,
+        ChatResponse modelResponse,
         IEnumerable<ChatMessage>? includedHistory,
         IEnumerable<EvaluationContext>? additionalContext,
         CancellationToken cancellationToken)
     {
+        _ = Throw.IfNull(modelResponse);
+
         string renderedModelResponse = await RenderAsync(modelResponse, cancellationToken).ConfigureAwait(false);
 
         string renderedUserRequest =

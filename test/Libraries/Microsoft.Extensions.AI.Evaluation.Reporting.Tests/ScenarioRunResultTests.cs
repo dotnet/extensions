@@ -36,7 +36,7 @@ public class ScenarioRunResultTests
             executionName: "Test Execution",
             creationTime: DateTime.UtcNow,
             messages: [new ChatMessage(ChatRole.User, "prompt")],
-            modelResponse: new ChatMessage(ChatRole.Assistant, "response"),
+            modelResponse: new ChatResponse(new ChatMessage(ChatRole.Assistant, "response")),
             evaluationResult: new EvaluationResult(booleanMetric, numericMetric, stringMetric, metricWithNoValue));
 
         string json = JsonSerializer.Serialize(entry, SerializerContext.Default.ScenarioRunResult);
@@ -48,7 +48,7 @@ public class ScenarioRunResultTests
         Assert.Equal(entry.ExecutionName, deserialized.ExecutionName);
         Assert.Equal(entry.CreationTime, deserialized.CreationTime);
         Assert.True(entry.Messages.SequenceEqual(deserialized.Messages, ChatMessageComparer.Instance));
-        Assert.Equal(entry.ModelResponse, deserialized.ModelResponse, ChatMessageComparer.Instance);
+        Assert.Equal(entry.ModelResponse, deserialized.ModelResponse, ChatResponseComparer.Instance);
 
         ValidateEquivalence(entry.EvaluationResult, deserialized.EvaluationResult);
     }
@@ -75,7 +75,7 @@ public class ScenarioRunResultTests
             executionName: "Test Execution",
             creationTime: DateTime.UtcNow,
             messages: [new ChatMessage(ChatRole.User, "prompt")],
-            modelResponse: new ChatMessage(ChatRole.Assistant, "response"),
+            modelResponse: new ChatResponse(new ChatMessage(ChatRole.Assistant, "response")),
             evaluationResult: new EvaluationResult(booleanMetric, numericMetric, stringMetric, metricWithNoValue));
 
         var dataset = new Dataset([entry], createdAt: DateTime.UtcNow, generatorVersion: "1.2.3.4");
@@ -89,7 +89,7 @@ public class ScenarioRunResultTests
         Assert.Equal(entry.ExecutionName, deserialized.ScenarioRunResults[0].ExecutionName);
         Assert.Equal(entry.CreationTime, deserialized.ScenarioRunResults[0].CreationTime);
         Assert.True(entry.Messages.SequenceEqual(deserialized.ScenarioRunResults[0].Messages, ChatMessageComparer.Instance));
-        Assert.Equal(entry.ModelResponse, deserialized.ScenarioRunResults[0].ModelResponse, ChatMessageComparer.Instance);
+        Assert.Equal(entry.ModelResponse, deserialized.ScenarioRunResults[0].ModelResponse, ChatResponseComparer.Instance);
 
         Assert.Single(deserialized.ScenarioRunResults);
         Assert.Equal(dataset.CreatedAt, deserialized.CreatedAt);
@@ -155,7 +155,20 @@ public class ScenarioRunResultTests
             => x?.AuthorName == y?.AuthorName && x?.Role == y?.Role && x?.Text == y?.Text;
 
         public int GetHashCode(ChatMessage obj)
-            => obj.GetHashCode();
+            => obj.Text.GetHashCode();
+    }
+
+    private class ChatResponseComparer : IEqualityComparer<ChatResponse>
+    {
+        public static ChatResponseComparer Instance { get; } = new ChatResponseComparer();
+
+        public bool Equals(ChatResponse? x, ChatResponse? y)
+            =>
+            x is null ? y is null :
+            y is not null && x.Messages.SequenceEqual(y.Messages, ChatMessageComparer.Instance);
+
+        public int GetHashCode(ChatResponse obj)
+            => obj.Text.GetHashCode();
     }
 
     private class DiagnosticComparer : IEqualityComparer<EvaluationDiagnostic>

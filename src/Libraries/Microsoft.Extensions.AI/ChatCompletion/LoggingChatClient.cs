@@ -44,13 +44,13 @@ public partial class LoggingChatClient : DelegatingChatClient
 
     /// <inheritdoc/>
     public override async Task<ChatResponse> GetResponseAsync(
-        IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
         {
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokedSensitive(nameof(GetResponseAsync), AsJson(chatMessages), AsJson(options), AsJson(this.GetService<ChatClientMetadata>()));
+                LogInvokedSensitive(nameof(GetResponseAsync), AsJson(messages), AsJson(options), AsJson(this.GetService<ChatClientMetadata>()));
             }
             else
             {
@@ -60,7 +60,7 @@ public partial class LoggingChatClient : DelegatingChatClient
 
         try
         {
-            var response = await base.GetResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
+            var response = await base.GetResponseAsync(messages, options, cancellationToken).ConfigureAwait(false);
 
             if (_logger.IsEnabled(LogLevel.Debug))
             {
@@ -90,13 +90,13 @@ public partial class LoggingChatClient : DelegatingChatClient
 
     /// <inheritdoc/>
     public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-        IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
         {
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokedSensitive(nameof(GetStreamingResponseAsync), AsJson(chatMessages), AsJson(options), AsJson(this.GetService<ChatClientMetadata>()));
+                LogInvokedSensitive(nameof(GetStreamingResponseAsync), AsJson(messages), AsJson(options), AsJson(this.GetService<ChatClientMetadata>()));
             }
             else
             {
@@ -107,7 +107,7 @@ public partial class LoggingChatClient : DelegatingChatClient
         IAsyncEnumerator<ChatResponseUpdate> e;
         try
         {
-            e = base.GetStreamingResponseAsync(chatMessages, options, cancellationToken).GetAsyncEnumerator(cancellationToken);
+            e = base.GetStreamingResponseAsync(messages, options, cancellationToken).GetAsyncEnumerator(cancellationToken);
         }
         catch (OperationCanceledException)
         {
@@ -173,8 +173,8 @@ public partial class LoggingChatClient : DelegatingChatClient
     [LoggerMessage(LogLevel.Debug, "{MethodName} invoked.")]
     private partial void LogInvoked(string methodName);
 
-    [LoggerMessage(LogLevel.Trace, "{MethodName} invoked: {ChatMessages}. Options: {ChatOptions}. Metadata: {ChatClientMetadata}.")]
-    private partial void LogInvokedSensitive(string methodName, string chatMessages, string chatOptions, string chatClientMetadata);
+    [LoggerMessage(LogLevel.Trace, "{MethodName} invoked: {Messages}. Options: {ChatOptions}. Metadata: {ChatClientMetadata}.")]
+    private partial void LogInvokedSensitive(string methodName, string messages, string chatOptions, string chatClientMetadata);
 
     [LoggerMessage(LogLevel.Debug, "{MethodName} completed.")]
     private partial void LogCompleted(string methodName);

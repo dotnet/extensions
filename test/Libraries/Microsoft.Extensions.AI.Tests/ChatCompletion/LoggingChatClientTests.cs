@@ -56,7 +56,7 @@ public class LoggingChatClientTests
         {
             GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
-                return Task.FromResult(new ChatResponse([new(ChatRole.Assistant, "blue whale")]));
+                return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "blue whale")));
             },
         };
 
@@ -105,8 +105,8 @@ public class LoggingChatClientTests
         static async IAsyncEnumerable<ChatResponseUpdate> GetUpdatesAsync()
         {
             await Task.Yield();
-            yield return new ChatResponseUpdate { Role = ChatRole.Assistant, Text = "blue " };
-            yield return new ChatResponseUpdate { Role = ChatRole.Assistant, Text = "whale" };
+            yield return new(ChatRole.Assistant, "blue ");
+            yield return new(ChatRole.Assistant, "whale");
         }
 
         using IChatClient client = innerClient

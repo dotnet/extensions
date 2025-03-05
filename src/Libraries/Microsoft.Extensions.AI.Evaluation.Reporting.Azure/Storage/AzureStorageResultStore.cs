@@ -156,7 +156,7 @@ public sealed class AzureStorageResultStore(DataLakeDirectoryClient client) : IR
         IEnumerable<ScenarioRunResult> results,
         CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(results, nameof(results));
+        _ = Throw.IfNull(results);
 
         foreach (ScenarioRunResult result in results)
         {

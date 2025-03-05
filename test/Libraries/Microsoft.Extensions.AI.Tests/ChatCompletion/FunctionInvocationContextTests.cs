@@ -15,15 +15,15 @@ public class FunctionInvocationContextTests
         FunctionInvocationContext ctx = new();
 
         Assert.NotNull(ctx.CallContent);
-        Assert.NotNull(ctx.ChatMessages);
+        Assert.NotNull(ctx.Messages);
         Assert.NotNull(ctx.Function);
         Assert.Equal(0, ctx.FunctionCallIndex);
         Assert.Equal(0, ctx.FunctionCount);
         Assert.Equal(0, ctx.Iteration);
         Assert.False(ctx.Terminate);
 
-        Assert.Empty(ctx.ChatMessages);
-        Assert.True(ctx.ChatMessages.IsReadOnly);
+        Assert.Empty(ctx.Messages);
+        Assert.True(ctx.Messages.IsReadOnly);
 
         Assert.Equal(nameof(FunctionInvocationContext), ctx.Function.Name);
         Assert.Empty(ctx.Function.Description);
@@ -35,7 +35,7 @@ public class FunctionInvocationContextTests
     {
         FunctionInvocationContext ctx = new();
         Assert.Throws<ArgumentNullException>("value", () => ctx.CallContent = null!);
-        Assert.Throws<ArgumentNullException>("value", () => ctx.ChatMessages = null!);
+        Assert.Throws<ArgumentNullException>("value", () => ctx.Messages = null!);
         Assert.Throws<ArgumentNullException>("value", () => ctx.Function = null!);
     }
 
@@ -44,9 +44,9 @@ public class FunctionInvocationContextTests
     {
         FunctionInvocationContext ctx = new();
 
-        List<ChatMessage> chatMessages = [];
-        ctx.ChatMessages = chatMessages;
-        Assert.Same(chatMessages, ctx.ChatMessages);
+        List<ChatMessage> messages = [];
+        ctx.Messages = messages;
+        Assert.Same(messages, ctx.Messages);
 
         AIFunction function = AIFunctionFactory.Create(() => { }, nameof(Properties_Roundtrip));
         ctx.Function = function;

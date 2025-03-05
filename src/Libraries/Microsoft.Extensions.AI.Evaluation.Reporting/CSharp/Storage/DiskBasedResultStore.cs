@@ -83,7 +83,7 @@ public sealed class DiskBasedResultStore : IResultStore
         IEnumerable<ScenarioRunResult> results,
         CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(results, nameof(results));
+        _ = Throw.IfNull(results);
 
         foreach (ScenarioRunResult result in results)
         {

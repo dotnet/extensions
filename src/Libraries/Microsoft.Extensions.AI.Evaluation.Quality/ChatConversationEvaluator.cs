@@ -1,8 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -35,13 +37,13 @@ public abstract class ChatConversationEvaluator : IEvaluator
     /// <inheritdoc/>
     public async ValueTask<EvaluationResult> EvaluateAsync(
         IEnumerable<ChatMessage> messages,
-        ChatMessage modelResponse,
+        ChatResponse modelResponse,
         ChatConfiguration? chatConfiguration = null,
         IEnumerable<EvaluationContext>? additionalContext = null,
         CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(modelResponse, nameof(modelResponse));
-        _ = Throw.IfNull(chatConfiguration, nameof(chatConfiguration));
+        _ = Throw.IfNull(modelResponse);
+        _ = Throw.IfNull(chatConfiguration);
 
         EvaluationResult result = InitializeResult();
 
@@ -211,8 +213,8 @@ public abstract class ChatConversationEvaluator : IEvaluator
         ChatConfiguration chatConfiguration,
         CancellationToken cancellationToken)
     {
-        _ = Throw.IfNull(message, nameof(message));
-        _ = Throw.IfNull(chatConfiguration, nameof(chatConfiguration));
+        _ = Throw.IfNull(message);
+        _ = Throw.IfNull(chatConfiguration);
 
         IEvaluationTokenCounter? tokenCounter = chatConfiguration.TokenCounter;
         if (tokenCounter is null)
@@ -250,11 +252,40 @@ public abstract class ChatConversationEvaluator : IEvaluator
     }
 
     /// <summary>
+    /// Renders the supplied <paramref name="response"/> to a string that can be included as part of the evaluation
+    /// prompt that this <see cref="IEvaluator"/> uses.
+    /// </summary>
+    /// <param name="response">
+    /// Chat response being evaluated and that is to be rendered as part of the evaluation prompt.
+    /// </param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can cancel the operation.</param>
+    /// <returns>
+    /// A string representation of the supplied <paramref name="response"/> that can be included as part of the
+    /// evaluation prompt.
+    /// </returns>
+    /// <remarks>
+    /// The default implementation uses <see cref="RenderAsync(ChatMessage, CancellationToken)"/> to render
+    /// each message in the response.
+    /// </remarks>
+    protected virtual async ValueTask<string> RenderAsync(ChatResponse response, CancellationToken cancellationToken)
+    {
+        _ = Throw.IfNull(response);
+
+        StringBuilder sb = new();
+        foreach (ChatMessage message in response.Messages)
+        {
+            _ = sb.Append(await RenderAsync(message, cancellationToken).ConfigureAwait(false));
+        }
+
+        return sb.ToString();
+    }
+
+    /// <summary>
     /// Renders the supplied <paramref name="message"/> to a string that can be included as part of the evaluation
     /// prompt that this <see cref="IEvaluator"/> uses.
     /// </summary>
     /// <param name="message">
-    /// A message that is part of the conversation history for the response being evaluated and that is to be rendered
+    /// Message that is part of the conversation history for the response being evaluated and that is to be rendered
     /// as part of the evaluation prompt.
     /// </param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can cancel the operation.</param>
@@ -264,7 +295,7 @@ public abstract class ChatConversationEvaluator : IEvaluator
     /// </returns>
     protected virtual ValueTask<string> RenderAsync(ChatMessage message, CancellationToken cancellationToken)
     {
-        _ = Throw.IfNull(message, nameof(message));
+        _ = Throw.IfNull(message);
 
         string? author = message.AuthorName;
         string role = message.Role.Value;
@@ -296,7 +327,7 @@ public abstract class ChatConversationEvaluator : IEvaluator
     /// <returns>The evaluation prompt.</returns>
     protected abstract ValueTask<string> RenderEvaluationPromptAsync(
         ChatMessage? userRequest,
-        ChatMessage modelResponse,
+        ChatResponse modelResponse,
         IEnumerable<ChatMessage>? includedHistory,
         IEnumerable<EvaluationContext>? additionalContext,
         CancellationToken cancellationToken);

@@ -62,17 +62,15 @@ public class OpenTelemetryChatClientTests
         };
 
         async static IAsyncEnumerable<ChatResponseUpdate> CallbackAsync(
-            IList<ChatMessage> messages, ChatOptions? options, [EnumeratorCancellation] CancellationToken cancellationToken)
+            IEnumerable<ChatMessage> messages, ChatOptions? options, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             await Task.Yield();
 
             foreach (string text in new[] { "The ", "blue ", "whale,", " ", "", "I", " think." })
             {
                 await Task.Yield();
-                yield return new ChatResponseUpdate
+                yield return new ChatResponseUpdate(ChatRole.Assistant, text)
                 {
-                    Role = ChatRole.Assistant,
-                    Text = text,
                     ResponseId = "id123",
                 };
             }
@@ -107,7 +105,7 @@ public class OpenTelemetryChatClientTests
             })
             .Build();
 
-        List<ChatMessage> chatMessages =
+        List<ChatMessage> messages =
         [
             new(ChatRole.System, "You are a close friend."),
             new(ChatRole.User, "Hey!"),
@@ -138,14 +136,14 @@ public class OpenTelemetryChatClientTests
 
         if (streaming)
         {
-            await foreach (var update in chatClient.GetStreamingResponseAsync(chatMessages, options))
+            await foreach (var update in chatClient.GetStreamingResponseAsync(messages, options))
             {
                 await Task.Yield();
             }
         }
         else
         {
-            await chatClient.GetResponseAsync(chatMessages, options);
+            await chatClient.GetResponseAsync(messages, options);
         }
 
         var activity = Assert.Single(activities);

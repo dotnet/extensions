@@ -32,7 +32,7 @@ internal static class JsonOutputFixer
         return trimmed;
     }
 
-    internal static async ValueTask<string?> RepairJsonAsync(
+    internal static async ValueTask<string> RepairJsonAsync(
         ChatConfiguration chatConfig,
         string json,
         CancellationToken cancellationToken)
@@ -74,6 +74,6 @@ internal static class JsonOutputFixer
                 chatOptions,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        return response.Message.Text?.Trim();
+        return response.Text.Trim();
     }
 }
