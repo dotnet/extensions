@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
-using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
@@ -21,7 +20,7 @@ namespace Microsoft.Extensions.AI;
 /// </para>
 /// <para>
 /// The relationship between <see cref="ChatResponse"/> and <see cref="ChatResponseUpdate"/> is
-/// codified in the <see cref="ChatResponseUpdateExtensions.ToChatResponseAsync"/> and
+/// codified in the <see cref="ChatResponseExtensions.ToChatResponseAsync"/> and
 /// <see cref="ChatResponse.ToChatResponseUpdates"/>, which enable bidirectional conversions
 /// between the two. Note, however, that the provided conversions may be lossy, for example if multiple
 /// updates all have different <see cref="RawRepresentation"/> objects whereas there's only one slot for
@@ -56,16 +55,10 @@ public class ChatResponseUpdate
     /// <summary>Initializes a new instance of the <see cref="ChatResponseUpdate"/> class.</summary>
     /// <param name="role">The role of the author of the update.</param>
     /// <param name="contents">The contents of the update.</param>
-    /// <exception cref="ArgumentException"><paramref name="contents"/> must not be read-only.</exception>
     public ChatResponseUpdate(ChatRole? role, IList<AIContent>? contents)
     {
-        if (contents is not null)
-        {
-            _ = Throw.IfReadOnly(contents);
-            _contents = contents;
-        }
-
         Role = role;
+        _contents = contents;
     }
 
     /// <summary>Gets or sets the name of the author of the response update.</summary>
@@ -86,20 +79,11 @@ public class ChatResponseUpdate
     public string Text => _contents is not null ? _contents.ConcatText() : string.Empty;
 
     /// <summary>Gets or sets the chat response update content items.</summary>
-    /// <exception cref="ArgumentException">The <see cref="IList{T}"/> must not be read-only.</exception>
     [AllowNull]
     public IList<AIContent> Contents
     {
         get => _contents ??= [];
-        set
-        {
-            if (value is not null)
-            {
-                _ = Throw.IfReadOnly(value);
-            }
-
-            _contents = value;
-        }
+        set => _contents = value;
     }
 
     /// <summary>Gets or sets the raw representation of the response update from an underlying implementation.</summary>
@@ -123,7 +107,7 @@ public class ChatResponseUpdate
     /// the input messages supplied to <see cref="IChatClient.GetStreamingResponseAsync"/> need only be the additional messages beyond
     /// what's already stored. If this property is non-<see langword="null"/>, it represents an identifier for that state,
     /// and it should be used in a subsequent <see cref="ChatOptions.ChatThreadId"/> instead of supplying the same messages
-    /// (and this streaming message) as part of the <c>chatMessages</c> parameter.
+    /// (and this streaming message) as part of the <c>messages</c> parameter.
     /// </remarks>
     public string? ChatThreadId { get; set; }
 

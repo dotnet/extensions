@@ -62,8 +62,8 @@ public abstract class SingleNumericMetricEvaluator : ChatConversationEvaluator
         EvaluationResult result,
         CancellationToken cancellationToken)
     {
-        _ = Throw.IfNull(chatConfiguration, nameof(chatConfiguration));
-        _ = Throw.IfNull(result, nameof(result));
+        _ = Throw.IfNull(chatConfiguration);
+        _ = Throw.IfNull(result);
 
         ChatResponse evaluationResponse =
             await chatConfiguration.ChatClient.GetResponseAsync(

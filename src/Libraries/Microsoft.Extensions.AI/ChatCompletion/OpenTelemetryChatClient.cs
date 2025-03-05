@@ -121,22 +121,23 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         base.GetService(serviceType, serviceKey);
 
     /// <inheritdoc/>
-    public override async Task<ChatResponse> GetResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<ChatResponse> GetResponseAsync(
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(chatMessages);
+        _ = Throw.IfNull(messages);
         _jsonSerializerOptions.MakeReadOnly();
 
         using Activity? activity = CreateAndConfigureActivity(options);
         Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
         string? requestModelId = options?.ModelId ?? _modelId;
 
-        LogChatMessages(chatMessages);
+        LogChatMessages(messages);
 
         ChatResponse? response = null;
         Exception? error = null;
         try
         {
-            response = await base.GetResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
+            response = await base.GetResponseAsync(messages, options, cancellationToken).ConfigureAwait(false);
             return response;
         }
         catch (Exception ex)
@@ -152,21 +153,21 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
     /// <inheritdoc/>
     public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-        IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(chatMessages);
+        _ = Throw.IfNull(messages);
         _jsonSerializerOptions.MakeReadOnly();
 
         using Activity? activity = CreateAndConfigureActivity(options);
         Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
         string? requestModelId = options?.ModelId ?? _modelId;
 
-        LogChatMessages(chatMessages);
+        LogChatMessages(messages);
 
         IAsyncEnumerable<ChatResponseUpdate> updates;
         try
         {
-            updates = base.GetStreamingResponseAsync(chatMessages, options, cancellationToken);
+            updates = base.GetStreamingResponseAsync(messages, options, cancellationToken);
         }
         catch (Exception ex)
         {

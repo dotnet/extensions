@@ -80,13 +80,14 @@ public sealed class OllamaChatClient : IChatClient
     }
 
     /// <inheritdoc />
-    public async Task<ChatResponse> GetResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<ChatResponse> GetResponseAsync(
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(chatMessages);
+        _ = Throw.IfNull(messages);
 
         using var httpResponse = await _httpClient.PostAsJsonAsync(
             _apiChatEndpoint,
-            ToOllamaChatRequest(chatMessages, options, stream: false),
+            ToOllamaChatRequest(messages, options, stream: false),
             JsonContext.Default.OllamaChatRequest,
             cancellationToken).ConfigureAwait(false);
 
@@ -104,11 +105,7 @@ public sealed class OllamaChatClient : IChatClient
             throw new InvalidOperationException($"Ollama error: {response.Error}");
         }
 
-        var responseMessage = FromOllamaMessage(response.Message!);
-
-        chatMessages.Add(responseMessage);
-
-        return new(responseMessage)
+        return new(FromOllamaMessage(response.Message!))
         {
             CreatedAt = DateTimeOffset.TryParse(response.CreatedAt, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset createdAt) ? createdAt : null,
             FinishReason = ToFinishReason(response),
@@ -120,13 +117,13 @@ public sealed class OllamaChatClient : IChatClient
 
     /// <inheritdoc />
     public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-        IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(chatMessages);
+        _ = Throw.IfNull(messages);
 
         using HttpRequestMessage request = new(HttpMethod.Post, _apiChatEndpoint)
         {
-            Content = JsonContent.Create(ToOllamaChatRequest(chatMessages, options, stream: true), JsonContext.Default.OllamaChatRequest)
+            Content = JsonContent.Create(ToOllamaChatRequest(messages, options, stream: true), JsonContext.Default.OllamaChatRequest)
         };
         using var httpResponse = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
@@ -143,65 +140,56 @@ public sealed class OllamaChatClient : IChatClient
 #endif
             .ConfigureAwait(false);
 
-        List<ChatResponseUpdate> updates = [];
-        try
-        {
-            using var streamReader = new StreamReader(httpResponseStream);
+        using var streamReader = new StreamReader(httpResponseStream);
 #if NET
-            while ((await streamReader.ReadLineAsync(cancellationToken).ConfigureAwait(false)) is { } line)
+        while ((await streamReader.ReadLineAsync(cancellationToken).ConfigureAwait(false)) is { } line)
 #else
-            while ((await streamReader.ReadLineAsync().ConfigureAwait(false)) is { } line)
+        while ((await streamReader.ReadLineAsync().ConfigureAwait(false)) is { } line)
 #endif
+        {
+            var chunk = JsonSerializer.Deserialize(line, JsonContext.Default.OllamaChatResponse);
+            if (chunk is null)
             {
-                var chunk = JsonSerializer.Deserialize(line, JsonContext.Default.OllamaChatResponse);
-                if (chunk is null)
-                {
-                    continue;
-                }
+                continue;
+            }
 
-                string? modelId = chunk.Model ?? _metadata.ModelId;
+            string? modelId = chunk.Model ?? _metadata.ModelId;
 
-                ChatResponseUpdate update = new()
-                {
-                    CreatedAt = DateTimeOffset.TryParse(chunk.CreatedAt, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset createdAt) ? createdAt : null,
-                    FinishReason = ToFinishReason(chunk),
-                    ModelId = modelId,
-                    ResponseId = chunk.CreatedAt,
-                    Role = chunk.Message?.Role is not null ? new ChatRole(chunk.Message.Role) : null,
-                };
+            ChatResponseUpdate update = new()
+            {
+                CreatedAt = DateTimeOffset.TryParse(chunk.CreatedAt, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset createdAt) ? createdAt : null,
+                FinishReason = ToFinishReason(chunk),
+                ModelId = modelId,
+                ResponseId = chunk.CreatedAt,
+                Role = chunk.Message?.Role is not null ? new ChatRole(chunk.Message.Role) : null,
+            };
 
-                if (chunk.Message is { } message)
+            if (chunk.Message is { } message)
+            {
+                if (message.ToolCalls is { Length: > 0 })
                 {
-                    if (message.ToolCalls is { Length: > 0 })
+                    foreach (var toolCall in message.ToolCalls)
                     {
-                        foreach (var toolCall in message.ToolCalls)
+                        if (toolCall.Function is { } function)
                         {
-                            if (toolCall.Function is { } function)
-                            {
-                                update.Contents.Add(ToFunctionCallContent(function));
-                            }
+                            update.Contents.Add(ToFunctionCallContent(function));
                         }
                     }
-
-                    // Equivalent rule to the nonstreaming case
-                    if (message.Content?.Length > 0 || update.Contents.Count == 0)
-                    {
-                        update.Contents.Insert(0, new TextContent(message.Content));
-                    }
                 }
 
-                if (ParseOllamaChatResponseUsage(chunk) is { } usage)
+                // Equivalent rule to the nonstreaming case
+                if (message.Content?.Length > 0 || update.Contents.Count == 0)
                 {
-                    update.Contents.Add(new UsageContent(usage));
+                    update.Contents.Insert(0, new TextContent(message.Content));
                 }
-
-                updates.Add(update);
-                yield return update;
             }
-        }
-        finally
-        {
-            chatMessages.AddRangeFromUpdates(updates);
+
+            if (ParseOllamaChatResponseUsage(chunk) is { } usage)
+            {
+                update.Contents.Add(new UsageContent(usage));
+            }
+
+            yield return update;
         }
     }
 
@@ -305,12 +293,12 @@ public sealed class OllamaChatClient : IChatClient
         }
     }
 
-    private OllamaChatRequest ToOllamaChatRequest(IList<ChatMessage> chatMessages, ChatOptions? options, bool stream)
+    private OllamaChatRequest ToOllamaChatRequest(IEnumerable<ChatMessage> messages, ChatOptions? options, bool stream)
     {
         OllamaChatRequest request = new()
         {
             Format = ToOllamaChatResponseFormat(options?.ResponseFormat),
-            Messages = chatMessages.SelectMany(ToOllamaChatRequestMessages).ToArray(),
+            Messages = messages.SelectMany(ToOllamaChatRequestMessages).ToArray(),
             Model = options?.ModelId ?? _metadata.ModelId ?? string.Empty,
             Stream = stream,
             Tools = options?.ToolMode is not NoneChatToolMode && options?.Tools is { Count: > 0 } tools ? tools.OfType<AIFunction>().Select(ToOllamaTool) : null,

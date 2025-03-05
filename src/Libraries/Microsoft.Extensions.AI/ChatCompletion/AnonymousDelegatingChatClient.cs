@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.AI;
 internal sealed class AnonymousDelegatingChatClient : DelegatingChatClient
 {
     /// <summary>The delegate to use as the implementation of <see cref="GetResponseAsync"/>.</summary>
-    private readonly Func<IList<ChatMessage>, ChatOptions?, IChatClient, CancellationToken, Task<ChatResponse>>? _getResponseFunc;
+    private readonly Func<IEnumerable<ChatMessage>, ChatOptions?, IChatClient, CancellationToken, Task<ChatResponse>>? _getResponseFunc;
 
     /// <summary>The delegate to use as the implementation of <see cref="GetStreamingResponseAsync"/>.</summary>
     /// <remarks>
@@ -25,10 +25,10 @@ internal sealed class AnonymousDelegatingChatClient : DelegatingChatClient
     /// will be invoked with the same arguments as the method itself, along with a reference to the inner client.
     /// When <see langword="null"/>, <see cref="GetStreamingResponseAsync"/> will delegate directly to the inner client.
     /// </remarks>
-    private readonly Func<IList<ChatMessage>, ChatOptions?, IChatClient, CancellationToken, IAsyncEnumerable<ChatResponseUpdate>>? _getStreamingResponseFunc;
+    private readonly Func<IEnumerable<ChatMessage>, ChatOptions?, IChatClient, CancellationToken, IAsyncEnumerable<ChatResponseUpdate>>? _getStreamingResponseFunc;
 
     /// <summary>The delegate to use as the implementation of both <see cref="GetResponseAsync"/> and <see cref="GetStreamingResponseAsync"/>.</summary>
-    private readonly Func<IList<ChatMessage>, ChatOptions?, Func<IList<ChatMessage>, ChatOptions?, CancellationToken, Task>, CancellationToken, Task>? _sharedFunc;
+    private readonly Func<IEnumerable<ChatMessage>, ChatOptions?, Func<IEnumerable<ChatMessage>, ChatOptions?, CancellationToken, Task>, CancellationToken, Task>? _sharedFunc;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AnonymousDelegatingChatClient"/> class.
@@ -47,7 +47,7 @@ internal sealed class AnonymousDelegatingChatClient : DelegatingChatClient
     /// <exception cref="ArgumentNullException"><paramref name="sharedFunc"/> is <see langword="null"/>.</exception>
     public AnonymousDelegatingChatClient(
         IChatClient innerClient,
-        Func<IList<ChatMessage>, ChatOptions?, Func<IList<ChatMessage>, ChatOptions?, CancellationToken, Task>, CancellationToken, Task> sharedFunc)
+        Func<IEnumerable<ChatMessage>, ChatOptions?, Func<IEnumerable<ChatMessage>, ChatOptions?, CancellationToken, Task>, CancellationToken, Task> sharedFunc)
         : base(innerClient)
     {
         _ = Throw.IfNull(sharedFunc);
@@ -73,8 +73,8 @@ internal sealed class AnonymousDelegatingChatClient : DelegatingChatClient
     /// <exception cref="ArgumentNullException">Both <paramref name="getResponseFunc"/> and <paramref name="getStreamingResponseFunc"/> are <see langword="null"/>.</exception>
     public AnonymousDelegatingChatClient(
         IChatClient innerClient,
-        Func<IList<ChatMessage>, ChatOptions?, IChatClient, CancellationToken, Task<ChatResponse>>? getResponseFunc,
-        Func<IList<ChatMessage>, ChatOptions?, IChatClient, CancellationToken, IAsyncEnumerable<ChatResponseUpdate>>? getStreamingResponseFunc)
+        Func<IEnumerable<ChatMessage>, ChatOptions?, IChatClient, CancellationToken, Task<ChatResponse>>? getResponseFunc,
+        Func<IEnumerable<ChatMessage>, ChatOptions?, IChatClient, CancellationToken, IAsyncEnumerable<ChatResponseUpdate>>? getStreamingResponseFunc)
         : base(innerClient)
     {
         ThrowIfBothDelegatesNull(getResponseFunc, getStreamingResponseFunc);
@@ -85,20 +85,21 @@ internal sealed class AnonymousDelegatingChatClient : DelegatingChatClient
 
     /// <inheritdoc/>
     public override Task<ChatResponse> GetResponseAsync(
-        IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(chatMessages);
+        _ = Throw.IfNull(messages);
 
         if (_sharedFunc is not null)
         {
-            return GetResponseViaSharedAsync(chatMessages, options, cancellationToken);
+            return GetResponseViaSharedAsync(messages, options, cancellationToken);
 
-            async Task<ChatResponse> GetResponseViaSharedAsync(IList<ChatMessage> chatMessages, ChatOptions? options, CancellationToken cancellationToken)
+            async Task<ChatResponse> GetResponseViaSharedAsync(
+                IEnumerable<ChatMessage> messages, ChatOptions? options, CancellationToken cancellationToken)
             {
                 ChatResponse? response = null;
-                await _sharedFunc(chatMessages, options, async (chatMessages, options, cancellationToken) =>
+                await _sharedFunc(messages, options, async (messages, options, cancellationToken) =>
                 {
-                    response = await InnerClient.GetResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
+                    response = await InnerClient.GetResponseAsync(messages, options, cancellationToken).ConfigureAwait(false);
                 }, cancellationToken).ConfigureAwait(false);
 
                 if (response is null)
@@ -111,21 +112,21 @@ internal sealed class AnonymousDelegatingChatClient : DelegatingChatClient
         }
         else if (_getResponseFunc is not null)
         {
-            return _getResponseFunc(chatMessages, options, InnerClient, cancellationToken);
+            return _getResponseFunc(messages, options, InnerClient, cancellationToken);
         }
         else
         {
             Debug.Assert(_getStreamingResponseFunc is not null, "Expected non-null streaming delegate.");
-            return _getStreamingResponseFunc!(chatMessages, options, InnerClient, cancellationToken)
+            return _getStreamingResponseFunc!(messages, options, InnerClient, cancellationToken)
                 .ToChatResponseAsync(cancellationToken);
         }
     }
 
     /// <inheritdoc/>
     public override IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-        IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(chatMessages);
+        _ = Throw.IfNull(messages);
 
         if (_sharedFunc is not null)
         {
@@ -138,9 +139,9 @@ internal sealed class AnonymousDelegatingChatClient : DelegatingChatClient
                 Exception? error = null;
                 try
                 {
-                    await _sharedFunc(chatMessages, options, async (chatMessages, options, cancellationToken) =>
+                    await _sharedFunc(messages, options, async (messages, options, cancellationToken) =>
                     {
-                        await foreach (var update in InnerClient.GetStreamingResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false))
+                        await foreach (var update in InnerClient.GetStreamingResponseAsync(messages, options, cancellationToken).ConfigureAwait(false))
                         {
                             await updates.Writer.WriteAsync(update, cancellationToken).ConfigureAwait(false);
                         }
@@ -161,12 +162,12 @@ internal sealed class AnonymousDelegatingChatClient : DelegatingChatClient
         }
         else if (_getStreamingResponseFunc is not null)
         {
-            return _getStreamingResponseFunc(chatMessages, options, InnerClient, cancellationToken);
+            return _getStreamingResponseFunc(messages, options, InnerClient, cancellationToken);
         }
         else
         {
             Debug.Assert(_getResponseFunc is not null, "Expected non-null non-streaming delegate.");
-            return GetStreamingResponseAsyncViaGetResponseAsync(_getResponseFunc!(chatMessages, options, InnerClient, cancellationToken));
+            return GetStreamingResponseAsyncViaGetResponseAsync(_getResponseFunc!(messages, options, InnerClient, cancellationToken));
 
             static async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsyncViaGetResponseAsync(Task<ChatResponse> task)
             {

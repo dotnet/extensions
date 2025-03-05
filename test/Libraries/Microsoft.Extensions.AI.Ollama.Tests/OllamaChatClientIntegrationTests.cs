@@ -106,10 +106,10 @@ public class OllamaChatClientIntegrationTests : ChatClientIntegrationTests
     private sealed class AssertNoToolsDefinedChatClient(IChatClient innerClient) : DelegatingChatClient(innerClient)
     {
         public override Task<ChatResponse> GetResponseAsync(
-            IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+            IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
         {
             Assert.Null(options?.Tools);
-            return base.GetResponseAsync(chatMessages, options, cancellationToken);
+            return base.GetResponseAsync(messages, options, cancellationToken);
         }
     }
 }

@@ -401,6 +401,7 @@ public class FunctionInvokingChatClientTests
                 // If the conversation is just starting, issue two consecutive updates with function calls
                 // Otherwise just end the conversation.
                 List<ChatResponseUpdate> updates;
+                string responseId = Guid.NewGuid().ToString("N");
                 if (chatContents.Last().Text == "Hello")
                 {
                     updates =
@@ -414,7 +415,10 @@ public class FunctionInvokingChatClientTests
                     updates = [new() { Contents = [new TextContent("OK bye")] }];
                 }
 
-                chatContents.AddRangeFromUpdates(updates);
+                foreach (var update in updates)
+                {
+                    update.ResponseId = responseId;
+                }
 
                 return YieldAsync(updates);
             }
@@ -422,15 +426,10 @@ public class FunctionInvokingChatClientTests
 
         using var client = new FunctionInvokingChatClient(innerClient);
 
-        var updates = new List<ChatResponseUpdate>();
-        await foreach (var update in client.GetStreamingResponseAsync(messages, options, CancellationToken.None))
-        {
-            updates.Add(update);
-        }
+        var response = await client.GetStreamingResponseAsync(messages, options, CancellationToken.None).ToChatResponseAsync();
 
-        // Message history should now include the FCCs and FRCs
-        Assert.Collection(messages,
-            m => Assert.Equal("Hello", Assert.IsType<TextContent>(Assert.Single(m.Contents)).Text),
+        // The returned message should include the FCCs and FRCs.
+        Assert.Collection(response.Messages,
             m => Assert.Collection(m.Contents,
                 c => Assert.Equal("Input 1", Assert.IsType<FunctionCallContent>(c).Arguments!["text"]),
                 c => Assert.Equal("Input 2", Assert.IsType<FunctionCallContent>(c).Arguments!["text"])),
@@ -438,11 +437,6 @@ public class FunctionInvokingChatClientTests
                 c => Assert.Equal("Result for Input 1", Assert.IsType<FunctionResultContent>(c).Result?.ToString()),
                 c => Assert.Equal("Result for Input 2", Assert.IsType<FunctionResultContent>(c).Result?.ToString())),
             m => Assert.Equal("OK bye", Assert.IsType<TextContent>(Assert.Single(m.Contents)).Text));
-
-        // The returned updates also include the FCCs and FRCs
-        var allUpdateContents = updates.SelectMany(updates => updates.Contents).ToList();
-        Assert.Contains(allUpdateContents, c => c is FunctionCallContent);
-        Assert.Contains(allUpdateContents, c => c is FunctionResultContent);
     }
 
     [Fact]
@@ -464,11 +458,9 @@ public class FunctionInvokingChatClientTests
             {
                 await Task.Yield();
 
-                ChatMessage message = chatContents.Count is 1 or 3 ?
-                    new(ChatRole.Assistant, [new FunctionCallContent($"callId{chatContents.Count}", "Func1")]) :
+                ChatMessage message = chatContents.Count() is 1 or 3 ?
+                    new(ChatRole.Assistant, [new FunctionCallContent($"callId{chatContents.Count()}", "Func1")]) :
                     new(ChatRole.Assistant, "The answer is 42.");
-
-                chatContents.Add(message);
 
                 return new(message);
             }
@@ -542,7 +534,7 @@ public class FunctionInvokingChatClientTests
         {
             invocationContexts.Clear();
 
-            var chatMessages = await work();
+            var messages = await work();
 
             Assert.Collection(invocationContexts,
                 c => AssertInvocationContext(c, iteration: 0, terminate: false),
@@ -551,7 +543,8 @@ public class FunctionInvokingChatClientTests
             void AssertInvocationContext(FunctionInvocationContext context, int iteration, bool terminate)
             {
                 Assert.NotNull(context);
-                Assert.Same(chatMessages, context.ChatMessages);
+                Assert.Equal(messages.Count, context.Messages.Count);
+                Assert.Equal(string.Concat(messages), string.Concat(context.Messages));
                 Assert.Same(function, context.Function);
                 Assert.Equal("Func1", context.CallContent.Name);
                 Assert.Equal(0, context.FunctionCallIndex);
@@ -572,7 +565,7 @@ public class FunctionInvokingChatClientTests
 
         int iteration = 0;
 
-        Func<IList<ChatMessage>, ChatOptions?, CancellationToken, ChatResponse> callback =
+        Func<IEnumerable<ChatMessage>, ChatOptions?, CancellationToken, ChatResponse> callback =
             (chatContents, chatOptions, cancellationToken) =>
             {
                 iteration++;
@@ -638,18 +631,19 @@ public class FunctionInvokingChatClientTests
                 var usage = CreateRandomUsage();
                 expectedTotalTokenCounts += usage.InputTokenCount!.Value;
 
-                var message = new ChatMessage(ChatRole.Assistant, [.. plan[contents.Count].Contents]);
-                contents.Add(message);
-                return new ChatResponse(message) { Usage = usage };
+                var message = new ChatMessage(ChatRole.Assistant, [.. plan[contents.Count()].Contents]);
+                return new ChatResponse(message) { Usage = usage, ResponseId = Guid.NewGuid().ToString("N") };
             }
         };
 
         IChatClient service = configurePipeline(innerClient.AsBuilder()).Build(services);
 
         var result = await service.GetResponseAsync(chat, options, cts.Token);
+        Assert.NotNull(result);
+
+        chat.AddRange(result.Messages);
 
         expected ??= plan;
-        Assert.NotNull(result);
         Assert.Equal(expected.Count, chat.Count);
         for (int i = 0; i < expected.Count; i++)
         {
@@ -728,18 +722,19 @@ public class FunctionInvokingChatClientTests
             {
                 Assert.Equal(cts.Token, actualCancellationToken);
 
-                ChatMessage message = new(ChatRole.Assistant, [.. plan[contents.Count].Contents]);
-                contents.Add(message);
-                return YieldAsync(new ChatResponse(message).ToChatResponseUpdates());
+                ChatMessage message = new(ChatRole.Assistant, [.. plan[contents.Count()].Contents]);
+                return YieldAsync(new ChatResponse(message) { ResponseId = Guid.NewGuid().ToString("N") }.ToChatResponseUpdates());
             }
         };
 
         IChatClient service = configurePipeline(innerClient.AsBuilder()).Build(services);
 
         var result = await service.GetStreamingResponseAsync(chat, options, cts.Token).ToChatResponseAsync();
+        Assert.NotNull(result);
+
+        chat.AddRange(result.Messages);
 
         expected ??= plan;
-        Assert.NotNull(result);
         Assert.Equal(expected.Count, chat.Count);
         for (int i = 0; i < expected.Count; i++)
         {

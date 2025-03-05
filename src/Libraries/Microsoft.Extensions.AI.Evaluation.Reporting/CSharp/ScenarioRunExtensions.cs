@@ -87,7 +87,36 @@ public static class ScenarioRunExtensions
         IEnumerable<EvaluationContext>? additionalContext = null,
         CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(scenarioRun, nameof(scenarioRun));
+        _ = Throw.IfNull(scenarioRun);
+
+        return scenarioRun.EvaluateAsync(
+                messages: [],
+                new ChatResponse(modelResponse),
+                additionalContext,
+                cancellationToken);
+    }
+
+    /// <summary>
+    /// Evaluates the supplied <paramref name="modelResponse"/> and returns an <see cref="EvaluationResult"/>
+    /// containing one or more <see cref="EvaluationMetric"/>s.
+    /// </summary>
+    /// <param name="scenarioRun">The <see cref="ScenarioRun"/> of which this evaluation is a part.</param>
+    /// <param name="modelResponse">The response that is to be evaluated.</param>
+    /// <param name="additionalContext">
+    /// Additional contextual information that the <see cref="IEvaluator"/>s included in this <see cref="ScenarioRun"/>
+    /// may need to accurately evaluate the supplied <paramref name="modelResponse"/>.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A <see cref="CancellationToken"/> that can cancel the evaluation operation.
+    /// </param>
+    /// <returns>An <see cref="EvaluationResult"/> containing one or more <see cref="EvaluationMetric"/>s.</returns>
+    public static ValueTask<EvaluationResult> EvaluateAsync(
+        this ScenarioRun scenarioRun,
+        ChatResponse modelResponse,
+        IEnumerable<EvaluationContext>? additionalContext = null,
+        CancellationToken cancellationToken = default)
+    {
+        _ = Throw.IfNull(scenarioRun);
 
         return scenarioRun.EvaluateAsync(
                 messages: [],
@@ -121,7 +150,41 @@ public static class ScenarioRunExtensions
         IEnumerable<EvaluationContext>? additionalContext = null,
         CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(scenarioRun, nameof(scenarioRun));
+        _ = Throw.IfNull(scenarioRun);
+
+        return scenarioRun.EvaluateAsync(
+                messages: [userRequest],
+                new ChatResponse(modelResponse),
+                additionalContext,
+                cancellationToken);
+    }
+
+    /// <summary>
+    /// Evaluates the supplied <paramref name="modelResponse"/> and returns an <see cref="EvaluationResult"/>
+    /// containing one or more <see cref="EvaluationMetric"/>s.
+    /// </summary>
+    /// <param name="scenarioRun">The <see cref="ScenarioRun"/> of which this evaluation is a part.</param>
+    /// <param name="userRequest">
+    /// The request that produced the <paramref name="modelResponse"/> that is to be evaluated.
+    /// </param>
+    /// <param name="modelResponse">The response that is to be evaluated.</param>
+    /// <param name="additionalContext">
+    /// Additional contextual information (beyond that which is available in <paramref name="userRequest"/>) that the
+    /// <see cref="IEvaluator"/>s included in this <see cref="ScenarioRun"/> may need to accurately evaluate the
+    /// supplied <paramref name="modelResponse"/>.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A <see cref="CancellationToken"/> that can cancel the evaluation operation.
+    /// </param>
+    /// <returns>An <see cref="EvaluationResult"/> containing one or more <see cref="EvaluationMetric"/>s.</returns>
+    public static ValueTask<EvaluationResult> EvaluateAsync(
+        this ScenarioRun scenarioRun,
+        ChatMessage userRequest,
+        ChatResponse modelResponse,
+        IEnumerable<EvaluationContext>? additionalContext = null,
+        CancellationToken cancellationToken = default)
+    {
+        _ = Throw.IfNull(scenarioRun);
 
         return scenarioRun.EvaluateAsync(
                 messages: [userRequest],

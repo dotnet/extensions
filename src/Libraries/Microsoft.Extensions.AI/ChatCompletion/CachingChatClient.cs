@@ -45,25 +45,19 @@ public abstract class CachingChatClient : DelegatingChatClient
     public bool CoalesceStreamingUpdates { get; set; } = true;
 
     /// <inheritdoc />
-    public override async Task<ChatResponse> GetResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<ChatResponse> GetResponseAsync(
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(chatMessages);
+        _ = Throw.IfNull(messages);
 
         // We're only storing the final result, not the in-flight task, so that we can avoid caching failures
         // or having problems when one of the callers cancels but others don't. This has the drawback that
         // concurrent callers might trigger duplicate requests, but that's acceptable.
-        var cacheKey = GetCacheKey(_boxedFalse, chatMessages, options);
+        var cacheKey = GetCacheKey(_boxedFalse, messages, options);
 
-        if (await ReadCacheAsync(cacheKey, cancellationToken).ConfigureAwait(false) is { } result)
+        if (await ReadCacheAsync(cacheKey, cancellationToken).ConfigureAwait(false) is not { } result)
         {
-            foreach (ChatMessage message in result.Messages)
-            {
-                chatMessages.Add(message);
-            }
-        }
-        else
-        {
-            result = await base.GetResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
+            result = await base.GetResponseAsync(messages, options, cancellationToken).ConfigureAwait(false);
             await WriteCacheAsync(cacheKey, result, cancellationToken).ConfigureAwait(false);
         }
 
@@ -72,9 +66,9 @@ public abstract class CachingChatClient : DelegatingChatClient
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-        IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(chatMessages);
+        _ = Throw.IfNull(messages);
 
         if (CoalesceStreamingUpdates)
         {
@@ -82,7 +76,7 @@ public abstract class CachingChatClient : DelegatingChatClient
             // we make a streaming request, yielding those results, but then convert those into a non-streaming
             // result and cache it. When we get a cache hit, we yield the non-streaming result as a streaming one.
 
-            var cacheKey = GetCacheKey(_boxedTrue, chatMessages, options);
+            var cacheKey = GetCacheKey(_boxedTrue, messages, options);
             if (await ReadCacheAsync(cacheKey, cancellationToken).ConfigureAwait(false) is { } chatResponse)
             {
                 // Yield all of the cached items.
@@ -90,17 +84,12 @@ public abstract class CachingChatClient : DelegatingChatClient
                 {
                     yield return chunk;
                 }
-
-                foreach (ChatMessage message in chatResponse.Messages)
-                {
-                    chatMessages.Add(message);
-                }
             }
             else
             {
                 // Yield and store all of the items.
                 List<ChatResponseUpdate> capturedItems = [];
-                await foreach (var chunk in base.GetStreamingResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false))
+                await foreach (var chunk in base.GetStreamingResponseAsync(messages, options, cancellationToken).ConfigureAwait(false))
                 {
                     capturedItems.Add(chunk);
                     yield return chunk;
@@ -112,7 +101,7 @@ public abstract class CachingChatClient : DelegatingChatClient
         }
         else
         {
-            var cacheKey = GetCacheKey(_boxedTrue, chatMessages, options);
+            var cacheKey = GetCacheKey(_boxedTrue, messages, options);
             if (await ReadCacheStreamingAsync(cacheKey, cancellationToken).ConfigureAwait(false) is { } existingChunks)
             {
                 // Yield all of the cached items.
@@ -122,17 +111,12 @@ public abstract class CachingChatClient : DelegatingChatClient
                     chatThreadId ??= chunk.ChatThreadId;
                     yield return chunk;
                 }
-
-                if (chatThreadId is null)
-                {
-                    chatMessages.AddRangeFromUpdates(existingChunks);
-                }
             }
             else
             {
                 // Yield and store all of the items.
                 List<ChatResponseUpdate> capturedItems = [];
-                await foreach (var chunk in base.GetStreamingResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false))
+                await foreach (var chunk in base.GetStreamingResponseAsync(messages, options, cancellationToken).ConfigureAwait(false))
                 {
                     capturedItems.Add(chunk);
                     yield return chunk;
@@ -151,7 +135,7 @@ public abstract class CachingChatClient : DelegatingChatClient
 
     /// <summary>
     /// Returns a previously cached <see cref="ChatResponse"/>, if available.
-    /// This is used when there is a call to <see cref="IChatClient.GetResponseAsync(IList{ChatMessage}, ChatOptions?, CancellationToken)"/>.
+    /// This is used when there is a call to <see cref="IChatClient.GetResponseAsync"/>.
     /// </summary>
     /// <param name="key">The cache key.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
@@ -161,7 +145,7 @@ public abstract class CachingChatClient : DelegatingChatClient
 
     /// <summary>
     /// Returns a previously cached list of <see cref="ChatResponseUpdate"/> values, if available.
-    /// This is used when there is a call to <see cref="IChatClient.GetStreamingResponseAsync(IList{ChatMessage}, ChatOptions?, CancellationToken)"/>.
+    /// This is used when there is a call to <see cref="IChatClient.GetStreamingResponseAsync"/>.
     /// </summary>
     /// <param name="key">The cache key.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
@@ -171,7 +155,7 @@ public abstract class CachingChatClient : DelegatingChatClient
 
     /// <summary>
     /// Stores a <see cref="ChatResponse"/> in the underlying cache.
-    /// This is used when there is a call to <see cref="IChatClient.GetResponseAsync(IList{ChatMessage}, ChatOptions?, CancellationToken)"/>.
+    /// This is used when there is a call to <see cref="IChatClient.GetResponseAsync"/>.
     /// </summary>
     /// <param name="key">The cache key.</param>
     /// <param name="value">The <see cref="ChatResponse"/> to be stored.</param>
@@ -183,7 +167,7 @@ public abstract class CachingChatClient : DelegatingChatClient
 
     /// <summary>
     /// Stores a list of <see cref="ChatResponseUpdate"/> values in the underlying cache.
-    /// This is used when there is a call to <see cref="IChatClient.GetStreamingResponseAsync(IList{ChatMessage}, ChatOptions?, CancellationToken)"/>.
+    /// This is used when there is a call to <see cref="IChatClient.GetStreamingResponseAsync"/>.
     /// </summary>
     /// <param name="key">The cache key.</param>
     /// <param name="value">The <see cref="ChatResponse"/> to be stored.</param>

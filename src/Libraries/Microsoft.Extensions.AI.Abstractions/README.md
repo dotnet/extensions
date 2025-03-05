@@ -41,7 +41,7 @@ IChatClient client = ...;
 Console.WriteLine(await client.GetResponseAsync("What is AI?"));
 ```
 
-The core `GetResponseAsync` method on the `IChatClient` interface accepts a list of messages. This list represents the history of all messages that are part of the conversation.
+The core `GetResponseAsync` method on the `IChatClient` interface accepts a list of messages. This list often represents the history of all messages that are part of the conversation.
 
 ```csharp
 IChatClient client = ...;
@@ -53,7 +53,10 @@ Console.WriteLine(await client.GetResponseAsync(
 ]));
 ```
 
-The `ChatResponse` that's returned from `GetResponseAsync` exposes a `ChatMessage` representing the response message. It is automatically added into the history by the `IChatClient`, so that it'll be provided back to the service in a subsequent request, e.g.
+The `ChatResponse` that's returned from `GetResponseAsync` exposes a list of `ChatMessage` instances representing one or more messages generated as part of the operation.
+In common cases, there is only one response message, but a variety of situations can result in their being multiple; the list is ordered, such that the last message in
+the list represents the final message to the request. In order to provide all of those response messages back to the service in a subsequent request, the messages from
+the response may be added back into the messages list.
 
 ```csharp
 List<ChatMessage> history = [];
@@ -62,13 +65,17 @@ while (true)
     Console.Write("Q: ");
     history.Add(new(ChatRole.User, Console.ReadLine()));
 
-    Console.WriteLine(await client.GetResponseAsync(history));
+    var response = await client.GetResponseAsync(history);
+    Console.WriteLine(response);
+
+    history.AddMessages(response);
 }
 ```
 
 #### Requesting a Streaming Chat Response: `GetStreamingResponseAsync`
 
-The inputs to `GetStreamingResponseAsync` are identical to those of `GetResponseAsync`. However, rather than returning the complete response as part of a `ChatResponse` object, the method returns an `IAsyncEnumerable<ChatResponseUpdate>`, providing a stream of updates that together form the single response.
+The inputs to `GetStreamingResponseAsync` are identical to those of `GetResponseAsync`. However, rather than returning the complete response as part of a
+`ChatResponse` object, the method returns an `IAsyncEnumerable<ChatResponseUpdate>`, providing a stream of updates that together form the single response.
 
 ```csharp
 IChatClient client = ...;
@@ -79,8 +86,10 @@ await foreach (var update in client.GetStreamingResponseAsync("What is AI?"))
 }
 ```
 
-As with `GetResponseAsync`, the `IChatClient.GetStreamingResponseAsync` implementation is responsible for adding
-the response message back into the history, so that it'll be provided back to the service in a subsequent request.
+As with `GetResponseAsync`, the updates from `IChatClient.GetStreamingResponseAsync` can be added back into the messages list. As the updates provided
+are individual pieces of a response, helpers like `ToChatResponse` can be used to compose one or more updates back into a single `ChatResponse` instance.
+Further helpers like `AddMessages` perform that same operation and then extract the composed messages from the response and add them into a list.
+
 ```csharp
 List<ChatMessage> history = [];
 while (true)
@@ -88,12 +97,14 @@ while (true)
     Console.Write("Q: ");
     history.Add(new(ChatRole.User, Console.ReadLine()));
 
+    List<ChatResponseUpdate> updates = [];
     await foreach (var update in client.GetStreamingResponseAsync(history))
     {
         Console.Write(update);
     }
-
     Console.WriteLine();
+
+    history.AddMessages(updates);
 }
 ```
 
@@ -165,7 +176,7 @@ IChatClient client = new ChatClientBuilder(new OllamaChatClient(new Uri("http://
     .UseOpenTelemetry(sourceName: sourceName, configure: c => c.EnableSensitiveData = true)
     .Build();
 
-Console.WriteLine((await client.GetResponseAsync("What is AI?")).Message);
+Console.WriteLine(await client.GetResponseAsync("What is AI?"));
 ```
 
 Alternatively, the `LoggingChatClient` and corresponding `UseLogging` method provide a simple way to write log entries to an `ILogger` for every request and response.
@@ -245,23 +256,23 @@ using System.Threading.RateLimiting;
 public sealed class RateLimitingChatClient(IChatClient innerClient, RateLimiter rateLimiter) : DelegatingChatClient(innerClient)
 {
     public override async Task<ChatResponse> GetResponseAsync(
-        IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         using var lease = await rateLimiter.AcquireAsync(permitCount: 1, cancellationToken).ConfigureAwait(false);
         if (!lease.IsAcquired)
             throw new InvalidOperationException("Unable to acquire lease.");
 
-        return await base.GetResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
+        return await base.GetResponseAsync(messages, options, cancellationToken).ConfigureAwait(false);
     }
 
     public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-        IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var lease = await rateLimiter.AcquireAsync(permitCount: 1, cancellationToken).ConfigureAwait(false);
         if (!lease.IsAcquired)
             throw new InvalidOperationException("Unable to acquire lease.");
 
-        await foreach (var update in base.GetStreamingResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false))
+        await foreach (var update in base.GetStreamingResponseAsync(messages, options, cancellationToken).ConfigureAwait(false))
             yield return update;
     }
 
@@ -285,7 +296,7 @@ var client = new RateLimitingChatClient(
     new OllamaChatClient(new Uri("http://localhost:11434"), "llama3.1"),
     new ConcurrencyLimiter(new() { PermitLimit = 1, QueueLimit = int.MaxValue }));
 
-await client.GetResponseAsync("What color is the sky?");
+Console.WriteLine(await client.GetResponseAsync("What color is the sky?"));
 ```
 
 To make it easier to compose such components with others, the author of the component is recommended to create a "Use" extension method for registering this component into a pipeline, e.g.
@@ -325,13 +336,13 @@ RateLimiter rateLimiter = ...;
 var client = new OllamaChatClient(new Uri("http://localhost:11434"), "llama3.1")
     .AsBuilder()
     .UseDistributedCache()
-    .Use(async (chatMessages, options, nextAsync, cancellationToken) =>
+    .Use(async (messages, options, nextAsync, cancellationToken) =>
     {
         using var lease = await rateLimiter.AcquireAsync(permitCount: 1, cancellationToken).ConfigureAwait(false);
         if (!lease.IsAcquired)
             throw new InvalidOperationException("Unable to acquire lease.");
 
-        await nextAsync(chatMessages, options, cancellationToken);
+        await nextAsync(messages, options, cancellationToken);
     })
     .UseOpenTelemetry()
     .Build();
@@ -369,9 +380,8 @@ What instance and configuration is injected may differ based on the current need
 "Stateless" services require all relevant conversation history to sent back on every request, while "stateful" services keep track of the history and instead
 require only additional messages be sent with a request. The `IChatClient` interface is designed to handle both stateless and stateful AI services.
 
-When working with a stateless service, the `GetResponseAsync` and `GetStreamingResponseAsync` methods will automatically add the response message back
-into the history. The client can then simply pass the same list of messages to a subsequent request, as that list will contain all
-of the context necessary to enable the next request.
+When working with a stateless service, callers maintain a list of all messages, adding in all received response messages, and providing the list
+back on subsequent interactions.
 ```csharp
 List<ChatMessage> history = [];
 while (true)
@@ -379,12 +389,15 @@ while (true)
     Console.Write("Q: ");
     history.Add(new(ChatRole.User, Console.ReadLine()));
 
-    Console.WriteLine(await client.GetResponseAsync(history));
+    var response = await client.GetResponseAsync(history);
+    Console.WriteLine(response);
+
+    history.AddMessages(response);
 }
 ```
 
 For stateful services, you may know ahead of time an identifier used for the relevant conversation. That identifier can be put into `ChatOptions.ChatThreadId`.
-Usage then follows the same pattern:
+Usage then follows the same pattern, except there's no need to maintain a history manually.
 ```csharp
 ChatOptions options = new() { ChatThreadId = "my-conversation-id" };
 while (true)
@@ -431,6 +444,10 @@ while (true)
     if (response.ChatThreadId is not null)
     {
         history.Clear();
+    }
+    else
+    {
+        history.AddMessages(response);
     }
 }
 ```

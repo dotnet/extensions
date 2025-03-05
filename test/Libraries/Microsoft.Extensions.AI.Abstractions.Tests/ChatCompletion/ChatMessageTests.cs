@@ -56,7 +56,7 @@ public class ChatMessageTests
     }
 
     [Fact]
-    public void Constructor_NullArgs_Valid()
+    public void Constructor_NullEmptyArgs_Valid()
     {
         ChatMessage message;
 
@@ -72,7 +72,9 @@ public class ChatMessageTests
         Assert.Empty(message.Text);
         Assert.Empty(message.Contents);
 
-        Assert.Throws<ArgumentException>(() => new ChatMessage(ChatRole.User, Array.Empty<AIContent>()));
+        message = new ChatMessage(ChatRole.User, Array.Empty<AIContent>());
+        Assert.Empty(message.Text);
+        Assert.Empty(message.Contents);
     }
 
     [Theory]

@@ -18,7 +18,7 @@ public sealed class FunctionInvocationContext
     private static readonly AIFunction _nopFunction = AIFunctionFactory.Create(() => { }, nameof(FunctionInvocationContext));
 
     /// <summary>The chat contents associated with the operation that initiated this function call request.</summary>
-    private IList<ChatMessage> _chatMessages = Array.Empty<ChatMessage>();
+    private IList<ChatMessage> _messages = Array.Empty<ChatMessage>();
 
     /// <summary>The AI function to be invoked.</summary>
     private AIFunction _function = _nopFunction;
@@ -39,10 +39,10 @@ public sealed class FunctionInvocationContext
     }
 
     /// <summary>Gets or sets the chat contents associated with the operation that initiated this function call request.</summary>
-    public IList<ChatMessage> ChatMessages
+    public IList<ChatMessage> Messages
     {
-        get => _chatMessages;
-        set => _chatMessages = Throw.IfNull(value);
+        get => _messages;
+        set => _messages = Throw.IfNull(value);
     }
 
     /// <summary>Gets or sets the chat options associated with the operation that initiated this function call request.</summary>
