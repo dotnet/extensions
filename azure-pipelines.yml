@@ -112,6 +112,14 @@ variables:
     - name: _Sign
       value: true
 
+  # Enable source index only for main branch builds
+  - ${{ if and(ne(variables['runAsPublic'], 'true'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}:
+    - name: enableSourceIndex
+      value: true
+  - ${{ else }}:
+    - name: enableSourceIndex
+      value: false
+
 resources:
   repositories:
   - repository: 1ESPipelineTemplates
@@ -145,7 +153,7 @@ extends:
         parameters:
           enableMicrobuild: true
           enableTelemetry: true
-          enableSourceIndex: true
+          enableSourceIndex: ${{ variables['enableSourceIndex'] }}
           runAsPublic: ${{ variables['runAsPublic'] }}
           # Publish build logs
           enablePublishBuildArtifacts: true
