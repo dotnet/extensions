@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
     <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <UseMetricsGenerator>true</UseMetricsGenerator>
