@@ -83,11 +83,11 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator(
     {
         _ = Throw.IfNull(modelResponse);
 
-        string renderedModelResponse = await RenderAsync(modelResponse.Messages, cancellationToken).ConfigureAwait(false);
+        string renderedModelResponse = await RenderAsync(modelResponse, cancellationToken).ConfigureAwait(false);
 
         string renderedUserRequest =
             userRequest is not null
-                ? await RenderAsync([userRequest], cancellationToken).ConfigureAwait(false)
+                ? await RenderAsync(userRequest, cancellationToken).ConfigureAwait(false)
                 : string.Empty;
 
         var builder = new StringBuilder();
@@ -95,7 +95,7 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator(
         {
             foreach (ChatMessage message in includedHistory)
             {
-                _ = builder.Append(await RenderAsync([message], cancellationToken).ConfigureAwait(false));
+                _ = builder.Append(await RenderAsync(message, cancellationToken).ConfigureAwait(false));
             }
         }
 
