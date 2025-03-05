@@ -191,6 +191,66 @@ public sealed class WindowsContainerSnapshotProviderTests
         Assert.True(data.MemoryUsageInBytes > 0);
     }
 
+    [Fact]
+    public void SnapshotProvider_EmitsCpuTimeMetric()
+    {
+        // Simulating 10% CPU usage (2 CPUs, 2000 ticks initially, 4000 ticks after 1 ms):
+        JOBOBJECT_BASIC_ACCOUNTING_INFORMATION updatedAccountingInfo = default;
+        updatedAccountingInfo.TotalKernelTime = 2500;
+        updatedAccountingInfo.TotalUserTime = 1500;
+
+        _jobHandleMock.SetupSequence(j => j.GetBasicAccountingInfo())
+            .Returns(_accountingInfo)
+            .Returns(_accountingInfo)
+            .Returns(updatedAccountingInfo)
+            .Returns(updatedAccountingInfo)
+            .Throws(new InvalidOperationException("We shouldn't hit here..."));
+
+        _sysInfo.NumberOfProcessors = 2;
+
+        var fakeClock = new FakeTimeProvider();
+        using var meter = new Meter(nameof(SnapshotProvider_EmitsCpuMetrics));
+        var meterFactoryMock = new Mock<IMeterFactory>();
+        meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>()))
+            .Returns(meter);
+        using var metricCollector = new MetricCollector<double>(meter, ResourceUtilizationInstruments.ContainerCpuTime, fakeClock);
+
+        var options = new ResourceMonitoringOptions { CpuConsumptionRefreshInterval = TimeSpan.FromMilliseconds(2) };
+
+        var snapshotProvider = new WindowsContainerSnapshotProvider(
+            _memoryInfoMock.Object,
+            _systemInfoMock.Object,
+            _processInfoMock.Object,
+            _logger,
+            meterFactoryMock.Object,
+            () => _jobHandleMock.Object,
+            fakeClock,
+            options);
+
+        // Step #0 - state in the beginning:
+        metricCollector.RecordObservableInstruments();
+        var snapshot = metricCollector.GetMeasurementSnapshot();
+        Assert.Equal(2, snapshot.Count);
+        Assert.Contains(_accountingInfo.TotalKernelTime / (double)TimeSpan.TicksPerSecond, snapshot.Select(m => m.Value));
+        Assert.Contains(_accountingInfo.TotalKernelTime / (double)TimeSpan.TicksPerSecond, snapshot.Select(m => m.Value));
+
+        // Step #1 - simulate 1 millisecond passing and collect metrics again:
+        fakeClock.Advance(TimeSpan.FromMilliseconds(1));
+        metricCollector.RecordObservableInstruments();
+        snapshot = metricCollector.GetMeasurementSnapshot();
+        Assert.Contains(updatedAccountingInfo.TotalKernelTime / (double)TimeSpan.TicksPerSecond, snapshot.Select(m => m.Value));
+        Assert.Contains(updatedAccountingInfo.TotalKernelTime / (double)TimeSpan.TicksPerSecond, snapshot.Select(m => m.Value));
+
+        // Step #2 - simulate 1 millisecond passing and collect metrics again:
+        fakeClock.Advance(TimeSpan.FromMilliseconds(1));
+        metricCollector.RecordObservableInstruments();
+        snapshot = metricCollector.GetMeasurementSnapshot();
+
+        // CPU time should be the same as before, as we're not simulating any CPU usage:
+        Assert.Contains(updatedAccountingInfo.TotalKernelTime / (double)TimeSpan.TicksPerSecond, snapshot.Select(m => m.Value));
+        Assert.Contains(updatedAccountingInfo.TotalKernelTime / (double)TimeSpan.TicksPerSecond, snapshot.Select(m => m.Value));
+    }
+
     [Theory]
     [InlineData(ResourceUtilizationInstruments.ProcessCpuUtilization, true)]
     [InlineData(ResourceUtilizationInstruments.ProcessCpuUtilization, false)]
