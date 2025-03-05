@@ -1,8 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -250,26 +252,50 @@ public abstract class ChatConversationEvaluator : IEvaluator
     }
 
     /// <summary>
-    /// Renders the supplied <paramref name="messages"/> to a string that can be included as part of the evaluation
+    /// Renders the supplied <paramref name="response"/> to a string that can be included as part of the evaluation
     /// prompt that this <see cref="IEvaluator"/> uses.
     /// </summary>
-    /// <param name="messages">
-    /// Messages that are part of the conversation history for the response being evaluated and that are to be rendered
+    /// <param name="response">
+    /// Chat response being evaluated and that is to be rendered as part of the evaluation prompt.
+    /// </param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can cancel the operation.</param>
+    /// <returns>
+    /// A string representation of the supplied <paramref name="response"/> that can be included as part of the
+    /// evaluation prompt.
+    /// </returns>
+    /// <remarks>
+    /// The default implementation uses <see cref="RenderAsync(ChatMessage, CancellationToken)"/> to render
+    /// each message in the response.
+    /// </remarks>
+    protected virtual async ValueTask<string> RenderAsync(ChatResponse response, CancellationToken cancellationToken)
+    {
+        _ = Throw.IfNull(response);
+
+        StringBuilder sb = new();
+        foreach (ChatMessage message in response.Messages)
+        {
+            _ = sb.Append(await RenderAsync(message, cancellationToken).ConfigureAwait(false));
+        }
+
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Renders the supplied <paramref name="message"/> to a string that can be included as part of the evaluation
+    /// prompt that this <see cref="IEvaluator"/> uses.
+    /// </summary>
+    /// <param name="message">
+    /// Message that is part of the conversation history for the response being evaluated and that is to be rendered
     /// as part of the evaluation prompt.
     /// </param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can cancel the operation.</param>
     /// <returns>
-    /// A string representation of the supplied <paramref name="messages"/> that can be included as part of the
+    /// A string representation of the supplied <paramref name="message"/> that can be included as part of the
     /// evaluation prompt.
     /// </returns>
-    /// <remarks>
-    /// The default implementation considers only the last message of <paramref name="messages"/>.
-    /// </remarks>
-    protected virtual ValueTask<string> RenderAsync(IEnumerable<ChatMessage> messages, CancellationToken cancellationToken)
+    protected virtual ValueTask<string> RenderAsync(ChatMessage message, CancellationToken cancellationToken)
     {
-        _ = Throw.IfNullOrEmpty(messages);
-
-        ChatMessage message = messages.Last();
+        _ = Throw.IfNull(message);
 
         string? author = message.AuthorName;
         string role = message.Role.Value;

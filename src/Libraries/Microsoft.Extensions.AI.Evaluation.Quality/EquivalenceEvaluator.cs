@@ -43,11 +43,11 @@ public sealed class EquivalenceEvaluator : SingleNumericMetricEvaluator
     {
         _ = Throw.IfNull(modelResponse);
 
-        string renderedModelResponse = await RenderAsync(modelResponse.Messages, cancellationToken).ConfigureAwait(false);
+        string renderedModelResponse = await RenderAsync(modelResponse, cancellationToken).ConfigureAwait(false);
 
         string renderedUserRequest =
             userRequest is not null
-                ? await RenderAsync([userRequest], cancellationToken).ConfigureAwait(false)
+                ? await RenderAsync(userRequest, cancellationToken).ConfigureAwait(false)
                 : string.Empty;
 
         string groundTruth;
