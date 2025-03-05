@@ -84,13 +84,13 @@ public sealed class AzureAIInferenceChatClient : IChatClient
 
     /// <inheritdoc />
     public async Task<ChatResponse> GetResponseAsync(
-        IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(chatMessages);
+        _ = Throw.IfNull(messages);
 
         // Make the call.
         ChatCompletions response = (await _chatCompletionsClient.CompleteAsync(
-            ToAzureAIOptions(chatMessages, options),
+            ToAzureAIOptions(messages, options),
             cancellationToken: cancellationToken).ConfigureAwait(false)).Value;
 
         // Create the return message.
@@ -125,7 +125,6 @@ public sealed class AzureAIInferenceChatClient : IChatClient
         }
 
         // Wrap the content in a ChatResponse to return.
-        chatMessages.Add(message);
         return new ChatResponse(message)
         {
             CreatedAt = response.Created,
@@ -139,9 +138,9 @@ public sealed class AzureAIInferenceChatClient : IChatClient
 
     /// <inheritdoc />
     public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-        IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(chatMessages);
+        _ = Throw.IfNull(messages);
 
         Dictionary<string, FunctionCallInfo>? functionCallInfos = null;
         ChatRole? streamedRole = default;
@@ -151,112 +150,102 @@ public sealed class AzureAIInferenceChatClient : IChatClient
         string? modelId = null;
         string lastCallId = string.Empty;
 
-        List<ChatResponseUpdate> responseUpdates = [];
-        try
+        // Process each update as it arrives
+        var updates = await _chatCompletionsClient.CompleteStreamingAsync(ToAzureAIOptions(messages, options), cancellationToken).ConfigureAwait(false);
+        await foreach (StreamingChatCompletionsUpdate chatCompletionUpdate in updates.ConfigureAwait(false))
         {
-            // Process each update as it arrives
-            var updates = await _chatCompletionsClient.CompleteStreamingAsync(ToAzureAIOptions(chatMessages, options), cancellationToken).ConfigureAwait(false);
-            await foreach (StreamingChatCompletionsUpdate chatCompletionUpdate in updates.ConfigureAwait(false))
+            // The role and finish reason may arrive during any update, but once they've arrived, the same value should be the same for all subsequent updates.
+            streamedRole ??= chatCompletionUpdate.Role is global::Azure.AI.Inference.ChatRole role ? ToChatRole(role) : null;
+            finishReason ??= chatCompletionUpdate.FinishReason is CompletionsFinishReason reason ? ToFinishReason(reason) : null;
+            responseId ??= chatCompletionUpdate.Id;
+            createdAt ??= chatCompletionUpdate.Created;
+            modelId ??= chatCompletionUpdate.Model;
+
+            // Create the response content object.
+            ChatResponseUpdate responseUpdate = new()
             {
-                // The role and finish reason may arrive during any update, but once they've arrived, the same value should be the same for all subsequent updates.
-                streamedRole ??= chatCompletionUpdate.Role is global::Azure.AI.Inference.ChatRole role ? ToChatRole(role) : null;
-                finishReason ??= chatCompletionUpdate.FinishReason is CompletionsFinishReason reason ? ToFinishReason(reason) : null;
-                responseId ??= chatCompletionUpdate.Id;
-                createdAt ??= chatCompletionUpdate.Created;
-                modelId ??= chatCompletionUpdate.Model;
+                CreatedAt = chatCompletionUpdate.Created,
+                FinishReason = finishReason,
+                ModelId = modelId,
+                RawRepresentation = chatCompletionUpdate,
+                ResponseId = chatCompletionUpdate.Id,
+                Role = streamedRole,
+            };
 
-                // Create the response content object.
-                ChatResponseUpdate responseUpdate = new()
-                {
-                    CreatedAt = chatCompletionUpdate.Created,
-                    FinishReason = finishReason,
-                    ModelId = modelId,
-                    RawRepresentation = chatCompletionUpdate,
-                    ResponseId = chatCompletionUpdate.Id,
-                    Role = streamedRole,
-                };
-
-                // Transfer over content update items.
-                if (chatCompletionUpdate.ContentUpdate is string update)
-                {
-                    responseUpdate.Contents.Add(new TextContent(update));
-                }
-
-                // Transfer over tool call updates.
-                if (chatCompletionUpdate.ToolCallUpdate is { } toolCallUpdate)
-                {
-                    // TODO https://github.com/Azure/azure-sdk-for-net/issues/46830: Azure.AI.Inference
-                    // has removed the Index property from ToolCallUpdate. It's now impossible via the
-                    // exposed APIs to correctly handle multiple parallel tool calls, as the CallId is
-                    // often null for anything other than the first update for a given call, and Index
-                    // isn't available to correlate which updates are for which call. This is a temporary
-                    // workaround to at least make a single tool call work and also make work multiple
-                    // tool calls when their updates aren't interleaved.
-                    if (toolCallUpdate.Id is not null)
-                    {
-                        lastCallId = toolCallUpdate.Id;
-                    }
-
-                    functionCallInfos ??= [];
-                    if (!functionCallInfos.TryGetValue(lastCallId, out FunctionCallInfo? existing))
-                    {
-                        functionCallInfos[lastCallId] = existing = new();
-                    }
-
-                    existing.Name ??= toolCallUpdate.Function.Name;
-                    if (toolCallUpdate.Function.Arguments is { } arguments)
-                    {
-                        _ = (existing.Arguments ??= new()).Append(arguments);
-                    }
-                }
-
-                if (chatCompletionUpdate.Usage is { } usage)
-                {
-                    responseUpdate.Contents.Add(new UsageContent(new()
-                    {
-                        InputTokenCount = usage.PromptTokens,
-                        OutputTokenCount = usage.CompletionTokens,
-                        TotalTokenCount = usage.TotalTokens,
-                    }));
-                }
-
-                // Now yield the item.
-                responseUpdates.Add(responseUpdate);
-                yield return responseUpdate;
+            // Transfer over content update items.
+            if (chatCompletionUpdate.ContentUpdate is string update)
+            {
+                responseUpdate.Contents.Add(new TextContent(update));
             }
 
-            // Now that we've received all updates, combine any for function calls into a single item to yield.
-            if (functionCallInfos is not null)
+            // Transfer over tool call updates.
+            if (chatCompletionUpdate.ToolCallUpdate is { } toolCallUpdate)
             {
-                var responseUpdate = new ChatResponseUpdate
+                // TODO https://github.com/Azure/azure-sdk-for-net/issues/46830: Azure.AI.Inference
+                // has removed the Index property from ToolCallUpdate. It's now impossible via the
+                // exposed APIs to correctly handle multiple parallel tool calls, as the CallId is
+                // often null for anything other than the first update for a given call, and Index
+                // isn't available to correlate which updates are for which call. This is a temporary
+                // workaround to at least make a single tool call work and also make work multiple
+                // tool calls when their updates aren't interleaved.
+                if (toolCallUpdate.Id is not null)
                 {
-                    CreatedAt = createdAt,
-                    FinishReason = finishReason,
-                    ModelId = modelId,
-                    ResponseId = responseId,
-                    Role = streamedRole,
-                };
-
-                foreach (var entry in functionCallInfos)
-                {
-                    FunctionCallInfo fci = entry.Value;
-                    if (!string.IsNullOrWhiteSpace(fci.Name))
-                    {
-                        FunctionCallContent callContent = ParseCallContentFromJsonString(
-                            fci.Arguments?.ToString() ?? string.Empty,
-                            entry.Key,
-                            fci.Name!);
-                        responseUpdate.Contents.Add(callContent);
-                    }
+                    lastCallId = toolCallUpdate.Id;
                 }
 
-                responseUpdates.Add(responseUpdate);
-                yield return responseUpdate;
+                functionCallInfos ??= [];
+                if (!functionCallInfos.TryGetValue(lastCallId, out FunctionCallInfo? existing))
+                {
+                    functionCallInfos[lastCallId] = existing = new();
+                }
+
+                existing.Name ??= toolCallUpdate.Function.Name;
+                if (toolCallUpdate.Function.Arguments is { } arguments)
+                {
+                    _ = (existing.Arguments ??= new()).Append(arguments);
+                }
             }
+
+            if (chatCompletionUpdate.Usage is { } usage)
+            {
+                responseUpdate.Contents.Add(new UsageContent(new()
+                {
+                    InputTokenCount = usage.PromptTokens,
+                    OutputTokenCount = usage.CompletionTokens,
+                    TotalTokenCount = usage.TotalTokens,
+                }));
+            }
+
+            // Now yield the item.
+            yield return responseUpdate;
         }
-        finally
+
+        // Now that we've received all updates, combine any for function calls into a single item to yield.
+        if (functionCallInfos is not null)
         {
-            chatMessages.AddRangeFromUpdates(responseUpdates);
+            var responseUpdate = new ChatResponseUpdate
+            {
+                CreatedAt = createdAt,
+                FinishReason = finishReason,
+                ModelId = modelId,
+                ResponseId = responseId,
+                Role = streamedRole,
+            };
+
+            foreach (var entry in functionCallInfos)
+            {
+                FunctionCallInfo fci = entry.Value;
+                if (!string.IsNullOrWhiteSpace(fci.Name))
+                {
+                    FunctionCallContent callContent = ParseCallContentFromJsonString(
+                        fci.Arguments?.ToString() ?? string.Empty,
+                        entry.Key,
+                        fci.Name!);
+                    responseUpdate.Contents.Add(callContent);
+                }
+            }
+
+            yield return responseUpdate;
         }
     }
 
@@ -292,7 +281,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
         new(s);
 
     /// <summary>Converts an extensions options instance to an AzureAI options instance.</summary>
-    private ChatCompletionsOptions ToAzureAIOptions(IList<ChatMessage> chatContents, ChatOptions? options)
+    private ChatCompletionsOptions ToAzureAIOptions(IEnumerable<ChatMessage> chatContents, ChatOptions? options)
     {
         ChatCompletionsOptions result = new(ToAzureAIInferenceChatMessages(chatContents))
         {
@@ -420,7 +409,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
     }
 
     /// <summary>Converts an Extensions chat message enumerable to an AzureAI chat message enumerable.</summary>
-    private IEnumerable<ChatRequestMessage> ToAzureAIInferenceChatMessages(IList<ChatMessage> inputs)
+    private IEnumerable<ChatRequestMessage> ToAzureAIInferenceChatMessages(IEnumerable<ChatMessage> inputs)
     {
         // Maps all of the M.E.AI types to the corresponding AzureAI types.
         // Unrecognized or non-processable content is ignored.

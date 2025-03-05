@@ -152,11 +152,11 @@ public class AzureAIInferenceChatClientTests
         using HttpClient httpClient = new(handler);
         using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
 
-        List<ChatMessage> chatMessages = multiContent ?
+        List<ChatMessage> messages = multiContent ?
             [new ChatMessage(ChatRole.User, "hello".Select(c => (AIContent)new TextContent(c.ToString())).ToList())] :
             [new ChatMessage(ChatRole.User, "hello")];
 
-        var response = await client.GetResponseAsync(chatMessages, new()
+        var response = await client.GetResponseAsync(messages, new()
         {
             MaxOutputTokens = 10,
             Temperature = 0.5f,
@@ -224,12 +224,12 @@ public class AzureAIInferenceChatClientTests
         using HttpClient httpClient = new(handler);
         using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
 
-        List<ChatMessage> chatMessages = multiContent ?
+        List<ChatMessage> messages = multiContent ?
             [new ChatMessage(ChatRole.User, "hello".Select(c => (AIContent)new TextContent(c.ToString())).ToList())] :
             [new ChatMessage(ChatRole.User, "hello")];
 
         List<ChatResponseUpdate> updates = [];
-        await foreach (var update in client.GetStreamingResponseAsync(chatMessages, new()
+        await foreach (var update in client.GetStreamingResponseAsync(messages, new()
         {
             MaxOutputTokens = 20,
             Temperature = 0.5f,

@@ -37,7 +37,7 @@ public static class TokenizerExtensions
     /// </returns>
     public static IEvaluationTokenCounter ToTokenCounter(this Tokenizer tokenizer, int inputTokenLimit)
     {
-        _ = Throw.IfNull(tokenizer, nameof(tokenizer));
+        _ = Throw.IfNull(tokenizer);
 
         return new TokenCounter(tokenizer, inputTokenLimit);
     }

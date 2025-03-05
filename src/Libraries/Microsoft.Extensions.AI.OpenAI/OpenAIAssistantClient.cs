@@ -70,21 +70,21 @@ internal sealed class OpenAIAssistantClient : IChatClient
 
     /// <inheritdoc />
     public Task<ChatResponse> GetResponseAsync(
-        IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default) =>
-        GetStreamingResponseAsync(chatMessages, options, cancellationToken).ToChatResponseAsync(cancellationToken);
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default) =>
+        GetStreamingResponseAsync(messages, options, cancellationToken).ToChatResponseAsync(cancellationToken);
 
     /// <inheritdoc />
     public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-        IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        // Extract necessary state from chatMessages and options.
-        (RunCreationOptions runOptions, List<FunctionResultContent>? toolResults) = CreateRunOptions(chatMessages, options);
+        // Extract necessary state from messages and options.
+        (RunCreationOptions runOptions, List<FunctionResultContent>? toolResults) = CreateRunOptions(messages, options);
 
         // Get the thread ID.
         string? threadId = options?.ChatThreadId ?? _threadId;
         if (threadId is null && toolResults is not null)
         {
-            Throw.ArgumentException(nameof(chatMessages), "No thread ID was provided, but chat messages includes tool results.");
+            Throw.ArgumentException(nameof(messages), "No thread ID was provided, but chat messages includes tool results.");
         }
 
         // Get the updates to process from the assistant. If we have any tool results, this means submitting those and ignoring
@@ -112,72 +112,61 @@ internal sealed class OpenAIAssistantClient : IChatClient
         }
 
         // Process each update.
-        List<ChatResponseUpdate> responseUpdates = [];
-        try
+        string? responseId = null;
+        await foreach (var update in updates.ConfigureAwait(false))
         {
-            string? responseId = null;
-            await foreach (var update in updates.ConfigureAwait(false))
+            switch (update)
             {
-                switch (update)
-                {
-                    case MessageContentUpdate mcu:
-                        ChatResponseUpdate responseUpdate = new(mcu.Role == MessageRole.User ? ChatRole.User : ChatRole.Assistant, mcu.Text)
+                case MessageContentUpdate mcu:
+                    yield return new(mcu.Role == MessageRole.User ? ChatRole.User : ChatRole.Assistant, mcu.Text)
+                    {
+                        ChatThreadId = threadId,
+                        RawRepresentation = mcu,
+                        ResponseId = responseId,
+                    };
+                    break;
+
+                case ThreadUpdate tu when options is not null:
+                    threadId ??= tu.Value.Id;
+                    break;
+
+                case RunUpdate ru:
+                    threadId ??= ru.Value.ThreadId;
+                    responseId ??= ru.Value.Id;
+
+                    ChatResponseUpdate ruUpdate = new()
+                    {
+                        AuthorName = ru.Value.AssistantId,
+                        ChatThreadId = threadId,
+                        CreatedAt = ru.Value.CreatedAt,
+                        ModelId = ru.Value.Model,
+                        RawRepresentation = ru,
+                        ResponseId = responseId,
+                        Role = ChatRole.Assistant,
+                    };
+
+                    if (ru.Value.Usage is { } usage)
+                    {
+                        ruUpdate.Contents.Add(new UsageContent(new()
                         {
-                            ChatThreadId = threadId,
-                            RawRepresentation = mcu,
-                            ResponseId = responseId,
-                        };
-                        responseUpdates.Add(responseUpdate);
-                        yield return responseUpdate;
-                        break;
+                            InputTokenCount = usage.InputTokenCount,
+                            OutputTokenCount = usage.OutputTokenCount,
+                            TotalTokenCount = usage.TotalTokenCount,
+                        }));
+                    }
 
-                    case ThreadUpdate tu when options is not null:
-                        threadId ??= tu.Value.Id;
-                        break;
+                    if (ru is RequiredActionUpdate rau && rau.ToolCallId is string toolCallId && rau.FunctionName is string functionName)
+                    {
+                        ruUpdate.Contents.Add(
+                            new FunctionCallContent(
+                                JsonSerializer.Serialize(new[] { ru.Value.Id, toolCallId }, OpenAIJsonContext.Default.StringArray!),
+                                functionName,
+                                JsonSerializer.Deserialize(rau.FunctionArguments, OpenAIJsonContext.Default.IDictionaryStringObject)!));
+                    }
 
-                    case RunUpdate ru:
-                        threadId ??= ru.Value.ThreadId;
-                        responseId ??= ru.Value.Id;
-
-                        ChatResponseUpdate ruUpdate = new()
-                        {
-                            AuthorName = ru.Value.AssistantId,
-                            ChatThreadId = threadId,
-                            CreatedAt = ru.Value.CreatedAt,
-                            ModelId = ru.Value.Model,
-                            RawRepresentation = ru,
-                            ResponseId = responseId,
-                            Role = ChatRole.Assistant,
-                        };
-
-                        if (ru.Value.Usage is { } usage)
-                        {
-                            ruUpdate.Contents.Add(new UsageContent(new()
-                            {
-                                InputTokenCount = usage.InputTokenCount,
-                                OutputTokenCount = usage.OutputTokenCount,
-                                TotalTokenCount = usage.TotalTokenCount,
-                            }));
-                        }
-
-                        if (ru is RequiredActionUpdate rau && rau.ToolCallId is string toolCallId && rau.FunctionName is string functionName)
-                        {
-                            ruUpdate.Contents.Add(
-                                new FunctionCallContent(
-                                    JsonSerializer.Serialize(new[] { ru.Value.Id, toolCallId }, OpenAIJsonContext.Default.StringArray!),
-                                    functionName,
-                                    JsonSerializer.Deserialize(rau.FunctionArguments, OpenAIJsonContext.Default.IDictionaryStringObject)!));
-                        }
-
-                        responseUpdates.Add(ruUpdate);
-                        yield return ruUpdate;
-                        break;
-                }
+                    yield return ruUpdate;
+                    break;
             }
-        }
-        finally
-        {
-            chatMessages.AddRangeFromUpdates(responseUpdates);
         }
     }
 
@@ -188,9 +177,10 @@ internal sealed class OpenAIAssistantClient : IChatClient
     }
 
     /// <summary>Adds the provided messages to the thread and returns the options to use for the request.</summary>
-    private static (RunCreationOptions RunOptions, List<FunctionResultContent>? ToolResults) CreateRunOptions(IList<ChatMessage> chatMessages, ChatOptions? options)
+    private static (RunCreationOptions RunOptions, List<FunctionResultContent>? ToolResults) CreateRunOptions(
+        IEnumerable<ChatMessage> messages, ChatOptions? options)
     {
-        _ = Throw.IfNull(chatMessages);
+        _ = Throw.IfNull(messages);
 
         RunCreationOptions runOptions = new();
 
@@ -285,7 +275,7 @@ internal sealed class OpenAIAssistantClient : IChatClient
         // Handle ChatMessages. System messages are turned into additional instructions.
         StringBuilder? instructions = null;
         List<FunctionResultContent>? functionResults = null;
-        foreach (var chatMessage in chatMessages)
+        foreach (var chatMessage in messages)
         {
             List<MessageContent> messageContents = [];
 

@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.AI.Evaluation.Reporting;
 /// Represents the results of a single execution of a particular iteration of a particular scenario under evaluation.
 /// In other words, <see cref="ScenarioRunResult"/> represents the results of evaluating a <see cref="ScenarioRun"/>
 /// and includes the <see cref="Evaluation.EvaluationResult"/> that is produced when
-/// <see cref="ScenarioRun.EvaluateAsync(IEnumerable{ChatMessage}, ChatMessage, IEnumerable{Microsoft.Extensions.AI.Evaluation.EvaluationContext}?, CancellationToken)"/>
+/// <see cref="ScenarioRun.EvaluateAsync(IEnumerable{ChatMessage}, ChatResponse, IEnumerable{Microsoft.Extensions.AI.Evaluation.EvaluationContext}?, CancellationToken)"/>
 /// is invoked.
 /// </summary>
 /// <remarks>
@@ -44,7 +44,7 @@ public sealed class ScenarioRunResult(
     string executionName,
     DateTime creationTime,
     IList<ChatMessage> messages,
-    ChatMessage modelResponse,
+    ChatResponse modelResponse,
     EvaluationResult evaluationResult)
 {
     /// <summary>
@@ -68,7 +68,7 @@ public sealed class ScenarioRunResult(
         string executionName,
         DateTime creationTime,
         IEnumerable<ChatMessage> messages,
-        ChatMessage modelResponse,
+        ChatResponse modelResponse,
         EvaluationResult evaluationResult)
             : this(
                 scenarioName,
@@ -115,7 +115,7 @@ public sealed class ScenarioRunResult(
     /// <summary>
     /// Gets or sets the response being evaluated in this <see cref="ScenarioRunResult"/>.
     /// </summary>
-    public ChatMessage ModelResponse { get; set; } = modelResponse;
+    public ChatResponse ModelResponse { get; set; } = modelResponse;
 
     /// <summary>
     /// Gets or sets the <see cref="Evaluation.EvaluationResult"/> for the <see cref="ScenarioRun"/> corresponding to
@@ -123,7 +123,7 @@ public sealed class ScenarioRunResult(
     /// </summary>
     /// <remarks>
     /// This is the same <see cref="Evaluation.EvaluationResult"/> that is returned when
-    /// <see cref="ScenarioRun.EvaluateAsync(IEnumerable{ChatMessage}, ChatMessage, IEnumerable{Microsoft.Extensions.AI.Evaluation.EvaluationContext}?, CancellationToken)"/>
+    /// <see cref="ScenarioRun.EvaluateAsync(IEnumerable{ChatMessage}, ChatResponse, IEnumerable{Microsoft.Extensions.AI.Evaluation.EvaluationContext}?, CancellationToken)"/>
     /// is invoked.
     /// </remarks>
     public EvaluationResult EvaluationResult { get; set; } = evaluationResult;

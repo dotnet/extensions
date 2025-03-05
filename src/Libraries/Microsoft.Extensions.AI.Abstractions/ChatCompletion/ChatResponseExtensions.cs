@@ -14,14 +14,37 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// Provides extension methods for working with <see cref="ChatResponseUpdate"/> instances.
+/// Provides extension methods for working with <see cref="ChatResponse"/> and <see cref="ChatResponseUpdate"/> instances.
 /// </summary>
-public static class ChatResponseUpdateExtensions
+public static class ChatResponseExtensions
 {
-    /// <summary>Converts the <paramref name="updates"/> into <see cref="ChatMessage"/> instances and adds them to <paramref name="chatMessages"/>.</summary>
-    /// <param name="chatMessages">The list to which the newly constructed messages should be added.</param>
+    /// <summary>Adds all of the messages from <paramref name="response"/> into <paramref name="list"/>.</summary>
+    /// <param name="list">The destination list into which the messages should be added.</param>
+    /// <param name="response">The response containing the messages to add.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="list"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="response"/> is <see langword="null"/>.</exception>
+    public static void AddMessages(this IList<ChatMessage> list, ChatResponse response)
+    {
+        _ = Throw.IfNull(list);
+        _ = Throw.IfNull(response);
+
+        if (list is List<ChatMessage> listConcrete)
+        {
+            listConcrete.AddRange(response.Messages);
+        }
+        else
+        {
+            foreach (var message in response.Messages)
+            {
+                list.Add(message);
+            }
+        }
+    }
+
+    /// <summary>Converts the <paramref name="updates"/> into <see cref="ChatMessage"/> instances and adds them to <paramref name="list"/>.</summary>
+    /// <param name="list">The list to which the newly constructed messages should be added.</param>
     /// <param name="updates">The <see cref="ChatResponseUpdate"/> instances to convert to messages and add to the list.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="chatMessages"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="list"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="updates"/> is <see langword="null"/>.</exception>
     /// <remarks>
     /// As part of combining <paramref name="updates"/> into a series of <see cref="ChatMessage"/> instances, tne
@@ -29,9 +52,9 @@ public static class ChatResponseUpdateExtensions
     /// contiguous <see cref="AIContent"/> items where applicable, e.g. multiple
     /// <see cref="TextContent"/> instances in a row may be combined into a single <see cref="TextContent"/>.
     /// </remarks>
-    public static void AddRangeFromUpdates(this IList<ChatMessage> chatMessages, IEnumerable<ChatResponseUpdate> updates)
+    public static void AddMessages(this IList<ChatMessage> list, IEnumerable<ChatResponseUpdate> updates)
     {
-        _ = Throw.IfNull(chatMessages);
+        _ = Throw.IfNull(list);
         _ = Throw.IfNull(updates);
 
         if (updates is ICollection<ChatResponseUpdate> { Count: 0 })
@@ -39,27 +62,15 @@ public static class ChatResponseUpdateExtensions
             return;
         }
 
-        ChatResponse response = updates.ToChatResponse();
-        if (chatMessages is List<ChatMessage> list)
-        {
-            list.AddRange(response.Messages);
-        }
-        else
-        {
-            int count = response.Messages.Count;
-            for (int i = 0; i < count; i++)
-            {
-                chatMessages.Add(response.Messages[i]);
-            }
-        }
+        list.AddMessages(updates.ToChatResponse());
     }
 
-    /// <summary>Converts the <paramref name="updates"/> into <see cref="ChatMessage"/> instances and adds them to <paramref name="chatMessages"/>.</summary>
-    /// <param name="chatMessages">The list to which the newly constructed messages should be added.</param>
+    /// <summary>Converts the <paramref name="updates"/> into <see cref="ChatMessage"/> instances and adds them to <paramref name="list"/>.</summary>
+    /// <param name="list">The list to which the newly constructed messages should be added.</param>
     /// <param name="updates">The <see cref="ChatResponseUpdate"/> instances to convert to messages and add to the list.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A <see cref="Task"/> representing the completion of the operation.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="chatMessages"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="list"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="updates"/> is <see langword="null"/>.</exception>
     /// <remarks>
     /// As part of combining <paramref name="updates"/> into a series of <see cref="ChatMessage"/> instances, tne
@@ -67,31 +78,17 @@ public static class ChatResponseUpdateExtensions
     /// contiguous <see cref="AIContent"/> items where applicable, e.g. multiple
     /// <see cref="TextContent"/> instances in a row may be combined into a single <see cref="TextContent"/>.
     /// </remarks>
-    public static Task AddRangeFromUpdatesAsync(
-        this IList<ChatMessage> chatMessages, IAsyncEnumerable<ChatResponseUpdate> updates, CancellationToken cancellationToken = default)
+    public static Task AddMessagesAsync(
+        this IList<ChatMessage> list, IAsyncEnumerable<ChatResponseUpdate> updates, CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(chatMessages);
+        _ = Throw.IfNull(list);
         _ = Throw.IfNull(updates);
 
-        return AddRangeFromUpdatesAsync(chatMessages, updates, cancellationToken);
+        return AddRangeFromUpdatesAsync(list, updates, cancellationToken);
 
         static async Task AddRangeFromUpdatesAsync(
-            IList<ChatMessage> chatMessages, IAsyncEnumerable<ChatResponseUpdate> updates, CancellationToken cancellationToken)
-        {
-            ChatResponse response = await updates.ToChatResponseAsync(cancellationToken).ConfigureAwait(false);
-            if (chatMessages is List<ChatMessage> list)
-            {
-                list.AddRange(response.Messages);
-            }
-            else
-            {
-                int count = response.Messages.Count;
-                for (int i = 0; i < count; i++)
-                {
-                    chatMessages.Add(response.Messages[i]);
-                }
-            }
-        }
+            IList<ChatMessage> list, IAsyncEnumerable<ChatResponseUpdate> updates, CancellationToken cancellationToken) =>
+            list.AddMessages(await updates.ToChatResponseAsync(cancellationToken).ConfigureAwait(false));
     }
 
     /// <summary>Combines <see cref="ChatResponseUpdate"/> instances into a single <see cref="ChatResponse"/>.</summary>

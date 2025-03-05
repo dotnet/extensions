@@ -106,9 +106,9 @@ public class ChatClientExtensionsTests
 
         using TestChatClient client = new()
         {
-            GetResponseAsyncCallback = (chatMessages, options, cancellationToken) =>
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
-                ChatMessage m = Assert.Single(chatMessages);
+                ChatMessage m = Assert.Single(messages);
                 Assert.Equal(ChatRole.User, m.Role);
                 Assert.Equal("hello", m.Text);
 
@@ -133,9 +133,9 @@ public class ChatClientExtensionsTests
 
         using TestChatClient client = new()
         {
-            GetStreamingResponseAsyncCallback = (chatMessages, options, cancellationToken) =>
+            GetStreamingResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
-                ChatMessage m = Assert.Single(chatMessages);
+                ChatMessage m = Assert.Single(messages);
                 Assert.Equal(ChatRole.User, m.Role);
                 Assert.Equal("hello", m.Text);
 

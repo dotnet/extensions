@@ -12,6 +12,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI.Evaluation.Quality.Utilities;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI.Evaluation.Quality;
 
@@ -75,16 +76,18 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator(
     /// <inheritdoc/>
     protected override async ValueTask<string> RenderEvaluationPromptAsync(
         ChatMessage? userRequest,
-        ChatMessage modelResponse,
+        ChatResponse modelResponse,
         IEnumerable<ChatMessage>? includedHistory,
         IEnumerable<EvaluationContext>? additionalContext,
         CancellationToken cancellationToken)
     {
-        string renderedModelResponse = await RenderAsync(modelResponse, cancellationToken).ConfigureAwait(false);
+        _ = Throw.IfNull(modelResponse);
+
+        string renderedModelResponse = await RenderAsync(modelResponse.Messages, cancellationToken).ConfigureAwait(false);
 
         string renderedUserRequest =
             userRequest is not null
-                ? await RenderAsync(userRequest, cancellationToken).ConfigureAwait(false)
+                ? await RenderAsync([userRequest], cancellationToken).ConfigureAwait(false)
                 : string.Empty;
 
         var builder = new StringBuilder();
@@ -92,7 +95,7 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator(
         {
             foreach (ChatMessage message in includedHistory)
             {
-                _ = builder.Append(await RenderAsync(message, cancellationToken).ConfigureAwait(false));
+                _ = builder.Append(await RenderAsync([message], cancellationToken).ConfigureAwait(false));
             }
         }
 

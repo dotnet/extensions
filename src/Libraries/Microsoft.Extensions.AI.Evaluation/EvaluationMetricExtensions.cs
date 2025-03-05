@@ -31,7 +31,7 @@ public static class EvaluationMetricExtensions
         this EvaluationMetric metric,
         Func<EvaluationDiagnostic, bool>? predicate = null)
     {
-        _ = Throw.IfNull(metric, nameof(metric));
+        _ = Throw.IfNull(metric);
 
         return predicate is null ? metric.Diagnostics.Any() : metric.Diagnostics.Any(predicate);
     }

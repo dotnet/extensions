@@ -12,10 +12,21 @@ namespace Microsoft.Extensions.AI;
 public class ChatResponseTests
 {
     [Fact]
-    public void Constructor_InvalidArgs_Throws()
+    public void Constructor_NullEmptyArgs_Valid()
     {
-        Assert.Throws<ArgumentNullException>("message", () => new ChatResponse((ChatMessage)null!));
-        Assert.Throws<ArgumentNullException>("messages", () => new ChatResponse((List<ChatMessage>)null!));
+        ChatResponse response;
+
+        response = new();
+        Assert.Empty(response.Messages);
+        Assert.Empty(response.Text);
+
+        response = new((ChatMessage?)null);
+        Assert.Empty(response.Messages);
+        Assert.Empty(response.Text);
+
+        response = new((IList<ChatMessage>?)null);
+        Assert.Empty(response.Messages);
+        Assert.Empty(response.Text);
     }
 
     [Fact]

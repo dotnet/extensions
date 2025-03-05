@@ -42,7 +42,7 @@ public sealed class CompositeEvaluator : IEvaluator
     /// <param name="evaluators">An enumeration of <see cref="IEvaluator"/>s that are to be composed.</param>
     public CompositeEvaluator(IEnumerable<IEvaluator> evaluators)
     {
-        _ = Throw.IfNull(evaluators, nameof(evaluators));
+        _ = Throw.IfNull(evaluators);
 
         var metricNames = new HashSet<string>();
 
@@ -102,7 +102,7 @@ public sealed class CompositeEvaluator : IEvaluator
     /// <returns>An <see cref="EvaluationResult"/> containing one or more <see cref="EvaluationMetric"/>s.</returns>
     public async ValueTask<EvaluationResult> EvaluateAsync(
         IEnumerable<ChatMessage> messages,
-        ChatMessage modelResponse,
+        ChatResponse modelResponse,
         ChatConfiguration? chatConfiguration = null,
         IEnumerable<EvaluationContext>? additionalContext = null,
         CancellationToken cancellationToken = default)
@@ -127,7 +127,7 @@ public sealed class CompositeEvaluator : IEvaluator
 
     private IAsyncEnumerable<EvaluationResult> EvaluateAndStreamResultsAsync(
         IEnumerable<ChatMessage> messages,
-        ChatMessage modelResponse,
+        ChatResponse modelResponse,
         ChatConfiguration? chatConfiguration = null,
         IEnumerable<EvaluationContext>? additionalContext = null,
         CancellationToken cancellationToken = default)

@@ -25,7 +25,7 @@ internal class TestEvaluator : IEvaluator
 
     async ValueTask<EvaluationResult> IEvaluator.EvaluateAsync(
         IEnumerable<ChatMessage> messages,
-        ChatMessage modelResponse,
+        ChatResponse modelResponse,
         ChatConfiguration? chatConfiguration,
         IEnumerable<EvaluationContext>? additionalContext,
         CancellationToken cancellationToken)

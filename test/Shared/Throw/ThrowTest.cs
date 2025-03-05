@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using Xunit;
 
 namespace Microsoft.Shared.Diagnostics.Test;
@@ -381,18 +380,6 @@ public class ThrowTest
         var exceptionImplicitArgumentName = Record.Exception(() => Throw.IfNullOrEmpty(listButActuallyNull!));
 
         Assert.Contains(nameof(listButActuallyNull), exceptionImplicitArgumentName.Message);
-    }
-
-    [Fact]
-    public void Collection_IfReadOnly()
-    {
-        _ = Throw.IfReadOnly(new List<int>());
-
-        IList<int> list = new int[4];
-        Assert.Throws<ArgumentException>("list", () => Throw.IfReadOnly(list));
-
-        list = new ReadOnlyCollection<int>(new List<int>());
-        Assert.Throws<ArgumentException>("list", () => Throw.IfReadOnly(list));
     }
 
     #endregion

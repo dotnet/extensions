@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
-using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
@@ -29,39 +28,26 @@ public class ChatResponse
 
     /// <summary>Initializes a new instance of the <see cref="ChatResponse"/> class.</summary>
     /// <param name="message">The response message.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="message"/> is <see langword="null"/>.</exception>
-    public ChatResponse(ChatMessage message)
+    public ChatResponse(ChatMessage? message)
     {
-        _ = Throw.IfNull(message);
-        Messages.Add(message);
+        if (message is not null)
+        {
+            Messages.Add(message);
+        }
     }
 
     /// <summary>Initializes a new instance of the <see cref="ChatResponse"/> class.</summary>
     /// <param name="messages">The response messages.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="messages"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException"><paramref name="messages"/> must not be read-only.</exception>
-    public ChatResponse(IList<ChatMessage> messages)
+    public ChatResponse(IList<ChatMessage>? messages)
     {
-        _ = Throw.IfNull(messages);
-        _ = Throw.IfReadOnly(messages);
-
         _messages = messages;
     }
 
     /// <summary>Gets or sets the chat response messages.</summary>
-    /// <exception cref="ArgumentException">The <see cref="IList{T}"/> must not be read-only.</exception>
     public IList<ChatMessage> Messages
     {
         get => _messages ??= new List<ChatMessage>(1);
-        set
-        {
-            if (value is not null)
-            {
-                _ = Throw.IfReadOnly(value);
-            }
-
-            _messages = value;
-        }
+        set => _messages = value;
     }
 
     /// <summary>Gets the text of the response.</summary>
@@ -99,7 +85,7 @@ public class ChatResponse
     /// the input messages supplied to <see cref="IChatClient.GetResponseAsync"/> need only be the additional messages beyond
     /// what's already stored. If this property is non-<see langword="null"/>, it represents an identifier for that state,
     /// and it should be used in a subsequent <see cref="ChatOptions.ChatThreadId"/> instead of supplying the same messages
-    /// (and this <see cref="ChatResponse"/>'s message) as part of the <c>chatMessages</c> parameter.
+    /// (and this <see cref="ChatResponse"/>'s message) as part of the <c>messages</c> parameter.
     /// </remarks>
     public string? ChatThreadId { get; set; }
 

@@ -103,38 +103,32 @@ public sealed class OpenAIChatClient : IChatClient
 
     /// <inheritdoc />
     public async Task<ChatResponse> GetResponseAsync(
-        IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(chatMessages);
+        _ = Throw.IfNull(messages);
 
-        var openAIChatMessages = OpenAIModelMappers.ToOpenAIChatMessages(chatMessages, ToolCallJsonSerializerOptions);
+        var openAIChatMessages = OpenAIModelMappers.ToOpenAIChatMessages(messages, ToolCallJsonSerializerOptions);
         var openAIOptions = OpenAIModelMappers.ToOpenAIOptions(options);
 
         // Make the call to OpenAI.
         var response = await _chatClient.CompleteChatAsync(openAIChatMessages, openAIOptions, cancellationToken).ConfigureAwait(false);
 
-        ChatResponse chatResponse = OpenAIModelMappers.FromOpenAIChatCompletion(response.Value, options, openAIOptions);
-        foreach (ChatMessage message in chatResponse.Messages)
-        {
-            chatMessages.Add(message);
-        }
-
-        return chatResponse;
+        return OpenAIModelMappers.FromOpenAIChatCompletion(response.Value, options, openAIOptions);
     }
 
     /// <inheritdoc />
     public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-        IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(chatMessages);
+        _ = Throw.IfNull(messages);
 
-        var openAIChatMessages = OpenAIModelMappers.ToOpenAIChatMessages(chatMessages, ToolCallJsonSerializerOptions);
+        var openAIChatMessages = OpenAIModelMappers.ToOpenAIChatMessages(messages, ToolCallJsonSerializerOptions);
         var openAIOptions = OpenAIModelMappers.ToOpenAIOptions(options);
 
         // Make the call to OpenAI.
         var chatCompletionUpdates = _chatClient.CompleteChatStreamingAsync(openAIChatMessages, openAIOptions, cancellationToken);
 
-        return OpenAIModelMappers.FromOpenAIStreamingChatCompletionAsync(chatMessages, chatCompletionUpdates, cancellationToken);
+        return OpenAIModelMappers.FromOpenAIStreamingChatCompletionAsync(chatCompletionUpdates, cancellationToken);
     }
 
     /// <inheritdoc />

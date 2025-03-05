@@ -30,7 +30,7 @@ public static class ScenarioRunResultExtensions
         this ScenarioRunResult result,
         Func<EvaluationDiagnostic, bool>? predicate = null)
     {
-        _ = Throw.IfNull(result, nameof(result));
+        _ = Throw.IfNull(result);
 
         return result.EvaluationResult.ContainsDiagnostics(predicate);
     }
