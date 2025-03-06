@@ -25,6 +25,7 @@ public static class DistributedCachingEmbeddingGeneratorBuilderExtensions
     /// </param>
     /// <param name="configure">An optional callback that can be used to configure the <see cref="DistributedCachingEmbeddingGenerator{TInput, TEmbedding}"/> instance.</param>
     /// <returns>The <see cref="EmbeddingGeneratorBuilder{TInput, TEmbedding}"/> provided as <paramref name="builder"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
     public static EmbeddingGeneratorBuilder<TInput, TEmbedding> UseDistributedCache<TInput, TEmbedding>(
         this EmbeddingGeneratorBuilder<TInput, TEmbedding> builder,
         IDistributedCache? storage = null,
