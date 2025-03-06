@@ -39,9 +39,12 @@ public sealed class AzureAIInferenceChatClient : IChatClient
     /// <summary>Initializes a new instance of the <see cref="AzureAIInferenceChatClient"/> class for the specified <see cref="ChatCompletionsClient"/>.</summary>
     /// <param name="chatCompletionsClient">The underlying client.</param>
     /// <param name="modelId">The ID of the model to use. If null, it can be provided per request via <see cref="ChatOptions.ModelId"/>.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="chatCompletionsClient"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="modelId"/> is empty or composed entirely of whitespace.</exception>
     public AzureAIInferenceChatClient(ChatCompletionsClient chatCompletionsClient, string? modelId = null)
     {
         _ = Throw.IfNull(chatCompletionsClient);
+
         if (modelId is not null)
         {
             _ = Throw.IfNullOrWhitespace(modelId);
@@ -81,29 +84,20 @@ public sealed class AzureAIInferenceChatClient : IChatClient
 
     /// <inheritdoc />
     public async Task<ChatResponse> GetResponseAsync(
-        IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(chatMessages);
+        _ = Throw.IfNull(messages);
 
         // Make the call.
         ChatCompletions response = (await _chatCompletionsClient.CompleteAsync(
-            ToAzureAIOptions(chatMessages, options),
+            ToAzureAIOptions(messages, options),
             cancellationToken: cancellationToken).ConfigureAwait(false)).Value;
 
         // Create the return message.
-        List<ChatMessage> returnMessages = [];
-
-        // Populate its content from those in the response content.
-        ChatMessage message = new()
+        ChatMessage message = new(ToChatRole(response.Role), response.Content)
         {
             RawRepresentation = response,
-            Role = ToChatRole(response.Role),
         };
-
-        if (response.Content is string content)
-        {
-            message.Text = content;
-        }
 
         if (response.ToolCalls is { Count: > 0 } toolCalls)
         {
@@ -119,8 +113,6 @@ public sealed class AzureAIInferenceChatClient : IChatClient
             }
         }
 
-        returnMessages.Add(message);
-
         UsageDetails? usage = null;
         if (response.Usage is CompletionsUsage completionsUsage)
         {
@@ -133,7 +125,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
         }
 
         // Wrap the content in a ChatResponse to return.
-        return new ChatResponse(returnMessages)
+        return new ChatResponse(message)
         {
             CreatedAt = response.Created,
             ModelId = response.Model,
@@ -146,9 +138,9 @@ public sealed class AzureAIInferenceChatClient : IChatClient
 
     /// <inheritdoc />
     public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-        IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(chatMessages);
+        _ = Throw.IfNull(messages);
 
         Dictionary<string, FunctionCallInfo>? functionCallInfos = null;
         ChatRole? streamedRole = default;
@@ -159,7 +151,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
         string lastCallId = string.Empty;
 
         // Process each update as it arrives
-        var updates = await _chatCompletionsClient.CompleteStreamingAsync(ToAzureAIOptions(chatMessages, options), cancellationToken).ConfigureAwait(false);
+        var updates = await _chatCompletionsClient.CompleteStreamingAsync(ToAzureAIOptions(messages, options), cancellationToken).ConfigureAwait(false);
         await foreach (StreamingChatCompletionsUpdate chatCompletionUpdate in updates.ConfigureAwait(false))
         {
             // The role and finish reason may arrive during any update, but once they've arrived, the same value should be the same for all subsequent updates.
@@ -289,7 +281,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
         new(s);
 
     /// <summary>Converts an extensions options instance to an AzureAI options instance.</summary>
-    private ChatCompletionsOptions ToAzureAIOptions(IList<ChatMessage> chatContents, ChatOptions? options)
+    private ChatCompletionsOptions ToAzureAIOptions(IEnumerable<ChatMessage> chatContents, ChatOptions? options)
     {
         ChatCompletionsOptions result = new(ToAzureAIInferenceChatMessages(chatContents))
         {
@@ -417,7 +409,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
     }
 
     /// <summary>Converts an Extensions chat message enumerable to an AzureAI chat message enumerable.</summary>
-    private IEnumerable<ChatRequestMessage> ToAzureAIInferenceChatMessages(IList<ChatMessage> inputs)
+    private IEnumerable<ChatRequestMessage> ToAzureAIInferenceChatMessages(IEnumerable<ChatMessage> inputs)
     {
         // Maps all of the M.E.AI types to the corresponding AzureAI types.
         // Unrecognized or non-processable content is ignored.

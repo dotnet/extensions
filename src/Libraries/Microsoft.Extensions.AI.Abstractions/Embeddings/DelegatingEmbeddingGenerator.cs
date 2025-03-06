@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.AI;
 /// <typeparam name="TInput">The type of the input passed to the generator.</typeparam>
 /// <typeparam name="TEmbedding">The type of the embedding instance produced by the generator.</typeparam>
 /// <remarks>
-/// This type is recommended as a base type when building generators that can be chained in any order around an underlying <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/>.
+/// This type is recommended as a base type when building generators that can be chained around an underlying <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/>.
 /// The default implementation simply passes each call to the inner generator instance.
 /// </remarks>
 public class DelegatingEmbeddingGenerator<TInput, TEmbedding> : IEmbeddingGenerator<TInput, TEmbedding>

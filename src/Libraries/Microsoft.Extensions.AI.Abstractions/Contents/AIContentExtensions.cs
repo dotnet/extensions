@@ -3,10 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-#if !NET
 using System.Linq;
-#else
+#if NET
 using System.Runtime.CompilerServices;
+#else
+using System.Text;
 #endif
 
 namespace Microsoft.Extensions.AI;
@@ -14,51 +15,102 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Internal extensions for working with <see cref="AIContent"/>.</summary>
 internal static class AIContentExtensions
 {
-    /// <summary>Finds the first occurrence of a <typeparamref name="T"/> in the list.</summary>
-    public static T? FindFirst<T>(this IList<AIContent> contents)
-        where T : AIContent
+    /// <summary>Concatenates the text of all <see cref="TextContent"/> instances in the list.</summary>
+    public static string ConcatText(this IEnumerable<AIContent> contents)
     {
-        int count = contents.Count;
-        for (int i = 0; i < count; i++)
+        if (contents is IList<AIContent> list)
         {
-            if (contents[i] is T t)
+            int count = list.Count;
+            switch (count)
             {
-                return t;
+                case 0:
+                    return string.Empty;
+
+                case 1:
+                    return (list[0] as TextContent)?.Text ?? string.Empty;
+
+                default:
+#if NET
+                    DefaultInterpolatedStringHandler builder = new(count, 0, null, stackalloc char[512]);
+                    for (int i = 0; i < count; i++)
+                    {
+                        if (list[i] is TextContent text)
+                        {
+                            builder.AppendLiteral(text.Text);
+                        }
+                    }
+
+                    return builder.ToStringAndClear();
+#else
+                    StringBuilder builder = new();
+                    for (int i = 0; i < count; i++)
+                    {
+                        if (list[i] is TextContent text)
+                        {
+                            builder.Append(text.Text);
+                        }
+                    }
+
+                    return builder.ToString();
+#endif
             }
         }
 
-        return null;
+        return string.Concat(contents.OfType<TextContent>());
     }
 
-    /// <summary>Concatenates the text of all <see cref="TextContent"/> instances in the list.</summary>
-    public static string ConcatText(this IList<AIContent> contents)
+    /// <summary>Concatenates the <see cref="ChatMessage.Text"/> of all <see cref="ChatMessage"/> instances in the list.</summary>
+    /// <remarks>A newline separator is added between each non-empty piece of text.</remarks>
+    public static string ConcatText(this IList<ChatMessage> messages)
     {
-        int count = contents.Count;
+        int count = messages.Count;
         switch (count)
         {
             case 0:
-                break;
+                return string.Empty;
 
             case 1:
-                return contents[0] is TextContent tc ? tc.Text : string.Empty;
+                return messages[0].Text;
 
             default:
 #if NET
-                DefaultInterpolatedStringHandler builder = new(0, 0, null, stackalloc char[512]);
+                DefaultInterpolatedStringHandler builder = new(count, 0, null, stackalloc char[512]);
+                bool needsSeparator = false;
                 for (int i = 0; i < count; i++)
                 {
-                    if (contents[i] is TextContent text)
+                    string text = messages[i].Text;
+                    if (text.Length > 0)
                     {
-                        builder.AppendLiteral(text.Text);
+                        if (needsSeparator)
+                        {
+                            builder.AppendLiteral(Environment.NewLine);
+                        }
+
+                        builder.AppendLiteral(text);
+
+                        needsSeparator = true;
                     }
                 }
 
                 return builder.ToStringAndClear();
 #else
-                return string.Concat(contents.OfType<TextContent>());
+                StringBuilder builder = new();
+                for (int i = 0; i < count; i++)
+                {
+                    string text = messages[i].Text;
+                    if (text.Length > 0)
+                    {
+                        if (builder.Length > 0)
+                        {
+                            builder.AppendLine();
+                        }
+
+                        builder.Append(text);
+                    }
+                }
+
+                return builder.ToString();
 #endif
         }
-
-        return string.Empty;
     }
 }
