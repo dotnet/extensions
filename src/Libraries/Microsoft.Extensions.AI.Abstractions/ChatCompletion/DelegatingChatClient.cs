@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.AI;
 /// Provides an optional base class for an <see cref="IChatClient"/> that passes through calls to another instance.
 /// </summary>
 /// <remarks>
-/// This is recommended as a base type when building clients that can be chained in any order around an underlying <see cref="IChatClient"/>.
+/// This is recommended as a base type when building clients that can be chained around an underlying <see cref="IChatClient"/>.
 /// The default implementation simply passes each call to the inner client instance.
 /// </remarks>
 public class DelegatingChatClient : IChatClient

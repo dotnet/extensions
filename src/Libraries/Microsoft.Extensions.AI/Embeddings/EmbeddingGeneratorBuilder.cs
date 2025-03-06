@@ -54,10 +54,13 @@ public sealed class EmbeddingGeneratorBuilder<TInput, TEmbedding>
         {
             for (var i = _generatorFactories.Count - 1; i >= 0; i--)
             {
-                embeddingGenerator = _generatorFactories[i](embeddingGenerator, services) ??
-                    throw new InvalidOperationException(
+                embeddingGenerator = _generatorFactories[i](embeddingGenerator, services);
+                if (embeddingGenerator is null)
+                {
+                    Throw.InvalidOperationException(
                         $"The {nameof(IEmbeddingGenerator<TInput, TEmbedding>)} entry at index {i} returned null. " +
                         $"Ensure that the callbacks passed to {nameof(Use)} return non-null {nameof(IEmbeddingGenerator<TInput, TEmbedding>)} instances.");
+                }
             }
         }
 

@@ -13,12 +13,13 @@ namespace Microsoft.Extensions.AI;
 /// <para>
 /// Unless otherwise specified, all members of <see cref="IChatClient"/> are thread-safe for concurrent use.
 /// It is expected that all implementations of <see cref="IChatClient"/> support being used by multiple requests concurrently.
+/// Instances must not be disposed of while the instance is still in use.
 /// </para>
 /// <para>
 /// However, implementations of <see cref="IChatClient"/> might mutate the arguments supplied to <see cref="GetResponseAsync"/> and
 /// <see cref="GetStreamingResponseAsync"/>, such as by configuring the options instance. Thus, consumers of the interface either
 /// should avoid using shared instances of these arguments for concurrent invocations or should otherwise ensure by construction
-/// that no <see cref="IChatClient"/> instances are used which might employ such mutation. For example, the WithChatOptions method be
+/// that no <see cref="IChatClient"/> instances are used which might employ such mutation. For example, the ConfigureOptions method is
 /// provided with a callback that could mutate the supplied options argument, and that should be avoided if using a singleton options instance.
 /// </para>
 /// </remarks>
@@ -52,7 +53,7 @@ public interface IChatClient : IDisposable
     /// <returns>The found object, otherwise <see langword="null"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="serviceType"/> is <see langword="null"/>.</exception>
     /// <remarks>
-    /// The purpose of this method is to allow for the retrieval of strongly typed services that might be provided by the <see cref="IChatClient"/>,
+    /// The purpose of this method is to allow for the retrieval of strongly-typed services that might be provided by the <see cref="IChatClient"/>,
     /// including itself or any services it might be wrapping. For example, to access the <see cref="ChatClientMetadata"/> for the instance,
     /// <see cref="GetService"/> may be used to request it.
     /// </remarks>

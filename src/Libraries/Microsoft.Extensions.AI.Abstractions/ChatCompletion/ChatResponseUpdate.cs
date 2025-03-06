@@ -46,9 +46,9 @@ public class ChatResponseUpdate
 
     /// <summary>Initializes a new instance of the <see cref="ChatResponseUpdate"/> class.</summary>
     /// <param name="role">The role of the author of the update.</param>
-    /// <param name="contents">The text contents of the update.</param>
-    public ChatResponseUpdate(ChatRole? role, string? contents)
-        : this(role, contents is null ? null : [new TextContent(contents)])
+    /// <param name="content">The text content of the update.</param>
+    public ChatResponseUpdate(ChatRole? role, string? content)
+        : this(role, content is null ? null : [new TextContent(content)])
     {
     }
 

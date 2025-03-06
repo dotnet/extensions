@@ -205,7 +205,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             response = await base.GetResponseAsync(messages, options, cancellationToken).ConfigureAwait(false);
             if (response is null)
             {
-                throw new InvalidOperationException($"The inner {nameof(IChatClient)} returned a null {nameof(ChatResponse)}.");
+                Throw.InvalidOperationException($"The inner {nameof(IChatClient)} returned a null {nameof(ChatResponse)}.");
             }
 
             // Any function call work to do? If yes, ensure we're tracking that work in functionCallContents.
@@ -291,7 +291,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             {
                 if (update is null)
                 {
-                    throw new InvalidOperationException($"The inner {nameof(IChatClient)} streamed a null {nameof(ChatResponseUpdate)}.");
+                    Throw.InvalidOperationException($"The inner {nameof(IChatClient)} streamed a null {nameof(ChatResponseUpdate)}.");
                 }
 
                 updates.Add(update);
@@ -311,7 +311,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             }
 
             // Reconsistitue a response from the response updates.
-            ChatResponse response = updates.ToChatResponse();
+            var response = updates.ToChatResponse();
             (responseMessages ??= []).AddRange(response.Messages);
 
             // Prepare the history for the next iteration.

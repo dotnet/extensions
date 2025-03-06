@@ -49,10 +49,13 @@ public sealed class ChatClientBuilder
         {
             for (var i = _clientFactories.Count - 1; i >= 0; i--)
             {
-                chatClient = _clientFactories[i](chatClient, services) ??
-                    throw new InvalidOperationException(
+                chatClient = _clientFactories[i](chatClient, services);
+                if (chatClient is null)
+                {
+                    Throw.InvalidOperationException(
                         $"The {nameof(ChatClientBuilder)} entry at index {i} returned null. " +
                         $"Ensure that the callbacks passed to {nameof(Use)} return non-null {nameof(IChatClient)} instances.");
+                }
             }
         }
 

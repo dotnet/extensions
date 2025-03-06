@@ -15,21 +15,21 @@ namespace Microsoft.Extensions.AI;
 /// <para>
 /// Unless otherwise specified, all members of <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> are thread-safe for concurrent use.
 /// It is expected that all implementations of <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> support being used by multiple requests concurrently.
+/// Instances must not be disposed of while the instance is still in use.
 /// </para>
 /// <para>
 /// However, implementations of <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> may mutate the arguments supplied to
-/// <see cref="GenerateAsync"/>, such as by adding additional values to the values list or configuring the options
-/// instance. Thus, consumers of the interface either should avoid using shared instances of these arguments for concurrent
-/// invocations or should otherwise ensure by construction that no <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> instances
-/// are used which might employ such mutation.
+/// <see cref="GenerateAsync"/>, such as by configuring the options instance. Thus, consumers of the interface either should
+/// avoid using shared instances of these arguments for concurrent invocations or should otherwise ensure by construction that
+/// no <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> instances are used which might employ such mutation.
 /// </para>
 /// </remarks>
 public interface IEmbeddingGenerator<in TInput, TEmbedding> : IDisposable
     where TEmbedding : Embedding
 {
     /// <summary>Generates embeddings for each of the supplied <paramref name="values"/>.</summary>
-    /// <param name="values">The collection of values for which to generate embeddings.</param>
-    /// <param name="options">The embedding generation options to configure the request.</param>
+    /// <param name="values">The sequence of values for which to generate embeddings.</param>
+    /// <param name="options">The embedding generation options with which to configure the request.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The generated embeddings.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="values"/> is <see langword="null"/>.</exception>

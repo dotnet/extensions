@@ -33,7 +33,7 @@ public class EmbeddingGeneratorExtensionsTests
     {
         using IEmbeddingGenerator<string, Embedding<float>> generator = new TestEmbeddingGenerator
         {
-            GetServiceCallback = (Type serviceType, object? serviceKey) =>
+            GetServiceCallback = (serviceType, serviceKey) =>
             {
                 if (serviceType == typeof(string))
                 {

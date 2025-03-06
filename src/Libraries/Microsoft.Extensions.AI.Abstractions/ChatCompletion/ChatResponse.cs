@@ -3,8 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
@@ -28,12 +29,12 @@ public class ChatResponse
 
     /// <summary>Initializes a new instance of the <see cref="ChatResponse"/> class.</summary>
     /// <param name="message">The response message.</param>
-    public ChatResponse(ChatMessage? message)
+    /// <exception cref="ArgumentNullException"><paramref name="message"/> is <see langword="null"/>.</exception>
+    public ChatResponse(ChatMessage message)
     {
-        if (message is not null)
-        {
-            Messages.Add(message);
-        }
+        _ = Throw.IfNull(message);
+
+        Messages.Add(message);
     }
 
     /// <summary>Initializes a new instance of the <see cref="ChatResponse"/> class.</summary>
@@ -44,6 +45,7 @@ public class ChatResponse
     }
 
     /// <summary>Gets or sets the chat response messages.</summary>
+    [AllowNull]
     public IList<ChatMessage> Messages
     {
         get => _messages ??= new List<ChatMessage>(1);
@@ -56,25 +58,7 @@ public class ChatResponse
     /// instances in <see cref="Messages"/>.
     /// </remarks>
     [JsonIgnore]
-    public string Text
-    {
-        get
-        {
-            IList<ChatMessage>? messages = _messages;
-            if (messages is null)
-            {
-                return string.Empty;
-            }
-
-            int count = messages.Count;
-            return count switch
-            {
-                0 => string.Empty,
-                1 => messages[0].Text,
-                _ => string.Join(Environment.NewLine, messages.Select(m => m.Text).Where(s => !string.IsNullOrEmpty(s))),
-            };
-        }
-    }
+    public string Text => _messages?.ConcatText() ?? string.Empty;
 
     /// <summary>Gets or sets the ID of the chat response.</summary>
     public string? ResponseId { get; set; }

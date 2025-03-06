@@ -104,7 +104,7 @@ internal sealed class AnonymousDelegatingChatClient : DelegatingChatClient
 
                 if (response is null)
                 {
-                    throw new InvalidOperationException("The wrapper completed successfully without producing a ChatResponse.");
+                    Throw.InvalidOperationException("The wrapper completed successfully without producing a ChatResponse.");
                 }
 
                 return response;

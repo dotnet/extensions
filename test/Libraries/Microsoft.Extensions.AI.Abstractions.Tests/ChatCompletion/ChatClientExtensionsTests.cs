@@ -32,7 +32,7 @@ public class ChatClientExtensionsTests
     {
         using var client = new TestChatClient
         {
-            GetServiceCallback = (Type serviceType, object? serviceKey) =>
+            GetServiceCallback = (serviceType, serviceKey) =>
             {
                 if (serviceType == typeof(string))
                 {

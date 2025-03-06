@@ -20,13 +20,11 @@ public class ChatResponseTests
         Assert.Empty(response.Messages);
         Assert.Empty(response.Text);
 
-        response = new((ChatMessage?)null);
-        Assert.Empty(response.Messages);
-        Assert.Empty(response.Text);
-
         response = new((IList<ChatMessage>?)null);
         Assert.Empty(response.Messages);
         Assert.Empty(response.Text);
+
+        Assert.Throws<ArgumentNullException>("message", () => new ChatResponse((ChatMessage)null!));
     }
 
     [Fact]

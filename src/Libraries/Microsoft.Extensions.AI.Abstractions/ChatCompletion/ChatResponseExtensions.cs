@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.AI;
 public static class ChatResponseExtensions
 {
     /// <summary>Adds all of the messages from <paramref name="response"/> into <paramref name="list"/>.</summary>
-    /// <param name="list">The destination list into which the messages should be added.</param>
+    /// <param name="list">The destination list to which the messages from <paramref name="response"/> should be added.</param>
     /// <param name="response">The response containing the messages to add.</param>
     /// <exception cref="ArgumentNullException"><paramref name="list"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="response"/> is <see langword="null"/>.</exception>
@@ -42,7 +42,7 @@ public static class ChatResponseExtensions
     }
 
     /// <summary>Converts the <paramref name="updates"/> into <see cref="ChatMessage"/> instances and adds them to <paramref name="list"/>.</summary>
-    /// <param name="list">The list to which the newly constructed messages should be added.</param>
+    /// <param name="list">The destination list to which the newly constructed messages should be added.</param>
     /// <param name="updates">The <see cref="ChatResponseUpdate"/> instances to convert to messages and add to the list.</param>
     /// <exception cref="ArgumentNullException"><paramref name="list"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="updates"/> is <see langword="null"/>.</exception>
@@ -84,9 +84,9 @@ public static class ChatResponseExtensions
         _ = Throw.IfNull(list);
         _ = Throw.IfNull(updates);
 
-        return AddRangeFromUpdatesAsync(list, updates, cancellationToken);
+        return AddMessagesAsync(list, updates, cancellationToken);
 
-        static async Task AddRangeFromUpdatesAsync(
+        static async Task AddMessagesAsync(
             IList<ChatMessage> list, IAsyncEnumerable<ChatResponseUpdate> updates, CancellationToken cancellationToken) =>
             list.AddMessages(await updates.ToChatResponseAsync(cancellationToken).ConfigureAwait(false));
     }
