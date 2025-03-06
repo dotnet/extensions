@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace ChatWithCustomData.Web.Services.Ingestion;
+namespace ChatWithCustomData.Web_CSharp.Services.Ingestion;
 
 // A DbContext that keeps track of which documents have been ingested.
 // This makes it possible to avoid re-ingesting documents that have not changed,
@@ -34,7 +34,7 @@ public class IngestedDocument
     public required string Id { get; set; }
     public required string SourceId { get; set; }
     public required string Version { get; set; }
-    public List<IngestedRecord> Records { get; set; } = new();
+    public List<IngestedRecord> Records { get; set; } = [];
 }
 
 public class IngestedRecord

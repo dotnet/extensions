@@ -51,7 +51,7 @@ public abstract class CachingEmbeddingGenerator<TInput, TEmbedding> : Delegating
                         var generated = await base.GenerateAsync(valuesList, options, cancellationToken).ConfigureAwait(false);
                         if (generated.Count != 1)
                         {
-                            throw new InvalidOperationException($"Expected exactly one embedding to be generated, but received {generated.Count}.");
+                            Throw.InvalidOperationException($"Expected exactly one embedding to be generated, but received {generated.Count}.");
                         }
 
                         await WriteCacheAsync(cacheKey, generated[0], cancellationToken).ConfigureAwait(false);

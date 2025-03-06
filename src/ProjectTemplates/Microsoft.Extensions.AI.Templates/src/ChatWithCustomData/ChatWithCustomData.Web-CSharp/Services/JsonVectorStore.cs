@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 
-namespace ChatWithCustomData.Web.Services;
+namespace ChatWithCustomData.Web_CSharp.Services;
 
 /// <summary>
 /// This IVectorStore implementation is for prototyping only. Do not use this in production.
@@ -51,7 +51,7 @@ public class JsonVectorStore(string basePath) : IVectorStore
 
         public async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
         {
-            _records = new();
+            _records = [];
             await WriteToDiskAsync(cancellationToken);
         }
 
