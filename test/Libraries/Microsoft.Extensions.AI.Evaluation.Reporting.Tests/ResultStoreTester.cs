@@ -32,7 +32,7 @@ public abstract class ResultStoreTester
             executionName: executionName,
             creationTime: DateTime.UtcNow,
             messages: [new ChatMessage(ChatRole.User, "User prompt")],
-            modelResponse: new ChatMessage(ChatRole.Assistant, "LLM response"),
+            modelResponse: new ChatResponse(new ChatMessage(ChatRole.Assistant, "LLM response")),
             evaluationResult: new EvaluationResult(booleanMetric, numericMetric, stringMetric));
     }
 

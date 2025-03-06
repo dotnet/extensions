@@ -12,6 +12,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI.Evaluation.Quality.Utilities;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI.Evaluation.Quality;
 
@@ -75,11 +76,13 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator(
     /// <inheritdoc/>
     protected override async ValueTask<string> RenderEvaluationPromptAsync(
         ChatMessage? userRequest,
-        ChatMessage modelResponse,
+        ChatResponse modelResponse,
         IEnumerable<ChatMessage>? includedHistory,
         IEnumerable<EvaluationContext>? additionalContext,
         CancellationToken cancellationToken)
     {
+        _ = Throw.IfNull(modelResponse);
+
         string renderedModelResponse = await RenderAsync(modelResponse, cancellationToken).ConfigureAwait(false);
 
         string renderedUserRequest =
@@ -125,10 +128,10 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator(
                 _chatOptions,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        string? evaluationResponseText = evaluationResponse.Message.Text?.Trim();
+        string evaluationResponseText = evaluationResponse.Text.Trim();
         Rating rating;
 
-        if (string.IsNullOrWhiteSpace(evaluationResponseText))
+        if (string.IsNullOrEmpty(evaluationResponseText))
         {
             rating = Rating.Inconclusive;
             result.AddDiagnosticToAllMetrics(
@@ -145,13 +148,13 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator(
             {
                 try
                 {
-                    string? repairedJson =
+                    string repairedJson =
                         await JsonOutputFixer.RepairJsonAsync(
                             chatConfiguration,
                             evaluationResponseText!,
                             cancellationToken).ConfigureAwait(false);
 
-                    if (string.IsNullOrWhiteSpace(repairedJson))
+                    if (string.IsNullOrEmpty(repairedJson))
                     {
                         rating = Rating.Inconclusive;
                         result.AddDiagnosticToAllMetrics(

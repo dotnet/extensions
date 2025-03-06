@@ -24,7 +24,7 @@ public class UseDelegateEmbeddingGeneratorTests
     [Fact]
     public async Task GenerateFunc_ContextPropagated()
     {
-        GeneratedEmbeddings<Embedding<float>> expectedEmbeddings = new();
+        GeneratedEmbeddings<Embedding<float>> expectedEmbeddings = [];
         IList<string> expectedValues = ["hello"];
         EmbeddingGenerationOptions expectedOptions = new();
         using CancellationTokenSource expectedCts = new();

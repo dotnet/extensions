@@ -39,6 +39,7 @@ public static partial class AIFunctionFactory
     /// it is round-tripped through JSON, serializing the object as JSON and then deserializing it to the expected type.
     /// </para>
     /// </remarks>
+    /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
     public static AIFunction Create(Delegate method, AIFunctionFactoryOptions? options)
     {
         _ = Throw.IfNull(method);
@@ -61,6 +62,7 @@ public static partial class AIFunctionFactory
     /// round-tripped through JSON, serializing the object as JSON and then deserializing it to the expected type.
     /// </para>
     /// </remarks>
+    /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
     public static AIFunction Create(Delegate method, string? name = null, string? description = null, JsonSerializerOptions? serializerOptions = null)
     {
         _ = Throw.IfNull(method);
@@ -98,6 +100,7 @@ public static partial class AIFunctionFactory
     /// it is round-tripped through JSON, serializing the object as JSON and then deserializing it to the expected type.
     /// </para>
     /// </remarks>
+    /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
     public static AIFunction Create(MethodInfo method, object? target, AIFunctionFactoryOptions? options)
     {
         _ = Throw.IfNull(method);
@@ -126,6 +129,7 @@ public static partial class AIFunctionFactory
     /// round-tripped through JSON, serializing the object as JSON and then deserializing it to the expected type.
     /// </para>
     /// </remarks>
+    /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
     public static AIFunction Create(MethodInfo method, object? target, string? name = null, string? description = null, JsonSerializerOptions? serializerOptions = null)
     {
         _ = Throw.IfNull(method);

@@ -22,6 +22,7 @@ public static class DistributedCachingChatClientBuilderExtensions
     /// </param>
     /// <param name="configure">An optional callback that can be used to configure the <see cref="DistributedCachingChatClient"/> instance.</param>
     /// <returns>The <see cref="ChatClientBuilder"/> provided as <paramref name="builder"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
     public static ChatClientBuilder UseDistributedCache(this ChatClientBuilder builder, IDistributedCache? storage = null, Action<DistributedCachingChatClient>? configure = null)
     {
         _ = Throw.IfNull(builder);
