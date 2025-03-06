@@ -22,13 +22,13 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <_ChatWithCustomDataWebContentRoot>$(MSBuildThisFileDirectory)Microsoft.Extensions.AI.Templates\src\ChatWithCustomData\ChatWithCustomData.Web\</_ChatWithCustomDataWebContentRoot>
+    <_ChatWithCustomDataWebContentRoot>$(MSBuildThisFileDirectory)Microsoft.Extensions.AI.Templates\src\ChatWithCustomData\ChatWithCustomData.Web-CSharp\</_ChatWithCustomDataWebContentRoot>
   </PropertyGroup>
 
   <ItemGroup>
     <GeneratedContent
-      Include="$(_ChatWithCustomDataWebContentRoot)ChatWithCustomData.Web.csproj.in"
-      OutputPath="$(_ChatWithCustomDataWebContentRoot)ChatWithCustomData.Web.csproj" />
+      Include="$(_ChatWithCustomDataWebContentRoot)ChatWithCustomData.Web-CSharp.csproj.in"
+      OutputPath="$(_ChatWithCustomDataWebContentRoot)ChatWithCustomData.Web-CSharp.csproj" />
   </ItemGroup>
 
 </Project>

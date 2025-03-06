@@ -7,7 +7,10 @@
   "description": "A project template for creating an AI chat application, which uses retrieval-augmented generation (RAG) to chat with your own data.",
   "shortName": "aichatweb",
   "defaultName": "ChatApp",
-  "sourceName": "ChatWithCustomData.Web", // TODO: When we support multi-project output, this needs to change to ChatWithCustomData, then we need some other technique to make it avoid emitting a .Web suffix in the single-project case
+  // The placeholder sourceName needs to contain a dash to ensure the CSS bundle asset uses the assembly identity name
+  // TODO: When we support multi-project output, this needs to change to ChatWithCustomData, then we need some other
+  // technique to make it avoid emitting a .Web suffix in the single-project case.
+  "sourceName": "ChatWithCustomData.Web-CSharp",
   "tags": {
     "language": "C#",
     "type": "project"
@@ -16,7 +19,7 @@
     "d5681fae-b21b-4114-b781-48180f08c0c4"
   ],
   "primaryOutputs": [
-    {"path": "./ChatWithCustomData.Web.csproj"},
+    {"path": "./ChatWithCustomData.Web-CSharp.csproj"},
     {"path": "./README.md"}
   ],
   "sources": [{
@@ -28,7 +31,7 @@
         // Later when we support multi-project output with Qdrant on Docker, we'll also emit
         // a second project ChatWithCustomData.AppHost and hence will suppress this renaming.
         "rename": {
-          "ChatWithCustomData.Web/": "./"
+          "ChatWithCustomData.Web-CSharp/": "./"
         }
       }
     ]
@@ -266,9 +269,54 @@
       "onlyIf": [{
         "after": "localhost:"
       }]
+    },
+    "vectorStoreIndexNameReplacer": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "vectorStoreIndexNameTransform",
+      "replaces": "data-ChatWithCustomData.Web-CSharp-ingestion"
     }
   },
-  
+  "forms": {
+    "vectorStoreIndexNameTransform": {
+      "identifier": "chain",
+      "steps": [
+        "lowerCaseForm",
+        "vectorStoreIndexName_ReplaceIllegalCharacters",
+        "vectoreStoreIndexName_CollapseConsecutiveDashesUnderscores",
+        "vectorStoreIndexName_LengthLimit",
+        "vectorStoreIndexName_PrefixSuffix"
+      ],
+      "description": "See https://learn.microsoft.com/rest/api/searchservice/naming-rules"
+    },
+    "lowerCaseForm": {
+      "identifier": "lowerCase"
+    },
+    "vectorStoreIndexName_ReplaceIllegalCharacters": {
+      "identifier": "replace",
+      "pattern": "[^a-z0-9-_]",
+      "replacement": "_",
+      "description": "Only letters, numbers, dashes, and underscores are allowed"
+    },
+    "vectoreStoreIndexName_CollapseConsecutiveDashesUnderscores": {
+      "identifier": "replace",
+      "pattern": "([-_])\\1+",
+      "replacement": "$1",
+      "description": "No consecutive dashes are underscores are allowed"
+    },
+    "vectorStoreIndexName_LengthLimit": {
+      "identifier": "replace",
+      "pattern": "^(.{0,114}).*",
+      "replacement": "$1",
+      "description": "Length is limited to 128 characters, including the 14 characters of prefix and suffix to be added."
+    },
+    "vectorStoreIndexName_PrefixSuffix": {
+      "identifier": "replace",
+      "pattern": "^(.*)$",
+      "replacement": "data-$1-ingested",
+      "description": "Produces a meaningful name parameterized by project name; ensures first, second, and last characters are valid"
+    }
+  },
   "postActions": [{
     "condition": "(hostIdentifier != \"dotnetcli\")",
     "description": "Opens README file in the editor",

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.AI;
 
-namespace ChatWithCustomData.Web.Services.Ingestion;
+namespace ChatWithCustomData.Web_CSharp.Services.Ingestion;
 
 public interface IIngestionSource
 {

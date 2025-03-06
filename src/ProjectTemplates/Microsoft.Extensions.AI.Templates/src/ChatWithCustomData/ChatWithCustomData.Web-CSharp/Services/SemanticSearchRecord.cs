@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.VectorData;
 
-namespace ChatWithCustomData.Web.Services;
+namespace ChatWithCustomData.Web_CSharp.Services;
 
 public class SemanticSearchRecord
 {
@@ -16,7 +16,7 @@ public class SemanticSearchRecord
     [VectorStoreRecordData]
     public required string Text { get; set; }
 
-#if (ollama)
+#if (IsOllama)
     [VectorStoreRecordVector(384, DistanceFunction.CosineSimilarity)] // 384 is the default vector size for the all-minilm embedding model
 #else
     [VectorStoreRecordVector(1536, DistanceFunction.CosineSimilarity)] // 1536 is the default vector size for the OpenAI text-embedding-3-small model

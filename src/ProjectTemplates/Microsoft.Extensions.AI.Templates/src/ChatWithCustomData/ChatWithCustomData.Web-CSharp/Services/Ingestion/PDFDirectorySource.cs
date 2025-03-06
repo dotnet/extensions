@@ -6,7 +6,7 @@ using UglyToad.PdfPig;
 using Microsoft.Extensions.AI;
 using UglyToad.PdfPig.Content;
 
-namespace ChatWithCustomData.Web.Services.Ingestion;
+namespace ChatWithCustomData.Web_CSharp.Services.Ingestion;
 
 public class PDFDirectorySource(string sourceDirectory) : IIngestionSource
 {
