@@ -39,8 +39,8 @@ public class DistributedCachingChatClientTest
 
         // Verify that all the expected properties will round-trip through the cache,
         // even if this involves serialization
-        var expectedResponse = new ChatResponse([
-            new(new ChatRole("fakeRole"), "This is some content")
+        var expectedResponse = new ChatResponse(
+            new ChatMessage(new ChatRole("fakeRole"), "This is some content")
             {
                 AdditionalProperties = new() { ["a"] = "b" },
                 Contents = [new FunctionCallContent("someCallId", "functionName", new Dictionary<string, object?>
@@ -52,8 +52,7 @@ public class DistributedCachingChatClientTest
                     ["arg5"] = false,
                     ["arg6"] = null
                 })]
-            }
-        ])
+            })
         {
             ResponseId = "someId",
             Usage = new()
@@ -111,7 +110,7 @@ public class DistributedCachingChatClientTest
             {
                 innerCallCount++;
                 await completionTcs.Task;
-                return new ChatResponse([new(ChatRole.Assistant, "Hello")]);
+                return new ChatResponse(new ChatMessage(ChatRole.Assistant, "Hello"));
             }
         };
         using var outer = new DistributedCachingChatClient(testClient, _storage)
@@ -128,13 +127,13 @@ public class DistributedCachingChatClientTest
         Assert.False(result1.IsCompleted);
         Assert.False(result2.IsCompleted);
         completionTcs.SetResult(true);
-        Assert.Equal("Hello", (await result1).Message.Text);
-        Assert.Equal("Hello", (await result2).Message.Text);
+        Assert.Equal("Hello", (await result1).Text);
+        Assert.Equal("Hello", (await result2).Text);
 
         // Act 2: Subsequent calls after completion are resolved from the cache
         var result3 = outer.GetResponseAsync("some input");
         Assert.Equal(2, innerCallCount);
-        Assert.Equal("Hello", (await result3).Message.Text);
+        Assert.Equal("Hello", (await result3).Text);
     }
 
     [Fact]
@@ -185,7 +184,7 @@ public class DistributedCachingChatClientTest
                     await resolutionTcs.Task;
                 }
 
-                return new ChatResponse([new(ChatRole.Assistant, "A good result")]);
+                return new ChatResponse(new ChatMessage(ChatRole.Assistant, "A good result"));
             }
         };
         using var outer = new DistributedCachingChatClient(testClient, _storage)
@@ -205,7 +204,7 @@ public class DistributedCachingChatClientTest
         // Act/Assert: Second call can succeed
         var result2 = await outer.GetResponseAsync([input]);
         Assert.Equal(2, innerCallCount);
-        Assert.Equal("A good result", result2.Message.Text);
+        Assert.Equal("A good result", result2.Text);
     }
 
     [Fact]
@@ -217,13 +216,6 @@ public class DistributedCachingChatClientTest
         // even if this involves serialization
         List<ChatResponseUpdate> actualUpdate =
         [
-            new()
-            {
-                Role = new ChatRole("fakeRole1"),
-                ChoiceIndex = 1,
-                AdditionalProperties = new() { ["a"] = "b" },
-                Contents = [new TextContent("Chunk1")]
-            },
             new()
             {
                 Role = new ChatRole("fakeRole2"),
@@ -241,13 +233,6 @@ public class DistributedCachingChatClientTest
             {
                 Role = new ChatRole("fakeRole2"),
                 Contents = [new FunctionCallContent("someCallId", "someFn", new Dictionary<string, object?> { ["arg1"] = "value1" })],
-            },
-            new()
-            {
-                Role = new ChatRole("fakeRole1"),
-                ChoiceIndex = 1,
-                AdditionalProperties = new() { ["a"] = "b" },
-                Contents = [new TextContent("Chunk1")]
             },
             new()
             {
@@ -295,12 +280,12 @@ public class DistributedCachingChatClientTest
         // Arrange
         List<ChatResponseUpdate> expectedResponse =
         [
-            new() { Role = ChatRole.Assistant, Text = "This" },
-            new() { Role = ChatRole.Assistant, Text = " becomes one chunk" },
+            new(ChatRole.Assistant, "This"),
+            new(ChatRole.Assistant, " becomes one chunk"),
             new() { Role = ChatRole.Assistant, Contents = [new FunctionCallContent("callId1", "separator")] },
-            new() { Role = ChatRole.Assistant, Text = "... and this" },
-            new() { Role = ChatRole.Assistant, Text = " becomes another" },
-            new() { Role = ChatRole.Assistant, Text = " one." },
+            new(ChatRole.Assistant, "... and this"),
+            new(ChatRole.Assistant, " becomes another"),
+            new(ChatRole.Assistant, " one."),
         ];
 
         using var testClient = new TestChatClient
@@ -416,7 +401,7 @@ public class DistributedCachingChatClientTest
         var completionTcs = new TaskCompletionSource<bool>();
         List<ChatResponseUpdate> expectedResponse =
         [
-            new() { Role = ChatRole.Assistant, Text = "Chunk 1" },
+            new(ChatRole.Assistant, "Chunk 1"),
         ];
         using var testClient = new TestChatClient
         {
@@ -464,7 +449,7 @@ public class DistributedCachingChatClientTest
                 innerCallCount++;
                 return ToAsyncEnumerableAsync<ChatResponseUpdate>(Task.CompletedTask,
                 [
-                    () => new() { Role = ChatRole.Assistant, Text = "Chunk 1" },
+                    () => new(ChatRole.Assistant, "Chunk 1"),
                     () => throw new InvalidTimeZoneException("some failure"),
                 ]);
             }
@@ -503,7 +488,7 @@ public class DistributedCachingChatClientTest
                 innerCallCount++;
                 return ToAsyncEnumerableAsync<ChatResponseUpdate>(
                     innerCallCount == 1 ? completionTcs.Task : Task.CompletedTask,
-                    [() => new() { Role = ChatRole.Assistant, Text = "A good result" }]);
+                    [() => new(ChatRole.Assistant, "A good result")]);
             }
         };
         using var outer = new DistributedCachingChatClient(testClient, _storage)
@@ -539,7 +524,7 @@ public class DistributedCachingChatClientTest
             {
                 innerCallCount++;
                 await Task.Yield();
-                return new([new(ChatRole.Assistant, options!.AdditionalProperties!["someKey"]!.ToString())]);
+                return new(new ChatMessage(ChatRole.Assistant, options!.AdditionalProperties!["someKey"]!.ToString()));
             }
         };
         using var outer = new DistributedCachingChatClient(testClient, _storage)
@@ -559,8 +544,8 @@ public class DistributedCachingChatClientTest
 
         // Assert: Same result
         Assert.Equal(1, innerCallCount);
-        Assert.Equal("value 1", result1.Message.Text);
-        Assert.Equal("value 1", result2.Message.Text);
+        Assert.Equal("value 1", result1.Text);
+        Assert.Equal("value 1", result2.Text);
 
         // Act: Call with two different ChatOptions that have different values
         var result3 = await outer.GetResponseAsync([], new ChatOptions
@@ -574,8 +559,8 @@ public class DistributedCachingChatClientTest
 
         // Assert: Different results
         Assert.Equal(2, innerCallCount);
-        Assert.Equal("value 1", result3.Message.Text);
-        Assert.Equal("value 2", result4.Message.Text);
+        Assert.Equal("value 1", result3.Text);
+        Assert.Equal("value 2", result4.Text);
     }
 
     [Fact]
@@ -590,7 +575,7 @@ public class DistributedCachingChatClientTest
             {
                 innerCallCount++;
                 await Task.Yield();
-                return new([new(ChatRole.Assistant, options!.AdditionalProperties!["someKey"]!.ToString())]);
+                return new(new ChatMessage(ChatRole.Assistant, options!.AdditionalProperties!["someKey"]!.ToString()));
             }
         };
         using var outer = new CachingChatClientWithCustomKey(testClient, _storage)
@@ -610,21 +595,20 @@ public class DistributedCachingChatClientTest
 
         // Assert: Different results
         Assert.Equal(2, innerCallCount);
-        Assert.Equal("value 1", result1.Message.Text);
-        Assert.Equal("value 2", result2.Message.Text);
+        Assert.Equal("value 1", result1.Text);
+        Assert.Equal("value 2", result2.Text);
     }
 
     [Fact]
     public async Task CanCacheCustomContentTypesAsync()
     {
         // Arrange
-        var expectedResponse = new ChatResponse([
-            new(new ChatRole("fakeRole"),
+        var expectedResponse = new ChatResponse(
+            new ChatMessage(new ChatRole("fakeRole"),
             [
                 new CustomAIContent1("Hello", DateTime.Now),
                 new CustomAIContent2("Goodbye", 42),
-            ])
-        ]);
+            ]));
 
         var serializerOptions = new JsonSerializerOptions(TestJsonSerializerContext.Default.Options);
         serializerOptions.TypeInfoResolver = serializerOptions.TypeInfoResolver!.WithAddedModifier(typeInfo =>
@@ -663,8 +647,8 @@ public class DistributedCachingChatClientTest
         // Assert
         Assert.Equal(1, innerCallCount);
         AssertResponsesEqual(expectedResponse, result2);
-        Assert.NotSame(result2.Message.Contents[0], expectedResponse.Message.Contents[0]);
-        Assert.NotSame(result2.Message.Contents[1], expectedResponse.Message.Contents[1]);
+        Assert.NotSame(result2.Messages.Last().Contents[0], expectedResponse.Messages.Last().Contents[0]);
+        Assert.NotSame(result2.Messages.Last().Contents[1], expectedResponse.Messages.Last().Contents[1]);
     }
 
     [Fact]
@@ -678,8 +662,8 @@ public class DistributedCachingChatClientTest
         {
             GetResponseAsyncCallback = delegate
             {
-                return Task.FromResult(new ChatResponse([
-                    new(ChatRole.Assistant, [new TextContent("Hey")])]));
+                return Task.FromResult(new ChatResponse(
+                    new ChatMessage(ChatRole.Assistant, [new TextContent("Hey")])));
             }
         };
         using var outer = testClient
@@ -739,33 +723,31 @@ public class DistributedCachingChatClientTest
         Assert.Equal(
             JsonSerializer.Serialize(expected.AdditionalProperties, TestJsonSerializerContext.Default.Options),
             JsonSerializer.Serialize(actual.AdditionalProperties, TestJsonSerializerContext.Default.Options));
-        Assert.Equal(expected.Choices.Count, actual.Choices.Count);
 
-        for (var i = 0; i < expected.Choices.Count; i++)
+        ChatMessage expectedMessage = expected.Messages.Last();
+        ChatMessage actualMessage = actual.Messages.Last();
+        Assert.IsType(expectedMessage.GetType(), actualMessage);
+        Assert.Equal(expectedMessage.Role, actualMessage.Role);
+        Assert.Equal(expectedMessage.Text, actualMessage.Text);
+        Assert.Equal(expectedMessage.Contents.Count, actualMessage.Contents.Count);
+
+        for (var itemIndex = 0; itemIndex < expectedMessage.Contents.Count; itemIndex++)
         {
-            Assert.IsType(expected.Choices[i].GetType(), actual.Choices[i]);
-            Assert.Equal(expected.Choices[i].Role, actual.Choices[i].Role);
-            Assert.Equal(expected.Choices[i].Text, actual.Choices[i].Text);
-            Assert.Equal(expected.Choices[i].Contents.Count, actual.Choices[i].Contents.Count);
+            var expectedItem = expectedMessage.Contents[itemIndex];
+            var actualItem = actualMessage.Contents[itemIndex];
+            Assert.IsType(expectedItem.GetType(), actualItem);
 
-            for (var itemIndex = 0; itemIndex < expected.Choices[i].Contents.Count; itemIndex++)
+            if (expectedItem is FunctionCallContent expectedFcc)
             {
-                var expectedItem = expected.Choices[i].Contents[itemIndex];
-                var actualItem = actual.Choices[i].Contents[itemIndex];
-                Assert.IsType(expectedItem.GetType(), actualItem);
+                var actualFcc = (FunctionCallContent)actualItem;
+                Assert.Equal(expectedFcc.Name, actualFcc.Name);
+                Assert.Equal(expectedFcc.CallId, actualFcc.CallId);
 
-                if (expectedItem is FunctionCallContent expectedFcc)
-                {
-                    var actualFcc = (FunctionCallContent)actualItem;
-                    Assert.Equal(expectedFcc.Name, actualFcc.Name);
-                    Assert.Equal(expectedFcc.CallId, actualFcc.CallId);
-
-                    // The correct JSON-round-tripping of AIContent/AIContent is not
-                    // the responsibility of CachingChatClient, so not testing that here.
-                    Assert.Equal(
-                        JsonSerializer.Serialize(expectedFcc.Arguments, TestJsonSerializerContext.Default.Options),
-                        JsonSerializer.Serialize(actualFcc.Arguments, TestJsonSerializerContext.Default.Options));
-                }
+                // The correct JSON-round-tripping of AIContent/AIContent is not
+                // the responsibility of CachingChatClient, so not testing that here.
+                Assert.Equal(
+                    JsonSerializer.Serialize(expectedFcc.Arguments, TestJsonSerializerContext.Default.Options),
+                    JsonSerializer.Serialize(actualFcc.Arguments, TestJsonSerializerContext.Default.Options));
             }
         }
     }
@@ -780,7 +762,6 @@ public class DistributedCachingChatClientTest
 
             var actualItem = actualEnumerator.Current;
             Assert.Equal(expectedItem.Text, actualItem.Text);
-            Assert.Equal(expectedItem.ChoiceIndex, actualItem.ChoiceIndex);
             Assert.Equal(expectedItem.Role, actualItem.Role);
             Assert.Equal(expectedItem.Contents.Count, actualItem.Contents.Count);
 

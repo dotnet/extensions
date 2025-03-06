@@ -51,7 +51,7 @@ public class JsonVectorStore(string basePath) : IVectorStore
 
         public async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
         {
-            _records = new();
+            _records = [];
             await WriteToDiskAsync(cancellationToken);
         }
 

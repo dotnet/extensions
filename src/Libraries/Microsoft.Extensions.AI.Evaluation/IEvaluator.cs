@@ -50,7 +50,7 @@ public interface IEvaluator
     /// <returns>An <see cref="EvaluationResult"/> containing one or more <see cref="EvaluationMetric"/>s.</returns>
     ValueTask<EvaluationResult> EvaluateAsync(
         IEnumerable<ChatMessage> messages,
-        ChatMessage modelResponse,
+        ChatResponse modelResponse,
         ChatConfiguration? chatConfiguration = null,
         IEnumerable<EvaluationContext>? additionalContext = null,
         CancellationToken cancellationToken = default);
