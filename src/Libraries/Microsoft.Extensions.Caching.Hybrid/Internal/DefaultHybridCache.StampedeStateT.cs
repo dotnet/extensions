@@ -230,7 +230,7 @@ internal partial class DefaultHybridCache
                     {
                         // result is the wider payload including HC headers; unwrap it:
                         HybridCachePayload.HybridCachePayloadParseResult parseResult = HybridCachePayload.TryParse(
-                            result.AsArraySegment(), Key.Key, CacheItem.Tags, Cache, out ArraySegment<byte> payload,
+                            result.AsArraySegment(), Key.Key, CacheItem.Tags, Cache, out ArraySegment<byte> payload, out TimeSpan remainingTime,
                             out HybridCachePayload.PayloadFlags flags, out ushort entropy, out TagSet pendingTags, out Exception? fault);
                         switch (parseResult)
                         {
@@ -240,7 +240,7 @@ internal partial class DefaultHybridCache
                                 {
                                     // move into the payload segment (minus any framing/header/etc data)
                                     result = new(payload.Array!, payload.Offset, payload.Count, result.ReturnToPool);
-                                    SetResultAndRecycleIfAppropriate(ref result);
+                                    SetResultAndRecycleIfAppropriate(ref result, remainingTime);
                                     return;
                                 }
 
@@ -441,7 +441,7 @@ internal partial class DefaultHybridCache
             }
         }
 
-        private void SetResultAndRecycleIfAppropriate(ref BufferChunk value)
+        private void SetResultAndRecycleIfAppropriate(ref BufferChunk value, TimeSpan remainingTime)
         {
             // set a result from L2 cache
             Debug.Assert(value.OversizedArray is not null, "expected buffer");
@@ -467,7 +467,7 @@ internal partial class DefaultHybridCache
                     break;
             }
 
-            SetResult(cacheItem);
+            SetResult(cacheItem, remainingTime);
         }
 
         private void SetImmutableResultWithoutSerialize(T value)
@@ -527,11 +527,13 @@ internal partial class DefaultHybridCache
             SetResult(cacheItem);
         }
 
-        private void SetResult(CacheItem<T> value)
+        private void SetResult(CacheItem<T> value) => SetResult(value, TimeSpan.MaxValue);
+
+        private void SetResult(CacheItem<T> value, TimeSpan maxRelativeTime)
         {
             if ((Key.Flags & HybridCacheEntryFlags.DisableLocalCacheWrite) == 0)
             {
-                Cache.SetL1(Key.Key, value, _options); // we can do this without a TCS, for SetValue
+                Cache.SetL1(Key.Key, value, _options, maxRelativeTime); // we can do this without a TCS, for SetValue
             }
 
             if (_result is not null)

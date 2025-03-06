@@ -2,7 +2,7 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
-namespace ChatWithCustomData.Web.Services.Ingestion;
+namespace ChatWithCustomData.Web_CSharp.Services.Ingestion;
 
 public class DataIngestor(
     ILogger<DataIngestor> logger,
@@ -19,7 +19,7 @@ public class DataIngestor(
 
     public async Task IngestDataAsync(IIngestionSource source)
     {
-        var vectorCollection = vectorStore.GetCollection<string, SemanticSearchRecord>("data");
+        var vectorCollection = vectorStore.GetCollection<string, SemanticSearchRecord>("data-ChatWithCustomData.Web-CSharp-ingestion");
         await vectorCollection.CreateCollectionIfNotExistsAsync();
 
         var documentsForSource = ingestionCacheDb.Documents

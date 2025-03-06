@@ -95,15 +95,14 @@ steps:
             artifactName: "$(Agent.JobName)_CodeCoverageResults"
 
   - ${{ if eq(parameters.isWindows, 'true') }}:
+    # Publishing will happen in a subsequent step
     - script: ${{ parameters.buildScript }}
               -projects $(Build.SourcesDirectory)/src/Packages/Microsoft.Internal.Extensions.DotNetApiDocs.Transport/Microsoft.Internal.Extensions.DotNetApiDocs.Transport.proj
-              -restore -build
               -pack
-              -publish $(_PublishArgs)
               -configuration ${{ parameters.buildConfig }}
               /bl:${{ parameters.repoLogPath }}/transport.binlog
               $(_OfficialBuildIdArgs)
-      displayName: Build and publish docs transport package
+      displayName: Pack docs transport package
 
     - pwsh: |
           $(Build.SourcesDirectory)/src/Libraries/Microsoft.Extensions.AI.Evaluation.Reporting/TypeScript/azure-devops-report/build.ps1 -OutputPath $(Build.Arcade.VSIXOutputPath)
