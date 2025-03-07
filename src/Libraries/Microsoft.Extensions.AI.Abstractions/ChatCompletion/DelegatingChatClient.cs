@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.AI;
 /// Provides an optional base class for an <see cref="IChatClient"/> that passes through calls to another instance.
 /// </summary>
 /// <remarks>
-/// This is recommended as a base type when building clients that can be chained in any order around an underlying <see cref="IChatClient"/>.
+/// This is recommended as a base type when building clients that can be chained around an underlying <see cref="IChatClient"/>.
 /// The default implementation simply passes each call to the inner client instance.
 /// </remarks>
 public class DelegatingChatClient : IChatClient
@@ -38,16 +38,14 @@ public class DelegatingChatClient : IChatClient
     protected IChatClient InnerClient { get; }
 
     /// <inheritdoc />
-    public virtual Task<ChatResponse> GetResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
-    {
-        return InnerClient.GetResponseAsync(chatMessages, options, cancellationToken);
-    }
+    public virtual Task<ChatResponse> GetResponseAsync(
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default) =>
+        InnerClient.GetResponseAsync(messages, options, cancellationToken);
 
     /// <inheritdoc />
-    public virtual IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
-    {
-        return InnerClient.GetStreamingResponseAsync(chatMessages, options, cancellationToken);
-    }
+    public virtual IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default) =>
+        InnerClient.GetStreamingResponseAsync(messages, options, cancellationToken);
 
     /// <inheritdoc />
     public virtual object? GetService(Type serviceType, object? serviceKey = null)

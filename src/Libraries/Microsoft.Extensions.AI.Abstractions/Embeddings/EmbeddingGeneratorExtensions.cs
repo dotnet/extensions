@@ -189,15 +189,21 @@ public static class EmbeddingGeneratorExtensions
 
         if (embeddings is null)
         {
-            throw new InvalidOperationException("Embedding generator returned a null collection of embeddings.");
+            Throw.InvalidOperationException("Embedding generator returned a null collection of embeddings.");
         }
 
         if (embeddings.Count != 1)
         {
-            throw new InvalidOperationException($"Expected the number of embeddings ({embeddings.Count}) to match the number of inputs (1).");
+            Throw.InvalidOperationException($"Expected the number of embeddings ({embeddings.Count}) to match the number of inputs (1).");
         }
 
-        return embeddings[0] ?? throw new InvalidOperationException("Embedding generator generated a null embedding.");
+        TEmbedding embedding = embeddings[0];
+        if (embedding is null)
+        {
+            Throw.InvalidOperationException("Embedding generator generated a null embedding.");
+        }
+
+        return embedding;
     }
 
     /// <summary>
@@ -235,7 +241,7 @@ public static class EmbeddingGeneratorExtensions
         var embeddings = await generator.GenerateAsync(values, options, cancellationToken).ConfigureAwait(false);
         if (embeddings.Count != inputsCount)
         {
-            throw new InvalidOperationException($"Expected the number of embeddings ({embeddings.Count}) to match the number of inputs ({inputsCount}).");
+            Throw.InvalidOperationException($"Expected the number of embeddings ({embeddings.Count}) to match the number of inputs ({inputsCount}).");
         }
 
         var results = new (TInput, TEmbedding)[embeddings.Count];

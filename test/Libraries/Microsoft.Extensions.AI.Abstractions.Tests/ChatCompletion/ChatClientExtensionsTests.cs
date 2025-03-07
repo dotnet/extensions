@@ -32,7 +32,7 @@ public class ChatClientExtensionsTests
     {
         using var client = new TestChatClient
         {
-            GetServiceCallback = (Type serviceType, object? serviceKey) =>
+            GetServiceCallback = (serviceType, serviceKey) =>
             {
                 if (serviceType == typeof(string))
                 {
@@ -100,15 +100,15 @@ public class ChatClientExtensionsTests
     [Fact]
     public async Task GetResponseAsync_CreatesTextMessageAsync()
     {
-        var expectedResponse = new ChatResponse([new ChatMessage()]);
+        var expectedResponse = new ChatResponse();
         var expectedOptions = new ChatOptions();
         using var cts = new CancellationTokenSource();
 
         using TestChatClient client = new()
         {
-            GetResponseAsyncCallback = (chatMessages, options, cancellationToken) =>
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
-                ChatMessage m = Assert.Single(chatMessages);
+                ChatMessage m = Assert.Single(messages);
                 Assert.Equal(ChatRole.User, m.Role);
                 Assert.Equal("hello", m.Text);
 
@@ -133,9 +133,9 @@ public class ChatClientExtensionsTests
 
         using TestChatClient client = new()
         {
-            GetStreamingResponseAsyncCallback = (chatMessages, options, cancellationToken) =>
+            GetStreamingResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
-                ChatMessage m = Assert.Single(chatMessages);
+                ChatMessage m = Assert.Single(messages);
                 Assert.Equal(ChatRole.User, m.Role);
                 Assert.Equal("hello", m.Text);
 
@@ -143,7 +143,7 @@ public class ChatClientExtensionsTests
 
                 Assert.Equal(cts.Token, cancellationToken);
 
-                return YieldAsync([new ChatResponseUpdate { Text = "world" }]);
+                return YieldAsync([new ChatResponseUpdate(ChatRole.Assistant, "world")]);
             },
         };
 

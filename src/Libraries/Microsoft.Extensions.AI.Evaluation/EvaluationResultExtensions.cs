@@ -22,7 +22,7 @@ public static class EvaluationResultExtensions
     /// <param name="diagnostic">The <see cref="EvaluationDiagnostic"/> that is to be added.</param>
     public static void AddDiagnosticToAllMetrics(this EvaluationResult result, EvaluationDiagnostic diagnostic)
     {
-        _ = Throw.IfNull(result, nameof(result));
+        _ = Throw.IfNull(result);
 
         foreach (EvaluationMetric metric in result.Metrics.Values)
         {
@@ -49,7 +49,7 @@ public static class EvaluationResultExtensions
         this EvaluationResult result,
         Func<EvaluationDiagnostic, bool>? predicate = null)
     {
-        _ = Throw.IfNull(result, nameof(result));
+        _ = Throw.IfNull(result);
 
         return result.Metrics.Values.Any(m => m.ContainsDiagnostics(predicate));
     }
@@ -69,8 +69,8 @@ public static class EvaluationResultExtensions
         this EvaluationResult result,
         Func<EvaluationMetric, EvaluationMetricInterpretation?> interpretationProvider)
     {
-        _ = Throw.IfNull(result, nameof(result));
-        _ = Throw.IfNull(interpretationProvider, nameof(interpretationProvider));
+        _ = Throw.IfNull(result);
+        _ = Throw.IfNull(interpretationProvider);
 
         foreach (EvaluationMetric metric in result.Metrics.Values)
         {
