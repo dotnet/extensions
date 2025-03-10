@@ -52,7 +52,7 @@ public partial class LoggingEmbeddingGenerator<TInput, TEmbedding> : DelegatingE
         {
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokedSensitive(AsJson(values), AsJson(options), AsJson(this.GetService<TInput, TEmbedding, EmbeddingGeneratorMetadata>()));
+                LogInvokedSensitive(AsJson(values), AsJson(options), AsJson(this.GetService<EmbeddingGeneratorMetadata>()));
             }
             else
             {

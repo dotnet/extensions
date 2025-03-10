@@ -5,10 +5,12 @@ using System;
 #if NET8_0_OR_GREATER
 using System.Buffers.Text;
 #endif
-using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Text;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
@@ -55,8 +57,9 @@ internal static class DataUriParser
         }
 
         // Validate the media type, if present.
+        ReadOnlySpan<char> span = metadata.Span.Trim();
         string? mediaType = null;
-        if (!IsValidMediaType(metadata.Span.Trim(), ref mediaType))
+        if (!span.IsEmpty && !IsValidMediaType(span, ref mediaType))
         {
             throw new UriFormatException("Invalid data URI format: the media type is not a valid.");
         }
@@ -64,20 +67,25 @@ internal static class DataUriParser
         return new DataUri(data, isBase64, mediaType);
     }
 
-    /// <summary>Validates that a media type is valid, and if successful, ensures we have it as a string.</summary>
-    public static bool IsValidMediaType(ReadOnlySpan<char> mediaTypeSpan, ref string? mediaType)
+    public static string ThrowIfInvalidMediaType(
+        string mediaType, [CallerArgumentExpression(nameof(mediaType))] string parameterName = "")
     {
-        Debug.Assert(
-            mediaType is null || mediaTypeSpan.Equals(mediaType.AsSpan(), StringComparison.Ordinal),
-            "mediaType string should either be null or the same as the span");
+        _ = Throw.IfNullOrWhitespace(mediaType, parameterName);
 
-        // If the media type is empty or all whitespace, normalize it to null.
-        if (mediaTypeSpan.IsWhiteSpace())
+        if (!IsValidMediaType(mediaType))
         {
-            mediaType = null;
-            return true;
+            Throw.ArgumentException(parameterName, $"An invalid media type was specified: '{mediaType}'");
         }
 
+        return mediaType;
+    }
+
+    public static bool IsValidMediaType(string mediaType) =>
+        IsValidMediaType(mediaType.AsSpan(), ref mediaType);
+
+    /// <summary>Validates that a media type is valid, and if successful, ensures we have it as a string.</summary>
+    public static bool IsValidMediaType(ReadOnlySpan<char> mediaTypeSpan, [NotNull] ref string? mediaType)
+    {
         // For common media types, we can avoid both allocating a string for the span and avoid parsing overheads.
         string? knownType = mediaTypeSpan switch
         {
@@ -108,7 +116,7 @@ internal static class DataUriParser
         };
         if (knownType is not null)
         {
-            mediaType ??= knownType;
+            mediaType = knownType;
             return true;
         }
 

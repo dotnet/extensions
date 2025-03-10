@@ -149,7 +149,7 @@ public class ChatClientStructuredOutputExtensionsTests
     [Fact]
     public async Task FailureUsage_NoJsonInResponse()
     {
-        var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, [new DataContent("https://example.com")]));
+        var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, [new UriContent("https://example.com", "image/*")]));
         using var client = new TestChatClient
         {
             GetResponseAsyncCallback = (messages, options, cancellationToken) => Task.FromResult(expectedResponse),

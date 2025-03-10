@@ -124,7 +124,7 @@ public class ChatResponseUpdateExtensionsTests
         {
             for (int i = 0; i < gapLength; i++)
             {
-                updates.Add(new() { Contents = [new DataContent("https://uri", mediaType: "image/png")] });
+                updates.Add(new() { Contents = [new DataContent("data:image/png;base64,aGVsbG8=")] });
             }
         }
 
