@@ -16,17 +16,33 @@ public class MetricsReportsGenerator : ISourceGenerator
     private const string GenerateMetricDefinitionReport = "build_property.GenerateMetricsReport";
     private const string RootNamespace = "build_property.rootnamespace";
     private const string ReportOutputPath = "build_property.MetricsReportOutputPath";
-    private const string FileName = "MetricsReport.json";
+    private const string FallbackFileName = "MetricsReport.json";
     private readonly string _fileName;
+    private string? _directory;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MetricsReportsGenerator"/> class.
+    /// </summary>
     public MetricsReportsGenerator()
-        : this(FileName)
+        : this(filePath: null)
     {
     }
 
-    internal MetricsReportsGenerator(string reportFileName)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MetricsReportsGenerator"/> class.
+    /// </summary>
+    /// <param name="filePath">The report path and name.</param>
+    internal MetricsReportsGenerator(string? filePath)
     {
-        _fileName = reportFileName;
+        if (filePath is not null)
+        {
+            _directory = Path.GetDirectoryName(filePath);
+            _fileName = Path.GetFileName(filePath);
+        }
+        else
+        {
+            _fileName = FallbackFileName;
+        }
     }
 
     public void Initialize(GeneratorInitializationContext context)
@@ -45,12 +61,11 @@ public class MetricsReportsGenerator : ISourceGenerator
         }
 
         var options = context.AnalyzerConfigOptions.GlobalOptions;
-
-        var path = GeneratorUtilities.TryRetrieveOptionsValue(options, ReportOutputPath, out var reportOutputPath)
+        _directory ??= GeneratorUtilities.TryRetrieveOptionsValue(options, ReportOutputPath, out var reportOutputPath)
             ? reportOutputPath!
             : GeneratorUtilities.GetDefaultReportOutputPath(options);
 
-        if (string.IsNullOrWhiteSpace(path))
+        if (string.IsNullOrWhiteSpace(_directory))
         {
             // Report diagnostic:
             var diagnostic = new DiagnosticDescriptor(
@@ -81,9 +96,9 @@ public class MetricsReportsGenerator : ISourceGenerator
         // Suppressing until this issue is addressed in https://github.com/dotnet/extensions/issues/5390
 
 #pragma warning disable RS1035 // Do not use APIs banned for analyzers
-        _ = Directory.CreateDirectory(path);
+        _ = Directory.CreateDirectory(_directory);
 
-        File.WriteAllText(Path.Combine(path, _fileName), report, Encoding.UTF8);
+        File.WriteAllText(Path.Combine(_directory, _fileName), report, Encoding.UTF8);
 #pragma warning restore RS1035 // Do not use APIs banned for analyzers
     }
 }
