@@ -615,7 +615,7 @@ public class AzureAIInferenceChatClientTests
         Assert.NotNull(await client.GetResponseAsync([new(ChatRole.User,
         [
             new TextContent("Describe this picture."),
-            new DataContent("http://dot.net/someimage.png", mediaType: "image/png"),
+            new UriContent("http://dot.net/someimage.png", mediaType: "image/*"),
         ])]));
     }
 
