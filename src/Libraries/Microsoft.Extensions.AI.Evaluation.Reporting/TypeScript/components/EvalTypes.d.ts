@@ -13,9 +13,13 @@ type ScenarioRunResult = {
     executionName: string;
     creationTime?: string;
     messages: ChatMessage[];
-    modelResponse: ChatMessage;
+    modelResponse: ChatResponse;
     evaluationResult: EvaluationResult;
 };
+
+type ChatResponse = {
+    messages: ChatMessage[];
+}
 
 type ChatMessage = {
     authorName?: string;
