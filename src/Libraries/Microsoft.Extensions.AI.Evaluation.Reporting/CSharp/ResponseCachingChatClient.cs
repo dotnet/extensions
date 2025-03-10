@@ -37,6 +37,6 @@ public sealed class ResponseCachingChatClient : DistributedCachingChatClient
 
     /// <inheritdoc/>
     protected override string GetCacheKey(params ReadOnlySpan<object?> values)
-        => base.GetCacheKey([.. values, .. _cachingKeys]);
+        => base.GetCacheKey([Defaults.CacheVersion, .. values, .. _cachingKeys]);
 
 }
