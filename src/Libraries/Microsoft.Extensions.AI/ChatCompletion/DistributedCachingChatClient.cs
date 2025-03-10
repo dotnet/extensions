@@ -107,6 +107,11 @@ public class DistributedCachingChatClient : CachingChatClient
     /// The generated cache key is not guaranteed to be stable across releases of the library.
     /// </para>
     /// </remarks>
-    protected override string GetCacheKey(params ReadOnlySpan<object?> values) =>
-        AIJsonUtilities.HashDataToString(values, _jsonSerializerOptions);
+    protected override string GetCacheKey(params ReadOnlySpan<object?> values) 
+    {
+        // Bump the cache version to invalidate existing caches if the serialization format changes in a breaking way.
+        const int CacheVersion = 1;
+
+        return AIJsonUtilities.HashDataToString([CacheVersion, .. values], _jsonSerializerOptions);
+    }
 }
