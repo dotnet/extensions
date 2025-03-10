@@ -200,28 +200,28 @@ public sealed class DataContentTests
     }
 
     [Theory]
-    [InlineData("image/gif", "image/")]
+    [InlineData("image/gif", "image")]
     [InlineData("IMAGE/JPEG", "image")]
-    [InlineData("image/vnd.microsoft.icon", "ima")]
-    [InlineData("image/svg+xml", "IMAGE/")]
+    [InlineData("image/vnd.microsoft.icon", "imAge")]
+    [InlineData("image/svg+xml", "IMAGE")]
     [InlineData("image/nonexistentimagemimetype", "IMAGE")]
-    [InlineData("audio/mpeg", "aUdIo/")]
-    [InlineData("application/json", "")]
-    [InlineData("application/pdf", "application/pdf")]
+    [InlineData("audio/mpeg", "aUdIo")]
     public void HasMediaTypePrefix_ReturnsTrue(string mediaType, string prefix)
     {
         var content = new DataContent("data:application/octet-stream;base64,AQIDBA==", mediaType);
-        Assert.True(content.MediaTypeStartsWith(prefix));
+        Assert.True(content.HasTopLevelMediaType(prefix));
     }
 
     [Theory]
-    [InlineData("audio/mpeg", "image/")]
+    [InlineData("audio/mpeg", "audio/")]
+    [InlineData("audio/mpeg", "image")]
+    [InlineData("audio/mpeg", "audio/mpeg")]
     [InlineData("text/css", "text/csv")]
     [InlineData("text/css", "/csv")]
     [InlineData("application/json", "application/json!")]
     public void HasMediaTypePrefix_ReturnsFalse(string mediaType, string prefix)
     {
         var content = new DataContent("data:application/octet-stream;base64,AQIDBA==", mediaType);
-        Assert.False(content.MediaTypeStartsWith(prefix));
+        Assert.False(content.HasTopLevelMediaType(prefix));
     }
 }

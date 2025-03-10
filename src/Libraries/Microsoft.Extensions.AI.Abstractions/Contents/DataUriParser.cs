@@ -12,6 +12,8 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Shared.Diagnostics;
 
+#pragma warning disable CA1307 // Specify StringComparison for clarity
+
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
@@ -123,6 +125,16 @@ internal static class DataUriParser
         // Otherwise, do the full validation using the same logic as HttpClient.
         mediaType ??= mediaTypeSpan.ToString();
         return MediaTypeHeaderValue.TryParse(mediaType, out _);
+    }
+
+    public static bool HasTopLevelMediaType(string mediaType, string topLevelMediaType)
+    {
+        int slashIndex = mediaType.IndexOf('/');
+
+        ReadOnlySpan<char> span = slashIndex < 0 ? mediaType.AsSpan() : mediaType.AsSpan(0, slashIndex);
+        span = span.Trim();
+
+        return span.Equals(topLevelMediaType.AsSpan(), StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>Test whether the value is a base64 string without whitespace.</summary>

@@ -28,18 +28,18 @@ namespace Microsoft.Extensions.AI;
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public class DataContent : AIContent
 {
-    // Design notes:
-    // - Ideally DataContent would be based in terms of Uri. However, Uri has a length limitation that makes it prohibitive
-    //   for the kinds of data URIs necessary to support here. As such, this type is based in strings.
+    // Design note:
+    // Ideally DataContent would be based in terms of Uri. However, Uri has a length limitation that makes it prohibitive
+    // for the kinds of data URIs necessary to support here. As such, this type is based in strings.
+
+    /// <summary>Parsed data URI information.</summary>
+    private readonly DataUriParser.DataUri? _dataUri;
 
     /// <summary>The string-based representation of the URI, including any data in the instance.</summary>
     private string? _uri;
 
     /// <summary>The data, lazily initialized if the data is provided in a data URI.</summary>
     private ReadOnlyMemory<byte>? _data;
-
-    /// <summary>Parsed data URI information.</summary>
-    private DataUriParser.DataUri? _dataUri;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DataContent"/> class.
@@ -120,15 +120,17 @@ public class DataContent : AIContent
     }
 
     /// <summary>
-    /// Determines whether the <see cref="MediaType"/> has the specified prefix.
+    /// Determines whether the <see cref="MediaType"/>'s top-level type matches the specified <paramref name="topLevelType"/>.
     /// </summary>
-    /// <param name="prefix">The media type prefix.</param>
-    /// <returns><see langword="true"/> if the <see cref="MediaType"/> has the specified prefix; otherwise, <see langword="false"/>.</returns>
+    /// <param name="topLevelType">The type to compare against <see cref="MediaType"/>.</param>
+    /// <returns><see langword="true"/> if the type portion of <see cref="MediaType"/> matches the specified value; otherwise, false.</returns>
     /// <remarks>
-    /// This performs an ordinal case-insensitive comparison of the <see cref="MediaType"/> against the specified <paramref name="prefix"/>.
+    /// A media type is primarily composed of two parts, a "type" and a "subtype", separated by a slash ("/").
+    /// The type portion is also referred to as the "top-level type"; for example,
+    /// "image/png" has a top-level type of "image". <see cref="HasTopLevelMediaType"/> compares
+    /// the specified <paramref name="topLevelType"/> against the type portion of <see cref="MediaType"/>.
     /// </remarks>
-    public bool MediaTypeStartsWith(string prefix) =>
-        MediaType.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) is true;
+    public bool HasTopLevelMediaType(string topLevelType) => DataUriParser.HasTopLevelMediaType(MediaType, topLevelType);
 
     /// <summary>Gets the data URI for this <see cref="DataContent"/>.</summary>
     /// <remarks>

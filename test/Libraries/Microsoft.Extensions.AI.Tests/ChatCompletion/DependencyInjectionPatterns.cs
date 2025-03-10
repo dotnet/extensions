@@ -167,13 +167,36 @@ public class DependencyInjectionPatterns
             ? sc.AddEmbeddingGenerator(services => new TestEmbeddingGenerator(), lifetime.Value)
             : sc.AddEmbeddingGenerator(services => new TestEmbeddingGenerator());
 
-        ServiceDescriptor sd = Assert.Single(sc);
+        Assert.Equal(2, sc.Count);
+        ServiceDescriptor sd = sc[0];
         Assert.Equal(typeof(IEmbeddingGenerator<string, Embedding<float>>), sd.ServiceType);
         Assert.False(sd.IsKeyedService);
         Assert.Null(sd.ImplementationInstance);
         Assert.NotNull(sd.ImplementationFactory);
         Assert.IsType<TestEmbeddingGenerator>(sd.ImplementationFactory(null!));
         Assert.Equal(expectedLifetime, sd.Lifetime);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData(ServiceLifetime.Singleton)]
+    [InlineData(ServiceLifetime.Scoped)]
+    [InlineData(ServiceLifetime.Transient)]
+    public void AddEmbeddingGenerator_RegistersNonGeneric(ServiceLifetime? lifetime)
+    {
+        ServiceCollection sc = new();
+        ServiceLifetime expectedLifetime = lifetime ?? ServiceLifetime.Singleton;
+        var builder = lifetime.HasValue
+            ? sc.AddEmbeddingGenerator(services => new TestEmbeddingGenerator(), lifetime.Value)
+            : sc.AddEmbeddingGenerator(services => new TestEmbeddingGenerator());
+        IServiceProvider sp = sc.BuildServiceProvider();
+
+        IEmbeddingGenerator<string, Embedding<float>>? g = sp.GetService<IEmbeddingGenerator<string, Embedding<float>>>();
+        IEmbeddingGenerator? ng = sp.GetService<IEmbeddingGenerator>();
+
+        Assert.NotNull(g);
+        Assert.NotNull(ng);
+        Assert.Equal(lifetime != ServiceLifetime.Transient, ReferenceEquals(g, ng));
     }
 
     [Theory]
@@ -189,7 +212,8 @@ public class DependencyInjectionPatterns
             ? sc.AddKeyedEmbeddingGenerator("key", services => new TestEmbeddingGenerator(), lifetime.Value)
             : sc.AddKeyedEmbeddingGenerator("key", services => new TestEmbeddingGenerator());
 
-        ServiceDescriptor sd = Assert.Single(sc);
+        Assert.Equal(2, sc.Count);
+        ServiceDescriptor sd = sc[0];
         Assert.Equal(typeof(IEmbeddingGenerator<string, Embedding<float>>), sd.ServiceType);
         Assert.True(sd.IsKeyedService);
         Assert.Equal("key", sd.ServiceKey);
@@ -197,6 +221,28 @@ public class DependencyInjectionPatterns
         Assert.NotNull(sd.KeyedImplementationFactory);
         Assert.IsType<TestEmbeddingGenerator>(sd.KeyedImplementationFactory(null!, null!));
         Assert.Equal(expectedLifetime, sd.Lifetime);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData(ServiceLifetime.Singleton)]
+    [InlineData(ServiceLifetime.Scoped)]
+    [InlineData(ServiceLifetime.Transient)]
+    public void AddKeyedEmbeddingGenerator_RegistersNonGeneric(ServiceLifetime? lifetime)
+    {
+        ServiceCollection sc = new();
+        ServiceLifetime expectedLifetime = lifetime ?? ServiceLifetime.Singleton;
+        var builder = lifetime.HasValue
+            ? sc.AddKeyedEmbeddingGenerator("key", services => new TestEmbeddingGenerator(), lifetime.Value)
+            : sc.AddKeyedEmbeddingGenerator("key", services => new TestEmbeddingGenerator());
+        IServiceProvider sp = sc.BuildServiceProvider();
+
+        IEmbeddingGenerator<string, Embedding<float>>? g = sp.GetKeyedService<IEmbeddingGenerator<string, Embedding<float>>>("key");
+        IEmbeddingGenerator? ng = sp.GetKeyedService<IEmbeddingGenerator>("key");
+
+        Assert.NotNull(g);
+        Assert.NotNull(ng);
+        Assert.Equal(lifetime != ServiceLifetime.Transient, ReferenceEquals(g, ng));
     }
 
     public class SingletonMiddleware(IChatClient inner, IServiceProvider services) : DelegatingChatClient(inner)

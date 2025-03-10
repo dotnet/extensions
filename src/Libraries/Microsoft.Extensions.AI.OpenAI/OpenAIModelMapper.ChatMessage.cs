@@ -229,21 +229,21 @@ internal static partial class OpenAIModelMappers
                     parts.Add(ChatMessageContentPart.CreateTextPart(textContent.Text));
                     break;
 
-                case UriContent uriContent when uriContent.MediaTypeStartsWith("image/"):
+                case UriContent uriContent when uriContent.HasTopLevelMediaType("image"):
                     parts.Add(ChatMessageContentPart.CreateImagePart(uriContent.Uri));
                     break;
 
-                case DataContent dataContent when dataContent.MediaTypeStartsWith("image/"):
+                case DataContent dataContent when dataContent.HasTopLevelMediaType("image"):
                     parts.Add(ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType));
                     break;
 
-                case DataContent dataContent when dataContent.MediaTypeStartsWith("audio/"):
+                case DataContent dataContent when dataContent.HasTopLevelMediaType("audio"):
                     var audioData = BinaryData.FromBytes(dataContent.Data);
-                    if (dataContent.MediaTypeStartsWith("audio/mpeg"))
+                    if (dataContent.MediaType.Equals("audio/mpeg", StringComparison.OrdinalIgnoreCase))
                     {
                         parts.Add(ChatMessageContentPart.CreateInputAudioPart(audioData, ChatInputAudioFormat.Mp3));
                     }
-                    else if (dataContent.MediaTypeStartsWith("audio/wav"))
+                    else if (dataContent.MediaType.Equals("audio/wav", StringComparison.OrdinalIgnoreCase))
                     {
                         parts.Add(ChatMessageContentPart.CreateInputAudioPart(audioData, ChatInputAudioFormat.Wav));
                     }

@@ -74,15 +74,17 @@ public class UriContent : AIContent
     }
 
     /// <summary>
-    /// Determines whether the <see cref="MediaType"/> has the specified prefix.
+    /// Determines whether the <see cref="MediaType"/>'s top-level type matches the specified <paramref name="topLevelType"/>.
     /// </summary>
-    /// <param name="prefix">The media type prefix.</param>
-    /// <returns><see langword="true"/> if the <see cref="MediaType"/> has the specified prefix; otherwise, <see langword="false"/>.</returns>
+    /// <param name="topLevelType">The type to compare against <see cref="MediaType"/>.</param>
+    /// <returns><see langword="true"/> if the type portion of <see cref="MediaType"/> matches the specified value; otherwise, false.</returns>
     /// <remarks>
-    /// This performs an ordinal case-insensitive comparison of the <see cref="MediaType"/> against the specified <paramref name="prefix"/>.
+    /// A media type is primarily composed of two parts, a "type" and a "subtype", separated by a slash ("/").
+    /// The type portion is also referred to as the "top-level type"; for example,
+    /// "image/png" has a top-level type of "image". <see cref="HasTopLevelMediaType"/> compares
+    /// the specified <paramref name="topLevelType"/> against the type portion of <see cref="MediaType"/>.
     /// </remarks>
-    public bool MediaTypeStartsWith(string prefix) =>
-        MediaType.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) is true;
+    public bool HasTopLevelMediaType(string topLevelType) => DataUriParser.HasTopLevelMediaType(MediaType, topLevelType);
 
     /// <summary>Gets a string representing this instance to display in the debugger.</summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]

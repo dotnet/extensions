@@ -103,28 +103,28 @@ public sealed class UriContentTests
     }
 
     [Theory]
-    [InlineData("image/gif", "image/")]
+    [InlineData("image/gif", "image")]
     [InlineData("IMAGE/JPEG", "image")]
-    [InlineData("image/vnd.microsoft.icon", "ima")]
-    [InlineData("image/svg+xml", "IMAGE/")]
+    [InlineData("image/vnd.microsoft.icon", "imAge")]
+    [InlineData("image/svg+xml", "IMAGE")]
     [InlineData("image/nonexistentimagemimetype", "IMAGE")]
-    [InlineData("audio/mpeg", "aUdIo/")]
-    [InlineData("application/json", "")]
-    [InlineData("application/pdf", "application/pdf")]
+    [InlineData("audio/mpeg", "aUdIo")]
     public void HasMediaTypePrefix_ReturnsTrue(string mediaType, string prefix)
     {
-        UriContent content = new("http://localhost", mediaType);
-        Assert.True(content.MediaTypeStartsWith(prefix));
+        var content = new UriContent("http://localhost", mediaType);
+        Assert.True(content.HasTopLevelMediaType(prefix));
     }
 
     [Theory]
-    [InlineData("audio/mpeg", "image/")]
+    [InlineData("audio/mpeg", "audio/")]
+    [InlineData("audio/mpeg", "image")]
+    [InlineData("audio/mpeg", "audio/mpeg")]
     [InlineData("text/css", "text/csv")]
     [InlineData("text/css", "/csv")]
     [InlineData("application/json", "application/json!")]
     public void HasMediaTypePrefix_ReturnsFalse(string mediaType, string prefix)
     {
-        UriContent content = new("http://localhost", mediaType);
-        Assert.False(content.MediaTypeStartsWith(prefix));
+        var content = new UriContent("http://localhost", mediaType);
+        Assert.False(content.HasTopLevelMediaType(prefix));
     }
 }

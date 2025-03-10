@@ -392,7 +392,7 @@ public sealed class OllamaChatClient : IChatClient
         OllamaChatRequestMessage? currentTextMessage = null;
         foreach (var item in content.Contents)
         {
-            if (item is DataContent dataContent && dataContent.MediaTypeStartsWith("image/"))
+            if (item is DataContent dataContent && dataContent.HasTopLevelMediaType("image"))
             {
                 IList<string> images = currentTextMessage?.Images ?? [];
                 images.Add(Convert.ToBase64String(dataContent.Data

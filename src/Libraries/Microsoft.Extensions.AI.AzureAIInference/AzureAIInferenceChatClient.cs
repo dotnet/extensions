@@ -490,25 +490,25 @@ public sealed class AzureAIInferenceChatClient : IChatClient
                     parts.Add(new ChatMessageTextContentItem(textContent.Text));
                     break;
 
-                case UriContent uriContent when uriContent.MediaTypeStartsWith("image/"):
+                case UriContent uriContent when uriContent.HasTopLevelMediaType("image"):
                     parts.Add(new ChatMessageImageContentItem(uriContent.Uri));
                     break;
 
-                case DataContent dataContent when dataContent.MediaTypeStartsWith("image/"):
+                case DataContent dataContent when dataContent.HasTopLevelMediaType("image"):
                     parts.Add(new ChatMessageImageContentItem(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType));
                     break;
 
-                case UriContent uriContent when uriContent.MediaTypeStartsWith("audio/"):
+                case UriContent uriContent when uriContent.HasTopLevelMediaType("audio"):
                     parts.Add(new ChatMessageAudioContentItem(uriContent.Uri));
                     break;
 
-                case DataContent dataContent when dataContent.MediaTypeStartsWith("audio/"):
+                case DataContent dataContent when dataContent.HasTopLevelMediaType("audio"):
                     AudioContentFormat format;
-                    if (dataContent.MediaTypeStartsWith("audio/mpeg"))
+                    if (dataContent.MediaType.Equals("audio/mpeg", StringComparison.OrdinalIgnoreCase))
                     {
                         format = AudioContentFormat.Mp3;
                     }
-                    else if (dataContent.MediaTypeStartsWith("audio/wav"))
+                    else if (dataContent.MediaType.Equals("audio/wav", StringComparison.OrdinalIgnoreCase))
                     {
                         format = AudioContentFormat.Wav;
                     }

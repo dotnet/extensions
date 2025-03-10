@@ -299,7 +299,7 @@ internal sealed class OpenAIAssistantClient : IChatClient
                         messageContents.Add(MessageContent.FromText(tc.Text));
                         break;
 
-                    case DataContent dc when dc.MediaTypeStartsWith("image/"):
+                    case DataContent dc when dc.HasTopLevelMediaType("image"):
                         messageContents.Add(MessageContent.FromImageUri(new(dc.Uri)));
                         break;
 
