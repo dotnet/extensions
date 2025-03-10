@@ -490,42 +490,34 @@ public sealed class AzureAIInferenceChatClient : IChatClient
                     parts.Add(new ChatMessageTextContentItem(textContent.Text));
                     break;
 
-                case DataContent dataContent when dataContent.MediaTypeStartsWith("image/"):
-                    if (dataContent.Data.HasValue)
-                    {
-                        parts.Add(new ChatMessageImageContentItem(BinaryData.FromBytes(dataContent.Data.Value), dataContent.MediaType));
-                    }
-                    else if (dataContent.Uri is string uri)
-                    {
-                        parts.Add(new ChatMessageImageContentItem(new Uri(uri)));
-                    }
+                case UriContent uriContent when uriContent.MediaTypeStartsWith("image/"):
+                    parts.Add(new ChatMessageImageContentItem(uriContent.Uri));
+                    break;
 
+                case DataContent dataContent when dataContent.MediaTypeStartsWith("image/"):
+                    parts.Add(new ChatMessageImageContentItem(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType));
+                    break;
+
+                case UriContent uriContent when uriContent.MediaTypeStartsWith("audio/"):
+                    parts.Add(new ChatMessageAudioContentItem(uriContent.Uri));
                     break;
 
                 case DataContent dataContent when dataContent.MediaTypeStartsWith("audio/"):
-                    if (dataContent.Data.HasValue)
+                    AudioContentFormat format;
+                    if (dataContent.MediaTypeStartsWith("audio/mpeg"))
                     {
-                        AudioContentFormat format;
-                        if (dataContent.MediaTypeStartsWith("audio/mpeg"))
-                        {
-                            format = AudioContentFormat.Mp3;
-                        }
-                        else if (dataContent.MediaTypeStartsWith("audio/wav"))
-                        {
-                            format = AudioContentFormat.Wav;
-                        }
-                        else
-                        {
-                            break;
-                        }
-
-                        parts.Add(new ChatMessageAudioContentItem(BinaryData.FromBytes(dataContent.Data.Value), format));
+                        format = AudioContentFormat.Mp3;
                     }
-                    else if (dataContent.Uri is string uri)
+                    else if (dataContent.MediaTypeStartsWith("audio/wav"))
                     {
-                        parts.Add(new ChatMessageAudioContentItem(new Uri(uri)));
+                        format = AudioContentFormat.Wav;
+                    }
+                    else
+                    {
+                        break;
                     }
 
+                    parts.Add(new ChatMessageAudioContentItem(BinaryData.FromBytes(dataContent.Data), format));
                     break;
             }
         }

@@ -13,10 +13,16 @@ public sealed class DataContentTests
 
     // Invalid URI
     [InlineData("", typeof(ArgumentException))]
-    [InlineData("invalid", typeof(UriFormatException))]
+    [InlineData("invalid", typeof(ArgumentException))]
+    [InlineData("data", typeof(ArgumentException))]
+
+    // Not a data URI
+    [InlineData("http://localhost/blah.png", typeof(ArgumentException))]
+    [InlineData("https://localhost/blah.png", typeof(ArgumentException))]
+    [InlineData("ftp://localhost/blah.png", typeof(ArgumentException))]
+    [InlineData("a://localhost/blah.png", typeof(ArgumentException))]
 
     // Format errors
-    [InlineData("data", typeof(UriFormatException))] // data missing colon
     [InlineData("data:", typeof(UriFormatException))] // data missing comma
     [InlineData("data:something,", typeof(UriFormatException))] // mime type without subtype
     [InlineData("data:something;else,data", typeof(UriFormatException))] // mime type without subtype
@@ -48,7 +54,7 @@ public sealed class DataContentTests
     [InlineData("type/subtype;key=value;another=")]
     public void Ctor_InvalidMediaType_Throws(string type)
     {
-        Assert.Throws<ArgumentException>("mediaType", () => new DataContent("http://localhost/test", type));
+        Assert.Throws<ArgumentException>("mediaType", () => new DataContent("data:image/png;base64,aGVsbG8=", type));
     }
 
     [Theory]
@@ -58,7 +64,7 @@ public sealed class DataContentTests
     [InlineData("type/subtype;key=value;another=value;yet_another=value")]
     public void Ctor_ValidMediaType_Roundtrips(string mediaType)
     {
-        var content = new DataContent("http://localhost/test", mediaType);
+        var content = new DataContent("data:image/png;base64,aGVsbG8=", mediaType);
         Assert.Equal(mediaType, content.MediaType);
 
         content = new DataContent("data:,", mediaType);
@@ -82,43 +88,25 @@ public sealed class DataContentTests
     {
         DataContent content;
 
-        foreach (string url in new[] { "http://localhost/test", "about:something", "file://c:\\path" })
-        {
-            content = new DataContent(url);
-            Assert.Equal(url, content.Uri);
-            Assert.Null(content.MediaType);
-            Assert.Null(content.Data);
-        }
+        content = new DataContent("data:image/png;base64,aGVsbG8=");
+        Assert.Equal("data:image/png;base64,aGVsbG8=", content.Uri);
+        Assert.Equal("image/png", content.MediaType);
 
-        content = new DataContent("data:,something");
-        Assert.Equal("data:,something", content.Uri);
-        Assert.Null(content.MediaType);
-        Assert.Equal("something"u8.ToArray(), content.Data!.Value.ToArray());
-
-        content = new DataContent("data:,Hello+%3C%3E");
-        Assert.Equal("data:,Hello+%3C%3E", content.Uri);
-        Assert.Null(content.MediaType);
-        Assert.Equal("Hello <>"u8.ToArray(), content.Data!.Value.ToArray());
+        content = new DataContent(new Uri("data:image/png;base64,aGVsbG8="));
+        Assert.Equal("data:image/png;base64,aGVsbG8=", content.Uri);
+        Assert.Equal("image/png", content.MediaType);
     }
 
     [Fact]
     public void Serialize_MatchesExpectedJson()
     {
         Assert.Equal(
-            """{"uri":"data:,"}""",
-            JsonSerializer.Serialize(new DataContent("data:,"), TestJsonSerializerContext.Default.Options));
-
-        Assert.Equal(
-            """{"uri":"http://localhost/"}""",
-            JsonSerializer.Serialize(new DataContent(new Uri("http://localhost/")), TestJsonSerializerContext.Default.Options));
-
-        Assert.Equal(
-            """{"uri":"data:application/octet-stream;base64,AQIDBA==","mediaType":"application/octet-stream"}""",
+            """{"uri":"data:application/octet-stream;base64,AQIDBA=="}""",
             JsonSerializer.Serialize(new DataContent(
                 uri: "data:application/octet-stream;base64,AQIDBA=="), TestJsonSerializerContext.Default.Options));
 
         Assert.Equal(
-            """{"uri":"data:application/octet-stream;base64,AQIDBA==","mediaType":"application/octet-stream"}""",
+            """{"uri":"data:application/octet-stream;base64,AQIDBA=="}""",
             JsonSerializer.Serialize(new DataContent(
                 new ReadOnlyMemory<byte>([0x01, 0x02, 0x03, 0x04]), "application/octet-stream"),
                 TestJsonSerializerContext.Default.Options));
@@ -136,53 +124,43 @@ public sealed class DataContentTests
     public void Deserialize_MatchesExpectedData()
     {
         // Data + MimeType only
-        var content = JsonSerializer.Deserialize<DataContent>("""{"mediaType":"application/octet-stream","uri":"data:;base64,AQIDBA=="}""", TestJsonSerializerContext.Default.Options)!;
+        var content = JsonSerializer.Deserialize<DataContent>("""{"uri":"data:application/octet-stream;base64,AQIDBA=="}""", TestJsonSerializerContext.Default.Options)!;
 
         Assert.Equal("data:application/octet-stream;base64,AQIDBA==", content.Uri);
-        Assert.NotNull(content.Data);
-        Assert.Equal([0x01, 0x02, 0x03, 0x04], content.Data.Value.ToArray());
+        Assert.Equal([0x01, 0x02, 0x03, 0x04], content.Data.ToArray());
         Assert.Equal("application/octet-stream", content.MediaType);
 
         // Uri referenced content-only
-        content = JsonSerializer.Deserialize<DataContent>("""{"mediaType":"application/octet-stream","uri":"http://localhost/"}""", TestJsonSerializerContext.Default.Options)!;
+        content = JsonSerializer.Deserialize<DataContent>("""{"uri":"data:application/octet-stream;base64,AQIDBA=="}""", TestJsonSerializerContext.Default.Options)!;
 
-        Assert.Null(content.Data);
-        Assert.Equal("http://localhost/", content.Uri);
+        Assert.Equal("data:application/octet-stream;base64,AQIDBA==", content.Uri);
         Assert.Equal("application/octet-stream", content.MediaType);
 
         // Using extra metadata
         content = JsonSerializer.Deserialize<DataContent>("""
             {
-                "uri": "data:;base64,AQIDBA==",
+                "uri": "data:audio/wav;base64,AQIDBA==",
                 "modelId": "gpt-4",
                 "additionalProperties":
                 {
                     "key": "value"
-                },
-                "mediaType": "text/plain"
+                }
             }
         """, TestJsonSerializerContext.Default.Options)!;
 
-        Assert.Equal("data:text/plain;base64,AQIDBA==", content.Uri);
-        Assert.NotNull(content.Data);
-        Assert.Equal([0x01, 0x02, 0x03, 0x04], content.Data.Value.ToArray());
-        Assert.Equal("text/plain", content.MediaType);
+        Assert.Equal("data:audio/wav;base64,AQIDBA==", content.Uri);
+        Assert.Equal([0x01, 0x02, 0x03, 0x04], content.Data.ToArray());
+        Assert.Equal("audio/wav", content.MediaType);
         Assert.Equal("value", content.AdditionalProperties!["key"]!.ToString());
     }
 
     [Theory]
     [InlineData(
-        """{"uri": "data:;base64,AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=","mediaType": "text/plain"}""",
-        """{"uri":"data:text/plain;base64,AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=","mediaType":"text/plain"}""")]
-    [InlineData(
-        """{"uri": "data:text/plain;base64,AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=","mediaType": "text/plain"}""",
-        """{"uri":"data:text/plain;base64,AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=","mediaType":"text/plain"}""")]
+        """{"uri": "data:text/plain;base64,AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8="}""",
+        """{"uri":"data:text/plain;base64,AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8="}""")]
     [InlineData( // Does not support non-readable content
         """{"uri": "data:text/plain;base64,AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=", "unexpected": true}""",
-        """{"uri":"data:text/plain;base64,AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=","mediaType":"text/plain"}""")]
-    [InlineData( // Uri comes before mimetype
-        """{"mediaType": "text/plain", "uri": "http://localhost/" }""",
-        """{"uri":"http://localhost/","mediaType":"text/plain"}""")]
+        """{"uri":"data:text/plain;base64,AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8="}""")]
     public void Serialize_Deserialize_Roundtrips(string serialized, string expectedToString)
     {
         var content = JsonSerializer.Deserialize<DataContent>(serialized, TestJsonSerializerContext.Default.Options)!;
@@ -230,22 +208,20 @@ public sealed class DataContentTests
     [InlineData("audio/mpeg", "aUdIo/")]
     [InlineData("application/json", "")]
     [InlineData("application/pdf", "application/pdf")]
-    public void HasMediaTypePrefix_ReturnsTrue(string? mediaType, string prefix)
+    public void HasMediaTypePrefix_ReturnsTrue(string mediaType, string prefix)
     {
-        var content = new DataContent("http://localhost/image.png", mediaType);
+        var content = new DataContent("data:application/octet-stream;base64,AQIDBA==", mediaType);
         Assert.True(content.MediaTypeStartsWith(prefix));
     }
 
     [Theory]
     [InlineData("audio/mpeg", "image/")]
     [InlineData("text/css", "text/csv")]
+    [InlineData("text/css", "/csv")]
     [InlineData("application/json", "application/json!")]
-    [InlineData("", "")] // The media type will get normalized to null
-    [InlineData(null, "image/")]
-    [InlineData(null, "")]
-    public void HasMediaTypePrefix_ReturnsFalse(string? mediaType, string prefix)
+    public void HasMediaTypePrefix_ReturnsFalse(string mediaType, string prefix)
     {
-        var content = new DataContent("http://localhost/image.png", mediaType);
+        var content = new DataContent("data:application/octet-stream;base64,AQIDBA==", mediaType);
         Assert.False(content.MediaTypeStartsWith(prefix));
     }
 }
