@@ -402,7 +402,8 @@ internal static partial class OpenAIModelMappers
                         jsonFormat.SchemaName ?? "json_schema",
                         BinaryData.FromBytes(
                             JsonSerializer.SerializeToUtf8Bytes(jsonSchema, OpenAIJsonContext.Default.JsonElement)),
-                        jsonFormat.SchemaDescription) :
+                        jsonFormat.SchemaDescription,
+                        jsonSchemaIsStrict: true) :
                     OpenAI.Chat.ChatResponseFormat.CreateJsonObjectFormat();
             }
         }
