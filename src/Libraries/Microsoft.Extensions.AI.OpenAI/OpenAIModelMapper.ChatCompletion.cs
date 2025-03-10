@@ -566,15 +566,14 @@ internal static partial class OpenAIModelMappers
         }
         else if (contentPart.Kind == ChatMessageContentPartKind.Image)
         {
-            DataContent? imageContent;
-            aiContent = imageContent =
-                contentPart.ImageUri is not null ? new DataContent(contentPart.ImageUri, contentPart.ImageBytesMediaType) :
+            aiContent =
+                contentPart.ImageUri is not null ? new UriContent(contentPart.ImageUri, "image/*") :
                 contentPart.ImageBytes is not null ? new DataContent(contentPart.ImageBytes.ToMemory(), contentPart.ImageBytesMediaType) :
                 null;
 
-            if (imageContent is not null && contentPart.ImageDetailLevel?.ToString() is string detail)
+            if (aiContent is not null && contentPart.ImageDetailLevel?.ToString() is string detail)
             {
-                (imageContent.AdditionalProperties ??= [])[nameof(contentPart.ImageDetailLevel)] = detail;
+                (aiContent.AdditionalProperties ??= [])[nameof(contentPart.ImageDetailLevel)] = detail;
             }
         }
 
