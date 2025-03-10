@@ -50,7 +50,7 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
     {
         Debug.Assert(innerGenerator is not null, "Should have been validated by the base ctor.");
 
-        if (innerGenerator!.GetService<TInput, TEmbedding, EmbeddingGeneratorMetadata>() is EmbeddingGeneratorMetadata metadata)
+        if (innerGenerator!.GetService<EmbeddingGeneratorMetadata>() is EmbeddingGeneratorMetadata metadata)
         {
             _system = metadata.ProviderName;
             _modelId = metadata.ModelId;

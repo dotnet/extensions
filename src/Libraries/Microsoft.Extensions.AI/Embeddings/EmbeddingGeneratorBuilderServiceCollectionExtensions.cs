@@ -53,6 +53,8 @@ public static class EmbeddingGeneratorBuilderServiceCollectionExtensions
 
         var builder = new EmbeddingGeneratorBuilder<TInput, TEmbedding>(innerGeneratorFactory);
         serviceCollection.Add(new ServiceDescriptor(typeof(IEmbeddingGenerator<TInput, TEmbedding>), builder.Build, lifetime));
+        serviceCollection.Add(new ServiceDescriptor(typeof(IEmbeddingGenerator),
+            static services => services.GetRequiredService<IEmbeddingGenerator<TInput, TEmbedding>>(), lifetime));
         return builder;
     }
 
@@ -103,6 +105,8 @@ public static class EmbeddingGeneratorBuilderServiceCollectionExtensions
 
         var builder = new EmbeddingGeneratorBuilder<TInput, TEmbedding>(innerGeneratorFactory);
         serviceCollection.Add(new ServiceDescriptor(typeof(IEmbeddingGenerator<TInput, TEmbedding>), serviceKey, factory: (services, serviceKey) => builder.Build(services), lifetime));
+        serviceCollection.Add(new ServiceDescriptor(typeof(IEmbeddingGenerator), serviceKey,
+            static (services, serviceKey) => services.GetRequiredKeyedService<IEmbeddingGenerator<TInput, TEmbedding>>(serviceKey), lifetime));
         return builder;
     }
 }
