@@ -268,7 +268,7 @@ internal sealed class OpenAIAssistantClient : IChatClient
                         jsonFormat.SchemaName ?? "json_schema",
                         BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(jsonSchema, OpenAIJsonContext.Default.JsonElement)),
                         jsonFormat.SchemaDescription,
-                        jsonSchemaIsStrict: true) :
+                        strictSchemaEnabled: true) :
                     AssistantResponseFormat.JsonObject;
             }
         }
