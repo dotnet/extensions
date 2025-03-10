@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
