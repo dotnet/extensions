@@ -37,9 +37,4 @@ public static class Defaults
     /// </summary>
     public const int ReportingFormatVersion = 1;
 
-    /// <summary>
-    /// Defines an version number for the cache format. Changing this value will break the cache key and force requests
-    /// to retrieve fresh data from the source until the version is updated again.
-    /// </summary>
-    public const int CacheVersion = 1;
 }
