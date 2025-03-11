@@ -103,6 +103,7 @@ const useStyles = makeStyles({
         padding: '1rem',
         border: '1px solid #e0e0e0',
         backgroundColor: tokens.colorNeutralBackground2,
+        cursor: 'text',
     },
     promptBox: {
         border: '1px solid #e0e0e0',
@@ -110,6 +111,7 @@ const useStyles = makeStyles({
         padding: '1rem',
         maxHeight: '20rem',
         overflow: 'auto',
+        cursor: 'text',
     },
     promptTitleLine: {
         display: 'flex',
@@ -187,6 +189,7 @@ export const PromptDetails = ({ history, response }: { history: string, response
             <h3 className={classes.promptTitle}>Response</h3>
             <Switch checked={renderResponse} onChange={onChangeRenderResponse} label="Render Markdown" />
         </div>
+
         <div className={classes.promptBox}>
             {renderResponse ? <ReactMarkdown>{response}</ReactMarkdown> : <pre>{response}</pre>}
         </div>
