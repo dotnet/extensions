@@ -36,5 +36,4 @@ public static class Defaults
     /// will be incremented to indicate the version a report file was created with compared to the version this library will produce.
     /// </summary>
     public const int ReportingFormatVersion = 1;
-
 }
