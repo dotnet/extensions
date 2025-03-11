@@ -71,6 +71,20 @@ public abstract class ChatClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
+    public virtual async Task GetResponseAsync_WithEmptyMessage()
+    {
+        SkipIfNotEnabled();
+
+        var response = await _chatClient.GetResponseAsync(
+        [
+            new(ChatRole.User, []),
+            new(ChatRole.User, "What is 1 + 2? Reply with a single number."),
+        ]);
+
+        Assert.Contains("3", response.Text);
+    }
+
+    [ConditionalFact]
     public virtual async Task GetStreamingResponseAsync()
     {
         SkipIfNotEnabled();
