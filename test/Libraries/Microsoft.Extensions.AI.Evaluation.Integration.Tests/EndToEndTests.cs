@@ -33,8 +33,7 @@ public class EndToEndTests
 
         if (Settings.Current.Configured)
         {
-            var options = new RelevanceTruthAndCompletenessEvaluatorOptions(includeReasoning: true);
-            IEvaluator rtcEvaluator = new RelevanceTruthAndCompletenessEvaluator(options);
+            IEvaluator rtcEvaluator = new RelevanceTruthAndCompletenessEvaluator();
             IEvaluator coherenceEvaluator = new CoherenceEvaluator();
             IEvaluator fluencyEvaluator = new FluencyEvaluator();
 
