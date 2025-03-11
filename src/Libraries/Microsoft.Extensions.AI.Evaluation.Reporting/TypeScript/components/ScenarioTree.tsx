@@ -8,6 +8,7 @@ import { PassFailBar } from "./PassFailBar";
 import { MetricCardList } from "./MetricCard";
 import ReactMarkdown from "react-markdown";
 import { ErrorCircleRegular } from "@fluentui/react-icons";
+import { ChevronDown12Regular, ChevronRight12Regular } from '@fluentui/react-icons';
 
 const ScenarioLevel = ({ node, parentPath, isOpen, renderMarkdown }: { node: ScoreNode, parentPath: string, isOpen: (path: string) => boolean, renderMarkdown: boolean }) => {
     const path = `${parentPath}.${node.name}`;
@@ -91,10 +92,34 @@ const useStyles = makeStyles({
     scenarioLabel: { 
         whiteSpace: 'nowrap',
         fontWeight: '500',
-     },
+    },
     iterationArea: {
         marginTop: '1rem',
         marginBottom: '1rem',
+    },
+    section: {
+        marginTop: '2rem',
+    },
+    sectionHeader: {
+        display: 'flex',
+        alignItems: 'center',
+        cursor: 'pointer',
+        userSelect: 'none',
+        marginBottom: '1rem',
+    },
+    sectionHeaderText: {
+        margin: 0,
+        marginLeft: '0.5rem',
+        fontSize: '1.25rem',
+        fontWeight: 'bold',
+    },
+    sectionSubHeader: {
+        fontSize: '0.875rem',
+        fontWeight: 'bold',
+        marginBottom: '0.5rem',
+    },
+    sectionContent: {
+        marginBottom: '1.5rem',
     },
     failMessage: {
         color: tokens.colorStatusDangerForeground2,
@@ -105,30 +130,38 @@ const useStyles = makeStyles({
         backgroundColor: tokens.colorNeutralBackground2,
         cursor: 'text',
     },
-    promptBox: {
+    conversationBox: {
         border: '1px solid #e0e0e0',
         borderRadius: '4px',
         padding: '1rem',
         maxHeight: '20rem',
         overflow: 'auto',
         cursor: 'text',
+        '& pre': {
+            whiteSpace: 'pre-wrap',
+            wordWrap: 'break-word',
+        },
     },
-    promptTitleLine: {
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    promptTitle: { flexGrow: 1 },
 });
 
 export const FailMessage = ({ messages }: { messages: string[] }) => {
     const classes = useStyles();
-    return <div>
-        <h3>Failure Reasons</h3>
-        <div className={classes.failContainer}>
-            {messages.map((msg) => <><span className={classes.failMessage} key={msg}><ErrorCircleRegular /> {msg}</span><br /></>)}
+    const [isExpanded, setIsExpanded] = useState(true);
+
+    return (
+        <div className={classes.section}>
+            <div className={classes.sectionHeader} onClick={() => setIsExpanded(!isExpanded)}>
+                {isExpanded ? <ChevronDown12Regular /> : <ChevronRight12Regular />}
+                <h3 className={classes.sectionHeaderText}>Failure Reasons</h3>
+            </div>
+
+            {isExpanded && (
+                <div className={classes.failContainer}>
+                    {messages.map((msg) => <><span className={classes.failMessage} key={msg}><ErrorCircleRegular /> {msg}</span><br /></>)}
+                </div>
+            )}
         </div>
-    </div>;
+    );
 };
 
 const PassFailBadge = ({ pass, total }: { pass: number, total: number }) => {
@@ -166,22 +199,28 @@ const ScoreNodeHeader = ({ item, showPrompt }: { item: ScoreNode, showPrompt?: b
 
 export const PromptDetails = ({ history, response, renderMarkdown }: { history: string, response: string, renderMarkdown: boolean }) => {
     const classes = useStyles();
+    const [isExpanded, setIsExpanded] = useState(true);
 
-    return (<div>
-        <div className={classes.promptTitleLine}>
-            <h3 className={classes.promptTitle}>Prompt</h3>
-        </div>
+    return (
+        <div className={classes.section}>
+            <div className={classes.sectionHeader} onClick={() => setIsExpanded(!isExpanded)}>
+                {isExpanded ? <ChevronDown12Regular /> : <ChevronRight12Regular />}
+                <h3 className={classes.sectionHeaderText}>Conversation</h3>
+            </div>
 
-        <div className={classes.promptBox}>
-            {renderMarkdown ? <ReactMarkdown>{history}</ReactMarkdown> : <pre>{history}</pre>}
+            {isExpanded && (
+                <div className={classes.conversationBox}>
+                    <div className={classes.sectionContent}>
+                        <div className={classes.sectionSubHeader}>Prompt</div>
+                        {renderMarkdown ? <ReactMarkdown>{history}</ReactMarkdown> : <pre>{history}</pre>}
+                    </div>
+                    
+                    <div>
+                        <div className={classes.sectionSubHeader}>Response</div>
+                        {renderMarkdown ? <ReactMarkdown>{response}</ReactMarkdown> : <pre>{response}</pre>}
+                    </div>
+                </div>
+            )}
         </div>
-
-        <div className={classes.promptTitleLine}>
-            <h3 className={classes.promptTitle}>Response</h3>
-        </div>
-
-        <div className={classes.promptBox}>
-            {renderMarkdown ? <ReactMarkdown>{response}</ReactMarkdown> : <pre>{response}</pre>}
-        </div>
-    </div>);
+    );
 };
