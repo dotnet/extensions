@@ -99,6 +99,12 @@ public class ChatResponseUpdate
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
 
     /// <summary>Gets or sets the ID of the response of which this update is a part.</summary>
+    /// <remarks>
+    /// This value is used when <see cref="ChatResponseExtensions.ToChatResponseAsync(IAsyncEnumerable{ChatResponseUpdate}, System.Threading.CancellationToken)"/>
+    /// groups <see cref="ChatResponseUpdate"/> instances into <see cref="ChatMessage"/> instances.
+    /// The value must be unique to each call to the underlying provider, and must be shared by
+    /// all updates that are part of the same response.
+    /// </remarks>
     public string? ResponseId { get; set; }
 
     /// <summary>Gets or sets the chat thread ID associated with the chat response of which this update is a part.</summary>
