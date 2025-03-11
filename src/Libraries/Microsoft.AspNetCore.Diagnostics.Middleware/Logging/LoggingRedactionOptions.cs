@@ -100,6 +100,11 @@ public class LoggingRedactionOptions
 #pragma warning disable CA2227 // Collection properties should be read only
     public ISet<string> ExcludePathStartsWith { get; set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 #pragma warning restore CA2227 // Collection properties should be read only
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to report unmatched routes.
+    /// </summary>
+    public bool ReportUnmatchedRoutes { get; set; } = false;
 }
 
 #endif

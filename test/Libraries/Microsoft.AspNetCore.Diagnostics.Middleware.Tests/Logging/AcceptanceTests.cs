@@ -224,13 +224,13 @@ public partial class AcceptanceTests
                 x.MediaTypeOptions.Clear();
                 x.MediaTypeOptions.AddText("text/*");
                 x.LoggingFields |= HttpLoggingFields.RequestBody;
-            }).AddHttpLoggingRedaction(),
+            }).AddHttpLoggingRedaction(options => options.ReportUnmatchedRoutes = true),
             async (logCollector, client) =>
             {
                 const string Content = "Client: hello!";
 
                 using var content = new StringContent(Content, null, requestContentType);
-                using var response = await client.PostAsync("/", content).ConfigureAwait(false);
+                using var response = await client.PostAsync("/myroute/123", content).ConfigureAwait(false);
                 Assert.True(response.IsSuccessStatusCode);
 
                 await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout);
@@ -247,7 +247,7 @@ public partial class AcceptanceTests
                 Assert.DoesNotContain(state, x => x.Key.StartsWith(HttpLoggingTagNames.RequestHeaderPrefix));
                 Assert.DoesNotContain(state, x => x.Key.StartsWith(HttpLoggingTagNames.ResponseHeaderPrefix));
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.Host && !string.IsNullOrEmpty(x.Value));
-                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Path && x.Value == TelemetryConstants.Unknown);
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Path && x.Value == "/myroute/123");
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.Method && x.Value == HttpMethod.Post.ToString());
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.Duration &&
