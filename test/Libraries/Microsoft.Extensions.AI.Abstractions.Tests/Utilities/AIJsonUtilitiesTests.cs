@@ -387,9 +387,9 @@ public static class AIJsonUtilitiesTests
     public static void AddAIContentType_NonAIContent_ThrowsArgumentException()
     {
         JsonSerializerOptions options = new();
-        Assert.Throws<ArgumentException>(() => options.AddAIContentType(typeof(int), "discriminator"));
-        Assert.Throws<ArgumentException>(() => options.AddAIContentType(typeof(object), "discriminator"));
-        Assert.Throws<ArgumentException>(() => options.AddAIContentType(typeof(ChatMessage), "discriminator"));
+        Assert.Throws<ArgumentException>("contentType", () => options.AddAIContentType(typeof(int), "discriminator"));
+        Assert.Throws<ArgumentException>("contentType", () => options.AddAIContentType(typeof(object), "discriminator"));
+        Assert.Throws<ArgumentException>("contentType", () => options.AddAIContentType(typeof(ChatMessage), "discriminator"));
     }
 
     [Fact]
@@ -415,11 +415,11 @@ public static class AIJsonUtilitiesTests
     public static void AddAIContentType_NullArguments_ThrowsArgumentNullException()
     {
         JsonSerializerOptions options = new();
-        Assert.Throws<ArgumentNullException>(() => ((JsonSerializerOptions)null!).AddAIContentType<DerivedAIContent>("discriminator"));
-        Assert.Throws<ArgumentNullException>(() => ((JsonSerializerOptions)null!).AddAIContentType(typeof(DerivedAIContent), "discriminator"));
-        Assert.Throws<ArgumentNullException>(() => options.AddAIContentType<DerivedAIContent>(null!));
-        Assert.Throws<ArgumentNullException>(() => options.AddAIContentType(typeof(DerivedAIContent), null!));
-        Assert.Throws<ArgumentNullException>(() => options.AddAIContentType(null!, "discriminator"));
+        Assert.Throws<ArgumentNullException>("options", () => ((JsonSerializerOptions)null!).AddAIContentType<DerivedAIContent>("discriminator"));
+        Assert.Throws<ArgumentNullException>("options", () => ((JsonSerializerOptions)null!).AddAIContentType(typeof(DerivedAIContent), "discriminator"));
+        Assert.Throws<ArgumentNullException>("typeDiscriminatorId", () => options.AddAIContentType<DerivedAIContent>(null!));
+        Assert.Throws<ArgumentNullException>("typeDiscriminatorId", () => options.AddAIContentType(typeof(DerivedAIContent), null!));
+        Assert.Throws<ArgumentNullException>("contentType", () => options.AddAIContentType(null!, "discriminator"));
     }
 
     [Fact]

@@ -30,6 +30,7 @@ public class DistributedCachingEmbeddingGenerator<TInput, TEmbedding> : CachingE
     /// <summary>Initializes a new instance of the <see cref="DistributedCachingEmbeddingGenerator{TInput, TEmbedding}"/> class.</summary>
     /// <param name="innerGenerator">The underlying <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/>.</param>
     /// <param name="storage">A <see cref="IDistributedCache"/> instance that will be used as the backing store for the cache.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="storage"/> is <see langword="null"/>.</exception>
     public DistributedCachingEmbeddingGenerator(IEmbeddingGenerator<TInput, TEmbedding> innerGenerator, IDistributedCache storage)
         : base(innerGenerator)
     {
@@ -39,6 +40,7 @@ public class DistributedCachingEmbeddingGenerator<TInput, TEmbedding> : CachingE
     }
 
     /// <summary>Gets or sets JSON serialization options to use when serializing cache data.</summary>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/>.</exception>
     public JsonSerializerOptions JsonSerializerOptions
     {
         get => _jsonSerializerOptions;

@@ -18,12 +18,19 @@ public static class EmbeddingGeneratorBuilderServiceCollectionExtensions
     /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>An <see cref="EmbeddingGeneratorBuilder{TInput, TEmbedding}"/> that can be used to build a pipeline around the inner generator.</returns>
     /// <remarks>The generator is registered as a singleton service.</remarks>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceCollection"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="innerGenerator"/> is <see langword="null"/>.</exception>
     public static EmbeddingGeneratorBuilder<TInput, TEmbedding> AddEmbeddingGenerator<TInput, TEmbedding>(
         this IServiceCollection serviceCollection,
         IEmbeddingGenerator<TInput, TEmbedding> innerGenerator,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TEmbedding : Embedding
-        => AddEmbeddingGenerator(serviceCollection, _ => innerGenerator, lifetime);
+    {
+        _ = Throw.IfNull(serviceCollection);
+        _ = Throw.IfNull(innerGenerator);
+
+        return AddEmbeddingGenerator(serviceCollection, _ => innerGenerator, lifetime);
+    }
 
     /// <summary>Registers a singleton embedding generator in the <see cref="IServiceCollection"/>.</summary>
     /// <typeparam name="TInput">The type from which embeddings will be generated.</typeparam>
@@ -33,6 +40,8 @@ public static class EmbeddingGeneratorBuilderServiceCollectionExtensions
     /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>An <see cref="EmbeddingGeneratorBuilder{TInput, TEmbedding}"/> that can be used to build a pipeline around the inner generator.</returns>
     /// <remarks>The generator is registered as a singleton service.</remarks>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceCollection"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="innerGeneratorFactory"/> is <see langword="null"/>.</exception>
     public static EmbeddingGeneratorBuilder<TInput, TEmbedding> AddEmbeddingGenerator<TInput, TEmbedding>(
         this IServiceCollection serviceCollection,
         Func<IServiceProvider, IEmbeddingGenerator<TInput, TEmbedding>> innerGeneratorFactory,
@@ -44,6 +53,8 @@ public static class EmbeddingGeneratorBuilderServiceCollectionExtensions
 
         var builder = new EmbeddingGeneratorBuilder<TInput, TEmbedding>(innerGeneratorFactory);
         serviceCollection.Add(new ServiceDescriptor(typeof(IEmbeddingGenerator<TInput, TEmbedding>), builder.Build, lifetime));
+        serviceCollection.Add(new ServiceDescriptor(typeof(IEmbeddingGenerator),
+            static services => services.GetRequiredService<IEmbeddingGenerator<TInput, TEmbedding>>(), lifetime));
         return builder;
     }
 
@@ -56,13 +67,20 @@ public static class EmbeddingGeneratorBuilderServiceCollectionExtensions
     /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>An <see cref="EmbeddingGeneratorBuilder{TInput, TEmbedding}"/> that can be used to build a pipeline around the inner generator.</returns>
     /// <remarks>The generator is registered as a singleton service.</remarks>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceCollection"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="innerGenerator"/> is <see langword="null"/>.</exception>
     public static EmbeddingGeneratorBuilder<TInput, TEmbedding> AddKeyedEmbeddingGenerator<TInput, TEmbedding>(
         this IServiceCollection serviceCollection,
         object? serviceKey,
         IEmbeddingGenerator<TInput, TEmbedding> innerGenerator,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TEmbedding : Embedding
-        => AddKeyedEmbeddingGenerator(serviceCollection, serviceKey, _ => innerGenerator, lifetime);
+    {
+        _ = Throw.IfNull(serviceCollection);
+        _ = Throw.IfNull(innerGenerator);
+
+        return AddKeyedEmbeddingGenerator(serviceCollection, serviceKey, _ => innerGenerator, lifetime);
+    }
 
     /// <summary>Registers a keyed singleton embedding generator in the <see cref="IServiceCollection"/>.</summary>
     /// <typeparam name="TInput">The type from which embeddings will be generated.</typeparam>
@@ -73,6 +91,8 @@ public static class EmbeddingGeneratorBuilderServiceCollectionExtensions
     /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>An <see cref="EmbeddingGeneratorBuilder{TInput, TEmbedding}"/> that can be used to build a pipeline around the inner generator.</returns>
     /// <remarks>The generator is registered as a singleton service.</remarks>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceCollection"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="innerGeneratorFactory"/> is <see langword="null"/>.</exception>
     public static EmbeddingGeneratorBuilder<TInput, TEmbedding> AddKeyedEmbeddingGenerator<TInput, TEmbedding>(
         this IServiceCollection serviceCollection,
         object? serviceKey,
@@ -81,11 +101,12 @@ public static class EmbeddingGeneratorBuilderServiceCollectionExtensions
         where TEmbedding : Embedding
     {
         _ = Throw.IfNull(serviceCollection);
-        _ = Throw.IfNull(serviceKey);
         _ = Throw.IfNull(innerGeneratorFactory);
 
         var builder = new EmbeddingGeneratorBuilder<TInput, TEmbedding>(innerGeneratorFactory);
         serviceCollection.Add(new ServiceDescriptor(typeof(IEmbeddingGenerator<TInput, TEmbedding>), serviceKey, factory: (services, serviceKey) => builder.Build(services), lifetime));
+        serviceCollection.Add(new ServiceDescriptor(typeof(IEmbeddingGenerator), serviceKey,
+            static (services, serviceKey) => services.GetRequiredKeyedService<IEmbeddingGenerator<TInput, TEmbedding>>(serviceKey), lifetime));
         return builder;
     }
 }

@@ -120,7 +120,7 @@ public class AIFunctionFactoryTest
         Assert.Empty(func.Description);
         Assert.Same(dotnetFunc.Method, func.UnderlyingMethod);
 
-        Func<string, string> dotnetFunc2 = (string a) => a + " " + a;
+        Func<string, string> dotnetFunc2 = a => a + " " + a;
         func = AIFunctionFactory.Create(dotnetFunc2);
         Assert.Contains("Metadata_DerivedFromLambda", func.Name);
         Assert.Empty(func.Description);

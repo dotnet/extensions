@@ -47,8 +47,7 @@ public class OllamaChatClientIntegrationTests : ChatClientIntegrationTests
             Seed = 0,
         });
 
-        Assert.Single(response.Choices);
-        Assert.Contains(secretNumber.ToString(), response.Message.Text);
+        Assert.Contains(secretNumber.ToString(), response.Text);
     }
 
     [ConditionalFact]
@@ -82,8 +81,7 @@ public class OllamaChatClientIntegrationTests : ChatClientIntegrationTests
             Seed = 0,
         });
 
-        Assert.Single(response.Choices);
-        Assert.Contains("999", response.Message.Text);
+        Assert.Contains("999", response.Text);
         Assert.False(didCallIrrelevantTool);
     }
 
@@ -108,10 +106,10 @@ public class OllamaChatClientIntegrationTests : ChatClientIntegrationTests
     private sealed class AssertNoToolsDefinedChatClient(IChatClient innerClient) : DelegatingChatClient(innerClient)
     {
         public override Task<ChatResponse> GetResponseAsync(
-            IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+            IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
         {
             Assert.Null(options?.Tools);
-            return base.GetResponseAsync(chatMessages, options, cancellationToken);
+            return base.GetResponseAsync(messages, options, cancellationToken);
         }
     }
 }
