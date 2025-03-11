@@ -6,7 +6,7 @@
   "main": "index.js",
   "config": {
     "destRoot": {
-      "chat": "./Microsoft.Extensions.AI.Templates/src/ChatWithCustomData/ChatWithCustomData.Web/wwwroot/lib"
+      "chat": "./Microsoft.Extensions.AI.Templates/src/ChatWithCustomData/ChatWithCustomData.Web-CSharp/wwwroot/lib"
     }
   },
   "scripts": {

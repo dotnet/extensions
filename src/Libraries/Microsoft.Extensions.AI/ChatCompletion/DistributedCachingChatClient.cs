@@ -9,6 +9,10 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Shared.Diagnostics;
 
+#pragma warning disable S109 // Magic numbers should not be used
+#pragma warning disable SA1202 // Elements should be ordered by access
+#pragma warning disable SA1502 // Element should not be on a single line
+
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
@@ -95,10 +99,14 @@ public class DistributedCachingChatClient : CachingChatClient
     /// <summary>Computes a cache key for the specified values.</summary>
     /// <param name="values">The values to inform the key.</param>
     /// <returns>The computed key.</returns>
-    /// <remarks>The <paramref name="values"/> are serialized to JSON using <see cref="JsonSerializerOptions"/> in order to compute the key.</remarks>
-    protected override string GetCacheKey(params ReadOnlySpan<object?> values)
-    {
-        _jsonSerializerOptions.MakeReadOnly();
-        return CachingHelpers.GetCacheKey(values, _jsonSerializerOptions);
-    }
+    /// <remarks>
+    /// <para>
+    /// The <paramref name="values"/> are serialized to JSON using <see cref="JsonSerializerOptions"/> in order to compute the key.
+    /// </para>
+    /// <para>
+    /// The generated cache key is not guaranteed to be stable across releases of the library.
+    /// </para>
+    /// </remarks>
+    protected override string GetCacheKey(params ReadOnlySpan<object?> values) =>
+        AIJsonUtilities.HashDataToString(values, _jsonSerializerOptions);
 }

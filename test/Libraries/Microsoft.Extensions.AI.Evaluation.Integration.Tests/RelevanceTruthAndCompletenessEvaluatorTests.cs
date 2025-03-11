@@ -68,7 +68,7 @@ public class RelevanceTruthAndCompletenessEvaluatorTests
         messages.Add(promptMessage);
 
         ChatResponse response = await chatClient.GetResponseAsync(messages, _chatOptions);
-        ChatMessage responseMessage = response.Message;
+        ChatMessage responseMessage = response.Messages.Single();
         Assert.NotNull(responseMessage.Text);
 
         EvaluationResult result = await scenarioRun.EvaluateAsync(promptMessage, responseMessage);
@@ -101,7 +101,7 @@ public class RelevanceTruthAndCompletenessEvaluatorTests
         messages.Add(promptMessage);
 
         ChatResponse response = await chatClient.GetResponseAsync(messages, _chatOptions);
-        ChatMessage responseMessage = response.Message;
+        ChatMessage responseMessage = response.Messages.Single();
         Assert.NotNull(responseMessage.Text);
 
         EvaluationResult result = await scenarioRun.EvaluateAsync(promptMessage, responseMessage);

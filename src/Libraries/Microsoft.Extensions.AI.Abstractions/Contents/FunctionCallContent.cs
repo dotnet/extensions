@@ -65,15 +65,19 @@ public sealed class FunctionCallContent : AIContent
     /// <param name="name">The function name.</param>
     /// <param name="argumentParser">The parsing implementation converting the encoding to a dictionary of arguments.</param>
     /// <returns>A new instance of <see cref="FunctionCallContent"/> containing the parse result.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="callId"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="name"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="encodedArguments"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="argumentParser"/> is <see langword="null"/>.</exception>
     public static FunctionCallContent CreateFromParsedArguments<TEncoding>(
         TEncoding encodedArguments,
         string callId,
         string name,
         Func<TEncoding, IDictionary<string, object?>?> argumentParser)
     {
+        _ = Throw.IfNull(encodedArguments);
         _ = Throw.IfNull(callId);
         _ = Throw.IfNull(name);
-        _ = Throw.IfNull(encodedArguments);
         _ = Throw.IfNull(argumentParser);
 
         IDictionary<string, object?>? arguments = null;
@@ -102,13 +106,16 @@ public sealed class FunctionCallContent : AIContent
     {
         get
         {
-            string display = CallId is not null ?
-                $"CallId = {CallId}, " :
-                string.Empty;
+            string display = "FunctionCall = ";
+
+            if (CallId is not null)
+            {
+                display += $"{CallId}, ";
+            }
 
             display += Arguments is not null ?
-                $"Call = {Name}({string.Join(", ", Arguments)})" :
-                $"Call = {Name}()";
+                $"{Name}({string.Join(", ", Arguments)})" :
+                $"{Name}()";
 
             return display;
         }

@@ -23,6 +23,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
     private readonly IDisposable? _enrichmentOptionsChangeTokenRegistration;
     private readonly IDisposable? _redactionOptionsChangeTokenRegistration;
     private readonly Action<IEnrichmentTagCollector>[] _enrichers;
+    private readonly LoggingSampler? _sampler;
     private readonly KeyValuePair<string, object?>[] _staticTags;
     private readonly Func<DataClassificationSet, Redactor> _redactorProvider;
     private volatile bool _disposed;
@@ -35,6 +36,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
         IEnumerable<ILogEnricher> enrichers,
         IEnumerable<IStaticLogEnricher> staticEnrichers,
         IOptionsMonitor<LoggerFilterOptions> filterOptions,
+        LoggingSampler? sampler = null,
         IOptions<LoggerFactoryOptions>? factoryOptions = null,
         IExternalScopeProvider? scopeProvider = null,
         IOptionsMonitor<LoggerEnrichmentOptions>? enrichmentOptions = null,
@@ -43,6 +45,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
 #pragma warning restore S107 // Methods should not have too many parameters
     {
         _scopeProvider = scopeProvider;
+        _sampler = sampler;
 
         _factoryOptions = factoryOptions == null || factoryOptions.Value == null ? new LoggerFactoryOptions() : factoryOptions.Value;
 
@@ -284,6 +287,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
 
         return new(_staticTags,
                 _enrichers,
+                _sampler,
                 enrichmentOptions.CaptureStackTraces,
                 enrichmentOptions.UseFileInfoForStackTraces,
                 enrichmentOptions.IncludeExceptionMessage,

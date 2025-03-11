@@ -50,7 +50,7 @@ public sealed class EvaluationResult
     /// </param>
     public EvaluationResult(IEnumerable<EvaluationMetric> metrics)
     {
-        _ = Throw.IfNull(metrics, nameof(metrics));
+        _ = Throw.IfNull(metrics);
 
         var metricsDictionary = new Dictionary<string, EvaluationMetric>();
 

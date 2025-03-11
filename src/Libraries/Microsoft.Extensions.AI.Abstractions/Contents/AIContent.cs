@@ -11,6 +11,7 @@ namespace Microsoft.Extensions.AI;
 [JsonDerivedType(typeof(FunctionCallContent), typeDiscriminator: "functionCall")]
 [JsonDerivedType(typeof(FunctionResultContent), typeDiscriminator: "functionResult")]
 [JsonDerivedType(typeof(TextContent), typeDiscriminator: "text")]
+[JsonDerivedType(typeof(UriContent), typeDiscriminator: "uri")]
 [JsonDerivedType(typeof(UsageContent), typeDiscriminator: "usage")]
 public class AIContent
 {

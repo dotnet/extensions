@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -84,7 +85,7 @@ public class ChatClientStructuredOutputExtensionsTests
         {
             GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
-                var suppliedSchemaMatch = Regex.Match(messages[1].Text!, "```(.*?)```", RegexOptions.Singleline);
+                var suppliedSchemaMatch = Regex.Match(messages.Last().Text!, "```(.*?)```", RegexOptions.Singleline);
                 Assert.True(suppliedSchemaMatch.Success);
                 Assert.Equal("""
                     {
@@ -148,7 +149,7 @@ public class ChatClientStructuredOutputExtensionsTests
     [Fact]
     public async Task FailureUsage_NoJsonInResponse()
     {
-        var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, [new DataContent("https://example.com")]));
+        var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, [new UriContent("https://example.com", "image/*")]));
         using var client = new TestChatClient
         {
             GetResponseAsyncCallback = (messages, options, cancellationToken) => Task.FromResult(expectedResponse),

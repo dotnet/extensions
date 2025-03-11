@@ -22,31 +22,15 @@
     <NoPackageAnalysis>true</NoPackageAnalysis>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <_MicrosoftExtensionsAIVersion>9.3.0-preview.1.25114.11</_MicrosoftExtensionsAIVersion>
-
-    <!-- Specify package version variables used in template content. -->
-    <GeneratedContentProperties>
-      $(GeneratedContentProperties);
-      OllamaSharpVersion=$(OllamaSharpVersion);
-      OpenAIVersion=$(OpenAIVersion);
-      AzureAIProjectsVersion=$(AzureAIProjectsVersion);
-      AzureAIOpenAIVersion=$(AzureAIOpenAIVersion);
-      AzureIdentityVersion=$(AzureIdentityVersion);
-      MicrosoftEntityFrameworkCoreSqliteVersion=$(MicrosoftEntityFrameworkCoreSqliteVersion);
-      MicrosoftExtensionsAIVersion=$(_MicrosoftExtensionsAIVersion);
-      MicrosoftSemanticKernelCoreVersion=$(MicrosoftSemanticKernelCoreVersion);
-      PdfPigVersion=$(PdfPigVersion);
-      SystemLinqAsyncVersion=$(SystemLinqAsyncVersion);
-      AzureSearchDocumentsVersion=$(AzureSearchDocumentsVersion);
-      MicrosoftSemanticKernelConnectorsAzureAISearchVersion=$(MicrosoftSemanticKernelConnectorsAzureAISearchVersion);
-    </GeneratedContentProperties>
-  </PropertyGroup>
-
+  <!--
+    Reference the GenerateTemplateContent project so that template content gets generated prior
+    to building this project.
+  -->
   <ItemGroup>
-    <GeneratedContent
-      Include="src\ChatWithCustomData\ChatWithCustomData.Web\ChatWithCustomData.Web.csproj.in"
-      OutputPath="src\ChatWithCustomData\ChatWithCustomData.Web\ChatWithCustomData.Web.csproj" />
+    <ProjectReference
+      Include="..\GenerateTemplateContent\GenerateTemplateContent.csproj"
+      ReferenceOutputAssembly="false"
+      PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>

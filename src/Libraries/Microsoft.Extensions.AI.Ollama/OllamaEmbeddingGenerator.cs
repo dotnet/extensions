@@ -45,6 +45,8 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator<string, Embed
     /// Either this parameter or <see cref="ChatOptions.ModelId"/> must provide a valid model ID.
     /// </param>
     /// <param name="httpClient">An <see cref="HttpClient"/> instance to use for HTTP operations.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="endpoint"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="modelId"/> is empty or composed entirely of whitespace.</exception>
     public OllamaEmbeddingGenerator(Uri endpoint, string? modelId = null, HttpClient? httpClient = null)
     {
         _ = Throw.IfNull(endpoint);
@@ -59,7 +61,7 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator<string, Embed
     }
 
     /// <inheritdoc />
-    object? IEmbeddingGenerator<string, Embedding<float>>.GetService(Type serviceType, object? serviceKey)
+    object? IEmbeddingGenerator.GetService(Type serviceType, object? serviceKey)
     {
         _ = Throw.IfNull(serviceType);
 

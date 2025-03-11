@@ -176,7 +176,7 @@ internal static class HybridCachePayload
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S107:Methods should not have too many parameters", Justification = "Borderline")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exposed for logging")]
     public static HybridCachePayloadParseResult TryParse(ArraySegment<byte> source, string key, TagSet knownTags, DefaultHybridCache cache,
-        out ArraySegment<byte> payload, out PayloadFlags flags, out ushort entropy, out TagSet pendingTags, out Exception? fault)
+        out ArraySegment<byte> payload, out TimeSpan remainingTime, out PayloadFlags flags, out ushort entropy, out TagSet pendingTags, out Exception? fault)
     {
         fault = null;
 
@@ -184,6 +184,7 @@ internal static class HybridCachePayload
         entropy = 0;
         payload = default;
         flags = 0;
+        remainingTime = TimeSpan.Zero;
         string[] pendingTagBuffer = [];
         int pendingTagsCount = 0;
 
@@ -229,10 +230,13 @@ internal static class HybridCachePayload
                         return HybridCachePayloadParseResult.InvalidData;
                     }
 
-                    if ((creationTime + (long)duration) <= now)
+                    var remainingTicks = (creationTime + (long)duration) - now;
+                    if (remainingTicks <= 0)
                     {
                         return HybridCachePayloadParseResult.ExpiredByEntry;
                     }
+
+                    remainingTime = DefaultHybridCache.TicksToTimeSpan(remainingTicks);
 
                     if (!TryRead7BitEncodedInt64(ref bytes, out u64) || u64 > int.MaxValue) // tag count
                     {
