@@ -35,12 +35,17 @@
 
   <ItemGroup>
     <Content
-      Include="src\ChatWithCustomData\**\*"
+      Include="
+        src\ChatWithCustomData\**\*;
+        src\AspireChatWithCustomData\**\*;"
       Exclude="
         **\bin\**;
         **\obj\**;
+        **\.vs\**;
         **\node_modules\**;
-        **\*.user;**\*.in;
+        **\qdrant_data\**;
+        **\*.user;
+        **\*.in;
         **\*.out.js;
         **\*.generated.css;
         **\package-lock.json;" />

@@ -6,16 +6,25 @@
   "main": "index.js",
   "config": {
     "destRoot": {
-      "chat": "./Microsoft.Extensions.AI.Templates/src/ChatWithCustomData/ChatWithCustomData.Web-CSharp/wwwroot/lib"
+      "chatWeb": "./Microsoft.Extensions.AI.Templates/src/ChatWithCustomData/ChatWithCustomData.Web-CSharp/wwwroot/lib",
+      "chatAspireWeb": "./Microsoft.Extensions.AI.Templates/src/AspireChatWithCustomData/ChatWithCustomData.Aspire-CSharp/ChatWithCustomData.Aspire-CSharp.Web/wwwroot/lib"
     }
   },
   "scripts": {
     "copy-dependency": "node copyDependency.mjs",
     "copy-dependencies": "npm run copy-dompurify && npm run copy-marked && npm run copy-tailwindcss && npm run copy-pdfjs",
-    "copy-dompurify": "npm run copy-dependency -- --name dompurify --dest-root chat --src-root dist --files purify.es.mjs",
-    "copy-marked": "npm run copy-dependency -- --name marked --dest-root chat --src-root lib --files marked.esm.js",
-    "copy-tailwindcss": "npm run copy-dependency -- --name tailwindcss --dest-root chat --files preflight.css",
-    "copy-pdfjs": "npm run copy-dependency -- --name pdfjs-dist --dest-root chat --files build/pdf.min.mjs;build/pdf.worker.min.mjs;web/pdf_viewer.css;web/pdf_viewer.mjs;web/images/loading-icon.gif"
+    "copy-dompurify": "npm run copy-dompurify-web && npm run copy-dompurify-aspire-web",
+    "copy-dompurify-web": "npm run copy-dependency -- --name dompurify --dest-root chatWeb --src-root dist --files purify.es.mjs",
+    "copy-dompurify-aspire-web": "npm run copy-dependency -- --name dompurify --dest-root chatAspireWeb --src-root dist --files purify.es.mjs",
+    "copy-marked": "npm run copy-marked-web && npm run copy-marked-aspire-web",
+    "copy-marked-web": "npm run copy-dependency -- --name marked --dest-root chatWeb --src-root lib --files marked.esm.js",
+    "copy-marked-aspire-web": "npm run copy-dependency -- --name marked --dest-root chatAspireWeb --src-root lib --files marked.esm.js",
+    "copy-tailwindcss": "npm run copy-tailwindcss-web && npm run copy-tailwindcss-aspire-web",
+    "copy-tailwindcss-web": "npm run copy-dependency -- --name tailwindcss --dest-root chatWeb --files preflight.css",
+    "copy-tailwindcss-aspire-web": "npm run copy-dependency -- --name tailwindcss --dest-root chatAspireWeb --files preflight.css",
+    "copy-pdfjs": "npm run copy-pdfjs-web && npm run copy-pdfjs-aspire-web",
+    "copy-pdfjs-web": "npm run copy-dependency -- --name pdfjs-dist --dest-root chatWeb --files build/pdf.min.mjs;build/pdf.worker.min.mjs;web/pdf_viewer.css;web/pdf_viewer.mjs;web/images/loading-icon.gif",
+    "copy-pdfjs-aspire-web": "npm run copy-dependency -- --name pdfjs-dist --dest-root chatAspireWeb --files build/pdf.min.mjs;build/pdf.worker.min.mjs;web/pdf_viewer.css;web/pdf_viewer.mjs;web/images/loading-icon.gif"
   },
   "repository": {
     "type": "git",

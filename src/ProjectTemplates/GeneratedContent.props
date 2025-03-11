@@ -23,12 +23,22 @@
 
   <PropertyGroup>
     <_ChatWithCustomDataWebContentRoot>$(MSBuildThisFileDirectory)Microsoft.Extensions.AI.Templates\src\ChatWithCustomData\ChatWithCustomData.Web-CSharp\</_ChatWithCustomDataWebContentRoot>
+    <_ChatWithCustomDataAspireContentRoot>$(MSBuildThisFileDirectory)Microsoft.Extensions.AI.Templates\src\AspireChatWithCustomData\ChatWithCustomData.Aspire-CSharp\</_ChatWithCustomDataAspireContentRoot>
   </PropertyGroup>
 
   <ItemGroup>
     <GeneratedContent
       Include="$(_ChatWithCustomDataWebContentRoot)ChatWithCustomData.Web-CSharp.csproj.in"
       OutputPath="$(_ChatWithCustomDataWebContentRoot)ChatWithCustomData.Web-CSharp.csproj" />
+    <GeneratedContent
+      Include="$(_ChatWithCustomDataAspireContentRoot)ChatWithCustomData.Aspire-CSharp.AppHost\ChatWithCustomData.Aspire-CSharp.AppHost.csproj.in"
+      OutputPath="$(_ChatWithCustomDataAspireContentRoot)ChatWithCustomData.Aspire-CSharp.AppHost\ChatWithCustomData.Aspire-CSharp.AppHost.csproj" />
+    <GeneratedContent
+      Include="$(_ChatWithCustomDataAspireContentRoot)ChatWithCustomData.Aspire-CSharp.ServiceDefaults\ChatWithCustomData.Aspire-CSharp.ServiceDefaults.csproj.in"
+      OutputPath="$(_ChatWithCustomDataAspireContentRoot)ChatWithCustomData.Aspire-CSharp.ServiceDefaults\ChatWithCustomData.Aspire-CSharp.ServiceDefaults.csproj" />
+    <GeneratedContent
+      Include="$(_ChatWithCustomDataAspireContentRoot)ChatWithCustomData.Aspire-CSharp.Web\ChatWithCustomData.Aspire-CSharp.Web.csproj.in"
+      OutputPath="$(_ChatWithCustomDataAspireContentRoot)ChatWithCustomData.Aspire-CSharp.Web\ChatWithCustomData.Aspire-CSharp.Web.csproj" />
   </ItemGroup>
 
 </Project>
