@@ -1,0 +1,72 @@
+using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.AI;
+
+namespace AspireAIChat.Web.Components.Pages.Chat;
+public partial class ChatSuggestions
+{
+    [Inject]
+    public required IChatClient ChatClient { get; set; }
+
+    private static readonly string Prompt = @"
+        Suggest up to 3 follow-up questions that I could ask you to help me complete my task.
+        Each suggestion must be a complete sentence, maximum 6 words.
+        Each suggestion must be phrased as something that I (the user) would ask you (the assistant) in response to your previous message,
+        for example 'How do I do that?' or 'Explain ...'.
+        If there are no suggestions, reply with an empty list.
+    ";
+
+    private string[]? suggestions;
+    private CancellationTokenSource? cancellation;
+
+    [Parameter]
+    public EventCallback<ChatMessage> OnSelected { get; set; }
+
+    public void Clear()
+    {
+        suggestions = null;
+        cancellation?.Cancel();
+    }
+
+    public void Update(IReadOnlyList<ChatMessage> messages)
+    {
+        // Runs in the background and handles its own cancellation/errors
+        _ = UpdateSuggestionsAsync(messages);
+    }
+
+    private async Task UpdateSuggestionsAsync(IReadOnlyList<ChatMessage> messages)
+    {
+        cancellation?.Cancel();
+        cancellation = new CancellationTokenSource();
+
+        try
+        {
+            var response = await ChatClient.GetResponseAsync<string[]>(
+                [.. ReduceMessages(messages), new(ChatRole.User, Prompt)],
+                useNativeJsonSchema: true, cancellationToken: cancellation.Token);
+            if (!response.TryGetResult(out suggestions))
+            {
+                suggestions = null;
+            }
+
+            StateHasChanged();
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            await DispatchExceptionAsync(ex);
+        }
+    }
+
+    private async Task AddSuggestionAsync(string text)
+    {
+        await OnSelected.InvokeAsync(new(ChatRole.User, text));
+    }
+
+    private static IEnumerable<ChatMessage> ReduceMessages(IReadOnlyList<ChatMessage> messages)
+    {
+        // Get any leading system messages, plus up to 5 user/assistant messages
+        // This should be enough context to generate suggestions without unnecessarily resending entire conversations when long
+        var systemMessages = messages.TakeWhile(m => m.Role == ChatRole.System);
+        var otherMessages = messages.Where((m, index) => m.Role == ChatRole.User || m.Role == ChatRole.Assistant).Where(m => !string.IsNullOrEmpty(m.Text)).TakeLast(5);
+        return systemMessages.Concat(otherMessages);
+    }
+}
