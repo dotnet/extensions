@@ -18,7 +18,6 @@
   <PropertyGroup>
     <Workstream>AIEval</Workstream>
     <Stage>preview</Stage>
-    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
     <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
     <EnablePackageValidation>false</EnablePackageValidation>
     <MinCodeCoverage>66</MinCodeCoverage>
