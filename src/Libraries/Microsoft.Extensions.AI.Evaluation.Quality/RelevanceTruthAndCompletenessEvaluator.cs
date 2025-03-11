@@ -23,7 +23,8 @@ namespace Microsoft.Extensions.AI.Evaluation.Quality;
 /// <remarks>
 /// <see cref="RelevanceTruthAndCompletenessEvaluator"/> returns three <see cref="NumericMetric"/>s that contain scores
 /// for 'Relevance', 'Truth' and 'Completeness' respectively. Each score is a number between 1 and 5, with 1 indicating
-/// a poor score, and 5 indicating an excellent score.
+/// a poor score, and 5 indicating an excellent score. Each returned score is also accompanied by a
+/// <see cref="EvaluationMetric{T}.Reason"/> that provides an explanation for the score.
 /// </remarks>
 public sealed partial class RelevanceTruthAndCompletenessEvaluator : ChatConversationEvaluator
 {
