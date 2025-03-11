@@ -10,7 +10,7 @@ From the command-line:
 dotnet add package Microsoft.Extensions.AI.Abstractions
 ```
 
-Or directly in the C# project file:
+or directly in the C# project file:
 
 ```xml
 <ItemGroup>
@@ -27,105 +27,24 @@ of the abstractions.
 
 ### `IChatClient`
 
-The `IChatClient` interface defines a client abstraction responsible for interacting with AI services that provide "chat" capabilities. It defines methods for sending and receiving messages comprised of multi-modal content (text, images, audio, etc.), with responses being either as a complete result or streamed incrementally. Additionally, it allows for retrieving strongly-typed services that may be provided by the client or its underlying services.
-
-#### Sample Implementation
+The `IChatClient` interface defines a client abstraction responsible for interacting with AI services that provide "chat" capabilities. It defines methods for sending and receiving messages comprised of multi-modal content (text, images, audio, etc.), with responses providing either a complete result or one streamed incrementally. Additionally, it allows for retrieving strongly-typed services that may be provided by the client or its underlying services.
 
 .NET libraries that provide clients for language models and services may provide an implementation of the `IChatClient` interface. Any consumers of the interface are then able to interoperate seamlessly with these models and services via the abstractions.
-
-Here is a sample implementation of an `IChatClient` to show the general structure.
-
-```csharp
-using System.Runtime.CompilerServices;
-using Microsoft.Extensions.AI;
-
-public class SampleChatClient : IChatClient
-{
-    private readonly ChatClientMetadata _metadata;
-
-    public SampleChatClient(Uri endpoint, string modelId) =>
-        _metadata = new("SampleChatClient", endpoint, modelId);
-
-    public async Task<ChatResponse> GetResponseAsync(
-        IList<ChatMessage> chatMessages,
-        ChatOptions? options = null,
-        CancellationToken cancellationToken = default)
-    {
-        // Simulate some operation.
-        await Task.Delay(300, cancellationToken);
-
-        // Return a sample chat response randomly.
-        string[] responses =
-        [
-            "This is the first sample response.",
-            "Here is another example of a response message.",
-            "This is yet another response message."
-        ];
-
-        return new(new ChatMessage()
-        {
-            Role = ChatRole.Assistant,
-            Text = responses[Random.Shared.Next(responses.Length)],
-        });
-    }
-
-    public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-        IList<ChatMessage> chatMessages,
-        ChatOptions? options = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        // Simulate streaming by yielding messages one by one.
-        string[] words = ["This ", "is ", "the ", "response ", "for ", "the ", "request."];
-        foreach (string word in words)
-        {
-            // Simulate some operation.
-            await Task.Delay(100, cancellationToken);
-
-            // Yield the next message in the response.
-            yield return new ChatResponseUpdate
-            {
-                Role = ChatRole.Assistant,
-                Text = word,
-            };
-        }
-    }
-
-    object? IChatClient.GetService(Type serviceType, object? serviceKey = null) =>
-        serviceKey is not null ? null :
-        serviceType == typeof(ChatClientMetadata) ? _metadata :
-        serviceType?.IsInstanceOfType(this) is true ? this :
-        null;
-        
-    void IDisposable.Dispose() { }
-}
-```
-
-As further examples, you can find other concrete implementations in the following packages (but many more such implementations for a large variety of services are available on NuGet):
-
-- [Microsoft.Extensions.AI.AzureAIInference](https://aka.ms/meai-azaiinference-nuget)
-- [Microsoft.Extensions.AI.OpenAI](https://aka.ms/meai-openai-nuget)
-- [Microsoft.Extensions.AI.Ollama](https://aka.ms/meai-ollama-nuget)
 
 #### Requesting a Chat Response: `GetResponseAsync`
 
 With an instance of `IChatClient`, the `GetResponseAsync` method may be used to send a request and get a response. The request is composed of one or more messages, each of which is composed of one or more pieces of content. Accelerator methods exist to simplify common cases, such as constructing a request for a single piece of text content.
 
 ```csharp
-using Microsoft.Extensions.AI;
+IChatClient client = ...;
 
-IChatClient client = new SampleChatClient(new Uri("http://coolsite.ai"), "my-custom-model");
-
-var response = await client.GetResponseAsync("What is AI?");
-
-Console.WriteLine(response.Message);
+Console.WriteLine(await client.GetResponseAsync("What is AI?"));
 ```
 
-The core `GetResponseAsync` method on the `IChatClient` interface accepts a list of messages. This list represents the history of all messages that are part of the conversation.
+The core `GetResponseAsync` method on the `IChatClient` interface accepts a list of messages. This list often represents the history of all messages that are part of the conversation.
 
 ```csharp
-using Microsoft.Extensions.AI;
-
-IChatClient client = new SampleChatClient(new Uri("http://coolsite.ai"), "my-custom-model");
+IChatClient client = ...;
 
 Console.WriteLine(await client.GetResponseAsync(
 [
@@ -134,7 +53,10 @@ Console.WriteLine(await client.GetResponseAsync(
 ]));
 ```
 
-The `ChatResponse` that's returned from `GetResponseAsync` exposes a `ChatMessage` representing the response message. It may be added back into the history in order to provide this response back to the service in a subsequent request, e.g.
+The `ChatResponse` that's returned from `GetResponseAsync` exposes a list of `ChatMessage` instances representing one or more messages generated as part of the operation.
+In common cases, there is only one response message, but a variety of situations can result in their being multiple; the list is ordered, such that the last message in
+the list represents the final message to the request. In order to provide all of those response messages back to the service in a subsequent request, the messages from
+the response may be added back into the messages list.
 
 ```csharp
 List<ChatMessage> history = [];
@@ -143,21 +65,20 @@ while (true)
     Console.Write("Q: ");
     history.Add(new(ChatRole.User, Console.ReadLine()));
 
-    ChatResponse response = await client.GetResponseAsync(history);
-
+    var response = await client.GetResponseAsync(history);
     Console.WriteLine(response);
-    history.Add(response.Message);
+
+    history.AddMessages(response);
 }
 ```
 
 #### Requesting a Streaming Chat Response: `GetStreamingResponseAsync`
 
-The inputs to `GetStreamingResponseAsync` are identical to those of `GetResponseAsync`. However, rather than returning the complete response as part of a `ChatResponse` object, the method returns an `IAsyncEnumerable<ChatResponseUpdate>`, providing a stream of updates that together form the single response.
+The inputs to `GetStreamingResponseAsync` are identical to those of `GetResponseAsync`. However, rather than returning the complete response as part of a
+`ChatResponse` object, the method returns an `IAsyncEnumerable<ChatResponseUpdate>`, providing a stream of updates that together form the single response.
 
 ```csharp
-using Microsoft.Extensions.AI;
-
-IChatClient client = new SampleChatClient(new Uri("http://coolsite.ai"), "my-custom-model");
+IChatClient client = ...;
 
 await foreach (var update in client.GetStreamingResponseAsync("What is AI?"))
 {
@@ -165,46 +86,45 @@ await foreach (var update in client.GetStreamingResponseAsync("What is AI?"))
 }
 ```
 
-Such a stream of response updates may be combined into a single response object via the `ToChatResponse` and `ToChatResponseAsync` helper methods, e.g.
+As with `GetResponseAsync`, the updates from `IChatClient.GetStreamingResponseAsync` can be added back into the messages list. As the updates provided
+are individual pieces of a response, helpers like `ToChatResponse` can be used to compose one or more updates back into a single `ChatResponse` instance.
+Further helpers like `AddMessages` perform that same operation and then extract the composed messages from the response and add them into a list.
 
 ```csharp
 List<ChatMessage> history = [];
-List<ChatResponseUpdate> updates = [];
 while (true)
 {
     Console.Write("Q: ");
     history.Add(new(ChatRole.User, Console.ReadLine()));
 
-    updates.Clear();
+    List<ChatResponseUpdate> updates = [];
     await foreach (var update in client.GetStreamingResponseAsync(history))
     {
         Console.Write(update);
-        updates.Add(update);
     }
+    Console.WriteLine();
 
-    history.Add(updates.ToChatResponse().Message));
+    history.AddMessages(updates);
 }
 ```
 
 #### Tool Calling
 
-Some models and services support the notion of tool calling, where requests may include information about tools (in particular .NET methods) that the model may request be invoked in order to gather additional information. Rather than sending back a response message that represents the final response to the input, the model sends back a request to invoke a given function with a given set of arguments; the client may then find and invoke the relevant function and send back the results to the model (along with all the rest of the history). The abstractions in Microsoft.Extensions.AI include representations for various forms of content that may be included in messages, and this includes representations for these function call requests and results. While it's possible for the consumer of the `IChatClient` to interact with this content directly, `Microsoft.Extensions.AI` supports automating these interactions. It provides an `AIFunction` that represents an invocable function along with metadata for describing the function to the AI model, along with an `AIFunctionFactory` for creating `AIFunction`s to represent .NET methods. It also provides a `FunctionInvokingChatClient` that both is an `IChatClient` and also wraps an `IChatClient`, enabling layering automatic function invocation capabilities around an arbitrary `IChatClient` implementation.
+Some models and services support the notion of tool calling, where requests may include information about tools (in particular .NET methods) that the model may request be invoked in order to gather additional information. Rather than sending back a response message that represents the final response to the input, the model sends back a request to invoke a given function with a given set of arguments; the client may then find and invoke the relevant function and send back the results to the model (along with all the rest of the history). The abstractions in `Microsoft.Extensions.AI` include representations for various forms of content that may be included in messages, and this includes representations for these function call requests and results. While it's possible for the consumer of the `IChatClient` to interact with this content directly, `Microsoft.Extensions.AI` supports automating these interactions. It provides an `AIFunction` that represents an invocable function along with metadata for describing the function to the AI model, as well as an `AIFunctionFactory` for creating `AIFunction`s to represent .NET methods. It also provides a `FunctionInvokingChatClient` that both is an `IChatClient` and also wraps an `IChatClient`, enabling layering automatic function invocation capabilities around an arbitrary `IChatClient` implementation.
 
 ```csharp
-using System.ComponentModel;
 using Microsoft.Extensions.AI;
 
-[Description("Gets the current weather")]
 string GetCurrentWeather() => Random.Shared.NextDouble() > 0.5 ? "It's sunny" : "It's raining";
 
-IChatClient client = new ChatClientBuilder(new OllamaChatClient(new Uri("http://localhost:11434"), "llama3.1"))
+IChatClient client = new OllamaChatClient(new Uri("http://localhost:11434"), "llama3.1")
+    .AsBuilder()
     .UseFunctionInvocation()
     .Build();
 
-var response = client.GetStreamingResponseAsync(
-    "Should I wear a rain coat?",
-    new() { Tools = [AIFunctionFactory.Create(GetCurrentWeather)] });
+ChatOptions options = new() { Tools = [AIFunctionFactory.Create(GetCurrentWeather)] };
 
+var response = client.GetStreamingResponseAsync("Should I wear a rain coat?", options);
 await foreach (var update in response)
 {
     Console.Write(update);
@@ -221,7 +141,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 
-IChatClient client = new ChatClientBuilder(new SampleChatClient(new Uri("http://coolsite.ai"), "my-custom-model"))
+IChatClient client = new ChatClientBuilder(new OllamaChatClient(new Uri("http://localhost:11434"), "llama3.1"))
     .UseDistributedCache(new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions())))
     .Build();
 
@@ -252,11 +172,11 @@ var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
     .AddConsoleExporter()
     .Build();
 
-IChatClient client = new ChatClientBuilder(new SampleChatClient(new Uri("http://coolsite.ai"), "my-custom-model"))
+IChatClient client = new ChatClientBuilder(new OllamaChatClient(new Uri("http://localhost:11434"), "llama3.1"))
     .UseOpenTelemetry(sourceName: sourceName, configure: c => c.EnableSensitiveData = true)
     .Build();
 
-Console.WriteLine((await client.GetResponseAsync("What is AI?")).Message);
+Console.WriteLine(await client.GetResponseAsync("What is AI?"));
 ```
 
 Alternatively, the `LoggingChatClient` and corresponding `UseLogging` method provide a simple way to write log entries to an `ILogger` for every request and response.
@@ -269,7 +189,8 @@ Options may also be baked into an `IChatClient` via the `ConfigureOptions` exten
 ```csharp
 using Microsoft.Extensions.AI;
 
-IChatClient client = new ChatClientBuilder(new OllamaChatClient(new Uri("http://localhost:11434")))
+IChatClient client = new OllamaChatClient(new Uri("http://localhost:11434"))
+    .AsBuilder()
     .ConfigureOptions(options => options.ModelId ??= "phi3")
     .Build();
 
@@ -335,23 +256,23 @@ using System.Threading.RateLimiting;
 public sealed class RateLimitingChatClient(IChatClient innerClient, RateLimiter rateLimiter) : DelegatingChatClient(innerClient)
 {
     public override async Task<ChatResponse> GetResponseAsync(
-        IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         using var lease = await rateLimiter.AcquireAsync(permitCount: 1, cancellationToken).ConfigureAwait(false);
         if (!lease.IsAcquired)
             throw new InvalidOperationException("Unable to acquire lease.");
 
-        return await base.GetResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
+        return await base.GetResponseAsync(messages, options, cancellationToken).ConfigureAwait(false);
     }
 
     public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-        IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var lease = await rateLimiter.AcquireAsync(permitCount: 1, cancellationToken).ConfigureAwait(false);
         if (!lease.IsAcquired)
             throw new InvalidOperationException("Unable to acquire lease.");
 
-        await foreach (var update in base.GetStreamingResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false))
+        await foreach (var update in base.GetStreamingResponseAsync(messages, options, cancellationToken).ConfigureAwait(false))
             yield return update;
     }
 
@@ -372,10 +293,10 @@ using Microsoft.Extensions.AI;
 using System.Threading.RateLimiting;
 
 var client = new RateLimitingChatClient(
-    new SampleChatClient(new Uri("http://localhost"), "test"),
+    new OllamaChatClient(new Uri("http://localhost:11434"), "llama3.1"),
     new ConcurrencyLimiter(new() { PermitLimit = 1, QueueLimit = int.MaxValue }));
 
-await client.GetResponseAsync("What color is the sky?");
+Console.WriteLine(await client.GetResponseAsync("What color is the sky?"));
 ```
 
 To make it easier to compose such components with others, the author of the component is recommended to create a "Use" extension method for registering this component into a pipeline, e.g.
@@ -398,7 +319,7 @@ public static class RateLimitingChatClientExtensions
 
 The consumer can then easily use this in their pipeline, e.g.
 ```csharp
-var client = new SampleChatClient(new Uri("http://localhost"), "test")
+var client = new OllamaChatClient(new Uri("http://localhost:11434"), "llama3.1")
     .AsBuilder()
     .UseDistributedCache()
     .UseRateLimiting()
@@ -412,16 +333,16 @@ need to do work before and after delegating to the next client in the pipeline. 
 be used that accepts a delegate which is used for both `GetResponseAsync` and `GetStreamingResponseAsync`, reducing the boilderplate required:
 ```csharp
 RateLimiter rateLimiter = ...;
-var client = new SampleChatClient(new Uri("http://localhost"), "test")
+var client = new OllamaChatClient(new Uri("http://localhost:11434"), "llama3.1")
     .AsBuilder()
     .UseDistributedCache()
-    .Use(async (chatMessages, options, nextAsync, cancellationToken) =>
+    .Use(async (messages, options, nextAsync, cancellationToken) =>
     {
         using var lease = await rateLimiter.AcquireAsync(permitCount: 1, cancellationToken).ConfigureAwait(false);
         if (!lease.IsAcquired)
             throw new InvalidOperationException("Unable to acquire lease.");
 
-        await nextAsync(chatMessages, options, cancellationToken);
+        await nextAsync(messages, options, cancellationToken);
     })
     .UseOpenTelemetry()
     .Build();
@@ -443,7 +364,7 @@ using Microsoft.Extensions.Hosting;
 // App Setup
 var builder = Host.CreateApplicationBuilder();
 builder.Services.AddDistributedMemoryCache();
-builder.Services.AddChatClient(new SampleChatClient(new Uri("http://coolsite.ai"), "my-custom-model"))
+builder.Services.AddChatClient(new OllamaChatClient(new Uri("http://localhost:11434"), "llama3.1"))
     .UseDistributedCache();
 var host = builder.Build();
 
@@ -459,7 +380,8 @@ What instance and configuration is injected may differ based on the current need
 "Stateless" services require all relevant conversation history to sent back on every request, while "stateful" services keep track of the history and instead
 require only additional messages be sent with a request. The `IChatClient` interface is designed to handle both stateless and stateful AI services.
 
-If you know you're working with a stateless service (currently the most common form), responses may be added back into a message history for sending back to the server.
+When working with a stateless service, callers maintain a list of all messages, adding in all received response messages, and providing the list
+back on subsequent interactions.
 ```csharp
 List<ChatMessage> history = [];
 while (true)
@@ -467,23 +389,23 @@ while (true)
     Console.Write("Q: ");
     history.Add(new(ChatRole.User, Console.ReadLine()));
 
-    ChatResponse response = await client.GetResponseAsync(history);
-
+    var response = await client.GetResponseAsync(history);
     Console.WriteLine(response);
-    history.Add(response.Message);
+
+    history.AddMessages(response);
 }
 ```
 
-For stateful services, you may know ahead of time an identifier used for the relevant conversation. That identifier can be put into `ChatOptions.ChatThreadId`:
+For stateful services, you may know ahead of time an identifier used for the relevant conversation. That identifier can be put into `ChatOptions.ChatThreadId`.
+Usage then follows the same pattern, except there's no need to maintain a history manually.
 ```csharp
 ChatOptions options = new() { ChatThreadId = "my-conversation-id" };
 while (true)
 {
     Console.Write("Q: ");
+    ChatMessage message = new(ChatRole.User, Console.ReadLine());
 
-    ChatResponse response = await client.GetResponseAsync(Console.ReadLine(), options);
-
-    Console.WriteLine(response);
+    Console.WriteLine(await client.GetResponseAsync(message, options));
 }
 ```
 
@@ -494,10 +416,11 @@ ChatOptions options = new();
 while (true)
 {
     Console.Write("Q: ");
+    ChatMessage message = new(ChatRole.User, Console.ReadLine());
 
-    ChatResponse response = await client.GetResponseAsync(Console.ReadLine(), options);
-
+    ChatResponse response = await client.GetResponseAsync(message, options);
     Console.WriteLine(response);
+
     options.ChatThreadId = response.ChatThreadId;
 }
 ```
@@ -515,8 +438,8 @@ while (true)
     history.Add(new(ChatRole.User, Console.ReadLine()));
 
     ChatResponse response = await client.GetResponseAsync(history);
-
     Console.WriteLine(response);
+
     options.ChatThreadId = response.ChatThreadId;
     if (response.ChatThreadId is not null)
     {
@@ -524,7 +447,7 @@ while (true)
     }
     else
     {
-        history.Add(response.Message);
+        history.AddMessages(response);
     }
 }
 ```

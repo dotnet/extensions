@@ -34,7 +34,7 @@ public class IngestedDocument
     public required string Id { get; set; }
     public required string SourceId { get; set; }
     public required string Version { get; set; }
-    public List<IngestedRecord> Records { get; set; } = new();
+    public List<IngestedRecord> Records { get; set; } = [];
 }
 
 public class IngestedRecord

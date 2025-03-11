@@ -21,6 +21,7 @@ public static class FunctionInvokingChatClientBuilderExtensions
     /// <param name="loggerFactory">An optional <see cref="ILoggerFactory"/> to use to create a logger for logging function invocations.</param>
     /// <param name="configure">An optional callback that can be used to configure the <see cref="FunctionInvokingChatClient"/> instance.</param>
     /// <returns>The supplied <paramref name="builder"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
     public static ChatClientBuilder UseFunctionInvocation(
         this ChatClientBuilder builder,
         ILoggerFactory? loggerFactory = null,

@@ -19,6 +19,7 @@ public sealed class ChatClientBuilder
 
     /// <summary>Initializes a new instance of the <see cref="ChatClientBuilder"/> class.</summary>
     /// <param name="innerClient">The inner <see cref="IChatClient"/> that represents the underlying backend.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="innerClient"/> is <see langword="null"/>.</exception>
     public ChatClientBuilder(IChatClient innerClient)
     {
         _ = Throw.IfNull(innerClient);
@@ -48,10 +49,13 @@ public sealed class ChatClientBuilder
         {
             for (var i = _clientFactories.Count - 1; i >= 0; i--)
             {
-                chatClient = _clientFactories[i](chatClient, services) ??
-                    throw new InvalidOperationException(
+                chatClient = _clientFactories[i](chatClient, services);
+                if (chatClient is null)
+                {
+                    Throw.InvalidOperationException(
                         $"The {nameof(ChatClientBuilder)} entry at index {i} returned null. " +
                         $"Ensure that the callbacks passed to {nameof(Use)} return non-null {nameof(IChatClient)} instances.");
+                }
             }
         }
 
@@ -61,6 +65,7 @@ public sealed class ChatClientBuilder
     /// <summary>Adds a factory for an intermediate chat client to the chat client pipeline.</summary>
     /// <param name="clientFactory">The client factory function.</param>
     /// <returns>The updated <see cref="ChatClientBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="clientFactory"/> is <see langword="null"/>.</exception>
     public ChatClientBuilder Use(Func<IChatClient, IChatClient> clientFactory)
     {
         _ = Throw.IfNull(clientFactory);
@@ -71,6 +76,7 @@ public sealed class ChatClientBuilder
     /// <summary>Adds a factory for an intermediate chat client to the chat client pipeline.</summary>
     /// <param name="clientFactory">The client factory function.</param>
     /// <returns>The updated <see cref="ChatClientBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="clientFactory"/> is <see langword="null"/>.</exception>
     public ChatClientBuilder Use(Func<IChatClient, IServiceProvider, IChatClient> clientFactory)
     {
         _ = Throw.IfNull(clientFactory);
@@ -96,7 +102,7 @@ public sealed class ChatClientBuilder
     /// need to interact with the results of the operation, which will come from the inner client.
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="sharedFunc"/> is <see langword="null"/>.</exception>
-    public ChatClientBuilder Use(Func<IList<ChatMessage>, ChatOptions?, Func<IList<ChatMessage>, ChatOptions?, CancellationToken, Task>, CancellationToken, Task> sharedFunc)
+    public ChatClientBuilder Use(Func<IEnumerable<ChatMessage>, ChatOptions?, Func<IEnumerable<ChatMessage>, ChatOptions?, CancellationToken, Task>, CancellationToken, Task> sharedFunc)
     {
         _ = Throw.IfNull(sharedFunc);
 
@@ -130,8 +136,8 @@ public sealed class ChatClientBuilder
     /// </remarks>
     /// <exception cref="ArgumentNullException">Both <paramref name="getResponseFunc"/> and <paramref name="getStreamingResponseFunc"/> are <see langword="null"/>.</exception>
     public ChatClientBuilder Use(
-        Func<IList<ChatMessage>, ChatOptions?, IChatClient, CancellationToken, Task<ChatResponse>>? getResponseFunc,
-        Func<IList<ChatMessage>, ChatOptions?, IChatClient, CancellationToken, IAsyncEnumerable<ChatResponseUpdate>>? getStreamingResponseFunc)
+        Func<IEnumerable<ChatMessage>, ChatOptions?, IChatClient, CancellationToken, Task<ChatResponse>>? getResponseFunc,
+        Func<IEnumerable<ChatMessage>, ChatOptions?, IChatClient, CancellationToken, IAsyncEnumerable<ChatResponseUpdate>>? getStreamingResponseFunc)
     {
         AnonymousDelegatingChatClient.ThrowIfBothDelegatesNull(getResponseFunc, getStreamingResponseFunc);
 
