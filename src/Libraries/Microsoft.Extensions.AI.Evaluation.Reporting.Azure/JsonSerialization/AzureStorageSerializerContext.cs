@@ -28,4 +28,11 @@ internal sealed partial class AzureStorageSerializerContext : JsonSerializerCont
             {
                 WriteIndented = false,
             });
+
+    static AzureStorageSerializerContext()
+    {
+        Default.Options.TypeInfoResolverChain.Add(AIJsonUtilities.DefaultOptions.TypeInfoResolver);
+        Compact.Options.TypeInfoResolverChain.Add(AIJsonUtilities.DefaultOptions.TypeInfoResolver);
+    }
+
 }
