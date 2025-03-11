@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { makeStyles, Switch, tokens, Tree, TreeItem, TreeItemLayout, TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fluentui/react-components";
+import { makeStyles, tokens, Tree, TreeItem, TreeItemLayout, TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fluentui/react-components";
 import { useState, useCallback } from "react";
 import { DefaultRootNodeName, ScoreNode, ScoreNodeType, getPromptDetails } from "./Summary";
 import { PassFailBar } from "./PassFailBar";
@@ -9,7 +9,7 @@ import { MetricCardList } from "./MetricCard";
 import ReactMarkdown from "react-markdown";
 import { ErrorCircleRegular } from "@fluentui/react-icons";
 
-const ScenarioLevel = ({ node, parentPath, isOpen }: { node: ScoreNode, parentPath: string, isOpen: (path: string) => boolean }) => {
+const ScenarioLevel = ({ node, parentPath, isOpen, renderMarkdown }: { node: ScoreNode, parentPath: string, isOpen: (path: string) => boolean, renderMarkdown: boolean }) => {
     const path = `${parentPath}.${node.name}`;
     if (node.isLeafNode) {
         return <TreeItem itemType="branch" value={path}>
@@ -19,7 +19,7 @@ const ScenarioLevel = ({ node, parentPath, isOpen }: { node: ScoreNode, parentPa
             <Tree>
                 <TreeItem itemType="leaf" >
                     <TreeItemLayout>
-                        <ScoreDetail scenario={node.scenario!}/>
+                        <ScoreDetail scenario={node.scenario!} renderMarkdown={renderMarkdown}/>
                     </TreeItemLayout>
                 </TreeItem>
             </Tree>
@@ -31,14 +31,14 @@ const ScenarioLevel = ({ node, parentPath, isOpen }: { node: ScoreNode, parentPa
             </TreeItemLayout>
             <Tree>
                 {node.childNodes.map((n) => (
-                    <ScenarioLevel node={n} key={n.name} parentPath={path} isOpen={isOpen}/>
+                    <ScenarioLevel node={n} key={n.name} parentPath={path} isOpen={isOpen} renderMarkdown={renderMarkdown}/>
                 ))}
             </Tree>
         </TreeItem>;
     }
 };
 
-export const ScenarioGroup = ({ node }: { node: ScoreNode }) => {
+export const ScenarioGroup = ({ node, renderMarkdown }: { node: ScoreNode, renderMarkdown: boolean }) => {
     const [openItems, setOpenItems] = useState<Set<TreeItemValue>>(() => new Set());
     const handleOpenChange = useCallback((_: TreeOpenChangeEvent, data: TreeOpenChangeData) => {
         setOpenItems(data.openItems);
@@ -47,11 +47,11 @@ export const ScenarioGroup = ({ node }: { node: ScoreNode }) => {
 
     return (
         <Tree aria-label="Default" appearance="transparent" onOpenChange={handleOpenChange} defaultOpenItems={["." + DefaultRootNodeName]}>
-            <ScenarioLevel node={node} parentPath={""} isOpen={isOpen} />
+            <ScenarioLevel node={node} parentPath={""} isOpen={isOpen} renderMarkdown={renderMarkdown} />
         </Tree>);
 };
 
-export const ScoreDetail = ({ scenario }: { scenario: ScenarioRunResult }) => {
+export const ScoreDetail = ({ scenario, renderMarkdown }: { scenario: ScenarioRunResult, renderMarkdown: boolean }) => {
     const classes = useStyles();
 
     const failureMessages = [];
@@ -70,7 +70,7 @@ export const ScoreDetail = ({ scenario }: { scenario: ScenarioRunResult }) => {
     return (<div className={classes.iterationArea}>
         <MetricCardList scenario={scenario} />
         {failureMessages && failureMessages.length > 0 && <FailMessage messages={failureMessages} />}
-        <PromptDetails history={history} response={response} />
+        <PromptDetails history={history} response={response} renderMarkdown={renderMarkdown} />
     </div>);
 };
 
@@ -164,34 +164,24 @@ const ScoreNodeHeader = ({ item, showPrompt }: { item: ScoreNode, showPrompt?: b
     </div>);
 };
 
-export const PromptDetails = ({ history, response }: { history: string, response: string }) => {
+export const PromptDetails = ({ history, response, renderMarkdown }: { history: string, response: string, renderMarkdown: boolean }) => {
     const classes = useStyles();
-    const [renderPrompt, setRenderPrompt] = useState(true);
-    const onChangeRenderPrompt = useCallback((ev: React.ChangeEvent<HTMLInputElement>) => {
-        setRenderPrompt(ev.currentTarget.checked);
-    }, [setRenderPrompt]);
-    const [renderResponse, setRenderResponse] = useState(true);
-    const onChangeRenderResponse = useCallback((ev: React.ChangeEvent<HTMLInputElement>) => {
-        setRenderResponse(ev.currentTarget.checked);
-    }, [setRenderResponse]);
 
     return (<div>
         <div className={classes.promptTitleLine}>
             <h3 className={classes.promptTitle}>Prompt</h3>
-            <Switch checked={renderPrompt} onChange={onChangeRenderPrompt} label="Render Markdown" />
         </div>
 
         <div className={classes.promptBox}>
-            {renderPrompt ? <ReactMarkdown>{history}</ReactMarkdown> : <pre>{history}</pre>}
+            {renderMarkdown ? <ReactMarkdown>{history}</ReactMarkdown> : <pre>{history}</pre>}
         </div>
 
         <div className={classes.promptTitleLine}>
             <h3 className={classes.promptTitle}>Response</h3>
-            <Switch checked={renderResponse} onChange={onChangeRenderResponse} label="Render Markdown" />
         </div>
 
         <div className={classes.promptBox}>
-            {renderResponse ? <ReactMarkdown>{response}</ReactMarkdown> : <pre>{response}</pre>}
+            {renderMarkdown ? <ReactMarkdown>{response}</ReactMarkdown> : <pre>{response}</pre>}
         </div>
     </div>);
 };
