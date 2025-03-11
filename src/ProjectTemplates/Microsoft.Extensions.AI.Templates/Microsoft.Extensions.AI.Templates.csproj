@@ -7,7 +7,6 @@
     <PackageTags>dotnet-new;templates;ai</PackageTags>
 
     <Stage>preview</Stage>
-    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
     <Workstream>AI</Workstream>
     <MinCodeCoverage>0</MinCodeCoverage>
     <MinMutationScore>0</MinMutationScore>
