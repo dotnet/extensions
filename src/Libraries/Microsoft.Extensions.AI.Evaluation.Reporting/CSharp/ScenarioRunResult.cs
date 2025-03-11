@@ -86,7 +86,7 @@ public sealed class ScenarioRunResult(
     /// <summary>
     /// Gets or sets the Version of the format used to persist this scenario run. You should not modify this value from the default.
     /// </summary>
-    public int FormatVersion { get; init; } = formatVersion;
+    public int FormatVersion { get; set; } = formatVersion;
 
     /// <summary>
     /// Gets or sets the <see cref="ScenarioRun.ScenarioName"/>.
