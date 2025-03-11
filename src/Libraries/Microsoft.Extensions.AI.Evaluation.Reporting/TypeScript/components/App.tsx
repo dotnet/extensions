@@ -17,7 +17,9 @@ type AppProperties = {
 const useStyles = makeStyles({
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, backgroundColor: 'white', zIndex: 1 },
   footerText: { fontSize: '0.8rem', marginTop: '2rem' },
-  closeButton: { position: 'absolute', top: '1rem', right: '1rem', cursor: 'pointer', fontSize: '1.5rem' }
+  closeButton: { position: 'absolute', top: '1.5rem', right: '1rem', cursor: 'pointer', fontSize: '2rem' },
+  switchLabel: { fontSize: '1rem', paddingTop: '1rem' },
+  drawerBody: { paddingTop: '1rem' },
 });
 
 function App({ dataset, tree }: AppProperties) {
@@ -45,8 +47,8 @@ function App({ dataset, tree }: AppProperties) {
           <DrawerHeaderTitle>Settings</DrawerHeaderTitle>
           <span className={classes.closeButton} onClick={closeSettings}>&times;</span>
         </DrawerHeader>
-        <DrawerBody>
-          <Switch checked={renderMarkdown} onChange={toggleRenderMarkdown} label='Render markdown for conversations' />
+        <DrawerBody className={classes.drawerBody}>
+          <Switch checked={renderMarkdown} onChange={toggleRenderMarkdown} label={<span className={classes.switchLabel}>Render markdown for conversations</span>} />
         </DrawerBody>
       </Drawer>
     </>
