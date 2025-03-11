@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Diagnostics.Buffering;
 using Microsoft.Extensions.Logging;
@@ -21,26 +22,50 @@ internal sealed class HttpRequestBuffer : ILoggingBuffer
     private readonly ConcurrentQueue<SerializedLogRecord> _buffer;
     private readonly TimeProvider _timeProvider = TimeProvider.System;
     private readonly IBufferedLogger _bufferedLogger;
+    private readonly LogBufferingFilterRuleSelector _ruleSelector;
 
     private DateTimeOffset _lastFlushTimestamp;
     private int _bufferSize;
+    private bool _disposed;
+    private readonly IDisposable? _optionsChangeTokenRegistration;
+    private LogBufferingFilterRule[] _lastKnownGoodFilterRules;
+    private readonly string _category;
 
     public HttpRequestBuffer(IBufferedLogger bufferedLogger,
+        string category,
+        LogBufferingFilterRuleSelector ruleSelector,
         IOptionsMonitor<HttpRequestLogBufferingOptions> options,
         IOptionsMonitor<GlobalLogBufferingOptions> globalOptions)
     {
         _options = options;
         _globalOptions = globalOptions;
         _bufferedLogger = bufferedLogger;
+        _category = Throw.IfNullOrEmpty(category);
+        _ruleSelector = ruleSelector;
         _buffer = new ConcurrentQueue<SerializedLogRecord>();
+        _lastKnownGoodFilterRules = LogBufferingFilterRuleSelector.SelectByCategory(_options.CurrentValue.Rules.ToArray(), _category);
+        _optionsChangeTokenRegistration = options.OnChange(OnOptionsChanged);
+    }
+    
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+
+        _optionsChangeTokenRegistration?.Dispose();
     }
 
+    ///<inheritdoc/>
     public bool TryEnqueue<TState>(LogEntry<TState> logEntry)
     {
         SerializedLogRecord serializedLogRecord = default;
         if (logEntry.State is ModernTagJoiner modernTagJoiner)
         {
-            if (!IsEnabled(logEntry.Category, logEntry.LogLevel, logEntry.EventId, modernTagJoiner))
+            if (!IsEnabled(logEntry.LogLevel, logEntry.EventId, modernTagJoiner))
             {
                 return false;
             }
@@ -50,7 +75,7 @@ internal sealed class HttpRequestBuffer : ILoggingBuffer
         }
         else if (logEntry.State is LegacyTagJoiner legacyTagJoiner)
         {
-            if (!IsEnabled(logEntry.Category, logEntry.LogLevel, logEntry.EventId, legacyTagJoiner))
+            if (!IsEnabled(logEntry.LogLevel, logEntry.EventId, legacyTagJoiner))
             {
                 return false;
             }
@@ -71,18 +96,26 @@ internal sealed class HttpRequestBuffer : ILoggingBuffer
         _buffer.Enqueue(serializedLogRecord);
         _ = Interlocked.Add(ref _bufferSize, serializedLogRecord.SizeInBytes);
 
-        Trim();
+        TrimExcessRecords();
 
         return true;
     }
 
+    ///<inheritdoc/>
     public void Flush()
     {
         _lastFlushTimestamp = _timeProvider.GetUtcNow();
 
         SerializedLogRecord[] bufferedRecords = _buffer.ToArray();
 
-        _buffer.Clear();
+        // Clear() and Interlocked.Exchange operations are atomic on their own.
+        // But together they are not atomic, therefore have to take a lock.
+        // This is need for an edge case when AutoFlushDuration is close to 0, e.g. buffering hardly pauses.
+        lock (_buffer)
+        {
+            _buffer.Clear();
+            Interlocked.Exchange(ref _bufferSize, 0);
+        }
 
         var deserializedLogRecords = new List<DeserializedLogRecord>(bufferedRecords.Length);
         foreach (var bufferedRecord in bufferedRecords)
@@ -99,22 +132,35 @@ internal sealed class HttpRequestBuffer : ILoggingBuffer
 
         _bufferedLogger.LogRecords(deserializedLogRecords);
     }
+    
+    private void OnOptionsChanged(HttpRequestLogBufferingOptions? updatedOptions)
+    {
+        if (updatedOptions is null)
+        {
+            _lastKnownGoodFilterRules = [];
+        }
+        else
+        {
+            _lastKnownGoodFilterRules = LogBufferingFilterRuleSelector.SelectByCategory(updatedOptions.Rules.ToArray(), _category);
+        }
 
-    public bool IsEnabled(string category, LogLevel logLevel, EventId eventId, IReadOnlyList<KeyValuePair<string, object?>> attributes)
+        _ruleSelector.InvalidateCache();
+    }
+
+    private bool IsEnabled(LogLevel logLevel, EventId eventId, IReadOnlyList<KeyValuePair<string, object?>> attributes)
     {
         if (_timeProvider.GetUtcNow() < _lastFlushTimestamp + _globalOptions.CurrentValue.AutoFlushDuration)
         {
             return false;
         }
 
-        LogBufferingFilterRuleSelector.Select(_options.CurrentValue.Rules, category, logLevel, eventId, attributes, out LogBufferingFilterRule? rule);
-
-        return rule is not null;
+        return _ruleSelector.Select(_options.CurrentValue.Rules, logLevel, eventId, attributes) is not null;
     }
 
-    private void Trim()
+    private void TrimExcessRecords()
     {
-        while (_bufferSize > _options.CurrentValue.MaxPerRequestBufferSizeInBytes && _buffer.TryDequeue(out var item))
+        while (_bufferSize > _options.CurrentValue.MaxPerRequestBufferSizeInBytes &&
+               _buffer.TryDequeue(out var item))
         {
             _ = Interlocked.Add(ref _bufferSize, -item.SizeInBytes);
         }

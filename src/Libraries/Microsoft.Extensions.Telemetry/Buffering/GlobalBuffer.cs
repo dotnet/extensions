@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -14,30 +15,59 @@ using static Microsoft.Extensions.Logging.ExtendedLogger;
 
 namespace Microsoft.Extensions.Diagnostics.Buffering;
 
-internal sealed class GlobalBuffer : ILoggingBuffer
+internal sealed class GlobalBuffer : ILoggingBuffer, IDisposable
 {
     private readonly IOptionsMonitor<GlobalLogBufferingOptions> _options;
     private readonly ConcurrentQueue<SerializedLogRecord> _buffer;
     private readonly IBufferedLogger _bufferedLogger;
     private readonly TimeProvider _timeProvider;
+    private readonly LogBufferingFilterRuleSelector _ruleSelector;
+    private readonly IDisposable? _optionsChangeTokenRegistration;
+    private readonly string _category;
+
     private DateTimeOffset _lastFlushTimestamp;
-
     private int _bufferSize;
+    private LogBufferingFilterRule[] _lastKnownGoodFilterRules;
 
-    public GlobalBuffer(IBufferedLogger bufferedLogger, IOptionsMonitor<GlobalLogBufferingOptions> options, TimeProvider timeProvider)
+    private volatile bool _disposed;
+
+    public GlobalBuffer(
+        IBufferedLogger bufferedLogger,
+        string category,
+        LogBufferingFilterRuleSelector ruleSelector,
+        IOptionsMonitor<GlobalLogBufferingOptions> options,
+        TimeProvider timeProvider)
     {
-        _options = options;
+        _options = Throw.IfNull(options);
         _timeProvider = timeProvider;
         _buffer = new ConcurrentQueue<SerializedLogRecord>();
         _bufferedLogger = bufferedLogger;
+        _category = Throw.IfNullOrEmpty(category);
+        _ruleSelector = Throw.IfNull(ruleSelector);
+        _lastKnownGoodFilterRules = LogBufferingFilterRuleSelector.SelectByCategory(_options.CurrentValue.Rules.ToArray(), _category);
+        _optionsChangeTokenRegistration = options.OnChange(OnOptionsChanged);
     }
 
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+
+        _optionsChangeTokenRegistration?.Dispose();
+    }
+    
+
+    ///<inheritdoc/>
     public bool TryEnqueue<TState>(LogEntry<TState> logEntry)
     {
         SerializedLogRecord serializedLogRecord = default;
         if (logEntry.State is ModernTagJoiner modernTagJoiner)
         {
-            if (!IsEnabled(logEntry.Category, logEntry.LogLevel, logEntry.EventId, modernTagJoiner))
+            if (!IsEnabled(logEntry.LogLevel, logEntry.EventId, modernTagJoiner))
             {
                 return false;
             }
@@ -47,7 +77,7 @@ internal sealed class GlobalBuffer : ILoggingBuffer
         }
         else if (logEntry.State is LegacyTagJoiner legacyTagJoiner)
         {
-            if (!IsEnabled(logEntry.Category, logEntry.LogLevel, logEntry.EventId, legacyTagJoiner))
+            if (!IsEnabled(logEntry.LogLevel, logEntry.EventId, legacyTagJoiner))
             {
                 return false;
             }
@@ -68,20 +98,29 @@ internal sealed class GlobalBuffer : ILoggingBuffer
         _buffer.Enqueue(serializedLogRecord);
         _ = Interlocked.Add(ref _bufferSize, serializedLogRecord.SizeInBytes);
 
-        Trim();
+        TrimExcessRecords();
 
         return true;
     }
 
+    ///<inheritdoc/>
     public void Flush()
     {
         _lastFlushTimestamp = _timeProvider.GetUtcNow();
 
         SerializedLogRecord[] bufferedRecords = _buffer.ToArray();
-        _buffer.Clear();
+        
+        // Clear() and Interlocked.Exchange operations are atomic on their own.
+        // But together they are not atomic, therefore have to take a lock.
+        // This is need for an edge case when AutoFlushDuration is close to 0, e.g. buffering hardly pauses.
+        lock (_buffer)
+        {
+            _buffer.Clear();
+            Interlocked.Exchange(ref _bufferSize, 0);
+        }
 
         var deserializedLogRecords = new List<DeserializedLogRecord>(bufferedRecords.Length);
-        foreach (var bufferedRecord in bufferedRecords)
+        foreach (SerializedLogRecord bufferedRecord in bufferedRecords)
         {
             deserializedLogRecords.Add(
                 new DeserializedLogRecord(
@@ -94,29 +133,39 @@ internal sealed class GlobalBuffer : ILoggingBuffer
         }
 
         _bufferedLogger.LogRecords(deserializedLogRecords);
-
-        // TO DO: adjust _buffersize after flushing.
     }
 
-    private void Trim()
+    private void OnOptionsChanged(GlobalLogBufferingOptions? updatedOptions)
     {
-        while (_bufferSize > _options.CurrentValue.MaxBufferSizeInBytes && _buffer.TryDequeue(out var item))
+        if (updatedOptions is null)
         {
-            _ = Interlocked.Add(ref _bufferSize, -item.SizeInBytes);
+            _lastKnownGoodFilterRules = [];
         }
-    }
+        else
+        {
+            _lastKnownGoodFilterRules = LogBufferingFilterRuleSelector.SelectByCategory(updatedOptions.Rules.ToArray(), _category);
+        }
 
-    private bool IsEnabled(string category, LogLevel logLevel, EventId eventId, IReadOnlyList<KeyValuePair<string, object?>> attributes)
+        _ruleSelector.InvalidateCache();
+    }
+    
+    private bool IsEnabled(LogLevel logLevel, EventId eventId, IReadOnlyList<KeyValuePair<string, object?>> attributes)
     {
         if (_timeProvider.GetUtcNow() < _lastFlushTimestamp + _options.CurrentValue.AutoFlushDuration)
         {
             return false;
         }
 
-        LogBufferingFilterRuleSelector.Select(_options.CurrentValue.Rules, category, logLevel, eventId, attributes, out LogBufferingFilterRule? rule);
+        return _ruleSelector.Select(_lastKnownGoodFilterRules, logLevel, eventId, attributes) is not null;
+    }
 
-        return rule is not null;
+    private void TrimExcessRecords()
+    {
+        while (_bufferSize > _options.CurrentValue.MaxBufferSizeInBytes &&
+               _buffer.TryDequeue(out SerializedLogRecord item))
+        {
+            _ = Interlocked.Add(ref _bufferSize, -item.SizeInBytes);
+        }
     }
 }
-
 #endif

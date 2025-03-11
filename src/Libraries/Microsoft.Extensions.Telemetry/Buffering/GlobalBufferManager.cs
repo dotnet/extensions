@@ -13,17 +13,24 @@ internal sealed class GlobalBufferManager : GlobalLogBuffer
 {
     internal readonly ConcurrentDictionary<string, ILoggingBuffer> Buffers = [];
     private readonly IOptionsMonitor<GlobalLogBufferingOptions> _options;
-    private readonly TimeProvider _timeProvider = TimeProvider.System;
+    private readonly TimeProvider _timeProvider;
+    private readonly LogBufferingFilterRuleSelector _ruleSelector;
 
-    public GlobalBufferManager(IOptionsMonitor<GlobalLogBufferingOptions> options)
+    public GlobalBufferManager(
+        LogBufferingFilterRuleSelector ruleSelector,
+        IOptionsMonitor<GlobalLogBufferingOptions> options)
+        : this(ruleSelector, options, TimeProvider.System)
     {
-        _options = options;
     }
 
-    internal GlobalBufferManager(IOptionsMonitor<GlobalLogBufferingOptions> options, TimeProvider timeProvider)
+    internal GlobalBufferManager(
+        LogBufferingFilterRuleSelector ruleSelector,
+        IOptionsMonitor<GlobalLogBufferingOptions> options,
+        TimeProvider timeProvider)
     {
-        _timeProvider = timeProvider;
+        _ruleSelector = ruleSelector;
         _options = options;
+        _timeProvider = timeProvider;
     }
 
     public override void Flush()
@@ -36,9 +43,14 @@ internal sealed class GlobalBufferManager : GlobalLogBuffer
 
     public override bool TryEnqueue<TState>(IBufferedLogger bufferedLogger, in LogEntry<TState> logEntry)
     {
-        var buffer = Buffers.GetOrAdd(logEntry.Category, _ => new GlobalBuffer(bufferedLogger, _options, _timeProvider));
+        string category = logEntry.Category;
+        ILoggingBuffer buffer = Buffers.GetOrAdd(category, _ => new GlobalBuffer(
+            bufferedLogger,
+            category,
+            _ruleSelector,
+            _options,
+            _timeProvider));
         return buffer.TryEnqueue(logEntry);
     }
 }
-
 #endif

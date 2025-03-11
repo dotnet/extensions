@@ -48,7 +48,7 @@ public class LogBufferingFilterRule
     public LogLevel? LogLevel { get; }
 
     /// <summary>
-    /// Gets the evnet ID of messages where this rule applies to.
+    /// Gets the event ID of messages where this rule applies to.
     /// </summary>
     public int? EventId { get; }
 
@@ -58,7 +58,7 @@ public class LogBufferingFilterRule
     public string? EventName { get; }
 
     /// <summary>
-    /// Gets the log state attributes of messages where this rules applies to.
+    /// Gets the log state attributes of messages where this rule applies to.
     /// </summary>
     public IReadOnlyList<KeyValuePair<string, object?>>? Attributes { get; }
 }

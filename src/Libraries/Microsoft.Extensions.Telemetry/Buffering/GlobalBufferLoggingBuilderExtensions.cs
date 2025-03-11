@@ -8,7 +8,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.Buffering;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
@@ -36,6 +35,7 @@ public static class GlobalBufferLoggingBuilderExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configuration);
 
+        _ = builder.Services.AddOptionsWithValidateOnStart<GlobalLogBufferingOptions, GlobalLogBufferingOptionsValidator>();
         _ = builder.Services.AddSingleton<IConfigureOptions<GlobalLogBufferingOptions>>(new GlobalLogBufferingConfigureOptions(configuration));
 
         return builder.AddGlobalBufferManager();
@@ -56,6 +56,7 @@ public static class GlobalBufferLoggingBuilderExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);
 
+        _ = builder.Services.AddOptionsWithValidateOnStart<GlobalLogBufferingOptions, GlobalLogBufferingOptionsValidator>();
         _ = builder.Services.Configure(configure);
 
         return builder.AddGlobalBufferManager();
@@ -75,15 +76,17 @@ public static class GlobalBufferLoggingBuilderExtensions
     {
         _ = Throw.IfNull(builder);
 
+        _ = builder.Services.AddOptionsWithValidateOnStart<GlobalLogBufferingOptions, GlobalLogBufferingOptionsValidator>();
         _ = builder.Services.Configure<GlobalLogBufferingOptions>(options => options.Rules.Add(new LogBufferingFilterRule(logLevel: logLevel)));
 
         return builder.AddGlobalBufferManager();
     }
 
-    internal static ILoggingBuilder AddGlobalBufferManager(this ILoggingBuilder builder)
+    private static ILoggingBuilder AddGlobalBufferManager(this ILoggingBuilder builder)
     {
         _ = builder.Services.AddExtendedLoggerFeactory();
 
+        builder.Services.TryAddSingleton<LogBufferingFilterRuleSelector>();
         builder.Services.TryAddSingleton<GlobalBufferManager>();
         builder.Services.TryAddSingleton<GlobalLogBuffer>(static sp => sp.GetRequiredService<GlobalBufferManager>());
         builder.Services.TryAddSingleton<LogBuffer>(static sp => sp.GetRequiredService<GlobalBufferManager>());

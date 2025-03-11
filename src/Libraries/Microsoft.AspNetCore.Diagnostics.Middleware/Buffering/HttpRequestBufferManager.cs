@@ -16,15 +16,18 @@ internal sealed class HttpRequestBufferManager : PerRequestLogBuffer
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IOptionsMonitor<HttpRequestLogBufferingOptions> _requestOptions;
     private readonly IOptionsMonitor<GlobalLogBufferingOptions> _globalOptions;
+    private readonly LogBufferingFilterRuleSelector _ruleSelector;
 
     public HttpRequestBufferManager(
         GlobalLogBuffer globalBuffer,
         IHttpContextAccessor httpContextAccessor,
+        LogBufferingFilterRuleSelector ruleSelector,
         IOptionsMonitor<HttpRequestLogBufferingOptions> requestOptions,
         IOptionsMonitor<GlobalLogBufferingOptions> globalOptions)
     {
         _globalBuffer = globalBuffer;
         _httpContextAccessor = httpContextAccessor;
+        _ruleSelector = ruleSelector;
         _requestOptions = requestOptions;
         _globalOptions = globalOptions;
     }
@@ -43,8 +46,10 @@ internal sealed class HttpRequestBufferManager : PerRequestLogBuffer
             return _globalBuffer.TryEnqueue(bufferedLogger, logEntry);
         }
 
+        string category = logEntry.Category;
         HttpRequestBufferHolder? bufferHolder = httpContext.RequestServices.GetService<HttpRequestBufferHolder>();
-        ILoggingBuffer? buffer = bufferHolder?.GetOrAdd(logEntry.Category, _ => new HttpRequestBuffer(bufferedLogger, _requestOptions, _globalOptions)!);
+        ILoggingBuffer? buffer = bufferHolder?.GetOrAdd(category, _ =>
+            new HttpRequestBuffer(bufferedLogger, category, _ruleSelector, _requestOptions, _globalOptions)!);
 
         if (buffer is null)
         {
@@ -54,5 +59,4 @@ internal sealed class HttpRequestBufferManager : PerRequestLogBuffer
         return buffer.TryEnqueue(logEntry);
     }
 }
-
 #endif

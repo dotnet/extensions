@@ -5,11 +5,11 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.Buffering;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Microsoft.Extensions.Logging.Test;
+namespace Microsoft.Extensions.Diagnostics.Buffering.Test;
 
 public class GlobalBufferLoggerBuilderExtensionsTests
 {
@@ -45,7 +45,7 @@ public class GlobalBufferLoggerBuilderExtensionsTests
         List<LogBufferingFilterRule> expectedData =
         [
             new LogBufferingFilterRule("Program.MyLogger",  LogLevel.Information, 1, "number one", [new("region", "westus2"), new ("priority", 1)]),
-            new LogBufferingFilterRule(logLevel : LogLevel.Information),
+            new LogBufferingFilterRule(logLevel: LogLevel.Information),
         ];
         ConfigurationBuilder configBuilder = new ConfigurationBuilder();
         configBuilder.AddJsonFile("appsettings.json");

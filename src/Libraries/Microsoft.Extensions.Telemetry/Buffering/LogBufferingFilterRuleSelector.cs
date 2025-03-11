@@ -7,6 +7,7 @@
 #pragma warning disable S2302 // "nameof" should be used
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
@@ -16,96 +17,66 @@ namespace Microsoft.Extensions.Diagnostics.Buffering;
 /// <summary>
 /// Selects the best rule from the list of rules for a given log event.
 /// </summary>
-internal static class LogBufferingFilterRuleSelector
+internal sealed class LogBufferingFilterRuleSelector
 {
-    private static readonly IEqualityComparer<KeyValuePair<string, object?>> _stringifyComparer = new StringifyComprarer();
+    private readonly ConcurrentDictionary<(LogLevel, EventId), List<LogBufferingFilterRule>> _ruleCache = new();
 
-    /// <summary>
-    /// Selects the best rule from the list of rules for a given log event.
-    /// </summary>
-    /// <param name="rules">The list of rules to select from.</param>
-    /// <param name="category">The category of the log event.</param>
-    /// <param name="logLevel">The log level of the log event.</param>
-    /// <param name="eventId">The event id of the log event.</param>
-    /// <param name="attributes">The log state attributes of the log event.</param>
-    /// <param name="bestRule">The best rule that matches the log event.</param>
-    public static void Select(IList<LogBufferingFilterRule> rules, string category, LogLevel logLevel,
-        EventId eventId, IReadOnlyList<KeyValuePair<string, object?>>? attributes, out LogBufferingFilterRule? bestRule)
+    public void InvalidateCache()
     {
-        bestRule = null;
-
-        // TO DO: update the comment and logic 
-        // Filter rule selection:
-        // 1. Select rules with longest matching categories
-        // 2. If there is nothing matched by category take all rules without category
-        // 3. If there is only one rule use it
-        // 4. If there are multiple rules use last
-
-        LogBufferingFilterRule? current = null;
-        if (rules is not null)
-        {
-            foreach (LogBufferingFilterRule rule in rules)
-            {
-                if (IsBetter(rule, current, category, logLevel, eventId, attributes))
-                {
-                    current = rule;
-                }
-            }
-        }
-
-        if (current != null)
-        {
-            bestRule = current;
-        }
+        _ruleCache.Clear();
     }
 
-    private static bool IsBetter(LogBufferingFilterRule rule, LogBufferingFilterRule? current, string category,
-        LogLevel logLevel, EventId eventId, IReadOnlyList<KeyValuePair<string, object?>>? attributes)
-    {
-        // Skip rules with inapplicable log level
-        if (rule.LogLevel != null && rule.LogLevel < logLevel)
-        {
-            return false;
-        }
+    private static readonly IEqualityComparer<KeyValuePair<string, object?>> _stringifyComparer = new StringifyComprarer();
 
-        // Skip rules with inapplicable event id
-        if (rule.EventId != null && rule.EventId != eventId)
-        {
-            return false;
-        }
+    public static LogBufferingFilterRule[] SelectByCategory(IList<LogBufferingFilterRule> rules, string category)
+    {
+        List<LogBufferingFilterRule> result = [];
 
         // Skip rules with inapplicable category
-        string? categoryName = rule.CategoryName;
-        if (categoryName != null)
+        foreach (LogBufferingFilterRule rule in rules)
         {
-            const char WildcardChar = '*';
-
-            int wildcardIndex = categoryName.IndexOf(WildcardChar);
-            if (wildcardIndex != -1 &&
-                categoryName.IndexOf(WildcardChar, wildcardIndex + 1) != -1)
+            if (IsMatch(rule, category))
             {
-                throw new InvalidOperationException("Only one wildcard character is allowed in category name.");
-            }
-
-            ReadOnlySpan<char> prefix, suffix;
-            if (wildcardIndex == -1)
-            {
-                prefix = categoryName.AsSpan();
-                suffix = default;
-            }
-            else
-            {
-                prefix = categoryName.AsSpan(0, wildcardIndex);
-                suffix = categoryName.AsSpan(wildcardIndex + 1);
-            }
-
-            if (!category.AsSpan().StartsWith(prefix, StringComparison.OrdinalIgnoreCase) ||
-                !category.AsSpan().EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
+                result.Add(rule);
             }
         }
 
+        return result.ToArray();
+    }
+
+    public LogBufferingFilterRule? Select(IList<LogBufferingFilterRule> rules,
+        LogLevel logLevel,
+        EventId eventId,
+        IReadOnlyList<KeyValuePair<string, object?>>? attributes)
+    {
+        List<LogBufferingFilterRule> ruleCandidates = _ruleCache.GetOrAdd((logLevel, eventId), _ =>
+        {
+            List<LogBufferingFilterRule> candidates = new(rules.Count);
+            foreach (LogBufferingFilterRule rule in rules)
+            {
+                if (IsMatch(rule, logLevel, eventId))
+                {
+                    candidates.Add(rule);
+                }
+            }
+
+            return candidates;
+        });
+
+        LogBufferingFilterRule? currentBest = null;
+        foreach (LogBufferingFilterRule ruleCandidate in ruleCandidates)
+        {
+            if (IsAttributesMatch(ruleCandidate, attributes) && IsBetter(currentBest, ruleCandidate))
+            {
+                currentBest = ruleCandidate;
+            }
+        }
+
+        return currentBest;
+    }
+
+    private static bool IsAttributesMatch(LogBufferingFilterRule rule, IReadOnlyList<KeyValuePair<string, object?>>? attributes)
+    {
         // Skip rules with inapplicable attributes
         if (rule.Attributes?.Count > 0 && attributes?.Count > 0)
         {
@@ -118,55 +89,78 @@ internal static class LogBufferingFilterRuleSelector
             }
         }
 
-        // Decide whose category is better - rule vs current
-        if (current?.CategoryName != null)
-        {
-            if (rule.CategoryName == null)
-            {
-                return false;
-            }
+        return true;
+    }
 
-            if (current.CategoryName.Length > rule.CategoryName.Length)
-            {
-                return false;
-            }
-        }
-
-        // Decide whose log level is better - rule vs current
-        if (current?.LogLevel != null)
-        {
-            if (rule.LogLevel == null)
-            {
-                return false;
-            }
-
-            if (current.LogLevel < rule.LogLevel)
-            {
-                return false;
-            }
-        }
-
-        // Decide whose event id is better - rule vs current
-        if (rule.EventId is null)
-        {
-            if (current?.EventId != null)
-            {
-                return false;
-            }
-        }
-
+    private static bool IsBetter(LogBufferingFilterRule? currentBest, LogBufferingFilterRule ruleCandidate)
+    {
         // Decide whose attributes are better - rule vs current
-        if (current?.Attributes?.Count > 0)
+        if (currentBest?.Attributes?.Count > 0)
         {
-            if (rule.Attributes is null || rule.Attributes.Count == 0)
+            if (ruleCandidate.Attributes is null || ruleCandidate.Attributes.Count == 0)
             {
                 return false;
             }
 
-            if (rule.Attributes.Count < current.Attributes.Count)
+            if (ruleCandidate.Attributes.Count < currentBest.Attributes.Count)
             {
                 return false;
             }
+        }
+
+        return true;
+    }
+
+    private static bool IsMatch(LogBufferingFilterRule rule, string category)
+    {
+        string? ruleCategory = rule.CategoryName;
+        if (ruleCategory is null)
+        {
+            return true;
+        }
+
+        const char WildcardChar = '*';
+
+        int wildcardIndex = ruleCategory.IndexOf(WildcardChar);
+        if (wildcardIndex >= 0 &&
+            ruleCategory.IndexOf(WildcardChar, wildcardIndex + 1) >= 0)
+        {
+            throw new InvalidOperationException("Only one wildcard character is allowed in category name.");
+        }
+
+        ReadOnlySpan<char> prefix, suffix;
+        if (wildcardIndex == -1)
+        {
+            prefix = ruleCategory.AsSpan();
+            suffix = default;
+        }
+        else
+        {
+            prefix = ruleCategory.AsSpan(0, wildcardIndex);
+            suffix = ruleCategory.AsSpan(wildcardIndex + 1);
+        }
+
+        if (!category.AsSpan().StartsWith(prefix, StringComparison.OrdinalIgnoreCase) ||
+            !category.AsSpan().EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private static bool IsMatch(LogBufferingFilterRule rule, LogLevel logLevel, EventId eventId)
+    {
+        // Skip rules with inapplicable log level
+        if (rule.LogLevel is not null && rule.LogLevel < logLevel)
+        {
+            return false;
+        }
+
+        // Skip rules with inapplicable event id
+        if (rule.EventId is not null && rule.EventId != eventId)
+        {
+            return false;
         }
 
         return true;
