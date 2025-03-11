@@ -10,7 +10,7 @@ public class SemanticSearch(
     public async Task<IReadOnlyList<SemanticSearchRecord>> SearchAsync(string text, string? filenameFilter, int maxResults)
     {
         var queryEmbedding = await embeddingGenerator.GenerateEmbeddingVectorAsync(text);
-        var vectorCollection = vectorStore.GetCollection<string, SemanticSearchRecord>("data-ChatWithCustomData.Web-CSharp-ingestion");
+        var vectorCollection = vectorStore.GetCollection<Guid, SemanticSearchRecord>("data-ChatWithCustomData.Web-CSharp-ingestion");
         var filter = filenameFilter is { Length: > 0 }
             ? new VectorSearchFilter().EqualTo(nameof(SemanticSearchRecord.FileName), filenameFilter)
             : null;

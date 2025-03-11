@@ -19,7 +19,7 @@ public class DataIngestor(
 
     public async Task IngestDataAsync(IIngestionSource source)
     {
-        var vectorCollection = vectorStore.GetCollection<string, SemanticSearchRecord>("data-ChatWithCustomData.Web-CSharp-ingestion");
+        var vectorCollection = vectorStore.GetCollection<Guid, SemanticSearchRecord>("data-ChatWithCustomData.Web-CSharp-ingestion");
         await vectorCollection.CreateCollectionIfNotExistsAsync();
 
         var documentsForSource = ingestionCacheDb.Documents
@@ -44,7 +44,7 @@ public class DataIngestor(
             {
                 await vectorCollection.DeleteBatchAsync(modifiedDoc.Records.Select(r => r.Id));
             }
-            
+
             var newRecords = await source.CreateRecordsForDocumentAsync(embeddingGenerator, modifiedDoc.Id);
             await foreach (var id in vectorCollection.UpsertBatchAsync(newRecords)) { }
 
