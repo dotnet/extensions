@@ -49,7 +49,7 @@ const useCardStyles = makeStyles({
         border: 'none'
     },
     metricText: { fontSize: '1rem', fontWeight: 'normal' },
-    valueText: { fontSize: '1.5rem', fontWeight: 'bold' },
+    valueText: { fontSize: '1rem', fontWeight: 'bold' },
     scoreFgDefault: { color: tokens.colorNeutralStrokeAccessible },
     scoreFg0: { color: tokens.colorStatusDangerForeground1 },
     scoreFg1: { color: tokens.colorStatusDangerForeground2 },
@@ -102,7 +102,7 @@ const useCardColors = (interpretation?: EvaluationMetricInterpretation) => {
     return { fg, bg };
 };
 
-type MetricType = StringMetric | NumericMetric | BooleanMetric | MetricWithNoValue;
+export type MetricType = StringMetric | NumericMetric | BooleanMetric | MetricWithNoValue;
 
 export const MetricCard = ({ 
     metric, 
@@ -159,9 +159,3 @@ export const MetricCard = ({
         </div>
     );
 };
-
-const useDetailStyles = makeStyles({
-    diagError: { fontStyle: tokens.fontFamilyMonospace, color: tokens.colorStatusDangerForeground2 },
-    diagWarn: { fontStyle: tokens.fontFamilyMonospace, color: tokens.colorStatusWarningForeground2 },
-    diagInfo: { fontStyle: tokens.fontFamilyMonospace },
-});

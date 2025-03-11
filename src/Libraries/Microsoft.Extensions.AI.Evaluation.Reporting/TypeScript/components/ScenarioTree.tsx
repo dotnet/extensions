@@ -5,7 +5,7 @@ import { makeStyles, tokens, Tree, TreeItem, TreeItemLayout, TreeItemValue, Tree
 import { useState, useCallback } from "react";
 import { DefaultRootNodeName, ScoreNode, ScoreNodeType, getPromptDetails } from "./Summary";
 import { PassFailBar } from "./PassFailBar";
-import { MetricCardList } from "./MetricCard";
+import { MetricCardList, type MetricType } from "./MetricCard";
 import ReactMarkdown from "react-markdown";
 import { DismissCircle16Regular, Info16Regular, Warning16Regular } from "@fluentui/react-icons";
 import { ChevronDown12Regular, ChevronRight12Regular } from '@fluentui/react-icons';
@@ -176,9 +176,7 @@ const DiagnosticsContent = ({ diagnostics }: { diagnostics: EvaluationDiagnostic
 const useStyles = makeStyles({
     headerContainer: { display: 'flex', alignItems: 'center', flexDirection: 'row', gap: '0.5rem' },
     promptHint: { fontFamily: tokens.fontFamilyMonospace, opacity: 0.6, fontSize: '0.7rem', paddingLeft: '1rem', whiteSpace: 'nowrap' },
-    score: { 
-        fontSize: tokens.fontSizeBase100,
-    },
+    score: { fontSize: tokens.fontSizeBase200 },
     passFailBadge: {
         display: 'flex',
         flexDirection: 'row',
@@ -190,13 +188,14 @@ const useStyles = makeStyles({
     scenarioLabel: { 
         whiteSpace: 'nowrap',
         fontWeight: '500',
+        fontSize: tokens.fontSizeBase300,
     },
     iterationArea: {
         marginTop: '1rem',
         marginBottom: '1rem',
     },
     section: {
-        marginTop: '2rem',
+        marginTop: '1rem',
     },
     sectionHeader: {
         display: 'flex',
@@ -208,12 +207,12 @@ const useStyles = makeStyles({
     sectionHeaderText: {
         margin: 0,
         marginLeft: '0.5rem',
-        fontSize: '1.25rem',
-        fontWeight: 'bold',
+        fontSize: tokens.fontSizeBase300,
+        fontWeight: '500',
     },
     sectionSubHeader: {
-        fontSize: '0.875rem',
-        fontWeight: 'bold',
+        fontSize: tokens.fontSizeBase300,
+        fontWeight: '500',
         marginBottom: '0.5rem',
     },
     sectionContent: {
