@@ -51,7 +51,7 @@ public class ChatResponseUpdateExtensionsTests
 
         Assert.Equal("123", response.ChatThreadId);
 
-        ChatMessage message = response.Messages.Last();
+        ChatMessage message = response.Messages.Single();
         Assert.Equal(new ChatRole("human"), message.Role);
         Assert.Equal("Someone", message.AuthorName);
         Assert.Null(message.AdditionalProperties);

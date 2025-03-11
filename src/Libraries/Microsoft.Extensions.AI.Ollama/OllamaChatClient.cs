@@ -132,6 +132,9 @@ public sealed class OllamaChatClient : IChatClient
             await OllamaUtilities.ThrowUnsuccessfulOllamaResponseAsync(httpResponse, cancellationToken).ConfigureAwait(false);
         }
 
+        // Ollama doesn't set a response ID on streamed chunks, so we need to generate one.
+        var responseId = Guid.NewGuid().ToString("N");
+
         using var httpResponseStream = await httpResponse.Content
 #if NET
             .ReadAsStreamAsync(cancellationToken)
@@ -160,7 +163,7 @@ public sealed class OllamaChatClient : IChatClient
                 CreatedAt = DateTimeOffset.TryParse(chunk.CreatedAt, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset createdAt) ? createdAt : null,
                 FinishReason = ToFinishReason(chunk),
                 ModelId = modelId,
-                ResponseId = chunk.CreatedAt,
+                ResponseId = responseId,
                 Role = chunk.Message?.Role is not null ? new ChatRole(chunk.Message.Role) : null,
             };
 
