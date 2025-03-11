@@ -104,7 +104,22 @@ export class ScoreNode {
         }
     }
 
-    
+    collapseSingleChildNodes() {
+        if (this.isLeafNode) {
+            return;
+        }
+
+        while (this.childNodes.length === 1) {
+            const onlyChild = this.childNodes[0];
+            this.name += ` > ${onlyChild.name}`;
+            this.children = onlyChild.children;
+            this.scenario = onlyChild.scenario;
+        }
+
+        for (const child of this.childNodes) {
+            child.collapseSingleChildNodes();
+        }
+    }
 };
 
 export const DefaultRootNodeName = "All Evaluations";

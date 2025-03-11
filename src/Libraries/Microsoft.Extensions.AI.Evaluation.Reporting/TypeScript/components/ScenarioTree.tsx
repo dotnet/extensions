@@ -11,6 +11,7 @@ import { ErrorCircleRegular } from "@fluentui/react-icons";
 import { ChevronDown12Regular, ChevronRight12Regular } from '@fluentui/react-icons';
 
 const ScenarioLevel = ({ node, parentPath, isOpen, renderMarkdown }: { node: ScoreNode, parentPath: string, isOpen: (path: string) => boolean, renderMarkdown: boolean }) => {
+    node.collapseSingleChildNodes();
     const path = `${parentPath}.${node.name}`;
     if (node.isLeafNode) {
         return <TreeItem itemType="branch" value={path}>
