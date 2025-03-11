@@ -171,7 +171,7 @@ public static class ChatResponseExtensions
         // response ID than the newest update, create a new message.
         ChatMessage message;
         if (response.Messages.Count == 0 ||
-            (update.ResponseId is string updateId && response.ResponseId is string responseId && updateId != responseId))
+            (update.ResponseId is { Length: > 0 } updateId && response.ResponseId is string responseId && updateId != responseId))
         {
             message = new ChatMessage(ChatRole.Assistant, []);
             response.Messages.Add(message);
@@ -213,7 +213,7 @@ public static class ChatResponseExtensions
         // Other members on a ChatResponseUpdate map to members of the ChatResponse.
         // Update the response object with those, preferring the values from later updates.
 
-        if (update.ResponseId is not null)
+        if (update.ResponseId is { Length: > 0 })
         {
             // Note that this must come after the message checks earlier, as they depend
             // on this value for change detection.
