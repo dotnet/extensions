@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>ed252028-af21-4edb-bfcd-6babd772a518</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Aspire.Microsoft.EntityFrameworkCore.Sqlite" Version="9.2.2-beta.215" />
+    <PackageReference Include="CommunityToolkit.Aspire.OllamaSharp" Version="9.2.2-beta.215" />
+    <PackageReference Include="Microsoft.SemanticKernel.Core" Version="1.37.0" />
+    <PackageReference Include="PdfPig" Version="0.1.9" />
+    <PackageReference Include="System.Linq.Async" Version="6.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AspireAIChat.ServiceDefaults\AspireAIChat.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+</Project>
