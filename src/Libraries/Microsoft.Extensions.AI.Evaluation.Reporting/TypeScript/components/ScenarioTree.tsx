@@ -7,10 +7,15 @@ import { DefaultRootNodeName, ScoreNode, ScoreNodeType, getPromptDetails } from 
 import { PassFailBar } from "./PassFailBar";
 import { MetricCardList } from "./MetricCard";
 import ReactMarkdown from "react-markdown";
-import { ErrorCircleRegular } from "@fluentui/react-icons";
+import { DismissCircle16Regular, Info16Regular, Warning16Regular } from "@fluentui/react-icons";
 import { ChevronDown12Regular, ChevronRight12Regular } from '@fluentui/react-icons';
 
-const ScenarioLevel = ({ node, parentPath, isOpen, renderMarkdown }: { node: ScoreNode, parentPath: string, isOpen: (path: string) => boolean, renderMarkdown: boolean }) => {
+const ScenarioLevel = ({ node, parentPath, isOpen, renderMarkdown }: { 
+  node: ScoreNode, 
+  parentPath: string, 
+  isOpen: (path: string) => boolean, 
+  renderMarkdown: boolean,
+}) => {
     node.collapseSingleChildNodes();
     const path = `${parentPath}.${node.name}`;
     if (node.isLeafNode) {
@@ -50,11 +55,12 @@ export const ScenarioGroup = ({ node, renderMarkdown }: { node: ScoreNode, rende
     return (
         <Tree aria-label="Default" appearance="transparent" onOpenChange={handleOpenChange} defaultOpenItems={["." + DefaultRootNodeName]}>
             <ScenarioLevel node={node} parentPath={""} isOpen={isOpen} renderMarkdown={renderMarkdown} />
-        </Tree>);
+        </Tree>);        
 };
 
 export const ScoreDetail = ({ scenario, renderMarkdown }: { scenario: ScenarioRunResult, renderMarkdown: boolean }) => {
     const classes = useStyles();
+    const [selectedMetric, setSelectedMetric] = useState<MetricType | null>(null);
 
     const failureMessages = [];
     for (const e of Object.values(scenario.evaluationResult.metrics)) {
@@ -70,10 +76,101 @@ export const ScoreDetail = ({ scenario, renderMarkdown }: { scenario: ScenarioRu
     const {history, response} = getPromptDetails(scenario.messages, scenario.modelResponse);
 
     return (<div className={classes.iterationArea}>
-        <MetricCardList scenario={scenario} />
+        <MetricCardList
+          scenario={scenario}
+          onMetricSelect={setSelectedMetric}
+          selectedMetric={selectedMetric}
+        />
+        {selectedMetric && <MetricDetailsSection metric={selectedMetric} />}
         {failureMessages && failureMessages.length > 0 && <FailMessage messages={failureMessages} />}
         <PromptDetails history={history} response={response} renderMarkdown={renderMarkdown} />
     </div>);
+};
+
+export const MetricDetailsSection = ({ metric }: { metric: MetricType }) => {
+    const classes = useStyles();
+    const [isExpanded, setIsExpanded] = useState(true);
+    
+    const reason = metric.reason;
+    const hasReason = reason != null;
+    const interpretationReason = metric.interpretation?.reason;
+    const hasInterpretationReason = interpretationReason != null;
+    const diagnostics = metric.diagnostics || [];
+    const hasDiagnostics = diagnostics.length > 0;
+    
+    if (!hasReason && !hasInterpretationReason && !hasDiagnostics) return null;
+
+    return (
+        <div className={classes.section}>
+            <div className={classes.sectionHeader} onClick={() => setIsExpanded(!isExpanded)}>
+                {isExpanded ? <ChevronDown12Regular /> : <ChevronRight12Regular />}
+                <h3 className={classes.sectionHeaderText}>Metric Details: {metric.name}</h3>
+            </div>
+
+            {isExpanded && (
+                <div className={classes.conversationBox}>
+                    {hasReason && (
+                        <div className={classes.sectionContent}>
+                            <div className={classes.sectionSubHeader}>Evaluation Reason</div>
+                            <div>
+                                <span>{reason}</span>
+                            </div>
+                        </div>
+                    )} 
+
+                    {hasInterpretationReason && (
+                        <div className={classes.sectionContent}>
+                            {metric.interpretation?.failed ?
+                                <div className={classes.sectionSubHeader}>Failure Reason</div> :
+                                <div className={classes.sectionSubHeader}>Interpretation Reason</div>
+                            }
+                            <div>
+                                {metric.interpretation?.failed ? 
+                                    <span className={classes.failMessage}><DismissCircle16Regular /> {interpretationReason}</span> : 
+                                    <span>{interpretationReason}</span>
+                                }
+                            </div>
+                        </div>
+                    )} 
+                    
+                    {hasDiagnostics && (
+                        <div>
+                            <div className={classes.sectionSubHeader}>Diagnostics</div>
+                            <DiagnosticsContent diagnostics={diagnostics} />
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+};
+
+const DiagnosticsContent = ({ diagnostics }: { diagnostics: EvaluationDiagnostic[] }) => {
+    const classes = useStyles();
+    
+    const errorDiagnostics = diagnostics.filter(d => d.severity === "error");
+    const warningDiagnostics = diagnostics.filter(d => d.severity === "warning");
+    const infoDiagnostics = diagnostics.filter(d => d.severity === "informational");
+    
+    return (
+        <>
+            {errorDiagnostics.map((diag, index) => (
+                <div key={`error-${index}`} className={classes.failMessage}>
+                    <DismissCircle16Regular /> {diag.message}
+                </div>
+            ))}
+            {warningDiagnostics.map((diag, index) => (
+                <div key={`warning-${index}`} className={classes.warningMessage}>
+                    <Warning16Regular /> {diag.message}
+                </div>
+            ))}
+            {infoDiagnostics.map((diag, index) => (
+                <div key={`info-${index}`} className={classes.infoMessage}>
+                    <Info16Regular /> {diag.message}
+                </div>
+            ))}
+        </>
+    );
 };
 
 const useStyles = makeStyles({
@@ -124,6 +221,15 @@ const useStyles = makeStyles({
     },
     failMessage: {
         color: tokens.colorStatusDangerForeground2,
+        marginBottom: '0.25rem',
+    },
+    warningMessage: {
+        color: tokens.colorStatusWarningForeground2,
+        marginBottom: '0.25rem',
+    },
+    infoMessage: {
+        color: tokens.colorNeutralForeground1,
+        marginBottom: '0.25rem',
     },
     failContainer: {
         padding: '1rem',
@@ -158,7 +264,7 @@ export const FailMessage = ({ messages }: { messages: string[] }) => {
 
             {isExpanded && (
                 <div className={classes.failContainer}>
-                    {messages.map((msg) => <><span className={classes.failMessage} key={msg}><ErrorCircleRegular /> {msg}</span><br /></>)}
+                    {messages.map((msg) => <><span className={classes.failMessage} key={msg}><DismissCircle16Regular /> {msg}</span><br /></>)}
                 </div>
             )}
         </div>
