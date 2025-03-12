@@ -14,4 +14,4 @@ namespace Microsoft.Extensions.AI.Evaluation;
 /// <paramred name="value"/>.
 /// </param>
 public sealed class BooleanMetric(string name, bool? value = null, string? reason = null)
-: EvaluationMetric<bool?>(name, value, reason);
+    : EvaluationMetric<bool?>(name, value, reason);

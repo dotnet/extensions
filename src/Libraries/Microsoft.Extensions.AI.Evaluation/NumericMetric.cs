@@ -25,4 +25,4 @@ namespace Microsoft.Extensions.AI.Evaluation;
 /// <paramred name="value"/>.
 /// </param>
 public sealed class NumericMetric(string name, double? value = null, string? reason = null)
- : EvaluationMetric<double?>(name, value, reason);
+    : EvaluationMetric<double?>(name, value, reason);
