@@ -33,7 +33,7 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
     private readonly HeaderReader _responseHeadersReader;
     private readonly string[] _excludePathStartsWith;
     private readonly FrozenDictionary<string, DataClassification> _parametersToRedactMap;
-    private readonly bool _reportUnmatchedRoutes;
+    private readonly bool _includeUnmatchedRoutes;
 
     public HttpLoggingRedactionInterceptor(
         IOptions<LoggingRedactionOptions> options,
@@ -60,7 +60,7 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
         _responseHeadersReader = new(optionsValue.ResponseHeadersDataClasses, redactorProvider, HttpLoggingTagNames.ResponseHeaderPrefix);
 
         _excludePathStartsWith = optionsValue.ExcludePathStartsWith.ToArray();
-        _reportUnmatchedRoutes = optionsValue.ReportUnmatchedRoutes;
+        _includeUnmatchedRoutes = optionsValue.IncludeUnmatchedRoutes;
     }
 
     public ValueTask OnRequestAsync(HttpLoggingInterceptorContext logContext)
@@ -117,7 +117,7 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
                         }
                     }
                 }
-                else if (_reportUnmatchedRoutes)
+                else if (_includeUnmatchedRoutes)
                 {
                     path = context.Request.Path.ToString();
                 }

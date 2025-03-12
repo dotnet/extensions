@@ -104,7 +104,13 @@ public class LoggingRedactionOptions
     /// <summary>
     /// Gets or sets a value indicating whether to report unmatched routes.
     /// </summary>
-    public bool ReportUnmatchedRoutes { get; set; } = false;
+    /// <remarks>
+    /// If set to true, instead of logging <i>unknown</i> value for path attribute it will log whole path of routes not identified by ASP.NET Routing.
+    /// </remarks>
+    /// <value>Defaults to <see langword="true"/>.</value>
+#pragma warning disable CA1805 // Do not initialize unnecessarily
+    public bool IncludeUnmatchedRoutes { get; set; } = false;
+#pragma warning restore CA1805 // Do not initialize unnecessarily
 }
 
 #endif
