@@ -111,7 +111,7 @@ export class ScoreNode {
 
         while (this.childNodes.length === 1) {
             const onlyChild = this.childNodes[0];
-            this.name += ` > ${onlyChild.name}`;
+            this.name += ` / ${onlyChild.name}`;
             this.children = onlyChild.children;
             this.scenario = onlyChild.scenario;
         }

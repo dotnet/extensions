@@ -176,6 +176,15 @@ const useStyles = makeStyles({
         whiteSpace: 'nowrap',
         fontWeight: '500',
         fontSize: tokens.fontSizeBase300,
+        display: 'flex',
+        gap: '0.5rem',
+        alignItems: 'center',
+    },
+    separator: {
+        color: tokens.colorNeutralForeground4,
+        fontSize: tokens.fontSizeBase200,
+        fontWeight: '300',
+        padding: '0 0.125rem',
     },
     iterationArea: {
         marginTop: '1rem',
@@ -262,9 +271,18 @@ const ScoreNodeHeader = ({ item, showPrompt }: { item: ScoreNode, showPrompt?: b
             break;
     }
 
+    const parts = item.name.split(' / ');
+
     return (<div className={classes.headerContainer}>
         <PassFailBar pass={ctPass} total={ctPass + ctFail} width="24px" height="12px"/>
-        <div className={classes.scenarioLabel}>{item.name}</div>
+        <div className={classes.scenarioLabel}>
+            {parts.map((part, index) => (
+                <>
+                    {part}
+                    {index < parts.length - 1 && <span className={classes.separator}>/</span>}
+                </>
+            ))}
+        </div>
         <PassFailBadge pass={ctPass} total={ctPass + ctFail} />
         {showPrompt && item.shortenedPrompt && <div className={classes.promptHint}>{item.shortenedPrompt}</div>}
     </div>);
