@@ -104,7 +104,7 @@ variables:
       value: >-
             /p:DotNetPublishUsingPipelines=true
     - name: _OfficialBuildIdArgs
-      value: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+      value: /p:OfficialBuildId=$(BUILD.BUILDNUMBER) /p:configureDotNetFinalVersionKind=true
     # needed for signing
     - name: _SignType
       value: real
