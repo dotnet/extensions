@@ -20,6 +20,7 @@
   <ItemGroup>
     <Compile Update="Parsing\Resources.Designer.cs" DesignTime="True" AutoGen="True" DependentUpon="Resources.resx" />
     <Compile Include="..\Shared\*.cs" LinkBase="Shared" />
+    <Compile Remove="..\Shared\JsonEmitterBase.cs" />
   </ItemGroup>
 
   <ItemGroup>
