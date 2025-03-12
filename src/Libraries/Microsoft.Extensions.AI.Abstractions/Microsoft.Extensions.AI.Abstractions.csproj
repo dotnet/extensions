@@ -29,7 +29,7 @@
     <InjectRequiredMemberOnLegacy>true</InjectRequiredMemberOnLegacy>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
+  <ItemGroup>
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
