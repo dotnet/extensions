@@ -19,8 +19,8 @@ public class CacheOptionsTests
     {
         var options = new CacheOptions(CacheMode.Disabled, TimeSpan.FromDays(300));
 
-        string json = JsonSerializer.Serialize(options, SerializerContext.Default.CacheOptions);
-        CacheOptions? deserialized = JsonSerializer.Deserialize<CacheOptions>(json, SerializerContext.Default.CacheOptions);
+        string json = JsonSerializer.Serialize(options, AIEvalJson.Default.CacheOptions);
+        CacheOptions? deserialized = JsonSerializer.Deserialize<CacheOptions>(json, AIEvalJson.Default.CacheOptions);
 
         Assert.NotNull(deserialized);
         Assert.Equal(options.Mode, deserialized!.Mode);
@@ -33,8 +33,8 @@ public class CacheOptionsTests
     {
         var options = new CacheOptions(CacheMode.Disabled, TimeSpan.FromDays(300));
 
-        string json = JsonSerializer.Serialize(options, SerializerContext.Compact.CacheOptions);
-        CacheOptions? deserialized = JsonSerializer.Deserialize<CacheOptions>(json, SerializerContext.Default.CacheOptions);
+        string json = JsonSerializer.Serialize(options, AIEvalJson.Compact.CacheOptions);
+        CacheOptions? deserialized = JsonSerializer.Deserialize<CacheOptions>(json, AIEvalJson.Default.CacheOptions);
 
         Assert.NotNull(deserialized);
         Assert.Equal(options.Mode, deserialized!.Mode);
