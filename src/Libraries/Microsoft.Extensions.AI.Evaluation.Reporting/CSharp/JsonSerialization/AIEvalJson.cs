@@ -16,7 +16,7 @@ internal static partial class AIEvalJson
     internal static class Default
     {
         private static JsonSerializerOptions? _options;
-        internal static JsonSerializerOptions Options => _options ??= CreateJsonSerializerOptions(writeIndented: false);
+        internal static JsonSerializerOptions Options => _options ??= CreateJsonSerializerOptions(writeIndented: true);
         internal static JsonTypeInfo<Dataset> Dataset => Options.GetTypeInfo<Dataset>();
         internal static JsonTypeInfo<CacheEntry> CacheEntry => Options.GetTypeInfo<CacheEntry>();
         internal static JsonTypeInfo<CacheOptions> CacheOptions => Options.GetTypeInfo<CacheOptions>();
@@ -26,7 +26,7 @@ internal static partial class AIEvalJson
     internal static class Compact
     {
         private static JsonSerializerOptions? _options;
-        internal static JsonSerializerOptions Options => _options ??= CreateJsonSerializerOptions(writeIndented: true);
+        internal static JsonSerializerOptions Options => _options ??= CreateJsonSerializerOptions(writeIndented: false);
         internal static JsonTypeInfo<Dataset> Dataset => Options.GetTypeInfo<Dataset>();
         internal static JsonTypeInfo<CacheEntry> CacheEntry => Options.GetTypeInfo<CacheEntry>();
         internal static JsonTypeInfo<CacheOptions> CacheOptions => Options.GetTypeInfo<CacheOptions>();
