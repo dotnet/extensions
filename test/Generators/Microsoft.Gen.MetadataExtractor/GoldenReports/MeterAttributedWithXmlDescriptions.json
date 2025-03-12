@@ -26,10 +26,10 @@
                         "MetricName": "ConstDescribedCounter",
                         "MetricDescription": "CreateConstDescribedCounter description.",
                         "Dimensions":
-                            {
-                                "Dim4": "Dim4 description.",
-                                "InClassDim": "InClassDim description."
-                            }
+                        {
+                            "Dim4": "Dim4 description.",
+                            "InClassDim": "InClassDim description."
+                        }
                     }
                 ]
             }

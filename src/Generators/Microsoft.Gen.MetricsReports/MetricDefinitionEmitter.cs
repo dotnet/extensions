@@ -108,7 +108,6 @@ internal sealed class MetricDefinitionEmitter : JsonEmitterBase
                             OutLn();
                             OutIndent();
                             Out("\"Dimensions\":");
-                            Indent();
                             OutObject(() =>
                             {
                                 foreach (var dimension in metricMethod.Dimensions)
@@ -119,7 +118,6 @@ internal sealed class MetricDefinitionEmitter : JsonEmitterBase
                                     }
                                 }
                             }, isProprietyDependent: true);
-                            Unindent();
                         }
                     });
 

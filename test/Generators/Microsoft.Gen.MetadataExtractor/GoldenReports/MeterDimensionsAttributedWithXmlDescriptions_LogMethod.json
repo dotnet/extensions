@@ -43,32 +43,32 @@
                         "MetricName": "DescribedDimensionCounter",
                         "MetricDescription": "(Missing Summary)",
                         "Dimensions":
-                            {
-                                "Dimension1": "Dimension1 description."
-                            }
+                        {
+                            "Dimension1": "Dimension1 description."
+                        }
                     },
                     {
                         "MetricName": "DescribedDimensionHistogram",
                         "MetricDescription": "(Missing Summary)",
                         "Dimensions":
-                            {
-                                "Dimension2": "Dimension2 description.",
-                                "DimensionDefinedInMetricClass": "DimensionDefinedInMetricClass description."
-                            }
+                        {
+                            "Dimension2": "Dimension2 description.",
+                            "DimensionDefinedInMetricClass": "DimensionDefinedInMetricClass description."
+                        }
                     },
                     {
                         "MetricName": "MyStrongTypeMetricWithDescription",
                         "MetricDescription": "(Missing Summary)",
                         "Dimensions":
-                            {
-                                "AnotherDimension": "Gets or sets anotherDimension.",
-                                "MetricEnum": "Gets or sets MetricEnum.",
-                                "MetricEnum2": "Gets or sets MetricEnum2.",
-                                "Dim2": "Gets or sets Dim2.",
-                                "SomeDim": "Gets or sets SomeDim.",
-                                "Dim4Struct": "Gets or sets Dim4Struct.",
-                                "Dim5Struct": "Gets or sets Dim5Struct."
-                            }
+                        {
+                            "AnotherDimension": "Gets or sets anotherDimension.",
+                            "MetricEnum": "Gets or sets MetricEnum.",
+                            "MetricEnum2": "Gets or sets MetricEnum2.",
+                            "Dim2": "Gets or sets Dim2.",
+                            "SomeDim": "Gets or sets SomeDim.",
+                            "Dim4Struct": "Gets or sets Dim4Struct.",
+                            "Dim5Struct": "Gets or sets Dim5Struct."
+                        }
                     }
                 ]
             }

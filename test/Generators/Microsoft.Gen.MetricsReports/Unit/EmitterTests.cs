@@ -137,17 +137,17 @@ public class EmitterTests
                 ""MetricName"": ""Requests"",
                 ""MetricDescription"": ""Requests summary."",
                 ""Dimensions"":
-                    {
-                        ""StatusCode"": ""Status code for request."",
-                        ""ErrorCode"": ""Error code for request.""
-                    }
+                {
+                    ""StatusCode"": ""Status code for request."",
+                    ""ErrorCode"": ""Error code for request.""
+                }
             },
             {
                 ""MetricName"": ""Latency"",
                 ""MetricDescription"": ""Latency summary."",
                 ""Dimensions"":
-                    {
-                    }
+                {
+                }
             },
             {
                 ""MetricName"": ""MemoryUsage"",
@@ -168,9 +168,9 @@ public class EmitterTests
                 ""MetricName"": ""Test\\\\MemoryUsage"",
                 ""MetricDescription"": ""MemoryUsage summary."",
                 ""Dimensions"":
-                    {
-                        ""Path"": ""Test\\\\Description\\\\Path""
-                    }
+                {
+                    ""Path"": ""Test\\\\Description\\\\Path""
+                }
             }
         ]
     }

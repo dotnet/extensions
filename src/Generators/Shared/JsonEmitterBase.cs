@@ -80,16 +80,6 @@ internal class JsonEmitterBase : EmitterBase
         }
     }
 
-    protected void OutEmptyObject()
-    {
-        Out("{}");
-    }
-
-    protected void OutEmptyArray()
-    {
-        Out("[]");
-    }
-
     private void NewItem(bool preAppendComma = true)
     {
         if (preAppendComma && ItemCount > 0)
