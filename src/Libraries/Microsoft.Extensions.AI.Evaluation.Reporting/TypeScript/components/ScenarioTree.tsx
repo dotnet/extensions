@@ -1,9 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { makeStyles, tokens, Tree, TreeItem, TreeItemLayout, TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fluentui/react-components";
-import { useState, useCallback } from "react";
-import { DefaultRootNodeName, ScoreNode, ScoreNodeType, getPromptDetails } from "./Summary";
+import React, { useState, useCallback } from "react";
+import { makeStyles, tokens, Tree, TreeItem, TreeItemLayout, TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent, mergeClasses } from "@fluentui/react-components";
+import { DefaultRootNodeName, ScoreNode, ScoreNodeType, getPromptDetails, ChatMessageDisplay } from "./Summary";
 import { PassFailBar } from "./PassFailBar";
 import { MetricCardList, type MetricType } from "./MetricCard";
 import ReactMarkdown from "react-markdown";
@@ -61,7 +61,7 @@ export const ScenarioGroup = ({ node, renderMarkdown }: { node: ScoreNode, rende
 export const ScoreDetail = ({ scenario, renderMarkdown }: { scenario: ScenarioRunResult, renderMarkdown: boolean }) => {
     const classes = useStyles();
     const [selectedMetric, setSelectedMetric] = useState<MetricType | null>(null);
-    const {history, response} = getPromptDetails(scenario.messages, scenario.modelResponse);
+    const { messages } = getPromptDetails(scenario.messages, scenario.modelResponse);
 
     return (<div className={classes.iterationArea}>
         <MetricCardList
@@ -70,7 +70,7 @@ export const ScoreDetail = ({ scenario, renderMarkdown }: { scenario: ScenarioRu
           selectedMetric={selectedMetric}
         />
         {selectedMetric && <MetricDetailsSection metric={selectedMetric} />}
-        <PromptDetails history={history} response={response} renderMarkdown={renderMarkdown} />
+        <PromptDetails messages={messages} renderMarkdown={renderMarkdown} />
     </div>);
 };
 
@@ -191,14 +191,14 @@ const useStyles = makeStyles({
         marginBottom: '1rem',
     },
     section: {
-        marginTop: '1rem',
+        marginTop: '0.75rem',
     },
     sectionHeader: {
         display: 'flex',
         alignItems: 'center',
         cursor: 'pointer',
         userSelect: 'none',
-        marginBottom: '1rem',
+        marginBottom: '0.5rem',
     },
     sectionHeaderText: {
         margin: 0,
@@ -209,10 +209,10 @@ const useStyles = makeStyles({
     sectionSubHeader: {
         fontSize: tokens.fontSizeBase300,
         fontWeight: '500',
-        marginBottom: '0.5rem',
+        marginBottom: '0.25rem',
     },
     sectionContent: {
-        marginBottom: '1.5rem',
+        marginBottom: '0.75rem',
     },
     failMessage: {
         color: tokens.colorStatusDangerForeground2,
@@ -233,9 +233,7 @@ const useStyles = makeStyles({
         cursor: 'text',
     },
     conversationBox: {
-        border: '1px solid #e0e0e0',
-        borderRadius: '4px',
-        padding: '1rem',
+        padding: '0.75rem',
         maxHeight: '20rem',
         overflow: 'auto',
         cursor: 'text',
@@ -243,6 +241,51 @@ const useStyles = makeStyles({
             whiteSpace: 'pre-wrap',
             wordWrap: 'break-word',
         },
+    },
+    chatContainer: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0.75rem',
+        padding: '0.75rem 0',
+        position: 'relative',
+    },
+    messageRow: {
+        display: 'flex',
+        flexDirection: 'column',
+        width: '900px',
+        position: 'relative',
+    },
+    userMessageRow: {
+        marginLeft: '0',
+    },
+    assistantMessageRow: {
+        marginLeft: '100px',
+    },
+    messageParticipantName: {
+        fontSize: tokens.fontSizeBase200,
+        marginBottom: '0.25rem',
+        color: tokens.colorNeutralForeground3,
+        paddingLeft: '0.5rem',
+    },
+    messageBubble: {
+        padding: '0.75rem 1rem',
+        borderRadius: '12px',
+        overflow: 'hidden',
+        wordBreak: 'break-word',
+        width: '100%',
+    },
+    userBubble: {
+        backgroundColor: tokens.colorNeutralBackground3,
+        borderTopLeftRadius: '4px',
+    },
+    systemBubble: {
+        backgroundColor: tokens.colorBrandBackground,
+        color: tokens.colorNeutralForegroundInverted,
+        borderTopLeftRadius: '4px',
+    },
+    assistantBubble: {
+        backgroundColor: tokens.colorNeutralBackground4,
+        borderTopRightRadius: '4px',
     },
 });
 
@@ -277,10 +320,10 @@ const ScoreNodeHeader = ({ item, showPrompt }: { item: ScoreNode, showPrompt?: b
         <PassFailBar pass={ctPass} total={ctPass + ctFail} width="24px" height="12px"/>
         <div className={classes.scenarioLabel}>
             {parts.map((part, index) => (
-                <>
+                <React.Fragment key={`${part}-${index}`}>
                     {part}
                     {index < parts.length - 1 && <span className={classes.separator}>/</span>}
-                </>
+                </React.Fragment>
             ))}
         </div>
         <PassFailBadge pass={ctPass} total={ctPass + ctFail} />
@@ -288,9 +331,14 @@ const ScoreNodeHeader = ({ item, showPrompt }: { item: ScoreNode, showPrompt?: b
     </div>);
 };
 
-export const PromptDetails = ({ history, response, renderMarkdown }: { history: string, response: string, renderMarkdown: boolean }) => {
+export const PromptDetails = ({ messages, renderMarkdown }: { 
+    messages: ChatMessageDisplay[], 
+    renderMarkdown: boolean 
+}) => {
     const classes = useStyles();
     const [isExpanded, setIsExpanded] = useState(true);
+
+    const isUserSide = (role: string) => role.toLowerCase() === 'user' || role.toLowerCase() === 'system';
 
     return (
         <div className={classes.section}>
@@ -300,16 +348,35 @@ export const PromptDetails = ({ history, response, renderMarkdown }: { history: 
             </div>
 
             {isExpanded && (
-                <div className={classes.conversationBox}>
-                    <div className={classes.sectionContent}>
-                        <div className={classes.sectionSubHeader}>Prompt</div>
-                        {renderMarkdown ? <ReactMarkdown>{history}</ReactMarkdown> : <pre>{history}</pre>}
-                    </div>
-                    
-                    <div>
-                        <div className={classes.sectionSubHeader}>Response</div>
-                        {renderMarkdown ? <ReactMarkdown>{response}</ReactMarkdown> : <pre>{response}</pre>}
-                    </div>
+                <div className={classes.chatContainer}>
+                    {messages.map((message, index) => {
+                        const isFromUserSide = isUserSide(message.role);
+                        const messageRowClass = mergeClasses(
+                            classes.messageRow,
+                            isFromUserSide ? classes.userMessageRow : classes.assistantMessageRow
+                        );
+                        
+                        let messageBubble;
+                        if (message.role.toLowerCase() === 'system') {
+                            messageBubble = mergeClasses(classes.messageBubble, classes.systemBubble);
+                        } else if (isFromUserSide) {
+                            messageBubble = mergeClasses(classes.messageBubble, classes.userBubble);
+                        } else {
+                            messageBubble = mergeClasses(classes.messageBubble, classes.assistantBubble);
+                        }
+
+                        return (
+                            <div key={index} className={messageRowClass}>
+                                <div className={classes.messageParticipantName}>{message.participantName}</div>
+                                <div className={messageBubble}>
+                                    {renderMarkdown ? 
+                                        <ReactMarkdown>{message.content}</ReactMarkdown> : 
+                                        <pre style={{ whiteSpace: 'pre-wrap' }}>{message.content}</pre>
+                                    }
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             )}
         </div>

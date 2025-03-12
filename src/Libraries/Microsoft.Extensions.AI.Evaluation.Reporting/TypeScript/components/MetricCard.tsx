@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
+import { makeStyles, mergeClasses, tokens, Tooltip } from "@fluentui/react-components";
 import { DismissCircle16Regular, Info16Regular, Warning16Regular } from "@fluentui/react-icons";
 
 const useCardListStyles = makeStyles({
@@ -30,9 +30,14 @@ export const MetricCardList = ({ scenario, onMetricSelect, selectedMetric }: {
 
 const useCardStyles = makeStyles({
     card: {
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem',
-        padding: '.75rem', border: '1px solid #e0e0e0', borderRadius: '4px',
-        minWidth: '8rem',
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        gap: '0.5rem',
+        padding: '.75rem', 
+        border: '1px solid #e0e0e0', 
+        borderRadius: '4px',
+        width: '10rem',
         cursor: 'pointer',
         transition: 'box-shadow 0.2s ease-in-out, outline 0.2s ease-in-out',
         position: 'relative',
@@ -48,8 +53,41 @@ const useCardStyles = makeStyles({
         outlineOffset: '0px',
         border: 'none'
     },
-    metricText: { fontSize: '1rem', fontWeight: 'normal' },
-    valueText: { fontSize: '1rem', fontWeight: 'bold' },
+    metricNameText: { 
+        fontSize: '1rem', 
+        fontWeight: 'normal',
+        width: '80%',
+        textAlign: 'center',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        lineHeight: '1.2',
+        maxHeight: '2.4em',
+        display: '-webkit-box',
+        WebkitLineClamp: 2,
+        WebkitBoxOrient: 'vertical',
+        marginTop: '-0.5rem',
+    },
+    iconPlaceholder: {
+        height: '4px',
+        width: '100%',
+        position: 'relative',
+        marginBottom: '0',
+    },
+    metricIcon: {
+        position: 'absolute',
+        top: '-0.25rem',
+        right: '-0.25rem',
+    },
+    metricValueText: { 
+        fontSize: '1rem', 
+        fontWeight: 'bold',
+        width: '80%',
+        textAlign: 'center',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+        maxHeight: '1.2em',
+    },
     scoreFgDefault: { color: tokens.colorNeutralStrokeAccessible },
     scoreFg0: { color: tokens.colorStatusDangerForeground1 },
     scoreFg1: { color: tokens.colorStatusDangerForeground2 },
@@ -113,27 +151,24 @@ export const MetricCard = ({
     onClick: () => void,
     isSelected: boolean
 }) => {
-    let renderValue: (metric: MetricType) => React.ReactNode;
-    switch (metric.$type) {
-        case "string":
-            renderValue = (metric: MetricType) => <>{metric?.value ?? "??"}</>;
-            break;
-        case "boolean":
-            renderValue = (metric: MetricType) => <>{
-                !metric || metric.value === undefined || metric.value === null ? 
-                '??' :
-                metric.value ? 'Pass' : 'Fail'}</>;
-            break;
-        case "numeric":
-            renderValue = (metric: MetricType) => <>{metric?.value ?? "??"}</>;
-            break;
-        case "none":
-            renderValue = () => <>None</>;
-            break;
-        default:
-            throw new Error(`Unknown metric type: ${metric["$type"]}`);
-    }
+    const getValue = (metric: MetricType): string => {
+        switch (metric.$type) {
+            case "string":
+                return metric?.value ?? "??";
+            case "boolean":
+                return !metric || metric.value === undefined || metric.value === null ? 
+                    '??' :
+                    metric.value ? 'Pass' : 'Fail';
+            case "numeric":
+                return metric?.value?.toString() ?? "??";
+            case "none":
+                return "None";
+            default:
+                throw new Error(`Unknown metric type: ${metric["$type"]}`);
+        }
+    };
 
+    const metricValue = getValue(metric);
     const classes = useCardStyles();
     const { fg, bg } = useCardColors(metric.interpretation);
     
@@ -148,14 +183,44 @@ export const MetricCard = ({
         isSelected ? classes.selectedCard : undefined
     );
     
-    return (
-        <div className={cardClass} onClick={onClick}>
-            <div className={classes.metricText}>{metric.name} {
-                    (hasErrorMessages && <DismissCircle16Regular />) || 
-                    (hasWarningMessages && <Warning16Regular />) || 
-                    ((hasInformationalMessages || hasReasons) && <Info16Regular />)}
-            </div>
-            <div className={mergeClasses(fg, classes.valueText)}>{renderValue(metric)}</div>
+    let statusIcon = null;
+    let statusTooltip = '';
+    
+    if (hasErrorMessages) {
+        statusIcon = <DismissCircle16Regular className={classes.metricIcon} />;
+        statusTooltip = 'This metric has errors. Click the card to view more details.';
+    } else if (hasWarningMessages) {
+        statusIcon = <Warning16Regular className={classes.metricIcon} />;
+        statusTooltip = 'This metric has warnings. Click the card to view more details.';
+    } else if (hasInformationalMessages || hasReasons) {
+        statusIcon = <Info16Regular className={classes.metricIcon} />;
+        statusTooltip = 'This metric has additional information. Click the card to view more details.';
+    }
+    
+    const tooltipContent = (
+        <div>
+            <div>Name: {metric.name}</div>
+            <div>Value: {metricValue}</div>
         </div>
+    );
+    
+    return (
+        <Tooltip content={tooltipContent} relationship="label">
+            <div className={cardClass} onClick={onClick}>
+                <div className={classes.iconPlaceholder}>
+                    {statusIcon && (
+                        <Tooltip content={statusTooltip} relationship="description">
+                            <span>{statusIcon}</span>
+                        </Tooltip>
+                    )}
+                </div>
+                <div className={classes.metricNameText}>
+                    {metric.name}
+                </div>
+                <div className={mergeClasses(fg, classes.metricValueText)}>
+                    {metricValue}
+                </div>
+            </div>
+        </Tooltip>
     );
 };
