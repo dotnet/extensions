@@ -62,7 +62,7 @@ internal class EmitterBase
             OutLn("}");
         }
 
-        Indent();
+        Unindent();
     }
 
     protected void OutCloseBraceWithExtra(string extra)
