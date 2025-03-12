@@ -61,18 +61,6 @@ export const ScenarioGroup = ({ node, renderMarkdown }: { node: ScoreNode, rende
 export const ScoreDetail = ({ scenario, renderMarkdown }: { scenario: ScenarioRunResult, renderMarkdown: boolean }) => {
     const classes = useStyles();
     const [selectedMetric, setSelectedMetric] = useState<MetricType | null>(null);
-
-    const failureMessages = [];
-    for (const e of Object.values(scenario.evaluationResult.metrics)) {
-        if (e.interpretation && e.interpretation.failed) {
-            failureMessages.push(e.interpretation.reason || "Metric failed.");
-        }
-        for (const d of e.diagnostics) {
-            if (d.severity === "error") {
-                failureMessages.push(d.message);
-            }
-        }
-    }
     const {history, response} = getPromptDetails(scenario.messages, scenario.modelResponse);
 
     return (<div className={classes.iterationArea}>
@@ -82,7 +70,6 @@ export const ScoreDetail = ({ scenario, renderMarkdown }: { scenario: ScenarioRu
           selectedMetric={selectedMetric}
         />
         {selectedMetric && <MetricDetailsSection metric={selectedMetric} />}
-        {failureMessages && failureMessages.length > 0 && <FailMessage messages={failureMessages} />}
         <PromptDetails history={history} response={response} renderMarkdown={renderMarkdown} />
     </div>);
 };
@@ -249,26 +236,6 @@ const useStyles = makeStyles({
         },
     },
 });
-
-export const FailMessage = ({ messages }: { messages: string[] }) => {
-    const classes = useStyles();
-    const [isExpanded, setIsExpanded] = useState(true);
-
-    return (
-        <div className={classes.section}>
-            <div className={classes.sectionHeader} onClick={() => setIsExpanded(!isExpanded)}>
-                {isExpanded ? <ChevronDown12Regular /> : <ChevronRight12Regular />}
-                <h3 className={classes.sectionHeaderText}>Failure Reasons</h3>
-            </div>
-
-            {isExpanded && (
-                <div className={classes.failContainer}>
-                    {messages.map((msg) => <><span className={classes.failMessage} key={msg}><DismissCircle16Regular /> {msg}</span><br /></>)}
-                </div>
-            )}
-        </div>
-    );
-};
 
 const PassFailBadge = ({ pass, total }: { pass: number, total: number }) => {
     const classes = useStyles();
