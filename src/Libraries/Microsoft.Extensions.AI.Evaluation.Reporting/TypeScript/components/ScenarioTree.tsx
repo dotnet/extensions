@@ -95,7 +95,7 @@ export const MetricDetailsSection = ({ metric }: { metric: MetricType }) => {
             </div>
 
             {isExpanded && (
-                <div className={classes.conversationBox}>
+                <div className={classes.sectionContainer}>
                     {hasReason && (
                         <div className={classes.sectionContent}>
                             <div className={classes.sectionSubHeader}>Evaluation Reason</div>
@@ -232,22 +232,17 @@ const useStyles = makeStyles({
         backgroundColor: tokens.colorNeutralBackground2,
         cursor: 'text',
     },
-    conversationBox: {
-        padding: '0.75rem',
-        maxHeight: '20rem',
-        overflow: 'auto',
-        cursor: 'text',
-        '& pre': {
-            whiteSpace: 'pre-wrap',
-            wordWrap: 'break-word',
-        },
-    },
-    chatContainer: {
+    sectionContainer: {
         display: 'flex',
         flexDirection: 'column',
         gap: '0.75rem',
         padding: '0.75rem 0',
+        cursor: 'text',
         position: 'relative',
+        '& pre': {
+            whiteSpace: 'pre-wrap',
+            wordWrap: 'break-word',
+        },
     },
     messageRow: {
         display: 'flex',
@@ -348,7 +343,7 @@ export const PromptDetails = ({ messages, renderMarkdown }: {
             </div>
 
             {isExpanded && (
-                <div className={classes.chatContainer}>
+                <div className={classes.sectionContainer}>
                     {messages.map((message, index) => {
                         const isFromUserSide = isUserSide(message.role);
                         const messageRowClass = mergeClasses(
