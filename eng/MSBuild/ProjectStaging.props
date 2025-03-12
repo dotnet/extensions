@@ -21,6 +21,6 @@
         https://github.com/dotnet/arcade/blob/main/Documentation/CorePackages/Versioning.md#package-version
       -->
     <SuppressFinalPackageVersion />
-    <SuppressFinalPackageVersion Condition=" '$(_IsStable)' != 'true' ">true</SuppressFinalPackageVersion>
+    <SuppressFinalPackageVersion Condition=" '$(configureDotNetFinalVersionKind)' == 'true' And '$(_IsStable)' != 'true' ">true</SuppressFinalPackageVersion>
   </PropertyGroup>
 </Project>
