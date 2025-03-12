@@ -145,7 +145,7 @@ const isTextContent = (content: AIContent): content is TextContent => {
     return (content as TextContent).text !== undefined;
 };
 
-export const getPromptDetails = (messages: ChatMessage[], modelResponse?: ChatMessage): {history:string, response: string}=> {
+export const getPromptDetails = (messages: ChatMessage[], modelResponse?: ChatResponse): {history:string, response: string}=> {
     let history: string = "";
     if (messages.length === 1) {
         history = messages[0].contents.map(c => (c as TextContent).text).join("\n");
@@ -163,7 +163,7 @@ export const getPromptDetails = (messages: ChatMessage[], modelResponse?: ChatMe
         history = historyItems.join("\n\n");
     }
 
-    const response: string = modelResponse?.contents.map(c => (c as TextContent).text).join("\n") ?? "";
+    const response: string = modelResponse?.messages.map(m => m.contents.map(c => (c as TextContent).text).join("\n") ?? "").join("\n") ?? "";
 
     return { history, response };
 };

@@ -59,6 +59,11 @@ internal static class OpenTelemetryConsts
             public const string Name = "gen_ai.operation.name";
         }
 
+        public static class Output
+        {
+            public const string Type = "gen_ai.output.type";
+        }
+
         public static class Request
         {
             public const string EmbeddingDimensions = "gen_ai.request.embedding.dimensions";

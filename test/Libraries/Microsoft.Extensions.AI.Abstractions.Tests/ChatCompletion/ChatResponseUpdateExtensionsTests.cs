@@ -51,7 +51,7 @@ public class ChatResponseUpdateExtensionsTests
 
         Assert.Equal("123", response.ChatThreadId);
 
-        ChatMessage message = response.Messages.Last();
+        ChatMessage message = response.Messages.Single();
         Assert.Equal(new ChatRole("human"), message.Role);
         Assert.Equal("Someone", message.AuthorName);
         Assert.Null(message.AdditionalProperties);
@@ -124,7 +124,7 @@ public class ChatResponseUpdateExtensionsTests
         {
             for (int i = 0; i < gapLength; i++)
             {
-                updates.Add(new() { Contents = [new DataContent("https://uri", mediaType: "image/png")] });
+                updates.Add(new() { Contents = [new DataContent("data:image/png;base64,aGVsbG8=")] });
             }
         }
 
