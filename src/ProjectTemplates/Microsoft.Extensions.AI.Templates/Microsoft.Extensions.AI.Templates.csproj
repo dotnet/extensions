@@ -41,10 +41,14 @@
         **\bin\**;
         **\obj\**;
         **\node_modules\**;
-        **\*.user;**\*.in;
+        **\*.user;
+        **\*.in;
         **\*.out.js;
         **\*.generated.css;
-        **\package-lock.json;" />
+        **\package-lock.json;
+        **\ingestioncache.db;
+        **\NuGet.config;
+        **\Directory.Build.targets;" />
     <None Include="THIRD-PARTY-NOTICES.TXT" Pack="true" PackagePath="." />
     <Compile Remove="**\*" />
   </ItemGroup>

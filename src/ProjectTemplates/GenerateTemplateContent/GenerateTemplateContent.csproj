@@ -1,9 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="$(MSBuildThisFileDirectory)..\GeneratedContent.props" />
-
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
 
     <!-- Used for incremental builds. When versions or dependencies of templates change, this file is updated and causes a re-build. -->
     <_GeneratedContentPropertiesHashFile>$(IntermediateOutputPath)$(MSBuildProjectName).content.g.cache</_GeneratedContentPropertiesHashFile>
@@ -24,7 +23,8 @@
     in the _GenerateContent target.
     This hash is used to determine if the generated content needs to be re-generated.
   -->
-  <Target Name="_ComputeGeneratedContentPropertiesHash">
+  <Target Name="_ComputeGeneratedContentPropertiesHash"
+          DependsOnTargets="ComputeGeneratedContentProperties">
     <Hash ItemsToHash="$(GeneratedContentProperties)">
       <Output TaskParameter="HashResult" PropertyName="_GeneratedContentPropertiesHash" />
     </Hash>
@@ -45,6 +45,12 @@
           Inputs="$(MSBuildAllProjects);$(_GeneratedContentPropertiesHashFile);@(GeneratedContent)"
           Outputs="@(GeneratedContent->'%(OutputPath)')">
 
+    <ItemGroup>
+      <GeneratedContent Remove="@(GeneratedContentToDelete)" />
+    </ItemGroup>
+
+    <Delete Files="@(GeneratedContentToDelete->'%(OutputPath)')" />
+
     <GenerateFileFromTemplate
       TemplateFile="%(GeneratedContent.Identity)"
       Properties="$(GeneratedContentProperties);%(GeneratedContent.AdditionalProperties)"
@@ -54,5 +60,7 @@
       <Output TaskParameter="ResolvedOutputPath" ItemName="Content" />
     </GenerateFileFromTemplate>
   </Target>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\GeneratedContent.targets" />
 
 </Project>
