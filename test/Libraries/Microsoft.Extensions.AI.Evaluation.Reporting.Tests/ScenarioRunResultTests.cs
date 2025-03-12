@@ -39,8 +39,8 @@ public class ScenarioRunResultTests
             modelResponse: new ChatResponse(new ChatMessage(ChatRole.Assistant, "response")),
             evaluationResult: new EvaluationResult(booleanMetric, numericMetric, stringMetric, metricWithNoValue));
 
-        string json = JsonSerializer.Serialize(entry, AIEvalJson.Default.ScenarioRunResult);
-        ScenarioRunResult? deserialized = JsonSerializer.Deserialize<ScenarioRunResult>(json, AIEvalJson.Default.ScenarioRunResult);
+        string json = JsonSerializer.Serialize(entry, JsonUtilities.Default.ScenarioRunResultTypeInfo);
+        ScenarioRunResult? deserialized = JsonSerializer.Deserialize<ScenarioRunResult>(json, JsonUtilities.Default.ScenarioRunResultTypeInfo);
 
         Assert.NotNull(deserialized);
         Assert.Equal(entry.ScenarioName, deserialized!.ScenarioName);
@@ -80,8 +80,8 @@ public class ScenarioRunResultTests
 
         var dataset = new Dataset([entry], createdAt: DateTime.UtcNow, generatorVersion: "1.2.3.4");
 
-        string json = JsonSerializer.Serialize(dataset, AIEvalJson.Compact.Dataset);
-        Dataset? deserialized = JsonSerializer.Deserialize(json, AIEvalJson.Default.Dataset);
+        string json = JsonSerializer.Serialize(dataset, JsonUtilities.Compact.DatasetTypeInfo);
+        Dataset? deserialized = JsonSerializer.Deserialize(json, JsonUtilities.Default.DatasetTypeInfo);
 
         Assert.NotNull(deserialized);
         Assert.Equal(entry.ScenarioName, deserialized!.ScenarioRunResults[0].ScenarioName);
@@ -107,8 +107,8 @@ public class ScenarioRunResultTests
             creation: DateTime.UtcNow,
             expiration: DateTime.UtcNow.Add(TimeSpan.FromMinutes(5)));
 
-        string defaultJson = JsonSerializer.Serialize(entry, AIEvalJson.Default.CacheEntry);
-        string compactJson = JsonSerializer.Serialize(entry, AIEvalJson.Compact.CacheEntry);
+        string defaultJson = JsonSerializer.Serialize(entry, JsonUtilities.Default.CacheEntryTypeInfo);
+        string compactJson = JsonSerializer.Serialize(entry, JsonUtilities.Compact.CacheEntryTypeInfo);
 
         Assert.NotEqual(defaultJson, compactJson);
         Assert.True(defaultJson.Length > compactJson.Length);

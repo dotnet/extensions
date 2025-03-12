@@ -40,7 +40,7 @@ public partial class DiskBasedResponseCache
             CacheEntry cacheEntry =
                 JsonSerializer.Deserialize(
                     cacheEntryFile,
-                    AIEvalJson.Default.CacheEntry) ??
+                    JsonUtilities.Default.CacheEntryTypeInfo) ??
                 throw new JsonException(
                     string.Format(CultureInfo.CurrentCulture, DeserializationFailedMessage, cacheEntryFilePath));
 
@@ -56,7 +56,7 @@ public partial class DiskBasedResponseCache
             CacheEntry cacheEntry =
                 await JsonSerializer.DeserializeAsync(
                     cacheEntryFile,
-                    AIEvalJson.Default.CacheEntry,
+                    JsonUtilities.Default.CacheEntryTypeInfo,
                     cancellationToken).ConfigureAwait(false) ??
                 throw new JsonException(
                     string.Format(CultureInfo.CurrentCulture, DeserializationFailedMessage, cacheEntryFilePath));
@@ -67,7 +67,7 @@ public partial class DiskBasedResponseCache
         public void Write(string cacheEntryFilePath)
         {
             using FileStream cacheEntryFile = File.Create(cacheEntryFilePath);
-            JsonSerializer.Serialize(cacheEntryFile, this, AIEvalJson.Default.CacheEntry);
+            JsonSerializer.Serialize(cacheEntryFile, this, JsonUtilities.Default.CacheEntryTypeInfo);
         }
 
         public async Task WriteAsync(
@@ -78,7 +78,7 @@ public partial class DiskBasedResponseCache
             await JsonSerializer.SerializeAsync(
                 cacheEntryFile,
                 this,
-                AIEvalJson.Default.CacheEntry,
+                JsonUtilities.Default.CacheEntryTypeInfo,
                 cancellationToken).ConfigureAwait(false);
         }
     }

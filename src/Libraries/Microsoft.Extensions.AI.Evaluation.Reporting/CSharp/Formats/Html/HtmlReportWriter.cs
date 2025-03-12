@@ -56,7 +56,7 @@ public sealed class HtmlReportWriter(string reportFilePath) : IEvaluationReportW
         await JsonSerializer.SerializeAsync(
             stream,
             dataset,
-            AIEvalJson.Compact.Dataset,
+            JsonUtilities.Compact.DatasetTypeInfo,
             cancellationToken).ConfigureAwait(false);
 
 #if NET

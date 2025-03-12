@@ -9,22 +9,22 @@ using static Microsoft.Extensions.AI.Evaluation.Reporting.Storage.AzureStorageRe
 
 namespace Microsoft.Extensions.AI.Evaluation.Reporting.JsonSerialization;
 
-internal static partial class AzureStorageJson
+internal static partial class AzureStorageJsonUtilities
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "Default matches the generated source naming convention.")]
     internal static class Default
     {
         private static JsonSerializerOptions? _options;
         internal static JsonSerializerOptions Options => _options ??= CreateJsonSerializerOptions(writeIndented: true);
-        internal static JsonTypeInfo<CacheEntry> CacheEntry => Options.GetTypeInfo<CacheEntry>();
-        internal static JsonTypeInfo<ScenarioRunResult> ScenarioRunResult => Options.GetTypeInfo<ScenarioRunResult>();
+        internal static JsonTypeInfo<CacheEntry> CacheEntryTypeInfo => Options.GetTypeInfo<CacheEntry>();
+        internal static JsonTypeInfo<ScenarioRunResult> ScenarioRunResultTypeInfo => Options.GetTypeInfo<ScenarioRunResult>();
     }
 
     internal static class Compact
     {
         private static JsonSerializerOptions? _options;
         internal static JsonSerializerOptions Options => _options ??= CreateJsonSerializerOptions(writeIndented: false);
-        internal static JsonTypeInfo<ScenarioRunResult> ScenarioRunResult => Options.GetTypeInfo<ScenarioRunResult>();
+        internal static JsonTypeInfo<ScenarioRunResult> ScenarioRunResultTypeInfo => Options.GetTypeInfo<ScenarioRunResult>();
     }
 
     private static JsonTypeInfo<T> GetTypeInfo<T>(this JsonSerializerOptions options) => (JsonTypeInfo<T>)options.GetTypeInfo(typeof(T));
@@ -46,8 +46,9 @@ internal static partial class AzureStorageJson
     [JsonSourceGenerationOptions(
         Converters = [
             typeof(AzureStorageCamelCaseEnumConverter<EvaluationDiagnosticSeverity>),
-        typeof(AzureStorageCamelCaseEnumConverter<EvaluationRating>),
-        typeof(AzureStorageTimeSpanConverter)],
+            typeof(AzureStorageCamelCaseEnumConverter<EvaluationRating>),
+            typeof(AzureStorageTimeSpanConverter)
+        ],
         WriteIndented = true,
         IgnoreReadOnlyProperties = false,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,

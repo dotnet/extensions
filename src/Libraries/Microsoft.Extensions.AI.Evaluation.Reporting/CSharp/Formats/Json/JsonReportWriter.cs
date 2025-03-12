@@ -45,7 +45,7 @@ public sealed class JsonReportWriter(string reportFilePath) : IEvaluationReportW
         await JsonSerializer.SerializeAsync(
             stream,
             dataset,
-            AIEvalJson.Default.Dataset,
+            JsonUtilities.Default.DatasetTypeInfo,
             cancellationToken).ConfigureAwait(false);
     }
 }

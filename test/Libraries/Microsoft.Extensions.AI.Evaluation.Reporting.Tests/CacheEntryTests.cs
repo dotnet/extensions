@@ -23,8 +23,8 @@ public class CacheEntryTests
                 creation: DateTime.UtcNow,
                 expiration: DateTime.UtcNow.Add(TimeSpan.FromMinutes(5)));
 
-        string json = JsonSerializer.Serialize(entry, AIEvalJson.Default.CacheEntry);
-        CacheEntry? deserialized = JsonSerializer.Deserialize<CacheEntry>(json, AIEvalJson.Default.CacheEntry);
+        string json = JsonSerializer.Serialize(entry, JsonUtilities.Default.CacheEntryTypeInfo);
+        CacheEntry? deserialized = JsonSerializer.Deserialize<CacheEntry>(json, JsonUtilities.Default.CacheEntryTypeInfo);
 
         Assert.NotNull(deserialized);
         Assert.Equal(entry.ScenarioName, deserialized!.ScenarioName);
@@ -43,8 +43,8 @@ public class CacheEntryTests
                 creation: DateTime.UtcNow,
                 expiration: DateTime.UtcNow.Add(TimeSpan.FromMinutes(5)));
 
-        string json = JsonSerializer.Serialize(entry, AIEvalJson.Compact.CacheEntry);
-        CacheEntry? deserialized = JsonSerializer.Deserialize<CacheEntry>(json, AIEvalJson.Default.CacheEntry);
+        string json = JsonSerializer.Serialize(entry, JsonUtilities.Compact.CacheEntryTypeInfo);
+        CacheEntry? deserialized = JsonSerializer.Deserialize<CacheEntry>(json, JsonUtilities.Default.CacheEntryTypeInfo);
 
         Assert.NotNull(deserialized);
         Assert.Equal(entry.ScenarioName, deserialized!.ScenarioName);

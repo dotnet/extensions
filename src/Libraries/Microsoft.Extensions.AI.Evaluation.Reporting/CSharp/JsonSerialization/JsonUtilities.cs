@@ -10,27 +10,27 @@ using static Microsoft.Extensions.AI.Evaluation.Reporting.Storage.DiskBasedRespo
 
 namespace Microsoft.Extensions.AI.Evaluation.Reporting.JsonSerialization;
 
-internal static partial class AIEvalJson
+internal static partial class JsonUtilities
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "Default matches the generated source naming convention.")]
     internal static class Default
     {
         private static JsonSerializerOptions? _options;
         internal static JsonSerializerOptions Options => _options ??= CreateJsonSerializerOptions(writeIndented: true);
-        internal static JsonTypeInfo<Dataset> Dataset => Options.GetTypeInfo<Dataset>();
-        internal static JsonTypeInfo<CacheEntry> CacheEntry => Options.GetTypeInfo<CacheEntry>();
-        internal static JsonTypeInfo<CacheOptions> CacheOptions => Options.GetTypeInfo<CacheOptions>();
-        internal static JsonTypeInfo<ScenarioRunResult> ScenarioRunResult => Options.GetTypeInfo<ScenarioRunResult>();
+        internal static JsonTypeInfo<Dataset> DatasetTypeInfo => Options.GetTypeInfo<Dataset>();
+        internal static JsonTypeInfo<CacheEntry> CacheEntryTypeInfo => Options.GetTypeInfo<CacheEntry>();
+        internal static JsonTypeInfo<CacheOptions> CacheOptionsTypeInfo => Options.GetTypeInfo<CacheOptions>();
+        internal static JsonTypeInfo<ScenarioRunResult> ScenarioRunResultTypeInfo => Options.GetTypeInfo<ScenarioRunResult>();
     }
 
     internal static class Compact
     {
         private static JsonSerializerOptions? _options;
         internal static JsonSerializerOptions Options => _options ??= CreateJsonSerializerOptions(writeIndented: false);
-        internal static JsonTypeInfo<Dataset> Dataset => Options.GetTypeInfo<Dataset>();
-        internal static JsonTypeInfo<CacheEntry> CacheEntry => Options.GetTypeInfo<CacheEntry>();
-        internal static JsonTypeInfo<CacheOptions> CacheOptions => Options.GetTypeInfo<CacheOptions>();
-        internal static JsonTypeInfo<ScenarioRunResult> ScenarioRunResult => Options.GetTypeInfo<ScenarioRunResult>();
+        internal static JsonTypeInfo<Dataset> DatasetTypeInfo => Options.GetTypeInfo<Dataset>();
+        internal static JsonTypeInfo<CacheEntry> CacheEntryTypeInfo => Options.GetTypeInfo<CacheEntry>();
+        internal static JsonTypeInfo<CacheOptions> CacheOptionsTypeInfo => Options.GetTypeInfo<CacheOptions>();
+        internal static JsonTypeInfo<ScenarioRunResult> ScenarioRunResultTypeInfo => Options.GetTypeInfo<ScenarioRunResult>();
     }
 
     private static JsonTypeInfo<T> GetTypeInfo<T>(this JsonSerializerOptions options) => (JsonTypeInfo<T>)options.GetTypeInfo(typeof(T));
@@ -54,9 +54,10 @@ internal static partial class AIEvalJson
     [JsonSourceGenerationOptions(
         Converters = [
             typeof(CamelCaseEnumConverter<EvaluationDiagnosticSeverity>),
-        typeof(CamelCaseEnumConverter<EvaluationRating>),
-        typeof(CamelCaseEnumConverter<CacheMode>),
-        typeof(TimeSpanConverter)],
+            typeof(CamelCaseEnumConverter<EvaluationRating>),
+            typeof(CamelCaseEnumConverter<CacheMode>),
+            typeof(TimeSpanConverter)
+        ],
         WriteIndented = true,
         IgnoreReadOnlyProperties = false,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,

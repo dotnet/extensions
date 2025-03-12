@@ -45,7 +45,7 @@ public partial class AzureStorageResponseCache
             CacheEntry cacheEntry =
                 JsonSerializer.Deserialize(
                     content.Value.Content.ToMemory().Span,
-                    AzureStorageJson.Default.CacheEntry)
+                    AzureStorageJsonUtilities.Default.CacheEntryTypeInfo)
                 ?? throw new JsonException(
                     string.Format(CultureInfo.CurrentCulture, DeserializationFailedMessage, fileClient.Name));
 
@@ -62,7 +62,7 @@ public partial class AzureStorageResponseCache
             CacheEntry cacheEntry =
                 await JsonSerializer.DeserializeAsync(
                     content.Value.Content.ToStream(),
-                    AzureStorageJson.Default.CacheEntry,
+                    AzureStorageJsonUtilities.Default.CacheEntryTypeInfo,
                     cancellationToken).ConfigureAwait(false)
                 ?? throw new JsonException(
                     string.Format(CultureInfo.CurrentCulture, DeserializationFailedMessage, fileClient.Name));
@@ -76,7 +76,7 @@ public partial class AzureStorageResponseCache
         {
             MemoryStream stream = new();
 
-            JsonSerializer.Serialize(stream, this, AzureStorageJson.Default.CacheEntry);
+            JsonSerializer.Serialize(stream, this, AzureStorageJsonUtilities.Default.CacheEntryTypeInfo);
 
             _ = stream.Seek(0, SeekOrigin.Begin);
             _ = fileClient.Upload(stream, overwrite: true, cancellationToken);
@@ -91,7 +91,7 @@ public partial class AzureStorageResponseCache
             await JsonSerializer.SerializeAsync(
                 stream,
                 this,
-                AzureStorageJson.Default.CacheEntry,
+                AzureStorageJsonUtilities.Default.CacheEntryTypeInfo,
                 cancellationToken).ConfigureAwait(false);
 
             _ = stream.Seek(0, SeekOrigin.Begin);

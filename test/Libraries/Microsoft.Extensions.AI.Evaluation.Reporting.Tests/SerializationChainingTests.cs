@@ -14,7 +14,6 @@ namespace Microsoft.Extensions.AI.Evaluation.Reporting.Tests;
 /// These tests are designed to verify that the M.E.AI.Evaluation.Reporting library can serialize and deserialize
 /// types that it doesn't know about, but that M.E.AI does know about. For example JsonElement.
 /// </summary>
-
 public class SerializationChainingTests
 {
     private ScenarioRunResult _scenarioRunResult =
@@ -59,37 +58,37 @@ public class SerializationChainingTests
     }
 
     [Fact]
-    public void SerializeScenarioResult_AIEvalJson_Default()
+    public void SerializeScenarioResult_JsonUtilities_Default()
     {
-        string text = JsonSerializer.Serialize(_scenarioRunResult, AIEvalJson.Default.ScenarioRunResult);
-        ScenarioRunResult? response = JsonSerializer.Deserialize(text, AIEvalJson.Default.ScenarioRunResult);
+        string text = JsonSerializer.Serialize(_scenarioRunResult, JsonUtilities.Default.ScenarioRunResultTypeInfo);
+        ScenarioRunResult? response = JsonSerializer.Deserialize(text, JsonUtilities.Default.ScenarioRunResultTypeInfo);
 
         VerifyScenarioRunResult(response);
     }
 
     [Fact]
-    public void SerializeRoundTripChatResponse_AIEvalJson_Compact()
+    public void SerializeRoundTripChatResponse_JsonUtilities_Compact()
     {
-        string text = JsonSerializer.Serialize(_scenarioRunResult, AIEvalJson.Compact.ScenarioRunResult);
-        ScenarioRunResult? response = JsonSerializer.Deserialize(text, AIEvalJson.Compact.ScenarioRunResult);
+        string text = JsonSerializer.Serialize(_scenarioRunResult, JsonUtilities.Compact.ScenarioRunResultTypeInfo);
+        ScenarioRunResult? response = JsonSerializer.Deserialize(text, JsonUtilities.Compact.ScenarioRunResultTypeInfo);
 
         VerifyScenarioRunResult(response);
     }
 
     [Fact]
-    public void SerializeRoundTripChatResponse_AzureStorageJson_Default()
+    public void SerializeRoundTripChatResponse_AzureStorageJsonUtilities_Default()
     {
-        string text = JsonSerializer.Serialize(_scenarioRunResult, AzureStorageJson.Default.ScenarioRunResult);
-        ScenarioRunResult? response = JsonSerializer.Deserialize(text, AzureStorageJson.Default.ScenarioRunResult);
+        string text = JsonSerializer.Serialize(_scenarioRunResult, AzureStorageJsonUtilities.Default.ScenarioRunResultTypeInfo);
+        ScenarioRunResult? response = JsonSerializer.Deserialize(text, AzureStorageJsonUtilities.Default.ScenarioRunResultTypeInfo);
 
         VerifyScenarioRunResult(response);
     }
 
     [Fact]
-    public void SerializeRoundTripChatResponse_AzureStorageJson_Compactt()
+    public void SerializeRoundTripChatResponse_AzureStorageJsonUtilities_Compact()
     {
-        string text = JsonSerializer.Serialize(_scenarioRunResult, AzureStorageJson.Compact.ScenarioRunResult);
-        ScenarioRunResult? response = JsonSerializer.Deserialize(text, AzureStorageJson.Compact.ScenarioRunResult);
+        string text = JsonSerializer.Serialize(_scenarioRunResult, AzureStorageJsonUtilities.Compact.ScenarioRunResultTypeInfo);
+        ScenarioRunResult? response = JsonSerializer.Deserialize(text, AzureStorageJsonUtilities.Compact.ScenarioRunResultTypeInfo);
 
         VerifyScenarioRunResult(response);
     }
