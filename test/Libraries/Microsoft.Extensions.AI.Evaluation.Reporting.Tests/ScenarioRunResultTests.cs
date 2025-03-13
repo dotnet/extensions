@@ -38,6 +38,7 @@ public class ScenarioRunResultTests
             messages: [new ChatMessage(ChatRole.User, "prompt")],
             modelResponse: new ChatResponse(new ChatMessage(ChatRole.Assistant, "response")),
             evaluationResult: new EvaluationResult(booleanMetric, numericMetric, stringMetric, metricWithNoValue));
+        Assert.Equal(Defaults.ReportingFormatVersion, entry.FormatVersion);
 
         string json = JsonSerializer.Serialize(entry, JsonUtilities.Default.ScenarioRunResultTypeInfo);
         ScenarioRunResult? deserialized = JsonSerializer.Deserialize<ScenarioRunResult>(json, JsonUtilities.Default.ScenarioRunResultTypeInfo);
@@ -49,6 +50,7 @@ public class ScenarioRunResultTests
         Assert.Equal(entry.CreationTime, deserialized.CreationTime);
         Assert.True(entry.Messages.SequenceEqual(deserialized.Messages, ChatMessageComparer.Instance));
         Assert.Equal(entry.ModelResponse, deserialized.ModelResponse, ChatResponseComparer.Instance);
+        Assert.Equal(entry.FormatVersion, deserialized.FormatVersion);
 
         ValidateEquivalence(entry.EvaluationResult, deserialized.EvaluationResult);
     }
