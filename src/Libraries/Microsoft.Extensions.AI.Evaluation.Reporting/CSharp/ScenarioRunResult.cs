@@ -84,9 +84,9 @@ public sealed class ScenarioRunResult(
     }
 
     /// <summary>
-    /// Gets or sets the version of the format used to persist the current <see cref="ScenarioRunResult"/>.
+    /// Gets the version of the format used to persist the current <see cref="ScenarioRunResult"/>.
     /// </summary>
-    public int? FormatVersion { get; set; } = formatVersion ?? Defaults.ReportingFormatVersion;
+    public int? FormatVersion { get; } = formatVersion ?? Defaults.ReportingFormatVersion;
 
     /// <summary>
     /// Gets or sets the <see cref="ScenarioRun.ScenarioName"/>.
