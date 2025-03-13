@@ -309,7 +309,6 @@ public partial class AcceptanceTests
             });
     }
 
-
     [Fact]
     public async Task HttpLogging_WhenLogLevelInfo_LogRequestStart()
     {
