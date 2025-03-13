@@ -66,6 +66,8 @@ variables:
     value: Release
   - name: PostBuildSign
     value: false
+  - name: _BrandingArgs
+    value: ''
   # needed for darc (dependency flow) publishing
   - name: _PublishArgs
     value: ''

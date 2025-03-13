@@ -49,6 +49,7 @@ steps:
             -warnAsError ${{ parameters.warnAsError }}
             /bl:${{ parameters.repoLogPath }}/build.binlog
             $(_OfficialBuildIdArgs)
+            $(_BrandingArgs)
     displayName: Build
 
   - ${{ if ne(parameters.skipTests, 'true') }}:
@@ -144,6 +145,7 @@ steps:
               -configuration ${{ parameters.buildConfig }}
               /bl:${{ parameters.repoLogPath }}/transport.binlog
               $(_OfficialBuildIdArgs)
+              $(_BrandingArgs)
       displayName: Pack docs transport package
 
     - pwsh: |
@@ -159,4 +161,5 @@ steps:
               /bl:${{ parameters.repoLogPath }}/pack.binlog
               /p:Restore=false /p:Build=false
               $(_OfficialBuildIdArgs)
+              $(_BrandingArgs)
       displayName: Pack, sign, and publish
