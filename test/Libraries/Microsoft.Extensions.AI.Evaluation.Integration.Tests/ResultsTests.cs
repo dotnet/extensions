@@ -193,6 +193,8 @@ public class ResultsTests
         Assert.NotNull(metricB.Interpretation);
         Assert.True(metricB.Interpretation!.Failed);
         Assert.Null(metricC.Interpretation);
+        Assert.NotNull(metricD.Interpretation);
+        Assert.False(metricD.Interpretation!.Failed);
 
         Assert.False(result.ContainsDiagnostics());
     }
