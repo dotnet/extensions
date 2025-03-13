@@ -23,11 +23,10 @@ namespace Microsoft.Extensions.AI.Evaluation.Quality;
 /// <remarks>
 /// <see cref="RelevanceTruthAndCompletenessEvaluator"/> returns three <see cref="NumericMetric"/>s that contain scores
 /// for 'Relevance', 'Truth' and 'Completeness' respectively. Each score is a number between 1 and 5, with 1 indicating
-/// a poor score, and 5 indicating an excellent score.
+/// a poor score, and 5 indicating an excellent score. Each returned score is also accompanied by a
+/// <see cref="EvaluationMetric.Reason"/> that provides an explanation for the score.
 /// </remarks>
-/// <param name="options">Options for <see cref="RelevanceTruthAndCompletenessEvaluator"/>.</param>
-public sealed partial class RelevanceTruthAndCompletenessEvaluator(
-    RelevanceTruthAndCompletenessEvaluatorOptions? options = null) : ChatConversationEvaluator
+public sealed partial class RelevanceTruthAndCompletenessEvaluator : ChatConversationEvaluator
 {
     /// <summary>
     /// Gets the <see cref="EvaluationMetric.Name"/> of the <see cref="NumericMetric"/> returned by
@@ -60,9 +59,6 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator(
             Temperature = 0.0f,
             ResponseFormat = ChatResponseFormat.Json
         };
-
-    private readonly RelevanceTruthAndCompletenessEvaluatorOptions _options =
-        options ?? RelevanceTruthAndCompletenessEvaluatorOptions.Default;
 
     /// <inheritdoc/>
     protected override EvaluationResult InitializeResult()
@@ -101,17 +97,7 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator(
 
         string renderedHistory = builder.ToString();
 
-        string prompt =
-            _options.IncludeReasoning
-                ? Prompts.BuildEvaluationPromptWithReasoning(
-                    renderedUserRequest,
-                    renderedModelResponse,
-                    renderedHistory)
-                : Prompts.BuildEvaluationPrompt(
-                    renderedUserRequest,
-                    renderedModelResponse,
-                    renderedHistory);
-
+        string prompt = Prompts.BuildEvaluationPrompt(renderedUserRequest, renderedModelResponse, renderedHistory);
         return prompt;
     }
 
@@ -192,7 +178,7 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator(
             relevance.Interpretation = relevance.InterpretScore();
             if (!string.IsNullOrWhiteSpace(rating.RelevanceReasoning))
             {
-                relevance.AddDiagnostic(EvaluationDiagnostic.Informational(rating.RelevanceReasoning!));
+                relevance.Reason = rating.RelevanceReasoning!;
             }
 
             NumericMetric truth = result.Get<NumericMetric>(TruthMetricName);
@@ -200,7 +186,7 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator(
             truth.Interpretation = truth.InterpretScore();
             if (!string.IsNullOrWhiteSpace(rating.TruthReasoning))
             {
-                truth.AddDiagnostic(EvaluationDiagnostic.Informational(rating.TruthReasoning!));
+                truth.Reason = rating.TruthReasoning!;
             }
 
             NumericMetric completeness = result.Get<NumericMetric>(CompletenessMetricName);
@@ -208,7 +194,7 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator(
             completeness.Interpretation = completeness.InterpretScore();
             if (!string.IsNullOrWhiteSpace(rating.CompletenessReasoning))
             {
-                completeness.AddDiagnostic(EvaluationDiagnostic.Informational(rating.CompletenessReasoning!));
+                completeness.Reason = rating.CompletenessReasoning!;
             }
 
             if (!string.IsNullOrWhiteSpace(rating.Error))
