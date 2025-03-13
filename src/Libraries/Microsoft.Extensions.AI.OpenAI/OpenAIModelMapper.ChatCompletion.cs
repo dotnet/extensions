@@ -633,6 +633,9 @@ internal static partial class OpenAIModelMappers
 
         [JsonPropertyName("properties")]
         public Dictionary<string, JsonElement> Properties { get; set; } = [];
+
+        [JsonPropertyName("additionalProperties")]
+        public bool AdditionalProperties { get; set; } = false;
     }
 
     /// <summary>POCO representing function calling info. Used to concatenation information for a single function call from across multiple streaming updates.</summary>
