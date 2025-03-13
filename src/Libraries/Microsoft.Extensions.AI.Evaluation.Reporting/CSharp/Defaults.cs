@@ -32,8 +32,8 @@ public static class Defaults
     public static TimeSpan DefaultTimeToLiveForCacheEntries { get; } = TimeSpan.FromDays(14);
 
     /// <summary>
-    /// Defines the version number for the reporting format. If and when the serialized format undergoes breaking changes, this number
-    /// will be incremented to indicate the version a report file was created with compared to the version this library will produce.
+    /// Defines the version number for the reporting format. If and when the serialized format undergoes
+    /// breaking changes, this number will be incremented.
     /// </summary>
-    public const int ReportingFormatVersion = 1;
+    internal const int ReportingFormatVersion = 1;
 }
