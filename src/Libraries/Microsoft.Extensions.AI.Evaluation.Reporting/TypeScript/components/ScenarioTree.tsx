@@ -247,14 +247,14 @@ const useStyles = makeStyles({
     messageRow: {
         display: 'flex',
         flexDirection: 'column',
-        width: '900px',
+        width: '60rem',
         position: 'relative',
     },
     userMessageRow: {
         marginLeft: '0',
     },
     assistantMessageRow: {
-        marginLeft: '100px',
+        marginLeft: '10rem',
     },
     messageParticipantName: {
         fontSize: tokens.fontSizeBase200,
@@ -268,19 +268,7 @@ const useStyles = makeStyles({
         overflow: 'hidden',
         wordBreak: 'break-word',
         width: '100%',
-    },
-    userBubble: {
         backgroundColor: tokens.colorNeutralBackground3,
-        borderTopLeftRadius: '4px',
-    },
-    systemBubble: {
-        backgroundColor: tokens.colorBrandBackground,
-        color: tokens.colorNeutralForegroundInverted,
-        borderTopLeftRadius: '4px',
-    },
-    assistantBubble: {
-        backgroundColor: tokens.colorNeutralBackground4,
-        borderTopRightRadius: '4px',
     },
 });
 
@@ -350,20 +338,11 @@ export const PromptDetails = ({ messages, renderMarkdown }: {
                             classes.messageRow,
                             isFromUserSide ? classes.userMessageRow : classes.assistantMessageRow
                         );
-                        
-                        let messageBubble;
-                        if (message.role.toLowerCase() === 'system') {
-                            messageBubble = mergeClasses(classes.messageBubble, classes.systemBubble);
-                        } else if (isFromUserSide) {
-                            messageBubble = mergeClasses(classes.messageBubble, classes.userBubble);
-                        } else {
-                            messageBubble = mergeClasses(classes.messageBubble, classes.assistantBubble);
-                        }
 
                         return (
                             <div key={index} className={messageRowClass}>
                                 <div className={classes.messageParticipantName}>{message.participantName}</div>
-                                <div className={messageBubble}>
+                                <div className={classes.messageBubble}>
                                     {renderMarkdown ? 
                                         <ReactMarkdown>{message.content}</ReactMarkdown> : 
                                         <pre style={{ whiteSpace: 'pre-wrap' }}>{message.content}</pre>
