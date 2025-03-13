@@ -5,14 +5,16 @@
     <Description Condition="'$(Stage)' == 'dev'">Experimental package. $(Description)</Description>
     <Description Condition="'$(Stage)' == 'obsolete'">Obsolete Package. $(Description)</Description>
 
+    <_IsStable Condition="('$(Stage)' != 'dev' and '$(Stage)' != 'preview') Or '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.Testing'">true</_IsStable>
+
     <!--
-        When DotNetFinalVersionKind is set to 'release', this branch will produce stable outputs for 'Shipping' packages
+        When DotNetFinalVersionKind is set to 'release' (only for the release branches),
+        the build will produce stable outputs for 'Shipping' packages.
 
         In 8.0, we shipped Microsoft.AspNetCore.Testing package as stable even when it was in the dev stage, so we
         keep it as stable for compatiblity.
       -->
-    <_IsStable Condition="('$(Stage)' != 'dev' and '$(Stage)' != 'preview') Or '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.Testing'">true</_IsStable>
-    <DotNetFinalVersionKind Condition=" '$(DotNetFinalVersionKind)' == '' And '$(_IsStable)' == 'true' ">release</DotNetFinalVersionKind>
+    <DotNetFinalVersionKind Condition=" '$(configureDotNetFinalVersionKind)' == 'true' And '$(DotNetFinalVersionKind)' == '' And '$(_IsStable)' == 'true' ">release</DotNetFinalVersionKind>
 
     <!-- Preview packages: do not use stable branding and do not warn about lack of [Experimental] -->
     <NoWarn Condition="'$(Stage)' == 'dev' or '$(Stage)' == 'preview'">$(NoWarn);LA0003</NoWarn>
@@ -21,6 +23,6 @@
         https://github.com/dotnet/arcade/blob/main/Documentation/CorePackages/Versioning.md#package-version
       -->
     <SuppressFinalPackageVersion />
-    <SuppressFinalPackageVersion Condition=" '$(configureDotNetFinalVersionKind)' == 'true' And '$(_IsStable)' != 'true' ">true</SuppressFinalPackageVersion>
+    <SuppressFinalPackageVersion Condition=" '$(_IsStable)' != 'true' ">true</SuppressFinalPackageVersion>
   </PropertyGroup>
 </Project>
