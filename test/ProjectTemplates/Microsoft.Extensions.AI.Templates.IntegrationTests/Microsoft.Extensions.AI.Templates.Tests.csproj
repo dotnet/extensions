@@ -2,13 +2,6 @@
 
   <PropertyGroup>
     <Description>Unit tests for Microsoft.Extensions.AI.Templates.</Description>
-
-    <!--
-      warning NU1504: Duplicate 'PackageReference' items found.
-      Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior.
-      The duplicate 'PackageReference' items are: Verify.Xunit , Verify.Xunit ; FluentAssertions , FluentAssertions .
-    -->
-    <NoWarn>$(NoWarn);NU1504</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -18,9 +11,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.TemplateEngine.Authoring.TemplateVerifier" />
     <PackageReference Include="Microsoft.TemplateEngine.TestHelper" />
-    <PackageReference Include="Verify.Xunit" />
-    <PackageReference Include="FluentAssertions" />
-    <PackageReference Include="xunit.extensibility.execution" />
   </ItemGroup>
 
   <ItemGroup>
