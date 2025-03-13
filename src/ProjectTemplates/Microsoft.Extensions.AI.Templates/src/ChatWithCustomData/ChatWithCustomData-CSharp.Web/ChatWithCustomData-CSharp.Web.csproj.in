@@ -10,7 +10,7 @@
   <ItemGroup>
 <!--#if (IsOllama)
 #if (IsAspire)
-    <PackageReference Include="CommunityToolkit.Aspire.OllamaSharp" Version="9.2.2-beta.215" />
+    <PackageReference Include="CommunityToolkit.Aspire.OllamaSharp" Version="${CommunityToolkitAspireOllamaSharpVersion}" />
 #else
     <PackageReference Include="OllamaSharp" Version="${OllamaSharpVersion}" />
 #endif
@@ -37,8 +37,8 @@
     <PackageReference Include="Azure.Search.Documents" Version="${AzureSearchDocumentsVersion}" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureAISearch" Version="${MicrosoftSemanticKernelConnectorsAzureAISearchVersion}" />
 #elif (IsQdrant)-->
-    <PackageReference Include="Aspire.Qdrant.Client" Version="9.1.0" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Qdrant" Version="1.41.0-preview" />
+    <PackageReference Include="Aspire.Qdrant.Client" Version="${AspireVersion}" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Qdrant" Version="${MicrosoftSemanticKernelConnectorsQdrantVersion}" />
 <!--#endif -->
   </ItemGroup>
 

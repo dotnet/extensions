@@ -16,18 +16,25 @@
       $(GeneratedContentProperties);
 
       <!-- Package version properties -->
-      OllamaSharpVersion=$(OllamaSharpVersion);
-      OpenAIVersion=$(OpenAIVersion);
+      AspireVersion=$(AspireVersion);
       AzureAIProjectsVersion=$(AzureAIProjectsVersion);
       AzureAIOpenAIVersion=$(AzureAIOpenAIVersion);
       AzureIdentityVersion=$(AzureIdentityVersion);
+      AzureSearchDocumentsVersion=$(AzureSearchDocumentsVersion);
+      CommunityToolkitAspireHostingOllamaVersion=$(CommunityToolkitAspireHostingOllamaVersion);
+      CommunityToolkitAspireOllamaSharpVersion=$(CommunityToolkitAspireOllamaSharpVersion);
       MicrosoftEntityFrameworkCoreSqliteVersion=$(MicrosoftEntityFrameworkCoreSqliteVersion);
       MicrosoftExtensionsAIVersion=$(_MicrosoftExtensionsAIVersion);
+      MicrosoftExtensionsHttpResilienceVersion=$(MicrosoftExtensionsHttpResilienceVersion);
+      MicrosoftExtensionsServiceDiscoveryVersion=$(MicrosoftExtensionsServiceDiscoveryVersion);
+      MicrosoftSemanticKernelConnectorsAzureAISearchVersion=$(MicrosoftSemanticKernelConnectorsAzureAISearchVersion);
+      MicrosoftSemanticKernelConnectorsQdrantVersion=$(MicrosoftSemanticKernelConnectorsQdrantVersion);
       MicrosoftSemanticKernelCoreVersion=$(MicrosoftSemanticKernelCoreVersion);
+      OllamaSharpVersion=$(OllamaSharpVersion);
+      OpenAIVersion=$(OpenAIVersion);
+      OpenTelemetryVersion=$(OpenTelemetryVersion);
       PdfPigVersion=$(PdfPigVersion);
       SystemLinqAsyncVersion=$(SystemLinqAsyncVersion);
-      AzureSearchDocumentsVersion=$(AzureSearchDocumentsVersion);
-      MicrosoftSemanticKernelConnectorsAzureAISearchVersion=$(MicrosoftSemanticKernelConnectorsAzureAISearchVersion);
 
       <!-- Other properties -->
       LocalChatTemplateVariant=$(_LocalChatTemplateVariant);

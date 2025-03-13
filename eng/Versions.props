@@ -96,12 +96,14 @@
     <MicrosoftExtensionsHostingAbstractionsLTSVersion>8.0.1</MicrosoftExtensionsHostingAbstractionsLTSVersion>
     <MicrosoftExtensionsHostingLTSVersion>8.0.1</MicrosoftExtensionsHostingLTSVersion>
     <MicrosoftExtensionsHttpLTSVersion>8.0.1</MicrosoftExtensionsHttpLTSVersion>
+    <MicrosoftExtensionsHttpResilienceVersion>9.1.0</MicrosoftExtensionsHttpResilienceVersion>
     <MicrosoftExtensionsLoggingAbstractionsLTSVersion>8.0.3</MicrosoftExtensionsLoggingAbstractionsLTSVersion>
     <MicrosoftExtensionsLoggingConfigurationLTSVersion>8.0.1</MicrosoftExtensionsLoggingConfigurationLTSVersion>
     <MicrosoftExtensionsLoggingConsoleLTSVersion>8.0.1</MicrosoftExtensionsLoggingConsoleLTSVersion>
     <MicrosoftExtensionsLoggingLTSVersion>8.0.1</MicrosoftExtensionsLoggingLTSVersion>
     <MicrosoftExtensionsOptionsConfigurationExtensionsLTSVersion>8.0.0</MicrosoftExtensionsOptionsConfigurationExtensionsLTSVersion>
     <MicrosoftExtensionsOptionsLTSVersion>8.0.2</MicrosoftExtensionsOptionsLTSVersion>
+    <MicrosoftExtensionsServiceDiscoveryVersion>9.1.0</MicrosoftExtensionsServiceDiscoveryVersion>
     <MicrosoftNETCoreAppRefLTSVersion>8.0.13</MicrosoftNETCoreAppRefLTSVersion>
     <MicrosoftNETCoreAppRuntimewinx64LTSVersion>8.0.13</MicrosoftNETCoreAppRuntimewinx64LTSVersion>
     <SystemCollectionsImmutableLTSVersion>8.0.0</SystemCollectionsImmutableLTSVersion>
@@ -130,14 +132,19 @@
     <MicrosoftExtensionsHttpPollyLTSVersion>8.0.13</MicrosoftExtensionsHttpPollyLTSVersion>
     <MicrosoftExtensionsObjectPoolLTSVersion>8.0.13</MicrosoftExtensionsObjectPoolLTSVersion>
     <!-- 3rd party dependencies -->
+    <AspireVersion>9.1.0</AspireVersion>
     <AzureAIProjectsVersion>1.0.0-beta.3</AzureAIProjectsVersion>
     <AzureAIOpenAIVersion>2.2.0-beta.1</AzureAIOpenAIVersion>
     <AzureIdentityVersion>1.13.2</AzureIdentityVersion>
     <AzureSearchDocumentsVersion>11.6.0</AzureSearchDocumentsVersion>
+    <CommunityToolkitAspireHostingOllamaVersion>9.2.2-beta.215</CommunityToolkitAspireHostingOllamaVersion>
+    <CommunityToolkitAspireOllamaSharpVersion>9.2.2-beta.215</CommunityToolkitAspireOllamaSharpVersion>
     <MicrosoftSemanticKernelConnectorsAzureAISearchVersion>1.41.0-preview</MicrosoftSemanticKernelConnectorsAzureAISearchVersion>
+    <MicrosoftSemanticKernelConnectorsQdrantVersion>1.41.0-preview</MicrosoftSemanticKernelConnectorsQdrantVersion>
     <MicrosoftSemanticKernelCoreVersion>1.41.0</MicrosoftSemanticKernelCoreVersion>
     <OllamaSharpVersion>5.0.7</OllamaSharpVersion>
     <OpenAIVersion>2.2.0-beta.1</OpenAIVersion>
+    <OpenTelemetryVersion>1.9.0</OpenTelemetryVersion>
     <PdfPigVersion>0.1.9</PdfPigVersion>
     <SystemLinqAsyncVersion>6.0.1</SystemLinqAsyncVersion>
   </PropertyGroup>
