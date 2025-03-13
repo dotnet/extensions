@@ -18,9 +18,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.TemplateEngine.Authoring.TemplateVerifier" />
     <PackageReference Include="Microsoft.TemplateEngine.TestHelper" />
-    <PackageReference Include="Verify.Xunit" VersionOverride="25.0.2" />
-    <PackageReference Include="FluentAssertions" VersionOverride=" 6.12.0" />
-    <PackageReference Include="xunit.extensibility.execution" VersionOverride="2.9.0" />
+    <PackageReference Include="Verify.Xunit" />
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="xunit.extensibility.execution" />
   </ItemGroup>
 
   <ItemGroup>
