@@ -20,14 +20,14 @@ public class HttpRequestBufferLoggerBuilderExtensionsTests
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging(builder =>
         {
-            builder.AddHttpRequestBuffering(LogLevel.Warning);
+            builder.AddPerIncomingRequestBuffer(LogLevel.Warning);
         });
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
         var buffer = serviceProvider.GetService<PerRequestLogBuffer>();
 
         Assert.NotNull(buffer);
-        Assert.IsAssignableFrom<HttpRequestBufferManager>(buffer);
+        Assert.IsAssignableFrom<PerIncomingRequestLogBufferManager>(buffer);
     }
 
     [Fact]
@@ -36,8 +36,8 @@ public class HttpRequestBufferLoggerBuilderExtensionsTests
         var builder = null as ILoggingBuilder;
         var configuration = null as IConfiguration;
 
-        Assert.Throws<ArgumentNullException>(() => builder!.AddHttpRequestBuffering(LogLevel.Warning));
-        Assert.Throws<ArgumentNullException>(() => builder!.AddHttpRequestBuffering(configuration!));
+        Assert.Throws<ArgumentNullException>(() => builder!.AddPerIncomingRequestBuffer(LogLevel.Warning));
+        Assert.Throws<ArgumentNullException>(() => builder!.AddPerIncomingRequestBuffer(configuration!));
     }
 
     [Fact]
@@ -52,9 +52,9 @@ public class HttpRequestBufferLoggerBuilderExtensionsTests
         configBuilder.AddJsonFile("appsettings.json");
         IConfigurationRoot configuration = configBuilder.Build();
         var serviceCollection = new ServiceCollection();
-        serviceCollection.AddLogging(b => b.AddHttpRequestBuffering(configuration));
+        serviceCollection.AddLogging(b => b.AddPerIncomingRequestBuffer(configuration));
         var serviceProvider = serviceCollection.BuildServiceProvider();
-        var options = serviceProvider.GetService<IOptionsMonitor<HttpRequestLogBufferingOptions>>();
+        var options = serviceProvider.GetService<IOptionsMonitor<PerRequestLogBufferingOptions>>();
         Assert.NotNull(options);
         Assert.NotNull(options.CurrentValue);
         Assert.Equivalent(expectedData, options.CurrentValue.Rules);

@@ -15,26 +15,27 @@ using static Microsoft.Extensions.Logging.ExtendedLogger;
 
 namespace Microsoft.AspNetCore.Diagnostics.Buffering;
 
-internal sealed class HttpRequestBuffer : ILoggingBuffer
+internal sealed class PerIncomingRequestBuffer : ILoggingBuffer, IDisposable
 {
-    private readonly IOptionsMonitor<HttpRequestLogBufferingOptions> _options;
+    private readonly IOptionsMonitor<PerRequestLogBufferingOptions> _options;
     private readonly IOptionsMonitor<GlobalLogBufferingOptions> _globalOptions;
     private readonly ConcurrentQueue<SerializedLogRecord> _buffer;
     private readonly TimeProvider _timeProvider = TimeProvider.System;
     private readonly IBufferedLogger _bufferedLogger;
     private readonly LogBufferingFilterRuleSelector _ruleSelector;
+    private readonly IDisposable? _optionsChangeTokenRegistration;
+    private readonly string _category;
 
     private DateTimeOffset _lastFlushTimestamp;
     private int _bufferSize;
     private bool _disposed;
-    private readonly IDisposable? _optionsChangeTokenRegistration;
-    private LogBufferingFilterRule[] _lastKnownGoodFilterRules;
-    private readonly string _category;
 
-    public HttpRequestBuffer(IBufferedLogger bufferedLogger,
+    private LogBufferingFilterRule[] _lastKnownGoodFilterRules;
+
+    public PerIncomingRequestBuffer(IBufferedLogger bufferedLogger,
         string category,
         LogBufferingFilterRuleSelector ruleSelector,
-        IOptionsMonitor<HttpRequestLogBufferingOptions> options,
+        IOptionsMonitor<PerRequestLogBufferingOptions> options,
         IOptionsMonitor<GlobalLogBufferingOptions> globalOptions)
     {
         _options = options;
@@ -46,17 +47,15 @@ internal sealed class HttpRequestBuffer : ILoggingBuffer
         _lastKnownGoodFilterRules = LogBufferingFilterRuleSelector.SelectByCategory(_options.CurrentValue.Rules.ToArray(), _category);
         _optionsChangeTokenRegistration = options.OnChange(OnOptionsChanged);
     }
-    
+
     public void Dispose()
     {
-        if (_disposed)
+        if (!_disposed)
         {
-            return;
+            _disposed = true;
+
+            _optionsChangeTokenRegistration?.Dispose();
         }
-
-        _disposed = true;
-
-        _optionsChangeTokenRegistration?.Dispose();
     }
 
     ///<inheritdoc/>
@@ -114,7 +113,7 @@ internal sealed class HttpRequestBuffer : ILoggingBuffer
         lock (_buffer)
         {
             _buffer.Clear();
-            Interlocked.Exchange(ref _bufferSize, 0);
+            _ = Interlocked.Exchange(ref _bufferSize, 0);
         }
 
         var deserializedLogRecords = new List<DeserializedLogRecord>(bufferedRecords.Length);
@@ -132,8 +131,8 @@ internal sealed class HttpRequestBuffer : ILoggingBuffer
 
         _bufferedLogger.LogRecords(deserializedLogRecords);
     }
-    
-    private void OnOptionsChanged(HttpRequestLogBufferingOptions? updatedOptions)
+
+    private void OnOptionsChanged(PerRequestLogBufferingOptions? updatedOptions)
     {
         if (updatedOptions is null)
         {
@@ -154,7 +153,7 @@ internal sealed class HttpRequestBuffer : ILoggingBuffer
             return false;
         }
 
-        return _ruleSelector.Select(_options.CurrentValue.Rules, logLevel, eventId, attributes) is not null;
+        return _ruleSelector.Select(_lastKnownGoodFilterRules, logLevel, eventId, attributes) is not null;
     }
 
     private void TrimExcessRecords()

@@ -6,17 +6,17 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Diagnostics.Buffering;
 
-internal sealed class HttpRequestLogBufferingConfigureOptions : IConfigureOptions<HttpRequestLogBufferingOptions>
+internal sealed class PerIncomingRequestLogBufferingConfigureOptions : IConfigureOptions<PerRequestLogBufferingOptions>
 {
     private const string BufferingKey = "Buffering";
     private readonly IConfiguration _configuration;
 
-    public HttpRequestLogBufferingConfigureOptions(IConfiguration configuration)
+    public PerIncomingRequestLogBufferingConfigureOptions(IConfiguration configuration)
     {
         _configuration = configuration;
     }
 
-    public void Configure(HttpRequestLogBufferingOptions options)
+    public void Configure(PerRequestLogBufferingOptions options)
     {
         if (_configuration == null)
         {
@@ -29,7 +29,7 @@ internal sealed class HttpRequestLogBufferingConfigureOptions : IConfigureOption
             return;
         }
 
-        var parsedOptions = section.Get<HttpRequestLogBufferingOptions>();
+        var parsedOptions = section.Get<PerRequestLogBufferingOptions>();
         if (parsedOptions is null)
         {
             return;

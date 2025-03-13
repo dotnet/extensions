@@ -754,7 +754,7 @@ public partial class AcceptanceTests
                 // they will be logged as usual and contaminate test results:
                 builder.AddFilter("Microsoft.AspNetCore.HttpLogging", LogLevel.None);
 
-                builder.AddHttpRequestBuffering(LogLevel.Debug);
+                builder.AddPerIncomingRequestBuffer(LogLevel.Debug);
             }),
             async (logCollector, client, sp) =>
             {

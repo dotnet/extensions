@@ -7,7 +7,7 @@ using Microsoft.Extensions.Diagnostics.Buffering;
 
 namespace Microsoft.AspNetCore.Diagnostics.Buffering;
 
-internal sealed class HttpRequestBufferHolder
+internal sealed class PerIncomingRequestBufferHolder
 {
     private readonly ConcurrentDictionary<string, ILoggingBuffer> _buffers = new();
 

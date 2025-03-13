@@ -10,19 +10,19 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Diagnostics.Buffering;
 
-internal sealed class HttpRequestBufferManager : PerRequestLogBuffer
+internal sealed class PerIncomingRequestLogBufferManager : PerRequestLogBuffer
 {
     private readonly GlobalLogBuffer _globalBuffer;
     private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly IOptionsMonitor<HttpRequestLogBufferingOptions> _requestOptions;
+    private readonly IOptionsMonitor<PerRequestLogBufferingOptions> _requestOptions;
     private readonly IOptionsMonitor<GlobalLogBufferingOptions> _globalOptions;
     private readonly LogBufferingFilterRuleSelector _ruleSelector;
 
-    public HttpRequestBufferManager(
+    public PerIncomingRequestLogBufferManager(
         GlobalLogBuffer globalBuffer,
         IHttpContextAccessor httpContextAccessor,
         LogBufferingFilterRuleSelector ruleSelector,
-        IOptionsMonitor<HttpRequestLogBufferingOptions> requestOptions,
+        IOptionsMonitor<PerRequestLogBufferingOptions> requestOptions,
         IOptionsMonitor<GlobalLogBufferingOptions> globalOptions)
     {
         _globalBuffer = globalBuffer;
@@ -34,7 +34,7 @@ internal sealed class HttpRequestBufferManager : PerRequestLogBuffer
 
     public override void Flush()
     {
-        _httpContextAccessor.HttpContext?.RequestServices.GetService<HttpRequestBufferHolder>()?.Flush();
+        _httpContextAccessor.HttpContext?.RequestServices.GetService<PerIncomingRequestBufferHolder>()?.Flush();
         _globalBuffer.Flush();
     }
 
@@ -47,9 +47,9 @@ internal sealed class HttpRequestBufferManager : PerRequestLogBuffer
         }
 
         string category = logEntry.Category;
-        HttpRequestBufferHolder? bufferHolder = httpContext.RequestServices.GetService<HttpRequestBufferHolder>();
+        PerIncomingRequestBufferHolder? bufferHolder = httpContext.RequestServices.GetService<PerIncomingRequestBufferHolder>();
         ILoggingBuffer? buffer = bufferHolder?.GetOrAdd(category, _ =>
-            new HttpRequestBuffer(bufferedLogger, category, _ruleSelector, _requestOptions, _globalOptions)!);
+            new PerIncomingRequestBuffer(bufferedLogger, category, _ruleSelector, _requestOptions, _globalOptions)!);
 
         if (buffer is null)
         {

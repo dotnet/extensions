@@ -21,7 +21,7 @@ namespace Microsoft.Extensions.Logging;
 /// Lets you register HTTP request log buffering in a dependency injection container.
 /// </summary>
 [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
-public static class HttpRequestBufferingLoggingBuilderExtensions
+public static class PerIncomingRequestLoggingBuilderExtensions
 {
     /// <summary>
     /// Adds HTTP request log buffering to the logging infrastructure. 
@@ -33,15 +33,15 @@ public static class HttpRequestBufferingLoggingBuilderExtensions
     /// <remarks>
     /// Matched logs will be buffered in a buffer specific to each HTTP request and can optionally be flushed and emitted during the request lifetime.
     /// </remarks>
-    public static ILoggingBuilder AddHttpRequestBuffering(this ILoggingBuilder builder, IConfiguration configuration)
+    public static ILoggingBuilder AddPerIncomingRequestBuffer(this ILoggingBuilder builder, IConfiguration configuration)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configuration);
 
-        _ = builder.Services.AddSingleton<IConfigureOptions<HttpRequestLogBufferingOptions>>(new HttpRequestLogBufferingConfigureOptions(configuration));
+        _ = builder.Services.AddSingleton<IConfigureOptions<PerRequestLogBufferingOptions>>(new PerIncomingRequestLogBufferingConfigureOptions(configuration));
 
         return builder
-            .AddHttpRequestBufferManager()
+            .AddPerIncomingRequestBufferManager()
             .AddGlobalBuffer(configuration);
     }
 
@@ -55,18 +55,18 @@ public static class HttpRequestBufferingLoggingBuilderExtensions
     /// <remarks>
     /// Matched logs will be buffered in a buffer specific to each HTTP request and can optionally be flushed and emitted during the request lifetime.
     /// </remarks>
-    public static ILoggingBuilder AddHttpRequestBuffering(this ILoggingBuilder builder, Action<HttpRequestLogBufferingOptions> configure)
+    public static ILoggingBuilder AddPerIncomingRequestBuffer(this ILoggingBuilder builder, Action<PerRequestLogBufferingOptions> configure)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);
 
         _ = builder.Services.Configure(configure);
 
-        HttpRequestLogBufferingOptions options = new HttpRequestLogBufferingOptions();
+        PerRequestLogBufferingOptions options = new PerRequestLogBufferingOptions();
         configure(options);
 
         return builder
-            .AddHttpRequestBufferManager()
+            .AddPerIncomingRequestBufferManager()
             .AddGlobalBuffer(opts => opts.Rules = options.Rules);
     }
 
@@ -80,28 +80,28 @@ public static class HttpRequestBufferingLoggingBuilderExtensions
     /// <remarks>
     /// Matched logs will be buffered in a buffer specific to each HTTP request and can optionally be flushed and emitted during the request lifetime.
     /// </remarks>
-    public static ILoggingBuilder AddHttpRequestBuffering(this ILoggingBuilder builder, LogLevel? logLevel = null)
+    public static ILoggingBuilder AddPerIncomingRequestBuffer(this ILoggingBuilder builder, LogLevel? logLevel = null)
     {
         _ = Throw.IfNull(builder);
 
-        _ = builder.Services.Configure<HttpRequestLogBufferingOptions>(options => options.Rules.Add(new LogBufferingFilterRule(logLevel: logLevel)));
+        _ = builder.Services.Configure<PerRequestLogBufferingOptions>(options => options.Rules.Add(new LogBufferingFilterRule(logLevel: logLevel)));
 
         return builder
-            .AddHttpRequestBufferManager()
+            .AddPerIncomingRequestBufferManager()
             .AddGlobalBuffer(logLevel);
     }
 
-    internal static ILoggingBuilder AddHttpRequestBufferManager(this ILoggingBuilder builder)
+    internal static ILoggingBuilder AddPerIncomingRequestBufferManager(this ILoggingBuilder builder)
     {
-        builder.Services.TryAddScoped<HttpRequestBufferHolder>();
+        builder.Services.TryAddScoped<PerIncomingRequestBufferHolder>();
         builder.Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         builder.Services.TryAddSingleton(sp =>
         {
             var globalBufferManager = sp.GetRequiredService<GlobalBufferManager>();
-            return ActivatorUtilities.CreateInstance<HttpRequestBufferManager>(sp, globalBufferManager);
+            return ActivatorUtilities.CreateInstance<PerIncomingRequestLogBufferManager>(sp, globalBufferManager);
         });
-        builder.Services.TryAddSingleton<LogBuffer>(sp => sp.GetRequiredService<HttpRequestBufferManager>());
-        builder.Services.TryAddSingleton<PerRequestLogBuffer>(sp => sp.GetRequiredService<HttpRequestBufferManager>());
+        builder.Services.TryAddSingleton<LogBuffer>(sp => sp.GetRequiredService<PerIncomingRequestLogBufferManager>());
+        builder.Services.TryAddSingleton<PerRequestLogBuffer>(sp => sp.GetRequiredService<PerIncomingRequestLogBufferManager>());
 
         return builder;
     }
