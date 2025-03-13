@@ -134,8 +134,8 @@
     <AzureAIOpenAIVersion>2.2.0-beta.1</AzureAIOpenAIVersion>
     <AzureIdentityVersion>1.13.2</AzureIdentityVersion>
     <AzureSearchDocumentsVersion>11.6.0</AzureSearchDocumentsVersion>
-    <MicrosoftSemanticKernelConnectorsAzureAISearchVersion>1.37.0-preview</MicrosoftSemanticKernelConnectorsAzureAISearchVersion>
-    <MicrosoftSemanticKernelCoreVersion>1.37.0</MicrosoftSemanticKernelCoreVersion>
+    <MicrosoftSemanticKernelConnectorsAzureAISearchVersion>1.41.0-preview</MicrosoftSemanticKernelConnectorsAzureAISearchVersion>
+    <MicrosoftSemanticKernelCoreVersion>1.41.0</MicrosoftSemanticKernelCoreVersion>
     <OllamaSharpVersion>5.0.7</OllamaSharpVersion>
     <OpenAIVersion>2.2.0-beta.1</OpenAIVersion>
     <PdfPigVersion>0.1.9</PdfPigVersion>

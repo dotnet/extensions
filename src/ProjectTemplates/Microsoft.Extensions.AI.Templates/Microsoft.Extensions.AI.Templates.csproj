@@ -35,9 +35,7 @@
 
   <ItemGroup>
     <Content
-      Include="
-        src\ChatWithCustomData\**\*;
-        src\AspireChatWithCustomData\**\*;"
+      Include="src\ChatWithCustomData\**\*"
       Exclude="
         **\bin\**;
         **\obj\**;
@@ -48,7 +46,9 @@
         **\*.in;
         **\*.out.js;
         **\*.generated.css;
-        **\package-lock.json;" />
+        **\package-lock.json;
+        **\Directory.build.targets;
+        **\NuGet.config;" />
     <None Include="THIRD-PARTY-NOTICES.TXT" Pack="true" PackagePath="." />
     <Compile Remove="**\*" />
   </ItemGroup>

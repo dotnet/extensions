@@ -8,6 +8,7 @@ package-lock.json
 */src/**/*.csproj
 */src/**/qdrant_data/
 */src/**/ingestioncache.*
+*/src/**/Directory.Build.targets.in
 
 # launchSettings.json files are required for the templates.
 !launchSettings.json
@@ -17,3 +18,6 @@ package-lock.json
 
 # Keep the package-lock.json file for updating template dependencies.
 !package-lock.json
+
+# Keep .sln files defined as part of template content.
+!*/src/ChatWithCustomData/*.sln
