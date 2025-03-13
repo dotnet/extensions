@@ -26,7 +26,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Microsoft.Extensions.AI\Microsoft.Extensions.AI.csproj" />
+    <PackageReference Include="Microsoft.Extensions.AI" VersionOverride="9.3.0-preview.1.25161.3" />
+    <!-- <ProjectReference Include="..\..\Microsoft.Extensions.AI\Microsoft.Extensions.AI.csproj" /> -->
     <ProjectReference Include="..\..\Microsoft.Extensions.AI.Evaluation\Microsoft.Extensions.AI.Evaluation.csproj" />
   </ItemGroup>
 
