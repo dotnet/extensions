@@ -1,5 +1,5 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.VectorData;
 using ChatWithCustomData_CSharp.Web.Components;
 using ChatWithCustomData_CSharp.Web.Services;
@@ -12,13 +12,21 @@ using Microsoft.SemanticKernel.Connectors.Qdrant;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
-#if (IsAzureOpenAI) // TODO
-#else // IsOllama
+#if (IsOllama)
 builder.AddOllamaApiClient("chat").AddChatClient()
     .UseFunctionInvocation()
     .UseLogging()
     .UseOpenTelemetry();
 builder.AddOllamaApiClient("embeddings").AddEmbeddingGenerator()
+    .UseLogging()
+    .UseOpenTelemetry();
+#else // IsAzureOpenAI
+var azureOpenAI = builder.AddAzureOpenAIClient("openai");
+azureOpenAI.AddChatClient("gpt-4o-mini")
+    .UseFunctionInvocation()
+    .UseLogging()
+    .UseOpenTelemetry();
+azureOpenAI.AddEmbeddingGenerator("text-embedding-3-small")
     .UseLogging()
     .UseOpenTelemetry();
 #endif

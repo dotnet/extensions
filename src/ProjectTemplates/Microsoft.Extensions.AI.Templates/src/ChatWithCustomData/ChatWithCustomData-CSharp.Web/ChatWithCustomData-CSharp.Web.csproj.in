@@ -19,9 +19,11 @@
     <PackageReference Include="Azure.AI.Projects" Version="${AzureAIProjectsVersion}" />
     <PackageReference Include="Azure.AI.OpenAI" Version="${AzureAIOpenAIVersion}" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${MicrosoftExtensionsAIVersion}" />
-#else -->
+#elif (IsAzureOpenAI && !IsAspire) -->
     <PackageReference Include="Azure.AI.OpenAI" Version="${AzureAIOpenAIVersion}" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${MicrosoftExtensionsAIVersion}" />
+<!--#else --> <!-- (IsAzureOpenAI && IsAspire) -->
+    <PackageReference Include="Aspire.Azure.AI.OpenAI" Version="9.1.0-preview.1.25121.10" />
 <!--#endif -->
 <!--#if (UseManagedIdentity) -->
     <PackageReference Include="Azure.Identity" Version="${AzureIdentityVersion}" />
@@ -36,7 +38,7 @@
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureAISearch" Version="${MicrosoftSemanticKernelConnectorsAzureAISearchVersion}" />
 #elif (IsQdrant)-->
     <PackageReference Include="Aspire.Qdrant.Client" Version="9.1.0" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Qdrant" Version="1.40.1-preview" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Qdrant" Version="1.41.0-preview" />
 <!--#endif -->
   </ItemGroup>
 

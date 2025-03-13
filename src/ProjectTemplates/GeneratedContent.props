@@ -3,7 +3,9 @@
   <PropertyGroup>
     <!--
       Configures which chat template variant to use when debugging locally.
-      Options are 'singleproject' and 'aspire'.
+      Options are:
+      - singleproject
+      - aspire
     -->
     <_LocalChatTemplateVariant>aspire</_LocalChatTemplateVariant>
 
