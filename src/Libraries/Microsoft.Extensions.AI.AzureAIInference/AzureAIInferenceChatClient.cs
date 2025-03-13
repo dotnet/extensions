@@ -449,9 +449,20 @@ public sealed class AzureAIInferenceChatClient : IChatClient
             }
             else if (input.Role == ChatRole.User)
             {
-                yield return input.Contents.All(c => c is TextContent) ?
-                    new ChatRequestUserMessage(string.Concat(input.Contents)) :
-                    new ChatRequestUserMessage(GetContentParts(input.Contents));
+                if (input.Contents.Count > 0)
+                {
+                    if (input.Contents.All(c => c is TextContent))
+                    {
+                        if (string.Concat(input.Contents) is { Length: > 0 } text)
+                        {
+                            yield return new ChatRequestUserMessage(text);
+                        }
+                    }
+                    else if (GetContentParts(input.Contents) is { Count: > 0 } parts)
+                    {
+                        yield return new ChatRequestUserMessage(parts);
+                    }
+                }
             }
             else if (input.Role == ChatRole.Assistant)
             {
