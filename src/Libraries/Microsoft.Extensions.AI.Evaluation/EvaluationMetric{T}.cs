@@ -21,24 +21,17 @@ public class EvaluationMetric<T> : EvaluationMetric
     public T? Value { get; set; }
 
     /// <summary>
-    /// Gets or sets a string that can optionally be used to provide some commentary around the result represented by
-    /// <see cref="Value"/>.
-    /// </summary>
-    public string? Reason { get; set; }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="EvaluationMetric{T}"/> class.
     /// </summary>
     /// <param name="name">The name of the <see cref="EvaluationMetric{T}"/>.</param>
     /// <param name="value">The value  of the <see cref="EvaluationMetric{T}"/>.</param>
     /// <param name="reason">
-    /// An optional string that can be used to provide some commentary around the result represented by
-    /// <paramred name="value"/>.
+    /// An optional string that can be used to provide some commentary around the result represented by this
+    /// <see cref="EvaluationMetric{T}"/>.
     /// </param>
     protected EvaluationMetric(string name, T? value, string? reason = null)
-        : base(name)
+        : base(name, reason)
     {
         Value = value;
-        Reason = reason;
     }
 }

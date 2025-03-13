@@ -419,6 +419,7 @@ public class ResultsTests
         var metric3 = new EvaluationMetric("Metric with error diagnostics only");
         metric3.AddDiagnostic(EvaluationDiagnostic.Error("Error 1"));
         metric3.AddDiagnostic(EvaluationDiagnostic.Error("Error 2"));
+        metric3.Reason = "Reason for metric 3";
 
         HashSet<string> allowedValues = ["A", "B", "C"];
         var metric4 = new StringMetric("Metric with warning diagnostics only");
@@ -470,6 +471,7 @@ public class ResultsTests
         var metric3 = new EvaluationMetric("Metric with error diagnostics only");
         metric3.AddDiagnostic(EvaluationDiagnostic.Error("Error 1"));
         metric3.AddDiagnostic(EvaluationDiagnostic.Error("Error 2"));
+        metric3.Reason = "Reason for metric 3";
 
         HashSet<string> allowedValues = ["A", "B", "C"];
         var metric4 = new StringMetric("Metric with warning diagnostics only");
