@@ -27,7 +27,6 @@ using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 #endif
 
 var builder = WebApplication.CreateBuilder(args);
-builder.AddServiceDefaults();
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 #if (IsGHModels)
@@ -60,7 +59,7 @@ var chatClient = openAIClient.AsChatClient("gpt-4o-mini");
 var embeddingGenerator = openAIClient.AsEmbeddingGenerator("text-embedding-3-small");
 #elif (IsAzureAiFoundry)
 
-#else
+#else // IsAzureOpenAI
 // You will need to set the endpoint and key to your own values
 // You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
 //   cd this-project-directory
@@ -95,7 +94,7 @@ var vectorStore = new AzureAISearchVectorStore(
 #else
         new AzureKeyCredential(builder.Configuration["AzureAISearch:Key"] ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Key. See the README for details."))));
 #endif
-#else
+#else // UseLocalVectorStore
 var vectorStore = new JsonVectorStore(Path.Combine(AppContext.BaseDirectory, "vector-store"));
 #endif
 
@@ -110,8 +109,6 @@ builder.Services.AddDbContext<IngestionCacheDbContext>(options =>
 
 var app = builder.Build();
 IngestionCacheDbContext.Initialize(app.Services);
-
-app.MapDefaultEndpoints();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

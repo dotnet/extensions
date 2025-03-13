@@ -8,22 +8,22 @@
   </PropertyGroup>
 
   <ItemGroup>
-<!--#if (IsOllama && !IsAspire)
-    <PackageReference Include="OllamaSharp" Version="${OllamaSharpVersion}" />
-#elif (IsOllama && IsAspire)-->
+<!--#if (IsOllama)
+#if (IsAspire)
     <PackageReference Include="CommunityToolkit.Aspire.OllamaSharp" Version="9.2.2-beta.215" />
-<!--#elif (IsGHModels)
+#else
+    <PackageReference Include="OllamaSharp" Version="${OllamaSharpVersion}" />
+#endif
+#elif (IsGHModels)
     <PackageReference Include="OpenAI" Version="${OpenAIVersion}" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${MicrosoftExtensionsAIVersion}" />
 #elif (IsAzureAiFoundry)
     <PackageReference Include="Azure.AI.Projects" Version="${AzureAIProjectsVersion}" />
     <PackageReference Include="Azure.AI.OpenAI" Version="${AzureAIOpenAIVersion}" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${MicrosoftExtensionsAIVersion}" />
-#elif (IsAzureOpenAI && !IsAspire) -->
+#else --> <!-- IsAzureOpenAI -->
     <PackageReference Include="Azure.AI.OpenAI" Version="${AzureAIOpenAIVersion}" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${MicrosoftExtensionsAIVersion}" />
-<!--#else --> <!-- (IsAzureOpenAI && IsAspire) -->
-    <PackageReference Include="Aspire.Azure.AI.OpenAI" Version="9.1.0-preview.1.25121.10" />
 <!--#endif -->
 <!--#if (UseManagedIdentity) -->
     <PackageReference Include="Azure.Identity" Version="${AzureIdentityVersion}" />
