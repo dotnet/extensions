@@ -129,14 +129,13 @@ export class ScoreNode {
     }
 };
 
-export const DefaultRootNodeName = "All Evaluations";
-
 export const createScoreTree = (dataset: Dataset): ScoreNode => {
-    const root = new ScoreNode(DefaultRootNodeName, ScoreNodeType.Group);
+    const root = new ScoreNode("All Evaluations", ScoreNodeType.Group);
     for (const scenario of dataset.scenarioRunResults) {
         const path = [...scenario.scenarioName.split('.'), scenario.iterationName];
         root.insertNode(path, scenario);
     }
+    root.collapseSingleChildNodes();
     root.aggregate();
     return root;
 };
