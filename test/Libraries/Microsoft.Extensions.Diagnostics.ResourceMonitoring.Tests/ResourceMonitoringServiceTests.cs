@@ -22,7 +22,6 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test;
 /// <summary>
 /// Tests for the DataTracker class.
 /// </summary>
-[UsesVerify]
 public sealed class ResourceMonitoringServiceTests
 {
     private const string ProviderUnableToGatherData = "Unable to gather utilization statistics.";

@@ -38,9 +38,10 @@ public class ScenarioRunResultTests
             messages: [new ChatMessage(ChatRole.User, "prompt")],
             modelResponse: new ChatResponse(new ChatMessage(ChatRole.Assistant, "response")),
             evaluationResult: new EvaluationResult(booleanMetric, numericMetric, stringMetric, metricWithNoValue));
+        Assert.Equal(Defaults.ReportingFormatVersion, entry.FormatVersion);
 
-        string json = JsonSerializer.Serialize(entry, SerializerContext.Default.ScenarioRunResult);
-        ScenarioRunResult? deserialized = JsonSerializer.Deserialize<ScenarioRunResult>(json, SerializerContext.Default.ScenarioRunResult);
+        string json = JsonSerializer.Serialize(entry, JsonUtilities.Default.ScenarioRunResultTypeInfo);
+        ScenarioRunResult? deserialized = JsonSerializer.Deserialize<ScenarioRunResult>(json, JsonUtilities.Default.ScenarioRunResultTypeInfo);
 
         Assert.NotNull(deserialized);
         Assert.Equal(entry.ScenarioName, deserialized!.ScenarioName);
@@ -49,6 +50,7 @@ public class ScenarioRunResultTests
         Assert.Equal(entry.CreationTime, deserialized.CreationTime);
         Assert.True(entry.Messages.SequenceEqual(deserialized.Messages, ChatMessageComparer.Instance));
         Assert.Equal(entry.ModelResponse, deserialized.ModelResponse, ChatResponseComparer.Instance);
+        Assert.Equal(entry.FormatVersion, deserialized.FormatVersion);
 
         ValidateEquivalence(entry.EvaluationResult, deserialized.EvaluationResult);
     }
@@ -80,8 +82,8 @@ public class ScenarioRunResultTests
 
         var dataset = new Dataset([entry], createdAt: DateTime.UtcNow, generatorVersion: "1.2.3.4");
 
-        string json = JsonSerializer.Serialize(dataset, SerializerContext.Compact.Dataset);
-        Dataset? deserialized = JsonSerializer.Deserialize(json, SerializerContext.Default.Dataset);
+        string json = JsonSerializer.Serialize(dataset, JsonUtilities.Compact.DatasetTypeInfo);
+        Dataset? deserialized = JsonSerializer.Deserialize(json, JsonUtilities.Default.DatasetTypeInfo);
 
         Assert.NotNull(deserialized);
         Assert.Equal(entry.ScenarioName, deserialized!.ScenarioRunResults[0].ScenarioName);
@@ -107,8 +109,8 @@ public class ScenarioRunResultTests
             creation: DateTime.UtcNow,
             expiration: DateTime.UtcNow.Add(TimeSpan.FromMinutes(5)));
 
-        string defaultJson = JsonSerializer.Serialize(entry, SerializerContext.Default.CacheEntry);
-        string compactJson = JsonSerializer.Serialize(entry, SerializerContext.Compact.CacheEntry);
+        string defaultJson = JsonSerializer.Serialize(entry, JsonUtilities.Default.CacheEntryTypeInfo);
+        string compactJson = JsonSerializer.Serialize(entry, JsonUtilities.Compact.CacheEntryTypeInfo);
 
         Assert.NotEqual(defaultJson, compactJson);
         Assert.True(defaultJson.Length > compactJson.Length);

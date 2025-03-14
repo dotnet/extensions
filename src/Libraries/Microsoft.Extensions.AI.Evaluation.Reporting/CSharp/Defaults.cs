@@ -30,4 +30,10 @@ public static class Defaults
     /// in the <see cref="IResponseCacheProvider"/>'s cache before they are considered expired and evicted.
     /// </summary>
     public static TimeSpan DefaultTimeToLiveForCacheEntries { get; } = TimeSpan.FromDays(14);
+
+    /// <summary>
+    /// Defines the version number for the reporting format. If and when the serialized format undergoes
+    /// breaking changes, this number will be incremented.
+    /// </summary>
+    internal const int ReportingFormatVersion = 1;
 }

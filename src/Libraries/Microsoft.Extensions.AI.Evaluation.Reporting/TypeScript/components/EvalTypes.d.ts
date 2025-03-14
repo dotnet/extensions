@@ -65,20 +65,24 @@ type BaseEvaluationMetric = {
 
 type MetricWithNoValue = BaseEvaluationMetric & {
     $type: "none";
+    reason?: string;
     value: undefined;
 };
 
 type NumericMetric = BaseEvaluationMetric & {
     $type: "numeric";
+    reason?: string;
     value?: number;
 };
 
 type BooleanMetric = BaseEvaluationMetric & {
     $type: "boolean";
+    reason?: string;
     value?: boolean;
 };
 
 type StringMetric = BaseEvaluationMetric & {
     $type: "string";
+    reason?: string;
     value?: string;
 };
