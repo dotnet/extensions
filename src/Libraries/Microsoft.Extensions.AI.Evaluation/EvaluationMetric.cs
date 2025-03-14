@@ -15,16 +15,26 @@ namespace Microsoft.Extensions.AI.Evaluation;
 /// A base class that represents the result of an evaluation.
 /// </summary>
 /// <param name="name">The name of the <see cref="EvaluationMetric"/>.</param>
+/// <param name="reason">
+/// An optional string that can be used to provide some commentary around the result represented by this
+/// <see cref="EvaluationMetric"/>.
+/// </param>
 [JsonDerivedType(typeof(NumericMetric), "numeric")]
 [JsonDerivedType(typeof(BooleanMetric), "boolean")]
 [JsonDerivedType(typeof(StringMetric), "string")]
 [JsonDerivedType(typeof(EvaluationMetric), "none")]
-public class EvaluationMetric(string name)
+public class EvaluationMetric(string name, string? reason = null)
 {
     /// <summary>
     /// Gets or sets the name of the <see cref="EvaluationMetric"/>.
     /// </summary>
     public string Name { get; set; } = name;
+
+    /// <summary>
+    /// Gets or sets a string that can optionally be used to provide some commentary around the result represented by
+    /// this <see cref="EvaluationMetric"/>.
+    /// </summary>
+    public string? Reason { get; set; } = reason;
 
     /// <summary>
     /// Gets or sets an <see cref="EvaluationMetricInterpretation"/> that identifies whether the result of the

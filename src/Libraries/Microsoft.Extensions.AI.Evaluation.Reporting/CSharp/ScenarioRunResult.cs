@@ -37,6 +37,7 @@ namespace Microsoft.Extensions.AI.Evaluation.Reporting;
 /// The <see cref="Evaluation.EvaluationResult"/> for the <see cref="ScenarioRun"/> corresponding to the
 /// <see cref="ScenarioRunResult"/> being constructed.
 /// </param>
+/// <param name="formatVersion">The version of the format used to persist the current <see cref="ScenarioRunResult"/>.</param>
 [method: JsonConstructor]
 public sealed class ScenarioRunResult(
     string scenarioName,
@@ -45,7 +46,8 @@ public sealed class ScenarioRunResult(
     DateTime creationTime,
     IList<ChatMessage> messages,
     ChatResponse modelResponse,
-    EvaluationResult evaluationResult)
+    EvaluationResult evaluationResult,
+    int? formatVersion = null)
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ScenarioRunResult"/> class.
@@ -80,6 +82,11 @@ public sealed class ScenarioRunResult(
                 evaluationResult)
     {
     }
+
+    /// <summary>
+    /// Gets the version of the format used to persist the current <see cref="ScenarioRunResult"/>.
+    /// </summary>
+    public int? FormatVersion { get; } = formatVersion ?? Defaults.ReportingFormatVersion;
 
     /// <summary>
     /// Gets or sets the <see cref="ScenarioRun.ScenarioName"/>.

@@ -20,7 +20,6 @@ using Xunit;
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 
 [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Windows specific.")]
-[UsesVerify]
 public sealed class WindowsSnapshotProviderTests
 {
     private const string VerifiedDataDirectory = "Verified";
