@@ -11,7 +11,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
-using static Microsoft.Extensions.Logging.ExtendedLogger;
 
 namespace Microsoft.AspNetCore.Diagnostics.Buffering;
 
@@ -44,29 +43,22 @@ internal sealed class IncomingRequestLogBuffer
     public bool TryEnqueue<TState>(LogEntry<TState> logEntry)
     {
         SerializedLogRecord serializedLogRecord = default;
-        if (logEntry.State is ModernTagJoiner modernTagJoiner)
+        if(logEntry.State is IReadOnlyList<KeyValuePair<string, object?>> attributes)
         {
-            if (!IsEnabled(logEntry.LogLevel, logEntry.EventId, modernTagJoiner))
+            if (!IsEnabled(logEntry.LogLevel, logEntry.EventId, attributes))
             {
                 return false;
             }
-
-            serializedLogRecord = new SerializedLogRecord(logEntry.LogLevel, logEntry.EventId, _timeProvider.GetUtcNow(), modernTagJoiner, logEntry.Exception,
-                ((Func<ModernTagJoiner, Exception?, string>)(object)logEntry.Formatter)(modernTagJoiner, logEntry.Exception));
+            serializedLogRecord = new SerializedLogRecord(logEntry.LogLevel, logEntry.EventId, _timeProvider.GetUtcNow(), attributes, logEntry.Exception,
+                logEntry.Formatter(logEntry.State, logEntry.Exception));
         }
-        else if (logEntry.State is LegacyTagJoiner legacyTagJoiner)
-        {
-            if (!IsEnabled(logEntry.LogLevel, logEntry.EventId, legacyTagJoiner))
-            {
-                return false;
-            }
 
-            serializedLogRecord = new SerializedLogRecord(logEntry.LogLevel, logEntry.EventId, _timeProvider.GetUtcNow(), legacyTagJoiner, logEntry.Exception,
-                ((Func<LegacyTagJoiner, Exception?, string>)(object)logEntry.Formatter)(legacyTagJoiner, logEntry.Exception));
-        }
         else
         {
-            Throw.InvalidOperationException($"Unsupported type of the log state object detected: {typeof(TState)}");
+            // we expect logEntry.State to be either ModernTagJoiner or LegacyTagJoiner
+            // which both implement IReadOnlyList<KeyValuePair<string, object?>>
+            // and if not, we throw an exception
+            Throw.InvalidOperationException($"Unsupported type of the log state detected: {typeof(TState)}");
         }
 
         if (serializedLogRecord.SizeInBytes > _options.CurrentValue.MaxLogRecordSizeInBytes)

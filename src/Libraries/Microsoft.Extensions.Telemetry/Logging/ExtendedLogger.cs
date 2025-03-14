@@ -304,9 +304,9 @@ internal sealed partial class ExtendedLogger : ILogger
                 {
                     if (_logBuffer is not null)
                     {
-                        var logEntry = new LogEntry<ModernTagJoiner>(logLevel, loggerInfo.Category!, eventId, joiner, exception, static (s, e) =>
+                        var logEntry = new LogEntry<ModernTagJoiner>(logLevel, loggerInfo.Category, eventId, joiner, exception, static (s, e) =>
                         {
-                            var fmt = s.Formatter!;
+                            Func<LoggerMessageState, Exception?, string>? fmt = s.Formatter!;
                             return fmt(s.State!, e);
                         });
                         bool wasBuffered = _logBuffer.TryEnqueue(_bufferedLogger!, logEntry);
@@ -432,7 +432,7 @@ internal sealed partial class ExtendedLogger : ILogger
                 {
                     if (_logBuffer is not null)
                     {
-                        var logEntry = new LogEntry<LegacyTagJoiner>(logLevel, loggerInfo.Category!, eventId, joiner, exception, static (s, e) =>
+                        var logEntry = new LogEntry<LegacyTagJoiner>(logLevel, loggerInfo.Category, eventId, joiner, exception, static (s, e) =>
                         {
                             var fmt = (Func<TState, Exception?, string>)s.Formatter!;
                             return fmt((TState)s.State!, e);
