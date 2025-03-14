@@ -151,8 +151,8 @@ const shortenPrompt = (prompt: string | undefined) => {
     return prompt;
 };
 
-function* flattener(node: ScoreNode, parentKey: string): Iterable<{key: string, node: ScoreNode}> {
-    const key= `${parentKey}.${node.name}`;
+const flattener = function* (node: ScoreNode, parentKey: string): Iterable<{key: string, node: ScoreNode}> {
+    const key = `${parentKey}.${node.name}`;
     if (node.isLeafNode) {
         yield {key, node};
     } else {
@@ -161,7 +161,7 @@ function* flattener(node: ScoreNode, parentKey: string): Iterable<{key: string, 
             yield* flattener(child, key);
         }
     }
-}
+};
 
 const isTextContent = (content: AIContent): content is TextContent => {
     return (content as TextContent).text !== undefined;
