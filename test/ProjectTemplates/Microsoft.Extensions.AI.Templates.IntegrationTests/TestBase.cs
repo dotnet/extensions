@@ -13,7 +13,6 @@ public abstract class TestBase
 {
     internal static string CodeBaseRoot { get; } = GetCodeBaseRoot();
 
-    // internal static string TemplateFeedLocation { get; } = Path.Combine(CodeBaseRoot, "template_feed");
     internal static string TemplateFeedLocation { get; } = Path.Combine(CodeBaseRoot, "src", "ProjectTemplates");
 
     private static string GetCodeBaseRoot()
