@@ -13,7 +13,7 @@
     <InjectSharedText>true</InjectSharedText>
     <InjectGetOrAddOnLegacy>true</InjectGetOrAddOnLegacy>
     <InjectSharedDataValidation>true</InjectSharedDataValidation>
-    <InjectSharedLoggingBuffering>true</InjectSharedLoggingBuffering>
+    <InjectSharedLogBuffering>true</InjectSharedLogBuffering>
     <InjectSharedMemoization>true</InjectSharedMemoization>
     <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>
     <InjectSharedPools>true</InjectSharedPools>

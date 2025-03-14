@@ -106,7 +106,7 @@ internal sealed class GlobalBuffer : IDisposable
         _lastFlushTimestamp = _timeProvider.GetUtcNow();
 
         SerializedLogRecord[] bufferedRecords = _buffer.ToArray();
-        
+
         // Clear() and Interlocked.Exchange operations are atomic on their own.
         // But together they are not atomic, therefore have to take a lock.
         // This is needed for an edge case when AutoFlushDuration is close to 0, e.g. buffering hardly pauses
@@ -114,7 +114,7 @@ internal sealed class GlobalBuffer : IDisposable
         lock (_buffer)
         {
             _buffer.Clear();
-            Interlocked.Exchange(ref _bufferSize, 0);
+            _ = Interlocked.Exchange(ref _bufferSize, 0);
         }
 
         var deserializedLogRecords = new List<DeserializedLogRecord>(bufferedRecords.Length);
@@ -146,7 +146,7 @@ internal sealed class GlobalBuffer : IDisposable
 
         _ruleSelector.InvalidateCache();
     }
-    
+
     private bool IsEnabled(LogLevel logLevel, EventId eventId, IReadOnlyList<KeyValuePair<string, object?>> attributes)
     {
         if (_timeProvider.GetUtcNow() < _lastFlushTimestamp + _options.CurrentValue.AutoFlushDuration)

@@ -22,12 +22,6 @@ internal sealed class LogBufferingFilterRuleSelector
     private static readonly IEqualityComparer<KeyValuePair<string, object?>> _stringifyComparer = new StringifyComprarer();
     private readonly ConcurrentDictionary<(LogLevel, EventId), List<LogBufferingFilterRule>> _ruleCache = new();
 
-    public void InvalidateCache()
-    {
-        _ruleCache.Clear();
-    }
-
-
     public static LogBufferingFilterRule[] SelectByCategory(IList<LogBufferingFilterRule> rules, string category)
     {
         List<LogBufferingFilterRule> result = [];
@@ -43,6 +37,11 @@ internal sealed class LogBufferingFilterRuleSelector
         }
 
         return result.ToArray();
+    }
+
+    public void InvalidateCache()
+    {
+        _ruleCache.Clear();
     }
 
     public LogBufferingFilterRule? Select(
