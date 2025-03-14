@@ -33,9 +33,6 @@ public class AichatwebTemplatesTests : TestBase
         // Get the template location
         string templateLocation = Path.Combine(TemplateFeedLocation, "Microsoft.Extensions.AI.Templates", "src", "ChatWithCustomData");
 
-        // // Treat *.in files as text, see https://github.com/VerifyTests/EmptyFiles#istext
-        // FileExtensions.AddTextExtension(".in");
-
         TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
         {
             TemplatePath = templateLocation,
