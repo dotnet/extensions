@@ -66,8 +66,9 @@
         var responseText = new TextContent("");
         currentResponseMessage = new ChatMessage(ChatRole.Assistant, [responseText]);
         currentResponseCancellation = new();
-        await foreach (var chunk in ChatClient.GetStreamingResponseAsync(messages, chatOptions, currentResponseCancellation.Token))
+        await foreach (var chunk in ChatClient.GetStreamingResponseAsync([.. messages], chatOptions, currentResponseCancellation.Token))
         {
+            AddNonTextContentToConversation(chunk.Contents);
             responseText.Text += chunk.Text;
             ChatMessageItem.NotifyChanged(currentResponseMessage);
         }
@@ -97,6 +98,22 @@
         messages.Add(new(ChatRole.System, SystemPrompt));
         chatSuggestions?.Clear();
         await chatInput!.FocusAsync();
+    }
+
+    private void AddNonTextContentToConversation(IList<AIContent> contents)
+    {
+        foreach (var content in contents)
+        {
+            switch (content)
+            {
+                case FunctionCallContent fcc:
+                    messages.Add(new ChatMessage(ChatRole.Assistant, [fcc]));
+                    break;
+                case FunctionResultContent frc:
+                    messages.Add(new ChatMessage(ChatRole.Tool, [frc]));
+                    break;
+            }
+        }
     }
 
     [Description("Searches for information using a phrase or keyword")]

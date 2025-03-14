@@ -24,7 +24,7 @@
 <!--#if (UseManagedIdentity) -->
     <PackageReference Include="Azure.Identity" Version="${AzureIdentityVersion}" />
 <!--#endif -->
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="${MicrosoftEntityFrameworkCoreSqliteVersion}" />
     <PackageReference Include="Microsoft.Extensions.AI" Version="${MicrosoftExtensionsAIVersion}" />
     <PackageReference Include="Microsoft.SemanticKernel.Core" Version="${MicrosoftSemanticKernelCoreVersion}" />
     <PackageReference Include="PdfPig" Version="${PdfPigVersion}" />
