@@ -117,12 +117,12 @@
 @*#if (!IsOllama)*@
     // TODO: Needed until https://github.com/dotnet/extensions/issues/6114 is resolved, which will introduce a
     // an extension method on IList<ChatMessage> for adding messages from a ChatResponseUpdate.
-    public static void AddMessages(IList<ChatMessage> list, ChatResponseUpdate update, Func<AIContent, bool>? filter = null)
+    private static void AddMessages(IList<ChatMessage> list, ChatResponseUpdate update, Func<AIContent, bool> filter)
     {
-        var contentsList = filter is null ? update.Contents : update.Contents.Where(filter).ToList();
+        var contentsList = update.Contents.Where(filter).ToList();
         if (contentsList.Count > 0)
         {
-            list.Add(new ChatMessage(update.Role ?? ChatRole.Assistant, contentsList)
+            list.Add(new(update.Role ?? ChatRole.Assistant, contentsList)
             {
                 AuthorName = update.AuthorName,
                 RawRepresentation = update.RawRepresentation,
