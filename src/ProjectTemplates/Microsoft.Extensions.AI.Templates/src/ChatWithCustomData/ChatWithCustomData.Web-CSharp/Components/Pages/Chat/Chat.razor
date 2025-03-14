@@ -75,10 +75,14 @@
         var responseText = new TextContent("");
         currentResponseMessage = new ChatMessage(ChatRole.Assistant, [responseText]);
         currentResponseCancellation = new();
-        await foreach (var chunk in ChatClient.GetStreamingResponseAsync([.. messages], chatOptions, currentResponseCancellation.Token))
+
+        // Pass a copy of the messages then add messages to the list while handling the streaming responses
+        var requestMessages = messages.ToArray();
+
+        await foreach (var update in ChatClient.GetStreamingResponseAsync(requestMessages, chatOptions, currentResponseCancellation.Token))
         {
-            AddNonTextContentToConversation(chunk.Contents);
-            responseText.Text += chunk.Text;
+            AddMessages(messages, update, filter: c => c is not TextContent);
+            responseText.Text += update.Text;
             ChatMessageItem.NotifyChanged(currentResponseMessage);
         }
 
@@ -111,19 +115,22 @@
     }
 
 @*#if (!IsOllama)*@
-    private void AddNonTextContentToConversation(IList<AIContent> contents)
+    // TODO: Needed until https://github.com/dotnet/extensions/issues/6114 is resolved, which will introduce a
+    // an extension method on IList<ChatMessage> for adding messages from a ChatResponseUpdate.
+    public static void AddMessages(IList<ChatMessage> list, ChatResponseUpdate update, Func<AIContent, bool>? filter = null)
     {
-        foreach (var content in contents)
+        ArgumentNullException.ThrowIfNull(list);
+        ArgumentNullException.ThrowIfNull(update);
+
+        var contentsList = filter is null ? update.Contents : update.Contents.Where(filter).ToList();
+        if (contentsList.Count > 0)
         {
-            switch (content)
+            list.Add(new ChatMessage(update.Role ?? ChatRole.Assistant, contentsList)
             {
-                case FunctionCallContent fcc:
-                    messages.Add(new ChatMessage(ChatRole.Assistant, [fcc]));
-                    break;
-                case FunctionResultContent frc:
-                    messages.Add(new ChatMessage(ChatRole.Tool, [frc]));
-                    break;
-            }
+                AuthorName = update.AuthorName,
+                RawRepresentation = update.RawRepresentation,
+                AdditionalProperties = update.AdditionalProperties,
+            });
         }
     }
 
