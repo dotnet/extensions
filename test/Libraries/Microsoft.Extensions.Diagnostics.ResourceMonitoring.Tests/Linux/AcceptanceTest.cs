@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -209,6 +210,8 @@ public sealed class AcceptanceTest
 
         using var listener = new MeterListener();
         var clock = new FakeTimeProvider(DateTimeOffset.UtcNow);
+        var cpuUserTime = 0.0d;
+        var cpuKernelTime = 0.0d;
         var cpuFromGauge = 0.0d;
         var cpuLimitFromGauge = 0.0d;
         var cpuRequestFromGauge = 0.0d;
@@ -219,8 +222,8 @@ public sealed class AcceptanceTest
         object? meterScope = null;
         listener.InstrumentPublished = (Instrument instrument, MeterListener meterListener)
             => OnInstrumentPublished(instrument, meterListener, meterScope);
-        listener.SetMeasurementEventCallback<double>((m, f, _, _)
-            => OnMeasurementReceived(m, f, ref cpuFromGauge, ref cpuLimitFromGauge, ref cpuRequestFromGauge, ref memoryFromGauge, ref memoryLimitFromGauge));
+        listener.SetMeasurementEventCallback<double>((m, f, tags, _)
+            => OnMeasurementReceived(m, f, tags, ref cpuUserTime, ref cpuKernelTime, ref cpuFromGauge, ref cpuLimitFromGauge, ref cpuRequestFromGauge, ref memoryFromGauge, ref memoryLimitFromGauge));
         listener.Start();
 
         using var host = FakeHost.CreateBuilder()
@@ -246,6 +249,8 @@ public sealed class AcceptanceTest
         Assert.Equal(0, utilization.CpuUsedPercentage);
         Assert.Equal(100, utilization.MemoryUsedPercentage);
         Assert.True(double.IsNaN(cpuFromGauge));
+        Assert.Equal(0.000102312, cpuUserTime);
+        Assert.Equal(0.8, cpuKernelTime);
 
         // gauge multiplied by 100 because gauges are in range [0, 1], and utilization is in range [0, 100]
         Assert.Equal(utilization.MemoryUsedPercentage, memoryFromGauge * 100);
@@ -264,6 +269,8 @@ public sealed class AcceptanceTest
         Assert.Equal(1, utilization.CpuUsedPercentage);
         Assert.Equal(50, utilization.MemoryUsedPercentage);
         Assert.Equal(0.5, cpuLimitFromGauge * 100);
+        Assert.Equal(0.000112312, cpuUserTime);
+        Assert.Equal(0.81, cpuKernelTime);
         Assert.Equal(utilization.CpuUsedPercentage, cpuRequestFromGauge * 100);
         Assert.Equal(utilization.MemoryUsedPercentage, memoryLimitFromGauge * 100);
         Assert.Equal(utilization.CpuUsedPercentage, cpuFromGauge * 100);
@@ -292,6 +299,8 @@ public sealed class AcceptanceTest
 
         using var listener = new MeterListener();
         var clock = new FakeTimeProvider(DateTimeOffset.UtcNow);
+        var cpuUserTime = 0.0d;
+        var cpuKernelTime = 0.0d;
         var cpuFromGauge = 0.0d;
         var cpuLimitFromGauge = 0.0d;
         var cpuRequestFromGauge = 0.0d;
@@ -302,8 +311,8 @@ public sealed class AcceptanceTest
         object? meterScope = null;
         listener.InstrumentPublished = (Instrument instrument, MeterListener meterListener)
             => OnInstrumentPublished(instrument, meterListener, meterScope);
-        listener.SetMeasurementEventCallback<double>((m, f, _, _)
-            => OnMeasurementReceived(m, f, ref cpuFromGauge, ref cpuLimitFromGauge, ref cpuRequestFromGauge, ref memoryFromGauge, ref memoryLimitFromGauge));
+        listener.SetMeasurementEventCallback<double>((m, f, tags, _)
+            => OnMeasurementReceived(m, f, tags, ref cpuUserTime, ref cpuKernelTime, ref cpuFromGauge, ref cpuLimitFromGauge, ref cpuRequestFromGauge, ref memoryFromGauge, ref memoryLimitFromGauge));
         listener.Start();
 
         using var host = FakeHost.CreateBuilder()
@@ -351,6 +360,8 @@ public sealed class AcceptanceTest
         Assert.Equal(1, roundedCpuUsedPercentage);
         Assert.Equal(50, utilization.MemoryUsedPercentage);
         Assert.Equal(0.5, cpuLimitFromGauge * 100);
+        Assert.Equal(0.000112, cpuUserTime);
+        Assert.Equal(0.81, cpuKernelTime);
         Assert.Equal(roundedCpuUsedPercentage, Math.Round(cpuRequestFromGauge * 100));
         Assert.Equal(utilization.MemoryUsedPercentage, memoryLimitFromGauge * 100);
         Assert.Equal(roundedCpuUsedPercentage, Math.Round(cpuFromGauge * 100));
@@ -369,6 +380,7 @@ public sealed class AcceptanceTest
 #pragma warning disable S1067 // Expressions should not be too complex
         if (instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization ||
             instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization ||
+            instrument.Name == ResourceUtilizationInstruments.ContainerCpuTime ||
             instrument.Name == ResourceUtilizationInstruments.ContainerCpuRequestUtilization ||
             instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization ||
             instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization)
@@ -378,10 +390,12 @@ public sealed class AcceptanceTest
 #pragma warning restore S1067 // Expressions should not be too complex
     }
 
+#pragma warning disable S107 // Methods should not have too many parameters
     private static void OnMeasurementReceived(
-        Instrument instrument, double value,
-        ref double cpuFromGauge, ref double cpuLimitFromGauge, ref double cpuRequestFromGauge,
-        ref double memoryFromGauge, ref double memoryLimitFromGauge)
+        Instrument instrument, double value, ReadOnlySpan<KeyValuePair<string, object?>> tags,
+        ref double cpuUserTime, ref double cpuKernelTime, ref double cpuFromGauge, ref double cpuLimitFromGauge,
+        ref double cpuRequestFromGauge, ref double memoryFromGauge, ref double memoryLimitFromGauge)
+#pragma warning restore S107 // Methods should not have too many parameters
     {
         if (instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization)
         {
@@ -390,6 +404,18 @@ public sealed class AcceptanceTest
         else if (instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization)
         {
             memoryFromGauge = value;
+        }
+        else if (instrument.Name == ResourceUtilizationInstruments.ContainerCpuTime)
+        {
+            var tagsArray = tags.ToArray();
+            if (tagsArray.Contains(new KeyValuePair<string, object?>("cpu.mode", "user")))
+            {
+                cpuUserTime = value;
+            }
+            else if (tagsArray.Contains(new KeyValuePair<string, object?>("cpu.mode", "system")))
+            {
+                cpuKernelTime = value;
+            }
         }
         else if (instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization)
         {
