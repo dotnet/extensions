@@ -18,7 +18,7 @@ public class AichatwebTemplatesTests : TestBase
 {
     // Keep the exclude patterns below in sync with those in Microsoft.Extensions.AI.Templates.csproj.
     private static readonly string[] _verificationExcludePatterns = [
-        "*/bin/**",
+        "**/bin/**",
         "**/obj/**",
         "**/node_modules/**",
         "**/*.user",
