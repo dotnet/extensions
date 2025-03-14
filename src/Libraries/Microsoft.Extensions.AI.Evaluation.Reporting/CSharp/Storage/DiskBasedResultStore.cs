@@ -68,7 +68,7 @@ public sealed class DiskBasedResultStore : IResultStore
             ScenarioRunResult? result =
                 await JsonSerializer.DeserializeAsync<ScenarioRunResult>(
                     stream,
-                    SerializerContext.Default.ScenarioRunResult,
+                    JsonUtilities.Default.ScenarioRunResultTypeInfo,
                     cancellationToken).ConfigureAwait(false);
 
             yield return result is null
@@ -101,7 +101,7 @@ public sealed class DiskBasedResultStore : IResultStore
             await JsonSerializer.SerializeAsync(
                 stream,
                 result,
-                SerializerContext.Default.ScenarioRunResult,
+                JsonUtilities.Default.ScenarioRunResultTypeInfo,
                 cancellationToken).ConfigureAwait(false);
         }
     }
