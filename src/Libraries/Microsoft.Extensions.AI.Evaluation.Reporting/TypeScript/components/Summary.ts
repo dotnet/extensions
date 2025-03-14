@@ -129,14 +129,13 @@ export class ScoreNode {
     }
 };
 
-export const DefaultRootNodeName = "All Evaluations";
-
 export const createScoreTree = (dataset: Dataset): ScoreNode => {
-    const root = new ScoreNode(DefaultRootNodeName, ScoreNodeType.Group);
+    const root = new ScoreNode("All Evaluations", ScoreNodeType.Group);
     for (const scenario of dataset.scenarioRunResults) {
         const path = [...scenario.scenarioName.split('.'), scenario.iterationName];
         root.insertNode(path, scenario);
     }
+    root.collapseSingleChildNodes();
     root.aggregate();
     return root;
 };
@@ -151,8 +150,8 @@ const shortenPrompt = (prompt: string | undefined) => {
     return prompt;
 };
 
-function* flattener(node: ScoreNode, parentKey: string): Iterable<{key: string, node: ScoreNode}> {
-    const key= `${parentKey}.${node.name}`;
+const flattener = function* (node: ScoreNode, parentKey: string): Iterable<{key: string, node: ScoreNode}> {
+    const key = `${parentKey}.${node.name}`;
     if (node.isLeafNode) {
         yield {key, node};
     } else {
@@ -161,7 +160,7 @@ function* flattener(node: ScoreNode, parentKey: string): Iterable<{key: string, 
             yield* flattener(child, key);
         }
     }
-}
+};
 
 const isTextContent = (content: AIContent): content is TextContent => {
     return (content as TextContent).text !== undefined;
