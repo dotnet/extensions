@@ -25,7 +25,7 @@
     See https://github.com/dotnet/arcade/blob/main/Documentation/Darc.md for instructions on using darc.
 
   -->
-  <PropertyGroup Label="Automated">
+  <PropertyGroup Label="Automated Maestro dependency updates">
     <!-- Packages from dotnet/runtime -->
     <MicrosoftBclAsyncInterfacesVersion>9.0.3</MicrosoftBclAsyncInterfacesVersion>
     <MicrosoftBclTimeProviderVersion>9.0.3</MicrosoftBclTimeProviderVersion>
@@ -79,7 +79,7 @@
     <!-- Dependencies from https://github.com/dotnet/arcade -->
     <MicrosoftDotNetBuildTasksTemplatingVersion>9.0.0-beta.25161.4</MicrosoftDotNetBuildTasksTemplatingVersion>
   </PropertyGroup>
-  <PropertyGroup Label="Manual">
+  <PropertyGroup Label="No longer automated Maestro dependency updates">
     <!-- Packages from dotnet/runtime -->
     <MicrosoftBclAsyncInterfacesLTSVersion>8.0.0</MicrosoftBclAsyncInterfacesLTSVersion>
     <MicrosoftBclTimeProviderLTSVersion>8.0.1</MicrosoftBclTimeProviderLTSVersion>
@@ -128,17 +128,6 @@
     <MicrosoftExtensionsDiagnosticsHealthChecksLTSVersion>8.0.14</MicrosoftExtensionsDiagnosticsHealthChecksLTSVersion>
     <MicrosoftExtensionsHttpPollyLTSVersion>8.0.14</MicrosoftExtensionsHttpPollyLTSVersion>
     <MicrosoftExtensionsObjectPoolLTSVersion>8.0.14</MicrosoftExtensionsObjectPoolLTSVersion>
-    <!-- 3rd party dependencies -->
-    <AzureAIProjectsVersion>1.0.0-beta.3</AzureAIProjectsVersion>
-    <AzureAIOpenAIVersion>2.2.0-beta.1</AzureAIOpenAIVersion>
-    <AzureIdentityVersion>1.13.2</AzureIdentityVersion>
-    <AzureSearchDocumentsVersion>11.6.0</AzureSearchDocumentsVersion>
-    <MicrosoftSemanticKernelConnectorsAzureAISearchVersion>1.37.0-preview</MicrosoftSemanticKernelConnectorsAzureAISearchVersion>
-    <MicrosoftSemanticKernelCoreVersion>1.37.0</MicrosoftSemanticKernelCoreVersion>
-    <OllamaSharpVersion>5.0.7</OllamaSharpVersion>
-    <OpenAIVersion>2.2.0-beta.1</OpenAIVersion>
-    <PdfPigVersion>0.1.9</PdfPigVersion>
-    <SystemLinqAsyncVersion>6.0.1</SystemLinqAsyncVersion>
   </PropertyGroup>
   <!--
 
@@ -157,6 +146,18 @@
     <!-- Compatibility with VS 17.8/.NET SDK 8.0.1xx -->
     <MicrosoftCodeAnalysisVersion>4.8.0</MicrosoftCodeAnalysisVersion>
     <MicrosoftCodeAnalysisAnalyzersVersion>3.3.4</MicrosoftCodeAnalysisAnalyzersVersion>
+
+    <!-- AI templates -->
+    <AzureAIProjectsVersion>1.0.0-beta.3</AzureAIProjectsVersion>
+    <AzureAIOpenAIVersion>2.2.0-beta.1</AzureAIOpenAIVersion>
+    <AzureIdentityVersion>1.13.2</AzureIdentityVersion>
+    <AzureSearchDocumentsVersion>11.6.0</AzureSearchDocumentsVersion>
+    <MicrosoftSemanticKernelConnectorsAzureAISearchVersion>1.37.0-preview</MicrosoftSemanticKernelConnectorsAzureAISearchVersion>
+    <MicrosoftSemanticKernelCoreVersion>1.37.0</MicrosoftSemanticKernelCoreVersion>
+    <OllamaSharpVersion>5.0.7</OllamaSharpVersion>
+    <OpenAIVersion>2.2.0-beta.1</OpenAIVersion>
+    <PdfPigVersion>0.1.9</PdfPigVersion>
+    <SystemLinqAsyncVersion>6.0.1</SystemLinqAsyncVersion>
 
     <!--
       xUnit version is configured by the Arcade SDK.
