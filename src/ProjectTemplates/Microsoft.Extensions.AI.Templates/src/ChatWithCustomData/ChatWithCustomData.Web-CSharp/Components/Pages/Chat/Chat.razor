@@ -115,7 +115,7 @@
     }
 
 @*#if (!IsOllama)*@
-    // TODO: Needed until https://github.com/dotnet/extensions/issues/6114 is resolved, which will introduce a
+    // TODO: Needed until https://github.com/dotnet/extensions/issues/6114 is resolved, which will introduce
     // an extension method on IList<ChatMessage> for adding messages from a ChatResponseUpdate.
     private static void AddMessages(IList<ChatMessage> list, ChatResponseUpdate update, Func<AIContent, bool> filter)
     {
