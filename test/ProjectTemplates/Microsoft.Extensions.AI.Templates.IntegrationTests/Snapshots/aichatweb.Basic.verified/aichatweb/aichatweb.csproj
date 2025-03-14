@@ -9,9 +9,9 @@
 
   <ItemGroup>
     <PackageReference Include="OpenAI" Version="2.2.0-beta.1" />
-    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.3.0-preview.1.25161.3" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.4.0-suffix" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.3" />
-    <PackageReference Include="Microsoft.Extensions.AI" Version="9.3.0-preview.1.25161.3" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="9.4.0-suffix" />
     <PackageReference Include="Microsoft.SemanticKernel.Core" Version="1.37.0" />
     <PackageReference Include="PdfPig" Version="0.1.9" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />

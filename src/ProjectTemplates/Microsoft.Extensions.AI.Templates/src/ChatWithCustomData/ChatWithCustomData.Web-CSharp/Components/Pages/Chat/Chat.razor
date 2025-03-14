@@ -75,10 +75,10 @@
         var responseText = new TextContent("");
         currentResponseMessage = new ChatMessage(ChatRole.Assistant, [responseText]);
         currentResponseCancellation = new();
-        await foreach (var chunk in ChatClient.GetStreamingResponseAsync([.. messages], chatOptions, currentResponseCancellation.Token))
+        await foreach (var update in ChatClient.GetStreamingResponseAsync([.. messages], chatOptions, currentResponseCancellation.Token))
         {
-            AddNonTextContentToConversation(chunk.Contents);
-            responseText.Text += chunk.Text;
+            messages.AddMessages(update, filter: c => c is not TextContent);
+            responseText.Text += update.Text;
             ChatMessageItem.NotifyChanged(currentResponseMessage);
         }
 
@@ -110,24 +110,6 @@
         await chatInput!.FocusAsync();
     }
 
-@*#if (!IsOllama)*@
-    private void AddNonTextContentToConversation(IList<AIContent> contents)
-    {
-        foreach (var content in contents)
-        {
-            switch (content)
-            {
-                case FunctionCallContent fcc:
-                    messages.Add(new ChatMessage(ChatRole.Assistant, [fcc]));
-                    break;
-                case FunctionResultContent frc:
-                    messages.Add(new ChatMessage(ChatRole.Tool, [frc]));
-                    break;
-            }
-        }
-    }
-
-@*#endif*@
     [Description("Searches for information using a phrase or keyword")]
     private async Task<IEnumerable<string>> SearchAsync(
         [Description("The phrase to search for.")] string searchPhrase,
