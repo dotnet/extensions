@@ -50,6 +50,7 @@ internal sealed class LogBufferingFilterRuleSelector
         EventId eventId,
         IReadOnlyList<KeyValuePair<string, object?>>? attributes)
     {
+        // 1. select rule candidates by log level and event id from the cache
         List<LogBufferingFilterRule> ruleCandidates = _ruleCache.GetOrAdd((logLevel, eventId), _ =>
         {
             List<LogBufferingFilterRule> candidates = new(rules.Count);
@@ -64,6 +65,7 @@ internal sealed class LogBufferingFilterRuleSelector
             return candidates;
         });
 
+        // 2. select the best rule from the candidates by attributes
         LogBufferingFilterRule? currentBest = null;
         foreach (LogBufferingFilterRule ruleCandidate in ruleCandidates)
         {

@@ -15,20 +15,17 @@ using static Microsoft.Extensions.Logging.ExtendedLogger;
 
 namespace Microsoft.AspNetCore.Diagnostics.Buffering;
 
-internal sealed class IncomingRequestLogBuffer : IDisposable
+internal sealed class IncomingRequestLogBuffer
 {
     private readonly IBufferedLogger _bufferedLogger;
     private readonly LogBufferingFilterRuleSelector _ruleSelector;
     private readonly IOptionsMonitor<PerRequestLogBufferingOptions> _options;
     private readonly ConcurrentQueue<SerializedLogRecord> _buffer;
     private readonly TimeProvider _timeProvider = TimeProvider.System;
-    private readonly IDisposable? _optionsChangeTokenRegistration;
-    private readonly string _category;
 
     private int _bufferSize;
-    private volatile bool _disposed;
     private DateTimeOffset _lastFlushTimestamp;
-    private LogBufferingFilterRule[] _lastKnownGoodFilterRules;
+    private readonly LogBufferingFilterRule[] _filterRules;
 
     public IncomingRequestLogBuffer(
         IBufferedLogger bufferedLogger,
@@ -37,13 +34,11 @@ internal sealed class IncomingRequestLogBuffer : IDisposable
         IOptionsMonitor<PerRequestLogBufferingOptions> options)
     {
         _bufferedLogger = bufferedLogger;
-        _category = category;
         _ruleSelector = ruleSelector;
         _options = options;
 
         _buffer = new ConcurrentQueue<SerializedLogRecord>();
-        _lastKnownGoodFilterRules = LogBufferingFilterRuleSelector.SelectByCategory(_options.CurrentValue.Rules.ToArray(), _category);
-        _optionsChangeTokenRegistration = options.OnChange(OnOptionsChanged);
+        _filterRules = LogBufferingFilterRuleSelector.SelectByCategory(_options.CurrentValue.Rules.ToArray(), category);
     }
 
     public bool TryEnqueue<TState>(LogEntry<TState> logEntry)
@@ -119,30 +114,6 @@ internal sealed class IncomingRequestLogBuffer : IDisposable
         _bufferedLogger.LogRecords(deserializedLogRecords);
     }
 
-    public void Dispose()
-    {
-        if (!_disposed)
-        {
-            _disposed = true;
-
-            _optionsChangeTokenRegistration?.Dispose();
-        }
-    }
-
-    private void OnOptionsChanged(PerRequestLogBufferingOptions? updatedOptions)
-    {
-        if (updatedOptions is null)
-        {
-            _lastKnownGoodFilterRules = [];
-        }
-        else
-        {
-            _lastKnownGoodFilterRules = LogBufferingFilterRuleSelector.SelectByCategory(updatedOptions.Rules.ToArray(), _category);
-        }
-
-        _ruleSelector.InvalidateCache();
-    }
-
     private bool IsEnabled(LogLevel logLevel, EventId eventId, IReadOnlyList<KeyValuePair<string, object?>> attributes)
     {
         if (_timeProvider.GetUtcNow() < _lastFlushTimestamp + _options.CurrentValue.AutoFlushDuration)
@@ -150,7 +121,7 @@ internal sealed class IncomingRequestLogBuffer : IDisposable
             return false;
         }
 
-        return _ruleSelector.Select(_lastKnownGoodFilterRules, logLevel, eventId, attributes) is not null;
+        return _ruleSelector.Select(_filterRules, logLevel, eventId, attributes) is not null;
     }
 
     private void TrimExcessRecords()
