@@ -3,7 +3,6 @@
 
 using System.IO;
 using System.Threading.Tasks;
-using EmptyFiles;
 using Microsoft.Extensions.AI.Templates.IntegrationTests;
 using Microsoft.Extensions.AI.Templates.Tests;
 using Microsoft.Extensions.Logging;
@@ -34,8 +33,8 @@ public class AichatwebTemplatesTests : TestBase
         // Get the template location
         string templateLocation = Path.Combine(TemplateFeedLocation, "Microsoft.Extensions.AI.Templates", "src", "ChatWithCustomData");
 
-        // Treat *.in files as text, see https://github.com/VerifyTests/EmptyFiles#istext
-        FileExtensions.AddTextExtension(".in");
+        // // Treat *.in files as text, see https://github.com/VerifyTests/EmptyFiles#istext
+        // FileExtensions.AddTextExtension(".in");
 
         TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
         {
@@ -44,6 +43,21 @@ public class AichatwebTemplatesTests : TestBase
             OutputDirectory = workingDir,
             DoNotPrependCallerMethodNameToScenarioName = true,
             ScenarioName = "Basic",
+
+            // Keep the exclude patterns below in sync with those in Microsoft.Extensions.AI.Templates.csproj.
+            VerificationExcludePatterns = [
+                "*\\bin\\**",
+                "**\\obj\\**",
+                "**\\node_modules\\**",
+                "**\\*.user",
+                "**\\*.in",
+                "**\\*.out.js",
+                "**\\*.generated.css",
+                "**\\package-lock.json",
+                "**\\ingestioncache.db",
+                "**\\NuGet.config",
+                "**\\Directory.Build.targets",
+            ],
         }
         .WithCustomScrubbers(
             ScrubbersDefinition.Empty.AddScrubber((path, content) =>
