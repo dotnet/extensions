@@ -119,9 +119,6 @@
     // an extension method on IList<ChatMessage> for adding messages from a ChatResponseUpdate.
     public static void AddMessages(IList<ChatMessage> list, ChatResponseUpdate update, Func<AIContent, bool>? filter = null)
     {
-        ArgumentNullException.ThrowIfNull(list);
-        ArgumentNullException.ThrowIfNull(update);
-
         var contentsList = filter is null ? update.Contents : update.Contents.Where(filter).ToList();
         if (contentsList.Count > 0)
         {
