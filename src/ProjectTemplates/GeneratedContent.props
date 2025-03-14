@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <_MicrosoftExtensionsAIVersion>9.3.0-preview.1.25114.11</_MicrosoftExtensionsAIVersion>
+    <_MicrosoftExtensionsAIVersion>9.3.0-preview.1.25161.3</_MicrosoftExtensionsAIVersion>
 
     <!-- Specify package version variables used in template content. -->
     <GeneratedContentProperties>

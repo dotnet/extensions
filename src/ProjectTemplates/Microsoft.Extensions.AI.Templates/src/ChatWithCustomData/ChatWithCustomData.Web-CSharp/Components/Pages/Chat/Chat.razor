@@ -67,23 +67,29 @@
         // aren't supported because Ollama will not support both streaming and using Tools
         currentResponseCancellation = new();
         var response = await ChatClient.GetResponseAsync(messages, chatOptions, currentResponseCancellation.Token);
-        currentResponseMessage = response.Message;
-        ChatMessageItem.NotifyChanged(currentResponseMessage);
+
+        // Store responses in the conversation, and begin getting suggestions
+        messages.AddMessages(response);
 #else*@
         // Stream and display a new response from the IChatClient
         var responseText = new TextContent("");
         currentResponseMessage = new ChatMessage(ChatRole.Assistant, [responseText]);
         currentResponseCancellation = new();
-        await foreach (var chunk in ChatClient.GetStreamingResponseAsync(messages, chatOptions, currentResponseCancellation.Token))
+
+        // Pass a copy of the messages then add messages to the list while handling the streaming responses
+        var requestMessages = messages.ToArray();
+
+        await foreach (var update in ChatClient.GetStreamingResponseAsync(requestMessages, chatOptions, currentResponseCancellation.Token))
         {
-            responseText.Text += chunk.Text;
+            AddMessages(messages, update, filter: c => c is not TextContent);
+            responseText.Text += update.Text;
             ChatMessageItem.NotifyChanged(currentResponseMessage);
         }
-@*#endif*@
 
         // Store the final response in the conversation, and begin getting suggestions
         messages.Add(currentResponseMessage!);
         currentResponseMessage = null;
+@*#endif*@
         chatSuggestions?.Update(messages);
     }
 
@@ -108,6 +114,24 @@
         await chatInput!.FocusAsync();
     }
 
+@*#if (!IsOllama)*@
+    // TODO: Needed until https://github.com/dotnet/extensions/issues/6114 is resolved, which will introduce
+    // an extension method on IList<ChatMessage> for adding messages from a ChatResponseUpdate.
+    private static void AddMessages(IList<ChatMessage> list, ChatResponseUpdate update, Func<AIContent, bool> filter)
+    {
+        var contentsList = update.Contents.Where(filter).ToList();
+        if (contentsList.Count > 0)
+        {
+            list.Add(new(update.Role ?? ChatRole.Assistant, contentsList)
+            {
+                AuthorName = update.AuthorName,
+                RawRepresentation = update.RawRepresentation,
+                AdditionalProperties = update.AdditionalProperties,
+            });
+        }
+    }
+
+@*#endif*@
     [Description("Searches for information using a phrase or keyword")]
     private async Task<IEnumerable<string>> SearchAsync(
         [Description("The phrase to search for.")] string searchPhrase,
