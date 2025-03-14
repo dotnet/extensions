@@ -65,7 +65,7 @@ public class AichatwebTemplatesTests : TestBase
                     filePath.EndsWith("aichatweb/aichatweb.csproj.in"))
                 {
                     content.ScrubByRegex("<UserSecretsId>(.*)<\\/UserSecretsId>", "<UserSecretsId>secret</UserSecretsId>");
-                    content.ScrubByRegex("\"(\\d*\\.\\d*\\.\\d*)-(dev|ci)\"", "\"$1-suffix\"");
+                    content.ScrubByRegex("\"(\\d*\\.\\d*\\.\\d*)-(dev|ci)\"", "\"$1\"");
                 }
 
                 if (filePath.EndsWith("aichatweb/Properties/launchSettings.json"))
