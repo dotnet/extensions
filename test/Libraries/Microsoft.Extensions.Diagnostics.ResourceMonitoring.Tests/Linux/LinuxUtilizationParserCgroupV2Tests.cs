@@ -166,8 +166,9 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
     }
 
     [ConditionalFact]
-    public void Returns_Memory_Usage_When_Memory_Usage_Is_Postive_Number()
+    public void Returns_Memory_Usage_When_Memory_Usage_Is_Valid()
     {
+        // When memory usage is a positive number
         var regexPatternforSlices = @"\w+.slice";
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
@@ -178,20 +179,15 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var r = p.GetMemoryUsageInBytesFromSlices(regexPatternforSlices);
 
         Assert.Equal(5_342_342, r);
-    }
 
-    [ConditionalFact]
-    public void Returns_Memory_Usage_When_Memory_Usage_Is_Zero()
-    {
-        var regexPatternforSlices = @"\w+.slice";
-        var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        // When memory usage is zero
+        f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
             { new FileInfo("/sys/fs/cgroup/system.slice/memory.current"), "0"},
         });
 
-        var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
-        var r = p.GetMemoryUsageInBytesFromSlices(regexPatternforSlices);
-
+        p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
+        r = p.GetMemoryUsageInBytesFromSlices(regexPatternforSlices);
         Assert.Equal(0, r);
     }
 
