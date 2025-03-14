@@ -13,10 +13,10 @@ using Microsoft.Shared.DiagnosticIds;
 namespace Microsoft.AspNetCore.Diagnostics.Buffering;
 
 /// <summary>
-/// The options for HTTP request log buffering.
+/// The options for log buffering per each incoming request.
 /// </summary>
 [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
-public class PerRequestLogBufferingOptions
+public class PerIncomingRequestLogBufferingOptions
 {
     private const int DefaultPerRequestBufferSizeInBytes = 5_000_000; // 500 MB.
     private const int DefaultMaxLogRecordSizeInBytes = 50_000; // 50 KB.
@@ -33,7 +33,7 @@ public class PerRequestLogBufferingOptions
     private static readonly TimeSpan _defaultAutoFlushDuration = TimeSpan.FromSeconds(30);
 
     /// <summary>
-    /// Gets or sets the time to suspend the buffering after flushing.
+    /// Gets or sets the time to do automatic flushing after manual flushing was triggered.
     /// </summary>
     /// <remarks>
     /// Use this to temporarily suspend buffering after a flush, e.g. in case of an incident you may want all logs to be emitted immediately,
@@ -43,14 +43,21 @@ public class PerRequestLogBufferingOptions
     public TimeSpan AutoFlushDuration { get; set; } = _defaultAutoFlushDuration;
 
     /// <summary>
-    /// Gets or sets the maximum size of each individual log record in bytes. If the size of a log record exceeds this limit, it won't be buffered.
+    /// Gets or sets the maximum size of each individual log record in bytes.
     /// </summary>
+    /// <remarks>
+    /// If the size of a log record exceeds this limit, it won't be buffered.
+    /// </remarks>
     [Range(MinimumLogRecordSizeInBytes, MaximumLogRecordSizeInBytes)]
     public int MaxLogRecordSizeInBytes { get; set; } = DefaultMaxLogRecordSizeInBytes;
 
     /// <summary>
-    /// Gets or sets the size in bytes of the buffer for a request. If the buffer size exceeds this limit, the oldest buffered log records will be dropped.
+    /// Gets or sets the maximum size of each per request buffer in bytes.
     /// </summary>
+    /// <remarks>
+    /// If adding a new log entry would cause the buffer size to exceed this limit,
+    /// the oldest buffered log records will be dropped to make room.
+    /// </remarks>
     [Range(MinimumPerRequestBufferSizeInBytes, MaximumPerRequestBufferSizeInBytes)]
     public int MaxPerRequestBufferSizeInBytes { get; set; } = DefaultPerRequestBufferSizeInBytes;
 

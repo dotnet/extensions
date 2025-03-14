@@ -17,45 +17,33 @@ namespace Microsoft.AspNetCore.Diagnostics.Buffering;
 
 internal sealed class PerIncomingRequestBuffer : ILoggingBuffer, IDisposable
 {
-    private readonly IOptionsMonitor<PerRequestLogBufferingOptions> _options;
-    private readonly IOptionsMonitor<GlobalLogBufferingOptions> _globalOptions;
-    private readonly ConcurrentQueue<SerializedLogRecord> _buffer;
-    private readonly TimeProvider _timeProvider = TimeProvider.System;
     private readonly IBufferedLogger _bufferedLogger;
     private readonly LogBufferingFilterRuleSelector _ruleSelector;
+    private readonly IOptionsMonitor<PerIncomingRequestLogBufferingOptions> _options;
+    private readonly ConcurrentQueue<SerializedLogRecord> _buffer;
+    private readonly TimeProvider _timeProvider = TimeProvider.System;
     private readonly IDisposable? _optionsChangeTokenRegistration;
     private readonly string _category;
 
-    private DateTimeOffset _lastFlushTimestamp;
     private int _bufferSize;
-    private bool _disposed;
-
+    private volatile bool _disposed;
+    private DateTimeOffset _lastFlushTimestamp;
     private LogBufferingFilterRule[] _lastKnownGoodFilterRules;
 
-    public PerIncomingRequestBuffer(IBufferedLogger bufferedLogger,
+    public PerIncomingRequestBuffer(
+        IBufferedLogger bufferedLogger,
         string category,
         LogBufferingFilterRuleSelector ruleSelector,
-        IOptionsMonitor<PerRequestLogBufferingOptions> options,
-        IOptionsMonitor<GlobalLogBufferingOptions> globalOptions)
+        IOptionsMonitor<PerIncomingRequestLogBufferingOptions> options)
     {
-        _options = options;
-        _globalOptions = globalOptions;
         _bufferedLogger = bufferedLogger;
-        _category = Throw.IfNullOrEmpty(category);
+        _category = category;
         _ruleSelector = ruleSelector;
+        _options = options;
+
         _buffer = new ConcurrentQueue<SerializedLogRecord>();
         _lastKnownGoodFilterRules = LogBufferingFilterRuleSelector.SelectByCategory(_options.CurrentValue.Rules.ToArray(), _category);
         _optionsChangeTokenRegistration = options.OnChange(OnOptionsChanged);
-    }
-
-    public void Dispose()
-    {
-        if (!_disposed)
-        {
-            _disposed = true;
-
-            _optionsChangeTokenRegistration?.Dispose();
-        }
     }
 
     ///<inheritdoc/>
@@ -87,7 +75,7 @@ internal sealed class PerIncomingRequestBuffer : ILoggingBuffer, IDisposable
             Throw.InvalidOperationException($"Unsupported type of the log state object detected: {typeof(TState)}");
         }
 
-        if (serializedLogRecord.SizeInBytes > _globalOptions.CurrentValue.MaxLogRecordSizeInBytes)
+        if (serializedLogRecord.SizeInBytes > _options.CurrentValue.MaxLogRecordSizeInBytes)
         {
             return false;
         }
@@ -109,7 +97,8 @@ internal sealed class PerIncomingRequestBuffer : ILoggingBuffer, IDisposable
 
         // Clear() and Interlocked.Exchange operations are atomic on their own.
         // But together they are not atomic, therefore have to take a lock.
-        // This is need for an edge case when AutoFlushDuration is close to 0, e.g. buffering hardly pauses.
+        // This is needed for an edge case when AutoFlushDuration is close to 0, e.g. buffering hardly pauses
+        // and new items get buffered immediately after the _buffer.Clear() call.
         lock (_buffer)
         {
             _buffer.Clear();
@@ -117,7 +106,7 @@ internal sealed class PerIncomingRequestBuffer : ILoggingBuffer, IDisposable
         }
 
         var deserializedLogRecords = new List<DeserializedLogRecord>(bufferedRecords.Length);
-        foreach (var bufferedRecord in bufferedRecords)
+        foreach (SerializedLogRecord bufferedRecord in bufferedRecords)
         {
             deserializedLogRecords.Add(
                 new DeserializedLogRecord(
@@ -132,7 +121,17 @@ internal sealed class PerIncomingRequestBuffer : ILoggingBuffer, IDisposable
         _bufferedLogger.LogRecords(deserializedLogRecords);
     }
 
-    private void OnOptionsChanged(PerRequestLogBufferingOptions? updatedOptions)
+    public void Dispose()
+    {
+        if (!_disposed)
+        {
+            _disposed = true;
+
+            _optionsChangeTokenRegistration?.Dispose();
+        }
+    }
+
+    private void OnOptionsChanged(PerIncomingRequestLogBufferingOptions? updatedOptions)
     {
         if (updatedOptions is null)
         {
@@ -148,7 +147,7 @@ internal sealed class PerIncomingRequestBuffer : ILoggingBuffer, IDisposable
 
     private bool IsEnabled(LogLevel logLevel, EventId eventId, IReadOnlyList<KeyValuePair<string, object?>> attributes)
     {
-        if (_timeProvider.GetUtcNow() < _lastFlushTimestamp + _globalOptions.CurrentValue.AutoFlushDuration)
+        if (_timeProvider.GetUtcNow() < _lastFlushTimestamp + _options.CurrentValue.AutoFlushDuration)
         {
             return false;
         }
@@ -159,7 +158,7 @@ internal sealed class PerIncomingRequestBuffer : ILoggingBuffer, IDisposable
     private void TrimExcessRecords()
     {
         while (_bufferSize > _options.CurrentValue.MaxPerRequestBufferSizeInBytes &&
-               _buffer.TryDequeue(out var item))
+               _buffer.TryDequeue(out SerializedLogRecord item))
         {
             _ = Interlocked.Add(ref _bufferSize, -item.SizeInBytes);
         }

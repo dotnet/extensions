@@ -112,7 +112,8 @@ internal sealed class GlobalBuffer : ILoggingBuffer, IDisposable
         
         // Clear() and Interlocked.Exchange operations are atomic on their own.
         // But together they are not atomic, therefore have to take a lock.
-        // This is need for an edge case when AutoFlushDuration is close to 0, e.g. buffering hardly pauses.
+        // This is needed for an edge case when AutoFlushDuration is close to 0, e.g. buffering hardly pauses
+        // and new items get buffered immediately after the _buffer.Clear() call.
         lock (_buffer)
         {
             _buffer.Clear();

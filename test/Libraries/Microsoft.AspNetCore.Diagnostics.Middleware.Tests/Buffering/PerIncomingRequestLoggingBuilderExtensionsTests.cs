@@ -3,19 +3,19 @@
 #if NET9_0_OR_GREATER
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Diagnostics.Buffering;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Buffering;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Diagnostics.Buffering.Test;
+namespace Microsoft.Extensions.Logging;
 
-public class HttpRequestBufferLoggerBuilderExtensionsTests
+public class PerIncomingRequestLoggingBuilderExtensionsTests
 {
     [Fact]
-    public void AddHttpRequestBuffering_RegistersInDI()
+    public void WhenLogLevelProvided_RegistersInDI()
     {
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging(builder =>
@@ -23,7 +23,7 @@ public class HttpRequestBufferLoggerBuilderExtensionsTests
             builder.AddPerIncomingRequestBuffer(LogLevel.Warning);
         });
 
-        var serviceProvider = serviceCollection.BuildServiceProvider();
+        ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
         var buffer = serviceProvider.GetService<PerRequestLogBuffer>();
 
         Assert.NotNull(buffer);
@@ -33,28 +33,28 @@ public class HttpRequestBufferLoggerBuilderExtensionsTests
     [Fact]
     public void WhenArgumentNull_Throws()
     {
-        var builder = null as ILoggingBuilder;
-        var configuration = null as IConfiguration;
+        ILoggingBuilder? builder = null;
+        IConfiguration? configuration = null;
 
         Assert.Throws<ArgumentNullException>(() => builder!.AddPerIncomingRequestBuffer(LogLevel.Warning));
         Assert.Throws<ArgumentNullException>(() => builder!.AddPerIncomingRequestBuffer(configuration!));
     }
 
     [Fact]
-    public void AddHttpRequestBufferConfiguration_RegistersInDI()
+    public void WhenIConfigurationProvided_RegistersInDI()
     {
         List<LogBufferingFilterRule> expectedData =
         [
-            new LogBufferingFilterRule(categoryName: "Program.MyLogger", logLevel: LogLevel.Information, eventId: 1, eventName: "number one"),
-            new LogBufferingFilterRule(logLevel: LogLevel.Information),
+            new(categoryName: "Program.MyLogger", logLevel: LogLevel.Information, eventId: 1, eventName: "number one"),
+            new(logLevel: LogLevel.Information),
         ];
-        ConfigurationBuilder configBuilder = new ConfigurationBuilder();
+        var configBuilder = new ConfigurationBuilder();
         configBuilder.AddJsonFile("appsettings.json");
         IConfigurationRoot configuration = configBuilder.Build();
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging(b => b.AddPerIncomingRequestBuffer(configuration));
-        var serviceProvider = serviceCollection.BuildServiceProvider();
-        var options = serviceProvider.GetService<IOptionsMonitor<PerRequestLogBufferingOptions>>();
+        ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
+        var options = serviceProvider.GetService<IOptionsMonitor<PerIncomingRequestLogBufferingOptions>>();
         Assert.NotNull(options);
         Assert.NotNull(options.CurrentValue);
         Assert.Equivalent(expectedData, options.CurrentValue.Rules);

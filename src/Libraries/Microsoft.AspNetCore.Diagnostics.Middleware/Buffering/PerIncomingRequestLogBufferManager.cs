@@ -14,22 +14,19 @@ internal sealed class PerIncomingRequestLogBufferManager : PerRequestLogBuffer
 {
     private readonly GlobalLogBuffer _globalBuffer;
     private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly IOptionsMonitor<PerRequestLogBufferingOptions> _requestOptions;
-    private readonly IOptionsMonitor<GlobalLogBufferingOptions> _globalOptions;
     private readonly LogBufferingFilterRuleSelector _ruleSelector;
+    private readonly IOptionsMonitor<PerIncomingRequestLogBufferingOptions> _options;
 
     public PerIncomingRequestLogBufferManager(
         GlobalLogBuffer globalBuffer,
         IHttpContextAccessor httpContextAccessor,
         LogBufferingFilterRuleSelector ruleSelector,
-        IOptionsMonitor<PerRequestLogBufferingOptions> requestOptions,
-        IOptionsMonitor<GlobalLogBufferingOptions> globalOptions)
+        IOptionsMonitor<PerIncomingRequestLogBufferingOptions> options)
     {
         _globalBuffer = globalBuffer;
         _httpContextAccessor = httpContextAccessor;
         _ruleSelector = ruleSelector;
-        _requestOptions = requestOptions;
-        _globalOptions = globalOptions;
+        _options = options;
     }
 
     public override void Flush()
@@ -49,7 +46,7 @@ internal sealed class PerIncomingRequestLogBufferManager : PerRequestLogBuffer
         string category = logEntry.Category;
         PerIncomingRequestBufferHolder? bufferHolder = httpContext.RequestServices.GetService<PerIncomingRequestBufferHolder>();
         ILoggingBuffer? buffer = bufferHolder?.GetOrAdd(category, _ =>
-            new PerIncomingRequestBuffer(bufferedLogger, category, _ruleSelector, _requestOptions, _globalOptions)!);
+            new PerIncomingRequestBuffer(bufferedLogger, category, _ruleSelector, _options));
 
         if (buffer is null)
         {

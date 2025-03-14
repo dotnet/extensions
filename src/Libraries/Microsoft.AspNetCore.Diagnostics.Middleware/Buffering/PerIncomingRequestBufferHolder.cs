@@ -16,7 +16,7 @@ internal sealed class PerIncomingRequestBufferHolder
 
     public void Flush()
     {
-        foreach (var buffer in _buffers.Values)
+        foreach (ILoggingBuffer buffer in _buffers.Values)
         {
             buffer.Flush();
         }
