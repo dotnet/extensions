@@ -21,7 +21,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Extensions.AI.Abstractions\Microsoft.Extensions.AI.Abstractions.csproj" />
+    <!-- Override dependency version since the M.E.AI is not shipping simultaneously. Remove before a new release. -->
+    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" VersionOverride="9.3.0-preview.1.25161.3" />
+    <!-- <ProjectReference Include="..\Microsoft.Extensions.AI.Abstractions\Microsoft.Extensions.AI.Abstractions.csproj" />  -->
   </ItemGroup>
 
   <ItemGroup>
