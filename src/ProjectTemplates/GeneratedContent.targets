@@ -7,18 +7,18 @@
   <Target Name="ComputeGeneratedContentProperties">
     <PropertyGroup>
       <!-- Define optional pinned versions of certain dependencies. -->
-      <TemplatePinnedMicrosoftExtensionsAIVersion>9.3.0-preview.1.25114.11</TemplatePinnedMicrosoftExtensionsAIVersion>
-      <TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion>9.0.2</TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion>
+      <TemplatePinnedMicrosoftExtensionsAIVersion>9.3.0-preview.1.25161.3</TemplatePinnedMicrosoftExtensionsAIVersion>
+      <TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion>9.0.3</TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion>
 
-      <!-- By default, don't use pinned dependency versions. -->
-      <TemplateUsePinnedMicrosoftExtensionsAIVersion Condition="'$(TemplateUsePinnedMicrosoftExtensionsAIVersion)' == ''">false</TemplateUsePinnedMicrosoftExtensionsAIVersion>
-      <TemplateUsePinnedMicrosoftEntityFrameworkCoreSqliteVersion Condition="'$(TemplateUsePinnedMicrosoftEntityFrameworkCoreSqliteVersion)' == ''">false</TemplateUsePinnedMicrosoftEntityFrameworkCoreSqliteVersion>
+      <!-- By default, use pinned dependency versions. -->
+      <TemplateUsePinnedMicrosoftExtensionsAIVersion Condition="'$(TemplateUsePinnedMicrosoftExtensionsAIVersion)' == ''">true</TemplateUsePinnedMicrosoftExtensionsAIVersion>
+      <TemplateUsePinnedMicrosoftEntityFrameworkCoreSqliteVersion Condition="'$(TemplateUsePinnedMicrosoftEntityFrameworkCoreSqliteVersion)' == ''">true</TemplateUsePinnedMicrosoftEntityFrameworkCoreSqliteVersion>
 
-      <!-- Use pinned dependency versions if specified. -->
+      <!-- Apply pinned dependency versions if enabled. -->
       <TemplateMicrosoftExtensionsAIVersion Condition="'$(TemplateUsePinnedMicrosoftExtensionsAIVersion)' == 'true'">$(TemplatePinnedMicrosoftExtensionsAIVersion)</TemplateMicrosoftExtensionsAIVersion>
       <TemplateMicrosoftEntityFrameworkCoreSqliteVersion Condition="'$(TemplateUsePinnedMicrosoftEntityFrameworkCoreSqliteVersion)' == 'true'">$(TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion)</TemplateMicrosoftEntityFrameworkCoreSqliteVersion>
 
-      <!-- Fall back on default dependency versions. -->
+      <!-- Fall back on default dependency versions if pinned versions were not applied. -->
       <TemplateMicrosoftExtensionsAIVersion Condition="'$(TemplateMicrosoftExtensionsAIVersion)' == ''">$(Version)</TemplateMicrosoftExtensionsAIVersion>
       <TemplateMicrosoftEntityFrameworkCoreSqliteVersion Condition="'$(TemplateMicrosoftEntityFrameworkCoreSqliteVersion)' == ''">$(MicrosoftEntityFrameworkCoreSqliteVersion)</TemplateMicrosoftEntityFrameworkCoreSqliteVersion>
 
