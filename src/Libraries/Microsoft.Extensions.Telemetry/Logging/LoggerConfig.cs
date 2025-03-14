@@ -26,7 +26,7 @@ internal sealed class LoggerConfig
         Func<DataClassificationSet, Redactor> getRedactor,
 #if NET9_0_OR_GREATER
         bool addRedactionDiscriminator,
-        LogBuffer? bufferingManager)
+        LogBuffer? logBuffer)
 #else
         bool addRedactionDiscriminator)
 #endif
@@ -42,7 +42,7 @@ internal sealed class LoggerConfig
         GetRedactor = getRedactor;
         AddRedactionDiscriminator = addRedactionDiscriminator;
 #if NET9_0_OR_GREATER
-        BufferingManager = bufferingManager;
+        LogBuffer = logBuffer;
 #endif
     }
 
@@ -56,6 +56,6 @@ internal sealed class LoggerConfig
     public Func<DataClassificationSet, Redactor> GetRedactor { get; }
     public bool AddRedactionDiscriminator { get; }
 #if NET9_0_OR_GREATER
-    public LogBuffer? BufferingManager { get; }
+    public LogBuffer? LogBuffer { get; }
 #endif
 }

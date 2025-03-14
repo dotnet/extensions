@@ -9,21 +9,21 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Diagnostics.Buffering;
 
-internal sealed class GlobalBufferManager : GlobalLogBuffer
+internal sealed class GlobalLogBufferManager : GlobalLogBuffer
 {
-    internal readonly ConcurrentDictionary<string, ILoggingBuffer> Buffers = [];
+    private readonly ConcurrentDictionary<string, GlobalBuffer> _buffers = [];
     private readonly IOptionsMonitor<GlobalLogBufferingOptions> _options;
     private readonly TimeProvider _timeProvider;
     private readonly LogBufferingFilterRuleSelector _ruleSelector;
 
-    public GlobalBufferManager(
+    public GlobalLogBufferManager(
         LogBufferingFilterRuleSelector ruleSelector,
         IOptionsMonitor<GlobalLogBufferingOptions> options)
         : this(ruleSelector, options, TimeProvider.System)
     {
     }
 
-    internal GlobalBufferManager(
+    internal GlobalLogBufferManager(
         LogBufferingFilterRuleSelector ruleSelector,
         IOptionsMonitor<GlobalLogBufferingOptions> options,
         TimeProvider timeProvider)
@@ -35,7 +35,7 @@ internal sealed class GlobalBufferManager : GlobalLogBuffer
 
     public override void Flush()
     {
-        foreach (var buffer in Buffers.Values)
+        foreach (GlobalBuffer buffer in _buffers.Values)
         {
             buffer.Flush();
         }
@@ -44,7 +44,7 @@ internal sealed class GlobalBufferManager : GlobalLogBuffer
     public override bool TryEnqueue<TState>(IBufferedLogger bufferedLogger, in LogEntry<TState> logEntry)
     {
         string category = logEntry.Category;
-        ILoggingBuffer buffer = Buffers.GetOrAdd(category, _ => new GlobalBuffer(
+        GlobalBuffer buffer = _buffers.GetOrAdd(category, _ => new GlobalBuffer(
             bufferedLogger,
             category,
             _ruleSelector,

@@ -10,6 +10,7 @@ namespace Microsoft.Extensions.Diagnostics.Buffering.Test;
 public class LogBufferingFilterRuleTests
 {
     private readonly LogBufferingFilterRuleSelector _selector = new();
+
     [Fact]
     public void SelectsRightRule()
     {

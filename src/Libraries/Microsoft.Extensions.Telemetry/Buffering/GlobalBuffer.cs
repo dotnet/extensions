@@ -15,7 +15,7 @@ using static Microsoft.Extensions.Logging.ExtendedLogger;
 
 namespace Microsoft.Extensions.Diagnostics.Buffering;
 
-internal sealed class GlobalBuffer : ILoggingBuffer, IDisposable
+internal sealed class GlobalBuffer : IDisposable
 {
     private readonly IOptionsMonitor<GlobalLogBufferingOptions> _options;
     private readonly ConcurrentQueue<SerializedLogRecord> _buffer;
@@ -59,9 +59,7 @@ internal sealed class GlobalBuffer : ILoggingBuffer, IDisposable
 
         _optionsChangeTokenRegistration?.Dispose();
     }
-    
 
-    ///<inheritdoc/>
     public bool TryEnqueue<TState>(LogEntry<TState> logEntry)
     {
         SerializedLogRecord serializedLogRecord = default;
@@ -103,7 +101,6 @@ internal sealed class GlobalBuffer : ILoggingBuffer, IDisposable
         return true;
     }
 
-    ///<inheritdoc/>
     public void Flush()
     {
         _lastFlushTimestamp = _timeProvider.GetUtcNow();

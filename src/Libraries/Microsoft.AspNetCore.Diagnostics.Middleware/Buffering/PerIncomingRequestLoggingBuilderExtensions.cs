@@ -38,11 +38,14 @@ public static class PerIncomingRequestLoggingBuilderExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configuration);
 
-        _ = builder.Services.AddSingleton<IConfigureOptions<PerIncomingRequestLogBufferingOptions>>(
-            new PerIncomingRequestLogBufferingConfigureOptions(configuration));
+        _ = builder.Services.AddSingleton<IConfigureOptions<PerRequestLogBufferingOptions>>(
+            new PerRequestLogBufferingConfigureOptions(configuration));
+
+        _ = builder.Services
+            .AddOptionsWithValidateOnStart<PerRequestLogBufferingOptions, PerRequestLogBufferingOptionsValidator>();
 
         return builder
-            .AddPerIncomingRequestBufferManager()
+            .AddPerRequestBufferManager()
             .AddGlobalBuffer(configuration);
     }
 
@@ -57,18 +60,20 @@ public static class PerIncomingRequestLoggingBuilderExtensions
     /// Matched logs will be buffered in a buffer specific to each incoming request
     /// and can optionally be flushed and emitted during the request lifetime.
     /// </remarks>
-    public static ILoggingBuilder AddPerIncomingRequestBuffer(this ILoggingBuilder builder, Action<PerIncomingRequestLogBufferingOptions> configure)
+    public static ILoggingBuilder AddPerIncomingRequestBuffer(this ILoggingBuilder builder, Action<PerRequestLogBufferingOptions> configure)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);
 
-        _ = builder.Services.Configure(configure);
+        _ = builder.Services
+            .AddOptionsWithValidateOnStart<PerRequestLogBufferingOptions, PerRequestLogBufferingOptionsValidator>()
+            .Configure(configure);
 
-        PerIncomingRequestLogBufferingOptions options = new PerIncomingRequestLogBufferingOptions();
+        PerRequestLogBufferingOptions options = new PerRequestLogBufferingOptions();
         configure(options);
 
         return builder
-            .AddPerIncomingRequestBufferManager()
+            .AddPerRequestBufferManager()
             .AddGlobalBuffer(opts => opts.Rules = options.Rules);
     }
 
@@ -87,25 +92,29 @@ public static class PerIncomingRequestLoggingBuilderExtensions
     {
         _ = Throw.IfNull(builder);
 
-        _ = builder.Services.Configure<PerIncomingRequestLogBufferingOptions>(options =>
-            options.Rules.Add(new LogBufferingFilterRule(logLevel: logLevel)));
+        _ = builder.Services
+            .AddOptionsWithValidateOnStart<PerRequestLogBufferingOptions, PerRequestLogBufferingOptionsValidator>()
+            .Configure(options =>
+            {
+                options.Rules.Add(new LogBufferingFilterRule(logLevel: logLevel));
+            });
 
         return builder
-            .AddPerIncomingRequestBufferManager()
+            .AddPerRequestBufferManager()
             .AddGlobalBuffer(logLevel);
     }
 
-    internal static ILoggingBuilder AddPerIncomingRequestBufferManager(this ILoggingBuilder builder)
+    private static ILoggingBuilder AddPerRequestBufferManager(this ILoggingBuilder builder)
     {
-        builder.Services.TryAddScoped<PerIncomingRequestBufferHolder>();
+        builder.Services.TryAddScoped<IncomingRequestLogBufferHolder>();
         builder.Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         builder.Services.TryAddSingleton(sp =>
         {
-            var globalBufferManager = sp.GetRequiredService<GlobalBufferManager>();
-            return ActivatorUtilities.CreateInstance<PerIncomingRequestLogBufferManager>(sp, globalBufferManager);
+            var globalBufferManager = sp.GetRequiredService<GlobalLogBufferManager>();
+            return ActivatorUtilities.CreateInstance<PerRequestLogBufferManager>(sp, globalBufferManager);
         });
-        builder.Services.TryAddSingleton<LogBuffer>(sp => sp.GetRequiredService<PerIncomingRequestLogBufferManager>());
-        builder.Services.TryAddSingleton<PerRequestLogBuffer>(sp => sp.GetRequiredService<PerIncomingRequestLogBufferManager>());
+        builder.Services.TryAddSingleton<LogBuffer>(sp => sp.GetRequiredService<PerRequestLogBufferManager>());
+        builder.Services.TryAddSingleton<PerRequestLogBuffer>(sp => sp.GetRequiredService<PerRequestLogBufferManager>());
 
         return builder;
     }

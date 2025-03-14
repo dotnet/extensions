@@ -15,11 +15,11 @@ using static Microsoft.Extensions.Logging.ExtendedLogger;
 
 namespace Microsoft.AspNetCore.Diagnostics.Buffering;
 
-internal sealed class PerIncomingRequestBuffer : ILoggingBuffer, IDisposable
+internal sealed class IncomingRequestLogBuffer : IDisposable
 {
     private readonly IBufferedLogger _bufferedLogger;
     private readonly LogBufferingFilterRuleSelector _ruleSelector;
-    private readonly IOptionsMonitor<PerIncomingRequestLogBufferingOptions> _options;
+    private readonly IOptionsMonitor<PerRequestLogBufferingOptions> _options;
     private readonly ConcurrentQueue<SerializedLogRecord> _buffer;
     private readonly TimeProvider _timeProvider = TimeProvider.System;
     private readonly IDisposable? _optionsChangeTokenRegistration;
@@ -30,11 +30,11 @@ internal sealed class PerIncomingRequestBuffer : ILoggingBuffer, IDisposable
     private DateTimeOffset _lastFlushTimestamp;
     private LogBufferingFilterRule[] _lastKnownGoodFilterRules;
 
-    public PerIncomingRequestBuffer(
+    public IncomingRequestLogBuffer(
         IBufferedLogger bufferedLogger,
         string category,
         LogBufferingFilterRuleSelector ruleSelector,
-        IOptionsMonitor<PerIncomingRequestLogBufferingOptions> options)
+        IOptionsMonitor<PerRequestLogBufferingOptions> options)
     {
         _bufferedLogger = bufferedLogger;
         _category = category;
@@ -46,7 +46,6 @@ internal sealed class PerIncomingRequestBuffer : ILoggingBuffer, IDisposable
         _optionsChangeTokenRegistration = options.OnChange(OnOptionsChanged);
     }
 
-    ///<inheritdoc/>
     public bool TryEnqueue<TState>(LogEntry<TState> logEntry)
     {
         SerializedLogRecord serializedLogRecord = default;
@@ -88,7 +87,6 @@ internal sealed class PerIncomingRequestBuffer : ILoggingBuffer, IDisposable
         return true;
     }
 
-    ///<inheritdoc/>
     public void Flush()
     {
         _lastFlushTimestamp = _timeProvider.GetUtcNow();
@@ -131,7 +129,7 @@ internal sealed class PerIncomingRequestBuffer : ILoggingBuffer, IDisposable
         }
     }
 
-    private void OnOptionsChanged(PerIncomingRequestLogBufferingOptions? updatedOptions)
+    private void OnOptionsChanged(PerRequestLogBufferingOptions? updatedOptions)
     {
         if (updatedOptions is null)
         {

@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Diagnostics.Buffering.Test;
 public class GlobalBufferLoggerBuilderExtensionsTests
 {
     [Fact]
-    public void AddGlobalBuffer_RegistersInDI()
+    public void WithLogLevel_RegistersInDI()
     {
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging(builder =>
@@ -22,30 +22,30 @@ public class GlobalBufferLoggerBuilderExtensionsTests
             builder.AddGlobalBuffer(LogLevel.Warning);
         });
 
-        var serviceProvider = serviceCollection.BuildServiceProvider();
+        ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
         var bufferManager = serviceProvider.GetService<GlobalLogBuffer>();
 
         Assert.NotNull(bufferManager);
-        Assert.IsAssignableFrom<GlobalBufferManager>(bufferManager);
+        Assert.IsAssignableFrom<GlobalLogBufferManager>(bufferManager);
     }
 
     [Fact]
     public void WhenArgumentNull_Throws()
     {
-        var builder = null as ILoggingBuilder;
-        var configuration = null as IConfiguration;
+        ILoggingBuilder? builder = null;
+        IConfiguration? configuration = null;
 
         Assert.Throws<ArgumentNullException>(() => builder!.AddGlobalBuffer(LogLevel.Warning));
         Assert.Throws<ArgumentNullException>(() => builder!.AddGlobalBuffer(configuration!));
     }
 
     [Fact]
-    public void AddGlobalBuffer_WithConfiguration_RegistersInDI()
+    public void WithConfiguration_RegistersInDI()
     {
         List<LogBufferingFilterRule> expectedData =
         [
-            new LogBufferingFilterRule("Program.MyLogger",  LogLevel.Information, 1, "number one", [new("region", "westus2"), new ("priority", 1)]),
-            new LogBufferingFilterRule(logLevel: LogLevel.Information),
+            new ("Program.MyLogger",  LogLevel.Information, 1, "number one", [new("region", "westus2"), new ("priority", 1)]),
+            new (logLevel: LogLevel.Information),
         ];
         ConfigurationBuilder configBuilder = new ConfigurationBuilder();
         configBuilder.AddJsonFile("appsettings.json");
@@ -59,7 +59,7 @@ public class GlobalBufferLoggerBuilderExtensionsTests
                 options.MaxLogRecordSizeInBytes = 33;
             });
         });
-        var serviceProvider = serviceCollection.BuildServiceProvider();
+        ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
         var options = serviceProvider.GetService<IOptionsMonitor<GlobalLogBufferingOptions>>();
         Assert.NotNull(options);
         Assert.NotNull(options.CurrentValue);
@@ -69,5 +69,4 @@ public class GlobalBufferLoggerBuilderExtensionsTests
         Assert.Equivalent(expectedData, options.CurrentValue.Rules);
     }
 }
-
 #endif

@@ -34,7 +34,7 @@ internal sealed partial class ExtendedLogger : ILogger
     public MessageLogger[] MessageLoggers { get; set; } = Array.Empty<MessageLogger>();
     public ScopeLogger[] ScopeLoggers { get; set; } = Array.Empty<ScopeLogger>();
 #if NET9_0_OR_GREATER
-    private readonly LogBuffer? _bufferingManager;
+    private readonly LogBuffer? _logBuffer;
     private readonly IBufferedLogger? _bufferedLogger;
 #endif
 
@@ -43,8 +43,8 @@ internal sealed partial class ExtendedLogger : ILogger
         _factory = factory;
         Loggers = loggers;
 #if NET9_0_OR_GREATER
-        _bufferingManager = _factory.Config.BufferingManager;
-        if (_bufferingManager is not null)
+        _logBuffer = _factory.Config.LogBuffer;
+        if (_logBuffer is not null)
         {
             _bufferedLogger = new BufferedLoggerProxy(this);
         }
@@ -302,14 +302,14 @@ internal sealed partial class ExtendedLogger : ILogger
 #if NET9_0_OR_GREATER
                 if (shouldBuffer)
                 {
-                    if (_bufferingManager is not null)
+                    if (_logBuffer is not null)
                     {
                         var logEntry = new LogEntry<ModernTagJoiner>(logLevel, loggerInfo.Category!, eventId, joiner, exception, static (s, e) =>
                         {
                             var fmt = s.Formatter!;
                             return fmt(s.State!, e);
                         });
-                        var wasBuffered = _bufferingManager.TryEnqueue(_bufferedLogger!, logEntry);
+                        bool wasBuffered = _logBuffer.TryEnqueue(_bufferedLogger!, logEntry);
 
                         if (wasBuffered)
                         {
@@ -430,14 +430,14 @@ internal sealed partial class ExtendedLogger : ILogger
 #if NET9_0_OR_GREATER
                 if (shouldBuffer)
                 {
-                    if (_bufferingManager is not null)
+                    if (_logBuffer is not null)
                     {
                         var logEntry = new LogEntry<LegacyTagJoiner>(logLevel, loggerInfo.Category!, eventId, joiner, exception, static (s, e) =>
                         {
                             var fmt = (Func<TState, Exception?, string>)s.Formatter!;
                             return fmt((TState)s.State!, e);
                         });
-                        bool wasBuffered = _bufferingManager.TryEnqueue(_bufferedLogger!, in logEntry);
+                        bool wasBuffered = _logBuffer.TryEnqueue(_bufferedLogger!, in logEntry);
 
                         if (wasBuffered)
                         {

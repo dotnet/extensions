@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Diagnostics.Buffering;
 
 internal sealed class GlobalLogBufferingConfigureOptions : IConfigureOptions<GlobalLogBufferingOptions>
 {
-    private const string BufferingKey = "GlobalLogBuffering";
+    private const string ConfigSectionName = "GlobalLogBuffering";
     private readonly IConfiguration _configuration;
 
     public GlobalLogBufferingConfigureOptions(IConfiguration configuration)
@@ -24,7 +24,7 @@ internal sealed class GlobalLogBufferingConfigureOptions : IConfigureOptions<Glo
             return;
         }
 
-        var section = _configuration.GetSection(BufferingKey);
+        IConfigurationSection section = _configuration.GetSection(ConfigSectionName);
         if (!section.Exists())
         {
             return;

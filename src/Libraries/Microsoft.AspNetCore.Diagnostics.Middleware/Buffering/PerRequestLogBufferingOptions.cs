@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Buffering;
 /// The options for log buffering per each incoming request.
 /// </summary>
 [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
-public class PerIncomingRequestLogBufferingOptions
+public class PerRequestLogBufferingOptions
 {
     private const int DefaultPerRequestBufferSizeInBytes = 5_000_000; // 500 MB.
     private const int DefaultMaxLogRecordSizeInBytes = 50_000; // 50 KB.

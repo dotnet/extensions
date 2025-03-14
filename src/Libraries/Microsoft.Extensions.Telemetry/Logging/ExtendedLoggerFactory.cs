@@ -28,7 +28,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
     private readonly Action<IEnrichmentTagCollector>[] _enrichers;
     private readonly LoggingSampler? _sampler;
 #if NET9_0_OR_GREATER
-    private readonly LogBuffer? _bufferingManager;
+    private readonly LogBuffer? _logBuffer;
 #endif
     private readonly KeyValuePair<string, object?>[] _staticTags;
     private readonly Func<DataClassificationSet, Redactor> _redactorProvider;
@@ -49,7 +49,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
         IOptionsMonitor<LoggerRedactionOptions>? redactionOptions = null,
 #if NET9_0_OR_GREATER
         IRedactorProvider? redactorProvider = null,
-        LogBuffer? bufferingManager = null)
+        LogBuffer? logBuffer = null)
 #else
         IRedactorProvider? redactorProvider = null)
 #endif
@@ -57,7 +57,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
     {
         _scopeProvider = scopeProvider;
 #if NET9_0_OR_GREATER
-        _bufferingManager = bufferingManager;
+        _logBuffer = logBuffer;
 #endif
         _sampler = sampler;
 
@@ -309,7 +309,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
                 _redactorProvider,
 #if NET9_0_OR_GREATER
                 redactionOptions.ApplyDiscriminator,
-                _bufferingManager);
+                _logBuffer);
 #else
                 redactionOptions.ApplyDiscriminator);
 #endif

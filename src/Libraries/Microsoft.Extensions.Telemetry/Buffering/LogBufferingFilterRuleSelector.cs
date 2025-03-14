@@ -19,6 +19,7 @@ namespace Microsoft.Extensions.Diagnostics.Buffering;
 /// </summary>
 internal sealed class LogBufferingFilterRuleSelector
 {
+    private static readonly IEqualityComparer<KeyValuePair<string, object?>> _stringifyComparer = new StringifyComprarer();
     private readonly ConcurrentDictionary<(LogLevel, EventId), List<LogBufferingFilterRule>> _ruleCache = new();
 
     public void InvalidateCache()
@@ -26,13 +27,13 @@ internal sealed class LogBufferingFilterRuleSelector
         _ruleCache.Clear();
     }
 
-    private static readonly IEqualityComparer<KeyValuePair<string, object?>> _stringifyComparer = new StringifyComprarer();
 
     public static LogBufferingFilterRule[] SelectByCategory(IList<LogBufferingFilterRule> rules, string category)
     {
         List<LogBufferingFilterRule> result = [];
 
         // Skip rules with inapplicable category
+        // because GlobalBuffers are created for each category
         foreach (LogBufferingFilterRule rule in rules)
         {
             if (IsMatch(rule, category))
@@ -44,7 +45,8 @@ internal sealed class LogBufferingFilterRuleSelector
         return result.ToArray();
     }
 
-    public LogBufferingFilterRule? Select(IList<LogBufferingFilterRule> rules,
+    public LogBufferingFilterRule? Select(
+        IList<LogBufferingFilterRule> rules,
         LogLevel logLevel,
         EventId eventId,
         IReadOnlyList<KeyValuePair<string, object?>>? attributes)

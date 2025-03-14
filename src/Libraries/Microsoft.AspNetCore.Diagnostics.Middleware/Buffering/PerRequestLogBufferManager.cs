@@ -10,18 +10,18 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Diagnostics.Buffering;
 
-internal sealed class PerIncomingRequestLogBufferManager : PerRequestLogBuffer
+internal sealed class PerRequestLogBufferManager : PerRequestLogBuffer
 {
     private readonly GlobalLogBuffer _globalBuffer;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly LogBufferingFilterRuleSelector _ruleSelector;
-    private readonly IOptionsMonitor<PerIncomingRequestLogBufferingOptions> _options;
+    private readonly IOptionsMonitor<PerRequestLogBufferingOptions> _options;
 
-    public PerIncomingRequestLogBufferManager(
+    public PerRequestLogBufferManager(
         GlobalLogBuffer globalBuffer,
         IHttpContextAccessor httpContextAccessor,
         LogBufferingFilterRuleSelector ruleSelector,
-        IOptionsMonitor<PerIncomingRequestLogBufferingOptions> options)
+        IOptionsMonitor<PerRequestLogBufferingOptions> options)
     {
         _globalBuffer = globalBuffer;
         _httpContextAccessor = httpContextAccessor;
@@ -31,7 +31,7 @@ internal sealed class PerIncomingRequestLogBufferManager : PerRequestLogBuffer
 
     public override void Flush()
     {
-        _httpContextAccessor.HttpContext?.RequestServices.GetService<PerIncomingRequestBufferHolder>()?.Flush();
+        _httpContextAccessor.HttpContext?.RequestServices.GetService<IncomingRequestLogBufferHolder>()?.Flush();
         _globalBuffer.Flush();
     }
 
@@ -44,9 +44,9 @@ internal sealed class PerIncomingRequestLogBufferManager : PerRequestLogBuffer
         }
 
         string category = logEntry.Category;
-        PerIncomingRequestBufferHolder? bufferHolder = httpContext.RequestServices.GetService<PerIncomingRequestBufferHolder>();
-        ILoggingBuffer? buffer = bufferHolder?.GetOrAdd(category, _ =>
-            new PerIncomingRequestBuffer(bufferedLogger, category, _ruleSelector, _options));
+        IncomingRequestLogBufferHolder? bufferHolder = httpContext.RequestServices.GetService<IncomingRequestLogBufferHolder>();
+        IncomingRequestLogBuffer? buffer = bufferHolder?.GetOrAdd(category, _ =>
+            new IncomingRequestLogBuffer(bufferedLogger, category, _ruleSelector, _options));
 
         if (buffer is null)
         {

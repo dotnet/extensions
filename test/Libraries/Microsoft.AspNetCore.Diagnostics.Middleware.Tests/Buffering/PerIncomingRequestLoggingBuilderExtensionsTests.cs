@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Buffering;
 using Microsoft.Extensions.Options;
 using Xunit;
+using PerRequestLogBuffer = Microsoft.Extensions.Diagnostics.Buffering.PerRequestLogBuffer;
 
 namespace Microsoft.Extensions.Logging;
 
@@ -27,7 +28,7 @@ public class PerIncomingRequestLoggingBuilderExtensionsTests
         var buffer = serviceProvider.GetService<PerRequestLogBuffer>();
 
         Assert.NotNull(buffer);
-        Assert.IsAssignableFrom<PerIncomingRequestLogBufferManager>(buffer);
+        Assert.IsAssignableFrom<PerRequestLogBufferManager>(buffer);
     }
 
     [Fact]
@@ -54,7 +55,7 @@ public class PerIncomingRequestLoggingBuilderExtensionsTests
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging(b => b.AddPerIncomingRequestBuffer(configuration));
         ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
-        var options = serviceProvider.GetService<IOptionsMonitor<PerIncomingRequestLogBufferingOptions>>();
+        var options = serviceProvider.GetService<IOptionsMonitor<PerRequestLogBufferingOptions>>();
         Assert.NotNull(options);
         Assert.NotNull(options.CurrentValue);
         Assert.Equivalent(expectedData, options.CurrentValue.Rules);

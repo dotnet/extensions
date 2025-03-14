@@ -56,8 +56,9 @@ public static class GlobalBufferLoggingBuilderExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);
 
-        _ = builder.Services.AddOptionsWithValidateOnStart<GlobalLogBufferingOptions, GlobalLogBufferingOptionsValidator>();
-        _ = builder.Services.Configure(configure);
+        _ = builder.Services
+            .AddOptionsWithValidateOnStart<GlobalLogBufferingOptions, GlobalLogBufferingOptionsValidator>()
+            .Configure(configure);
 
         return builder.AddGlobalBufferManager();
     }
@@ -76,8 +77,9 @@ public static class GlobalBufferLoggingBuilderExtensions
     {
         _ = Throw.IfNull(builder);
 
-        _ = builder.Services.AddOptionsWithValidateOnStart<GlobalLogBufferingOptions, GlobalLogBufferingOptionsValidator>();
-        _ = builder.Services.Configure<GlobalLogBufferingOptions>(options => options.Rules.Add(new LogBufferingFilterRule(logLevel: logLevel)));
+        _ = builder.Services
+            .AddOptionsWithValidateOnStart<GlobalLogBufferingOptions, GlobalLogBufferingOptionsValidator>()
+            .Configure(options => options.Rules.Add(new LogBufferingFilterRule(logLevel: logLevel)));
 
         return builder.AddGlobalBufferManager();
     }
@@ -87,9 +89,9 @@ public static class GlobalBufferLoggingBuilderExtensions
         _ = builder.Services.AddExtendedLoggerFeactory();
 
         builder.Services.TryAddSingleton<LogBufferingFilterRuleSelector>();
-        builder.Services.TryAddSingleton<GlobalBufferManager>();
-        builder.Services.TryAddSingleton<GlobalLogBuffer>(static sp => sp.GetRequiredService<GlobalBufferManager>());
-        builder.Services.TryAddSingleton<LogBuffer>(static sp => sp.GetRequiredService<GlobalBufferManager>());
+        builder.Services.TryAddSingleton<GlobalLogBufferManager>();
+        builder.Services.TryAddSingleton<GlobalLogBuffer>(static sp => sp.GetRequiredService<GlobalLogBufferManager>());
+        builder.Services.TryAddSingleton<LogBuffer>(static sp => sp.GetRequiredService<GlobalLogBufferManager>());
 
         return builder;
     }
