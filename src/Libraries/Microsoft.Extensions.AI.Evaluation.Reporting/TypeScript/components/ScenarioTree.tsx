@@ -3,7 +3,7 @@
 
 import React, { useState, useCallback } from "react";
 import { makeStyles, tokens, Tree, TreeItem, TreeItemLayout, TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent, mergeClasses } from "@fluentui/react-components";
-import { DefaultRootNodeName, ScoreNode, ScoreNodeType, getPromptDetails, ChatMessageDisplay } from "./Summary";
+import { ScoreNode, ScoreNodeType, getPromptDetails, ChatMessageDisplay } from "./Summary";
 import { PassFailBar } from "./PassFailBar";
 import { MetricCardList, type MetricType } from "./MetricCard";
 import ReactMarkdown from "react-markdown";
@@ -16,7 +16,6 @@ const ScenarioLevel = ({ node, parentPath, isOpen, renderMarkdown }: {
   isOpen: (path: string) => boolean, 
   renderMarkdown: boolean,
 }) => {
-    node.collapseSingleChildNodes();
     const path = `${parentPath}.${node.name}`;
     if (node.isLeafNode) {
         return <TreeItem itemType="branch" value={path}>
@@ -53,7 +52,7 @@ export const ScenarioGroup = ({ node, renderMarkdown }: { node: ScoreNode, rende
     const isOpen = (name: string) => openItems.has(name);
 
     return (
-        <Tree aria-label="Default" appearance="transparent" onOpenChange={handleOpenChange} defaultOpenItems={["." + DefaultRootNodeName]}>
+        <Tree aria-label="Default" appearance="transparent" onOpenChange={handleOpenChange} defaultOpenItems={["." + node.name]}>
             <ScenarioLevel node={node} parentPath={""} isOpen={isOpen} renderMarkdown={renderMarkdown} />
         </Tree>);        
 };
