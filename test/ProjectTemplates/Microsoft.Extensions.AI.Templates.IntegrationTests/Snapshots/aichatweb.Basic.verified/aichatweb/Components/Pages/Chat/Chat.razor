@@ -100,6 +100,7 @@
         await chatInput!.FocusAsync();
     }
 
+    // TODO: This helper is needed until https://github.com/dotnet/extensions/issues/6114 is resolved
     private void AddNonTextContentToConversation(IList<AIContent> contents)
     {
         foreach (var content in contents)
