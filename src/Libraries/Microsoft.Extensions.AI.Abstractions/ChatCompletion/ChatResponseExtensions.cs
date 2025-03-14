@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -47,7 +48,7 @@ public static class ChatResponseExtensions
     /// <exception cref="ArgumentNullException"><paramref name="list"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="updates"/> is <see langword="null"/>.</exception>
     /// <remarks>
-    /// As part of combining <paramref name="updates"/> into a series of <see cref="ChatMessage"/> instances, tne
+    /// As part of combining <paramref name="updates"/> into a series of <see cref="ChatMessage"/> instances, the
     /// method may use <see cref="ChatResponseUpdate.ResponseId"/> to determine message boundaries, as well as coalesce
     /// contiguous <see cref="AIContent"/> items where applicable, e.g. multiple
     /// <see cref="TextContent"/> instances in a row may be combined into a single <see cref="TextContent"/>.
@@ -63,6 +64,33 @@ public static class ChatResponseExtensions
         }
 
         list.AddMessages(updates.ToChatResponse());
+    }
+
+    /// <summary>Converts the <paramref name="update"/> into a <see cref="ChatMessage"/> instance and adds it to <paramref name="list"/>.</summary>
+    /// <param name="list">The destination list to which the newly constructed message should be added.</param>
+    /// <param name="update">The <see cref="ChatResponseUpdate"/> instance to convert to a message and add to the list.</param>
+    /// <param name="filter">A predicate to filter which <see cref="AIContent"/> gets included in the message.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="list"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="update"/> is <see langword="null"/>.</exception>
+    /// <remarks>
+    /// If the <see cref="ChatResponseUpdate"/> has no content, or all its content gets excluded by <paramref name="filter"/>, then
+    /// no <see cref="ChatMessage"/> will be added to the <paramref name="list"/>.
+    /// </remarks>
+    public static void AddMessages(this IList<ChatMessage> list, ChatResponseUpdate update, Func<AIContent, bool>? filter = null)
+    {
+        _ = Throw.IfNull(list);
+        _ = Throw.IfNull(update);
+
+        var contentsList = filter is null ? update.Contents : update.Contents.Where(filter).ToList();
+        if (contentsList.Count > 0)
+        {
+            list.Add(new ChatMessage(update.Role ?? ChatRole.Assistant, contentsList)
+            {
+                AuthorName = update.AuthorName,
+                RawRepresentation = update.RawRepresentation,
+                AdditionalProperties = update.AdditionalProperties,
+            });
+        }
     }
 
     /// <summary>Converts the <paramref name="updates"/> into <see cref="ChatMessage"/> instances and adds them to <paramref name="list"/>.</summary>
