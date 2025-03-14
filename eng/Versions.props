@@ -139,7 +139,7 @@
     <AzureSearchDocumentsVersion>11.6.0</AzureSearchDocumentsVersion>
     <MicrosoftSemanticKernelConnectorsAzureAISearchVersion>1.37.0-preview</MicrosoftSemanticKernelConnectorsAzureAISearchVersion>
     <MicrosoftSemanticKernelCoreVersion>1.37.0</MicrosoftSemanticKernelCoreVersion>
-    <OllamaSharpVersion>5.0.7</OllamaSharpVersion>
+    <OllamaSharpVersion>5.1.5</OllamaSharpVersion>
     <OpenAIVersion>2.2.0-beta.1</OpenAIVersion>
     <PdfPigVersion>0.1.9</PdfPigVersion>
     <SystemLinqAsyncVersion>6.0.1</SystemLinqAsyncVersion>
