@@ -157,5 +157,11 @@
     <!-- Compatibility with VS 17.8/.NET SDK 8.0.1xx -->
     <MicrosoftCodeAnalysisVersion>4.8.0</MicrosoftCodeAnalysisVersion>
     <MicrosoftCodeAnalysisAnalyzersVersion>3.3.4</MicrosoftCodeAnalysisAnalyzersVersion>
+
+    <!--
+      xUnit version is configured by the Arcade SDK.
+      https://github.com/dotnet/arcade/blob/f5a7c5d5c56197b09715dece7541ca06beb94eb0/src/Microsoft.DotNet.Arcade.Sdk/tools/XUnit/XUnit.targets#L9
+     -->
+    <XUnitVersion>2.9.3</XUnitVersion>
   </PropertyGroup>
 </Project>
