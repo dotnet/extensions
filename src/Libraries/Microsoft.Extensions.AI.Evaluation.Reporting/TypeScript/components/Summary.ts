@@ -65,7 +65,6 @@ export class ScoreNode {
     }
 
     aggregate() {
-        // Reset node to defaults before recalculating
         this.failed = false;
         this.numPassingIterations = 0;
         this.numFailingIterations = 0;
@@ -84,7 +83,15 @@ export class ScoreNode {
             this.numPassingIterations = this.failed ? 0 : 1;
             this.numFailingIterations = this.failed ? 1 : 0;
             const lastMessage = this.scenario?.messages[this.scenario?.messages.length - 1];
-            const {history} = getPromptDetails(lastMessage ? [lastMessage] : [], this.scenario?.modelResponse);
+            
+            const { messages } = getPromptDetails(lastMessage ? [lastMessage] : [], this.scenario?.modelResponse);
+            let history = "";
+            if (messages.length === 1) {
+                history = messages[0].content;
+            } else if (messages.length > 1) {
+                history = messages.map(m => `[${m.participantName}] ${m.content}`).join("\n\n");
+            }
+            
             this.shortenedPrompt = shortenPrompt(history);
         } else {
             for (const child of this.childNodes) {
@@ -104,7 +111,22 @@ export class ScoreNode {
         }
     }
 
-    
+    collapseSingleChildNodes() {
+        if (this.isLeafNode) {
+            return;
+        }
+
+        while (this.childNodes.length === 1) {
+            const onlyChild = this.childNodes[0];
+            this.name += ` / ${onlyChild.name}`;
+            this.children = onlyChild.children;
+            this.scenario = onlyChild.scenario;
+        }
+
+        for (const child of this.childNodes) {
+            child.collapseSingleChildNodes();
+        }
+    }
 };
 
 export const DefaultRootNodeName = "All Evaluations";
@@ -145,25 +167,42 @@ const isTextContent = (content: AIContent): content is TextContent => {
     return (content as TextContent).text !== undefined;
 };
 
-export const getPromptDetails = (messages: ChatMessage[], modelResponse?: ChatMessage): {history:string, response: string}=> {
-    let history: string = "";
-    if (messages.length === 1) {
-        history = messages[0].contents.map(c => (c as TextContent).text).join("\n");
-    } else if (messages.length > 1) {
-        const historyItems: string[] = [];
-        for (const m of messages) {
+export type ChatMessageDisplay = {
+    role: string;
+    participantName: string;
+    content: string;
+};
+
+export const getPromptDetails = (messages: ChatMessage[], modelResponse?: ChatResponse): { messages: ChatMessageDisplay[] } => {
+    const chatMessages: ChatMessageDisplay[] = [];
+    
+    for (const m of messages) {
+        for (const c of m.contents) {
+            if (isTextContent(c)) {
+                const participantName = m.authorName ? `${m.authorName} (${m.role})` : m.role;
+                chatMessages.push({
+                    role: m.role,
+                    participantName: participantName,
+                    content: c.text
+                });
+            }
+        }
+    }
+
+    if (modelResponse?.messages) {
+        for (const m of modelResponse.messages) {
             for (const c of m.contents) {
                 if (isTextContent(c)) {
-                    const historyItem = m.authorName
-                        ? `[${m.authorName} (${m.role})] ${c.text}` : `[${m.role}] ${c.text}`;
-                    historyItems.push(historyItem);
+                    const participantName = m.authorName ? `${m.authorName} (${m.role})` : m.role || 'Assistant';
+                    chatMessages.push({
+                        role: m.role,
+                        participantName: participantName,
+                        content: c.text
+                    });
                 }
             }
         }
-        history = historyItems.join("\n\n");
     }
 
-    const response: string = modelResponse?.contents.map(c => (c as TextContent).text).join("\n") ?? "";
-
-    return { history, response };
+    return { messages: chatMessages };
 };

@@ -119,7 +119,7 @@ public sealed class AzureStorageResultStore(DataLakeDirectoryClient client) : IR
 
             ScenarioRunResult? result = await JsonSerializer.DeserializeAsync(
                 content.Value.Content.ToStream(),
-                AzureStorageSerializerContext.Default.ScenarioRunResult,
+                AzureStorageJsonUtilities.Default.ScenarioRunResultTypeInfo,
                 cancellationToken).ConfigureAwait(false)
                     ?? throw new JsonException(
                         string.Format(CultureInfo.CurrentCulture, DeserializationFailedMessage, fileClient.Name));
@@ -171,7 +171,7 @@ public sealed class AzureStorageResultStore(DataLakeDirectoryClient client) : IR
             await JsonSerializer.SerializeAsync(
                 stream,
                 result,
-                AzureStorageSerializerContext.Default.ScenarioRunResult,
+                AzureStorageJsonUtilities.Default.ScenarioRunResultTypeInfo,
                 cancellationToken).ConfigureAwait(false);
 
             _ = stream.Seek(0, SeekOrigin.Begin);

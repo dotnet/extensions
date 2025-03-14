@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a delegating chat client that implements the OpenTelemetry Semantic Conventions for Generative AI systems.</summary>
 /// <remarks>
-/// This class provides an implementation of the Semantic Conventions for Generative AI systems v1.30, defined at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
+/// This class provides an implementation of the Semantic Conventions for Generative AI systems v1.31, defined at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
 /// The specification is still experimental and subject to change; as such, the telemetry output by this client is also subject to change.
 /// </remarks>
 public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
@@ -279,20 +279,21 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                         _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.TopP, top_p);
                     }
 
+                    if (options.ResponseFormat is not null)
+                    {
+                        switch (options.ResponseFormat)
+                        {
+                            case ChatResponseFormatText:
+                                _ = activity.AddTag(OpenTelemetryConsts.GenAI.Output.Type, "text");
+                                break;
+                            case ChatResponseFormatJson:
+                                _ = activity.AddTag(OpenTelemetryConsts.GenAI.Output.Type, "json");
+                                break;
+                        }
+                    }
+
                     if (_system is not null)
                     {
-                        if (options.ResponseFormat is not null)
-                        {
-                            string responseFormat = options.ResponseFormat switch
-                            {
-                                ChatResponseFormatText => "text",
-                                ChatResponseFormatJson { Schema: null } => "json_schema",
-                                ChatResponseFormatJson => "json_object",
-                                _ => "_OTHER",
-                            };
-                            _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.PerProvider(_system, "response_format"), responseFormat);
-                        }
-
                         if (options.AdditionalProperties is { } props)
                         {
                             // Log all additional request options as per-provider tags. This is non-normative, but it covers cases where

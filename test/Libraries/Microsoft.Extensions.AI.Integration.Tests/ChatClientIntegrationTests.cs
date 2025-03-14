@@ -71,6 +71,20 @@ public abstract class ChatClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
+    public virtual async Task GetResponseAsync_WithEmptyMessage()
+    {
+        SkipIfNotEnabled();
+
+        var response = await _chatClient.GetResponseAsync(
+        [
+            new(ChatRole.User, []),
+            new(ChatRole.User, "What is 1 + 2? Reply with a single number."),
+        ]);
+
+        Assert.Contains("3", response.Text);
+    }
+
+    [ConditionalFact]
     public virtual async Task GetStreamingResponseAsync()
     {
         SkipIfNotEnabled();
@@ -128,6 +142,25 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.True(usage.Details.InputTokenCount > 1);
         Assert.True(usage.Details.OutputTokenCount > 1);
         Assert.Equal(usage.Details.InputTokenCount + usage.Details.OutputTokenCount, usage.Details.TotalTokenCount);
+    }
+
+    [ConditionalFact]
+    public virtual async Task GetStreamingResponseAsync_AppendToHistory()
+    {
+        SkipIfNotEnabled();
+
+        List<ChatMessage> history = [new(ChatRole.User, "Explain in 100 words how AI works")];
+
+        var streamingResponse = _chatClient.GetStreamingResponseAsync(history);
+
+        Assert.Single(history);
+        await history.AddMessagesAsync(streamingResponse);
+        Assert.Equal(2, history.Count);
+        Assert.Equal(ChatRole.Assistant, history[1].Role);
+
+        var singleTextContent = (TextContent)history[1].Contents.Single();
+        Assert.NotEmpty(singleTextContent.Text);
+        Assert.Equal(history[1].Text, singleTextContent.Text);
     }
 
     protected virtual string? GetModel_MultiModal_DescribeImage() => null;
