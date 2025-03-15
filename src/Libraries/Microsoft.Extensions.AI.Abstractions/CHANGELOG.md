@@ -1,5 +1,18 @@
 # Release History
 
+## 9.3.0-preview.1.25161.3
+
+- Changed `IChatClient.GetResponseAsync` and `IChatClient.GetStreamingResponseAsync` to accept an `IEnumerable<ChatMessage>` rather than an `IList<ChatMessage>`. It is no longer mutated by implementations.
+- Removed `ChatResponse.Choice` and `ChatResponseUpdate.ChoiceIndex`.
+- Replaced `ChatResponse.Message` with `ChatResponse.Messages`. Responses now carry with them all messages generated as part of the operation, rather than all but the last being added to the history and the last returned.
+- Added `GetRequiredService` extension method for `IChatClient`/`IEmbeddingGenerator`.
+- Added non-generic `IEmbeddingGenerator` interface, which is inherited by `IEmbeddingGenerator<TInput, TEmbedding>`. The `GetService` method moves down to the non-generic interface, and the `GetService`/`GetRequiredService` extension methods are now in terms of the non-generic.
+- `AIJsonUtilities.CreateFunctionJsonSchema` now special-cases `CancellationToken` to not include it in the schema.
+- Improved the debugger displays for `ChatMessage` and the `AIContent` types.
+- Added a static `AIJsonUtilities.HashDataToString` method.
+- Split `DataContent`, which handled both in-memory data and URIs to remote data, into `DataContent` (for the former) and `UriContent` (for the latter).
+- Renamed `DataContent.MediaTypeStartsWith` to `DataContent.HasTopLevelMediaType`, and changed semantics accordingly.
+
 ## 9.3.0-preview.1.25114.11
 
 - Renamed `IChatClient.Complete{Streaming}Async` to `IChatClient.Get{Streaming}ResponseAsync`. This is to avoid confusion with "Complete" being about stopping an operation, as well as to avoid tying the methods to a particular implementation detail of how responses are generated. Along with this, renamed `ChatCompletion` to `ChatResponse`, `StreamingChatCompletionUpdate` to `ChatResponseUpdate`, `CompletionId` to `ResponseId`, `ToStreamingChatCompletionUpdates` to `ToChatResponseUpdates`, and `ToChatCompletion{Async}` to `ToChatResponse{Async}`.

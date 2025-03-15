@@ -1,5 +1,9 @@
 # Release History
 
+## 9.3.0-preview.1.25161.3
+
+- Updated to accomodate the changes in `Microsoft.Extensions.AI.Abstractions`.
+
 ## 9.3.0-preview.1.25114.11
 
 - Updated to use Azure.AI.Inference 1.0.0-beta.3, adding support for structured output and audio input.
