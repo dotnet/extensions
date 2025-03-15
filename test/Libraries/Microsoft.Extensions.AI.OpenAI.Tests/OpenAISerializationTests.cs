@@ -727,6 +727,9 @@ public static partial class OpenAISerializationTests
 
     private static void AssertJsonEqual(string expected, string actual)
     {
+        expected = NormalizeNewLines(expected);
+        actual = NormalizeNewLines(actual);
+
         JsonNode? expectedNode = JsonNode.Parse(expected);
         JsonNode? actualNode = JsonNode.Parse(actual);
 

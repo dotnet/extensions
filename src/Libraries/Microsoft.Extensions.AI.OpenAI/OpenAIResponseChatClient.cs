@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -106,7 +107,7 @@ internal sealed class OpenAIResponseChatClient : IChatClient
             ResponseId = openAIResponse.Id,
             CreatedAt = openAIResponse.CreatedAt,
             FinishReason = ToFinishReason(openAIResponse.IncompleteStatusDetails?.Reason),
-            Messages = [new(ChatRole.Assistant, (string?)null)],
+            Messages = [new(ChatRole.Assistant, [])],
             ModelId = openAIResponse.Model,
             Usage = ToUsageDetails(openAIResponse),
         };
@@ -124,6 +125,8 @@ internal sealed class OpenAIResponseChatClient : IChatClient
         if (openAIResponse.OutputItems is not null)
         {
             ChatMessage message = response.Messages[0];
+            Debug.Assert(message.Contents is List<AIContent>, "Expected a List<AIContent> for message contents.");
+
             foreach (ResponseItem outputItem in openAIResponse.OutputItems)
             {
                 switch (outputItem)
@@ -132,7 +135,7 @@ internal sealed class OpenAIResponseChatClient : IChatClient
                         message.RawRepresentation = messageItem;
                         message.Role = ToChatRole(messageItem.Role);
                         (message.AdditionalProperties ??= []).Add(nameof(messageItem.Id), messageItem.Id);
-                        message.Contents = ToAIContents(messageItem.Content);
+                        ((List<AIContent>)message.Contents).AddRange(ToAIContents(messageItem.Content));
                         break;
 
                     case FunctionCallResponseItem functionCall:
