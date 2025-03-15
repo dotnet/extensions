@@ -388,7 +388,7 @@ public class OpenAIChatClientTests
                     },
                     {
                         "role": "user",
-                        "content": "i\u0027m good. how are you?"
+                        "content": "i'm good. how are you?"
                     }
                 ],
                 "model": "gpt-4o-mini",
@@ -701,7 +701,8 @@ public class OpenAIChatClientTests
                                         "description": "The person whose age is being requested",
                                         "type": "string"
                                     }
-                                }
+                                },
+                                "additionalProperties": false
                             }
                         },
                         "type": "function"
@@ -820,7 +821,8 @@ public class OpenAIChatClientTests
                                         "description": "The person whose age is being requested",
                                         "type": "string"
                                     }
-                                }
+                                },
+                                "additionalProperties": false
                             }
                         },
                         "type": "function"

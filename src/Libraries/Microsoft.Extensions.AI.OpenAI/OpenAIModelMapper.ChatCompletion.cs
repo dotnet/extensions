@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -620,7 +619,7 @@ internal static partial class OpenAIModelMappers
     private static T? GetValueOrDefault<T>(this AdditionalPropertiesDictionary? dict, string key) =>
         dict?.TryGetValue(key, out T? value) is true ? value : default;
 
-    private static string CreateCompletionId() => $"chatcmpl-{Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture)}";
+    private static string CreateCompletionId() => $"chatcmpl-{Guid.NewGuid():N}";
 
     /// <summary>Used to create the JSON payload for an OpenAI chat tool description.</summary>
     public sealed class OpenAIChatToolJson
@@ -633,6 +632,9 @@ internal static partial class OpenAIModelMappers
 
         [JsonPropertyName("properties")]
         public Dictionary<string, JsonElement> Properties { get; set; } = [];
+
+        [JsonPropertyName("additionalProperties")]
+        public bool AdditionalProperties { get; set; }
     }
 
     /// <summary>POCO representing function calling info. Used to concatenation information for a single function call from across multiple streaming updates.</summary>

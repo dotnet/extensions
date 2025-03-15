@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
-using EmptyFiles;
 using Microsoft.Extensions.AI.Templates.IntegrationTests;
 using Microsoft.Extensions.AI.Templates.Tests;
 using Microsoft.Extensions.Logging;
@@ -16,6 +16,21 @@ namespace Microsoft.Extensions.AI.Templates.InegrationTests;
 
 public class AichatwebTemplatesTests : TestBase
 {
+    // Keep the exclude patterns below in sync with those in Microsoft.Extensions.AI.Templates.csproj.
+    private static readonly string[] _verificationExcludePatterns = [
+        "**/bin/**",
+        "**/obj/**",
+        "**/node_modules/**",
+        "**/*.user",
+        "**/*.in",
+        "**/*.out.js",
+        "**/*.generated.css",
+        "**/package-lock.json",
+        "**/ingestioncache.db",
+        "**/NuGet.config",
+        "**/Directory.Build.targets",
+    ];
+
     private readonly ILogger _log;
 
     public AichatwebTemplatesTests(ITestOutputHelper log)
@@ -34,8 +49,9 @@ public class AichatwebTemplatesTests : TestBase
         // Get the template location
         string templateLocation = Path.Combine(TemplateFeedLocation, "Microsoft.Extensions.AI.Templates", "src", "ChatWithCustomData");
 
-        // Treat *.in files as text, see https://github.com/VerifyTests/EmptyFiles#istext
-        FileExtensions.AddTextExtension(".in");
+        var verificationExcludePatterns = Path.DirectorySeparatorChar is '/'
+            ? _verificationExcludePatterns
+            : _verificationExcludePatterns.Select(p => p.Replace('/', Path.DirectorySeparatorChar)).ToArray();
 
         TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
         {
@@ -44,6 +60,7 @@ public class AichatwebTemplatesTests : TestBase
             OutputDirectory = workingDir,
             DoNotPrependCallerMethodNameToScenarioName = true,
             ScenarioName = "Basic",
+            VerificationExcludePatterns = verificationExcludePatterns,
         }
         .WithCustomScrubbers(
             ScrubbersDefinition.Empty.AddScrubber((path, content) =>
@@ -54,6 +71,7 @@ public class AichatwebTemplatesTests : TestBase
                     filePath.EndsWith("aichatweb/aichatweb.csproj.in"))
                 {
                     content.ScrubByRegex("<UserSecretsId>(.*)<\\/UserSecretsId>", "<UserSecretsId>secret</UserSecretsId>");
+                    content.ScrubByRegex("\"(\\d*\\.\\d*\\.\\d*)-(dev|ci)\"", "\"$1\"");
                 }
 
                 if (filePath.EndsWith("aichatweb/Properties/launchSettings.json"))
