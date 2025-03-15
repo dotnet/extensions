@@ -103,6 +103,118 @@ public class SerializerTests
         Assert.Equal("abc", obj.Y);
     }
 
+    [Fact]
+    public void RoundTripValueTupleList()
+    {
+        List<(int, string)> source = [(1, "a"), (2, "b")];
+        var clone = RoundTrip(source, """[{"Item1":1,"Item2":"a"},{"Item1":2,"Item2":"b"}]"""u8, JsonSerializer.FieldEnabled);
+        Assert.Equal(source, clone);
+    }
+
+    [Fact]
+    public void RoundTripValueTupleArray()
+    {
+        (int, string)[] source = [(1, "a"), (2, "b")];
+        var clone = RoundTrip(source, """[{"Item1":1,"Item2":"a"},{"Item1":2,"Item2":"b"}]"""u8, JsonSerializer.FieldEnabled);
+        Assert.Equal(source, clone);
+    }
+
+    [Fact]
+    public void RoundTripTupleList()
+    {
+        List<Tuple<int, string>> source = [Tuple.Create(1, "a"), Tuple.Create(2, "b")];
+        var clone = RoundTrip(source, """[{"Item1":1,"Item2":"a"},{"Item1":2,"Item2":"b"}]"""u8, JsonSerializer.Default);
+        Assert.Equal(source, clone);
+    }
+
+    [Fact]
+    public void RoundTripTupleArray()
+    {
+        Tuple<int, string>[] source = [Tuple.Create(1, "a"), Tuple.Create(2, "b")];
+        var clone = RoundTrip(source, """[{"Item1":1,"Item2":"a"},{"Item1":2,"Item2":"b"}]"""u8, JsonSerializer.Default);
+        Assert.Equal(source, clone);
+    }
+
+    [Fact]
+    public void RoundTripFieldOnlyPoco()
+    {
+        var source = new FieldOnlyPoco { X = 1, Y = "a" };
+        var clone = RoundTrip(source, """{"X":1,"Y":"a"}"""u8, JsonSerializer.FieldEnabled);
+        Assert.Equal(1, clone.X);
+        Assert.Equal("a", clone.Y);
+    }
+
+    [Fact]
+    public void RoundTripPropertyOnlyPoco()
+    {
+        var source = new PropertyOnlyPoco { X = 1, Y = "a" };
+        var clone = RoundTrip(source, """{"X":1,"Y":"a"}"""u8, JsonSerializer.Default);
+        Assert.Equal(1, clone.X);
+        Assert.Equal("a", clone.Y);
+    }
+
+    [Fact]
+    public void RoundTripMixedPoco()
+    {
+        // this is the self-inflicted scenario; intent isn't obvious, so: we defer to STJ conventions,
+        // which means we lose the field
+        var source = new MixedFieldPropertyPoco { X = 1, Y = "a" };
+        var clone = RoundTrip(source, """{"Y":"a"}"""u8, JsonSerializer.Default);
+        Assert.Equal(0, clone.X); // <== drop
+        Assert.Equal("a", clone.Y);
+    }
+
+    [Fact]
+    public void RoundTripTree()
+    {
+        NodeA<string> source = new NodeA<string>
+        {
+            Value = "abc",
+            Next = new()
+            {
+                Value = "def"
+            }
+        };
+
+        var clone = RoundTrip(source, """{"Next":{"Next":null,"Value":"def"},"Value":"abc"}"""u8, JsonSerializer.Default);
+        Assert.Equal("abc", clone.Value);
+        Assert.NotNull(clone.Next);
+        Assert.Equal("def", clone.Next.Value);
+        Assert.Null(clone.Next.Next);
+    }
+
+    public class FieldOnlyPoco
+    {
+        public int X;
+        public string? Y;
+    }
+
+    public class PropertyOnlyPoco
+    {
+        public int X { get; set; }
+        public string? Y { get; set; }
+    }
+
+    public class MixedFieldPropertyPoco
+    {
+        public int X; // field
+        public string? Y { get; set; } // property
+    }
+
+    public class NodeA<T>
+    {
+        public NodeB<T>? Next { get; set; }
+
+        public T? Value { get; set; }
+    }
+
+    public class NodeB<T>
+    {
+        public NodeA<T>? Next { get; set; }
+
+        public T? Value { get; set; }
+    }
+
     private static T RoundTrip<T>(T value, ReadOnlySpan<byte> expectedBytes, JsonSerializer expectedJsonOptions, JsonSerializer addSerializers = JsonSerializer.None, bool binary = false)
     {
         var services = new ServiceCollection();
