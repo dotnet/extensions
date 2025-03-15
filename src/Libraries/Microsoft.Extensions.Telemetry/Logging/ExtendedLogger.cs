@@ -322,24 +322,6 @@ internal sealed partial class ExtendedLogger : ILogger
         joiner.Formatter = formatter;
         joiner.State = state;
 
-        switch (state)
-        {
-            case IReadOnlyList<KeyValuePair<string, object?>> stateList:
-                joiner.SetIncomingTags(stateList);
-                break;
-
-            case IEnumerable<KeyValuePair<string, object?>> stateList:
-                joiner.EnrichmentTagCollector.AddRange(stateList);
-                break;
-
-            case null:
-                break;
-
-            default:
-                joiner.EnrichmentTagCollector.Add("{OriginalFormat}", state);
-                break;
-        }
-
         List<Exception>? exceptions = null;
 
         // enrich
@@ -356,10 +338,28 @@ internal sealed partial class ExtendedLogger : ILogger
             }
         }
 
-        // one last dedicated bit of enrichment
+        // enrich log data with exception information
         if (exception != null)
         {
             RecordException(exception, joiner.EnrichmentTagCollector, config);
+        }
+
+        switch (state)
+        {
+            case IReadOnlyList<KeyValuePair<string, object?>> stateList:
+                joiner.SetIncomingTags(stateList);
+                break;
+
+            case IEnumerable<KeyValuePair<string, object?>> stateList:
+                joiner.EnrichmentTagCollector.AddRange(stateList);
+                break;
+
+            case null:
+                break;
+
+            default:
+                joiner.EnrichmentTagCollector.Add("{OriginalFormat}", state);
+                break;
         }
 
         bool? samplingDecision = null;
