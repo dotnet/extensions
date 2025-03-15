@@ -68,7 +68,9 @@ internal sealed class GlobalBuffer : IDisposable
             {
                 return false;
             }
-            serializedLogRecord = new SerializedLogRecord(logEntry.LogLevel, logEntry.EventId, _timeProvider.GetUtcNow(), attributes, logEntry.Exception,
+            serializedLogRecord = new SerializedLogRecord(
+                logEntry.LogLevel, logEntry.EventId,
+                _timeProvider.GetUtcNow(), attributes, logEntry.Exception,
                 logEntry.Formatter(logEntry.State, logEntry.Exception));
         }
 
@@ -109,10 +111,10 @@ internal sealed class GlobalBuffer : IDisposable
             _ = Interlocked.Exchange(ref _bufferSize, 0);
         }
 
-        var deserializedLogRecords = new List<DeserializedLogRecord>(bufferedRecords.Length);
+        var recordsToEmit = new List<DeserializedLogRecord>(bufferedRecords.Length);
         foreach (SerializedLogRecord bufferedRecord in bufferedRecords)
         {
-            deserializedLogRecords.Add(
+            recordsToEmit.Add(
                 new DeserializedLogRecord(
                     bufferedRecord.Timestamp,
                     bufferedRecord.LogLevel,
@@ -122,7 +124,7 @@ internal sealed class GlobalBuffer : IDisposable
                     bufferedRecord.Attributes));
         }
 
-        _bufferedLogger.LogRecords(deserializedLogRecords);
+        _bufferedLogger.LogRecords(recordsToEmit);
     }
 
     private void OnOptionsChanged(GlobalLogBufferingOptions? updatedOptions)

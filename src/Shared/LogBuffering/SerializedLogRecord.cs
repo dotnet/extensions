@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Diagnostics.Buffering;
@@ -11,8 +12,10 @@ namespace Microsoft.Extensions.Diagnostics.Buffering;
 /// Represents a log record that has been serialized for purposes of buffering or similar.
 /// </summary>
 #pragma warning disable CA1815 // Override equals and operator equals on value types - not used for this struct, would be dead code
+[DebuggerDisplay("Message: {FormattedMessage}, LogLevel:{LogLevel}, Timestamp: {Timestamp.ToString(FormatSpecifier)}")]
 internal readonly struct SerializedLogRecord
 {
+    private const string FormatSpecifier = "u";
     /// <summary>
     /// Initializes a new instance of the <see cref="SerializedLogRecord"/> struct.
     /// </summary>
