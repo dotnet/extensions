@@ -56,21 +56,23 @@ internal sealed partial class ExtendedLogger
         {
             get
             {
-                if (index < _incomingTagsCount)
+                // Keep the order of the if-else statements. It ensures that the {OriginalFormat}
+                // property is always the last tag in the list.
+                if (index < _redactedTagsCount)
                 {
-                    return _incomingTags![index];
+                    return _redactedTags![index];
                 }
-                else if (index < _incomingTagsCount + _redactedTagsCount)
+                else if (index < _redactedTagsCount + _extraTags.Count)
                 {
-                    return _redactedTags![index - _incomingTagsCount];
+                    return _extraTags[index - _redactedTagsCount];
                 }
-                else if (index < _incomingTagsCount + _redactedTagsCount + _extraTags.Count)
+                else if (index < _redactedTagsCount + _extraTags.Count + StaticTags!.Length)
                 {
-                    return _extraTags[index - _incomingTagsCount - _redactedTagsCount];
+                    return StaticTags[index - _redactedTagsCount - _extraTags.Count];
                 }
                 else
                 {
-                    return StaticTags![index - _incomingTagsCount - _redactedTagsCount - _extraTags.Count];
+                    return _incomingTags![index - _redactedTagsCount - _extraTags.Count - StaticTags.Length];
                 }
             }
         }
