@@ -6,19 +6,23 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectSharedText>true</InjectSharedText>
+    <InjectGetOrAddOnLegacy>true</InjectGetOrAddOnLegacy>
     <InjectSharedDataValidation>true</InjectSharedDataValidation>
+    <InjectSharedLogBuffering>true</InjectSharedLogBuffering>
+    <InjectSharedMemoization>true</InjectSharedMemoization>
     <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>
     <InjectSharedPools>true</InjectSharedPools>
     <InjectSharedRentedSpan>true</InjectSharedRentedSpan>
-    <InjectSharedMemoization>true</InjectSharedMemoization>
-    <InjectGetOrAddOnLegacy>true</InjectGetOrAddOnLegacy>
+    <InjectSharedText>true</InjectSharedText>
     <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
     <UseLoggingGenerator>true</UseLoggingGenerator>
-  </PropertyGroup>
+    <NoWarn>$(NoWarn);IL2026</NoWarn>
+</PropertyGroup>
 
   <PropertyGroup>
     <Stage>normal</Stage>
@@ -33,9 +37,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Bcl.TimeProvider" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))" />
+    <PackageReference Include="Microsoft.Bcl.TimeProvider" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Configuration" />
     <PackageReference Include="System.Collections.Immutable" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))" />
+    <PackageReference Include="System.Text.Json"/>
   </ItemGroup>
 
   <ItemGroup>
