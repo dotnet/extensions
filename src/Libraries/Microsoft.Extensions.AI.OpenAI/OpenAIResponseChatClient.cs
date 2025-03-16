@@ -412,7 +412,8 @@ internal sealed class OpenAIResponseChatClient : IChatClient
                     ResponseTextFormat.CreateJsonSchemaFormat(
                         jsonFormat.SchemaName ?? "json_schema",
                         BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(jsonSchema, OpenAIJsonContext.Default.JsonElement)),
-                        jsonFormat.SchemaDescription) :
+                        jsonFormat.SchemaDescription,
+                        jsonSchemaIsStrict: true) :
                     ResponseTextFormat.CreateJsonObjectFormat();
             }
         }

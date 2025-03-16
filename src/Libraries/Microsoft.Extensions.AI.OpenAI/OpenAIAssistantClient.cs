@@ -217,10 +217,11 @@ internal sealed class OpenAIAssistantClient : IChatClient
                     switch (tool)
                     {
                         case AIFunction aiFunction:
-                            bool? strict =
-                                aiFunction.AdditionalProperties.TryGetValue("Strict", out object? strictObj) &&
-                                strictObj is bool strictValue ?
-                                strictValue : null;
+                            // Default strict to true, but allow to be overridden by an additional Strict property.
+                            bool strict =
+                                !aiFunction.AdditionalProperties.TryGetValue("Strict", out object? strictObj) ||
+                                strictObj is not bool strictValue ||
+                                strictValue;
 
                             var functionParameters = BinaryData.FromBytes(
                                 JsonSerializer.SerializeToUtf8Bytes(
