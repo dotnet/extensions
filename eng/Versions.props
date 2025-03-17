@@ -95,7 +95,6 @@
     <MicrosoftExtensionsHostingAbstractionsLTSVersion>8.0.1</MicrosoftExtensionsHostingAbstractionsLTSVersion>
     <MicrosoftExtensionsHostingLTSVersion>8.0.1</MicrosoftExtensionsHostingLTSVersion>
     <MicrosoftExtensionsHttpLTSVersion>8.0.1</MicrosoftExtensionsHttpLTSVersion>
-    <MicrosoftExtensionsHttpResilienceVersion>9.1.0</MicrosoftExtensionsHttpResilienceVersion>
     <MicrosoftExtensionsLoggingAbstractionsLTSVersion>8.0.3</MicrosoftExtensionsLoggingAbstractionsLTSVersion>
     <MicrosoftExtensionsLoggingConfigurationLTSVersion>8.0.1</MicrosoftExtensionsLoggingConfigurationLTSVersion>
     <MicrosoftExtensionsLoggingConsoleLTSVersion>8.0.1</MicrosoftExtensionsLoggingConsoleLTSVersion>
@@ -155,6 +154,7 @@
     <AzureSearchDocumentsVersion>11.6.0</AzureSearchDocumentsVersion>
     <CommunityToolkitAspireHostingOllamaVersion>9.2.2-beta.215</CommunityToolkitAspireHostingOllamaVersion>
     <CommunityToolkitAspireOllamaSharpVersion>9.2.2-beta.215</CommunityToolkitAspireOllamaSharpVersion>
+    <MicrosoftExtensionsHttpResilienceVersion>9.1.0</MicrosoftExtensionsHttpResilienceVersion>
     <MicrosoftExtensionsServiceDiscoveryVersion>9.1.0</MicrosoftExtensionsServiceDiscoveryVersion>
     <MicrosoftSemanticKernelConnectorsAzureAISearchVersion>1.37.0-preview</MicrosoftSemanticKernelConnectorsAzureAISearchVersion>
     <MicrosoftSemanticKernelConnectorsQdrantVersion>1.41.0-preview</MicrosoftSemanticKernelConnectorsQdrantVersion>
