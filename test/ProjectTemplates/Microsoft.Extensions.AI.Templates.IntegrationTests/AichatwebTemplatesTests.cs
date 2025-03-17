@@ -3,7 +3,6 @@
 
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI.Templates.IntegrationTests;
 using Microsoft.Extensions.AI.Templates.Tests;
@@ -30,10 +29,6 @@ public class AichatwebTemplatesTests : TestBase
         "**/ingestioncache.db",
         "**/NuGet.config",
         "**/Directory.Build.targets",
-    ];
-
-    private static readonly string[] _packagePrefixesWithJustBuiltVersionNumber = [
-        "Microsoft.Extensions.AI",
     ];
 
     private readonly ILogger _log;
@@ -77,15 +72,11 @@ public class AichatwebTemplatesTests : TestBase
                 {
                     content.ScrubByRegex("<UserSecretsId>(.*)<\\/UserSecretsId>", "<UserSecretsId>secret</UserSecretsId>");
 
-                    foreach (var prefix in _packagePrefixesWithJustBuiltVersionNumber)
-                    {
-                        // Scrub references to just-built packages and remove the suffix, if it exists.
-                        // This allows the snapshots to remain the same regardless of where the repo is built (e.g., locally, public CI, internal CI).
-                        var escapedPrefix = Regex.Escape(prefix);
-                        var pattern = $"<PackageReference\\s+Include=\\\"({escapedPrefix}[^\"]*)\\\"\\s+Version=\\\"([^{{\\\"|\\-}}]*)[^\"]*\\\"\\s*\\/>";
-                        var replacement = "<PackageReference Include=\"$1\" Version=\"$2\" />";
-                        content.ScrubByRegex(pattern, replacement);
-                    }
+                    // Scrub references to just-built packages and remove the suffix, if it exists.
+                    // This allows the snapshots to remain the same regardless of where the repo is built (e.g., locally, public CI, internal CI).
+                    var pattern = "<PackageReference\\s+Include=\\\"(Microsoft\\.Extensions\\.AI[^\"]*)\\\"\\s+Version=\\\"([^{{\\\"|\\-}}]*)[^\"]*\\\"\\s*\\/>";
+                    var replacement = "<PackageReference Include=\"$1\" Version=\"$2\" />";
+                    content.ScrubByRegex(pattern, replacement);
                 }
 
                 if (filePath.EndsWith("aichatweb/Properties/launchSettings.json"))
