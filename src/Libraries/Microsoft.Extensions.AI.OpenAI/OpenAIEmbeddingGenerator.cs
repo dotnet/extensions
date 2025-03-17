@@ -17,7 +17,7 @@ using OpenAI.Embeddings;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>An <see cref="IEmbeddingGenerator{String, Embedding}"/> for an OpenAI <see cref="EmbeddingClient"/>.</summary>
-public sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>
+internal sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>
 {
     /// <summary>Default OpenAI endpoint.</summary>
     private const string DefaultOpenAIEndpoint = "https://api.openai.com/v1";

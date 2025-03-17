@@ -12,7 +12,6 @@ namespace Microsoft.Extensions.AI;
     UseStringEnumConverter = true,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     WriteIndented = true)]
-[JsonSerializable(typeof(OpenAIRealtimeExtensions.ConversationFunctionToolParametersSchema))]
 [JsonSerializable(typeof(OpenAIModelMappers.OpenAIChatToolJson))]
 [JsonSerializable(typeof(IDictionary<string, object?>))]
 [JsonSerializable(typeof(string[]))]

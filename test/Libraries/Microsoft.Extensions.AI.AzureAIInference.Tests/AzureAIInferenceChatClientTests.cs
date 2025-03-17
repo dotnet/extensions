@@ -24,28 +24,6 @@ namespace Microsoft.Extensions.AI;
 public class AzureAIInferenceChatClientTests
 {
     [Fact]
-    public void Ctor_InvalidArgs_Throws()
-    {
-        Assert.Throws<ArgumentNullException>("chatCompletionsClient", () => new AzureAIInferenceChatClient(null!, "model"));
-
-        ChatCompletionsClient client = new(new("http://somewhere"), new AzureKeyCredential("key"));
-        Assert.Throws<ArgumentException>("modelId", () => new AzureAIInferenceChatClient(client, "   "));
-    }
-
-    [Fact]
-    public void ToolCallJsonSerializerOptions_HasExpectedValue()
-    {
-        using AzureAIInferenceChatClient client = new(new(new("http://somewhere"), new AzureKeyCredential("key")), "mode");
-
-        Assert.Same(client.ToolCallJsonSerializerOptions, AIJsonUtilities.DefaultOptions);
-        Assert.Throws<ArgumentNullException>("value", () => client.ToolCallJsonSerializerOptions = null!);
-
-        JsonSerializerOptions options = new();
-        client.ToolCallJsonSerializerOptions = options;
-        Assert.Same(options, client.ToolCallJsonSerializerOptions);
-    }
-
-    [Fact]
     public void AsChatClient_InvalidArgs_Throws()
     {
         Assert.Throws<ArgumentNullException>("chatCompletionsClient", () => ((ChatCompletionsClient)null!).AsChatClient("model"));
@@ -76,8 +54,6 @@ public class AzureAIInferenceChatClientTests
         IChatClient chatClient = client.AsChatClient("model");
 
         Assert.Same(chatClient, chatClient.GetService<IChatClient>());
-        Assert.Same(chatClient, chatClient.GetService<AzureAIInferenceChatClient>());
-
         Assert.Same(client, chatClient.GetService<ChatCompletionsClient>());
 
         using IChatClient pipeline = chatClient
@@ -97,7 +73,6 @@ public class AzureAIInferenceChatClientTests
         Assert.IsType<FunctionInvokingChatClient>(pipeline.GetService<IChatClient>());
 
         Assert.Null(pipeline.GetService<ChatCompletionsClient>("key"));
-        Assert.Null(pipeline.GetService<AzureAIInferenceChatClient>("key"));
         Assert.Null(pipeline.GetService<string>("key"));
     }
 

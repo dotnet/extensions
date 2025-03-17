@@ -18,12 +18,6 @@ internal static class JsonModelHelpers
         return value.Write(ModelReaderWriterOptions.Json);
     }
 
-    public static TModel Deserialize<TModel>(BinaryData data)
-        where TModel : IJsonModel<TModel>, new()
-    {
-        return JsonModelDeserializationWitness<TModel>.Value.Create(data, ModelReaderWriterOptions.Json);
-    }
-
     public static TModel Deserialize<TModel>(ref Utf8JsonReader reader)
         where TModel : IJsonModel<TModel>, new()
     {
