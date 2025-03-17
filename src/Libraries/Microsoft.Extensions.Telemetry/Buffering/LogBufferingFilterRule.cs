@@ -12,6 +12,11 @@ namespace Microsoft.Extensions.Diagnostics.Buffering;
 /// <summary>
 /// Defines a rule used to filter log messages for purposes of further buffering.
 /// </summary>
+/// <remarks>
+/// If a log entry matches a rule, it will be buffered. Consequently, it will later be emitted when the buffer is flushed.
+/// If a log entry does not match any rule, it will be emitted normally.
+/// If the buffer size limit is reached, the oldest buffered log entries will be dropped (not emitted!) to make room for new ones.
+/// </remarks>
 [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
 public class LogBufferingFilterRule
 {
@@ -22,7 +27,7 @@ public class LogBufferingFilterRule
     /// <param name="logLevel">The <see cref="LogLevel"/> to use in this filter rule.</param>
     /// <param name="eventId">The event ID to use in this filter rule.</param>
     /// <param name="eventName">The event name to use in this filter rule.</param>
-    /// <param name="attributes">The log state attributes to use in this filter tule.</param>
+    /// <param name="attributes">The log state attributes to use in this filter rule.</param>
     public LogBufferingFilterRule(
         string? categoryName = null,
         LogLevel? logLevel = null,
