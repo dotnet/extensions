@@ -9,7 +9,7 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Schema;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
-#if !NET9_0_OR_GREATER
+#if !NET9_0
 using System.Xml.Linq;
 #endif
 using Xunit;
@@ -97,7 +97,7 @@ public abstract class JsonSchemaExporterTests
         {
             TransformSchemaNode = (ctx, schema) =>
             {
-#if NET9_0_OR_GREATER
+#if !NET8_0
                 visitedNodes.Add((ctx.PropertyInfo?.DeclaringType, ctx.PropertyInfo?.Name, ctx.TypeInfo.Type));
 #else
                 visitedNodes.Add((ctx.DeclaringType, ctx.PropertyInfo?.Name, ctx.TypeInfo.Type));

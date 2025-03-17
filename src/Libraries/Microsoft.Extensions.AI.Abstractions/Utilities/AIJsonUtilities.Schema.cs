@@ -413,7 +413,7 @@ public static partial class AIJsonUtilities
 #endif
     }
 
-#if !NET9_0_OR_GREATER
+#if NET8_0
     private static int IndexOf(this JsonObject jsonObject, string key)
     {
         int i = 0;
@@ -430,6 +430,7 @@ public static partial class AIJsonUtilities
         return -1;
     }
 #endif
+
     private static JsonElement ParseJsonElement(ReadOnlySpan<byte> utf8Json)
     {
         Utf8JsonReader reader = new(utf8Json);
