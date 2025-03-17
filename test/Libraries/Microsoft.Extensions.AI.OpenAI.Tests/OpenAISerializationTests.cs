@@ -544,6 +544,7 @@ public static partial class OpenAISerializationTests
                         "type": "function"
                       }
                     ],
+                    "annotations":[],
                     "role": "assistant",
                     "content": "Hello! How can I assist you today?"
                   },
@@ -726,6 +727,9 @@ public static partial class OpenAISerializationTests
 
     private static void AssertJsonEqual(string expected, string actual)
     {
+        expected = NormalizeNewLines(expected);
+        actual = NormalizeNewLines(actual);
+
         JsonNode? expectedNode = JsonNode.Parse(expected);
         JsonNode? actualNode = JsonNode.Parse(actual);
 
@@ -735,7 +739,7 @@ public static partial class OpenAISerializationTests
             // normal form strings for better reporting.
             expected = expectedNode?.ToJsonString() ?? "null";
             actual = actualNode?.ToJsonString() ?? "null";
-            Assert.Equal(expected.NormalizeNewLines(), actual.NormalizeNewLines());
+            Assert.Fail($"Expected:{Environment.NewLine}{expected}{Environment.NewLine}Actual:{Environment.NewLine}{actual}");
         }
     }
 

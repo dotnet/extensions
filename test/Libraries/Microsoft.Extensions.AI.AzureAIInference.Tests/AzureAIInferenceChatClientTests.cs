@@ -408,7 +408,8 @@ public class AzureAIInferenceChatClientTests
                             "required":["description"],
                             "additionalProperties":false
                          },
-                         "description":"An object with a description"
+                         "description":"An object with a description",
+                         "strict":true
                     }
                 }
             }

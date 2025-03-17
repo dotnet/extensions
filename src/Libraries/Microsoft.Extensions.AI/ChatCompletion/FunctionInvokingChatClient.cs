@@ -189,7 +189,11 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         // Create an activity to group them together for better observability.
         using Activity? activity = _activitySource?.StartActivity(nameof(FunctionInvokingChatClient));
 
-        IEnumerable<ChatMessage> originalMessages = messages; // the original messages, tracked for the rare case where we need to know what was originally provided
+        // Copy the original messages in order to avoid enumerating the original messages multiple times.
+        // The IEnumerable can represent an arbitrary amount of work.
+        List<ChatMessage> originalMessages = [.. messages];
+        messages = originalMessages;
+
         List<ChatMessage>? augmentedHistory = null; // the actual history of messages sent on turns other than the first
         ChatResponse? response = null; // the response from the inner client, which is possibly modified and then eventually returned
         List<ChatMessage>? responseMessages = null; // tracked list of messages, across multiple turns, to be used for the final response
@@ -275,7 +279,11 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         // Create an activity to group them together for better observability.
         using Activity? activity = _activitySource?.StartActivity(nameof(FunctionInvokingChatClient));
 
-        IEnumerable<ChatMessage> originalMessages = messages; // the original messages, tracked for the rare case where we need to know what was originally provided
+        // Copy the original messages in order to avoid enumerating the original messages multiple times.
+        // The IEnumerable can represent an arbitrary amount of work.
+        List<ChatMessage> originalMessages = [.. messages];
+        messages = originalMessages;
+
         List<ChatMessage>? augmentedHistory = null; // the actual history of messages sent on turns other than the first
         List<FunctionCallContent>? functionCallContents = null; // function call contents that need responding to in the current turn
         List<ChatMessage>? responseMessages = null; // tracked list of messages, across multiple turns, to be used in fallback cases to reconstitute history
