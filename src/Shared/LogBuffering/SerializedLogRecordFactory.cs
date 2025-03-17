@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Shared.Pools;
@@ -11,6 +12,8 @@ internal static class SerializedLogRecordFactory
     private static readonly ObjectPool<List<KeyValuePair<string, object?>>> _attributesPool =
         PoolFactory.CreateListPool<KeyValuePair<string, object?>>();
 
+    private static readonly int _serializedLogRecordSize = Unsafe.SizeOf<SerializedLogRecord>();
+
     public static SerializedLogRecord Create(
         LogLevel logLevel,
         EventId eventId,
@@ -19,7 +22,7 @@ internal static class SerializedLogRecordFactory
         Exception? exception,
         string formattedMessage)
     {
-        int sizeInBytes = 0;
+        int sizeInBytes = _serializedLogRecordSize;
         List<KeyValuePair<string, object?>> serializedAttributes = _attributesPool.Get();
         for (int i = 0; i < attributes.Count; i++)
         {

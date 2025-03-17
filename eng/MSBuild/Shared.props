@@ -52,6 +52,6 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(InjectSharedLogBuffering)' == 'true'">
-    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\LogBuffering\*.cs" LinkBase="Shared\LoggingBuffering" />
+    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\LogBuffering\*.cs" LinkBase="Shared\LogBuffering" />
   </ItemGroup>
 </Project>
