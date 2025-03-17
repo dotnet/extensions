@@ -79,12 +79,11 @@ public class AichatwebTemplatesTests : TestBase
 
                     foreach (var prefix in _packagePrefixesWithJustBuiltVersionNumber)
                     {
-                        // Scrub references to just-built packages and use a fake version name.
+                        // Scrub references to just-built packages and remove the suffix, if it exists.
                         // This allows the snapshots to remain the same regardless of where the repo is built (e.g., locally, public CI, internal CI).
-                        const string VersionReplacement = "REPO_VERSION";
                         var escapedPrefix = Regex.Escape(prefix);
-                        var pattern = $"<PackageReference\\s+Include=\"({escapedPrefix}[^\"]*)\"\\s+Version=\"[^\"]*\"\\s*/>";
-                        var replacement = $"<PackageReference Include=\"$1\" Version=\"{VersionReplacement}\" />";
+                        var pattern = $"<PackageReference\\s+Include=\\\"({escapedPrefix}[^\"]*)\\\"\\s+Version=\\\"([^{{\\\"|\\-}}]*)[^\"]*\\\"\\s*\\/>";
+                        var replacement = "<PackageReference Include=\"$1\" Version=\"$2\" />";
                         content.ScrubByRegex(pattern, replacement);
                     }
                 }
