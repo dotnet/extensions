@@ -78,7 +78,7 @@ public class FunctionInvokingChatClientTests
         {
             Tools =
             [
-                AIFunctionFactory.Create((int i) => "Result 1", "Func1"),
+                AIFunctionFactory.Create((int? i = 42) => "Result 1", "Func1"),
                 AIFunctionFactory.Create((int i) => $"Result 2: {i}", "Func2"),
             ]
         };
