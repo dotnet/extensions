@@ -74,9 +74,8 @@ public class AichatwebTemplatesTests : TestBase
 
                     // Scrub references to just-built packages and remove the suffix, if it exists.
                     // This allows the snapshots to remain the same regardless of where the repo is built (e.g., locally, public CI, internal CI).
-                    var pattern = "<PackageReference\\s+Include=\\\"(Microsoft\\.Extensions\\.AI[^\"]*)\\\"\\s+Version=\\\"([^{{\\\"|\\-}}]*)[^\"]*\\\"\\s*\\/>";
-                    var replacement = "<PackageReference Include=\"$1\" Version=\"$2\" />";
-                    content.ScrubByRegex(pattern, replacement);
+                    var pattern = @"(?<=<PackageReference\s+Include=""Microsoft\.Extensions\..*""\s+Version="")(\d+\.\d+\.\d+)(?:-[^""]*)?(?=""\s*/>)";
+                    content.ScrubByRegex(pattern, replacement: "$1");
                 }
 
                 if (filePath.EndsWith("aichatweb/Properties/launchSettings.json"))
