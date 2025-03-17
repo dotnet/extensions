@@ -20,13 +20,15 @@ public class AichatwebTemplatesTests : TestBase
     private static readonly string[] _verificationExcludePatterns = [
         "**/bin/**",
         "**/obj/**",
+        "**/.vs/**",
         "**/node_modules/**",
+        "**/qdrant_data/**",
         "**/*.user",
         "**/*.in",
         "**/*.out.js",
         "**/*.generated.css",
         "**/package-lock.json",
-        "**/ingestioncache.db",
+        "**/ingestioncache.*",
         "**/NuGet.config",
         "**/Directory.Build.targets",
     ];

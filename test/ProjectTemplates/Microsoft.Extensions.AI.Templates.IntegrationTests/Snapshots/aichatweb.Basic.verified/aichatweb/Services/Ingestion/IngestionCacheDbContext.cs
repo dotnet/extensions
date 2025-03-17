@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace aichatweb.Services.Ingestion;
+namespace aichatweb.Web.Services.Ingestion;
 
 // A DbContext that keeps track of which documents have been ingested.
 // This makes it possible to avoid re-ingesting documents that have not changed,
@@ -39,6 +39,6 @@ public class IngestedDocument
 
 public class IngestedRecord
 {
-    public required string Id { get; set; }
+    public required Guid Id { get; set; }
     public required string DocumentId { get; set; }
 }

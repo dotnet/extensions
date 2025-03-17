@@ -126,19 +126,9 @@ public class JsonVectorStore(string basePath) : IVectorStore
             }
 
             IEnumerable<TRecord> filteredRecords = _records!.Values;
-
-            // TODO: Use non-deprecated API.
-            foreach (var clause in options?.OldFilter.FilterClauses ?? [])
+            if (options?.Filter is { } filter)
             {
-                if (clause is EqualToFilterClause equalClause)
-                {
-                    var propertyInfo = typeof(TRecord).GetProperty(equalClause.FieldName);
-                    filteredRecords = filteredRecords.Where(record => propertyInfo!.GetValue(record)!.Equals(equalClause.Value));
-                }
-                else
-                {
-                    throw new NotSupportedException($"The provided filter clause type {clause.GetType().FullName} is not supported.");
-                }
+                filteredRecords = filteredRecords.AsQueryable().Where(filter);
             }
 
             var ranked = (from record in filteredRecords

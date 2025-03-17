@@ -1,6 +1,14 @@
 <Project>
 
   <PropertyGroup>
+    <!--
+      Configures which chat template variant to use when debugging locally.
+      Options are:
+      - singleproject
+      - aspire
+    -->
+    <_LocalChatTemplateVariant>aspire</_LocalChatTemplateVariant>
+
     <_ChatWithCustomDataContentRoot>$(MSBuildThisFileDirectory)Microsoft.Extensions.AI.Templates\src\ChatWithCustomData\</_ChatWithCustomDataContentRoot>
   </PropertyGroup>
 
@@ -39,8 +47,8 @@
         AzureSearchDocumentsVersion=$(AzureSearchDocumentsVersion);
         CommunityToolkitAspireHostingOllamaVersion=$(CommunityToolkitAspireHostingOllamaVersion);
         CommunityToolkitAspireOllamaSharpVersion=$(CommunityToolkitAspireOllamaSharpVersion);
-        MicrosoftEntityFrameworkCoreSqliteVersion=$(MicrosoftEntityFrameworkCoreSqliteVersion);
-        MicrosoftExtensionsAIVersion=$(_MicrosoftExtensionsAIVersion);
+        MicrosoftEntityFrameworkCoreSqliteVersion=$(TemplateMicrosoftEntityFrameworkCoreSqliteVersion);
+        MicrosoftExtensionsAIVersion=$(TemplateMicrosoftExtensionsAIVersion);
         MicrosoftExtensionsHttpResilienceVersion=$(MicrosoftExtensionsHttpResilienceVersion);
         MicrosoftExtensionsServiceDiscoveryVersion=$(MicrosoftExtensionsServiceDiscoveryVersion);
         MicrosoftSemanticKernelConnectorsAzureAISearchVersion=$(MicrosoftSemanticKernelConnectorsAzureAISearchVersion);
@@ -60,8 +68,8 @@
 
     <ItemGroup>
       <GeneratedContent
-        Include="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.Web\ChatWithCustomData.Web-CSharp.csproj.in"
-        OutputPath="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.Web\ChatWithCustomData.Web-CSharp.csproj" />
+        Include="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.Web\ChatWithCustomData-CSharp.Web.csproj.in"
+        OutputPath="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.Web\ChatWithCustomData-CSharp.Web.csproj" />
       <GeneratedContent
         Include="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.Web\Directory.Build.targets.in"
         OutputPath="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.Web\Directory.Build.targets" />

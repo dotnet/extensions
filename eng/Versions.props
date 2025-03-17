@@ -148,6 +148,7 @@
     <MicrosoftCodeAnalysisVersion>4.8.0</MicrosoftCodeAnalysisVersion>
     <MicrosoftCodeAnalysisAnalyzersVersion>3.3.4</MicrosoftCodeAnalysisAnalyzersVersion>
     <!-- AI templates -->
+    <AspireVersion>9.1.0</AspireVersion>
     <AzureAIProjectsVersion>1.0.0-beta.3</AzureAIProjectsVersion>
     <AzureAIOpenAIVersion>2.2.0-beta.1</AzureAIOpenAIVersion>
     <AzureIdentityVersion>1.13.2</AzureIdentityVersion>
@@ -160,6 +161,7 @@
     <MicrosoftSemanticKernelCoreVersion>1.41.0</MicrosoftSemanticKernelCoreVersion>
     <OllamaSharpVersion>5.1.5</OllamaSharpVersion>
     <OpenAIVersion>2.2.0-beta.1</OpenAIVersion>
+    <OpenTelemetryVersion>1.9.0</OpenTelemetryVersion>
     <PdfPigVersion>0.1.9</PdfPigVersion>
     <SystemLinqAsyncVersion>6.0.1</SystemLinqAsyncVersion>
     <!--

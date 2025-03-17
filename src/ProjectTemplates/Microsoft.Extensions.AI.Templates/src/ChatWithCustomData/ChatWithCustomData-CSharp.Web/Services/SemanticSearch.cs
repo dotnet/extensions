@@ -11,16 +11,11 @@ public class SemanticSearch(
     {
         var queryEmbedding = await embeddingGenerator.GenerateEmbeddingVectorAsync(text);
         var vectorCollection = vectorStore.GetCollection<Guid, SemanticSearchRecord>("data-ChatWithCustomData-CSharp.Web-ingestion");
-        // TODO: Use non-deprecated API
-        var filter = filenameFilter is { Length: > 0 }
-            ? new VectorSearchFilter().EqualTo(nameof(SemanticSearchRecord.FileName), filenameFilter)
-            : null;
 
-        // TODO: Use non-deprecated API
         var nearest = await vectorCollection.VectorizedSearchAsync(queryEmbedding, new VectorSearchOptions<SemanticSearchRecord>
         {
             Top = maxResults,
-            OldFilter = filter,
+            Filter = filenameFilter is { Length: > 0 } ? record => record.FileName == filenameFilter : null,
         });
         var results = new List<SemanticSearchRecord>();
         await foreach (var item in nearest.Results)
