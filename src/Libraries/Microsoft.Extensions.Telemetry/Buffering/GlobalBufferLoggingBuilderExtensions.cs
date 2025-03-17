@@ -35,8 +35,10 @@ public static class GlobalBufferLoggingBuilderExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configuration);
 
-        _ = builder.Services.AddOptionsWithValidateOnStart<GlobalLogBufferingOptions, GlobalLogBufferingOptionsValidator>();
-        _ = builder.Services.AddSingleton<IConfigureOptions<GlobalLogBufferingOptions>>(new GlobalLogBufferingConfigureOptions(configuration));
+        _ = builder
+            .Services.AddOptionsWithValidateOnStart<GlobalLogBufferingOptions, GlobalLogBufferingOptionsValidator>()
+            .Services.AddOptionsWithValidateOnStart<GlobalLogBufferingOptions, GlobalLogBufferingOptionsCustomValidator>()
+            .Services.AddSingleton<IConfigureOptions<GlobalLogBufferingOptions>>(new GlobalLogBufferingConfigureOptions(configuration));
 
         return builder.AddGlobalBufferManager();
     }
@@ -56,8 +58,9 @@ public static class GlobalBufferLoggingBuilderExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);
 
-        _ = builder.Services
-            .AddOptionsWithValidateOnStart<GlobalLogBufferingOptions, GlobalLogBufferingOptionsValidator>()
+        _ = builder
+            .Services.AddOptionsWithValidateOnStart<GlobalLogBufferingOptions, GlobalLogBufferingOptionsValidator>()
+            .Services.AddOptionsWithValidateOnStart<GlobalLogBufferingOptions, GlobalLogBufferingOptionsCustomValidator>()
             .Configure(configure);
 
         return builder.AddGlobalBufferManager();
@@ -77,8 +80,9 @@ public static class GlobalBufferLoggingBuilderExtensions
     {
         _ = Throw.IfNull(builder);
 
-        _ = builder.Services
-            .AddOptionsWithValidateOnStart<GlobalLogBufferingOptions, GlobalLogBufferingOptionsValidator>()
+        _ = builder
+            .Services.AddOptionsWithValidateOnStart<GlobalLogBufferingOptions, GlobalLogBufferingOptionsValidator>()
+            .Services.AddOptionsWithValidateOnStart<GlobalLogBufferingOptions, GlobalLogBufferingOptionsCustomValidator>()
             .Configure(options => options.Rules.Add(new LogBufferingFilterRule(logLevel: logLevel)));
 
         return builder.AddGlobalBufferManager();

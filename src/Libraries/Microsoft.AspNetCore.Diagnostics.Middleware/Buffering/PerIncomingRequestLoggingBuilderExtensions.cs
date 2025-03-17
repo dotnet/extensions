@@ -38,11 +38,10 @@ public static class PerIncomingRequestLoggingBuilderExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configuration);
 
-        _ = builder.Services.AddSingleton<IConfigureOptions<PerRequestLogBufferingOptions>>(
-            new PerRequestLogBufferingConfigureOptions(configuration));
-
         _ = builder.Services
-            .AddOptionsWithValidateOnStart<PerRequestLogBufferingOptions, PerRequestLogBufferingOptionsValidator>();
+            .AddSingleton<IConfigureOptions<PerRequestLogBufferingOptions>>(new PerRequestLogBufferingConfigureOptions(configuration))
+            .AddOptionsWithValidateOnStart<PerRequestLogBufferingOptions, PerRequestLogBufferingOptionsValidator>()
+            .Services.AddOptionsWithValidateOnStart<PerRequestLogBufferingOptions, PerRequestLogBufferingOptionsCustomValidator>();
 
         return builder
             .AddPerRequestBufferManager()
@@ -67,6 +66,7 @@ public static class PerIncomingRequestLoggingBuilderExtensions
 
         _ = builder.Services
             .AddOptionsWithValidateOnStart<PerRequestLogBufferingOptions, PerRequestLogBufferingOptionsValidator>()
+            .Services.AddOptionsWithValidateOnStart<PerRequestLogBufferingOptions, PerRequestLogBufferingOptionsCustomValidator>()
             .Configure(configure);
 
         PerRequestLogBufferingOptions options = new PerRequestLogBufferingOptions();
@@ -94,6 +94,7 @@ public static class PerIncomingRequestLoggingBuilderExtensions
 
         _ = builder.Services
             .AddOptionsWithValidateOnStart<PerRequestLogBufferingOptions, PerRequestLogBufferingOptionsValidator>()
+            .Services.AddOptionsWithValidateOnStart<PerRequestLogBufferingOptions, PerRequestLogBufferingOptionsCustomValidator>()
             .Configure(options =>
             {
                 options.Rules.Add(new LogBufferingFilterRule(logLevel: logLevel));

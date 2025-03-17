@@ -116,20 +116,15 @@ internal sealed class LogBufferingFilterRuleSelector
 
     private static bool IsMatch(LogBufferingFilterRule rule, string category)
     {
+        const char WildcardChar = '*';
+
         string? ruleCategory = rule.CategoryName;
         if (ruleCategory is null)
         {
             return true;
         }
 
-        const char WildcardChar = '*';
-
         int wildcardIndex = ruleCategory.IndexOf(WildcardChar);
-        if (wildcardIndex >= 0 &&
-            ruleCategory.IndexOf(WildcardChar, wildcardIndex + 1) >= 0)
-        {
-            throw new InvalidOperationException("Only one wildcard character is allowed in category name.");
-        }
 
         ReadOnlySpan<char> prefix, suffix;
         if (wildcardIndex == -1)
