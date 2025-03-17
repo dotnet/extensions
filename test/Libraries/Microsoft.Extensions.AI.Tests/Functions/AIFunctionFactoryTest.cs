@@ -48,6 +48,24 @@ public class AIFunctionFactoryTest
     }
 
     [Fact]
+    public async Task Parameters_MissingRequiredParametersFail_Async()
+    {
+        AIFunction[] funcs =
+        [
+            AIFunctionFactory.Create((string theParam) => theParam + " " + theParam),
+            AIFunctionFactory.Create((string? theParam) => theParam + " " + theParam),
+            AIFunctionFactory.Create((int theParam) => theParam * 2),
+            AIFunctionFactory.Create((int? theParam) => theParam * 2),
+        ];
+
+        foreach (AIFunction f in funcs)
+        {
+            Exception e = await Assert.ThrowsAsync<ArgumentException>(() => f.InvokeAsync());
+            Assert.Contains("'theParam'", e.Message);
+        }
+    }
+
+    [Fact]
     public async Task Parameters_MappedByType_Async()
     {
         using var cts = new CancellationTokenSource();
