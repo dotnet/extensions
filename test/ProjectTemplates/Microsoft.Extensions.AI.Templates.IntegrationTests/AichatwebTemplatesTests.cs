@@ -3,6 +3,7 @@
 
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI.Templates.IntegrationTests;
 using Microsoft.Extensions.AI.Templates.Tests;
@@ -29,6 +30,10 @@ public class AichatwebTemplatesTests : TestBase
         "**/ingestioncache.db",
         "**/NuGet.config",
         "**/Directory.Build.targets",
+    ];
+
+    private static readonly string[] _packagePrefixesWithJustBuiltVersionNumber = [
+        "Microsoft.Extensions.AI",
     ];
 
     private readonly ILogger _log;
@@ -71,7 +76,17 @@ public class AichatwebTemplatesTests : TestBase
                     filePath.EndsWith("aichatweb/aichatweb.csproj.in"))
                 {
                     content.ScrubByRegex("<UserSecretsId>(.*)<\\/UserSecretsId>", "<UserSecretsId>secret</UserSecretsId>");
-                    content.ScrubByRegex("\"(\\d*\\.\\d*\\.\\d*)-(dev|ci)\"", "\"$1\"");
+
+                    foreach (var prefix in _packagePrefixesWithJustBuiltVersionNumber)
+                    {
+                        // Scrub references to just-built packages and use a fake version name.
+                        // This allows the snapshots to remain the same regardless of where the repo is built (e.g., locally, public CI, internal CI).
+                        const string VersionReplacement = "REPO_VERSION";
+                        var escapedPrefix = Regex.Escape(prefix);
+                        var pattern = $"<PackageReference\\s+Include=\"({escapedPrefix}[^\"]*)\"\\s+Version=\"[^\"]*\"\\s*/>";
+                        var replacement = $"<PackageReference Include=\"$1\" Version=\"{VersionReplacement}\" />";
+                        content.ScrubByRegex(pattern, replacement);
+                    }
                 }
 
                 if (filePath.EndsWith("aichatweb/Properties/launchSettings.json"))
