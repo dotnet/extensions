@@ -68,7 +68,8 @@ internal sealed class GlobalBuffer : IDisposable
             {
                 return false;
             }
-            serializedLogRecord = new SerializedLogRecord(
+
+            serializedLogRecord = SerializedLogRecordFactory.Create(
                 logEntry.LogLevel, logEntry.EventId,
                 _timeProvider.GetUtcNow(), attributes, logEntry.Exception,
                 logEntry.Formatter(logEntry.State, logEntry.Exception));
@@ -84,6 +85,7 @@ internal sealed class GlobalBuffer : IDisposable
 
         if (serializedLogRecord.SizeInBytes > _options.CurrentValue.MaxLogRecordSizeInBytes)
         {
+            SerializedLogRecordFactory.Return(serializedLogRecord);
             return false;
         }
 
@@ -114,17 +116,18 @@ internal sealed class GlobalBuffer : IDisposable
         var recordsToEmit = new List<DeserializedLogRecord>(bufferedRecords.Length);
         foreach (SerializedLogRecord bufferedRecord in bufferedRecords)
         {
-            recordsToEmit.Add(
-                new DeserializedLogRecord(
-                    bufferedRecord.Timestamp,
-                    bufferedRecord.LogLevel,
-                    bufferedRecord.EventId,
-                    bufferedRecord.Exception,
-                    bufferedRecord.FormattedMessage,
-                    bufferedRecord.Attributes));
+            recordsToEmit.Add(new DeserializedLogRecord(
+                bufferedRecord.Timestamp,
+                bufferedRecord.LogLevel,
+                bufferedRecord.EventId,
+                bufferedRecord.Exception,
+                bufferedRecord.FormattedMessage,
+                bufferedRecord.Attributes));
         }
 
         _bufferedLogger.LogRecords(recordsToEmit);
+
+        SerializedLogRecordFactory.Return(bufferedRecords);
     }
 
     private void OnOptionsChanged(GlobalLogBufferingOptions? updatedOptions)
@@ -157,6 +160,7 @@ internal sealed class GlobalBuffer : IDisposable
                _buffer.TryDequeue(out SerializedLogRecord item))
         {
             _ = Interlocked.Add(ref _bufferSize, -item.SizeInBytes);
+            SerializedLogRecordFactory.Return(item);
         }
     }
 }

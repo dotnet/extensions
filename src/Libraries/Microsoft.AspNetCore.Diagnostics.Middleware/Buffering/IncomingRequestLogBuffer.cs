@@ -49,7 +49,7 @@ internal sealed class IncomingRequestLogBuffer
             {
                 return false;
             }
-            serializedLogRecord = new SerializedLogRecord(logEntry.LogLevel, logEntry.EventId, _timeProvider.GetUtcNow(), attributes, logEntry.Exception,
+            serializedLogRecord = SerializedLogRecordFactory.Create(logEntry.LogLevel, logEntry.EventId, _timeProvider.GetUtcNow(), attributes, logEntry.Exception,
                 logEntry.Formatter(logEntry.State, logEntry.Exception));
         }
 
@@ -63,6 +63,7 @@ internal sealed class IncomingRequestLogBuffer
 
         if (serializedLogRecord.SizeInBytes > _options.CurrentValue.MaxLogRecordSizeInBytes)
         {
+            SerializedLogRecordFactory.Return(serializedLogRecord);
             return false;
         }
 
@@ -90,11 +91,10 @@ internal sealed class IncomingRequestLogBuffer
             _ = Interlocked.Exchange(ref _bufferSize, 0);
         }
 
-        var deserializedLogRecords = new List<DeserializedLogRecord>(bufferedRecords.Length);
+        var recordsToEmit = new List<DeserializedLogRecord>(bufferedRecords.Length);
         foreach (SerializedLogRecord bufferedRecord in bufferedRecords)
         {
-            deserializedLogRecords.Add(
-                new DeserializedLogRecord(
+            recordsToEmit.Add(new DeserializedLogRecord(
                     bufferedRecord.Timestamp,
                     bufferedRecord.LogLevel,
                     bufferedRecord.EventId,
@@ -103,7 +103,9 @@ internal sealed class IncomingRequestLogBuffer
                     bufferedRecord.Attributes));
         }
 
-        _bufferedLogger.LogRecords(deserializedLogRecords);
+        _bufferedLogger.LogRecords(recordsToEmit);
+
+        SerializedLogRecordFactory.Return(bufferedRecords);
     }
 
     private bool IsEnabled(LogLevel logLevel, EventId eventId, IReadOnlyList<KeyValuePair<string, object?>> attributes)
@@ -122,6 +124,7 @@ internal sealed class IncomingRequestLogBuffer
                _buffer.TryDequeue(out SerializedLogRecord item))
         {
             _ = Interlocked.Add(ref _bufferSize, -item.SizeInBytes);
+            SerializedLogRecordFactory.Return(item);
         }
     }
 }
