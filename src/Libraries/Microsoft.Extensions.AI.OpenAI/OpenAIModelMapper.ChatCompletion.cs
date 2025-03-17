@@ -7,18 +7,12 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 using OpenAI.Chat;
 
 #pragma warning disable CA1308 // Normalize strings to uppercase
-#pragma warning disable CA1859 // Use concrete types when possible for improved performance
-#pragma warning disable SA1204 // Static elements should appear before instance elements
-#pragma warning disable S103 // Lines should not be too long
 #pragma warning disable S1067 // Expressions should not be too complex
 #pragma warning disable S2178 // Short-circuit logic should be used in boolean contexts
-#pragma warning disable S3440 // Variables should not be checked against the values they're about to be assigned
 #pragma warning disable EA0011 // Consider removing unnecessary conditional access operator (?)
 
 namespace Microsoft.Extensions.AI;
@@ -177,104 +171,6 @@ internal static partial class OpenAIModelMappers
         return response;
     }
 
-    public static ChatOptions FromOpenAIOptions(ChatCompletionOptions? options)
-    {
-        ChatOptions result = new();
-
-        if (options is not null)
-        {
-            result.ModelId = _getModelIdAccessor.Invoke(options, null)?.ToString() switch
-            {
-                null or "" => null,
-                var modelId => modelId,
-            };
-
-            result.FrequencyPenalty = options.FrequencyPenalty;
-            result.MaxOutputTokens = options.MaxOutputTokenCount;
-            result.TopP = options.TopP;
-            result.PresencePenalty = options.PresencePenalty;
-            result.Temperature = options.Temperature;
-#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
-            result.Seed = options.Seed;
-#pragma warning restore OPENAI001
-
-            if (options.StopSequences is { Count: > 0 } stopSequences)
-            {
-                result.StopSequences = [.. stopSequences];
-            }
-
-            if (options.EndUserId is string endUserId)
-            {
-                (result.AdditionalProperties ??= [])[nameof(options.EndUserId)] = endUserId;
-            }
-
-            if (options.IncludeLogProbabilities is bool includeLogProbabilities)
-            {
-                (result.AdditionalProperties ??= [])[nameof(options.IncludeLogProbabilities)] = includeLogProbabilities;
-            }
-
-            if (options.LogitBiases is { Count: > 0 } logitBiases)
-            {
-                (result.AdditionalProperties ??= [])[nameof(options.LogitBiases)] = new Dictionary<int, int>(logitBiases);
-            }
-
-            if (options.AllowParallelToolCalls is bool allowParallelToolCalls)
-            {
-                (result.AdditionalProperties ??= [])[nameof(options.AllowParallelToolCalls)] = allowParallelToolCalls;
-            }
-
-            if (options.TopLogProbabilityCount is int topLogProbabilityCount)
-            {
-                (result.AdditionalProperties ??= [])[nameof(options.TopLogProbabilityCount)] = topLogProbabilityCount;
-            }
-
-            if (options.Metadata is IDictionary<string, string> { Count: > 0 } metadata)
-            {
-                (result.AdditionalProperties ??= [])[nameof(options.Metadata)] = new Dictionary<string, string>(metadata);
-            }
-
-            if (options.StoredOutputEnabled is bool storedOutputEnabled)
-            {
-                (result.AdditionalProperties ??= [])[nameof(options.StoredOutputEnabled)] = storedOutputEnabled;
-            }
-
-            if (options.Tools is { Count: > 0 } tools)
-            {
-                foreach (ChatTool tool in tools)
-                {
-                    if (FromOpenAIChatTool(tool) is { } convertedTool)
-                    {
-                        (result.Tools ??= []).Add(convertedTool);
-                    }
-                }
-
-                using var toolChoiceJson = JsonDocument.Parse(JsonModelHelpers.Serialize(options.ToolChoice).ToMemory());
-                JsonElement jsonElement = toolChoiceJson.RootElement;
-                switch (jsonElement.ValueKind)
-                {
-                    case JsonValueKind.String:
-                        result.ToolMode = jsonElement.GetString() switch
-                        {
-                            "required" => ChatToolMode.RequireAny,
-                            "none" => ChatToolMode.None,
-                            _ => ChatToolMode.Auto,
-                        };
-
-                        break;
-                    case JsonValueKind.Object:
-                        if (jsonElement.TryGetProperty("function", out JsonElement functionElement))
-                        {
-                            result.ToolMode = ChatToolMode.RequireSpecific(functionElement.GetString()!);
-                        }
-
-                        break;
-                }
-            }
-        }
-
-        return result;
-    }
-
     /// <summary>Converts an extensions options instance to an OpenAI options instance.</summary>
     public static ChatCompletionOptions ToOpenAIOptions(ChatOptions? options)
     {
@@ -410,36 +306,6 @@ internal static partial class OpenAIModelMappers
         }
 
         return result;
-    }
-
-    private static AITool? FromOpenAIChatTool(ChatTool chatTool)
-    {
-        switch (chatTool.Kind)
-        {
-            case ChatToolKind.Function:
-                AdditionalPropertiesDictionary additionalProperties = [];
-                if (chatTool.FunctionSchemaIsStrict is bool strictValue)
-                {
-                    additionalProperties["Strict"] = strictValue;
-                }
-
-                OpenAIChatToolJson openAiChatTool = JsonSerializer.Deserialize(chatTool.FunctionParameters.ToMemory().Span, OpenAIJsonContext.Default.OpenAIChatToolJson)!;
-                JsonElement schema = JsonSerializer.SerializeToElement(openAiChatTool, OpenAIJsonContext.Default.OpenAIChatToolJson);
-                return new MetadataOnlyAIFunction(chatTool.FunctionName, chatTool.FunctionDescription, schema, additionalProperties);
-
-            default:
-                return null;
-        }
-    }
-
-    private sealed class MetadataOnlyAIFunction(string name, string description, JsonElement schema, IReadOnlyDictionary<string, object?> additionalProps) : AIFunction
-    {
-        public override string Name => name;
-        public override string Description => description;
-        public override JsonElement JsonSchema => schema;
-        public override IReadOnlyDictionary<string, object?> AdditionalProperties => additionalProps;
-        protected override ValueTask<object?> InvokeCoreAsync(AIFunctionArguments arguments, CancellationToken cancellationToken) =>
-            throw new InvalidOperationException($"The AI function '{Name}' does not support being invoked.");
     }
 
     /// <summary>Converts an Extensions function to an OpenAI chat tool.</summary>

@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.Caching.Distributed;
@@ -23,31 +22,6 @@ namespace Microsoft.Extensions.AI;
 
 public class OpenAIChatClientTests
 {
-    [Fact]
-    public void Ctor_InvalidArgs_Throws()
-    {
-        Assert.Throws<ArgumentNullException>("openAIClient", () => new OpenAIChatClient(null!, "model"));
-        Assert.Throws<ArgumentNullException>("chatClient", () => new OpenAIChatClient(null!));
-
-        OpenAIClient openAIClient = new("key");
-        Assert.Throws<ArgumentNullException>("modelId", () => new OpenAIChatClient(openAIClient, null!));
-        Assert.Throws<ArgumentException>("modelId", () => new OpenAIChatClient(openAIClient, ""));
-        Assert.Throws<ArgumentException>("modelId", () => new OpenAIChatClient(openAIClient, "   "));
-    }
-
-    [Fact]
-    public void ToolCallJsonSerializerOptions_HasExpectedValue()
-    {
-        using OpenAIChatClient client = new(new("key"), "model");
-
-        Assert.Same(client.ToolCallJsonSerializerOptions, AIJsonUtilities.DefaultOptions);
-        Assert.Throws<ArgumentNullException>("value", () => client.ToolCallJsonSerializerOptions = null!);
-
-        JsonSerializerOptions options = new();
-        client.ToolCallJsonSerializerOptions = options;
-        Assert.Same(options, client.ToolCallJsonSerializerOptions);
-    }
-
     [Fact]
     public void AsChatClient_InvalidArgs_Throws()
     {
@@ -91,7 +65,6 @@ public class OpenAIChatClientTests
         IChatClient chatClient = openAIClient.AsChatClient("model");
 
         Assert.Same(chatClient, chatClient.GetService<IChatClient>());
-        Assert.Same(chatClient, chatClient.GetService<OpenAIChatClient>());
 
         Assert.Same(openAIClient, chatClient.GetService<OpenAIClient>());
 

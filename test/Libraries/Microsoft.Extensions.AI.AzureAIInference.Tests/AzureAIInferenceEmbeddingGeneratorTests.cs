@@ -18,18 +18,6 @@ namespace Microsoft.Extensions.AI;
 public class AzureAIInferenceEmbeddingGeneratorTests
 {
     [Fact]
-    public void Ctor_InvalidArgs_Throws()
-    {
-        Assert.Throws<ArgumentNullException>("embeddingsClient", () => new AzureAIInferenceEmbeddingGenerator(null!));
-
-        EmbeddingsClient client = new(new("http://somewhere"), new AzureKeyCredential("key"));
-        Assert.Throws<ArgumentException>("modelId", () => new AzureAIInferenceEmbeddingGenerator(client, ""));
-        Assert.Throws<ArgumentException>("modelId", () => new AzureAIInferenceEmbeddingGenerator(client, "   "));
-
-        using var _ = new AzureAIInferenceEmbeddingGenerator(client);
-    }
-
-    [Fact]
     public void AsEmbeddingGenerator_InvalidArgs_Throws()
     {
         Assert.Throws<ArgumentNullException>("embeddingsClient", () => ((EmbeddingsClient)null!).AsEmbeddingGenerator());

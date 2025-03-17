@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -13,13 +12,11 @@ using OpenAI.Chat;
 
 #pragma warning disable S1067 // Expressions should not be too complex
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
-#pragma warning disable SA1204 // Static elements should appear before instance elements
-#pragma warning disable SA1108 // Block statements should not contain embedded comments
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="IChatClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="ChatClient"/>.</summary>
-public sealed class OpenAIChatClient : IChatClient
+internal sealed class OpenAIChatClient : IChatClient
 {
     /// <summary>Gets the default OpenAI endpoint.</summary>
     internal static Uri DefaultOpenAIEndpoint { get; } = new("https://api.openai.com/v1");
@@ -32,9 +29,6 @@ public sealed class OpenAIChatClient : IChatClient
 
     /// <summary>The underlying <see cref="ChatClient" />.</summary>
     private readonly ChatClient _chatClient;
-
-    /// <summary>The <see cref="JsonSerializerOptions"/> use for any serialization activities related to tool call arguments and results.</summary>
-    private JsonSerializerOptions _toolCallJsonSerializerOptions = AIJsonUtilities.DefaultOptions;
 
     /// <summary>Initializes a new instance of the <see cref="OpenAIChatClient"/> class for the specified <see cref="OpenAIClient"/>.</summary>
     /// <param name="openAIClient">The underlying client.</param>
@@ -80,13 +74,6 @@ public sealed class OpenAIChatClient : IChatClient
         _metadata = new("openai", providerUrl, model);
     }
 
-    /// <summary>Gets or sets <see cref="JsonSerializerOptions"/> to use for any serialization activities related to tool call arguments and results.</summary>
-    public JsonSerializerOptions ToolCallJsonSerializerOptions
-    {
-        get => _toolCallJsonSerializerOptions;
-        set => _toolCallJsonSerializerOptions = Throw.IfNull(value);
-    }
-
     /// <inheritdoc />
     object? IChatClient.GetService(Type serviceType, object? serviceKey)
     {
@@ -107,7 +94,7 @@ public sealed class OpenAIChatClient : IChatClient
     {
         _ = Throw.IfNull(messages);
 
-        var openAIChatMessages = OpenAIModelMappers.ToOpenAIChatMessages(messages, ToolCallJsonSerializerOptions);
+        var openAIChatMessages = OpenAIModelMappers.ToOpenAIChatMessages(messages, AIJsonUtilities.DefaultOptions);
         var openAIOptions = OpenAIModelMappers.ToOpenAIOptions(options);
 
         // Make the call to OpenAI.
@@ -122,7 +109,7 @@ public sealed class OpenAIChatClient : IChatClient
     {
         _ = Throw.IfNull(messages);
 
-        var openAIChatMessages = OpenAIModelMappers.ToOpenAIChatMessages(messages, ToolCallJsonSerializerOptions);
+        var openAIChatMessages = OpenAIModelMappers.ToOpenAIChatMessages(messages, AIJsonUtilities.DefaultOptions);
         var openAIOptions = OpenAIModelMappers.ToOpenAIOptions(options);
 
         // Make the call to OpenAI.

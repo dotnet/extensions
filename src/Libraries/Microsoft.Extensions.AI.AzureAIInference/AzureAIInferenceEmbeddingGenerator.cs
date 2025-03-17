@@ -22,7 +22,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="IEmbeddingGenerator{String, Embedding}"/> for an Azure.AI.Inference <see cref="EmbeddingsClient"/>.</summary>
-public sealed class AzureAIInferenceEmbeddingGenerator :
+internal sealed class AzureAIInferenceEmbeddingGenerator :
     IEmbeddingGenerator<string, Embedding<float>>
 {
     /// <summary>Metadata about the embedding generator.</summary>

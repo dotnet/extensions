@@ -20,18 +20,6 @@ namespace Microsoft.Extensions.AI;
 public class OpenAIEmbeddingGeneratorTests
 {
     [Fact]
-    public void Ctor_InvalidArgs_Throws()
-    {
-        Assert.Throws<ArgumentNullException>("openAIClient", () => new OpenAIEmbeddingGenerator(null!, "model"));
-        Assert.Throws<ArgumentNullException>("embeddingClient", () => new OpenAIEmbeddingGenerator(null!));
-
-        OpenAIClient openAIClient = new("key");
-        Assert.Throws<ArgumentNullException>("modelId", () => new OpenAIEmbeddingGenerator(openAIClient, null!));
-        Assert.Throws<ArgumentException>("modelId", () => new OpenAIEmbeddingGenerator(openAIClient, ""));
-        Assert.Throws<ArgumentException>("modelId", () => new OpenAIEmbeddingGenerator(openAIClient, "   "));
-    }
-
-    [Fact]
     public void AsEmbeddingGenerator_InvalidArgs_Throws()
     {
         Assert.Throws<ArgumentNullException>("openAIClient", () => ((OpenAIClient)null!).AsEmbeddingGenerator("model"));
@@ -73,7 +61,6 @@ public class OpenAIEmbeddingGeneratorTests
         IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator = openAIClient.AsEmbeddingGenerator("model");
 
         Assert.Same(embeddingGenerator, embeddingGenerator.GetService<IEmbeddingGenerator<string, Embedding<float>>>());
-        Assert.Same(embeddingGenerator, embeddingGenerator.GetService<OpenAIEmbeddingGenerator>());
 
         Assert.Same(openAIClient, embeddingGenerator.GetService<OpenAIClient>());
 
