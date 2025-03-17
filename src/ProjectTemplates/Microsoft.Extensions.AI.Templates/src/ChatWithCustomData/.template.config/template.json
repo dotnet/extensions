@@ -7,10 +7,8 @@
   "description": "A project template for creating an AI chat application, which uses retrieval-augmented generation (RAG) to chat with your own data.",
   "shortName": "aichatweb",
   "defaultName": "ChatApp",
-  // The placeholder sourceName needs to contain a dash to ensure the CSS bundle asset uses the assembly identity name
-  // TODO: When we support multi-project output, this needs to change to ChatWithCustomData, then we need some other
-  // technique to make it avoid emitting a .Web suffix in the single-project case.
   "sourceName": "ChatWithCustomData-CSharp",
+  "preferNameDirectory": true,
   "tags": {
     "language": "C#",
     "type": "project"
