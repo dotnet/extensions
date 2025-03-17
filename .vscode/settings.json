@@ -1,6 +1,3 @@
 {
-  "dotnet.automaticallyCreateSolutionInWorkspace": false,
-  "githubPullRequests.ignoredPullRequestBranches": [
-    "main"
-  ]
+  "dotnet.automaticallyCreateSolutionInWorkspace": false
 }
