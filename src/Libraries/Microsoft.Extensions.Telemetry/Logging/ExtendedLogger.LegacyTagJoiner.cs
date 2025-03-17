@@ -50,19 +50,29 @@ internal sealed partial class ExtendedLogger
         {
             get
             {
-                // Keep the order of the if-else statements. It ensures that the {OriginalFormat}
-                // property is always the last tag in the list.
-                if (index < StaticTags!.Length)
+                int staticTagsCount = StaticTags!.Length;
+                int extraTagsCount = _extraTags.Count;
+
+                if (index < staticTagsCount)
                 {
                     return StaticTags[index];
                 }
-                else if (index < StaticTags.Length + _extraTags.Count)
+
+                // Iterating over "_extraTags" and "_incomingTags" at the end, because they may contain
+                // the "{OriginalFormat}" property which needs to be the last tag in the list. The order
+                // "_extraTags" then "_incomingTags" is important because:
+                // 1. In the case when the "{OriginalFormat}" property is in "_extraTags",
+                //    "_incomingTags" is always empty.
+                // 2. In the case when the "{OriginalFormat}" property is in "_incomingTags",
+                //    "_extraTags" might contain other tags and we want them to be returned
+                //    before "_incomingTags".
+                else if (index < staticTagsCount + extraTagsCount)
                 {
-                    return _extraTags[index - StaticTags.Length];
+                    return _extraTags[index - staticTagsCount];
                 }
                 else
                 {
-                    return _incomingTags![index - StaticTags.Length - _extraTags.Count];
+                    return _incomingTags![index - staticTagsCount - extraTagsCount];
                 }
             }
         }
