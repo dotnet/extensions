@@ -1,4 +1,4 @@
-﻿@if (contentText is not null)
+﻿@if (text is { Length: > 0 })
 {
     <div class="assistant-message">
         <div>
@@ -10,7 +10,7 @@
         </div>
         <div class="assistant-message-header">Assistant</div>
         <div class="assistant-message-text">
-            <assistant-message markdown="@contentText"></assistant-message>
+            <assistant-message markdown="@text"></assistant-message>
 
             @TextContentFooter
         </div>
@@ -36,7 +36,7 @@ else if (Content is FunctionCallContent { Name: "Search" } fcc && fcc.Arguments?
 }
 
 @code {
-    private string? contentText;
+    private string? text;
 
     [Parameter]
     public AIContent? Content { get; set; }
@@ -49,6 +49,6 @@ else if (Content is FunctionCallContent { Name: "Search" } fcc && fcc.Arguments?
 
     protected override void OnParametersSet()
     {
-        contentText = Text ?? (Content is TextContent { Text: { Length: > 0 } text } ? text : null);
+        text = Text ?? (Content as TextContent)?.Text;
     }
 }

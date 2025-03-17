@@ -87,6 +87,14 @@ public static partial class AIJsonUtilities
                 continue;
             }
 
+            if (inferenceOptions.IncludeParameter is { } includeParameter &&
+                !includeParameter(parameter))
+            {
+                // Skip parameters that should not be included in the schema.
+                // By default, all parameters are included.
+                continue;
+            }
+
             JsonNode parameterSchema = CreateJsonSchemaCore(
                 type: parameter.ParameterType,
                 parameterName: parameter.Name,

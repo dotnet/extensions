@@ -5,15 +5,15 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class CodeInterpreterToolTests
+public class HostedWebSearchToolTests
 {
     [Fact]
     public void Constructor_Roundtrips()
     {
-        var tool = new CodeInterpreterTool();
-        Assert.Equal(nameof(CodeInterpreterTool), tool.Name);
+        var tool = new HostedWebSearchTool();
+        Assert.Equal(nameof(HostedWebSearchTool), tool.Name);
         Assert.Empty(tool.Description);
         Assert.Empty(tool.AdditionalProperties);
-        Assert.Equal(nameof(CodeInterpreterTool), tool.ToString());
+        Assert.Equal(nameof(HostedWebSearchTool), tool.ToString());
     }
 }
