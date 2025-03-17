@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -171,5 +172,30 @@ public class AIFunctionFactoryTest
         Assert.Null(options.AdditionalProperties);
         Assert.Null(options.SerializerOptions);
         Assert.Null(options.JsonSchemaCreateOptions);
+    }
+
+    [Fact]
+    public async Task AIFunctionFactoryOptions_SupportsSkippingParameters()
+    {
+        AIFunction func = AIFunctionFactory.Create(
+            (string firstParameter, int secondParameter) => firstParameter + secondParameter,
+            new()
+            {
+                JsonSchemaCreateOptions = new()
+                {
+                    IncludeParameter = p => p.Name != "firstParameter",
+                }
+            });
+
+        Assert.DoesNotContain("firstParameter", func.JsonSchema.ToString());
+        Assert.Contains("secondParameter", func.JsonSchema.ToString());
+
+        JsonElement? result = (JsonElement?)await func.InvokeAsync(new Dictionary<string, object?>
+        {
+            ["firstParameter"] = "test",
+            ["secondParameter"] = 42
+        });
+        Assert.NotNull(result);
+        Assert.Contains("test42", result.ToString());
     }
 }
