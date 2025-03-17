@@ -64,6 +64,12 @@ public class GlobalLogBufferingOptions
     /// <summary>
     /// Gets or sets the collection of <see cref="LogBufferingFilterRule"/> used for filtering log messages for the purpose of further buffering.
     /// </summary>
+    /// <remarks>
+    /// If a log entry matches a rule, it will be buffered. Consequently, it will later be emitted when the buffer is flushed.
+    /// If a log entry does not match any rule, it will be emitted normally.
+    /// If the buffer size limit is reached, the oldest buffered log entries will be dropped (not emitted!) to make room for new ones.
+    /// If a log entry size is greater than <see cref="MaxLogRecordSizeInBytes"/>, it will not be buffered and will be emitted normally.
+    /// </remarks>
     [Required]
     public IList<LogBufferingFilterRule> Rules { get; set; } = [];
 #pragma warning restore CA2227
