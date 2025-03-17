@@ -3,11 +3,13 @@
     <RootNamespace>Microsoft.Shared</RootNamespace>
     <Description>Reusable shared code.</Description>
     <Workstream>Fundamentals</Workstream>
+    <NoWarn Condition="'$(TargetFramework)' == 'net462'">$(NoWarn);CS0436</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
     <TargetFrameworks>$(NetCoreTargetFrameworks)$(ConditionalNet462)</TargetFrameworks>
     <IsPackable>false</IsPackable>
+    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
     <DefineConstants>$(DefineConstants);SHARED_PROJECT</DefineConstants>
     <InjectDiagnosticAttributesOnLegacy>true</InjectDiagnosticAttributesOnLegacy>
     <InjectCallerAttributesOnLegacy>true</InjectCallerAttributesOnLegacy>

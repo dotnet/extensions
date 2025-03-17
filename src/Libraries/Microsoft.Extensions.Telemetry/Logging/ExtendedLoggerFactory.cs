@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Redaction;
-#if NET9_0_OR_GREATER
+#if NET8_0_OR_GREATER
 using Microsoft.Extensions.Diagnostics.Buffering;
 #endif
 using Microsoft.Extensions.Diagnostics.Enrichment;
@@ -27,7 +27,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
     private readonly IDisposable? _redactionOptionsChangeTokenRegistration;
     private readonly Action<IEnrichmentTagCollector>[] _enrichers;
     private readonly LoggingSampler? _sampler;
-#if NET9_0_OR_GREATER
+#if NET8_0_OR_GREATER
     private readonly LogBuffer? _logBuffer;
 #endif
     private readonly KeyValuePair<string, object?>[] _staticTags;
@@ -47,7 +47,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
         IExternalScopeProvider? scopeProvider = null,
         IOptionsMonitor<LoggerEnrichmentOptions>? enrichmentOptions = null,
         IOptionsMonitor<LoggerRedactionOptions>? redactionOptions = null,
-#if NET9_0_OR_GREATER
+#if NET8_0_OR_GREATER
         IRedactorProvider? redactorProvider = null,
         LogBuffer? logBuffer = null)
 #else
@@ -56,7 +56,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
 #pragma warning restore S107 // Methods should not have too many parameters
     {
         _scopeProvider = scopeProvider;
-#if NET9_0_OR_GREATER
+#if NET8_0_OR_GREATER
         _logBuffer = logBuffer;
 #endif
         _sampler = sampler;
@@ -307,7 +307,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
                 enrichmentOptions.IncludeExceptionMessage,
                 enrichmentOptions.MaxStackTraceLength,
                 _redactorProvider,
-#if NET9_0_OR_GREATER
+#if NET8_0_OR_GREATER
                 redactionOptions.ApplyDiscriminator,
                 _logBuffer);
 #else

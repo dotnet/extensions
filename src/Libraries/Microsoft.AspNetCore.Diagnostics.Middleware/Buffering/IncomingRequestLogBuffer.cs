@@ -1,6 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-#if NET9_0_OR_GREATER
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -21,10 +21,10 @@ internal sealed class IncomingRequestLogBuffer
     private readonly IOptionsMonitor<PerRequestLogBufferingOptions> _options;
     private readonly ConcurrentQueue<SerializedLogRecord> _buffer;
     private readonly TimeProvider _timeProvider = TimeProvider.System;
+    private readonly LogBufferingFilterRule[] _filterRules;
 
     private int _bufferSize;
     private DateTimeOffset _lastFlushTimestamp;
-    private readonly LogBufferingFilterRule[] _filterRules;
 
     public IncomingRequestLogBuffer(
         IBufferedLogger bufferedLogger,
@@ -43,16 +43,16 @@ internal sealed class IncomingRequestLogBuffer
     public bool TryEnqueue<TState>(LogEntry<TState> logEntry)
     {
         SerializedLogRecord serializedLogRecord = default;
-        if(logEntry.State is IReadOnlyList<KeyValuePair<string, object?>> attributes)
+        if(logEntry.State is IReadOnlyList<KeyValuePair<string,object?>> attributes)
         {
             if (!IsEnabled(logEntry.LogLevel, logEntry.EventId, attributes))
             {
                 return false;
             }
+
             serializedLogRecord = SerializedLogRecordFactory.Create(logEntry.LogLevel, logEntry.EventId, _timeProvider.GetUtcNow(), attributes, logEntry.Exception,
                 logEntry.Formatter(logEntry.State, logEntry.Exception));
         }
-
         else
         {
             // we expect logEntry.State to be either ModernTagJoiner or LegacyTagJoiner
@@ -128,4 +128,3 @@ internal sealed class IncomingRequestLogBuffer
         }
     }
 }
-#endif

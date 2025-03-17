@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
-#if NET9_0_OR_GREATER
+#if NET8_0_OR_GREATER
 using Microsoft.Extensions.Diagnostics.Buffering;
 #endif
 using Microsoft.Extensions.Diagnostics.Enrichment;
@@ -154,7 +154,7 @@ public static class ExtendedLoggerTests
 
         Assert.Equal(0, provider.Logger!.Collector.Count);
     }
-#if NET9_0_OR_GREATER
+#if NET8_0_OR_GREATER
     [Fact]
     public static void GlobalBuffering_CanonicalUsecase()
     {

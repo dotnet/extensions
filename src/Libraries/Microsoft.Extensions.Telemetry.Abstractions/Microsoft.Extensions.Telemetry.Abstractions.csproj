@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectSharedPools>true</InjectSharedPools>

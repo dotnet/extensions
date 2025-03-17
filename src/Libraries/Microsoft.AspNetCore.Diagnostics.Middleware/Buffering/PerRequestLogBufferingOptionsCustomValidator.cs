@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-#if NET9_0_OR_GREATER
-
+using System;
 using Microsoft.Extensions.Diagnostics.Buffering;
 using Microsoft.Extensions.Options;
 
@@ -21,7 +20,7 @@ internal sealed class PerRequestLogBufferingOptionsCustomValidator : IValidateOp
                 continue;
             }
 
-            int wildcardIndex = rule.CategoryName.IndexOf(WildcardChar);
+            int wildcardIndex = rule.CategoryName.IndexOf(WildcardChar, StringComparison.Ordinal);
             if (wildcardIndex >= 0 && rule.CategoryName.IndexOf(WildcardChar, wildcardIndex + 1) >= 0)
             {
                 resultBuilder.AddError("Only one wildcard character is allowed in category name.", nameof(options.Rules));
@@ -31,4 +30,3 @@ internal sealed class PerRequestLogBufferingOptionsCustomValidator : IValidateOp
         return resultBuilder.Build();
     }
 }
-#endif

@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if NET8_0_OR_GREATER
-
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -18,9 +16,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.DependencyInjection;
-#if NET9_0_OR_GREATER
 using Microsoft.Extensions.Diagnostics.Buffering;
-#endif
 using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Testing;
@@ -57,7 +53,7 @@ public partial class AcceptanceTests
         {
             app.UseRouting();
             app.UseHttpLogging();
-#if NET9_0_OR_GREATER
+#if NET8_0_OR_GREATER
             app.Map("/flushrequestlogs", static x =>
                 x.Run(static async context =>
                 {
@@ -631,7 +627,7 @@ public partial class AcceptanceTests
 
                 var originalException = ex.InnerException?.InnerException;
                 Assert.NotNull(originalException);
-                Assert.Equal("Test exception", originalException!.Message);
+                Assert.Equal("Test exception", originalException.Message);
 
                 Assert.Equal(1, logCollector.Count);
                 Assert.Equal(LogLevel.Information, logCollector.LatestRecord.Level);
@@ -665,7 +661,7 @@ public partial class AcceptanceTests
 
                 var originalException = ex.InnerException?.InnerException;
                 Assert.NotNull(originalException);
-                Assert.Equal("Test exception", originalException!.Message);
+                Assert.Equal("Test exception", originalException.Message);
 
                 Assert.Equal(1, logCollector.Count);
                 Assert.Equal(LogLevel.Information, logCollector.LatestRecord.Level);
@@ -736,7 +732,7 @@ public partial class AcceptanceTests
                 }
             });
     }
-#if NET9_0_OR_GREATER
+#if NET8_0_OR_GREATER
     [Fact]
     public async Task HttpRequestBuffering()
     {
@@ -786,7 +782,7 @@ public partial class AcceptanceTests
     {
         await RunAsync(
             LogLevel.Information,
-            services => services.AddHttpLoggingRedaction(x =>
+            services => services.AddHttpLoggingRedaction(_ =>
             {
             }).AddHttpLogging(o =>
             {
@@ -825,4 +821,3 @@ public partial class AcceptanceTests
         public void Enrich(IEnrichmentTagCollector collector, HttpContext httpContext) => throw new InvalidOperationException();
     }
 }
-#endif
