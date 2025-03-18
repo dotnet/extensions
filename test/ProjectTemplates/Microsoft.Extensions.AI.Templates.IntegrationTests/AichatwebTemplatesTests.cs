@@ -71,7 +71,11 @@ public class AichatwebTemplatesTests : TestBase
                     filePath.EndsWith("aichatweb/aichatweb.csproj.in"))
                 {
                     content.ScrubByRegex("<UserSecretsId>(.*)<\\/UserSecretsId>", "<UserSecretsId>secret</UserSecretsId>");
-                    content.ScrubByRegex("\"(\\d*\\.\\d*\\.\\d*)-(dev|ci)\"", "\"$1\"");
+
+                    // Scrub references to just-built packages and remove the suffix, if it exists.
+                    // This allows the snapshots to remain the same regardless of where the repo is built (e.g., locally, public CI, internal CI).
+                    var pattern = @"(?<=<PackageReference\s+Include=""Microsoft\.Extensions\..*""\s+Version="")(\d+\.\d+\.\d+)(?:-[^""]*)?(?=""\s*/>)";
+                    content.ScrubByRegex(pattern, replacement: "$1");
                 }
 
                 if (filePath.EndsWith("aichatweb/Properties/launchSettings.json"))

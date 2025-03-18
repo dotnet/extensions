@@ -81,9 +81,9 @@ public class SerializerTests
 
     [Theory]
     [InlineData(JsonSerializer.None, JsonSerializer.FieldEnabled)]
-    [InlineData(JsonSerializer.CustomGlobal, JsonSerializer.FieldEnabled)]
-    [InlineData(JsonSerializer.CustomPerType, JsonSerializer.FieldEnabled)]
-    [InlineData(JsonSerializer.CustomPerType | JsonSerializer.CustomGlobal, JsonSerializer.FieldEnabled)]
+    [InlineData(JsonSerializer.CustomGlobal, JsonSerializer.CustomGlobal)]
+    [InlineData(JsonSerializer.CustomPerType, JsonSerializer.CustomPerType)]
+    [InlineData(JsonSerializer.CustomPerType | JsonSerializer.CustomGlobal, JsonSerializer.CustomPerType)]
     public void RoundTripValueTuple(JsonSerializer addSerializers, JsonSerializer expectedSerializer)
     {
         var obj = RoundTrip((42, "abc"), """{"Item1":42,"Item2":"abc"}"""u8, expectedSerializer, addSerializers);
@@ -93,14 +93,144 @@ public class SerializerTests
 
     [Theory]
     [InlineData(JsonSerializer.None, JsonSerializer.FieldEnabled)]
-    [InlineData(JsonSerializer.CustomGlobal, JsonSerializer.FieldEnabled)]
-    [InlineData(JsonSerializer.CustomPerType, JsonSerializer.FieldEnabled)]
-    [InlineData(JsonSerializer.CustomPerType | JsonSerializer.CustomGlobal, JsonSerializer.FieldEnabled)]
+    [InlineData(JsonSerializer.CustomGlobal, JsonSerializer.CustomGlobal)]
+    [InlineData(JsonSerializer.CustomPerType, JsonSerializer.CustomPerType)]
+    [InlineData(JsonSerializer.CustomPerType | JsonSerializer.CustomGlobal, JsonSerializer.CustomPerType)]
     public void RoundTripNamedValueTuple(JsonSerializer addSerializers, JsonSerializer expectedSerializer)
     {
         var obj = RoundTrip((X: 42, Y: "abc"), """{"Item1":42,"Item2":"abc"}"""u8, expectedSerializer, addSerializers);
         Assert.Equal(42, obj.X);
         Assert.Equal("abc", obj.Y);
+    }
+
+    [Fact]
+    public void RoundTripValueTupleList()
+    {
+        List<(int, string)> source = [(1, "a"), (2, "b")];
+        var clone = RoundTrip(source, """[{"Item1":1,"Item2":"a"},{"Item1":2,"Item2":"b"}]"""u8, JsonSerializer.FieldEnabled);
+        Assert.Equal(source, clone);
+    }
+
+    [Fact]
+    public void RoundTripValueTupleArray()
+    {
+        (int, string)[] source = [(1, "a"), (2, "b")];
+        var clone = RoundTrip(source, """[{"Item1":1,"Item2":"a"},{"Item1":2,"Item2":"b"}]"""u8, JsonSerializer.FieldEnabled);
+        Assert.Equal(source, clone);
+    }
+
+    [Fact]
+    public void RoundTripTupleList()
+    {
+        List<Tuple<int, string>> source = [Tuple.Create(1, "a"), Tuple.Create(2, "b")];
+        var clone = RoundTrip(source, """[{"Item1":1,"Item2":"a"},{"Item1":2,"Item2":"b"}]"""u8, JsonSerializer.Default);
+        Assert.Equal(source, clone);
+    }
+
+    [Fact]
+    public void RoundTripTupleArray()
+    {
+        Tuple<int, string>[] source = [Tuple.Create(1, "a"), Tuple.Create(2, "b")];
+        var clone = RoundTrip(source, """[{"Item1":1,"Item2":"a"},{"Item1":2,"Item2":"b"}]"""u8, JsonSerializer.Default);
+        Assert.Equal(source, clone);
+    }
+
+    [Fact]
+    public void RoundTripFieldOnlyPoco()
+    {
+        var source = new FieldOnlyPoco { X = 1, Y = "a" };
+        var clone = RoundTrip(source, """{"X":1,"Y":"a"}"""u8, JsonSerializer.FieldEnabled);
+        Assert.Equal(1, clone.X);
+        Assert.Equal("a", clone.Y);
+    }
+
+    [Fact]
+    public void RoundTripPropertyOnlyPoco()
+    {
+        var source = new PropertyOnlyPoco { X = 1, Y = "a" };
+        var clone = RoundTrip(source, """{"X":1,"Y":"a"}"""u8, JsonSerializer.Default);
+        Assert.Equal(1, clone.X);
+        Assert.Equal("a", clone.Y);
+    }
+
+    [Fact]
+    public void RoundTripMixedPoco()
+    {
+        // this is the self-inflicted scenario; intent isn't obvious, so: we defer to STJ conventions,
+        // which means we lose the field
+        var source = new MixedFieldPropertyPoco { X = 1, Y = "a" };
+        var clone = RoundTrip(source, """{"Y":"a"}"""u8, JsonSerializer.Default);
+        Assert.Equal(0, clone.X); // <== drop
+        Assert.Equal("a", clone.Y);
+    }
+
+    [Fact]
+    public void RoundTripTree()
+    {
+        NodeA<string> source = new NodeA<string>
+        {
+            Value = "abc",
+            Next = new()
+            {
+                Value = "def"
+            }
+        };
+
+        var clone = RoundTrip(source, """{"Next":{"Next":null,"Value":"def"},"Value":"abc"}"""u8, JsonSerializer.Default);
+        Assert.Equal("abc", clone.Value);
+        Assert.NotNull(clone.Next);
+        Assert.Equal("def", clone.Next.Value);
+        Assert.Null(clone.Next.Next);
+    }
+
+    [Fact]
+    public void RoundTripDictionary()
+    {
+        Dictionary<string, (int id, string who, DateTime when)> source = new()
+        {
+            ["x"] = (42, "Fred", new(2025, 03, 18)),
+            ["y"] = (43, "Barney", new(2025, 03, 22)),
+        };
+        var clone = RoundTrip(source,
+            """{"x":{"Item1":42,"Item2":"Fred","Item3":"2025-03-18T00:00:00"},"y":{"Item1":43,"Item2":"Barney","Item3":"2025-03-22T00:00:00"}}"""u8,
+            JsonSerializer.FieldEnabled);
+        Assert.Equal(2, clone.Count);
+        Assert.True(clone.TryGetValue("x", out var val));
+        Assert.Equal(source["x"], val);
+        Assert.True(clone.TryGetValue("y", out val));
+        Assert.Equal(source["y"], val);
+    }
+
+    public class FieldOnlyPoco
+    {
+        public int X;
+        public string? Y;
+    }
+
+    public class PropertyOnlyPoco
+    {
+        public int X { get; set; }
+        public string? Y { get; set; }
+    }
+
+    public class MixedFieldPropertyPoco
+    {
+        public int X; // field
+        public string? Y { get; set; } // property
+    }
+
+    public class NodeA<T>
+    {
+        public NodeB<T>? Next { get; set; }
+
+        public T? Value { get; set; }
+    }
+
+    public class NodeB<T>
+    {
+        public NodeA<T>? Next { get; set; }
+
+        public T? Value { get; set; }
     }
 
     private static T RoundTrip<T>(T value, ReadOnlySpan<byte> expectedBytes, JsonSerializer expectedJsonOptions, JsonSerializer addSerializers = JsonSerializer.None, bool binary = false)
@@ -112,13 +242,13 @@ public class SerializerTests
 
         if ((addSerializers & JsonSerializer.CustomGlobal) != JsonSerializer.None)
         {
-            globalOptions = new();
+            globalOptions = new() { IncludeFields = true }; // assume any custom options will serialize the whole type
             services.AddKeyedSingleton<JsonSerializerOptions>(typeof(IHybridCacheSerializer<>), globalOptions);
         }
 
         if ((addSerializers & JsonSerializer.CustomPerType) != JsonSerializer.None)
         {
-            perTypeOptions = new();
+            perTypeOptions = new() { IncludeFields = true }; // assume any custom options will serialize the whole type
             services.AddKeyedSingleton<JsonSerializerOptions>(typeof(IHybridCacheSerializer<T>), perTypeOptions);
         }
 
