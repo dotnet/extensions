@@ -1,6 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-#if NET8_0_OR_GREATER
+#if NET9_0_OR_GREATER
 
 using System;
 using System.Collections.Concurrent;
@@ -62,7 +62,7 @@ internal sealed class GlobalBuffer : IDisposable
     public bool TryEnqueue<TState>(LogEntry<TState> logEntry)
     {
         SerializedLogRecord serializedLogRecord = default;
-        if(logEntry.State is IReadOnlyList<KeyValuePair<string,object?>> attributes)
+        if(logEntry.State is IReadOnlyList<KeyValuePair<string, object?>> attributes)
         {
             if (!IsEnabled(logEntry.LogLevel, logEntry.EventId, attributes))
             {
@@ -74,6 +74,7 @@ internal sealed class GlobalBuffer : IDisposable
                 _timeProvider.GetUtcNow(), attributes, logEntry.Exception,
                 logEntry.Formatter(logEntry.State, logEntry.Exception));
         }
+
         else
         {
             // we expect logEntry.State to be either ModernTagJoiner or LegacyTagJoiner

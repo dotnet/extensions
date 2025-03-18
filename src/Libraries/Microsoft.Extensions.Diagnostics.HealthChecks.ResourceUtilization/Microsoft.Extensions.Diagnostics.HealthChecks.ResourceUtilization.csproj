@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
     <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
     <InjectSharedDataValidation>true</InjectSharedDataValidation>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>

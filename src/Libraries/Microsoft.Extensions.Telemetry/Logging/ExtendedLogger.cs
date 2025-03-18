@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-#if NET8_0_OR_GREATER
+#if NET9_0_OR_GREATER
 using Microsoft.Extensions.Diagnostics.Buffering;
 #endif
 using Microsoft.Extensions.Logging.Abstractions;
@@ -33,7 +33,7 @@ internal sealed partial class ExtendedLogger : ILogger
     public LoggerInformation[] Loggers { get; set; }
     public MessageLogger[] MessageLoggers { get; set; } = Array.Empty<MessageLogger>();
     public ScopeLogger[] ScopeLoggers { get; set; } = Array.Empty<ScopeLogger>();
-#if NET8_0_OR_GREATER
+#if NET9_0_OR_GREATER
     private readonly LogBuffer? _logBuffer;
     private readonly IBufferedLogger? _bufferedLogger;
 #endif
@@ -42,7 +42,7 @@ internal sealed partial class ExtendedLogger : ILogger
     {
         _factory = factory;
         Loggers = loggers;
-#if NET8_0_OR_GREATER
+#if NET9_0_OR_GREATER
         _logBuffer = _factory.Config.LogBuffer;
         if (_logBuffer is not null)
         {
@@ -276,7 +276,7 @@ internal sealed partial class ExtendedLogger : ILogger
         }
 
         bool? samplingDecision = null;
-#if NET8_0_OR_GREATER
+#if NET9_0_OR_GREATER
         bool shouldBuffer = true;
 #endif
         for (int i = 0; i < loggers.Length; i++)
@@ -299,7 +299,7 @@ internal sealed partial class ExtendedLogger : ILogger
                     // the record was not selected for being sampled in, so we drop it.
                     break;
                 }
-#if NET8_0_OR_GREATER
+#if NET9_0_OR_GREATER
                 if (shouldBuffer)
                 {
                     if (_logBuffer is not null)
@@ -404,7 +404,7 @@ internal sealed partial class ExtendedLogger : ILogger
         }
 
         bool? samplingDecision = null;
-#if NET8_0_OR_GREATER
+#if NET9_0_OR_GREATER
         bool shouldBuffer = true;
 #endif
         for (int i = 0; i < loggers.Length; i++)
@@ -427,7 +427,7 @@ internal sealed partial class ExtendedLogger : ILogger
                     // the record was not selected for being sampled in, so we drop it.
                     break;
                 }
-#if NET8_0_OR_GREATER
+#if NET9_0_OR_GREATER
                 if (shouldBuffer)
                 {
                     if (_logBuffer is not null)

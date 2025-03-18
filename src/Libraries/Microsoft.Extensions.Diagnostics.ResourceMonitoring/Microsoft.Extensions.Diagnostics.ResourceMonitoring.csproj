@@ -8,7 +8,6 @@
 
   <PropertyGroup>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
     <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <InjectSharedDataValidation>true</InjectSharedDataValidation>

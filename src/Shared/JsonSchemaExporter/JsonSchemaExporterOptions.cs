@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #if !NET9_0_OR_GREATER
+using System;
 using System.Text.Json.Nodes;
 
 namespace System.Text.Json.Schema;
@@ -12,7 +13,6 @@ namespace System.Text.Json.Schema;
 #if !SHARED_PROJECT
 [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 #endif
-#pragma warning disable CS0436 // Type conflicts with imported type
 internal sealed class JsonSchemaExporterOptions
 {
     /// <summary>

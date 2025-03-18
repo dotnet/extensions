@@ -1,8 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-#if NET8_0_OR_GREATER
+#if NET9_0_OR_GREATER
 
-using System;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Diagnostics.Buffering;
@@ -21,7 +20,7 @@ internal sealed class GlobalLogBufferingOptionsCustomValidator : IValidateOption
                 continue;
             }
 
-            int wildcardIndex = rule.CategoryName.IndexOf(WildcardChar, StringComparison.Ordinal);
+            int wildcardIndex = rule.CategoryName.IndexOf(WildcardChar);
             if (wildcardIndex >= 0 && rule.CategoryName.IndexOf(WildcardChar, wildcardIndex + 1) >= 0)
             {
                 resultBuilder.AddError("Only one wildcard character is allowed in category name.", nameof(options.Rules));

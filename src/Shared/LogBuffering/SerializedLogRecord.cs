@@ -60,6 +60,7 @@ internal readonly struct SerializedLogRecord
     /// </summary>
     public DateTimeOffset Timestamp { get; }
 
+
     /// <summary>
     /// Gets the variable set of name/value pairs associated with the record.
     /// </summary>

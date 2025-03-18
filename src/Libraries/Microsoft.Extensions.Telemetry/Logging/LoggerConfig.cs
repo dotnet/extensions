@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Redaction;
-#if NET8_0_OR_GREATER
+#if NET9_0_OR_GREATER
 using Microsoft.Extensions.Diagnostics.Buffering;
 #endif
 using Microsoft.Extensions.Diagnostics.Enrichment;
@@ -24,7 +24,7 @@ internal sealed class LoggerConfig
         bool includeExceptionMessage,
         int maxStackTraceLength,
         Func<DataClassificationSet, Redactor> getRedactor,
-#if NET8_0_OR_GREATER
+#if NET9_0_OR_GREATER
         bool addRedactionDiscriminator,
         LogBuffer? logBuffer)
 #else
@@ -41,7 +41,7 @@ internal sealed class LoggerConfig
         IncludeExceptionMessage = includeExceptionMessage;
         GetRedactor = getRedactor;
         AddRedactionDiscriminator = addRedactionDiscriminator;
-#if NET8_0_OR_GREATER
+#if NET9_0_OR_GREATER
         LogBuffer = logBuffer;
 #endif
     }
@@ -55,7 +55,7 @@ internal sealed class LoggerConfig
     public int MaxStackTraceLength { get; }
     public Func<DataClassificationSet, Redactor> GetRedactor { get; }
     public bool AddRedactionDiscriminator { get; }
-#if NET8_0_OR_GREATER
+#if NET9_0_OR_GREATER
     public LogBuffer? LogBuffer { get; }
 #endif
 }

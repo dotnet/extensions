@@ -2,7 +2,6 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Diagnostics.HealthChecks.Test</RootNamespace>
     <Description>Unit tests for Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilization.</Description>
-    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
   </PropertyGroup>
 
   <ItemGroup>
