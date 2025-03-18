@@ -18,33 +18,23 @@ namespace Microsoft.Extensions.AI;
 /// </summary>
 public static class OpenAIRealtimeExtensions
 {
-    private static readonly JsonElement _defaultParameterSchema = JsonDocument.Parse("{}").RootElement;
-
     /// <summary>
     /// Converts a <see cref="AIFunction"/> into a <see cref="ConversationFunctionTool"/> so that
     /// it can be used with <see cref="RealtimeConversationClient"/>.
     /// </summary>
     /// <returns>A <see cref="ConversationFunctionTool"/> that can be used with <see cref="RealtimeConversationClient"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="aiFunction"/> is <see langword="null"/>.</exception>
     public static ConversationFunctionTool ToConversationFunctionTool(this AIFunction aiFunction)
     {
         _ = Throw.IfNull(aiFunction);
 
-        var parametersSchema = new ConversationFunctionToolParametersSchema
-        {
-            Type = "object",
-            Properties = aiFunction.Metadata.Parameters
-                .ToDictionary(p => p.Name, GetParameterSchema),
-            Required = aiFunction.Metadata.Parameters
-                .Where(p => p.IsRequired)
-                .Select(p => p.Name),
-        };
-
+        ConversationFunctionToolParametersSchema functionToolSchema = JsonSerializer.Deserialize(aiFunction.JsonSchema, OpenAIJsonContext.Default.ConversationFunctionToolParametersSchema)!;
+        BinaryData functionParameters = new(JsonSerializer.SerializeToUtf8Bytes(functionToolSchema, OpenAIJsonContext.Default.ConversationFunctionToolParametersSchema));
         return new ConversationFunctionTool
         {
-            Name = aiFunction.Metadata.Name,
-            Description = aiFunction.Metadata.Description,
-            Parameters = new BinaryData(JsonSerializer.SerializeToUtf8Bytes(
-                parametersSchema, OpenAIJsonContext.Default.ConversationFunctionToolParametersSchema))
+            Name = aiFunction.Name,
+            Description = aiFunction.Description,
+            Parameters = functionParameters
         };
     }
 
@@ -64,6 +54,9 @@ public static class OpenAIRealtimeExtensions
     /// <param name="jsonSerializerOptions">An optional <see cref="JsonSerializerOptions"/> that controls JSON handling.</param>
     /// <param name="cancellationToken">An optional <see cref="CancellationToken"/>.</param>
     /// <returns>A <see cref="Task"/> that represents the completion of processing, including invoking any asynchronous tools.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="session"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="update"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="tools"/> is <see langword="null"/>.</exception>
     public static async Task HandleToolCallsAsync(
         this RealtimeConversationSession session,
         ConversationUpdate update,
@@ -95,15 +88,6 @@ public static class OpenAIRealtimeExtensions
         }
     }
 
-    private static JsonElement GetParameterSchema(AIFunctionParameterMetadata parameterMetadata)
-    {
-        return parameterMetadata switch
-        {
-            { Schema: JsonElement jsonElement } => jsonElement,
-            _ => _defaultParameterSchema,
-        };
-    }
-
     private static async Task<ConversationItem?> GetFunctionCallOutputAsync(
         this ConversationItemStreamingFinishedUpdate update,
         IReadOnlyList<AIFunction> tools,
@@ -112,7 +96,7 @@ public static class OpenAIRealtimeExtensions
         CancellationToken cancellationToken = default)
     {
         if (!string.IsNullOrEmpty(update.FunctionName)
-            && tools.FirstOrDefault(t => t.Metadata.Name == update.FunctionName) is AIFunction aiFunction)
+            && tools.FirstOrDefault(t => t.Name == update.FunctionName) is AIFunction aiFunction)
         {
             var jsonOptions = jsonSerializerOptions ?? AIJsonUtilities.DefaultOptions;
 

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using Xunit;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Microsoft.Extensions.AI;
 
@@ -18,7 +19,7 @@ public class ChatMessageTests
         Assert.Null(message.AuthorName);
         Assert.Empty(message.Contents);
         Assert.Equal(ChatRole.User, message.Role);
-        Assert.Null(message.Text);
+        Assert.Empty(message.Text);
         Assert.NotNull(message.Contents);
         Assert.Same(message.Contents, message.Contents);
         Assert.Empty(message.Contents);
@@ -55,9 +56,25 @@ public class ChatMessageTests
     }
 
     [Fact]
-    public void Constructor_RoleList_InvalidArgs_Throws()
+    public void Constructor_NullEmptyArgs_Valid()
     {
-        Assert.Throws<ArgumentNullException>("contents", () => new ChatMessage(ChatRole.User, (IList<AIContent>)null!));
+        ChatMessage message;
+
+        message = new();
+        Assert.Empty(message.Text);
+        Assert.Empty(message.Contents);
+
+        message = new(ChatRole.User, (string?)null);
+        Assert.Empty(message.Text);
+        Assert.Empty(message.Contents);
+
+        message = new(ChatRole.User, (IList<AIContent>?)null);
+        Assert.Empty(message.Text);
+        Assert.Empty(message.Contents);
+
+        message = new ChatMessage(ChatRole.User, Array.Empty<AIContent>());
+        Assert.Empty(message.Text);
+        Assert.Empty(message.Contents);
     }
 
     [Theory]
@@ -80,7 +97,7 @@ public class ChatMessageTests
         if (messageCount == 0)
         {
             Assert.Empty(message.Contents);
-            Assert.Null(message.Text);
+            Assert.Empty(message.Text);
         }
         else
         {
@@ -91,7 +108,7 @@ public class ChatMessageTests
                 Assert.Equal($"text-{i}", tc.Text);
             }
 
-            Assert.Equal("text-0", message.Text);
+            Assert.Equal(string.Concat(Enumerable.Range(0, messageCount).Select(i => $"text-{i}")), message.Text);
             Assert.Equal(string.Concat(Enumerable.Range(0, messageCount).Select(i => $"text-{i}")), message.ToString());
         }
 
@@ -120,69 +137,27 @@ public class ChatMessageTests
     }
 
     [Fact]
-    public void Text_GetSet_UsesFirstTextContent()
+    public void Text_ConcatsAllTextContent()
     {
         ChatMessage message = new(ChatRole.User,
         [
-            new AudioContent("http://localhost/audio"),
-            new ImageContent("http://localhost/image"),
+            new DataContent("data:text/image;base64,aGVsbG8="),
+            new DataContent("data:text/plain;base64,aGVsbG8="),
             new FunctionCallContent("callId1", "fc1"),
             new TextContent("text-1"),
             new TextContent("text-2"),
-            new FunctionResultContent("callId1", "fc2", "result"),
+            new FunctionResultContent("callId1", "result"),
         ]);
 
         TextContent textContent = Assert.IsType<TextContent>(message.Contents[3]);
         Assert.Equal("text-1", textContent.Text);
-        Assert.Equal("text-1", message.Text);
+        Assert.Equal("text-1text-2", message.Text);
         Assert.Equal("text-1text-2", message.ToString());
 
-        message.Text = "text-3";
-        Assert.Equal("text-3", message.Text);
-        Assert.Equal("text-3", message.Text);
-        Assert.Same(textContent, message.Contents[3]);
+        ((TextContent)message.Contents[3]).Text = "text-3";
+        Assert.Equal("text-3", textContent.Text);
+        Assert.Equal("text-3text-2", message.Text);
         Assert.Equal("text-3text-2", message.ToString());
-    }
-
-    [Fact]
-    public void Text_Set_AddsTextMessageToEmptyList()
-    {
-        ChatMessage message = new(ChatRole.User, []);
-        Assert.Empty(message.Contents);
-
-        message.Text = "text-1";
-        Assert.Equal("text-1", message.Text);
-
-        Assert.Single(message.Contents);
-        TextContent textContent = Assert.IsType<TextContent>(message.Contents[0]);
-        Assert.Equal("text-1", textContent.Text);
-    }
-
-    [Fact]
-    public void Text_Set_AddsTextMessageToListWithNoText()
-    {
-        ChatMessage message = new(ChatRole.User,
-        [
-            new AudioContent("http://localhost/audio"),
-            new ImageContent("http://localhost/image"),
-            new FunctionCallContent("callId1", "fc1"),
-        ]);
-        Assert.Equal(3, message.Contents.Count);
-
-        message.Text = "text-1";
-        Assert.Equal("text-1", message.Text);
-        Assert.Equal(4, message.Contents.Count);
-
-        message.Text = "text-2";
-        Assert.Equal("text-2", message.Text);
-        Assert.Equal(4, message.Contents.Count);
-
-        message.Contents.RemoveAt(3);
-        Assert.Equal(3, message.Contents.Count);
-
-        message.Text = "text-3";
-        Assert.Equal("text-3", message.Text);
-        Assert.Equal(4, message.Contents.Count);
     }
 
     [Fact]
@@ -265,7 +240,7 @@ public class ChatMessageTests
             {
                 AdditionalProperties = new() { ["metadata-key-1"] = "metadata-value-1" }
             },
-            new ImageContent(new Uri("https://fake-random-test-host:123"), "mime-type/2")
+            new DataContent(new Uri("data:text/plain;base64,aGVsbG8="), "mime-type/2")
             {
                 AdditionalProperties = new() { ["metadata-key-2"] = "metadata-value-2" }
             },
@@ -273,29 +248,22 @@ public class ChatMessageTests
             {
                 AdditionalProperties = new() { ["metadata-key-3"] = "metadata-value-3" }
             },
-            new AudioContent(new BinaryData(new[] { 3, 2, 1 }, options: TestJsonSerializerContext.Default.Options), "mime-type/4")
+            new TextContent("content-4")
             {
                 AdditionalProperties = new() { ["metadata-key-4"] = "metadata-value-4" }
             },
-            new ImageContent(new BinaryData(new[] { 2, 1, 3 }, options: TestJsonSerializerContext.Default.Options), "mime-type/5")
-            {
-                AdditionalProperties = new() { ["metadata-key-5"] = "metadata-value-5" }
-            },
-            new TextContent("content-6")
-            {
-                AdditionalProperties = new() { ["metadata-key-6"] = "metadata-value-6" }
-            },
             new FunctionCallContent("function-id", "plugin-name-function-name", new Dictionary<string, object?> { ["parameter"] = "argument" }),
-            new FunctionResultContent("function-id", "plugin-name-function-name", "function-result"),
+            new FunctionResultContent("function-id", "function-result"),
         ];
 
         // Act
-        var chatMessageJson = JsonSerializer.Serialize(new ChatMessage(ChatRole.User, contents: items)
+        var chatMessage = new ChatMessage(ChatRole.User, contents: items)
         {
-            Text = "content-1-override", // Override the content of the first text content item that has the "content-1" content  
             AuthorName = "Fred",
             AdditionalProperties = new() { ["message-metadata-key-1"] = "message-metadata-value-1" },
-        }, TestJsonSerializerContext.Default.Options);
+        };
+        ((TextContent)chatMessage.Contents[0]).Text = "content-1-override"; // Override the content of the first text content item that has the "content-1" content
+        var chatMessageJson = JsonSerializer.Serialize(chatMessage, TestJsonSerializerContext.Default.Options);
 
         var deserializedMessage = JsonSerializer.Deserialize<ChatMessage>(chatMessageJson, TestJsonSerializerContext.Default.Options)!;
 
@@ -316,46 +284,30 @@ public class ChatMessageTests
         Assert.Single(textContent.AdditionalProperties);
         Assert.Equal("metadata-value-1", textContent.AdditionalProperties["metadata-key-1"]?.ToString());
 
-        var imageContent = deserializedMessage.Contents[1] as ImageContent;
-        Assert.NotNull(imageContent);
-        Assert.Equal("https://fake-random-test-host:123/", imageContent.Uri);
-        Assert.Equal("mime-type/2", imageContent.MediaType);
-        Assert.NotNull(imageContent.AdditionalProperties);
-        Assert.Single(imageContent.AdditionalProperties);
-        Assert.Equal("metadata-value-2", imageContent.AdditionalProperties["metadata-key-2"]?.ToString());
-
-        var dataContent = deserializedMessage.Contents[2] as DataContent;
+        var dataContent = deserializedMessage.Contents[1] as DataContent;
         Assert.NotNull(dataContent);
-        Assert.True(dataContent.Data!.Value.Span.SequenceEqual(new BinaryData(new[] { 1, 2, 3 }, TestJsonSerializerContext.Default.Options)));
+        Assert.Equal("data:mime-type/2;base64,aGVsbG8=", dataContent.Uri);
+        Assert.Equal("mime-type/2", dataContent.MediaType);
+        Assert.NotNull(dataContent.AdditionalProperties);
+        Assert.Single(dataContent.AdditionalProperties);
+        Assert.Equal("metadata-value-2", dataContent.AdditionalProperties["metadata-key-2"]?.ToString());
+
+        dataContent = deserializedMessage.Contents[2] as DataContent;
+        Assert.NotNull(dataContent);
+        Assert.True(dataContent.Data.Span.SequenceEqual(new BinaryData(new[] { 1, 2, 3 }, TestJsonSerializerContext.Default.Options)));
         Assert.Equal("mime-type/3", dataContent.MediaType);
         Assert.NotNull(dataContent.AdditionalProperties);
         Assert.Single(dataContent.AdditionalProperties);
         Assert.Equal("metadata-value-3", dataContent.AdditionalProperties["metadata-key-3"]?.ToString());
 
-        var audioContent = deserializedMessage.Contents[3] as AudioContent;
-        Assert.NotNull(audioContent);
-        Assert.True(audioContent.Data!.Value.Span.SequenceEqual(new BinaryData(new[] { 3, 2, 1 }, TestJsonSerializerContext.Default.Options)));
-        Assert.Equal("mime-type/4", audioContent.MediaType);
-        Assert.NotNull(audioContent.AdditionalProperties);
-        Assert.Single(audioContent.AdditionalProperties);
-        Assert.Equal("metadata-value-4", audioContent.AdditionalProperties["metadata-key-4"]?.ToString());
-
-        imageContent = deserializedMessage.Contents[4] as ImageContent;
-        Assert.NotNull(imageContent);
-        Assert.True(imageContent.Data?.Span.SequenceEqual(new BinaryData(new[] { 2, 1, 3 }, TestJsonSerializerContext.Default.Options)));
-        Assert.Equal("mime-type/5", imageContent.MediaType);
-        Assert.NotNull(imageContent.AdditionalProperties);
-        Assert.Single(imageContent.AdditionalProperties);
-        Assert.Equal("metadata-value-5", imageContent.AdditionalProperties["metadata-key-5"]?.ToString());
-
-        textContent = deserializedMessage.Contents[5] as TextContent;
+        textContent = deserializedMessage.Contents[3] as TextContent;
         Assert.NotNull(textContent);
-        Assert.Equal("content-6", textContent.Text);
+        Assert.Equal("content-4", textContent.Text);
         Assert.NotNull(textContent.AdditionalProperties);
         Assert.Single(textContent.AdditionalProperties);
-        Assert.Equal("metadata-value-6", textContent.AdditionalProperties["metadata-key-6"]?.ToString());
+        Assert.Equal("metadata-value-4", textContent.AdditionalProperties["metadata-key-4"]?.ToString());
 
-        var functionCallContent = deserializedMessage.Contents[6] as FunctionCallContent;
+        var functionCallContent = deserializedMessage.Contents[4] as FunctionCallContent;
         Assert.NotNull(functionCallContent);
         Assert.Equal("plugin-name-function-name", functionCallContent.Name);
         Assert.Equal("function-id", functionCallContent.CallId);
@@ -363,7 +315,7 @@ public class ChatMessageTests
         Assert.Single(functionCallContent.Arguments);
         Assert.Equal("argument", functionCallContent.Arguments["parameter"]?.ToString());
 
-        var functionResultContent = deserializedMessage.Contents[7] as FunctionResultContent;
+        var functionResultContent = deserializedMessage.Contents[5] as FunctionResultContent;
         Assert.NotNull(functionResultContent);
         Assert.Equal("function-result", functionResultContent.Result?.ToString());
         Assert.Equal("function-id", functionResultContent.CallId);

@@ -4,7 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -16,8 +19,8 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.AI;
 
-// This isn't a feature we're planning to ship, but demonstrates how custom clients can
-// layer in non-trivial functionality. In this case we're able to upgrade non-function-calling models
+// Demonstrates how custom clients can layer in non-trivial functionality.
+// In this case we're able to upgrade non-function-calling models
 // to behaving as if they do support function calling.
 //
 // In practice:
@@ -37,13 +40,16 @@ internal sealed class PromptBasedFunctionCallingChatClient(IChatClient innerClie
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     };
 
-    public override async Task<ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<ChatResponse> GetResponseAsync(
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
+        List<ChatMessage> chatMessageList = [.. messages];
+
         // Our goal is to convert tools into a prompt describing them, then to detect tool calls in the
         // response and convert those into FunctionCallContent.
         if (options?.Tools is { Count: > 0 })
         {
-            AddOrUpdateToolPrompt(chatMessages, options.Tools);
+            AddOrUpdateToolPrompt(chatMessageList, options.Tools);
             options = options.Clone();
             options.Tools = null;
 
@@ -56,7 +62,7 @@ internal sealed class PromptBasedFunctionCallingChatClient(IChatClient innerClie
             // Since the point of this client is to avoid relying on the underlying model having
             // native tool call support, we have to replace any "tool" or "toolcall" messages with
             // "user" or "assistant" ones.
-            foreach (var message in chatMessages)
+            foreach (var message in chatMessageList)
             {
                 for (var itemIndex = 0; itemIndex < message.Contents.Count; itemIndex++)
                 {
@@ -78,12 +84,12 @@ internal sealed class PromptBasedFunctionCallingChatClient(IChatClient innerClie
             }
         }
 
-        var result = await base.CompleteAsync(chatMessages, options, cancellationToken);
+        var result = await base.GetResponseAsync(chatMessageList, options, cancellationToken);
 
-        if (result.Choices.FirstOrDefault()?.Text is { } content && content.IndexOf("<tool_call_json>", StringComparison.Ordinal) is int startPos
+        if (result.Text is { } content && content.IndexOf("<tool_call_json>", StringComparison.Ordinal) is int startPos
             && startPos >= 0)
         {
-            var message = result.Choices.First();
+            var message = result.Messages.Last();
             var contentItem = message.Contents.SingleOrDefault();
             content = content.Substring(startPos);
 
@@ -129,6 +135,16 @@ internal sealed class PromptBasedFunctionCallingChatClient(IChatClient innerClie
         return result;
     }
 
+    public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var response = await GetResponseAsync(messages, options, cancellationToken);
+        foreach (var update in response.ToChatResponseUpdates())
+        {
+            yield return update;
+        }
+    }
+
     private static void ParseArguments(IDictionary<string, object?> arguments)
     {
         // This is a simple implementation. A more robust answer is to use other schema information given by
@@ -149,17 +165,17 @@ internal sealed class PromptBasedFunctionCallingChatClient(IChatClient innerClie
         }
     }
 
-    private static void AddOrUpdateToolPrompt(IList<ChatMessage> chatMessages, IList<AITool> tools)
+    private static void AddOrUpdateToolPrompt(List<ChatMessage> messages, IList<AITool> tools)
     {
-        var existingToolPrompt = chatMessages.FirstOrDefault(c => c.Text?.StartsWith(MessageIntro, StringComparison.Ordinal) is true);
+        var existingToolPrompt = messages.FirstOrDefault(c => c.Text.StartsWith(MessageIntro, StringComparison.Ordinal) is true);
         if (existingToolPrompt is null)
         {
             existingToolPrompt = new ChatMessage(ChatRole.System, (string?)null);
-            chatMessages.Insert(0, existingToolPrompt);
+            messages.Insert(0, existingToolPrompt);
         }
 
         var toolDescriptorsJson = JsonSerializer.Serialize(tools.OfType<AIFunction>().Select(ToToolDescriptor), _jsonOptions);
-        existingToolPrompt.Text = $$"""
+        existingToolPrompt.Contents.OfType<TextContent>().First().Text = $$"""
             {{MessageIntro}}
 
             For each function call, return a JSON object with the function name and arguments within <tool_call_json></tool_call_json> XML tags
@@ -179,17 +195,17 @@ internal sealed class PromptBasedFunctionCallingChatClient(IChatClient innerClie
 
     private static ToolDescriptor ToToolDescriptor(AIFunction tool) => new()
     {
-        Name = tool.Metadata.Name,
-        Description = tool.Metadata.Description,
-        Arguments = tool.Metadata.Parameters.ToDictionary(
-            p => p.Name,
+        Name = tool.Name,
+        Description = tool.Description,
+        Arguments = tool.UnderlyingMethod?.GetParameters().ToDictionary(
+            p => p.Name!,
             p => new ToolParameterDescriptor
             {
-                Type = p.ParameterType?.Name,
-                Description = p.Description,
-                Enum = p.ParameterType?.IsEnum == true ? Enum.GetNames(p.ParameterType) : null,
-                Required = p.IsRequired,
-            }),
+                Type = p.Name!,
+                Description = p.GetCustomAttribute<DescriptionAttribute>()?.Description,
+                Enum = p.ParameterType.IsEnum ? Enum.GetNames(p.ParameterType) : null,
+                Required = !p.IsOptional,
+            }) ?? [],
     };
 
     private sealed class ToolDescriptor

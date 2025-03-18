@@ -5,6 +5,7 @@ using System.Diagnostics.Metrics;
 using System.Linq;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Network;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Helpers;
+using Microsoft.Shared.Instruments;
 using Microsoft.TestUtilities;
 using Moq;
 using Xunit;

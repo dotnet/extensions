@@ -11,7 +11,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
 
-public class SizeTests(ITestOutputHelper log)
+public class SizeTests(ITestOutputHelper log) : IClassFixture<TestEventListener>
 {
     [Theory]
     [InlineData("abc", null, true, null, null)] // does not enforce size limits

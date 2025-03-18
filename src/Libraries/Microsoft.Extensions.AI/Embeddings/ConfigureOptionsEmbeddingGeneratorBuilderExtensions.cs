@@ -28,6 +28,8 @@ public static class ConfigureOptionsEmbeddingGeneratorBuilderExtensions
     /// of the caller-supplied instance if one was supplied.
     /// </remarks>
     /// <returns>The <paramref name="builder"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="configure"/> is <see langword="null"/>.</exception>
     public static EmbeddingGeneratorBuilder<TInput, TEmbedding> ConfigureOptions<TInput, TEmbedding>(
         this EmbeddingGeneratorBuilder<TInput, TEmbedding> builder,
         Action<EmbeddingGenerationOptions> configure)

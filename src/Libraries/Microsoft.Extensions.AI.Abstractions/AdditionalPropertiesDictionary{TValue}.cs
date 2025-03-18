@@ -143,10 +143,10 @@ public class AdditionalPropertiesDictionary<TValue> : IDictionary<string, TValue
     bool ICollection<KeyValuePair<string, TValue>>.Remove(KeyValuePair<string, TValue> item) => ((ICollection<KeyValuePair<string, TValue>>)_dictionary).Remove(item);
 
     /// <summary>Attempts to extract a typed value from the dictionary.</summary>
-    /// <typeparam name="T">Specifies the type of the value to be retrieved.</typeparam>
+    /// <typeparam name="T">The type of the value to be retrieved.</typeparam>
     /// <param name="key">The key to locate.</param>
     /// <param name="value">
-    /// The value retrieved from the dictionary, if found and successfully converted to the requested type;
+    /// When this method returns, contains the value retrieved from the dictionary, if found and successfully converted to the requested type;
     /// otherwise, the default value of <typeparamref name="T"/>.
     /// </param>
     /// <returns>
@@ -200,6 +200,18 @@ public class AdditionalPropertiesDictionary<TValue> : IDictionary<string, TValue
 
     /// <inheritdoc />
     bool IReadOnlyDictionary<string, TValue>.TryGetValue(string key, out TValue value) => _dictionary.TryGetValue(key, out value!);
+
+    /// <summary>Copies all of the entries from <paramref name="items"/> into the dictionary, overwriting any existing items in the dictionary with the same key.</summary>
+    /// <param name="items">The items to add.</param>
+    internal void SetAll(IEnumerable<KeyValuePair<string, TValue>> items)
+    {
+        _ = Throw.IfNull(items);
+
+        foreach (var item in items)
+        {
+            _dictionary[item.Key] = item.Value;
+        }
+    }
 
     /// <summary>Enumerates the elements of an <see cref="AdditionalPropertiesDictionary{TValue}"/>.</summary>
     public struct Enumerator : IEnumerator<KeyValuePair<string, TValue>>

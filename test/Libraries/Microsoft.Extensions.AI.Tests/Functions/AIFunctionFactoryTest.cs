@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -46,41 +48,40 @@ public class AIFunctionFactoryTest
     }
 
     [Fact]
-    public async Task Parameters_AIFunctionContextMappedByType_Async()
+    public async Task Parameters_MissingRequiredParametersFail_Async()
+    {
+        AIFunction[] funcs =
+        [
+            AIFunctionFactory.Create((string theParam) => theParam + " " + theParam),
+            AIFunctionFactory.Create((string? theParam) => theParam + " " + theParam),
+            AIFunctionFactory.Create((int theParam) => theParam * 2),
+            AIFunctionFactory.Create((int? theParam) => theParam * 2),
+        ];
+
+        foreach (AIFunction f in funcs)
+        {
+            Exception e = await Assert.ThrowsAsync<ArgumentException>(() => f.InvokeAsync());
+            Assert.Contains("'theParam'", e.Message);
+        }
+    }
+
+    [Fact]
+    public async Task Parameters_MappedByType_Async()
     {
         using var cts = new CancellationTokenSource();
-        CancellationToken written;
-        AIFunction func;
 
-        // As the only parameter
-        written = default;
-        func = AIFunctionFactory.Create((AIFunctionContext ctx) =>
+        foreach (CancellationToken ctArg in new[] { cts.Token, default })
         {
-            Assert.NotNull(ctx);
-            written = ctx.CancellationToken;
-        });
-        AssertExtensions.EqualFunctionCallResults(null, await func.InvokeAsync(cancellationToken: cts.Token));
-        Assert.Equal(cts.Token, written);
-
-        // As the last
-        written = default;
-        func = AIFunctionFactory.Create((int somethingFirst, AIFunctionContext ctx) =>
-        {
-            Assert.NotNull(ctx);
-            written = ctx.CancellationToken;
-        });
-        AssertExtensions.EqualFunctionCallResults(null, await func.InvokeAsync(new Dictionary<string, object?> { ["somethingFirst"] = 1, ["ctx"] = new AIFunctionContext() }, cts.Token));
-        Assert.Equal(cts.Token, written);
-
-        // As the first
-        written = default;
-        func = AIFunctionFactory.Create((AIFunctionContext ctx, int somethingAfter = 0) =>
-        {
-            Assert.NotNull(ctx);
-            written = ctx.CancellationToken;
-        });
-        AssertExtensions.EqualFunctionCallResults(null, await func.InvokeAsync(cancellationToken: cts.Token));
-        Assert.Equal(cts.Token, written);
+            CancellationToken written = default;
+            AIFunction func = AIFunctionFactory.Create((int value1 = 1, string value2 = "2", CancellationToken cancellationToken = default) =>
+            {
+                written = cancellationToken;
+                return 42;
+            });
+            AssertExtensions.EqualFunctionCallResults(42, await func.InvokeAsync(cancellationToken: ctArg));
+            Assert.Equal(ctArg, written);
+            Assert.DoesNotContain("cancellationToken", func.JsonSchema.ToString(), StringComparison.OrdinalIgnoreCase);
+        }
     }
 
     [Fact]
@@ -132,66 +133,87 @@ public class AIFunctionFactoryTest
     {
         AIFunction func;
 
-        func = AIFunctionFactory.Create(() => "test");
-        Assert.Contains("Metadata_DerivedFromLambda", func.Metadata.Name);
-        Assert.Empty(func.Metadata.Description);
-        Assert.Empty(func.Metadata.Parameters);
-        Assert.Equal(typeof(string), func.Metadata.ReturnParameter.ParameterType);
+        Func<string> dotnetFunc = () => "test";
+        func = AIFunctionFactory.Create(dotnetFunc);
+        Assert.Contains("Metadata_DerivedFromLambda", func.Name);
+        Assert.Empty(func.Description);
+        Assert.Same(dotnetFunc.Method, func.UnderlyingMethod);
 
-        func = AIFunctionFactory.Create((string a) => a + " " + a);
-        Assert.Contains("Metadata_DerivedFromLambda", func.Metadata.Name);
-        Assert.Empty(func.Metadata.Description);
-        Assert.Single(func.Metadata.Parameters);
+        Func<string, string> dotnetFunc2 = a => a + " " + a;
+        func = AIFunctionFactory.Create(dotnetFunc2);
+        Assert.Contains("Metadata_DerivedFromLambda", func.Name);
+        Assert.Empty(func.Description);
+        Assert.Same(dotnetFunc2.Method, func.UnderlyingMethod);
 
-        func = AIFunctionFactory.Create(
-            [Description("This is a test function")] ([Description("This is A")] string a, [Description("This is B")] string b) => b + " " + a);
-        Assert.Contains("Metadata_DerivedFromLambda", func.Metadata.Name);
-        Assert.Equal("This is a test function", func.Metadata.Description);
-        Assert.Collection(func.Metadata.Parameters,
-            p => Assert.Equal("This is A", p.Description),
-            p => Assert.Equal("This is B", p.Description));
+        Func<string, string, string> dotnetFunc3 = [Description("This is a test function")] ([Description("This is A")] string a, [Description("This is B")] string b) => b + " " + a;
+        func = AIFunctionFactory.Create(dotnetFunc3);
+        Assert.Contains("Metadata_DerivedFromLambda", func.Name);
+        Assert.Equal("This is a test function", func.Description);
+        Assert.Same(dotnetFunc3.Method, func.UnderlyingMethod);
+        Assert.Collection(func.UnderlyingMethod!.GetParameters(),
+            p => Assert.Equal("This is A", p.GetCustomAttribute<DescriptionAttribute>()?.Description),
+            p => Assert.Equal("This is B", p.GetCustomAttribute<DescriptionAttribute>()?.Description));
     }
 
     [Fact]
     public void AIFunctionFactoryCreateOptions_ValuesPropagateToAIFunction()
     {
-        IReadOnlyList<AIFunctionParameterMetadata> parameterMetadata = [new AIFunctionParameterMetadata("a")];
-        AIFunctionReturnParameterMetadata returnParameterMetadata = new() { ParameterType = typeof(string) };
         IReadOnlyDictionary<string, object?> metadata = new Dictionary<string, object?> { ["a"] = "b" };
 
-        var options = new AIFunctionFactoryCreateOptions
+        var options = new AIFunctionFactoryOptions
         {
             Name = "test name",
             Description = "test description",
-            Parameters = parameterMetadata,
-            ReturnParameter = returnParameterMetadata,
             AdditionalProperties = metadata,
         };
 
         Assert.Equal("test name", options.Name);
         Assert.Equal("test description", options.Description);
-        Assert.Same(parameterMetadata, options.Parameters);
-        Assert.Same(returnParameterMetadata, options.ReturnParameter);
         Assert.Same(metadata, options.AdditionalProperties);
 
-        AIFunction func = AIFunctionFactory.Create(() => { }, options);
+        Action dotnetFunc = () => { };
+        AIFunction func = AIFunctionFactory.Create(dotnetFunc, options);
 
-        Assert.Equal("test name", func.Metadata.Name);
-        Assert.Equal("test description", func.Metadata.Description);
-        Assert.Equal(parameterMetadata, func.Metadata.Parameters);
-        Assert.Equal(returnParameterMetadata, func.Metadata.ReturnParameter);
-        Assert.Equal(metadata, func.Metadata.AdditionalProperties);
+        Assert.Equal("test name", func.Name);
+        Assert.Equal("test description", func.Description);
+        Assert.Same(dotnetFunc.Method, func.UnderlyingMethod);
+        Assert.Equal(metadata, func.AdditionalProperties);
     }
 
     [Fact]
-    public void AIFunctionFactoryCreateOptions_SchemaOptions_HasExpectedDefaults()
+    public void AIFunctionFactoryOptions_DefaultValues()
     {
-        var options = new AIFunctionFactoryCreateOptions();
-        var schemaOptions = options.SchemaCreateOptions;
+        AIFunctionFactoryOptions options = new();
 
-        Assert.NotNull(schemaOptions);
-        Assert.True(schemaOptions.IncludeTypeInEnumSchemas);
-        Assert.True(schemaOptions.RequireAllProperties);
-        Assert.True(schemaOptions.DisallowAdditionalProperties);
+        Assert.Null(options.Name);
+        Assert.Null(options.Description);
+        Assert.Null(options.AdditionalProperties);
+        Assert.Null(options.SerializerOptions);
+        Assert.Null(options.JsonSchemaCreateOptions);
+    }
+
+    [Fact]
+    public async Task AIFunctionFactoryOptions_SupportsSkippingParameters()
+    {
+        AIFunction func = AIFunctionFactory.Create(
+            (string firstParameter, int secondParameter) => firstParameter + secondParameter,
+            new()
+            {
+                JsonSchemaCreateOptions = new()
+                {
+                    IncludeParameter = p => p.Name != "firstParameter",
+                }
+            });
+
+        Assert.DoesNotContain("firstParameter", func.JsonSchema.ToString());
+        Assert.Contains("secondParameter", func.JsonSchema.ToString());
+
+        JsonElement? result = (JsonElement?)await func.InvokeAsync(new Dictionary<string, object?>
+        {
+            ["firstParameter"] = "test",
+            ["secondParameter"] = 42
+        });
+        Assert.NotNull(result);
+        Assert.Contains("test42", result.ToString());
     }
 }

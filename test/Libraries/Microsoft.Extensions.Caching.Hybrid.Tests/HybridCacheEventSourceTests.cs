@@ -207,6 +207,19 @@ public class HybridCacheEventSourceTests(ITestOutputHelper log, TestEventListene
         listener.AssertRemainingCountersZero();
     }
 
+    [SkippableFact]
+    public async Task TagInvalidated()
+    {
+        AssertEnabled();
+
+        listener.Reset().Source.TagInvalidated();
+        listener.AssertSingleEvent(HybridCacheEventSource.EventIdTagInvalidated, "TagInvalidated", EventLevel.Verbose);
+
+        await AssertCountersAsync();
+        listener.AssertCounter("total-tag-invalidations", "Total Tag Invalidations", 1);
+        listener.AssertRemainingCountersZero();
+    }
+
     private void AssertEnabled()
     {
         // including this data for visibility when tests fail - ETW subsystem can be ... weird

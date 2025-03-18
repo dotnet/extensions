@@ -18,7 +18,7 @@ internal static class IntegrationTestHelpers
         TestRunnerConfiguration.Instance["AzureAIInference:Endpoint"] ??
         "https://api.openai.com/v1";
 
-    /// <summary>Gets an <see cref="ChatCompletionsClient"/> to use for testing, or null if the associated tests should be disabled.</summary>
+    /// <summary>Gets a <see cref="ChatResponsesClient"/> to use for testing, or null if the associated tests should be disabled.</summary>
     public static ChatCompletionsClient? GetChatCompletionsClient() =>
         _apiKey is string apiKey ?
             new ChatCompletionsClient(new Uri(_endpoint), new AzureKeyCredential(apiKey)) :

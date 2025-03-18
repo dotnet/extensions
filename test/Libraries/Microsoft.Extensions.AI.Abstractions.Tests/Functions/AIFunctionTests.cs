@@ -35,7 +35,8 @@ public class AIFunctionTests
 
     private sealed class DerivedAIFunction : AIFunction
     {
-        public override AIFunctionMetadata Metadata => new("name");
+        public override string Name => "name";
+        public override string Description => "";
 
         protected override Task<object?> InvokeCoreAsync(IEnumerable<KeyValuePair<string, object?>> arguments, CancellationToken cancellationToken)
         {

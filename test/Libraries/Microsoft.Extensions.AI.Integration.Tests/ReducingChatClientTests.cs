@@ -27,13 +27,13 @@ public class ReducingChatClientTests
     {
         using var innerClient = new TestChatClient
         {
-            CompleteAsyncCallback = (messages, options, cancellationToken) =>
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
-                Assert.Equal(2, messages.Count);
+                Assert.Equal(2, messages.Count());
                 Assert.Collection(messages,
                     m => Assert.StartsWith("Golden retrievers are quite active", m.Text, StringComparison.Ordinal),
                     m => Assert.StartsWith("Are they good with kids?", m.Text, StringComparison.Ordinal));
-                return Task.FromResult(new ChatCompletion([]));
+                return Task.FromResult(new ChatResponse());
             }
         };
 
@@ -51,7 +51,7 @@ public class ReducingChatClientTests
             new ChatMessage(ChatRole.User, "Are they good with kids?"),
         ];
 
-        await client.CompleteAsync(messages);
+        await client.GetResponseAsync(messages);
 
         Assert.Equal(5, messages.Count);
     }
@@ -61,69 +61,57 @@ public class ReducingChatClientTests
 public sealed class ReducingChatClient : DelegatingChatClient
 {
     private readonly IChatReducer _reducer;
-    private readonly bool _inPlace;
 
     /// <summary>Initializes a new instance of the <see cref="ReducingChatClient"/> class.</summary>
     /// <param name="innerClient">The inner client.</param>
     /// <param name="reducer">The reducer to be used by this instance.</param>
-    /// <param name="inPlace">
-    /// true if the <paramref name="reducer"/> should perform any modifications directly on the supplied list of messages;
-    /// false if it should instead create a new list when reduction is necessary.
-    /// </param>
-    public ReducingChatClient(IChatClient innerClient, IChatReducer reducer, bool inPlace = false)
+    public ReducingChatClient(IChatClient innerClient, IChatReducer reducer)
         : base(innerClient)
     {
         _reducer = Throw.IfNull(reducer);
-        _inPlace = inPlace;
     }
 
     /// <inheritdoc />
-    public override async Task<ChatCompletion> CompleteAsync(
-        IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<ChatResponse> GetResponseAsync(
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
-        chatMessages = await GetChatMessagesToPropagate(chatMessages, cancellationToken).ConfigureAwait(false);
+        messages = await _reducer.ReduceAsync(messages, cancellationToken).ConfigureAwait(false);
 
-        return await base.CompleteAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
+        return await base.GetResponseAsync(messages, options, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public override async IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(
-        IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        chatMessages = await GetChatMessagesToPropagate(chatMessages, cancellationToken).ConfigureAwait(false);
+        messages = await _reducer.ReduceAsync(messages, cancellationToken).ConfigureAwait(false);
 
-        await foreach (var update in base.CompleteStreamingAsync(chatMessages, options, cancellationToken).ConfigureAwait(false))
+        await foreach (var update in base.GetStreamingResponseAsync(messages, options, cancellationToken).ConfigureAwait(false))
         {
             yield return update;
         }
     }
-
-    /// <summary>Runs the reducer and gets the chat message list to forward to the inner client.</summary>
-    private async Task<IList<ChatMessage>> GetChatMessagesToPropagate(IList<ChatMessage> chatMessages, CancellationToken cancellationToken) =>
-        await _reducer.ReduceAsync(chatMessages, _inPlace, cancellationToken).ConfigureAwait(false) ??
-        chatMessages;
 }
 
 /// <summary>Represents a reducer capable of shrinking the size of a list of chat messages.</summary>
 public interface IChatReducer
 {
     /// <summary>Reduces the size of a list of chat messages.</summary>
-    /// <param name="chatMessages">The messages.</param>
-    /// <param name="inPlace">true if the reducer should modify the provided list; false if a new list should be returned.</param>
+    /// <param name="messages">The messages.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The new list of messages, or null if no reduction need be performed or <paramref name="inPlace"/> was true.</returns>
-    Task<IList<ChatMessage>?> ReduceAsync(IList<ChatMessage> chatMessages, bool inPlace, CancellationToken cancellationToken);
+    Task<IList<ChatMessage>> ReduceAsync(IEnumerable<ChatMessage> messages, CancellationToken cancellationToken);
 }
 
 /// <summary>Provides extensions for configuring <see cref="ReducingChatClientExtensions"/> instances.</summary>
 public static class ReducingChatClientExtensions
 {
-    public static ChatClientBuilder UseChatReducer(this ChatClientBuilder builder, IChatReducer reducer, bool inPlace = false)
+    public static ChatClientBuilder UseChatReducer(this ChatClientBuilder builder, IChatReducer reducer)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(reducer);
 
-        return builder.Use(innerClient => new ReducingChatClient(innerClient, reducer, inPlace));
+        return builder.Use(innerClient => new ReducingChatClient(innerClient, reducer));
     }
 }
 
@@ -139,51 +127,29 @@ public sealed class TokenCountingChatReducer : IChatReducer
         _tokenLimit = Throw.IfLessThan(tokenLimit, 1);
     }
 
-    public async Task<IList<ChatMessage>?> ReduceAsync(IList<ChatMessage> chatMessages, bool inPlace, CancellationToken cancellationToken)
+    public async Task<IList<ChatMessage>> ReduceAsync(
+        IEnumerable<ChatMessage> messages, CancellationToken cancellationToken)
     {
-        _ = Throw.IfNull(chatMessages);
+        _ = Throw.IfNull(messages);
 
-        if (chatMessages.Count > 1)
+        List<ChatMessage> list = messages.ToList();
+
+        if (list.Count > 1)
         {
-            int totalCount = CountTokens(chatMessages[chatMessages.Count - 1]);
+            int totalCount = CountTokens(list[list.Count - 1]);
 
-            if (inPlace)
+            for (int i = list.Count - 2; i >= 0; i--)
             {
-                for (int i = chatMessages.Count - 2; i >= 0; i--)
+                totalCount += CountTokens(list[i]);
+                if (totalCount > _tokenLimit)
                 {
-                    totalCount += CountTokens(chatMessages[i]);
-                    if (totalCount > _tokenLimit)
-                    {
-                        if (chatMessages is List<ChatMessage> list)
-                        {
-                            list.RemoveRange(0, i + 1);
-                        }
-                        else
-                        {
-                            for (int j = i; j >= 0; j--)
-                            {
-                                chatMessages.RemoveAt(j);
-                            }
-                        }
-
-                        break;
-                    }
-                }
-            }
-            else
-            {
-                for (int i = chatMessages.Count - 2; i >= 0; i--)
-                {
-                    totalCount += CountTokens(chatMessages[i]);
-                    if (totalCount > _tokenLimit)
-                    {
-                        return chatMessages.Skip(i + 1).ToList();
-                    }
+                    list.RemoveRange(0, i + 1);
+                    break;
                 }
             }
         }
 
-        return null;
+        return list;
     }
 
     private int CountTokens(ChatMessage message)

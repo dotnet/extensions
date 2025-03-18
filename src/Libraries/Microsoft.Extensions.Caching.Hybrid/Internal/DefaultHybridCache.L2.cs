@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
+using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -14,17 +16,21 @@ namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
 internal partial class DefaultHybridCache
 {
+    private const int MaxCacheDays = 1000;
+    private const string TagKeyPrefix = "__MSFT_HCT__";
+    private static readonly DistributedCacheEntryOptions _tagInvalidationEntryOptions = new() { AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(MaxCacheDays) };
+
     [SuppressMessage("Performance", "CA1849:Call async methods when in an async method", Justification = "Manual sync check")]
     [SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "Manual sync check")]
     [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Explicit async exception handling")]
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Deliberate recycle only on success")]
-    internal ValueTask<BufferChunk> GetFromL2Async(string key, CancellationToken token)
+    internal ValueTask<BufferChunk> GetFromL2DirectAsync(string key, CancellationToken token)
     {
         switch (GetFeatures(CacheFeatures.BackendCache | CacheFeatures.BackendBuffers))
         {
             case CacheFeatures.BackendCache: // legacy byte[]-based
 
-                var pendingLegacy = _backendCache!.GetAsync(key, token);
+                Task<byte[]?> pendingLegacy = _backendCache!.GetAsync(key, token);
 
 #if NETCOREAPP2_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
                 if (!pendingLegacy.IsCompletedSuccessfully)
@@ -39,16 +45,16 @@ internal partial class DefaultHybridCache
 
             case CacheFeatures.BackendCache | CacheFeatures.BackendBuffers: // IBufferWriter<byte>-based
                 RecyclableArrayBufferWriter<byte> writer = RecyclableArrayBufferWriter<byte>.Create(MaximumPayloadBytes);
-                var cache = Unsafe.As<IBufferDistributedCache>(_backendCache!); // type-checked already
+                IBufferDistributedCache cache = Unsafe.As<IBufferDistributedCache>(_backendCache!); // type-checked already
 
-                var pendingBuffers = cache.TryGetAsync(key, writer, token);
+                ValueTask<bool> pendingBuffers = cache.TryGetAsync(key, writer, token);
                 if (!pendingBuffers.IsCompletedSuccessfully)
                 {
                     return new(AwaitedBuffersAsync(pendingBuffers, writer));
                 }
 
                 BufferChunk result = pendingBuffers.GetAwaiter().GetResult()
-                    ? new(writer.DetachCommitted(out var length), length, returnToPool: true)
+                    ? new(writer.DetachCommitted(out int length), 0, length, returnToPool: true)
                     : default;
                 writer.Dispose(); // it is not accidental that this isn't "using"; avoid recycling if not 100% sure what happened
                 return new(result);
@@ -58,43 +64,122 @@ internal partial class DefaultHybridCache
 
         static async Task<BufferChunk> AwaitedLegacyAsync(Task<byte[]?> pending, DefaultHybridCache @this)
         {
-            var bytes = await pending.ConfigureAwait(false);
+            byte[]? bytes = await pending.ConfigureAwait(false);
             return @this.GetValidPayloadSegment(bytes);
         }
 
         static async Task<BufferChunk> AwaitedBuffersAsync(ValueTask<bool> pending, RecyclableArrayBufferWriter<byte> writer)
         {
             BufferChunk result = await pending.ConfigureAwait(false)
-                    ? new(writer.DetachCommitted(out var length), length, returnToPool: true)
+                    ? new(writer.DetachCommitted(out int length), 0, length, returnToPool: true)
                     : default;
             writer.Dispose(); // it is not accidental that this isn't "using"; avoid recycling if not 100% sure what happened
             return result;
         }
     }
 
-    internal ValueTask SetL2Async(string key, in BufferChunk buffer, HybridCacheEntryOptions? options, CancellationToken token)
+    internal ValueTask SetL2Async(string key, CacheItem cacheItem, in BufferChunk buffer, HybridCacheEntryOptions? options, CancellationToken token)
+        => HasBackendCache ? WritePayloadAsync(key, cacheItem, buffer, options, token) : default;
+
+    internal ValueTask SetDirectL2Async(string key, in BufferChunk buffer, DistributedCacheEntryOptions options, CancellationToken token)
     {
-        Debug.Assert(buffer.Array is not null, "array should be non-null");
+        Debug.Assert(buffer.OversizedArray is not null, "array should be non-null");
         switch (GetFeatures(CacheFeatures.BackendCache | CacheFeatures.BackendBuffers))
         {
             case CacheFeatures.BackendCache: // legacy byte[]-based
-                var arr = buffer.Array!;
-                if (arr.Length != buffer.Length)
+                byte[] arr = buffer.OversizedArray!;
+                if (buffer.Offset != 0 || arr.Length != buffer.Length)
                 {
                     // we'll need a right-sized snapshot
                     arr = buffer.ToArray();
                 }
 
-                return new(_backendCache!.SetAsync(key, arr, GetOptions(options), token));
+                return new(_backendCache!.SetAsync(key, arr, options, token));
             case CacheFeatures.BackendCache | CacheFeatures.BackendBuffers: // ReadOnlySequence<byte>-based
-                var cache = Unsafe.As<IBufferDistributedCache>(_backendCache!); // type-checked already
-                return cache.SetAsync(key, buffer.AsSequence(), GetOptions(options), token);
+                IBufferDistributedCache cache = Unsafe.As<IBufferDistributedCache>(_backendCache!); // type-checked already
+                return cache.SetAsync(key, buffer.AsSequence(), options, token);
         }
 
         return default;
     }
 
-    internal void SetL1<T>(string key, CacheItem<T> value, HybridCacheEntryOptions? options)
+    [SuppressMessage("Performance", "CA1849:Call async methods when in an async method", Justification = "Manual async core implementation")]
+    internal ValueTask InvalidateL2TagAsync(string tag, long timestamp, CancellationToken token)
+    {
+        if (!HasBackendCache)
+        {
+            return default; // no L2
+        }
+
+        byte[] oversized = ArrayPool<byte>.Shared.Rent(sizeof(long));
+        BinaryPrimitives.WriteInt64LittleEndian(oversized, timestamp);
+        ValueTask pending = SetDirectL2Async(TagKeyPrefix + tag, new BufferChunk(oversized, 0, sizeof(long), false), _tagInvalidationEntryOptions, token);
+
+        if (pending.IsCompletedSuccessfully)
+        {
+            pending.GetAwaiter().GetResult(); // ensure observed (IVTS etc)
+            ArrayPool<byte>.Shared.Return(oversized);
+            return default;
+        }
+        else
+        {
+            return AwaitedAsync(pending, oversized);
+        }
+
+        static async ValueTask AwaitedAsync(ValueTask pending, byte[] oversized)
+        {
+            await pending.ConfigureAwait(false);
+            ArrayPool<byte>.Shared.Return(oversized);
+        }
+    }
+
+    [SuppressMessage("Resilience", "EA0014:The async method doesn't support cancellation", Justification = "Cancellation handled internally")]
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "All failure is critical")]
+    internal async Task<long> SafeReadTagInvalidationAsync(string tag)
+    {
+        Debug.Assert(HasBackendCache, "shouldn't be here without L2");
+
+        const int READ_TIMEOUT = 4000;
+
+        try
+        {
+            using var cts = new CancellationTokenSource(millisecondsDelay: READ_TIMEOUT);
+            BufferChunk buffer = await GetFromL2DirectAsync(TagKeyPrefix + tag, cts.Token).ConfigureAwait(false);
+
+            long timestamp;
+            if (buffer.OversizedArray is not null)
+            {
+                if (buffer.Length == sizeof(long))
+                {
+                    timestamp = BinaryPrimitives.ReadInt64LittleEndian(buffer.AsSpan());
+                }
+                else
+                {
+                    // not what we expected! assume invalid
+                    timestamp = CurrentTimestamp();
+                }
+
+                buffer.RecycleIfAppropriate();
+            }
+            else
+            {
+                timestamp = 0; // never invalidated
+            }
+
+            buffer.RecycleIfAppropriate();
+            return timestamp;
+        }
+        catch (Exception ex)
+        {
+            // ^^^ this catch is the "Safe" in "SafeReadTagInvalidationAsync"
+            Debug.WriteLine(ex.Message);
+
+            // if anything goes wrong reading tag invalidations; we have to assume the tag is invalid
+            return CurrentTimestamp();
+        }
+    }
+
+    internal void SetL1<T>(string key, CacheItem<T> value, HybridCacheEntryOptions? options, TimeSpan maxRelativeTime)
     {
         // incr ref-count for the the cache itself; this *may* be released via the NeedsEvictionCallback path
         if (value.TryReserve())
@@ -105,10 +190,18 @@ internal partial class DefaultHybridCache
             // that actually commits the add - so: if we fault, we don't want to try
             // committing a partially configured cache entry
             ICacheEntry cacheEntry = _localCache.CreateEntry(key);
-            cacheEntry.AbsoluteExpirationRelativeToNow = options?.LocalCacheExpiration ?? _defaultLocalCacheExpiration;
+
+            var expiry = GetL1AbsoluteExpirationRelativeToNow(options);
+            if (expiry > maxRelativeTime)
+            {
+                // enforce "not exceeding the remaining overall cache lifetime" that we got from L2
+                expiry = maxRelativeTime;
+            }
+
+            cacheEntry.AbsoluteExpirationRelativeToNow = expiry;
             cacheEntry.Value = value;
 
-            if (value.TryGetSize(out var size))
+            if (value.TryGetSize(out long size))
             {
                 cacheEntry = cacheEntry.SetSize(size);
             }
@@ -126,6 +219,20 @@ internal partial class DefaultHybridCache
                 HybridCacheEventSource.Log.LocalCacheWrite();
             }
         }
+    }
+
+    private async ValueTask WritePayloadAsync(string key, CacheItem cacheItem, BufferChunk payload, HybridCacheEntryOptions? options, CancellationToken token)
+    {
+        // bundle a serialized payload inside the wrapper used at the DC layer
+        int maxLength = HybridCachePayload.GetMaxBytes(key, cacheItem.Tags, payload.Length);
+        byte[] oversized = ArrayPool<byte>.Shared.Rent(maxLength);
+
+        int length = HybridCachePayload.Write(oversized, key, cacheItem.CreationTimestamp, GetL2AbsoluteExpirationRelativeToNow(options),
+            HybridCachePayload.PayloadFlags.None, cacheItem.Tags, payload.AsSequence());
+
+        await SetDirectL2Async(key, new(oversized, 0, length, true), GetL2DistributedCacheOptions(options), token).ConfigureAwait(false);
+
+        ArrayPool<byte>.Shared.Return(oversized);
     }
 
     private BufferChunk GetValidPayloadSegment(byte[]? payload)
@@ -154,12 +261,17 @@ internal partial class DefaultHybridCache
 #if NET8_0_OR_GREATER
     [SuppressMessage("Maintainability", "CA1508:Avoid dead conditional code", Justification = "False positive from unsafe accessor")]
 #endif
-    private DistributedCacheEntryOptions GetOptions(HybridCacheEntryOptions? options)
+    private DistributedCacheEntryOptions GetL2DistributedCacheOptions(HybridCacheEntryOptions? options)
     {
         DistributedCacheEntryOptions? result = null;
-        if (options is not null && options.Expiration.HasValue && options.Expiration.GetValueOrDefault() != _defaultExpiration)
+        if (options is not null)
         {
-            result = ToDistributedCacheEntryOptions(options);
+            TimeSpan expiration = GetL2AbsoluteExpirationRelativeToNow(options);
+            if (expiration != _defaultExpiration)
+            {
+                // ^^^ avoid creating unnecessary DC options objects if the expiration still matches the default
+                result = ToDistributedCacheEntryOptions(options);
+            }
         }
 
         return result ?? _defaultDistributedCacheExpiration;

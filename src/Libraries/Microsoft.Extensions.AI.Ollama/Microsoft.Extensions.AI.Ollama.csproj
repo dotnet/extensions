@@ -9,7 +9,8 @@
   <PropertyGroup>
     <Stage>preview</Stage>
     <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
-    <MinCodeCoverage>80</MinCodeCoverage>
+    <EnablePackageValidation>false</EnablePackageValidation>
+    <MinCodeCoverage>78</MinCodeCoverage>
     <MinMutationScore>0</MinMutationScore>
   </PropertyGroup>
 
@@ -40,5 +41,5 @@
   <ItemGroup>
     <ProjectReference Include="../Microsoft.Extensions.AI.Abstractions/Microsoft.Extensions.AI.Abstractions.csproj" />
   </ItemGroup>
-  
+
 </Project>

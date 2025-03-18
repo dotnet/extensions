@@ -47,9 +47,6 @@
     <Deterministic>true</Deterministic>
     <Features>debug-determinism</Features>
 
-    <!-- https://learn.microsoft.com/dotnet/fundamentals/package-validation/overview -->
-    <EnablePackageValidation>true</EnablePackageValidation>
-
     <EnableXlfLocalization>false</EnableXlfLocalization>
     <UpdateXlfOnBuild>false</UpdateXlfOnBuild>
 
@@ -103,6 +100,11 @@
       This is needed to produce Cobertura code coverage. See the targets file to more information.
     -->
     <UseVSTestRunner>true</UseVSTestRunner>
+  </PropertyGroup>
+
+  <!-- Enable the Evaluation report builds on all CI builds -->
+  <PropertyGroup>
+    <EnableEvaluationReportBuild Condition="'$(ContinuousIntegrationBuild)'=='true'">true</EnableEvaluationReportBuild>
   </PropertyGroup>
 
   <!-- Common properties -->

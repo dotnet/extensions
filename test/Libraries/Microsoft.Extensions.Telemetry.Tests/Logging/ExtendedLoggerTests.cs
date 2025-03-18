@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Enrichment;
+using Microsoft.Extensions.Diagnostics.Sampling;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -117,6 +118,38 @@ public static class ExtendedLoggerTests
             Assert.Null(snap[1].GetStructuredStateValue("SEK1"));
             Assert.Null(snap[1].GetStructuredStateValue("EK1"));
         }
+    }
+
+    [Fact]
+    public static void Sampling()
+    {
+        const string Category = "C1";
+
+        RandomProbabilisticSamplerOptions options = new();
+        options.Rules.Add(new RandomProbabilisticSamplerFilterRule(probability: 0, logLevel: LogLevel.Warning));
+        LogSamplingRuleSelector<RandomProbabilisticSamplerFilterRule> ruleSelector = new();
+        using var sampler = new RandomProbabilisticSampler(ruleSelector, new StaticOptionsMonitor<RandomProbabilisticSamplerOptions>(options));
+
+        using var provider = new Provider();
+        using ILoggerFactory factory = Utils.CreateLoggerFactory(
+             builder =>
+             {
+                 builder.AddProvider(provider);
+                 builder.AddRandomProbabilisticSampler(0, LogLevel.Warning);
+             });
+        ILogger logger = factory.CreateLogger(Category);
+
+        // Act
+        // 1, no state (legacy path)
+        logger.LogWarning("MSG0");
+
+        // 2, with Modern state
+        LoggerMessageState lms = LoggerMessageHelper.ThreadLocalState;
+        int index = lms.ReserveTagSpace(1);
+        lms.TagArray[index] = new("PK2", "PV2");
+        logger.Log(LogLevel.Warning, new EventId(2, "ID2"), lms, null, (_, _) => "MSG2");
+
+        Assert.Equal(0, provider.Logger!.Collector.Count);
     }
 
     [Theory]
@@ -758,6 +791,130 @@ public static class ExtendedLoggerTests
         }
     }
 
+    [Theory]
+    [CombinatorialData]
+    public static void ModernLogging_OriginalFormatMustBeLastInTheListOfStateProperties(
+        bool enableRedaction, bool enableEnrichment, bool logException)
+    {
+        using var provider = new Provider();
+
+        var enricher = new ForcedEnricher(new[]
+        {
+            new KeyValuePair<string, object?>("K1", "V1"),
+        });
+        var staticEnricher = new ForcedEnricher(new[]
+        {
+            new KeyValuePair<string, object?>("K2", "V2"),
+        });
+        var redactorProvider = new FakeRedactorProvider(new FakeRedactorOptions
+        {
+            RedactionFormat = "REDACTED<{0}>",
+        });
+
+        var enrichmentOptions = enableEnrichment ? new StaticOptionsMonitor<LoggerEnrichmentOptions>(new()) : null;
+        var redactionOptions = enableRedaction ? new StaticOptionsMonitor<LoggerRedactionOptions>(new() { ApplyDiscriminator = false }) : null;
+
+        using var factory = new ExtendedLoggerFactory(
+            providers: new[] { provider },
+            enrichmentOptions: enrichmentOptions,
+            redactionOptions: redactionOptions,
+            enrichers: new[] { enricher },
+            staticEnrichers: new[] { staticEnricher },
+            redactorProvider: redactorProvider,
+            filterOptions: new StaticOptionsMonitor<LoggerFilterOptions>(new()));
+
+        var logger = factory.CreateLogger("logger");
+
+        var state = LoggerMessageHelper.ThreadLocalState;
+        var index = state.ReserveTagSpace(2);
+        state.TagArray[index] = new("K3", "V3");
+        state.TagArray[index + 1] = new("{OriginalFormat}", "V4");
+
+        index = state.ReserveClassifiedTagSpace(1);
+        state.ClassifiedTagArray[index] = new("K5", "V5", FakeTaxonomy.PrivateData);
+
+        var exception = logException ? new InvalidOperationException() : null;
+
+        logger.Log(LogLevel.Warning, new EventId(1, "ID1"), state, exception, (_, _) => "MSG");
+
+        var sink = provider.Logger!;
+        var collector = sink.Collector;
+        Assert.Equal(1, collector.Count);
+
+        var record = collector.GetSnapshot().Single();
+        var property = record.StructuredState!.Last();
+        Assert.Equal("{OriginalFormat}", property.Key);
+        Assert.Equal("V4", property.Value);
+    }
+
+    [Theory]
+    [CombinatorialData]
+    public static void LegacyLogging_OriginalFormatMustBeLastInTheListOfStateProperties(
+        bool enableEnrichment, bool logException, LegacyStateType stateType)
+    {
+        using var provider = new Provider();
+
+        var enricher = new ForcedEnricher(new[]
+        {
+            new KeyValuePair<string, object?>("K1", "V1"),
+        });
+        var staticEnricher = new ForcedEnricher(new[]
+        {
+            new KeyValuePair<string, object?>("K2", "V2"),
+        });
+
+        var enrichmentOptions = enableEnrichment ? new StaticOptionsMonitor<LoggerEnrichmentOptions>(new()) : null;
+
+        using var factory = new ExtendedLoggerFactory(
+            providers: new[] { provider },
+            enrichmentOptions: enrichmentOptions,
+            enrichers: new[] { enricher },
+            staticEnrichers: new[] { staticEnricher },
+            filterOptions: new StaticOptionsMonitor<LoggerFilterOptions>(new()));
+
+        var logger = factory.CreateLogger("logger");
+        var exception = logException ? new InvalidOperationException() : null;
+
+        switch (stateType)
+        {
+            case LegacyStateType.ReadOnlyList:
+                List<KeyValuePair<string, object?>> list =
+                [
+                    new("K3", "V3"),
+                    new("{OriginalFormat}", "V4")
+                ];
+                logger.Log(LogLevel.Warning, new EventId(1, "ID1"), list, exception, (_, _) => "MSG");
+                break;
+
+            case LegacyStateType.Enumerable:
+                IEnumerable<KeyValuePair<string, object?>> enumerable =
+                    new List<KeyValuePair<string, object?>>
+                    {
+                        new("K3", "V3"),
+                        new("{OriginalFormat}", "V4")
+                    }
+                    .Select(x => x);
+                logger.Log(LogLevel.Warning, new EventId(1, "ID1"), enumerable, exception, (_, _) => "MSG");
+                break;
+
+            case LegacyStateType.String:
+                logger.Log(LogLevel.Warning, new EventId(1, "ID1"), "V4", exception, (_, _) => "MSG");
+                break;
+
+            default:
+                throw new InvalidOperationException($"Uknown state type: {stateType}");
+        }
+
+        var sink = provider.Logger!;
+        var collector = sink.Collector;
+        Assert.Equal(1, collector.Count);
+
+        var record = collector.GetSnapshot().Single();
+        var property = record.StructuredState!.Last();
+        Assert.Equal("{OriginalFormat}", property.Key);
+        Assert.Equal("V4", property.Value);
+    }
+
     private sealed class CustomLoggerProvider : ILoggerProvider
     {
         private readonly string _providerName;
@@ -946,7 +1103,7 @@ public static class ExtendedLoggerTests
         }
     }
 
-    private sealed class StaticOptionsMonitor<T> : IOptionsMonitor<T>
+    public sealed class StaticOptionsMonitor<T> : IOptionsMonitor<T>
     {
         public StaticOptionsMonitor(T currentValue)
         {
@@ -956,5 +1113,12 @@ public static class ExtendedLoggerTests
         public IDisposable? OnChange(Action<T, string> listener) => null;
         public T Get(string? name) => CurrentValue;
         public T CurrentValue { get; }
+    }
+
+    public enum LegacyStateType
+    {
+        ReadOnlyList,
+        Enumerable,
+        String
     }
 }

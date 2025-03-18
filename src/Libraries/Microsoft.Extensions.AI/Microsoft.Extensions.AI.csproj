@@ -11,7 +11,8 @@
   <PropertyGroup>
     <Stage>preview</Stage>
     <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
-    <MinCodeCoverage>88</MinCodeCoverage>
+    <EnablePackageValidation>false</EnablePackageValidation>
+    <MinCodeCoverage>89</MinCodeCoverage>
     <MinMutationScore>0</MinMutationScore>
   </PropertyGroup>
 

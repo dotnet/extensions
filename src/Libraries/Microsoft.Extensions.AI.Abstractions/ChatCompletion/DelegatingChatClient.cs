@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.AI;
 /// Provides an optional base class for an <see cref="IChatClient"/> that passes through calls to another instance.
 /// </summary>
 /// <remarks>
-/// This is recommended as a base type when building clients that can be chained in any order around an underlying <see cref="IChatClient"/>.
+/// This is recommended as a base type when building clients that can be chained around an underlying <see cref="IChatClient"/>.
 /// The default implementation simply passes each call to the inner client instance.
 /// </remarks>
 public class DelegatingChatClient : IChatClient
@@ -37,30 +37,15 @@ public class DelegatingChatClient : IChatClient
     /// <summary>Gets the inner <see cref="IChatClient" />.</summary>
     protected IChatClient InnerClient { get; }
 
-    /// <summary>Provides a mechanism for releasing unmanaged resources.</summary>
-    /// <param name="disposing"><see langword="true"/> if being called from <see cref="Dispose()"/>; otherwise, <see langword="false"/>.</param>
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            InnerClient.Dispose();
-        }
-    }
+    /// <inheritdoc />
+    public virtual Task<ChatResponse> GetResponseAsync(
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default) =>
+        InnerClient.GetResponseAsync(messages, options, cancellationToken);
 
     /// <inheritdoc />
-    public virtual ChatClientMetadata Metadata => InnerClient.Metadata;
-
-    /// <inheritdoc />
-    public virtual Task<ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
-    {
-        return InnerClient.CompleteAsync(chatMessages, options, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public virtual IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
-    {
-        return InnerClient.CompleteStreamingAsync(chatMessages, options, cancellationToken);
-    }
+    public virtual IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default) =>
+        InnerClient.GetStreamingResponseAsync(messages, options, cancellationToken);
 
     /// <inheritdoc />
     public virtual object? GetService(Type serviceType, object? serviceKey = null)
@@ -71,5 +56,15 @@ public class DelegatingChatClient : IChatClient
         return
             serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
             InnerClient.GetService(serviceType, serviceKey);
+    }
+
+    /// <summary>Provides a mechanism for releasing unmanaged resources.</summary>
+    /// <param name="disposing"><see langword="true"/> if being called from <see cref="Dispose()"/>; otherwise, <see langword="false"/>.</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            InnerClient.Dispose();
+        }
     }
 }

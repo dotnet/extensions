@@ -17,6 +17,7 @@
     <InjectSharedBufferWriterPool>true</InjectSharedBufferWriterPool>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectStringSplitExtensions>true</InjectStringSplitExtensions>
+    <InjectSharedInstruments>true</InjectSharedInstruments>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -47,5 +48,6 @@
   <ItemGroup>
     <InternalsVisibleToDynamicProxyGenAssembly2 Include="*" />
     <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
+    <InternalsVisibleToTest Include="Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilization.Tests" />
   </ItemGroup>
 </Project>

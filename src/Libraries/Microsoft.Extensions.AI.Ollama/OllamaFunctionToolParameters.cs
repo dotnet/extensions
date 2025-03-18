@@ -10,5 +10,5 @@ internal sealed class OllamaFunctionToolParameters
 {
     public string Type { get; set; } = "object";
     public required IDictionary<string, JsonElement> Properties { get; set; }
-    public required IList<string> Required { get; set; }
+    public IList<string>? Required { get; set; }
 }

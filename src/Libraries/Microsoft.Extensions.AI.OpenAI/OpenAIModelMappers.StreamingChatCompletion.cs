@@ -18,17 +18,17 @@ namespace Microsoft.Extensions.AI;
 
 internal static partial class OpenAIModelMappers
 {
-    public static async IAsyncEnumerable<OpenAI.Chat.StreamingChatCompletionUpdate> ToOpenAIStreamingChatCompletionAsync(
-        IAsyncEnumerable<StreamingChatCompletionUpdate> chatCompletions,
+    public static async IAsyncEnumerable<StreamingChatCompletionUpdate> ToOpenAIStreamingChatCompletionAsync(
+        IAsyncEnumerable<ChatResponseUpdate> updates,
         JsonSerializerOptions options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var chatCompletionUpdate in chatCompletions.WithCancellation(cancellationToken).ConfigureAwait(false))
+        await foreach (var update in updates.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
             List<StreamingChatToolCallUpdate>? toolCallUpdates = null;
             ChatTokenUsage? chatTokenUsage = null;
 
-            foreach (var content in chatCompletionUpdate.Contents)
+            foreach (var content in update.Contents)
             {
                 if (content is FunctionCallContent functionCallContent)
                 {
@@ -46,92 +46,92 @@ internal static partial class OpenAIModelMappers
             }
 
             yield return OpenAIChatModelFactory.StreamingChatCompletionUpdate(
-                completionId: chatCompletionUpdate.CompletionId ?? CreateCompletionId(),
-                model: chatCompletionUpdate.ModelId,
-                createdAt: chatCompletionUpdate.CreatedAt ?? DateTimeOffset.UtcNow,
-                role: ToOpenAIChatRole(chatCompletionUpdate.Role),
-                finishReason: chatCompletionUpdate.FinishReason is null ? null : ToOpenAIFinishReason(chatCompletionUpdate.FinishReason),
-                contentUpdate: [.. ToOpenAIChatContent(chatCompletionUpdate.Contents)],
+                completionId: update.ResponseId ?? CreateCompletionId(),
+                model: update.ModelId,
+                createdAt: update.CreatedAt ?? DateTimeOffset.UtcNow,
+                role: ToOpenAIChatRole(update.Role),
+                finishReason: update.FinishReason is null ? null : ToOpenAIFinishReason(update.FinishReason),
+                contentUpdate: [.. ToOpenAIChatContent(update.Contents)],
                 toolCallUpdates: toolCallUpdates,
-                refusalUpdate: chatCompletionUpdate.AdditionalProperties.GetValueOrDefault<string>(nameof(OpenAI.Chat.StreamingChatCompletionUpdate.RefusalUpdate)),
-                contentTokenLogProbabilities: chatCompletionUpdate.AdditionalProperties.GetValueOrDefault<IReadOnlyList<ChatTokenLogProbabilityDetails>>(nameof(OpenAI.Chat.StreamingChatCompletionUpdate.ContentTokenLogProbabilities)),
-                refusalTokenLogProbabilities: chatCompletionUpdate.AdditionalProperties.GetValueOrDefault<IReadOnlyList<ChatTokenLogProbabilityDetails>>(nameof(OpenAI.Chat.StreamingChatCompletionUpdate.RefusalTokenLogProbabilities)),
-                systemFingerprint: chatCompletionUpdate.AdditionalProperties.GetValueOrDefault<string>(nameof(OpenAI.Chat.StreamingChatCompletionUpdate.SystemFingerprint)),
+                refusalUpdate: update.AdditionalProperties.GetValueOrDefault<string>(nameof(StreamingChatCompletionUpdate.RefusalUpdate)),
+                contentTokenLogProbabilities: update.AdditionalProperties.GetValueOrDefault<IReadOnlyList<ChatTokenLogProbabilityDetails>>(nameof(StreamingChatCompletionUpdate.ContentTokenLogProbabilities)),
+                refusalTokenLogProbabilities: update.AdditionalProperties.GetValueOrDefault<IReadOnlyList<ChatTokenLogProbabilityDetails>>(nameof(StreamingChatCompletionUpdate.RefusalTokenLogProbabilities)),
+                systemFingerprint: update.AdditionalProperties.GetValueOrDefault<string>(nameof(StreamingChatCompletionUpdate.SystemFingerprint)),
                 usage: chatTokenUsage);
         }
     }
 
-    public static async IAsyncEnumerable<StreamingChatCompletionUpdate> FromOpenAIStreamingChatCompletionAsync(
-        IAsyncEnumerable<OpenAI.Chat.StreamingChatCompletionUpdate> chatCompletionUpdates,
+    public static async IAsyncEnumerable<ChatResponseUpdate> FromOpenAIStreamingChatCompletionAsync(
+        IAsyncEnumerable<StreamingChatCompletionUpdate> updates,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Dictionary<int, FunctionCallInfo>? functionCallInfos = null;
         ChatRole? streamedRole = null;
         ChatFinishReason? finishReason = null;
         StringBuilder? refusal = null;
-        string? completionId = null;
+        string? responseId = null;
         DateTimeOffset? createdAt = null;
         string? modelId = null;
         string? fingerprint = null;
 
         // Process each update as it arrives
-        await foreach (OpenAI.Chat.StreamingChatCompletionUpdate chatCompletionUpdate in chatCompletionUpdates.WithCancellation(cancellationToken).ConfigureAwait(false))
+        await foreach (StreamingChatCompletionUpdate update in updates.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
             // The role and finish reason may arrive during any update, but once they've arrived, the same value should be the same for all subsequent updates.
-            streamedRole ??= chatCompletionUpdate.Role is ChatMessageRole role ? FromOpenAIChatRole(role) : null;
-            finishReason ??= chatCompletionUpdate.FinishReason is OpenAI.Chat.ChatFinishReason reason ? FromOpenAIFinishReason(reason) : null;
-            completionId ??= chatCompletionUpdate.CompletionId;
-            createdAt ??= chatCompletionUpdate.CreatedAt;
-            modelId ??= chatCompletionUpdate.Model;
-            fingerprint ??= chatCompletionUpdate.SystemFingerprint;
+            streamedRole ??= update.Role is ChatMessageRole role ? FromOpenAIChatRole(role) : null;
+            finishReason ??= update.FinishReason is OpenAI.Chat.ChatFinishReason reason ? FromOpenAIFinishReason(reason) : null;
+            responseId ??= update.CompletionId;
+            createdAt ??= update.CreatedAt;
+            modelId ??= update.Model;
+            fingerprint ??= update.SystemFingerprint;
 
             // Create the response content object.
-            StreamingChatCompletionUpdate completionUpdate = new()
+            ChatResponseUpdate responseUpdate = new()
             {
-                CompletionId = chatCompletionUpdate.CompletionId,
-                CreatedAt = chatCompletionUpdate.CreatedAt,
+                ResponseId = update.CompletionId,
+                CreatedAt = update.CreatedAt,
                 FinishReason = finishReason,
                 ModelId = modelId,
-                RawRepresentation = chatCompletionUpdate,
+                RawRepresentation = update,
                 Role = streamedRole,
             };
 
             // Populate it with any additional metadata from the OpenAI object.
-            if (chatCompletionUpdate.ContentTokenLogProbabilities is { Count: > 0 } contentTokenLogProbs)
+            if (update.ContentTokenLogProbabilities is { Count: > 0 } contentTokenLogProbs)
             {
-                (completionUpdate.AdditionalProperties ??= [])[nameof(chatCompletionUpdate.ContentTokenLogProbabilities)] = contentTokenLogProbs;
+                (responseUpdate.AdditionalProperties ??= [])[nameof(update.ContentTokenLogProbabilities)] = contentTokenLogProbs;
             }
 
-            if (chatCompletionUpdate.RefusalTokenLogProbabilities is { Count: > 0 } refusalTokenLogProbs)
+            if (update.RefusalTokenLogProbabilities is { Count: > 0 } refusalTokenLogProbs)
             {
-                (completionUpdate.AdditionalProperties ??= [])[nameof(chatCompletionUpdate.RefusalTokenLogProbabilities)] = refusalTokenLogProbs;
+                (responseUpdate.AdditionalProperties ??= [])[nameof(update.RefusalTokenLogProbabilities)] = refusalTokenLogProbs;
             }
 
             if (fingerprint is not null)
             {
-                (completionUpdate.AdditionalProperties ??= [])[nameof(chatCompletionUpdate.SystemFingerprint)] = fingerprint;
+                (responseUpdate.AdditionalProperties ??= [])[nameof(update.SystemFingerprint)] = fingerprint;
             }
 
             // Transfer over content update items.
-            if (chatCompletionUpdate.ContentUpdate is { Count: > 0 })
+            if (update.ContentUpdate is { Count: > 0 })
             {
-                foreach (ChatMessageContentPart contentPart in chatCompletionUpdate.ContentUpdate)
+                foreach (ChatMessageContentPart contentPart in update.ContentUpdate)
                 {
                     if (ToAIContent(contentPart) is AIContent aiContent)
                     {
-                        completionUpdate.Contents.Add(aiContent);
+                        responseUpdate.Contents.Add(aiContent);
                     }
                 }
             }
 
             // Transfer over refusal updates.
-            if (chatCompletionUpdate.RefusalUpdate is not null)
+            if (update.RefusalUpdate is not null)
             {
-                _ = (refusal ??= new()).Append(chatCompletionUpdate.RefusalUpdate);
+                _ = (refusal ??= new()).Append(update.RefusalUpdate);
             }
 
             // Transfer over tool call updates.
-            if (chatCompletionUpdate.ToolCallUpdates is { Count: > 0 } toolCallUpdates)
+            if (update.ToolCallUpdates is { Count: > 0 } toolCallUpdates)
             {
                 foreach (StreamingChatToolCallUpdate toolCallUpdate in toolCallUpdates)
                 {
@@ -143,30 +143,30 @@ internal static partial class OpenAIModelMappers
 
                     existing.CallId ??= toolCallUpdate.ToolCallId;
                     existing.Name ??= toolCallUpdate.FunctionName;
-                    if (toolCallUpdate.FunctionArgumentsUpdate is { } update && !update.ToMemory().IsEmpty)
+                    if (toolCallUpdate.FunctionArgumentsUpdate is { } argUpdate && !argUpdate.ToMemory().IsEmpty)
                     {
-                        _ = (existing.Arguments ??= new()).Append(update.ToString());
+                        _ = (existing.Arguments ??= new()).Append(argUpdate.ToString());
                     }
                 }
             }
 
             // Transfer over usage updates.
-            if (chatCompletionUpdate.Usage is ChatTokenUsage tokenUsage)
+            if (update.Usage is ChatTokenUsage tokenUsage)
             {
                 var usageDetails = FromOpenAIUsage(tokenUsage);
-                completionUpdate.Contents.Add(new UsageContent(usageDetails));
+                responseUpdate.Contents.Add(new UsageContent(usageDetails));
             }
 
             // Now yield the item.
-            yield return completionUpdate;
+            yield return responseUpdate;
         }
 
         // Now that we've received all updates, combine any for function calls into a single item to yield.
         if (functionCallInfos is not null)
         {
-            StreamingChatCompletionUpdate completionUpdate = new()
+            ChatResponseUpdate responseUpdate = new()
             {
-                CompletionId = completionId,
+                ResponseId = responseId,
                 CreatedAt = createdAt,
                 FinishReason = finishReason,
                 ModelId = modelId,
@@ -182,7 +182,7 @@ internal static partial class OpenAIModelMappers
                         fci.Arguments?.ToString() ?? string.Empty,
                         fci.CallId!,
                         fci.Name!);
-                    completionUpdate.Contents.Add(callContent);
+                    responseUpdate.Contents.Add(callContent);
                 }
             }
 
@@ -190,16 +190,16 @@ internal static partial class OpenAIModelMappers
             // add it to this function calling item.
             if (refusal is not null)
             {
-                (completionUpdate.AdditionalProperties ??= [])[nameof(ChatMessageContentPart.Refusal)] = refusal.ToString();
+                (responseUpdate.AdditionalProperties ??= [])[nameof(ChatMessageContentPart.Refusal)] = refusal.ToString();
             }
 
             // Propagate additional relevant metadata.
             if (fingerprint is not null)
             {
-                (completionUpdate.AdditionalProperties ??= [])[nameof(OpenAI.Chat.ChatCompletion.SystemFingerprint)] = fingerprint;
+                (responseUpdate.AdditionalProperties ??= [])[nameof(ChatCompletion.SystemFingerprint)] = fingerprint;
             }
 
-            yield return completionUpdate;
+            yield return responseUpdate;
         }
     }
 }

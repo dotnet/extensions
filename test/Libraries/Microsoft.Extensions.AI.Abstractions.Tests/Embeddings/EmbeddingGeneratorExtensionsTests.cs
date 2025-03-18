@@ -14,7 +14,65 @@ public class EmbeddingGeneratorExtensionsTests
     public void GetService_InvalidArgs_Throws()
     {
         Assert.Throws<ArgumentNullException>("generator", () => EmbeddingGeneratorExtensions.GetService<object>(null!));
-        Assert.Throws<ArgumentNullException>("generator", () => EmbeddingGeneratorExtensions.GetService<string, Embedding<double>, object>(null!));
+    }
+
+    [Fact]
+    public void GetRequiredService_InvalidArgs_Throws()
+    {
+        Assert.Throws<ArgumentNullException>("generator", () => EmbeddingGeneratorExtensions.GetRequiredService<object>(null!));
+
+        using var generator = new TestEmbeddingGenerator();
+        Assert.Throws<ArgumentNullException>("serviceType", () => generator.GetRequiredService(null!));
+    }
+
+    [Fact]
+    public void GetService_ValidService_Returned()
+    {
+        using IEmbeddingGenerator<string, Embedding<float>> generator = new TestEmbeddingGenerator
+        {
+            GetServiceCallback = (serviceType, serviceKey) =>
+            {
+                if (serviceType == typeof(string))
+                {
+                    return serviceKey == null ? "null key" : "non-null key";
+                }
+
+                if (serviceType == typeof(IEmbeddingGenerator<string, Embedding<float>>))
+                {
+                    return new object();
+                }
+
+                return null;
+            },
+        };
+
+        Assert.Equal("null key", generator.GetService(typeof(string)));
+        Assert.Equal("null key", generator.GetService<string>());
+
+        Assert.Equal("non-null key", generator.GetService(typeof(string), "key"));
+        Assert.Equal("non-null key", generator.GetService<string>("key"));
+
+        Assert.Null(generator.GetService(typeof(object)));
+        Assert.Null(generator.GetService<object>());
+
+        Assert.Null(generator.GetService(typeof(object), "key"));
+        Assert.Null(generator.GetService<object>("key"));
+
+        Assert.Null(generator.GetService<int?>());
+
+        Assert.Equal("null key", generator.GetRequiredService(typeof(string)));
+        Assert.Equal("null key", generator.GetRequiredService<string>());
+
+        Assert.Equal("non-null key", generator.GetRequiredService(typeof(string), "key"));
+        Assert.Equal("non-null key", generator.GetRequiredService<string>("key"));
+
+        Assert.Throws<InvalidOperationException>(() => generator.GetRequiredService(typeof(object)));
+        Assert.Throws<InvalidOperationException>(() => generator.GetRequiredService<object>());
+
+        Assert.Throws<InvalidOperationException>(() => generator.GetRequiredService(typeof(object), "key"));
+        Assert.Throws<InvalidOperationException>(() => generator.GetRequiredService<object>("key"));
+
+        Assert.Throws<InvalidOperationException>(() => generator.GetRequiredService<int?>());
     }
 
     [Fact]

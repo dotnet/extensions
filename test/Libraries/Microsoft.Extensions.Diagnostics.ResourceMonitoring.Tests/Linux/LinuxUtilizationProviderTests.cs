@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Helpers;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Shared.Instruments;
 using Microsoft.TestUtilities;
 using Moq;
 using VerifyXunit;
@@ -17,7 +18,6 @@ using Xunit;
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
 [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
-[UsesVerify]
 public sealed class LinuxUtilizationProviderTests
 {
     private const string VerifiedDataDirectory = "Verified";

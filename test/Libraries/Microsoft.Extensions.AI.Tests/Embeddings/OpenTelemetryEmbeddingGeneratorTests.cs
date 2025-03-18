@@ -30,7 +30,6 @@ public class OpenTelemetryEmbeddingGeneratorTests
 
         using var innerGenerator = new TestEmbeddingGenerator
         {
-            Metadata = new("testservice", new Uri("http://localhost:12345/something"), "amazingmodel", 384),
             GenerateAsyncCallback = async (values, options, cancellationToken) =>
             {
                 await Task.Yield();
@@ -48,6 +47,9 @@ public class OpenTelemetryEmbeddingGeneratorTests
                     }
                 };
             },
+            GetServiceCallback = (serviceType, serviceKey) =>
+                serviceType == typeof(EmbeddingGeneratorMetadata) ? new EmbeddingGeneratorMetadata("testservice", new Uri("http://localhost:12345/something"), "amazingmodel", 384) :
+                null,
         };
 
         using var generator = innerGenerator

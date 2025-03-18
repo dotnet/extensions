@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -28,14 +30,14 @@ internal partial class DefaultHybridCache
         internal void SetResultDirect(CacheItem<T> value)
             => _result?.TrySetResult(value);
 
-        public StampedeState(DefaultHybridCache cache, in StampedeKey key, bool canBeCanceled)
-            : base(cache, key, CacheItem<T>.Create(), canBeCanceled)
+        public StampedeState(DefaultHybridCache cache, in StampedeKey key, TagSet tags, bool canBeCanceled)
+            : base(cache, key, CacheItem<T>.Create(cache.CurrentTimestamp(), tags), canBeCanceled)
         {
             _result = new(TaskCreationOptions.RunContinuationsAsynchronously);
         }
 
-        public StampedeState(DefaultHybridCache cache, in StampedeKey key, CancellationToken token)
-            : base(cache, key, CacheItem<T>.Create(), token)
+        public StampedeState(DefaultHybridCache cache, in StampedeKey key, TagSet tags, CancellationToken token)
+            : base(cache, key, CacheItem<T>.Create(cache.CurrentTimestamp(), tags), token)
         {
             // no TCS in this case - this is for SetValue only
         }
@@ -87,7 +89,7 @@ internal partial class DefaultHybridCache
             static async ValueTask<T> WithCancellationAsync(ILogger log, StampedeState<TState, T> stampede, CancellationToken token)
             {
                 var cancelStub = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-                using var reg = token.Register(static obj =>
+                using CancellationTokenRegistration reg = token.Register(static obj =>
                 {
                     _ = ((TaskCompletionSource<bool>)obj!).TrySetResult(true);
                 }, cancelStub);
@@ -95,7 +97,7 @@ internal partial class DefaultHybridCache
                 CacheItem<T> result;
                 try
                 {
-                    var first = await System.Threading.Tasks.Task.WhenAny(stampede.Task, cancelStub.Task).ConfigureAwait(false);
+                    Task first = await System.Threading.Tasks.Task.WhenAny(stampede.Task, cancelStub.Task).ConfigureAwait(false);
                     if (ReferenceEquals(first, cancelStub.Task))
                     {
                         // we expect this to throw, because otherwise we wouldn't have gotten here
@@ -137,7 +139,7 @@ internal partial class DefaultHybridCache
         [SuppressMessage("Major Code Smell", "S1121:Assignments should not be made from within sub-expressions", Justification = "Unusual, but legit here")]
         internal ValueTask<T> UnwrapReservedAsync(ILogger log)
         {
-            var task = Task;
+            Task<CacheItem<T>> task = Task;
 #if NETCOREAPP2_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
             if (task.IsCompletedSuccessfully)
 #else
@@ -149,7 +151,7 @@ internal partial class DefaultHybridCache
 
             // if the type is immutable, callers can share the final step too (this may leave dangling
             // reservation counters, but that's OK)
-            var result = ImmutableTypeCache<T>.IsImmutable ? (_sharedUnwrap ??= AwaitedAsync(log, Task)) : AwaitedAsync(log, Task);
+            Task<T> result = ImmutableTypeCache<T>.IsImmutable ? (_sharedUnwrap ??= AwaitedAsync(log, Task)) : AwaitedAsync(log, Task);
             return new(result);
 
             static async Task<T> AwaitedAsync(ILogger log, Task<CacheItem<T>> task)
@@ -161,14 +163,28 @@ internal partial class DefaultHybridCache
 
         [SuppressMessage("Resilience", "EA0014:The async method doesn't support cancellation", Justification = "In this case the cancellation token is provided internally via SharedToken")]
         [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exception is passed through to faulted task result")]
+        [SuppressMessage("Reliability", "EA0002:Use 'System.TimeProvider' to make the code easier to test", Justification = "Does not apply")]
         private async Task BackgroundFetchAsync()
         {
             bool eventSourceEnabled = HybridCacheEventSource.Log.IsEnabled();
             try
             {
-                // read from L2 if appropriate
-                if ((Key.Flags & HybridCacheEntryFlags.DisableDistributedCacheRead) == 0)
+                HybridCacheEntryFlags activeFlags = Key.Flags;
+                if ((activeFlags & HybridCacheEntryFlags.DisableDistributedCache) != HybridCacheEntryFlags.DisableDistributedCache)
                 {
+                    // in order to use distributed cache, the tags and keys must be valid unicode, to avoid security complications
+                    if (!ValidateUnicodeCorrectness(Cache._logger, Key.Key, CacheItem.Tags))
+                    {
+                        activeFlags |= HybridCacheEntryFlags.DisableDistributedCache;
+                    }
+                }
+
+                // read from L2 if appropriate
+                if ((activeFlags & HybridCacheEntryFlags.DisableDistributedCacheRead) == 0)
+                {
+                    // kick off any necessary tag invalidation fetches
+                    Cache.PrefetchTags(CacheItem.Tags);
+
                     BufferChunk result;
                     try
                     {
@@ -177,10 +193,10 @@ internal partial class DefaultHybridCache
                             HybridCacheEventSource.Log.DistributedCacheGet();
                         }
 
-                        result = await Cache.GetFromL2Async(Key.Key, SharedToken).ConfigureAwait(false);
+                        result = await Cache.GetFromL2DirectAsync(Key.Key, SharedToken).ConfigureAwait(false);
                         if (eventSourceEnabled)
                         {
-                            if (result.Array is not null)
+                            if (result.HasValue)
                             {
                                 HybridCacheEventSource.Log.DistributedCacheHit();
                             }
@@ -210,15 +226,41 @@ internal partial class DefaultHybridCache
                         result = default; // treat as "miss"
                     }
 
-                    if (result.Array is not null)
+                    if (result.HasValue)
                     {
-                        SetResultAndRecycleIfAppropriate(ref result);
-                        return;
+                        // result is the wider payload including HC headers; unwrap it:
+                        HybridCachePayload.HybridCachePayloadParseResult parseResult = HybridCachePayload.TryParse(
+                            result.AsArraySegment(), Key.Key, CacheItem.Tags, Cache, out ArraySegment<byte> payload, out TimeSpan remainingTime,
+                            out HybridCachePayload.PayloadFlags flags, out ushort entropy, out TagSet pendingTags, out Exception? fault);
+                        switch (parseResult)
+                        {
+                            case HybridCachePayload.HybridCachePayloadParseResult.Success:
+                                // check any pending expirations, if necessary
+                                if (pendingTags.IsEmpty || !await Cache.IsAnyTagExpiredAsync(pendingTags, CacheItem.CreationTimestamp).ConfigureAwait(false))
+                                {
+                                    // move into the payload segment (minus any framing/header/etc data)
+                                    result = new(payload.Array!, payload.Offset, payload.Count, result.ReturnToPool);
+                                    SetResultAndRecycleIfAppropriate(ref result, remainingTime);
+                                    return;
+                                }
+
+                                break;
+                            case HybridCachePayload.HybridCachePayloadParseResult.ExpiredByEntry:
+                            case HybridCachePayload.HybridCachePayloadParseResult.ExpiredByWildcard:
+                            case HybridCachePayload.HybridCachePayloadParseResult.ExpiredByTag:
+                                // we don't need to log anything in the case of expiration
+                                break;
+                            default:
+                                Cache._logger.CacheBackendDataRejected(parseResult, fault);
+                                break;
+                        }
+
+                        result.RecycleIfAppropriate();
                     }
                 }
 
                 // nothing from L2; invoke the underlying data store
-                if ((Key.Flags & HybridCacheEntryFlags.DisableUnderlyingData) == 0)
+                if ((activeFlags & HybridCacheEntryFlags.DisableUnderlyingData) == 0)
                 {
                     // invoke the callback supplied by the caller
                     T newValue;
@@ -253,6 +295,35 @@ internal partial class DefaultHybridCache
                         throw;
                     }
 
+                    // check whether we're going to hit a timing problem with tag invalidation
+                    if (!Cache.IsValid(CacheItem))
+                    {
+                        // When writing to L1, we need to avoid a problem where either "*" or one of
+                        // the active tags matches "now" - we get into a problem whereby it is
+                        // ambiguous whether the data is invalidated; consider all of the following happen
+                        // *in the same measured instance*:
+                        // - write with value A
+                        // - invalidate by tag (or wildcard)
+                        // - write with value B
+                        // Both A and B have the same timestamp as the invalidated one; to avoid this problem,
+                        // we need to detect this (very rare) scenario, and inject an artificial delay, such that
+                        // B effectively gets written at a later time.
+                        long time = Cache.CurrentTimestamp();
+                        if (time <= CacheItem.CreationTimestamp)
+                        {
+                            // Clock hasn't changed; this is *very rare*, and honestly mostly applies to
+                            // tests with dummy fetch calls; inject an artificial delay and re-fetch
+                            // the time.
+                            await System.Threading.Tasks.Task.Delay(1, CancellationToken.None).ConfigureAwait(false);
+                            time = Cache.CurrentTimestamp();
+                        }
+
+                        // We can safely update the timestamp without fear of torn values etc; no competing code
+                        // will access this until we set it into L1, which happens towards the *end* of this method,
+                        // and we (the current thread/path) are the only execution for this instance.
+                        CacheItem.UnsafeSetCreationTimestamp(time);
+                    }
+
                     // If we're writing this value *anywhere*, we're going to need to serialize; this is obvious
                     // in the case of L2, but we also need it for L1, because MemoryCache might be enforcing
                     // SizeLimit (we can't know - it is an abstraction), and for *that* we need to know the item size.
@@ -261,9 +332,8 @@ internal partial class DefaultHybridCache
                     // Rephrasing that: the only scenario in which we *do not* need to serialize is if:
                     // - it is an ImmutableCacheItem (so we don't need bytes for the CacheItem, L1)
                     // - we're not writing to L2
-
                     CacheItem cacheItem = CacheItem;
-                    bool skipSerialize = cacheItem is ImmutableCacheItem<T> && (Key.Flags & FlagsDisableL1AndL2Write) == FlagsDisableL1AndL2Write;
+                    bool skipSerialize = cacheItem is ImmutableCacheItem<T> && (activeFlags & FlagsDisableL1AndL2Write) == FlagsDisableL1AndL2Write;
 
                     if (skipSerialize)
                     {
@@ -274,9 +344,8 @@ internal partial class DefaultHybridCache
                         // ^^^ The first thing we need to do is make sure we're not getting into a thread race over buffer disposal.
                         // In particular, if this cache item is somehow so short-lived that the buffers would be released *before* we're
                         // done writing them to L2, which happens *after* we've provided the value to consumers.
-
                         BufferChunk bufferToRelease = default;
-                        if (Cache.TrySerialize(newValue, out var buffer, out var serializer))
+                        if (Cache.TrySerialize(newValue, out BufferChunk buffer, out IHybridCacheSerializer<T>? serializer))
                         {
                             // note we also capture the resolved serializer ^^^ - we'll need it again later
 
@@ -297,12 +366,12 @@ internal partial class DefaultHybridCache
                             // from this point onwards happens in the background, from the perspective of the calling code.
 
                             // Write to L2 if appropriate.
-                            if ((Key.Flags & HybridCacheEntryFlags.DisableDistributedCacheWrite) == 0)
+                            if ((activeFlags & HybridCacheEntryFlags.DisableDistributedCacheWrite) == 0)
                             {
                                 // We already have the payload serialized, so this is trivial to do.
                                 try
                                 {
-                                    await Cache.SetL2Async(Key.Key, in buffer, _options, SharedToken).ConfigureAwait(false);
+                                    await Cache.SetL2Async(Key.Key, cacheItem, in buffer, _options, SharedToken).ConfigureAwait(false);
 
                                     if (eventSourceEnabled)
                                     {
@@ -372,10 +441,10 @@ internal partial class DefaultHybridCache
             }
         }
 
-        private void SetResultAndRecycleIfAppropriate(ref BufferChunk value)
+        private void SetResultAndRecycleIfAppropriate(ref BufferChunk value, TimeSpan remainingTime)
         {
             // set a result from L2 cache
-            Debug.Assert(value.Array is not null, "expected buffer");
+            Debug.Assert(value.OversizedArray is not null, "expected buffer");
 
             IHybridCacheSerializer<T> serializer = Cache.GetSerializer<T>();
             CacheItem<T> cacheItem;
@@ -383,7 +452,7 @@ internal partial class DefaultHybridCache
             {
                 case ImmutableCacheItem<T> immutable:
                     // deserialize; and store object; buffer can be recycled now
-                    immutable.SetValue(serializer.Deserialize(new(value.Array!, 0, value.Length)), value.Length);
+                    immutable.SetValue(serializer.Deserialize(new(value.OversizedArray!, value.Offset, value.Length)), value.Length);
                     value.RecycleIfAppropriate();
                     cacheItem = immutable;
                     break;
@@ -398,7 +467,7 @@ internal partial class DefaultHybridCache
                     break;
             }
 
-            SetResult(cacheItem);
+            SetResult(cacheItem, remainingTime);
         }
 
         private void SetImmutableResultWithoutSerialize(T value)
@@ -458,11 +527,13 @@ internal partial class DefaultHybridCache
             SetResult(cacheItem);
         }
 
-        private void SetResult(CacheItem<T> value)
+        private void SetResult(CacheItem<T> value) => SetResult(value, TimeSpan.MaxValue);
+
+        private void SetResult(CacheItem<T> value, TimeSpan maxRelativeTime)
         {
             if ((Key.Flags & HybridCacheEntryFlags.DisableLocalCacheWrite) == 0)
             {
-                Cache.SetL1(Key.Key, value, _options); // we can do this without a TCS, for SetValue
+                Cache.SetL1(Key.Key, value, _options, maxRelativeTime); // we can do this without a TCS, for SetValue
             }
 
             if (_result is not null)
@@ -470,6 +541,88 @@ internal partial class DefaultHybridCache
                 Cache.RemoveStampedeState(in Key);
                 _ = _result.TrySetResult(value);
             }
+        }
+    }
+
+    [SuppressMessage("Major Code Smell", "S1121:Assignments should not be made from within sub-expressions", Justification = "Reasonable in this case, due to stack alloc scope.")]
+    private static bool ValidateUnicodeCorrectness(ILogger logger, string key, TagSet tags)
+    {
+        int maxChars = Math.Max(key.Length, tags.MaxLength());
+        int maxBytes = HybridCachePayload.Encoding.GetMaxByteCount(maxChars);
+
+        byte[] leasedBytes = [];
+        char[] leasedChars = [];
+
+        Span<byte> byteBuffer = maxBytes <= 128 ? stackalloc byte[128] : (leasedBytes = ArrayPool<byte>.Shared.Rent(maxBytes));
+        Span<char> charBuffer = maxChars <= 128 ? stackalloc char[128] : (leasedChars = ArrayPool<char>.Shared.Rent(maxChars));
+
+        bool isValid = true;
+
+        if (!Test(key, byteBuffer, charBuffer))
+        {
+            Log.KeyInvalidUnicode(logger);
+            isValid = false;
+        }
+
+        if (isValid)
+        {
+            switch (tags.Count)
+            {
+                case 0:
+                    break;
+                case 1:
+                    if (!Test(tags.GetSinglePrechecked(), byteBuffer, charBuffer))
+                    {
+                        Log.TagInvalidUnicode(logger);
+                        isValid = false;
+                        break;
+                    }
+
+                    break;
+                default:
+                    foreach (string tag in tags.GetSpanPrechecked())
+                    {
+                        if (!Test(tag, byteBuffer, charBuffer))
+                        {
+                            Log.TagInvalidUnicode(logger);
+                            isValid = false;
+                            break;
+                        }
+                    }
+
+                    break;
+            }
+        }
+
+        ArrayPool<char>.Shared.Return(leasedChars);
+        ArrayPool<byte>.Shared.Return(leasedBytes);
+        return isValid;
+
+        static unsafe bool Test(string value, Span<byte> byteBuffer, Span<char> charBuffer)
+        {
+            // for reliable confidence of unicode correctness: encode and decode, and verify equality
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+            byteBuffer = byteBuffer.Slice(0, HybridCachePayload.Encoding.GetBytes(value.AsSpan(), byteBuffer));
+            charBuffer = charBuffer.Slice(0, HybridCachePayload.Encoding.GetChars(byteBuffer, charBuffer));
+#else
+            unsafe
+            {
+                int bytes;
+                fixed (byte* bPtr = byteBuffer)
+                {
+                    fixed (char* cPtr = value)
+                    {
+                        bytes = HybridCachePayload.Encoding.GetBytes(cPtr, value.Length, bPtr, byteBuffer.Length);
+                    }
+
+                    fixed (char* cPtr = charBuffer)
+                    {
+                        charBuffer = charBuffer.Slice(0, HybridCachePayload.Encoding.GetChars(bPtr, bytes, cPtr, charBuffer.Length));
+                    }
+                }
+            }
+#endif
+            return charBuffer.SequenceEqual(value.AsSpan());
         }
     }
 }

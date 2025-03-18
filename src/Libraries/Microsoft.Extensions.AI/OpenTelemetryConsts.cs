@@ -59,6 +59,11 @@ internal static class OpenTelemetryConsts
             public const string Name = "gen_ai.operation.name";
         }
 
+        public static class Output
+        {
+            public const string Type = "gen_ai.output.type";
+        }
+
         public static class Request
         {
             public const string EmbeddingDimensions = "gen_ai.request.embedding.dimensions";
@@ -66,6 +71,7 @@ internal static class OpenTelemetryConsts
             public const string Model = "gen_ai.request.model";
             public const string MaxTokens = "gen_ai.request.max_tokens";
             public const string PresencePenalty = "gen_ai.request.presence_penalty";
+            public const string Seed = "gen_ai.request.seed";
             public const string StopSequences = "gen_ai.request.stop_sequences";
             public const string Temperature = "gen_ai.request.temperature";
             public const string TopK = "gen_ai.request.top_k";

@@ -19,17 +19,17 @@ namespace Microsoft.Extensions.AI;
 public sealed class OpenAIChatCompletionRequest
 {
     /// <summary>
-    /// Gets the chat messages specified in the completion request.
+    /// Gets the chat messages specified in the request.
     /// </summary>
     public required IList<ChatMessage> Messages { get; init; }
 
     /// <summary>
-    /// Gets the chat options governing the completion request.
+    /// Gets the chat options governing the request.
     /// </summary>
     public required ChatOptions Options { get; init; }
 
     /// <summary>
-    /// Gets a value indicating whether the completion response should be streamed.
+    /// Gets a value indicating whether the response should be streamed.
     /// </summary>
     public bool Stream { get; init; }
 

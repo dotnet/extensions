@@ -61,8 +61,6 @@ public class FunctionCallContentTests
         Assert.Same(props, c.AdditionalProperties);
 
         Assert.Equal("callId1", c.CallId);
-        c.CallId = "id";
-        Assert.Equal("id", c.CallId);
 
         Assert.Null(c.Arguments);
         AdditionalPropertiesDictionary args = new() { { "key", "value" } };
@@ -251,20 +249,8 @@ public class FunctionCallContentTests
     {
         public static NetTypelessAIFunction Instance { get; } = new NetTypelessAIFunction();
 
-        public override AIFunctionMetadata Metadata => new("NetTypeless")
-        {
-            Description = "AIFunction with parameters that lack .NET types",
-            Parameters =
-            [
-                new AIFunctionParameterMetadata("a"),
-                new AIFunctionParameterMetadata("b"),
-                new AIFunctionParameterMetadata("c"),
-                new AIFunctionParameterMetadata("d"),
-                new AIFunctionParameterMetadata("e"),
-                new AIFunctionParameterMetadata("f"),
-            ]
-        };
-
+        public override string Name => "NetTypeless";
+        public override string Description => "AIFunction with parameters that lack .NET types";
         protected override Task<object?> InvokeCoreAsync(IEnumerable<KeyValuePair<string, object?>>? arguments, CancellationToken cancellationToken) =>
             Task.FromResult<object?>(arguments);
     }
