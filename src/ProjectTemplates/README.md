@@ -11,7 +11,17 @@ To update project template JavaScript dependencies:
 
 To add a new dependency, run `npm install <package-name>` and update the `scripts` section in `package.json` to specify how the new dependency should be copied into its template.
 
-# Installing the templates locally
+# Running AI templates
+
+By default the templates use just-built versions of `Microsoft.Extensions.AI*` packages, so NuGet packages must be produced before the templates can be run:
+```sh
+.\build.cmd -vs AI -noLaunch # Generate an SDK.sln for Microsoft.Extensions.AI* projects
+.\build.cmd -build -pack     # Build a NuGet package for each project
+```
+
+Alternatively, you can override the `TemplateMicrosoftExtensionsAIVersion` property (defined in the `GeneratedContent.targets` file in this directory) with a publicly-available version. This will disable the template generation logic that utilizes locally-built `Microsoft.Extensions.AI*` packages.
+
+## Installing the templates locally
 
 First, create the template NuGet package by running the following from the repo root:
 ```pwsh
@@ -34,6 +44,24 @@ dotnet new install "<PATH_TO_TEMPLATE_NUPKG>" --debug:reinit # Install the templ
 
 Finally, create a project from the template and run it:
 ```sh
-dotnet new chat # (specify options as necessary)
+dotnet new aichatweb [-A <azureopenai | githubmodels | ollama | openai>] [-V <azureaisearch | local>]
+dotnet run
+```
+
+## Running the templates directly within the repo
+
+The project templates are structured in a way that allows them to be run directly within the repo.
+
+**Note:** For the following commands to succeed, you'll need to either install a compatible .NET SDK globally or prepend the repo's generated `.dotnet` folder to the PATH environment variable.
+
+Navigate to the `Microsoft.Extensions.AI.Templates` folder and run:
+```sh
+dotnet build
+```
+
+This will generate the necessary template content to build and run AI templates from within this repo.
+
+Now, you can navigate to a folder containing a template's `.csproj` file and run:
+```sh
 dotnet run
 ```

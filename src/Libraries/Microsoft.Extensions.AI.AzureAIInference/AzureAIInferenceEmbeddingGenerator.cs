@@ -41,6 +41,9 @@ public sealed class AzureAIInferenceEmbeddingGenerator :
     /// Either this parameter or <see cref="EmbeddingGenerationOptions.ModelId"/> must provide a valid model ID.
     /// </param>
     /// <param name="dimensions">The number of dimensions to generate in each embedding.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="embeddingsClient"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="modelId"/> is empty or composed entirely of whitespace.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="dimensions"/> is not positive.</exception>
     public AzureAIInferenceEmbeddingGenerator(
         EmbeddingsClient embeddingsClient, string? modelId = null, int? dimensions = null)
     {
@@ -70,7 +73,7 @@ public sealed class AzureAIInferenceEmbeddingGenerator :
     }
 
     /// <inheritdoc />
-    object? IEmbeddingGenerator<string, Embedding<float>>.GetService(Type serviceType, object? serviceKey)
+    object? IEmbeddingGenerator.GetService(Type serviceType, object? serviceKey)
     {
         _ = Throw.IfNull(serviceType);
 

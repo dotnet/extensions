@@ -5,10 +5,16 @@ import fs from 'fs/promises';
 import path from 'path';
 import {fileURLToPath} from 'url';
 
+const storagePath = process.argv[2];
+if (!storagePath) {
+    console.error('Usage: node init-devdata.js <storagePath>');
+    process.exit(1);
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const resultsDir = path.join(__dirname, '../../../.storage/results');
+const resultsDir = path.join(storagePath, 'results');
 const scenarioDirents = await fs.readdir(resultsDir, { withFileTypes: true });
 
 let maxBirthtime = 0;

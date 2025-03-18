@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
@@ -10,6 +11,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+using System.Threading;
 using Microsoft.Extensions.AI.JsonSchemaExporter;
 using Xunit;
 
@@ -84,6 +86,12 @@ public static class AIJsonUtilitiesTests
                     Func<AIJsonSchemaCreateContext, JsonNode, JsonNode> transformer = static (context, schema) => (JsonNode)true;
                     property.SetValue(options1, transformer);
                     property.SetValue(options2, transformer);
+                    break;
+
+                case null when property.PropertyType == typeof(Func<ParameterInfo, bool>):
+                    Func<ParameterInfo, bool> includeParameter = static (parameter) => true;
+                    property.SetValue(options1, includeParameter);
+                    property.SetValue(options2, includeParameter);
                     break;
 
                 default:
@@ -387,9 +395,9 @@ public static class AIJsonUtilitiesTests
     public static void AddAIContentType_NonAIContent_ThrowsArgumentException()
     {
         JsonSerializerOptions options = new();
-        Assert.Throws<ArgumentException>(() => options.AddAIContentType(typeof(int), "discriminator"));
-        Assert.Throws<ArgumentException>(() => options.AddAIContentType(typeof(object), "discriminator"));
-        Assert.Throws<ArgumentException>(() => options.AddAIContentType(typeof(ChatMessage), "discriminator"));
+        Assert.Throws<ArgumentException>("contentType", () => options.AddAIContentType(typeof(int), "discriminator"));
+        Assert.Throws<ArgumentException>("contentType", () => options.AddAIContentType(typeof(object), "discriminator"));
+        Assert.Throws<ArgumentException>("contentType", () => options.AddAIContentType(typeof(ChatMessage), "discriminator"));
     }
 
     [Fact]
@@ -415,11 +423,57 @@ public static class AIJsonUtilitiesTests
     public static void AddAIContentType_NullArguments_ThrowsArgumentNullException()
     {
         JsonSerializerOptions options = new();
-        Assert.Throws<ArgumentNullException>(() => ((JsonSerializerOptions)null!).AddAIContentType<DerivedAIContent>("discriminator"));
-        Assert.Throws<ArgumentNullException>(() => ((JsonSerializerOptions)null!).AddAIContentType(typeof(DerivedAIContent), "discriminator"));
-        Assert.Throws<ArgumentNullException>(() => options.AddAIContentType<DerivedAIContent>(null!));
-        Assert.Throws<ArgumentNullException>(() => options.AddAIContentType(typeof(DerivedAIContent), null!));
-        Assert.Throws<ArgumentNullException>(() => options.AddAIContentType(null!, "discriminator"));
+        Assert.Throws<ArgumentNullException>("options", () => ((JsonSerializerOptions)null!).AddAIContentType<DerivedAIContent>("discriminator"));
+        Assert.Throws<ArgumentNullException>("options", () => ((JsonSerializerOptions)null!).AddAIContentType(typeof(DerivedAIContent), "discriminator"));
+        Assert.Throws<ArgumentNullException>("typeDiscriminatorId", () => options.AddAIContentType<DerivedAIContent>(null!));
+        Assert.Throws<ArgumentNullException>("typeDiscriminatorId", () => options.AddAIContentType(typeof(DerivedAIContent), null!));
+        Assert.Throws<ArgumentNullException>("contentType", () => options.AddAIContentType(null!, "discriminator"));
+    }
+
+    [Fact]
+    public static void HashData_Idempotent()
+    {
+        JsonSerializerOptions customOptions = new()
+        {
+            TypeInfoResolver = AIJsonUtilities.DefaultOptions.TypeInfoResolver
+        };
+
+        foreach (JsonSerializerOptions? options in new[] { AIJsonUtilities.DefaultOptions, null, customOptions })
+        {
+            string key1 = AIJsonUtilities.HashDataToString(["a", 'b', 42], options);
+            string key2 = AIJsonUtilities.HashDataToString(["a", 'b', 42], options);
+            string key3 = AIJsonUtilities.HashDataToString([TimeSpan.FromSeconds(1), null, 1.23], options);
+            string key4 = AIJsonUtilities.HashDataToString([TimeSpan.FromSeconds(1), null, 1.23], options);
+
+            Assert.Equal(key1, key2);
+            Assert.Equal(key3, key4);
+            Assert.NotEqual(key1, key3);
+        }
+    }
+
+    [Fact]
+    public static void CreateFunctionJsonSchema_InvokesIncludeParameterCallbackForEveryParameter()
+    {
+        Delegate method = (int first, string second, bool third, CancellationToken fourth, DateTime fifth) => { };
+
+        List<string?> names = [];
+        JsonElement schema = AIJsonUtilities.CreateFunctionJsonSchema(method.Method, inferenceOptions: new()
+        {
+            IncludeParameter = p =>
+            {
+                names.Add(p.Name);
+                return p.Name is "first" or "fifth";
+            }
+        });
+
+        Assert.Equal(["first", "second", "third", "fifth"], names);
+
+        string schemaString = schema.ToString();
+        Assert.Contains("first", schemaString);
+        Assert.DoesNotContain("second", schemaString);
+        Assert.DoesNotContain("third", schemaString);
+        Assert.DoesNotContain("fourth", schemaString);
+        Assert.Contains("fifth", schemaString);
     }
 
     private class DerivedAIContent : AIContent

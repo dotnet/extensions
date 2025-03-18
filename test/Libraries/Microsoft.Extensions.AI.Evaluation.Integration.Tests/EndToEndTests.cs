@@ -33,8 +33,7 @@ public class EndToEndTests
 
         if (Settings.Current.Configured)
         {
-            var options = new RelevanceTruthAndCompletenessEvaluatorOptions(includeReasoning: true);
-            IEvaluator rtcEvaluator = new RelevanceTruthAndCompletenessEvaluator(options);
+            IEvaluator rtcEvaluator = new RelevanceTruthAndCompletenessEvaluator();
             IEvaluator coherenceEvaluator = new CoherenceEvaluator();
             IEvaluator fluencyEvaluator = new FluencyEvaluator();
 
@@ -71,7 +70,7 @@ public class EndToEndTests
             messages.Add(promptMessage);
 
             ChatResponse response = await chatClient.GetResponseAsync(messages, _chatOptions);
-            ChatMessage responseMessage = response.Message;
+            ChatMessage responseMessage = response.Messages.Single();
             Assert.NotNull(responseMessage.Text);
 
             EvaluationResult result = await scenarioRun.EvaluateAsync(promptMessage, responseMessage);
@@ -82,9 +81,9 @@ public class EndToEndTests
             NumericMetric truth = result.Get<NumericMetric>(RelevanceTruthAndCompletenessEvaluator.TruthMetricName);
             NumericMetric completeness = result.Get<NumericMetric>(RelevanceTruthAndCompletenessEvaluator.CompletenessMetricName);
 
-            Assert.True(relevance.Value >= 4, string.Format("Relevance - Reasoning: {0}", relevance.Diagnostics.Single().Message));
-            Assert.True(truth.Value >= 4, string.Format("Truth - Reasoning: {0}", truth.Diagnostics.Single().Message));
-            Assert.True(completeness.Value >= 4, string.Format("Completeness - Reasoning: {0}", completeness.Diagnostics.Single().Message));
+            Assert.True(relevance.Value >= 4, string.Format("Relevance - Reasoning: {0}", relevance.Reason));
+            Assert.True(truth.Value >= 4, string.Format("Truth - Reasoning: {0}", truth.Reason));
+            Assert.True(completeness.Value >= 4, string.Format("Completeness - Reasoning: {0}", completeness.Reason));
 
             NumericMetric coherence = result.Get<NumericMetric>(CoherenceEvaluator.CoherenceMetricName);
             Assert.True(coherence.Value >= 4);
@@ -122,7 +121,7 @@ public class EndToEndTests
             messages.Add(promptMessage);
 
             ChatResponse response = await chatClient.GetResponseAsync(messages, _chatOptions);
-            ChatMessage responseMessage = response.Message;
+            ChatMessage responseMessage = response.Messages.Single();
             Assert.NotNull(responseMessage.Text);
 
             EvaluationResult result = await scenarioRun.EvaluateAsync(promptMessage, responseMessage);
@@ -133,9 +132,9 @@ public class EndToEndTests
             NumericMetric truth = result.Get<NumericMetric>(RelevanceTruthAndCompletenessEvaluator.TruthMetricName);
             NumericMetric completeness = result.Get<NumericMetric>(RelevanceTruthAndCompletenessEvaluator.CompletenessMetricName);
 
-            Assert.True(relevance.Value >= 4, string.Format("Relevance - Reasoning: {0}", relevance.Diagnostics.Single().Message));
-            Assert.True(truth.Value >= 4, string.Format("Truth - Reasoning: {0}", truth.Diagnostics.Single().Message));
-            Assert.True(completeness.Value >= 4, string.Format("Completeness - Reasoning: {0}", completeness.Diagnostics.Single().Message));
+            Assert.True(relevance.Value >= 4, string.Format("Relevance - Reasoning: {0}", relevance.Reason));
+            Assert.True(truth.Value >= 4, string.Format("Truth - Reasoning: {0}", truth.Reason));
+            Assert.True(completeness.Value >= 4, string.Format("Completeness - Reasoning: {0}", completeness.Reason));
 
             NumericMetric coherence = result.Get<NumericMetric>(CoherenceEvaluator.CoherenceMetricName);
             Assert.True(coherence.Value >= 4);

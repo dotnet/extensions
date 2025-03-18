@@ -62,8 +62,8 @@ public abstract class SingleNumericMetricEvaluator : ChatConversationEvaluator
         EvaluationResult result,
         CancellationToken cancellationToken)
     {
-        _ = Throw.IfNull(chatConfiguration, nameof(chatConfiguration));
-        _ = Throw.IfNull(result, nameof(result));
+        _ = Throw.IfNull(chatConfiguration);
+        _ = Throw.IfNull(result);
 
         ChatResponse evaluationResponse =
             await chatConfiguration.ChatClient.GetResponseAsync(
@@ -71,11 +71,11 @@ public abstract class SingleNumericMetricEvaluator : ChatConversationEvaluator
                 _chatOptions,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        string? evaluationResponseText = evaluationResponse.Message.Text?.Trim();
+        string evaluationResponseText = evaluationResponse.Text.Trim();
 
         NumericMetric metric = result.Get<NumericMetric>(MetricName);
 
-        if (string.IsNullOrWhiteSpace(evaluationResponseText))
+        if (string.IsNullOrEmpty(evaluationResponseText))
         {
             metric.AddDiagnostic(
                 EvaluationDiagnostic.Error(

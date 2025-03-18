@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -30,23 +29,25 @@ internal static partial class OpenAIModelMappers
     {
         _ = Throw.IfNull(response);
 
-        if (response.Choices.Count > 1)
-        {
-            throw new NotSupportedException("Creating OpenAI ChatCompletion models with multiple choices is currently not supported.");
-        }
-
         List<ChatToolCall>? toolCalls = null;
-        foreach (AIContent content in response.Message.Contents)
+        ChatRole? role = null;
+        List<AIContent> allContents = [];
+        foreach (ChatMessage message in response.Messages)
         {
-            if (content is FunctionCallContent callRequest)
+            role = message.Role;
+            foreach (AIContent content in message.Contents)
             {
-                toolCalls ??= [];
-                toolCalls.Add(ChatToolCall.CreateFunctionToolCall(
-                    callRequest.CallId,
-                    callRequest.Name,
-                    new(JsonSerializer.SerializeToUtf8Bytes(
-                        callRequest.Arguments,
-                        options.GetTypeInfo(typeof(IDictionary<string, object?>))))));
+                allContents.Add(content);
+                if (content is FunctionCallContent callRequest)
+                {
+                    toolCalls ??= [];
+                    toolCalls.Add(ChatToolCall.CreateFunctionToolCall(
+                        callRequest.CallId,
+                        callRequest.Name,
+                        new(JsonSerializer.SerializeToUtf8Bytes(
+                            callRequest.Arguments,
+                            options.GetTypeInfo(typeof(IDictionary<string, object?>))))));
+                }
             }
         }
 
@@ -60,9 +61,9 @@ internal static partial class OpenAIModelMappers
             id: response.ResponseId ?? CreateCompletionId(),
             model: response.ModelId,
             createdAt: response.CreatedAt ?? DateTimeOffset.UtcNow,
-            role: ToOpenAIChatRole(response.Message.Role).Value,
+            role: ToOpenAIChatRole(role) ?? ChatMessageRole.Assistant,
             finishReason: ToOpenAIFinishReason(response.FinishReason),
-            content: new(ToOpenAIChatContent(response.Message.Contents)),
+            content: new(ToOpenAIChatContent(allContents)),
             toolCalls: toolCalls,
             refusal: response.AdditionalProperties.GetValueOrDefault<string>(nameof(ChatCompletion.Refusal)),
             contentTokenLogProbabilities: response.AdditionalProperties.GetValueOrDefault<IReadOnlyList<ChatTokenLogProbabilityDetails>>(nameof(ChatCompletion.ContentTokenLogProbabilities)),
@@ -138,7 +139,7 @@ internal static partial class OpenAIModelMappers
         }
 
         // Wrap the content in a ChatResponse to return.
-        var response = new ChatResponse([returnMessage])
+        var response = new ChatResponse(returnMessage)
         {
             CreatedAt = openAICompletion.CreatedAt,
             FinishReason = FromOpenAIFinishReason(openAICompletion.FinishReason),
@@ -401,7 +402,8 @@ internal static partial class OpenAIModelMappers
                         jsonFormat.SchemaName ?? "json_schema",
                         BinaryData.FromBytes(
                             JsonSerializer.SerializeToUtf8Bytes(jsonSchema, OpenAIJsonContext.Default.JsonElement)),
-                        jsonFormat.SchemaDescription) :
+                        jsonFormat.SchemaDescription,
+                        jsonSchemaIsStrict: true) :
                     OpenAI.Chat.ChatResponseFormat.CreateJsonObjectFormat();
             }
         }
@@ -442,10 +444,11 @@ internal static partial class OpenAIModelMappers
     /// <summary>Converts an Extensions function to an OpenAI chat tool.</summary>
     private static ChatTool ToOpenAIChatTool(AIFunction aiFunction)
     {
-        bool? strict =
-            aiFunction.AdditionalProperties.TryGetValue("Strict", out object? strictObj) &&
-            strictObj is bool strictValue ?
-            strictValue : null;
+        // Default strict to true, but allow to be overridden by an additional Strict property.
+        bool strict =
+            !aiFunction.AdditionalProperties.TryGetValue("Strict", out object? strictObj) ||
+            strictObj is not bool strictValue ||
+            strictValue;
 
         // Map to an intermediate model so that redundant properties are skipped.
         var tool = JsonSerializer.Deserialize(aiFunction.JsonSchema, OpenAIJsonContext.Default.OpenAIChatToolJson)!;
@@ -564,15 +567,14 @@ internal static partial class OpenAIModelMappers
         }
         else if (contentPart.Kind == ChatMessageContentPartKind.Image)
         {
-            DataContent? imageContent;
-            aiContent = imageContent =
-                contentPart.ImageUri is not null ? new DataContent(contentPart.ImageUri, contentPart.ImageBytesMediaType) :
+            aiContent =
+                contentPart.ImageUri is not null ? new UriContent(contentPart.ImageUri, "image/*") :
                 contentPart.ImageBytes is not null ? new DataContent(contentPart.ImageBytes.ToMemory(), contentPart.ImageBytesMediaType) :
                 null;
 
-            if (imageContent is not null && contentPart.ImageDetailLevel?.ToString() is string detail)
+            if (aiContent is not null && contentPart.ImageDetailLevel?.ToString() is string detail)
             {
-                (imageContent.AdditionalProperties ??= [])[nameof(contentPart.ImageDetailLevel)] = detail;
+                (aiContent.AdditionalProperties ??= [])[nameof(contentPart.ImageDetailLevel)] = detail;
             }
         }
 
@@ -619,7 +621,7 @@ internal static partial class OpenAIModelMappers
     private static T? GetValueOrDefault<T>(this AdditionalPropertiesDictionary? dict, string key) =>
         dict?.TryGetValue(key, out T? value) is true ? value : default;
 
-    private static string CreateCompletionId() => $"chatcmpl-{Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture)}";
+    private static string CreateCompletionId() => $"chatcmpl-{Guid.NewGuid():N}";
 
     /// <summary>Used to create the JSON payload for an OpenAI chat tool description.</summary>
     public sealed class OpenAIChatToolJson
@@ -632,6 +634,9 @@ internal static partial class OpenAIModelMappers
 
         [JsonPropertyName("properties")]
         public Dictionary<string, JsonElement> Properties { get; set; } = [];
+
+        [JsonPropertyName("additionalProperties")]
+        public bool AdditionalProperties { get; set; }
     }
 
     /// <summary>POCO representing function calling info. Used to concatenation information for a single function call from across multiple streaming updates.</summary>

@@ -257,11 +257,11 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
             ReadOnlySpan<char> memoryUsageFile = bufferWriter.Buffer.WrittenSpan;
             int next = GetNextNumber(memoryUsageFile, out long containerMemoryUsage);
 
-            if (containerMemoryUsage == 0 || containerMemoryUsage == -1)
+            if (containerMemoryUsage == -1)
             {
                 memoryUsageInBytesTotal = 0;
                 Throw.InvalidOperationException(
-                    $"We tried to read '{memoryUsageInBytesFile}', and we expected to get a positive number but instead it was: '{memoryUsageFile}'.");
+                    $"We tried to read '{memoryUsageInBytesFile}', and we expected to get a non-negative number but instead it was: '{memoryUsageFile}'.");
             }
 
             memoryUsageInBytesTotal += containerMemoryUsage;

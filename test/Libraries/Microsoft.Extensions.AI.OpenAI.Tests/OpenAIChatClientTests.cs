@@ -195,9 +195,9 @@ public class OpenAIChatClientTests
         Assert.NotNull(response);
 
         Assert.Equal("chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI", response.ResponseId);
-        Assert.Equal("Hello! How can I assist you today?", response.Message.Text);
-        Assert.Single(response.Message.Contents);
-        Assert.Equal(ChatRole.Assistant, response.Message.Role);
+        Assert.Equal("Hello! How can I assist you today?", response.Text);
+        Assert.Single(response.Messages.Single().Contents);
+        Assert.Equal(ChatRole.Assistant, response.Messages.Single().Role);
         Assert.Equal("gpt-4o-mini-2024-07-18", response.ModelId);
         Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_727_888_631), response.CreatedAt);
         Assert.Equal(ChatFinishReason.Stop, response.FinishReason);
@@ -388,7 +388,7 @@ public class OpenAIChatClientTests
                     },
                     {
                         "role": "user",
-                        "content": "i\u0027m good. how are you?"
+                        "content": "i'm good. how are you?"
                     }
                 ],
                 "model": "gpt-4o-mini",
@@ -455,9 +455,9 @@ public class OpenAIChatClientTests
         Assert.NotNull(response);
 
         Assert.Equal("chatcmpl-ADyV17bXeSm5rzUx3n46O7m3M0o3P", response.ResponseId);
-        Assert.Equal("I’m doing well, thank you! What’s on your mind today?", response.Message.Text);
-        Assert.Single(response.Message.Contents);
-        Assert.Equal(ChatRole.Assistant, response.Message.Role);
+        Assert.Equal("I’m doing well, thank you! What’s on your mind today?", response.Text);
+        Assert.Single(response.Messages.Single().Contents);
+        Assert.Equal(ChatRole.Assistant, response.Messages.Single().Role);
         Assert.Equal("gpt-4o-mini-2024-07-18", response.ModelId);
         Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_727_894_187), response.CreatedAt);
         Assert.Equal(ChatFinishReason.Stop, response.FinishReason);
@@ -555,9 +555,9 @@ public class OpenAIChatClientTests
         Assert.NotNull(response);
 
         Assert.Equal("chatcmpl-ADyV17bXeSm5rzUx3n46O7m3M0o3P", response.ResponseId);
-        Assert.Equal("Hi! It's so good to hear from you!", response.Message.Text);
-        Assert.Single(response.Message.Contents);
-        Assert.Equal(ChatRole.Assistant, response.Message.Role);
+        Assert.Equal("Hi! It's so good to hear from you!", response.Text);
+        Assert.Single(response.Messages.Single().Contents);
+        Assert.Equal(ChatRole.Assistant, response.Messages.Single().Role);
         Assert.Equal("gpt-4o-mini-2024-07-18", response.ModelId);
         Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_727_894_187), response.CreatedAt);
         Assert.Equal(ChatFinishReason.Stop, response.FinishReason);
@@ -656,9 +656,9 @@ public class OpenAIChatClientTests
         Assert.NotNull(response);
 
         Assert.Equal("chatcmpl-ADyV17bXeSm5rzUx3n46O7m3M0o3P", response.ResponseId);
-        Assert.Equal("I’m doing well, thank you! What’s on your mind today?", response.Message.Text);
-        Assert.Single(response.Message.Contents);
-        Assert.Equal(ChatRole.Assistant, response.Message.Role);
+        Assert.Equal("I’m doing well, thank you! What’s on your mind today?", response.Text);
+        Assert.Single(response.Messages.Single().Contents);
+        Assert.Equal(ChatRole.Assistant, response.Messages.Single().Role);
         Assert.Equal("gpt-4o-mini-2024-07-18", response.ModelId);
         Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_727_894_187), response.CreatedAt);
         Assert.Equal(ChatFinishReason.Stop, response.FinishReason);
@@ -691,6 +691,7 @@ public class OpenAIChatClientTests
                         "function": {
                             "description": "Gets the age of the specified person.",
                             "name": "GetPersonAge",
+                            "strict":true,
                             "parameters": {
                                 "type": "object",
                                 "required": [
@@ -701,7 +702,8 @@ public class OpenAIChatClientTests
                                         "description": "The person whose age is being requested",
                                         "type": "string"
                                     }
-                                }
+                                },
+                                "additionalProperties": false
                             }
                         },
                         "type": "function"
@@ -771,9 +773,9 @@ public class OpenAIChatClientTests
         });
         Assert.NotNull(response);
 
-        Assert.Null(response.Message.Text);
+        Assert.Empty(response.Text);
         Assert.Equal("gpt-4o-mini-2024-07-18", response.ModelId);
-        Assert.Equal(ChatRole.Assistant, response.Message.Role);
+        Assert.Equal(ChatRole.Assistant, response.Messages.Single().Role);
         Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_727_894_702), response.CreatedAt);
         Assert.Equal(ChatFinishReason.ToolCalls, response.FinishReason);
         Assert.NotNull(response.Usage);
@@ -791,9 +793,8 @@ public class OpenAIChatClientTests
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, response.Usage.AdditionalCounts);
 
-        Assert.Single(response.Choices);
-        Assert.Single(response.Message.Contents);
-        FunctionCallContent fcc = Assert.IsType<FunctionCallContent>(response.Message.Contents[0]);
+        Assert.Single(response.Messages.Single().Contents);
+        FunctionCallContent fcc = Assert.IsType<FunctionCallContent>(response.Messages.Single().Contents[0]);
         Assert.Equal("GetPersonAge", fcc.Name);
         AssertExtensions.EqualFunctionCallParameters(new Dictionary<string, object?> { ["personName"] = "Alice" }, fcc.Arguments);
 
@@ -811,6 +812,7 @@ public class OpenAIChatClientTests
                         "function": {
                             "description": "Gets the age of the specified person.",
                             "name": "GetPersonAge",
+                            "strict":true,
                             "parameters": {
                                 "type": "object",
                                 "required": [
@@ -821,7 +823,8 @@ public class OpenAIChatClientTests
                                         "description": "The person whose age is being requested",
                                         "type": "string"
                                     }
-                                }
+                                },
+                                "additionalProperties": false
                             }
                         },
                         "type": "function"
@@ -1033,9 +1036,9 @@ public class OpenAIChatClientTests
         Assert.NotNull(response);
 
         Assert.Equal("chatcmpl-ADyV17bXeSm5rzUx3n46O7m3M0o3P", response.ResponseId);
-        Assert.Equal("I’m doing well, thank you! What’s on your mind today?", response.Message.Text);
-        Assert.Single(response.Message.Contents);
-        Assert.Equal(ChatRole.Assistant, response.Message.Role);
+        Assert.Equal("I’m doing well, thank you! What’s on your mind today?", response.Text);
+        Assert.Single(response.Messages.Single().Contents);
+        Assert.Equal(ChatRole.Assistant, response.Messages.Single().Role);
         Assert.Equal("gpt-4o-mini-2024-07-18", response.ModelId);
         Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_727_894_187), response.CreatedAt);
         Assert.Equal(ChatFinishReason.Stop, response.FinishReason);

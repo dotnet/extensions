@@ -253,7 +253,7 @@ public partial class AcceptanceTests
                 const string Content = "Client: hello!";
 
                 using var content = new StringContent(Content, null, requestContentType);
-                using var response = await client.PostAsync("/", content).ConfigureAwait(false);
+                using var response = await client.PostAsync("/myroute/123", content).ConfigureAwait(false);
                 Assert.True(response.IsSuccessStatusCode);
 
                 await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout);
@@ -287,6 +287,48 @@ public partial class AcceptanceTests
                     Assert.DoesNotContain(state, x => x.Key == HttpLoggingTagNames.RequestBody);
                     Assert.Equal(7, state!.Count);
                 }
+            });
+    }
+
+    [Fact]
+    public async Task HttpLogging_WhenIncludeUnmatchedRoutes_LogRequestPath()
+    {
+        await RunAsync(
+            LogLevel.Information,
+            services => services.AddHttpLogging(x =>
+            {
+                x.MediaTypeOptions.Clear();
+                x.MediaTypeOptions.AddText("text/*");
+                x.LoggingFields |= HttpLoggingFields.RequestBody;
+            }).AddHttpLoggingRedaction(options => options.IncludeUnmatchedRoutes = true),
+            async (logCollector, client) =>
+            {
+                const string Content = "Client: hello!";
+
+                using var content = new StringContent(Content, null, MediaTypeNames.Text.Html);
+                using var response = await client.PostAsync("/myroute/123", content).ConfigureAwait(false);
+                Assert.True(response.IsSuccessStatusCode);
+
+                await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout);
+
+                Assert.Equal(1, logCollector.Count);
+                Assert.Null(logCollector.LatestRecord.Exception);
+                Assert.Equal(LogLevel.Information, logCollector.LatestRecord.Level);
+                Assert.Equal(LoggingCategory, logCollector.LatestRecord.Category);
+
+                var responseStatus = ((int)response.StatusCode).ToInvariantString();
+                var state = logCollector.LatestRecord.StructuredState!;
+
+                Assert.DoesNotContain(state, x => x.Key == HttpLoggingTagNames.ResponseBody);
+                Assert.DoesNotContain(state, x => x.Key.StartsWith(HttpLoggingTagNames.RequestHeaderPrefix));
+                Assert.DoesNotContain(state, x => x.Key.StartsWith(HttpLoggingTagNames.ResponseHeaderPrefix));
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Host && !string.IsNullOrEmpty(x.Value));
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Path && x.Value == "/myroute/123");
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Method && x.Value == HttpMethod.Post.ToString());
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Duration &&
+                    x.Value != null &&
+                    int.Parse(x.Value, CultureInfo.InvariantCulture) == SlashRouteProcessingTimeMs);
             });
     }
 

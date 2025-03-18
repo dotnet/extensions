@@ -59,6 +59,48 @@ steps:
       displayName: Run tests
 
     - pwsh: |
+        $SourcesDirectory = '$(Build.SourcesDirectory)';
+
+        $destinationPath = "${{ parameters.repoLogPath }}/FailedAssertions"
+        if (-not (Test-Path -Path $destinationPath)) {
+            New-Item -Path $destinationPath -ItemType Directory -Force | Out-Null
+        }
+
+        Get-ChildItem $SourcesDirectory -Filter "*.received.*" -Recurse | `
+            ForEach-Object {
+                # Exclude files that are already in the test results path
+                if ($_.FullName -like "*FailedAssertions*") {
+                    return
+                }
+
+                if ($_.PSIsContainer) {
+                    # Delete the folder if it exists
+                    $dest = Join-Path -Path $destinationPath -ChildPath $_.Name
+                    if (Test-Path -Path $dest) {
+                        Remove-Item -Path $dest -Recurse -Force
+                    }
+                    # Copy folder to logs
+                    Copy-Item -Path $_.FullName -Destination $destinationPath -Recurse -Force
+                }
+                else {
+                    # Calculates the relative path of the file with respect to `$SourcesDirectory`.
+                    $relativePath = [System.IO.Path]::GetRelativePath($SourcesDirectory, $_.FullName)
+                    # Constructs the full destination path for the file, preserving the relative directory structure.
+                    $destinationFile = Join-Path -Path $destinationPath -ChildPath $relativePath
+                    $destinationDirectory = [System.IO.Path]::GetDirectoryName($destinationFile)
+                    # Ensures the destination directory exists (creates it if necessary).
+                    if (-not (Test-Path -Path $destinationDirectory)) {
+                        New-Item -Path $destinationDirectory -ItemType Directory -Force | Out-Null
+                    }
+                    # Copies the file to the destination path.
+                    Copy-Item -Path $_.FullName -Destination $destinationFile -Force
+                }
+            }
+      displayName: Copy failed assertions results to logs
+      condition: always()
+      continueOnError: true
+
+    - pwsh: |
         Get-ChildItem ${{ parameters.repoTestResultsPath }} -Include "*_hangdump.dmp","Sequence_*.xml" -Recurse | `
             ForEach-Object {
                 $sourceFolder = $_.Directory.Name;
@@ -95,15 +137,14 @@ steps:
             artifactName: "$(Agent.JobName)_CodeCoverageResults"
 
   - ${{ if eq(parameters.isWindows, 'true') }}:
+    # Publishing will happen in a subsequent step
     - script: ${{ parameters.buildScript }}
               -projects $(Build.SourcesDirectory)/src/Packages/Microsoft.Internal.Extensions.DotNetApiDocs.Transport/Microsoft.Internal.Extensions.DotNetApiDocs.Transport.proj
-              -restore -build
               -pack
-              -publish $(_PublishArgs)
               -configuration ${{ parameters.buildConfig }}
               /bl:${{ parameters.repoLogPath }}/transport.binlog
               $(_OfficialBuildIdArgs)
-      displayName: Build and publish docs transport package
+      displayName: Pack docs transport package
 
     - pwsh: |
           $(Build.SourcesDirectory)/src/Libraries/Microsoft.Extensions.AI.Evaluation.Reporting/TypeScript/azure-devops-report/build.ps1 -OutputPath $(Build.Arcade.VSIXOutputPath)

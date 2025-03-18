@@ -212,7 +212,8 @@ internal sealed partial class DefaultHybridCache : HybridCache
     }
 
     // exposed as internal for testability
-    internal TimeSpan GetL1AbsoluteExpirationRelativeToNow(HybridCacheEntryOptions? options) => GetEffectiveLocalCacheExpiration(options) ?? _defaultLocalCacheExpiration;
+    internal TimeSpan GetL1AbsoluteExpirationRelativeToNow(HybridCacheEntryOptions? options)
+        => GetEffectiveLocalCacheExpiration(options) ?? _defaultLocalCacheExpiration;
 
     internal TimeSpan GetL2AbsoluteExpirationRelativeToNow(HybridCacheEntryOptions? options) => options?.Expiration ?? _defaultExpiration;
 
@@ -235,7 +236,23 @@ internal sealed partial class DefaultHybridCache : HybridCache
         // precedence between the inheritance between per-entry options and global options, and if a caller
         // provides a per-entry option with *just* the Expiration specified, then that is assumed to also
         // specify the LocalCacheExpiration.
-        return options is not null ? options.LocalCacheExpiration ?? options.Expiration : null;
+        if (options is not null)
+        {
+            if (options.LocalCacheExpiration is { } local)
+            {
+                if (options.Expiration is { } overall)
+                {
+                    // enforce "not exceeding the remaining overall cache lifetime"
+                    return local < overall ? local : overall;
+                }
+
+                return local;
+            }
+
+            return options.Expiration;
+        }
+
+        return null;
     }
 
     private bool ValidateKey(string key)

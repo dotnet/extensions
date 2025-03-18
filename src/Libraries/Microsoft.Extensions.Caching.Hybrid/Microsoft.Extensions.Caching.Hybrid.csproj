@@ -29,7 +29,6 @@
     <MinMutationScore>50</MinMutationScore>
     <Workstream>Fundamentals</Workstream>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <EnablePackageValidation>false</EnablePackageValidation>
   </PropertyGroup>
 
   <ItemGroup>

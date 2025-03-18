@@ -7,6 +7,7 @@
     <PackageTags>dotnet-new;templates;ai</PackageTags>
 
     <Stage>preview</Stage>
+    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
     <Workstream>AI</Workstream>
     <MinCodeCoverage>0</MinCodeCoverage>
     <MinMutationScore>0</MinMutationScore>
@@ -34,16 +35,21 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Keep the exclude patterns below in sync with those in AichatwebTemplatesTests.cs -->
     <Content
       Include="src\ChatWithCustomData\**\*"
       Exclude="
         **\bin\**;
         **\obj\**;
         **\node_modules\**;
-        **\*.user;**\*.in;
+        **\*.user;
+        **\*.in;
         **\*.out.js;
         **\*.generated.css;
-        **\package-lock.json;" />
+        **\package-lock.json;
+        **\ingestioncache.db;
+        **\NuGet.config;
+        **\Directory.Build.targets;" />
     <None Include="THIRD-PARTY-NOTICES.TXT" Pack="true" PackagePath="." />
     <Compile Remove="**\*" />
   </ItemGroup>

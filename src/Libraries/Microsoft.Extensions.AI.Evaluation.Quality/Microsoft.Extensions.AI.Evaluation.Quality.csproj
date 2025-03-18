@@ -9,6 +9,7 @@
   <PropertyGroup>
     <Workstream>AIEval</Workstream>
     <Stage>preview</Stage>
+    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
     <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
     <EnablePackageValidation>false</EnablePackageValidation>
     <!-- The evaluators in this assembly need AI and the tests that cover them are not being run in CI at the moment. -->

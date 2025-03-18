@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -44,6 +45,24 @@ public class AIFunctionFactoryTest
         AIFunction func = AIFunctionFactory.Create((string a = "test") => a + " " + a);
         AssertExtensions.EqualFunctionCallResults("test test", await func.InvokeAsync());
         AssertExtensions.EqualFunctionCallResults("hello hello", await func.InvokeAsync([new KeyValuePair<string, object?>("a", "hello")]));
+    }
+
+    [Fact]
+    public async Task Parameters_MissingRequiredParametersFail_Async()
+    {
+        AIFunction[] funcs =
+        [
+            AIFunctionFactory.Create((string theParam) => theParam + " " + theParam),
+            AIFunctionFactory.Create((string? theParam) => theParam + " " + theParam),
+            AIFunctionFactory.Create((int theParam) => theParam * 2),
+            AIFunctionFactory.Create((int? theParam) => theParam * 2),
+        ];
+
+        foreach (AIFunction f in funcs)
+        {
+            Exception e = await Assert.ThrowsAsync<ArgumentException>(() => f.InvokeAsync());
+            Assert.Contains("'theParam'", e.Message);
+        }
     }
 
     [Fact]
@@ -120,7 +139,7 @@ public class AIFunctionFactoryTest
         Assert.Empty(func.Description);
         Assert.Same(dotnetFunc.Method, func.UnderlyingMethod);
 
-        Func<string, string> dotnetFunc2 = (string a) => a + " " + a;
+        Func<string, string> dotnetFunc2 = a => a + " " + a;
         func = AIFunctionFactory.Create(dotnetFunc2);
         Assert.Contains("Metadata_DerivedFromLambda", func.Name);
         Assert.Empty(func.Description);
@@ -171,5 +190,30 @@ public class AIFunctionFactoryTest
         Assert.Null(options.AdditionalProperties);
         Assert.Null(options.SerializerOptions);
         Assert.Null(options.JsonSchemaCreateOptions);
+    }
+
+    [Fact]
+    public async Task AIFunctionFactoryOptions_SupportsSkippingParameters()
+    {
+        AIFunction func = AIFunctionFactory.Create(
+            (string firstParameter, int secondParameter) => firstParameter + secondParameter,
+            new()
+            {
+                JsonSchemaCreateOptions = new()
+                {
+                    IncludeParameter = p => p.Name != "firstParameter",
+                }
+            });
+
+        Assert.DoesNotContain("firstParameter", func.JsonSchema.ToString());
+        Assert.Contains("secondParameter", func.JsonSchema.ToString());
+
+        JsonElement? result = (JsonElement?)await func.InvokeAsync(new Dictionary<string, object?>
+        {
+            ["firstParameter"] = "test",
+            ["secondParameter"] = 42
+        });
+        Assert.NotNull(result);
+        Assert.Contains("test42", result.ToString());
     }
 }

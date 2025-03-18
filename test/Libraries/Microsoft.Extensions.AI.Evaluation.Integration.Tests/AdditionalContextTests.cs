@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Execution;
@@ -59,7 +60,7 @@ public class AdditionalContextTests
         messages.Add(promptMessage);
 
         ChatResponse response = await chatClient.GetResponseAsync(messages, _chatOptions);
-        ChatMessage responseMessage = response.Message;
+        ChatMessage responseMessage = response.Messages.Single();
         Assert.NotNull(responseMessage.Text);
 
         EvaluationResult result =
@@ -94,7 +95,7 @@ public class AdditionalContextTests
         messages.Add(promptMessage);
 
         ChatResponse response = await chatClient.GetResponseAsync(messages, _chatOptions);
-        ChatMessage responseMessage = response.Message;
+        ChatMessage responseMessage = response.Messages.Single();
         Assert.NotNull(responseMessage.Text);
 
         var baselineResponseForEquivalenceEvaluator =
