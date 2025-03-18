@@ -9,7 +9,7 @@
 
 <ChatHeader OnNewChat="@ResetConversationAsync" />
 
-<ChatMessageList Messages="@messages" InProgressMessage="@currentResponseMessage">
+<ChatMessageList Messages="@messages" @ref="chatMessageList">
     <NoMessagesContent>
         <div>To get started, try asking about these example documents. You can replace these with your own data and replace this message.</div>
         <ChatCitation File="Example_Emergency_Survival_Kit.pdf"/>
@@ -18,8 +18,8 @@
 </ChatMessageList>
 
 <div class="chat-container">
-    <ChatSuggestions OnSelected="@AddUserMessageAsync" @ref="@chatSuggestions" />
-    <ChatInput OnSend="@AddUserMessageAsync" @ref="@chatInput" />
+    <ChatSuggestions OnSelected="@AddUserMessageAsync" @ref="chatSuggestions" />
+    <ChatInput OnSend="@AddUserMessageAsync" @ref="chatInput" />
     <SurveyPrompt /> @* Remove this line to eliminate the template survey message *@
 </div>
 
@@ -42,8 +42,9 @@
 
     private readonly ChatOptions chatOptions = new();
     private readonly List<ChatMessage> messages = new();
+    private readonly List<ChatResponseUpdate> currentResponseUpdates = new();
     private CancellationTokenSource? currentResponseCancellation;
-    private ChatMessage? currentResponseMessage;
+    private ChatMessageList? chatMessageList;
     private ChatInput? chatInput;
     private ChatSuggestions? chatSuggestions;
 
@@ -72,33 +73,35 @@
         messages.AddMessages(response);
 #else*@
         // Stream and display a new response from the IChatClient
-        var responseText = new TextContent("");
-        currentResponseMessage = new ChatMessage(ChatRole.Assistant, [responseText]);
         currentResponseCancellation = new();
-        await foreach (var update in ChatClient.GetStreamingResponseAsync([.. messages], chatOptions, currentResponseCancellation.Token))
+        await foreach (var update in ChatClient.GetStreamingResponseAsync(messages, chatOptions, currentResponseCancellation.Token))
         {
-            messages.AddMessages(update, filter: c => c is not TextContent);
-            responseText.Text += update.Text;
-            ChatMessageItem.NotifyChanged(currentResponseMessage);
+            currentResponseUpdates.Add(update);
+            chatMessageList?.AddStreamingResponseUpdate(update);
         }
 
         // Store the final response in the conversation, and begin getting suggestions
-        messages.Add(currentResponseMessage!);
-        currentResponseMessage = null;
+        CompleteCurrentResponse();
 @*#endif*@
         chatSuggestions?.Update(messages);
     }
 
+@*#if (!IsOllama)*@
+    private void CompleteCurrentResponse()
+    {
+        messages.AddMessages(currentResponseUpdates);
+        currentResponseUpdates.Clear();
+        chatMessageList?.ClearStreamingResponseUpdates();
+    }
+@*#endif*@
+
     private void CancelAnyCurrentResponse()
     {
+@*#if (!IsOllama)*@
         // If a response was cancelled while streaming, include it in the conversation so it's not lost
-        if (currentResponseMessage is not null)
-        {
-            messages.Add(currentResponseMessage);
-        }
-
+        CompleteCurrentResponse();
+@*#endif*@
         currentResponseCancellation?.Cancel();
-        currentResponseMessage = null;
     }
 
     private async Task ResetConversationAsync()

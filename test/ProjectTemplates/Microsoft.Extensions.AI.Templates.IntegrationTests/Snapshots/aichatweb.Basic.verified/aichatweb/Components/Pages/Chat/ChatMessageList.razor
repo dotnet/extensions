@@ -1,15 +1,24 @@
 @inject IJSRuntime JS
 
 <div class="message-list-container">
-    <chat-messages class="page-width message-list" in-progress="@(InProgressMessage is not null)">
+    <chat-messages class="page-width message-list" in-progress="@isInProgress">
         @foreach (var message in Messages)
         {
             <ChatMessageItem @key="@message" Message="@message" />
         }
 
-        @if (InProgressMessage is not null)
+        @if (isInProgress)
         {
-            <ChatMessageItem Message="@InProgressMessage" InProgress="true" />
+            foreach (var content in inProgressContents)
+            {
+                <ChatAssistantContentItem Content="@content" />
+            }
+
+            if (inProgressText is { Length: > 0 })
+            {
+                <ChatAssistantContentItem Text="@inProgressText" />
+            }
+
             <LoadingSpinner />
         }
         else if (IsEmpty)
@@ -20,11 +29,12 @@
 </div>
 
 @code {
-    [Parameter]
-    public required IEnumerable<ChatMessage> Messages { get; set; }
+    private readonly List<AIContent> inProgressContents = new();
+    private string? inProgressText;
+    private bool isInProgress;
 
-    [Parameter]
-    public ChatMessage? InProgressMessage { get; set; }
+    [Parameter, EditorRequired]
+    public required IEnumerable<ChatMessage> Messages { get; set; }
 
     [Parameter]
     public RenderFragment? NoMessagesContent { get; set; }
@@ -38,5 +48,31 @@
             // Activates the auto-scrolling behavior
             await JS.InvokeVoidAsync("import", "./Components/Pages/Chat/ChatMessageList.razor.js");
         }
+    }
+
+    public void AddStreamingResponseUpdate(ChatResponseUpdate update)
+    {
+        isInProgress = true;
+
+        foreach (var content in update.Contents)
+        {
+            if (content is not TextContent)
+            {
+                inProgressContents.Add(content);
+            }
+        }
+
+        inProgressText += update.Text;
+
+        StateHasChanged();
+    }
+
+    public void ClearStreamingResponseUpdates()
+    {
+        isInProgress = false;
+        inProgressContents.Clear();
+        inProgressText = null;
+
+        StateHasChanged();
     }
 }
