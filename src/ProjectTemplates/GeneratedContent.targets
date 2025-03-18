@@ -46,6 +46,8 @@
         AzureIdentityVersion=$(AzureIdentityVersion);
         AzureSearchDocumentsVersion=$(AzureSearchDocumentsVersion);
         CommunityToolkitAspireHostingOllamaVersion=$(CommunityToolkitAspireHostingOllamaVersion);
+        CommunityToolkitAspireHostingSqliteVersion=$(CommunityToolkitAspireHostingSqliteVersion);
+        CommunityToolkitAspireMicrosoftEntityFrameworkCoreSqliteVersion=$(CommunityToolkitAspireMicrosoftEntityFrameworkCoreSqliteVersion);
         CommunityToolkitAspireOllamaSharpVersion=$(CommunityToolkitAspireOllamaSharpVersion);
         MicrosoftEntityFrameworkCoreSqliteVersion=$(TemplateMicrosoftEntityFrameworkCoreSqliteVersion);
         MicrosoftExtensionsAIVersion=$(TemplateRepoPackagesVersion);

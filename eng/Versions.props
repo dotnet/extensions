@@ -153,6 +153,8 @@
     <AzureIdentityVersion>1.13.2</AzureIdentityVersion>
     <AzureSearchDocumentsVersion>11.6.0</AzureSearchDocumentsVersion>
     <CommunityToolkitAspireHostingOllamaVersion>9.2.2-beta.236</CommunityToolkitAspireHostingOllamaVersion>
+    <CommunityToolkitAspireHostingSqliteVersion>9.2.2-beta.236</CommunityToolkitAspireHostingSqliteVersion>
+    <CommunityToolkitAspireMicrosoftEntityFrameworkCoreSqliteVersion>9.2.2-beta.236</CommunityToolkitAspireMicrosoftEntityFrameworkCoreSqliteVersion>
     <CommunityToolkitAspireOllamaSharpVersion>9.2.2-beta.236</CommunityToolkitAspireOllamaSharpVersion>
     <MicrosoftExtensionsServiceDiscoveryVersion>9.1.0</MicrosoftExtensionsServiceDiscoveryVersion>
     <MicrosoftSemanticKernelConnectorsAzureAISearchVersion>1.37.0-preview</MicrosoftSemanticKernelConnectorsAzureAISearchVersion>

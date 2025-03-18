@@ -4,7 +4,7 @@ using Microsoft.Extensions.VectorData;
 using ChatWithCustomData_CSharp.Web.Components;
 using ChatWithCustomData_CSharp.Web.Services;
 using ChatWithCustomData_CSharp.Web.Services.Ingestion;
-#if(IsAzureOpenAI || UseAzureAISearch)
+#if(UseAzureAISearch)
 using Azure;
 #if (UseManagedIdentity)
 using Azure.Identity;
@@ -117,8 +117,7 @@ builder.Services.AddChatClient(chatClient).UseFunctionInvocation().UseLogging();
 builder.Services.AddEmbeddingGenerator(embeddingGenerator);
 #endif
 
-builder.Services.AddDbContext<IngestionCacheDbContext>(options =>
-    options.UseSqlite("Data Source=ingestioncache.db"));
+builder.AddSqliteDbContext<IngestionCacheDbContext>("ingestionCache");
 
 var app = builder.Build();
 IngestionCacheDbContext.Initialize(app.Services);
