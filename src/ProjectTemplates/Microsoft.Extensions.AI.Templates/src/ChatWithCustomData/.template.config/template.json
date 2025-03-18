@@ -24,7 +24,7 @@
   "primaryOutputs": [
     {
       "condition": "(!IsAspire)",
-      "path": "./ChatWithCustomData-CSharp.Web.csproj"
+      "path": "./ChatWithCustomData-CSharp.csproj"
     },
     {
       "condition": "(IsAspire && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\"))",
@@ -53,6 +53,7 @@
       {
         "condition": "(!IsAspire)",
         "rename": {
+          "ChatWithCustomData-CSharp.Web/ChatWithCustomData-CSharp.Web.csproj": "ChatWithCustomData-CSharp.csproj",
           "ChatWithCustomData-CSharp.Web/": "./"
         },
         "exclude": [
@@ -338,6 +339,29 @@
       "valueSource": "name",
       "valueTransform": "vectorStoreIndexNameTransform",
       "replaces": "data-ChatWithCustomData-CSharp.Web-ingestion"
+    },
+    "webProjectNamespaceAdjuster": {
+      "type": "generated",
+      "generator": "switch",
+      "replaces": ".Web",
+      "onlyIf": [{
+        "after": "ChatWithCustomData_CSharp"
+      }, {
+        "after": "ChatWithCustomData-CSharp"
+      }],
+      "parameters": {
+        "evaluator": "C++",
+        "cases": [
+          {
+            "condition": "(IsAspire)",
+            "value": ".Web"
+          },
+          {
+            "condition": "(!IsAspire)",
+            "value": ""
+          }
+        ]
+      }
     }
   },
   "forms": {
