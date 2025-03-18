@@ -25,11 +25,7 @@ internal sealed class DefaultJsonSerializerFactory : IHybridCacheSerializerFacto
         // store the service provider and obtain the default JSON options, keyed by the **open** generic interface type
         _serviceProvider = serviceProvider;
 
-#pragma warning disable IDE0079 // unnecessary suppression: TFM-dependent
-#pragma warning disable IL2026, IL3050 // AOT bits
-        Options = serviceProvider.GetKeyedService<JsonSerializerOptions>(typeof(IHybridCacheSerializer<>)) ?? JsonSerializerOptions.Default;
-#pragma warning restore IL2026, IL3050
-#pragma warning restore IDE0079
+        Options = serviceProvider.GetKeyedService<JsonSerializerOptions>(typeof(IHybridCacheSerializer<>)) ?? SystemDefaultJsonOptions;
     }
 
     public bool TryCreateSerializer<T>([NotNullWhen(true)] out IHybridCacheSerializer<T>? serializer)
@@ -38,7 +34,7 @@ internal sealed class DefaultJsonSerializerFactory : IHybridCacheSerializerFacto
 
         // see if there is a per-type options registered (keyed by the **closed** generic type), otherwise use the default
         JsonSerializerOptions options = _serviceProvider.GetKeyedService<JsonSerializerOptions>(typeof(IHybridCacheSerializer<T>)) ?? Options;
-        if (!options.IncludeFields && IsFieldOnlyType(typeof(T)))
+        if (!options.IncludeFields && ReferenceEquals(options, SystemDefaultJsonOptions) && IsFieldOnlyType(typeof(T)))
         {
             // value-tuples expose fields, not properties; special-case this as a common scenario
             options = FieldEnabledJsonOptions;
@@ -53,6 +49,12 @@ internal sealed class DefaultJsonSerializerFactory : IHybridCacheSerializerFacto
         Dictionary<Type, FieldOnlyResult>? state = null; // only needed for complex types
         return IsFieldOnlyType(type, ref state) == FieldOnlyResult.FieldOnly;
     }
+
+#pragma warning disable IDE0079 // unnecessary suppression: TFM-dependent
+#pragma warning disable IL2026, IL3050 // AOT bits
+    private static JsonSerializerOptions SystemDefaultJsonOptions => JsonSerializerOptions.Default;
+#pragma warning restore IL2026, IL3050
+#pragma warning restore IDE0079
 
     [SuppressMessage("Trimming", "IL2070:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The parameter of method does not have matching annotations.",
         Justification = "Custom serializers may be needed for AOT with STJ")]

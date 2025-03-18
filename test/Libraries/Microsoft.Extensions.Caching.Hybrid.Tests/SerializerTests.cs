@@ -81,9 +81,9 @@ public class SerializerTests
 
     [Theory]
     [InlineData(JsonSerializer.None, JsonSerializer.FieldEnabled)]
-    [InlineData(JsonSerializer.CustomGlobal, JsonSerializer.FieldEnabled)]
-    [InlineData(JsonSerializer.CustomPerType, JsonSerializer.FieldEnabled)]
-    [InlineData(JsonSerializer.CustomPerType | JsonSerializer.CustomGlobal, JsonSerializer.FieldEnabled)]
+    [InlineData(JsonSerializer.CustomGlobal, JsonSerializer.CustomGlobal)]
+    [InlineData(JsonSerializer.CustomPerType, JsonSerializer.CustomPerType)]
+    [InlineData(JsonSerializer.CustomPerType | JsonSerializer.CustomGlobal, JsonSerializer.CustomPerType)]
     public void RoundTripValueTuple(JsonSerializer addSerializers, JsonSerializer expectedSerializer)
     {
         var obj = RoundTrip((42, "abc"), """{"Item1":42,"Item2":"abc"}"""u8, expectedSerializer, addSerializers);
@@ -93,9 +93,9 @@ public class SerializerTests
 
     [Theory]
     [InlineData(JsonSerializer.None, JsonSerializer.FieldEnabled)]
-    [InlineData(JsonSerializer.CustomGlobal, JsonSerializer.FieldEnabled)]
-    [InlineData(JsonSerializer.CustomPerType, JsonSerializer.FieldEnabled)]
-    [InlineData(JsonSerializer.CustomPerType | JsonSerializer.CustomGlobal, JsonSerializer.FieldEnabled)]
+    [InlineData(JsonSerializer.CustomGlobal, JsonSerializer.CustomGlobal)]
+    [InlineData(JsonSerializer.CustomPerType, JsonSerializer.CustomPerType)]
+    [InlineData(JsonSerializer.CustomPerType | JsonSerializer.CustomGlobal, JsonSerializer.CustomPerType)]
     public void RoundTripNamedValueTuple(JsonSerializer addSerializers, JsonSerializer expectedSerializer)
     {
         var obj = RoundTrip((X: 42, Y: "abc"), """{"Item1":42,"Item2":"abc"}"""u8, expectedSerializer, addSerializers);
@@ -224,13 +224,13 @@ public class SerializerTests
 
         if ((addSerializers & JsonSerializer.CustomGlobal) != JsonSerializer.None)
         {
-            globalOptions = new();
+            globalOptions = new() { IncludeFields = true }; // assume any custom options will serialize the whole type
             services.AddKeyedSingleton<JsonSerializerOptions>(typeof(IHybridCacheSerializer<>), globalOptions);
         }
 
         if ((addSerializers & JsonSerializer.CustomPerType) != JsonSerializer.None)
         {
-            perTypeOptions = new();
+            perTypeOptions = new() { IncludeFields = true }; // assume any custom options will serialize the whole type
             services.AddKeyedSingleton<JsonSerializerOptions>(typeof(IHybridCacheSerializer<T>), perTypeOptions);
         }
 
