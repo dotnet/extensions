@@ -68,9 +68,7 @@ public class AichatwebTemplatesTests : TestBase
             ScrubbersDefinition.Empty.AddScrubber((path, content) =>
             {
                 string filePath = path.UnixifyDirSeparators();
-                if (filePath.EndsWith("aichatweb/ChatWithCustomData.Web/ChatWithCustomData.Web.csproj") ||
-                    filePath.EndsWith("aichatweb/aichatweb.csproj") ||
-                    filePath.EndsWith("aichatweb/aichatweb.csproj.in"))
+                if (filePath.EndsWith("aichatweb/aichatweb.csproj"))
                 {
                     content.ScrubByRegex("<UserSecretsId>(.*)<\\/UserSecretsId>", "<UserSecretsId>secret</UserSecretsId>");
 

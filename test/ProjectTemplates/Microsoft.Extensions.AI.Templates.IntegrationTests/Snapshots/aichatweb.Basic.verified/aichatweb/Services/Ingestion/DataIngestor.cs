@@ -19,7 +19,7 @@ public class DataIngestor(
 
     public async Task IngestDataAsync(IIngestionSource source)
     {
-        var vectorCollection = vectorStore.GetCollection<string, SemanticSearchRecord>("data-aichatweb-ingested");
+        var vectorCollection = vectorStore.GetCollection<Guid, SemanticSearchRecord>("data-aichatweb-ingested");
         await vectorCollection.CreateCollectionIfNotExistsAsync();
 
         var documentsForSource = ingestionCacheDb.Documents
@@ -44,7 +44,7 @@ public class DataIngestor(
             {
                 await vectorCollection.DeleteBatchAsync(modifiedDoc.Records.Select(r => r.Id));
             }
-            
+
             var newRecords = await source.CreateRecordsForDocumentAsync(embeddingGenerator, modifiedDoc.Id);
             await foreach (var id in vectorCollection.UpsertBatchAsync(newRecords)) { }
 

@@ -52,12 +52,12 @@ public class PDFDirectorySource(string sourceDirectory) : IIngestionSource
     {
         using var pdf = PdfDocument.Open(Path.Combine(sourceDirectory, documentId));
         var paragraphs = pdf.GetPages().SelectMany(GetPageParagraphs).ToList();
-        
+
         var embeddings = await embeddingGenerator.GenerateAsync(paragraphs.Select(c => c.Text));
 
         return paragraphs.Zip(embeddings).Select((pair, index) => new SemanticSearchRecord
         {
-            Key = $"{Path.GetFileNameWithoutExtension(documentId)}_{pair.First.PageNumber}_{pair.First.IndexOnPage}",
+            Key = Guid.CreateVersion7(),
             FileName = documentId,
             PageNumber = pair.First.PageNumber,
             Text = pair.First.Text,
