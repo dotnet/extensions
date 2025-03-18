@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" Version="${AspireVersion}" />
-<!--#if (IsQdrant) -->
+<!--#if (UseQdrant) -->
     <PackageReference Include="Aspire.Hosting.Qdrant" Version="${AspireVersion}" />
 <!--#endif -->
 <!--#if (IsOllama)

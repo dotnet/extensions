@@ -70,6 +70,12 @@
         "rename": {
           "Program.Aspire.cs": "Program.cs"
         }
+      },
+      {
+        "condition": "(UseLocalVectorStore)",
+        "exclude": [
+          "ChatWithCustomData-CSharp.Web/Services/JsonVectorStore.cs"
+        ]
       }
     ]
   }],
@@ -165,7 +171,7 @@
     },
     "IsAspire": {
       "type": "computed",
-      "value": "(UseAspire || AiServiceProvider == \"qdrant\")"
+      "value": "(UseAspire || VectorStore == \"qdrant\")"
     },
     "IsAzureOpenAI": {
       "type": "computed",
@@ -194,6 +200,10 @@
     "UseLocalVectorStore": {
       "type": "computed",
       "value": "(VectorStore == \"local\")"
+    },
+    "UseQdrant": {
+      "type": "computed",
+      "value": "(VectorStore == \"qdrant\")"
     },
     "UseAzure": {
       "type": "computed",

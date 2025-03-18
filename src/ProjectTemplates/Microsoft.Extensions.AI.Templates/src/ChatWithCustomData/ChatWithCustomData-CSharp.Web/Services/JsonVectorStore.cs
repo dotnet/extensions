@@ -131,11 +131,11 @@ public class JsonVectorStore(string basePath) : IVectorStore
                 filteredRecords = filteredRecords.AsQueryable().Where(filter);
             }
 
-            var ranked = (from record in filteredRecords
-                          let candidateVector = _getVector(record)
-                          let similarity = TensorPrimitives.CosineSimilarity(candidateVector.Span, floatVector.Span)
-                          orderby similarity descending
-                          select (Record: record, Similarity: similarity));
+            var ranked = from record in filteredRecords
+                         let candidateVector = _getVector(record)
+                         let similarity = TensorPrimitives.CosineSimilarity(candidateVector.Span, floatVector.Span)
+                         orderby similarity descending
+                         select (Record: record, Similarity: similarity);
 
             var results = ranked.Skip(options?.Skip ?? 0).Take(options?.Top ?? int.MaxValue);
             return Task.FromResult(new VectorSearchResults<TRecord>(

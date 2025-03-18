@@ -12,7 +12,8 @@ using Azure.Identity;
 using System.ClientModel;
 #endif
 #endif
-#if (IsOpenAI || IsGHModels)
+#if (IsOllama)
+#elif (IsOpenAI || IsGHModels)
 using OpenAI;
 using System.ClientModel;
 #else
@@ -46,8 +47,12 @@ var ghModelsClient = new OpenAIClient(credential, openAIOptions);
 var chatClient = ghModelsClient.AsChatClient("gpt-4o-mini");
 var embeddingGenerator = ghModelsClient.AsEmbeddingGenerator("text-embedding-3-small");
 #elif (IsOllama)
-var chatClient = AddOllamaApiClient("chat").AddChatClient();
-var embeddingGenerator = AddOllamaApiClient("embeddings").AddEmbeddingGenerator();
+builder.AddOllamaApiClient("chat")
+    .AddChatClient()
+    .UseFunctionInvocation()
+    .UseLogging();
+builder.AddOllamaApiClient("embeddings")
+    .AddEmbeddingGenerator();
 #elif (IsOpenAI)
 // You will need to set the endpoint and key to your own values
 // You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
@@ -106,8 +111,11 @@ builder.Services.AddSingleton<IVectorStore>(vectorStore);
 #endif
 builder.Services.AddScoped<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();
+#if (IsOllama)
+#else
 builder.Services.AddChatClient(chatClient).UseFunctionInvocation().UseLogging();
 builder.Services.AddEmbeddingGenerator(embeddingGenerator);
+#endif
 
 builder.Services.AddDbContext<IngestionCacheDbContext>(options =>
     options.UseSqlite("Data Source=ingestioncache.db"));

@@ -8,12 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-<!--#if (IsOllama)
-#if (IsAspire)
+<!--#if (IsOllama && IsAspire)
     <PackageReference Include="CommunityToolkit.Aspire.OllamaSharp" Version="${CommunityToolkitAspireOllamaSharpVersion}" />
-#else
+#endif -->
+<!--#if (IsOllama)
     <PackageReference Include="OllamaSharp" Version="${OllamaSharpVersion}" />
-#endif
 #elif (IsGHModels)
     <PackageReference Include="OpenAI" Version="${OpenAIVersion}" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${MicrosoftExtensionsAIVersion}" />
@@ -36,13 +35,13 @@
 <!--#if (UseAzureAISearch)
     <PackageReference Include="Azure.Search.Documents" Version="${AzureSearchDocumentsVersion}" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureAISearch" Version="${MicrosoftSemanticKernelConnectorsAzureAISearchVersion}" />
-#elif (IsQdrant)-->
+#elif (UseQdrant)-->
     <PackageReference Include="Aspire.Qdrant.Client" Version="${AspireVersion}" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.Qdrant" Version="${MicrosoftSemanticKernelConnectorsQdrantVersion}" />
 <!--#endif -->
   </ItemGroup>
-
 <!--#if (IsAspire) -->
+
   <ItemGroup>
     <ProjectReference Include="..\ChatWithCustomData-CSharp.ServiceDefaults\ChatWithCustomData-CSharp.ServiceDefaults.csproj" />
   </ItemGroup>
