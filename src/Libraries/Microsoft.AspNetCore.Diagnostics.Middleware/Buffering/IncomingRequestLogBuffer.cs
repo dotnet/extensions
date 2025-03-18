@@ -21,10 +21,10 @@ internal sealed class IncomingRequestLogBuffer
     private readonly IOptionsMonitor<PerRequestLogBufferingOptions> _options;
     private readonly ConcurrentQueue<SerializedLogRecord> _buffer;
     private readonly TimeProvider _timeProvider = TimeProvider.System;
+    private readonly LogBufferingFilterRule[] _filterRules;
 
     private int _bufferSize;
     private DateTimeOffset _lastFlushTimestamp;
-    private readonly LogBufferingFilterRule[] _filterRules;
 
     public IncomingRequestLogBuffer(
         IBufferedLogger bufferedLogger,
@@ -43,19 +43,20 @@ internal sealed class IncomingRequestLogBuffer
     public bool TryEnqueue<TState>(LogEntry<TState> logEntry)
     {
         SerializedLogRecord serializedLogRecord = default;
-        if(logEntry.State is IReadOnlyList<KeyValuePair<string, object?>> attributes)
+        TState state = logEntry.State;
+        if (state is IReadOnlyList<KeyValuePair<string, object?>> attributes)
         {
             if (!IsEnabled(logEntry.LogLevel, logEntry.EventId, attributes))
             {
                 return false;
             }
-            serializedLogRecord = SerializedLogRecordFactory.Create(logEntry.LogLevel, logEntry.EventId, _timeProvider.GetUtcNow(), attributes, logEntry.Exception,
-                logEntry.Formatter(logEntry.State, logEntry.Exception));
-        }
 
+            serializedLogRecord = SerializedLogRecordFactory.Create(logEntry.LogLevel, logEntry.EventId, _timeProvider.GetUtcNow(), attributes, logEntry.Exception,
+                logEntry.Formatter(state, logEntry.Exception));
+        }
         else
         {
-            // we expect logEntry.State to be either ModernTagJoiner or LegacyTagJoiner
+            // we expect state to be either ModernTagJoiner or LegacyTagJoiner
             // which both implement IReadOnlyList<KeyValuePair<string, object?>>
             // and if not, we throw an exception
             Throw.InvalidOperationException($"Unsupported type of the log state detected: {typeof(TState)}");
