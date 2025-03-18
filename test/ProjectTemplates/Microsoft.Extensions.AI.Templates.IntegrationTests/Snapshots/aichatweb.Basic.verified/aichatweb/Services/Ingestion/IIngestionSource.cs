@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.AI;
 
-namespace aichatweb.Web.Services.Ingestion;
+namespace aichatweb.Services.Ingestion;
 
 public interface IIngestionSource
 {

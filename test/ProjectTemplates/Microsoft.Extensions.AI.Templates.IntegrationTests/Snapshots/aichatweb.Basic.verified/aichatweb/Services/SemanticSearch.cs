@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
-namespace aichatweb.Web.Services;
+namespace aichatweb.Services;
 
 public class SemanticSearch(
     IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
@@ -10,12 +10,15 @@ public class SemanticSearch(
     public async Task<IReadOnlyList<SemanticSearchRecord>> SearchAsync(string text, string? filenameFilter, int maxResults)
     {
         var queryEmbedding = await embeddingGenerator.GenerateEmbeddingVectorAsync(text);
-        var vectorCollection = vectorStore.GetCollection<Guid, SemanticSearchRecord>("data-aichatweb-ingested");
+        var vectorCollection = vectorStore.GetCollection<string, SemanticSearchRecord>("data-aichatweb-ingested");
+        var filter = filenameFilter is { Length: > 0 }
+            ? new VectorSearchFilter().EqualTo(nameof(SemanticSearchRecord.FileName), filenameFilter)
+            : null;
 
-        var nearest = await vectorCollection.VectorizedSearchAsync(queryEmbedding, new VectorSearchOptions<SemanticSearchRecord>
+        var nearest = await vectorCollection.VectorizedSearchAsync(queryEmbedding, new VectorSearchOptions
         {
             Top = maxResults,
-            Filter = filenameFilter is { Length: > 0 } ? record => record.FileName == filenameFilter : null,
+            Filter = filter,
         });
         var results = new List<SemanticSearchRecord>();
         await foreach (var item in nearest.Results)

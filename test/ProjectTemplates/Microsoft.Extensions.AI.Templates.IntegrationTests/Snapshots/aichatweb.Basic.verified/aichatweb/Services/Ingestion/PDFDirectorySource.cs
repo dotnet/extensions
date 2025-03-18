@@ -6,7 +6,7 @@ using UglyToad.PdfPig;
 using Microsoft.Extensions.AI;
 using UglyToad.PdfPig.Content;
 
-namespace aichatweb.Web.Services.Ingestion;
+namespace aichatweb.Services.Ingestion;
 
 public class PDFDirectorySource(string sourceDirectory) : IIngestionSource
 {
@@ -52,12 +52,12 @@ public class PDFDirectorySource(string sourceDirectory) : IIngestionSource
     {
         using var pdf = PdfDocument.Open(Path.Combine(sourceDirectory, documentId));
         var paragraphs = pdf.GetPages().SelectMany(GetPageParagraphs).ToList();
-
+        
         var embeddings = await embeddingGenerator.GenerateAsync(paragraphs.Select(c => c.Text));
 
         return paragraphs.Zip(embeddings).Select((pair, index) => new SemanticSearchRecord
         {
-            Key = Guid.CreateVersion7(),
+            Key = $"{Path.GetFileNameWithoutExtension(documentId)}_{pair.First.PageNumber}_{pair.First.IndexOnPage}",
             FileName = documentId,
             PageNumber = pair.First.PageNumber,
             Text = pair.First.Text,

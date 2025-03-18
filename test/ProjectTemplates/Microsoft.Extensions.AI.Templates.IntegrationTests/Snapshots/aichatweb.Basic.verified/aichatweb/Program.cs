@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using aichatweb.Web.Components;
-using aichatweb.Web.Services;
-using aichatweb.Web.Services.Ingestion;
+using aichatweb.Components;
+using aichatweb.Services;
+using aichatweb.Services.Ingestion;
 using OpenAI;
 using System.ClientModel;
 
