@@ -78,13 +78,9 @@ variables:
   - ${{ if or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/validation/'), eq(variables['Build.Reason'], 'Manual')) }}:
     - name: PostBuildSign
       value: false
-    - name: _BrandingArgs
-      value: /p:configureDotNetFinalVersionKind=true
   - ${{ else }}:
     - name: PostBuildSign
       value: true
-    - name: _BrandingArgs
-      value: ''
 
   # Produce test-signed build for PR and Public builds
   - ${{ if or(eq(variables['runAsPublic'], 'true'), eq(variables['Build.Reason'], 'PullRequest')) }}:
