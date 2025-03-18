@@ -5,14 +5,15 @@
     <Description Condition="'$(Stage)' == 'dev'">Experimental package. $(Description)</Description>
     <Description Condition="'$(Stage)' == 'obsolete'">Obsolete Package. $(Description)</Description>
 
+    <!--
+        In 8.0, we shipped Microsoft.AspNetCore.Testing package as stable even when it was in the dev stage, so we
+        keep it as stable for compatiblity.
+      -->
     <_IsStable Condition="('$(Stage)' != 'dev' and '$(Stage)' != 'preview') Or '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.Testing'">true</_IsStable>
 
     <!--
         When DotNetFinalVersionKind is set to 'release' (only for the release branches),
         the build will produce stable outputs for 'Shipping' packages.
-
-        In 8.0, we shipped Microsoft.AspNetCore.Testing package as stable even when it was in the dev stage, so we
-        keep it as stable for compatiblity.
       -->
     <DotNetFinalVersionKind Condition=" '$(StabilizePackageVersion)' == 'true' And '$(DotNetFinalVersionKind)' == '' And '$(_IsStable)' == 'true' ">release</DotNetFinalVersionKind>
 
