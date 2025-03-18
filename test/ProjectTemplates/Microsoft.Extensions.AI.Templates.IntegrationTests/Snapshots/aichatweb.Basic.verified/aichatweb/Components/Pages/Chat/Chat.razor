@@ -66,9 +66,10 @@
         var responseText = new TextContent("");
         currentResponseMessage = new ChatMessage(ChatRole.Assistant, [responseText]);
         currentResponseCancellation = new();
-        await foreach (var chunk in ChatClient.GetStreamingResponseAsync(messages, chatOptions, currentResponseCancellation.Token))
+        await foreach (var update in ChatClient.GetStreamingResponseAsync([.. messages], chatOptions, currentResponseCancellation.Token))
         {
-            responseText.Text += chunk.Text;
+            messages.AddMessages(update, filter: c => c is not TextContent);
+            responseText.Text += update.Text;
             ChatMessageItem.NotifyChanged(currentResponseMessage);
         }
 
