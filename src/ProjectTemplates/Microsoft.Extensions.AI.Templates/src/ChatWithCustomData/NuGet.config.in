@@ -5,12 +5,16 @@
 -->
 <configuration>
   <packageSources>
+    <add key="local-shipping" value="${ArtifactsShippingPackagesDir}" />
     <add key="nuget" value="https://api.nuget.org/v3/index.json" />
   </packageSources>
   <packageSourceMapping>
     <packageSource key="nuget">
       <package pattern="CommunityToolkit.*" />
       <package pattern="OllamaSharp" />
+    </packageSource>
+    <packageSource key="local-shipping">
+      <package pattern="*" />
     </packageSource>
   </packageSourceMapping>
 </configuration>

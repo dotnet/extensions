@@ -21,6 +21,7 @@
     <EnableDefaultItems>false</EnableDefaultItems>
     <NoDefaultExcludes>true</NoDefaultExcludes>
     <NoPackageAnalysis>true</NoPackageAnalysis>
+    <NoWarn>$(NoWarn);NU1702</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

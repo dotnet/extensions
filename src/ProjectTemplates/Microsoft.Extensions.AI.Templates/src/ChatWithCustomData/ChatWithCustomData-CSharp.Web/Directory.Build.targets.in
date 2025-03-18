@@ -7,7 +7,6 @@
 
   <PropertyGroup>
     <_LocalChatTemplateVariant>${LocalChatTemplateVariant}</_LocalChatTemplateVariant>
-    <_UsingJustBuiltPackages>${UsingJustBuiltPackages}</_UsingJustBuiltPackages>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,14 +18,4 @@
       Condition="'$(_LocalChatTemplateVariant)' != 'singleproject'"
       Remove="Program.cs" />
   </ItemGroup>
-
-  <Target
-    Name="_EnsurePackagesBuiltLocally"
-    Condition="'$(_UsingJustBuiltPackages)' == 'true'"
-    BeforeTargets="Restore">
-
-    <Error
-      Condition="!Exists('${ArtifactsShippingPackagesDir}')"
-      Text="Repo packages must be built locally before running this project. See src/ProjectTemplates/README.md for more info." />
-  </Target>
 </Project>
