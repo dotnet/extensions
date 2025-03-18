@@ -606,6 +606,39 @@ public class FunctionInvokingChatClientTests
         Assert.Equal("done!", (await service.GetStreamingResponseAsync("hey", options).ToChatResponseAsync()).ToString());
     }
 
+    [Fact]
+    public async Task FunctionInvocations_PassesServices()
+    {
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1", new Dictionary<string, object?> { ["arg1"] = "value1" })]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create((
+                [FromServices] ILogger<FunctionInvokingChatClientTests> logger1,
+                [FromKeyedServices("something")] object arg1,
+                [FromServices] FunctionInvokingChatClientTests? arg2 = null,
+                [FromKeyedServices("nonexistent")] ILogger<FunctionInvokingChatClientTests>? logger2 = null) =>
+            {
+                Assert.NotNull(logger1);
+                Assert.True(arg1 is int i && i == 42);
+                Assert.Null(arg2);
+                Assert.Null(logger2);
+                return "Result 1";
+            }, "Func1")]
+        };
+
+        ServiceCollection c = new();
+        c.AddLogging(b => b.AddProvider(new FakeLoggerProvider(new FakeLogCollector())));
+        c.AddKeyedSingleton<object>("something", 42);
+        await InvokeAndAssertAsync(options, plan, services: c.BuildServiceProvider());
+    }
+
     private static async Task<List<ChatMessage>> InvokeAndAssertAsync(
         ChatOptions options,
         List<ChatMessage> plan,

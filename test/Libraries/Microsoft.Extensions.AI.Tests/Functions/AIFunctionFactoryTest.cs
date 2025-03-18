@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.Extensions.AI;
@@ -216,4 +217,59 @@ public class AIFunctionFactoryTest
         Assert.NotNull(result);
         Assert.Contains("test42", result.ToString());
     }
+
+    [Fact]
+    public async Task AIFunctionArguments_ServicesSatisfyParameters()
+    {
+        MyService myService1 = new();
+        MyService myService2 = new();
+
+        ServiceCollection sc = new();
+        sc.AddSingleton(myService1);
+        sc.AddKeyedSingleton("myKey", myService2);
+        IServiceProvider sp = sc.BuildServiceProvider();
+
+        AIFunction func = AIFunctionFactory.Create((
+            int myInteger,
+            [FromServices] MyService arg1,
+            [FromKeyedServices("myKey")] MyService arg2,
+            [FromServices] MyService? arg3 = null,
+            [FromKeyedServices("otherKey")] MyService? arg4 = null,
+            [FromServices] AIFunctionFactoryTest? arg5 = null) =>
+        {
+            Assert.Same(myService1, arg1);
+            Assert.Same(myService2, arg2);
+            Assert.Same(myService1, arg3);
+            Assert.Null(arg4);
+            Assert.Null(arg5);
+            return myInteger;
+        });
+
+        Assert.Contains("myInteger", func.JsonSchema.ToString());
+        Assert.DoesNotContain("myLogger", func.JsonSchema.ToString());
+
+        await Assert.ThrowsAsync<ArgumentException>("arguments", () => func.InvokeAsync([new KeyValuePair<string, object?>("myInteger", 42)]));
+        var result = await func.InvokeAsync(new AIFunctionArguments([new KeyValuePair<string, object?>("myInteger", 42)]) { Services = sp });
+
+        Assert.Contains("42", result?.ToString());
+    }
+
+    [Fact]
+    public async Task AIFunctionArguments_MissingServices_Throws()
+    {
+        ServiceCollection sc = new();
+        IServiceProvider sp = sc.BuildServiceProvider();
+
+        AIFunction func;
+
+        func = AIFunctionFactory.Create(void ([FromServices] MyService arg1) => throw new FormatException("uh oh"));
+        await Assert.ThrowsAsync<ArgumentException>("arguments", () => func.InvokeAsync(
+            new AIFunctionArguments([new KeyValuePair<string, object?>("myInteger", 42)]) { Services = sp }));
+
+        func = AIFunctionFactory.Create(void ([FromKeyedServices("notthere")] MyService arg1) => throw new FormatException("uh oh"));
+        await Assert.ThrowsAsync<ArgumentException>("arguments", () => func.InvokeAsync(
+            new AIFunctionArguments([new KeyValuePair<string, object?>("myInteger", 42)]) { Services = sp }));
+    }
+
+    private sealed class MyService;
 }
