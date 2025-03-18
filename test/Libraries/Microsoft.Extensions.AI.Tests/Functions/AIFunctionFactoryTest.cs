@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.Extensions.AI;
@@ -215,5 +216,56 @@ public class AIFunctionFactoryTest
         });
         Assert.NotNull(result);
         Assert.Contains("test42", result.ToString());
+    }
+
+    [Fact]
+    public async Task AIFunctionArguments_ServicesSatisfyParameters()
+    {
+        ServiceCollection sc = new();
+        IServiceProvider sp = sc.BuildServiceProvider();
+
+        AIFunction func = AIFunctionFactory.Create((
+            int myInteger,
+            IServiceProvider services1,
+            IServiceProvider services2,
+            IServiceProvider? services3,
+            IServiceProvider? services4 = null) =>
+        {
+            Assert.Same(sp, services1);
+            Assert.Same(sp, services2);
+            Assert.Same(sp, services3);
+            Assert.Same(sp, services4);
+            return myInteger;
+        });
+
+        Assert.Contains("myInteger", func.JsonSchema.ToString());
+        Assert.DoesNotContain("services", func.JsonSchema.ToString());
+
+        await Assert.ThrowsAsync<ArgumentException>("arguments", () => func.InvokeAsync([new KeyValuePair<string, object?>("myInteger", 42)]));
+        var result = await func.InvokeAsync([new KeyValuePair<string, object?>("myInteger", 42)], sp);
+
+        Assert.Contains("42", result?.ToString());
+    }
+
+    [Fact]
+    public async Task AIFunctionArguments_MissingServicesMayBeOptional()
+    {
+        ServiceCollection sc = new();
+        IServiceProvider sp = sc.BuildServiceProvider();
+
+        AIFunction func = AIFunctionFactory.Create((
+            int myInteger,
+            IServiceProvider? services = null) =>
+        {
+            Assert.Null(services);
+            return myInteger;
+        });
+
+        Assert.Contains("myInteger", func.JsonSchema.ToString());
+        Assert.DoesNotContain("services", func.JsonSchema.ToString());
+
+        var result = await func.InvokeAsync([new KeyValuePair<string, object?>("myInteger", 42)]);
+
+        Assert.Contains("42", result?.ToString());
     }
 }

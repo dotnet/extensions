@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Diagnostics;
@@ -63,11 +64,13 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// </summary>
     /// <param name="innerClient">The underlying <see cref="IChatClient"/>, or the next instance in a chain of clients.</param>
     /// <param name="logger">An <see cref="ILogger"/> to use for logging information about function invocation.</param>
-    public FunctionInvokingChatClient(IChatClient innerClient, ILogger? logger = null)
+    /// <param name="services">An optional <see cref="IServiceProvider"/> to use for resolving services required by the <see cref="AIFunction"/> instances being invoked.</param>
+    public FunctionInvokingChatClient(IChatClient innerClient, ILogger? logger = null, IServiceProvider? services = null)
         : base(innerClient)
     {
-        _logger = logger ?? NullLogger.Instance;
+        _logger = logger ?? (ILogger?)services?.GetService<ILogger<FunctionInvokingChatClient>>() ?? NullLogger.Instance;
         _activitySource = innerClient.GetService<ActivitySource>();
+        Services = services;
     }
 
     /// <summary>
@@ -81,6 +84,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         get => _currentContext.Value;
         protected set => _currentContext.Value = value;
     }
+
+    /// <summary>Gets the <see cref="IServiceProvider"/> used for resolving services required by the <see cref="AIFunction"/> instances being invoked.</summary>
+    public IServiceProvider? Services { get; }
 
     /// <summary>
     /// Gets or sets a value indicating whether to handle exceptions that occur during function calls.
@@ -722,7 +728,10 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         try
         {
             CurrentContext = context;
-            result = await context.Function.InvokeAsync(context.CallContent.Arguments, cancellationToken).ConfigureAwait(false);
+            result = await context.Function.InvokeAsync(
+                context.CallContent.Arguments,
+                Services,
+                cancellationToken).ConfigureAwait(false);
         }
         catch (Exception e)
         {
