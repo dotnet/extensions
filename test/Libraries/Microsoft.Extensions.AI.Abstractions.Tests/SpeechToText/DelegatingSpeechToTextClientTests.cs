@@ -40,7 +40,7 @@ public class DelegatingSpeechToTextClientTests
         using var delegating = new NoOpDelegatingSpeechToTextClient(inner);
 
         // Act
-        var resultTask = delegating.GetResponseAsync(expectedContents, expectedOptions, expectedCancellationToken);
+        var resultTask = delegating.TranscribeAudioAsync(expectedContents, expectedOptions, expectedCancellationToken);
 
         // Assert
         Assert.False(resultTask.IsCompleted);
@@ -76,7 +76,7 @@ public class DelegatingSpeechToTextClientTests
         using var delegating = new NoOpDelegatingSpeechToTextClient(inner);
 
         // Act
-        var resultAsyncEnumerable = delegating.GetStreamingResponseAsync(expectedContents, expectedOptions, expectedCancellationToken);
+        var resultAsyncEnumerable = delegating.TranscribeStreamingAudioAsync(expectedContents, expectedOptions, expectedCancellationToken);
 
         // Assert
         var enumerator = resultAsyncEnumerable.GetAsyncEnumerator();

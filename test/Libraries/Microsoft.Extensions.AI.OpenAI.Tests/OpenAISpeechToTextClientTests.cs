@@ -23,18 +23,6 @@ namespace Microsoft.Extensions.AI;
 public class OpenAISpeechToTextClientTests
 {
     [Fact]
-    public void Ctor_InvalidArgs_Throws()
-    {
-        Assert.Throws<ArgumentNullException>("openAIClient", () => new OpenAISpeechToTextClient(null!, "model"));
-        Assert.Throws<ArgumentNullException>("audioClient", () => new OpenAISpeechToTextClient(null!));
-
-        OpenAIClient openAIClient = new("key");
-        Assert.Throws<ArgumentNullException>("modelId", () => new OpenAISpeechToTextClient(openAIClient, null!));
-        Assert.Throws<ArgumentException>("modelId", () => new OpenAISpeechToTextClient(openAIClient, ""));
-        Assert.Throws<ArgumentException>("modelId", () => new OpenAISpeechToTextClient(openAIClient, "   "));
-    }
-
-    [Fact]
     public void AsSpeechToTextClient_InvalidArgs_Throws()
     {
         Assert.Throws<ArgumentNullException>("openAIClient", () => ((OpenAIClient)null!).AsSpeechToTextClient("model"));
@@ -79,7 +67,6 @@ public class OpenAISpeechToTextClientTests
         ISpeechToTextClient client = openAIClient.AsSpeechToTextClient("model");
 
         Assert.Same(client, client.GetService<ISpeechToTextClient>());
-        Assert.Same(client, client.GetService<OpenAISpeechToTextClient>());
 
         Assert.Same(openAIClient, client.GetService<OpenAIClient>());
 

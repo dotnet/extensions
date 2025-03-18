@@ -29,6 +29,7 @@ namespace Microsoft.Extensions.AI;
 /// only one slot for such an object available in <see cref="SpeechToTextResponse.RawRepresentation"/>.
 /// </para>
 /// </remarks>
+[Experimental("MEAI001")]
 public class SpeechToTextResponseUpdate
 {
     private IList<AIContent>? _contents;

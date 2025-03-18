@@ -65,7 +65,7 @@ public class LoggingSpeechToTextClientTests
             .UseLogging()
             .Build(services);
 
-        await client.GetResponseAsync(
+        await client.TranscribeAudioAsync(
             [YieldAsync([new DataContent("data:audio/wav;base64,AQIDBA==")])],
             new SpeechToTextOptions { SpeechLanguage = "pt" });
 
@@ -114,7 +114,7 @@ public class LoggingSpeechToTextClientTests
             .UseLogging(loggerFactory)
             .Build();
 
-        await foreach (var update in client.GetStreamingResponseAsync(
+        await foreach (var update in client.TranscribeStreamingAudioAsync(
             [YieldAsync([new DataContent("data:audio/wav;base64,AQIDBA==")])],
             new SpeechToTextOptions { SpeechLanguage = "pt" }))
         {

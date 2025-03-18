@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -10,6 +11,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides extensions for configuring <see cref="LoggingSpeechToTextClient"/> instances.</summary>
+[Experimental("MEAI001")]
 public static class LoggingSpeechToTextClientExtensions
 {
     /// <summary>Adds logging to the audio transcription client pipeline.</summary>

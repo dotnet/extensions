@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Extensions for <see cref="ISpeechToTextClient"/>.</summary>
+[Experimental("MEAI001")]
 public static class SpeechToTextClientExtensions
 {
     /// <summary>Asks the <see cref="ISpeechToTextClient"/> for an object of type <typeparamref name="TService"/>.</summary>
@@ -42,7 +44,7 @@ public static class SpeechToTextClientExtensions
     {
         IEnumerable<DataContent> speechContents = [Throw.IfNull(speechContent)];
         return Throw.IfNull(client)
-            .GetResponseAsync(
+            .TranscribeAudioAsync(
                 [speechContents.ToAsyncEnumerable()],
                 options,
                 cancellationToken);
@@ -60,7 +62,7 @@ public static class SpeechToTextClientExtensions
         SpeechToTextOptions? options = null,
         CancellationToken cancellationToken = default)
         => Throw.IfNull(client)
-            .GetResponseAsync(
+            .TranscribeAudioAsync(
                 [speechStream.ToAsyncEnumerable(cancellationToken: cancellationToken)],
                 options,
                 cancellationToken);
@@ -77,7 +79,7 @@ public static class SpeechToTextClientExtensions
         SpeechToTextOptions? options = null,
         CancellationToken cancellationToken = default)
         => Throw.IfNull(client)
-            .GetStreamingResponseAsync(
+            .TranscribeStreamingAudioAsync(
                 [speechStream.ToAsyncEnumerable(cancellationToken: cancellationToken)],
                 options,
                 cancellationToken);
@@ -96,7 +98,7 @@ public static class SpeechToTextClientExtensions
     {
         IEnumerable<DataContent> speechContents = [Throw.IfNull(speechContent)];
         return Throw.IfNull(client)
-            .GetStreamingResponseAsync(
+            .TranscribeStreamingAudioAsync(
                 [speechContents.ToAsyncEnumerable()],
                 options,
                 cancellationToken);

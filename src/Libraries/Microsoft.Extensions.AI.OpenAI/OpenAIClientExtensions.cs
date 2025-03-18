@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using OpenAI;
 using OpenAI.Assistants;
 using OpenAI.Audio;
@@ -49,12 +50,14 @@ public static class OpenAIClientExtensions
     /// <param name="openAIClient">The client.</param>
     /// <param name="modelId">The model.</param>
     /// <returns>An <see cref="ISpeechToTextClient"/> that can be used to transcribe audio via the <see cref="OpenAIClient"/>.</returns>
+    [Experimental("MEAI001")]
     public static ISpeechToTextClient AsSpeechToTextClient(this OpenAIClient openAIClient, string modelId) =>
         new OpenAISpeechToTextClient(openAIClient, modelId);
 
     /// <summary>Gets an <see cref="ISpeechToTextClient"/> for use with this <see cref="AudioClient"/>.</summary>
     /// <param name="audioClient">The client.</param>
     /// <returns>An <see cref="ISpeechToTextClient"/> that can be used to transcribe audio via the <see cref="AudioClient"/>.</returns>
+    [Experimental("MEAI001")]
     public static ISpeechToTextClient AsSpeechToTextClient(this AudioClient audioClient) =>
         new OpenAISpeechToTextClient(audioClient);
 

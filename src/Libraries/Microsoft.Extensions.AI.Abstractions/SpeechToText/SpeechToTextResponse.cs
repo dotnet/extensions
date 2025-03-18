@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
@@ -10,6 +11,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents the result of an speech to text request.</summary>
+[Experimental("MEAI001")]
 public class SpeechToTextResponse
 {
     /// <summary>The list of choices in the generated text response.</summary>

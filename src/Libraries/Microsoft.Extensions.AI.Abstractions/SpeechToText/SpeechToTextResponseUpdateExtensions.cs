@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 #if NET
 using System.Runtime.InteropServices;
@@ -15,6 +16,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Provides extension methods for working with <see cref="SpeechToTextResponseUpdate"/> instances.
 /// </summary>
+[Experimental("MEAI001")]
 public static class SpeechToTextResponseUpdateExtensions
 {
     /// <summary>Combines <see cref="SpeechToTextResponseUpdate"/> instances into a single <see cref="SpeechToTextResponse"/>.</summary>
@@ -84,8 +86,15 @@ public static class SpeechToTextResponseUpdateExtensions
     /// <param name="response">The <see cref="SpeechToTextResponse"/> object whose properties should be updated based on <paramref name="update"/>.</param>
     private static void ProcessUpdate(SpeechToTextResponseUpdate update, Dictionary<int, SpeechToTextMessage> choices, SpeechToTextResponse response)
     {
-        response.ResponseId ??= update.ResponseId;
-        response.ModelId ??= update.ModelId;
+        if (update.ResponseId is not null)
+        {
+            response.ResponseId = update.ResponseId;
+        }
+
+        if (update.ModelId is not null)
+        {
+            response.ModelId = update.ModelId;
+        }
 
 #if NET
         SpeechToTextMessage choice = CollectionsMarshal.GetValueRefOrAddDefault(choices, update.ChoiceIndex, out _) ??=
@@ -109,8 +118,7 @@ public static class SpeechToTextResponseUpdateExtensions
             {
                 foreach (var entry in update.AdditionalProperties)
                 {
-                    // Use first-wins behavior to match the behavior of the other properties.
-                    _ = choice.AdditionalProperties.TryAdd(entry.Key, entry.Value);
+                    choice.AdditionalProperties[entry.Key] = entry.Value;
                 }
             }
         }

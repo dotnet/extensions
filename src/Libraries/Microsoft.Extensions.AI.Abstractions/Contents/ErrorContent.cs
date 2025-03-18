@@ -7,22 +7,31 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>
-/// Represents an error content.
-/// </summary>
+/// <summary>Represents an error.</summary>
+/// <remarks>
+/// Typically, <see cref="ErrorContent"/> is used for non-fatal errors, where something went wrong
+/// as part of the operation but the operation was still able to continue.
+/// </remarks>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public class ErrorContent : AIContent
 {
+    /// <summary>The error message.</summary>
+    private string _message;
+
     /// <summary>Initializes a new instance of the <see cref="ErrorContent"/> class with the specified message.</summary>
     /// <param name="message">The message to store in this content.</param>
     [JsonConstructor]
     public ErrorContent(string message)
     {
-        Message = Throw.IfNull(message);
+        _message = Throw.IfNull(message);
     }
 
     /// <summary>Gets or sets the error message.</summary>
-    public string Message { get; set; }
+    public string Message
+    {
+        get => _message;
+        set => _message = Throw.IfNull(value);
+    }
 
     /// <summary>Gets or sets the error code.</summary>
     public string? ErrorCode { get; set; }
@@ -32,19 +41,8 @@ public class ErrorContent : AIContent
 
     /// <summary>Gets a string representing this instance to display in the debugger.</summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private string DebuggerDisplay
-    {
-        get
-        {
-            string display = $"Message = {Message} ";
-
-            display += ErrorCode is not null ?
-                $", ErrorCode = {ErrorCode}" : string.Empty;
-
-            display += Details is not null ?
-                $", Details = {Details}" : string.Empty;
-
-            return display;
-        }
-    }
+    private string DebuggerDisplay =>
+        $"Error = {Message}" +
+        (ErrorCode is not null ? $" ({ErrorCode})" : string.Empty) +
+        (Details is not null ? $" - {Details}" : string.Empty);
 }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -10,6 +11,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a delegating chat client that configures a <see cref="SpeechToTextOptions"/> instance used by the remainder of the pipeline.</summary>
+[Experimental("MEAI001")]
 public sealed class ConfigureOptionsSpeechToTextClient : DelegatingSpeechToTextClient
 {
     /// <summary>The callback delegate used to configure options.</summary>
@@ -33,17 +35,17 @@ public sealed class ConfigureOptionsSpeechToTextClient : DelegatingSpeechToTextC
     }
 
     /// <inheritdoc/>
-    public override Task<SpeechToTextResponse> GetResponseAsync(
+    public override Task<SpeechToTextResponse> TranscribeAudioAsync(
         IList<IAsyncEnumerable<DataContent>> speechContents, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return base.GetResponseAsync(speechContents, Configure(options), cancellationToken);
+        return base.TranscribeAudioAsync(speechContents, Configure(options), cancellationToken);
     }
 
     /// <inheritdoc/>
-    public override IAsyncEnumerable<SpeechToTextResponseUpdate> GetStreamingResponseAsync(
+    public override IAsyncEnumerable<SpeechToTextResponseUpdate> TranscribeStreamingAudioAsync(
         IList<IAsyncEnumerable<DataContent>> speechContents, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return base.GetStreamingResponseAsync(speechContents, Configure(options), cancellationToken);
+        return base.TranscribeStreamingAudioAsync(speechContents, Configure(options), cancellationToken);
     }
 
     /// <summary>Creates and configures the <see cref="SpeechToTextOptions"/> to pass along to the inner client.</summary>

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -16,6 +17,7 @@ namespace Microsoft.Extensions.AI;
 /// This is recommended as a base type when building clients that can be chained in any order around an underlying <see cref="ISpeechToTextClient"/>.
 /// The default implementation simply passes each call to the inner client instance.
 /// </remarks>
+[Experimental("MEAI001")]
 public class DelegatingSpeechToTextClient : ISpeechToTextClient
 {
     /// <summary>
@@ -38,17 +40,17 @@ public class DelegatingSpeechToTextClient : ISpeechToTextClient
     protected ISpeechToTextClient InnerClient { get; }
 
     /// <inheritdoc />
-    public virtual Task<SpeechToTextResponse> GetResponseAsync(
+    public virtual Task<SpeechToTextResponse> TranscribeAudioAsync(
         IList<IAsyncEnumerable<DataContent>> speechContents, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return InnerClient.GetResponseAsync(speechContents, options, cancellationToken);
+        return InnerClient.TranscribeAudioAsync(speechContents, options, cancellationToken);
     }
 
     /// <inheritdoc />
-    public virtual IAsyncEnumerable<SpeechToTextResponseUpdate> GetStreamingResponseAsync(
+    public virtual IAsyncEnumerable<SpeechToTextResponseUpdate> TranscribeStreamingAudioAsync(
         IList<IAsyncEnumerable<DataContent>> speechContents, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return InnerClient.GetStreamingResponseAsync(speechContents, options, cancellationToken);
+        return InnerClient.TranscribeStreamingAudioAsync(speechContents, options, cancellationToken);
     }
 
     /// <inheritdoc />

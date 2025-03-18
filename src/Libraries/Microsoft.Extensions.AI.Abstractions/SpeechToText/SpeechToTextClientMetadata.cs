@@ -2,10 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides metadata about an <see cref="ISpeechToTextClient"/>.</summary>
+[Experimental("MEAI001")]
 public class SpeechToTextClientMetadata
 {
     /// <summary>Initializes a new instance of the <see cref="SpeechToTextClientMetadata"/> class.</summary>

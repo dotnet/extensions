@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable SA1629 // Documentation text should end with a period
@@ -9,6 +10,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides extensions for configuring <see cref="ConfigureOptionsSpeechToTextClient"/> instances.</summary>
+[Experimental("MEAI001")]
 public static class ConfigureOptionsSpeechToTextClientBuilderExtensions
 {
     /// <summary>

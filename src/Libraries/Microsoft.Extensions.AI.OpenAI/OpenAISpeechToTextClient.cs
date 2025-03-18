@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -18,7 +19,8 @@ using OpenAI.Audio;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="ISpeechToTextClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="OpenAI.Audio.AudioClient"/>.</summary>
-public sealed class OpenAISpeechToTextClient : ISpeechToTextClient
+[Experimental("MEAI001")]
+internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
 {
     /// <summary>Default OpenAI endpoint.</summary>
     private static readonly Uri _defaultOpenAIEndpoint = new("https://api.openai.com/v1");
@@ -88,7 +90,7 @@ public sealed class OpenAISpeechToTextClient : ISpeechToTextClient
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<SpeechToTextResponseUpdate> GetStreamingResponseAsync(
+    public async IAsyncEnumerable<SpeechToTextResponseUpdate> TranscribeStreamingAudioAsync(
         IList<IAsyncEnumerable<DataContent>> speechContents, SpeechToTextOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNullOrEmpty(speechContents);
@@ -98,7 +100,7 @@ public sealed class OpenAISpeechToTextClient : ISpeechToTextClient
             var speechContent = speechContents[inputIndex];
             _ = Throw.IfNull(speechContent);
 
-            var speechResponse = await GetResponseAsync([speechContent], options, cancellationToken).ConfigureAwait(false);
+            var speechResponse = await TranscribeAudioAsync([speechContent], options, cancellationToken).ConfigureAwait(false);
 
             foreach (var choice in speechResponse.Choices)
             {
@@ -113,7 +115,7 @@ public sealed class OpenAISpeechToTextClient : ISpeechToTextClient
     }
 
     /// <inheritdoc />
-    public async Task<SpeechToTextResponse> GetResponseAsync(
+    public async Task<SpeechToTextResponse> TranscribeAudioAsync(
         IList<IAsyncEnumerable<DataContent>> speechContents, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNullOrEmpty(speechContents);

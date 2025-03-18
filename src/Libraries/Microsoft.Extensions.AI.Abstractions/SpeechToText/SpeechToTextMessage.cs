@@ -11,6 +11,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a choice in an speech to text.</summary>
+[Experimental("MEAI001")]
 public class SpeechToTextMessage
 {
     private IList<AIContent>? _contents;
