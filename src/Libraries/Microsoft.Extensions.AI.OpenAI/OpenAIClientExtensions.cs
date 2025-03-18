@@ -3,6 +3,7 @@
 
 using OpenAI;
 using OpenAI.Assistants;
+using OpenAI.Audio;
 using OpenAI.Chat;
 using OpenAI.Embeddings;
 using OpenAI.Responses;
@@ -43,6 +44,19 @@ public static class OpenAIClientExtensions
     public static IChatClient AsChatClient(this AssistantClient assistantClient, string assistantId, string? threadId = null) =>
         new OpenAIAssistantClient(assistantClient, assistantId, threadId);
 #pragma warning restore OPENAI001
+
+    /// <summary>Gets an <see cref="ISpeechToTextClient"/> for use with this <see cref="OpenAIClient"/>.</summary>
+    /// <param name="openAIClient">The client.</param>
+    /// <param name="modelId">The model.</param>
+    /// <returns>An <see cref="ISpeechToTextClient"/> that can be used to transcribe audio via the <see cref="OpenAIClient"/>.</returns>
+    public static ISpeechToTextClient AsSpeechToTextClient(this OpenAIClient openAIClient, string modelId) =>
+        new OpenAISpeechToTextClient(openAIClient, modelId);
+
+    /// <summary>Gets an <see cref="ISpeechToTextClient"/> for use with this <see cref="AudioClient"/>.</summary>
+    /// <param name="audioClient">The client.</param>
+    /// <returns>An <see cref="ISpeechToTextClient"/> that can be used to transcribe audio via the <see cref="AudioClient"/>.</returns>
+    public static ISpeechToTextClient AsSpeechToTextClient(this AudioClient audioClient) =>
+        new OpenAISpeechToTextClient(audioClient);
 
     /// <summary>Gets an <see cref="IEmbeddingGenerator{String, Single}"/> for use with this <see cref="OpenAIClient"/>.</summary>
     /// <param name="openAIClient">The client.</param>

@@ -17,11 +17,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="dotnet.png" />
+    <None Remove="Resources\audio001.wav" />
+    <None Remove="Resources\audio002.wav" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\audio001.wav" />
+    <EmbeddedResource Include="Resources\audio002.wav" />
+    <EmbeddedResource Include="Resources\dotnet.png" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestChatClient.cs" />
+    <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestSpeechToTextClient.cs" />
   </ItemGroup>
 
   <ItemGroup>
