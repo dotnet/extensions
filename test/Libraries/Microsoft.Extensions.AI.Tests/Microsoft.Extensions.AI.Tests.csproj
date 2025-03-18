@@ -5,7 +5,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
     <NoWarn>$(NoWarn);CA1063;CA1861;SA1130;VSTHRD003</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>

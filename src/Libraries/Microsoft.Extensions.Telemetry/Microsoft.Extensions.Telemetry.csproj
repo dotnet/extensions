@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
@@ -38,10 +37,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Bcl.TimeProvider" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Configuration" />
     <PackageReference Include="System.Collections.Immutable" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))" />
-    <PackageReference Include="System.Text.Json"/>
   </ItemGroup>
 
   <ItemGroup>

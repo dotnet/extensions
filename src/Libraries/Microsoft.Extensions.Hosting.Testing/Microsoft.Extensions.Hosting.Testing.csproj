@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>

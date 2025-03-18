@@ -2,7 +2,6 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Resilience.Test</RootNamespace>
     <Description>Unit tests for Microsoft.Extensions.Resilience</Description>
-    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
   </PropertyGroup>
 
   <PropertyGroup>

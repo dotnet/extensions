@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
     <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
     <InjectIsExternalInitOnLegacy>true</InjectIsExternalInitOnLegacy>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>

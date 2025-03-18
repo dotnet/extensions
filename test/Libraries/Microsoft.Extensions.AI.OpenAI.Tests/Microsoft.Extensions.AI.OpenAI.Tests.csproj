@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <InjectDiagnosticAttributesOnLegacy>true</InjectDiagnosticAttributesOnLegacy>
   </PropertyGroup>
