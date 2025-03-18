@@ -41,8 +41,7 @@ internal sealed class CleanResultsCommand(ILogger logger)
         }
         else
         {
-            logger.LogError("Either --path or --endpoint must be specified");
-            return 1;
+            throw new InvalidOperationException("Either --path or --endpoint must be specified");
         }
 
         await logger.ExecuteWithCatchAsync(
