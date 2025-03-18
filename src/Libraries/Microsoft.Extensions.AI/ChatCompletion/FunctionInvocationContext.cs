@@ -31,6 +31,9 @@ public sealed class FunctionInvocationContext
     {
     }
 
+    /// <summary>Gets or sets services associated with the operation.</summary>
+    public IServiceProvider? Services { get; set; }
+
     /// <summary>Gets or sets the function call content information associated with this invocation.</summary>
     public FunctionCallContent CallContent
     {
