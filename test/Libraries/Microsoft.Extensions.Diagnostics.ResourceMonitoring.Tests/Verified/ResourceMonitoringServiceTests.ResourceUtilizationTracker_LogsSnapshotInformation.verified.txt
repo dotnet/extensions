@@ -6,9 +6,6 @@
   },
   State: [
     {
-      {OriginalFormat}: Snapshot received: TotalTimeSinceStart={totalTimeSinceStart}, KernelTimeSinceStart={kernelTimeSinceStart}, UserTimeSinceStart={userTimeSinceStart}, MemoryUsageInBytes={memoryUsageInBytes}.
-    },
-    {
       memoryUsageInBytes: 500
     },
     {
@@ -19,13 +16,13 @@
     },
     {
       totalTimeSinceStart: 730119.00:00:00
+    },
+    {
+      {OriginalFormat}: Snapshot received: TotalTimeSinceStart={totalTimeSinceStart}, KernelTimeSinceStart={kernelTimeSinceStart}, UserTimeSinceStart={userTimeSinceStart}, MemoryUsageInBytes={memoryUsageInBytes}.
     }
   ],
   StructuredState: [
     {
-      {OriginalFormat}: Snapshot received: TotalTimeSinceStart={totalTimeSinceStart}, KernelTimeSinceStart={kernelTimeSinceStart}, UserTimeSinceStart={userTimeSinceStart}, MemoryUsageInBytes={memoryUsageInBytes}.
-    },
-    {
       memoryUsageInBytes: 500
     },
     {
@@ -36,6 +33,9 @@
     },
     {
       totalTimeSinceStart: 730119.00:00:00
+    },
+    {
+      {OriginalFormat}: Snapshot received: TotalTimeSinceStart={totalTimeSinceStart}, KernelTimeSinceStart={kernelTimeSinceStart}, UserTimeSinceStart={userTimeSinceStart}, MemoryUsageInBytes={memoryUsageInBytes}.
     }
   ],
   Message: Snapshot received: TotalTimeSinceStart=730119.00:00:00, KernelTimeSinceStart=00:00:01, UserTimeSinceStart=00:00:01, MemoryUsageInBytes=500.,
