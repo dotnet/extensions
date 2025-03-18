@@ -1,5 +1,12 @@
 var builder = DistributedApplication.CreateBuilder(args);
-#if (IsOpenAI || IsOllama || IsGitHubModels) // ASPIRE PARAMETERS
+#if (IsOpenAI || IsOllama) // ASPIRE PARAMETERS
+#elif (IsGHModels)
+
+// You will need to set the endpoint and key to your own values
+// You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
+//   cd this-project-directory
+//   dotnet user-secrets set Parameters:gitHubModelsToken YOUR-GITHUB-TOKEN
+var gitHubModelsToken = builder.AddParameter("gitHubModelsToken", secret: true);
 #else // IsAzureOpenAI
 
 // You will need to set the endpoint and key to your own values
@@ -41,7 +48,10 @@ webApp
     .WithReference(embeddings)
     .WaitFor(chat)
     .WaitFor(embeddings);
-#elif (IsOpenAI || IsGitHubModels)
+#elif (IsOpenAI)
+#elif (IsGHModels)
+webApp
+    .WithEnvironment("GITHUB_MODELS_TOKEN", gitHubModelsToken);
 #else // IsAzureOpenAI
 webApp
     .WithEnvironment("AZURE_OPENAI_ENDPOINT", azureOpenAIEndpoint)

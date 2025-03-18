@@ -1,5 +1,4 @@
 using Microsoft.Extensions.AI;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.VectorData;
 using ChatWithCustomData_CSharp.Web.Components;
 using ChatWithCustomData_CSharp.Web.Services;
@@ -33,11 +32,7 @@ builder.AddServiceDefaults();
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 #if (IsGHModels)
-// You will need to set the endpoint and key to your own values
-// You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
-//   cd this-project-directory
-//   dotnet user-secrets set GitHubModels:Token YOUR-GITHUB-TOKEN
-var credential = new ApiKeyCredential(builder.Configuration["GitHubModels:Token"] ?? throw new InvalidOperationException("Missing configuration: GitHubModels:Token. See the README for details."));
+var credential = new ApiKeyCredential(builder.Configuration["GITHUB_MODELS_TOKEN"] ?? throw new InvalidOperationException("Missing configuration: GITHUB_MODELS_TOKEN. See the README for details."));
 var openAIOptions = new OpenAIClientOptions()
 {
     Endpoint = new Uri("https://models.inference.ai.azure.com")
