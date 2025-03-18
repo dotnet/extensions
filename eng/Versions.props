@@ -154,7 +154,6 @@
     <AzureSearchDocumentsVersion>11.6.0</AzureSearchDocumentsVersion>
     <CommunityToolkitAspireHostingOllamaVersion>9.2.2-beta.215</CommunityToolkitAspireHostingOllamaVersion>
     <CommunityToolkitAspireOllamaSharpVersion>9.2.2-beta.215</CommunityToolkitAspireOllamaSharpVersion>
-    <MicrosoftExtensionsHttpResilienceVersion>9.1.0</MicrosoftExtensionsHttpResilienceVersion>
     <MicrosoftExtensionsServiceDiscoveryVersion>9.1.0</MicrosoftExtensionsServiceDiscoveryVersion>
     <MicrosoftSemanticKernelConnectorsAzureAISearchVersion>1.37.0-preview</MicrosoftSemanticKernelConnectorsAzureAISearchVersion>
     <MicrosoftSemanticKernelConnectorsQdrantVersion>1.41.0-preview</MicrosoftSemanticKernelConnectorsQdrantVersion>

@@ -15,22 +15,22 @@
   <Target Name="ComputeGeneratedContentProperties">
     <PropertyGroup>
       <!-- Define optional pinned versions of certain dependencies. -->
-      <TemplatePinnedMicrosoftExtensionsAIVersion>9.3.0-preview.1.25161.3</TemplatePinnedMicrosoftExtensionsAIVersion>
+      <TemplatePinnedRepoPackagesVersion>9.3.0-preview.1.25161.3</TemplatePinnedRepoPackagesVersion>
       <TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion>9.0.3</TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion>
 
       <!-- By default, use pinned dependency versions. -->
-      <TemplateUsePinnedMicrosoftExtensionsAIVersion Condition="'$(TemplateUsePinnedMicrosoftExtensionsAIVersion)' == ''">false</TemplateUsePinnedMicrosoftExtensionsAIVersion>
+      <TemplateUsePinnedRepoPackagesVersion Condition="'$(TemplateUsePinnedRepoPackagesVersion)' == ''">false</TemplateUsePinnedRepoPackagesVersion>
       <TemplateUsePinnedMicrosoftEntityFrameworkCoreSqliteVersion Condition="'$(TemplateUsePinnedMicrosoftEntityFrameworkCoreSqliteVersion)' == ''">false</TemplateUsePinnedMicrosoftEntityFrameworkCoreSqliteVersion>
 
       <!-- Apply pinned dependency versions if enabled. -->
-      <TemplateMicrosoftExtensionsAIVersion Condition="'$(TemplateUsePinnedMicrosoftExtensionsAIVersion)' == 'true'">$(TemplatePinnedMicrosoftExtensionsAIVersion)</TemplateMicrosoftExtensionsAIVersion>
+      <TemplateRepoPackagesVersion Condition="'$(TemplateUsePinnedRepoPackagesVersion)' == 'true'">$(TemplatePinnedRepoPackagesVersion)</TemplateRepoPackagesVersion>
       <TemplateMicrosoftEntityFrameworkCoreSqliteVersion Condition="'$(TemplateUsePinnedMicrosoftEntityFrameworkCoreSqliteVersion)' == 'true'">$(TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion)</TemplateMicrosoftEntityFrameworkCoreSqliteVersion>
 
       <!-- Fall back on default dependency versions if pinned versions were not applied. -->
-      <TemplateMicrosoftExtensionsAIVersion Condition="'$(TemplateMicrosoftExtensionsAIVersion)' == ''">$(Version)</TemplateMicrosoftExtensionsAIVersion>
+      <TemplateRepoPackagesVersion Condition="'$(TemplateRepoPackagesVersion)' == ''">$(Version)</TemplateRepoPackagesVersion>
       <TemplateMicrosoftEntityFrameworkCoreSqliteVersion Condition="'$(TemplateMicrosoftEntityFrameworkCoreSqliteVersion)' == ''">$(MicrosoftEntityFrameworkCoreSqliteVersion)</TemplateMicrosoftEntityFrameworkCoreSqliteVersion>
 
-      <_TemplateUsingJustBuiltPackages Condition="'$(TemplateMicrosoftExtensionsAIVersion)' == '$(Version)'">true</_TemplateUsingJustBuiltPackages>
+      <_TemplateUsingJustBuiltPackages Condition="'$(TemplateRepoPackagesVersion)' == '$(Version)'">true</_TemplateUsingJustBuiltPackages>
 
       <!-- Specify package version variables used in template content. -->
       <GeneratedContentProperties>
@@ -48,8 +48,8 @@
         CommunityToolkitAspireHostingOllamaVersion=$(CommunityToolkitAspireHostingOllamaVersion);
         CommunityToolkitAspireOllamaSharpVersion=$(CommunityToolkitAspireOllamaSharpVersion);
         MicrosoftEntityFrameworkCoreSqliteVersion=$(TemplateMicrosoftEntityFrameworkCoreSqliteVersion);
-        MicrosoftExtensionsAIVersion=$(TemplateMicrosoftExtensionsAIVersion);
-        MicrosoftExtensionsHttpResilienceVersion=$(MicrosoftExtensionsHttpResilienceVersion);
+        MicrosoftExtensionsAIVersion=$(TemplateRepoPackagesVersion);
+        MicrosoftExtensionsHttpResilienceVersion=$(TemplateRepoPackagesVersion);
         MicrosoftExtensionsServiceDiscoveryVersion=$(MicrosoftExtensionsServiceDiscoveryVersion);
         MicrosoftSemanticKernelConnectorsAzureAISearchVersion=$(MicrosoftSemanticKernelConnectorsAzureAISearchVersion);
         MicrosoftSemanticKernelConnectorsQdrantVersion=$(MicrosoftSemanticKernelConnectorsQdrantVersion);
