@@ -72,7 +72,7 @@
         }
       },
       {
-        "condition": "(UseLocalVectorStore)",
+        "condition": "(!UseLocalVectorStore)",
         "exclude": [
           "ChatWithCustomData-CSharp.Web/Services/JsonVectorStore.cs"
         ]
