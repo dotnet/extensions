@@ -183,6 +183,24 @@ public class SerializerTests
         Assert.Null(clone.Next.Next);
     }
 
+    [Fact]
+    public void RoundTripDictionary()
+    {
+        Dictionary<string, (int id, string who, DateTime when)> source = new()
+        {
+            ["x"] = (42, "Fred", new(2025, 03, 18)),
+            ["y"] = (43, "Barney", new(2025, 03, 22)),
+        };
+        var clone = RoundTrip(source,
+            """{"x":{"Item1":42,"Item2":"Fred","Item3":"2025-03-18T00:00:00"},"y":{"Item1":43,"Item2":"Barney","Item3":"2025-03-22T00:00:00"}}"""u8,
+            JsonSerializer.FieldEnabled);
+        Assert.Equal(2, clone.Count);
+        Assert.True(clone.TryGetValue("x", out var val));
+        Assert.Equal(source["x"], val);
+        Assert.True(clone.TryGetValue("y", out val));
+        Assert.Equal(source["y"], val);
+    }
+
     public class FieldOnlyPoco
     {
         public int X;
