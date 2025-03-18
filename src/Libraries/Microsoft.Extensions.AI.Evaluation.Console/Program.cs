@@ -65,7 +65,7 @@ internal sealed class Program
         reportCmd.AddOption(pathOpt);
         reportCmd.AddOption(endpointOpt);
         reportCmd.AddOption(openReportOpt);
-        reportCmd.AddValidator(requiresPathOrEndpoint);
+        reportCmd.AddValidator(RequiresPathOrEndpoint);
 
         var outputOpt = new Option<FileInfo>(
             ["-o", "--output"],
@@ -102,7 +102,7 @@ internal sealed class Program
         var cleanResultsCmd = new Command("cleanResults", "Delete results");
         cleanResultsCmd.AddOption(pathOpt);
         cleanResultsCmd.AddOption(endpointOpt);
-        cleanResultsCmd.AddValidator(requiresPathOrEndpoint);
+        cleanResultsCmd.AddValidator(RequiresPathOrEndpoint);
 
         var lastNOpt2 = new Option<int>(["-n"], () => 0, "Number of most recent executions to preserve.");
         cleanResultsCmd.AddOption(lastNOpt2);
@@ -118,7 +118,7 @@ internal sealed class Program
         var cleanCacheCmd = new Command("cleanCache", "Delete expired cache entries");
         cleanCacheCmd.AddOption(pathOpt);
         cleanCacheCmd.AddOption(endpointOpt);
-        cleanCacheCmd.AddValidator(requiresPathOrEndpoint);
+        cleanCacheCmd.AddValidator(RequiresPathOrEndpoint);
 
         cleanCacheCmd.SetHandler(
             (path, endpoint) => new CleanCacheCommand(logger).InvokeAsync(path, endpoint),
@@ -140,7 +140,7 @@ internal sealed class Program
 
         return await rootCmd.InvokeAsync(args).ConfigureAwait(false);
 
-        void requiresPathOrEndpoint(CommandResult cmd)
+        void RequiresPathOrEndpoint(CommandResult cmd)
         {
             bool hasPath = cmd.GetValueForOption(pathOpt) is not null;
             bool hasEndpoint = cmd.GetValueForOption(endpointOpt) is not null;
