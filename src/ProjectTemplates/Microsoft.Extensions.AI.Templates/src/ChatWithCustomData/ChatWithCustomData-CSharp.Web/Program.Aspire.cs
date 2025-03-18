@@ -5,11 +5,7 @@ using ChatWithCustomData_CSharp.Web.Services;
 using ChatWithCustomData_CSharp.Web.Services.Ingestion;
 #if(UseAzureAISearch)
 using Azure;
-#if (UseManagedIdentity)
-using Azure.Identity;
-#else
 using System.ClientModel;
-#endif
 #endif
 #if (IsOllama)
 #elif (IsOpenAI || IsGHModels)
@@ -56,40 +52,18 @@ var embeddingGenerator = openAIClient.AsEmbeddingGenerator("text-embedding-3-sma
 #elif (IsAzureAiFoundry)
 
 #else
-// You will need to set the endpoint and key to your own values
-// You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
-//   cd this-project-directory
-//   dotnet user-secrets set AzureOpenAI:Endpoint https://YOUR-DEPLOYMENT-NAME.openai.azure.com
-#if (!UseManagedIdentity)
-//   dotnet user-secrets set AzureOpenAI:Key YOUR-API-KEY
-#endif
 var azureOpenAi = new AzureOpenAIClient(
-    new Uri(builder.Configuration["AzureOpenAI:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAi:Endpoint. See the README for details.")),
-#if (UseManagedIdentity)
-    new DefaultAzureCredential());
-#else
-    new ApiKeyCredential(builder.Configuration["AzureOpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAi:Key. See the README for details.")));
-#endif
+    new Uri(builder.Configuration["AZURE_OPENAI_ENDPOINT"] ?? throw new InvalidOperationException("Missing configuration: AZURE_OPENAI_ENDPOINT. See the README for details.")),
+    new ApiKeyCredential(builder.Configuration["AZURE_OPENAI_KEY"] ?? throw new InvalidOperationException("Missing configuration: AZURE_OPENAI_KEY. See the README for details.")));
 var chatClient = azureOpenAi.AsChatClient("gpt-4o-mini");
 var embeddingGenerator = azureOpenAi.AsEmbeddingGenerator("text-embedding-3-small");
 #endif
 
 #if (UseAzureAISearch)
-// You will need to set the endpoint and key to your own values
-// You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
-//   cd this-project-directory
-//   dotnet user-secrets set AzureAISearch:Endpoint https://YOUR-DEPLOYMENT-NAME.search.windows.net
-#if (!UseManagedIdentity)
-//   dotnet user-secrets set AzureAISearch:Key YOUR-API-KEY
-#endif
 var vectorStore = new AzureAISearchVectorStore(
     new SearchIndexClient(
-        new Uri(builder.Configuration["AzureAISearch:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Endpoint. See the README for details.")),
-#if (UseManagedIdentity)
-        new DefaultAzureCredential()));
-#else
-        new AzureKeyCredential(builder.Configuration["AzureAISearch:Key"] ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Key. See the README for details."))));
-#endif
+        new Uri(builder.Configuration["AZURE_AI_SEARCH_ENDPOINT"] ?? throw new InvalidOperationException("Missing configuration: AZURE_AI_SEARCH_ENDPOINT. See the README for details.")),
+        new AzureKeyCredential(builder.Configuration["AZURE_AI_SEARCH_KEY"] ?? throw new InvalidOperationException("Missing configuration: AZURE_AI_SEARCH_KEY. See the README for details."))));
 #elif (UseLocalVectorStore)
 var vectorStore = new JsonVectorStore(Path.Combine(AppContext.BaseDirectory, "vector-store"));
 #else // UseQdrant

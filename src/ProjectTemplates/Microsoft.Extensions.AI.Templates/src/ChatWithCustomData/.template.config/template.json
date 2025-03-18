@@ -160,7 +160,7 @@
       "displayName": "Use keyless authentication for Azure services",
       "datatype": "bool",
       "defaultValue": "true",
-      "isEnabled": "(AiServiceProvider == \"azureopenai\" || AiServiceProvider == \"azureaifoundry\" || VectorStore == \"azureaisearch\")",
+      "isEnabled": "(!UseAspire && VectorStore != \"qdrant\" && (AiServiceProvider == \"azureopenai\" || AiServiceProvider == \"azureaifoundry\" || VectorStore == \"azureaisearch\"))",
       "description": "Use managed identity to access Azure services"
     },
     "UseAspire": {

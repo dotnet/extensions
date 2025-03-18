@@ -25,6 +25,14 @@ var azureOpenAIEndpoint = builder.AddParameter("azureOpenAIEndpoint", secret: tr
 var azureOpenAIKey = builder.AddParameter("azureOpenAIKey", secret: true);
 #endif
 #if (UseAzureAISearch)
+
+// You will need to set the endpoint and key to your own values
+// You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
+//   cd this-project-directory
+//   dotnet user-secrets set Parameters:azureAISearchEndpoint https://YOUR-DEPLOYMENT-NAME.search.windows.net
+//   dotnet user-secrets set Parameters:azureAISearchKey YOUR-API-KEY
+var azureAISearchEndpoint = builder.AddParameter("azureAISearchEndpoint", secret: true);
+var azureAISearchKey = builder.AddParameter("azureAISearchKey", secret: true);
 #elif (UseLocalVectorStore)
 #else // UseQdrant
 
@@ -64,7 +72,11 @@ webApp
     .WithEnvironment("AZURE_OPENAI_ENDPOINT", azureOpenAIEndpoint)
     .WithEnvironment("AZURE_OPENAI_KEY", azureOpenAIKey);
 #endif
-#if (UseAzureAISearch || UseLocalVectorStore) // VECTOR DATABASE REFERENCES
+#if (UseLocalVectorStore) // VECTOR DATABASE REFERENCES
+#elif (UseAzureAISearch)
+webApp
+    .WithEnvironment("AZURE_AI_SEARCH_ENDPOINT", azureAISearchEndpoint)
+    .WithEnvironment("AZURE_AI_SEARCH_KEY", azureAISearchKey);
 #else // UseQdrant
 webApp
     .WithReference(vectorDB)
