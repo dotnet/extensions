@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -45,6 +47,17 @@ public class AichatwebTemplatesTests : TestBase
     [Fact]
     public async Task BasicTest()
     {
+        await TestTemplateCoreAsync(scenarioName: "Basic");
+    }
+
+    [Fact]
+    public async Task BasicAspireTest()
+    {
+        await TestTemplateCoreAsync(scenarioName: "BasicAspire", templateArgs: ["--UseAspire"]);
+    }
+
+    private async Task TestTemplateCoreAsync(string scenarioName, IEnumerable<string>? templateArgs = null)
+    {
         string workingDir = TestUtils.CreateTemporaryFolder();
         string templateShortName = "aichatweb";
 
@@ -58,17 +71,24 @@ public class AichatwebTemplatesTests : TestBase
         TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
         {
             TemplatePath = templateLocation,
+            TemplateSpecificArgs = templateArgs,
             SnapshotsDirectory = "Snapshots",
             OutputDirectory = workingDir,
             DoNotPrependCallerMethodNameToScenarioName = true,
-            ScenarioName = "Basic",
+            ScenarioName = scenarioName,
             VerificationExcludePatterns = verificationExcludePatterns,
         }
         .WithCustomScrubbers(
             ScrubbersDefinition.Empty.AddScrubber((path, content) =>
             {
                 string filePath = path.UnixifyDirSeparators();
-                if (filePath.EndsWith("aichatweb/aichatweb.csproj"))
+                if (filePath.EndsWith(".sln"))
+                {
+                    // Scrub .sln file GUIDs.
+                    content.ScrubByRegex(pattern: @"\{.{36}\}", replacement: "{00000000-0000-0000-0000-000000000000}");
+                }
+
+                if (filePath.EndsWith(".csproj"))
                 {
                     content.ScrubByRegex("<UserSecretsId>(.*)<\\/UserSecretsId>", "<UserSecretsId>secret</UserSecretsId>");
 
@@ -78,7 +98,7 @@ public class AichatwebTemplatesTests : TestBase
                     content.ScrubByRegex(pattern, replacement: "$1");
                 }
 
-                if (filePath.EndsWith("aichatweb/Properties/launchSettings.json"))
+                if (filePath.EndsWith("launchSettings.json"))
                 {
                     content.ScrubByRegex("(http(s?):\\/\\/localhost)\\:(\\d*)", "$1:9999");
                 }
