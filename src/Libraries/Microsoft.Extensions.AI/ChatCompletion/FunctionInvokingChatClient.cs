@@ -62,12 +62,14 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// Initializes a new instance of the <see cref="FunctionInvokingChatClient"/> class.
     /// </summary>
     /// <param name="innerClient">The underlying <see cref="IChatClient"/>, or the next instance in a chain of clients.</param>
-    /// <param name="logger">An <see cref="ILogger"/> to use for logging information about function invocation.</param>
-    public FunctionInvokingChatClient(IChatClient innerClient, ILogger? logger = null)
+    /// <param name="loggerFactory">An <see cref="ILoggerFactory"/> to use for logging information about function invocation.</param>
+    /// <param name="services">An optional <see cref="IServiceProvider"/> to use for resolving services required by the <see cref="AIFunction"/> instances being invoked.</param>
+    public FunctionInvokingChatClient(IChatClient innerClient, ILoggerFactory? loggerFactory = null, IServiceProvider? services = null)
         : base(innerClient)
     {
-        _logger = logger ?? NullLogger.Instance;
+        _logger = (ILogger?)loggerFactory?.CreateLogger<FunctionInvokingChatClient>() ?? NullLogger.Instance;
         _activitySource = innerClient.GetService<ActivitySource>();
+        Services = services;
     }
 
     /// <summary>
@@ -81,6 +83,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         get => _currentContext.Value;
         protected set => _currentContext.Value = value;
     }
+
+    /// <summary>Gets the <see cref="IServiceProvider"/> used for resolving services required by the <see cref="AIFunction"/> instances being invoked.</summary>
+    public IServiceProvider? Services { get; }
 
     /// <summary>
     /// Gets or sets a value indicating whether to handle exceptions that occur during function calls.
@@ -601,10 +606,13 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
         FunctionInvocationContext context = new()
         {
+            Function = function,
+            Arguments = new(callContent.Arguments) { Services = Services },
+
             Messages = messages,
             Options = options,
+
             CallContent = callContent,
-            Function = function,
             Iteration = iteration,
             FunctionCallIndex = functionCallIndex,
             FunctionCount = callContents.Count,
@@ -710,7 +718,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             startingTimestamp = Stopwatch.GetTimestamp();
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokingSensitive(context.Function.Name, LoggingHelpers.AsJson(context.CallContent.Arguments, context.Function.JsonSerializerOptions));
+                LogInvokingSensitive(context.Function.Name, LoggingHelpers.AsJson(context.Arguments, context.Function.JsonSerializerOptions));
             }
             else
             {
@@ -721,8 +729,8 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         object? result = null;
         try
         {
-            CurrentContext = context;
-            result = await context.Function.InvokeAsync(context.CallContent.Arguments, cancellationToken).ConfigureAwait(false);
+            CurrentContext = context; // doesn't need to be explicitly reset after, as that's handled automatically at async method exit
+            result = await context.Function.InvokeAsync(context.Arguments, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception e)
         {

@@ -107,7 +107,7 @@ public static class OpenAIRealtimeExtensions
 
             try
             {
-                var result = await aiFunction.InvokeAsync(functionCallContent.Arguments, cancellationToken).ConfigureAwait(false);
+                var result = await aiFunction.InvokeAsync(new(functionCallContent.Arguments), cancellationToken).ConfigureAwait(false);
                 var resultJson = JsonSerializer.Serialize(result, jsonOptions.GetTypeInfo(typeof(object)));
                 return ConversationItem.CreateFunctionCallOutput(update.FunctionCallId, resultJson);
             }

@@ -96,7 +96,7 @@ public class FunctionCallContentTests
     [Fact]
     public async Task AIFunctionFactory_ObjectValues_Converted()
     {
-        Dictionary<string, object?> arguments = new()
+        AIFunctionArguments arguments = new()
         {
             ["a"] = new DayOfWeek[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday },
             ["b"] = 123.4M,
@@ -116,7 +116,7 @@ public class FunctionCallContentTests
     [Fact]
     public async Task AIFunctionFactory_JsonElementValues_ValuesDeserialized()
     {
-        Dictionary<string, object?> arguments = JsonSerializer.Deserialize<Dictionary<string, object?>>("""
+        AIFunctionArguments arguments = JsonSerializer.Deserialize<AIFunctionArguments>("""
             {
               "a": ["Monday", "Tuesday", "Wednesday"],
               "b": 123.4,
@@ -164,7 +164,7 @@ public class FunctionCallContentTests
             """, TestJsonSerializerContext.Default.Options)!.ToDictionary(k => k.Key, k => (object?)k.Value);
 
         AIFunction function = AIFunctionFactory.Create((DayOfWeek[] a, double b, Guid c, Dictionary<string, string> d) => b, serializerOptions: TestJsonSerializerContext.Default.Options);
-        var result = await function.InvokeAsync(arguments);
+        var result = await function.InvokeAsync(new(arguments));
         AssertExtensions.EqualFunctionCallResults(123.4, result);
     }
 
@@ -185,14 +185,14 @@ public class FunctionCallContentTests
             """, TestJsonSerializerContext.Default.Options)!.ToDictionary(k => k.Key, k => (object?)k.Value);
 
         AIFunction function = AIFunctionFactory.Create((DayOfWeek[] a, double b, Guid c, Dictionary<string, string> d) => b, serializerOptions: TestJsonSerializerContext.Default.Options);
-        var result = await function.InvokeAsync(arguments);
+        var result = await function.InvokeAsync(new(arguments));
         AssertExtensions.EqualFunctionCallResults(123.4, result);
     }
 
     [Fact]
     public async Task TypelessAIFunction_JsonDocumentValues_AcceptsArguments()
     {
-        var arguments = JsonSerializer.Deserialize<Dictionary<string, JsonDocument>>("""
+        AIFunctionArguments arguments = new(JsonSerializer.Deserialize<Dictionary<string, JsonDocument>>("""
             {
               "a": "string",
               "b": 123.4,
@@ -201,7 +201,7 @@ public class FunctionCallContentTests
               "e": ["Monday", "Tuesday", "Wednesday"],
               "f": null
             }
-            """, TestJsonSerializerContext.Default.Options)!.ToDictionary(k => k.Key, k => (object?)k.Value);
+            """, TestJsonSerializerContext.Default.Options)!.ToDictionary(k => k.Key, k => (object?)k.Value));
 
         var result = await NetTypelessAIFunction.Instance.InvokeAsync(arguments);
         Assert.Same(result, arguments);
@@ -210,7 +210,7 @@ public class FunctionCallContentTests
     [Fact]
     public async Task TypelessAIFunction_JsonElementValues_AcceptsArguments()
     {
-        Dictionary<string, object?> arguments = JsonSerializer.Deserialize<Dictionary<string, object?>>("""
+        AIFunctionArguments arguments = new(JsonSerializer.Deserialize<Dictionary<string, object?>>("""
             {
               "a": "string",
               "b": 123.4,
@@ -219,7 +219,7 @@ public class FunctionCallContentTests
               "e": ["Monday", "Tuesday", "Wednesday"],
               "f": null
             }
-            """, TestJsonSerializerContext.Default.Options)!;
+            """, TestJsonSerializerContext.Default.Options)!);
 
         var result = await NetTypelessAIFunction.Instance.InvokeAsync(arguments);
         Assert.Same(result, arguments);
@@ -228,7 +228,7 @@ public class FunctionCallContentTests
     [Fact]
     public async Task TypelessAIFunction_JsonNodeValues_AcceptsArguments()
     {
-        var arguments = JsonSerializer.Deserialize<Dictionary<string, JsonNode>>("""
+        AIFunctionArguments arguments = new(JsonSerializer.Deserialize<Dictionary<string, JsonNode>>("""
             {
               "a": "string",
               "b": 123.4,
@@ -237,7 +237,7 @@ public class FunctionCallContentTests
               "e": ["Monday", "Tuesday", "Wednesday"],
               "f": null
             }
-            """, TestJsonSerializerContext.Default.Options)!.ToDictionary(k => k.Key, k => (object?)k.Value);
+            """, TestJsonSerializerContext.Default.Options)!.ToDictionary(k => k.Key, k => (object?)k.Value));
 
         var result = await NetTypelessAIFunction.Instance.InvokeAsync(arguments);
         Assert.Same(result, arguments);
@@ -251,7 +251,7 @@ public class FunctionCallContentTests
 
         public override string Name => "NetTypeless";
         public override string Description => "AIFunction with parameters that lack .NET types";
-        protected override Task<object?> InvokeCoreAsync(IEnumerable<KeyValuePair<string, object?>>? arguments, CancellationToken cancellationToken) =>
+        protected override Task<object?> InvokeCoreAsync(AIFunctionArguments arguments, CancellationToken cancellationToken) =>
             Task.FromResult<object?>(arguments);
     }
 
