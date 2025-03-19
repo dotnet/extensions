@@ -48,6 +48,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <summary>The <see cref="FunctionInvocationContext"/> for the current function invocation.</summary>
     private static readonly AsyncLocal<FunctionInvocationContext?> _currentContext = new();
 
+    /// <summary>Optional services used for function invocation.</summary>
+    private readonly IServiceProvider? _functionInvocationServices;
+
     /// <summary>The logger to use for logging information about function invocation.</summary>
     private readonly ILogger _logger;
 
@@ -63,13 +66,13 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// </summary>
     /// <param name="innerClient">The underlying <see cref="IChatClient"/>, or the next instance in a chain of clients.</param>
     /// <param name="loggerFactory">An <see cref="ILoggerFactory"/> to use for logging information about function invocation.</param>
-    /// <param name="services">An optional <see cref="IServiceProvider"/> to use for resolving services required by the <see cref="AIFunction"/> instances being invoked.</param>
-    public FunctionInvokingChatClient(IChatClient innerClient, ILoggerFactory? loggerFactory = null, IServiceProvider? services = null)
+    /// <param name="functionInvocationServices">An optional <see cref="IServiceProvider"/> to use for resolving services required by the <see cref="AIFunction"/> instances being invoked.</param>
+    public FunctionInvokingChatClient(IChatClient innerClient, ILoggerFactory? loggerFactory = null, IServiceProvider? functionInvocationServices = null)
         : base(innerClient)
     {
         _logger = (ILogger?)loggerFactory?.CreateLogger<FunctionInvokingChatClient>() ?? NullLogger.Instance;
         _activitySource = innerClient.GetService<ActivitySource>();
-        Services = services;
+        _functionInvocationServices = functionInvocationServices;
     }
 
     /// <summary>
@@ -83,9 +86,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         get => _currentContext.Value;
         protected set => _currentContext.Value = value;
     }
-
-    /// <summary>Gets the <see cref="IServiceProvider"/> used for resolving services required by the <see cref="AIFunction"/> instances being invoked.</summary>
-    public IServiceProvider? Services { get; }
 
     /// <summary>
     /// Gets or sets a value indicating whether to handle exceptions that occur during function calls.
@@ -607,7 +607,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         FunctionInvocationContext context = new()
         {
             Function = function,
-            Arguments = new(callContent.Arguments) { Services = Services },
+            Arguments = new(callContent.Arguments) { Services = _functionInvocationServices },
 
             Messages = messages,
             Options = options,
