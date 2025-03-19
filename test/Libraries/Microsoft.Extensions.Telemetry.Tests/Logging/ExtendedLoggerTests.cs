@@ -154,19 +154,20 @@ public static class ExtendedLoggerTests
 
         Assert.Equal(0, provider.Logger!.Collector.Count);
     }
+
 #if NET9_0_OR_GREATER
     [Fact]
     public static void GlobalBuffering_CanonicalUsecase()
     {
         using var provider = new Provider();
-        using var factory = Utils.CreateLoggerFactory(
+        using ILoggerFactory factory = Utils.CreateLoggerFactory(
              builder =>
              {
                  builder.AddProvider(provider);
                  builder.AddGlobalBuffer(LogLevel.Warning);
              });
 
-        var logger = factory.CreateLogger("my category");
+        ILogger logger = factory.CreateLogger("my category");
         logger.LogWarning("MSG0");
         logger.Log(LogLevel.Warning, new EventId(2, "ID2"), "some state", null, (_, _) => "MSG2");
 
@@ -174,15 +175,16 @@ public static class ExtendedLoggerTests
         Assert.Equal(0, provider.Logger!.Collector.Count);
 
         // instead of this, users would get LogBuffer from DI and call Flush on it
-        var dlf = (Utils.DisposingLoggerFactory)factory;
-        var bufferManager = dlf.ServiceProvider.GetRequiredService<GlobalLogBuffer>();
+        Utils.DisposingLoggerFactory dlf = (Utils.DisposingLoggerFactory)factory;
+        GlobalLogBuffer? buffer = dlf.ServiceProvider.GetRequiredService<GlobalLogBuffer>();
 
-        bufferManager.Flush();
+        buffer.Flush();
 
         // 2 log records emitted because the buffer has been flushed
         Assert.Equal(2, provider.Logger!.Collector.Count);
     }
 #endif
+
     [Theory]
     [CombinatorialData]
     public static void BagAndJoiner(bool objectVersion)

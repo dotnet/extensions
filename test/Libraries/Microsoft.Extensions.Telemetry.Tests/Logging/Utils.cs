@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Logging.Test;
 
@@ -28,7 +27,7 @@ internal static class Utils
     {
         private readonly ILoggerFactory _loggerFactory;
 
-        internal readonly ServiceProvider ServiceProvider;
+        internal ServiceProvider ServiceProvider { get; }
 
         public DisposingLoggerFactory(ILoggerFactory loggerFactory, ServiceProvider serviceProvider)
         {
