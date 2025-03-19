@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -77,7 +78,7 @@ public class FunctionInvokingChatClientTests
         {
             Tools =
             [
-                AIFunctionFactory.Create((int i) => "Result 1", "Func1"),
+                AIFunctionFactory.Create((int? i = 42) => "Result 1", "Func1"),
                 AIFunctionFactory.Create((int i) => $"Result 2: {i}", "Func2"),
             ]
         };
@@ -638,7 +639,7 @@ public class FunctionInvokingChatClientTests
 
         IChatClient service = configurePipeline(innerClient.AsBuilder()).Build(services);
 
-        var result = await service.GetResponseAsync(chat, options, cts.Token);
+        var result = await service.GetResponseAsync(new EnumeratedOnceEnumerable<ChatMessage>(chat), options, cts.Token);
         Assert.NotNull(result);
 
         chat.AddRange(result.Messages);
@@ -729,7 +730,7 @@ public class FunctionInvokingChatClientTests
 
         IChatClient service = configurePipeline(innerClient.AsBuilder()).Build(services);
 
-        var result = await service.GetStreamingResponseAsync(chat, options, cts.Token).ToChatResponseAsync();
+        var result = await service.GetStreamingResponseAsync(new EnumeratedOnceEnumerable<ChatMessage>(chat), options, cts.Token).ToChatResponseAsync();
         Assert.NotNull(result);
 
         chat.AddRange(result.Messages);
@@ -777,5 +778,25 @@ public class FunctionInvokingChatClientTests
         {
             yield return item;
         }
+    }
+
+    private sealed class EnumeratedOnceEnumerable<T>(IEnumerable<T> items) : IEnumerable<T>
+    {
+        private int _iterated;
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            if (Interlocked.Exchange(ref _iterated, 1) != 0)
+            {
+                throw new InvalidOperationException("This enumerable can only be enumerated once.");
+            }
+
+            foreach (var item in items)
+            {
+                yield return item;
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

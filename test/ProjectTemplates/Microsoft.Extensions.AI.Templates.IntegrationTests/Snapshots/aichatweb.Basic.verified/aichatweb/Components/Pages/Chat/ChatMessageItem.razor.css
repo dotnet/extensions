@@ -110,3 +110,11 @@
 ::deep th, ::deep tr:nth-child(even) {
     background-color: rgba(0, 0, 0, 0.05);
 }
+
+::deep pre > code {
+    background-color: white;
+    display: block;
+    padding: 0.5rem 1rem;
+    margin: 1rem 0;
+    overflow-x: auto;
+}

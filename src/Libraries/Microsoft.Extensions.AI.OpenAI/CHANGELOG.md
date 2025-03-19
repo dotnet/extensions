@@ -1,5 +1,9 @@
 # Release History
 
+## 9.3.0-preview.1.25161.3
+
+- Updated to accomodate the changes in `Microsoft.Extensions.AI.Abstractions`.
+
 ## 9.3.0-preview.1.25114.11
 
 - Updated to depend on OpenAI 2.2.0-beta.1, updating with support for the Developer role, audio input and output, and additional options like output prediction. It is now also compatible with NativeAOT.
