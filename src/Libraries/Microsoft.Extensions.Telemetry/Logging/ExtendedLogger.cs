@@ -275,7 +275,7 @@ internal sealed partial class ExtendedLogger : ILogger
             RecordException(exception, joiner.EnrichmentTagCollector, config);
         }
 
-        bool? samplingDecision = null;
+        bool? shouldSample = null;
 #if NET9_0_OR_GREATER
         bool shouldBuffer = true;
 #endif
@@ -284,19 +284,26 @@ internal sealed partial class ExtendedLogger : ILogger
             ref readonly MessageLogger loggerInfo = ref loggers[i];
             if (loggerInfo.IsNotFilteredOut(logLevel))
             {
-                if (samplingDecision is null && config.Sampler is not null)
+                if (shouldSample is null && config.Sampler is not null)
                 {
-                    var logEntry = new LogEntry<ModernTagJoiner>(logLevel, loggerInfo.Category, eventId, joiner, exception, static (s, e) =>
-                    {
-                        Func<LoggerMessageState, Exception?, string> fmt = s.Formatter!;
-                        return fmt(s.State!, e);
-                    });
-                    samplingDecision = config.Sampler.ShouldSample(in logEntry);
+                    var logEntry = new LogEntry<ModernTagJoiner>(
+                        logLevel,
+                        loggerInfo.Category,
+                        eventId,
+                        joiner,
+                        exception,
+                        static (s, e) =>
+                        {
+                            Func<LoggerMessageState, Exception?, string> fmt = s.Formatter!;
+                            return fmt(s.State!, e);
+                        });
+
+                    shouldSample = config.Sampler.ShouldSample(in logEntry);
                 }
 
-                if (samplingDecision is false)
+                if (shouldSample is false)
                 {
-                    // the record was not selected for being sampled in, so we drop it.
+                    // the record was not selected for being sampled in, so we drop it for all loggers.
                     break;
                 }
 #if NET9_0_OR_GREATER
@@ -304,14 +311,19 @@ internal sealed partial class ExtendedLogger : ILogger
                 {
                     if (_logBuffer is not null)
                     {
-                        var logEntry = new LogEntry<ModernTagJoiner>(logLevel, loggerInfo.Category, eventId, joiner, exception, static (s, e) =>
-                        {
-                            Func<LoggerMessageState, Exception?, string>? fmt = s.Formatter!;
-                            return fmt(s.State!, e);
-                        });
-                        bool wasBuffered = _logBuffer.TryEnqueue(_bufferedLogger!, logEntry);
+                        var logEntry = new LogEntry<ModernTagJoiner>(
+                            logLevel,
+                            loggerInfo.Category,
+                            eventId,
+                            joiner,
+                            exception,
+                            static (s, e) =>
+                            {
+                                Func<LoggerMessageState, Exception?, string>? fmt = s.Formatter!;
+                                return fmt(s.State!, e);
+                            });
 
-                        if (wasBuffered)
+                        if (_logBuffer.TryEnqueue(_bufferedLogger!, logEntry))
                         {
                             // The record was buffered, so we skip logging it here and for all other loggers.
                             // When a caller needs to flush the buffer and calls Flush(),
@@ -403,7 +415,7 @@ internal sealed partial class ExtendedLogger : ILogger
                 break;
         }
 
-        bool? samplingDecision = null;
+        bool? shouldSample = null;
 #if NET9_0_OR_GREATER
         bool shouldBuffer = true;
 #endif
@@ -412,17 +424,24 @@ internal sealed partial class ExtendedLogger : ILogger
             ref readonly MessageLogger loggerInfo = ref loggers[i];
             if (loggerInfo.IsNotFilteredOut(logLevel))
             {
-                if (samplingDecision is null && config.Sampler is not null)
+                if (shouldSample is null && config.Sampler is not null)
                 {
-                    var logEntry = new LogEntry<LegacyTagJoiner>(logLevel, loggerInfo.Category, eventId, joiner, exception, static (s, e) =>
-                    {
-                        var fmt = (Func<TState, Exception?, string>)s.Formatter!;
-                        return fmt((TState)s.State!, e);
-                    });
-                    samplingDecision = config.Sampler.ShouldSample(in logEntry);
+                    var logEntry = new LogEntry<LegacyTagJoiner>(
+                        logLevel,
+                        loggerInfo.Category,
+                        eventId,
+                        joiner,
+                        exception,
+                        static (s, e) =>
+                        {
+                            var fmt = (Func<TState, Exception?, string>)s.Formatter!;
+                            return fmt((TState)s.State!, e);
+                        });
+
+                    shouldSample = config.Sampler.ShouldSample(in logEntry);
                 }
 
-                if (samplingDecision is false)
+                if (shouldSample is false)
                 {
                     // the record was not selected for being sampled in, so we drop it.
                     break;
@@ -432,14 +451,19 @@ internal sealed partial class ExtendedLogger : ILogger
                 {
                     if (_logBuffer is not null)
                     {
-                        var logEntry = new LogEntry<LegacyTagJoiner>(logLevel, loggerInfo.Category, eventId, joiner, exception, static (s, e) =>
-                        {
-                            var fmt = (Func<TState, Exception?, string>)s.Formatter!;
-                            return fmt((TState)s.State!, e);
-                        });
-                        bool wasBuffered = _logBuffer.TryEnqueue(_bufferedLogger!, in logEntry);
+                        var logEntry = new LogEntry<LegacyTagJoiner>(
+                            logLevel,
+                            loggerInfo.Category,
+                            eventId,
+                            joiner,
+                            exception,
+                            static (s, e) =>
+                            {
+                                var fmt = (Func<TState, Exception?, string>)s.Formatter!;
+                                return fmt((TState)s.State!, e);
+                            });
 
-                        if (wasBuffered)
+                        if (_logBuffer.TryEnqueue(_bufferedLogger!, in logEntry))
                         {
                             // The record was buffered, so we skip logging it here and for all other loggers.
                             // When a caller needs to flush the buffer and calls Flush(),
