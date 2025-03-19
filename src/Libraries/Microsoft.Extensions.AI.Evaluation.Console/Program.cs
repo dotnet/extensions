@@ -2,11 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #if DEBUG
-using System.CommandLine.Parsing;
 using System.Diagnostics;
 #endif
 using System;
 using System.CommandLine;
+using System.CommandLine.Parsing;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI.Evaluation.Console.Commands;
