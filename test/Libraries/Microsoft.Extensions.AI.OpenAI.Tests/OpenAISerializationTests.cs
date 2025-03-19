@@ -382,7 +382,7 @@ public static partial class OpenAISerializationTests
         Assert.Equal("The person whose age is being requested", (string)parameterSchema["description"]!);
         Assert.Equal("string", (string)parameterSchema["type"]!);
 
-        Dictionary<string, object?> functionArgs = new() { ["personName"] = "John" };
+        AIFunctionArguments functionArgs = new() { ["personName"] = "John" };
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => function.InvokeAsync(functionArgs));
         Assert.Contains("does not support being invoked.", ex.Message);
     }

@@ -6,7 +6,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+#if !NET
 using System.Linq;
+#endif
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -16,6 +18,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Collections;
 using Microsoft.Shared.Diagnostics;
+
+#pragma warning disable CA1031 // Do not catch general exception types
+#pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 
 namespace Microsoft.Extensions.AI;
 
@@ -188,25 +193,17 @@ public static partial class AIFunctionFactory
         public override MethodInfo UnderlyingMethod => FunctionDescriptor.Method;
         public override JsonElement JsonSchema => FunctionDescriptor.JsonSchema;
         public override JsonSerializerOptions JsonSerializerOptions => FunctionDescriptor.JsonSerializerOptions;
+
         protected override Task<object?> InvokeCoreAsync(
-            IEnumerable<KeyValuePair<string, object?>>? arguments,
+            AIFunctionArguments arguments,
             CancellationToken cancellationToken)
         {
             var paramMarshallers = FunctionDescriptor.ParameterMarshallers;
             object?[] args = paramMarshallers.Length != 0 ? new object?[paramMarshallers.Length] : [];
 
-            IReadOnlyDictionary<string, object?> argDict =
-                arguments is null || args.Length == 0 ? EmptyReadOnlyDictionary<string, object?>.Instance :
-                arguments as IReadOnlyDictionary<string, object?> ??
-                arguments.
-#if NET8_0_OR_GREATER
-                    ToDictionary();
-#else
-                    ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-#endif
             for (int i = 0; i < args.Length; i++)
             {
-                args[i] = paramMarshallers[i](argDict, cancellationToken);
+                args[i] = paramMarshallers[i](arguments, cancellationToken);
             }
 
             return FunctionDescriptor.ReturnParameterMarshaller(ReflectionInvoke(FunctionDescriptor.Method, Target, args), cancellationToken);
@@ -248,9 +245,36 @@ public static partial class AIFunctionFactory
 
         private ReflectionAIFunctionDescriptor(DescriptorKey key, JsonSerializerOptions serializerOptions)
         {
+            // Augment the schema options to exclude AIFunctionArguments/IServiceProvider from the schema,
+            // as it'll be satisfied from AIFunctionArguments.
+            static bool IncludeNonAIFunctionArgumentParameter(ParameterInfo parameterInfo) =>
+                parameterInfo.ParameterType != typeof(AIFunctionArguments) &&
+                parameterInfo.ParameterType != typeof(IServiceProvider);
+
+            AIJsonSchemaCreateOptions schemaOptions;
+            if (key.SchemaOptions.IncludeParameter is not null)
+            {
+                // There's an existing filter, so delegate to it after filtering out IServiceProvider.
+                var existingIncludeParameter = key.SchemaOptions.IncludeParameter;
+                schemaOptions = key.SchemaOptions with
+                {
+                    IncludeParameter = parameterInfo =>
+                        IncludeNonAIFunctionArgumentParameter(parameterInfo) &&
+                        existingIncludeParameter(parameterInfo),
+                };
+            }
+            else
+            {
+                // There's no existing parameter filter, so only exclude IServiceProvider.
+                schemaOptions = key.SchemaOptions with
+                {
+                    IncludeParameter = IncludeNonAIFunctionArgumentParameter,
+                };
+            }
+
             // Get marshaling delegates for parameters.
             ParameterInfo[] parameters = key.Method.GetParameters();
-            ParameterMarshallers = new Func<IReadOnlyDictionary<string, object?>, CancellationToken, object?>[parameters.Length];
+            ParameterMarshallers = new Func<AIFunctionArguments, CancellationToken, object?>[parameters.Length];
             for (int i = 0; i < parameters.Length; i++)
             {
                 ParameterMarshallers[i] = GetParameterMarshaller(serializerOptions, parameters[i]);
@@ -268,7 +292,7 @@ public static partial class AIFunctionFactory
                 Name,
                 Description,
                 serializerOptions,
-                key.SchemaOptions);
+                schemaOptions);
         }
 
         public string Name { get; }
@@ -276,7 +300,7 @@ public static partial class AIFunctionFactory
         public MethodInfo Method { get; }
         public JsonSerializerOptions JsonSerializerOptions { get; }
         public JsonElement JsonSchema { get; }
-        public Func<IReadOnlyDictionary<string, object?>, CancellationToken, object?>[] ParameterMarshallers { get; }
+        public Func<AIFunctionArguments, CancellationToken, object?>[] ParameterMarshallers { get; }
         public Func<object?, CancellationToken, Task<object?>> ReturnParameterMarshaller { get; }
         public ReflectionAIFunction? CachedDefaultInstance { get; set; }
 
@@ -320,7 +344,7 @@ public static partial class AIFunctionFactory
         /// <summary>
         /// Gets a delegate for handling the marshaling of a parameter.
         /// </summary>
-        private static Func<IReadOnlyDictionary<string, object?>, CancellationToken, object?> GetParameterMarshaller(
+        private static Func<AIFunctionArguments, CancellationToken, object?> GetParameterMarshaller(
             JsonSerializerOptions serializerOptions,
             ParameterInfo parameter)
         {
@@ -341,6 +365,28 @@ public static partial class AIFunctionFactory
                     cancellationToken;
             }
 
+            // For AIFunctionArgument parameters, we always bind to the arguments passed directly to InvokeAsync.
+            if (parameterType == typeof(AIFunctionArguments))
+            {
+                return static (arguments, _) => arguments;
+            }
+
+            // For IServiceProvider parameters, we always bind to the services passed directly to InvokeAsync via AIFunctionArguments.
+            // However, those Services are not required, so we throw if they're not available and are required.
+            if (parameterType == typeof(IServiceProvider))
+            {
+                return (arguments, _) =>
+                {
+                    IServiceProvider? services = arguments.Services;
+                    if (services is null && !parameter.HasDefaultValue)
+                    {
+                        Throw.ArgumentException(nameof(arguments), $"An {nameof(IServiceProvider)} was not provided for the {parameter.Name} parameter.");
+                    }
+
+                    return services;
+                };
+            }
+
             // For all other parameters, create a marshaller that tries to extract the value from the arguments dictionary.
             return (arguments, _) =>
             {
@@ -359,7 +405,6 @@ public static partial class AIFunctionFactory
 
                     object? MarshallViaJsonRoundtrip(object value)
                     {
-#pragma warning disable CA1031 // Do not catch general exception types
                         try
                         {
                             string json = JsonSerializer.Serialize(value, serializerOptions.GetTypeInfo(value.GetType()));
@@ -370,7 +415,6 @@ public static partial class AIFunctionFactory
                             // Eat any exceptions and fall back to the original value to force a cast exception later on.
                             return value;
                         }
-#pragma warning restore CA1031
                     }
                 }
 
@@ -482,9 +526,7 @@ public static partial class AIFunctionFactory
 #if NET
             return (MethodInfo)specializedType.GetMemberWithSameMetadataDefinitionAs(genericMethodDefinition);
 #else
-#pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
             const BindingFlags All = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance;
-#pragma warning restore S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
             return specializedType.GetMethods(All).First(m => m.MetadataToken == genericMethodDefinition.MetadataToken);
 #endif
         }

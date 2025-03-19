@@ -287,7 +287,7 @@ public class FunctionInvokingChatClientTests
         };
 
         Func<ChatClientBuilder, ChatClientBuilder> configure = b =>
-            b.Use((c, services) => new FunctionInvokingChatClient(c, services.GetRequiredService<ILogger<FunctionInvokingChatClient>>()));
+            b.Use((c, services) => new FunctionInvokingChatClient(c, services.GetRequiredService<ILoggerFactory>()));
 
         await InvokeAsync(services => InvokeAndAssertAsync(options, plan, configurePipeline: configure, services: services));
 
@@ -604,6 +604,32 @@ public class FunctionInvokingChatClientTests
         Assert.Equal("done!", (await service.GetResponseAsync("hey", options)).ToString());
         iteration = 0;
         Assert.Equal("done!", (await service.GetStreamingResponseAsync("hey", options).ToChatResponseAsync()).ToString());
+    }
+
+    [Fact]
+    public async Task FunctionInvocations_PassesServices()
+    {
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1", new Dictionary<string, object?> { ["arg1"] = "value1" })]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        ServiceCollection c = new();
+        IServiceProvider expected = c.BuildServiceProvider();
+
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create((IServiceProvider actual) =>
+            {
+                Assert.Same(expected, actual);
+                return "Result 1";
+            }, "Func1")]
+        };
+
+        await InvokeAndAssertAsync(options, plan, services: expected);
     }
 
     private static async Task<List<ChatMessage>> InvokeAndAssertAsync(
