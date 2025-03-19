@@ -65,16 +65,21 @@ public class OllamaChatClientTests
     }
 
     [Fact]
-    public void AsChatClient_ProducesExpectedMetadata()
+    public async Task AsChatClient_ProducesExpectedMetadata()
     {
         Uri endpoint = new("http://localhost/some/endpoint");
         string model = "amazingModel";
 
         using IChatClient chatClient = new OllamaChatClient(endpoint, model);
         var metadata = chatClient.GetService<ChatClientMetadata>();
-        Assert.Equal("ollama", metadata?.ProviderName);
-        Assert.Equal(endpoint, metadata?.ProviderUri);
-        Assert.Equal(model, metadata?.DefaultModelId);
+        Assert.NotNull(metadata);
+        Assert.Equal("ollama", metadata.ProviderName);
+        Assert.Equal(endpoint, metadata.ProviderUri);
+        Assert.Equal(model, metadata.DefaultModelId);
+
+        // All models support native JSON schema
+        var modelMetadata = await metadata.GetModelMetadataAsync("any model ID");
+        Assert.True(modelMetadata.SupportsNativeJsonSchema);
     }
 
     [Fact]
