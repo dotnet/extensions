@@ -51,7 +51,6 @@ TestResult.xml
 # VERIFY
 *.received.*
 **/*.received/
-!**/*.verified/**/*
 
 # Build Results of an ATL Project
 [Dd]ebugPS/
