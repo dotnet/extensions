@@ -32,8 +32,7 @@ internal static class SerializedLogRecordFactory
             string key = attributes[i].Key;
             string value = attributes[i].Value?.ToString() ?? string.Empty;
 
-            sizeInBytes += key.Length * sizeof(char);
-            sizeInBytes += value.Length * sizeof(char);
+            sizeInBytes += CalculateStringSize(value);
 
             serializedAttributes.Add(new KeyValuePair<string, object?>(key, value));
         }
@@ -41,11 +40,11 @@ internal static class SerializedLogRecordFactory
         string exceptionMessage = string.Empty;
         if (exception is not null)
         {
-            sizeInBytes += exception.Message.Length * sizeof(char);
             exceptionMessage = exception.Message;
+            sizeInBytes += CalculateStringSize(exceptionMessage);
         }
 
-        sizeInBytes += formattedMessage.Length * sizeof(char);
+        sizeInBytes += CalculateStringSize(formattedMessage);
 
         return new SerializedLogRecord(
             logLevel,
@@ -68,5 +67,22 @@ internal static class SerializedLogRecordFactory
     public static void Return(SerializedLogRecord bufferedRecord)
     {
         _attributesPool.Return(bufferedRecord.Attributes);
+    }
+
+    private static int CalculateStringSize(string str)
+    {
+        if (string.IsNullOrEmpty(str))
+        {
+            return 0;
+        }
+
+        // Base size: object overhead (16 bytes) + other stuff.
+        const int BaseSize = 26;
+
+        // Strings are aligned to 8-byte boundaries
+        const int Alignment = 7;
+
+        int charSize = str.Length * sizeof(char);
+        return (BaseSize + charSize + Alignment) & ~Alignment;
     }
 }
