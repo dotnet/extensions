@@ -437,7 +437,7 @@ internal static partial class OpenAIModelMappers
         public override string Description => description;
         public override JsonElement JsonSchema => schema;
         public override IReadOnlyDictionary<string, object?> AdditionalProperties => additionalProps;
-        protected override Task<object?> InvokeCoreAsync(IEnumerable<KeyValuePair<string, object?>> arguments, CancellationToken cancellationToken) =>
+        protected override Task<object?> InvokeCoreAsync(AIFunctionArguments arguments, CancellationToken cancellationToken) =>
             throw new InvalidOperationException($"The AI function '{Name}' does not support being invoked.");
     }
 
