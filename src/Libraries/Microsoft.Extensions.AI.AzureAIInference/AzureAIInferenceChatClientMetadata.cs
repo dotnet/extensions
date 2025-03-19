@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.AI;
 
-internal sealed class OpenAIChatClientMetadata(string provider, Uri endpoint, string? modelId)
+internal sealed class AzureAIInferenceChatClientMetadata(string provider, Uri? endpoint, string? modelId)
     : ChatClientMetadata(provider, endpoint, modelId)
 {
     private const int MaxMetadataCacheEntries = 1000;
     private static readonly ConcurrentDictionary<string, ChatModelMetadata> _metadataByModelId = new();
 
-    // See https://platform.openai.com/docs/guides/structured-outputs
+    // See https://learn.microsoft.com/en-us/azure/ai-foundry/model-inference/concepts/models
     private static readonly string[] _supportedStructuredOutputModelIdPrefixes =
     [
         "gpt-4.5",
@@ -22,6 +22,8 @@ internal sealed class OpenAIChatClientMetadata(string provider, Uri endpoint, st
         "o1",
         "gpt-4o",
         "gpt-4o-mini",
+        "AI21-Jamba-1.5-Mini",
+        "AI21-Jamba-1.5-Large",
     ];
 
     // These are model IDs that would otherwise match one of the prefixes above,
@@ -56,8 +58,8 @@ internal sealed class OpenAIChatClientMetadata(string provider, Uri endpoint, st
         }
 
         // The following is not guaranteed to be correct because
-        // (1) OpenAI may introduce further models that support native JSON schema,
-        // (2) OpenAI may introduce new models that don't support native JSON schema
+        // (1) The service may introduce further models that support native JSON schema,
+        // (2) The service may introduce new models that don't support native JSON schema
         //     but have names that have the same prefix as ones that do. For example
         //     they could theoretically introduce an "gpt-4o-micro" model that doesn't
         //     support it, but that would match our check for "gpt-4o-*"

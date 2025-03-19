@@ -913,6 +913,34 @@ public class AzureAIInferenceChatClientTests
         AssertExtensions.EqualFunctionCallParameters(new Dictionary<string, object?> { ["personName"] = "Alice" }, fcc.Arguments);
     }
 
+    [Theory]
+    [InlineData("gpt-4.5", true)]
+    [InlineData("o3-mini", true)]
+    [InlineData("o1", true)]
+    [InlineData("gpt-4o-mini", true)]
+    [InlineData("gpt-4o", true)]
+    [InlineData("AI21-Jamba-1.5-Mini", true)]
+    [InlineData("AI21-Jamba-1.5-Large", true)]
+    [InlineData("gpt-4.5-preview-2025-02-27", true)]
+    [InlineData("o3-mini-2025-1-31", true)]
+    [InlineData("o1-2024-12-17", true)]
+    [InlineData("gpt-4o-mini-2024-07-18", true)]
+    [InlineData("gpt-4o-2024-08-06", true)]
+    [InlineData("gpt-3.5-turbo", null)]
+    [InlineData("o1-mini", null)]
+    [InlineData("gpt-4o_this_does_not_match", null)]
+    [InlineData("AI21-Jamba-1.5-Fake", null)]
+    [InlineData("anything-else", null)]
+    public async Task MetadataSpecifiesIfNativeJsonSchemaIsSupported(string modelId, bool? expectedSupportValue)
+    {
+        using var httpClient = new HttpClient();
+        using var chatClient = CreateChatClient(httpClient, modelId);
+        var providerMetadata = chatClient.GetRequiredService<ChatClientMetadata>();
+        var modelMetadata = await providerMetadata.GetModelMetadataAsync();
+
+        Assert.Equal(expectedSupportValue, modelMetadata.SupportsNativeJsonSchema);
+    }
+
     private static IChatClient CreateChatClient(HttpClient httpClient, string modelId) =>
         new ChatCompletionsClient(
             new("http://somewhere"),
