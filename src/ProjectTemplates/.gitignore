@@ -20,6 +20,3 @@ package-lock.json
 
 # Keep the package-lock.json file for updating template dependencies.
 !package-lock.json
-
-# Keep .sln files defined as part of template content.
-!*/src/ChatWithCustomData/*.sln
