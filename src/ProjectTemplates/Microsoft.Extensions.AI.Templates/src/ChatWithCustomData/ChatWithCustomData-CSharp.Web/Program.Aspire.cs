@@ -4,16 +4,15 @@ using ChatWithCustomData_CSharp.Web.Components;
 using ChatWithCustomData_CSharp.Web.Services;
 using ChatWithCustomData_CSharp.Web.Services.Ingestion;
 #if (IsOllama)
-#elif (IsOpenAI || IsGHModels)
+#elif (IsGHModels)
 using OpenAI;
 using System.ClientModel;
-#else // IsAzureOpenAI
+#else // IsAzureOpenAI || IsOpenAI
 using OpenAI;
 #endif
 #if (UseAzureAISearch)
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
-#elif (UseLocalVectorStore)
-#else // UseQdrant
+#elif (UseQdrant)
 using Microsoft.SemanticKernel.Connectors.Qdrant;
 #endif
 
@@ -38,14 +37,9 @@ builder.AddOllamaApiClient("chat")
     .UseLogging();
 builder.AddOllamaApiClient("embeddings")
     .AddEmbeddingGenerator();
-#elif (IsOpenAI)
-var openAIClient = new OpenAIClient(
-    new ApiKeyCredential(builder.Configuration["OPENAI_KEY"] ?? throw new InvalidOperationException("Missing configuration: OPENAI_KEY. See the README for details.")));
-var chatClient = openAIClient.AsChatClient("gpt-4o-mini");
-var embeddingGenerator = openAIClient.AsEmbeddingGenerator("text-embedding-3-small");
 #elif (IsAzureAiFoundry)
 
-#else // IsAzureOpenAI
+#else // IsAzureOpenAI || IsOpenAI
 builder.AddOpenAIClientFromConfiguration("openai");
 #endif
 
@@ -64,10 +58,10 @@ builder.Services.AddSingleton<IVectorStore>(vectorStore);
 builder.Services.AddScoped<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();
 #if (IsOllama)
-#elif (IsOpenAI || IsGHModels)
+#elif (IsGHModels)
 builder.Services.AddChatClient(chatClient).UseFunctionInvocation().UseLogging();
 builder.Services.AddEmbeddingGenerator(embeddingGenerator);
-#else // IsAzureOpenAI
+#else // IsAzureOpenAI || IsOpenAI
 builder.Services.AddChatClient(sp => sp.GetRequiredService<OpenAIClient>().AsChatClient("gpt-4o-mini"))
     .UseFunctionInvocation()
     .UseLogging();

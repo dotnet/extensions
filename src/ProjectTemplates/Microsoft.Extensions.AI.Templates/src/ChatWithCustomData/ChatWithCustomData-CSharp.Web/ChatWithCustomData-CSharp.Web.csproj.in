@@ -21,8 +21,8 @@
     <PackageReference Include="Azure.AI.OpenAI" Version="${AzureAIOpenAIVersion}" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${MicrosoftExtensionsAIVersion}" />
 #endif -->
-<!--#if (IsAzureOpenAI && IsAspire) -->
-    <PackageReference Include="Aspire.Azure.AI.OpenAI" Version="9.1.0-preview.1.25121.10" />
+<!--#if ((IsAzureOpenAI || IsOpenAI) && IsAspire) -->
+    <PackageReference Include="Aspire.Azure.AI.OpenAI" Version="${AspireAzureAIOpenAIVersion}" />
 <!--#endif -->
 <!--#if (IsAzureOpenAI) -->
     <PackageReference Include="Azure.AI.OpenAI" Version="${AzureAIOpenAIVersion}" />

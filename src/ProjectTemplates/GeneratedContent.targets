@@ -41,6 +41,7 @@
 
         <!-- Package version properties -->
         AspireVersion=$(AspireVersion);
+        AspireAzureAIOpenAIVersion=$(AspireAzureAIOpenAIVersion);
         AzureAIProjectsVersion=$(AzureAIProjectsVersion);
         AzureAIOpenAIVersion=$(AzureAIOpenAIVersion);
         AzureIdentityVersion=$(AzureIdentityVersion);

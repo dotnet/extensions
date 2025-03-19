@@ -148,6 +148,7 @@
     <MicrosoftCodeAnalysisAnalyzersVersion>3.3.4</MicrosoftCodeAnalysisAnalyzersVersion>
     <!-- AI templates -->
     <AspireVersion>9.1.0</AspireVersion>
+    <AspireAzureAIOpenAIVersion>9.1.0-preview.1.25121.10</AspireAzureAIOpenAIVersion>
     <AzureAIProjectsVersion>1.0.0-beta.3</AzureAIProjectsVersion>
     <AzureAIOpenAIVersion>2.2.0-beta.1</AzureAIOpenAIVersion>
     <AzureIdentityVersion>1.13.2</AzureIdentityVersion>

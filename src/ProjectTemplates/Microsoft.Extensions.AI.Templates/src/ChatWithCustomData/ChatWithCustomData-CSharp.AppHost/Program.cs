@@ -1,12 +1,5 @@
 var builder = DistributedApplication.CreateBuilder(args);
 #if (IsOllama) // ASPIRE PARAMETERS
-#elif (IsOpenAI)
-
-// You will need to set the endpoint and key to your own values
-// You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
-//   cd this-project-directory
-//   dotnet user-secrets set Parameters:openAIKey YOUR-API-KEY
-var openAIKey = builder.AddParameter("openAIKey", secret: true);
 #elif (IsGHModels)
 
 // You will need to set the endpoint and key to your own values
@@ -14,12 +7,16 @@ var openAIKey = builder.AddParameter("openAIKey", secret: true);
 //   cd this-project-directory
 //   dotnet user-secrets set Parameters:gitHubModelsToken YOUR-GITHUB-TOKEN
 var gitHubModelsToken = builder.AddParameter("gitHubModelsToken", secret: true);
-#else // IsAzureOpenAI
+#else // IsAzureOpenAI || IsOpenAI
 
 // You will need to set the connection string to your own value
 // You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
 //   cd this-project-directory
+#if (IsOpenAI)
+//   dotnet user-secrets set ConnectionStrings:openai Key=YOUR-API-KEY
+#else // IsAzureOpenAI
 //   dotnet user-secrets set ConnectionStrings:openai Endpoint=https://YOUR-DEPLOYMENT-NAME.openai.azure.com;Key=YOUR-API-KEY
+#endif
 var openai = builder.AddConnectionString("openai");
 #endif
 #if (UseAzureAISearch)
@@ -60,11 +57,9 @@ webApp
     .WithReference(embeddings)
     .WaitFor(chat)
     .WaitFor(embeddings);
-#elif (IsOpenAI)
-webApp.WithEnvironment("OPENAI_KEY", openAIKey);
 #elif (IsGHModels)
 webApp.WithEnvironment("GITHUB_MODELS_TOKEN", gitHubModelsToken);
-#else // IsAzureOpenAI
+#else // IsAzureOpenAI || IsOpenAI
 webApp.WithReference(openai);
 #endif
 #if (UseAzureAISearch) // VECTOR DATABASE REFERENCES
