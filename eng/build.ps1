@@ -139,7 +139,6 @@ if ([string]::IsNullOrWhiteSpace($projects)) {
 
   if ($slnFiles.Count -gt 1) {
     Write-Host "[ERROR] Multiple .sln files found in the root of the repository. Use '-projects' to specify the one you wish to build." -ForegroundColor Red;
-    $slnFiles | ForEach-Object { Write-Host "[ERROR] .sln file: $($_.FullName)" -ForegroundColor Red }
     exit -1;
   }
 
