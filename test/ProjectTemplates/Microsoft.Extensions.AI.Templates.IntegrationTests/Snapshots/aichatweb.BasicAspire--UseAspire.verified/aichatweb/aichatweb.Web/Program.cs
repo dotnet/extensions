@@ -21,7 +21,6 @@ var chatClient = ghModelsClient.AsChatClient("gpt-4o-mini");
 var embeddingGenerator = ghModelsClient.AsEmbeddingGenerator("text-embedding-3-small");
 
 var vectorStore = new JsonVectorStore(Path.Combine(AppContext.BaseDirectory, "vector-store"));
-
 builder.Services.AddSingleton<IVectorStore>(vectorStore);
 builder.Services.AddScoped<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();
