@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
@@ -10,6 +11,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+using System.Threading;
 using Microsoft.Extensions.AI.JsonSchemaExporter;
 using Xunit;
 
@@ -84,6 +86,12 @@ public static class AIJsonUtilitiesTests
                     Func<AIJsonSchemaCreateContext, JsonNode, JsonNode> transformer = static (context, schema) => (JsonNode)true;
                     property.SetValue(options1, transformer);
                     property.SetValue(options2, transformer);
+                    break;
+
+                case null when property.PropertyType == typeof(Func<ParameterInfo, bool>):
+                    Func<ParameterInfo, bool> includeParameter = static (parameter) => true;
+                    property.SetValue(options1, includeParameter);
+                    property.SetValue(options2, includeParameter);
                     break;
 
                 default:
@@ -441,6 +449,31 @@ public static class AIJsonUtilitiesTests
             Assert.Equal(key3, key4);
             Assert.NotEqual(key1, key3);
         }
+    }
+
+    [Fact]
+    public static void CreateFunctionJsonSchema_InvokesIncludeParameterCallbackForEveryParameter()
+    {
+        Delegate method = (int first, string second, bool third, CancellationToken fourth, DateTime fifth) => { };
+
+        List<string?> names = [];
+        JsonElement schema = AIJsonUtilities.CreateFunctionJsonSchema(method.Method, inferenceOptions: new()
+        {
+            IncludeParameter = p =>
+            {
+                names.Add(p.Name);
+                return p.Name is "first" or "fifth";
+            }
+        });
+
+        Assert.Equal(["first", "second", "third", "fifth"], names);
+
+        string schemaString = schema.ToString();
+        Assert.Contains("first", schemaString);
+        Assert.DoesNotContain("second", schemaString);
+        Assert.DoesNotContain("third", schemaString);
+        Assert.DoesNotContain("fourth", schemaString);
+        Assert.Contains("fifth", schemaString);
     }
 
     private class DerivedAIContent : AIContent
