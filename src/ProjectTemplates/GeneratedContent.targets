@@ -70,6 +70,9 @@
 
     <ItemGroup>
       <GeneratedContent
+        Include="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.sln.in"
+        OutputPath="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.sln" />
+      <GeneratedContent
         Include="$(_ChatWithCustomDataContentRoot)Directory.Build.targets.in"
         OutputPath="$(_ChatWithCustomDataContentRoot)Directory.Build.targets" />
       <GeneratedContent
