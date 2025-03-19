@@ -139,7 +139,7 @@ public sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Embed
     }
 
     /// <summary>Creates the <see cref="EmbeddingGeneratorMetadata"/> for this instance.</summary>
-    private static EmbeddingGeneratorMetadata CreateMetadata(string providerName, string providerUrl, string? model, int? dimensions) =>
+    private static OpenAIEmbeddingGeneratorMetadata CreateMetadata(string providerName, string providerUrl, string? model, int? dimensions) =>
         new(providerName, Uri.TryCreate(providerUrl, UriKind.Absolute, out Uri? providerUri) ? providerUri : null, model, dimensions);
 
     /// <summary>Converts an extensions options instance to an OpenAI options instance.</summary>
@@ -159,5 +159,19 @@ public sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Embed
         }
 
         return openAIOptions;
+    }
+
+    private sealed class OpenAIEmbeddingGeneratorMetadata : EmbeddingGeneratorMetadata
+    {
+        private readonly EmbeddingModelMetadata _modelMetadata;
+
+        public OpenAIEmbeddingGeneratorMetadata(string? providerName, Uri? providerUri, string? defaultModelId, int? dimensions)
+            : base(providerName, providerUri, defaultModelId)
+        {
+            _modelMetadata = new() { Dimensions = dimensions };
+        }
+
+        public override Task<EmbeddingModelMetadata> GetModelMetadataAsync(string? modelId = null, CancellationToken cancellationToken = default)
+            => Task.FromResult(_modelMetadata);
     }
 }
