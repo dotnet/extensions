@@ -33,9 +33,6 @@ public class AichatwebTemplatesTests : TestBase
         "**/ingestioncache.*",
         "**/NuGet.config",
         "**/Directory.Build.targets",
-
-        // Ignore .sln files because this repo expects there to be no .sln files during restore
-        "**/*.sln",
     ];
 
     private readonly ILogger _log;
@@ -85,6 +82,12 @@ public class AichatwebTemplatesTests : TestBase
             ScrubbersDefinition.Empty.AddScrubber((path, content) =>
             {
                 string filePath = path.UnixifyDirSeparators();
+                if (filePath.EndsWith(".sln"))
+                {
+                    // Scrub .sln file GUIDs.
+                    content.ScrubByRegex(pattern: @"\{.{36}\}", replacement: "{00000000-0000-0000-0000-000000000000}");
+                }
+
                 if (filePath.EndsWith(".csproj"))
                 {
                     content.ScrubByRegex("<UserSecretsId>(.*)<\\/UserSecretsId>", "<UserSecretsId>secret</UserSecretsId>");
