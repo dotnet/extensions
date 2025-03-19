@@ -1,15 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable SA1204 // Static elements should appear before instance elements
-#pragma warning disable S103 // Lines should not be too long
-#pragma warning disable CA1859 // Use concrete types when possible for improved performance
-
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using OpenAI.Chat;
@@ -18,49 +13,6 @@ namespace Microsoft.Extensions.AI;
 
 internal static partial class OpenAIModelMappers
 {
-    public static async IAsyncEnumerable<StreamingChatCompletionUpdate> ToOpenAIStreamingChatCompletionAsync(
-        IAsyncEnumerable<ChatResponseUpdate> updates,
-        JsonSerializerOptions options,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        await foreach (var update in updates.WithCancellation(cancellationToken).ConfigureAwait(false))
-        {
-            List<StreamingChatToolCallUpdate>? toolCallUpdates = null;
-            ChatTokenUsage? chatTokenUsage = null;
-
-            foreach (var content in update.Contents)
-            {
-                if (content is FunctionCallContent functionCallContent)
-                {
-                    toolCallUpdates ??= [];
-                    toolCallUpdates.Add(OpenAIChatModelFactory.StreamingChatToolCallUpdate(
-                        index: toolCallUpdates.Count,
-                        toolCallId: functionCallContent.CallId,
-                        functionName: functionCallContent.Name,
-                        functionArgumentsUpdate: new(JsonSerializer.SerializeToUtf8Bytes(functionCallContent.Arguments, options.GetTypeInfo(typeof(IDictionary<string, object?>))))));
-                }
-                else if (content is UsageContent usageContent)
-                {
-                    chatTokenUsage = ToOpenAIUsage(usageContent.Details);
-                }
-            }
-
-            yield return OpenAIChatModelFactory.StreamingChatCompletionUpdate(
-                completionId: update.ResponseId ?? CreateCompletionId(),
-                model: update.ModelId,
-                createdAt: update.CreatedAt ?? DateTimeOffset.UtcNow,
-                role: ToOpenAIChatRole(update.Role),
-                finishReason: update.FinishReason is null ? null : ToOpenAIFinishReason(update.FinishReason),
-                contentUpdate: [.. ToOpenAIChatContent(update.Contents)],
-                toolCallUpdates: toolCallUpdates,
-                refusalUpdate: update.AdditionalProperties.GetValueOrDefault<string>(nameof(StreamingChatCompletionUpdate.RefusalUpdate)),
-                contentTokenLogProbabilities: update.AdditionalProperties.GetValueOrDefault<IReadOnlyList<ChatTokenLogProbabilityDetails>>(nameof(StreamingChatCompletionUpdate.ContentTokenLogProbabilities)),
-                refusalTokenLogProbabilities: update.AdditionalProperties.GetValueOrDefault<IReadOnlyList<ChatTokenLogProbabilityDetails>>(nameof(StreamingChatCompletionUpdate.RefusalTokenLogProbabilities)),
-                systemFingerprint: update.AdditionalProperties.GetValueOrDefault<string>(nameof(StreamingChatCompletionUpdate.SystemFingerprint)),
-                usage: chatTokenUsage);
-        }
-    }
-
     public static async IAsyncEnumerable<ChatResponseUpdate> FromOpenAIStreamingChatCompletionAsync(
         IAsyncEnumerable<StreamingChatCompletionUpdate> updates,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)

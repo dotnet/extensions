@@ -1,12 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable SA1204 // Static elements should appear before instance elements
-
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using System.Text.Json;
 using OpenAI.Chat;
 
@@ -15,111 +11,6 @@ namespace Microsoft.Extensions.AI;
 internal static partial class OpenAIModelMappers
 {
     public static ChatRole ChatRoleDeveloper { get; } = new ChatRole("developer");
-
-    public static OpenAIChatCompletionRequest FromOpenAIChatCompletionRequest(OpenAI.Chat.ChatCompletionOptions chatCompletionOptions)
-    {
-        ChatOptions chatOptions = FromOpenAIOptions(chatCompletionOptions);
-        IList<ChatMessage> messages = FromOpenAIChatMessages(_getMessagesAccessor(chatCompletionOptions)).ToList();
-        return new()
-        {
-            Messages = messages,
-            ModelId = chatOptions.ModelId,
-            Options = chatOptions,
-            Stream = _getStreamAccessor(chatCompletionOptions) ?? false,
-        };
-    }
-
-    public static IEnumerable<ChatMessage> FromOpenAIChatMessages(IEnumerable<OpenAI.Chat.ChatMessage> inputs)
-    {
-        // Maps all of the OpenAI types to the corresponding M.E.AI types.
-        // Unrecognized or non-processable content is ignored.
-
-        foreach (OpenAI.Chat.ChatMessage input in inputs)
-        {
-            switch (input)
-            {
-                case SystemChatMessage systemMessage:
-                    yield return new ChatMessage
-                    {
-                        Role = ChatRole.System,
-                        AuthorName = systemMessage.ParticipantName,
-                        Contents = FromOpenAIChatContent(systemMessage.Content),
-                    };
-                    break;
-
-                case DeveloperChatMessage developerMessage:
-                    yield return new ChatMessage
-                    {
-                        Role = ChatRoleDeveloper,
-                        AuthorName = developerMessage.ParticipantName,
-                        Contents = FromOpenAIChatContent(developerMessage.Content),
-                    };
-                    break;
-
-                case UserChatMessage userMessage:
-                    yield return new ChatMessage
-                    {
-                        Role = ChatRole.User,
-                        AuthorName = userMessage.ParticipantName,
-                        Contents = FromOpenAIChatContent(userMessage.Content),
-                    };
-                    break;
-
-                case ToolChatMessage toolMessage:
-                    string textContent = string.Join(string.Empty, toolMessage.Content.Where(part => part.Kind is ChatMessageContentPartKind.Text).Select(part => part.Text));
-                    object? result = textContent;
-                    if (!string.IsNullOrEmpty(textContent))
-                    {
-#pragma warning disable CA1031 // Do not catch general exception types
-                        try
-                        {
-                            result = JsonSerializer.Deserialize(textContent, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(object)));
-                        }
-                        catch
-                        {
-                            // If the content can't be deserialized, leave it as a string.
-                        }
-#pragma warning restore CA1031 // Do not catch general exception types
-                    }
-
-                    yield return new ChatMessage
-                    {
-                        Role = ChatRole.Tool,
-                        Contents = [new FunctionResultContent(toolMessage.ToolCallId, result)],
-                    };
-                    break;
-
-                case AssistantChatMessage assistantMessage:
-
-                    ChatMessage message = new()
-                    {
-                        Role = ChatRole.Assistant,
-                        AuthorName = assistantMessage.ParticipantName,
-                        Contents = FromOpenAIChatContent(assistantMessage.Content),
-                    };
-
-                    foreach (ChatToolCall toolCall in assistantMessage.ToolCalls)
-                    {
-                        if (!string.IsNullOrWhiteSpace(toolCall.FunctionName))
-                        {
-                            var callContent = ParseCallContentFromBinaryData(toolCall.FunctionArguments, toolCall.Id, toolCall.FunctionName);
-                            callContent.RawRepresentation = toolCall;
-
-                            message.Contents.Add(callContent);
-                        }
-                    }
-
-                    if (assistantMessage.Refusal is not null)
-                    {
-                        message.AdditionalProperties ??= [];
-                        message.AdditionalProperties.Add(nameof(assistantMessage.Refusal), assistantMessage.Refusal);
-                    }
-
-                    yield return message;
-                    break;
-            }
-        }
-    }
 
     /// <summary>Converts an Extensions chat message enumerable to an OpenAI chat message enumerable.</summary>
     public static IEnumerable<OpenAI.Chat.ChatMessage> ToOpenAIChatMessages(IEnumerable<ChatMessage> inputs, JsonSerializerOptions options)
@@ -193,30 +84,6 @@ internal static partial class OpenAIModelMappers
         }
     }
 
-    private static List<AIContent> FromOpenAIChatContent(IList<ChatMessageContentPart> openAiMessageContentParts)
-    {
-        List<AIContent> contents = [];
-        foreach (var openAiContentPart in openAiMessageContentParts)
-        {
-            switch (openAiContentPart.Kind)
-            {
-                case ChatMessageContentPartKind.Text:
-                    contents.Add(new TextContent(openAiContentPart.Text));
-                    break;
-
-                case ChatMessageContentPartKind.Image when openAiContentPart.ImageBytes is { } bytes:
-                    contents.Add(new DataContent(bytes.ToMemory(), openAiContentPart.ImageBytesMediaType));
-                    break;
-
-                case ChatMessageContentPartKind.Image when openAiContentPart.ImageUri is { } uri:
-                    contents.Add(new UriContent(uri, "image/*"));
-                    break;
-            }
-        }
-
-        return contents;
-    }
-
     /// <summary>Converts a list of <see cref="AIContent"/> to a list of <see cref="ChatMessageContentPart"/>.</summary>
     private static List<ChatMessageContentPart> ToOpenAIChatContent(IList<AIContent> contents)
     {
@@ -259,19 +126,4 @@ internal static partial class OpenAIModelMappers
 
         return parts;
     }
-
-#pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
-    private static readonly Func<ChatCompletionOptions, IList<OpenAI.Chat.ChatMessage>> _getMessagesAccessor =
-        (Func<ChatCompletionOptions, IList<OpenAI.Chat.ChatMessage>>)
-            typeof(ChatCompletionOptions).GetMethod("get_Messages", BindingFlags.NonPublic | BindingFlags.Instance)!
-            .CreateDelegate(typeof(Func<ChatCompletionOptions, IList<OpenAI.Chat.ChatMessage>>))!;
-
-    private static readonly Func<ChatCompletionOptions, bool?> _getStreamAccessor =
-        (Func<ChatCompletionOptions, bool?>)
-            typeof(ChatCompletionOptions).GetMethod("get_Stream", BindingFlags.NonPublic | BindingFlags.Instance)!
-            .CreateDelegate(typeof(Func<ChatCompletionOptions, bool?>))!;
-
-    private static readonly MethodInfo _getModelIdAccessor =
-        typeof(ChatCompletionOptions).GetMethod("get_Model", BindingFlags.NonPublic | BindingFlags.Instance)!;
-#pragma warning restore S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 }
