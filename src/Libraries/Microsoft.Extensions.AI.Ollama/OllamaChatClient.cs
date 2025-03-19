@@ -111,7 +111,7 @@ public sealed class OllamaChatClient : IChatClient
         {
             CreatedAt = DateTimeOffset.TryParse(response.CreatedAt, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset createdAt) ? createdAt : null,
             FinishReason = ToFinishReason(response),
-            ModelId = response.Model ?? options?.ModelId ?? _metadata.ModelId,
+            ModelId = response.Model ?? options?.ModelId ?? _metadata.DefaultModelId,
             ResponseId = responseId,
             Usage = ParseOllamaChatResponseUsage(response),
         };
@@ -158,7 +158,7 @@ public sealed class OllamaChatClient : IChatClient
                 continue;
             }
 
-            string? modelId = chunk.Model ?? _metadata.ModelId;
+            string? modelId = chunk.Model ?? _metadata.DefaultModelId;
 
             ChatResponseUpdate update = new()
             {
@@ -306,7 +306,7 @@ public sealed class OllamaChatClient : IChatClient
         {
             Format = ToOllamaChatResponseFormat(options?.ResponseFormat),
             Messages = messages.SelectMany(ToOllamaChatRequestMessages).ToArray(),
-            Model = options?.ModelId ?? _metadata.ModelId ?? string.Empty,
+            Model = options?.ModelId ?? _metadata.DefaultModelId ?? string.Empty,
             Stream = stream,
             Tools = options?.ToolMode is not NoneChatToolMode && options?.Tools is { Count: > 0 } tools ? tools.OfType<AIFunction>().Select(ToOllamaTool) : null,
         };

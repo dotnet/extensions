@@ -89,7 +89,7 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator<string, Embed
 
         // Create request.
         string[] inputs = values.ToArray();
-        string? requestModel = options?.ModelId ?? _metadata.ModelId;
+        string? requestModel = options?.ModelId ?? _metadata.DefaultModelId;
         var request = new OllamaEmbeddingRequest
         {
             Model = requestModel ?? string.Empty,

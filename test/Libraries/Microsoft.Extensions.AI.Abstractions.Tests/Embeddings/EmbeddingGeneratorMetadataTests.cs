@@ -14,7 +14,7 @@ public class EmbeddingGeneratorMetadataTests
         EmbeddingGeneratorMetadata metadata = new(null, null, null, null);
         Assert.Null(metadata.ProviderName);
         Assert.Null(metadata.ProviderUri);
-        Assert.Null(metadata.ModelId);
+        Assert.Null(metadata.DefaultModelId);
         Assert.Null(metadata.Dimensions);
     }
 
@@ -25,7 +25,7 @@ public class EmbeddingGeneratorMetadataTests
         EmbeddingGeneratorMetadata metadata = new("providerName", uri, "theModel", 42);
         Assert.Equal("providerName", metadata.ProviderName);
         Assert.Same(uri, metadata.ProviderUri);
-        Assert.Equal("theModel", metadata.ModelId);
+        Assert.Equal("theModel", metadata.DefaultModelId);
         Assert.Equal(42, metadata.Dimensions);
     }
 }
