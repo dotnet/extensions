@@ -3,7 +3,9 @@
   <PropertyGroup>
     <Description>A dotnet tool for managing the evaluation data and generating reports.</Description>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
+    <!-- Building only one TFM due to bug: https://github.com/dotnet/sdk/issues/47696 
+         Once this is fixed, we can go back to building multiple. -->
+    <TargetFrameworks>$(MinimumSupportedTfmForPackaging)</TargetFrameworks>
     <RootNamespace>Microsoft.Extensions.AI.Evaluation.Console</RootNamespace>
     <!-- EA0000: Use source generated logging methods for improved performance. -->
     <NoWarn>$(NoWarn);EA0000</NoWarn>
