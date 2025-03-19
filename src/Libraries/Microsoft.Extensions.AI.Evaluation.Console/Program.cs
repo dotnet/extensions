@@ -56,16 +56,26 @@ internal sealed class Program
         var openReportOpt =
             new Option<bool>(
                 ["--open"],
-                getDefaultValue: () => true,
+                getDefaultValue: () => false,
                 "Open the report in the default browser")
             {
                 IsRequired = false,
             };
 
+        ValidateSymbolResult<CommandResult> requiresPathOrEndpoint = (CommandResult cmd) =>
+        {
+            bool hasPath = cmd.GetValueForOption(pathOpt) is not null;
+            bool hasEndpoint = cmd.GetValueForOption(endpointOpt) is not null;
+            if (!(hasPath ^ hasEndpoint))
+            {
+                cmd.ErrorMessage = $"Either '{pathOpt.Name}' or '{endpointOpt.Name}' must be specified.";
+            }
+        };
+
         reportCmd.AddOption(pathOpt);
         reportCmd.AddOption(endpointOpt);
         reportCmd.AddOption(openReportOpt);
-        reportCmd.AddValidator(RequiresPathOrEndpoint);
+        reportCmd.AddValidator(requiresPathOrEndpoint);
 
         var outputOpt = new Option<FileInfo>(
             ["-o", "--output"],
@@ -102,7 +112,7 @@ internal sealed class Program
         var cleanResultsCmd = new Command("cleanResults", "Delete results");
         cleanResultsCmd.AddOption(pathOpt);
         cleanResultsCmd.AddOption(endpointOpt);
-        cleanResultsCmd.AddValidator(RequiresPathOrEndpoint);
+        cleanResultsCmd.AddValidator(requiresPathOrEndpoint);
 
         var lastNOpt2 = new Option<int>(["-n"], () => 0, "Number of most recent executions to preserve.");
         cleanResultsCmd.AddOption(lastNOpt2);
@@ -118,7 +128,7 @@ internal sealed class Program
         var cleanCacheCmd = new Command("cleanCache", "Delete expired cache entries");
         cleanCacheCmd.AddOption(pathOpt);
         cleanCacheCmd.AddOption(endpointOpt);
-        cleanCacheCmd.AddValidator(RequiresPathOrEndpoint);
+        cleanCacheCmd.AddValidator(requiresPathOrEndpoint);
 
         cleanCacheCmd.SetHandler(
             (path, endpoint) => new CleanCacheCommand(logger).InvokeAsync(path, endpoint),
@@ -139,16 +149,6 @@ internal sealed class Program
 #endif
 
         return await rootCmd.InvokeAsync(args).ConfigureAwait(false);
-
-        void RequiresPathOrEndpoint(CommandResult cmd)
-        {
-            bool hasPath = cmd.GetValueForOption(pathOpt) is not null;
-            bool hasEndpoint = cmd.GetValueForOption(endpointOpt) is not null;
-            if (!(hasPath ^ hasEndpoint))
-            {
-                cmd.ErrorMessage = $"Either '{pathOpt.Name}' or '{endpointOpt.Name}' must be specified.";
-            }
-        }
     }
 
 }
