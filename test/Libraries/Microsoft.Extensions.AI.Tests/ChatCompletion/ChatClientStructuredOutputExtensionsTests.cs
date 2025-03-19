@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -163,6 +164,96 @@ public class ChatClientStructuredOutputExtensionsTests
 
         Assert.False(response.TryGetResult(out var tryGetResult));
         Assert.Null(tryGetResult);
+    }
+
+    [Fact]
+    public async Task NativeStructuredOutput_WithoutModelMetadata_DefaultsOff()
+    {
+        var expectedResult = new Animal { Id = 123 };
+        var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult)));
+        using var client = new TestChatClient
+        {
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
+            {
+                var responseFormat = Assert.IsType<ChatResponseFormatJson>(options!.ResponseFormat);
+                Assert.Null(responseFormat.Schema);
+                Assert.Null(responseFormat.SchemaName);
+                return Task.FromResult(expectedResponse);
+            }
+        };
+
+        var actualResponse = await client.GetResponseAsync<Animal>("Hello");
+        Assert.Equal(123, actualResponse.Result.Id);
+    }
+
+    [Theory]
+    [InlineData(null, false)]
+    [InlineData(false, false)]
+    [InlineData(true, true)]
+    public async Task NativeStructuredOutput_WithModelMetadata_TakesDefaultFromMetadata(bool? metadataValue, bool shouldUseNativeSchema)
+    {
+        var expectedResult = new Animal { Id = 123 };
+        var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult)));
+        using var client = new TestChatClient
+        {
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
+            {
+                var responseFormat = Assert.IsType<ChatResponseFormatJson>(options!.ResponseFormat);
+                if (shouldUseNativeSchema)
+                {
+                    Assert.NotNull(responseFormat.Schema);
+                    Assert.Equal(nameof(Animal), responseFormat.SchemaName);
+                }
+                else
+                {
+                    Assert.Null(responseFormat.Schema);
+                    Assert.Null(responseFormat.SchemaName);
+                }
+
+                return Task.FromResult(expectedResponse);
+            },
+            GetServiceCallback = (serviceType, serviceKey) => serviceType == typeof(ChatClientMetadata)
+                ? new TestChatClientMetadata("someModelId", metadataValue)
+                : null
+        };
+
+        var actualResponse = await client.GetResponseAsync<Animal>("Hello", new ChatOptions { ModelId = "someModelId" });
+        Assert.Equal(123, actualResponse.Result.Id);
+    }
+
+    [Theory]
+    [InlineData(null, true)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    public async Task NativeStructuredOutput_WithModelMetadata_CanOverrideMetadata(bool? metadataValue, bool shouldUseNativeSchema)
+    {
+        var expectedResult = new Animal { Id = 123 };
+        var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult)));
+        using var client = new TestChatClient
+        {
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
+            {
+                var responseFormat = Assert.IsType<ChatResponseFormatJson>(options!.ResponseFormat);
+                if (shouldUseNativeSchema)
+                {
+                    Assert.NotNull(responseFormat.Schema);
+                    Assert.Equal(nameof(Animal), responseFormat.SchemaName);
+                }
+                else
+                {
+                    Assert.Null(responseFormat.Schema);
+                    Assert.Null(responseFormat.SchemaName);
+                }
+
+                return Task.FromResult(expectedResponse);
+            },
+            GetServiceCallback = (serviceType, serviceKey) => serviceType == typeof(ChatClientMetadata)
+                ? new TestChatClientMetadata("someModelId", metadataValue)
+                : null
+        };
+
+        var actualResponse = await client.GetResponseAsync<Animal>("Hello", new ChatOptions { ModelId = "someModelId" }, useNativeJsonSchema: shouldUseNativeSchema);
+        Assert.Equal(123, actualResponse.Result.Id);
     }
 
     [Fact]
@@ -356,5 +447,14 @@ public class ChatClientStructuredOutputExtensionsTests
         Bear,
         Tiger,
         Walrus,
+    }
+
+    private class TestChatClientMetadata(string expectedModelId, bool? supportsNativeJsonSchema) : ChatClientMetadata
+    {
+        public override Task<ChatModelMetadata> GetModelMetadataAsync(string? modelId = null, CancellationToken cancellationToken = default)
+        {
+            Assert.Equal(expectedModelId, modelId);
+            return Task.FromResult(new ChatModelMetadata { SupportsNativeJsonSchema = supportsNativeJsonSchema });
+        }
     }
 }

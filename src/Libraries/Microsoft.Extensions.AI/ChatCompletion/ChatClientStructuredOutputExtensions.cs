@@ -192,10 +192,9 @@ public static class ChatClientStructuredOutputExtensions
         ChatMessage? promptAugmentation = null;
         options = options is not null ? options.Clone() : new();
 
-        // Currently there's no way for the inner IChatClient to specify whether structured output
-        // is supported, so we always default to false. In the future, some mechanism of declaring
-        // capabilities may be added (e.g., on ChatClientMetadata).
-        if (useNativeJsonSchema.GetValueOrDefault(false))
+        var resolvedUseNativeSchema = useNativeJsonSchema
+            ?? await ModelSupportsNativeJsonSchemaAsync(chatClient, options.ModelId, cancellationToken).ConfigureAwait(false);
+        if (resolvedUseNativeSchema.GetValueOrDefault(false))
         {
             // When using native structured output, we don't add any additional prompt, because
             // the LLM backend is meant to do whatever's needed to explain the schema to the LLM.
@@ -221,6 +220,17 @@ public static class ChatClientStructuredOutputExtensions
 
         var result = await chatClient.GetResponseAsync(messages, options, cancellationToken).ConfigureAwait(false);
         return new ChatResponse<T>(result, serializerOptions) { IsWrappedInObject = isWrappedInObject };
+    }
+
+    private static async Task<bool?> ModelSupportsNativeJsonSchemaAsync(IChatClient chatClient, string? modelId, CancellationToken cancellationToken)
+    {
+        if (chatClient.GetService<ChatClientMetadata>() is { } providerMetadata)
+        {
+            var modelMetadata = await providerMetadata.GetModelMetadataAsync(modelId, cancellationToken).ConfigureAwait(false);
+            return modelMetadata.SupportsNativeJsonSchema;
+        }
+
+        return null;
     }
 
     private static bool SchemaRepresentsObject(JsonElement schemaElement)
