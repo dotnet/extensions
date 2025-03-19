@@ -157,7 +157,7 @@
     <CommunityToolkitAspireMicrosoftEntityFrameworkCoreSqliteVersion>9.2.2-beta.236</CommunityToolkitAspireMicrosoftEntityFrameworkCoreSqliteVersion>
     <CommunityToolkitAspireOllamaSharpVersion>9.2.2-beta.236</CommunityToolkitAspireOllamaSharpVersion>
     <MicrosoftExtensionsServiceDiscoveryVersion>9.1.0</MicrosoftExtensionsServiceDiscoveryVersion>
-    <MicrosoftSemanticKernelConnectorsAzureAISearchVersion>1.37.0-preview</MicrosoftSemanticKernelConnectorsAzureAISearchVersion>
+    <MicrosoftSemanticKernelConnectorsAzureAISearchVersion>1.41.0-preview</MicrosoftSemanticKernelConnectorsAzureAISearchVersion>
     <MicrosoftSemanticKernelConnectorsQdrantVersion>1.41.0-preview</MicrosoftSemanticKernelConnectorsQdrantVersion>
     <MicrosoftSemanticKernelCoreVersion>1.41.0</MicrosoftSemanticKernelCoreVersion>
     <OllamaSharpVersion>5.1.5</OllamaSharpVersion>

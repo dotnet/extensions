@@ -16,23 +16,19 @@ var openAIKey = builder.AddParameter("openAIKey", secret: true);
 var gitHubModelsToken = builder.AddParameter("gitHubModelsToken", secret: true);
 #else // IsAzureOpenAI
 
-// You will need to set the endpoint and key to your own values
+// You will need to set the connection string to your own value
 // You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
 //   cd this-project-directory
-//   dotnet user-secrets set Parameters:azureOpenAIEndpoint https://YOUR-DEPLOYMENT-NAME.openai.azure.com
-//   dotnet user-secrets set Parameters:azureOpenAIKey YOUR-API-KEY
-var azureOpenAIEndpoint = builder.AddParameter("azureOpenAIEndpoint", secret: true);
-var azureOpenAIKey = builder.AddParameter("azureOpenAIKey", secret: true);
+//   dotnet user-secrets set ConnectionStrings:openai Endpoint=https://YOUR-DEPLOYMENT-NAME.openai.azure.com;Key=YOUR-API-KEY
+var openai = builder.AddConnectionString("openai");
 #endif
 #if (UseAzureAISearch)
 
-// You will need to set the endpoint and key to your own values
+// You will need to set the connection string to your own value
 // You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
 //   cd this-project-directory
-//   dotnet user-secrets set Parameters:azureAISearchEndpoint https://YOUR-DEPLOYMENT-NAME.search.windows.net
-//   dotnet user-secrets set Parameters:azureAISearchKey YOUR-API-KEY
-var azureAISearchEndpoint = builder.AddParameter("azureAISearchEndpoint", secret: true);
-var azureAISearchKey = builder.AddParameter("azureAISearchKey", secret: true);
+//   dotnet user-secrets set ConnectionStrings:azureAISearch Endpoint=https://YOUR-DEPLOYMENT-NAME.search.windows.net;Key=YOUR-API-KEY
+var azureAISearch = builder.AddConnectionString("azureAISearch");
 #elif (UseQdrant)
 
 var qdrantApiKey = builder.AddParameter("qdrantApiKey", secret: true);
@@ -69,14 +65,10 @@ webApp.WithEnvironment("OPENAI_KEY", openAIKey);
 #elif (IsGHModels)
 webApp.WithEnvironment("GITHUB_MODELS_TOKEN", gitHubModelsToken);
 #else // IsAzureOpenAI
-webApp
-    .WithEnvironment("AZURE_OPENAI_ENDPOINT", azureOpenAIEndpoint)
-    .WithEnvironment("AZURE_OPENAI_KEY", azureOpenAIKey);
+webApp.WithReference(openai);
 #endif
 #if (UseAzureAISearch) // VECTOR DATABASE REFERENCES
-webApp
-    .WithEnvironment("AZURE_AI_SEARCH_ENDPOINT", azureAISearchEndpoint)
-    .WithEnvironment("AZURE_AI_SEARCH_KEY", azureAISearchKey);
+webApp.WithReference(azureAISearch);
 #elif (UseQdrant)
 webApp
     .WithReference(vectorDB)

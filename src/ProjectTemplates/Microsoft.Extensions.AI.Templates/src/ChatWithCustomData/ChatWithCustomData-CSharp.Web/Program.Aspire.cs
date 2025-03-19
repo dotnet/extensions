@@ -3,20 +3,14 @@ using Microsoft.Extensions.VectorData;
 using ChatWithCustomData_CSharp.Web.Components;
 using ChatWithCustomData_CSharp.Web.Services;
 using ChatWithCustomData_CSharp.Web.Services.Ingestion;
-#if(UseAzureAISearch)
-using Azure;
-using System.ClientModel;
-#endif
 #if (IsOllama)
 #elif (IsOpenAI || IsGHModels)
 using OpenAI;
 using System.ClientModel;
-#else
-using Azure.AI.OpenAI;
-using System.ClientModel;
+#else // IsAzureOpenAI
+using OpenAI;
 #endif
 #if (UseAzureAISearch)
-using Azure.Search.Documents.Indexes;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 #elif (UseLocalVectorStore)
 #else // UseQdrant
@@ -51,35 +45,33 @@ var chatClient = openAIClient.AsChatClient("gpt-4o-mini");
 var embeddingGenerator = openAIClient.AsEmbeddingGenerator("text-embedding-3-small");
 #elif (IsAzureAiFoundry)
 
-#else
-var azureOpenAi = new AzureOpenAIClient(
-    new Uri(builder.Configuration["AZURE_OPENAI_ENDPOINT"] ?? throw new InvalidOperationException("Missing configuration: AZURE_OPENAI_ENDPOINT. See the README for details.")),
-    new ApiKeyCredential(builder.Configuration["AZURE_OPENAI_KEY"] ?? throw new InvalidOperationException("Missing configuration: AZURE_OPENAI_KEY. See the README for details.")));
-var chatClient = azureOpenAi.AsChatClient("gpt-4o-mini");
-var embeddingGenerator = azureOpenAi.AsEmbeddingGenerator("text-embedding-3-small");
+#else // IsAzureOpenAI
+builder.AddOpenAIClientFromConfiguration("openai");
 #endif
 
 #if (UseAzureAISearch)
-var vectorStore = new AzureAISearchVectorStore(
-    new SearchIndexClient(
-        new Uri(builder.Configuration["AZURE_AI_SEARCH_ENDPOINT"] ?? throw new InvalidOperationException("Missing configuration: AZURE_AI_SEARCH_ENDPOINT. See the README for details.")),
-        new AzureKeyCredential(builder.Configuration["AZURE_AI_SEARCH_KEY"] ?? throw new InvalidOperationException("Missing configuration: AZURE_AI_SEARCH_KEY. See the README for details."))));
-#elif (UseLocalVectorStore)
-var vectorStore = new JsonVectorStore(Path.Combine(AppContext.BaseDirectory, "vector-store"));
-#else // UseQdrant
-builder.AddQdrantClient("vectordb");
-builder.Services.AddSingleton<IVectorStore, QdrantVectorStore>();
-#endif
+builder.AddAzureSearchClient("azureAISearch");
 
-#if (UseAzureAISearch || UseLocalVectorStore)
+builder.Services.AddSingleton<IVectorStore, AzureAISearchVectorStore>();
+#elif (UseQdrant)
+builder.AddQdrantClient("vectordb");
+
+builder.Services.AddSingleton<IVectorStore, QdrantVectorStore>();
+#else // UseLocalVectorStore
+var vectorStore = new JsonVectorStore(Path.Combine(AppContext.BaseDirectory, "vector-store"));
 builder.Services.AddSingleton<IVectorStore>(vectorStore);
 #endif
 builder.Services.AddScoped<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();
 #if (IsOllama)
-#else
+#elif (IsOpenAI || IsGHModels)
 builder.Services.AddChatClient(chatClient).UseFunctionInvocation().UseLogging();
 builder.Services.AddEmbeddingGenerator(embeddingGenerator);
+#else // IsAzureOpenAI
+builder.Services.AddChatClient(sp => sp.GetRequiredService<OpenAIClient>().AsChatClient("gpt-4o-mini"))
+    .UseFunctionInvocation()
+    .UseLogging();
+builder.Services.AddEmbeddingGenerator(sp => sp.GetRequiredService<OpenAIClient>().AsEmbeddingGenerator("text-embedding-3-small"));
 #endif
 
 builder.AddSqliteDbContext<IngestionCacheDbContext>("ingestionCache");

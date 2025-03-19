@@ -20,7 +20,11 @@
     <PackageReference Include="Azure.AI.Projects" Version="${AzureAIProjectsVersion}" />
     <PackageReference Include="Azure.AI.OpenAI" Version="${AzureAIOpenAIVersion}" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${MicrosoftExtensionsAIVersion}" />
-#else --> <!-- IsAzureOpenAI -->
+#endif -->
+<!--#if (IsAzureOpenAI && IsAspire) -->
+    <PackageReference Include="Aspire.Azure.AI.OpenAI" Version="9.1.0-preview.1.25121.10" />
+<!--#endif -->
+<!--#if (IsAzureOpenAI) -->
     <PackageReference Include="Azure.AI.OpenAI" Version="${AzureAIOpenAIVersion}" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${MicrosoftExtensionsAIVersion}" />
 <!--#endif -->
@@ -36,8 +40,12 @@
     <PackageReference Include="Microsoft.SemanticKernel.Core" Version="${MicrosoftSemanticKernelCoreVersion}" />
     <PackageReference Include="PdfPig" Version="${PdfPigVersion}" />
     <PackageReference Include="System.Linq.Async" Version="${SystemLinqAsyncVersion}" />
-<!--#if (UseAzureAISearch)
+<!--#if (UseAzureAISearch && IsAspire)
+    <PackageReference Include="Aspire.Azure.Search.Documents" Version="${AspireVersion}" />
+#elif (UseAzureAISearch && !IsAspire)
     <PackageReference Include="Azure.Search.Documents" Version="${AzureSearchDocumentsVersion}" />
+#endif -->
+<!--#if (UseAzureAISearch)
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureAISearch" Version="${MicrosoftSemanticKernelConnectorsAzureAISearchVersion}" />
 #elif (UseQdrant)-->
     <PackageReference Include="Aspire.Qdrant.Client" Version="${AspireVersion}" />
