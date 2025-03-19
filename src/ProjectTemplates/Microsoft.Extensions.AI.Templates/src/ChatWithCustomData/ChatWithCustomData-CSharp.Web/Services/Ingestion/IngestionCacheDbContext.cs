@@ -39,6 +39,10 @@ public class IngestedDocument
 
 public class IngestedRecord
 {
+#if (UseQdrant)
     public required Guid Id { get; set; }
+#else
+    public required string Id { get; set; }
+#endif
     public required string DocumentId { get; set; }
 }

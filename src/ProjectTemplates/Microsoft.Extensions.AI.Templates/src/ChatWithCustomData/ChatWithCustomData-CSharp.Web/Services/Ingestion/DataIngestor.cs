@@ -19,7 +19,11 @@ public class DataIngestor(
 
     public async Task IngestDataAsync(IIngestionSource source)
     {
+#if (UseQdrant)
         var vectorCollection = vectorStore.GetCollection<Guid, SemanticSearchRecord>("data-ChatWithCustomData-CSharp.Web-ingestion");
+#else
+        var vectorCollection = vectorStore.GetCollection<string, SemanticSearchRecord>("data-ChatWithCustomData-CSharp.Web-ingestion");
+#endif
         await vectorCollection.CreateCollectionIfNotExistsAsync();
 
         var documentsForSource = ingestionCacheDb.Documents

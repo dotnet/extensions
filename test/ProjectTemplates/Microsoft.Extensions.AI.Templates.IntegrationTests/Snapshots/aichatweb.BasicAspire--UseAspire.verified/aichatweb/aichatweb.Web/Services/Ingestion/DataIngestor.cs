@@ -19,7 +19,7 @@ public class DataIngestor(
 
     public async Task IngestDataAsync(IIngestionSource source)
     {
-        var vectorCollection = vectorStore.GetCollection<Guid, SemanticSearchRecord>("data-aichatweb-ingested");
+        var vectorCollection = vectorStore.GetCollection<string, SemanticSearchRecord>("data-aichatweb-ingested");
         await vectorCollection.CreateCollectionIfNotExistsAsync();
 
         var documentsForSource = ingestionCacheDb.Documents

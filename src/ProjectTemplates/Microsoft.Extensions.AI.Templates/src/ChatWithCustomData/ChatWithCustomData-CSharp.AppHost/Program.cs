@@ -33,10 +33,10 @@ var azureOpenAIKey = builder.AddParameter("azureOpenAIKey", secret: true);
 //   dotnet user-secrets set Parameters:azureAISearchKey YOUR-API-KEY
 var azureAISearchEndpoint = builder.AddParameter("azureAISearchEndpoint", secret: true);
 var azureAISearchKey = builder.AddParameter("azureAISearchKey", secret: true);
-#elif (UseLocalVectorStore)
-#else // UseQdrant
+#elif (UseQdrant)
 
 var qdrantApiKey = builder.AddParameter("qdrantApiKey", secret: true);
+#else // UseLocalVectorStore
 #endif
 #if (IsOllama) // AI SERVICE PROVIDER CONFIGURATION
 
@@ -45,12 +45,13 @@ var ollama = builder.AddOllama("ollama")
 var chat = ollama.AddModel("chat", "llama3.2");
 var embeddings = ollama.AddModel("embeddings", "all-minilm");
 #endif
-#if (UseAzureAISearch || UseLocalVectorStore) // VECTOR DATABASE CONFIGURATION
-#else // UseQdrant
+#if (UseAzureAISearch) // VECTOR DATABASE CONFIGURATION
+#elif (UseQdrant)
 
 var vectorDB = builder.AddQdrant("vectordb", apiKey: qdrantApiKey, grpcPort: 6334, httpPort: 6333)
     .WithDataBindMount("./qdrant_data")
     .WithLifetime(ContainerLifetime.Persistent);
+#else // UseLocalVectorStore
 #endif
 
 var ingestionCache = builder.AddSqlite("ingestionCache")
@@ -72,15 +73,15 @@ webApp
     .WithEnvironment("AZURE_OPENAI_ENDPOINT", azureOpenAIEndpoint)
     .WithEnvironment("AZURE_OPENAI_KEY", azureOpenAIKey);
 #endif
-#if (UseLocalVectorStore) // VECTOR DATABASE REFERENCES
-#elif (UseAzureAISearch)
+#if (UseAzureAISearch) // VECTOR DATABASE REFERENCES
 webApp
     .WithEnvironment("AZURE_AI_SEARCH_ENDPOINT", azureAISearchEndpoint)
     .WithEnvironment("AZURE_AI_SEARCH_KEY", azureAISearchKey);
-#else // UseQdrant
+#elif (UseQdrant)
 webApp
     .WithReference(vectorDB)
     .WaitFor(vectorDB);
+#else // UseLocalVectorStore
 #endif
 webApp
     .WithReference(ingestionCache)

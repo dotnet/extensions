@@ -57,7 +57,11 @@ public class PDFDirectorySource(string sourceDirectory) : IIngestionSource
 
         return paragraphs.Zip(embeddings).Select((pair, index) => new SemanticSearchRecord
         {
+#if (UseQdrant)
             Key = Guid.CreateVersion7(),
+#else
+            Key = $"{Path.GetFileNameWithoutExtension(documentId)}_{pair.First.PageNumber}_{pair.First.IndexOnPage}",
+#endif
             FileName = documentId,
             PageNumber = pair.First.PageNumber,
             Text = pair.First.Text,

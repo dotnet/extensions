@@ -5,7 +5,7 @@ namespace aichatweb.Services;
 public class SemanticSearchRecord
 {
     [VectorStoreRecordKey]
-    public required Guid Key { get; set; }
+    public required string Key { get; set; }
 
     [VectorStoreRecordData]
     public required string FileName { get; set; }

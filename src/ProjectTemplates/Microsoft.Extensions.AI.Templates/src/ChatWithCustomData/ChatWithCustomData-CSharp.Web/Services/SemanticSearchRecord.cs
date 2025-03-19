@@ -5,7 +5,11 @@ namespace ChatWithCustomData_CSharp.Web.Services;
 public class SemanticSearchRecord
 {
     [VectorStoreRecordKey]
+#if (UseQdrant)
     public required Guid Key { get; set; }
+#else
+    public required string Key { get; set; }
+#endif
 
     [VectorStoreRecordData]
     public required string FileName { get; set; }
