@@ -6,12 +6,12 @@ import { Settings28Regular } from '@fluentui/react-icons';
 import { Drawer, DrawerBody, DrawerHeader, DrawerHeaderTitle, Switch } from '@fluentui/react-components';
 import { makeStyles } from '@fluentui/react-components';
 import './App.css';
-import { ScoreNode } from './Summary';
+import { SummaryResults } from './Summary';
 import { ScenarioGroup } from './ScenarioTree';
 
 type AppProperties = {
   dataset: Dataset,
-  tree: ScoreNode,
+  tree: SummaryResults,
 };
 
 const useStyles = makeStyles({
@@ -38,7 +38,7 @@ function App({ dataset, tree }: AppProperties) {
         <Settings28Regular onClick={toggleSettings} style={{ cursor: 'pointer' }} />
       </div>
 
-      <ScenarioGroup node={tree} renderMarkdown={renderMarkdown} />
+      <ScenarioGroup node={tree.primaryResult} renderMarkdown={renderMarkdown} />
 
       <p className={classes.footerText}>Generated at {dataset.createdAt} by Microsoft.Extensions.AI.Evaluation.Reporting version {dataset.generatorVersion}</p>
 

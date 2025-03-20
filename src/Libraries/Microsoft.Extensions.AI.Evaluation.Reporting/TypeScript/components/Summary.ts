@@ -7,6 +7,11 @@ export enum ScoreNodeType {
     Iteration,
 }
 
+export type SummaryResults = {
+    primaryResult: ScoreNode;
+    history: Map<string,ScoreNode>;
+};
+
 export class ScoreNode {
     constructor(name: string, nodeType: ScoreNodeType) {
         this.name = name;
@@ -129,15 +134,30 @@ export class ScoreNode {
     }
 };
 
-export const createScoreTree = (dataset: Dataset): ScoreNode => {
-    const root = new ScoreNode("All Evaluations", ScoreNodeType.Group);
+export const createScoreTree = (dataset: Dataset): SummaryResults => {
+
+    const executionMap = new Map<string, ScoreNode>();
     for (const scenario of dataset.scenarioRunResults) {
+        const executionName = scenario.executionName;
+        if (!executionMap.has(executionName)) {
+            const newRoot = new ScoreNode(`All Evaluations [${executionName}]`, ScoreNodeType.Group);
+            executionMap.set(executionName, newRoot );
+        }
+        const scoreNode = executionMap.get(executionName)!;
         const path = [...scenario.scenarioName.split('.'), scenario.iterationName];
-        root.insertNode(path, scenario);
+        scoreNode.insertNode(path, scenario);
     }
-    root.collapseSingleChildNodes();
-    root.aggregate();
-    return root;
+
+    for (const scoreNode of executionMap.values()) {
+        scoreNode.collapseSingleChildNodes();
+        scoreNode.aggregate();
+    }
+
+    const [primaryResult] = executionMap.values();
+    return {
+        primaryResult: primaryResult,
+        history: executionMap,
+    } as SummaryResults;
 };
 
 const shortenPrompt = (prompt: string | undefined) => {
