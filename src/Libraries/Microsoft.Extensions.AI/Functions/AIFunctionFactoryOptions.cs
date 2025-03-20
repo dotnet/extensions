@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Text.Json;
+using System.Threading;
 
 namespace Microsoft.Extensions.AI;
 
@@ -55,4 +56,41 @@ public sealed class AIFunctionFactoryOptions
     /// This property can be used to provide arbitrary information about the function.
     /// </remarks>
     public IReadOnlyDictionary<string, object?>? AdditionalProperties { get; set; }
+
+    /// <summary>
+    /// Gets or sets a delegate that binds parameters to function arguments.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// When set to a non-<see langword="null"/> value, this delegate will be invoked for each parameter
+    /// in a function each time that function is invoked, allowing the caller to provide custom logic for binding
+    /// the parameter to an argument. This delegate is in complete control of the process, including
+    /// whether to throw an exception if the parameter cannot be bound (if the delegate returns
+    /// <see langword="null"/>), the default value for the parameter's type will be used.
+    /// </para>
+    /// <para>
+    /// When setting this property, the caller should ensure that <see cref="JsonSchemaCreateOptions"/>
+    /// is configured in a consistent manner. In particular, for any parameter that <see cref="ArgumentBinder" />
+    /// binds to something other than the corresponding value from the arguments dictionary, the
+    /// <see cref="AIJsonSchemaCreateOptions.IncludeParameter"/> delegate typically should be set to
+    /// exclude that parameter from the generated schema.
+    /// </para>
+    /// <para>
+    /// This delegate is not invoked for parameters of type <see cref="CancellationToken"/>,
+    /// which are always handled by <see cref="AIFunctionFactory"/>, invariably binding them to the
+    /// <see cref="CancellationToken" /> provided to the <see cref="AIFunction.InvokeAsync"/> call.
+    /// </para>
+    /// </remarks>
+    public ArgumentBinderFunc? ArgumentBinder { get; set; }
+
+    /// <summary>Delegate type used with <see cref="ArgumentBinder"/>.</summary>
+    /// <param name="parameter">The information about the parameter to bind.</param>
+    /// <param name="arguments">The <see cref="AIFunctionArguments"/> provided to the function's invocation.</param>
+    /// <param name="value">The argument value selected by the binder to be used as the parameter's value.</param>
+    /// <returns>
+    /// <see langword="true"/> if the binder chooses to provide an argument value for the parameter,
+    /// in which case <paramref name="value"/> stores the selected value; otherwise, <see langword="false"/>,
+    /// in which case the default binding will be used for the parameter.
+    /// </returns>
+    public delegate bool ArgumentBinderFunc(ParameterInfo parameter, AIFunctionArguments arguments, out object? value);
 }

@@ -231,7 +231,7 @@ public static partial class AIFunctionFactory
             serializerOptions.MakeReadOnly();
             ConcurrentDictionary<DescriptorKey, ReflectionAIFunctionDescriptor> innerCache = _descriptorCache.GetOrCreateValue(serializerOptions);
 
-            DescriptorKey key = new(method, options.Name, options.Description, schemaOptions);
+            DescriptorKey key = new(method, options.Name, options.Description, options.ArgumentBinder, schemaOptions);
             if (innerCache.TryGetValue(key, out ReflectionAIFunctionDescriptor? descriptor))
             {
                 return descriptor;
@@ -277,7 +277,7 @@ public static partial class AIFunctionFactory
             ParameterMarshallers = new Func<AIFunctionArguments, CancellationToken, object?>[parameters.Length];
             for (int i = 0; i < parameters.Length; i++)
             {
-                ParameterMarshallers[i] = GetParameterMarshaller(serializerOptions, parameters[i]);
+                ParameterMarshallers[i] = GetParameterMarshaller(serializerOptions, key.ArgumentBinder, parameters[i]);
             }
 
             // Get a marshaling delegate for the return value.
@@ -346,6 +346,7 @@ public static partial class AIFunctionFactory
         /// </summary>
         private static Func<AIFunctionArguments, CancellationToken, object?> GetParameterMarshaller(
             JsonSerializerOptions serializerOptions,
+            AIFunctionFactoryOptions.ArgumentBinderFunc? argumentBinder,
             ParameterInfo parameter)
         {
             if (string.IsNullOrWhiteSpace(parameter.Name))
@@ -365,18 +366,34 @@ public static partial class AIFunctionFactory
                     cancellationToken;
             }
 
-            // For AIFunctionArgument parameters, we always bind to the arguments passed directly to InvokeAsync.
+            // For AIFunctionArgument parameters, we always bind to the arguments passed directly to InvokeAsync,
+            // unless an argument binder overrides it.
             if (parameterType == typeof(AIFunctionArguments))
             {
-                return static (arguments, _) => arguments;
+                return (arguments, _) =>
+                {
+                    // If there is an argument binder, use it to get the argument for this parameter.
+                    if (argumentBinder?.Invoke(parameter, arguments, out object? boundValue) is true)
+                    {
+                        return boundValue;
+                    }
+
+                    return arguments;
+                };
             }
 
-            // For IServiceProvider parameters, we always bind to the services passed directly to InvokeAsync via AIFunctionArguments.
-            // However, those Services are not required, so we throw if they're not available and are required.
+            // For IServiceProvider parameters, we always bind to the services passed directly to InvokeAsync via AIFunctionArguments,
+            // unless an argument binder overrides it.
             if (parameterType == typeof(IServiceProvider))
             {
                 return (arguments, _) =>
                 {
+                    // If there is an argument binder, use it to get the argument for this parameter.
+                    if (argumentBinder?.Invoke(parameter, arguments, out object? boundValue) is true)
+                    {
+                        return boundValue;
+                    }
+
                     IServiceProvider? services = arguments.Services;
                     if (services is null && !parameter.HasDefaultValue)
                     {
@@ -387,9 +404,16 @@ public static partial class AIFunctionFactory
                 };
             }
 
-            // For all other parameters, create a marshaller that tries to extract the value from the arguments dictionary.
+            // For all other parameters, create a marshaller that tries to extract the value from the arguments dictionary,
+            // unless an argument binder overrides it.
             return (arguments, _) =>
             {
+                // If there is an argument binder, use it to get the argument for this parameter.
+                if (argumentBinder?.Invoke(parameter, arguments, out object? boundValue) is true)
+                {
+                    return boundValue;
+                }
+
                 // If the parameter has an argument specified in the dictionary, return that argument.
                 if (arguments.TryGetValue(parameter.Name, out object? value))
                 {
@@ -531,6 +555,11 @@ public static partial class AIFunctionFactory
 #endif
         }
 
-        private record struct DescriptorKey(MethodInfo Method, string? Name, string? Description, AIJsonSchemaCreateOptions SchemaOptions);
+        private record struct DescriptorKey(
+            MethodInfo Method,
+            string? Name,
+            string? Description,
+            AIFunctionFactoryOptions.ArgumentBinderFunc? ArgumentBinder,
+            AIJsonSchemaCreateOptions SchemaOptions);
     }
 }

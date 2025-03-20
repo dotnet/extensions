@@ -55,6 +55,14 @@ public sealed class AIFunctionArguments : IDictionary<string, object?>, IReadOnl
     /// <summary>Gets or sets services optionally associated with these arguments.</summary>
     public IServiceProvider? Services { get; set; }
 
+    /// <summary>Gets or sets additional context associated with these arguments.</summary>
+    /// <remarks>
+    /// The context is a dictionary of name/value pairs that can be used to store arbitrary
+    /// information for use by an <see cref="AIFunction"/> implementation. The meaning of this
+    /// data is left up to the implementer of the <see cref="AIFunction"/>.
+    /// </remarks>
+    public IDictionary<object, object?>? Context { get; set; }
+
     /// <inheritdoc />
     public object? this[string key]
     {
