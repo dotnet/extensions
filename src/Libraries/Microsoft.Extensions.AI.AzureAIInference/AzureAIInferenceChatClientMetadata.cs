@@ -12,6 +12,7 @@ internal sealed class AzureAIInferenceChatClientMetadata(string provider, Uri? e
     : ChatClientMetadata(provider, endpoint, modelId)
 {
     private const int MaxMetadataCacheEntries = 1000;
+    private static readonly Task<ChatModelMetadata> _emptyModelMetadata = Task.FromResult(new ChatModelMetadata());
     private static readonly ConcurrentDictionary<string, ChatModelMetadata> _metadataByModelId = new();
 
     // See https://learn.microsoft.com/en-us/azure/ai-foundry/model-inference/concepts/models
@@ -38,17 +39,33 @@ internal sealed class AzureAIInferenceChatClientMetadata(string provider, Uri? e
         if (string.IsNullOrEmpty(modelId))
         {
             modelId = DefaultModelId;
+
+            if (string.IsNullOrEmpty(modelId))
+            {
+                return _emptyModelMetadata;
+            }
         }
 
-        // There could be a brief race here and we could add more than the intended max items to the cache.
-        // That wouldn't be a problem since it's an arbitrary limit to mitigate memory leaks if the application
-        // is doing something very strange (generating distinct model IDs per call).
-        var result = _metadataByModelId.Count > MaxMetadataCacheEntries
-            ? (_metadataByModelId.TryGetValue(modelId ?? string.Empty, out var entry) ? entry : CreateModelMetadata(modelId))
-            : _metadataByModelId.GetOrAdd(modelId ?? string.Empty, CreateModelMetadata);
+        if (!_metadataByModelId.TryGetValue(modelId!, out var result))
+        {
+            result = CreateModelMetadata(modelId);
+
+            // There could be a brief race here and we could add more than the intended max items to the cache.
+            // That wouldn't be a problem since it's an arbitrary limit to mitigate memory leaks if the application
+            // is doing something very strange (generating distinct model IDs per call).
+            if (_metadataByModelId.Count < MaxMetadataCacheEntries)
+            {
+                result = _metadataByModelId.GetOrAdd(modelId!, result);
+            }
+        }
 
         return Task.FromResult(result);
     }
+
+    private static ChatModelMetadata CreateModelMetadata(string? modelId) => new ChatModelMetadata
+    {
+        SupportsJsonSchemaResponseFormat = SupportsNativeJsonSchema(modelId),
+    };
 
     private static bool? SupportsNativeJsonSchema(string? modelId)
     {
@@ -94,9 +111,4 @@ internal sealed class AzureAIInferenceChatClientMetadata(string provider, Uri? e
 
         return modelId.Length == prefix.Length || modelId[prefix.Length] == '-';
     }
-
-    private ChatModelMetadata CreateModelMetadata(string? modelId) => new ChatModelMetadata
-    {
-        SupportsJsonSchemaResponseFormat = SupportsNativeJsonSchema(modelId),
-    };
 }
