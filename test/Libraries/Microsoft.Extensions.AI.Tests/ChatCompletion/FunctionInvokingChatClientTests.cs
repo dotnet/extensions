@@ -201,6 +201,47 @@ public class FunctionInvokingChatClientTests
     }
 
     [Fact]
+    public async Task ContinuesWithSuccessfulCallsUntilMaximumIterations()
+    {
+        var maxIterations = 7;
+        Func<ChatClientBuilder, ChatClientBuilder> configurePipeline = pipeline => pipeline
+            .UseFunctionInvocation(configure: functionInvokingChatClient =>
+            {
+                functionInvokingChatClient.MaximumIterationsPerRequest = maxIterations;
+            });
+
+        var actualCallCount = 0;
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                AIFunctionFactory.Create(() => { actualCallCount++; }, "VoidReturn"),
+            ]
+        };
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent($"callId0", "VoidReturn")]),
+        ];
+
+        // Note that this plan ends with a function call. Normally we would expect the system to try to resolve
+        // the call, but it won't because of the maximum iterations limit.
+        for (var i = 0; i < maxIterations; i++)
+        {
+            plan.Add(new ChatMessage(ChatRole.Tool, [new FunctionResultContent($"callId{i}", result: "Success: Function completed.")]));
+            plan.Add(new ChatMessage(ChatRole.Assistant, [new FunctionCallContent($"callId{(i + 1)}", "VoidReturn")]));
+        }
+
+        await InvokeAndAssertAsync(options, plan, configurePipeline: configurePipeline);
+        Assert.Equal(maxIterations, actualCallCount);
+
+        actualCallCount = 0;
+        await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configurePipeline);
+        Assert.Equal(maxIterations, actualCallCount);
+    }
+
+    [Fact]
     public async Task KeepsFunctionCallingContent()
     {
         var options = new ChatOptions
