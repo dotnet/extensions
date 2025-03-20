@@ -1,5 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
 #if NET9_0_OR_GREATER
 using System;
 using System.Collections.Concurrent;
@@ -7,7 +8,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Diagnostics.Buffering;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
@@ -19,11 +19,13 @@ internal sealed class IncomingRequestLogBuffer
     private readonly IBufferedLogger _bufferedLogger;
     private readonly LogBufferingFilterRuleSelector _ruleSelector;
     private readonly IOptionsMonitor<PerRequestLogBufferingOptions> _options;
-    private readonly ConcurrentQueue<SerializedLogRecord> _buffer;
     private readonly TimeProvider _timeProvider = TimeProvider.System;
     private readonly LogBufferingFilterRule[] _filterRules;
+    private readonly Lock _bufferSwapLock = new();
 
-    private int _bufferSize;
+    private ConcurrentQueue<SerializedLogRecord> _activeBuffer;
+    private ConcurrentQueue<SerializedLogRecord> _standbyBuffer;
+    private int _activeBufferSize;
     private DateTimeOffset _lastFlushTimestamp;
 
     public IncomingRequestLogBuffer(
@@ -36,7 +38,8 @@ internal sealed class IncomingRequestLogBuffer
         _ruleSelector = ruleSelector;
         _options = options;
 
-        _buffer = new ConcurrentQueue<SerializedLogRecord>();
+        _activeBuffer = new ConcurrentQueue<SerializedLogRecord>();
+        _standbyBuffer = new ConcurrentQueue<SerializedLogRecord>();
         _filterRules = LogBufferingFilterRuleSelector.SelectByCategory(_options.CurrentValue.Rules.ToArray(), category);
     }
 
@@ -59,8 +62,8 @@ internal sealed class IncomingRequestLogBuffer
 
         if (_ruleSelector.Select(_filterRules, logEntry.LogLevel, logEntry.EventId, attributes) is null)
         {
-            // buffering is not enabled for this log entry
-            // so we return false to indicate that the log entry should be logged normally
+            // buffering is not enabled for this log entry,
+            // return false to indicate that the log entry should be logged normally.
             return false;
         }
 
@@ -78,8 +81,8 @@ internal sealed class IncomingRequestLogBuffer
             return false;
         }
 
-        _buffer.Enqueue(serializedLogRecord);
-        _ = Interlocked.Add(ref _bufferSize, serializedLogRecord.SizeInBytes);
+        _activeBuffer.Enqueue(serializedLogRecord);
+        _ = Interlocked.Add(ref _activeBufferSize, serializedLogRecord.SizeInBytes);
 
         TrimExcessRecords();
 
@@ -90,28 +93,31 @@ internal sealed class IncomingRequestLogBuffer
     {
         _lastFlushTimestamp = _timeProvider.GetUtcNow();
 
-        SerializedLogRecord[] bufferedRecords = _buffer.ToArray();
-
-        // Clear() and Interlocked.Exchange operations are atomic on their own.
-        // But together they are not atomic, therefore have to take a lock.
-        // This is needed for an edge case when AutoFlushDuration is close to 0, e.g. buffering hardly pauses
-        // and new items get buffered immediately after the _buffer.Clear() call.
-        lock (_buffer)
+        ConcurrentQueue<SerializedLogRecord> bufferToFlush;
+        lock (_bufferSwapLock)
         {
-            _buffer.Clear();
-            _ = Interlocked.Exchange(ref _bufferSize, 0);
+            bufferToFlush = _activeBuffer;
+
+            // Swap to the empty standby buffer
+            _activeBuffer = _standbyBuffer;
+            _activeBufferSize = 0;
+
+            // Prepare the new standby buffer for future Flush() calls
+            _standbyBuffer = new ConcurrentQueue<SerializedLogRecord>();
         }
+        SerializedLogRecord[] bufferedRecords = bufferToFlush.ToArray();
+
 
         var recordsToEmit = new List<DeserializedLogRecord>(bufferedRecords.Length);
         foreach (SerializedLogRecord bufferedRecord in bufferedRecords)
         {
             recordsToEmit.Add(new DeserializedLogRecord(
-                    bufferedRecord.Timestamp,
-                    bufferedRecord.LogLevel,
-                    bufferedRecord.EventId,
-                    bufferedRecord.Exception,
-                    bufferedRecord.FormattedMessage,
-                    bufferedRecord.Attributes));
+                bufferedRecord.Timestamp,
+                bufferedRecord.LogLevel,
+                bufferedRecord.EventId,
+                bufferedRecord.Exception,
+                bufferedRecord.FormattedMessage,
+                bufferedRecord.Attributes));
         }
 
         _bufferedLogger.LogRecords(recordsToEmit);
@@ -121,10 +127,10 @@ internal sealed class IncomingRequestLogBuffer
 
     private void TrimExcessRecords()
     {
-        while (_bufferSize > _options.CurrentValue.MaxPerRequestBufferSizeInBytes &&
-               _buffer.TryDequeue(out SerializedLogRecord item))
+        while (_activeBufferSize > _options.CurrentValue.MaxPerRequestBufferSizeInBytes &&
+               _activeBuffer.TryDequeue(out SerializedLogRecord item))
         {
-            _ = Interlocked.Add(ref _bufferSize, -item.SizeInBytes);
+            _ = Interlocked.Add(ref _activeBufferSize, -item.SizeInBytes);
             SerializedLogRecordFactory.Return(item);
         }
     }
