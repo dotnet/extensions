@@ -222,7 +222,7 @@ public static class ChatClientStructuredOutputExtensions
         return new ChatResponse<T>(result, serializerOptions) { IsWrappedInObject = isWrappedInObject };
     }
 
-    private static async Task<bool?> ModelSupportsNativeJsonSchemaAsync(IChatClient chatClient, string? modelId, CancellationToken cancellationToken)
+    private static async ValueTask<bool?> ModelSupportsNativeJsonSchemaAsync(IChatClient chatClient, string? modelId, CancellationToken cancellationToken)
     {
         if (chatClient.GetService<ChatClientMetadata>() is { } providerMetadata)
         {
