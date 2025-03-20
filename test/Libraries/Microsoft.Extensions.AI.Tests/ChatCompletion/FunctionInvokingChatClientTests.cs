@@ -35,7 +35,7 @@ public class FunctionInvokingChatClientTests
 
         Assert.False(client.AllowConcurrentInvocation);
         Assert.False(client.IncludeDetailedErrors);
-        Assert.Null(client.MaximumIterationsPerRequest);
+        Assert.Equal(10, client.MaximumIterationsPerRequest);
     }
 
     [Fact]

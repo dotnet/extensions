@@ -60,7 +60,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     private readonly ActivitySource? _activitySource;
 
     /// <summary>Maximum number of roundtrips allowed to the inner client.</summary>
-    private int? _maximumIterationsPerRequest;
+    private int _maximumIterationsPerRequest = 10;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvokingChatClient"/> class.
@@ -138,7 +138,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// </summary>
     /// <value>
     /// The maximum number of iterations per request.
-    /// The default value is <see langword="null"/>.
+    /// The default value is 10.
     /// </value>
     /// <remarks>
     /// <para>
@@ -146,15 +146,14 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// multiple requests to the inner client. Each time the inner client responds with
     /// a function call request, this client might perform that invocation and send the results
     /// back to the inner client in a new request. This property limits the number of times
-    /// such a roundtrip is performed. If null, there is no limit applied. If set, the value
-    /// must be at least one, as it includes the initial request.
+    /// such a roundtrip is performed. The value must be at least one, as it includes the initial request.
     /// </para>
     /// <para>
     /// Changing the value of this property while the client is in use might result in inconsistencies
     /// as to how many iterations are allowed for an in-flight request.
     /// </para>
     /// </remarks>
-    public int? MaximumIterationsPerRequest
+    public int MaximumIterationsPerRequest
     {
         get => _maximumIterationsPerRequest;
         set
@@ -204,7 +203,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             // Any function call work to do? If yes, ensure we're tracking that work in functionCallContents.
             bool requiresFunctionInvocation =
                 options?.Tools is { Count: > 0 } &&
-                (!MaximumIterationsPerRequest.HasValue || iteration < MaximumIterationsPerRequest.GetValueOrDefault()) &&
+                iteration < MaximumIterationsPerRequest &&
                 CopyFunctionCalls(response.Messages, ref functionCallContents);
 
             // In a common case where we make a request and there's no function calling work required,
