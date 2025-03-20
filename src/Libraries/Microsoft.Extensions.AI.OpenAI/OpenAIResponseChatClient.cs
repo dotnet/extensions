@@ -491,13 +491,13 @@ internal sealed class OpenAIResponseChatClient : IChatClient
                     {
                         case TextContent textContent:
                             yield return ResponseItem.CreateAssistantMessageItem(
-                                "msg_ignored",
+                                input.MessageId,
                                 textContent.Text);
                             break;
 
                         case FunctionCallContent callContent:
                             yield return ResponseItem.CreateFunctionCall(
-                                "msg_ignored",
+                                input.MessageId,
                                 callContent.CallId,
                                 callContent.Name,
                                 BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(
