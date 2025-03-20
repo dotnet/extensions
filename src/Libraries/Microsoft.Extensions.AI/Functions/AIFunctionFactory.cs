@@ -21,6 +21,7 @@ using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable CA1031 // Do not catch general exception types
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
+#pragma warning disable SA1118 // Parameter should not span multiple lines
 
 namespace Microsoft.Extensions.AI;
 
@@ -231,7 +232,7 @@ public static partial class AIFunctionFactory
             serializerOptions.MakeReadOnly();
             ConcurrentDictionary<DescriptorKey, ReflectionAIFunctionDescriptor> innerCache = _descriptorCache.GetOrCreateValue(serializerOptions);
 
-            DescriptorKey key = new(method, options.Name, options.Description, options.ArgumentBinder, schemaOptions);
+            DescriptorKey key = new(method, options.Name, options.Description, options.ConfigureParameterBinding, options.BindParameter, schemaOptions);
             if (innerCache.TryGetValue(key, out ReflectionAIFunctionDescriptor? descriptor))
             {
                 return descriptor;
@@ -245,39 +246,69 @@ public static partial class AIFunctionFactory
 
         private ReflectionAIFunctionDescriptor(DescriptorKey key, JsonSerializerOptions serializerOptions)
         {
-            // Augment the schema options to exclude AIFunctionArguments/IServiceProvider from the schema,
-            // as it'll be satisfied from AIFunctionArguments.
-            static bool IncludeNonAIFunctionArgumentParameter(ParameterInfo parameterInfo) =>
-                parameterInfo.ParameterType != typeof(AIFunctionArguments) &&
-                parameterInfo.ParameterType != typeof(IServiceProvider);
+            ParameterInfo[] parameters = key.Method.GetParameters();
 
-            AIJsonSchemaCreateOptions schemaOptions;
-            if (key.SchemaOptions.IncludeParameter is not null)
+            // Determine how each parameter should be bound.
+            Dictionary<ParameterInfo, AIFunctionFactoryOptions.ParameterBindingOptions>? boundParameters = null;
+            if (parameters.Length != 0 && key.GetBindParameterOptions is not null)
             {
-                // There's an existing filter, so delegate to it after filtering out IServiceProvider.
-                var existingIncludeParameter = key.SchemaOptions.IncludeParameter;
-                schemaOptions = key.SchemaOptions with
+                boundParameters = [];
+                for (int i = 0; i < parameters.Length; i++)
                 {
-                    IncludeParameter = parameterInfo =>
-                        IncludeNonAIFunctionArgumentParameter(parameterInfo) &&
-                        existingIncludeParameter(parameterInfo),
-                };
+                    var options = key.GetBindParameterOptions(parameters[i]);
+
+                    if (options.UseBindParameter && key.BindParameter is null)
+                    {
+                        Throw.ArgumentException("options",
+                            $"{nameof(AIFunctionFactoryOptions.ConfigureParameterBinding)} returned '{nameof(AIFunctionFactoryOptions.ParameterBindingOptions.UseBindParameter)}'" +
+                            $"for parameter '{parameters[i].Name}', but {nameof(AIFunctionFactoryOptions.BindParameter)} delegate was not provided.");
+                    }
+
+                    boundParameters[parameters[i]] = options;
+                }
             }
-            else
+
+            // Use that binding information to impact the schema generation.
+            AIJsonSchemaCreateOptions schemaOptions = key.SchemaOptions with
             {
-                // There's no existing parameter filter, so only exclude IServiceProvider.
-                schemaOptions = key.SchemaOptions with
+                IncludeParameter = parameterInfo =>
                 {
-                    IncludeParameter = IncludeNonAIFunctionArgumentParameter,
-                };
-            }
+                    // AIFunctionArguments and IServiceProvider parameters are always excluded from the schema.
+                    if (parameterInfo.ParameterType == typeof(AIFunctionArguments) ||
+                        parameterInfo.ParameterType == typeof(IServiceProvider))
+                    {
+                        return false;
+                    }
+
+                    // If the parameter is marked as excluded by GetBindParameterOptions, exclude it.
+                    if (boundParameters?.TryGetValue(parameterInfo, out var options) is true &&
+                        options.ExcludeFromSchema)
+                    {
+                        return false;
+                    }
+
+                    // If there was an existing IncludeParameter delegate, now defer to it as we've
+                    // excluded everything we need to exclude.
+                    if (key.SchemaOptions.IncludeParameter is { } existingIncludeParameter)
+                    {
+                        return existingIncludeParameter(parameterInfo);
+                    }
+
+                    // Everything else is included.
+                    return true;
+                },
+            };
 
             // Get marshaling delegates for parameters.
-            ParameterInfo[] parameters = key.Method.GetParameters();
-            ParameterMarshallers = new Func<AIFunctionArguments, CancellationToken, object?>[parameters.Length];
+            ParameterMarshallers = parameters.Length > 0 ? new Func<AIFunctionArguments, CancellationToken, object?>[parameters.Length] : [];
             for (int i = 0; i < parameters.Length; i++)
             {
-                ParameterMarshallers[i] = GetParameterMarshaller(serializerOptions, key.ArgumentBinder, parameters[i]);
+                if (boundParameters?.TryGetValue(parameters[i], out AIFunctionFactoryOptions.ParameterBindingOptions options) is not true)
+                {
+                    options = default;
+                }
+
+                ParameterMarshallers[i] = GetParameterMarshaller(serializerOptions, options, key.BindParameter, parameters[i]);
             }
 
             // Get a marshaling delegate for the return value.
@@ -346,7 +377,8 @@ public static partial class AIFunctionFactory
         /// </summary>
         private static Func<AIFunctionArguments, CancellationToken, object?> GetParameterMarshaller(
             JsonSerializerOptions serializerOptions,
-            AIFunctionFactoryOptions.ArgumentBinderFunc? argumentBinder,
+            AIFunctionFactoryOptions.ParameterBindingOptions bindingOptions,
+            Func<AIFunctionFactoryOptions.ParameterBindingOptions, ParameterInfo, AIFunctionArguments, object?>? bindParameter,
             ParameterInfo parameter)
         {
             if (string.IsNullOrWhiteSpace(parameter.Name))
@@ -366,34 +398,27 @@ public static partial class AIFunctionFactory
                     cancellationToken;
             }
 
-            // For AIFunctionArgument parameters, we always bind to the arguments passed directly to InvokeAsync,
-            // unless an argument binder overrides it.
-            if (parameterType == typeof(AIFunctionArguments))
+            // CancellationToken is the only parameter type that's handled exclusively by the implementation.
+            // Now that it's been processed, check to see if the parameter should be handled via BindParameter.
+            if (bindingOptions.UseBindParameter)
             {
-                return (arguments, _) =>
-                {
-                    // If there is an argument binder, use it to get the argument for this parameter.
-                    if (argumentBinder?.Invoke(parameter, arguments, out object? boundValue) is true)
-                    {
-                        return boundValue;
-                    }
-
-                    return arguments;
-                };
+                Debug.Assert(bindParameter is not null, "This case should have already been excluded by the caller.");
+                return (arguments, _) => bindParameter!(bindingOptions, parameter, arguments);
             }
 
-            // For IServiceProvider parameters, we always bind to the services passed directly to InvokeAsync via AIFunctionArguments,
-            // unless an argument binder overrides it.
+            // We're now into default handling of everything else.
+
+            // For AIFunctionArgument parameters, we bind to the arguments passed directly to InvokeAsync.
+            if (parameterType == typeof(AIFunctionArguments))
+            {
+                return static (arguments, _) => arguments;
+            }
+
+            // For IServiceProvider parameters, we bind to the services passed directly to InvokeAsync via AIFunctionArguments.
             if (parameterType == typeof(IServiceProvider))
             {
                 return (arguments, _) =>
                 {
-                    // If there is an argument binder, use it to get the argument for this parameter.
-                    if (argumentBinder?.Invoke(parameter, arguments, out object? boundValue) is true)
-                    {
-                        return boundValue;
-                    }
-
                     IServiceProvider? services = arguments.Services;
                     if (services is null && !parameter.HasDefaultValue)
                     {
@@ -404,16 +429,9 @@ public static partial class AIFunctionFactory
                 };
             }
 
-            // For all other parameters, create a marshaller that tries to extract the value from the arguments dictionary,
-            // unless an argument binder overrides it.
+            // For all other parameters, create a marshaller that tries to extract the value from the arguments dictionary.
             return (arguments, _) =>
             {
-                // If there is an argument binder, use it to get the argument for this parameter.
-                if (argumentBinder?.Invoke(parameter, arguments, out object? boundValue) is true)
-                {
-                    return boundValue;
-                }
-
                 // If the parameter has an argument specified in the dictionary, return that argument.
                 if (arguments.TryGetValue(parameter.Name, out object? value))
                 {
@@ -559,7 +577,8 @@ public static partial class AIFunctionFactory
             MethodInfo Method,
             string? Name,
             string? Description,
-            AIFunctionFactoryOptions.ArgumentBinderFunc? ArgumentBinder,
+            Func<ParameterInfo, AIFunctionFactoryOptions.ParameterBindingOptions>? GetBindParameterOptions,
+            Func<AIFunctionFactoryOptions.ParameterBindingOptions, ParameterInfo, AIFunctionArguments, object?>? BindParameter,
             AIJsonSchemaCreateOptions SchemaOptions);
     }
 }

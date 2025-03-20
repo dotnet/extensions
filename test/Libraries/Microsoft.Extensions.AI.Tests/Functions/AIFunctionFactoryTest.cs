@@ -164,24 +164,29 @@ public class AIFunctionFactoryTest
     {
         IReadOnlyDictionary<string, object?> metadata = new Dictionary<string, object?> { ["a"] = "b" };
 
-        AIFunctionFactoryOptions.ArgumentBinderFunc binder = (ParameterInfo p, AIFunctionArguments a, out object? value) =>
-        {
-            value = null;
-            return false;
-        };
+        Func<ParameterInfo, AIFunctionFactoryOptions.ParameterBindingOptions> getBindParameterMode = _ =>
+            new()
+            {
+                UseBindParameter = true,
+                ExcludeFromSchema = true,
+            };
+
+        Func<AIFunctionFactoryOptions.ParameterBindingOptions, ParameterInfo, AIFunctionArguments, object?> bindParameter = (o, p, a) => new();
 
         var options = new AIFunctionFactoryOptions
         {
             Name = "test name",
             Description = "test description",
             AdditionalProperties = metadata,
-            ArgumentBinder = binder,
+            ConfigureParameterBinding = getBindParameterMode,
+            BindParameter = bindParameter,
         };
 
         Assert.Equal("test name", options.Name);
         Assert.Equal("test description", options.Description);
         Assert.Same(metadata, options.AdditionalProperties);
-        Assert.Same(binder, options.ArgumentBinder);
+        Assert.Same(getBindParameterMode, options.ConfigureParameterBinding);
+        Assert.Same(bindParameter, options.BindParameter);
 
         Action dotnetFunc = () => { };
         AIFunction func = AIFunctionFactory.Create(dotnetFunc, options);
@@ -202,7 +207,8 @@ public class AIFunctionFactoryTest
         Assert.Null(options.AdditionalProperties);
         Assert.Null(options.SerializerOptions);
         Assert.Null(options.JsonSchemaCreateOptions);
-        Assert.Null(options.ArgumentBinder);
+        Assert.Null(options.ConfigureParameterBinding);
+        Assert.Null(options.BindParameter);
     }
 
     [Fact]
@@ -212,10 +218,7 @@ public class AIFunctionFactoryTest
             (string firstParameter, int secondParameter) => firstParameter + secondParameter,
             new()
             {
-                JsonSchemaCreateOptions = new()
-                {
-                    IncludeParameter = p => p.Name != "firstParameter",
-                }
+                ConfigureParameterBinding = p => p.Name == "firstParameter" ? new() { ExcludeFromSchema = true } : default,
             });
 
         Assert.DoesNotContain("firstParameter", func.JsonSchema.ToString());
@@ -314,24 +317,13 @@ public class AIFunctionFactoryTest
             ([FromKeyedServices("key")] MyService service, int myInteger) => service.Value + myInteger,
             new AIFunctionFactoryOptions
             {
-                JsonSchemaCreateOptions = new()
-                {
-                    IncludeParameter = p => p.GetCustomAttribute<FromKeyedServicesAttribute>() is null,
-                },
-                ArgumentBinder = (ParameterInfo p, AIFunctionArguments a, out object? value) =>
-                {
-                    if (p.GetCustomAttribute<FromKeyedServicesAttribute>() is { } attr)
-                    {
-                        value =
-                            (a.Services as IKeyedServiceProvider)?.GetKeyedService(p.ParameterType, attr.Key) is { } service ? service :
-                            p.HasDefaultValue ? p.DefaultValue :
-                            throw new ArgumentException($"Unable to resolve argument for '{p.Name}'.");
-                        return true;
-                    }
-
-                    value = null;
-                    return false;
-                },
+                ConfigureParameterBinding = p => p.GetCustomAttribute<FromKeyedServicesAttribute>() is { } attr ?
+                    new() { Context = attr.Key, UseBindParameter = true, ExcludeFromSchema = true } :
+                    default,
+                BindParameter = (key, p, a) =>
+                    (a.Services as IKeyedServiceProvider)?.GetKeyedService(p.ParameterType, key.Context) is { } service ? service :
+                    p.HasDefaultValue ? p.DefaultValue :
+                    throw new ArgumentException($"Unable to resolve argument for '{p.Name}'."),
             });
 
         Assert.Contains("myInteger", f.JsonSchema.ToString());
@@ -357,19 +349,12 @@ public class AIFunctionFactoryTest
                 {
                     IncludeParameter = p => p.ParameterType != typeof(MyService),
                 },
-                ArgumentBinder = (ParameterInfo p, AIFunctionArguments a, out object? value) =>
-                {
-                    if (p.ParameterType == typeof(MyService))
-                    {
-                        value =
-                            a.Context?.TryGetValue(typeof(MyService), out object? service) is true ? service :
-                            throw new ArgumentException($"Unable to resolve argument for '{p.Name}'.");
-                        return true;
-                    }
-
-                    value = null;
-                    return false;
-                },
+                ConfigureParameterBinding = p => p.ParameterType == typeof(MyService) ?
+                    new() { UseBindParameter = true, ExcludeFromSchema = true } :
+                    default,
+                BindParameter = (o, p, a) =>
+                    a.Context?.TryGetValue(typeof(MyService), out object? service) is true ? service :
+                    throw new ArgumentException($"Unable to resolve argument for '{p.Name}'."),
             });
 
         Assert.Contains("myInteger", f.JsonSchema.ToString());
@@ -406,17 +391,8 @@ public class AIFunctionFactoryTest
             (IServiceProvider services) => services.GetRequiredService<MyService>().Value,
             new AIFunctionFactoryOptions
             {
-                ArgumentBinder = (ParameterInfo p, AIFunctionArguments a, out object? value) =>
-                {
-                    if (p.ParameterType == typeof(IServiceProvider))
-                    {
-                        value = sp2;
-                        return true;
-                    }
-
-                    value = null;
-                    return false;
-                },
+                ConfigureParameterBinding = p => new() { UseBindParameter = true },
+                BindParameter = (o, p, a) => sp2,
             });
 
         var result = await f.InvokeAsync(new() { Services = sp1 });
@@ -433,17 +409,8 @@ public class AIFunctionFactoryTest
             (AIFunctionArguments args) => (int)args["a"]!,
             new AIFunctionFactoryOptions
             {
-                ArgumentBinder = (ParameterInfo p, AIFunctionArguments a, out object? value) =>
-                {
-                    if (p.ParameterType == typeof(AIFunctionArguments))
-                    {
-                        value = args2;
-                        return true;
-                    }
-
-                    value = null;
-                    return false;
-                },
+                ConfigureParameterBinding = p => new() { UseBindParameter = true },
+                BindParameter = (o, p, a) => args2,
             });
 
         var result = await f.InvokeAsync(args1);

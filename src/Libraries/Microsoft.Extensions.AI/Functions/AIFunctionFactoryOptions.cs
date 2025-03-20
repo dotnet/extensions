@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text.Json;
-using System.Threading;
 
 namespace Microsoft.Extensions.AI;
 
@@ -57,40 +57,90 @@ public sealed class AIFunctionFactoryOptions
     /// </remarks>
     public IReadOnlyDictionary<string, object?>? AdditionalProperties { get; set; }
 
-    /// <summary>
-    /// Gets or sets a delegate that binds parameters to function arguments.
-    /// </summary>
+    /// <summary>Gets or sets a delegate used to determine how a particular parameter to the function should be bound.</summary>
     /// <remarks>
     /// <para>
-    /// When set to a non-<see langword="null"/> value, this delegate will be invoked for each parameter
-    /// in a function each time that function is invoked, allowing the caller to provide custom logic for binding
-    /// the parameter to an argument. This delegate is in complete control of the process, including
-    /// whether to throw an exception if the parameter cannot be bound (if the delegate returns
-    /// <see langword="null"/>), the default value for the parameter's type will be used.
-    /// </para>
-    /// <para>
-    /// When setting this property, the caller should ensure that <see cref="JsonSchemaCreateOptions"/>
-    /// is configured in a consistent manner. In particular, for any parameter that <see cref="ArgumentBinder" />
-    /// binds to something other than the corresponding value from the arguments dictionary, the
-    /// <see cref="AIJsonSchemaCreateOptions.IncludeParameter"/> delegate typically should be set to
-    /// exclude that parameter from the generated schema.
-    /// </para>
-    /// <para>
-    /// This delegate is not invoked for parameters of type <see cref="CancellationToken"/>,
-    /// which are always handled by <see cref="AIFunctionFactory"/>, invariably binding them to the
-    /// <see cref="CancellationToken" /> provided to the <see cref="AIFunction.InvokeAsync"/> call.
+    /// If <see langword="null"/>, the default parameter binding logic will be used, and <see cref="BindParameter"/> will be ignored.
+    /// If set to a non-<see langword="null"/> value, this delegate will be invoked once for each parameter in the function as part of
+    /// creating the <see cref="AIFunction"/> instance.
     /// </para>
     /// </remarks>
-    public ArgumentBinderFunc? ArgumentBinder { get; set; }
+    public Func<ParameterInfo, ParameterBindingOptions>? ConfigureParameterBinding { get; set; }
 
-    /// <summary>Delegate type used with <see cref="ArgumentBinder"/>.</summary>
-    /// <param name="parameter">The information about the parameter to bind.</param>
-    /// <param name="arguments">The <see cref="AIFunctionArguments"/> provided to the function's invocation.</param>
-    /// <param name="value">The argument value selected by the binder to be used as the parameter's value.</param>
-    /// <returns>
-    /// <see langword="true"/> if the binder chooses to provide an argument value for the parameter,
-    /// in which case <paramref name="value"/> stores the selected value; otherwise, <see langword="false"/>,
-    /// in which case the default binding will be used for the parameter.
-    /// </returns>
-    public delegate bool ArgumentBinderFunc(ParameterInfo parameter, AIFunctionArguments arguments, out object? value);
+    /// <summary>Gets or sets a delegate used to determine the value for a bound parameter.</summary>
+    /// <remarks>
+    /// For any parameter for which <see cref="ConfigureParameterBinding"/> returns a result including
+    /// <see cref="ParameterBindingOptions.UseBindParameter"/> set to true, <see cref="BindParameter"/>
+    /// will be invoked for that parameter each time the <see cref="AIFunction"/> is invoked. The <see cref="BindParameter"/>
+    /// delegate will be passed the <see cref="ParameterInfo" /> for the parameter, the <see cref="AIFunctionArguments"/> used
+    /// with the <see cref="AIFunction.InvokeAsync"/> call, and the <see cref="ParameterBindingOptions"/> result produced by
+    /// the <see cref="ConfigureParameterBinding"/> delegate. The return value of the delegate will be used for the parameter's
+    /// value. If <see cref="ParameterBindingOptions"/> is <see langword="null"/> or if the <see cref="ParameterBindingOptions"/>
+    /// it produces has <see cref="ParameterBindingOptions.UseBindParameter"/> as <see langword="false"/>, this delegate will be
+    /// ignored for that parameter.
+    /// </remarks>
+    public Func<ParameterBindingOptions, ParameterInfo, AIFunctionArguments, object?>? BindParameter { get; set; }
+
+    /// <summary>Provides configuration options produced by the <see cref="ConfigureParameterBinding"/> delegate.</summary>
+    [StructLayout(LayoutKind.Auto)]
+    public readonly record struct ParameterBindingOptions
+    {
+        /// <summary>Gets a value indicating whether the <see cref="BindParameter"/> delegate should be used for this parameter.</summary>
+        /// <remarks>
+        /// <para>
+        /// The default value is <see langword="false"/>.
+        /// </para>
+        /// <para>
+        /// If this property is <see langword="false"/>, the associated parameter will employ the default binding.
+        /// If this property is <see langword="true"/>, the <see cref="BindParameter"/> delegate will be invoked to be
+        /// solely responsible for the value to use for the property.
+        /// </para>
+        /// <para>
+        /// Typically, this value is used in combination with <see cref="ExcludeFromSchema"/> also set to <see langword="true"/>,
+        /// for cases where <see cref="BindParameter"/> will source the argument value for the parameter from somewhere other than
+        /// the argument dictionary (for example, from its <see cref="AIFunctionArguments.Services"/> or
+        /// <see cref="AIFunctionArguments.Context"/>. However, it may be used even when <see cref="ExcludeFromSchema"/> is <see langword="false"/>,
+        /// in a situation where it's desirable for the AI service to generate a value for the parameter, which <see cref="BindParameter"/>
+        /// may then use as part of its logic.
+        /// </para>
+        /// <para>
+        /// It is an error for <see cref="ConfigureParameterBinding"/> to return a <see cref="ParameterBindingOptions"/> with
+        /// <see cref="UseBindParameter"/> set to <see langword="true"/> when <see cref="BindParameter"/> is <see langword="null"/>.
+        /// </para>
+        /// </remarks>
+        public bool UseBindParameter { get; init; }
+
+        /// <summary>Gets a value indicating whether the parameter should be excluded from the generated schema.</summary>
+        /// <remarks>
+        /// <para>
+        /// The default value is <see langword="false"/>.
+        /// </para>
+        /// <para>
+        /// Typically, this property is set to <see langword="true"/> when <see cref="UseBindParameter"/> is also set to
+        /// <see langword="true"/>. While it's possible to exclude the schema when <see cref="UseBindParameter"/> is <see langword="false"/>,
+        /// doing so means that default marshaling will be used but the AI service won't be aware of the parameter or able to generate
+        /// an argument for it. This is likely to result in invocation errors, as the parameter information is unlikely to be available.
+        /// It, however, is permissible for cases where invocation of the <see cref="AIFunction"/> is tightly controlled, and the caller
+        /// is expected to augment the argument dictionary with the parameter value.
+        /// </para>
+        /// </remarks>
+        public bool ExcludeFromSchema { get; init; }
+
+        /// <summary>
+        /// Gets additional context information that can be passed from <see cref="ConfigureParameterBinding"/> into
+        /// <see cref="BindParameter"/>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The default value is <see langword="null"/>.
+        /// </para>
+        /// <para>
+        /// In situations where <see cref="ConfigureParameterBinding"/> retrieves metadata about a parameter in order
+        /// to decide how it should be handled, that metadata is often also useful in <see cref="BindParameter"/>.
+        /// <see cref="ConfigureParameterBinding"/> can pass that information into <see cref="BindParameter"/> via
+        /// <see cref="Context"/>, rather than <see cref="BindParameter"/> needing to rediscover it.
+        /// </para>
+        /// </remarks>
+        public object? Context { get; init; }
+    }
 }
