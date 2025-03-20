@@ -16,6 +16,7 @@ using static Microsoft.Extensions.AI.OpenTelemetryConsts.GenAI;
 
 #pragma warning disable CA2213 // Disposable fields should be disposed
 #pragma warning disable EA0002 // Use 'System.TimeProvider' to make the code easier to test
+#pragma warning disable SA1202 // 'protected' members should come before 'private' members
 
 namespace Microsoft.Extensions.AI;
 
@@ -86,23 +87,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         get => _currentContext.Value;
         protected set => _currentContext.Value = value;
     }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether to handle exceptions that occur during function calls.
-    /// </summary>
-    /// <value>
-    /// <see langword="false"/> if the
-    /// underlying <see cref="IChatClient"/> will be instructed to give a response without invoking
-    /// any further functions if a function call fails with an exception.
-    /// <see langword="true"/> if the underlying <see cref="IChatClient"/> is allowed
-    /// to continue attempting function calls until <see cref="MaximumIterationsPerRequest"/> is reached.
-    /// The default value is <see langword="false"/>.
-    /// </value>
-    /// <remarks>
-    /// Changing the value of this property while the client is in use might result in inconsistencies
-    /// as to whether errors are retried during an in-flight request.
-    /// </remarks>
-    public bool RetryOnError { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether detailed exception information should be included
@@ -260,7 +244,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options!, functionCallContents!, iteration, cancellationToken).ConfigureAwait(false);
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
 
-            if (UpdateOptionsForMode(modeAndMessages.Mode, ref options!, response.ChatThreadId))
+            if (UpdateOptionsForMode(modeAndMessages.ShouldContinue, ref options!, response.ChatThreadId))
             {
                 // Terminate
                 break;
@@ -362,7 +346,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
             }
 
-            if (UpdateOptionsForMode(modeAndMessages.Mode, ref options, response.ChatThreadId))
+            if (UpdateOptionsForMode(modeAndMessages.ShouldContinue, ref options, response.ChatThreadId))
             {
                 // Terminate
                 yield break;
@@ -466,45 +450,32 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
     /// <summary>Updates <paramref name="options"/> for the response.</summary>
     /// <returns>true if the function calling loop should terminate; otherwise, false.</returns>
-    private static bool UpdateOptionsForMode(ContinueMode mode, ref ChatOptions options, string? chatThreadId)
+    private static bool UpdateOptionsForMode(bool shouldContinue, ref ChatOptions options, string? chatThreadId)
     {
-        switch (mode)
+        if (shouldContinue)
         {
-            case ContinueMode.Continue when options.ToolMode is RequiredChatToolMode:
+            if (options.ToolMode is RequiredChatToolMode)
+            {
                 // We have to reset the tool mode to be non-required after the first iteration,
                 // as otherwise we'll be in an infinite loop.
                 options = options.Clone();
                 options.ToolMode = null;
                 options.ChatThreadId = chatThreadId;
-
-                break;
-
-            case ContinueMode.AllowOneMoreRoundtrip:
-                // The LLM gets one further chance to answer, but cannot use tools.
-                options = options.Clone();
-                options.Tools = null;
-                options.ToolMode = null;
-                options.ChatThreadId = chatThreadId;
-
-                break;
-
-            case ContinueMode.Terminate:
-                // Bail immediately.
-                return true;
-
-            default:
+            }
+            else if (options.ChatThreadId != chatThreadId)
+            {
                 // As with the other modes, ensure we've propagated the chat thread ID to the options.
                 // We only need to clone the options if we're actually mutating it.
-                if (options.ChatThreadId != chatThreadId)
-                {
-                    options = options.Clone();
-                    options.ChatThreadId = chatThreadId;
-                }
+                options = options.Clone();
+                options.ChatThreadId = chatThreadId;
+            }
 
-                break;
+            return false;
         }
-
-        return false;
+        else
+        {
+            return true;
+        }
     }
 
     /// <summary>
@@ -515,8 +486,8 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <param name="functionCallContents">The function call contents representing the functions to be invoked.</param>
     /// <param name="iteration">The iteration number of how many roundtrips have been made to the inner client.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
-    /// <returns>A <see cref="ContinueMode"/> value indicating how the caller should proceed.</returns>
-    private async Task<(ContinueMode Mode, IList<ChatMessage> MessagesAdded)> ProcessFunctionCallsAsync(
+    /// <returns>A value indicating how the caller should proceed.</returns>
+    private async Task<(bool ShouldContinue, IList<ChatMessage> MessagesAdded)> ProcessFunctionCallsAsync(
         List<ChatMessage> messages, ChatOptions options, List<FunctionCallContent> functionCallContents, int iteration, CancellationToken cancellationToken)
     {
         // We must add a response for every tool call, regardless of whether we successfully executed it or not.
@@ -534,7 +505,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             ThrowIfNoFunctionResultsAdded(added);
 
             messages.AddRange(added);
-            return (result.ContinueMode, added);
+            return (result.ShouldContinue, added);
         }
         else
         {
@@ -561,7 +532,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 }
             }
 
-            ContinueMode continueMode = ContinueMode.Continue;
+            var shouldContinue = true;
 
             IList<ChatMessage> added = CreateResponseMessages(results);
             ThrowIfNoFunctionResultsAdded(added);
@@ -569,13 +540,10 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             messages.AddRange(added);
             foreach (FunctionInvocationResult fir in results)
             {
-                if (fir.ContinueMode > continueMode)
-                {
-                    continueMode = fir.ContinueMode;
-                }
+                shouldContinue = shouldContinue && fir.ShouldContinue;
             }
 
-            return (continueMode, added);
+            return (shouldContinue, added);
         }
     }
 
@@ -597,7 +565,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <param name="iteration">The iteration number of how many roundtrips have been made to the inner client.</param>
     /// <param name="functionCallIndex">The 0-based index of the function being called out of <paramref name="callContents"/>.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
-    /// <returns>A <see cref="ContinueMode"/> value indicating how the caller should proceed.</returns>
+    /// <returns>A value indicating how the caller should proceed.</returns>
     private async Task<FunctionInvocationResult> ProcessFunctionCallAsync(
         List<ChatMessage> messages, ChatOptions options, List<FunctionCallContent> callContents,
         int iteration, int functionCallIndex, CancellationToken cancellationToken)
@@ -608,7 +576,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         AIFunction? function = options.Tools!.OfType<AIFunction>().FirstOrDefault(t => t.Name == callContent.Name);
         if (function is null)
         {
-            return new(ContinueMode.Continue, FunctionInvocationStatus.NotFound, callContent, result: null, exception: null);
+            return new(shouldContinue: true, FunctionInvocationStatus.NotFound, callContent, result: null, exception: null);
         }
 
         FunctionInvocationContext context = new()
@@ -633,7 +601,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         catch (Exception e) when (!cancellationToken.IsCancellationRequested)
         {
             return new(
-                RetryOnError ? ContinueMode.Continue : ContinueMode.AllowOneMoreRoundtrip, // We won't allow further function calls, hence the LLM will just get one more chance to give a final answer.
+                shouldContinue: true,
                 FunctionInvocationStatus.Exception,
                 callContent,
                 result: null,
@@ -641,25 +609,11 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         }
 
         return new(
-            context.Terminate ? ContinueMode.Terminate : ContinueMode.Continue,
+            shouldContinue: !context.Terminate,
             FunctionInvocationStatus.RanToCompletion,
             callContent,
             result,
             exception: null);
-    }
-
-    /// <summary>Represents the return value of <see cref="ProcessFunctionCallsAsync"/>, dictating how the loop should behave.</summary>
-    /// <remarks>These values are ordered from least severe to most severe, and code explicitly depends on the ordering.</remarks>
-    internal enum ContinueMode
-    {
-        /// <summary>Send back the responses and continue processing.</summary>
-        Continue = 0,
-
-        /// <summary>Send back the response but without any tools.</summary>
-        AllowOneMoreRoundtrip = 1,
-
-        /// <summary>Immediately exit the function calling loop.</summary>
-        Terminate = 2,
     }
 
     /// <summary>Creates one or more response messages for function invocation results.</summary>
@@ -806,9 +760,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <summary>Provides information about the invocation of a function call.</summary>
     public sealed class FunctionInvocationResult
     {
-        internal FunctionInvocationResult(ContinueMode continueMode, FunctionInvocationStatus status, FunctionCallContent callContent, object? result, Exception? exception)
+        internal FunctionInvocationResult(bool shouldContinue, FunctionInvocationStatus status, FunctionCallContent callContent, object? result, Exception? exception)
         {
-            ContinueMode = continueMode;
+            ShouldContinue = shouldContinue;
             Status = status;
             CallContent = callContent;
             Result = result;
@@ -827,8 +781,8 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         /// <summary>Gets any exception the function call threw.</summary>
         public Exception? Exception { get; }
 
-        /// <summary>Gets an indication for how the caller should continue the processing loop.</summary>
-        internal ContinueMode ContinueMode { get; }
+        /// <summary>Gets a value indicating whether indication the caller should continue the processing loop.</summary>
+        internal bool ShouldContinue { get; }
     }
 
     /// <summary>Provides error codes for when errors occur as part of the function calling loop.</summary>
