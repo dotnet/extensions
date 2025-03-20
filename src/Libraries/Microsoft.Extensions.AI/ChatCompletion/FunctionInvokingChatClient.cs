@@ -290,9 +290,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
             consecutiveErrorCount = modeAndMessages.NewConsecutiveErrorCount;
 
-            if (UpdateOptionsForMode(modeAndMessages.ShouldContinue, ref options!, response.ChatThreadId))
+            UpdateOptionsForMode(modeAndMessages.ShouldTerminate, ref options!, response.ChatThreadId);
+            if (modeAndMessages.ShouldTerminate)
             {
-                // Terminate
                 break;
             }
         }
@@ -394,9 +394,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
             }
 
-            if (UpdateOptionsForMode(modeAndMessages.ShouldContinue, ref options, response.ChatThreadId))
+            UpdateOptionsForMode(modeAndMessages.ShouldTerminate, ref options, response.ChatThreadId);
+            if (modeAndMessages.ShouldTerminate)
             {
-                // Terminate
                 yield break;
             }
         }
@@ -497,10 +497,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     }
 
     /// <summary>Updates <paramref name="options"/> for the response.</summary>
-    /// <returns>true if the function calling loop should terminate; otherwise, false.</returns>
-    private static bool UpdateOptionsForMode(bool shouldContinue, ref ChatOptions options, string? chatThreadId)
+    private static void UpdateOptionsForMode(bool shouldTerminate, ref ChatOptions options, string? chatThreadId)
     {
-        if (shouldContinue)
+        if (!shouldTerminate)
         {
             if (options.ToolMode is RequiredChatToolMode)
             {
@@ -517,12 +516,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 options = options.Clone();
                 options.ChatThreadId = chatThreadId;
             }
-
-            return false;
-        }
-        else
-        {
-            return true;
         }
     }
 
@@ -536,7 +529,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <param name="consecutiveErrorCount">The number of consecutive iterations, prior to this one, that were recorded as having function invocation errors.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>A value indicating how the caller should proceed.</returns>
-    private async Task<(bool ShouldContinue, int NewConsecutiveErrorCount, IList<ChatMessage> MessagesAdded)> ProcessFunctionCallsAsync(
+    private async Task<(bool ShouldTerminate, int NewConsecutiveErrorCount, IList<ChatMessage> MessagesAdded)> ProcessFunctionCallsAsync(
         List<ChatMessage> messages, ChatOptions options, List<FunctionCallContent> functionCallContents, int iteration, int consecutiveErrorCount, CancellationToken cancellationToken)
     {
         // We must add a response for every tool call, regardless of whether we successfully executed it or not.
@@ -555,7 +548,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             UpdateConsecutiveErrorCountOrThrow(added, ref consecutiveErrorCount);
 
             messages.AddRange(added);
-            return (result.ShouldContinue, consecutiveErrorCount, added);
+            return (result.ShouldTerminate, consecutiveErrorCount, added);
         }
         else
         {
@@ -582,7 +575,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 }
             }
 
-            var shouldContinue = true;
+            var shouldTerminate = false;
 
             IList<ChatMessage> added = CreateResponseMessages(results);
             ThrowIfNoFunctionResultsAdded(added);
@@ -591,10 +584,10 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             messages.AddRange(added);
             foreach (FunctionInvocationResult fir in results)
             {
-                shouldContinue = shouldContinue && fir.ShouldContinue;
+                shouldTerminate = shouldTerminate || fir.ShouldTerminate;
             }
 
-            return (shouldContinue, consecutiveErrorCount, added);
+            return (shouldTerminate, consecutiveErrorCount, added);
         }
     }
 
@@ -647,7 +640,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         AIFunction? function = options.Tools!.OfType<AIFunction>().FirstOrDefault(t => t.Name == callContent.Name);
         if (function is null)
         {
-            return new(shouldContinue: true, FunctionInvocationStatus.NotFound, callContent, result: null, exception: null);
+            return new(shouldTerminate: false, FunctionInvocationStatus.NotFound, callContent, result: null, exception: null);
         }
 
         FunctionInvocationContext context = new()
@@ -672,7 +665,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         catch (Exception e) when (!cancellationToken.IsCancellationRequested)
         {
             return new(
-                shouldContinue: true,
+                shouldTerminate: false,
                 FunctionInvocationStatus.Exception,
                 callContent,
                 result: null,
@@ -680,7 +673,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         }
 
         return new(
-            shouldContinue: !context.Terminate,
+            shouldTerminate: context.Terminate,
             FunctionInvocationStatus.RanToCompletion,
             callContent,
             result,
@@ -831,9 +824,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <summary>Provides information about the invocation of a function call.</summary>
     public sealed class FunctionInvocationResult
     {
-        internal FunctionInvocationResult(bool shouldContinue, FunctionInvocationStatus status, FunctionCallContent callContent, object? result, Exception? exception)
+        internal FunctionInvocationResult(bool shouldTerminate, FunctionInvocationStatus status, FunctionCallContent callContent, object? result, Exception? exception)
         {
-            ShouldContinue = shouldContinue;
+            ShouldTerminate = shouldTerminate;
             Status = status;
             CallContent = callContent;
             Result = result;
@@ -852,8 +845,8 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         /// <summary>Gets any exception the function call threw.</summary>
         public Exception? Exception { get; }
 
-        /// <summary>Gets a value indicating whether indication the caller should continue the processing loop.</summary>
-        internal bool ShouldContinue { get; }
+        /// <summary>Gets a value indicating whether indication the caller should terminate the processing loop.</summary>
+        internal bool ShouldTerminate { get; }
     }
 
     /// <summary>Provides error codes for when errors occur as part of the function calling loop.</summary>
