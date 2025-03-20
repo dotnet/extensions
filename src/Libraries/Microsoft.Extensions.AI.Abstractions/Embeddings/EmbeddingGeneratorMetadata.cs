@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Provides metadata about an <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/>.</summary>
 public class EmbeddingGeneratorMetadata
 {
-    private static readonly EmbeddingModelMetadata _emptyModelMetadata = new EmbeddingModelMetadata();
+    private static readonly Task<EmbeddingModelMetadata> _emptyModelMetadata = Task.FromResult(new EmbeddingModelMetadata());
 
     /// <summary>Initializes a new instance of the <see cref="EmbeddingGeneratorMetadata"/> class.</summary>
     /// <param name="providerName">
@@ -50,5 +50,5 @@ public class EmbeddingGeneratorMetadata
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that completes with the model metadata.</returns>
     public virtual Task<EmbeddingModelMetadata> GetModelMetadataAsync(string? modelId = null, CancellationToken cancellationToken = default)
-        => Task.FromResult(_emptyModelMetadata);
+        => _emptyModelMetadata;
 }
