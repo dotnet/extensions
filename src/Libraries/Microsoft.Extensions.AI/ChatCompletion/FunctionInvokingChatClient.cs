@@ -844,7 +844,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         /// <summary>Gets any exception the function call threw.</summary>
         public Exception? Exception { get; }
 
-        /// <summary>Gets a value indicating whether indication the caller should terminate the processing loop.</summary>
+        /// <summary>Gets a value indicating whether the caller should terminate the processing loop.</summary>
         internal bool ShouldTerminate { get; }
     }
 
