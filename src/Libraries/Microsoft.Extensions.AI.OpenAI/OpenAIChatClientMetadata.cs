@@ -95,6 +95,6 @@ internal sealed class OpenAIChatClientMetadata(string provider, Uri endpoint, st
 
     private ChatModelMetadata CreateModelMetadata(string? modelId) => new ChatModelMetadata
     {
-        SupportsNativeJsonSchema = SupportsNativeJsonSchema(modelId),
+        SupportsJsonSchemaResponseFormat = SupportsNativeJsonSchema(modelId),
     };
 }

@@ -136,7 +136,7 @@ public static class ChatClientStructuredOutputExtensions
     /// <param name="messages">The chat content to send.</param>
     /// <param name="serializerOptions">The JSON serialization options to use.</param>
     /// <param name="options">The chat options to configure the request.</param>
-    /// <param name="useNativeJsonSchema">
+    /// <param name="useJsonSchema">
     /// Optionally specifies whether to set a JSON schema on the <see cref="ChatResponseFormat"/>.
     /// This improves reliability if the underlying model supports native structured output with a schema, but may cause an error if the model does not support it.
     /// If not specified, the underlying provider's default will be used.
@@ -152,7 +152,7 @@ public static class ChatClientStructuredOutputExtensions
         IEnumerable<ChatMessage> messages,
         JsonSerializerOptions serializerOptions,
         ChatOptions? options = null,
-        bool? useNativeJsonSchema = null,
+        bool? useJsonSchema = null,
         CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(chatClient);
@@ -192,7 +192,7 @@ public static class ChatClientStructuredOutputExtensions
         ChatMessage? promptAugmentation = null;
         options = options is not null ? options.Clone() : new();
 
-        var resolvedUseNativeSchema = useNativeJsonSchema
+        var resolvedUseNativeSchema = useJsonSchema
             ?? await ModelSupportsNativeJsonSchemaAsync(chatClient, options.ModelId, cancellationToken).ConfigureAwait(false);
         if (resolvedUseNativeSchema.GetValueOrDefault(false))
         {
@@ -227,7 +227,7 @@ public static class ChatClientStructuredOutputExtensions
         if (chatClient.GetService<ChatClientMetadata>() is { } providerMetadata)
         {
             var modelMetadata = await providerMetadata.GetModelMetadataAsync(modelId, cancellationToken).ConfigureAwait(false);
-            return modelMetadata.SupportsNativeJsonSchema;
+            return modelMetadata.SupportsJsonSchemaResponseFormat;
         }
 
         return null;

@@ -9,5 +9,5 @@ public class ChatModelMetadata
     /// <summary>
     /// Gets a value indicating whether the model can produce structured output conforming to a JSON schema.
     /// </summary>
-    public bool? SupportsNativeJsonSchema { get; init; }
+    public bool? SupportsJsonSchemaResponseFormat { get; init; }
 }

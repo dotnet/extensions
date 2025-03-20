@@ -497,7 +497,7 @@ public sealed class OllamaChatClient : IChatClient
         : ChatClientMetadata(provider, endpoint, modelId)
     {
         // Ollama has supported native JSON schema for a while, so we'll assume it's always available
-        private static readonly ChatModelMetadata _metadata = new ChatModelMetadata { SupportsNativeJsonSchema = true };
+        private static readonly ChatModelMetadata _metadata = new ChatModelMetadata { SupportsJsonSchemaResponseFormat = true };
 
         public override Task<ChatModelMetadata> GetModelMetadataAsync(string? modelId = null, CancellationToken cancellationToken = default)
             => Task.FromResult(_metadata);

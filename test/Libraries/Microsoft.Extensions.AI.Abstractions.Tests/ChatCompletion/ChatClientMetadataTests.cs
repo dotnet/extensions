@@ -19,7 +19,7 @@ public class ChatClientMetadataTests
         Assert.Null(providerMetadata.DefaultModelId);
 
         var modelMetadata = await providerMetadata.GetModelMetadataAsync();
-        Assert.Null(modelMetadata.SupportsNativeJsonSchema);
+        Assert.Null(modelMetadata.SupportsJsonSchemaResponseFormat);
     }
 
     [Fact]
@@ -32,13 +32,13 @@ public class ChatClientMetadataTests
         Assert.Equal("theModel", providerMetadata.DefaultModelId);
 
         var modelMetadata = await providerMetadata.GetModelMetadataAsync();
-        Assert.True(modelMetadata.SupportsNativeJsonSchema);
+        Assert.True(modelMetadata.SupportsJsonSchemaResponseFormat);
     }
 
     private class TestChatClientMetadata(string providerName, Uri providerUri, string modelId, bool? supportsNativeJsonSchema)
         : ChatClientMetadata(providerName, providerUri, modelId)
     {
         public override Task<ChatModelMetadata> GetModelMetadataAsync(string? modelId = null, CancellationToken cancellationToken = default)
-            => Task.FromResult(new ChatModelMetadata { SupportsNativeJsonSchema = supportsNativeJsonSchema });
+            => Task.FromResult(new ChatModelMetadata { SupportsJsonSchemaResponseFormat = supportsNativeJsonSchema });
     }
 }

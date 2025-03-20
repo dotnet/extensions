@@ -79,7 +79,7 @@ public class OllamaChatClientTests
 
         // All models support native JSON schema
         var modelMetadata = await metadata.GetModelMetadataAsync("any model ID");
-        Assert.True(modelMetadata.SupportsNativeJsonSchema);
+        Assert.True(modelMetadata.SupportsJsonSchemaResponseFormat);
     }
 
     [Fact]

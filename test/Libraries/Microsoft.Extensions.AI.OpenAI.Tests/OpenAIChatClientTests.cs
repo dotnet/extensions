@@ -1087,7 +1087,7 @@ public class OpenAIChatClientTests
         var providerMetadata = chatClient.GetRequiredService<ChatClientMetadata>();
         var modelMetadata = await providerMetadata.GetModelMetadataAsync();
 
-        Assert.Equal(expectedSupportValue, modelMetadata.SupportsNativeJsonSchema);
+        Assert.Equal(expectedSupportValue, modelMetadata.SupportsJsonSchemaResponseFormat);
     }
 
     private static IChatClient CreateChatClient(HttpClient httpClient, string modelId) =>

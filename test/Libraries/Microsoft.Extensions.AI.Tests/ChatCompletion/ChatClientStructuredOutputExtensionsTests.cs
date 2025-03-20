@@ -422,7 +422,7 @@ public class ChatClientStructuredOutputExtensionsTests
         public override Task<ChatModelMetadata> GetModelMetadataAsync(string? modelId = null, CancellationToken cancellationToken = default)
         {
             Assert.Equal(expectedModelId, modelId);
-            return Task.FromResult(new ChatModelMetadata { SupportsNativeJsonSchema = supportsNativeJsonSchema });
+            return Task.FromResult(new ChatModelMetadata { SupportsJsonSchemaResponseFormat = supportsNativeJsonSchema });
         }
     }
 }

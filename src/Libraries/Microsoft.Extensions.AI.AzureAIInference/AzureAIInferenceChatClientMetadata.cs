@@ -97,6 +97,6 @@ internal sealed class AzureAIInferenceChatClientMetadata(string provider, Uri? e
 
     private ChatModelMetadata CreateModelMetadata(string? modelId) => new ChatModelMetadata
     {
-        SupportsNativeJsonSchema = SupportsNativeJsonSchema(modelId),
+        SupportsJsonSchemaResponseFormat = SupportsNativeJsonSchema(modelId),
     };
 }
