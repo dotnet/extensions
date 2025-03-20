@@ -29,8 +29,7 @@ internal sealed class GlobalBuffer : IDisposable
     private readonly string _category;
     private readonly Lock _bufferSwapLock = new();
 
-    private ConcurrentQueue<SerializedLogRecord> _activeBuffer;
-    private ConcurrentQueue<SerializedLogRecord> _standbyBuffer;
+    private ConcurrentQueue<SerializedLogRecord> _buffer = new();
 
     private DateTimeOffset _lastFlushTimestamp;
     private int _activeBufferSize;
@@ -47,8 +46,6 @@ internal sealed class GlobalBuffer : IDisposable
     {
         _options = Throw.IfNull(options);
         _timeProvider = timeProvider;
-        _activeBuffer = new ConcurrentQueue<SerializedLogRecord>();
-        _standbyBuffer = new ConcurrentQueue<SerializedLogRecord>();
         _bufferedLogger = bufferedLogger;
         _category = Throw.IfNullOrEmpty(category);
         _ruleSelector = Throw.IfNull(ruleSelector);
@@ -106,9 +103,12 @@ internal sealed class GlobalBuffer : IDisposable
             return false;
         }
 
-        _activeBuffer.Enqueue(serializedLogRecord);
-        _ = Interlocked.Add(ref _activeBufferSize, serializedLogRecord.SizeInBytes);
+        lock (_bufferSwapLock)
+        {
+            _buffer.Enqueue(serializedLogRecord);
+        }
 
+        _ = Interlocked.Add(ref _activeBufferSize, serializedLogRecord.SizeInBytes);
         TrimExcessRecords();
 
         return true;
@@ -117,20 +117,14 @@ internal sealed class GlobalBuffer : IDisposable
     public void Flush()
     {
         _lastFlushTimestamp = _timeProvider.GetUtcNow();
-
         ConcurrentQueue<SerializedLogRecord> bufferToFlush;
         lock (_bufferSwapLock)
         {
-            bufferToFlush = _activeBuffer;
-
-            // Swap to the empty standby buffer
-            _activeBuffer = _standbyBuffer;
-            _activeBufferSize = 0;
-
-            // Prepare the new standby buffer for future Flush() calls
-            _standbyBuffer = new ConcurrentQueue<SerializedLogRecord>();
+            bufferToFlush = _buffer;
+            _buffer = new ConcurrentQueue<SerializedLogRecord>();
         }
 
+        Interlocked.Exchange(ref _activeBufferSize, 0);
         SerializedLogRecord[] bufferedRecords = bufferToFlush.ToArray();
 
         // Process records in batches
@@ -185,7 +179,7 @@ internal sealed class GlobalBuffer : IDisposable
     private void TrimExcessRecords()
     {
         while (_activeBufferSize > _options.CurrentValue.MaxBufferSizeInBytes &&
-               _activeBuffer.TryDequeue(out SerializedLogRecord item))
+               _buffer.TryDequeue(out SerializedLogRecord item))
         {
             _ = Interlocked.Add(ref _activeBufferSize, -item.SizeInBytes);
             SerializedLogRecordFactory.Return(item);

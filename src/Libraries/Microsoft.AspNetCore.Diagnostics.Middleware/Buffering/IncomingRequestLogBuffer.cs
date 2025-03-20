@@ -29,8 +29,7 @@ internal sealed class IncomingRequestLogBuffer
     private readonly LogBufferingFilterRule[] _filterRules;
     private readonly Lock _bufferSwapLock = new();
 
-    private ConcurrentQueue<SerializedLogRecord> _activeBuffer;
-    private ConcurrentQueue<SerializedLogRecord> _standbyBuffer;
+    private ConcurrentQueue<SerializedLogRecord> _buffer = new();
     private int _activeBufferSize;
     private DateTimeOffset _lastFlushTimestamp;
 
@@ -43,9 +42,6 @@ internal sealed class IncomingRequestLogBuffer
         _bufferedLogger = bufferedLogger;
         _ruleSelector = ruleSelector;
         _options = options;
-
-        _activeBuffer = new ConcurrentQueue<SerializedLogRecord>();
-        _standbyBuffer = new ConcurrentQueue<SerializedLogRecord>();
         _filterRules = LogBufferingFilterRuleSelector.SelectByCategory(_options.CurrentValue.Rules.ToArray(), category);
     }
 
@@ -87,7 +83,11 @@ internal sealed class IncomingRequestLogBuffer
             return false;
         }
 
-        _activeBuffer.Enqueue(serializedLogRecord);
+        lock (_bufferSwapLock)
+        {
+            _buffer.Enqueue(serializedLogRecord);
+        }
+
         _ = Interlocked.Add(ref _activeBufferSize, serializedLogRecord.SizeInBytes);
 
         TrimExcessRecords();
@@ -102,16 +102,11 @@ internal sealed class IncomingRequestLogBuffer
         ConcurrentQueue<SerializedLogRecord> bufferToFlush;
         lock (_bufferSwapLock)
         {
-            bufferToFlush = _activeBuffer;
-
-            // Swap to the empty standby buffer
-            _activeBuffer = _standbyBuffer;
-            _activeBufferSize = 0;
-
-            // Prepare the new standby buffer for future Flush() calls
-            _standbyBuffer = new ConcurrentQueue<SerializedLogRecord>();
+            bufferToFlush = _buffer;
+            _buffer = new ConcurrentQueue<SerializedLogRecord>();
         }
 
+        Interlocked.Exchange(ref _activeBufferSize, 0);
         SerializedLogRecord[] bufferedRecords = bufferToFlush.ToArray();
 
         // Process records in batches
@@ -152,7 +147,7 @@ internal sealed class IncomingRequestLogBuffer
     private void TrimExcessRecords()
     {
         while (_activeBufferSize > _options.CurrentValue.MaxPerRequestBufferSizeInBytes &&
-               _activeBuffer.TryDequeue(out SerializedLogRecord item))
+               _buffer.TryDequeue(out SerializedLogRecord item))
         {
             _ = Interlocked.Add(ref _activeBufferSize, -item.SizeInBytes);
             SerializedLogRecordFactory.Return(item);
