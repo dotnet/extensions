@@ -136,6 +136,7 @@ public class ChatResponse
                 Role = message.Role,
 
                 ResponseId = ResponseId,
+                MessageId = message.MessageId,
                 CreatedAt = CreatedAt,
                 FinishReason = FinishReason,
                 ModelId = ModelId

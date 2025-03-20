@@ -347,6 +347,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     CreatedAt = DateTimeOffset.UtcNow,
                     Contents = message.Contents,
                     RawRepresentation = message.RawRepresentation,
+                    MessageId = message.MessageId,
                     ResponseId = toolResponseId,
                     Role = message.Role,
                 };

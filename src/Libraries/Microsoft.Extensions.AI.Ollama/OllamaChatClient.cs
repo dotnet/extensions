@@ -164,6 +164,7 @@ public sealed class OllamaChatClient : IChatClient
                 FinishReason = ToFinishReason(chunk),
                 ModelId = modelId,
                 ResponseId = responseId,
+                MessageId = responseId, // There is no per-message ID, but there's only one message per response, so use the response ID
                 Role = chunk.Message?.Role is not null ? new ChatRole(chunk.Message.Role) : null,
             };
 
@@ -271,7 +272,10 @@ public sealed class OllamaChatClient : IChatClient
             contents.Insert(0, new TextContent(message.Content));
         }
 
-        return new ChatMessage(new(message.Role), contents);
+        // Ollama doesn't set a response ID on responses or messages, so generate one for consistency with streaming
+        var messageId = Guid.NewGuid().ToString("N");
+
+        return new ChatMessage(new(message.Role), contents) { MessageId = messageId };
     }
 
     private static FunctionCallContent ToFunctionCallContent(OllamaFunctionToolCall function)

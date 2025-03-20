@@ -403,6 +403,7 @@ public class FunctionInvokingChatClientTests
                 // Otherwise just end the conversation.
                 List<ChatResponseUpdate> updates;
                 string responseId = Guid.NewGuid().ToString("N");
+                string messageId = Guid.NewGuid().ToString("N");
                 if (chatContents.Last().Text == "Hello")
                 {
                     updates =
@@ -419,6 +420,7 @@ public class FunctionInvokingChatClientTests
                 foreach (var update in updates)
                 {
                     update.ResponseId = responseId;
+                    update.MessageId = messageId;
                 }
 
                 return YieldAsync(updates);

@@ -123,6 +123,7 @@ internal sealed class OpenAIAssistantClient : IChatClient
                         ChatThreadId = threadId,
                         RawRepresentation = mcu,
                         ResponseId = responseId,
+                        MessageId = responseId, // There's no per-message ID, but there's only one mesage per run, so use the run ID
                     };
                     break;
 
@@ -142,6 +143,7 @@ internal sealed class OpenAIAssistantClient : IChatClient
                         ModelId = ru.Value.Model,
                         RawRepresentation = ru,
                         ResponseId = responseId,
+                        MessageId = responseId, // There's no per-message ID, but there's only one mesage per run, so use the run ID
                         Role = ChatRole.Assistant,
                     };
 

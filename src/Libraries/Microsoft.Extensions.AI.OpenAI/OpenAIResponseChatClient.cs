@@ -132,6 +132,7 @@ internal sealed class OpenAIResponseChatClient : IChatClient
                 switch (outputItem)
                 {
                     case MessageResponseItem messageItem:
+                        message.MessageId = messageItem.Id;
                         message.RawRepresentation = messageItem;
                         message.Role = ToChatRole(messageItem.Role);
                         (message.AdditionalProperties ??= []).Add(nameof(messageItem.Id), messageItem.Id);
@@ -233,6 +234,7 @@ internal sealed class OpenAIResponseChatClient : IChatClient
                         ModelId = modelId,
                         RawRepresentation = streamingUpdate,
                         ResponseId = responseId,
+                        MessageId = responseId, // When streaming, all chunks are within the same logical message so we use the response ID
                     };
                 }
 
@@ -245,6 +247,7 @@ internal sealed class OpenAIResponseChatClient : IChatClient
         ChatResponseUpdate update = new()
         {
             ResponseId = responseId,
+            MessageId = responseId, // When streaming, all chunks are within the same logical message so we use the response ID
             CreatedAt = createdAt,
             FinishReason = finishReason ?? (functionCallInfos is not null ? ChatFinishReason.ToolCalls : ChatFinishReason.Stop),
             ModelId = modelId,

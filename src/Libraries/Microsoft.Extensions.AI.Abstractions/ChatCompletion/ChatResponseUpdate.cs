@@ -99,13 +99,22 @@ public class ChatResponseUpdate
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
 
     /// <summary>Gets or sets the ID of the response of which this update is a part.</summary>
+    public string? ResponseId { get; set; }
+
+    /// <summary>Gets or sets the ID of the message of which this update is a part.</summary>
     /// <remarks>
+    /// A single streaming response may be composed of multiple messages, each of which may be represented
+    /// by multiple updates. This property is used to group those updates together into messages.
+    ///
+    /// Some providers may consider streaming responses to be a single message, and in that case
+    /// the value of this property may be the same as the response ID.
+    /// 
     /// This value is used when <see cref="ChatResponseExtensions.ToChatResponseAsync(IAsyncEnumerable{ChatResponseUpdate}, System.Threading.CancellationToken)"/>
     /// groups <see cref="ChatResponseUpdate"/> instances into <see cref="ChatMessage"/> instances.
     /// The value must be unique to each call to the underlying provider, and must be shared by
-    /// all updates that are part of the same response.
+    /// all updates that are part of the same logical message within a streaming response.
     /// </remarks>
-    public string? ResponseId { get; set; }
+    public string? MessageId { get; set; }
 
     /// <summary>Gets or sets the chat thread ID associated with the chat response of which this update is a part.</summary>
     /// <remarks>
