@@ -217,10 +217,11 @@ internal sealed class OpenAIAssistantClient : IChatClient
                     switch (tool)
                     {
                         case AIFunction aiFunction:
-                            bool? strict =
-                                aiFunction.AdditionalProperties.TryGetValue("Strict", out object? strictObj) &&
-                                strictObj is bool strictValue ?
-                                strictValue : null;
+                            // Default strict to true, but allow to be overridden by an additional Strict property.
+                            bool strict =
+                                !aiFunction.AdditionalProperties.TryGetValue("Strict", out object? strictObj) ||
+                                strictObj is not bool strictValue ||
+                                strictValue;
 
                             var functionParameters = BinaryData.FromBytes(
                                 JsonSerializer.SerializeToUtf8Bytes(
@@ -230,7 +231,7 @@ internal sealed class OpenAIAssistantClient : IChatClient
                             runOptions.ToolsOverride.Add(ToolDefinition.CreateFunction(aiFunction.Name, aiFunction.Description, functionParameters, strict));
                             break;
 
-                        case CodeInterpreterTool:
+                        case HostedCodeInterpreterTool:
                             runOptions.ToolsOverride.Add(ToolDefinition.CreateCodeInterpreter());
                             break;
                     }
@@ -267,7 +268,8 @@ internal sealed class OpenAIAssistantClient : IChatClient
                     AssistantResponseFormat.CreateJsonSchemaFormat(
                         jsonFormat.SchemaName ?? "json_schema",
                         BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(jsonSchema, OpenAIJsonContext.Default.JsonElement)),
-                        jsonFormat.SchemaDescription) :
+                        jsonFormat.SchemaDescription,
+                        strictSchemaEnabled: true) :
                     AssistantResponseFormat.JsonObject;
             }
         }

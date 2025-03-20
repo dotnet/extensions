@@ -48,6 +48,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <summary>The <see cref="FunctionInvocationContext"/> for the current function invocation.</summary>
     private static readonly AsyncLocal<FunctionInvocationContext?> _currentContext = new();
 
+    /// <summary>Optional services used for function invocation.</summary>
+    private readonly IServiceProvider? _functionInvocationServices;
+
     /// <summary>The logger to use for logging information about function invocation.</summary>
     private readonly ILogger _logger;
 
@@ -62,12 +65,14 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// Initializes a new instance of the <see cref="FunctionInvokingChatClient"/> class.
     /// </summary>
     /// <param name="innerClient">The underlying <see cref="IChatClient"/>, or the next instance in a chain of clients.</param>
-    /// <param name="logger">An <see cref="ILogger"/> to use for logging information about function invocation.</param>
-    public FunctionInvokingChatClient(IChatClient innerClient, ILogger? logger = null)
+    /// <param name="loggerFactory">An <see cref="ILoggerFactory"/> to use for logging information about function invocation.</param>
+    /// <param name="functionInvocationServices">An optional <see cref="IServiceProvider"/> to use for resolving services required by the <see cref="AIFunction"/> instances being invoked.</param>
+    public FunctionInvokingChatClient(IChatClient innerClient, ILoggerFactory? loggerFactory = null, IServiceProvider? functionInvocationServices = null)
         : base(innerClient)
     {
-        _logger = logger ?? NullLogger.Instance;
+        _logger = (ILogger?)loggerFactory?.CreateLogger<FunctionInvokingChatClient>() ?? NullLogger.Instance;
         _activitySource = innerClient.GetService<ActivitySource>();
+        _functionInvocationServices = functionInvocationServices;
     }
 
     /// <summary>
@@ -189,7 +194,11 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         // Create an activity to group them together for better observability.
         using Activity? activity = _activitySource?.StartActivity(nameof(FunctionInvokingChatClient));
 
-        IEnumerable<ChatMessage> originalMessages = messages; // the original messages, tracked for the rare case where we need to know what was originally provided
+        // Copy the original messages in order to avoid enumerating the original messages multiple times.
+        // The IEnumerable can represent an arbitrary amount of work.
+        List<ChatMessage> originalMessages = [.. messages];
+        messages = originalMessages;
+
         List<ChatMessage>? augmentedHistory = null; // the actual history of messages sent on turns other than the first
         ChatResponse? response = null; // the response from the inner client, which is possibly modified and then eventually returned
         List<ChatMessage>? responseMessages = null; // tracked list of messages, across multiple turns, to be used for the final response
@@ -275,7 +284,11 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         // Create an activity to group them together for better observability.
         using Activity? activity = _activitySource?.StartActivity(nameof(FunctionInvokingChatClient));
 
-        IEnumerable<ChatMessage> originalMessages = messages; // the original messages, tracked for the rare case where we need to know what was originally provided
+        // Copy the original messages in order to avoid enumerating the original messages multiple times.
+        // The IEnumerable can represent an arbitrary amount of work.
+        List<ChatMessage> originalMessages = [.. messages];
+        messages = originalMessages;
+
         List<ChatMessage>? augmentedHistory = null; // the actual history of messages sent on turns other than the first
         List<FunctionCallContent>? functionCallContents = null; // function call contents that need responding to in the current turn
         List<ChatMessage>? responseMessages = null; // tracked list of messages, across multiple turns, to be used in fallback cases to reconstitute history
@@ -593,10 +606,13 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
         FunctionInvocationContext context = new()
         {
+            Function = function,
+            Arguments = new(callContent.Arguments) { Services = _functionInvocationServices },
+
             Messages = messages,
             Options = options,
+
             CallContent = callContent,
-            Function = function,
             Iteration = iteration,
             FunctionCallIndex = functionCallIndex,
             FunctionCount = callContents.Count,
@@ -702,7 +718,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             startingTimestamp = Stopwatch.GetTimestamp();
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokingSensitive(context.Function.Name, LoggingHelpers.AsJson(context.CallContent.Arguments, context.Function.JsonSerializerOptions));
+                LogInvokingSensitive(context.Function.Name, LoggingHelpers.AsJson(context.Arguments, context.Function.JsonSerializerOptions));
             }
             else
             {
@@ -713,8 +729,8 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         object? result = null;
         try
         {
-            CurrentContext = context;
-            result = await context.Function.InvokeAsync(context.CallContent.Arguments, cancellationToken).ConfigureAwait(false);
+            CurrentContext = context; // doesn't need to be explicitly reset after, as that's handled automatically at async method exit
+            result = await context.Function.InvokeAsync(context.Arguments, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception e)
         {

@@ -5,6 +5,7 @@ using OpenAI;
 using OpenAI.Assistants;
 using OpenAI.Chat;
 using OpenAI.Embeddings;
+using OpenAI.Responses;
 
 namespace Microsoft.Extensions.AI;
 
@@ -23,6 +24,12 @@ public static class OpenAIClientExtensions
     /// <returns>An <see cref="IChatClient"/> that can be used to converse via the <see cref="ChatClient"/>.</returns>
     public static IChatClient AsChatClient(this ChatClient chatClient) =>
         new OpenAIChatClient(chatClient);
+
+    /// <summary>Gets an <see cref="IChatClient"/> for use with this <see cref="OpenAIResponseClient"/>.</summary>
+    /// <param name="responseClient">The client.</param>
+    /// <returns>An <see cref="IChatClient"/> that can be used to converse via the <see cref="OpenAIResponseClient"/>.</returns>
+    public static IChatClient AsChatClient(this OpenAIResponseClient responseClient) =>
+        new OpenAIResponseChatClient(responseClient);
 
 #pragma warning disable OPENAI001 // Type is for evaluation purposes only
     /// <summary>Gets an <see cref="IChatClient"/> for use with this <see cref="AssistantClient"/>.</summary>

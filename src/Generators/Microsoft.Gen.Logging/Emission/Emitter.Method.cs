@@ -102,7 +102,8 @@ internal sealed partial class Emitter : EmitterBase
         OutLn($"[{GeneratorUtilities.GeneratedCodeAttribute}] static string ({lambdaStateName}, {exceptionLambdaName}) =>");
         OutOpenBrace();
 
-        if (GenVariableAssignments(lm, lambdaStateName, numReservedUnclassifiedTags, numReservedClassifiedTags))
+        if (!string.IsNullOrEmpty(lm.Message) &&
+            GenVariableAssignments(lm, lambdaStateName, numReservedUnclassifiedTags, numReservedClassifiedTags))
         {
             var mapped = Parsing.TemplateProcessor.MapTemplates(lm.Message, t =>
             {
@@ -318,7 +319,14 @@ internal sealed partial class Emitter : EmitterBase
             {
                 OutLn();
                 OutLn($"_ = {stateName}.ReserveTagSpace({numReservedUnclassifiedTags});");
+
                 int count = numReservedUnclassifiedTags;
+
+                if (!string.IsNullOrEmpty(lm.Message))
+                {
+                    OutLn($"{stateName}.TagArray[{--count}] = new(\"{{OriginalFormat}}\", {EscapeMessageString(lm.Message)});");
+                }
+
                 foreach (var p in lm.Parameters)
                 {
                     if (NeedsASlot(p) && !p.HasDataClassification)
@@ -366,11 +374,6 @@ internal sealed partial class Emitter : EmitterBase
                             }
                         });
                     }
-                }
-
-                if (!string.IsNullOrEmpty(lm.Message))
-                {
-                    OutLn($"{stateName}.TagArray[{--count}] = new(\"{{OriginalFormat}}\", {EscapeMessageString(lm.Message)});");
                 }
             }
 
@@ -516,7 +519,7 @@ internal sealed partial class Emitter : EmitterBase
         {
             bool generatedAssignments = false;
 
-            int index = numReservedUnclassifiedTags - 1;
+            int index = numReservedUnclassifiedTags - 2;
             foreach (var p in lm.Parameters)
             {
                 if (NeedsASlot(p) && !p.HasDataClassification)

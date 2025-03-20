@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -77,7 +78,7 @@ public class FunctionInvokingChatClientTests
         {
             Tools =
             [
-                AIFunctionFactory.Create((int i) => "Result 1", "Func1"),
+                AIFunctionFactory.Create((int? i = 42) => "Result 1", "Func1"),
                 AIFunctionFactory.Create((int i) => $"Result 2: {i}", "Func2"),
             ]
         };
@@ -286,7 +287,7 @@ public class FunctionInvokingChatClientTests
         };
 
         Func<ChatClientBuilder, ChatClientBuilder> configure = b =>
-            b.Use((c, services) => new FunctionInvokingChatClient(c, services.GetRequiredService<ILogger<FunctionInvokingChatClient>>()));
+            b.Use((c, services) => new FunctionInvokingChatClient(c, services.GetRequiredService<ILoggerFactory>()));
 
         await InvokeAsync(services => InvokeAndAssertAsync(options, plan, configurePipeline: configure, services: services));
 
@@ -605,6 +606,32 @@ public class FunctionInvokingChatClientTests
         Assert.Equal("done!", (await service.GetStreamingResponseAsync("hey", options).ToChatResponseAsync()).ToString());
     }
 
+    [Fact]
+    public async Task FunctionInvocations_PassesServices()
+    {
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1", new Dictionary<string, object?> { ["arg1"] = "value1" })]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        ServiceCollection c = new();
+        IServiceProvider expected = c.BuildServiceProvider();
+
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create((IServiceProvider actual) =>
+            {
+                Assert.Same(expected, actual);
+                return "Result 1";
+            }, "Func1")]
+        };
+
+        await InvokeAndAssertAsync(options, plan, services: expected);
+    }
+
     private static async Task<List<ChatMessage>> InvokeAndAssertAsync(
         ChatOptions options,
         List<ChatMessage> plan,
@@ -638,7 +665,7 @@ public class FunctionInvokingChatClientTests
 
         IChatClient service = configurePipeline(innerClient.AsBuilder()).Build(services);
 
-        var result = await service.GetResponseAsync(chat, options, cts.Token);
+        var result = await service.GetResponseAsync(new EnumeratedOnceEnumerable<ChatMessage>(chat), options, cts.Token);
         Assert.NotNull(result);
 
         chat.AddRange(result.Messages);
@@ -729,7 +756,7 @@ public class FunctionInvokingChatClientTests
 
         IChatClient service = configurePipeline(innerClient.AsBuilder()).Build(services);
 
-        var result = await service.GetStreamingResponseAsync(chat, options, cts.Token).ToChatResponseAsync();
+        var result = await service.GetStreamingResponseAsync(new EnumeratedOnceEnumerable<ChatMessage>(chat), options, cts.Token).ToChatResponseAsync();
         Assert.NotNull(result);
 
         chat.AddRange(result.Messages);
@@ -777,5 +804,25 @@ public class FunctionInvokingChatClientTests
         {
             yield return item;
         }
+    }
+
+    private sealed class EnumeratedOnceEnumerable<T>(IEnumerable<T> items) : IEnumerable<T>
+    {
+        private int _iterated;
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            if (Interlocked.Exchange(ref _iterated, 1) != 0)
+            {
+                throw new InvalidOperationException("This enumerable can only be enumerated once.");
+            }
+
+            foreach (var item in items)
+            {
+                yield return item;
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -403,7 +402,8 @@ internal static partial class OpenAIModelMappers
                         jsonFormat.SchemaName ?? "json_schema",
                         BinaryData.FromBytes(
                             JsonSerializer.SerializeToUtf8Bytes(jsonSchema, OpenAIJsonContext.Default.JsonElement)),
-                        jsonFormat.SchemaDescription) :
+                        jsonFormat.SchemaDescription,
+                        jsonSchemaIsStrict: true) :
                     OpenAI.Chat.ChatResponseFormat.CreateJsonObjectFormat();
             }
         }
@@ -437,17 +437,18 @@ internal static partial class OpenAIModelMappers
         public override string Description => description;
         public override JsonElement JsonSchema => schema;
         public override IReadOnlyDictionary<string, object?> AdditionalProperties => additionalProps;
-        protected override Task<object?> InvokeCoreAsync(IEnumerable<KeyValuePair<string, object?>> arguments, CancellationToken cancellationToken) =>
+        protected override Task<object?> InvokeCoreAsync(AIFunctionArguments arguments, CancellationToken cancellationToken) =>
             throw new InvalidOperationException($"The AI function '{Name}' does not support being invoked.");
     }
 
     /// <summary>Converts an Extensions function to an OpenAI chat tool.</summary>
     private static ChatTool ToOpenAIChatTool(AIFunction aiFunction)
     {
-        bool? strict =
-            aiFunction.AdditionalProperties.TryGetValue("Strict", out object? strictObj) &&
-            strictObj is bool strictValue ?
-            strictValue : null;
+        // Default strict to true, but allow to be overridden by an additional Strict property.
+        bool strict =
+            !aiFunction.AdditionalProperties.TryGetValue("Strict", out object? strictObj) ||
+            strictObj is not bool strictValue ||
+            strictValue;
 
         // Map to an intermediate model so that redundant properties are skipped.
         var tool = JsonSerializer.Deserialize(aiFunction.JsonSchema, OpenAIJsonContext.Default.OpenAIChatToolJson)!;
@@ -620,7 +621,7 @@ internal static partial class OpenAIModelMappers
     private static T? GetValueOrDefault<T>(this AdditionalPropertiesDictionary? dict, string key) =>
         dict?.TryGetValue(key, out T? value) is true ? value : default;
 
-    private static string CreateCompletionId() => $"chatcmpl-{Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture)}";
+    private static string CreateCompletionId() => $"chatcmpl-{Guid.NewGuid():N}";
 
     /// <summary>Used to create the JSON payload for an OpenAI chat tool description.</summary>
     public sealed class OpenAIChatToolJson
@@ -633,6 +634,9 @@ internal static partial class OpenAIModelMappers
 
         [JsonPropertyName("properties")]
         public Dictionary<string, JsonElement> Properties { get; set; } = [];
+
+        [JsonPropertyName("additionalProperties")]
+        public bool AdditionalProperties { get; set; }
     }
 
     /// <summary>POCO representing function calling info. Used to concatenation information for a single function call from across multiple streaming updates.</summary>

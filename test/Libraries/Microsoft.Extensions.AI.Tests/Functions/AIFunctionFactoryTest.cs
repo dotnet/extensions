@@ -5,9 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+
+#pragma warning disable S107 // Methods should not have too many parameters
 
 namespace Microsoft.Extensions.AI;
 
@@ -29,13 +33,13 @@ public class AIFunctionFactoryTest
         AIFunction func;
 
         func = AIFunctionFactory.Create((string a) => a + " " + a);
-        AssertExtensions.EqualFunctionCallResults("test test", await func.InvokeAsync([new KeyValuePair<string, object?>("a", "test")]));
+        AssertExtensions.EqualFunctionCallResults("test test", await func.InvokeAsync(new() { ["a"] = "test" }));
 
         func = AIFunctionFactory.Create((string a, string b) => b + " " + a);
-        AssertExtensions.EqualFunctionCallResults("hello world", await func.InvokeAsync([new KeyValuePair<string, object?>("b", "hello"), new KeyValuePair<string, object?>("a", "world")]));
+        AssertExtensions.EqualFunctionCallResults("hello world", await func.InvokeAsync(new() { ["b"] = "hello", ["a"] = "world" }));
 
         func = AIFunctionFactory.Create((int a, long b) => a + b);
-        AssertExtensions.EqualFunctionCallResults(3L, await func.InvokeAsync([new KeyValuePair<string, object?>("a", 1), new KeyValuePair<string, object?>("b", 2L)]));
+        AssertExtensions.EqualFunctionCallResults(3L, await func.InvokeAsync(new() { ["a"] = 1, ["b"] = 2L }));
     }
 
     [Fact]
@@ -43,7 +47,25 @@ public class AIFunctionFactoryTest
     {
         AIFunction func = AIFunctionFactory.Create((string a = "test") => a + " " + a);
         AssertExtensions.EqualFunctionCallResults("test test", await func.InvokeAsync());
-        AssertExtensions.EqualFunctionCallResults("hello hello", await func.InvokeAsync([new KeyValuePair<string, object?>("a", "hello")]));
+        AssertExtensions.EqualFunctionCallResults("hello hello", await func.InvokeAsync(new() { ["a"] = "hello" }));
+    }
+
+    [Fact]
+    public async Task Parameters_MissingRequiredParametersFail_Async()
+    {
+        AIFunction[] funcs =
+        [
+            AIFunctionFactory.Create((string theParam) => theParam + " " + theParam),
+            AIFunctionFactory.Create((string? theParam) => theParam + " " + theParam),
+            AIFunctionFactory.Create((int theParam) => theParam * 2),
+            AIFunctionFactory.Create((int? theParam) => theParam * 2),
+        ];
+
+        foreach (AIFunction f in funcs)
+        {
+            Exception e = await Assert.ThrowsAsync<ArgumentException>(() => f.InvokeAsync());
+            Assert.Contains("'theParam'", e.Message);
+        }
     }
 
     [Fact]
@@ -71,23 +93,23 @@ public class AIFunctionFactoryTest
         AIFunction func;
 
         func = AIFunctionFactory.Create(Task<string> (string a) => Task.FromResult(a + " " + a));
-        AssertExtensions.EqualFunctionCallResults("test test", await func.InvokeAsync([new KeyValuePair<string, object?>("a", "test")]));
+        AssertExtensions.EqualFunctionCallResults("test test", await func.InvokeAsync(new() { ["a"] = "test" }));
 
         func = AIFunctionFactory.Create(ValueTask<string> (string a, string b) => new ValueTask<string>(b + " " + a));
-        AssertExtensions.EqualFunctionCallResults("hello world", await func.InvokeAsync([new KeyValuePair<string, object?>("b", "hello"), new KeyValuePair<string, object?>("a", "world")]));
+        AssertExtensions.EqualFunctionCallResults("hello world", await func.InvokeAsync(new() { ["b"] = "hello", ["a"] = "world" }));
 
         long result = 0;
         func = AIFunctionFactory.Create(async Task (int a, long b) => { result = a + b; await Task.Yield(); });
-        AssertExtensions.EqualFunctionCallResults(null, await func.InvokeAsync([new KeyValuePair<string, object?>("a", 1), new KeyValuePair<string, object?>("b", 2L)]));
+        AssertExtensions.EqualFunctionCallResults(null, await func.InvokeAsync(new() { ["a"] = 1, ["b"] = 2L }));
         Assert.Equal(3, result);
 
         result = 0;
         func = AIFunctionFactory.Create(async ValueTask (int a, long b) => { result = a + b; await Task.Yield(); });
-        AssertExtensions.EqualFunctionCallResults(null, await func.InvokeAsync([new KeyValuePair<string, object?>("a", 1), new KeyValuePair<string, object?>("b", 2L)]));
+        AssertExtensions.EqualFunctionCallResults(null, await func.InvokeAsync(new() { ["a"] = 1, ["b"] = 2L }));
         Assert.Equal(3, result);
 
         func = AIFunctionFactory.Create((int count) => SimpleIAsyncEnumerable(count));
-        AssertExtensions.EqualFunctionCallResults(new int[] { 0, 1, 2, 3, 4 }, await func.InvokeAsync([new("count", 5)]));
+        AssertExtensions.EqualFunctionCallResults(new int[] { 0, 1, 2, 3, 4 }, await func.InvokeAsync(new() { ["count"] = 5 }));
 
         static async IAsyncEnumerable<int> SimpleIAsyncEnumerable(int count)
         {
@@ -171,5 +193,101 @@ public class AIFunctionFactoryTest
         Assert.Null(options.AdditionalProperties);
         Assert.Null(options.SerializerOptions);
         Assert.Null(options.JsonSchemaCreateOptions);
+    }
+
+    [Fact]
+    public async Task AIFunctionFactoryOptions_SupportsSkippingParameters()
+    {
+        AIFunction func = AIFunctionFactory.Create(
+            (string firstParameter, int secondParameter) => firstParameter + secondParameter,
+            new()
+            {
+                JsonSchemaCreateOptions = new()
+                {
+                    IncludeParameter = p => p.Name != "firstParameter",
+                }
+            });
+
+        Assert.DoesNotContain("firstParameter", func.JsonSchema.ToString());
+        Assert.Contains("secondParameter", func.JsonSchema.ToString());
+
+        JsonElement? result = (JsonElement?)await func.InvokeAsync(new()
+        {
+            ["firstParameter"] = "test",
+            ["secondParameter"] = 42
+        });
+        Assert.NotNull(result);
+        Assert.Contains("test42", result.ToString());
+    }
+
+    [Fact]
+    public async Task AIFunctionArguments_SatisfiesParameters()
+    {
+        ServiceCollection sc = new();
+        IServiceProvider sp = sc.BuildServiceProvider();
+
+        AIFunctionArguments arguments = new() { ["myInteger"] = 42 };
+
+        AIFunction func = AIFunctionFactory.Create((
+            int myInteger,
+            IServiceProvider services1,
+            IServiceProvider services2,
+            AIFunctionArguments arguments1,
+            AIFunctionArguments arguments2,
+            IServiceProvider? services3,
+            AIFunctionArguments? arguments3,
+            IServiceProvider? services4 = null,
+            AIFunctionArguments? arguments4 = null) =>
+        {
+            Assert.Same(sp, services1);
+            Assert.Same(sp, services2);
+            Assert.Same(sp, services3);
+            Assert.Same(sp, services4);
+
+            Assert.Same(arguments, arguments1);
+            Assert.Same(arguments, arguments2);
+            Assert.Same(arguments, arguments3);
+            Assert.Same(arguments, arguments4);
+
+            return myInteger;
+        });
+
+        Assert.Contains("myInteger", func.JsonSchema.ToString());
+        Assert.DoesNotContain("services", func.JsonSchema.ToString());
+        Assert.DoesNotContain("arguments", func.JsonSchema.ToString());
+
+        await Assert.ThrowsAsync<ArgumentException>("arguments", () => func.InvokeAsync(arguments));
+
+        arguments.Services = sp;
+        var result = await func.InvokeAsync(arguments);
+
+        Assert.Contains("42", result?.ToString());
+    }
+
+    [Fact]
+    public async Task AIFunctionArguments_MissingServicesMayBeOptional()
+    {
+        ServiceCollection sc = new();
+        IServiceProvider sp = sc.BuildServiceProvider();
+
+        AIFunction func = AIFunctionFactory.Create((
+            int? myInteger = null,
+            AIFunctionArguments? arguments = null,
+            IServiceProvider? services = null) =>
+        {
+            Assert.NotNull(arguments);
+            Assert.Null(services);
+            return myInteger;
+        });
+
+        Assert.Contains("myInteger", func.JsonSchema.ToString());
+        Assert.DoesNotContain("services", func.JsonSchema.ToString());
+        Assert.DoesNotContain("arguments", func.JsonSchema.ToString());
+
+        var result = await func.InvokeAsync(new() { ["myInteger"] = 42 });
+        Assert.Contains("42", result?.ToString());
+
+        result = await func.InvokeAsync();
+        Assert.Equal("", result?.ToString());
     }
 }

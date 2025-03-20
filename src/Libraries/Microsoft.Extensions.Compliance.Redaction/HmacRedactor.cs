@@ -18,7 +18,7 @@ using System.Text;
 namespace Microsoft.Extensions.Compliance.Redaction;
 
 /// <summary>
-/// A redactor using HMACSHA256 to encode data being redacted.
+/// Represents a redactor that uses HMAC SHA-256 to encode redacted data.
 /// </summary>
 public sealed class HmacRedactor : Redactor
 {
