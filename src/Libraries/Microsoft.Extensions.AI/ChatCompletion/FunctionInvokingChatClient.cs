@@ -290,11 +290,12 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
             consecutiveErrorCount = modeAndMessages.NewConsecutiveErrorCount;
 
-            UpdateOptionsForMode(modeAndMessages.ShouldTerminate, ref options!, response.ChatThreadId);
             if (modeAndMessages.ShouldTerminate)
             {
                 break;
             }
+
+            UpdateOptionsForMode(ref options!, response.ChatThreadId);
         }
 
         Debug.Assert(responseMessages is not null, "Expected to only be here if we have response messages.");
@@ -394,11 +395,12 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
             }
 
-            UpdateOptionsForMode(modeAndMessages.ShouldTerminate, ref options, response.ChatThreadId);
             if (modeAndMessages.ShouldTerminate)
             {
                 yield break;
             }
+
+            UpdateOptionsForMode(ref options, response.ChatThreadId);
         }
     }
 
@@ -497,25 +499,22 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     }
 
     /// <summary>Updates <paramref name="options"/> for the response.</summary>
-    private static void UpdateOptionsForMode(bool shouldTerminate, ref ChatOptions options, string? chatThreadId)
+    private static void UpdateOptionsForMode(ref ChatOptions options, string? chatThreadId)
     {
-        if (!shouldTerminate)
+        if (options.ToolMode is RequiredChatToolMode)
         {
-            if (options.ToolMode is RequiredChatToolMode)
-            {
-                // We have to reset the tool mode to be non-required after the first iteration,
-                // as otherwise we'll be in an infinite loop.
-                options = options.Clone();
-                options.ToolMode = null;
-                options.ChatThreadId = chatThreadId;
-            }
-            else if (options.ChatThreadId != chatThreadId)
-            {
-                // As with the other modes, ensure we've propagated the chat thread ID to the options.
-                // We only need to clone the options if we're actually mutating it.
-                options = options.Clone();
-                options.ChatThreadId = chatThreadId;
-            }
+            // We have to reset the tool mode to be non-required after the first iteration,
+            // as otherwise we'll be in an infinite loop.
+            options = options.Clone();
+            options.ToolMode = null;
+            options.ChatThreadId = chatThreadId;
+        }
+        else if (options.ChatThreadId != chatThreadId)
+        {
+            // As with the other modes, ensure we've propagated the chat thread ID to the options.
+            // We only need to clone the options if we're actually mutating it.
+            options = options.Clone();
+            options.ChatThreadId = chatThreadId;
         }
     }
 
