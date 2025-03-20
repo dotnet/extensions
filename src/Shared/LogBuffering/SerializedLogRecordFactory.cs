@@ -32,6 +32,9 @@ internal static class SerializedLogRecordFactory
             string key = attributes[i].Key;
             string value = attributes[i].Value?.ToString() ?? string.Empty;
 
+            // deliberately not counting the size of the key,
+            // as it is constant strings in the vast majority of cases
+
             sizeInBytes += CalculateStringSize(value);
 
             serializedAttributes.Add(new KeyValuePair<string, object?>(key, value));

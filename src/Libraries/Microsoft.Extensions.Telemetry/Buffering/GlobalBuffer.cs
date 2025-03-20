@@ -8,13 +8,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
+using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Diagnostics.Buffering;
 
 internal sealed class GlobalBuffer : IDisposable
 {
+    private const int MaxBatchSize = 256;
+    private static readonly ObjectPool<List<DeserializedLogRecord>> _recordsToEmitListPool =
+        PoolFactory.CreateListPoolWithCapacity<DeserializedLogRecord>(MaxBatchSize);
+
     private readonly IOptionsMonitor<GlobalLogBufferingOptions> _options;
     private readonly IBufferedLogger _bufferedLogger;
     private readonly TimeProvider _timeProvider;
@@ -127,19 +133,37 @@ internal sealed class GlobalBuffer : IDisposable
 
         SerializedLogRecord[] bufferedRecords = bufferToFlush.ToArray();
 
-        var recordsToEmit = new List<DeserializedLogRecord>(bufferedRecords.Length);
-        foreach (SerializedLogRecord bufferedRecord in bufferedRecords)
+        // Process records in batches
+        for (int offset = 0; offset < bufferedRecords.Length; offset += MaxBatchSize)
         {
-            recordsToEmit.Add(new DeserializedLogRecord(
-                bufferedRecord.Timestamp,
-                bufferedRecord.LogLevel,
-                bufferedRecord.EventId,
-                bufferedRecord.Exception,
-                bufferedRecord.FormattedMessage,
-                bufferedRecord.Attributes));
-        }
+            int currentBatchSize = Math.Min(MaxBatchSize, bufferedRecords.Length - offset);
+            List<DeserializedLogRecord>? recordsToEmit = null;
+            try
+            {
+                recordsToEmit = _recordsToEmitListPool.Get();
 
-        _bufferedLogger.LogRecords(recordsToEmit);
+                for (int i = 0; i < currentBatchSize; i++)
+                {
+                    SerializedLogRecord bufferedRecord = bufferedRecords[offset + i];
+                    recordsToEmit.Add(new DeserializedLogRecord(
+                        bufferedRecord.Timestamp,
+                        bufferedRecord.LogLevel,
+                        bufferedRecord.EventId,
+                        bufferedRecord.Exception,
+                        bufferedRecord.FormattedMessage,
+                        bufferedRecord.Attributes));
+                }
+
+                _bufferedLogger.LogRecords(recordsToEmit);
+            }
+            finally
+            {
+                if (recordsToEmit is not null)
+                {
+                    _recordsToEmitListPool.Return(recordsToEmit);
+                }
+            }
+        }
 
         SerializedLogRecordFactory.Return(bufferedRecords);
     }
