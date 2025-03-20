@@ -169,6 +169,7 @@ internal sealed class OpenAIResponseChatClient : IChatClient
         Dictionary<int, FunctionCallInfo>? functionCallInfos = null;
         DateTimeOffset? createdAt = null;
         string? responseId = null;
+        string? messageId = null;
         string? modelId = null;
         ChatRole? role = null;
         ChatFinishReason? finishReason = null;
@@ -188,6 +189,8 @@ internal sealed class OpenAIResponseChatClient : IChatClient
 
             if (streamingUpdate is StreamingResponseItemUpdate itemUpdate)
             {
+                messageId = itemUpdate.Item.Id;
+
                 // Handle metadata updates about the message.
                 if (itemUpdate.Item is MessageResponseItem messageItem)
                 {
@@ -213,6 +216,8 @@ internal sealed class OpenAIResponseChatClient : IChatClient
             // Handle content updates.
             if (streamingUpdate is StreamingResponseContentPartDeltaUpdate contentUpdate)
             {
+                messageId = contentUpdate.ItemId;
+
                 // Update our knowledge of function call requests.
                 if (contentUpdate.FunctionArguments is string argsUpdate)
                 {
@@ -234,7 +239,7 @@ internal sealed class OpenAIResponseChatClient : IChatClient
                         ModelId = modelId,
                         RawRepresentation = streamingUpdate,
                         ResponseId = responseId,
-                        MessageId = responseId, // When streaming, all chunks are within the same logical message so we use the response ID
+                        MessageId = messageId,
                     };
                 }
 
@@ -247,7 +252,7 @@ internal sealed class OpenAIResponseChatClient : IChatClient
         ChatResponseUpdate update = new()
         {
             ResponseId = responseId,
-            MessageId = responseId, // When streaming, all chunks are within the same logical message so we use the response ID
+            MessageId = messageId,
             CreatedAt = createdAt,
             FinishReason = finishReason ?? (functionCallInfos is not null ? ChatFinishReason.ToolCalls : ChatFinishReason.Stop),
             ModelId = modelId,
