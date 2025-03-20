@@ -42,25 +42,35 @@ internal sealed class IncomingRequestLogBuffer
 
     public bool TryEnqueue<TState>(LogEntry<TState> logEntry)
     {
-        SerializedLogRecord serializedLogRecord = default;
-        TState state = logEntry.State;
-        if (state is IReadOnlyList<KeyValuePair<string, object?>> attributes)
+        if (_timeProvider.GetUtcNow() < _lastFlushTimestamp + _options.CurrentValue.AutoFlushDuration)
         {
-            if (!IsEnabled(logEntry.LogLevel, logEntry.EventId, attributes))
-            {
-                return false;
-            }
-
-            serializedLogRecord = SerializedLogRecordFactory.Create(logEntry.LogLevel, logEntry.EventId, _timeProvider.GetUtcNow(), attributes, logEntry.Exception,
-                logEntry.Formatter(state, logEntry.Exception));
+            return false;
         }
-        else
+
+        IReadOnlyList<KeyValuePair<string, object?>>? attributes = logEntry.State as IReadOnlyList<KeyValuePair<string, object?>>;
+        if (attributes is null)
         {
             // we expect state to be either ModernTagJoiner or LegacyTagJoiner
             // which both implement IReadOnlyList<KeyValuePair<string, object?>>
             // and if not, we throw an exception
-            Throw.InvalidOperationException($"Unsupported type of the log state detected: {typeof(TState)}");
+            Throw.InvalidOperationException(
+                $"Unsupported type of log state detected: {typeof(TState)}, expected IReadOnlyList<KeyValuePair<string, object?>>");
         }
+
+        if (_ruleSelector.Select(_filterRules, logEntry.LogLevel, logEntry.EventId, attributes) is null)
+        {
+            // buffering is not enabled for this log entry
+            // so we return false to indicate that the log entry should be logged normally
+            return false;
+        }
+
+        SerializedLogRecord serializedLogRecord = SerializedLogRecordFactory.Create(
+            logEntry.LogLevel,
+            logEntry.EventId,
+            _timeProvider.GetUtcNow(),
+            attributes,
+            logEntry.Exception,
+            logEntry.Formatter(logEntry.State, logEntry.Exception));
 
         if (serializedLogRecord.SizeInBytes > _options.CurrentValue.MaxLogRecordSizeInBytes)
         {
@@ -107,16 +117,6 @@ internal sealed class IncomingRequestLogBuffer
         _bufferedLogger.LogRecords(recordsToEmit);
 
         SerializedLogRecordFactory.Return(bufferedRecords);
-    }
-
-    private bool IsEnabled(LogLevel logLevel, EventId eventId, IReadOnlyList<KeyValuePair<string, object?>> attributes)
-    {
-        if (_timeProvider.GetUtcNow() < _lastFlushTimestamp + _options.CurrentValue.AutoFlushDuration)
-        {
-            return false;
-        }
-
-        return _ruleSelector.Select(_filterRules, logLevel, eventId, attributes) is not null;
     }
 
     private void TrimExcessRecords()
