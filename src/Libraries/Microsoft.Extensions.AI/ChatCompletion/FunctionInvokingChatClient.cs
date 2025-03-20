@@ -324,7 +324,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         List<ChatMessage>? responseMessages = null; // tracked list of messages, across multiple turns, to be used in fallback cases to reconstitute history
         bool lastIterationHadThreadId = false; // whether the last iteration's response had a ChatThreadId set
         List<ChatResponseUpdate> updates = []; // updates from the current response
-        int consecutiveFailureCount = 0;
+        int consecutiveErrorCount = 0;
 
         for (int iteration = 0; ; iteration++)
         {
@@ -362,9 +362,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             FixupHistories(originalMessages, ref messages, ref augmentedHistory, response, responseMessages, ref lastIterationHadThreadId);
 
             // Process all of the functions, adding their results into the history.
-            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options, functionCallContents, iteration, consecutiveFailureCount, cancellationToken).ConfigureAwait(false);
+            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options, functionCallContents, iteration, consecutiveErrorCount, cancellationToken).ConfigureAwait(false);
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
-            consecutiveFailureCount = modeAndMessages.NewConsecutiveErrorCount;
+            consecutiveErrorCount = modeAndMessages.NewConsecutiveErrorCount;
 
             // This is a synthetic ID since we're generating the tool messages instead of getting them from
             // the underlying provider. When emitting the streamed chunks, it's perfectly valid for us to
