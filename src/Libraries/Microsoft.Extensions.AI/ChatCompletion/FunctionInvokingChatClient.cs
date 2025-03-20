@@ -62,6 +62,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <summary>Maximum number of roundtrips allowed to the inner client.</summary>
     private int _maximumIterationsPerRequest = 10;
 
+    /// <summary>Maximum number of consecutive iterations that are allowed contain at least one exception result. If the limit is exceeded, we rethrow the exception instead of continuing.</summary>
+    private int _maximumConsecutiveErrorsPerRequest = 3;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvokingChatClient"/> class.
     /// </summary>
@@ -167,6 +170,48 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         }
     }
 
+    /// <summary>
+    /// Gets or sets the maximum number of consecutive iterations that are allowed to fail with an error.
+    /// </summary>
+    /// <value>
+    /// The maximum number of consecutive iterations that are allowed to fail with an error.
+    /// The default value is 3.
+    /// </value>
+    /// <remarks>
+    /// <para>
+    /// When function invocations fail with an exception, the <see cref="FunctionInvokingChatClient"/>
+    /// continues to make requests to the inner client, optionally supplying exception information (as
+    /// controlled by <see cref="IncludeDetailedErrors"/>). This allows the <see cref="IChatClient"/> to
+    /// recover from errors by trying other function parameters that may succeed.
+    /// </para>
+    /// <para>
+    /// However, in case function invocations continue to produce exceptions, this property can be used to
+    /// limit the number of consecutive failing attempts. When the limit is reached, the exception will be
+    /// rethrown to the caller.
+    /// </para>
+    /// <para>
+    /// If the value is set to zero, all function calling exceptions immediately terminate the function
+    /// invocation loop and the exception will be rethrown to the caller.
+    /// </para>
+    /// <para>
+    /// Changing the value of this property while the client is in use might result in inconsistencies
+    /// as to how many iterations are allowed for an in-flight request.
+    /// </para>
+    /// </remarks>
+    public int MaximumConsecutiveErrorsPerRequest
+    {
+        get => _maximumConsecutiveErrorsPerRequest;
+        set
+        {
+            if (value < 0)
+            {
+                Throw.ArgumentOutOfRangeException(nameof(value));
+            }
+
+            _maximumConsecutiveErrorsPerRequest = value;
+        }
+    }
+
     /// <inheritdoc/>
     public override async Task<ChatResponse> GetResponseAsync(
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
@@ -188,6 +233,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         UsageDetails? totalUsage = null; // tracked usage across all turns, to be used for the final response
         List<FunctionCallContent>? functionCallContents = null; // function call contents that need responding to in the current turn
         bool lastIterationHadThreadId = false; // whether the last iteration's response had a ChatThreadId set
+        int consecutiveErrorCount = 0;
 
         for (int iteration = 0; ; iteration++)
         {
@@ -240,8 +286,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
             // Add the responses from the function calls into the augmented history and also into the tracked
             // list of response messages.
-            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options!, functionCallContents!, iteration, cancellationToken).ConfigureAwait(false);
+            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options!, functionCallContents!, iteration, consecutiveErrorCount, cancellationToken).ConfigureAwait(false);
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
+            consecutiveErrorCount = modeAndMessages.NewConsecutiveErrorCount;
 
             if (UpdateOptionsForMode(modeAndMessages.ShouldContinue, ref options!, response.ChatThreadId))
             {
@@ -277,6 +324,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         List<ChatMessage>? responseMessages = null; // tracked list of messages, across multiple turns, to be used in fallback cases to reconstitute history
         bool lastIterationHadThreadId = false; // whether the last iteration's response had a ChatThreadId set
         List<ChatResponseUpdate> updates = []; // updates from the current response
+        int consecutiveFailureCount = 0;
 
         for (int iteration = 0; ; iteration++)
         {
@@ -301,7 +349,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             // If there are no tools to call, or for any other reason we should stop, return the response.
             if (functionCallContents is not { Count: > 0 } ||
                 options?.Tools is not { Count: > 0 } ||
-                (MaximumIterationsPerRequest is { } maxIterations && iteration >= maxIterations))
+                iteration >= _maximumIterationsPerRequest)
             {
                 break;
             }
@@ -314,8 +362,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             FixupHistories(originalMessages, ref messages, ref augmentedHistory, response, responseMessages, ref lastIterationHadThreadId);
 
             // Process all of the functions, adding their results into the history.
-            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options, functionCallContents, iteration, cancellationToken).ConfigureAwait(false);
+            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options, functionCallContents, iteration, consecutiveFailureCount, cancellationToken).ConfigureAwait(false);
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
+            consecutiveFailureCount = modeAndMessages.NewConsecutiveErrorCount;
 
             // This is a synthetic ID since we're generating the tool messages instead of getting them from
             // the underlying provider. When emitting the streamed chunks, it's perfectly valid for us to
@@ -484,10 +533,11 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <param name="options">The options used for the response being processed.</param>
     /// <param name="functionCallContents">The function call contents representing the functions to be invoked.</param>
     /// <param name="iteration">The iteration number of how many roundtrips have been made to the inner client.</param>
+    /// <param name="consecutiveErrorCount">The number of consecutive iterations, prior to this one, that were recorded as having function invocation errors.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>A value indicating how the caller should proceed.</returns>
-    private async Task<(bool ShouldContinue, IList<ChatMessage> MessagesAdded)> ProcessFunctionCallsAsync(
-        List<ChatMessage> messages, ChatOptions options, List<FunctionCallContent> functionCallContents, int iteration, CancellationToken cancellationToken)
+    private async Task<(bool ShouldContinue, int NewConsecutiveErrorCount, IList<ChatMessage> MessagesAdded)> ProcessFunctionCallsAsync(
+        List<ChatMessage> messages, ChatOptions options, List<FunctionCallContent> functionCallContents, int iteration, int consecutiveErrorCount, CancellationToken cancellationToken)
     {
         // We must add a response for every tool call, regardless of whether we successfully executed it or not.
         // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
@@ -502,9 +552,10 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
             IList<ChatMessage> added = CreateResponseMessages([result]);
             ThrowIfNoFunctionResultsAdded(added);
+            UpdateConsecutiveErrorCountOrThrow(added, ref consecutiveErrorCount);
 
             messages.AddRange(added);
-            return (result.ShouldContinue, added);
+            return (result.ShouldContinue, consecutiveErrorCount, added);
         }
         else
         {
@@ -535,6 +586,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
             IList<ChatMessage> added = CreateResponseMessages(results);
             ThrowIfNoFunctionResultsAdded(added);
+            UpdateConsecutiveErrorCountOrThrow(added, ref consecutiveErrorCount);
 
             messages.AddRange(added);
             foreach (FunctionInvocationResult fir in results)
@@ -542,7 +594,27 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 shouldContinue = shouldContinue && fir.ShouldContinue;
             }
 
-            return (shouldContinue, added);
+            return (shouldContinue, consecutiveErrorCount, added);
+        }
+    }
+
+    private void UpdateConsecutiveErrorCountOrThrow(IList<ChatMessage> added, ref int consecutiveErrorCount)
+    {
+        var allExceptions = added.SelectMany(m => m.Contents.OfType<FunctionResultContent>())
+            .Select(frc => frc.Exception!)
+            .Where(e => e is not null);
+
+        if (allExceptions.Any())
+        {
+            consecutiveErrorCount++;
+            if (consecutiveErrorCount > _maximumConsecutiveErrorsPerRequest)
+            {
+                throw new AggregateException(allExceptions);
+            }
+        }
+        else
+        {
+            consecutiveErrorCount = 0;
         }
     }
 
