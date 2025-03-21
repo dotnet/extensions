@@ -201,15 +201,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     public int MaximumConsecutiveErrorsPerRequest
     {
         get => _maximumConsecutiveErrorsPerRequest;
-        set
-        {
-            if (value < 0)
-            {
-                Throw.ArgumentOutOfRangeException(nameof(value));
-            }
-
-            _maximumConsecutiveErrorsPerRequest = value;
-        }
+        set => _maximumConsecutiveErrorsPerRequest = Throw.IfLessThan(value, 0);
     }
 
     /// <inheritdoc/>
