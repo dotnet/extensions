@@ -151,7 +151,7 @@
         {
           "choice": "qdrant",
           "displayName": "Qdrant",
-          "description": "Uses Qdrant in a Docker container, orechestrated using Aspire."
+          "description": "Uses Qdrant in a Docker container, orchestrated using Aspire."
         }
       ]
     },
