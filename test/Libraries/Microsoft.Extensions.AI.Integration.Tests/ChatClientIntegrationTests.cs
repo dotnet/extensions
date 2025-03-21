@@ -731,7 +731,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         var response = await _chatClient.GetResponseAsync<bool>("""
             Jimbo Smith is a 35-year-old software developer from Cardiff, Wales.
-            Can we be sure that he is a medical doctor?
+            Reply true if the previous statement indicates that he is a medical doctor, otherwise false.
             """);
 
         Assert.False(response.Result);
@@ -820,7 +820,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
     private enum JobType
     {
-        Surgeon,
+        Wombat,
         PopStar,
         Programmer,
         Unknown,
