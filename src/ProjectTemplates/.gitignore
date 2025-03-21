@@ -10,7 +10,6 @@ package-lock.json
 */src/**/NuGet.config
 */src/**/Directory.Build.targets
 */src/**/ingestioncache.*
-*/src/**/qdrant_data/
 
 # launchSettings.json files are required for the templates.
 !launchSettings.json
