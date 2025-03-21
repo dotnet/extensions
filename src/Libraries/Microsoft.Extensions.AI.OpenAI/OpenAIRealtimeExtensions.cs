@@ -30,9 +30,8 @@ public static class OpenAIRealtimeExtensions
 
         ConversationFunctionToolParametersSchema functionToolSchema = JsonSerializer.Deserialize(aiFunction.JsonSchema, OpenAIJsonContext.Default.ConversationFunctionToolParametersSchema)!;
         BinaryData functionParameters = new(JsonSerializer.SerializeToUtf8Bytes(functionToolSchema, OpenAIJsonContext.Default.ConversationFunctionToolParametersSchema));
-        return new ConversationFunctionTool
+        return new ConversationFunctionTool(aiFunction.Name)
         {
-            Name = aiFunction.Name,
             Description = aiFunction.Description,
             Parameters = functionParameters
         };

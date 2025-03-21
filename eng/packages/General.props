@@ -3,7 +3,7 @@
   <ItemGroup>
     <PackageVersion Include="Azure.Identity" Version="1.13.2" />
     <PackageVersion Include="Azure.Storage.Files.DataLake" Version="12.21.0" />
-    <PackageVersion Include="Azure.AI.Inference" Version="1.0.0-beta.3" />
+    <PackageVersion Include="Azure.AI.Inference" Version="1.0.0-beta.4" />
     <PackageVersion Include="ICSharpCode.Decompiler" Version="8.2.0.7535" />
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="$(MicrosoftCodeAnalysisAnalyzersVersion)" />
@@ -14,7 +14,7 @@
     <PackageVersion Include="Microsoft.IO.RecyclableMemoryStream" Version="3.0.0" />
     <PackageVersion Include="Microsoft.ML.Tokenizers" Version="$(MicrosoftMLTokenizersVersion)" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageVersion Include="OpenAI" Version="2.2.0-beta.3" />
+    <PackageVersion Include="OpenAI" Version="2.2.0-beta.4" />
     <PackageVersion Include="Polly" Version="8.4.2" />
     <PackageVersion Include="Polly.Core" Version="8.4.2" />
     <PackageVersion Include="Polly.Extensions" Version="8.4.2" />

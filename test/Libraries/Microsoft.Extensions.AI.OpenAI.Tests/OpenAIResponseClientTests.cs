@@ -88,8 +88,7 @@ public class OpenAIResponseClientTests
                     "role":"user",
                     "content":[{"type":"input_text","text":"hello"}]
                 }],
-                "max_output_tokens":20,
-                "truncation":"auto"
+                "max_output_tokens":20
             }
             """;
 
@@ -193,8 +192,7 @@ public class OpenAIResponseClientTests
                     }
                 ],
                 "stream":true,
-                "max_output_tokens":20,
-                "truncation":"auto"
+                "max_output_tokens":20
             }
             """;
 
