@@ -4,10 +4,7 @@ using ChatWithCustomData_CSharp.Web.Components;
 using ChatWithCustomData_CSharp.Web.Services;
 using ChatWithCustomData_CSharp.Web.Services.Ingestion;
 #if (IsOllama)
-#elif (IsGHModels)
-using OpenAI;
-using System.ClientModel;
-#else // IsAzureOpenAI || IsOpenAI
+#else // IsAzureOpenAI || IsOpenAI || IsGHModels
 using OpenAI;
 #endif
 #if (UseAzureAISearch)
@@ -20,17 +17,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
-#if (IsGHModels)
-var credential = new ApiKeyCredential(builder.Configuration["GITHUB_MODELS_TOKEN"] ?? throw new InvalidOperationException("Missing configuration: GITHUB_MODELS_TOKEN. See the README for details."));
-var openAIOptions = new OpenAIClientOptions()
-{
-    Endpoint = new Uri("https://models.inference.ai.azure.com")
-};
-
-var ghModelsClient = new OpenAIClient(credential, openAIOptions);
-var chatClient = ghModelsClient.AsChatClient("gpt-4o-mini");
-var embeddingGenerator = ghModelsClient.AsEmbeddingGenerator("text-embedding-3-small");
-#elif (IsOllama)
+#if (IsOllama)
 builder.AddOllamaApiClient("chat")
     .AddChatClient()
     .UseFunctionInvocation()
@@ -38,8 +25,7 @@ builder.AddOllamaApiClient("chat")
 builder.AddOllamaApiClient("embeddings")
     .AddEmbeddingGenerator();
 #elif (IsAzureAiFoundry)
-
-#else // IsAzureOpenAI || IsOpenAI
+#else // IsAzureOpenAI || IsOpenAI || IsGHModels
 builder.AddOpenAIClientFromConfiguration("openai");
 #endif
 
@@ -58,10 +44,7 @@ builder.Services.AddSingleton<IVectorStore>(vectorStore);
 builder.Services.AddScoped<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();
 #if (IsOllama)
-#elif (IsGHModels)
-builder.Services.AddChatClient(chatClient).UseFunctionInvocation().UseLogging();
-builder.Services.AddEmbeddingGenerator(embeddingGenerator);
-#else // IsAzureOpenAI || IsOpenAI
+#else // IsAzureOpenAI || IsOpenAI || IsGHModels
 builder.Services.AddChatClient(sp => sp.GetRequiredService<OpenAIClient>().AsChatClient("gpt-4o-mini"))
     .UseFunctionInvocation()
     .UseLogging();

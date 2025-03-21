@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="OpenAI" Version="2.2.0-beta.1" />
+    <PackageReference Include="Aspire.Azure.AI.OpenAI" Version="9.1.0-preview.1.25121.10" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.4.0" />
     <PackageReference Include="CommunityToolkit.Aspire.Microsoft.EntityFrameworkCore.Sqlite" Version="9.2.2-beta.236" />
     <PackageReference Include="Microsoft.Extensions.AI" Version="9.4.0" />

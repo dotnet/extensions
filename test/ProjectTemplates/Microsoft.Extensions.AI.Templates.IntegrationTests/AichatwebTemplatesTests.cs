@@ -24,7 +24,6 @@ public class AichatwebTemplatesTests : TestBase
         "**/obj/**",
         "**/.vs/**",
         "**/node_modules/**",
-        "**/qdrant_data/**",
         "**/*.user",
         "**/*.in",
         "**/*.out.js",
@@ -53,7 +52,7 @@ public class AichatwebTemplatesTests : TestBase
     [Fact]
     public async Task BasicAspireTest()
     {
-        await TestTemplateCoreAsync(scenarioName: "BasicAspire", templateArgs: ["--UseAspire"]);
+        await TestTemplateCoreAsync(scenarioName: "BasicAspire", templateArgs: ["-as"]);
     }
 
     private async Task TestTemplateCoreAsync(string scenarioName, IEnumerable<string>? templateArgs = null)
