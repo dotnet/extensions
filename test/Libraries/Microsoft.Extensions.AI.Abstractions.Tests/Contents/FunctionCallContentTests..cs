@@ -251,8 +251,8 @@ public class FunctionCallContentTests
 
         public override string Name => "NetTypeless";
         public override string Description => "AIFunction with parameters that lack .NET types";
-        protected override Task<object?> InvokeCoreAsync(AIFunctionArguments arguments, CancellationToken cancellationToken) =>
-            Task.FromResult<object?>(arguments);
+        protected override ValueTask<object?> InvokeCoreAsync(AIFunctionArguments arguments, CancellationToken cancellationToken) =>
+            new(arguments);
     }
 
     [Fact]
