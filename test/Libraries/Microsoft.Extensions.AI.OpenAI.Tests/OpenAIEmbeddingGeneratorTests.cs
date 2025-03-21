@@ -58,12 +58,12 @@ public class OpenAIEmbeddingGeneratorTests
         var metadata = embeddingGenerator.GetService<EmbeddingGeneratorMetadata>();
         Assert.Equal("openai", metadata?.ProviderName);
         Assert.Equal(endpoint, metadata?.ProviderUri);
-        Assert.Equal(model, metadata?.ModelId);
+        Assert.Equal(model, metadata?.DefaultModelId);
 
         embeddingGenerator = client.GetEmbeddingClient(model).AsEmbeddingGenerator();
         Assert.Equal("openai", metadata?.ProviderName);
         Assert.Equal(endpoint, metadata?.ProviderUri);
-        Assert.Equal(model, metadata?.ModelId);
+        Assert.Equal(model, metadata?.DefaultModelId);
     }
 
     [Fact]

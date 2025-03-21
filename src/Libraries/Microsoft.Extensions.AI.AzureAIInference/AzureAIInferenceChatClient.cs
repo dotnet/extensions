@@ -59,7 +59,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
         var providerUrl = typeof(ChatCompletionsClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(chatCompletionsClient) as Uri;
 
-        _metadata = new("az.ai.inference", providerUrl, modelId);
+        _metadata = new ChatClientMetadata("az.ai.inference", providerUrl, modelId);
     }
 
     /// <summary>Gets or sets <see cref="JsonSerializerOptions"/> to use for any serialization activities related to tool call arguments and results.</summary>
@@ -96,6 +96,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
         // Create the return message.
         ChatMessage message = new(ToChatRole(response.Role), response.Content)
         {
+            MessageId = response.Id, // There is no per-message ID, but there's only one message per response, so use the response ID
             RawRepresentation = response,
         };
 
@@ -157,7 +158,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
             // The role and finish reason may arrive during any update, but once they've arrived, the same value should be the same for all subsequent updates.
             streamedRole ??= chatCompletionUpdate.Role is global::Azure.AI.Inference.ChatRole role ? ToChatRole(role) : null;
             finishReason ??= chatCompletionUpdate.FinishReason is CompletionsFinishReason reason ? ToFinishReason(reason) : null;
-            responseId ??= chatCompletionUpdate.Id;
+            responseId ??= chatCompletionUpdate.Id; // While it's unclear from the name, this Id is documented to be the response ID, not the chunk ID
             createdAt ??= chatCompletionUpdate.Created;
             modelId ??= chatCompletionUpdate.Model;
 
@@ -168,7 +169,8 @@ public sealed class AzureAIInferenceChatClient : IChatClient
                 FinishReason = finishReason,
                 ModelId = modelId,
                 RawRepresentation = chatCompletionUpdate,
-                ResponseId = chatCompletionUpdate.Id,
+                ResponseId = responseId,
+                MessageId = responseId, // There is no per-message ID, but there's only one message per response, so use the response ID
                 Role = streamedRole,
             };
 
@@ -229,6 +231,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
                 FinishReason = finishReason,
                 ModelId = modelId,
                 ResponseId = responseId,
+                MessageId = responseId, // There is no per-message ID, but there's only one message per response, so use the response ID
                 Role = streamedRole,
             };
 
@@ -285,7 +288,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
     {
         ChatCompletionsOptions result = new(ToAzureAIInferenceChatMessages(chatContents))
         {
-            Model = options?.ModelId ?? _metadata.ModelId ?? throw new InvalidOperationException("No model id was provided when either constructing the client or in the chat options.")
+            Model = options?.ModelId ?? _metadata.DefaultModelId ?? throw new InvalidOperationException("No model id was provided when either constructing the client or in the chat options.")
         };
 
         if (options is not null)

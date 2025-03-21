@@ -11,21 +11,21 @@ public class EmbeddingGeneratorMetadataTests
     [Fact]
     public void Constructor_NullValues_AllowedAndRoundtrip()
     {
-        EmbeddingGeneratorMetadata metadata = new(null, null, null, null);
-        Assert.Null(metadata.ProviderName);
-        Assert.Null(metadata.ProviderUri);
-        Assert.Null(metadata.ModelId);
-        Assert.Null(metadata.Dimensions);
+        EmbeddingGeneratorMetadata providerMetadata = new(null, null, null);
+        Assert.Null(providerMetadata.ProviderName);
+        Assert.Null(providerMetadata.ProviderUri);
+        Assert.Null(providerMetadata.DefaultModelId);
+        Assert.Null(providerMetadata.DefaultModelDimensions);
     }
 
     [Fact]
     public void Constructor_Value_Roundtrips()
     {
         var uri = new Uri("https://example.com");
-        EmbeddingGeneratorMetadata metadata = new("providerName", uri, "theModel", 42);
+        EmbeddingGeneratorMetadata metadata = new EmbeddingGeneratorMetadata("providerName", uri, "theModel", 42);
         Assert.Equal("providerName", metadata.ProviderName);
         Assert.Same(uri, metadata.ProviderUri);
-        Assert.Equal("theModel", metadata.ModelId);
-        Assert.Equal(42, metadata.Dimensions);
+        Assert.Equal("theModel", metadata.DefaultModelId);
+        Assert.Equal(42, metadata.DefaultModelDimensions);
     }
 }

@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Provides options for configuring the behavior of <see cref="AIJsonUtilities"/> JSON schema creation functionality.
 /// </summary>
-public sealed class AIJsonSchemaCreateOptions : IEquatable<AIJsonSchemaCreateOptions>
+public sealed record class AIJsonSchemaCreateOptions
 {
     /// <summary>
     /// Gets the default options instance.
@@ -56,26 +56,4 @@ public sealed class AIJsonSchemaCreateOptions : IEquatable<AIJsonSchemaCreateOpt
     /// Gets a value indicating whether to mark all properties as required in the schema.
     /// </summary>
     public bool RequireAllProperties { get; init; } = true;
-
-    /// <inheritdoc/>
-    public bool Equals(AIJsonSchemaCreateOptions? other) =>
-        other is not null &&
-        TransformSchemaNode == other.TransformSchemaNode &&
-        IncludeParameter == other.IncludeParameter &&
-        IncludeTypeInEnumSchemas == other.IncludeTypeInEnumSchemas &&
-        DisallowAdditionalProperties == other.DisallowAdditionalProperties &&
-        IncludeSchemaKeyword == other.IncludeSchemaKeyword &&
-        RequireAllProperties == other.RequireAllProperties;
-
-    /// <inheritdoc />
-    public override bool Equals(object? obj) => obj is AIJsonSchemaCreateOptions other && Equals(other);
-
-    /// <inheritdoc />
-    public override int GetHashCode() =>
-        (TransformSchemaNode,
-         IncludeParameter,
-         IncludeTypeInEnumSchemas,
-         DisallowAdditionalProperties,
-         IncludeSchemaKeyword,
-         RequireAllProperties).GetHashCode();
 }

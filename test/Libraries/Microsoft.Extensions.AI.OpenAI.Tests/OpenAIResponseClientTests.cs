@@ -48,7 +48,7 @@ public class OpenAIResponseClientTests
         var metadata = chatClient.GetService<ChatClientMetadata>();
         Assert.Equal("openai", metadata?.ProviderName);
         Assert.Equal(endpoint, metadata?.ProviderUri);
-        Assert.Equal(model, metadata?.ModelId);
+        Assert.Equal(model, metadata?.DefaultModelId);
     }
 
     [Fact]
@@ -167,6 +167,7 @@ public class OpenAIResponseClientTests
         Assert.Equal("Hello! How can I assist you today?", response.Text);
         Assert.Single(response.Messages.Single().Contents);
         Assert.Equal(ChatRole.Assistant, response.Messages.Single().Role);
+        Assert.Equal("msg_67d32764fcdc8191bcf2e444d4088804058a5e08c46a181d", response.Messages.Single().MessageId);
         Assert.Equal("gpt-4o-mini-2024-07-18", response.ModelId);
         Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_741_891_428), response.CreatedAt);
         Assert.Null(response.FinishReason);
@@ -273,6 +274,7 @@ public class OpenAIResponseClientTests
         for (int i = 0; i < updates.Count; i++)
         {
             Assert.Equal("resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77", updates[i].ResponseId);
+            Assert.Equal("msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77", updates[i].MessageId);
             Assert.Equal(createdAt, updates[i].CreatedAt);
             Assert.Equal("gpt-4o-mini-2024-07-18", updates[i].ModelId);
             Assert.Equal(ChatRole.Assistant, updates[i].Role);

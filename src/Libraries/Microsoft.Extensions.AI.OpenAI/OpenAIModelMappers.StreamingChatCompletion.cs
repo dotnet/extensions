@@ -89,6 +89,7 @@ internal static partial class OpenAIModelMappers
             ChatResponseUpdate responseUpdate = new()
             {
                 ResponseId = update.CompletionId,
+                MessageId = update.CompletionId, // There is no per-message ID, but there's only one message per response, so use the response ID
                 CreatedAt = update.CreatedAt,
                 FinishReason = finishReason,
                 ModelId = modelId,
@@ -167,6 +168,7 @@ internal static partial class OpenAIModelMappers
             ChatResponseUpdate responseUpdate = new()
             {
                 ResponseId = responseId,
+                MessageId = responseId, // There is no per-message ID, but there's only one message per response, so use the response ID
                 CreatedAt = createdAt,
                 FinishReason = finishReason,
                 ModelId = modelId,

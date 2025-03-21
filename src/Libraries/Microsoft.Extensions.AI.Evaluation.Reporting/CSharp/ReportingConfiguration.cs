@@ -229,7 +229,7 @@ public sealed class ReportingConfiguration
             yield return providerUri.AbsoluteUri;
         }
 
-        string? modelId = metadata?.ModelId;
+        string? modelId = metadata?.DefaultModelId;
         if (!string.IsNullOrWhiteSpace(modelId))
         {
             yield return modelId!;

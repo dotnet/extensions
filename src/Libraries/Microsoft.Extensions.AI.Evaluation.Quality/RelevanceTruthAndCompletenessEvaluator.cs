@@ -21,10 +21,26 @@ namespace Microsoft.Extensions.AI.Evaluation.Quality;
 /// AI model.
 /// </summary>
 /// <remarks>
+/// <para>
 /// <see cref="RelevanceTruthAndCompletenessEvaluator"/> returns three <see cref="NumericMetric"/>s that contain scores
 /// for 'Relevance', 'Truth' and 'Completeness' respectively. Each score is a number between 1 and 5, with 1 indicating
 /// a poor score, and 5 indicating an excellent score. Each returned score is also accompanied by a
 /// <see cref="EvaluationMetric.Reason"/> that provides an explanation for the score.
+/// </para>
+/// <para>
+/// <b>Note:</b> <see cref="RelevanceTruthAndCompletenessEvaluator"/> is an AI-based evaluator that uses an AI model to
+/// perform its evaluation. While the prompt that this evaluator uses to perform its evaluation is designed to be
+/// model-agnostic, the performance of this prompt (and the resulting evaluation) can vary depending on the model used,
+/// and can be especially poor when a smaller / local model is used.
+/// </para>
+/// <para>
+/// The prompt that <see cref="RelevanceTruthAndCompletenessEvaluator"/> uses has been tested against (and tuned to
+/// work well with) the following models. So, using this evaluator with a model from the following list is likely to
+/// produce the best results. (The model to be used can be configured via <see cref="ChatConfiguration.ChatClient"/>.)
+/// </para>
+/// <para>
+/// <b>GPT-4o</b>
+/// </para>
 /// </remarks>
 public sealed partial class RelevanceTruthAndCompletenessEvaluator : ChatConversationEvaluator
 {

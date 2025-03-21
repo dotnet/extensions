@@ -28,7 +28,7 @@ public class ChatResponseUpdateExtensionsTests
     {
         ChatResponseUpdate[] updates =
         [
-            new(ChatRole.Assistant, "Hello") { ResponseId = "12345", CreatedAt = new DateTimeOffset(1, 2, 3, 4, 5, 6, TimeSpan.Zero), ModelId = "model123" },
+            new(ChatRole.Assistant, "Hello") { ResponseId = "someResponse", MessageId = "12345", CreatedAt = new DateTimeOffset(1, 2, 3, 4, 5, 6, TimeSpan.Zero), ModelId = "model123" },
             new(new("human"), ", ") { AuthorName = "Someone", AdditionalProperties = new() { ["a"] = "b" } },
             new(null, "world!") { CreatedAt = new DateTimeOffset(2, 2, 3, 4, 5, 6, TimeSpan.Zero), ChatThreadId = "123", AdditionalProperties = new() { ["c"] = "d" } },
 
@@ -45,13 +45,14 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal(5, response.Usage.InputTokenCount);
         Assert.Equal(7, response.Usage.OutputTokenCount);
 
-        Assert.Equal("12345", response.ResponseId);
+        Assert.Equal("someResponse", response.ResponseId);
         Assert.Equal(new DateTimeOffset(2, 2, 3, 4, 5, 6, TimeSpan.Zero), response.CreatedAt);
         Assert.Equal("model123", response.ModelId);
 
         Assert.Equal("123", response.ChatThreadId);
 
         ChatMessage message = response.Messages.Single();
+        Assert.Equal("12345", message.MessageId);
         Assert.Equal(new ChatRole("human"), message.Role);
         Assert.Equal("Someone", message.AuthorName);
         Assert.Null(message.AdditionalProperties);

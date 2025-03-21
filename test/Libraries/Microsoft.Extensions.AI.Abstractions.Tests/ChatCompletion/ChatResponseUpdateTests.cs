@@ -21,6 +21,7 @@ public class ChatResponseUpdateTests
         Assert.Null(update.RawRepresentation);
         Assert.Null(update.AdditionalProperties);
         Assert.Null(update.ResponseId);
+        Assert.Null(update.MessageId);
         Assert.Null(update.CreatedAt);
         Assert.Null(update.FinishReason);
         Assert.Equal(string.Empty, update.ToString());
@@ -66,6 +67,10 @@ public class ChatResponseUpdateTests
         Assert.Null(update.ResponseId);
         update.ResponseId = "id";
         Assert.Equal("id", update.ResponseId);
+
+        Assert.Null(update.MessageId);
+        update.MessageId = "messageid";
+        Assert.Equal("messageid", update.MessageId);
 
         Assert.Null(update.CreatedAt);
         update.CreatedAt = new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero);
@@ -121,6 +126,7 @@ public class ChatResponseUpdateTests
             ],
             RawRepresentation = new object(),
             ResponseId = "id",
+            MessageId = "messageid",
             CreatedAt = new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero),
             FinishReason = ChatFinishReason.ContentFilter,
             AdditionalProperties = new() { ["key"] = "value" },
@@ -151,6 +157,7 @@ public class ChatResponseUpdateTests
         Assert.Equal("author", result.AuthorName);
         Assert.Equal(ChatRole.Assistant, result.Role);
         Assert.Equal("id", result.ResponseId);
+        Assert.Equal("messageid", result.MessageId);
         Assert.Equal(new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero), result.CreatedAt);
         Assert.Equal(ChatFinishReason.ContentFilter, result.FinishReason);
 
