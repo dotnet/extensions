@@ -17,7 +17,8 @@ builder.Services.AddScoped<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();
 builder.Services.AddChatClient(sp => sp.GetRequiredService<OpenAIClient>().AsChatClient("gpt-4o-mini"))
     .UseFunctionInvocation()
-    .UseLogging();
+    .UseLogging()
+    .UseOpenTelemetry();
 builder.Services.AddEmbeddingGenerator(sp => sp.GetRequiredService<OpenAIClient>().AsEmbeddingGenerator("text-embedding-3-small"));
 
 builder.AddSqliteDbContext<IngestionCacheDbContext>("ingestionCache");
