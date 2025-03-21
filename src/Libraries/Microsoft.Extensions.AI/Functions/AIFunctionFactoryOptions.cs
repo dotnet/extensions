@@ -96,8 +96,15 @@ public sealed class AIFunctionFactoryOptions
     /// For methods typed to return <see cref="Task{TResult}"/> or <see cref="ValueTask{TResult}"/>, the delegate will be invoked with the
     /// task's result value after the task has successfully completed.These behaviors keep synchronous and asynchronous methods consistent.
     /// </para>
+    /// <para>
+    /// In addition to the returned value, which is provided to the delegate as the first argument, the delegate is also provided with
+    /// a <see cref="Type"/> represented the declared return type of the method. This can be used to determine how to marshal the result.
+    /// This may be different than the actual type of the object (<see cref="object.GetType"/>) if the method returns a derived type
+    /// or <see langword="null"/>. If the method is typed to return <see cref="Task"/>, <see cref="ValueTask"/>, or <see langword="void"/>,
+    /// the <see cref="Type"/> argument will be <see langword="null"/>.
+    /// </para>
     /// </remarks>
-    public Func<object?, CancellationToken, ValueTask<object?>>? MarshalResult { get; set; }
+    public Func<object?, Type?, CancellationToken, ValueTask<object?>>? MarshalResult { get; set; }
 
     /// <summary>Provides configuration options produced by the <see cref="ConfigureParameterBinding"/> delegate.</summary>
     public readonly record struct ParameterBindingOptions
