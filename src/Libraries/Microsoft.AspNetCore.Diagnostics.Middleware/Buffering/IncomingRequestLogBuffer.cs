@@ -29,7 +29,8 @@ internal sealed class IncomingRequestLogBuffer
     private readonly LogBufferingFilterRule[] _filterRules;
     private readonly Lock _bufferSwapLock = new();
 
-    private ConcurrentQueue<SerializedLogRecord> _buffer = new();
+    private ConcurrentQueue<SerializedLogRecord> _activeBuffer = new();
+    private ConcurrentQueue<SerializedLogRecord> _standbyBuffer = new();
     private int _activeBufferSize;
     private DateTimeOffset _lastFlushTimestamp;
 
@@ -85,7 +86,7 @@ internal sealed class IncomingRequestLogBuffer
 
         lock (_bufferSwapLock)
         {
-            _buffer.Enqueue(serializedLogRecord);
+            _activeBuffer.Enqueue(serializedLogRecord);
         }
 
         _ = Interlocked.Add(ref _activeBufferSize, serializedLogRecord.SizeInBytes);
@@ -99,15 +100,17 @@ internal sealed class IncomingRequestLogBuffer
     {
         _lastFlushTimestamp = _timeProvider.GetUtcNow();
 
-        ConcurrentQueue<SerializedLogRecord> bufferToFlush;
+        SerializedLogRecord[] bufferedRecords;
         lock (_bufferSwapLock)
         {
-            bufferToFlush = _buffer;
-            _buffer = new ConcurrentQueue<SerializedLogRecord>();
-        }
+            bufferedRecords = _activeBuffer.ToArray();
 
-        Interlocked.Exchange(ref _activeBufferSize, 0);
-        SerializedLogRecord[] bufferedRecords = bufferToFlush.ToArray();
+            ConcurrentQueue<SerializedLogRecord> tempBuffer = _activeBuffer;
+            _activeBuffer = _standbyBuffer;
+            tempBuffer.Clear();
+            _standbyBuffer = tempBuffer;
+            Interlocked.Exchange(ref _activeBufferSize, 0);
+        }
 
         // Process records in batches
         for (int offset = 0; offset < bufferedRecords.Length; offset += MaxBatchSize)
@@ -147,7 +150,7 @@ internal sealed class IncomingRequestLogBuffer
     private void TrimExcessRecords()
     {
         while (_activeBufferSize > _options.CurrentValue.MaxPerRequestBufferSizeInBytes &&
-               _buffer.TryDequeue(out SerializedLogRecord item))
+               _activeBuffer.TryDequeue(out SerializedLogRecord item))
         {
             _ = Interlocked.Add(ref _activeBufferSize, -item.SizeInBytes);
             SerializedLogRecordFactory.Return(item);
