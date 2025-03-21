@@ -1,6 +1,22 @@
 {
   "$schema": "https://json.schemastore.org/dotnetcli.host",
   "symbolInfo": {
+    "AiServiceProvider": {
+      "longName": "provider",
+      "shortName": "pr"
+    },
+    "VectorStore": {
+      "longName": "vector-store",
+      "shortName": "vs"
+    },
+    "UseManagedIdentity": {
+      "longName": "managed-identity",
+      "shortName": "mi"
+    },
+    "UseAspire": {
+      "longName": "aspire",
+      "shortName": "as"
+    },
     "kestrelHttpPort": {
       "isHidden": true
     },

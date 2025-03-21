@@ -44,7 +44,7 @@ public class DataIngestor(
             {
                 await vectorCollection.DeleteBatchAsync(modifiedDoc.Records.Select(r => r.Id));
             }
-            
+
             var newRecords = await source.CreateRecordsForDocumentAsync(embeddingGenerator, modifiedDoc.Id);
             await foreach (var id in vectorCollection.UpsertBatchAsync(newRecords)) { }
 

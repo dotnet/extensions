@@ -113,7 +113,7 @@ fi
 # - If more than one solution is found - fail.
 if [[ "$hasProjects" == false ]]; then
   repoRoot=$(realpath $DIR/../)
-  fileCount=$(find $repoRoot -path "$repoRoot/*.sln" | wc -l)
+  fileCount=$(find $repoRoot -path "$repoRoot/*.sln" -maxdepth 1 | wc -l)
   if [[ $fileCount > 1 ]]; then
     echo -e '\e[31m[ERROR] Multiple .sln files found in the root of the repository. Use '--projects' to specify the one you wish to build.\e[0m' >&2
     exit -1

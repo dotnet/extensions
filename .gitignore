@@ -316,3 +316,6 @@ BenchmarkDotNet.artifacts/
 *.binlog
 /eng/scripts/repo-digest.html
 **/.DS_Store
+
+# VERIFY
+!**/*.verified/**
