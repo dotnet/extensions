@@ -21,6 +21,13 @@ public readonly struct ChatRole : IEquatable<ChatRole>
     /// <summary>Gets the role that instructs or sets the behavior of the system.</summary>
     public static ChatRole System { get; } = new("system");
 
+    /// <summary>Gets the role that sets developer-provided instructions the model should follow, regardless of messages sent by the user.</summary>
+    /// <remarks>
+    /// With OpenAI `o1` models and newer, developer messages replace the previous system messages.
+    /// See <see href="https://cdn.openai.com/spec/model-spec-2024-05-08.html">OpenAI Model Spec</see>.
+    /// </remarks>
+    public static ChatRole Developer { get; } = new("developer");
+
     /// <summary>Gets the role that provides responses to system-instructed, user-prompted input.</summary>
     public static ChatRole Assistant { get; } = new("assistant");
 
