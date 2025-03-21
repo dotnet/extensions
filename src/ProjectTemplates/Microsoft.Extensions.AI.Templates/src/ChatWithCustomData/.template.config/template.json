@@ -66,10 +66,12 @@
       {
         "condition": "(IsAspire)",
         "exclude": [
-          "ChatWithCustomData-CSharp.Web/Program.cs"
+          "ChatWithCustomData-CSharp.Web/Program.cs",
+          "ChatWithCustomData-CSharp.Web/README.md"
         ],
         "rename": {
-          "Program.Aspire.cs": "Program.cs"
+          "Program.Aspire.cs": "Program.cs",
+          "README.Aspire.md": "README.md"
         }
       },
       {
