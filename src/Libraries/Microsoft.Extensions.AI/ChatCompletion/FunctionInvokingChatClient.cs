@@ -287,7 +287,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 break;
             }
 
-            UpdateOptionsForMode(ref options!, response.ChatThreadId);
+            UpdateOptionsForNextIteration(ref options!, response.ChatThreadId);
         }
 
         Debug.Assert(responseMessages is not null, "Expected to only be here if we have response messages.");
@@ -392,7 +392,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 yield break;
             }
 
-            UpdateOptionsForMode(ref options, response.ChatThreadId);
+            UpdateOptionsForNextIteration(ref options, response.ChatThreadId);
         }
     }
 
@@ -490,8 +490,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         return any;
     }
 
-    /// <summary>Updates <paramref name="options"/> for the response.</summary>
-    private static void UpdateOptionsForMode(ref ChatOptions options, string? chatThreadId)
+    private static void UpdateOptionsForNextIteration(ref ChatOptions options, string? chatThreadId)
     {
         if (options.ToolMode is RequiredChatToolMode)
         {
