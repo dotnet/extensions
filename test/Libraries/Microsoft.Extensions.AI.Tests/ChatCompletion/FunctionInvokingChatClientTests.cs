@@ -402,7 +402,7 @@ public class FunctionInvokingChatClientTests
                 // If the conversation is just starting, issue two consecutive updates with function calls
                 // Otherwise just end the conversation.
                 List<ChatResponseUpdate> updates;
-                string responseId = Guid.NewGuid().ToString("N");
+                string messageId = Guid.NewGuid().ToString("N");
                 if (chatContents.Last().Text == "Hello")
                 {
                     updates =
@@ -418,7 +418,7 @@ public class FunctionInvokingChatClientTests
 
                 foreach (var update in updates)
                 {
-                    update.ResponseId = responseId;
+                    update.MessageId = messageId;
                 }
 
                 return YieldAsync(updates);
@@ -658,8 +658,11 @@ public class FunctionInvokingChatClientTests
                 var usage = CreateRandomUsage();
                 expectedTotalTokenCounts += usage.InputTokenCount!.Value;
 
-                var message = new ChatMessage(ChatRole.Assistant, [.. plan[contents.Count()].Contents]);
-                return new ChatResponse(message) { Usage = usage, ResponseId = Guid.NewGuid().ToString("N") };
+                var message = new ChatMessage(ChatRole.Assistant, [.. plan[contents.Count()].Contents])
+                {
+                    MessageId = Guid.NewGuid().ToString("N")
+                };
+                return new ChatResponse(message) { Usage = usage };
             }
         };
 
@@ -749,8 +752,11 @@ public class FunctionInvokingChatClientTests
             {
                 Assert.Equal(cts.Token, actualCancellationToken);
 
-                ChatMessage message = new(ChatRole.Assistant, [.. plan[contents.Count()].Contents]);
-                return YieldAsync(new ChatResponse(message) { ResponseId = Guid.NewGuid().ToString("N") }.ToChatResponseUpdates());
+                ChatMessage message = new(ChatRole.Assistant, [.. plan[contents.Count()].Contents])
+                {
+                    MessageId = Guid.NewGuid().ToString("N"),
+                };
+                return YieldAsync(new ChatResponse(message).ToChatResponseUpdates());
             }
         };
 

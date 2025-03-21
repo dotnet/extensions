@@ -334,9 +334,15 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options, functionCallContents, iteration, cancellationToken).ConfigureAwait(false);
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
 
+            // This is a synthetic ID since we're generating the tool messages instead of getting them from
+            // the underlying provider. When emitting the streamed chunks, it's perfectly valid for us to
+            // use the same message ID for all of them within a given iteration, as this is a single logical
+            // message with multiple content items. We could also use different message IDs per tool content,
+            // but there's no benefit to doing so.
+            string toolResponseId = Guid.NewGuid().ToString("N");
+
             // Stream any generated function results. This mirrors what's done for GetResponseAsync, where the returned messages
             // includes all activitys, including generated function results.
-            string toolResponseId = Guid.NewGuid().ToString("N");
             foreach (var message in modeAndMessages.MessagesAdded)
             {
                 var toolResultUpdate = new ChatResponseUpdate
@@ -348,6 +354,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     Contents = message.Contents,
                     RawRepresentation = message.RawRepresentation,
                     ResponseId = toolResponseId,
+                    MessageId = toolResponseId, // See above for why this can be the same as ResponseId
                     Role = message.Role,
                 };
 

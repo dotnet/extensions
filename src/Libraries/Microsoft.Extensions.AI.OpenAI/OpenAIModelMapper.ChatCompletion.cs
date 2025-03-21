@@ -79,6 +79,7 @@ internal static partial class OpenAIModelMappers
         // Create the return message.
         ChatMessage returnMessage = new()
         {
+            MessageId = openAICompletion.Id, // There's no per-message ID, so we use the same value as the response ID
             RawRepresentation = openAICompletion,
             Role = FromOpenAIChatRole(openAICompletion.Role),
         };

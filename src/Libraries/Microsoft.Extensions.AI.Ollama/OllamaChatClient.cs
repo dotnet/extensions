@@ -105,12 +105,14 @@ public sealed class OllamaChatClient : IChatClient
             throw new InvalidOperationException($"Ollama error: {response.Error}");
         }
 
-        return new(FromOllamaMessage(response.Message!))
+        var responseId = Guid.NewGuid().ToString("N");
+
+        return new(FromOllamaMessage(response.Message!, responseId))
         {
             CreatedAt = DateTimeOffset.TryParse(response.CreatedAt, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset createdAt) ? createdAt : null,
             FinishReason = ToFinishReason(response),
             ModelId = response.Model ?? options?.ModelId ?? _metadata.ModelId,
-            ResponseId = response.CreatedAt,
+            ResponseId = responseId,
             Usage = ParseOllamaChatResponseUsage(response),
         };
     }
@@ -164,6 +166,7 @@ public sealed class OllamaChatClient : IChatClient
                 FinishReason = ToFinishReason(chunk),
                 ModelId = modelId,
                 ResponseId = responseId,
+                MessageId = responseId, // There is no per-message ID, but there's only one message per response, so use the response ID
                 Role = chunk.Message?.Role is not null ? new ChatRole(chunk.Message.Role) : null,
             };
 
@@ -248,7 +251,7 @@ public sealed class OllamaChatClient : IChatClient
             _ => new ChatFinishReason(response.DoneReason),
         };
 
-    private static ChatMessage FromOllamaMessage(OllamaChatResponseMessage message)
+    private static ChatMessage FromOllamaMessage(OllamaChatResponseMessage message, string responseId)
     {
         List<AIContent> contents = [];
 
@@ -271,7 +274,8 @@ public sealed class OllamaChatClient : IChatClient
             contents.Insert(0, new TextContent(message.Content));
         }
 
-        return new ChatMessage(new(message.Role), contents);
+        // Ollama doesn't have per-message IDs, so use the response ID in the same way we do when streaming
+        return new ChatMessage(new(message.Role), contents) { MessageId = responseId };
     }
 
     private static FunctionCallContent ToFunctionCallContent(OllamaFunctionToolCall function)
