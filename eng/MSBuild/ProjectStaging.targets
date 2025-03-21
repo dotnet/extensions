@@ -1,11 +1,5 @@
 <Project>
 
-  <PropertyGroup>
-    <!-- Preview packages: do not use stable branding and do not warn about lack of [Experimental] -->
-    <SuppressFinalPackageVersion Condition="'$(Stage)' == 'preview'">true</SuppressFinalPackageVersion>
-    <NoWarn Condition="'$(Stage)' == 'preview'">$(NoWarn);LA0003</NoWarn>
-  </PropertyGroup>
-
   <!-- Produce errors if we don't have all the right properties defined -->
   <Target Name="_CheckPropsExist" Condition="'$(IsPackable)' == 'true' and '$(Stage)' != '' and $(Stage) != 'transport'" BeforeTargets="Build">
     <Error Condition="'$(Stage)' != 'dev' AND '$(Stage)' != 'normal' AND '$(Stage)' != 'obsolete' AND '$(Stage)' != 'preview'" Text="Stage property must be dev|normal|obsolete|preview" />
@@ -22,10 +16,17 @@
     <Error Condition="'$(MinMutationScore)' != 'n/a' AND ('$(MinMutationScore)' &lt; 50)" Text="MinMutationScore property must be >= 50 for normal stage." />
   </Target>
 
-  <!-- Amend the description based on stage -->
-  <PropertyGroup>
-    <Description Condition="'$(Stage)' == 'dev'">Experimental package. $(Description)</Description>
-    <Description Condition="'$(Stage)' == 'obsolete'">Obsolete Package. $(Description)</Description>
-  </PropertyGroup>
+  <!--
+   Produce errors if we don't have all the right property values for non-production stages.
 
+   Note, that Arcade resets $(_PreReleaseLabel) to "ci" for non-official builds, which breaks the validation.
+   See Arcade SDK/Version.BeforeCommonTargets.targets for more details.
+    -->
+  <Target Name="_ValidateVersion" AfterTargets="GenerateNuspec" Condition=" '$(OfficialBuild)' == 'true' and '$(_IsStable)' != 'true' ">
+    <PropertyGroup>
+      <_ExpectedVersionSuffix>$(_PreReleaseLabel)$(_BuildNumberLabels)</_ExpectedVersionSuffix>
+    </PropertyGroup>
+
+    <Error Condition=" '$(VersionSuffix)' != '$(_ExpectedVersionSuffix)' " Text="Unexpected package version suffix. Expected suffix for '$(Stage)' stage: '$(_ExpectedVersionSuffix)', received: '$(VersionSuffix)'." />
+  </Target>
 </Project>
