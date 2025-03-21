@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Logging.Test;
 
@@ -24,21 +23,21 @@ internal static class Utils
         return new DisposingLoggerFactory(loggerFactory, serviceProvider);
     }
 
-    private sealed class DisposingLoggerFactory : ILoggerFactory
+    internal sealed class DisposingLoggerFactory : ILoggerFactory
     {
         private readonly ILoggerFactory _loggerFactory;
 
-        private readonly ServiceProvider _serviceProvider;
+        internal ServiceProvider ServiceProvider { get; }
 
         public DisposingLoggerFactory(ILoggerFactory loggerFactory, ServiceProvider serviceProvider)
         {
             _loggerFactory = loggerFactory;
-            _serviceProvider = serviceProvider;
+            ServiceProvider = serviceProvider;
         }
 
         public void Dispose()
         {
-            _serviceProvider.Dispose();
+            ServiceProvider.Dispose();
         }
 
         public ILogger CreateLogger(string categoryName)
