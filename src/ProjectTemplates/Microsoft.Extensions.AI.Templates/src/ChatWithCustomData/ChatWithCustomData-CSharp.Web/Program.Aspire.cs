@@ -26,7 +26,12 @@ builder.AddOllamaApiClient("embeddings")
     .AddEmbeddingGenerator();
 #elif (IsAzureAiFoundry)
 #else // IsAzureOpenAI || IsOpenAI || IsGHModels
-builder.AddOpenAIClientFromConfiguration("openai");
+var openai = builder.AddAzureOpenAIClient("openai");
+openai.AddChatClient("gpt-4o-mini")
+    .UseFunctionInvocation()
+    .UseLogging()
+    .UseOpenTelemetry();
+openai.AddEmbeddingGenerator("text-embedding-3-small");
 #endif
 
 #if (UseAzureAISearch)
@@ -43,15 +48,6 @@ builder.Services.AddSingleton<IVectorStore>(vectorStore);
 #endif
 builder.Services.AddScoped<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();
-#if (IsOllama)
-#else // IsAzureOpenAI || IsOpenAI || IsGHModels
-builder.Services.AddChatClient(sp => sp.GetRequiredService<OpenAIClient>().AsChatClient("gpt-4o-mini"))
-    .UseFunctionInvocation()
-    .UseLogging()
-    .UseOpenTelemetry();
-builder.Services.AddEmbeddingGenerator(sp => sp.GetRequiredService<OpenAIClient>().AsEmbeddingGenerator("text-embedding-3-small"));
-#endif
-
 builder.AddSqliteDbContext<IngestionCacheDbContext>("ingestionCache");
 
 var app = builder.Build();
