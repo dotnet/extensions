@@ -9,11 +9,13 @@ import { createScoreTree } from '../../components/Summary.ts';
 
 
 let dataset: Dataset = { scenarioRunResults: [] };
+
 if (!import.meta.env.PROD) {
   // This only runs in development. In production the data is embedded into the dataset variable declaration above.
   // run `node init-devdata.js` to populate the data file from the most recent execution.
   dataset = await import("../devdata.json") as unknown as Dataset;
 }
+
 const scoreTree = createScoreTree(dataset);
 
 createRoot(document.getElementById('root')!).render(
