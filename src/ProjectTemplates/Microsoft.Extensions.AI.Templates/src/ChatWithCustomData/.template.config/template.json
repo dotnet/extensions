@@ -11,6 +11,7 @@
   // TODO: When we support multi-project output, this needs to change to ChatWithCustomData, then we need some other
   // technique to make it avoid emitting a .Web suffix in the single-project case.
   "sourceName": "ChatWithCustomData.Web-CSharp",
+  "preferNameDirectory": true,
   "tags": {
     "language": "C#",
     "type": "project"
@@ -37,7 +38,7 @@
     ]
   }],
   "symbols": {
-    "framework": {
+    "Framework": {
       "type": "parameter",
       "description": "The target framework for the project.",
       "datatype": "choice",

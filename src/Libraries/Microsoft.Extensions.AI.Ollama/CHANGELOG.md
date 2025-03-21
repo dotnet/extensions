@@ -1,5 +1,9 @@
 # Release History
 
+## 9.3.0-preview.1.25161.3
+
+- Updated to accomodate the changes in `Microsoft.Extensions.AI.Abstractions`.
+
 ## 9.3.0-preview.1.25114.11
 
 - Ensures that all yielded `ChatResponseUpdates` include a `ResponseId`.

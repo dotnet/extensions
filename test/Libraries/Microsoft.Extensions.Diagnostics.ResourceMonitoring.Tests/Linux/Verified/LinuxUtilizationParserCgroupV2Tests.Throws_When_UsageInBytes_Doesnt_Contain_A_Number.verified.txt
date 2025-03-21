@@ -1,6 +1,6 @@
 ﻿{
   Type: InvalidOperationException,
-  Message: We tried to read '/sys/fs/cgroup/system.slice/memory.current', and we expected to get a positive number but instead it was: 'dasda'.,
+  Message: We tried to read '/sys/fs/cgroup/system.slice/memory.current', and we expected to get a non-negative number but instead it was: 'dasda'.,
   StackTrace:
 at Microsoft.Shared.Diagnostics.Throw.InvalidOperationException(String message)
 at Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.LinuxUtilizationParserCgroupV2.GetMemoryUsageInBytesFromSlices(String pattern)

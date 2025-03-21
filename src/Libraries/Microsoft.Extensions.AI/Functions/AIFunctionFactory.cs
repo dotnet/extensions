@@ -374,15 +374,14 @@ public static partial class AIFunctionFactory
                     }
                 }
 
-                // There was no argument for the parameter in the dictionary.
-                // Does it have a default value?
-                if (parameter.HasDefaultValue)
+                // If the parameter is required and there's no argument specified for it, throw.
+                if (!parameter.HasDefaultValue)
                 {
-                    return parameter.DefaultValue;
+                    Throw.ArgumentException(nameof(arguments), $"Missing required parameter '{parameter.Name}' for method '{parameter.Member.Name}'.");
                 }
 
-                // Leave it empty.
-                return null;
+                // Otherwise, use the optional parameter's default value.
+                return parameter.DefaultValue;
             };
         }
 

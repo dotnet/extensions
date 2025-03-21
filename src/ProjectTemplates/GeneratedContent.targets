@@ -1,0 +1,72 @@
+<Project>
+
+  <PropertyGroup>
+    <_ChatWithCustomDataWebContentRoot>$(MSBuildThisFileDirectory)Microsoft.Extensions.AI.Templates\src\ChatWithCustomData\ChatWithCustomData.Web-CSharp\</_ChatWithCustomDataWebContentRoot>
+  </PropertyGroup>
+
+  <Target Name="ComputeGeneratedContentProperties">
+    <PropertyGroup>
+      <!-- Define optional pinned versions of certain dependencies. -->
+      <TemplatePinnedMicrosoftExtensionsAIVersion>9.3.0-preview.1.25161.3</TemplatePinnedMicrosoftExtensionsAIVersion>
+      <TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion>9.0.3</TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion>
+
+      <!-- By default, use pinned dependency versions. -->
+      <TemplateUsePinnedMicrosoftExtensionsAIVersion Condition="'$(TemplateUsePinnedMicrosoftExtensionsAIVersion)' == ''">false</TemplateUsePinnedMicrosoftExtensionsAIVersion>
+      <TemplateUsePinnedMicrosoftEntityFrameworkCoreSqliteVersion Condition="'$(TemplateUsePinnedMicrosoftEntityFrameworkCoreSqliteVersion)' == ''">false</TemplateUsePinnedMicrosoftEntityFrameworkCoreSqliteVersion>
+
+      <!-- Apply pinned dependency versions if enabled. -->
+      <TemplateMicrosoftExtensionsAIVersion Condition="'$(TemplateUsePinnedMicrosoftExtensionsAIVersion)' == 'true'">$(TemplatePinnedMicrosoftExtensionsAIVersion)</TemplateMicrosoftExtensionsAIVersion>
+      <TemplateMicrosoftEntityFrameworkCoreSqliteVersion Condition="'$(TemplateUsePinnedMicrosoftEntityFrameworkCoreSqliteVersion)' == 'true'">$(TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion)</TemplateMicrosoftEntityFrameworkCoreSqliteVersion>
+
+      <!-- Fall back on default dependency versions if pinned versions were not applied. -->
+      <TemplateMicrosoftExtensionsAIVersion Condition="'$(TemplateMicrosoftExtensionsAIVersion)' == ''">$(Version)</TemplateMicrosoftExtensionsAIVersion>
+      <TemplateMicrosoftEntityFrameworkCoreSqliteVersion Condition="'$(TemplateMicrosoftEntityFrameworkCoreSqliteVersion)' == ''">$(MicrosoftEntityFrameworkCoreSqliteVersion)</TemplateMicrosoftEntityFrameworkCoreSqliteVersion>
+
+      <_TemplateUsingJustBuiltPackages Condition="'$(TemplateMicrosoftExtensionsAIVersion)' == '$(Version)'">true</_TemplateUsingJustBuiltPackages>
+
+      <!-- Specify package version variables used in template content. -->
+      <GeneratedContentProperties>
+        $(GeneratedContentProperties);
+
+        <!-- Repo properties -->
+        ArtifactsShippingPackagesDir=$(ArtifactsShippingPackagesDir);
+
+        <!-- Package version properties -->
+        OllamaSharpVersion=$(OllamaSharpVersion);
+        OpenAIVersion=$(OpenAIVersion);
+        AzureAIProjectsVersion=$(AzureAIProjectsVersion);
+        AzureAIOpenAIVersion=$(AzureAIOpenAIVersion);
+        AzureIdentityVersion=$(AzureIdentityVersion);
+        MicrosoftEntityFrameworkCoreSqliteVersion=$(TemplateMicrosoftEntityFrameworkCoreSqliteVersion);
+        MicrosoftExtensionsAIVersion=$(TemplateMicrosoftExtensionsAIVersion);
+        MicrosoftSemanticKernelCoreVersion=$(MicrosoftSemanticKernelCoreVersion);
+        PdfPigVersion=$(PdfPigVersion);
+        SystemLinqAsyncVersion=$(SystemLinqAsyncVersion);
+        AzureSearchDocumentsVersion=$(AzureSearchDocumentsVersion);
+        MicrosoftSemanticKernelConnectorsAzureAISearchVersion=$(MicrosoftSemanticKernelConnectorsAzureAISearchVersion);
+      </GeneratedContentProperties>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <GeneratedContent
+        Include="$(_ChatWithCustomDataWebContentRoot)ChatWithCustomData.Web-CSharp.csproj.in"
+        OutputPath="$(_ChatWithCustomDataWebContentRoot)ChatWithCustomData.Web-CSharp.csproj" />
+
+      <!-- The following content only gets generated when using just-built packages -->
+      <_GeneratedContentEnablingJustBuiltPackages
+        Include="$(_ChatWithCustomDataWebContentRoot)NuGet.config.in"
+        OutputPath="$(_ChatWithCustomDataWebContentRoot)NuGet.config" />
+      <_GeneratedContentEnablingJustBuiltPackages
+        Include="$(_ChatWithCustomDataWebContentRoot)Directory.Build.targets.in"
+        OutputPath="$(_ChatWithCustomDataWebContentRoot)Directory.Build.targets" />
+
+      <GeneratedContent
+        Include="@(_GeneratedContentEnablingJustBuiltPackages)"
+        Condition="'$(_TemplateUsingJustBuiltPackages)' == 'true'" />
+      <GeneratedContentToDelete
+        Include="@(_GeneratedContentEnablingJustBuiltPackages)"
+        Condition="'$(_TemplateUsingJustBuiltPackages)' != 'true'" />
+    </ItemGroup>
+  </Target>
+
+</Project>

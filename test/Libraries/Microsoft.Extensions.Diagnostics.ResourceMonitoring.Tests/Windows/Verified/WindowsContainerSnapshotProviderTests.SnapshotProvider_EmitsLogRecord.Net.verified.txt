@@ -28,9 +28,6 @@
     },
     State: [
       {
-        {OriginalFormat}: System resources information: CpuLimit = {cpuLimit}, CpuRequest = {cpuRequest}, MemoryLimit = {memoryLimit}, MemoryRequest = {memoryRequest}.
-      },
-      {
         memoryRequest: 2000
       },
       {
@@ -41,13 +38,13 @@
       },
       {
         cpuLimit: 1
+      },
+      {
+        {OriginalFormat}: System resources information: CpuLimit = {cpuLimit}, CpuRequest = {cpuRequest}, MemoryLimit = {memoryLimit}, MemoryRequest = {memoryRequest}.
       }
     ],
     StructuredState: [
       {
-        {OriginalFormat}: System resources information: CpuLimit = {cpuLimit}, CpuRequest = {cpuRequest}, MemoryLimit = {memoryLimit}, MemoryRequest = {memoryRequest}.
-      },
-      {
         memoryRequest: 2000
       },
       {
@@ -58,6 +55,9 @@
       },
       {
         cpuLimit: 1
+      },
+      {
+        {OriginalFormat}: System resources information: CpuLimit = {cpuLimit}, CpuRequest = {cpuRequest}, MemoryLimit = {memoryLimit}, MemoryRequest = {memoryRequest}.
       }
     ],
     Message: System resources information: CpuLimit = 1, CpuRequest = 1, MemoryLimit = 2000, MemoryRequest = 2000.,

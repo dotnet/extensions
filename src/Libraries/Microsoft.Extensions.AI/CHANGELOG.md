@@ -1,5 +1,22 @@
 # Release History
 
+## 9.3.0-preview.1.25161.3
+
+- Added caching to `AIFunctionFactory.Create` to improve performance of creating the same functions repeatedly. As part of this, `AIJsonSchemaCreateOptions` now implements `IEquatable<AIJsonSchemaCreateOptions>`.
+- Removed the public `AnonymousDelegatingChatClient`/`AnonymousDelegatingEmbeddingGenerator`. Their functionality is still available via the `Use` methods on the builders.
+- Changed those `Use` methods to use `Func<...>` rather than a custom delegate type.
+- `AIFunctionFactory.Create` now supports `CancellationToken` parameters, and the `AIFunctionContext` type that had served to enable that has been removed.
+- Made `FunctionInvokingChatClient.CurrentContext`'s setter `protected`.
+- Renamed `FunctionInvokingChatClient.DetailedErrors` to `IncludeDetailedErrors`.
+- Renamed `FunctionInvokingChatClient.ConcurrentInvocation` to `AllowConcurrentInvocation`.
+- Removed `FunctionInvokingChatClient.KeepFunctionCallingContent`, as it's no longer relevant now that the input messages are an `IEnumerable<ChatMessage>` rather than an `IList<ChatMessage>`.
+- Renamed `FunctionStatus` to `FunctionInvocationStatus`.
+- Renamed `FunctionInvocationStatus.Failed` to `FunctionInvocationStatus.Exception`.
+- Moved the nested `FunctionInvocationContext` type to be a peer of `FunctionInvokingChatClient` rather than nested within it.
+- Made the `serviceKey` parameters to `AddKeyedChatClient`/`AddKeyedEmbeddingGenerator` nullable.
+- Improved `FunctionInvokingChatClient.GetStreamingResponseAsync` to send back to the inner client all content received until that point, and to stream back to the caller messages it generates (e.g. tool responses).
+- Improved `AddEmbeddingGenerator` and `AddKeyedEmbeddingGenerator` to register for both the generic and non-generic interfaces.
+
 ## 9.3.0-preview.1.25114.11
 
 - Updated `OpenTelemetryChatClient`/`OpenTelemetryEmbeddingGenerator` to conform to the latest 1.30.0 draft specification of the Semantic Conventions for Generative AI systems.
