@@ -2,16 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides metadata about an <see cref="IChatClient"/>.</summary>
 public class ChatClientMetadata
 {
-    private static readonly Task<ChatModelMetadata> _emptyModelMetadata = Task.FromResult(new ChatModelMetadata());
-
     /// <summary>Initializes a new instance of the <see cref="ChatClientMetadata"/> class.</summary>
     /// <param name="providerName">
     /// The name of the chat provider, if applicable. Where possible, this should map to the
@@ -42,13 +38,4 @@ public class ChatClientMetadata
     /// An individual request may override this value via <see cref="ChatOptions.ModelId"/>.
     /// </remarks>
     public string? DefaultModelId { get; }
-
-    /// <summary>
-    /// Gets metadata for the the default model or a specified model.
-    /// </summary>
-    /// <param name="modelId">The model identifier. If not set, uses <see cref="DefaultModelId"/>.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>A task that completes with the model metadata.</returns>
-    public virtual Task<ChatModelMetadata> GetModelMetadataAsync(string? modelId = null, CancellationToken cancellationToken = default)
-        => _emptyModelMetadata;
 }

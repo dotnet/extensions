@@ -30,9 +30,9 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
     private readonly Histogram<int> _tokenUsageHistogram;
     private readonly Histogram<double> _operationDurationHistogram;
 
-    private readonly EmbeddingGeneratorMetadata? _metadata;
     private readonly string? _system;
     private readonly string? _defaultModelId;
+    private readonly int? _defaultModelDimensions;
     private readonly string? _modelProvider;
     private readonly string? _endpointAddress;
     private readonly int _endpointPort;
@@ -52,9 +52,9 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
 
         if (innerGenerator!.GetService<EmbeddingGeneratorMetadata>() is EmbeddingGeneratorMetadata metadata)
         {
-            _metadata = metadata;
             _system = metadata.ProviderName;
             _defaultModelId = metadata.DefaultModelId;
+            _defaultModelDimensions = metadata.DefaultModelDimensions;
             _modelProvider = metadata.ProviderName;
             _endpointAddress = metadata.ProviderUri?.GetLeftPart(UriPartial.Path);
             _endpointPort = metadata.ProviderUri?.Port ?? 0;
@@ -87,16 +87,7 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
     {
         _ = Throw.IfNull(values);
 
-        // If there's a per-call dimensions value, use it
-        var dimensions = options?.Dimensions;
-        if (!dimensions.HasValue && _metadata is not null)
-        {
-            // If not, ask the provider to give metadata. We rely on the provider caching this otherwise it will be expensive.
-            var modelMetadata = await _metadata.GetModelMetadataAsync(options?.ModelId, cancellationToken).ConfigureAwait(false);
-            dimensions = modelMetadata.Dimensions;
-        }
-
-        using Activity? activity = CreateAndConfigureActivity(options, dimensions);
+        using Activity? activity = CreateAndConfigureActivity(options);
         Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
         string? requestModelId = options?.ModelId ?? _defaultModelId;
 
@@ -132,7 +123,7 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
     }
 
     /// <summary>Creates an activity for an embedding generation request, or returns null if not enabled.</summary>
-    private Activity? CreateAndConfigureActivity(EmbeddingGenerationOptions? options, int? dimensions)
+    private Activity? CreateAndConfigureActivity(EmbeddingGenerationOptions? options)
     {
         Activity? activity = null;
         if (_activitySource.HasListeners())
@@ -158,7 +149,7 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
                         .AddTag(OpenTelemetryConsts.Server.Port, _endpointPort);
                 }
 
-                if (dimensions is int dimensionsValue)
+                if ((options?.Dimensions ?? _defaultModelDimensions) is int dimensionsValue)
                 {
                     _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.EmbeddingDimensions, dimensionsValue);
                 }

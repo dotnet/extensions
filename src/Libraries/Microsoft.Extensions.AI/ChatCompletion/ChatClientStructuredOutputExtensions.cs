@@ -192,9 +192,10 @@ public static class ChatClientStructuredOutputExtensions
         ChatMessage? promptAugmentation = null;
         options = options is not null ? options.Clone() : new();
 
-        var resolvedUseNativeSchema = useJsonSchema
-            ?? await ModelSupportsNativeJsonSchemaAsync(chatClient, options.ModelId, cancellationToken).ConfigureAwait(false);
-        if (resolvedUseNativeSchema.GetValueOrDefault(false))
+        // We default to assuming that models support JSON schema because developers will normally use
+        // GetResponseAsync<T> only with models that do. If the model doesn't support JSON schema, it may
+        // throw or it may ignore the schema. In these cases developers should pass useJsonSchema: false.
+        if (useJsonSchema.GetValueOrDefault(true))
         {
             // When using native structured output, we don't add any additional prompt, because
             // the LLM backend is meant to do whatever's needed to explain the schema to the LLM.
@@ -207,7 +208,7 @@ public static class ChatClientStructuredOutputExtensions
         {
             options.ResponseFormat = ChatResponseFormat.Json;
 
-            // When not using native structured output, augment the chat messages with a schema prompt
+            // When not using native JSON schema, augment the chat messages with a schema prompt
             promptAugmentation = new ChatMessage(ChatRole.User, $$"""
                 Respond with a JSON value conforming to the following schema:
                 ```
@@ -220,17 +221,6 @@ public static class ChatClientStructuredOutputExtensions
 
         var result = await chatClient.GetResponseAsync(messages, options, cancellationToken).ConfigureAwait(false);
         return new ChatResponse<T>(result, serializerOptions) { IsWrappedInObject = isWrappedInObject };
-    }
-
-    private static async ValueTask<bool?> ModelSupportsNativeJsonSchemaAsync(IChatClient chatClient, string? modelId, CancellationToken cancellationToken)
-    {
-        if (chatClient.GetService<ChatClientMetadata>() is { } providerMetadata)
-        {
-            var modelMetadata = await providerMetadata.GetModelMetadataAsync(modelId, cancellationToken).ConfigureAwait(false);
-            return modelMetadata.SupportsJsonSchemaResponseFormat;
-        }
-
-        return null;
     }
 
     private static bool SchemaRepresentsObject(JsonElement schemaElement)
