@@ -9,18 +9,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
-builder.AddOpenAIClientFromConfiguration("openai");
+var openai = builder.AddAzureOpenAIClient("openai");
+openai.AddChatClient("gpt-4o-mini")
+    .UseFunctionInvocation()
+    .UseLogging()
+    .UseOpenTelemetry();
+openai.AddEmbeddingGenerator("text-embedding-3-small");
 
 var vectorStore = new JsonVectorStore(Path.Combine(AppContext.BaseDirectory, "vector-store"));
 builder.Services.AddSingleton<IVectorStore>(vectorStore);
 builder.Services.AddScoped<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();
-builder.Services.AddChatClient(sp => sp.GetRequiredService<OpenAIClient>().AsChatClient("gpt-4o-mini"))
-    .UseFunctionInvocation()
-    .UseLogging()
-    .UseOpenTelemetry();
-builder.Services.AddEmbeddingGenerator(sp => sp.GetRequiredService<OpenAIClient>().AsEmbeddingGenerator("text-embedding-3-small"));
-
 builder.AddSqliteDbContext<IngestionCacheDbContext>("ingestionCache");
 
 var app = builder.Build();
