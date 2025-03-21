@@ -47,7 +47,8 @@ builder.Services.AddSingleton<SemanticSearch>();
 #else // IsAzureOpenAI || IsOpenAI || IsGHModels
 builder.Services.AddChatClient(sp => sp.GetRequiredService<OpenAIClient>().AsChatClient("gpt-4o-mini"))
     .UseFunctionInvocation()
-    .UseLogging();
+    .UseLogging()
+    .UseOpenTelemetry();
 builder.Services.AddEmbeddingGenerator(sp => sp.GetRequiredService<OpenAIClient>().AsEmbeddingGenerator("text-embedding-3-small"));
 #endif
 
