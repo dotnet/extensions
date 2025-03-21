@@ -168,7 +168,7 @@ public static partial class AIFunctionFactory
                 Throw.ArgumentNullException(nameof(target), "Target must not be null for an instance method.");
             }
 
-            ReflectionAIFunctionDescriptor functionDescriptor = ReflectionAIFunctionDescriptor.GetOrCreate(method, options);
+            var functionDescriptor = ReflectionAIFunctionDescriptor.GetOrCreate(method, options);
 
             if (target is null && options.AdditionalProperties is null)
             {
@@ -232,7 +232,7 @@ public static partial class AIFunctionFactory
             serializerOptions.MakeReadOnly();
             ConcurrentDictionary<DescriptorKey, ReflectionAIFunctionDescriptor> innerCache = _descriptorCache.GetOrCreateValue(serializerOptions);
 
-            DescriptorKey key = new(method, options.Name, options.Description, options.ConfigureParameterBinding, options.BindParameter, schemaOptions);
+            DescriptorKey key = new(method, options.Name, options.Description, options.ConfigureParameterBinding, schemaOptions);
             if (innerCache.TryGetValue(key, out ReflectionAIFunctionDescriptor? descriptor))
             {
                 return descriptor;
@@ -252,19 +252,10 @@ public static partial class AIFunctionFactory
             Dictionary<ParameterInfo, AIFunctionFactoryOptions.ParameterBindingOptions>? boundParameters = null;
             if (parameters.Length != 0 && key.GetBindParameterOptions is not null)
             {
-                boundParameters = [];
+                boundParameters = new(parameters.Length);
                 for (int i = 0; i < parameters.Length; i++)
                 {
-                    var options = key.GetBindParameterOptions(parameters[i]);
-
-                    if (options.UseBindParameter && key.BindParameter is null)
-                    {
-                        Throw.ArgumentException("options",
-                            $"{nameof(AIFunctionFactoryOptions.ConfigureParameterBinding)} returned '{nameof(AIFunctionFactoryOptions.ParameterBindingOptions.UseBindParameter)}'" +
-                            $"for parameter '{parameters[i].Name}', but {nameof(AIFunctionFactoryOptions.BindParameter)} delegate was not provided.");
-                    }
-
-                    boundParameters[parameters[i]] = options;
+                    boundParameters[parameters[i]] = key.GetBindParameterOptions(parameters[i]);
                 }
             }
 
@@ -308,7 +299,7 @@ public static partial class AIFunctionFactory
                     options = default;
                 }
 
-                ParameterMarshallers[i] = GetParameterMarshaller(serializerOptions, options, key.BindParameter, parameters[i]);
+                ParameterMarshallers[i] = GetParameterMarshaller(serializerOptions, options, parameters[i]);
             }
 
             // Get a marshaling delegate for the return value.
@@ -378,7 +369,6 @@ public static partial class AIFunctionFactory
         private static Func<AIFunctionArguments, CancellationToken, object?> GetParameterMarshaller(
             JsonSerializerOptions serializerOptions,
             AIFunctionFactoryOptions.ParameterBindingOptions bindingOptions,
-            Func<AIFunctionFactoryOptions.ParameterBindingOptions, ParameterInfo, AIFunctionArguments, object?>? bindParameter,
             ParameterInfo parameter)
         {
             if (string.IsNullOrWhiteSpace(parameter.Name))
@@ -400,10 +390,9 @@ public static partial class AIFunctionFactory
 
             // CancellationToken is the only parameter type that's handled exclusively by the implementation.
             // Now that it's been processed, check to see if the parameter should be handled via BindParameter.
-            if (bindingOptions.UseBindParameter)
+            if (bindingOptions.BindParameter is { } bindParameter)
             {
-                Debug.Assert(bindParameter is not null, "This case should have already been excluded by the caller.");
-                return (arguments, _) => bindParameter!(bindingOptions, parameter, arguments);
+                return (arguments, _) => bindParameter(parameter, arguments);
             }
 
             // We're now into default handling of everything else.
@@ -578,7 +567,6 @@ public static partial class AIFunctionFactory
             string? Name,
             string? Description,
             Func<ParameterInfo, AIFunctionFactoryOptions.ParameterBindingOptions>? GetBindParameterOptions,
-            Func<AIFunctionFactoryOptions.ParameterBindingOptions, ParameterInfo, AIFunctionArguments, object?>? BindParameter,
             AIJsonSchemaCreateOptions SchemaOptions);
     }
 }
