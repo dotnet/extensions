@@ -65,7 +65,7 @@ public class OllamaChatClientTests
     }
 
     [Fact]
-    public async Task AsChatClient_ProducesExpectedMetadata()
+    public void AsChatClient_ProducesExpectedMetadata()
     {
         Uri endpoint = new("http://localhost/some/endpoint");
         string model = "amazingModel";
@@ -76,10 +76,6 @@ public class OllamaChatClientTests
         Assert.Equal("ollama", metadata.ProviderName);
         Assert.Equal(endpoint, metadata.ProviderUri);
         Assert.Equal(model, metadata.DefaultModelId);
-
-        // All models support native JSON schema
-        var modelMetadata = await metadata.GetModelMetadataAsync("any model ID");
-        Assert.True(modelMetadata.SupportsJsonSchemaResponseFormat);
     }
 
     [Fact]

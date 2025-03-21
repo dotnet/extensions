@@ -781,30 +781,31 @@ public abstract class ChatClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
-    public virtual async Task GetResponseAsync_StructuredOutput_Native()
+    public virtual async Task GetResponseAsync_StructuredOutput_NonNative()
     {
         SkipIfNotEnabled();
 
-        var capturedCalls = new List<IList<ChatMessage>>();
+        var capturedOptions = new List<ChatOptions?>();
         var captureOutputChatClient = _chatClient.AsBuilder()
             .Use((messages, options, nextAsync, cancellationToken) =>
             {
-                capturedCalls.Add([.. messages]);
+                capturedOptions.Add(options);
                 return nextAsync(messages, options, cancellationToken);
             })
             .Build();
 
         var response = await captureOutputChatClient.GetResponseAsync<Person>("""
-            Supply a JSON object to represent Jimbo Smith from Cardiff.
-            """, useNativeJsonSchema: true);
+            Supply an object to represent Jimbo Smith from Cardiff.
+            """, useJsonSchema: false);
 
         Assert.Equal("Jimbo Smith", response.Result.FullName);
         Assert.Contains("Cardiff", response.Result.HomeTown);
 
-        // Verify it used *native* structured output, i.e., no prompt augmentation
-        Assert.All(
-            Assert.Single(capturedCalls),
-            message => Assert.DoesNotContain("schema", message.Text));
+        // Verify it used *non-native* structured output, i.e., response format Json with no schema
+        var responseFormat = Assert.IsType<ChatResponseFormatJson>(Assert.Single(capturedOptions)!.ResponseFormat);
+        Assert.Null(responseFormat.Schema);
+        Assert.Null(responseFormat.SchemaName);
+        Assert.Null(responseFormat.SchemaDescription);
     }
 
     private class Person

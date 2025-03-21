@@ -1065,17 +1065,6 @@ public class OpenAIChatClientTests
         Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(ChatCompletion.SystemFingerprint)]);
     }
 
-    [Fact]
-    public async Task ModelMetadataHasExpectedValues()
-    {
-        using var httpClient = new HttpClient();
-        using var chatClient = CreateChatClient(httpClient, "any model ID");
-        var providerMetadata = chatClient.GetRequiredService<ChatClientMetadata>();
-        var modelMetadata = await providerMetadata.GetModelMetadataAsync();
-
-        Assert.Equal(true, modelMetadata.SupportsJsonSchemaResponseFormat);
-    }
-
     private static IChatClient CreateChatClient(HttpClient httpClient, string modelId) =>
         new OpenAIClient(new ApiKeyCredential("apikey"), new OpenAIClientOptions { Transport = new HttpClientPipelineTransport(httpClient) })
         .AsChatClient(modelId);

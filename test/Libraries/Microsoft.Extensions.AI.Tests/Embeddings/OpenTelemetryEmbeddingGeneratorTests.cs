@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -51,7 +50,7 @@ public class OpenTelemetryEmbeddingGeneratorTests
                 };
             },
             GetServiceCallback = (serviceType, serviceKey) =>
-                serviceType == typeof(EmbeddingGeneratorMetadata) ? new TestEmbeddingGeneratorMetadata("testservice", new Uri("http://localhost:12345/something"), "defaultmodel") :
+                serviceType == typeof(EmbeddingGeneratorMetadata) ? new EmbeddingGeneratorMetadata("testservice", new Uri("http://localhost:12345/something"), "defaultmodel", 1234) :
                 null,
         };
 
@@ -74,7 +73,6 @@ public class OpenTelemetryEmbeddingGeneratorTests
 
         var activity = Assert.Single(activities);
         var expectedModelName = perRequestModelId ?? "defaultmodel";
-        var expectedDimensions = perRequestModelId == "replacementmodel" ? 5678 : 1234;
 
         Assert.NotNull(activity.Id);
         Assert.NotEmpty(activity.Id);
@@ -86,7 +84,7 @@ public class OpenTelemetryEmbeddingGeneratorTests
         Assert.Equal("testservice", activity.GetTagItem("gen_ai.system"));
 
         Assert.Equal(expectedModelName, activity.GetTagItem("gen_ai.request.model"));
-        Assert.Equal(expectedDimensions, activity.GetTagItem("gen_ai.request.embedding.dimensions"));
+        Assert.Equal(1234, activity.GetTagItem("gen_ai.request.embedding.dimensions"));
         Assert.Equal("value1", activity.GetTagItem("gen_ai.testservice.request.service_tier"));
         Assert.Equal("value2", activity.GetTagItem("gen_ai.testservice.request.something_else"));
 
@@ -95,23 +93,5 @@ public class OpenTelemetryEmbeddingGeneratorTests
         Assert.Equal("value2", activity.GetTagItem("gen_ai.testservice.response.and_something_else"));
 
         Assert.True(activity.Duration.TotalMilliseconds > 0);
-    }
-
-    private class TestEmbeddingGeneratorMetadata(string providerName, Uri providerUri, string modelId)
-        : EmbeddingGeneratorMetadata(providerName, providerUri, modelId)
-    {
-        public override async Task<EmbeddingModelMetadata> GetModelMetadataAsync(string? modelId = null, CancellationToken cancellationToken = default)
-        {
-            await Task.Yield();
-
-            var dimensions = modelId switch
-            {
-                null or "defaultmodel" => 1234,
-                "replacementmodel" => 5678,
-                _ => throw new ArgumentException("Unknown model ID", nameof(modelId)),
-            };
-
-            return new EmbeddingModelMetadata { Dimensions = dimensions };
-        }
     }
 }

@@ -25,7 +25,7 @@ public sealed class OpenAIChatClient : IChatClient
     internal static Uri DefaultOpenAIEndpoint { get; } = new("https://api.openai.com/v1");
 
     /// <summary>Metadata about the client.</summary>
-    private readonly OpenAIChatClientMetadata _metadata;
+    private readonly ChatClientMetadata _metadata;
 
     /// <summary>The underlying <see cref="OpenAIClient" />.</summary>
     private readonly OpenAIClient? _openAIClient;
@@ -56,7 +56,7 @@ public sealed class OpenAIChatClient : IChatClient
         Uri providerUrl = typeof(OpenAIClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(openAIClient) as Uri ?? DefaultOpenAIEndpoint;
 
-        _metadata = new OpenAIChatClientMetadata("openai", providerUrl, modelId);
+        _metadata = new ChatClientMetadata("openai", providerUrl, modelId);
     }
 
     /// <summary>Initializes a new instance of the <see cref="OpenAIChatClient"/> class for the specified <see cref="ChatClient"/>.</summary>

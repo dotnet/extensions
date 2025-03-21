@@ -26,7 +26,7 @@ public sealed class OllamaChatClient : IChatClient
     private static readonly JsonElement _schemalessJsonResponseFormatValue = JsonDocument.Parse("\"json\"").RootElement;
 
     /// <summary>Metadata about the client.</summary>
-    private readonly OllamaChatClientMetadata _metadata;
+    private readonly ChatClientMetadata _metadata;
 
     /// <summary>The api/chat endpoint URI.</summary>
     private readonly Uri _apiChatEndpoint;
@@ -69,7 +69,7 @@ public sealed class OllamaChatClient : IChatClient
         _apiChatEndpoint = new Uri(endpoint, "api/chat");
         _httpClient = httpClient ?? OllamaUtilities.SharedClient;
 
-        _metadata = new OllamaChatClientMetadata("ollama", endpoint, modelId);
+        _metadata = new ChatClientMetadata("ollama", endpoint, modelId);
     }
 
     /// <summary>Gets or sets <see cref="JsonSerializerOptions"/> to use for any serialization activities related to tool call arguments and results.</summary>
@@ -491,15 +491,5 @@ public sealed class OllamaChatClient : IChatClient
                 Parameters = JsonSerializer.Deserialize(function.JsonSchema, JsonContext.Default.OllamaFunctionToolParameters)!,
             }
         };
-    }
-
-    private sealed class OllamaChatClientMetadata(string provider, Uri endpoint, string? modelId)
-        : ChatClientMetadata(provider, endpoint, modelId)
-    {
-        // Ollama has supported native JSON schema for a while, so we'll assume it's always available
-        private static readonly ChatModelMetadata _metadata = new ChatModelMetadata { SupportsJsonSchemaResponseFormat = true };
-
-        public override Task<ChatModelMetadata> GetModelMetadataAsync(string? modelId = null, CancellationToken cancellationToken = default)
-            => Task.FromResult(_metadata);
     }
 }

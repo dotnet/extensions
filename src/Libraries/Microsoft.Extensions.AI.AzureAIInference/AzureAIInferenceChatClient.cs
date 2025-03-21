@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.AI;
 public sealed class AzureAIInferenceChatClient : IChatClient
 {
     /// <summary>Metadata about the client.</summary>
-    private readonly AzureAIInferenceChatClientMetadata _metadata;
+    private readonly ChatClientMetadata _metadata;
 
     /// <summary>The underlying <see cref="ChatCompletionsClient" />.</summary>
     private readonly ChatCompletionsClient _chatCompletionsClient;
@@ -59,7 +59,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
         var providerUrl = typeof(ChatCompletionsClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(chatCompletionsClient) as Uri;
 
-        _metadata = new AzureAIInferenceChatClientMetadata("az.ai.inference", providerUrl, modelId);
+        _metadata = new ChatClientMetadata("az.ai.inference", providerUrl, modelId);
     }
 
     /// <summary>Gets or sets <see cref="JsonSerializerOptions"/> to use for any serialization activities related to tool call arguments and results.</summary>

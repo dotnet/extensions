@@ -913,17 +913,6 @@ public class AzureAIInferenceChatClientTests
         AssertExtensions.EqualFunctionCallParameters(new Dictionary<string, object?> { ["personName"] = "Alice" }, fcc.Arguments);
     }
 
-    [Fact]
-    public async Task ModelMetadataHasExpectedValues()
-    {
-        using var httpClient = new HttpClient();
-        using var chatClient = CreateChatClient(httpClient, "any model ID");
-        var providerMetadata = chatClient.GetRequiredService<ChatClientMetadata>();
-        var modelMetadata = await providerMetadata.GetModelMetadataAsync();
-
-        Assert.Equal(true, modelMetadata.SupportsJsonSchemaResponseFormat);
-    }
-
     private static IChatClient CreateChatClient(HttpClient httpClient, string modelId) =>
         new ChatCompletionsClient(
             new("http://somewhere"),
