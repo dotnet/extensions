@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.AI;
 
@@ -71,6 +72,32 @@ public sealed class AIFunctionFactoryOptions
     /// </para>
     /// </remarks>
     public Func<ParameterInfo, ParameterBindingOptions>? ConfigureParameterBinding { get; set; }
+
+    /// <summary>Gets or sets a delegate used to determine the <see cref="object"/> returned by <see cref="AIFunction.InvokeAsync"/>.</summary>
+    /// <remarks>
+    /// <para>
+    /// By default, the return value of invoking the method wrapped into an <see cref="AIFunction"/> by <see cref="AIFunctionFactory"/>
+    /// is then JSON serialized, with the resulting <see cref="JsonElement"/> returned from the <see cref="AIFunction.InvokeAsync"/> method.
+    /// This default behavior is ideal for the common case where the result will be passed back to an AI service. However, if the caller
+    /// requires more control over the result's marshaling, the <see cref="MarshalResult"/> property may be set to a delegate that is
+    /// then provided with complete control over the result's marshaling. The delegate is invoked with the value returned by the method,
+    /// and its return value is then returned from the <see cref="AIFunction.InvokeAsync"/> method.
+    /// </para>
+    /// <para>
+    /// When set, the delegate is invoked even for <see langword="void"/>-returning methods, in which case it is invoked with
+    /// a <see langword="null"/> argument. By default, <see langword="null"/> is returned from the <see cref="AIFunction.InvokeAsync"/>
+    /// method for <see cref="AIFunction"/> instances produced by <see cref="AIFunctionFactory"/> to wrap
+    /// <see langword="void"/>-returning methods).
+    /// </para>
+    /// <para>
+    /// Methods strongly-typed to return types of <see cref="Task"/>, <see cref="Task{TResult}"/>, <see cref="ValueTask"/>,
+    /// and <see cref="ValueTask{TResult}"/> are special-cased. For methods typed to return <see cref="Task"/> or <see cref="ValueTask"/>,
+    /// <see cref="MarshalResult"/> will be invoked with the <see langword="null"/> value after the returned task has successfully completed.
+    /// For methods typed to return <see cref="Task{TResult}"/> or <see cref="ValueTask{TResult}"/>, the delegate will be invoked with the
+    /// task's result value after the task has successfully completed.These behaviors keep synchronous and asynchronous methods consistent.
+    /// </para>
+    /// </remarks>
+    public Func<object?, CancellationToken, ValueTask<object?>>? MarshalResult { get; set; }
 
     /// <summary>Provides configuration options produced by the <see cref="ConfigureParameterBinding"/> delegate.</summary>
     public readonly record struct ParameterBindingOptions
