@@ -604,6 +604,7 @@ public static partial class OpenAISerializationTests
                 yield return new ChatResponseUpdate
                 {
                     ResponseId = "chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl",
+                    MessageId = "chatcmpl-DJ9a2DJw8892dsa8DJw8jdDsiwkai", // Won't appear in the output, as OpenAI has no representation of this
                     ModelId = "gpt-4o-mini-2024-07-18",
                     CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1_727_888_631),
                     Role = ChatRole.Assistant,
