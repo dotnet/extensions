@@ -69,7 +69,7 @@ public sealed class OllamaChatClient : IChatClient
         _apiChatEndpoint = new Uri(endpoint, "api/chat");
         _httpClient = httpClient ?? OllamaUtilities.SharedClient;
 
-        _metadata = new("ollama", endpoint, modelId);
+        _metadata = new ChatClientMetadata("ollama", endpoint, modelId);
     }
 
     /// <summary>Gets or sets <see cref="JsonSerializerOptions"/> to use for any serialization activities related to tool call arguments and results.</summary>
@@ -105,12 +105,14 @@ public sealed class OllamaChatClient : IChatClient
             throw new InvalidOperationException($"Ollama error: {response.Error}");
         }
 
-        return new(FromOllamaMessage(response.Message!))
+        var responseId = Guid.NewGuid().ToString("N");
+
+        return new(FromOllamaMessage(response.Message!, responseId))
         {
             CreatedAt = DateTimeOffset.TryParse(response.CreatedAt, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset createdAt) ? createdAt : null,
             FinishReason = ToFinishReason(response),
-            ModelId = response.Model ?? options?.ModelId ?? _metadata.ModelId,
-            ResponseId = response.CreatedAt,
+            ModelId = response.Model ?? options?.ModelId ?? _metadata.DefaultModelId,
+            ResponseId = responseId,
             Usage = ParseOllamaChatResponseUsage(response),
         };
     }
@@ -156,7 +158,7 @@ public sealed class OllamaChatClient : IChatClient
                 continue;
             }
 
-            string? modelId = chunk.Model ?? _metadata.ModelId;
+            string? modelId = chunk.Model ?? _metadata.DefaultModelId;
 
             ChatResponseUpdate update = new()
             {
@@ -164,6 +166,7 @@ public sealed class OllamaChatClient : IChatClient
                 FinishReason = ToFinishReason(chunk),
                 ModelId = modelId,
                 ResponseId = responseId,
+                MessageId = responseId, // There is no per-message ID, but there's only one message per response, so use the response ID
                 Role = chunk.Message?.Role is not null ? new ChatRole(chunk.Message.Role) : null,
             };
 
@@ -248,7 +251,7 @@ public sealed class OllamaChatClient : IChatClient
             _ => new ChatFinishReason(response.DoneReason),
         };
 
-    private static ChatMessage FromOllamaMessage(OllamaChatResponseMessage message)
+    private static ChatMessage FromOllamaMessage(OllamaChatResponseMessage message, string responseId)
     {
         List<AIContent> contents = [];
 
@@ -271,7 +274,8 @@ public sealed class OllamaChatClient : IChatClient
             contents.Insert(0, new TextContent(message.Content));
         }
 
-        return new ChatMessage(new(message.Role), contents);
+        // Ollama doesn't have per-message IDs, so use the response ID in the same way we do when streaming
+        return new ChatMessage(new(message.Role), contents) { MessageId = responseId };
     }
 
     private static FunctionCallContent ToFunctionCallContent(OllamaFunctionToolCall function)
@@ -302,7 +306,7 @@ public sealed class OllamaChatClient : IChatClient
         {
             Format = ToOllamaChatResponseFormat(options?.ResponseFormat),
             Messages = messages.SelectMany(ToOllamaChatRequestMessages).ToArray(),
-            Model = options?.ModelId ?? _metadata.ModelId ?? string.Empty,
+            Model = options?.ModelId ?? _metadata.DefaultModelId ?? string.Empty,
             Stream = stream,
             Tools = options?.ToolMode is not NoneChatToolMode && options?.Tools is { Count: > 0 } tools ? tools.OfType<AIFunction>().Select(ToOllamaTool) : null,
         };

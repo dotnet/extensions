@@ -37,7 +37,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     private readonly Histogram<int> _tokenUsageHistogram;
     private readonly Histogram<double> _operationDurationHistogram;
 
-    private readonly string? _modelId;
+    private readonly string? _defaultModelId;
     private readonly string? _system;
     private readonly string? _serverAddress;
     private readonly int _serverPort;
@@ -57,7 +57,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
         if (innerClient!.GetService<ChatClientMetadata>() is ChatClientMetadata metadata)
         {
-            _modelId = metadata.ModelId;
+            _defaultModelId = metadata.DefaultModelId;
             _system = metadata.ProviderName;
             _serverAddress = metadata.ProviderUri?.GetLeftPart(UriPartial.Path);
             _serverPort = metadata.ProviderUri?.Port ?? 0;
@@ -129,7 +129,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
         using Activity? activity = CreateAndConfigureActivity(options);
         Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
-        string? requestModelId = options?.ModelId ?? _modelId;
+        string? requestModelId = options?.ModelId ?? _defaultModelId;
 
         LogChatMessages(messages);
 
@@ -160,7 +160,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
         using Activity? activity = CreateAndConfigureActivity(options);
         Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
-        string? requestModelId = options?.ModelId ?? _modelId;
+        string? requestModelId = options?.ModelId ?? _defaultModelId;
 
         LogChatMessages(messages);
 
@@ -217,7 +217,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         Activity? activity = null;
         if (_activitySource.HasListeners())
         {
-            string? modelId = options?.ModelId ?? _modelId;
+            string? modelId = options?.ModelId ?? _defaultModelId;
 
             activity = _activitySource.StartActivity(
                 string.IsNullOrWhiteSpace(modelId) ? OpenTelemetryConsts.GenAI.Chat : $"{OpenTelemetryConsts.GenAI.Chat} {modelId}",

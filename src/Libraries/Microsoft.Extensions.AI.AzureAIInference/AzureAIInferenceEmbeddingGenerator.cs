@@ -69,7 +69,7 @@ public sealed class AzureAIInferenceEmbeddingGenerator :
         var providerUrl = typeof(EmbeddingsClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(embeddingsClient) as Uri;
 
-        _metadata = new("az.ai.inference", providerUrl, modelId, dimensions);
+        _metadata = new EmbeddingGeneratorMetadata("az.ai.inference", providerUrl, modelId, dimensions);
     }
 
     /// <inheritdoc />
@@ -167,7 +167,7 @@ public sealed class AzureAIInferenceEmbeddingGenerator :
         EmbeddingsOptions result = new(inputs)
         {
             Dimensions = options?.Dimensions ?? _dimensions,
-            Model = options?.ModelId ?? _metadata.ModelId,
+            Model = options?.ModelId ?? _metadata.DefaultModelId,
             EncodingFormat = format,
         };
 
