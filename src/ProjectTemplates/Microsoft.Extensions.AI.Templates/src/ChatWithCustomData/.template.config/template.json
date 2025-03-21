@@ -60,6 +60,7 @@
           "ChatWithCustomData-CSharp.AppHost/**",
           "ChatWithCustomData-CSharp.ServiceDefaults/**",
           "ChatWithCustomData-CSharp.Web/Program.Aspire.cs",
+          "README.Aspire.md",
           "*.sln"
         ]
       },
