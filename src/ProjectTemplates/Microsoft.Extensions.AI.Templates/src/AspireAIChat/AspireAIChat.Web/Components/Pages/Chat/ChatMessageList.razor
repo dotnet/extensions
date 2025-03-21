@@ -1,0 +1,20 @@
+<div class="message-list-container">
+    <chat-messages class="page-width message-list" in-progress="@(InProgressMessage is not null)">
+        @foreach (var message in Messages)
+        {
+            <ChatMessageItem @key="@message" Message="@message" />
+        }
+
+        @if (InProgressMessage is not null)
+        {
+            <ChatMessageItem Message="@InProgressMessage" InProgress="true" />
+            <LoadingSpinner />
+        }
+        else if (IsEmpty)
+        {
+            <div class="no-messages">@NoMessagesContent</div>
+        }
+    </chat-messages>
+</div>
+
+
