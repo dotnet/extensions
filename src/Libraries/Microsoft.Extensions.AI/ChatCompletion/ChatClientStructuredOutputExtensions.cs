@@ -186,6 +186,7 @@ public static class ChatClientStructuredOutputExtensions
                 { "type", "object" },
                 { "properties", new JsonObject { { "data", JsonElementToJsonNode(schemaElement) } } },
                 { "additionalProperties", false },
+                { "required", new JsonArray("data") },
             }, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonObject)));
         }
 
