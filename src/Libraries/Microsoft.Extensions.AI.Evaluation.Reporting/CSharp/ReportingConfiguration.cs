@@ -16,6 +16,7 @@ namespace Microsoft.Extensions.AI.Evaluation.Reporting;
 /// used by these <see cref="IEvaluator"/>s, how the resulting <see cref="ScenarioRunResult"/>s should be persisted,
 /// and how AI responses should be cached.
 /// </summary>
+/// <related type="Article" href="/dotnet/ai/tutorials/evaluate-with-reporting">Tutorial: Evaluate a model's response with response caching and reporting</related>
 public sealed class ReportingConfiguration
 {
     /// <summary>
@@ -162,6 +163,7 @@ public sealed class ReportingConfiguration
     /// A new <see cref="ScenarioRun"/> with the specified <paramref name="scenarioName"/> and
     /// <paramref name="iterationName"/>.
     /// </returns>
+    /// <related type="Article" href="/dotnet/ai/tutorials/evaluate-with-reporting">Tutorial: Evaluate a model's response with response caching and reporting</related>
     public async ValueTask<ScenarioRun> CreateScenarioRunAsync(
         string scenarioName,
         string iterationName = Defaults.DefaultIterationName,

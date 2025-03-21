@@ -26,6 +26,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides factory methods for creating commonly used implementations of <see cref="AIFunction"/>.</summary>
+/// <related type="Article" href="/dotnet/ai/quickstarts/use-function-calling">Invoke .NET functions using an AI model</related>
 public static partial class AIFunctionFactory
 {
     /// <summary>Holds the default options instance used when creating function.</summary>
