@@ -97,11 +97,10 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
     {
         using var process = Process.GetCurrentProcess();
 
-        return new Snapshot(
-            totalTimeSinceStart: TimeSpan.FromTicks(_timeProvider.GetUtcNow().Ticks),
+        return new Snapshot(totalTimeSinceStart: TimeSpan.FromTicks(_timeProvider.GetUtcNow().Ticks),
             kernelTimeSinceStart: process.PrivilegedProcessorTime,
             userTimeSinceStart: process.UserProcessorTime,
-            memoryUsageInBytes: (ulong)process.WorkingSet64);
+            memoryUsageInBytes: (ulong)Environment.WorkingSet);
     }
 
     internal static long GetCpuTicks()

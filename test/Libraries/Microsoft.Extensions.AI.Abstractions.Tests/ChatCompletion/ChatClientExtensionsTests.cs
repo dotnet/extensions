@@ -18,6 +18,58 @@ public class ChatClientExtensionsTests
     }
 
     [Fact]
+    public void GetRequiredService_InvalidArgs_Throws()
+    {
+        Assert.Throws<ArgumentNullException>("client", () => ChatClientExtensions.GetRequiredService(null!, typeof(string)));
+        Assert.Throws<ArgumentNullException>("client", () => ChatClientExtensions.GetRequiredService<object>(null!));
+
+        using var client = new TestChatClient();
+        Assert.Throws<ArgumentNullException>("serviceType", () => client.GetRequiredService(null!));
+    }
+
+    [Fact]
+    public void GetService_ValidService_Returned()
+    {
+        using var client = new TestChatClient
+        {
+            GetServiceCallback = (serviceType, serviceKey) =>
+            {
+                if (serviceType == typeof(string))
+                {
+                    return serviceKey == null ? "null key" : "non-null key";
+                }
+
+                if (serviceType == typeof(IChatClient))
+                {
+                    return new object();
+                }
+
+                return null;
+            },
+        };
+
+        Assert.Equal("null key", client.GetService<string>());
+        Assert.Equal("null key", client.GetService<string>(null));
+        Assert.Equal("non-null key", client.GetService<string>("key"));
+
+        Assert.Null(client.GetService<object>());
+        Assert.Null(client.GetService<object>("key"));
+        Assert.Null(client.GetService<IChatClient>());
+
+        Assert.Equal("null key", client.GetRequiredService(typeof(string)));
+        Assert.Equal("null key", client.GetRequiredService<string>());
+        Assert.Equal("null key", client.GetRequiredService<string>(null));
+        Assert.Equal("non-null key", client.GetRequiredService(typeof(string), "key"));
+        Assert.Equal("non-null key", client.GetRequiredService<string>("key"));
+
+        Assert.Throws<InvalidOperationException>(() => client.GetRequiredService(typeof(object)));
+        Assert.Throws<InvalidOperationException>(() => client.GetRequiredService<object>());
+        Assert.Throws<InvalidOperationException>(() => client.GetRequiredService(typeof(object), "key"));
+        Assert.Throws<InvalidOperationException>(() => client.GetRequiredService<object>("key"));
+        Assert.Throws<InvalidOperationException>(() => client.GetRequiredService<IChatClient>());
+    }
+
+    [Fact]
     public void GetResponseAsync_InvalidArgs_Throws()
     {
         Assert.Throws<ArgumentNullException>("client", () =>
@@ -48,15 +100,15 @@ public class ChatClientExtensionsTests
     [Fact]
     public async Task GetResponseAsync_CreatesTextMessageAsync()
     {
-        var expectedResponse = new ChatResponse([new ChatMessage()]);
+        var expectedResponse = new ChatResponse();
         var expectedOptions = new ChatOptions();
         using var cts = new CancellationTokenSource();
 
         using TestChatClient client = new()
         {
-            GetResponseAsyncCallback = (chatMessages, options, cancellationToken) =>
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
-                ChatMessage m = Assert.Single(chatMessages);
+                ChatMessage m = Assert.Single(messages);
                 Assert.Equal(ChatRole.User, m.Role);
                 Assert.Equal("hello", m.Text);
 
@@ -81,9 +133,9 @@ public class ChatClientExtensionsTests
 
         using TestChatClient client = new()
         {
-            GetStreamingResponseAsyncCallback = (chatMessages, options, cancellationToken) =>
+            GetStreamingResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
-                ChatMessage m = Assert.Single(chatMessages);
+                ChatMessage m = Assert.Single(messages);
                 Assert.Equal(ChatRole.User, m.Role);
                 Assert.Equal("hello", m.Text);
 
@@ -91,7 +143,7 @@ public class ChatClientExtensionsTests
 
                 Assert.Equal(cts.Token, cancellationToken);
 
-                return YieldAsync([new ChatResponseUpdate { Text = "world" }]);
+                return YieldAsync([new ChatResponseUpdate(ChatRole.Assistant, "world")]);
             },
         };
 

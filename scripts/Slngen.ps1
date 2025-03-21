@@ -64,7 +64,7 @@ param (
     [Parameter(Mandatory = $false, HelpMessage="Enables use of folders.")]
     [switch]$Folders = $false,
     [Parameter(Mandatory = $false, HelpMessage="Path to exclude from search for project files. Must be repo root folder based.")]
-    [string[]]$ExcludePaths = @('src\Tools\MutationTesting\samples\', 'src\Templates\templates'),
+    [string[]]$ExcludePaths = @('src\Tools\MutationTesting\samples\', 'src\ProjectTemplates\**\src\', 'test\**\Snapshots'),
     [Parameter(Mandatory = $false, HelpMessage="Don't launch Visual Studio.")]
     [switch]$NoLaunch = $false,
     [Parameter(Mandatory = $false, HelpMessage="Minimizes console output.")]

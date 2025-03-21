@@ -3,60 +3,62 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents the response to a chat request.</summary>
+/// <remarks>
+/// <see cref="ChatResponse"/> provides one or more response messages and metadata about the response.
+/// A typical response will contain a single message, however a response may contain multiple messages
+/// in a variety of scenarios. For example, if automatic function calling is employed, such that a single
+/// request to a <see cref="IChatClient"/> may actually generate multiple roundtrips to an inner <see cref="IChatClient"/>
+/// it uses, all of the involved messages may be surfaced as part of the final <see cref="ChatResponse"/>.
+/// </remarks>
 public class ChatResponse
 {
-    /// <summary>The list of choices in the response.</summary>
-    private IList<ChatMessage> _choices;
+    /// <summary>The response messages.</summary>
+    private IList<ChatMessage>? _messages;
 
     /// <summary>Initializes a new instance of the <see cref="ChatResponse"/> class.</summary>
-    /// <param name="choices">The list of choices in the response, one message per choice.</param>
-    [JsonConstructor]
-    public ChatResponse(IList<ChatMessage> choices)
+    public ChatResponse()
     {
-        _choices = Throw.IfNull(choices);
     }
 
     /// <summary>Initializes a new instance of the <see cref="ChatResponse"/> class.</summary>
-    /// <param name="message">The chat message representing the singular choice in the response.</param>
+    /// <param name="message">The response message.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="message"/> is <see langword="null"/>.</exception>
     public ChatResponse(ChatMessage message)
     {
         _ = Throw.IfNull(message);
-        _choices = [message];
+
+        Messages.Add(message);
     }
 
-    /// <summary>Gets or sets the list of chat response choices.</summary>
-    public IList<ChatMessage> Choices
+    /// <summary>Initializes a new instance of the <see cref="ChatResponse"/> class.</summary>
+    /// <param name="messages">The response messages.</param>
+    public ChatResponse(IList<ChatMessage>? messages)
     {
-        get => _choices;
-        set => _choices = Throw.IfNull(value);
+        _messages = messages;
     }
 
-    /// <summary>Gets the chat response message.</summary>
+    /// <summary>Gets or sets the chat response messages.</summary>
+    [AllowNull]
+    public IList<ChatMessage> Messages
+    {
+        get => _messages ??= new List<ChatMessage>(1);
+        set => _messages = value;
+    }
+
+    /// <summary>Gets the text of the response.</summary>
     /// <remarks>
-    /// If there are multiple choices, this property returns the first choice.
-    /// If <see cref="Choices"/> is empty, this property will throw. Use <see cref="Choices"/> to access all choices directly.
+    /// This property concatenates the <see cref="ChatMessage.Text"/> of all <see cref="ChatMessage"/>
+    /// instances in <see cref="Messages"/>.
     /// </remarks>
     [JsonIgnore]
-    public ChatMessage Message
-    {
-        get
-        {
-            var choices = Choices;
-            if (choices.Count == 0)
-            {
-                throw new InvalidOperationException($"The {nameof(ChatResponse)} instance does not contain any {nameof(ChatMessage)} choices.");
-            }
-
-            return choices[0];
-        }
-    }
+    public string Text => _messages?.ConcatText() ?? string.Empty;
 
     /// <summary>Gets or sets the ID of the chat response.</summary>
     public string? ResponseId { get; set; }
@@ -67,7 +69,7 @@ public class ChatResponse
     /// the input messages supplied to <see cref="IChatClient.GetResponseAsync"/> need only be the additional messages beyond
     /// what's already stored. If this property is non-<see langword="null"/>, it represents an identifier for that state,
     /// and it should be used in a subsequent <see cref="ChatOptions.ChatThreadId"/> instead of supplying the same messages
-    /// (and this <see cref="ChatResponse"/>'s message) as part of the <c>chatMessages</c> parameter.
+    /// (and this <see cref="ChatResponse"/>'s message) as part of the <c>messages</c> parameter.
     /// </remarks>
     public string? ChatThreadId { get; set; }
 
@@ -96,26 +98,7 @@ public class ChatResponse
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
 
     /// <inheritdoc />
-    public override string ToString()
-    {
-        if (Choices.Count == 1)
-        {
-            return Choices[0].ToString();
-        }
-
-        StringBuilder sb = new();
-        for (int i = 0; i < Choices.Count; i++)
-        {
-            if (i > 0)
-            {
-                _ = sb.AppendLine().AppendLine();
-            }
-
-            _ = sb.Append("Choice ").Append(i).AppendLine(":").Append(Choices[i]);
-        }
-
-        return sb.ToString();
-    }
+    public override string ToString() => Text;
 
     /// <summary>Creates an array of <see cref="ChatResponseUpdate" /> instances that represent this <see cref="ChatResponse" />.</summary>
     /// <returns>An array of <see cref="ChatResponseUpdate" /> instances that may be used to represent this <see cref="ChatResponse" />.</returns>
@@ -135,24 +118,25 @@ public class ChatResponse
             }
         }
 
-        int choicesCount = Choices.Count;
-        var updates = new ChatResponseUpdate[choicesCount + (extra is null ? 0 : 1)];
+        int messageCount = _messages?.Count ?? 0;
+        var updates = new ChatResponseUpdate[messageCount + (extra is not null ? 1 : 0)];
 
-        for (int choiceIndex = 0; choiceIndex < choicesCount; choiceIndex++)
+        int i;
+        for (i = 0; i < messageCount; i++)
         {
-            ChatMessage choice = Choices[choiceIndex];
-            updates[choiceIndex] = new ChatResponseUpdate
+            ChatMessage message = _messages![i];
+            updates[i] = new ChatResponseUpdate
             {
                 ChatThreadId = ChatThreadId,
-                ChoiceIndex = choiceIndex,
 
-                AdditionalProperties = choice.AdditionalProperties,
-                AuthorName = choice.AuthorName,
-                Contents = choice.Contents,
-                RawRepresentation = choice.RawRepresentation,
-                Role = choice.Role,
+                AdditionalProperties = message.AdditionalProperties,
+                AuthorName = message.AuthorName,
+                Contents = message.Contents,
+                RawRepresentation = message.RawRepresentation,
+                Role = message.Role,
 
                 ResponseId = ResponseId,
+                MessageId = message.MessageId,
                 CreatedAt = CreatedAt,
                 FinishReason = FinishReason,
                 ModelId = ModelId
@@ -161,7 +145,7 @@ public class ChatResponse
 
         if (extra is not null)
         {
-            updates[choicesCount] = extra;
+            updates[i] = extra;
         }
 
         return updates;

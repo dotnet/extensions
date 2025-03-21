@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,16 +19,7 @@ public class UseDelegateChatClientTests
         using var client = new TestChatClient();
         ChatClientBuilder builder = new(client);
 
-        Assert.Throws<ArgumentNullException>("sharedFunc", () =>
-            builder.Use((AnonymousDelegatingChatClient.GetResponseSharedFunc)null!));
-
         Assert.Throws<ArgumentNullException>("getResponseFunc", () => builder.Use(null!, null!));
-
-        Assert.Throws<ArgumentNullException>("innerClient", () => new AnonymousDelegatingChatClient(null!, delegate { return Task.CompletedTask; }));
-        Assert.Throws<ArgumentNullException>("sharedFunc", () => new AnonymousDelegatingChatClient(client, null!));
-
-        Assert.Throws<ArgumentNullException>("innerClient", () => new AnonymousDelegatingChatClient(null!, null!, null!));
-        Assert.Throws<ArgumentNullException>("getResponseFunc", () => new AnonymousDelegatingChatClient(client, null!, null!));
     }
 
     [Fact]
@@ -41,43 +33,43 @@ public class UseDelegateChatClientTests
 
         using IChatClient innerClient = new TestChatClient
         {
-            GetResponseAsyncCallback = (chatMessages, options, cancellationToken) =>
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
-                Assert.Same(expectedMessages, chatMessages);
+                Assert.Same(expectedMessages, messages);
                 Assert.Same(expectedOptions, options);
                 Assert.Equal(expectedCts.Token, cancellationToken);
                 Assert.Equal(42, asyncLocal.Value);
                 return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "hello")));
             },
 
-            GetStreamingResponseAsyncCallback = (chatMessages, options, cancellationToken) =>
+            GetStreamingResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
-                Assert.Same(expectedMessages, chatMessages);
+                Assert.Same(expectedMessages, messages);
                 Assert.Same(expectedOptions, options);
                 Assert.Equal(expectedCts.Token, cancellationToken);
                 Assert.Equal(42, asyncLocal.Value);
-                return YieldUpdates(new ChatResponseUpdate { Text = "world" });
+                return YieldUpdates(new ChatResponseUpdate(null, "world"));
             },
         };
 
         using IChatClient client = new ChatClientBuilder(innerClient)
-            .Use(async (chatMessages, options, next, cancellationToken) =>
+            .Use(async (messages, options, next, cancellationToken) =>
             {
-                Assert.Same(expectedMessages, chatMessages);
+                Assert.Same(expectedMessages, messages);
                 Assert.Same(expectedOptions, options);
                 Assert.Equal(expectedCts.Token, cancellationToken);
                 asyncLocal.Value = 42;
-                await next(chatMessages, options, cancellationToken);
+                await next(messages, options, cancellationToken);
             })
             .Build();
 
         Assert.Equal(0, asyncLocal.Value);
         ChatResponse response = await client.GetResponseAsync(expectedMessages, expectedOptions, expectedCts.Token);
-        Assert.Equal("hello", response.Message.Text);
+        Assert.Equal("hello", response.Text);
 
         Assert.Equal(0, asyncLocal.Value);
         response = await client.GetStreamingResponseAsync(expectedMessages, expectedOptions, expectedCts.Token).ToChatResponseAsync();
-        Assert.Equal("world", response.Message.Text);
+        Assert.Equal("world", response.Text);
     }
 
     [Fact]
@@ -90,9 +82,9 @@ public class UseDelegateChatClientTests
 
         using IChatClient innerClient = new TestChatClient
         {
-            GetResponseAsyncCallback = (chatMessages, options, cancellationToken) =>
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
-                Assert.Same(expectedMessages, chatMessages);
+                Assert.Same(expectedMessages, messages);
                 Assert.Same(expectedOptions, options);
                 Assert.Equal(expectedCts.Token, cancellationToken);
                 Assert.Equal(42, asyncLocal.Value);
@@ -101,14 +93,14 @@ public class UseDelegateChatClientTests
         };
 
         using IChatClient client = new ChatClientBuilder(innerClient)
-            .Use(async (chatMessages, options, innerClient, cancellationToken) =>
+            .Use(async (messages, options, innerClient, cancellationToken) =>
             {
-                Assert.Same(expectedMessages, chatMessages);
+                Assert.Same(expectedMessages, messages);
                 Assert.Same(expectedOptions, options);
                 Assert.Equal(expectedCts.Token, cancellationToken);
                 asyncLocal.Value = 42;
-                var cc = await innerClient.GetResponseAsync(chatMessages, options, cancellationToken);
-                cc.Choices[0].Text += " world";
+                var cc = await innerClient.GetResponseAsync(messages, options, cancellationToken);
+                cc.Messages.SelectMany(c => c.Contents).OfType<TextContent>().Last().Text += " world";
                 return cc;
             }, null)
             .Build();
@@ -116,10 +108,10 @@ public class UseDelegateChatClientTests
         Assert.Equal(0, asyncLocal.Value);
 
         ChatResponse response = await client.GetResponseAsync(expectedMessages, expectedOptions, expectedCts.Token);
-        Assert.Equal("hello world", response.Message.Text);
+        Assert.Equal("hello world", response.Text);
 
         response = await client.GetStreamingResponseAsync(expectedMessages, expectedOptions, expectedCts.Token).ToChatResponseAsync();
-        Assert.Equal("hello world", response.Message.Text);
+        Assert.Equal("hello world", response.Text);
     }
 
     [Fact]
@@ -132,34 +124,34 @@ public class UseDelegateChatClientTests
 
         using IChatClient innerClient = new TestChatClient
         {
-            GetStreamingResponseAsyncCallback = (chatMessages, options, cancellationToken) =>
+            GetStreamingResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
-                Assert.Same(expectedMessages, chatMessages);
+                Assert.Same(expectedMessages, messages);
                 Assert.Same(expectedOptions, options);
                 Assert.Equal(expectedCts.Token, cancellationToken);
                 Assert.Equal(42, asyncLocal.Value);
-                return YieldUpdates(new ChatResponseUpdate { Text = "hello" });
+                return YieldUpdates(new ChatResponseUpdate(null, "hello"));
             },
         };
 
         using IChatClient client = new ChatClientBuilder(innerClient)
-            .Use(null, (chatMessages, options, innerClient, cancellationToken) =>
+            .Use(null, (messages, options, innerClient, cancellationToken) =>
             {
-                Assert.Same(expectedMessages, chatMessages);
+                Assert.Same(expectedMessages, messages);
                 Assert.Same(expectedOptions, options);
                 Assert.Equal(expectedCts.Token, cancellationToken);
                 asyncLocal.Value = 42;
-                return Impl(chatMessages, options, innerClient, cancellationToken);
+                return Impl(messages, options, innerClient, cancellationToken);
 
                 static async IAsyncEnumerable<ChatResponseUpdate> Impl(
-                    IList<ChatMessage> chatMessages, ChatOptions? options, IChatClient innerClient, [EnumeratorCancellation] CancellationToken cancellationToken)
+                    IEnumerable<ChatMessage> messages, ChatOptions? options, IChatClient innerClient, [EnumeratorCancellation] CancellationToken cancellationToken)
                 {
-                    await foreach (var update in innerClient.GetStreamingResponseAsync(chatMessages, options, cancellationToken))
+                    await foreach (var update in innerClient.GetStreamingResponseAsync(messages, options, cancellationToken))
                     {
                         yield return update;
                     }
 
-                    yield return new() { Text = " world" };
+                    yield return new(null, " world");
                 }
             })
             .Build();
@@ -167,10 +159,10 @@ public class UseDelegateChatClientTests
         Assert.Equal(0, asyncLocal.Value);
 
         ChatResponse response = await client.GetResponseAsync(expectedMessages, expectedOptions, expectedCts.Token);
-        Assert.Equal("hello world", response.Message.Text);
+        Assert.Equal("hello world", response.Text);
 
         response = await client.GetStreamingResponseAsync(expectedMessages, expectedOptions, expectedCts.Token).ToChatResponseAsync();
-        Assert.Equal("hello world", response.Message.Text);
+        Assert.Equal("hello world", response.Text);
     }
 
     [Fact]
@@ -183,54 +175,54 @@ public class UseDelegateChatClientTests
 
         using IChatClient innerClient = new TestChatClient
         {
-            GetResponseAsyncCallback = (chatMessages, options, cancellationToken) =>
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
-                Assert.Same(expectedMessages, chatMessages);
+                Assert.Same(expectedMessages, messages);
                 Assert.Same(expectedOptions, options);
                 Assert.Equal(expectedCts.Token, cancellationToken);
                 Assert.Equal(42, asyncLocal.Value);
                 return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "non-streaming hello")));
             },
 
-            GetStreamingResponseAsyncCallback = (chatMessages, options, cancellationToken) =>
+            GetStreamingResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
-                Assert.Same(expectedMessages, chatMessages);
+                Assert.Same(expectedMessages, messages);
                 Assert.Same(expectedOptions, options);
                 Assert.Equal(expectedCts.Token, cancellationToken);
                 Assert.Equal(42, asyncLocal.Value);
-                return YieldUpdates(new ChatResponseUpdate { Text = "streaming hello" });
+                return YieldUpdates(new ChatResponseUpdate(null, "streaming hello"));
             },
         };
 
         using IChatClient client = new ChatClientBuilder(innerClient)
             .Use(
-                async (chatMessages, options, innerClient, cancellationToken) =>
+                async (messages, options, innerClient, cancellationToken) =>
                 {
-                    Assert.Same(expectedMessages, chatMessages);
+                    Assert.Same(expectedMessages, messages);
                     Assert.Same(expectedOptions, options);
                     Assert.Equal(expectedCts.Token, cancellationToken);
                     asyncLocal.Value = 42;
-                    var cc = await innerClient.GetResponseAsync(chatMessages, options, cancellationToken);
-                    cc.Choices[0].Text += " world (non-streaming)";
+                    var cc = await innerClient.GetResponseAsync(messages, options, cancellationToken);
+                    cc.Messages.SelectMany(c => c.Contents).OfType<TextContent>().Last().Text += " world (non-streaming)";
                     return cc;
                 },
-                (chatMessages, options, innerClient, cancellationToken) =>
+                (messages, options, innerClient, cancellationToken) =>
                 {
-                    Assert.Same(expectedMessages, chatMessages);
+                    Assert.Same(expectedMessages, messages);
                     Assert.Same(expectedOptions, options);
                     Assert.Equal(expectedCts.Token, cancellationToken);
                     asyncLocal.Value = 42;
-                    return Impl(chatMessages, options, innerClient, cancellationToken);
+                    return Impl(messages, options, innerClient, cancellationToken);
 
                     static async IAsyncEnumerable<ChatResponseUpdate> Impl(
-                        IList<ChatMessage> chatMessages, ChatOptions? options, IChatClient innerClient, [EnumeratorCancellation] CancellationToken cancellationToken)
+                        IEnumerable<ChatMessage> messages, ChatOptions? options, IChatClient innerClient, [EnumeratorCancellation] CancellationToken cancellationToken)
                     {
-                        await foreach (var update in innerClient.GetStreamingResponseAsync(chatMessages, options, cancellationToken))
+                        await foreach (var update in innerClient.GetStreamingResponseAsync(messages, options, cancellationToken))
                         {
                             yield return update;
                         }
 
-                        yield return new() { Text = " world (streaming)" };
+                        yield return new(null, " world (streaming)");
                     }
                 })
             .Build();
@@ -238,10 +230,10 @@ public class UseDelegateChatClientTests
         Assert.Equal(0, asyncLocal.Value);
 
         ChatResponse response = await client.GetResponseAsync(expectedMessages, expectedOptions, expectedCts.Token);
-        Assert.Equal("non-streaming hello world (non-streaming)", response.Message.Text);
+        Assert.Equal("non-streaming hello world (non-streaming)", response.Text);
 
         response = await client.GetStreamingResponseAsync(expectedMessages, expectedOptions, expectedCts.Token).ToChatResponseAsync();
-        Assert.Equal("streaming hello world (streaming)", response.Message.Text);
+        Assert.Equal("streaming hello world (streaming)", response.Text);
     }
 
     private static async IAsyncEnumerable<ChatResponseUpdate> YieldUpdates(params ChatResponseUpdate[] updates)

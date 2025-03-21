@@ -86,7 +86,6 @@ public static partial class AIJsonUtilities
     [JsonSerializable(typeof(ChatResponseUpdate))]
     [JsonSerializable(typeof(IReadOnlyList<ChatResponseUpdate>))]
     [JsonSerializable(typeof(Dictionary<string, object>))]
-    [JsonSerializable(typeof(IDictionary<int, int>))]
     [JsonSerializable(typeof(IDictionary<string, object?>))]
     [JsonSerializable(typeof(JsonDocument))]
     [JsonSerializable(typeof(JsonElement))]
@@ -109,6 +108,7 @@ public static partial class AIJsonUtilities
     [JsonSerializable(typeof(Embedding<float>))]
     [JsonSerializable(typeof(Embedding<double>))]
     [JsonSerializable(typeof(AIContent))]
+    [JsonSerializable(typeof(AIFunctionArguments))]
     [EditorBrowsable(EditorBrowsableState.Never)] // Never use JsonContext directly, use DefaultOptions instead.
     private sealed partial class JsonContext : JsonSerializerContext;
 }

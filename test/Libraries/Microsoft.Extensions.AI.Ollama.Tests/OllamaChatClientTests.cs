@@ -118,9 +118,9 @@ public class OllamaChatClientTests
         });
         Assert.NotNull(response);
 
-        Assert.Equal("Hello! How are you today? Is there something", response.Message.Text);
-        Assert.Single(response.Message.Contents);
-        Assert.Equal(ChatRole.Assistant, response.Message.Role);
+        Assert.Equal("Hello! How are you today? Is there something", response.Text);
+        Assert.Single(response.Messages.Single().Contents);
+        Assert.Equal(ChatRole.Assistant, response.Messages.Single().Role);
         Assert.Equal("llama3.1", response.ModelId);
         Assert.Equal(DateTimeOffset.Parse("2024-10-01T15:46:10.5248793Z"), response.CreatedAt);
         Assert.Equal(ChatFinishReason.Length, response.FinishReason);
@@ -171,11 +171,12 @@ public class OllamaChatClientTests
         using IChatClient client = new OllamaChatClient("http://localhost:11434", "llama3.1", httpClient);
 
         List<ChatResponseUpdate> updates = [];
-        await foreach (var update in client.GetStreamingResponseAsync("hello", new()
+        var streamingResponse = client.GetStreamingResponseAsync("hello", new()
         {
             MaxOutputTokens = 20,
             Temperature = 0.5f,
-        }))
+        });
+        await foreach (var update in streamingResponse)
         {
             updates.Add(update);
         }
@@ -187,6 +188,7 @@ public class OllamaChatClientTests
         for (int i = 0; i < updates.Count; i++)
         {
             Assert.NotNull(updates[i].ResponseId);
+            Assert.NotNull(updates[i].MessageId);
             Assert.Equal(i < updates.Count - 1 ? 1 : 2, updates[i].Contents.Count);
             Assert.Equal(ChatRole.Assistant, updates[i].Role);
             Assert.Equal("llama3.1", updates[i].ModelId);
@@ -201,6 +203,10 @@ public class OllamaChatClientTests
         Assert.Equal(11, usage.Details.InputTokenCount);
         Assert.Equal(20, usage.Details.OutputTokenCount);
         Assert.Equal(31, usage.Details.TotalTokenCount);
+
+        var chatResponse = await streamingResponse.ToChatResponseAsync();
+        Assert.Single(Assert.Single(chatResponse.Messages).Contents);
+        Assert.Equal("Hello! How are you today? Is there something I can help you with or would you like to", chatResponse.Text);
     }
 
     [Fact]
@@ -281,9 +287,9 @@ public class OllamaChatClientTests
                 but I'm functioning properly and ready to help with any questions or tasks you may have!
                 How about we chat about something in particular or just shoot the breeze ? Your choice!
                 """),
-            VerbatimHttpHandler.RemoveWhiteSpace(response.Message.Text));
-        Assert.Single(response.Message.Contents);
-        Assert.Equal(ChatRole.Assistant, response.Message.Role);
+            VerbatimHttpHandler.RemoveWhiteSpace(response.Text));
+        Assert.Single(response.Messages.Single().Contents);
+        Assert.Equal(ChatRole.Assistant, response.Messages.Single().Role);
         Assert.Equal("llama3.1", response.ModelId);
         Assert.Equal(DateTimeOffset.Parse("2024-10-01T17:18:46.308987Z"), response.CreatedAt);
         Assert.Equal(ChatFinishReason.Stop, response.FinishReason);
@@ -370,9 +376,9 @@ public class OllamaChatClientTests
         });
         Assert.NotNull(response);
 
-        Assert.Null(response.Message.Text);
+        Assert.Empty(response.Text);
         Assert.Equal("llama3.1", response.ModelId);
-        Assert.Equal(ChatRole.Assistant, response.Message.Role);
+        Assert.Equal(ChatRole.Assistant, response.Messages.Single().Role);
         Assert.Equal(DateTimeOffset.Parse("2024-10-01T18:48:30.2669578Z"), response.CreatedAt);
         Assert.Equal(ChatFinishReason.Stop, response.FinishReason);
         Assert.NotNull(response.Usage);
@@ -380,9 +386,8 @@ public class OllamaChatClientTests
         Assert.Equal(19, response.Usage.OutputTokenCount);
         Assert.Equal(189, response.Usage.TotalTokenCount);
 
-        Assert.Single(response.Choices);
-        Assert.Single(response.Message.Contents);
-        FunctionCallContent fcc = Assert.IsType<FunctionCallContent>(response.Message.Contents[0]);
+        Assert.Single(response.Messages.Single().Contents);
+        FunctionCallContent fcc = Assert.IsType<FunctionCallContent>(response.Messages.Single().Contents[0]);
         Assert.Equal("GetPersonAge", fcc.Name);
         AssertExtensions.EqualFunctionCallParameters(new Dictionary<string, object?> { ["personName"] = "Alice" }, fcc.Arguments);
     }
@@ -468,9 +473,9 @@ public class OllamaChatClientTests
             });
         Assert.NotNull(response);
 
-        Assert.Equal("Alice is 42 years old.", response.Message.Text);
+        Assert.Equal("Alice is 42 years old.", response.Text);
         Assert.Equal("llama3.1", response.ModelId);
-        Assert.Equal(ChatRole.Assistant, response.Message.Role);
+        Assert.Equal(ChatRole.Assistant, response.Messages.Single().Role);
         Assert.Equal(DateTimeOffset.Parse("2024-10-01T20:57:20.157266Z"), response.CreatedAt);
         Assert.Equal(ChatFinishReason.Stop, response.FinishReason);
         Assert.NotNull(response.Usage);

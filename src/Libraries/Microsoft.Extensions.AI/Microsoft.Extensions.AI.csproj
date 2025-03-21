@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.AI</RootNamespace>
@@ -10,8 +10,9 @@
 
   <PropertyGroup>
     <Stage>preview</Stage>
+    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
     <EnablePackageValidation>false</EnablePackageValidation>
-    <MinCodeCoverage>88</MinCodeCoverage>
+    <MinCodeCoverage>89</MinCodeCoverage>
     <MinMutationScore>0</MinMutationScore>
   </PropertyGroup>
 

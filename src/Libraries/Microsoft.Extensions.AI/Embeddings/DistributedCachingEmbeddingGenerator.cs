@@ -30,6 +30,7 @@ public class DistributedCachingEmbeddingGenerator<TInput, TEmbedding> : CachingE
     /// <summary>Initializes a new instance of the <see cref="DistributedCachingEmbeddingGenerator{TInput, TEmbedding}"/> class.</summary>
     /// <param name="innerGenerator">The underlying <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/>.</param>
     /// <param name="storage">A <see cref="IDistributedCache"/> instance that will be used as the backing store for the cache.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="storage"/> is <see langword="null"/>.</exception>
     public DistributedCachingEmbeddingGenerator(IEmbeddingGenerator<TInput, TEmbedding> innerGenerator, IDistributedCache storage)
         : base(innerGenerator)
     {
@@ -39,6 +40,7 @@ public class DistributedCachingEmbeddingGenerator<TInput, TEmbedding> : CachingE
     }
 
     /// <summary>Gets or sets JSON serialization options to use when serializing cache data.</summary>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/>.</exception>
     public JsonSerializerOptions JsonSerializerOptions
     {
         get => _jsonSerializerOptions;
@@ -77,10 +79,14 @@ public class DistributedCachingEmbeddingGenerator<TInput, TEmbedding> : CachingE
     /// <summary>Computes a cache key for the specified values.</summary>
     /// <param name="values">The values to inform the key.</param>
     /// <returns>The computed key.</returns>
-    /// <remarks>The <paramref name="values"/> are serialized to JSON using <see cref="JsonSerializerOptions"/> in order to compute the key.</remarks>
-    protected override string GetCacheKey(params ReadOnlySpan<object?> values)
-    {
-        _jsonSerializerOptions.MakeReadOnly();
-        return CachingHelpers.GetCacheKey(values, _jsonSerializerOptions);
-    }
+    /// <remarks>
+    /// <para>
+    /// The <paramref name="values"/> are serialized to JSON using <see cref="JsonSerializerOptions"/> in order to compute the key.
+    /// </para>
+    /// <para>
+    /// The generated cache key is not guaranteed to be stable across releases of the library.
+    /// </para>
+    /// </remarks>
+    protected override string GetCacheKey(params ReadOnlySpan<object?> values) =>
+        AIJsonUtilities.HashDataToString(values, _jsonSerializerOptions);
 }

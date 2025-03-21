@@ -2,16 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Schema;
 using System.Text.Json.Serialization;
+using System.Threading;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable S1121 // Assignments should not be made from within sub-expressions
@@ -46,39 +47,65 @@ public static partial class AIJsonUtilities
     private static readonly string[] _schemaKeywordsDisallowedByAIVendors = ["minLength", "maxLength", "pattern", "format"];
 
     /// <summary>
-    /// Determines a JSON schema for the provided AI function parameter metadata.
+    /// Determines a JSON schema for the provided method.
     /// </summary>
+    /// <param name="method">The method from which to extract schema information.</param>
     /// <param name="title">The title keyword used by the method schema.</param>
     /// <param name="description">The description keyword used by the method schema.</param>
-    /// <param name="parameters">The AI function parameter metadata.</param>
     /// <param name="serializerOptions">The options used to extract the schema from the specified type.</param>
     /// <param name="inferenceOptions">The options controlling schema inference.</param>
     /// <returns>A JSON schema document encoded as a <see cref="JsonElement"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
     public static JsonElement CreateFunctionJsonSchema(
+        MethodBase method,
         string? title = null,
         string? description = null,
-        IReadOnlyList<AIFunctionParameterMetadata>? parameters = null,
         JsonSerializerOptions? serializerOptions = null,
         AIJsonSchemaCreateOptions? inferenceOptions = null)
     {
+        _ = Throw.IfNull(method);
+
         serializerOptions ??= DefaultOptions;
         inferenceOptions ??= AIJsonSchemaCreateOptions.Default;
+        title ??= method.Name;
+        description ??= method.GetCustomAttribute<DescriptionAttribute>()?.Description;
 
         JsonObject parameterSchemas = new();
         JsonArray? requiredProperties = null;
-        foreach (AIFunctionParameterMetadata parameter in parameters ?? [])
+        foreach (ParameterInfo parameter in method.GetParameters())
         {
+            if (string.IsNullOrWhiteSpace(parameter.Name))
+            {
+                Throw.ArgumentException(nameof(parameter), "Parameter is missing a name.");
+            }
+
+            if (parameter.ParameterType == typeof(CancellationToken))
+            {
+                // CancellationToken is a special case that, by convention, we don't want to include in the schema.
+                // Invocations of methods that include a CancellationToken argument should also special-case CancellationToken
+                // to pass along what relevant token into the method's invocation.
+                continue;
+            }
+
+            if (inferenceOptions.IncludeParameter is { } includeParameter &&
+                !includeParameter(parameter))
+            {
+                // Skip parameters that should not be included in the schema.
+                // By default, all parameters are included.
+                continue;
+            }
+
             JsonNode parameterSchema = CreateJsonSchemaCore(
-                parameter.ParameterType,
-                parameter.Name,
-                parameter.Description,
-                parameter.HasDefaultValue,
-                parameter.DefaultValue,
+                type: parameter.ParameterType,
+                parameterName: parameter.Name,
+                description: parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
+                hasDefaultValue: parameter.HasDefaultValue,
+                defaultValue: parameter.HasDefaultValue ? parameter.DefaultValue : null,
                 serializerOptions,
                 inferenceOptions);
 
             parameterSchemas.Add(parameter.Name, parameterSchema);
-            if (parameter.IsRequired)
+            if (!parameter.IsOptional)
             {
                 (requiredProperties ??= []).Add((JsonNode)parameter.Name);
             }

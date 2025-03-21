@@ -21,6 +21,7 @@ using Xunit;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
 #pragma warning disable CA2214 // Do not call overridable methods in constructors
+#pragma warning disable CA2249 // Consider using 'string.Contains' instead of 'string.IndexOf'
 
 namespace Microsoft.Extensions.AI;
 
@@ -48,7 +49,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         var response = await _chatClient.GetResponseAsync("What's the biggest animal?");
 
-        Assert.Contains("whale", response.Message.Text, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("whale", response.Text, StringComparison.OrdinalIgnoreCase);
     }
 
     [ConditionalFact]
@@ -65,13 +66,26 @@ public abstract class ChatClientIntegrationTests : IDisposable
             new(ChatRole.User, "What continent are they each in?"),
         ]);
 
-        Assert.Single(response.Choices);
-        Assert.Contains("America", response.Message.Text);
-        Assert.Contains("Asia", response.Message.Text);
+        Assert.Contains("America", response.Text);
+        Assert.Contains("Asia", response.Text);
     }
 
     [ConditionalFact]
-    public virtual async Task GetStreamingResponseAsync_SingleStreamingResponseChoice()
+    public virtual async Task GetResponseAsync_WithEmptyMessage()
+    {
+        SkipIfNotEnabled();
+
+        var response = await _chatClient.GetResponseAsync(
+        [
+            new(ChatRole.User, []),
+            new(ChatRole.User, "What is 1 + 2? Reply with a single number."),
+        ]);
+
+        Assert.Contains("3", response.Text);
+    }
+
+    [ConditionalFact]
+    public virtual async Task GetStreamingResponseAsync()
     {
         SkipIfNotEnabled();
 
@@ -89,9 +103,6 @@ public abstract class ChatClientIntegrationTests : IDisposable
         string responseText = sb.ToString();
         Assert.Contains("one small step", responseText, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("one giant leap", responseText, StringComparison.OrdinalIgnoreCase);
-
-        // The input list is left unaugmented.
-        Assert.Single(chatHistory);
     }
 
     [ConditionalFact]
@@ -101,7 +112,6 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         var response = await _chatClient.GetResponseAsync("Explain in 10 words how AI works");
 
-        Assert.Single(response.Choices);
         Assert.True(response.Usage?.InputTokenCount > 1);
         Assert.True(response.Usage?.OutputTokenCount > 1);
         Assert.Equal(response.Usage?.InputTokenCount + response.Usage?.OutputTokenCount, response.Usage?.TotalTokenCount);
@@ -134,6 +144,25 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.Equal(usage.Details.InputTokenCount + usage.Details.OutputTokenCount, usage.Details.TotalTokenCount);
     }
 
+    [ConditionalFact]
+    public virtual async Task GetStreamingResponseAsync_AppendToHistory()
+    {
+        SkipIfNotEnabled();
+
+        List<ChatMessage> history = [new(ChatRole.User, "Explain in 100 words how AI works")];
+
+        var streamingResponse = _chatClient.GetStreamingResponseAsync(history);
+
+        Assert.Single(history);
+        await history.AddMessagesAsync(streamingResponse);
+        Assert.Equal(2, history.Count);
+        Assert.Equal(ChatRole.Assistant, history[1].Role);
+
+        var singleTextContent = (TextContent)history[1].Contents.Single();
+        Assert.NotEmpty(singleTextContent.Text);
+        Assert.Equal(history[1].Text, singleTextContent.Text);
+    }
+
     protected virtual string? GetModel_MultiModal_DescribeImage() => null;
 
     [ConditionalFact]
@@ -151,8 +180,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
             ],
             new() { ModelId = GetModel_MultiModal_DescribeImage() });
 
-        Assert.Single(response.Choices);
-        Assert.True(response.Message.Text?.IndexOf("net", StringComparison.OrdinalIgnoreCase) >= 0, response.Message.Text);
+        Assert.True(response.Text.IndexOf("net", StringComparison.OrdinalIgnoreCase) >= 0, response.Text);
     }
 
     [ConditionalFact]
@@ -182,8 +210,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
             Tools = [AIFunctionFactory.Create(() => secretNumber, "GetSecretNumber")]
         });
 
-        Assert.Single(response.Choices);
-        Assert.Contains(secretNumber.ToString(), response.Message.Text);
+        Assert.Contains(secretNumber.ToString(), response.Text);
 
         // If the underlying IChatClient provides usage data, function invocation should aggregate the
         // usage data across all calls to produce a single Usage value on the final response
@@ -208,8 +235,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
             Tools = [AIFunctionFactory.Create((int a, int b) => a * b, "SecretComputation")]
         });
 
-        Assert.Single(response.Choices);
-        Assert.Contains("3528", response.Message.Text);
+        Assert.Contains("3528", response.Text);
     }
 
     [ConditionalFact]
@@ -261,8 +287,8 @@ public abstract class ChatClientIntegrationTests : IDisposable
         });
 
         Assert.True(
-            Regex.IsMatch(response.Message.Text ?? "", @"\b(3|three)\b", RegexOptions.IgnoreCase),
-            $"Doesn't contain three: {response.Message.Text}");
+            Regex.IsMatch(response.Text ?? "", @"\b(3|three)\b", RegexOptions.IgnoreCase),
+            $"Doesn't contain three: {response.Text}");
     }
 
     [ConditionalFact]
@@ -285,7 +311,6 @@ public abstract class ChatClientIntegrationTests : IDisposable
             ToolMode = ChatToolMode.RequireAny,
         });
 
-        Assert.Single(response.Choices);
         Assert.True(callCount >= 1);
     }
 
@@ -304,7 +329,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         var response = await chatClient.GetResponseAsync("What's the current secret number?", new()
         {
             Tools = [getSecretNumberTool, shieldsUpTool],
-            ToolMode = ChatToolMode.RequireSpecific(shieldsUpTool.Metadata.Name),
+            ToolMode = ChatToolMode.RequireSpecific(shieldsUpTool.Name),
         });
 
         Assert.True(shieldsUp);
@@ -317,10 +342,9 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         var message = new ChatMessage(ChatRole.User, "Pick a random number, uniformly distributed between 1 and 1000000");
         var firstResponse = await _chatClient.GetResponseAsync([message]);
-        Assert.Single(firstResponse.Choices);
 
         var secondResponse = await _chatClient.GetResponseAsync([message]);
-        Assert.NotEqual(firstResponse.Message.Text, secondResponse.Message.Text);
+        Assert.NotEqual(firstResponse.Text, secondResponse.Text);
     }
 
     [ConditionalFact]
@@ -334,19 +358,18 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         var message = new ChatMessage(ChatRole.User, "Pick a random number, uniformly distributed between 1 and 1000000");
         var firstResponse = await chatClient.GetResponseAsync([message]);
-        Assert.Single(firstResponse.Choices);
 
         // No matter what it said before, we should see identical output due to caching
         for (int i = 0; i < 3; i++)
         {
             var secondResponse = await chatClient.GetResponseAsync([message]);
-            Assert.Equal(firstResponse.Message.Text, secondResponse.Message.Text);
+            Assert.Equal(firstResponse.Messages.Select(m => m.Text), secondResponse.Messages.Select(m => m.Text));
         }
 
         // ... but if the conversation differs, we should see different output
-        message.Text += "!";
+        ((TextContent)message.Contents[0]).Text += "!";
         var thirdResponse = await chatClient.GetResponseAsync([message]);
-        Assert.NotEqual(firstResponse.Message.Text, thirdResponse.Message.Text);
+        Assert.NotEqual(firstResponse.Messages, thirdResponse.Messages);
     }
 
     [ConditionalFact]
@@ -378,7 +401,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         }
 
         // ... but if the conversation differs, we should see different output
-        message.Text += "!";
+        ((TextContent)message.Contents[0]).Text += "!";
         StringBuilder third = new();
         await foreach (var update in chatClient.GetStreamingResponseAsync([message]))
         {
@@ -412,14 +435,14 @@ public abstract class ChatClientIntegrationTests : IDisposable
         var llmCallCount = chatClient.GetService<CallCountingChatClient>();
         var message = new ChatMessage(ChatRole.User, "What is the temperature?");
         var response = await chatClient.GetResponseAsync([message]);
-        Assert.Contains("101", response.Message.Text);
+        Assert.Contains("101", response.Text);
 
         // First LLM call tells us to call the function, second deals with the result
         Assert.Equal(2, llmCallCount!.CallCount);
 
         // Second call doesn't execute the function or call the LLM, but rather just returns the cached result
         var secondResponse = await chatClient.GetResponseAsync([message]);
-        Assert.Equal(response.Message.Text, secondResponse.Message.Text);
+        Assert.Equal(response.Text, secondResponse.Text);
         Assert.Equal(1, functionCallCount);
         Assert.Equal(2, llmCallCount!.CallCount);
     }
@@ -451,7 +474,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         var llmCallCount = chatClient.GetService<CallCountingChatClient>();
         var message = new ChatMessage(ChatRole.User, "What is the temperature?");
         var response = await chatClient.GetResponseAsync([message]);
-        Assert.Contains("58", response.Message.Text);
+        Assert.Contains("58", response.Text);
 
         // First LLM call tells us to call the function, second deals with the result
         Assert.Equal(1, functionCallCount);
@@ -459,7 +482,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         // Second time, the calls to the LLM don't happen, but the function is called again
         var secondResponse = await chatClient.GetResponseAsync([message]);
-        Assert.Equal(response.Message.Text, secondResponse.Message.Text);
+        Assert.Equal(response.Text, secondResponse.Text);
         Assert.Equal(2, functionCallCount);
         Assert.Equal(2, llmCallCount!.CallCount);
     }
@@ -491,7 +514,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         var llmCallCount = chatClient.GetService<CallCountingChatClient>();
         var message = new ChatMessage(ChatRole.User, "What is the temperature?");
         var response = await chatClient.GetResponseAsync([message]);
-        Assert.Contains("81", response.Message.Text);
+        Assert.Contains("81", response.Text);
 
         // First LLM call tells us to call the function, second deals with the result
         Assert.Equal(1, functionCallCount);
@@ -500,7 +523,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         // Second time, the first call to the LLM don't happen, but the function is called again,
         // and since its output now differs, we no longer hit the cache so the second LLM call does happen
         var secondResponse = await chatClient.GetResponseAsync([message]);
-        Assert.Contains("82", secondResponse.Message.Text);
+        Assert.Contains("82", secondResponse.Text);
         Assert.Equal(2, functionCallCount);
         Assert.Equal(3, llmCallCount!.CallCount);
     }

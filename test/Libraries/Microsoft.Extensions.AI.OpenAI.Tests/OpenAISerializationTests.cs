@@ -370,23 +370,19 @@ public static partial class OpenAISerializationTests
         Assert.NotNull(request.Options.Tools);
 
         AIFunction function = Assert.IsAssignableFrom<AIFunction>(Assert.Single(request.Options.Tools));
-        Assert.Equal("Gets the age of the specified person.", function.Metadata.Description);
-        Assert.Equal("GetPersonAge", function.Metadata.Name);
-        Assert.Equal("Strict", Assert.Single(function.Metadata.AdditionalProperties).Key);
-        Assert.Equal("Return parameter", function.Metadata.ReturnParameter.Description);
-        Assert.Equal("{}", Assert.IsType<JsonElement>(function.Metadata.ReturnParameter.Schema).GetRawText());
+        Assert.Equal("Gets the age of the specified person.", function.Description);
+        Assert.Equal("GetPersonAge", function.Name);
+        Assert.Equal("Strict", Assert.Single(function.AdditionalProperties).Key);
 
-        AIFunctionParameterMetadata parameter = Assert.Single(function.Metadata.Parameters);
-        Assert.Equal("personName", parameter.Name);
-        Assert.True(parameter.IsRequired);
+        Assert.Null(function.UnderlyingMethod);
 
-        JsonObject parametersSchema = Assert.IsType<JsonObject>(JsonNode.Parse(function.Metadata.Schema.GetProperty("properties").GetRawText()));
+        JsonObject parametersSchema = Assert.IsType<JsonObject>(JsonNode.Parse(function.JsonSchema.GetProperty("properties").GetRawText()));
         var parameterSchema = Assert.IsType<JsonObject>(Assert.Single(parametersSchema.Select(kvp => kvp.Value)));
         Assert.Equal(2, parameterSchema.Count);
         Assert.Equal("The person whose age is being requested", (string)parameterSchema["description"]!);
         Assert.Equal("string", (string)parameterSchema["type"]!);
 
-        Dictionary<string, object?> functionArgs = new() { ["personName"] = "John" };
+        AIFunctionArguments functionArgs = new() { ["personName"] = "John" };
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => function.InvokeAsync(functionArgs));
         Assert.Contains("does not support being invoked.", ex.Message);
     }
@@ -464,7 +460,7 @@ public static partial class OpenAISerializationTests
     }
 
     [Fact]
-    public static async Task SerializeResponse_SingleChoice()
+    public static async Task SerializeResponse()
     {
         ChatMessage message = new()
         {
@@ -548,6 +544,7 @@ public static partial class OpenAISerializationTests
                         "type": "function"
                       }
                     ],
+                    "annotations":[],
                     "role": "assistant",
                     "content": "Hello! How can I assist you today?"
                   },
@@ -560,28 +557,6 @@ public static partial class OpenAISerializationTests
               "created": 1727888631
             }
             """, result);
-    }
-
-    [Fact]
-    public static async Task SerializeResponse_ManyChoices_ThrowsNotSupportedException()
-    {
-        ChatMessage message1 = new()
-        {
-            Role = ChatRole.Assistant,
-            Text = "Hello! How can I assist you today?",
-        };
-
-        ChatMessage message2 = new()
-        {
-            Role = ChatRole.Assistant,
-            Text = "Hey there! How can I help?",
-        };
-
-        ChatResponse response = new([message1, message2]);
-
-        using MemoryStream stream = new();
-        var ex = await Assert.ThrowsAsync<NotSupportedException>(() => OpenAISerializationHelpers.SerializeAsync(stream, response));
-        Assert.Contains("multiple choices", ex.Message);
     }
 
     [Fact]
@@ -629,6 +604,7 @@ public static partial class OpenAISerializationTests
                 yield return new ChatResponseUpdate
                 {
                     ResponseId = "chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl",
+                    MessageId = "chatcmpl-DJ9a2DJw8892dsa8DJw8jdDsiwkai", // Won't appear in the output, as OpenAI has no representation of this
                     ModelId = "gpt-4o-mini-2024-07-18",
                     CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1_727_888_631),
                     Role = ChatRole.Assistant,
@@ -752,6 +728,9 @@ public static partial class OpenAISerializationTests
 
     private static void AssertJsonEqual(string expected, string actual)
     {
+        expected = NormalizeNewLines(expected);
+        actual = NormalizeNewLines(actual);
+
         JsonNode? expectedNode = JsonNode.Parse(expected);
         JsonNode? actualNode = JsonNode.Parse(actual);
 
@@ -761,7 +740,7 @@ public static partial class OpenAISerializationTests
             // normal form strings for better reporting.
             expected = expectedNode?.ToJsonString() ?? "null";
             actual = actualNode?.ToJsonString() ?? "null";
-            Assert.Equal(expected.NormalizeNewLines(), actual.NormalizeNewLines());
+            Assert.Fail($"Expected:{Environment.NewLine}{expected}{Environment.NewLine}Actual:{Environment.NewLine}{actual}");
         }
     }
 

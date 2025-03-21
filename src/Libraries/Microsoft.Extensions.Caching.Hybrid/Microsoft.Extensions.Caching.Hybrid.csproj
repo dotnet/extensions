@@ -24,9 +24,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Stage>dev</Stage>
-    <StageDevDiagnosticId>EXTEXP0018</StageDevDiagnosticId>
-    <MinCodeCoverage>86</MinCodeCoverage>
+    <Stage>normal</Stage>
+    <MinCodeCoverage>82</MinCodeCoverage>
     <MinMutationScore>50</MinMutationScore>
     <Workstream>Fundamentals</Workstream>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>

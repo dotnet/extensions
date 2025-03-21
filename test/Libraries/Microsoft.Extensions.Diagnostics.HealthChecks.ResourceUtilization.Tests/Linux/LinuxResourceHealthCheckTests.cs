@@ -183,7 +183,10 @@ public class LinuxResourceHealthCheckTests
         };
 
         var options = Microsoft.Extensions.Options.Options.Create(checkOptions);
-        using var healthCheck = new ResourceUtilizationHealthCheck(options, dataTracker.Object);
+        using var healthCheck = new ResourceUtilizationHealthCheck(
+            options,
+            dataTracker.Object,
+            Microsoft.Extensions.Options.Options.Create(new ResourceMonitoringOptions()));
 
         // Act
         fakeClock.Advance(TimeSpan.FromMilliseconds(1));

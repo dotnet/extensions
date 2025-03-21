@@ -31,7 +31,7 @@ public sealed class ResourceMonitoringExtensionsTests
     }
 
     [ConditionalFact]
-    public void AddResourceUtilization_AddsResourceMonitoringService_ToServicesCollection()
+    public void AddsResourceMonitoringService_ToServicesCollection()
     {
         using var provider = new ServiceCollection()
             .AddLogging()
@@ -51,7 +51,7 @@ public sealed class ResourceMonitoringExtensionsTests
     }
 
     [ConditionalFact]
-    public void AddResourceUtilization_AddsResourceMonitoringService_ToServicesCollection_NoArgs()
+    public void AddsResourceMonitoringService_ToServicesCollection_NoArgs()
     {
         using var provider = new ServiceCollection()
             .AddLogging()
@@ -67,7 +67,7 @@ public sealed class ResourceMonitoringExtensionsTests
     }
 
     [ConditionalFact]
-    public void AddResourceUtilization_AddsResourceMonitoringService_AsHostedService()
+    public void AddsResourceMonitoringService_AsHostedService()
     {
         using var provider = new ServiceCollection()
             .AddLogging()
@@ -114,7 +114,7 @@ public sealed class ResourceMonitoringExtensionsTests
     }
 
     [ConditionalFact]
-    public void ConfigureTracker_GivenOptionsDelegate_InitializeTrackerWithOptionsProperly()
+    public void ConfigureMonitor_GivenOptionsDelegate_InitializeTrackerWithOptionsProperly()
     {
         const int SamplingWindowValue = 3;
         const int CalculationPeriodValue = 2;
@@ -142,7 +142,7 @@ public sealed class ResourceMonitoringExtensionsTests
     }
 
     [ConditionalFact]
-    public void ConfigureTracker_GivenIConfigurationSection_InitializeTrackerWithOptionsProperly()
+    public void ConfigureMonitor_GivenIConfigurationSection_InitializeTrackerWithOptionsProperly()
     {
         const int SamplingWindowValue = 3;
         const int CalculationPeriod = 2;

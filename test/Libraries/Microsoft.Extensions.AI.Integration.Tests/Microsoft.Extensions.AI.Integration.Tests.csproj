@@ -31,6 +31,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Options" />
     <PackageReference Include="Microsoft.ML.Tokenizers" />
+    <PackageReference Include="Microsoft.ML.Tokenizers.Data.O200kBase" />
     <PackageReference Include="OpenTelemetry.Exporter.InMemory" />
     <PackageReference Include="System.Numerics.Tensors" />
   </ItemGroup>

@@ -81,6 +81,10 @@ public class ResourceHealthCheckExtensionsTests
 
         IResourceMonitor? resourceMonitor = serviceProvider.GetService<IResourceMonitor>();
         Assert.NotNull(resourceMonitor);
+
+        // check Resource Monitoring Options:
+        var resourceMonitoringOptions = serviceProvider.GetRequiredService<IOptions<ResourceMonitoringOptions>>().Value;
+        Assert.NotNull(resourceMonitoringOptions);
     }
 
     [ConditionalFact]
@@ -522,7 +526,16 @@ public class ResourceHealthCheckExtensionsTests
         };
 
         var options = Microsoft.Extensions.Options.Options.Create(checkOptions);
-        using var healthCheck = new ResourceUtilizationHealthCheck(options, dataTracker.Object);
+#if !NETFRAMEWORK
+        using var healthCheck = new ResourceUtilizationHealthCheck(
+            options,
+            dataTracker.Object,
+            Microsoft.Extensions.Options.Options.Create(new ResourceMonitoringOptions()));
+#else
+        using var healthCheck = new ResourceUtilizationHealthCheck(
+            options,
+            dataTracker.Object);
+#endif
 
         // Act
         fakeClock.Advance(TimeSpan.FromMilliseconds(1));
