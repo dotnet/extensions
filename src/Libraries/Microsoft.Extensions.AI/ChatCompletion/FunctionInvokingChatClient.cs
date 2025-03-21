@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -592,7 +593,15 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             consecutiveErrorCount++;
             if (consecutiveErrorCount > _maximumConsecutiveErrorsPerRequest)
             {
-                throw new AggregateException(allExceptions);
+                var allExceptionsArray = allExceptions.ToArray();
+                if (allExceptionsArray.Length == 1)
+                {
+                    ExceptionDispatchInfo.Capture(allExceptionsArray[0]).Throw();
+                }
+                else
+                {
+                    throw new AggregateException(allExceptionsArray);
+                }
             }
         }
         else

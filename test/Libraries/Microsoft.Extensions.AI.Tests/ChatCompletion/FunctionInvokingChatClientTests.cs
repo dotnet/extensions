@@ -271,23 +271,23 @@ public class FunctionInvokingChatClientTests
             new ChatMessage(ChatRole.User, "hello"),
 
             // A single failure isn't enough to stop the cycle
-            ..CreateIterationPlan(ref callIndex, true, false),
+            ..CreateFunctionCallIterationPlan(ref callIndex, true, false),
 
             // Now NumConsecutiveErrors = 1
             // We can reset the number of consecutive errors by having a successful iteration
-            ..CreateIterationPlan(ref callIndex, false, false, false),
+            ..CreateFunctionCallIterationPlan(ref callIndex, false, false, false),
 
             // Now NumConsecutiveErrors = 0
             // Any failure within an iteration causes the whole iteration to be treated as failed
-            ..CreateIterationPlan(ref callIndex, false, true, false),
+            ..CreateFunctionCallIterationPlan(ref callIndex, false, true, false),
 
             // Now NumConsecutiveErrors = 1
             // Even if several calls in the same iteration fail, that only counts as a single iteration having failed, so won't exceed the limit yet
-            ..CreateIterationPlan(ref callIndex, true, true, true),
+            ..CreateFunctionCallIterationPlan(ref callIndex, true, true, true),
 
             // Now NumConsecutiveErrors = 2
             // Any more failures will now exceed the limit
-            ..CreateIterationPlan(ref callIndex, true, true),
+            ..CreateFunctionCallIterationPlan(ref callIndex, true, true),
         ];
 
         var ex = await Assert.ThrowsAsync<AggregateException>(() =>
@@ -301,23 +301,64 @@ public class FunctionInvokingChatClientTests
         Assert.Equal(2, ex.InnerExceptions.Count);
         Assert.Equal("Exception from call 11", Assert.IsType<InvalidTimeZoneException>(ex.InnerExceptions[0]).Message);
         Assert.Equal("Exception from call 12", Assert.IsType<InvalidTimeZoneException>(ex.InnerExceptions[1]).Message);
+    }
 
-        static IEnumerable<ChatMessage> CreateIterationPlan(ref int callIndex, params bool[] shouldThrow)
-        {
-            var assistantMessage = new ChatMessage(ChatRole.Assistant, []);
-            var toolMessage = new ChatMessage(ChatRole.Tool, []);
-
-            foreach (var callShouldThrow in shouldThrow)
+    [Fact]
+    public async Task CanFailOnFirstException()
+    {
+        Func<ChatClientBuilder, ChatClientBuilder> configurePipeline = pipeline => pipeline
+            .UseFunctionInvocation(configure: functionInvokingChatClient =>
             {
-                var thisCallIndex = callIndex++;
-                var callId = $"callId{thisCallIndex}";
-                assistantMessage.Contents.Add(new FunctionCallContent(callId, "Func",
-                    arguments: new Dictionary<string, object?> { { "shouldThrow", callShouldThrow }, { "callIndex", thisCallIndex } }));
-                toolMessage.Contents.Add(new FunctionResultContent(callId, result: callShouldThrow ? "Error: Function failed." : "Success"));
-            }
+                functionInvokingChatClient.MaximumConsecutiveErrorsPerRequest = 0;
+            });
 
-            return [assistantMessage, toolMessage];
+        var callCount = 0;
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                AIFunctionFactory.Create(() =>
+                {
+                    callCount++;
+                    throw new InvalidTimeZoneException($"It failed");
+                }, "Func"),
+            ]
+        };
+
+        var callIndex = 0;
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            ..CreateFunctionCallIterationPlan(ref callIndex, true),
+        ];
+
+        var ex = await Assert.ThrowsAsync<InvalidTimeZoneException>(() =>
+            InvokeAndAssertAsync(options, plan, configurePipeline: configurePipeline));
+        Assert.Equal("It failed", ex.Message);
+        Assert.Equal(1, callCount);
+        callCount = 0;
+
+        ex = await Assert.ThrowsAsync<InvalidTimeZoneException>(() =>
+            InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configurePipeline));
+        Assert.Equal("It failed", ex.Message);
+        Assert.Equal(1, callCount);
+    }
+
+    private static IEnumerable<ChatMessage> CreateFunctionCallIterationPlan(ref int callIndex, params bool[] shouldThrow)
+    {
+        var assistantMessage = new ChatMessage(ChatRole.Assistant, []);
+        var toolMessage = new ChatMessage(ChatRole.Tool, []);
+
+        foreach (var callShouldThrow in shouldThrow)
+        {
+            var thisCallIndex = callIndex++;
+            var callId = $"callId{thisCallIndex}";
+            assistantMessage.Contents.Add(new FunctionCallContent(callId, "Func",
+                arguments: new Dictionary<string, object?> { { "shouldThrow", callShouldThrow }, { "callIndex", thisCallIndex } }));
+            toolMessage.Contents.Add(new FunctionResultContent(callId, result: callShouldThrow ? "Error: Function failed." : "Success"));
         }
+
+        return [assistantMessage, toolMessage];
     }
 
     [Fact]
