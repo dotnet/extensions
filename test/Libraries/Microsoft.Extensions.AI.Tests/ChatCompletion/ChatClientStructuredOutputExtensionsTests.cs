@@ -176,7 +176,10 @@ public class ChatClientStructuredOutputExtensionsTests
                           "type": "integer"
                         }
                       },
-                      "additionalProperties": false
+                      "additionalProperties": false,
+                      "required": [
+                        "data"
+                      ]
                     }
                     """, responseFormat.Schema.ToString());
                 return Task.FromResult(expectedResponse);
