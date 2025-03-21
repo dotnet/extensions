@@ -528,11 +528,13 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
         Debug.Assert(functionCallContents.Count > 0, "Expecteded at least one function call.");
 
+        var captureCurrentIterationExceptions = consecutiveErrorCount < _maximumConsecutiveErrorsPerRequest;
+
         // Process all functions. If there's more than one and concurrent invocation is enabled, do so in parallel.
         if (functionCallContents.Count == 1)
         {
             FunctionInvocationResult result = await ProcessFunctionCallAsync(
-                messages, options, functionCallContents, iteration, 0, cancellationToken).ConfigureAwait(false);
+                messages, options, functionCallContents, iteration, 0, captureCurrentIterationExceptions, cancellationToken).ConfigureAwait(false);
 
             IList<ChatMessage> added = CreateResponseMessages([result]);
             ThrowIfNoFunctionResultsAdded(added);
@@ -548,11 +550,12 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             if (AllowConcurrentInvocation)
             {
                 // Schedule the invocation of every function.
+                // In this case we always capture exceptions because the ordering is nondeterministic
                 results = await Task.WhenAll(
                     from i in Enumerable.Range(0, functionCallContents.Count)
                     select Task.Run(() => ProcessFunctionCallAsync(
                         messages, options, functionCallContents,
-                        iteration, i, cancellationToken))).ConfigureAwait(false);
+                        iteration, i, captureExceptions: true, cancellationToken))).ConfigureAwait(false);
             }
             else
             {
@@ -562,7 +565,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 {
                     results[i] = await ProcessFunctionCallAsync(
                         messages, options, functionCallContents,
-                        iteration, i, cancellationToken).ConfigureAwait(false);
+                        iteration, i, captureCurrentIterationExceptions, cancellationToken).ConfigureAwait(false);
                 }
             }
 
@@ -627,11 +630,12 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <param name="callContents">The function call contents representing all the functions being invoked.</param>
     /// <param name="iteration">The iteration number of how many roundtrips have been made to the inner client.</param>
     /// <param name="functionCallIndex">The 0-based index of the function being called out of <paramref name="callContents"/>.</param>
+    /// <param name="captureExceptions">If true, handles function-invocation exceptions by returning a value with <see cref="FunctionInvocationStatus.Exception"/>. Otherwise, rethrows.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>A value indicating how the caller should proceed.</returns>
     private async Task<FunctionInvocationResult> ProcessFunctionCallAsync(
         List<ChatMessage> messages, ChatOptions options, List<FunctionCallContent> callContents,
-        int iteration, int functionCallIndex, CancellationToken cancellationToken)
+        int iteration, int functionCallIndex, bool captureExceptions, CancellationToken cancellationToken)
     {
         var callContent = callContents[functionCallIndex];
 
@@ -663,6 +667,11 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         }
         catch (Exception e) when (!cancellationToken.IsCancellationRequested)
         {
+            if (!captureExceptions)
+            {
+                throw;
+            }
+
             return new(
                 shouldTerminate: false,
                 FunctionInvocationStatus.Exception,

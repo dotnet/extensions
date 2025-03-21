@@ -242,13 +242,16 @@ public class FunctionInvokingChatClientTests
         Assert.Equal(maxIterations, actualCallCount);
     }
 
-    [Fact]
-    public async Task ContinuesWithFailingCallsUntilMaximumConsecutiveErrors()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ContinuesWithFailingCallsUntilMaximumConsecutiveErrors(bool allowConcurrentInvocation)
     {
         Func<ChatClientBuilder, ChatClientBuilder> configurePipeline = pipeline => pipeline
             .UseFunctionInvocation(configure: functionInvokingChatClient =>
             {
                 functionInvokingChatClient.MaximumConsecutiveErrorsPerRequest = 2;
+                functionInvokingChatClient.AllowConcurrentInvocation = allowConcurrentInvocation;
             });
 
         var options = new ChatOptions
@@ -290,36 +293,54 @@ public class FunctionInvokingChatClientTests
             ..CreateFunctionCallIterationPlan(ref callIndex, true, true),
         ];
 
-        var ex = await Assert.ThrowsAsync<AggregateException>(() =>
-            InvokeAndAssertAsync(options, plan, configurePipeline: configurePipeline));
-        Assert.Equal(2, ex.InnerExceptions.Count);
-        Assert.Equal("Exception from call 11", Assert.IsType<InvalidTimeZoneException>(ex.InnerExceptions[0]).Message);
-        Assert.Equal("Exception from call 12", Assert.IsType<InvalidTimeZoneException>(ex.InnerExceptions[1]).Message);
+        if (allowConcurrentInvocation)
+        {
+            // With concurrent invocation, we always make all the calls in the iteration
+            // and combine their exceptions into an AggregateException
+            var ex = await Assert.ThrowsAsync<AggregateException>(() =>
+                InvokeAndAssertAsync(options, plan, configurePipeline: configurePipeline));
+            Assert.Equal(2, ex.InnerExceptions.Count);
+            Assert.Equal("Exception from call 11", ex.InnerExceptions[0].Message);
+            Assert.Equal("Exception from call 12", ex.InnerExceptions[1].Message);
 
-        ex = await Assert.ThrowsAsync<AggregateException>(() =>
-            InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configurePipeline));
-        Assert.Equal(2, ex.InnerExceptions.Count);
-        Assert.Equal("Exception from call 11", Assert.IsType<InvalidTimeZoneException>(ex.InnerExceptions[0]).Message);
-        Assert.Equal("Exception from call 12", Assert.IsType<InvalidTimeZoneException>(ex.InnerExceptions[1]).Message);
+            ex = await Assert.ThrowsAsync<AggregateException>(() =>
+                InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configurePipeline));
+            Assert.Equal(2, ex.InnerExceptions.Count);
+            Assert.Equal("Exception from call 11", ex.InnerExceptions[0].Message);
+            Assert.Equal("Exception from call 12", ex.InnerExceptions[1].Message);
+        }
+        else
+        {
+            // With serial invocation, we allow the threshold-crossing exception to propagate
+            // directly and terminate the iteration
+            var ex = await Assert.ThrowsAsync<InvalidTimeZoneException>(() =>
+                InvokeAndAssertAsync(options, plan, configurePipeline: configurePipeline));
+            Assert.Equal("Exception from call 11", ex.Message);
+
+            ex = await Assert.ThrowsAsync<InvalidTimeZoneException>(() =>
+                InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configurePipeline));
+            Assert.Equal("Exception from call 11", ex.Message);
+        }
     }
 
-    [Fact]
-    public async Task CanFailOnFirstException()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CanFailOnFirstException(bool allowConcurrentInvocation)
     {
         Func<ChatClientBuilder, ChatClientBuilder> configurePipeline = pipeline => pipeline
             .UseFunctionInvocation(configure: functionInvokingChatClient =>
             {
                 functionInvokingChatClient.MaximumConsecutiveErrorsPerRequest = 0;
+                functionInvokingChatClient.AllowConcurrentInvocation = allowConcurrentInvocation;
             });
 
-        var callCount = 0;
         var options = new ChatOptions
         {
             Tools =
             [
                 AIFunctionFactory.Create(() =>
                 {
-                    callCount++;
                     throw new InvalidTimeZoneException($"It failed");
                 }, "Func"),
             ]
@@ -332,16 +353,15 @@ public class FunctionInvokingChatClientTests
             ..CreateFunctionCallIterationPlan(ref callIndex, true),
         ];
 
+        // Regardless of AllowConcurrentInvocation, if there's only a single exception,
+        // we don't wrap it in an AggregateException
         var ex = await Assert.ThrowsAsync<InvalidTimeZoneException>(() =>
             InvokeAndAssertAsync(options, plan, configurePipeline: configurePipeline));
         Assert.Equal("It failed", ex.Message);
-        Assert.Equal(1, callCount);
-        callCount = 0;
 
         ex = await Assert.ThrowsAsync<InvalidTimeZoneException>(() =>
             InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configurePipeline));
         Assert.Equal("It failed", ex.Message);
-        Assert.Equal(1, callCount);
     }
 
     private static IEnumerable<ChatMessage> CreateFunctionCallIterationPlan(ref int callIndex, params bool[] shouldThrow)
