@@ -65,6 +65,14 @@ internal static class ResourceUtilizationInstruments
     /// The type of an instrument is <see cref="System.Diagnostics.Metrics.ObservableUpDownCounter{T}"/>.
     /// </remarks>
     public const string SystemNetworkConnections = "system.network.connections";
+
+    /// <summary>
+    /// The name of an instrument to retrieve disk bytes transferred.
+    /// </summary>
+    /// <remarks>
+    /// The type of an instrument is <see cref="System.Diagnostics.Metrics.ObservableCounter{T}"/>.
+    /// </remarks>
+    public const string SystemDiskIo = "system.disk.io";
 }
 
 #pragma warning disable CS1574

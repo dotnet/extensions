@@ -11,6 +11,7 @@ using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Network;
 
 #endif
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows;
+using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Disk;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Network;
 using Microsoft.Shared.DiagnosticIds;
@@ -96,6 +97,9 @@ public static class ResourceMonitoringServiceCollectionExtensions
         _ = builder.Services
             .AddActivatedSingleton<WindowsNetworkMetrics>()
             .AddActivatedSingleton<ITcpStateInfoProvider, WindowsTcpStateInfo>();
+
+        _ = builder.Services
+            .AddActivatedSingleton<WindowsDiskMetrics>();
 
         return builder;
     }

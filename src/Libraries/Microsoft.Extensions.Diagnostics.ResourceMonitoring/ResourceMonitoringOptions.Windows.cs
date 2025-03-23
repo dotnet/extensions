@@ -33,4 +33,10 @@ public partial class ResourceMonitoringOptions
     /// </remarks>
     [Experimental(diagnosticId: DiagnosticIds.Experiments.ResourceMonitoring, UrlFormat = DiagnosticIds.UrlFormat)]
     public bool UseZeroToOneRangeForMetrics { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether disk I/O metrics should be enabled.
+    /// </summary>
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.ResourceMonitoring, UrlFormat = DiagnosticIds.UrlFormat)]
+    public bool EnabledDiskIoMetrics { get; set; }
 }
