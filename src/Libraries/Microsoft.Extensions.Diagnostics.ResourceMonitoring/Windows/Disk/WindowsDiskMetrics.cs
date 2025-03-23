@@ -41,6 +41,8 @@ internal sealed class WindowsDiskMetrics
 
         InitializeDiskCounters();
 
+        // The metric is aligned with
+        // https://github.com/open-telemetry/semantic-conventions/blob/main/docs/system/system-metrics.md#metric-systemdiskio
         _ = meter.CreateObservableCounter(
             ResourceUtilizationInstruments.SystemDiskIo,
             GetDiskIoGetMeasurements,
