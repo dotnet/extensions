@@ -34,7 +34,7 @@ internal sealed class WindowsDiskMetrics
 
     public WindowsDiskMetrics(IMeterFactory meterFactory, IOptions<ResourceMonitoringOptions> options)
     {
-        if (!options.Value.EnabledDiskIoMetrics)
+        if (!options.Value.EnableDiskIoMetrics)
         {
             return;
         }

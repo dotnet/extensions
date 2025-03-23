@@ -38,5 +38,5 @@ public partial class ResourceMonitoringOptions
     /// Gets or sets a value indicating whether disk I/O metrics should be enabled.
     /// </summary>
     [Experimental(diagnosticId: DiagnosticIds.Experiments.ResourceMonitoring, UrlFormat = DiagnosticIds.UrlFormat)]
-    public bool EnabledDiskIoMetrics { get; set; }
+    public bool EnableDiskIoMetrics { get; set; }
 }
