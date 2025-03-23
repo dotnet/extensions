@@ -52,7 +52,7 @@ internal sealed class WindowsDiskMetrics
         // https://github.com/open-telemetry/semantic-conventions/blob/main/docs/system/system-metrics.md#metric-systemdiskio
         _ = meter.CreateObservableCounter(
             ResourceUtilizationInstruments.SystemDiskIo,
-            GetDiskIoGetMeasurements,
+            GetDiskIoMeasurements,
             unit: "By",
             description: "Disk bytes transferred");
     }
@@ -78,7 +78,7 @@ internal sealed class WindowsDiskMetrics
         }
     }
 
-    private IEnumerable<Measurement<long>> GetDiskIoGetMeasurements()
+    private IEnumerable<Measurement<long>> GetDiskIoMeasurements()
     {
         List<Measurement<long>> measurements = [];
 
