@@ -23,13 +23,11 @@ internal sealed class WindowsDiskMetrics
 
     private const string DeviceKey = "system.device";
 
-    private const string DiskWriteBytesCounter = "Disk Write Bytes/sec";
+    private const string DirectionKey = "disk.io.direction";
 
-    private const string DiskReadBytesCounter = "Disk Read Bytes/sec";
+    private static readonly KeyValuePair<string, object?> _directionReadTag = new(DirectionKey, "read");
 
-    private static readonly KeyValuePair<string, object?> _directionReadTag = new("disk.io.direction", "read");
-
-    private static readonly KeyValuePair<string, object?> _directionWriteTag = new("disk.io.direction", "write");
+    private static readonly KeyValuePair<string, object?> _directionWriteTag = new(DirectionKey, "write");
 
     private readonly Dictionary<string, WindowsDiskPerSecondPerfCounters> _perSecondCounters = new();
 
@@ -56,6 +54,14 @@ internal sealed class WindowsDiskMetrics
             GetDiskIoMeasurements,
             unit: "By",
             description: "Disk bytes transferred");
+
+        // The metric is aligned with
+        // https://github.com/open-telemetry/semantic-conventions/blob/main/docs/system/system-metrics.md#metric-systemdiskoperations
+        _ = meter.CreateObservableCounter(
+            ResourceUtilizationInstruments.SystemDiskOperations,
+            GetDiskOperationMeasurements,
+            unit: "{operation}",
+            description: "Disk operations");
     }
 
     private void InitializeDiskCounters()
@@ -83,19 +89,44 @@ internal sealed class WindowsDiskMetrics
     {
         List<Measurement<long>> measurements = [];
 
-        if (_perSecondCounters.TryGetValue(DiskWriteBytesCounter, out WindowsDiskPerSecondPerfCounters? diskWriteBytesPerfCounter))
+        if (_perSecondCounters.TryGetValue(WindowsDiskPerfCounterNames.DiskWriteBytesCounter, out WindowsDiskPerSecondPerfCounters? perSecondWriteCounter))
         {
-            diskWriteBytesPerfCounter.UpdateDiskCounters();
-            foreach (KeyValuePair<string, long> pair in diskWriteBytesPerfCounter.TotalCountDict)
+            perSecondWriteCounter.UpdateDiskCounters();
+            foreach (KeyValuePair<string, long> pair in perSecondWriteCounter.TotalCountDict)
             {
                 measurements.Add(new Measurement<long>(pair.Value, new TagList { _directionWriteTag, new(DeviceKey, pair.Key) }));
             }
         }
 
-        if (_perSecondCounters.TryGetValue(DiskReadBytesCounter, out WindowsDiskPerSecondPerfCounters? diskReadBytesPerfCounter))
+        if (_perSecondCounters.TryGetValue(WindowsDiskPerfCounterNames.DiskReadBytesCounter, out WindowsDiskPerSecondPerfCounters? perSecondReadCounter))
         {
-            diskReadBytesPerfCounter.UpdateDiskCounters();
-            foreach (KeyValuePair<string, long> pair in diskReadBytesPerfCounter.TotalCountDict)
+            perSecondReadCounter.UpdateDiskCounters();
+            foreach (KeyValuePair<string, long> pair in perSecondReadCounter.TotalCountDict)
+            {
+                measurements.Add(new Measurement<long>(pair.Value, new TagList { _directionReadTag, new(DeviceKey, pair.Key) }));
+            }
+        }
+
+        return measurements;
+    }
+
+    private IEnumerable<Measurement<long>> GetDiskOperationMeasurements()
+    {
+        List<Measurement<long>> measurements = [];
+
+        if (_perSecondCounters.TryGetValue(WindowsDiskPerfCounterNames.DiskWritesCounter, out WindowsDiskPerSecondPerfCounters? perSecondWriteCounter))
+        {
+            perSecondWriteCounter.UpdateDiskCounters();
+            foreach (KeyValuePair<string, long> pair in perSecondWriteCounter.TotalCountDict)
+            {
+                measurements.Add(new Measurement<long>(pair.Value, new TagList { _directionWriteTag, new(DeviceKey, pair.Key) }));
+            }
+        }
+
+        if (_perSecondCounters.TryGetValue(WindowsDiskPerfCounterNames.DiskReadsCounter, out WindowsDiskPerSecondPerfCounters? perSecondReadCounter))
+        {
+            perSecondReadCounter.UpdateDiskCounters();
+            foreach (KeyValuePair<string, long> pair in perSecondReadCounter.TotalCountDict)
             {
                 measurements.Add(new Measurement<long>(pair.Value, new TagList { _directionReadTag, new(DeviceKey, pair.Key) }));
             }
@@ -106,7 +137,9 @@ internal sealed class WindowsDiskMetrics
 
     private static readonly List<string> _perSecondPerformanceCounters =
     [
-        DiskWriteBytesCounter,
-        DiskReadBytesCounter,
+        WindowsDiskPerfCounterNames.DiskWriteBytesCounter,
+        WindowsDiskPerfCounterNames.DiskReadBytesCounter,
+        WindowsDiskPerfCounterNames.DiskWritesCounter,
+        WindowsDiskPerfCounterNames.DiskReadsCounter,
     ];
 }

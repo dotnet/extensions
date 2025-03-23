@@ -73,6 +73,14 @@ internal static class ResourceUtilizationInstruments
     /// The type of an instrument is <see cref="System.Diagnostics.Metrics.ObservableCounter{T}"/>.
     /// </remarks>
     public const string SystemDiskIo = "system.disk.io";
+
+    /// <summary>
+    /// The name of an instrument to retrieve disk operations.
+    /// </summary>
+    /// <remarks>
+    /// The type of an instrument is <see cref="System.Diagnostics.Metrics.ObservableCounter{T}"/>.
+    /// </remarks>
+    public const string SystemDiskOperations = "system.disk.operations";
 }
 
 #pragma warning disable CS1574
