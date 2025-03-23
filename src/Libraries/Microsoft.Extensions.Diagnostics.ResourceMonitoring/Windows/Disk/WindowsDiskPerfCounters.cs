@@ -20,16 +20,16 @@ internal sealed class WindowsDiskPerfCounters
 
     private readonly List<PerformanceCounter> _counters = [];
 
-    private PerformanceCounterCategory _category;
+    private readonly PerformanceCounterCategory _category;
 
-    private string _counter;
+    private readonly string _counterName;
 
     private long _lastTimestamp;
 
-    internal WindowsDiskPerfCounters(PerformanceCounterCategory category, string counter)
+    internal WindowsDiskPerfCounters(PerformanceCounterCategory category, string counterName)
     {
         _category = category;
-        _counter = counter;
+        _counterName = counterName;
     }
 
     internal void InitializeDiskCounters()
@@ -44,7 +44,7 @@ internal sealed class WindowsDiskPerfCounters
             }
 
             // Create counters for each disk
-            _counters.Add(new PerformanceCounter(_category.CategoryName, _counter, instance));
+            _counters.Add(new PerformanceCounter(_category.CategoryName, _counterName, instance));
             TotalCountDict.Add(instance, 0);
         }
 
