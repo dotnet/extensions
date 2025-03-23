@@ -7,8 +7,15 @@ using System.Diagnostics.Metrics;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Instruments;
 
+#if NETCOREAPP
+using System.Runtime.Versioning;
+#endif
+
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Disk;
 
+#if NETCOREAPP
+[SupportedOSPlatform("windows")]
+#endif
 internal sealed class WindowsDiskMetrics
 {
     private const string LogicalDiskCategory = "LogicalDisk";
@@ -53,7 +60,6 @@ internal sealed class WindowsDiskMetrics
     private void InitializeDiskCounters()
     {
         var diskCategory = new PerformanceCounterCategory(LogicalDiskCategory);
-        string[]? instanceNames = diskCategory.GetInstanceNames();
 
         foreach (string counterName in _performanceCounters)
         {

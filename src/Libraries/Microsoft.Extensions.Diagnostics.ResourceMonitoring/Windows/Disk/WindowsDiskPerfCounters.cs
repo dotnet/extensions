@@ -5,9 +5,16 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
+#if NETCOREAPP
+using System.Runtime.Versioning;
+#endif
+
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Disk;
 
-internal class WindowsDiskPerfCounters
+#if NETCOREAPP
+[SupportedOSPlatform("windows")]
+#endif
+internal sealed class WindowsDiskPerfCounters
 {
     internal Dictionary<string, long> TotalCountDict { get; } = [];
 
