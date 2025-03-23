@@ -31,7 +31,7 @@ internal sealed class WindowsDiskMetrics
 
     private static readonly KeyValuePair<string, object?> _directionWriteTag = new("disk.io.direction", "write");
 
-    private readonly Dictionary<string, WindowsDiskPerfCounters> _perfCounters = new();
+    private readonly Dictionary<string, WindowsDiskPerSecondPerfCounters> _perSecondCounters = new();
 
     public WindowsDiskMetrics(IMeterFactory meterFactory, IOptions<ResourceMonitoringOptions> options)
     {
@@ -62,13 +62,13 @@ internal sealed class WindowsDiskMetrics
     {
         var diskCategory = new PerformanceCounterCategory(LogicalDiskCategory);
 
-        foreach (string counterName in _performanceCounters)
+        foreach (string counterName in _perSecondPerformanceCounters)
         {
             try
             {
-                var diskPerfCounter = new WindowsDiskPerfCounters(diskCategory, counterName);
+                var diskPerfCounter = new WindowsDiskPerSecondPerfCounters(diskCategory, counterName);
                 diskPerfCounter.InitializeDiskCounters();
-                _perfCounters.Add(counterName, diskPerfCounter);
+                _perSecondCounters.Add(counterName, diskPerfCounter);
             }
 #pragma warning disable CA1031
             catch (Exception ex)
@@ -83,7 +83,7 @@ internal sealed class WindowsDiskMetrics
     {
         List<Measurement<long>> measurements = [];
 
-        if (_perfCounters.TryGetValue(DiskWriteBytesCounter, out WindowsDiskPerfCounters? diskWriteBytesPerfCounter))
+        if (_perSecondCounters.TryGetValue(DiskWriteBytesCounter, out WindowsDiskPerSecondPerfCounters? diskWriteBytesPerfCounter))
         {
             diskWriteBytesPerfCounter.UpdateDiskCounters();
             foreach (KeyValuePair<string, long> pair in diskWriteBytesPerfCounter.TotalCountDict)
@@ -92,7 +92,7 @@ internal sealed class WindowsDiskMetrics
             }
         }
 
-        if (_perfCounters.TryGetValue(DiskReadBytesCounter, out WindowsDiskPerfCounters? diskReadBytesPerfCounter))
+        if (_perSecondCounters.TryGetValue(DiskReadBytesCounter, out WindowsDiskPerSecondPerfCounters? diskReadBytesPerfCounter))
         {
             diskReadBytesPerfCounter.UpdateDiskCounters();
             foreach (KeyValuePair<string, long> pair in diskReadBytesPerfCounter.TotalCountDict)
@@ -104,7 +104,7 @@ internal sealed class WindowsDiskMetrics
         return measurements;
     }
 
-    private static readonly List<string> _performanceCounters =
+    private static readonly List<string> _perSecondPerformanceCounters =
     [
         DiskWriteBytesCounter,
         DiskReadBytesCounter,

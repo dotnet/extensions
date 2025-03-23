@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Disk;
 #if NETCOREAPP
 [SupportedOSPlatform("windows")]
 #endif
-internal sealed class WindowsDiskPerfCounters
+internal sealed class WindowsDiskPerSecondPerfCounters
 {
     internal Dictionary<string, long> TotalCountDict { get; } = [];
 
@@ -26,7 +26,7 @@ internal sealed class WindowsDiskPerfCounters
 
     private long _lastTimestamp;
 
-    internal WindowsDiskPerfCounters(PerformanceCounterCategory category, string counterName)
+    internal WindowsDiskPerSecondPerfCounters(PerformanceCounterCategory category, string counterName)
     {
         _category = category;
         _counterName = counterName;
