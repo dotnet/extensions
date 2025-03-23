@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
@@ -70,10 +71,10 @@ internal sealed class WindowsDiskMetrics
                 _perfCounters.Add(counterName, diskPerfCounter);
             }
 #pragma warning disable CA1031
-            catch
+            catch (Exception ex)
 #pragma warning restore CA1031
             {
-                // ignored
+                Debug.WriteLine("Error initializing disk performance counter: " + ex.Message);
             }
         }
     }
