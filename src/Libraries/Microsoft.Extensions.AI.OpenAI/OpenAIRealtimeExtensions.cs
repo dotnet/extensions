@@ -52,6 +52,7 @@ public static class OpenAIRealtimeExtensions
     /// <param name="tools">The available tools.</param>
     /// <param name="detailedErrors">An optional flag specifying whether to disclose detailed exception information to the model. The default value is <see langword="false"/>.</param>
     /// <param name="jsonSerializerOptions">An optional <see cref="JsonSerializerOptions"/> that controls JSON handling.</param>
+    /// <param name="functionInvocationServices">An optional <see cref="IServiceProvider"/> to use for resolving services required by <see cref="AIFunction"/> instances being invoked.</param>
     /// <param name="cancellationToken">An optional <see cref="CancellationToken"/>.</param>
     /// <returns>A <see cref="Task"/> that represents the completion of processing, including invoking any asynchronous tools.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="session"/> is <see langword="null"/>.</exception>
@@ -63,6 +64,7 @@ public static class OpenAIRealtimeExtensions
         IReadOnlyList<AIFunction> tools,
         bool? detailedErrors = false,
         JsonSerializerOptions? jsonSerializerOptions = null,
+        IServiceProvider? functionInvocationServices = null,
         CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(session);
@@ -73,7 +75,7 @@ public static class OpenAIRealtimeExtensions
         {
             // If we need to call a tool to update the model, do so
             if (!string.IsNullOrEmpty(itemFinished.FunctionName)
-                && await itemFinished.GetFunctionCallOutputAsync(tools, detailedErrors, jsonSerializerOptions, cancellationToken).ConfigureAwait(false) is { } output)
+                && await itemFinished.GetFunctionCallOutputAsync(tools, detailedErrors, jsonSerializerOptions, functionInvocationServices, cancellationToken).ConfigureAwait(false) is { } output)
             {
                 await session.AddItemAsync(output, cancellationToken).ConfigureAwait(false);
             }
@@ -93,6 +95,7 @@ public static class OpenAIRealtimeExtensions
         IReadOnlyList<AIFunction> tools,
         bool? detailedErrors = false,
         JsonSerializerOptions? jsonSerializerOptions = null,
+        IServiceProvider? functionInvocationServices = null,
         CancellationToken cancellationToken = default)
     {
         if (!string.IsNullOrEmpty(update.FunctionName)
@@ -107,7 +110,7 @@ public static class OpenAIRealtimeExtensions
 
             try
             {
-                var result = await aiFunction.InvokeAsync(functionCallContent.Arguments, cancellationToken).ConfigureAwait(false);
+                var result = await aiFunction.InvokeAsync(new(functionCallContent.Arguments) { Services = functionInvocationServices }, cancellationToken).ConfigureAwait(false);
                 var resultJson = JsonSerializer.Serialize(result, jsonOptions.GetTypeInfo(typeof(object)));
                 return ConversationItem.CreateFunctionCallOutput(update.FunctionCallId, resultJson);
             }

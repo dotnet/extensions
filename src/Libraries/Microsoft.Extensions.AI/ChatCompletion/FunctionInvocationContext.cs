@@ -24,17 +24,34 @@ public sealed class FunctionInvocationContext
     private AIFunction _function = _nopFunction;
 
     /// <summary>The function call content information associated with this invocation.</summary>
-    private FunctionCallContent _callContent = new(string.Empty, _nopFunction.Name, EmptyReadOnlyDictionary<string, object?>.Instance);
+    private FunctionCallContent? _callContent;
+
+    /// <summary>The arguments used with the function.</summary>
+    private AIFunctionArguments? _arguments;
 
     /// <summary>Initializes a new instance of the <see cref="FunctionInvocationContext"/> class.</summary>
     public FunctionInvocationContext()
     {
     }
 
+    /// <summary>Gets or sets the AI function to be invoked.</summary>
+    public AIFunction Function
+    {
+        get => _function;
+        set => _function = Throw.IfNull(value);
+    }
+
+    /// <summary>Gets or sets the arguments associated with this invocation.</summary>
+    public AIFunctionArguments Arguments
+    {
+        get => _arguments ??= [];
+        set => _arguments = Throw.IfNull(value);
+    }
+
     /// <summary>Gets or sets the function call content information associated with this invocation.</summary>
     public FunctionCallContent CallContent
     {
-        get => _callContent;
+        get => _callContent ??= new(string.Empty, _nopFunction.Name, EmptyReadOnlyDictionary<string, object?>.Instance);
         set => _callContent = Throw.IfNull(value);
     }
 
@@ -47,13 +64,6 @@ public sealed class FunctionInvocationContext
 
     /// <summary>Gets or sets the chat options associated with the operation that initiated this function call request.</summary>
     public ChatOptions? Options { get; set; }
-
-    /// <summary>Gets or sets the AI function to be invoked.</summary>
-    public AIFunction Function
-    {
-        get => _function;
-        set => _function = Throw.IfNull(value);
-    }
 
     /// <summary>Gets or sets the number of this iteration with the underlying client.</summary>
     /// <remarks>

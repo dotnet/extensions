@@ -53,7 +53,7 @@ public class OllamaEmbeddingGeneratorTests
         var metadata = generator.GetService<EmbeddingGeneratorMetadata>();
         Assert.Equal("ollama", metadata?.ProviderName);
         Assert.Equal(endpoint, metadata?.ProviderUri);
-        Assert.Equal(model, metadata?.ModelId);
+        Assert.Equal(model, metadata?.DefaultModelId);
     }
 
     [Fact]
