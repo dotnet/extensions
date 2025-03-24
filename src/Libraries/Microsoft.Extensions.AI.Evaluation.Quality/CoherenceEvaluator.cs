@@ -31,7 +31,7 @@ namespace Microsoft.Extensions.AI.Evaluation.Quality;
 /// <b>GPT-4o</b>
 /// </para>
 /// </remarks>
-/// <related type="Article" href="/dotnet/ai/quickstarts/evaluate-ai-response">Evaluate a model's response</related>
+/// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/quickstarts/evaluate-ai-response">Evaluate a model's response.</related>
 public sealed class CoherenceEvaluator : SingleNumericMetricEvaluator
 {
     /// <summary>

@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.AI.Evaluation;
 /// <summary>
 /// A collection of one or more <see cref="EvaluationMetric"/>s that represent the result of an evaluation.
 /// </summary>
-/// <related type="Article" href="/dotnet/ai/quickstarts/evaluate-ai-response">Evaluate a model's response</related>
+/// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/quickstarts/evaluate-ai-response">Evaluate a model's response.</related>
 public sealed class EvaluationResult
 {
     /// <summary>

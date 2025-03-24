@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.AI;
 /// provided with a callback that could mutate the supplied options argument, and that should be avoided if using a singleton options instance.
 /// </para>
 /// </remarks>
-/// <related type="Article" href="/dotnet/ai/quickstarts/build-chat-app">Build an AI chat app with .NET</related>
+/// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/quickstarts/build-chat-app">Build an AI chat app with .NET.</related>
 public interface IChatClient : IDisposable
 {
     /// <summary>Sends chat messages and returns the response.</summary>
