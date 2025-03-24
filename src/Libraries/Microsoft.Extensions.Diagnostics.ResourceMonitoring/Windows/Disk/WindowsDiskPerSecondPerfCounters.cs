@@ -16,8 +16,6 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Disk;
 #endif
 internal sealed class WindowsDiskPerSecondPerfCounters
 {
-    internal Dictionary<string, long> TotalCountDict { get; } = [];
-
     private readonly List<PerformanceCounter> _counters = [];
 
     private readonly PerformanceCounterCategory _category;
@@ -31,6 +29,8 @@ internal sealed class WindowsDiskPerSecondPerfCounters
         _category = category;
         _counterName = counterName;
     }
+
+    internal Dictionary<string, long> TotalCountDict { get; } = [];
 
     internal void InitializeDiskCounters()
     {

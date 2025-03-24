@@ -20,14 +20,19 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Disk;
 internal sealed class WindowsDiskMetrics
 {
     private const string LogicalDiskCategory = "LogicalDisk";
-
     private const string DeviceKey = "system.device";
-
     private const string DirectionKey = "disk.io.direction";
 
     private static readonly KeyValuePair<string, object?> _directionReadTag = new(DirectionKey, "read");
-
     private static readonly KeyValuePair<string, object?> _directionWriteTag = new(DirectionKey, "write");
+
+    private static readonly List<string> _perSecondPerformanceCounters =
+    [
+        WindowsDiskPerfCounterNames.DiskWriteBytesCounter,
+        WindowsDiskPerfCounterNames.DiskReadBytesCounter,
+        WindowsDiskPerfCounterNames.DiskWritesCounter,
+        WindowsDiskPerfCounterNames.DiskReadsCounter,
+    ];
 
     private readonly Dictionary<string, WindowsDiskPerSecondPerfCounters> _perSecondCounters = new();
 
@@ -134,12 +139,4 @@ internal sealed class WindowsDiskMetrics
 
         return measurements;
     }
-
-    private static readonly List<string> _perSecondPerformanceCounters =
-    [
-        WindowsDiskPerfCounterNames.DiskWriteBytesCounter,
-        WindowsDiskPerfCounterNames.DiskReadBytesCounter,
-        WindowsDiskPerfCounterNames.DiskWritesCounter,
-        WindowsDiskPerfCounterNames.DiskReadsCounter,
-    ];
 }

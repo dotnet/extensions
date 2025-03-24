@@ -59,14 +59,6 @@ internal static class ResourceUtilizationInstruments
     public const string ProcessMemoryUtilization = "dotnet.process.memory.virtual.utilization";
 
     /// <summary>
-    /// The name of an instrument to retrieve network connections information.
-    /// </summary>
-    /// <remarks>
-    /// The type of an instrument is <see cref="System.Diagnostics.Metrics.ObservableUpDownCounter{T}"/>.
-    /// </remarks>
-    public const string SystemNetworkConnections = "system.network.connections";
-
-    /// <summary>
     /// The name of an instrument to retrieve disk bytes transferred.
     /// </summary>
     /// <remarks>
@@ -81,6 +73,14 @@ internal static class ResourceUtilizationInstruments
     /// The type of an instrument is <see cref="System.Diagnostics.Metrics.ObservableCounter{T}"/>.
     /// </remarks>
     public const string SystemDiskOperations = "system.disk.operations";
+
+    /// <summary>
+    /// The name of an instrument to retrieve network connections information.
+    /// </summary>
+    /// <remarks>
+    /// The type of an instrument is <see cref="System.Diagnostics.Metrics.ObservableUpDownCounter{T}"/>.
+    /// </remarks>
+    public const string SystemNetworkConnections = "system.network.connections";
 }
 
 #pragma warning disable CS1574
