@@ -227,7 +227,7 @@ public class FakeLogCollectorTests
         bool EndWaiting(FakeLogRecord record)
         {
             Interlocked.Increment(ref count);
-            testExecutionCustomLog.Enqueue("Checking if should end waiting #" + count);
+            testExecutionCustomLog.Enqueue("Checking if waiting should end #" + count);
             return count == testCaseData.EndWaitAtAttemptCount;
         }
 
@@ -251,7 +251,7 @@ public class FakeLogCollectorTests
             CancellationToken.None);
 
         testExecutionCustomLog.Enqueue("Right after starting the background action");
-        
+
         bool taskCancelled = false;
 
         try
@@ -285,7 +285,7 @@ public class FakeLogCollectorTests
                 "Started",
                 "Right after starting the background action",
                 $"{WaitingTscLogAttemptPrefix} #001",
-                "Checking if should end waiting #1",
+                "Checking if waiting should end #1",
                 "Finished waiting for the log",
                 $"{WaitingTscLogAttemptPrefix} #002",
                 $"{WaitingTscLogAttemptPrefix} #003",
@@ -300,9 +300,9 @@ public class FakeLogCollectorTests
                 "Started",
                 "Right after starting the background action",
                 $"{WaitingTscLogAttemptPrefix} #001",
-                "Checking if should end waiting #1",
+                "Checking if waiting should end #1",
                 $"{WaitingTscLogAttemptPrefix} #002",
-                "Checking if should end waiting #2",
+                "Checking if waiting should end #2",
                 "Finished waiting for the log",
                 $"{WaitingTscLogAttemptPrefix} #003",
                 "Background action has finished"
@@ -317,7 +317,7 @@ public class FakeLogCollectorTests
                 "Started",
                 "Right after starting the background action",
                 $"{WaitingTscLogAttemptPrefix} #001",
-                "Checking if should end waiting #1",
+                "Checking if waiting should end #1",
                 "Finished waiting for the log",
                 $"{WaitingTscLogAttemptPrefix} #002",
                 $"{WaitingTscLogAttemptPrefix} #003",
@@ -346,7 +346,7 @@ public class FakeLogCollectorTests
                 "Started",
                 "Right after starting the background action",
                 $"{WaitingTscLogAttemptPrefix} #001",
-                "Checking if should end waiting #1",
+                "Checking if waiting should end #1",
                 "Finished waiting for the log",
                 $"{WaitingTscLogAttemptPrefix} #002",
                 $"{WaitingTscLogAttemptPrefix} #003",
