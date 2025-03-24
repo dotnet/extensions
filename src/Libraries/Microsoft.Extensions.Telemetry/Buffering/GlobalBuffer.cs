@@ -128,7 +128,7 @@ internal sealed class GlobalBuffer : IDisposable
             _activeBuffer = _standbyBuffer;
             tempBuffer.Clear();
             _standbyBuffer = tempBuffer;
-            Interlocked.Exchange(ref _activeBufferSize, 0);
+            _ = Interlocked.Exchange(ref _activeBufferSize, 0);
         }
 
         // Process records in batches

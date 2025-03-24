@@ -16,7 +16,7 @@ using Microsoft.Shared.Pools;
 
 namespace Microsoft.AspNetCore.Diagnostics.Buffering;
 
-internal sealed class IncomingRequestLogBuffer
+internal sealed class IncomingRequestLogBuffer : IDisposable
 {
     private const int MaxBatchSize = 256;
     private static readonly ObjectPool<List<DeserializedLogRecord>> _recordsToEmitListPool =
@@ -28,7 +28,7 @@ internal sealed class IncomingRequestLogBuffer
     private readonly TimeProvider _timeProvider = TimeProvider.System;
     private readonly LogBufferingFilterRule[] _filterRules;
     private readonly Lock _bufferSwapLock = new();
-
+    private volatile bool _disposed;
     private ConcurrentQueue<SerializedLogRecord> _activeBuffer = new();
     private ConcurrentQueue<SerializedLogRecord> _standbyBuffer = new();
     private int _activeBufferSize;
@@ -109,7 +109,7 @@ internal sealed class IncomingRequestLogBuffer
             _activeBuffer = _standbyBuffer;
             tempBuffer.Clear();
             _standbyBuffer = tempBuffer;
-            Interlocked.Exchange(ref _activeBufferSize, 0);
+            _ = Interlocked.Exchange(ref _activeBufferSize, 0);
         }
 
         // Process records in batches
@@ -145,6 +145,18 @@ internal sealed class IncomingRequestLogBuffer
         }
 
         SerializedLogRecordFactory.Return(bufferedRecords);
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+
+        _ruleSelector.InvalidateCache();
     }
 
     private void TrimExcessRecords()

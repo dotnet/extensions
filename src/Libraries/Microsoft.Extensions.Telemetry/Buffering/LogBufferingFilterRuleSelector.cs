@@ -11,6 +11,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ObjectPool;
+using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Diagnostics.Buffering;
 
@@ -20,27 +22,42 @@ namespace Microsoft.Extensions.Diagnostics.Buffering;
 internal sealed class LogBufferingFilterRuleSelector
 {
     private static readonly IEqualityComparer<KeyValuePair<string, object?>> _stringifyComparer = new StringifyComprarer();
+    private static readonly ObjectPool<List<LogBufferingFilterRule>> _rulePool =
+        PoolFactory.CreateListPool<LogBufferingFilterRule>();
+
+    private readonly ObjectPool<List<LogBufferingFilterRule>> _cachedRulePool =
+        PoolFactory.CreateListPool<LogBufferingFilterRule>();
     private readonly ConcurrentDictionary<(LogLevel, EventId), List<LogBufferingFilterRule>> _ruleCache = new();
 
     public static LogBufferingFilterRule[] SelectByCategory(IList<LogBufferingFilterRule> rules, string category)
     {
-        List<LogBufferingFilterRule> result = [];
-
-        // Skip rules with inapplicable category
-        // because GlobalBuffers are created for each category
-        foreach (LogBufferingFilterRule rule in rules)
+        List<LogBufferingFilterRule> rulesOfCategory = _rulePool.Get();
+        try
         {
-            if (IsMatch(rule, category))
+            // Select rules with applicable category only
+            foreach (LogBufferingFilterRule rule in rules)
             {
-                result.Add(rule);
+                if (IsMatch(rule, category))
+                {
+                    rulesOfCategory.Add(rule);
+                }
             }
-        }
 
-        return result.ToArray();
+            return rulesOfCategory.ToArray();
+        }
+        finally
+        {
+            _rulePool.Return(rulesOfCategory);
+        }
     }
 
     public void InvalidateCache()
     {
+        foreach (((LogLevel, EventId) key, List<LogBufferingFilterRule> value) in _ruleCache)
+        {
+            _cachedRulePool.Return(value);
+        }
+
         _ruleCache.Clear();
     }
 
@@ -53,7 +70,7 @@ internal sealed class LogBufferingFilterRuleSelector
         // 1. select rule candidates by log level and event id from the cache
         List<LogBufferingFilterRule> ruleCandidates = _ruleCache.GetOrAdd((logLevel, eventId), _ =>
         {
-            List<LogBufferingFilterRule> candidates = new(rules.Count);
+            List<LogBufferingFilterRule> candidates = _cachedRulePool.Get();
             foreach (LogBufferingFilterRule rule in rules)
             {
                 if (IsMatch(rule, logLevel, eventId))
