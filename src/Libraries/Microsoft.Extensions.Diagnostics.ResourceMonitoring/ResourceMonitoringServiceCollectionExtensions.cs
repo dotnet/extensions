@@ -3,10 +3,10 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.Versioning;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 #if !NETFRAMEWORK
-using System.Runtime.Versioning;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Network;
 
@@ -91,9 +91,7 @@ public static class ResourceMonitoringServiceCollectionExtensions
         return services;
     }
 
-#if NETCOREAPP
     [SupportedOSPlatform("windows")]
-#endif
     private static ResourceMonitorBuilder AddWindowsProvider(this ResourceMonitorBuilder builder)
     {
         builder.PickWindowsSnapshotProvider();

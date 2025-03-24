@@ -5,18 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.Runtime.Versioning;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Instruments;
 
-#if NETCOREAPP
-using System.Runtime.Versioning;
-#endif
-
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Disk;
 
-#if NETCOREAPP
 [SupportedOSPlatform("windows")]
-#endif
 internal sealed class WindowsDiskMetrics
 {
     private const string LogicalDiskCategory = "LogicalDisk";

@@ -4,16 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-
-#if NETCOREAPP
 using System.Runtime.Versioning;
-#endif
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Disk;
 
-#if NETCOREAPP
 [SupportedOSPlatform("windows")]
-#endif
 internal sealed class WindowsDiskPerSecondPerfCounters
 {
     private readonly List<PerformanceCounter> _counters = [];
