@@ -3,6 +3,7 @@
 
 using System.Diagnostics.Metrics;
 using System.Linq;
+using System.Runtime.Versioning;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Helpers;
 using Microsoft.Shared.Instruments;
 using Microsoft.TestUtilities;
@@ -11,6 +12,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Disk.Test;
 
+[SupportedOSPlatform("windows")]
 [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Windows specific.")]
 public class WindowsDiskMetricsTests
 {
