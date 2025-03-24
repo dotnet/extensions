@@ -64,15 +64,15 @@
     <SystemTextJsonVersion>10.0.0-preview.3.25128.5</SystemTextJsonVersion>
     <SystemThreadingChannelsVersion>10.0.0-preview.3.25128.5</SystemThreadingChannelsVersion>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
-    <MicrosoftAspNetCoreAppRefVersion>10.0.0-preview.3.25164.5</MicrosoftAspNetCoreAppRefVersion>
-    <MicrosoftAspNetCoreAppRuntimewinx64Version>10.0.0-preview.3.25164.5</MicrosoftAspNetCoreAppRuntimewinx64Version>
-    <MicrosoftAspNetCoreMvcTestingVersion>10.0.0-preview.3.25164.5</MicrosoftAspNetCoreMvcTestingVersion>
-    <MicrosoftAspNetCoreTestHostVersion>10.0.0-preview.3.25164.5</MicrosoftAspNetCoreTestHostVersion>
-    <MicrosoftExtensionsCachingSqlServerVersion>10.0.0-preview.3.25164.5</MicrosoftExtensionsCachingSqlServerVersion>
-    <MicrosoftExtensionsCachingStackExchangeRedisVersion>10.0.0-preview.3.25164.5</MicrosoftExtensionsCachingStackExchangeRedisVersion>
-    <MicrosoftExtensionsDiagnosticsHealthChecksVersion>10.0.0-preview.3.25164.5</MicrosoftExtensionsDiagnosticsHealthChecksVersion>
-    <MicrosoftExtensionsHttpPollyVersion>10.0.0-preview.3.25164.5</MicrosoftExtensionsHttpPollyVersion>
-    <MicrosoftExtensionsObjectPoolVersion>10.0.0-preview.3.25164.5</MicrosoftExtensionsObjectPoolVersion>
+    <MicrosoftAspNetCoreAppRefVersion>10.0.0-preview.4.25171.5</MicrosoftAspNetCoreAppRefVersion>
+    <MicrosoftAspNetCoreAppRuntimewinx64Version>10.0.0-preview.4.25171.5</MicrosoftAspNetCoreAppRuntimewinx64Version>
+    <MicrosoftAspNetCoreMvcTestingVersion>10.0.0-preview.4.25171.5</MicrosoftAspNetCoreMvcTestingVersion>
+    <MicrosoftAspNetCoreTestHostVersion>10.0.0-preview.4.25171.5</MicrosoftAspNetCoreTestHostVersion>
+    <MicrosoftExtensionsCachingSqlServerVersion>10.0.0-preview.4.25171.5</MicrosoftExtensionsCachingSqlServerVersion>
+    <MicrosoftExtensionsCachingStackExchangeRedisVersion>10.0.0-preview.4.25171.5</MicrosoftExtensionsCachingStackExchangeRedisVersion>
+    <MicrosoftExtensionsDiagnosticsHealthChecksVersion>10.0.0-preview.4.25171.5</MicrosoftExtensionsDiagnosticsHealthChecksVersion>
+    <MicrosoftExtensionsHttpPollyVersion>10.0.0-preview.4.25171.5</MicrosoftExtensionsHttpPollyVersion>
+    <MicrosoftExtensionsObjectPoolVersion>10.0.0-preview.4.25171.5</MicrosoftExtensionsObjectPoolVersion>
     <!-- Dependencies from https://github.com/dotnet/efcore -->
     <MicrosoftEntityFrameworkCoreSqliteVersion>9.0.3</MicrosoftEntityFrameworkCoreSqliteVersion>
     <!-- Dependencies from https://github.com/dotnet/arcade -->
