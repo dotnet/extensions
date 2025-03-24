@@ -56,7 +56,7 @@ public sealed class OpenAIChatClient : IChatClient
         Uri providerUrl = typeof(OpenAIClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(openAIClient) as Uri ?? DefaultOpenAIEndpoint;
 
-        _metadata = new("openai", providerUrl, modelId);
+        _metadata = new ChatClientMetadata("openai", providerUrl, modelId);
     }
 
     /// <summary>Initializes a new instance of the <see cref="OpenAIChatClient"/> class for the specified <see cref="ChatClient"/>.</summary>

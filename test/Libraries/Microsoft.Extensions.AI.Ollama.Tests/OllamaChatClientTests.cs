@@ -72,9 +72,10 @@ public class OllamaChatClientTests
 
         using IChatClient chatClient = new OllamaChatClient(endpoint, model);
         var metadata = chatClient.GetService<ChatClientMetadata>();
-        Assert.Equal("ollama", metadata?.ProviderName);
-        Assert.Equal(endpoint, metadata?.ProviderUri);
-        Assert.Equal(model, metadata?.ModelId);
+        Assert.NotNull(metadata);
+        Assert.Equal("ollama", metadata.ProviderName);
+        Assert.Equal(endpoint, metadata.ProviderUri);
+        Assert.Equal(model, metadata.DefaultModelId);
     }
 
     [Fact]

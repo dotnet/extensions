@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -16,6 +17,7 @@ using static Microsoft.Extensions.AI.OpenTelemetryConsts.GenAI;
 
 #pragma warning disable CA2213 // Disposable fields should be disposed
 #pragma warning disable EA0002 // Use 'System.TimeProvider' to make the code easier to test
+#pragma warning disable SA1202 // 'protected' members should come before 'private' members
 
 namespace Microsoft.Extensions.AI;
 
@@ -59,7 +61,10 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     private readonly ActivitySource? _activitySource;
 
     /// <summary>Maximum number of roundtrips allowed to the inner client.</summary>
-    private int? _maximumIterationsPerRequest;
+    private int _maximumIterationsPerRequest = 10;
+
+    /// <summary>Maximum number of consecutive iterations that are allowed contain at least one exception result. If the limit is exceeded, we rethrow the exception instead of continuing.</summary>
+    private int _maximumConsecutiveErrorsPerRequest = 3;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvokingChatClient"/> class.
@@ -86,23 +91,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         get => _currentContext.Value;
         protected set => _currentContext.Value = value;
     }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether to handle exceptions that occur during function calls.
-    /// </summary>
-    /// <value>
-    /// <see langword="false"/> if the
-    /// underlying <see cref="IChatClient"/> will be instructed to give a response without invoking
-    /// any further functions if a function call fails with an exception.
-    /// <see langword="true"/> if the underlying <see cref="IChatClient"/> is allowed
-    /// to continue attempting function calls until <see cref="MaximumIterationsPerRequest"/> is reached.
-    /// The default value is <see langword="false"/>.
-    /// </value>
-    /// <remarks>
-    /// Changing the value of this property while the client is in use might result in inconsistencies
-    /// as to whether errors are retried during an in-flight request.
-    /// </remarks>
-    public bool RetryOnError { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether detailed exception information should be included
@@ -154,7 +142,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// </summary>
     /// <value>
     /// The maximum number of iterations per request.
-    /// The default value is <see langword="null"/>.
+    /// The default value is 10.
     /// </value>
     /// <remarks>
     /// <para>
@@ -162,15 +150,14 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// multiple requests to the inner client. Each time the inner client responds with
     /// a function call request, this client might perform that invocation and send the results
     /// back to the inner client in a new request. This property limits the number of times
-    /// such a roundtrip is performed. If null, there is no limit applied. If set, the value
-    /// must be at least one, as it includes the initial request.
+    /// such a roundtrip is performed. The value must be at least one, as it includes the initial request.
     /// </para>
     /// <para>
     /// Changing the value of this property while the client is in use might result in inconsistencies
     /// as to how many iterations are allowed for an in-flight request.
     /// </para>
     /// </remarks>
-    public int? MaximumIterationsPerRequest
+    public int MaximumIterationsPerRequest
     {
         get => _maximumIterationsPerRequest;
         set
@@ -182,6 +169,40 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
             _maximumIterationsPerRequest = value;
         }
+    }
+
+    /// <summary>
+    /// Gets or sets the maximum number of consecutive iterations that are allowed to fail with an error.
+    /// </summary>
+    /// <value>
+    /// The maximum number of consecutive iterations that are allowed to fail with an error.
+    /// The default value is 3.
+    /// </value>
+    /// <remarks>
+    /// <para>
+    /// When function invocations fail with an exception, the <see cref="FunctionInvokingChatClient"/>
+    /// continues to make requests to the inner client, optionally supplying exception information (as
+    /// controlled by <see cref="IncludeDetailedErrors"/>). This allows the <see cref="IChatClient"/> to
+    /// recover from errors by trying other function parameters that may succeed.
+    /// </para>
+    /// <para>
+    /// However, in case function invocations continue to produce exceptions, this property can be used to
+    /// limit the number of consecutive failing attempts. When the limit is reached, the exception will be
+    /// rethrown to the caller.
+    /// </para>
+    /// <para>
+    /// If the value is set to zero, all function calling exceptions immediately terminate the function
+    /// invocation loop and the exception will be rethrown to the caller.
+    /// </para>
+    /// <para>
+    /// Changing the value of this property while the client is in use might result in inconsistencies
+    /// as to how many iterations are allowed for an in-flight request.
+    /// </para>
+    /// </remarks>
+    public int MaximumConsecutiveErrorsPerRequest
+    {
+        get => _maximumConsecutiveErrorsPerRequest;
+        set => _maximumConsecutiveErrorsPerRequest = Throw.IfLessThan(value, 0);
     }
 
     /// <inheritdoc/>
@@ -205,6 +226,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         UsageDetails? totalUsage = null; // tracked usage across all turns, to be used for the final response
         List<FunctionCallContent>? functionCallContents = null; // function call contents that need responding to in the current turn
         bool lastIterationHadThreadId = false; // whether the last iteration's response had a ChatThreadId set
+        int consecutiveErrorCount = 0;
 
         for (int iteration = 0; ; iteration++)
         {
@@ -220,7 +242,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             // Any function call work to do? If yes, ensure we're tracking that work in functionCallContents.
             bool requiresFunctionInvocation =
                 options?.Tools is { Count: > 0 } &&
-                (!MaximumIterationsPerRequest.HasValue || iteration < MaximumIterationsPerRequest.GetValueOrDefault()) &&
+                iteration < MaximumIterationsPerRequest &&
                 CopyFunctionCalls(response.Messages, ref functionCallContents);
 
             // In a common case where we make a request and there's no function calling work required,
@@ -257,14 +279,16 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
             // Add the responses from the function calls into the augmented history and also into the tracked
             // list of response messages.
-            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options!, functionCallContents!, iteration, cancellationToken).ConfigureAwait(false);
+            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options!, functionCallContents!, iteration, consecutiveErrorCount, cancellationToken).ConfigureAwait(false);
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
+            consecutiveErrorCount = modeAndMessages.NewConsecutiveErrorCount;
 
-            if (UpdateOptionsForMode(modeAndMessages.Mode, ref options!, response.ChatThreadId))
+            if (modeAndMessages.ShouldTerminate)
             {
-                // Terminate
                 break;
             }
+
+            UpdateOptionsForNextIteration(ref options!, response.ChatThreadId);
         }
 
         Debug.Assert(responseMessages is not null, "Expected to only be here if we have response messages.");
@@ -294,6 +318,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         List<ChatMessage>? responseMessages = null; // tracked list of messages, across multiple turns, to be used in fallback cases to reconstitute history
         bool lastIterationHadThreadId = false; // whether the last iteration's response had a ChatThreadId set
         List<ChatResponseUpdate> updates = []; // updates from the current response
+        int consecutiveErrorCount = 0;
 
         for (int iteration = 0; ; iteration++)
         {
@@ -318,7 +343,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             // If there are no tools to call, or for any other reason we should stop, return the response.
             if (functionCallContents is not { Count: > 0 } ||
                 options?.Tools is not { Count: > 0 } ||
-                (MaximumIterationsPerRequest is { } maxIterations && iteration >= maxIterations))
+                iteration >= _maximumIterationsPerRequest)
             {
                 break;
             }
@@ -331,8 +356,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             FixupHistories(originalMessages, ref messages, ref augmentedHistory, response, responseMessages, ref lastIterationHadThreadId);
 
             // Process all of the functions, adding their results into the history.
-            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options, functionCallContents, iteration, cancellationToken).ConfigureAwait(false);
+            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options, functionCallContents, iteration, consecutiveErrorCount, cancellationToken).ConfigureAwait(false);
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
+            consecutiveErrorCount = modeAndMessages.NewConsecutiveErrorCount;
 
             // This is a synthetic ID since we're generating the tool messages instead of getting them from
             // the underlying provider. When emitting the streamed chunks, it's perfectly valid for us to
@@ -362,11 +388,12 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
             }
 
-            if (UpdateOptionsForMode(modeAndMessages.Mode, ref options, response.ChatThreadId))
+            if (modeAndMessages.ShouldTerminate)
             {
-                // Terminate
                 yield break;
             }
+
+            UpdateOptionsForNextIteration(ref options, response.ChatThreadId);
         }
     }
 
@@ -464,47 +491,23 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         return any;
     }
 
-    /// <summary>Updates <paramref name="options"/> for the response.</summary>
-    /// <returns>true if the function calling loop should terminate; otherwise, false.</returns>
-    private static bool UpdateOptionsForMode(ContinueMode mode, ref ChatOptions options, string? chatThreadId)
+    private static void UpdateOptionsForNextIteration(ref ChatOptions options, string? chatThreadId)
     {
-        switch (mode)
+        if (options.ToolMode is RequiredChatToolMode)
         {
-            case ContinueMode.Continue when options.ToolMode is RequiredChatToolMode:
-                // We have to reset the tool mode to be non-required after the first iteration,
-                // as otherwise we'll be in an infinite loop.
-                options = options.Clone();
-                options.ToolMode = null;
-                options.ChatThreadId = chatThreadId;
-
-                break;
-
-            case ContinueMode.AllowOneMoreRoundtrip:
-                // The LLM gets one further chance to answer, but cannot use tools.
-                options = options.Clone();
-                options.Tools = null;
-                options.ToolMode = null;
-                options.ChatThreadId = chatThreadId;
-
-                break;
-
-            case ContinueMode.Terminate:
-                // Bail immediately.
-                return true;
-
-            default:
-                // As with the other modes, ensure we've propagated the chat thread ID to the options.
-                // We only need to clone the options if we're actually mutating it.
-                if (options.ChatThreadId != chatThreadId)
-                {
-                    options = options.Clone();
-                    options.ChatThreadId = chatThreadId;
-                }
-
-                break;
+            // We have to reset the tool mode to be non-required after the first iteration,
+            // as otherwise we'll be in an infinite loop.
+            options = options.Clone();
+            options.ToolMode = null;
+            options.ChatThreadId = chatThreadId;
         }
-
-        return false;
+        else if (options.ChatThreadId != chatThreadId)
+        {
+            // As with the other modes, ensure we've propagated the chat thread ID to the options.
+            // We only need to clone the options if we're actually mutating it.
+            options = options.Clone();
+            options.ChatThreadId = chatThreadId;
+        }
     }
 
     /// <summary>
@@ -514,27 +517,31 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <param name="options">The options used for the response being processed.</param>
     /// <param name="functionCallContents">The function call contents representing the functions to be invoked.</param>
     /// <param name="iteration">The iteration number of how many roundtrips have been made to the inner client.</param>
+    /// <param name="consecutiveErrorCount">The number of consecutive iterations, prior to this one, that were recorded as having function invocation errors.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
-    /// <returns>A <see cref="ContinueMode"/> value indicating how the caller should proceed.</returns>
-    private async Task<(ContinueMode Mode, IList<ChatMessage> MessagesAdded)> ProcessFunctionCallsAsync(
-        List<ChatMessage> messages, ChatOptions options, List<FunctionCallContent> functionCallContents, int iteration, CancellationToken cancellationToken)
+    /// <returns>A value indicating how the caller should proceed.</returns>
+    private async Task<(bool ShouldTerminate, int NewConsecutiveErrorCount, IList<ChatMessage> MessagesAdded)> ProcessFunctionCallsAsync(
+        List<ChatMessage> messages, ChatOptions options, List<FunctionCallContent> functionCallContents, int iteration, int consecutiveErrorCount, CancellationToken cancellationToken)
     {
         // We must add a response for every tool call, regardless of whether we successfully executed it or not.
         // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
 
         Debug.Assert(functionCallContents.Count > 0, "Expecteded at least one function call.");
 
+        var captureCurrentIterationExceptions = consecutiveErrorCount < _maximumConsecutiveErrorsPerRequest;
+
         // Process all functions. If there's more than one and concurrent invocation is enabled, do so in parallel.
         if (functionCallContents.Count == 1)
         {
             FunctionInvocationResult result = await ProcessFunctionCallAsync(
-                messages, options, functionCallContents, iteration, 0, cancellationToken).ConfigureAwait(false);
+                messages, options, functionCallContents, iteration, 0, captureCurrentIterationExceptions, cancellationToken).ConfigureAwait(false);
 
             IList<ChatMessage> added = CreateResponseMessages([result]);
             ThrowIfNoFunctionResultsAdded(added);
+            UpdateConsecutiveErrorCountOrThrow(added, ref consecutiveErrorCount);
 
             messages.AddRange(added);
-            return (result.ContinueMode, added);
+            return (result.ShouldTerminate, consecutiveErrorCount, added);
         }
         else
         {
@@ -543,11 +550,12 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             if (AllowConcurrentInvocation)
             {
                 // Schedule the invocation of every function.
+                // In this case we always capture exceptions because the ordering is nondeterministic
                 results = await Task.WhenAll(
                     from i in Enumerable.Range(0, functionCallContents.Count)
                     select Task.Run(() => ProcessFunctionCallAsync(
                         messages, options, functionCallContents,
-                        iteration, i, cancellationToken))).ConfigureAwait(false);
+                        iteration, i, captureExceptions: true, cancellationToken))).ConfigureAwait(false);
             }
             else
             {
@@ -557,25 +565,51 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 {
                     results[i] = await ProcessFunctionCallAsync(
                         messages, options, functionCallContents,
-                        iteration, i, cancellationToken).ConfigureAwait(false);
+                        iteration, i, captureCurrentIterationExceptions, cancellationToken).ConfigureAwait(false);
                 }
             }
 
-            ContinueMode continueMode = ContinueMode.Continue;
+            var shouldTerminate = false;
 
             IList<ChatMessage> added = CreateResponseMessages(results);
             ThrowIfNoFunctionResultsAdded(added);
+            UpdateConsecutiveErrorCountOrThrow(added, ref consecutiveErrorCount);
 
             messages.AddRange(added);
             foreach (FunctionInvocationResult fir in results)
             {
-                if (fir.ContinueMode > continueMode)
-                {
-                    continueMode = fir.ContinueMode;
-                }
+                shouldTerminate = shouldTerminate || fir.ShouldTerminate;
             }
 
-            return (continueMode, added);
+            return (shouldTerminate, consecutiveErrorCount, added);
+        }
+    }
+
+    private void UpdateConsecutiveErrorCountOrThrow(IList<ChatMessage> added, ref int consecutiveErrorCount)
+    {
+        var allExceptions = added.SelectMany(m => m.Contents.OfType<FunctionResultContent>())
+            .Select(frc => frc.Exception!)
+            .Where(e => e is not null);
+
+        if (allExceptions.Any())
+        {
+            consecutiveErrorCount++;
+            if (consecutiveErrorCount > _maximumConsecutiveErrorsPerRequest)
+            {
+                var allExceptionsArray = allExceptions.ToArray();
+                if (allExceptionsArray.Length == 1)
+                {
+                    ExceptionDispatchInfo.Capture(allExceptionsArray[0]).Throw();
+                }
+                else
+                {
+                    throw new AggregateException(allExceptionsArray);
+                }
+            }
+        }
+        else
+        {
+            consecutiveErrorCount = 0;
         }
     }
 
@@ -596,11 +630,12 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <param name="callContents">The function call contents representing all the functions being invoked.</param>
     /// <param name="iteration">The iteration number of how many roundtrips have been made to the inner client.</param>
     /// <param name="functionCallIndex">The 0-based index of the function being called out of <paramref name="callContents"/>.</param>
+    /// <param name="captureExceptions">If true, handles function-invocation exceptions by returning a value with <see cref="FunctionInvocationStatus.Exception"/>. Otherwise, rethrows.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
-    /// <returns>A <see cref="ContinueMode"/> value indicating how the caller should proceed.</returns>
+    /// <returns>A value indicating how the caller should proceed.</returns>
     private async Task<FunctionInvocationResult> ProcessFunctionCallAsync(
         List<ChatMessage> messages, ChatOptions options, List<FunctionCallContent> callContents,
-        int iteration, int functionCallIndex, CancellationToken cancellationToken)
+        int iteration, int functionCallIndex, bool captureExceptions, CancellationToken cancellationToken)
     {
         var callContent = callContents[functionCallIndex];
 
@@ -608,7 +643,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         AIFunction? function = options.Tools!.OfType<AIFunction>().FirstOrDefault(t => t.Name == callContent.Name);
         if (function is null)
         {
-            return new(ContinueMode.Continue, FunctionInvocationStatus.NotFound, callContent, result: null, exception: null);
+            return new(shouldTerminate: false, FunctionInvocationStatus.NotFound, callContent, result: null, exception: null);
         }
 
         FunctionInvocationContext context = new()
@@ -632,8 +667,13 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         }
         catch (Exception e) when (!cancellationToken.IsCancellationRequested)
         {
+            if (!captureExceptions)
+            {
+                throw;
+            }
+
             return new(
-                RetryOnError ? ContinueMode.Continue : ContinueMode.AllowOneMoreRoundtrip, // We won't allow further function calls, hence the LLM will just get one more chance to give a final answer.
+                shouldTerminate: false,
                 FunctionInvocationStatus.Exception,
                 callContent,
                 result: null,
@@ -641,25 +681,11 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         }
 
         return new(
-            context.Terminate ? ContinueMode.Terminate : ContinueMode.Continue,
+            shouldTerminate: context.Terminate,
             FunctionInvocationStatus.RanToCompletion,
             callContent,
             result,
             exception: null);
-    }
-
-    /// <summary>Represents the return value of <see cref="ProcessFunctionCallsAsync"/>, dictating how the loop should behave.</summary>
-    /// <remarks>These values are ordered from least severe to most severe, and code explicitly depends on the ordering.</remarks>
-    internal enum ContinueMode
-    {
-        /// <summary>Send back the responses and continue processing.</summary>
-        Continue = 0,
-
-        /// <summary>Send back the response but without any tools.</summary>
-        AllowOneMoreRoundtrip = 1,
-
-        /// <summary>Immediately exit the function calling loop.</summary>
-        Terminate = 2,
     }
 
     /// <summary>Creates one or more response messages for function invocation results.</summary>
@@ -806,9 +832,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <summary>Provides information about the invocation of a function call.</summary>
     public sealed class FunctionInvocationResult
     {
-        internal FunctionInvocationResult(ContinueMode continueMode, FunctionInvocationStatus status, FunctionCallContent callContent, object? result, Exception? exception)
+        internal FunctionInvocationResult(bool shouldTerminate, FunctionInvocationStatus status, FunctionCallContent callContent, object? result, Exception? exception)
         {
-            ContinueMode = continueMode;
+            ShouldTerminate = shouldTerminate;
             Status = status;
             CallContent = callContent;
             Result = result;
@@ -827,8 +853,8 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         /// <summary>Gets any exception the function call threw.</summary>
         public Exception? Exception { get; }
 
-        /// <summary>Gets an indication for how the caller should continue the processing loop.</summary>
-        internal ContinueMode ContinueMode { get; }
+        /// <summary>Gets a value indicating whether the caller should terminate the processing loop.</summary>
+        internal bool ShouldTerminate { get; }
     }
 
     /// <summary>Provides error codes for when errors occur as part of the function calling loop.</summary>
