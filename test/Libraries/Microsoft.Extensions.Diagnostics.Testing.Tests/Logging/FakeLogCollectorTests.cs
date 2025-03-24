@@ -186,9 +186,11 @@ public class FakeLogCollectorTests
     private record WaitingTestCase(
         int EndWaitAtAttemptCount,
         int? CancellationWaitInMs,
+        int? TimeoutWaitInMs,
         bool StartsWithCancelledToken,
         string[] ExpectedOperationSequence,
-        bool ExpectedTaskCancelled
+        bool ExpectedTaskCancelled,
+        bool? ExpectedAwaitedTaskResult
     );
 
     private const int WaitingTscOverallLogCount = 3;
@@ -201,6 +203,7 @@ public class FakeLogCollectorTests
     [InlineData(2)]
     [InlineData(3)]
     [InlineData(4)]
+    [InlineData(5)]
     public async Task Waiting(int testCase)
     {
         // Arrange
@@ -235,7 +238,11 @@ public class FakeLogCollectorTests
 
         testExecutionCustomLog.Enqueue("Started");
 
-        var awaitingTask = collector.WaitForLogAsync(EndWaiting, cancellationTokenSource.Token);
+        TimeSpan? timeout = testCaseData.TimeoutWaitInMs is null
+            ? null
+            : new TimeSpan(testCaseData.TimeoutWaitInMs.Value);
+
+        var awaitingTask = collector.WaitForLogAsync(EndWaiting, timeout, cancellationTokenSource.Token);
 
         var loggingBackgroundAction = Task.Run(
             () =>
@@ -252,24 +259,26 @@ public class FakeLogCollectorTests
 
         testExecutionCustomLog.Enqueue("Right after starting the background action");
 
+        bool? result = null;
         bool taskCancelled = false;
 
         try
         {
-            await awaitingTask;
+            result = await awaitingTask;
         }
         catch (TaskCanceledException)
         {
             taskCancelled = true;
         }
 
-        testExecutionCustomLog.Enqueue("Finished waiting for the log");
+        testExecutionCustomLog.Enqueue("Finished waiting for the log. Waiting for the background action to finish.");
 
         await loggingBackgroundAction;
 
         testExecutionCustomLog.Enqueue("Background action has finished");
 
         // Assert
+        Assert.Equal(result, testCaseData.ExpectedAwaitedTaskResult);
         Assert.True(testExecutionCustomLog.SequenceEqual(testCaseData.ExpectedOperationSequence));
         Assert.Equal(testExecutionCustomLog.Count(r => r.StartsWith(WaitingTscLogAttemptPrefix)), logger.Collector.Count);
         Assert.Equal(taskCancelled, testCaseData.ExpectedTaskCancelled);
@@ -277,83 +286,103 @@ public class FakeLogCollectorTests
 
     private static List<WaitingTestCase> WaitingTestCases()
     {
-        var testCases = new List<WaitingTestCase>();
+        var testCases = new List<WaitingTestCase>
+        {
+            // Waiting for one record
+            new WaitingTestCase(
+                1, null, null, false, [
+                    "Started",
+                    "Right after starting the background action",
+                    $"{WaitingTscLogAttemptPrefix} #001",
+                    "Checking if waiting should end #1",
+                    "Finished waiting for the log. Waiting for the background action to finish.",
+                    $"{WaitingTscLogAttemptPrefix} #002",
+                    $"{WaitingTscLogAttemptPrefix} #003",
+                    "Background action has finished",
+                ],
+                false,
+                true),
 
-        // Waiting for one record
+            // Waiting for two records
+            new WaitingTestCase(
+                2, null, null, false, [
+                    "Started",
+                    "Right after starting the background action",
+                    $"{WaitingTscLogAttemptPrefix} #001",
+                    "Checking if waiting should end #1",
+                    $"{WaitingTscLogAttemptPrefix} #002",
+                    "Checking if waiting should end #2",
+                    "Finished waiting for the log. Waiting for the background action to finish.",
+                    $"{WaitingTscLogAttemptPrefix} #003",
+                    "Background action has finished"
+                ],
+                false,
+                true)
+        };
+
+        // Waiting for many log records, but cancelling the wait before this condition is reached at the time of one log record being actually logged.
+        const int OneAndHalfRecordTime = WaitingTscOneLogTimeInMs + (WaitingTscOneLogTimeInMs / 2);
         testCases.Add(new WaitingTestCase(
-            1, null, false, [
+            WaitingTscOverallLogCount + 1, OneAndHalfRecordTime, null, false, [
                 "Started",
                 "Right after starting the background action",
                 $"{WaitingTscLogAttemptPrefix} #001",
                 "Checking if waiting should end #1",
-                "Finished waiting for the log",
+                "Finished waiting for the log. Waiting for the background action to finish.",
                 $"{WaitingTscLogAttemptPrefix} #002",
                 $"{WaitingTscLogAttemptPrefix} #003",
                 "Background action has finished"
             ],
-            false
-        ));
+            true,
+            null));
 
-        // Waiting for two records
+        // Waiting for many log records, but starting with cancellation token already cancelled.
         testCases.Add(new WaitingTestCase(
-            2, null, false, [
+            WaitingTscOverallLogCount, null, null, true, [
+                "Started",
+                "Right after starting the background action",
+                "Finished waiting for the log. Waiting for the background action to finish.",
+                $"{WaitingTscLogAttemptPrefix} #001",
+                $"{WaitingTscLogAttemptPrefix} #002",
+                $"{WaitingTscLogAttemptPrefix} #003",
+                "Background action has finished"
+            ],
+            true,
+            null)
+        );
+
+        // Waiting for single log record and supplying a cancellation period that would match three logs to get writer
+        testCases.Add(new WaitingTestCase(
+            1, 3 * WaitingTscOneLogTimeInMs, null, false, [
+                "Started",
+                "Right after starting the background action",
+                $"{WaitingTscLogAttemptPrefix} #001",
+                "Checking if waiting should end #1",
+                "Finished waiting for the log. Waiting for the background action to finish.",
+                $"{WaitingTscLogAttemptPrefix} #002",
+                $"{WaitingTscLogAttemptPrefix} #003",
+                "Background action has finished"
+            ],
+            false,
+            true)
+        );
+
+        // Waiting for 3 log attempts, but setting timeout to expire after the second attempt.
+        testCases.Add(new WaitingTestCase(
+            3, null, (2 * WaitingTscOneLogTimeInMs) + (WaitingTscOneLogTimeInMs / 2), false, [
                 "Started",
                 "Right after starting the background action",
                 $"{WaitingTscLogAttemptPrefix} #001",
                 "Checking if waiting should end #1",
                 $"{WaitingTscLogAttemptPrefix} #002",
                 "Checking if waiting should end #2",
-                "Finished waiting for the log",
+                "Finished waiting for the log. Waiting for the background action to finish.",
                 $"{WaitingTscLogAttemptPrefix} #003",
                 "Background action has finished"
             ],
-            false
-        ));
-
-        // Waiting for many log records, but cancelling the wait before this condition is reached at the time of one log record being actually logged.
-        const int OneAndHalfRecordTime = WaitingTscOneLogTimeInMs + (WaitingTscOneLogTimeInMs / 2);
-        testCases.Add(new WaitingTestCase(
-            WaitingTscOverallLogCount + 1, OneAndHalfRecordTime, false, [
-                "Started",
-                "Right after starting the background action",
-                $"{WaitingTscLogAttemptPrefix} #001",
-                "Checking if waiting should end #1",
-                "Finished waiting for the log",
-                $"{WaitingTscLogAttemptPrefix} #002",
-                $"{WaitingTscLogAttemptPrefix} #003",
-                "Background action has finished"
-            ],
-            true
-        ));
-
-        // Waiting for many log records, but starting with cancellation token already cancelled.
-        testCases.Add(new WaitingTestCase(
-            WaitingTscOverallLogCount, null, true, [
-                "Started",
-                "Right after starting the background action",
-                "Finished waiting for the log",
-                $"{WaitingTscLogAttemptPrefix} #001",
-                $"{WaitingTscLogAttemptPrefix} #002",
-                $"{WaitingTscLogAttemptPrefix} #003",
-                "Background action has finished"
-            ],
-            true
-        ));
-
-        // Waiting for single log record and supplying a cancellation period that would match three logs to get writter
-        testCases.Add(new WaitingTestCase(
-            1, 3 * WaitingTscOneLogTimeInMs, false, [
-                "Started",
-                "Right after starting the background action",
-                $"{WaitingTscLogAttemptPrefix} #001",
-                "Checking if waiting should end #1",
-                "Finished waiting for the log",
-                $"{WaitingTscLogAttemptPrefix} #002",
-                $"{WaitingTscLogAttemptPrefix} #003",
-                "Background action has finished"
-            ],
-            false
-        ));
+            false,
+            false)
+        );
 
         return testCases;
     }

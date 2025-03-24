@@ -112,14 +112,25 @@ public class FakeLogCollector
     public int Count => _records.Count;
 
 
+    public Task WaitForLogAsync(
+        Func<FakeLogRecord, bool> endWaiting,
+        CancellationToken cancellationToken = default)
+    {
+        return WaitForLogAsync(endWaiting, null, cancellationToken);
+    }
+
     // TODO TW: add documentation
     /// <summary>
     /// 
     /// </summary>
     /// <param name="endWaiting"></param>
+    /// <param name="timeout"></param>
     /// <param name="cancellationToken"></param>
     /// <returns>Task which is completed when the condition is fulfilled or when the cancellation is invoked</returns>
-    public Task WaitForLogAsync(Func<FakeLogRecord, bool> endWaiting, CancellationToken cancellationToken = default)
+    public Task<bool> WaitForLogAsync(
+        Func<FakeLogRecord, bool> endWaiting,
+        TimeSpan? timeout,
+        CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(endWaiting);
 
@@ -129,7 +140,7 @@ public class FakeLogCollector
         {
             if (_records.Count > 0 && endWaiting(LatestRecord))
             {
-                return Task.CompletedTask;
+                return Task.FromResult(true);
             }
 
             waiter = new Waiter(endWaiting);
@@ -239,7 +250,8 @@ public class FakeLogCollector
     {
         public Func<FakeLogRecord, bool> ShouldEndWaiting { get; } = ShouldEndWaiting;
 
-        // NOTE: In order to avoid potential dead locks, this task should
+        // TODO TW: check this
+        // NOTE: In order to avoid potential deadlocks, this task should
         // be completed when the main lock is not being held. Otherwise,
         // application code being woken up by the task could potentially
         // call back into the MetricCollector code and thus trigger a deadlock.
