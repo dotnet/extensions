@@ -204,6 +204,7 @@ public class FakeLogCollectorTests
     [InlineData(3)]
     [InlineData(4)]
     [InlineData(5)]
+    [InlineData(6)]
     public async Task Waiting(int testCase)
     {
         // Arrange
@@ -240,7 +241,7 @@ public class FakeLogCollectorTests
 
         TimeSpan? timeout = testCaseData.TimeoutWaitInMs is null
             ? null
-            : new TimeSpan(testCaseData.TimeoutWaitInMs.Value);
+            : TimeSpan.FromMilliseconds(testCaseData.TimeoutWaitInMs.Value);
 
         var awaitingTask = collector.WaitForLogAsync(EndWaiting, timeout, cancellationTokenSource.Token);
 

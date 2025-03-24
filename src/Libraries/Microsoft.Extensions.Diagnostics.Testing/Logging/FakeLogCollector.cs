@@ -138,28 +138,30 @@ public class FakeLogCollector
 
         lock (_records)
         {
+            // Before we even start waiting, we check if the latest record already fulfills the condition and if yes, we exit early with success 
             if (_records.Count > 0 && endWaiting(LatestRecord))
             {
                 return Task.FromResult(true);
             }
 
-            waiter = new Waiter(endWaiting);
+            // Before we even start waiting, we checked if the cancellation token is already canceled and if yes, we exit early with a canceled task
+            if (cancellationToken.IsCancellationRequested)
+            {
+                var tcs = new TaskCompletionSource<bool>();
+                _ = tcs.TrySetCanceled(cancellationToken);
+                return tcs.Task;
+            }
+
+            // We register the waiter
+            
+            // TODO TW: flc also very nice
+            waiter = new Waiter(this, endWaiting, timeout);
             _waiters.Add(waiter);
         }
 
-        bool isCancelled = false;
-
         if (cancellationToken.CanBeCanceled)
         {
-            lock (_records)
-            {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    isCancelled = true;
-                    _ = _waiters.Remove(waiter);
-                }
-            }
-
+            // When the cancellation token is canceled, we resolve the waiter and cancel the awaited task
             _ = cancellationToken.Register(() =>
             {
                 lock (_records)
@@ -168,14 +170,9 @@ public class FakeLogCollector
                 }
 
                 // trigger the task from outside the lock
+                // TODO TW: nice, but why outside precisely?
                 _ = waiter.TaskSource.TrySetCanceled(cancellationToken);
             });
-        }
-
-        if (isCancelled)
-        {
-            // trigger the task from outside the lock
-            _ = waiter.TaskSource.TrySetCanceled(cancellationToken); // TODO TW: <<<< is this correct?
         }
 
 #pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
@@ -221,13 +218,14 @@ public class FakeLogCollector
             foreach (var waiterToWakeUp in waitersToWakeUp)
             {
                 // trigger the task from outside the lock
-                waiterToWakeUp.TaskSource.SetResult(true);
+                _ = waiterToWakeUp.TaskSource.TrySetResult(true);
             }
         }
 
         _options.OutputSink?.Invoke(_options.OutputFormatter(record));
     }
 
+    // Must be called inside lock(_records)
     private void GatherWaitersForWaking(ref List<Waiter>? waitersToWakeUp, FakeLogRecord currentlyLoggedRecord)
     {
         for (var waiterIndex = _waiters.Count - 1; waiterIndex >= 0; waiterIndex--)
@@ -246,9 +244,11 @@ public class FakeLogCollector
 
     internal TimeProvider TimeProvider => _options.TimeProvider;
 
-    private readonly record struct Waiter(Func<FakeLogRecord, bool> ShouldEndWaiting)
+    private readonly record struct Waiter
     {
-        public Func<FakeLogRecord, bool> ShouldEndWaiting { get; } = ShouldEndWaiting;
+        public Func<FakeLogRecord, bool> ShouldEndWaiting { get; }
+
+        public ITimer? TimeoutTimer { get; }
 
         // TODO TW: check this
         // NOTE: In order to avoid potential deadlocks, this task should
@@ -256,5 +256,33 @@ public class FakeLogCollector
         // application code being woken up by the task could potentially
         // call back into the MetricCollector code and thus trigger a deadlock.
         public TaskCompletionSource<bool> TaskSource { get; } = new();
+
+        public Waiter(FakeLogCollector fakeLogCollector, Func<FakeLogRecord, bool> shouldEndWaiting, TimeSpan? timeout)
+        {
+            // TODO TW: beautiful
+            var t = this;
+
+            ShouldEndWaiting = shouldEndWaiting;
+            
+            // TODO TW: you need to stop the timer when you resolve the task from task source
+            TimeoutTimer = timeout.HasValue
+                ? fakeLogCollector.TimeProvider
+                    .CreateTimer(
+                        __ =>
+                        {
+                            lock (fakeLogCollector._records)
+                            {
+                                _ = fakeLogCollector._waiters.Remove(t); // TODO TW: hmmmm, it's a copy i guess
+                            }
+
+                            // trigger the task from outside the lock
+                            _ = t.TaskSource.TrySetResult(false);
+                        },
+                        null,
+                        timeout.Value,
+                        Timeout.InfiniteTimeSpan
+                    )
+                : null;
+        }
     }
 }
