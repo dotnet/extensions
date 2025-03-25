@@ -22,10 +22,12 @@ using Microsoft.Shared.Diagnostics;
 #pragma warning disable CA1031 // Do not catch general exception types
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 #pragma warning disable SA1118 // Parameter should not span multiple lines
+#pragma warning disable SA1500 // Braces for multi-line statements should not share line
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides factory methods for creating commonly used implementations of <see cref="AIFunction"/>.</summary>
+/// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/quickstarts/use-function-calling">Invoke .NET functions using an AI model.</related>
 public static partial class AIFunctionFactory
 {
     /// <summary>Holds the default options instance used when creating function.</summary>
@@ -195,7 +197,7 @@ public static partial class AIFunctionFactory
         public override JsonElement JsonSchema => FunctionDescriptor.JsonSchema;
         public override JsonSerializerOptions JsonSerializerOptions => FunctionDescriptor.JsonSerializerOptions;
 
-        protected override Task<object?> InvokeCoreAsync(
+        protected override ValueTask<object?> InvokeCoreAsync(
             AIFunctionArguments arguments,
             CancellationToken cancellationToken)
         {
@@ -232,7 +234,7 @@ public static partial class AIFunctionFactory
             serializerOptions.MakeReadOnly();
             ConcurrentDictionary<DescriptorKey, ReflectionAIFunctionDescriptor> innerCache = _descriptorCache.GetOrCreateValue(serializerOptions);
 
-            DescriptorKey key = new(method, options.Name, options.Description, options.ConfigureParameterBinding, schemaOptions);
+            DescriptorKey key = new(method, options.Name, options.Description, options.ConfigureParameterBinding, options.MarshalResult, schemaOptions);
             if (innerCache.TryGetValue(key, out ReflectionAIFunctionDescriptor? descriptor))
             {
                 return descriptor;
@@ -303,7 +305,7 @@ public static partial class AIFunctionFactory
             }
 
             // Get a marshaling delegate for the return value.
-            ReturnParameterMarshaller = GetReturnParameterMarshaller(key.Method, serializerOptions);
+            ReturnParameterMarshaller = GetReturnParameterMarshaller(key, serializerOptions);
 
             Method = key.Method;
             Name = key.Name ?? GetFunctionName(key.Method);
@@ -323,7 +325,7 @@ public static partial class AIFunctionFactory
         public JsonSerializerOptions JsonSerializerOptions { get; }
         public JsonElement JsonSchema { get; }
         public Func<AIFunctionArguments, CancellationToken, object?>[] ParameterMarshallers { get; }
-        public Func<object?, CancellationToken, Task<object?>> ReturnParameterMarshaller { get; }
+        public Func<object?, CancellationToken, ValueTask<object?>> ReturnParameterMarshaller { get; }
         public ReflectionAIFunction? CachedDefaultInstance { get; set; }
 
         private static string GetFunctionName(MethodInfo method)
@@ -463,20 +465,36 @@ public static partial class AIFunctionFactory
         /// <summary>
         /// Gets a delegate for handling the result value of a method, converting it into the <see cref="Task{FunctionResult}"/> to return from the invocation.
         /// </summary>
-        private static Func<object?, CancellationToken, Task<object?>> GetReturnParameterMarshaller(MethodInfo method, JsonSerializerOptions serializerOptions)
+        private static Func<object?, CancellationToken, ValueTask<object?>> GetReturnParameterMarshaller(
+            DescriptorKey key, JsonSerializerOptions serializerOptions)
         {
-            Type returnType = method.ReturnType;
+            Type returnType = key.Method.ReturnType;
             JsonTypeInfo returnTypeInfo;
+            Func<object?, Type?, CancellationToken, ValueTask<object?>>? marshalResult = key.MarshalResult;
 
             // Void
             if (returnType == typeof(void))
             {
-                return static (_, _) => Task.FromResult<object?>(null);
+                if (marshalResult is not null)
+                {
+                    return (result, cancellationToken) => marshalResult(null, null, cancellationToken);
+                }
+
+                return static (_, _) => new ValueTask<object?>((object?)null);
             }
 
             // Task
             if (returnType == typeof(Task))
             {
+                if (marshalResult is not null)
+                {
+                    return async (result, cancellationToken) =>
+                    {
+                        await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
+                        return await marshalResult(null, null, cancellationToken).ConfigureAwait(false);
+                    };
+                }
+
                 return async static (result, _) =>
                 {
                     await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
@@ -487,6 +505,15 @@ public static partial class AIFunctionFactory
             // ValueTask
             if (returnType == typeof(ValueTask))
             {
+                if (marshalResult is not null)
+                {
+                    return async (result, cancellationToken) =>
+                    {
+                        await ((ValueTask)ThrowIfNullResult(result)).ConfigureAwait(false);
+                        return await marshalResult(null, null, cancellationToken).ConfigureAwait(false);
+                    };
+                }
+
                 return async static (result, _) =>
                 {
                     await ((ValueTask)ThrowIfNullResult(result)).ConfigureAwait(false);
@@ -505,7 +532,9 @@ public static partial class AIFunctionFactory
                     {
                         await ((Task)ThrowIfNullResult(taskObj)).ConfigureAwait(false);
                         object? result = ReflectionInvoke(taskResultGetter, taskObj, null);
-                        return await SerializeResultAsync(result, returnTypeInfo, cancellationToken).ConfigureAwait(false);
+                        return marshalResult is not null ?
+                            await marshalResult(result, returnTypeInfo.Type, cancellationToken).ConfigureAwait(false) :
+                            await SerializeResultAsync(result, returnTypeInfo, cancellationToken).ConfigureAwait(false);
                     };
                 }
 
@@ -520,16 +549,20 @@ public static partial class AIFunctionFactory
                         var task = (Task)ReflectionInvoke(valueTaskAsTask, ThrowIfNullResult(taskObj), null)!;
                         await task.ConfigureAwait(false);
                         object? result = ReflectionInvoke(asTaskResultGetter, task, null);
-                        return await SerializeResultAsync(result, returnTypeInfo, cancellationToken).ConfigureAwait(false);
+                        return marshalResult is not null ?
+                            await marshalResult(result, returnTypeInfo.Type, cancellationToken).ConfigureAwait(false) :
+                            await SerializeResultAsync(result, returnTypeInfo, cancellationToken).ConfigureAwait(false);
                     };
                 }
             }
 
             // For everything else, just serialize the result as-is.
             returnTypeInfo = serializerOptions.GetTypeInfo(returnType);
-            return (result, cancellationToken) => SerializeResultAsync(result, returnTypeInfo, cancellationToken);
+            return marshalResult is not null ?
+                (result, cancellationToken) => marshalResult(result, returnTypeInfo.Type, cancellationToken) :
+                (result, cancellationToken) => SerializeResultAsync(result, returnTypeInfo, cancellationToken);
 
-            static async Task<object?> SerializeResultAsync(object? result, JsonTypeInfo returnTypeInfo, CancellationToken cancellationToken)
+            static async ValueTask<object?> SerializeResultAsync(object? result, JsonTypeInfo returnTypeInfo, CancellationToken cancellationToken)
             {
                 if (returnTypeInfo.Kind is JsonTypeInfoKind.None)
                 {
@@ -567,6 +600,7 @@ public static partial class AIFunctionFactory
             string? Name,
             string? Description,
             Func<ParameterInfo, AIFunctionFactoryOptions.ParameterBindingOptions>? GetBindParameterOptions,
+            Func<object?, Type?, CancellationToken, ValueTask<object?>>? MarshalResult,
             AIJsonSchemaCreateOptions SchemaOptions);
     }
 }

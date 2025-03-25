@@ -53,7 +53,7 @@ public abstract class AIFunction : AITool
     /// <param name="arguments">The arguments to pass to the function's invocation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function's execution.</returns>
-    public Task<object?> InvokeAsync(
+    public ValueTask<object?> InvokeAsync(
         AIFunctionArguments? arguments = null,
         CancellationToken cancellationToken = default) =>
         InvokeCoreAsync(arguments ?? [], cancellationToken);
@@ -62,7 +62,7 @@ public abstract class AIFunction : AITool
     /// <param name="arguments">The arguments to pass to the function's invocation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>The result of the function's execution.</returns>
-    protected abstract Task<object?> InvokeCoreAsync(
+    protected abstract ValueTask<object?> InvokeCoreAsync(
         AIFunctionArguments arguments,
         CancellationToken cancellationToken);
 }

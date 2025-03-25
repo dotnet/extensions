@@ -42,6 +42,7 @@ namespace Microsoft.Extensions.AI.Evaluation.Quality;
 /// <b>GPT-4o</b>
 /// </para>
 /// </remarks>
+/// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/tutorials/evaluate-with-reporting">Tutorial: Evaluate a model's response with response caching and reporting.</related>
 public sealed partial class RelevanceTruthAndCompletenessEvaluator : ChatConversationEvaluator
 {
     /// <summary>

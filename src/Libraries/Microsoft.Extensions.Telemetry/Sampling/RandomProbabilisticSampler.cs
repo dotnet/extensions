@@ -20,13 +20,14 @@ namespace Microsoft.Extensions.Diagnostics.Sampling;
 /// </summary>
 internal sealed class RandomProbabilisticSampler : LoggingSampler, IDisposable
 {
+    internal RandomProbabilisticSamplerFilterRule[] LastKnownGoodSamplerRules;
+
 #if NETFRAMEWORK
     private static readonly System.Threading.ThreadLocal<Random> _randomInstance = new(() => new Random());
 #endif
 
     private readonly IDisposable? _samplerOptionsChangeTokenRegistration;
     private readonly LogSamplingRuleSelector<RandomProbabilisticSamplerFilterRule> _ruleSelector;
-    private RandomProbabilisticSamplerFilterRule[] _lastKnownGoodSamplerRules;
     private volatile bool _disposed;
 
     /// <summary>
@@ -37,7 +38,7 @@ internal sealed class RandomProbabilisticSampler : LoggingSampler, IDisposable
         IOptionsMonitor<RandomProbabilisticSamplerOptions> options)
     {
         _ruleSelector = Throw.IfNull(ruleSelector);
-        _lastKnownGoodSamplerRules = Throw.IfNullOrMemberNull(options, options!.CurrentValue).Rules.ToArray();
+        LastKnownGoodSamplerRules = Throw.IfNullOrMemberNull(options, options!.CurrentValue).Rules.ToArray();
         _samplerOptionsChangeTokenRegistration = options.OnChange(OnSamplerOptionsChanged);
     }
 
@@ -70,11 +71,11 @@ internal sealed class RandomProbabilisticSampler : LoggingSampler, IDisposable
     {
         if (updatedOptions is null)
         {
-            _lastKnownGoodSamplerRules = Array.Empty<RandomProbabilisticSamplerFilterRule>();
+            LastKnownGoodSamplerRules = Array.Empty<RandomProbabilisticSamplerFilterRule>();
         }
         else
         {
-            _lastKnownGoodSamplerRules = updatedOptions.Rules.ToArray();
+            LastKnownGoodSamplerRules = updatedOptions.Rules.ToArray();
         }
 
         _ruleSelector.InvalidateCache();
@@ -84,7 +85,7 @@ internal sealed class RandomProbabilisticSampler : LoggingSampler, IDisposable
     {
         probability = 0.0;
 
-        RandomProbabilisticSamplerFilterRule? rule = _ruleSelector.Select(_lastKnownGoodSamplerRules, logEntry.Category, logEntry.LogLevel, logEntry.EventId);
+        RandomProbabilisticSamplerFilterRule? rule = _ruleSelector.Select(LastKnownGoodSamplerRules, logEntry.Category, logEntry.LogLevel, logEntry.EventId);
 
         if (rule is null)
         {
