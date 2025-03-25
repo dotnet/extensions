@@ -20,7 +20,7 @@ public class WindowsDiskPerSecondPerfCountersTests
     [ConditionalFact]
     public void DiskReadsPerfCounter_Per60Seconds()
     {
-        const string CounterName = "Disk Reads/sec";
+        const string CounterName = WindowsDiskPerfCounterNames.DiskReadsCounter;
         var performanceCounterFactory = new Mock<IPerformanceCounterFactory>();
         var fakeTimeProvider = new FakeTimeProvider { AutoAdvanceAmount = TimeSpan.FromSeconds(60) };
 
@@ -28,7 +28,7 @@ public class WindowsDiskPerSecondPerfCountersTests
             performanceCounterFactory.Object,
             fakeTimeProvider,
             CategoryName,
-            counterName: CounterName,
+            CounterName,
             instanceNames: ["C:", "D:", "_Total"]);
 
         var counterC = new FakePerformanceCounter("C:", [0, 1, 1.5f, 2, 2.5f]);
@@ -70,7 +70,7 @@ public class WindowsDiskPerSecondPerfCountersTests
     [ConditionalFact]
     public void DiskWriteBytesPerfCounter_Per30Seconds()
     {
-        const string CounterName = "Disk Write Bytes/sec";
+        const string CounterName = WindowsDiskPerfCounterNames.DiskWriteBytesCounter;
         var performanceCounterFactory = new Mock<IPerformanceCounterFactory>();
         var fakeTimeProvider = new FakeTimeProvider { AutoAdvanceAmount = TimeSpan.FromSeconds(30) };
 
@@ -81,7 +81,7 @@ public class WindowsDiskPerSecondPerfCountersTests
             counterName: CounterName,
             instanceNames: ["C:", "D:", "_Total"]);
 
-        var counterC = new FakePerformanceCounter("C:", [0, 100, 150.5f, 20, 3.1415f]);
+        var counterC = new FakePerformanceCounter("C:", [0, 100, 150.5f, 20, 3.1416f]);
         var counterD = new FakePerformanceCounter("D:", [0, 2000, 2025, 0, 2.7183f]);
 
         performanceCounterFactory
@@ -113,7 +113,7 @@ public class WindowsDiskPerSecondPerfCountersTests
 
         // Simulate the fourth tick
         perSecondPerfCounters.UpdateDiskCounters();
-        Assert.Equal(8209, perSecondPerfCounters.TotalCountDict["C:"]); // 8115 + 3.1415 * 30 = 8209
+        Assert.Equal(8209, perSecondPerfCounters.TotalCountDict["C:"]); // 8115 + 3.1416 * 30 = 8209
         Assert.Equal(120831, perSecondPerfCounters.TotalCountDict["D:"]); // 120750 + 3.5 * 30 = 120831
     }
 }

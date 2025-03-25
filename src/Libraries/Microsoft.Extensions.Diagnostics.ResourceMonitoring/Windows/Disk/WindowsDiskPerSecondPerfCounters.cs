@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.Versioning;
 
@@ -36,7 +37,7 @@ internal sealed class WindowsDiskPerSecondPerfCounters
     /// Gets the disk I/O measurements.
     /// Key: Disk name, Value: Total count.
     /// </summary>
-    internal Dictionary<string, long> TotalCountDict { get; } = [];
+    internal IDictionary<string, long> TotalCountDict { get; } = new ConcurrentDictionary<string, long>();
 
     internal void InitializeDiskCounters()
     {
