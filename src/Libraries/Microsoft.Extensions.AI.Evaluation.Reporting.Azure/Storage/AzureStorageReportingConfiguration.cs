@@ -45,10 +45,22 @@ public static class AzureStorageReportingConfiguration
     /// The name of the current execution. See <see cref="ScenarioRun.ExecutionName"/> for more information about this
     /// concept. Uses a fixed default value <c>"Default"</c> if omitted.
     /// </param>
+    /// <param name="evaluationMetricInterpreter">
+    /// An optional function that can be used to override <see cref="EvaluationMetricInterpretation"/>s for
+    /// <see cref="EvaluationMetric"/>s returned from evaluations that use the returned
+    /// <see cref="ReportingConfiguration"/>. The supplied function can either return a new
+    /// <see cref="EvaluationMetricInterpretation"/> for any <see cref="EvaluationMetric"/> that is supplied to it, or
+    /// return <see langword="null"/> if the <see cref="EvaluationMetric.Interpretation"/> should be left unchanged.
+    /// </param>
+    /// <param name="tags">
+    /// A optional set of text tags applicable to all <see cref="ScenarioRun"/>s created using the returned
+    /// <see cref="ReportingConfiguration"/>.
+    /// </param>
     /// <returns>
     /// A <see cref="ReportingConfiguration"/> that persists <see cref="ScenarioRunResult"/>s to Azure Storage
     /// and also uses Azure Storage to cache AI responses.
     /// </returns>
+#pragma warning disable S107 // Methods should not have too many parameters
     public static ReportingConfiguration Create(
         DataLakeDirectoryClient client,
         IEnumerable<IEvaluator> evaluators,
@@ -56,7 +68,10 @@ public static class AzureStorageReportingConfiguration
         ChatConfiguration? chatConfiguration = null,
         bool enableResponseCaching = true,
         IEnumerable<string>? cachingKeys = null,
-        string executionName = Defaults.DefaultExecutionName)
+        string executionName = Defaults.DefaultExecutionName,
+        Func<EvaluationMetric, EvaluationMetricInterpretation?>? evaluationMetricInterpreter = null,
+        IEnumerable<string>? tags = null)
+#pragma warning restore S107
     {
         IResponseCacheProvider? responseCacheProvider =
             chatConfiguration is not null && enableResponseCaching
@@ -71,6 +86,8 @@ public static class AzureStorageReportingConfiguration
             chatConfiguration,
             responseCacheProvider,
             cachingKeys,
-            executionName);
+            executionName,
+            evaluationMetricInterpreter,
+            tags);
     }
 }

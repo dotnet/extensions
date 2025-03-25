@@ -26,6 +26,10 @@ export class ScoreNode {
     numPassingScenarios: number = 0;
     numFailingScenarios: number = 0;
 
+    setChildren(children: Map<string, ScoreNode>) {
+        this.children = children;
+    }
+
     insertNode(path: string[], scenario: ScenarioRunResult) {
         if (path.length === 0) {
             if (this.scenario) {
@@ -64,7 +68,7 @@ export class ScoreNode {
         return [...flattener(this, "")];
     }
 
-    aggregate() {
+    aggregate(filteredTags: string[] = []) {
         this.failed = false;
         this.numPassingIterations = 0;
         this.numFailingIterations = 0;
@@ -72,6 +76,10 @@ export class ScoreNode {
         this.numFailingScenarios = 0;
 
         if (this.isLeafNode) {
+            if (filteredTags.length > 0 && !this.scenario?.tags?.some(tag => filteredTags.includes(tag))) {
+                return;
+            }
+
             this.failed = false;
             for (const metric of Object.values(this.scenario?.evaluationResult.metrics ?? [])) {
                 if ((metric.interpretation && metric.interpretation.failed) ||
@@ -80,32 +88,35 @@ export class ScoreNode {
                     break;
                 }
             }
+
             this.numPassingIterations = this.failed ? 0 : 1;
             this.numFailingIterations = this.failed ? 1 : 0;
             const lastMessage = this.scenario?.messages[this.scenario?.messages.length - 1];
-            
-            const { messages } = getPromptDetails(lastMessage ? [lastMessage] : [], this.scenario?.modelResponse);
+
+            const { messages } = getConversationDisplay(lastMessage ? [lastMessage] : [], this.scenario?.modelResponse);
             let history = "";
             if (messages.length === 1) {
                 history = messages[0].content;
             } else if (messages.length > 1) {
                 history = messages.map(m => `[${m.participantName}] ${m.content}`).join("\n\n");
             }
-            
+
             this.shortenedPrompt = shortenPrompt(history);
         } else {
             for (const child of this.childNodes) {
-                child.aggregate();
-                this.failed = this.failed || child.failed;
-                this.numPassingIterations += child.numPassingIterations;
-                this.numFailingIterations += child.numFailingIterations;
-                if (this.nodeType == ScoreNodeType.Scenario) {
-                    this.numPassingScenarios = this.failed ? 0 : 1;
-                    this.numFailingScenarios = this.failed ? 1 : 0;
-                    this.shortenedPrompt = child.shortenedPrompt;
-                } else if (this.nodeType == ScoreNodeType.Group) {
-                    this.numPassingScenarios += child.numPassingScenarios;
-                    this.numFailingScenarios += child.numFailingScenarios;
+                child.aggregate(filteredTags);
+                if (filteredTags.length === 0 || child.numPassingIterations + child.numFailingIterations > 0) {
+                    this.failed = this.failed || child.failed;
+                    this.numPassingIterations += child.numPassingIterations;
+                    this.numFailingIterations += child.numFailingIterations;
+                    if (this.nodeType == ScoreNodeType.Scenario) {
+                        this.numPassingScenarios = this.failed ? 0 : 1;
+                        this.numFailingScenarios = this.failed ? 1 : 0;
+                        this.shortenedPrompt = child.shortenedPrompt;
+                    } else if (this.nodeType == ScoreNodeType.Group) {
+                        this.numPassingScenarios += child.numPassingScenarios;
+                        this.numFailingScenarios += child.numFailingScenarios;
+                    }
                 }
             }
         }
@@ -166,13 +177,19 @@ const isTextContent = (content: AIContent): content is TextContent => {
     return (content as TextContent).text !== undefined;
 };
 
+export type ConversationDisplay = {
+    messages: ChatMessageDisplay[];
+    model?: string;
+    usage?: UsageDetails;
+};
+
 export type ChatMessageDisplay = {
     role: string;
     participantName: string;
     content: string;
 };
 
-export const getPromptDetails = (messages: ChatMessage[], modelResponse?: ChatResponse): { messages: ChatMessageDisplay[] } => {
+export const getConversationDisplay = (messages: ChatMessage[], modelResponse?: ChatResponse): ConversationDisplay => {
     const chatMessages: ChatMessageDisplay[] = [];
     
     for (const m of messages) {
@@ -203,5 +220,9 @@ export const getPromptDetails = (messages: ChatMessage[], modelResponse?: ChatRe
         }
     }
 
-    return { messages: chatMessages };
+    return {
+        messages: chatMessages,
+        model: modelResponse?.modelId,
+        usage: modelResponse?.usage
+    };
 };

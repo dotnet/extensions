@@ -5,7 +5,13 @@ import { makeStyles, mergeClasses, tokens, Tooltip } from "@fluentui/react-compo
 import { DismissCircle16Regular, Info16Regular, Warning16Regular } from "@fluentui/react-icons";
 
 const useCardListStyles = makeStyles({
-    metricCardList: { display: 'flex', gap: '1rem', flexWrap: 'wrap' },
+    metricCardList: {
+        display: 'flex',
+        gap: '1rem',
+        flexWrap: 'wrap',
+        maxWidth: '75rem',
+        margin: '0 auto',
+    },
 });
 
 export const MetricCardList = ({ scenario, onMetricSelect, selectedMetric }: { 
@@ -35,7 +41,7 @@ const useCardStyles = makeStyles({
         alignItems: 'center', 
         gap: '0.5rem',
         padding: '.75rem', 
-        border: '1px solid #e0e0e0', 
+        border: `1px solid ${tokens.colorNeutralStroke2}`,
         borderRadius: '4px',
         width: '12rem',
         cursor: 'pointer',
@@ -43,12 +49,12 @@ const useCardStyles = makeStyles({
         position: 'relative',
         '&:hover': {
             opacity: 0.9,
-            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+            boxShadow: tokens.shadow4,
         }
     },
     selectedCard: {
         zIndex: 1,
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)',
+        boxShadow: tokens.shadow8,
         outline: `2px solid ${tokens.colorNeutralForeground3}`,
         outlineOffset: '0px',
         border: 'none'
