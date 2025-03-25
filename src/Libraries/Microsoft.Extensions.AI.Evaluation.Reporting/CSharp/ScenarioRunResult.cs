@@ -45,7 +45,7 @@ public sealed class ScenarioRunResult(
     string executionName,
     DateTime creationTime,
     IList<ChatMessage> messages,
-    ChatResponse modelResponse,
+    ChatResponse? modelResponse,
     EvaluationResult evaluationResult,
     int? formatVersion = null)
 {
@@ -70,7 +70,7 @@ public sealed class ScenarioRunResult(
         string executionName,
         DateTime creationTime,
         IEnumerable<ChatMessage> messages,
-        ChatResponse modelResponse,
+        ChatResponse? modelResponse,
         EvaluationResult evaluationResult)
             : this(
                 scenarioName,
@@ -122,7 +122,7 @@ public sealed class ScenarioRunResult(
     /// <summary>
     /// Gets or sets the response being evaluated in this <see cref="ScenarioRunResult"/>.
     /// </summary>
-    public ChatResponse ModelResponse { get; set; } = modelResponse;
+    public ChatResponse? ModelResponse { get; set; } = modelResponse;
 
     /// <summary>
     /// Gets or sets the <see cref="Evaluation.EvaluationResult"/> for the <see cref="ScenarioRun"/> corresponding to

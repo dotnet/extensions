@@ -5,7 +5,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from '../../components/App.tsx'
 import { FluentProvider, webLightTheme } from '@fluentui/react-components';
-import { createScoreTree } from '../../components/Summary.ts';
+import { createScoreSummary } from '../../components/Summary.ts';
 
 
 let dataset: Dataset = { scenarioRunResults: [] };
@@ -16,12 +16,12 @@ if (!import.meta.env.PROD) {
   dataset = await import("../devdata.json") as unknown as Dataset;
 }
 
-const scoreTree = createScoreTree(dataset);
+const scoreSummary = createScoreSummary(dataset);
 
 createRoot(document.getElementById('root')!).render(
   <FluentProvider theme={webLightTheme}>
     <StrictMode>
-      <App tree={scoreTree} dataset={dataset} />
+      <App scoreSummary={scoreSummary} dataset={dataset} />
     </StrictMode>
   </FluentProvider>,
 )

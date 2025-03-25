@@ -7,7 +7,7 @@ export enum ScoreNodeType {
     Iteration,
 }
 
-export type SummaryResults = {
+export type ScoreSummary = {
     primaryResult: ScoreNode;
     history: Map<string,ScoreNode>;
 };
@@ -134,7 +134,7 @@ export class ScoreNode {
     }
 };
 
-export const createScoreTree = (dataset: Dataset): SummaryResults => {
+export const createScoreSummary = (dataset: Dataset): ScoreSummary => {
 
     const executionMap = new Map<string, ScoreNode>();
     for (const scenario of dataset.scenarioRunResults) {
@@ -157,7 +157,7 @@ export const createScoreTree = (dataset: Dataset): SummaryResults => {
     return {
         primaryResult: primaryResult,
         history: executionMap,
-    } as SummaryResults;
+    } as ScoreSummary;
 };
 
 const shortenPrompt = (prompt: string | undefined) => {

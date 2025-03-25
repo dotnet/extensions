@@ -3,26 +3,26 @@
 
 import { useState } from 'react';
 import { Settings28Regular } from '@fluentui/react-icons';
-import { Drawer, DrawerBody, DrawerHeader, DrawerHeaderTitle, Switch } from '@fluentui/react-components';
+import { Drawer, DrawerBody, DrawerHeader, DrawerHeaderTitle, Dropdown, Switch, Option, SelectionEvents, OptionOnSelectData } from '@fluentui/react-components';
 import { makeStyles } from '@fluentui/react-components';
 import './App.css';
-import { SummaryResults } from './Summary';
+import { ScoreSummary } from './Summary';
 import { ScenarioGroup } from './ScenarioTree';
 
 type AppProperties = {
   dataset: Dataset,
-  tree: SummaryResults,
+  scoreSummary: ScoreSummary,
 };
 
 const useStyles = makeStyles({
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, backgroundColor: 'white', zIndex: 1 },
+  header: { display: 'flex', alignItems: 'center', position: 'sticky', top: 0, backgroundColor: 'white', zIndex: 1, gap: '1rem' },
   footerText: { fontSize: '0.8rem', marginTop: '2rem' },
   closeButton: { position: 'absolute', top: '1.5rem', right: '1rem', cursor: 'pointer', fontSize: '2rem' },
   switchLabel: { fontSize: '1rem', paddingTop: '1rem' },
   drawerBody: { paddingTop: '1rem' },
 });
 
-function App({ dataset, tree }: AppProperties) {
+function App({ dataset, scoreSummary }: AppProperties) {
   const classes = useStyles();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [renderMarkdown, setRenderMarkdown] = useState(true);
@@ -35,10 +35,11 @@ function App({ dataset, tree }: AppProperties) {
     <>
       <div className={classes.header}>
         <h1>AI Evaluation Report</h1>
+        <div style={{ flexGrow: 1 }} />
         <Settings28Regular onClick={toggleSettings} style={{ cursor: 'pointer' }} />
       </div>
 
-      <ScenarioGroup node={tree.primaryResult} renderMarkdown={renderMarkdown} />
+      <ScenarioGroup summaryResults={scoreSummary} renderMarkdown={renderMarkdown} />
 
       <p className={classes.footerText}>Generated at {dataset.createdAt} by Microsoft.Extensions.AI.Evaluation.Reporting version {dataset.generatorVersion}</p>
 

@@ -37,7 +37,7 @@ const useCardStyles = makeStyles({
         padding: '.75rem', 
         border: '1px solid #e0e0e0', 
         borderRadius: '4px',
-        width: '12rem',
+        width: '8rem',
         cursor: 'pointer',
         transition: 'box-shadow 0.2s ease-in-out, outline 0.2s ease-in-out',
         position: 'relative',
@@ -196,30 +196,21 @@ export const MetricCard = ({
         statusTooltip = 'This metric has additional information. Click the card to view more details.';
     }
     
-    const tooltipContent = (
-        <div>
-            <div>Name: {metric.name}</div>
-            <div>Value: {metricValue}</div>
-        </div>
-    );
-    
     return (
-        <Tooltip content={tooltipContent} relationship="label">
-            <div className={cardClass} onClick={onClick}>
-                <div className={classes.iconPlaceholder}>
-                    {statusIcon && (
-                        <Tooltip content={statusTooltip} relationship="description">
-                            <span>{statusIcon}</span>
-                        </Tooltip>
-                    )}
-                </div>
-                <div className={classes.metricNameText}>
-                    {metric.name}
-                </div>
-                <div className={mergeClasses(fg, classes.metricValueText)}>
-                    {metricValue}
-                </div>
+        <div className={cardClass} onClick={onClick}>
+            <div className={classes.iconPlaceholder}>
+                {statusIcon && (
+                    <Tooltip content={statusTooltip} relationship="description">
+                        <span>{statusIcon}</span>
+                    </Tooltip>
+                )}
             </div>
-        </Tooltip>
+            <div className={classes.metricNameText}>
+                {metric.name}
+            </div>
+            <div className={mergeClasses(fg, classes.metricValueText)}>
+                {metricValue}
+            </div>
+        </div>
     );
 };

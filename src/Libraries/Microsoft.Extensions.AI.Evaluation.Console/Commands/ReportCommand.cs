@@ -51,14 +51,25 @@ internal sealed partial class ReportCommand(ILogger logger)
 
         List<ScenarioRunResult> results = [];
 
+        string? firstExecutionName = null;
+
         await foreach (string executionName in
             resultStore.GetLatestExecutionNamesAsync(lastN, cancellationToken).ConfigureAwait(false))
         {
+            firstExecutionName ??= executionName;
+
             await foreach (ScenarioRunResult result in
                 resultStore.ReadResultsAsync(
                     executionName,
                     cancellationToken: cancellationToken).ConfigureAwait(false))
             {
+                if (result.ExecutionName != firstExecutionName)
+                {
+                    // Clear the chat data for following executions
+                    result.Messages = [];
+                    result.ModelResponse = null;
+                }
+
                 results.Add(result);
 
                 logger.LogInformation("Execution: {executionName} Scenario: {scenarioName} Iteration: {iterationName}", result.ExecutionName, result.ScenarioName, result.IterationName);

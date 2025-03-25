@@ -2,49 +2,58 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import React, { useState, useCallback } from "react";
-import { makeStyles, tokens, Tree, TreeItem, TreeItemLayout, TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent, mergeClasses } from "@fluentui/react-components";
-import { ScoreNode, ScoreNodeType, getPromptDetails, ChatMessageDisplay } from "./Summary";
+import { makeStyles, tokens, Tree, TreeItem, TreeItemLayout, TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent, mergeClasses, Button, Divider, Table, TableBody, TableCell, TableHeader, TableHeaderCell, TableRow } from "@fluentui/react-components";
+import { ScoreNode, ScoreNodeType, getPromptDetails, ChatMessageDisplay, ScoreSummary } from "./Summary";
 import { PassFailBar } from "./PassFailBar";
 import { MetricCardList, type MetricType } from "./MetricCard";
 import ReactMarkdown from "react-markdown";
-import { DismissCircle16Regular, Info16Regular, Warning16Regular } from "@fluentui/react-icons";
+import { DismissCircle16Regular, Info16Regular, Warning16Regular, DataTrendingRegular } from "@fluentui/react-icons";
 import { ChevronDown12Regular, ChevronRight12Regular } from '@fluentui/react-icons';
 
-const ScenarioLevel = ({ node, parentPath, isOpen, renderMarkdown }: { 
-  node: ScoreNode, 
-  parentPath: string, 
-  isOpen: (path: string) => boolean, 
-  renderMarkdown: boolean,
+const ScenarioLevel = ({ node, parentPath, isOpen, renderMarkdown }: {
+    node: ScoreNode,
+    parentPath: string,
+    isOpen: (path: string) => boolean,
+    renderMarkdown: boolean,
 }) => {
+    const [showTrendsAtLevel, setShowTrendsAtLevel] = useState(false);
+
     const path = `${parentPath}.${node.name}`;
     if (node.isLeafNode) {
         return <TreeItem itemType="branch" value={path}>
             <TreeItemLayout>
-                <ScoreNodeHeader item={node} showPrompt={!isOpen(path)}/>
+                <ScoreNodeHeader item={node} showPrompt={!isOpen(path)} />
             </TreeItemLayout>
             <Tree>
                 <TreeItem itemType="leaf" >
                     <TreeItemLayout>
-                        <ScoreDetail scenario={node.scenario!} renderMarkdown={renderMarkdown}/>
+                        <IterationScoreTrends scenario={node.scenario!} initiallyOpen={false} />
+                        <ScoreDetail scenario={node.scenario!} renderMarkdown={renderMarkdown} />
                     </TreeItemLayout>
                 </TreeItem>
             </Tree>
         </TreeItem>
     } else {
         return <TreeItem itemType="branch" value={path}>
-            <TreeItemLayout>
-                <ScoreNodeHeader item={node} showPrompt={!isOpen(path)}/>
+            <TreeItemLayout actions={
+                <Button aria-label="Trends" onClick={() => setShowTrendsAtLevel(!showTrendsAtLevel)}
+                    appearance="subtle" icon={<DataTrendingRegular />} />
+            }>
+                <ScoreNodeHeader item={node} showPrompt={!isOpen(path)} />
+                {showTrendsAtLevel && <IterationScoreTrends scenario={node.scenario!} initiallyOpen={true} />}
             </TreeItemLayout>
             <Tree>
                 {node.childNodes.map((n) => (
-                    <ScenarioLevel node={n} key={n.name} parentPath={path} isOpen={isOpen} renderMarkdown={renderMarkdown}/>
+                    <React.Fragment key={path + '.' + n.name}>
+                        <ScenarioLevel node={n} key={path + '.' + n.name} parentPath={path} isOpen={isOpen} renderMarkdown={renderMarkdown} />
+                    </React.Fragment>
                 ))}
             </Tree>
         </TreeItem>;
     }
 };
 
-export const ScenarioGroup = ({ node, renderMarkdown }: { node: ScoreNode, renderMarkdown: boolean }) => {
+export const ScenarioGroup = ({ summaryResults, renderMarkdown }: { summaryResults: ScoreSummary, renderMarkdown: boolean }) => {
     const [openItems, setOpenItems] = useState<Set<TreeItemValue>>(() => new Set());
     const handleOpenChange = useCallback((_: TreeOpenChangeEvent, data: TreeOpenChangeData) => {
         setOpenItems(data.openItems);
@@ -52,9 +61,10 @@ export const ScenarioGroup = ({ node, renderMarkdown }: { node: ScoreNode, rende
     const isOpen = (name: string) => openItems.has(name);
 
     return (
-        <Tree aria-label="Default" appearance="transparent" onOpenChange={handleOpenChange} defaultOpenItems={["." + node.name]}>
-            <ScenarioLevel node={node} parentPath={""} isOpen={isOpen} renderMarkdown={renderMarkdown} />
-        </Tree>);        
+        <Tree aria-label="Default" appearance="transparent" onOpenChange={handleOpenChange}
+            defaultOpenItems={["." + summaryResults.primaryResult.name]}>
+            <ScenarioLevel node={summaryResults.primaryResult} parentPath={""} isOpen={isOpen} renderMarkdown={renderMarkdown} />
+        </Tree>);
 };
 
 export const ScoreDetail = ({ scenario, renderMarkdown }: { scenario: ScenarioRunResult, renderMarkdown: boolean }) => {
@@ -64,26 +74,26 @@ export const ScoreDetail = ({ scenario, renderMarkdown }: { scenario: ScenarioRu
 
     return (<div className={classes.iterationArea}>
         <MetricCardList
-          scenario={scenario}
-          onMetricSelect={setSelectedMetric}
-          selectedMetric={selectedMetric}
+            scenario={scenario}
+            onMetricSelect={setSelectedMetric}
+            selectedMetric={selectedMetric}
         />
         {selectedMetric && <MetricDetailsSection metric={selectedMetric} />}
-        <PromptDetails messages={messages} renderMarkdown={renderMarkdown} />
+        {messages.length > 0 && <PromptDetails messages={messages} renderMarkdown={renderMarkdown} />}
     </div>);
 };
 
 export const MetricDetailsSection = ({ metric }: { metric: MetricType }) => {
     const classes = useStyles();
     const [isExpanded, setIsExpanded] = useState(true);
-    
+
     const reason = metric.reason;
     const hasReason = reason != null;
     const interpretationReason = metric.interpretation?.reason;
     const hasInterpretationReason = interpretationReason != null;
     const diagnostics = metric.diagnostics || [];
     const hasDiagnostics = diagnostics.length > 0;
-    
+
     if (!hasReason && !hasInterpretationReason && !hasDiagnostics) return null;
 
     return (
@@ -102,7 +112,7 @@ export const MetricDetailsSection = ({ metric }: { metric: MetricType }) => {
                                 <span>{reason}</span>
                             </div>
                         </div>
-                    )} 
+                    )}
 
                     {hasInterpretationReason && (
                         <div className={classes.sectionContent}>
@@ -111,14 +121,14 @@ export const MetricDetailsSection = ({ metric }: { metric: MetricType }) => {
                                 <div className={classes.sectionSubHeader}>Interpretation Reason</div>
                             }
                             <div>
-                                {metric.interpretation?.failed ? 
-                                    <span className={classes.failMessage}><DismissCircle16Regular /> {interpretationReason}</span> : 
+                                {metric.interpretation?.failed ?
+                                    <span className={classes.failMessage}><DismissCircle16Regular /> {interpretationReason}</span> :
                                     <span>{interpretationReason}</span>
                                 }
                             </div>
                         </div>
-                    )} 
-                    
+                    )}
+
                     {hasDiagnostics && (
                         <div>
                             <div className={classes.sectionSubHeader}>Diagnostics</div>
@@ -133,11 +143,11 @@ export const MetricDetailsSection = ({ metric }: { metric: MetricType }) => {
 
 const DiagnosticsContent = ({ diagnostics }: { diagnostics: EvaluationDiagnostic[] }) => {
     const classes = useStyles();
-    
+
     const errorDiagnostics = diagnostics.filter(d => d.severity === "error");
     const warningDiagnostics = diagnostics.filter(d => d.severity === "warning");
     const infoDiagnostics = diagnostics.filter(d => d.severity === "informational");
-    
+
     return (
         <>
             {errorDiagnostics.map((diag, index) => (
@@ -171,7 +181,7 @@ const useStyles = makeStyles({
         borderRadius: '4px',
         backgroundColor: tokens.colorNeutralBackground3,
     },
-    scenarioLabel: { 
+    scenarioLabel: {
         whiteSpace: 'nowrap',
         fontWeight: '500',
         fontSize: tokens.fontSizeBase300,
@@ -191,13 +201,16 @@ const useStyles = makeStyles({
     },
     section: {
         marginTop: '0.75rem',
+        padding: '1rem',
+        border: '2px solid ' + tokens.colorNeutralStroke1,
+        borderRadius: '8px',
+        right: '0',
     },
     sectionHeader: {
         display: 'flex',
         alignItems: 'center',
         cursor: 'pointer',
         userSelect: 'none',
-        marginBottom: '0.5rem',
     },
     sectionHeaderText: {
         margin: 0,
@@ -246,14 +259,15 @@ const useStyles = makeStyles({
     messageRow: {
         display: 'flex',
         flexDirection: 'column',
-        width: '60rem',
         position: 'relative',
     },
     userMessageRow: {
         marginLeft: '0',
+        marginRight: '10rem',
     },
     assistantMessageRow: {
         marginLeft: '10rem',
+        marginRight: '0',
     },
     messageParticipantName: {
         fontSize: tokens.fontSizeBase200,
@@ -266,8 +280,8 @@ const useStyles = makeStyles({
         borderRadius: '12px',
         overflow: 'hidden',
         wordBreak: 'break-word',
-        width: '100%',
         backgroundColor: tokens.colorNeutralBackground3,
+        border: '1px solid ' + tokens.colorNeutralStroke2,
     },
 });
 
@@ -278,7 +292,13 @@ const PassFailBadge = ({ pass, total }: { pass: number, total: number }) => {
     </div>);
 };
 
-const ScoreNodeHeader = ({ item, showPrompt }: { item: ScoreNode, showPrompt?: boolean }) => {
+const ScoreNodeHeader = (
+    { item, showPrompt }:
+        {
+            item: ScoreNode,
+            showPrompt?: boolean,
+        }) => {
+
     const classes = useStyles();
     let ctPass, ctFail;
     switch (item.nodeType) {
@@ -299,7 +319,7 @@ const ScoreNodeHeader = ({ item, showPrompt }: { item: ScoreNode, showPrompt?: b
     const parts = item.name.split(' / ');
 
     return (<div className={classes.headerContainer}>
-        <PassFailBar pass={ctPass} total={ctPass + ctFail} width="24px" height="12px"/>
+        <PassFailBar pass={ctPass} total={ctPass + ctFail} width="24px" height="12px" />
         <div className={classes.scenarioLabel}>
             {parts.map((part, index) => (
                 <React.Fragment key={`${part}-${index}`}>
@@ -313,9 +333,9 @@ const ScoreNodeHeader = ({ item, showPrompt }: { item: ScoreNode, showPrompt?: b
     </div>);
 };
 
-export const PromptDetails = ({ messages, renderMarkdown }: { 
-    messages: ChatMessageDisplay[], 
-    renderMarkdown: boolean 
+export const PromptDetails = ({ messages, renderMarkdown }: {
+    messages: ChatMessageDisplay[],
+    renderMarkdown: boolean
 }) => {
     const classes = useStyles();
     const [isExpanded, setIsExpanded] = useState(true);
@@ -342,14 +362,48 @@ export const PromptDetails = ({ messages, renderMarkdown }: {
                             <div key={index} className={messageRowClass}>
                                 <div className={classes.messageParticipantName}>{message.participantName}</div>
                                 <div className={classes.messageBubble}>
-                                    {renderMarkdown ? 
-                                        <ReactMarkdown>{message.content}</ReactMarkdown> : 
+                                    {renderMarkdown ?
+                                        <ReactMarkdown>{message.content}</ReactMarkdown> :
                                         <pre style={{ whiteSpace: 'pre-wrap' }}>{message.content}</pre>
                                     }
                                 </div>
                             </div>
                         );
                     })}
+                </div>
+            )}
+        </div>
+    );
+};
+
+export const IterationScoreTrends = ({scenario, initiallyOpen }: { scenario: ScenarioRunResult, initiallyOpen: boolean }) => {
+    const classes = useStyles();
+    const [isExpanded, setIsExpanded] = useState(initiallyOpen);
+
+    return (
+        <div className={classes.section}>
+            <div className={classes.sectionHeader} onClick={(evt) => {
+                evt.stopPropagation();
+                setIsExpanded(!isExpanded);
+            }}>
+                {isExpanded ? <ChevronDown12Regular /> : <ChevronRight12Regular />}
+                <h3 className={classes.sectionHeaderText}>Data Trends</h3>
+            </div>
+
+            {isExpanded && (
+                <div className={classes.sectionContainer}>
+                    <Table>
+                        <TableHeader>
+                            <TableHeaderCell>{scenario.iterationName}</TableHeaderCell>
+                        </TableHeader>
+                        <TableBody>
+                            <TableRow>
+                                <TableCell>
+                                    
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
                 </div>
             )}
         </div>
