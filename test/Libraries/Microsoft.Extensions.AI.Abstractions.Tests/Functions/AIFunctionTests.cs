@@ -21,10 +21,10 @@ public class AIFunctionTests
         public override string Name => "name";
         public override string Description => "";
 
-        protected override Task<object?> InvokeCoreAsync(AIFunctionArguments arguments, CancellationToken cancellationToken)
+        protected override ValueTask<object?> InvokeCoreAsync(AIFunctionArguments arguments, CancellationToken cancellationToken)
         {
             Assert.NotNull(arguments);
-            return Task.FromResult<object?>((arguments, cancellationToken));
+            return new ValueTask<object?>((arguments, cancellationToken));
         }
     }
 }

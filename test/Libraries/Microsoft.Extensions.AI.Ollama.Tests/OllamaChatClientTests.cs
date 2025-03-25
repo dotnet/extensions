@@ -72,9 +72,10 @@ public class OllamaChatClientTests
 
         using IChatClient chatClient = new OllamaChatClient(endpoint, model);
         var metadata = chatClient.GetService<ChatClientMetadata>();
-        Assert.Equal("ollama", metadata?.ProviderName);
-        Assert.Equal(endpoint, metadata?.ProviderUri);
-        Assert.Equal(model, metadata?.ModelId);
+        Assert.NotNull(metadata);
+        Assert.Equal("ollama", metadata.ProviderName);
+        Assert.Equal(endpoint, metadata.ProviderUri);
+        Assert.Equal(model, metadata.DefaultModelId);
     }
 
     [Fact]
@@ -188,6 +189,7 @@ public class OllamaChatClientTests
         for (int i = 0; i < updates.Count; i++)
         {
             Assert.NotNull(updates[i].ResponseId);
+            Assert.NotNull(updates[i].MessageId);
             Assert.Equal(i < updates.Count - 1 ? 1 : 2, updates[i].Contents.Count);
             Assert.Equal(ChatRole.Assistant, updates[i].Role);
             Assert.Equal("llama3.1", updates[i].ModelId);
