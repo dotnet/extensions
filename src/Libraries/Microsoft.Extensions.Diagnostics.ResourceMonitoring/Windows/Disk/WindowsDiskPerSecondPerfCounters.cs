@@ -13,13 +13,19 @@ internal sealed class WindowsDiskPerSecondPerfCounters
 {
     private readonly List<IPerformanceCounter> _counters = [];
     private readonly IPerformanceCounterFactory _performanceCounterFactory;
+    private readonly TimeProvider _timeProvider;
     private readonly PerformanceCounterCategory _category;
     private readonly string _counterName;
     private long _lastTimestamp;
 
-    internal WindowsDiskPerSecondPerfCounters(IPerformanceCounterFactory performanceCounterFactory, PerformanceCounterCategory category, string counterName)
+    internal WindowsDiskPerSecondPerfCounters(
+        IPerformanceCounterFactory performanceCounterFactory,
+        TimeProvider timeProvider,
+        PerformanceCounterCategory category,
+        string counterName)
     {
         _performanceCounterFactory = performanceCounterFactory;
+        _timeProvider = timeProvider;
         _category = category;
         _counterName = counterName;
     }
@@ -52,16 +58,12 @@ internal sealed class WindowsDiskPerSecondPerfCounters
             _ = counter.NextValue();
         }
 
-#pragma warning disable EA0002
-        _lastTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-#pragma warning restore EA0002
+        _lastTimestamp = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
     }
 
     internal void UpdateDiskCounters()
     {
-#pragma warning disable EA0002
-        long currentTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-#pragma warning restore EA0002
+        long currentTimestamp = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
         double elapsedTime = (currentTimestamp - _lastTimestamp) / 1000.0; // Convert to seconds
 
         // For the kind of "per-second" perf counters, this algorithm calculates the total value over a time interval

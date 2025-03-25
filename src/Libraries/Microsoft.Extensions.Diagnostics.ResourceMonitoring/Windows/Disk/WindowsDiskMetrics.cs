@@ -31,7 +31,11 @@ internal sealed class WindowsDiskMetrics
 
     private readonly Dictionary<string, WindowsDiskPerSecondPerfCounters> _perSecondCounters = new();
 
-    public WindowsDiskMetrics(IMeterFactory meterFactory, IPerformanceCounterFactory performanceCounterFactory, IOptions<ResourceMonitoringOptions> options)
+    public WindowsDiskMetrics(
+        IMeterFactory meterFactory,
+        IPerformanceCounterFactory performanceCounterFactory,
+        TimeProvider timeProvider,
+        IOptions<ResourceMonitoringOptions> options)
     {
         if (!options.Value.EnableDiskIoMetrics)
         {
@@ -45,7 +49,7 @@ internal sealed class WindowsDiskMetrics
         Meter meter = meterFactory.Create(ResourceUtilizationInstruments.MeterName);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-        InitializeDiskCounters(performanceCounterFactory);
+        InitializeDiskCounters(performanceCounterFactory, timeProvider);
 
         // The metric is aligned with
         // https://github.com/open-telemetry/semantic-conventions/blob/main/docs/system/system-metrics.md#metric-systemdiskio
@@ -64,7 +68,7 @@ internal sealed class WindowsDiskMetrics
             description: "Disk operations");
     }
 
-    private void InitializeDiskCounters(IPerformanceCounterFactory performanceCounterFactory)
+    private void InitializeDiskCounters(IPerformanceCounterFactory performanceCounterFactory, TimeProvider timeProvider)
     {
         var diskCategory = new PerformanceCounterCategory(LogicalDiskCategory);
 
@@ -72,7 +76,7 @@ internal sealed class WindowsDiskMetrics
         {
             try
             {
-                var diskPerfCounter = new WindowsDiskPerSecondPerfCounters(performanceCounterFactory, diskCategory, counterName);
+                var diskPerfCounter = new WindowsDiskPerSecondPerfCounters(performanceCounterFactory, timeProvider, diskCategory, counterName);
                 diskPerfCounter.InitializeDiskCounters();
                 _perSecondCounters.Add(counterName, diskPerfCounter);
             }
