@@ -135,6 +135,7 @@ function App({ dataset, scoreSummary }: AppProperties) {
 
       <ScenarioGroup
         node={scoreSummary.primaryResult}
+        scoreSummary={scoreSummary}
         renderMarkdown={renderMarkdown}
         selectedTags={selectedTags}
       />

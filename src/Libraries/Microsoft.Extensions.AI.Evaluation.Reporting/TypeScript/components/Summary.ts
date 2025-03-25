@@ -171,6 +171,23 @@ export const createScoreSummary = (dataset: Dataset): ScoreSummary => {
     } as ScoreSummary;
 };
 
+export const getScoreHistory = (scoreSummary: ScoreSummary, scenario: ScenarioRunResult): Map<string, ScenarioRunResult> => {
+
+    const scenarioName = scenario.scenarioName;
+    const iterationName = scenario.iterationName;
+
+    const scoreHistory = new Map<string, ScenarioRunResult>();
+    for (const [key, node] of scoreSummary.history.entries()) {
+        for (const {node: leafNode} of node.flattenedNodes) {
+            if (leafNode.scenario?.scenarioName == scenarioName &&
+                leafNode.scenario?.iterationName == iterationName) {
+                scoreHistory.set(key, leafNode.scenario);
+            }
+        }
+    }
+    return scoreHistory;
+};
+
 const shortenPrompt = (prompt: string | undefined) => {
     if (!prompt) {
         return "";

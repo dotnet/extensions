@@ -107,6 +107,16 @@ const useCardStyles = makeStyles({
     scoreBg3: { backgroundColor: tokens.colorStatusWarningBackground2 },
     scoreBg4: { backgroundColor: tokens.colorStatusSuccessBackground2 },
     scoreBg5: { backgroundColor: tokens.colorStatusSuccessBackground2 },
+    metricPill: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: tokens.fontSizeBase200,
+        fontWeight: '500',
+        padding: '0.25rem 0.5rem',
+        borderRadius: '4px',
+        border: '1px solid ' + tokens.colorNeutralStroke2,        
+    }
 });
 
 const useCardColors = (interpretation?: EvaluationMetricInterpretation) => {
@@ -147,6 +157,23 @@ const useCardColors = (interpretation?: EvaluationMetricInterpretation) => {
 
 export type MetricType = StringMetric | NumericMetric | BooleanMetric | MetricWithNoValue;
 
+const getMetricDisplayValue = (metric: MetricType): string => {
+    switch (metric.$type) {
+        case "string":
+            return metric?.value ?? "??";
+        case "boolean":
+            return !metric || metric.value === undefined || metric.value === null ? 
+                '??' :
+                metric.value ? 'Pass' : 'Fail';
+        case "numeric":
+            return metric?.value?.toString() ?? "??";
+        case "none":
+            return "None";
+        default:
+            throw new Error(`Unknown metric type: ${metric["$type"]}`);
+    }
+};
+
 export const MetricCard = ({ 
     metric, 
     onClick,
@@ -156,24 +183,8 @@ export const MetricCard = ({
     onClick: () => void,
     isSelected: boolean
 }) => {
-    const getValue = (metric: MetricType): string => {
-        switch (metric.$type) {
-            case "string":
-                return metric?.value ?? "??";
-            case "boolean":
-                return !metric || metric.value === undefined || metric.value === null ? 
-                    '??' :
-                    metric.value ? 'Pass' : 'Fail';
-            case "numeric":
-                return metric?.value?.toString() ?? "??";
-            case "none":
-                return "None";
-            default:
-                throw new Error(`Unknown metric type: ${metric["$type"]}`);
-        }
-    };
 
-    const metricValue = getValue(metric);
+    const metricValue = getMetricDisplayValue(metric);
     const classes = useCardStyles();
     const { fg, bg } = useCardColors(metric.interpretation);
     
@@ -219,4 +230,16 @@ export const MetricCard = ({
             </div>
         </div>
     );
+};
+
+export const MetricDisplay = ({metric}: {metric: MetricWithNoValue | NumericMetric | BooleanMetric | StringMetric}) => {
+    const metricValue = getMetricDisplayValue(metric);
+    const classes = useCardStyles();
+    const { fg, bg } = useCardColors(metric.interpretation);
+
+    const pillClass = mergeClasses(
+        bg,
+        classes.metricPill,
+    );
+    return (<div className={pillClass}><span className={fg}>{metricValue}</span></div>);
 };

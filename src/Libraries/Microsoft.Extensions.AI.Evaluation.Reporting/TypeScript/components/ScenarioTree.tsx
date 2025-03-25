@@ -2,19 +2,20 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import React, { useState, useCallback } from "react";
-import { makeStyles, tokens, Tree, TreeItem, TreeItemLayout, TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent, mergeClasses, Table, TableHeader, TableRow, TableHeaderCell, TableBody, TableCell } from "@fluentui/react-components";
-import { ScoreNode, ScoreNodeType, getConversationDisplay, ChatMessageDisplay } from "./Summary";
+import { makeStyles, tokens, Tree, TreeItem, TreeItemLayout, TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent, mergeClasses, Table, TableHeader, TableRow, TableHeaderCell, TableBody, TableCell, TableCellLayout } from "@fluentui/react-components";
+import { ScoreNode, ScoreNodeType, getConversationDisplay, ChatMessageDisplay, ScoreSummary, getScoreHistory } from "./Summary";
 import { PassFailBar } from "./PassFailBar";
-import { MetricCardList, type MetricType } from "./MetricCard";
+import { MetricCardList, MetricDisplay, type MetricType } from "./MetricCard";
 import ReactMarkdown from "react-markdown";
 import { DismissCircle16Regular, Info16Regular, Warning16Regular, CheckmarkCircle16Regular, Copy16Regular } from "@fluentui/react-icons";
 import { ChevronDown12Regular, ChevronRight12Regular } from '@fluentui/react-icons';
 
-const ScenarioLevel = ({ node, parentPath, isOpen, renderMarkdown }: {
-  node: ScoreNode,
-  parentPath: string,
-  isOpen: (path: string) => boolean,
-  renderMarkdown: boolean,
+const ScenarioLevel = ({ node, scoreSummary, parentPath, isOpen, renderMarkdown }: {
+    node: ScoreNode,
+    scoreSummary: ScoreSummary,
+    parentPath: string,
+    isOpen: (path: string) => boolean,
+    renderMarkdown: boolean,
 }) => {
     const path = `${parentPath}.${node.name}`;
     if (node.isLeafNode) {
@@ -25,7 +26,7 @@ const ScenarioLevel = ({ node, parentPath, isOpen, renderMarkdown }: {
             <Tree>
                 <TreeItem itemType="leaf" >
                     <TreeItemLayout>
-                        <ScoreDetail scenario={node.scenario!} renderMarkdown={renderMarkdown} />
+                        <ScoreDetail scenario={node.scenario!} scoreSummary={scoreSummary} renderMarkdown={renderMarkdown} />
                     </TreeItemLayout>
                 </TreeItem>
             </Tree>
@@ -37,66 +38,68 @@ const ScenarioLevel = ({ node, parentPath, isOpen, renderMarkdown }: {
             </TreeItemLayout>
             <Tree>
                 {node.childNodes.map((n) => (
-                    <ScenarioLevel node={n} key={path + '.' + n.name} parentPath={path} isOpen={isOpen} renderMarkdown={renderMarkdown} />
+                    <ScenarioLevel key={path + '.' + n.name} node={n} scoreSummary={scoreSummary} parentPath={path} isOpen={isOpen} renderMarkdown={renderMarkdown} />
                 ))}
             </Tree>
         </TreeItem>;
     }
 };
 
-export const ScenarioGroup = ({ node, renderMarkdown, selectedTags }: {
-  node: ScoreNode, 
-  renderMarkdown: boolean,
-  selectedTags: string[]
+export const ScenarioGroup = ({ node, scoreSummary, renderMarkdown, selectedTags }: {
+    node: ScoreNode,
+    scoreSummary: ScoreSummary,
+    renderMarkdown: boolean,
+    selectedTags: string[]
 }) => {
-  const [openItems, setOpenItems] = useState<Set<TreeItemValue>>(() => new Set());
-  const handleOpenChange = useCallback((_: TreeOpenChangeEvent, data: TreeOpenChangeData) => {
-    setOpenItems(data.openItems);
-  }, []);
-  const isOpen = (name: string) => openItems.has(name);
+    const [openItems, setOpenItems] = useState<Set<TreeItemValue>>(() => new Set());
+    const handleOpenChange = useCallback((_: TreeOpenChangeEvent, data: TreeOpenChangeData) => {
+        setOpenItems(data.openItems);
+    }, []);
+    const isOpen = (name: string) => openItems.has(name);
 
-  const filterTree = (node: ScoreNode): ScoreNode | null => {
-    if (selectedTags.length === 0) {
-      return node;
+    const filterTree = (node: ScoreNode): ScoreNode | null => {
+        if (selectedTags.length === 0) {
+            return node;
+        }
+
+        if (node.isLeafNode) {
+            return node.scenario?.tags?.some(tag => selectedTags.includes(tag)) ? node : null;
+        }
+
+        const filteredChildren = node.childNodes
+            .map(filterTree)
+            .filter((child): child is ScoreNode => child !== null);
+
+        if (filteredChildren.length > 0) {
+            const newNode = new ScoreNode(node.name, node.nodeType);
+            newNode.setChildren(new Map(filteredChildren.map(child => [child.name, child])));
+            newNode.aggregate(selectedTags);
+            return newNode;
+        }
+
+        return null;
+    };
+
+    const filteredNode = filterTree(node);
+
+    if (!filteredNode) {
+        return <div>No results match the selected tags.</div>;
     }
 
-    if (node.isLeafNode) {
-      return node.scenario?.tags?.some(tag => selectedTags.includes(tag)) ? node : null;
-    }
-
-    const filteredChildren = node.childNodes
-      .map(filterTree)
-      .filter((child): child is ScoreNode => child !== null);
-
-    if (filteredChildren.length > 0) {
-      const newNode = new ScoreNode(node.name, node.nodeType);
-      newNode.setChildren(new Map(filteredChildren.map(child => [child.name, child])));
-      newNode.aggregate(selectedTags);
-      return newNode;
-    }
-
-    return null;
-  };
-
-  const filteredNode = filterTree(node);
-
-  if (!filteredNode) {
-    return <div>No results match the selected tags.</div>;
-  }
-
-  return (
-    <Tree aria-label="Default" appearance="transparent" onOpenChange={handleOpenChange} defaultOpenItems={["." + filteredNode.name]}>
-      <ScenarioLevel node={filteredNode} parentPath={""} isOpen={isOpen} renderMarkdown={renderMarkdown} />
-    </Tree>
-  );        
+    return (
+        <Tree aria-label="Default" appearance="transparent" onOpenChange={handleOpenChange} defaultOpenItems={["." + filteredNode.name]}>
+            <ScenarioLevel node={filteredNode} scoreSummary={scoreSummary} parentPath={""} isOpen={isOpen} renderMarkdown={renderMarkdown} />
+        </Tree>
+    );
 };
 
-export const ScoreDetail = ({ scenario, renderMarkdown }: { scenario: ScenarioRunResult, renderMarkdown: boolean }) => {
+export const ScoreDetail = ({ scenario, renderMarkdown, scoreSummary }: { scenario: ScenarioRunResult, renderMarkdown: boolean, scoreSummary: ScoreSummary }) => {
     const classes = useStyles();
     const [selectedMetric, setSelectedMetric] = useState<MetricType | null>(null);
     const { messages, model, usage } = getConversationDisplay(scenario.messages, scenario.modelResponse);
 
     return (<div className={classes.iterationArea}>
+        <ScoreHistory scoreSummary={scoreSummary} scenario={scenario} />
         <MetricCardList
             scenario={scenario}
             onMetricSelect={setSelectedMetric}
@@ -236,6 +239,7 @@ const useStyles = makeStyles({
     },
     section: {
         marginTop: '0.75rem',
+        marginBottom: '0.75rem',
         padding: '1rem',
         border: '2px solid ' + tokens.colorNeutralStroke1,
         borderRadius: '8px',
@@ -376,6 +380,35 @@ const useStyles = makeStyles({
     preWrap: {
         whiteSpace: 'pre-wrap',
     },
+    executionHeaderCell: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100%',
+        width: '100%',
+        padding: '0.5rem',
+    },
+    currentExecutionBackground: {
+        backgroundColor: tokens.colorNeutralBackground4,
+    },
+    currentExecutionForeground: {
+        fontWeight: '600',
+    },
+    verticalText: {
+        writingMode: 'vertical-rl',
+        transform: 'rotate(180deg)',
+        fontSize: tokens.fontSizeBase200,
+        fontWeight: '400',
+        color: tokens.colorNeutralForeground2,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    historyMetricCell : {
+        fontSize: tokens.fontSizeBase200,
+        fontWeight: '400',
+        color: tokens.colorNeutralForeground2,
+    },
 });
 
 const PassFailBadge = ({ pass, total }: { pass: number, total: number }) => {
@@ -426,8 +459,8 @@ const ScoreNodeHeader = (
     </div>);
 };
 
-export const ConversationDetails = ({ messages, model, usage, renderMarkdown }: { 
-    messages: ChatMessageDisplay[], 
+export const ConversationDetails = ({ messages, model, usage, renderMarkdown }: {
+    messages: ChatMessageDisplay[],
     model?: string,
     usage?: UsageDetails,
     renderMarkdown: boolean,
@@ -465,8 +498,8 @@ export const ConversationDetails = ({ messages, model, usage, renderMarkdown }: 
                             <div key={index} className={messageRowClass}>
                                 <div className={classes.messageParticipantName}>{message.participantName}</div>
                                 <div className={classes.messageBubble}>
-                                    {renderMarkdown ? 
-                                        <ReactMarkdown>{message.content}</ReactMarkdown> : 
+                                    {renderMarkdown ?
+                                        <ReactMarkdown>{message.content}</ReactMarkdown> :
                                         <pre className={classes.preWrap}>{message.content}</pre>
                                     }
                                 </div>
@@ -482,10 +515,10 @@ export const ConversationDetails = ({ messages, model, usage, renderMarkdown }: 
 export const ChatDetailsSection = ({ chatDetails }: { chatDetails: ChatDetails }) => {
     const classes = useStyles();
     const [isExpanded, setIsExpanded] = useState(false);
-    
+
     const totalTurns = chatDetails.turnDetails.length;
     const cachedTurns = chatDetails.turnDetails.filter(turn => turn.cacheHit === true).length;
-    
+
     const hasCacheKey = chatDetails.turnDetails.some(turn => turn.cacheKey !== undefined);
     const hasCacheStatus = chatDetails.turnDetails.some(turn => turn.cacheHit !== undefined);
     const hasModelInfo = chatDetails.turnDetails.some(turn => turn.model !== undefined);
@@ -496,7 +529,7 @@ export const ChatDetailsSection = ({ chatDetails }: { chatDetails: ChatDetails }
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
     };
-    
+
     return (
         <div className={classes.section}>
             <div className={classes.sectionHeader} onClick={() => setIsExpanded(!isExpanded)}>
@@ -505,7 +538,7 @@ export const ChatDetailsSection = ({ chatDetails }: { chatDetails: ChatDetails }
                 {hasCacheStatus && (
                     <div className={classes.hint}>
                         {cachedTurns != totalTurns ?
-                            <Warning16Regular className={classes.cacheMissIcon}/> : 
+                            <Warning16Regular className={classes.cacheMissIcon} /> :
                             <CheckmarkCircle16Regular className={classes.cacheHitIcon} />
                         }
                         {cachedTurns}/{totalTurns} chat responses for this evaluation were fulfiled from cache
@@ -538,8 +571,8 @@ export const ChatDetailsSection = ({ chatDetails }: { chatDetails: ChatDetails }
                                                         <span className={classes.cacheKey}>
                                                             {turn.cacheKey.substring(0, 8)}...
                                                         </span>
-                                                        <button 
-                                                            className={classes.copyButton} 
+                                                        <button
+                                                            className={classes.copyButton}
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 copyToClipboard(turn.cacheKey || "");
@@ -556,10 +589,10 @@ export const ChatDetailsSection = ({ chatDetails }: { chatDetails: ChatDetails }
                                         )}
                                         {hasCacheStatus && (
                                             <TableCell>
-                                                {turn.cacheHit === true ? 
+                                                {turn.cacheHit === true ?
                                                     <span className={classes.cacheHit}>
                                                         <CheckmarkCircle16Regular className={classes.cacheHitIcon} /> Hit
-                                                    </span> : 
+                                                    </span> :
                                                     <span className={classes.cacheMiss}>
                                                         <Warning16Regular className={classes.cacheMissIcon} /> Miss
                                                     </span>
@@ -580,4 +613,75 @@ export const ChatDetailsSection = ({ chatDetails }: { chatDetails: ChatDetails }
             )}
         </div>
     );
+};
+
+
+
+export const ScoreHistory = ({ scoreSummary, scenario}: { scoreSummary: ScoreSummary, scenario: ScenarioRunResult }) => {
+    const classes = useStyles();
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    if (!scoreSummary.history || scoreSummary.history.size === 0 || 
+        (scoreSummary.history.size === 1 && [...scoreSummary.history.keys()][0] == scenario.executionName)) {
+        return null;
+    }
+
+    const scoreHistory = getScoreHistory(scoreSummary, scenario);
+    const executions = [...scoreSummary.history.keys()].reverse();
+    const metrics = [...Object.keys(scenario.evaluationResult.metrics)];
+
+    const getMetricDisplay = (execution: string, metric: string) => {
+        const scenarioResult = scoreHistory.get(execution);
+        if (!scenarioResult) return null;
+        const metricResult = scenarioResult.evaluationResult.metrics[metric];
+        if (!metricResult) return null;
+        return (<MetricDisplay metric={metricResult}/>);
+    };
+
+    const latestExecution = mergeClasses(classes.verticalText, classes.currentExecutionForeground);
+
+    return (
+        <div className={classes.section}>
+            <div className={classes.sectionHeader} onClick={() => setIsExpanded(!isExpanded)}>
+                {isExpanded ? <ChevronDown12Regular /> : <ChevronRight12Regular />}
+                <h3 className={classes.sectionHeaderText}>Trends</h3>
+            </div>
+
+            {isExpanded && (
+                <div className={classes.sectionContainer}>
+                    <div className={classes.tableContainer}>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    {executions.map((execution) => (
+                                        <TableHeaderCell key={execution}
+                                            className={execution == scenario.executionName ? classes.currentExecutionBackground : undefined}>
+                                            <div className={classes.executionHeaderCell}>
+                                                <span className={execution == scenario.executionName ? latestExecution: classes.verticalText}>{execution}</span>
+                                            </div>
+                                        </TableHeaderCell>
+                                    ))}
+                                    <TableHeaderCell className={classes.currentExecutionBackground}></TableHeaderCell>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {metrics.map((metric) => (
+                                    <TableRow key={metric}>
+                                        {executions.map((execution) => (
+                                            <TableCell key={execution} 
+                                                className={execution == scenario.executionName ? classes.currentExecutionBackground : undefined}>
+                                                    {getMetricDisplay(execution, metric)}
+                                            </TableCell>
+                                        ))}
+                                        <TableCell className={classes.currentExecutionBackground}>
+                                            <TableCellLayout className={classes.historyMetricCell}>{metric}</TableCellLayout>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </div>
+            )}
+        </div>);
 };
