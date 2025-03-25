@@ -108,6 +108,7 @@ Configure your Azure OpenAI API key and endpoint for this project, using .NET Us
 Make sure to replace `YOUR-API-KEY` and `YOUR-DEPLOYMENT-NAME` with your actual Azure OpenAI key and endpoint. Make sure your endpoint URL is formatted like https://YOUR-DEPLOYMENT-NAME.openai.azure.com/ (do not include any path after .openai.azure.com/).
 #### ---#endif
 #### ---#if (UseAzureAISearch)
+
 ## Configure Azure AI Search
 
 To use Azure AI Search, you will need an Azure account and an Azure AI Search resource. For detailed instructions, see the [Azure AI Search documentation](https://learn.microsoft.com/azure/search/search-create-service-portal).

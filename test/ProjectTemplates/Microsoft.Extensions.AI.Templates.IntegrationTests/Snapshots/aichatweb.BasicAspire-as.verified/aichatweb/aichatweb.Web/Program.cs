@@ -11,9 +11,7 @@ builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 var openai = builder.AddAzureOpenAIClient("openai");
 openai.AddChatClient("gpt-4o-mini")
-    .UseFunctionInvocation()
-    .UseLogging()
-    .UseOpenTelemetry();
+    .UseFunctionInvocation();
 openai.AddEmbeddingGenerator("text-embedding-3-small");
 
 var vectorStore = new JsonVectorStore(Path.Combine(AppContext.BaseDirectory, "vector-store"));
