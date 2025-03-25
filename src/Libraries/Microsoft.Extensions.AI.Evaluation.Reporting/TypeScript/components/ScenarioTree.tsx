@@ -277,6 +277,7 @@ const useStyles = makeStyles({
         padding: '0.75rem 0',
         cursor: 'text',
         position: 'relative',
+        maxWidth: '75rem',
         '& pre': {
             whiteSpace: 'pre-wrap',
             wordWrap: 'break-word',
@@ -347,7 +348,6 @@ const useStyles = makeStyles({
     },
     tableContainer: {
         overflowX: 'auto',
-        maxWidth: '75rem',
     },
     cacheKeyContainer: {
         display: 'flex',
