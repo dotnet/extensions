@@ -100,6 +100,8 @@ public static class ResourceMonitoringServiceCollectionExtensions
             .AddActivatedSingleton<WindowsNetworkMetrics>()
             .AddActivatedSingleton<ITcpStateInfoProvider, WindowsTcpStateInfo>();
 
+        builder.Services.TryAddSingleton(TimeProvider.System);
+
         _ = builder.Services
             .AddActivatedSingleton<WindowsDiskMetrics>()
             .AddActivatedSingleton<IPerformanceCounterFactory, PerformanceCounterFactory>();
