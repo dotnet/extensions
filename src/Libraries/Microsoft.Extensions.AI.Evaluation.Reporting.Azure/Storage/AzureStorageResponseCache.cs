@@ -25,28 +25,11 @@ using Microsoft.Extensions.Caching.Distributed;
 
 namespace Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
 
-/// <summary>
-/// An <see cref="IDistributedCache"/> implementation that stores cached AI responses for a particular
-/// <see cref="ScenarioRun"/> under an Azure Storage container.
-/// </summary>
-/// <param name="client">
-/// A <see cref="DataLakeDirectoryClient"/> with access to an Azure Storage container under which the cached AI
-/// responses should be stored.
-/// </param>
-/// <param name="scenarioName">
-/// The <see cref="ScenarioRun.ScenarioName"/> for the returned <see cref="AzureStorageResponseCache"/> instance.
-/// </param>
-/// <param name="iterationName">
-/// The <see cref="ScenarioRun.IterationName"/> for the returned <see cref="AzureStorageResponseCache"/> instance.
-/// </param>
-/// <param name="timeToLiveForCacheEntries">
-/// An optional <see cref="TimeSpan"/> that specifies the maximum amount of time that cached AI responses should
-/// survive in the cache before they are considered expired and evicted.
-/// </param>
-public sealed partial class AzureStorageResponseCache(
+internal sealed partial class AzureStorageResponseCache(
     DataLakeDirectoryClient client,
     string scenarioName,
     string iterationName,
+    Func<DateTime> provideDateTime,
     TimeSpan? timeToLiveForCacheEntries = null) : IDistributedCache
 {
     private const string EntryFileName = "entry.json";
@@ -59,23 +42,8 @@ public sealed partial class AzureStorageResponseCache(
     private readonly string _iterationPath = $"cache/{scenarioName}/{iterationName}";
     private readonly TimeSpan _timeToLiveForCacheEntries =
         timeToLiveForCacheEntries ?? Defaults.DefaultTimeToLiveForCacheEntries;
-    private readonly Func<DateTime> _provideDateTime = () => DateTime.UtcNow;
+    private readonly Func<DateTime> _provideDateTime = provideDateTime;
 
-    /// <remarks>
-    /// Intended for testing purposes only.
-    /// </remarks>
-    internal AzureStorageResponseCache(
-        DataLakeDirectoryClient client,
-        string scenarioName,
-        string iterationName,
-        TimeSpan? timeToLiveForCacheEntries,
-        Func<DateTime> provideDateTime)
-            : this(client, scenarioName, iterationName, timeToLiveForCacheEntries)
-    {
-        _provideDateTime = provideDateTime;
-    }
-
-    /// <inheritdoc/>
     public byte[]? Get(string key)
     {
         (string entryFilePath, string contentsFilePath, bool filesExist) = CheckPaths(key);
@@ -95,7 +63,6 @@ public sealed partial class AzureStorageResponseCache(
         return client.GetFileClient(contentsFilePath).ReadContent().Value.Content.ToArray();
     }
 
-    /// <inheritdoc/>
     public async Task<byte[]?> GetAsync(string key, CancellationToken cancellationToken = default)
     {
         (string entryFilePath, string contentsFilePath, bool filesExist) =
@@ -124,7 +91,6 @@ public sealed partial class AzureStorageResponseCache(
         return content.Value.Content.ToArray();
     }
 
-    /// <inheritdoc/>
     public void Refresh(string key)
     {
         (string entryFilePath, string contentsFilePath, bool filesExist) = CheckPaths(key);
@@ -145,7 +111,6 @@ public sealed partial class AzureStorageResponseCache(
         entry.Write(entryFileClient);
     }
 
-    /// <inheritdoc/>
     public async Task RefreshAsync(string key, CancellationToken cancellationToken = default)
     {
         (string entryFilePath, string contentsFilePath, bool filesExist) =
@@ -167,7 +132,6 @@ public sealed partial class AzureStorageResponseCache(
         await entry.WriteAsync(entryClient, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
-    /// <inheritdoc/>
     public void Remove(string key)
     {
         (string entryFilePath, string contentsFilePath) = GetPaths(key);
@@ -179,7 +143,6 @@ public sealed partial class AzureStorageResponseCache(
         _ = contentsClient.Delete();
     }
 
-    /// <inheritdoc/>
     public async Task RemoveAsync(string key, CancellationToken cancellationToken = default)
     {
         (string entryFilePath, _) = GetPaths(key);
@@ -191,7 +154,6 @@ public sealed partial class AzureStorageResponseCache(
                 cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
-    /// <inheritdoc/>
     public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
     {
         (string entryFilePath, string contentsFilePath) = GetPaths(key);
@@ -205,7 +167,6 @@ public sealed partial class AzureStorageResponseCache(
         _ = contentsClient.Upload(BinaryData.FromBytes(value).ToStream(), overwrite: true);
     }
 
-    /// <inheritdoc/>
     public async Task SetAsync(
         string key,
         byte[] value,

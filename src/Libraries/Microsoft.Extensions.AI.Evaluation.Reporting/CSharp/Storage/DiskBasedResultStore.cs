@@ -66,7 +66,7 @@ public sealed class DiskBasedResultStore : IResultStore
             using FileStream stream = resultFile.OpenRead();
 
             ScenarioRunResult? result =
-                await JsonSerializer.DeserializeAsync<ScenarioRunResult>(
+                await JsonSerializer.DeserializeAsync(
                     stream,
                     JsonUtilities.Default.ScenarioRunResultTypeInfo,
                     cancellationToken).ConfigureAwait(false);
