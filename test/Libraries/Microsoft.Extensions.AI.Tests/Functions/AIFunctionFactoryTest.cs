@@ -13,6 +13,7 @@ using Xunit;
 
 #pragma warning disable S107 // Methods should not have too many parameters
 #pragma warning disable S3358 // Ternary operators should not be nested
+#pragma warning disable S5034 // "ValueTask" should be consumed correctly
 
 namespace Microsoft.Extensions.AI;
 
@@ -64,7 +65,7 @@ public class AIFunctionFactoryTest
 
         foreach (AIFunction f in funcs)
         {
-            Exception e = await Assert.ThrowsAsync<ArgumentException>(() => f.InvokeAsync());
+            Exception e = await Assert.ThrowsAsync<ArgumentException>(() => f.InvokeAsync().AsTask());
             Assert.Contains("'theParam'", e.Message);
         }
     }
@@ -122,7 +123,7 @@ public class AIFunctionFactoryTest
         }
 
         func = AIFunctionFactory.Create(() => (IAsyncEnumerable<int>)new ThrowingAsyncEnumerable());
-        await Assert.ThrowsAsync<NotImplementedException>(() => func.InvokeAsync());
+        await Assert.ThrowsAsync<NotImplementedException>(() => func.InvokeAsync().AsTask());
     }
 
     private sealed class ThrowingAsyncEnumerable : IAsyncEnumerable<int>
@@ -259,7 +260,7 @@ public class AIFunctionFactoryTest
         Assert.DoesNotContain("services", func.JsonSchema.ToString());
         Assert.DoesNotContain("arguments", func.JsonSchema.ToString());
 
-        await Assert.ThrowsAsync<ArgumentException>("arguments", () => func.InvokeAsync(arguments));
+        await Assert.ThrowsAsync<ArgumentException>("arguments", () => func.InvokeAsync(arguments).AsTask());
 
         arguments.Services = sp;
         var result = await func.InvokeAsync(arguments);
@@ -328,7 +329,7 @@ public class AIFunctionFactoryTest
         Assert.Contains("myInteger", f.JsonSchema.ToString());
         Assert.DoesNotContain("service", f.JsonSchema.ToString());
 
-        Exception e = await Assert.ThrowsAsync<ArgumentException>(() => f.InvokeAsync(new() { ["myInteger"] = 1 }));
+        Exception e = await Assert.ThrowsAsync<ArgumentException>(() => f.InvokeAsync(new() { ["myInteger"] = 1 }).AsTask());
         Assert.Contains("Unable to resolve", e.Message);
 
         var result = await f.InvokeAsync(new() { ["myInteger"] = 1, Services = sp });
@@ -365,14 +366,14 @@ public class AIFunctionFactoryTest
         Assert.Contains("myInteger", f.JsonSchema.ToString());
         Assert.DoesNotContain("service", f.JsonSchema.ToString());
 
-        Exception e = await Assert.ThrowsAsync<ArgumentException>(() => f.InvokeAsync(new() { ["myInteger"] = 1 }));
+        Exception e = await Assert.ThrowsAsync<ArgumentException>(() => f.InvokeAsync(new() { ["myInteger"] = 1 }).AsTask());
         Assert.Contains("Unable to resolve", e.Message);
 
         e = await Assert.ThrowsAsync<ArgumentException>(() => f.InvokeAsync(new()
         {
             ["myInteger"] = 1,
             Context = new Dictionary<object, object?>(),
-        }));
+        }).AsTask());
         Assert.Contains("Unable to resolve", e.Message);
 
         var result = await f.InvokeAsync(new()
@@ -420,8 +421,196 @@ public class AIFunctionFactoryTest
         Assert.Contains("43", result?.ToString());
     }
 
+    [Fact]
+    public async Task MarshalResult_UsedForVoidReturningMethods()
+    {
+        using CancellationTokenSource cts = new();
+
+        AIFunction f = AIFunctionFactory.Create(
+            (int i) => { },
+            new()
+            {
+                MarshalResult = async (result, type, cancellationToken) =>
+                {
+                    await Task.Yield();
+                    Assert.Null(result);
+                    Assert.Null(type);
+                    Assert.Equal(cts.Token, cancellationToken);
+                    return "marshalResultInvoked";
+                },
+            });
+
+        object? result = await f.InvokeAsync(new() { ["i"] = 42 }, cts.Token);
+        Assert.Equal("marshalResultInvoked", result);
+    }
+
+    [Fact]
+    public async Task MarshalResult_UsedForTaskReturningMethods()
+    {
+        using CancellationTokenSource cts = new();
+
+        AIFunction f = AIFunctionFactory.Create(
+            async (int i) => { await Task.Yield(); },
+            new()
+            {
+                MarshalResult = async (result, type, cancellationToken) =>
+                {
+                    await Task.Yield();
+                    Assert.Null(result);
+                    Assert.Null(type);
+                    Assert.Equal(cts.Token, cancellationToken);
+                    return "marshalResultInvoked";
+                },
+            });
+
+        object? result = await f.InvokeAsync(new() { ["i"] = 42 }, cts.Token);
+        Assert.Equal("marshalResultInvoked", result);
+    }
+
+    [Fact]
+    public async Task MarshalResult_UsedForValueTaskReturningMethods()
+    {
+        using CancellationTokenSource cts = new();
+
+        AIFunction f = AIFunctionFactory.Create(
+            async ValueTask (int i) => { await Task.Yield(); },
+            new()
+            {
+                MarshalResult = async (result, type, cancellationToken) =>
+                {
+                    await Task.Yield();
+                    Assert.Null(result);
+                    Assert.Null(type);
+                    Assert.Equal(cts.Token, cancellationToken);
+                    return "marshalResultInvoked";
+                },
+            });
+
+        object? result = await f.InvokeAsync(new() { ["i"] = 42 }, cts.Token);
+        Assert.Equal("marshalResultInvoked", result);
+    }
+
+    [Fact]
+    public async Task MarshalResult_UsedForTReturningMethods()
+    {
+        using CancellationTokenSource cts = new();
+
+        AIFunction f = AIFunctionFactory.Create(
+            (int i) => i,
+            new()
+            {
+                MarshalResult = async (result, type, cancellationToken) =>
+                {
+                    await Task.Yield();
+                    Assert.Equal(42, result);
+                    Assert.Equal(typeof(int), type);
+                    Assert.Equal(cts.Token, cancellationToken);
+                    return "marshalResultInvoked";
+                },
+            });
+
+        object? result = await f.InvokeAsync(new() { ["i"] = 42 }, cts.Token);
+        Assert.Equal("marshalResultInvoked", result);
+    }
+
+    [Fact]
+    public async Task MarshalResult_UsedForTaskTReturningMethods()
+    {
+        using CancellationTokenSource cts = new();
+
+        AIFunction f = AIFunctionFactory.Create(
+            async (int i) => { await Task.Yield(); return i; },
+            new()
+            {
+                MarshalResult = async (result, type, cancellationToken) =>
+                {
+                    await Task.Yield();
+                    Assert.Equal(42, result);
+                    Assert.Equal(typeof(int), type);
+                    Assert.Equal(cts.Token, cancellationToken);
+                    return "marshalResultInvoked";
+                },
+            });
+
+        object? result = await f.InvokeAsync(new() { ["i"] = 42 }, cts.Token);
+        Assert.Equal("marshalResultInvoked", result);
+    }
+
+    [Fact]
+    public async Task MarshalResult_UsedForValueTaskTReturningMethods()
+    {
+        using CancellationTokenSource cts = new();
+
+        AIFunction f = AIFunctionFactory.Create(
+            async ValueTask<int> (int i) => { await Task.Yield(); return i; },
+            new()
+            {
+                MarshalResult = async (result, type, cancellationToken) =>
+                {
+                    await Task.Yield();
+                    Assert.Equal(42, result);
+                    Assert.Equal(typeof(int), type);
+                    Assert.Equal(cts.Token, cancellationToken);
+                    return "marshalResultInvoked";
+                },
+            });
+
+        object? result = await f.InvokeAsync(new() { ["i"] = 42 }, cts.Token);
+        Assert.Equal("marshalResultInvoked", result);
+    }
+
+    [Fact]
+    public async Task MarshalResult_TypeIsDeclaredTypeEvenWhenNullReturned()
+    {
+        using CancellationTokenSource cts = new();
+
+        AIFunction f = AIFunctionFactory.Create(
+            async ValueTask<string?> (int i) => { await Task.Yield(); return null; },
+            new()
+            {
+                MarshalResult = async (result, type, cancellationToken) =>
+                {
+                    await Task.Yield();
+                    Assert.Null(result);
+                    Assert.Equal(typeof(string), type);
+                    Assert.Equal(cts.Token, cancellationToken);
+                    return "marshalResultInvoked";
+                },
+            });
+
+        object? result = await f.InvokeAsync(new() { ["i"] = 42 }, cts.Token);
+        Assert.Equal("marshalResultInvoked", result);
+    }
+
+    [Fact]
+    public async Task MarshalResult_TypeIsDeclaredTypeEvenWhenDerivedTypeReturned()
+    {
+        using CancellationTokenSource cts = new();
+
+        AIFunction f = AIFunctionFactory.Create(
+            async ValueTask<B> (int i) => { await Task.Yield(); return new C(); },
+            new()
+            {
+                MarshalResult = async (result, type, cancellationToken) =>
+                {
+                    await Task.Yield();
+                    Assert.IsType<C>(result);
+                    Assert.Equal(typeof(B), type);
+                    Assert.Equal(cts.Token, cancellationToken);
+                    return "marshalResultInvoked";
+                },
+            });
+
+        object? result = await f.InvokeAsync(new() { ["i"] = 42 }, cts.Token);
+        Assert.Equal("marshalResultInvoked", result);
+    }
+
     private sealed class MyService(int value)
     {
         public int Value => value;
     }
+
+    private class A;
+    private class B : A;
+    private sealed class C : B;
 }
