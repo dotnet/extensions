@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.Versioning;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Disk;
@@ -14,20 +13,23 @@ internal sealed class WindowsDiskPerSecondPerfCounters
     private readonly List<IPerformanceCounter> _counters = [];
     private readonly IPerformanceCounterFactory _performanceCounterFactory;
     private readonly TimeProvider _timeProvider;
-    private readonly PerformanceCounterCategory _category;
+    private readonly string _categoryName;
     private readonly string _counterName;
+    private readonly string[] _instanceNames;
     private long _lastTimestamp;
 
     internal WindowsDiskPerSecondPerfCounters(
         IPerformanceCounterFactory performanceCounterFactory,
         TimeProvider timeProvider,
-        PerformanceCounterCategory category,
-        string counterName)
+        string categoryName,
+        string counterName,
+        string[] instanceNames)
     {
         _performanceCounterFactory = performanceCounterFactory;
         _timeProvider = timeProvider;
-        _category = category;
+        _categoryName = categoryName;
         _counterName = counterName;
+        _instanceNames = instanceNames;
     }
 
     /// <summary>
@@ -38,18 +40,17 @@ internal sealed class WindowsDiskPerSecondPerfCounters
 
     internal void InitializeDiskCounters()
     {
-        string[]? instanceNames = _category.GetInstanceNames();
-        foreach (string instance in instanceNames)
+        foreach (string instanceName in _instanceNames)
         {
             // Skip the total instance
-            if (instance.Equals("_Total", StringComparison.OrdinalIgnoreCase))
+            if (instanceName.Equals("_Total", StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
 
             // Create counters for each disk
-            _counters.Add(_performanceCounterFactory.Create(_category.CategoryName, _counterName, instance));
-            TotalCountDict.Add(instance, 0);
+            _counters.Add(_performanceCounterFactory.Create(_categoryName, _counterName, instanceName));
+            TotalCountDict.Add(instanceName, 0);
         }
 
         // Initialize the counters to get the first value

@@ -71,12 +71,22 @@ internal sealed class WindowsDiskMetrics
     private void InitializeDiskCounters(IPerformanceCounterFactory performanceCounterFactory, TimeProvider timeProvider)
     {
         var diskCategory = new PerformanceCounterCategory(LogicalDiskCategory);
+        string[] instanceNames = diskCategory.GetInstanceNames();
+        if (instanceNames == null || instanceNames.Length == 0)
+        {
+            return;
+        }
 
         foreach (string counterName in _perSecondPerformanceCounters)
         {
             try
             {
-                var diskPerfCounter = new WindowsDiskPerSecondPerfCounters(performanceCounterFactory, timeProvider, diskCategory, counterName);
+                var diskPerfCounter = new WindowsDiskPerSecondPerfCounters(
+                    performanceCounterFactory,
+                    timeProvider,
+                    diskCategory.CategoryName,
+                    counterName,
+                    instanceNames);
                 diskPerfCounter.InitializeDiskCounters();
                 _perSecondCounters.Add(counterName, diskPerfCounter);
             }
