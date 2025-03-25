@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
+#pragma warning disable IDE0004 // Remove Unnecessary Cast
 #pragma warning disable S107 // Methods should not have too many parameters
 #pragma warning disable S3358 // Ternary operators should not be nested
 #pragma warning disable S5034 // "ValueTask" should be consumed correctly
@@ -25,7 +26,8 @@ public class AIFunctionFactoryTest
         Assert.Throws<ArgumentNullException>("method", () => AIFunctionFactory.Create(method: null!));
         Assert.Throws<ArgumentNullException>("method", () => AIFunctionFactory.Create(method: null!, target: new object()));
         Assert.Throws<ArgumentNullException>("method", () => AIFunctionFactory.Create(method: null!, target: new object(), name: "myAiFunk"));
-        Assert.Throws<ArgumentNullException>("target", () => AIFunctionFactory.Create(typeof(AIFunctionFactoryTest).GetMethod(nameof(InvalidArguments_Throw))!, null));
+        Assert.Throws<ArgumentNullException>("target", () => AIFunctionFactory.Create(typeof(AIFunctionFactoryTest).GetMethod(nameof(InvalidArguments_Throw))!, (object?)null));
+        Assert.Throws<ArgumentNullException>("targetType", () => AIFunctionFactory.Create(typeof(AIFunctionFactoryTest).GetMethod(nameof(InvalidArguments_Throw))!, (Type)null!));
         Assert.Throws<ArgumentException>("method", () => AIFunctionFactory.Create(typeof(List<>).GetMethod("Add")!, new List<int>()));
     }
 
@@ -296,7 +298,92 @@ public class AIFunctionFactoryTest
     }
 
     [Fact]
-    public async Task ArgumentBinderFunc_CanBeUsedToSupportFromKeyedServices()
+    public async Task Create_NoInstance_UsesActivatorUtilitiesWhenServicesAvailable()
+    {
+        MyFunctionTypeWithOneArg mft = new(new());
+        MyArgumentType mat = new();
+
+        ServiceCollection sc = new();
+        sc.AddSingleton(mft);
+        sc.AddSingleton(mat);
+        IServiceProvider sp = sc.BuildServiceProvider();
+
+        AIFunction func = AIFunctionFactory.Create(
+            typeof(MyFunctionTypeWithOneArg).GetMethod(nameof(MyFunctionTypeWithOneArg.InstanceMethod))!,
+            typeof(MyFunctionTypeWithOneArg),
+            new()
+            {
+                MarshalResult = (result, type, cancellationToken) => new ValueTask<object?>(result),
+            });
+
+        Assert.NotNull(func);
+        var result = (Tuple<MyFunctionTypeWithOneArg, MyArgumentType>?)await func.InvokeAsync(new() { Services = sp });
+        Assert.NotSame(mft, result?.Item1);
+        Assert.Same(mat, result?.Item2);
+    }
+
+    [Fact]
+    public async Task Create_NoInstance_UsesActivatorWhenServicesUnavailable()
+    {
+        AIFunction func = AIFunctionFactory.Create(
+            typeof(MyFunctionTypeWithNoArgs).GetMethod(nameof(MyFunctionTypeWithNoArgs.InstanceMethod))!,
+            typeof(MyFunctionTypeWithNoArgs),
+            new()
+            {
+                MarshalResult = (result, type, cancellationToken) => new ValueTask<object?>(result),
+            });
+
+        Assert.NotNull(func);
+        Assert.Equal("42", await func.InvokeAsync());
+    }
+
+    [Fact]
+    public async Task Create_NoInstance_ThrowsWhenCantConstructInstance()
+    {
+        var sp = new ServiceCollection().BuildServiceProvider();
+
+        AIFunction func = AIFunctionFactory.Create(
+            typeof(MyFunctionTypeWithOneArg).GetMethod(nameof(MyFunctionTypeWithOneArg.InstanceMethod))!,
+            typeof(MyFunctionTypeWithOneArg));
+
+        Assert.NotNull(func);
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await func.InvokeAsync(new() { Services = sp }));
+    }
+
+    [Fact]
+    public void Create_NoInstance_ThrowsForStaticMethod()
+    {
+        Assert.Throws<ArgumentException>("method", () => AIFunctionFactory.Create(
+            typeof(MyFunctionTypeWithNoArgs).GetMethod(nameof(MyFunctionTypeWithNoArgs.StaticMethod))!,
+            typeof(MyFunctionTypeWithNoArgs)));
+    }
+
+    [Fact]
+    public void Create_NoInstance_ThrowsForMismatchedMethod()
+    {
+        Assert.Throws<ArgumentException>("targetType", () => AIFunctionFactory.Create(
+            typeof(MyFunctionTypeWithNoArgs).GetMethod(nameof(MyFunctionTypeWithNoArgs.InstanceMethod))!,
+            typeof(MyFunctionTypeWithOneArg)));
+    }
+
+    private sealed class MyFunctionTypeWithNoArgs
+    {
+        private string _value = "42";
+
+        public static void StaticMethod() => throw new NotSupportedException();
+
+        public string InstanceMethod() => _value;
+    }
+
+    private sealed class MyFunctionTypeWithOneArg(MyArgumentType arg)
+    {
+        public object InstanceMethod() => Tuple.Create(this, arg);
+    }
+
+    private sealed class MyArgumentType;
+
+    [Fact]
+    public async Task ConfigureParameterBinding_CanBeUsedToSupportFromKeyedServices()
     {
         MyService service = new(42);
 
@@ -337,7 +424,7 @@ public class AIFunctionFactoryTest
     }
 
     [Fact]
-    public async Task ArgumentBinderFunc_CanBeUsedToSupportFromContext()
+    public async Task ConfigureParameterBinding_CanBeUsedToSupportFromContext()
     {
         MyService service = new(42);
 
@@ -388,7 +475,7 @@ public class AIFunctionFactoryTest
     }
 
     [Fact]
-    public async Task ArgumentBinderFunc_CanBeUsedToOverrideServiceProvider()
+    public async Task ConfigureParameterBinding_CanBeUsedToOverrideServiceProvider()
     {
         IServiceProvider sp1 = new ServiceCollection().AddSingleton(new MyService(42)).BuildServiceProvider();
         IServiceProvider sp2 = new ServiceCollection().AddSingleton(new MyService(43)).BuildServiceProvider();
@@ -405,7 +492,7 @@ public class AIFunctionFactoryTest
     }
 
     [Fact]
-    public async Task ArgumentBinderFunc_CanBeUsedToOverrideAIFunctionArguments()
+    public async Task ConfigureParameterBinding_CanBeUsedToOverrideAIFunctionArguments()
     {
         AIFunctionArguments args1 = new() { ["a"] = 42 };
         AIFunctionArguments args2 = new() { ["a"] = 43 };
