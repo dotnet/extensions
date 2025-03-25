@@ -134,7 +134,7 @@ public sealed class ScenarioRunResult(
     // CA2227: Collection properties should be read only.
     // We disable this warning because we want this type to be fully mutable for serialization purposes and for general
     // convenience.
-    public IList<ChatMessage> Messages { get; set; } = messages;
+    public IList<ChatMessage>? Messages { get; set; } = messages;
 #pragma warning restore CA2227
 
     /// <summary>

@@ -7,7 +7,7 @@ import { ScoreNode, ScoreNodeType, getConversationDisplay, ChatMessageDisplay } 
 import { PassFailBar } from "./PassFailBar";
 import { MetricCardList, type MetricType } from "./MetricCard";
 import ReactMarkdown from "react-markdown";
-import { DismissCircle16Regular, Info16Regular, Warning16Regular, CheckmarkCircle16Regular, Copy16Regular, DataTrendingRegular } from "@fluentui/react-icons";
+import { DismissCircle16Regular, Info16Regular, Warning16Regular, CheckmarkCircle16Regular, Copy16Regular } from "@fluentui/react-icons";
 import { ChevronDown12Regular, ChevronRight12Regular } from '@fluentui/react-icons';
 
 const ScenarioLevel = ({ node, parentPath, isOpen, renderMarkdown }: {
@@ -37,17 +37,15 @@ const ScenarioLevel = ({ node, parentPath, isOpen, renderMarkdown }: {
             </TreeItemLayout>
             <Tree>
                 {node.childNodes.map((n) => (
-                    <React.Fragment key={path + '.' + n.name}>
-                        <ScenarioLevel node={n} key={path + '.' + n.name} parentPath={path} isOpen={isOpen} renderMarkdown={renderMarkdown} />
-                    </React.Fragment>
+                    <ScenarioLevel node={n} key={path + '.' + n.name} parentPath={path} isOpen={isOpen} renderMarkdown={renderMarkdown} />
                 ))}
             </Tree>
         </TreeItem>;
     }
 };
 
-export const ScenarioGroup = ({ summaryResults, renderMarkdown, selectedTags }: {
-  summaryResults: ScoreSummary, 
+export const ScenarioGroup = ({ node, renderMarkdown, selectedTags }: {
+  node: ScoreNode, 
   renderMarkdown: boolean,
   selectedTags: string[]
 }) => {

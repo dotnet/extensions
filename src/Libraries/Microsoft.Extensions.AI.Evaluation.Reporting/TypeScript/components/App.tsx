@@ -24,7 +24,8 @@ const useStyles = makeStyles({
     position: 'sticky',
     top: 0,
     zIndex: 1,
-    paddingBottom: '12px'
+    paddingBottom: '12px',
+    backgroundColor: tokens.colorNeutralBackground1,
   },
   headerTop: {
     display: 'flex',
@@ -133,7 +134,7 @@ function App({ dataset, scoreSummary }: AppProperties) {
       />
 
       <ScenarioGroup
-        summaryResults={scoreSummary}
+        node={scoreSummary.primaryResult}
         renderMarkdown={renderMarkdown}
         selectedTags={selectedTags}
       />
