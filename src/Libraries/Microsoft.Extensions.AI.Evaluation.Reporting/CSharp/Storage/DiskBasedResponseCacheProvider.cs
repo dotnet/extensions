@@ -14,7 +14,8 @@ using Microsoft.Extensions.Caching.Distributed;
 namespace Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
 
 /// <summary>
-/// An <see cref="IResponseCacheProvider"/> that returns a <see cref="DiskBasedResponseCache"/>.
+/// An <see cref="IResponseCacheProvider"/> that returns an <see cref="IDistributedCache"/> that can cache AI responses
+/// for a particular <see cref="ScenarioRun"/> under the specified <paramref name="storageRootPath"/> on disk.
 /// </summary>
 /// <param name="storageRootPath">
 /// The path to a directory on disk under which the cached AI responses should be stored.

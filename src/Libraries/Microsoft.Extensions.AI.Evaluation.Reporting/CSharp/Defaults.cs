@@ -21,7 +21,7 @@ public static class Defaults
     /// <summary>
     /// The default iteration name that should be used if one was not specified when creating a
     /// <see cref="ScenarioRun"/> via
-    /// <see cref="ReportingConfiguration.CreateScenarioRunAsync(string, string, IEnumerable{string}?, CancellationToken)"/>.
+    /// <see cref="ReportingConfiguration.CreateScenarioRunAsync(string, string, IEnumerable{string}?, IEnumerable{string}?, CancellationToken)"/>.
     /// </summary>
     public const string DefaultIterationName = "1";
 

@@ -12,7 +12,7 @@ using Microsoft.Extensions.AI.Evaluation.Reporting.JsonSerialization;
 
 namespace Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
 
-public partial class DiskBasedResponseCache
+internal partial class DiskBasedResponseCache
 {
     internal sealed class CacheOptions
     {
@@ -59,7 +59,7 @@ public partial class DiskBasedResponseCache
             using FileStream cacheOptionsFile = File.OpenRead(cacheOptionsFilePath);
 
             CacheOptions cacheOptions =
-                await JsonSerializer.DeserializeAsync<CacheOptions>(
+                await JsonSerializer.DeserializeAsync(
                     cacheOptionsFile,
                     JsonUtilities.Default.CacheOptionsTypeInfo,
                     cancellationToken).ConfigureAwait(false) ??
