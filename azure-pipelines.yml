@@ -10,6 +10,7 @@ trigger:
       - dev
       - release/*
       - internal/release/*
+      - validation/*
   paths:
     include:
       - '*'
@@ -31,7 +32,6 @@ pr:
       - main
       - dev
       - release/*
-      - validation/*
       - internal/release/*
   paths:
     include:
