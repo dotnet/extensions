@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Disk.Test;
 
 [SupportedOSPlatform("windows")]
 [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Windows specific.")]
-public class WindowsDiskPerSecondPerfCountersTests
+public class WindowsDiskIoRatePerfCountersTests
 {
     private const string CategoryName = "LogicalDisk";
 
@@ -24,7 +24,7 @@ public class WindowsDiskPerSecondPerfCountersTests
         var performanceCounterFactory = new Mock<IPerformanceCounterFactory>();
         var fakeTimeProvider = new FakeTimeProvider { AutoAdvanceAmount = TimeSpan.FromSeconds(60) };
 
-        var perSecondPerfCounters = new WindowsDiskPerSecondPerfCounters(
+        var ratePerfCounters = new WindowsDiskIoRatePerfCounters(
             performanceCounterFactory.Object,
             fakeTimeProvider,
             CategoryName,
@@ -38,30 +38,30 @@ public class WindowsDiskPerSecondPerfCountersTests
         performanceCounterFactory.Setup(x => x.Create(CategoryName, CounterName, "D:")).Returns(counterD);
 
         // Initialize the counters
-        perSecondPerfCounters.InitializeDiskCounters();
-        Assert.Equal(2, perSecondPerfCounters.TotalCountDict.Count);
-        Assert.Equal(0, perSecondPerfCounters.TotalCountDict["C:"]);
-        Assert.Equal(0, perSecondPerfCounters.TotalCountDict["D:"]);
+        ratePerfCounters.InitializeDiskCounters();
+        Assert.Equal(2, ratePerfCounters.TotalCountDict.Count);
+        Assert.Equal(0, ratePerfCounters.TotalCountDict["C:"]);
+        Assert.Equal(0, ratePerfCounters.TotalCountDict["D:"]);
 
         // Simulate the first tick
-        perSecondPerfCounters.UpdateDiskCounters();
-        Assert.Equal(60, perSecondPerfCounters.TotalCountDict["C:"]); // 1 * 60 = 60
-        Assert.Equal(120, perSecondPerfCounters.TotalCountDict["D:"]); // 2 * 60 = 120
+        ratePerfCounters.UpdateDiskCounters();
+        Assert.Equal(60, ratePerfCounters.TotalCountDict["C:"]); // 1 * 60 = 60
+        Assert.Equal(120, ratePerfCounters.TotalCountDict["D:"]); // 2 * 60 = 120
 
         // Simulate the second tick
-        perSecondPerfCounters.UpdateDiskCounters();
-        Assert.Equal(150, perSecondPerfCounters.TotalCountDict["C:"]); // 60 + 1.5 * 60 = 150
-        Assert.Equal(270, perSecondPerfCounters.TotalCountDict["D:"]); // 120 + 2.5 * 60 = 270
+        ratePerfCounters.UpdateDiskCounters();
+        Assert.Equal(150, ratePerfCounters.TotalCountDict["C:"]); // 60 + 1.5 * 60 = 150
+        Assert.Equal(270, ratePerfCounters.TotalCountDict["D:"]); // 120 + 2.5 * 60 = 270
 
         // Simulate the third tick
-        perSecondPerfCounters.UpdateDiskCounters();
-        Assert.Equal(270, perSecondPerfCounters.TotalCountDict["C:"]); // 150 + 2 * 60 = 270
-        Assert.Equal(450, perSecondPerfCounters.TotalCountDict["D:"]); // 270 + 3 * 60 = 450
+        ratePerfCounters.UpdateDiskCounters();
+        Assert.Equal(270, ratePerfCounters.TotalCountDict["C:"]); // 150 + 2 * 60 = 270
+        Assert.Equal(450, ratePerfCounters.TotalCountDict["D:"]); // 270 + 3 * 60 = 450
 
         // Simulate the fourth tick
-        perSecondPerfCounters.UpdateDiskCounters();
-        Assert.Equal(420, perSecondPerfCounters.TotalCountDict["C:"]); // 270 + 2.5 * 60 = 420
-        Assert.Equal(660, perSecondPerfCounters.TotalCountDict["D:"]); // 450 + 3.5 * 60 = 660
+        ratePerfCounters.UpdateDiskCounters();
+        Assert.Equal(420, ratePerfCounters.TotalCountDict["C:"]); // 270 + 2.5 * 60 = 420
+        Assert.Equal(660, ratePerfCounters.TotalCountDict["D:"]); // 450 + 3.5 * 60 = 660
     }
 
     [ConditionalFact]
@@ -70,7 +70,7 @@ public class WindowsDiskPerSecondPerfCountersTests
         const string CounterName = WindowsDiskPerfCounterNames.DiskWriteBytesCounter;
         var performanceCounterFactory = new Mock<IPerformanceCounterFactory>();
         var fakeTimeProvider = new FakeTimeProvider { AutoAdvanceAmount = TimeSpan.FromSeconds(30) };
-        var perSecondPerfCounters = new WindowsDiskPerSecondPerfCounters(
+        var ratePerfCounters = new WindowsDiskIoRatePerfCounters(
             performanceCounterFactory.Object,
             fakeTimeProvider,
             CategoryName,
@@ -84,29 +84,29 @@ public class WindowsDiskPerSecondPerfCountersTests
         performanceCounterFactory.Setup(x => x.Create(CategoryName, CounterName, "D:")).Returns(counterD);
 
         // Initialize the counters
-        perSecondPerfCounters.InitializeDiskCounters();
-        Assert.Equal(2, perSecondPerfCounters.TotalCountDict.Count);
-        Assert.Equal(0, perSecondPerfCounters.TotalCountDict["C:"]);
-        Assert.Equal(0, perSecondPerfCounters.TotalCountDict["D:"]);
+        ratePerfCounters.InitializeDiskCounters();
+        Assert.Equal(2, ratePerfCounters.TotalCountDict.Count);
+        Assert.Equal(0, ratePerfCounters.TotalCountDict["C:"]);
+        Assert.Equal(0, ratePerfCounters.TotalCountDict["D:"]);
 
         // Simulate the first tick
-        perSecondPerfCounters.UpdateDiskCounters();
-        Assert.Equal(3000, perSecondPerfCounters.TotalCountDict["C:"]); // 100 * 30 = 3000
-        Assert.Equal(60000, perSecondPerfCounters.TotalCountDict["D:"]); // 2000 * 30 = 60000
+        ratePerfCounters.UpdateDiskCounters();
+        Assert.Equal(3000, ratePerfCounters.TotalCountDict["C:"]); // 100 * 30 = 3000
+        Assert.Equal(60000, ratePerfCounters.TotalCountDict["D:"]); // 2000 * 30 = 60000
 
         // Simulate the second tick
-        perSecondPerfCounters.UpdateDiskCounters();
-        Assert.Equal(7515, perSecondPerfCounters.TotalCountDict["C:"]); // 3000 + 150.5 * 30 = 7515
-        Assert.Equal(120750, perSecondPerfCounters.TotalCountDict["D:"]); // 60000 + 2.5 * 30 = 120750
+        ratePerfCounters.UpdateDiskCounters();
+        Assert.Equal(7515, ratePerfCounters.TotalCountDict["C:"]); // 3000 + 150.5 * 30 = 7515
+        Assert.Equal(120750, ratePerfCounters.TotalCountDict["D:"]); // 60000 + 2.5 * 30 = 120750
 
         // Simulate the third tick
-        perSecondPerfCounters.UpdateDiskCounters();
-        Assert.Equal(8115, perSecondPerfCounters.TotalCountDict["C:"]); // 7515 + 20 * 30 = 8115
-        Assert.Equal(120750, perSecondPerfCounters.TotalCountDict["D:"]); // 120750 + 0 * 30 = 120750
+        ratePerfCounters.UpdateDiskCounters();
+        Assert.Equal(8115, ratePerfCounters.TotalCountDict["C:"]); // 7515 + 20 * 30 = 8115
+        Assert.Equal(120750, ratePerfCounters.TotalCountDict["D:"]); // 120750 + 0 * 30 = 120750
 
         // Simulate the fourth tick
-        perSecondPerfCounters.UpdateDiskCounters();
-        Assert.Equal(8209, perSecondPerfCounters.TotalCountDict["C:"]); // 8115 + 3.1416 * 30 = 8209
-        Assert.Equal(120831, perSecondPerfCounters.TotalCountDict["D:"]); // 120750 + 3.5 * 30 = 120831
+        ratePerfCounters.UpdateDiskCounters();
+        Assert.Equal(8209, ratePerfCounters.TotalCountDict["C:"]); // 8115 + 3.1416 * 30 = 8209
+        Assert.Equal(120831, ratePerfCounters.TotalCountDict["D:"]); // 120750 + 3.5 * 30 = 120831
     }
 }

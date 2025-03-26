@@ -9,7 +9,7 @@ using System.Runtime.Versioning;
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Disk;
 
 [SupportedOSPlatform("windows")]
-internal sealed class WindowsDiskPerSecondPerfCounters
+internal sealed class WindowsDiskIoRatePerfCounters
 {
     private readonly List<IPerformanceCounter> _counters = [];
     private readonly IPerformanceCounterFactory _performanceCounterFactory;
@@ -19,7 +19,7 @@ internal sealed class WindowsDiskPerSecondPerfCounters
     private readonly string[] _instanceNames;
     private long _lastTimestamp;
 
-    internal WindowsDiskPerSecondPerfCounters(
+    internal WindowsDiskIoRatePerfCounters(
         IPerformanceCounterFactory performanceCounterFactory,
         TimeProvider timeProvider,
         string categoryName,
@@ -66,15 +66,15 @@ internal sealed class WindowsDiskPerSecondPerfCounters
     internal void UpdateDiskCounters()
     {
         long currentTimestamp = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
-        double elapsedTime = (currentTimestamp - _lastTimestamp) / 1000.0; // Convert to seconds
+        double elapsedSeconds = (currentTimestamp - _lastTimestamp) / 1000.0; // Convert to seconds
 
-        // For the kind of "per-second" perf counters, this algorithm calculates the total value over a time interval
+        // For the kind of "rate" perf counters, this algorithm calculates the total value over a time interval
         // by multiplying the per-second rate (e.g., Disk Bytes/sec) by the time interval between two samples.
         // This effectively reverses the per-second rate calculation to a total amount (e.g., total bytes transferred) during that period.
         foreach (IPerformanceCounter counter in _counters)
         {
-            // total value = per-second rate * elapsed time
-            double value = counter.NextValue() * elapsedTime;
+            // total value = per-second rate * elapsed seconds
+            double value = counter.NextValue() * elapsedSeconds;
             TotalCountDict[counter.InstanceName] += (long)value;
         }
 

@@ -20,7 +20,7 @@ internal sealed class WindowsDiskMetrics
     private static readonly KeyValuePair<string, object?> _directionReadTag = new(DirectionKey, "read");
     private static readonly KeyValuePair<string, object?> _directionWriteTag = new(DirectionKey, "write");
 
-    private static readonly List<string> _perSecondPerformanceCounters =
+    private static readonly List<string> _diskIoRatePerformanceCounters =
     [
         WindowsDiskPerfCounterNames.DiskWriteBytesCounter,
         WindowsDiskPerfCounterNames.DiskReadBytesCounter,
@@ -28,7 +28,7 @@ internal sealed class WindowsDiskMetrics
         WindowsDiskPerfCounterNames.DiskReadsCounter,
     ];
 
-    private readonly Dictionary<string, WindowsDiskPerSecondPerfCounters> _perSecondCounters = new();
+    private readonly Dictionary<string, WindowsDiskIoRatePerfCounters> _diskIoRateCounters = new();
 
     public WindowsDiskMetrics(
         IMeterFactory meterFactory,
@@ -76,18 +76,18 @@ internal sealed class WindowsDiskMetrics
             return;
         }
 
-        foreach (string counterName in _perSecondPerformanceCounters)
+        foreach (string counterName in _diskIoRatePerformanceCounters)
         {
             try
             {
-                var diskPerfCounter = new WindowsDiskPerSecondPerfCounters(
+                var ratePerfCounter = new WindowsDiskIoRatePerfCounters(
                     performanceCounterFactory,
                     timeProvider,
                     DiskCategoryName,
                     counterName,
                     instanceNames);
-                diskPerfCounter.InitializeDiskCounters();
-                _perSecondCounters.Add(counterName, diskPerfCounter);
+                ratePerfCounter.InitializeDiskCounters();
+                _diskIoRateCounters.Add(counterName, ratePerfCounter);
             }
 #pragma warning disable CA1031
             catch (Exception ex)
@@ -102,7 +102,7 @@ internal sealed class WindowsDiskMetrics
     {
         List<Measurement<long>> measurements = [];
 
-        if (_perSecondCounters.TryGetValue(WindowsDiskPerfCounterNames.DiskWriteBytesCounter, out WindowsDiskPerSecondPerfCounters? perSecondWriteCounter))
+        if (_diskIoRateCounters.TryGetValue(WindowsDiskPerfCounterNames.DiskWriteBytesCounter, out WindowsDiskIoRatePerfCounters? perSecondWriteCounter))
         {
             perSecondWriteCounter.UpdateDiskCounters();
             foreach (KeyValuePair<string, long> pair in perSecondWriteCounter.TotalCountDict)
@@ -111,7 +111,7 @@ internal sealed class WindowsDiskMetrics
             }
         }
 
-        if (_perSecondCounters.TryGetValue(WindowsDiskPerfCounterNames.DiskReadBytesCounter, out WindowsDiskPerSecondPerfCounters? perSecondReadCounter))
+        if (_diskIoRateCounters.TryGetValue(WindowsDiskPerfCounterNames.DiskReadBytesCounter, out WindowsDiskIoRatePerfCounters? perSecondReadCounter))
         {
             perSecondReadCounter.UpdateDiskCounters();
             foreach (KeyValuePair<string, long> pair in perSecondReadCounter.TotalCountDict)
@@ -127,7 +127,7 @@ internal sealed class WindowsDiskMetrics
     {
         List<Measurement<long>> measurements = [];
 
-        if (_perSecondCounters.TryGetValue(WindowsDiskPerfCounterNames.DiskWritesCounter, out WindowsDiskPerSecondPerfCounters? perSecondWriteCounter))
+        if (_diskIoRateCounters.TryGetValue(WindowsDiskPerfCounterNames.DiskWritesCounter, out WindowsDiskIoRatePerfCounters? perSecondWriteCounter))
         {
             perSecondWriteCounter.UpdateDiskCounters();
             foreach (KeyValuePair<string, long> pair in perSecondWriteCounter.TotalCountDict)
@@ -136,7 +136,7 @@ internal sealed class WindowsDiskMetrics
             }
         }
 
-        if (_perSecondCounters.TryGetValue(WindowsDiskPerfCounterNames.DiskReadsCounter, out WindowsDiskPerSecondPerfCounters? perSecondReadCounter))
+        if (_diskIoRateCounters.TryGetValue(WindowsDiskPerfCounterNames.DiskReadsCounter, out WindowsDiskIoRatePerfCounters? perSecondReadCounter))
         {
             perSecondReadCounter.UpdateDiskCounters();
             foreach (KeyValuePair<string, long> pair in perSecondReadCounter.TotalCountDict)
