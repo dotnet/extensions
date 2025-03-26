@@ -382,8 +382,8 @@ public static partial class OpenAISerializationTests
         Assert.Equal("The person whose age is being requested", (string)parameterSchema["description"]!);
         Assert.Equal("string", (string)parameterSchema["type"]!);
 
-        Dictionary<string, object?> functionArgs = new() { ["personName"] = "John" };
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => function.InvokeAsync(functionArgs));
+        AIFunctionArguments functionArgs = new() { ["personName"] = "John" };
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => function.InvokeAsync(functionArgs).AsTask());
         Assert.Contains("does not support being invoked.", ex.Message);
     }
 
@@ -604,6 +604,7 @@ public static partial class OpenAISerializationTests
                 yield return new ChatResponseUpdate
                 {
                     ResponseId = "chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl",
+                    MessageId = "chatcmpl-DJ9a2DJw8892dsa8DJw8jdDsiwkai", // Won't appear in the output, as OpenAI has no representation of this
                     ModelId = "gpt-4o-mini-2024-07-18",
                     CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1_727_888_631),
                     Role = ChatRole.Assistant,
@@ -730,8 +731,8 @@ public static partial class OpenAISerializationTests
         expected = NormalizeNewLines(expected);
         actual = NormalizeNewLines(actual);
 
-        JsonNode? expectedNode = JsonNode.Parse(expected);
-        JsonNode? actualNode = JsonNode.Parse(actual);
+        var expectedNode = JsonNode.Parse(expected);
+        var actualNode = JsonNode.Parse(actual);
 
         if (!JsonNode.DeepEquals(expectedNode, actualNode))
         {

@@ -50,7 +50,7 @@ public abstract class EmbeddingGeneratorIntegrationTests : IDisposable
         Assert.NotNull(embeddings.Usage.InputTokenCount);
         Assert.NotNull(embeddings.Usage.TotalTokenCount);
         Assert.Single(embeddings);
-        Assert.Equal(_embeddingGenerator.GetService<EmbeddingGeneratorMetadata>()?.ModelId, embeddings[0].ModelId);
+        Assert.Equal(_embeddingGenerator.GetService<EmbeddingGeneratorMetadata>()?.DefaultModelId, embeddings[0].ModelId);
         Assert.NotEmpty(embeddings[0].Vector.ToArray());
     }
 
@@ -71,7 +71,7 @@ public abstract class EmbeddingGeneratorIntegrationTests : IDisposable
         Assert.NotNull(embeddings.Usage.TotalTokenCount);
         Assert.All(embeddings, embedding =>
         {
-            Assert.Equal(_embeddingGenerator.GetService<EmbeddingGeneratorMetadata>()?.ModelId, embedding.ModelId);
+            Assert.Equal(_embeddingGenerator.GetService<EmbeddingGeneratorMetadata>()?.DefaultModelId, embedding.ModelId);
             Assert.NotEmpty(embedding.Vector.ToArray());
         });
     }

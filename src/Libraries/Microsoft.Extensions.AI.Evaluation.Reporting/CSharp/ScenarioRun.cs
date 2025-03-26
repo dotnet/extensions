@@ -16,6 +16,7 @@ namespace Microsoft.Extensions.AI.Evaluation.Reporting;
 /// can contain evaluations for multiple scenarios each with a unique <see cref="ScenarioName"/>. The execution of each
 /// such scenario in turn can include multiple iterations each with a unique <see cref="IterationName"/>.
 /// </remarks>
+/// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/tutorials/evaluate-with-reporting">Tutorial: Evaluate a model's response with response caching and reporting.</related>
 public sealed class ScenarioRun : IAsyncDisposable
 {
     /// <summary>
@@ -31,6 +32,7 @@ public sealed class ScenarioRun : IAsyncDisposable
     /// suite can be set to the fully qualified name of the corresponding unit test.
     /// </para>
     /// </remarks>
+    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/tutorials/evaluate-with-reporting">Tutorial: Evaluate a model's response with response caching and reporting.</related>
     public string ScenarioName { get; }
 
     /// <summary>
@@ -73,6 +75,7 @@ public sealed class ScenarioRun : IAsyncDisposable
     /// the new execution.
     /// </para>
     /// </remarks>
+    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/tutorials/evaluate-with-reporting">Tutorial: Evaluate a model's response with response caching and reporting.</related>
     public string ExecutionName { get; }
 
     /// <summary>
@@ -85,9 +88,12 @@ public sealed class ScenarioRun : IAsyncDisposable
     private readonly CompositeEvaluator _compositeEvaluator;
     private readonly IResultStore _resultStore;
     private readonly Func<EvaluationMetric, EvaluationMetricInterpretation?>? _evaluationMetricInterpreter;
+    private readonly ChatDetails? _chatDetails;
+    private readonly IEnumerable<string>? _tags;
 
     private ScenarioRunResult? _result;
 
+#pragma warning disable S107 // Methods should not have too many parameters
     internal ScenarioRun(
         string scenarioName,
         string iterationName,
@@ -95,7 +101,10 @@ public sealed class ScenarioRun : IAsyncDisposable
         IEnumerable<IEvaluator> evaluators,
         IResultStore resultStore,
         ChatConfiguration? chatConfiguration = null,
-        Func<EvaluationMetric, EvaluationMetricInterpretation?>? evaluationMetricInterpreter = null)
+        Func<EvaluationMetric, EvaluationMetricInterpretation?>? evaluationMetricInterpreter = null,
+        ChatDetails? chatDetails = null,
+        IEnumerable<string>? tags = null)
+#pragma warning restore
     {
         ScenarioName = scenarioName;
         IterationName = iterationName;
@@ -105,6 +114,8 @@ public sealed class ScenarioRun : IAsyncDisposable
         _compositeEvaluator = new CompositeEvaluator(evaluators);
         _resultStore = resultStore;
         _evaluationMetricInterpreter = evaluationMetricInterpreter;
+        _chatDetails = chatDetails;
+        _tags = tags;
     }
 
     /// <summary>
@@ -159,7 +170,9 @@ public sealed class ScenarioRun : IAsyncDisposable
                 creationTime: DateTime.UtcNow,
                 messages,
                 modelResponse,
-                evaluationResult);
+                evaluationResult,
+                _chatDetails,
+                _tags);
 
         return evaluationResult;
     }

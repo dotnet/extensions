@@ -4,10 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -41,15 +40,14 @@ internal sealed class PromptBasedFunctionCallingChatClient(IChatClient innerClie
     };
 
     public override async Task<ChatResponse> GetResponseAsync(
-        IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+        IEnumerable<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
-        List<ChatMessage> chatMessageList = [.. messages];
-
         // Our goal is to convert tools into a prompt describing them, then to detect tool calls in the
         // response and convert those into FunctionCallContent.
         if (options?.Tools is { Count: > 0 })
         {
-            AddOrUpdateToolPrompt(chatMessageList, options.Tools);
+            List<ChatMessage> chatMessagesList = [CreateToolPrompt(options.Tools), .. chatMessages.Select(m => m.Clone())];
+            chatMessages = chatMessagesList;
             options = options.Clone();
             options.Tools = null;
 
@@ -61,35 +59,34 @@ internal sealed class PromptBasedFunctionCallingChatClient(IChatClient innerClie
 
             // Since the point of this client is to avoid relying on the underlying model having
             // native tool call support, we have to replace any "tool" or "toolcall" messages with
-            // "user" or "assistant" ones.
-            foreach (var message in chatMessageList)
+            // "user" or "assistant" ones. We don't mutate the incoming messages, because the
+            // intent is only to modify the representation we send to the underlying model.
+            for (var messageIndex = 0; messageIndex < chatMessagesList.Count; messageIndex++)
             {
+                var message = chatMessagesList[messageIndex];
                 for (var itemIndex = 0; itemIndex < message.Contents.Count; itemIndex++)
                 {
                     if (message.Contents[itemIndex] is FunctionResultContent frc)
                     {
                         var toolCallResultJson = JsonSerializer.Serialize(new ToolCallResult { Id = frc.CallId, Result = frc.Result }, _jsonOptions);
-                        message.Role = ChatRole.User;
-                        message.Contents[itemIndex] = new TextContent(
-                            $"<tool_call_result>{toolCallResultJson}</tool_call_result>");
+                        chatMessagesList[messageIndex] = new ChatMessage(ChatRole.User, $"<tool_call_result>{toolCallResultJson}</tool_call_result>");
                     }
                     else if (message.Contents[itemIndex] is FunctionCallContent fcc)
                     {
                         var toolCallJson = JsonSerializer.Serialize(new { fcc.CallId, fcc.Name, fcc.Arguments }, _jsonOptions);
-                        message.Role = ChatRole.Assistant;
-                        message.Contents[itemIndex] = new TextContent(
-                            $"<tool_call_json>{toolCallJson}</tool_call_json>");
+                        chatMessagesList[messageIndex] = new ChatMessage(ChatRole.Assistant, $"<tool_call_json>{toolCallJson}</tool_call_json>");
                     }
                 }
             }
         }
 
-        var result = await base.GetResponseAsync(chatMessageList, options, cancellationToken);
+        var result = await base.GetResponseAsync(chatMessages, options, cancellationToken);
 
-        if (result.Text is { } content && content.IndexOf("<tool_call_json>", StringComparison.Ordinal) is int startPos
+        if (result.Text is { } content
+            && content.IndexOf("<tool_call_json>", StringComparison.Ordinal) is int startPos
             && startPos >= 0)
         {
-            var message = result.Messages.Last();
+            var message = result.Messages.First();
             var contentItem = message.Contents.SingleOrDefault();
             content = content.Substring(startPos);
 
@@ -107,7 +104,9 @@ internal sealed class PromptBasedFunctionCallingChatClient(IChatClient innerClie
                     toolCall = toolCall.Substring(0, endPos);
                     try
                     {
-                        var toolCallParsed = JsonSerializer.Deserialize<ToolCall>(toolCall, _jsonOptions);
+                        // Deserialize just the first. We don't care if there are trailing braces etc.
+                        var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(toolCall));
+                        var toolCallParsed = JsonSerializer.Deserialize<ToolCall>(ref reader, _jsonOptions);
                         if (!string.IsNullOrEmpty(toolCallParsed?.Name))
                         {
                             if (toolCallParsed!.Arguments is not null)
@@ -165,17 +164,10 @@ internal sealed class PromptBasedFunctionCallingChatClient(IChatClient innerClie
         }
     }
 
-    private static void AddOrUpdateToolPrompt(List<ChatMessage> messages, IList<AITool> tools)
+    private static ChatMessage CreateToolPrompt(IList<AITool> tools)
     {
-        var existingToolPrompt = messages.FirstOrDefault(c => c.Text.StartsWith(MessageIntro, StringComparison.Ordinal) is true);
-        if (existingToolPrompt is null)
-        {
-            existingToolPrompt = new ChatMessage(ChatRole.System, (string?)null);
-            messages.Insert(0, existingToolPrompt);
-        }
-
-        var toolDescriptorsJson = JsonSerializer.Serialize(tools.OfType<AIFunction>().Select(ToToolDescriptor), _jsonOptions);
-        existingToolPrompt.Contents.OfType<TextContent>().First().Text = $$"""
+        var toolDescriptorsJson = JsonSerializer.Serialize(tools.OfType<AIFunction>().Select(t => t.JsonSchema), _jsonOptions);
+        var prompt = $$"""
             {{MessageIntro}}
 
             For each function call, return a JSON object with the function name and arguments within <tool_call_json></tool_call_json> XML tags
@@ -191,36 +183,7 @@ internal sealed class PromptBasedFunctionCallingChatClient(IChatClient innerClie
             Here are the available tools:
             <tools>{{toolDescriptorsJson}}</tools>
             """;
-    }
-
-    private static ToolDescriptor ToToolDescriptor(AIFunction tool) => new()
-    {
-        Name = tool.Name,
-        Description = tool.Description,
-        Arguments = tool.UnderlyingMethod?.GetParameters().ToDictionary(
-            p => p.Name!,
-            p => new ToolParameterDescriptor
-            {
-                Type = p.Name!,
-                Description = p.GetCustomAttribute<DescriptionAttribute>()?.Description,
-                Enum = p.ParameterType.IsEnum ? Enum.GetNames(p.ParameterType) : null,
-                Required = !p.IsOptional,
-            }) ?? [],
-    };
-
-    private sealed class ToolDescriptor
-    {
-        public string? Name { get; set; }
-        public string? Description { get; set; }
-        public IDictionary<string, ToolParameterDescriptor>? Arguments { get; set; }
-    }
-
-    private sealed class ToolParameterDescriptor
-    {
-        public string? Type { get; set; }
-        public string? Description { get; set; }
-        public bool? Required { get; set; }
-        public string[]? Enum { get; set; }
+        return new ChatMessage(ChatRole.System, prompt);
     }
 
     private sealed class ToolCall

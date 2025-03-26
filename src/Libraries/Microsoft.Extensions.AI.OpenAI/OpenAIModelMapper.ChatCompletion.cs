@@ -79,6 +79,7 @@ internal static partial class OpenAIModelMappers
         // Create the return message.
         ChatMessage returnMessage = new()
         {
+            MessageId = openAICompletion.Id, // There's no per-message ID, so we use the same value as the response ID
             RawRepresentation = openAICompletion,
             Role = FromOpenAIChatRole(openAICompletion.Role),
         };
@@ -437,7 +438,7 @@ internal static partial class OpenAIModelMappers
         public override string Description => description;
         public override JsonElement JsonSchema => schema;
         public override IReadOnlyDictionary<string, object?> AdditionalProperties => additionalProps;
-        protected override Task<object?> InvokeCoreAsync(IEnumerable<KeyValuePair<string, object?>> arguments, CancellationToken cancellationToken) =>
+        protected override ValueTask<object?> InvokeCoreAsync(AIFunctionArguments arguments, CancellationToken cancellationToken) =>
             throw new InvalidOperationException($"The AI function '{Name}' does not support being invoked.");
     }
 
