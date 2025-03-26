@@ -70,7 +70,7 @@ internal sealed class WindowsDiskMetrics
     private void InitializeDiskCounters(IPerformanceCounterFactory performanceCounterFactory, TimeProvider timeProvider)
     {
         const string DiskCategoryName = "LogicalDisk";
-        string[] instanceNames = performanceCounterFactory.GetCategoryInstance(DiskCategoryName);
+        string[] instanceNames = performanceCounterFactory.GetCategoryInstances(DiskCategoryName);
         if (instanceNames.Length == 0)
         {
             return;

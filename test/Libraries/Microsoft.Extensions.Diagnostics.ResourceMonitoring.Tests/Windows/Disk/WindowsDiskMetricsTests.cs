@@ -59,7 +59,7 @@ public class WindowsDiskMetricsTests
         var writeCounterD = new FakePerformanceCounter("D:", [0, 20, 25, 30, 35]);
         performanceCounterFactory.Setup(x => x.Create(CategoryName, WriteCounterName, "C:")).Returns(writeCounterC);
         performanceCounterFactory.Setup(x => x.Create(CategoryName, WriteCounterName, "D:")).Returns(writeCounterD);
-        performanceCounterFactory.Setup(x => x.GetCategoryInstance(CategoryName)).Returns(["_Total", "C:", "D:"]);
+        performanceCounterFactory.Setup(x => x.GetCategoryInstances(CategoryName)).Returns(["_Total", "C:", "D:"]);
 
         _ = new WindowsDiskMetrics(
             meterFactory,
@@ -132,7 +132,7 @@ public class WindowsDiskMetricsTests
         var writeCounterD = new FakePerformanceCounter("D:", [0, 200, 250, 300, 350]);
         performanceCounterFactory.Setup(x => x.Create(CategoryName, WriteCounterName, "C:")).Returns(writeCounterC);
         performanceCounterFactory.Setup(x => x.Create(CategoryName, WriteCounterName, "D:")).Returns(writeCounterD);
-        performanceCounterFactory.Setup(x => x.GetCategoryInstance(CategoryName)).Returns(["_Total", "C:", "D:"]);
+        performanceCounterFactory.Setup(x => x.GetCategoryInstances(CategoryName)).Returns(["_Total", "C:", "D:"]);
 
         _ = new WindowsDiskMetrics(
             meterFactory,

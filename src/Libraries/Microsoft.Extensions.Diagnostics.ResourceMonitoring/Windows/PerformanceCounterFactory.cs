@@ -12,7 +12,7 @@ internal sealed class PerformanceCounterFactory : IPerformanceCounterFactory
     public IPerformanceCounter Create(string categoryName, string counterName, string instanceName)
         => new PerformanceCounterWrapper(categoryName, counterName, instanceName);
 
-    public string[] GetCategoryInstance(string categoryName)
+    public string[] GetCategoryInstances(string categoryName)
     {
         var category = new PerformanceCounterCategory(categoryName);
         string[] instanceNames = category.GetInstanceNames();

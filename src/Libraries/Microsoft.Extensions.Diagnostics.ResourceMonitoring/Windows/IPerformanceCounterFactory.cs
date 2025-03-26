@@ -22,5 +22,5 @@ internal interface IPerformanceCounterFactory
     /// </summary>
     /// <param name="categoryName">PerformanceCounter category name.</param>
     /// <returns>Array of instance names.</returns>
-    string[] GetCategoryInstance(string categoryName);
+    string[] GetCategoryInstances(string categoryName);
 }
