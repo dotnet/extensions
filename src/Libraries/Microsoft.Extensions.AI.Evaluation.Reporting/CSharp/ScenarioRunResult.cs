@@ -88,8 +88,8 @@ public sealed class ScenarioRunResult(
         string iterationName,
         string executionName,
         DateTime creationTime,
-        IEnumerable<ChatMessage>? messages,
-        ChatResponse? modelResponse,
+        IEnumerable<ChatMessage> messages,
+        ChatResponse modelResponse,
         EvaluationResult evaluationResult,
         ChatDetails? chatDetails = null,
         IEnumerable<string>? tags = null)

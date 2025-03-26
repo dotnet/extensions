@@ -10,7 +10,6 @@ const useCardListStyles = makeStyles({
         gap: '1rem',
         flexWrap: 'wrap',
         maxWidth: '75rem',
-        margin: '0 auto',
     },
 });
 

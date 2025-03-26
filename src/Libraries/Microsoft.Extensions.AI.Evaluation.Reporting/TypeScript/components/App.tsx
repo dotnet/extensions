@@ -125,13 +125,14 @@ function App({ dataset, scoreSummary }: AppProperties) {
           </div>
         </div>
         <GlobalTagsDisplay globalTags={globalTags} />
-      </div>
 
-      <FilterableTagsDisplay
-        filterableTags={filterableTags}
-        onTagClick={handleTagClick}
-        selectedTags={selectedTags}
-      />
+        <FilterableTagsDisplay
+          filterableTags={filterableTags}
+          onTagClick={handleTagClick}
+          selectedTags={selectedTags}
+        />
+
+      </div>
 
       <ScenarioGroup
         node={scoreSummary.primaryResult}

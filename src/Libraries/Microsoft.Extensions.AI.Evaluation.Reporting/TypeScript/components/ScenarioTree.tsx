@@ -284,6 +284,7 @@ const useStyles = makeStyles({
         padding: '0.75rem 0',
         cursor: 'text',
         position: 'relative',
+        maxWidth: '75rem',
         '& pre': {
             whiteSpace: 'pre-wrap',
             wordWrap: 'break-word',
@@ -409,6 +410,69 @@ const useStyles = makeStyles({
         fontWeight: '400',
         color: tokens.colorNeutralForeground2,
     },
+    cacheHitIcon: {
+        color: tokens.colorPaletteGreenForeground1,
+    },
+    cacheMissIcon: {
+        color: tokens.colorPaletteRedForeground1,
+    },
+    cacheHit: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.25rem',
+        color: tokens.colorPaletteGreenForeground1,
+    },
+    cacheMiss: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.25rem',
+        color: tokens.colorPaletteRedForeground1,
+    },
+    cacheKeyCell: {
+        maxWidth: '240px',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+    },
+    cacheKey: {
+        fontFamily: tokens.fontFamilyMonospace,
+        fontSize: '0.7rem',
+        padding: '0.1rem 0.3rem',
+        backgroundColor: tokens.colorNeutralBackground3,
+        borderRadius: '4px',
+        display: 'block',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+    },
+    noCacheKey: {
+        color: tokens.colorNeutralForeground3,
+        fontStyle: 'italic',
+    },
+    tableContainer: {
+        overflowX: 'auto',
+    },
+    cacheKeyContainer: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.25rem',
+    },
+    copyButton: {
+        background: 'none',
+        border: 'none',
+        cursor: 'pointer',
+        padding: '2px',
+        color: tokens.colorNeutralForeground3,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: '3px',
+        '&:hover': {
+            backgroundColor: tokens.colorNeutralBackground4,
+            color: tokens.colorNeutralForeground1,
+        }
+    },
+    preWrap: {
+        whiteSpace: 'pre-wrap',
+    },
 });
 
 const PassFailBadge = ({ pass, total }: { pass: number, total: number }) => {
@@ -529,7 +593,6 @@ export const ChatDetailsSection = ({ chatDetails }: { chatDetails: ChatDetails }
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
     };
-
     return (
         <div className={classes.section}>
             <div className={classes.sectionHeader} onClick={() => setIsExpanded(!isExpanded)}>
