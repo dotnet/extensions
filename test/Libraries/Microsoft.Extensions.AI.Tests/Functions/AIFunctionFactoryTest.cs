@@ -366,21 +366,64 @@ public class AIFunctionFactoryTest
             typeof(MyFunctionTypeWithOneArg)));
     }
 
-    private sealed class MyFunctionTypeWithNoArgs
+    [Fact]
+    public async Task Create_NoInstance_DisposableInstanceCreatedDisposedEachInvocation()
     {
-        private string _value = "42";
+        AIFunction func = AIFunctionFactory.Create(
+            typeof(DisposableService).GetMethod(nameof(DisposableService.GetThis))!,
+            typeof(DisposableService),
+            new()
+            {
+                MarshalResult = (result, type, cancellationToken) => new ValueTask<object?>(result),
+            });
 
-        public static void StaticMethod() => throw new NotSupportedException();
+        var d1 = Assert.IsType<DisposableService>(await func.InvokeAsync());
+        var d2 = Assert.IsType<DisposableService>(await func.InvokeAsync());
+        Assert.NotSame(d1, d2);
 
-        public string InstanceMethod() => _value;
+        Assert.Equal(1, d1.Disposals);
+        Assert.Equal(1, d2.Disposals);
     }
 
-    private sealed class MyFunctionTypeWithOneArg(MyArgumentType arg)
+    [Fact]
+    public async Task Create_NoInstance_AsyncDisposableInstanceCreatedDisposedEachInvocation()
     {
-        public object InstanceMethod() => Tuple.Create(this, arg);
+        AIFunction func = AIFunctionFactory.Create(
+            typeof(AsyncDisposableService).GetMethod(nameof(AsyncDisposableService.GetThis))!,
+            typeof(AsyncDisposableService),
+            new()
+            {
+                MarshalResult = (result, type, cancellationToken) => new ValueTask<object?>(result),
+            });
+
+        var d1 = Assert.IsType<AsyncDisposableService>(await func.InvokeAsync());
+        var d2 = Assert.IsType<AsyncDisposableService>(await func.InvokeAsync());
+        Assert.NotSame(d1, d2);
+
+        Assert.Equal(1, d1.AsyncDisposals);
+        Assert.Equal(1, d2.AsyncDisposals);
     }
 
-    private sealed class MyArgumentType;
+    [Fact]
+    public async Task Create_NoInstance_DisposableAndAsyncDisposableInstanceCreatedDisposedEachInvocation()
+    {
+        AIFunction func = AIFunctionFactory.Create(
+            typeof(DisposableAndAsyncDisposableService).GetMethod(nameof(DisposableAndAsyncDisposableService.GetThis))!,
+            typeof(DisposableAndAsyncDisposableService),
+            new()
+            {
+                MarshalResult = (result, type, cancellationToken) => new ValueTask<object?>(result),
+            });
+
+        var d1 = Assert.IsType<DisposableAndAsyncDisposableService>(await func.InvokeAsync());
+        var d2 = Assert.IsType<DisposableAndAsyncDisposableService>(await func.InvokeAsync());
+        Assert.NotSame(d1, d2);
+
+        Assert.Equal(0, d1.Disposals);
+        Assert.Equal(0, d2.Disposals);
+        Assert.Equal(1, d1.AsyncDisposals);
+        Assert.Equal(1, d2.AsyncDisposals);
+    }
 
     [Fact]
     public async Task ConfigureParameterBinding_CanBeUsedToSupportFromKeyedServices()
@@ -696,6 +739,59 @@ public class AIFunctionFactoryTest
     {
         public int Value => value;
     }
+
+    private class DisposableService : IDisposable
+    {
+        public int Disposals { get; private set; }
+        public void Dispose() => Disposals++;
+
+        public object GetThis() => this;
+    }
+
+    private class AsyncDisposableService : IAsyncDisposable
+    {
+        public int AsyncDisposals { get; private set; }
+
+        public ValueTask DisposeAsync()
+        {
+            AsyncDisposals++;
+            return default;
+        }
+
+        public object GetThis() => this;
+    }
+
+    private class DisposableAndAsyncDisposableService : IDisposable, IAsyncDisposable
+    {
+        public int Disposals { get; private set; }
+        public int AsyncDisposals { get; private set; }
+
+        public void Dispose() => Disposals++;
+
+        public ValueTask DisposeAsync()
+        {
+            AsyncDisposals++;
+            return default;
+        }
+
+        public object GetThis() => this;
+    }
+
+    private sealed class MyFunctionTypeWithNoArgs
+    {
+        private string _value = "42";
+
+        public static void StaticMethod() => throw new NotSupportedException();
+
+        public string InstanceMethod() => _value;
+    }
+
+    private sealed class MyFunctionTypeWithOneArg(MyArgumentType arg)
+    {
+        public object InstanceMethod() => Tuple.Create(this, arg);
+    }
+
+    private sealed class MyArgumentType;
 
     private class A;
     private class B : A;
