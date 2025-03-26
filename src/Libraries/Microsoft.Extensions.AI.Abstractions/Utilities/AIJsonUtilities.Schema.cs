@@ -105,7 +105,7 @@ public static partial class AIJsonUtilities
                 inferenceOptions);
 
             parameterSchemas.Add(parameter.Name, parameterSchema);
-            if (!parameter.IsOptional)
+            if (!parameter.IsOptional || inferenceOptions.RequireAllProperties)
             {
                 (requiredProperties ??= []).Add((JsonNode)parameter.Name);
             }
@@ -199,18 +199,31 @@ public static partial class AIJsonUtilities
                 (schemaObj = [])[SchemaPropertyName] = SchemaKeywordUri;
             }
 
+            if (hasDefaultValue)
+            {
+                if (inferenceOptions.RequireAllProperties)
+                {
+                    // Do not emit default values for schemas where all properties
+                    // are required and embed in the description instead.
+                    string defaultValueJson = defaultValue is not null
+                        ? JsonSerializer.Serialize(defaultValue, serializerOptions.GetTypeInfo(defaultValue.GetType()))
+                        : "null";
+
+                    description = CreateDescriptionWithDefaultValue(description, defaultValueJson);
+                }
+                else
+                {
+                    JsonNode? defaultValueNode = defaultValue is not null
+                        ? JsonSerializer.SerializeToNode(defaultValue, serializerOptions.GetTypeInfo(defaultValue.GetType()))
+                        : null;
+
+                    (schemaObj ??= [])[DefaultPropertyName] = defaultValueNode;
+                }
+            }
+
             if (description is not null)
             {
                 (schemaObj ??= [])[DescriptionPropertyName] = description;
-            }
-
-            if (hasDefaultValue)
-            {
-                JsonNode? defaultValueNode = defaultValue is not null
-                    ? JsonSerializer.Serialize(defaultValue, serializerOptions.GetTypeInfo(defaultValue.GetType()))
-                    : null;
-
-                (schemaObj ??= [])[DefaultPropertyName] = defaultValueNode;
             }
 
             return schemaObj ?? (JsonNode)true;
@@ -233,10 +246,9 @@ public static partial class AIJsonUtilities
         {
             AIJsonSchemaCreateContext ctx = new(schemaExporterContext);
 
-            if (ctx.GetCustomAttribute<DescriptionAttribute>() is { } attr)
-            {
-                ConvertSchemaToObject(ref schema).InsertAtStart(DescriptionPropertyName, (JsonNode)attr.Description);
-            }
+            string? localDescription = ctx.Path.IsEmpty && description is not null
+                ? description
+                : ctx.GetCustomAttribute<DescriptionAttribute>()?.Description;
 
             if (schema is JsonObject objSchema)
             {
@@ -282,6 +294,15 @@ public static partial class AIJsonUtilities
                     }
                 }
 
+                // Strip default keywords and embed in description where required
+                if (inferenceOptions.RequireAllProperties &&
+                    objSchema.TryGetPropertyValue(DefaultPropertyName, out JsonNode? defaultValue))
+                {
+                    _ = objSchema.Remove(DefaultPropertyName);
+                    string defaultValueJson = defaultValue?.ToJsonString() ?? "null";
+                    localDescription = CreateDescriptionWithDefaultValue(localDescription, defaultValueJson);
+                }
+
                 // Filter potentially disallowed keywords.
                 foreach (string keyword in _schemaKeywordsDisallowedByAIVendors)
                 {
@@ -302,37 +323,33 @@ public static partial class AIJsonUtilities
                 }
             }
 
-            if (ctx.Path.IsEmpty)
+            if (ctx.Path.IsEmpty && hasDefaultValue)
             {
-                // We are at the root-level schema node, update/append parameter-specific metadata
-
-                if (!string.IsNullOrWhiteSpace(description))
+                // Add root-level default value metadata
+                if (inferenceOptions.RequireAllProperties)
                 {
-                    JsonObject obj = ConvertSchemaToObject(ref schema);
-                    int index = obj.IndexOf(DescriptionPropertyName);
-                    if (index < 0)
-                    {
-                        // If there's no description property, insert it at the beginning of the doc.
-                        obj.InsertAtStart(DescriptionPropertyName, (JsonNode)description!);
-                    }
-                    else
-                    {
-                        // If there is a description property, just update it in-place.
-                        obj[index] = (JsonNode)description!;
-                    }
+                    // Do not emit default values for schemas where all properties
+                    // are required and embed in the description instead.
+                    string defaultValueJson = JsonSerializer.Serialize(defaultValue, ctx.TypeInfo);
+                    localDescription = CreateDescriptionWithDefaultValue(localDescription, defaultValueJson);
                 }
-
-                if (hasDefaultValue)
+                else
                 {
-                    JsonNode? defaultValueNode = JsonSerializer.Serialize(defaultValue, serializerOptions.GetTypeInfo(typeof(object)));
+                    JsonNode? defaultValueNode = JsonSerializer.SerializeToNode(defaultValue, ctx.TypeInfo);
                     ConvertSchemaToObject(ref schema)[DefaultPropertyName] = defaultValueNode;
                 }
+            }
 
-                if (inferenceOptions.IncludeSchemaKeyword)
-                {
-                    // The $schema property must be the first keyword in the object
-                    ConvertSchemaToObject(ref schema).InsertAtStart(SchemaPropertyName, (JsonNode)SchemaKeywordUri);
-                }
+            if (localDescription is not null)
+            {
+                // Insert the final description property at the start of the schema object.
+                ConvertSchemaToObject(ref schema).InsertAtStart(DescriptionPropertyName, (JsonNode)localDescription);
+            }
+
+            if (ctx.Path.IsEmpty && inferenceOptions.IncludeSchemaKeyword)
+            {
+                // The $schema property must be the first keyword in the object
+                ConvertSchemaToObject(ref schema).InsertAtStart(SchemaPropertyName, (JsonNode)SchemaKeywordUri);
             }
 
             // Finally, apply any user-defined transformations if specified.
@@ -413,23 +430,13 @@ public static partial class AIJsonUtilities
 #endif
     }
 
-#if !NET9_0_OR_GREATER
-    private static int IndexOf(this JsonObject jsonObject, string key)
+    private static string CreateDescriptionWithDefaultValue(string? existingDescription, string defaultValueJson)
     {
-        int i = 0;
-        foreach (var entry in jsonObject)
-        {
-            if (string.Equals(entry.Key, key, StringComparison.Ordinal))
-            {
-                return i;
-            }
-
-            i++;
-        }
-
-        return -1;
+        return existingDescription is null
+            ? $"Default value: {defaultValueJson}"
+            : $"{existingDescription} (Default value: {defaultValueJson})";
     }
-#endif
+
     private static JsonElement ParseJsonElement(ReadOnlySpan<byte> utf8Json)
     {
         Utf8JsonReader reader = new(utf8Json);

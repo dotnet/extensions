@@ -259,6 +259,90 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.Contains("3528", sb.ToString());
     }
 
+    [ConditionalFact]
+    public virtual async Task FunctionInvocation_OptionalParameter()
+    {
+        SkipIfNotEnabled();
+
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using var chatClient = new FunctionInvokingChatClient(
+            new OpenTelemetryChatClient(_chatClient, sourceName: sourceName));
+
+        int secretNumber = 42;
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.User, "What is the secret number for id foo?")
+        ];
+
+        AIFunction func = AIFunctionFactory.Create((string id = "defaultId") => id is "foo" ? secretNumber : -1, "GetSecretNumberById");
+        var response = await chatClient.GetResponseAsync(messages, new()
+        {
+            Tools = [func]
+        });
+
+        Assert.Contains(secretNumber.ToString(), response.Text);
+
+        // If the underlying IChatClient provides usage data, function invocation should aggregate the
+        // usage data across all calls to produce a single Usage value on the final response
+        if (response.Usage is { } finalUsage)
+        {
+            var totalInputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.input_tokens")!);
+            var totalOutputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.output_tokens")!);
+            Assert.Equal(totalInputTokens, finalUsage.InputTokenCount);
+            Assert.Equal(totalOutputTokens, finalUsage.OutputTokenCount);
+        }
+    }
+
+    [ConditionalFact]
+    public virtual async Task FunctionInvocation_NestedParameters()
+    {
+        SkipIfNotEnabled();
+
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using var chatClient = new FunctionInvokingChatClient(
+            new OpenTelemetryChatClient(_chatClient, sourceName: sourceName));
+
+        int secretNumber = 42;
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.User, "What is the secret number for John aged 19?")
+        ];
+
+        AIFunction func = AIFunctionFactory.Create((PersonRecord person) => person.Name is "John" ? secretNumber + person.Age : -1, "GetSecretNumberByPerson");
+        var response = await chatClient.GetResponseAsync(messages, new()
+        {
+            Tools = [func]
+        });
+
+        Assert.Contains((secretNumber + 19).ToString(), response.Text);
+
+        // If the underlying IChatClient provides usage data, function invocation should aggregate the
+        // usage data across all calls to produce a single Usage value on the final response
+        if (response.Usage is { } finalUsage)
+        {
+            var totalInputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.input_tokens")!);
+            var totalOutputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.output_tokens")!);
+            Assert.Equal(totalInputTokens, finalUsage.InputTokenCount);
+            Assert.Equal(totalOutputTokens, finalUsage.OutputTokenCount);
+        }
+    }
+
+    public record PersonRecord(string Name, int Age = 42);
+
     protected virtual bool SupportsParallelFunctionCalling => true;
 
     [ConditionalFact]
