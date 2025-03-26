@@ -24,7 +24,8 @@ const useStyles = makeStyles({
     position: 'sticky',
     top: 0,
     zIndex: 1,
-    paddingBottom: '12px'
+    paddingBottom: '12px',
+    backgroundColor: tokens.colorNeutralBackground1,
   },
   headerTop: {
     display: 'flex',
@@ -124,13 +125,12 @@ function App({ dataset, tree }: AppProperties) {
           </div>
         </div>
         <GlobalTagsDisplay globalTags={globalTags} />
+        <FilterableTagsDisplay
+          filterableTags={filterableTags}
+          onTagClick={handleTagClick}
+          selectedTags={selectedTags}
+        />
       </div>
-
-      <FilterableTagsDisplay
-        filterableTags={filterableTags}
-        onTagClick={handleTagClick}
-        selectedTags={selectedTags}
-      />
 
       <ScenarioGroup
         node={tree}
