@@ -73,8 +73,8 @@ const run = async () => {
       createRoot(document.getElementById('root')!).render(
         <FluentProvider theme={webLightTheme}>
           <StrictMode>
-            <ReportContextProvider>
-              <App scoreSummary={scoreSummary} dataset={dataset} />
+            <ReportContextProvider dataset={dataset} scoreSummary={scoreSummary}>
+              <App />
             </ReportContextProvider>
           </StrictMode>
         </FluentProvider>

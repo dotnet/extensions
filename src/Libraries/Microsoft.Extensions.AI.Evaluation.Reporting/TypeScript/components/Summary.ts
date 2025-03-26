@@ -9,23 +9,27 @@ export enum ScoreNodeType {
 
 export type ScoreSummary = {
     primaryResult: ScoreNode;
-    history: Map<string,ScoreNode>;
+    executionHistory: Map<string, ScoreNode>;
+    nodesByKey: Map<string, Map<string, ScoreNode>>;
 };
 
 export class ScoreNode {
-    constructor(name: string, nodeType: ScoreNodeType, key: string) {
+    constructor(name: string, nodeType: ScoreNodeType, nodeKey: string, executionName: string) {
         this.name = name;
         this.nodeType = nodeType;
         this.children = new Map<string, ScoreNode>();
-        this.key = key;
+        this.nodeKey = nodeKey;
+        this.executionName = executionName;
     }
     private children: Map<string, ScoreNode>;
 
     nodeType: ScoreNodeType;
     name: string;
-    key: string;
+    executionName: string;
+    nodeKey: string;
+
     scenario?: ScenarioRunResult;
-    
+
     shortenedPrompt?: string;
     failed: boolean = false;
     numPassingIterations: number = 0;
@@ -57,7 +61,7 @@ export class ScoreNode {
                 case 2: nodeType = ScoreNodeType.Scenario; break;
                 default: nodeType = ScoreNodeType.Group; break;
             }
-            const newChild = new ScoreNode(head, nodeType, `${this.key}.${head}`);
+            const newChild = new ScoreNode(head, nodeType, `${this.nodeKey}.${head}`, this.executionName);
             newChild.insertNode(tail, scenario);
             this.children.set(head, newChild);
         }
@@ -66,13 +70,13 @@ export class ScoreNode {
     get isLeafNode() {
         return this.scenario !== undefined;
     }
-  
+
     get childNodes() {
         return [...this.children.values()];
     }
 
     get flattenedNodes() {
-        return [...flattener(this, "")];
+        return [...flattener(this)];
     }
 
     aggregate(filteredTags: string[] = []) {
@@ -149,27 +153,39 @@ export class ScoreNode {
 
 export const createScoreSummary = (dataset: Dataset): ScoreSummary => {
 
-    const executionMap = new Map<string, ScoreNode>();
+    const executionHistory = new Map<string, ScoreNode>();
     for (const scenario of dataset.scenarioRunResults) {
         const executionName = scenario.executionName;
-        if (!executionMap.has(executionName)) {
-            const newRoot = new ScoreNode(`All Evaluations [${executionName}]`, ScoreNodeType.Group, executionName);
-            executionMap.set(executionName, newRoot );
+        if (!executionHistory.has(executionName)) {
+            const newRoot = new ScoreNode(`All Evaluations [${executionName}]`, ScoreNodeType.Group, "root", executionName);
+            executionHistory.set(executionName, newRoot);
         }
-        const scoreNode = executionMap.get(executionName)!;
+        const scoreNode = executionHistory.get(executionName)!;
         const path = [...scenario.scenarioName.split('.'), scenario.iterationName];
         scoreNode.insertNode(path, scenario);
     }
 
-    for (const scoreNode of executionMap.values()) {
-        scoreNode.collapseSingleChildNodes();
-        scoreNode.aggregate();
+    const nodesByKey = new Map<string, Map<string, ScoreNode>>();
+    for (const executionName of executionHistory.keys()) {
+        nodesByKey.set(executionName, new Map<string, ScoreNode>());
     }
 
-    const [primaryResult] = executionMap.values();
+    for (const scoreNode of executionHistory.values()) {
+        scoreNode.aggregate();
+
+        for (const node of scoreNode.flattenedNodes) {
+            const nodeList = nodesByKey.get(node.executionName)!;
+            nodeList.set(node.nodeKey, node);
+        }
+    }
+
+    const [primaryResult] = executionHistory.values();
+    primaryResult.collapseSingleChildNodes();
+
     return {
-        primaryResult: primaryResult,
-        history: executionMap,
+        primaryResult,
+        executionHistory,
+        nodesByKey,
     } as ScoreSummary;
 };
 
@@ -179,8 +195,8 @@ export const getScoreHistory = (scoreSummary: ScoreSummary, scenario: ScenarioRu
     const iterationName = scenario.iterationName;
 
     const scoreHistory = new Map<string, ScenarioRunResult>();
-    for (const [key, node] of scoreSummary.history.entries()) {
-        for (const {node: leafNode} of node.flattenedNodes) {
+    for (const [key, node] of scoreSummary.executionHistory.entries()) {
+        for (const leafNode of node.flattenedNodes) {
             if (leafNode.scenario?.scenarioName == scenarioName &&
                 leafNode.scenario?.iterationName == iterationName) {
                 scoreHistory.set(key, leafNode.scenario);
@@ -200,14 +216,13 @@ const shortenPrompt = (prompt: string | undefined) => {
     return prompt;
 };
 
-const flattener = function* (node: ScoreNode, parentKey: string): Iterable<{key: string, node: ScoreNode}> {
-    const key = `${parentKey}.${node.name}`;
+const flattener = function* (node: ScoreNode): Iterable<ScoreNode> {
     if (node.isLeafNode) {
-        yield {key, node};
+        yield node;
     } else {
-        yield {key, node};
+        yield node;
         for (const child of node.childNodes) {
-            yield* flattener(child, key);
+            yield* flattener(child);
         }
     }
 };
@@ -230,7 +245,7 @@ export type ChatMessageDisplay = {
 
 export const getConversationDisplay = (messages: ChatMessage[], modelResponse?: ChatResponse): ConversationDisplay => {
     const chatMessages: ChatMessageDisplay[] = [];
-    
+
     for (const m of messages) {
         for (const c of m.contents) {
             if (isTextContent(c)) {

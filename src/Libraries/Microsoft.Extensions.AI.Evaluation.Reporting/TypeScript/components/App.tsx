@@ -13,11 +13,6 @@ import { tokens } from '@fluentui/react-components';
 import { ScoreNodeHistory } from './ScoreNodeHistory';
 import { useReportContext } from './ReportContext';
 
-type AppProperties = {
-  dataset: Dataset,
-  scoreSummary: ScoreSummary,
-};
-
 const useStyles = makeStyles({
   header: {
     display: 'flex',
@@ -86,12 +81,12 @@ const useStyles = makeStyles({
   drawerBody: { paddingTop: '1rem' },
 });
 
-function App({ dataset, scoreSummary }: AppProperties) {
+function App() {
   const classes = useStyles();
+  const { dataset, scoreSummary } = useReportContext();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const {renderMarkdown, setRenderMarkdown} = useReportContext();
+  const { renderMarkdown, setRenderMarkdown } = useReportContext();
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-
   const { globalTags, filterableTags } = categorizeAndSortTags(dataset);
 
   const toggleSettings = () => setIsSettingsOpen(!isSettingsOpen);

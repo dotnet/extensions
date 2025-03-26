@@ -10,6 +10,7 @@ import ReactMarkdown from "react-markdown";
 import { DismissCircle16Regular, Info16Regular, Warning16Regular, CheckmarkCircle16Regular, Copy16Regular, RadioButtonFilled, RadioButtonRegular } from "@fluentui/react-icons";
 import { ChevronDown12Regular, ChevronRight12Regular } from '@fluentui/react-icons';
 import { useReportContext } from "./ReportContext";
+import { useStyles } from "./Styles";
 
 const ScenarioLevel = ({ node, scoreSummary, isOpen }: {
     node: ScoreNode,
@@ -17,9 +18,9 @@ const ScenarioLevel = ({ node, scoreSummary, isOpen }: {
     isOpen: (path: string) => boolean,
 }) => {
     if (node.isLeafNode) {
-        return <TreeItem itemType="branch" value={node.key}>
+        return <TreeItem itemType="branch" value={node.nodeKey}>
             <TreeItemLayout>
-                <ScoreNodeHeader item={node} showPrompt={!isOpen(node.key)} />
+                <ScoreNodeHeader item={node} showPrompt={!isOpen(node.nodeKey)} />
             </TreeItemLayout>
             <Tree>
                 <TreeItem itemType="leaf" >
@@ -30,13 +31,13 @@ const ScenarioLevel = ({ node, scoreSummary, isOpen }: {
             </Tree>
         </TreeItem>
     } else {
-        return <TreeItem itemType="branch" value={node.key}>
+        return <TreeItem itemType="branch" value={node.nodeKey}>
             <TreeItemLayout>
-                <ScoreNodeHeader item={node} showPrompt={!isOpen(node.key)} />
+                <ScoreNodeHeader item={node} showPrompt={!isOpen(node.nodeKey)} />
             </TreeItemLayout>
             <Tree>
                 {node.childNodes.map((n) => (
-                    <ScenarioLevel key={n.key} node={n} scoreSummary={scoreSummary} isOpen={isOpen} />
+                    <ScenarioLevel key={n.nodeKey} node={n} scoreSummary={scoreSummary} isOpen={isOpen} />
                 ))}
             </Tree>
         </TreeItem>;
@@ -68,7 +69,7 @@ export const ScenarioGroup = ({ node, scoreSummary, selectedTags }: {
             .filter((child): child is ScoreNode => child !== null);
 
         if (filteredChildren.length > 0) {
-            const newNode = new ScoreNode(node.name, node.nodeType, node.key);
+            const newNode = new ScoreNode(node.name, node.nodeType, node.nodeKey, node.executionName);
             newNode.setChildren(new Map(filteredChildren.map(child => [child.name, child])));
             newNode.aggregate(selectedTags);
             return newNode;
@@ -84,7 +85,7 @@ export const ScenarioGroup = ({ node, scoreSummary, selectedTags }: {
     }
 
     return (
-        <Tree aria-label="Default" appearance="transparent" onOpenChange={handleOpenChange} defaultOpenItems={[filteredNode.key]}>
+        <Tree aria-label="Default" appearance="transparent" onOpenChange={handleOpenChange} defaultOpenItems={[filteredNode.nodeKey]}>
             <ScenarioLevel node={filteredNode} scoreSummary={scoreSummary} isOpen={isOpen} />
         </Tree>
     );
@@ -194,222 +195,7 @@ const DiagnosticsContent = ({ diagnostics }: { diagnostics: EvaluationDiagnostic
     );
 };
 
-const useStyles = makeStyles({
-    headerContainer: { display: 'flex', alignItems: 'center', flexDirection: 'row', gap: '0.5rem' },
-    hint: {
-        fontFamily: tokens.fontFamilyMonospace,
-        opacity: 0.6,
-        fontSize: '0.7rem',
-        paddingTop: '0.25rem',
-        paddingLeft: '1rem',
-        whiteSpace: 'nowrap',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.25rem',
-    },
-    score: { fontSize: tokens.fontSizeBase200 },
-    passFailBadge: {
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: '0 0.25rem',
-        borderRadius: '4px',
-        backgroundColor: tokens.colorNeutralBackground3,
-    },
-    scenarioLabel: {
-        whiteSpace: 'nowrap',
-        fontWeight: '500',
-        fontSize: tokens.fontSizeBase300,
-        display: 'flex',
-        gap: '0.5rem',
-        alignItems: 'center',
-    },
-    separator: {
-        color: tokens.colorNeutralForeground4,
-        fontSize: tokens.fontSizeBase200,
-        fontWeight: '300',
-        padding: '0 0.125rem',
-    },
-    iterationArea: {
-        marginTop: '1rem',
-        marginBottom: '1rem',
-    },
-    section: {
-        marginTop: '0.75rem',
-        marginBottom: '0.75rem',
-        padding: '1rem',
-        border: '2px solid ' + tokens.colorNeutralStroke1,
-        borderRadius: '8px',
-        right: '0',
-    },
-    sectionHeader: {
-        display: 'flex',
-        alignItems: 'center',
-        cursor: 'pointer',
-        userSelect: 'none',
-    },
-    sectionHeaderText: {
-        margin: 0,
-        marginLeft: '0.5rem',
-        fontSize: tokens.fontSizeBase300,
-        fontWeight: '500',
-    },
-    sectionSubHeader: {
-        fontSize: tokens.fontSizeBase300,
-        fontWeight: '500',
-        marginBottom: '0.25rem',
-    },
-    sectionContent: {
-        marginBottom: '0.75rem',
-    },
-    failMessage: {
-        color: tokens.colorStatusDangerForeground2,
-        marginBottom: '0.25rem',
-    },
-    warningMessage: {
-        color: tokens.colorStatusWarningForeground2,
-        marginBottom: '0.25rem',
-    },
-    infoMessage: {
-        color: tokens.colorNeutralForeground1,
-        marginBottom: '0.25rem',
-    },
-    sectionContainer: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0.75rem',
-        padding: '0.75rem 0',
-        cursor: 'text',
-        position: 'relative',
-        maxWidth: '75rem',
-        '& pre': {
-            whiteSpace: 'pre-wrap',
-            wordWrap: 'break-word',
-        },
-    },
-    messageRow: {
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'relative',
-    },
-    userMessageRow: {
-        marginLeft: '0',
-        marginRight: '10rem',
-    },
-    assistantMessageRow: {
-        marginLeft: '10rem',
-        marginRight: '0',
-    },
-    messageParticipantName: {
-        fontSize: tokens.fontSizeBase200,
-        marginBottom: '0.25rem',
-        color: tokens.colorNeutralForeground3,
-        paddingLeft: '0.5rem',
-    },
-    messageBubble: {
-        padding: '0.75rem 1rem',
-        borderRadius: '12px',
-        overflow: 'hidden',
-        wordBreak: 'break-word',
-        backgroundColor: tokens.colorNeutralBackground3,
-        border: '1px solid ' + tokens.colorNeutralStroke2,
-    },
-    cacheHitIcon: {
-        color: tokens.colorPaletteGreenForeground1,
-    },
-    cacheMissIcon: {
-        color: tokens.colorPaletteRedForeground1,
-    },
-    cacheHit: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.25rem',
-        color: tokens.colorPaletteGreenForeground1,
-    },
-    cacheMiss: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.25rem',
-        color: tokens.colorPaletteRedForeground1,
-    },
-    cacheKeyCell: {
-        maxWidth: '240px',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-    },
-    cacheKey: {
-        fontFamily: tokens.fontFamilyMonospace,
-        fontSize: '0.7rem',
-        padding: '0.1rem 0.3rem',
-        backgroundColor: tokens.colorNeutralBackground3,
-        borderRadius: '4px',
-        display: 'block',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-    },
-    noCacheKey: {
-        color: tokens.colorNeutralForeground3,
-        fontStyle: 'italic',
-    },
-    tableContainer: {
-        overflowX: 'auto',
-        maxWidth: '75rem',
-    },
-    cacheKeyContainer: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.25rem',
-    },
-    copyButton: {
-        background: 'none',
-        border: 'none',
-        cursor: 'pointer',
-        padding: '2px',
-        color: tokens.colorNeutralForeground3,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: '3px',
-        '&:hover': {
-            backgroundColor: tokens.colorNeutralBackground4,
-            color: tokens.colorNeutralForeground1,
-        }
-    },
-    preWrap: {
-        whiteSpace: 'pre-wrap',
-    },
-    executionHeaderCell: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100%',
-        width: '100%',
-        padding: '0.5rem',
-    },
-    currentExecutionBackground: {
-        backgroundColor: tokens.colorNeutralBackground4,
-    },
-    currentExecutionForeground: {
-        fontWeight: '600',
-    },
-    verticalText: {
-        writingMode: 'vertical-rl',
-        transform: 'rotate(180deg)',
-        fontSize: tokens.fontSizeBase200,
-        fontWeight: '400',
-        color: tokens.colorNeutralForeground2,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    historyMetricCell: {
-        fontSize: tokens.fontSizeBase200,
-        fontWeight: '400',
-        color: tokens.colorNeutralForeground2,
-    },
-});
-
-const PassFailBadge = ({ pass, total }: { pass: number, total: number }) => {
+export const PassFailBadge = ({ pass, total }: { pass: number, total: number }) => {
     const classes = useStyles();
     return (<div className={classes.passFailBadge}>
         <span className={classes.score}>{pass}/{total} [{((pass * 100) / total).toFixed(1)}%]</span>
@@ -457,7 +243,7 @@ const ScoreNodeHeader = ({ item, showPrompt }:
     const parts = item.name.split(' / ');
 
     return (<div className={classes.headerContainer}>
-        <SelectionButton nodeKey={item.key}  />
+        <SelectionButton nodeKey={item.nodeKey}  />
         <PassFailBar pass={ctPass} total={ctPass + ctFail} width="24px" height="12px" />
         <div className={classes.scenarioLabel}>
             {parts.map((part, index) => (
@@ -633,13 +419,13 @@ export const ScoreHistory = ({ scoreSummary, scenario }: { scoreSummary: ScoreSu
     const classes = useStyles();
     const [isExpanded, setIsExpanded] = useState(false);
 
-    if (!scoreSummary.history || scoreSummary.history.size === 0 ||
-        (scoreSummary.history.size === 1 && [...scoreSummary.history.keys()][0] == scenario.executionName)) {
+    if (!scoreSummary.executionHistory || scoreSummary.executionHistory.size === 0 ||
+        (scoreSummary.executionHistory.size === 1 && [...scoreSummary.executionHistory.keys()][0] == scenario.executionName)) {
         return null;
     }
 
     const scoreHistory = getScoreHistory(scoreSummary, scenario);
-    const executions = [...scoreSummary.history.keys()].reverse();
+    const executions = [...scoreSummary.executionHistory.keys()].reverse();
     const metrics = [...Object.keys(scenario.evaluationResult.metrics)];
 
     const getMetricDisplay = (execution: string, metric: string) => {
