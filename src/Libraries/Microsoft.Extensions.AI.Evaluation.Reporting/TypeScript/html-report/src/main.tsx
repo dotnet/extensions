@@ -6,6 +6,7 @@ import { createRoot } from 'react-dom/client'
 import App from '../../components/App.tsx'
 import { FluentProvider, webLightTheme } from '@fluentui/react-components';
 import { createScoreSummary } from '../../components/Summary.ts';
+import { ReportContextProvider } from '../../components/ReportContext.tsx';
 
 
 let dataset: Dataset = { scenarioRunResults: [] };
@@ -21,7 +22,9 @@ const scoreSummary = createScoreSummary(dataset);
 createRoot(document.getElementById('root')!).render(
   <FluentProvider theme={webLightTheme}>
     <StrictMode>
-      <App scoreSummary={scoreSummary} dataset={dataset} />
+      <ReportContextProvider>
+        <App scoreSummary={scoreSummary} dataset={dataset} />
+      </ReportContextProvider>
     </StrictMode>
   </FluentProvider>,
 )

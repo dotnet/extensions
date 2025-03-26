@@ -11,6 +11,7 @@ import { getClient } from "azure-devops-extension-api";
 import { Build, Attachment, BuildRestClient } from "azure-devops-extension-api/Build";
 import { FluentProvider, webLightTheme } from '@fluentui/react-components';
 import { createScoreSummary as createScoreSummary } from '../../components/Summary.ts';
+import { ReportContextProvider } from '../../components/ReportContext.tsx';
 
 const ErrorHtml = ({ message }: { message: string }) =>
   <html>
@@ -72,7 +73,9 @@ const run = async () => {
       createRoot(document.getElementById('root')!).render(
         <FluentProvider theme={webLightTheme}>
           <StrictMode>
-            <App scoreSummary={scoreSummary} dataset={dataset} />
+            <ReportContextProvider>
+              <App scoreSummary={scoreSummary} dataset={dataset} />
+            </ReportContextProvider>
           </StrictMode>
         </FluentProvider>
       );

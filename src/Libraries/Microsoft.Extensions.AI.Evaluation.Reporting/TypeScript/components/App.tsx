@@ -11,7 +11,7 @@ import { ScenarioGroup } from './ScenarioTree';
 import { GlobalTagsDisplay, FilterableTagsDisplay, categorizeAndSortTags } from './TagsDisplay';
 import { tokens } from '@fluentui/react-components';
 import { ScoreNodeHistory } from './ScoreNodeHistory';
-import { ReportContextProvider } from './ReportContext';
+import { useReportContext } from './ReportContext';
 
 type AppProperties = {
   dataset: Dataset,
@@ -28,6 +28,8 @@ const useStyles = makeStyles({
     zIndex: 1,
     paddingBottom: '12px',
     backgroundColor: tokens.colorNeutralBackground1,
+    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+    marginBottom: '1rem',
   },
   headerTop: {
     display: 'flex',
@@ -87,13 +89,12 @@ const useStyles = makeStyles({
 function App({ dataset, scoreSummary }: AppProperties) {
   const classes = useStyles();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [renderMarkdown, setRenderMarkdown] = useState(true);
+  const {renderMarkdown, setRenderMarkdown} = useReportContext();
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   const { globalTags, filterableTags } = categorizeAndSortTags(dataset);
 
   const toggleSettings = () => setIsSettingsOpen(!isSettingsOpen);
-  const toggleRenderMarkdown = () => setRenderMarkdown(!renderMarkdown);
   const closeSettings = () => setIsSettingsOpen(false);
 
   const handleTagClick = (tag: string) => {
@@ -107,7 +108,7 @@ function App({ dataset, scoreSummary }: AppProperties) {
   };
 
   return (
-    <ReportContextProvider>
+    <>
       <div className={classes.header}>
         <div className={classes.headerTop}>
           <h1>AI Evaluation Report</h1>
@@ -140,7 +141,6 @@ function App({ dataset, scoreSummary }: AppProperties) {
       <ScenarioGroup
         node={scoreSummary.primaryResult}
         scoreSummary={scoreSummary}
-        renderMarkdown={renderMarkdown}
         selectedTags={selectedTags}
       />
 
@@ -156,12 +156,12 @@ function App({ dataset, scoreSummary }: AppProperties) {
         <DrawerBody className={classes.drawerBody}>
           <Switch
             checked={renderMarkdown}
-            onChange={toggleRenderMarkdown}
+            onChange={(_ev, data) => setRenderMarkdown(data.checked)}
             label={<span className={classes.switchLabel}>Render markdown for conversations</span>}
           />
         </DrawerBody>
       </Drawer>
-    </ReportContextProvider>
+    </>
   );
 }
 

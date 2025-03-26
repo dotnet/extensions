@@ -1,4 +1,5 @@
 import { makeStyles, tokens } from "@fluentui/react-components";
+import { useReportContext } from "./ReportContext";
 
 const useStyles = makeStyles({
     root: {
@@ -24,6 +25,11 @@ const useStyles = makeStyles({
 
 export const ScoreNodeHistory = () => {
     const classes = useStyles();
+    const { selectedScenarioLevel } = useReportContext();
+
+    if (!selectedScenarioLevel) {
+        return null;
+    }
 
     return (<div className={classes.root}>
         <div className={classes.title}>Score Node History</div>

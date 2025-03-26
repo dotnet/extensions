@@ -11,11 +11,10 @@ import { DismissCircle16Regular, Info16Regular, Warning16Regular, CheckmarkCircl
 import { ChevronDown12Regular, ChevronRight12Regular } from '@fluentui/react-icons';
 import { useReportContext } from "./ReportContext";
 
-const ScenarioLevel = ({ node, scoreSummary, isOpen, renderMarkdown }: {
+const ScenarioLevel = ({ node, scoreSummary, isOpen }: {
     node: ScoreNode,
     scoreSummary: ScoreSummary,
     isOpen: (path: string) => boolean,
-    renderMarkdown: boolean,
 }) => {
     if (node.isLeafNode) {
         return <TreeItem itemType="branch" value={node.key}>
@@ -25,7 +24,7 @@ const ScenarioLevel = ({ node, scoreSummary, isOpen, renderMarkdown }: {
             <Tree>
                 <TreeItem itemType="leaf" >
                     <TreeItemLayout>
-                        <ScoreDetail scenario={node.scenario!} scoreSummary={scoreSummary} renderMarkdown={renderMarkdown} />
+                        <ScoreDetail scenario={node.scenario!} scoreSummary={scoreSummary} />
                     </TreeItemLayout>
                 </TreeItem>
             </Tree>
@@ -37,17 +36,16 @@ const ScenarioLevel = ({ node, scoreSummary, isOpen, renderMarkdown }: {
             </TreeItemLayout>
             <Tree>
                 {node.childNodes.map((n) => (
-                    <ScenarioLevel key={n.key} node={n} scoreSummary={scoreSummary} isOpen={isOpen} renderMarkdown={renderMarkdown} />
+                    <ScenarioLevel key={n.key} node={n} scoreSummary={scoreSummary} isOpen={isOpen} />
                 ))}
             </Tree>
         </TreeItem>;
     }
 };
 
-export const ScenarioGroup = ({ node, scoreSummary, renderMarkdown, selectedTags }: {
+export const ScenarioGroup = ({ node, scoreSummary, selectedTags }: {
     node: ScoreNode,
     scoreSummary: ScoreSummary,
-    renderMarkdown: boolean,
     selectedTags: string[]
 }) => {
     const [openItems, setOpenItems] = useState<Set<TreeItemValue>>(() => new Set());
@@ -87,12 +85,12 @@ export const ScenarioGroup = ({ node, scoreSummary, renderMarkdown, selectedTags
 
     return (
         <Tree aria-label="Default" appearance="transparent" onOpenChange={handleOpenChange} defaultOpenItems={[filteredNode.key]}>
-            <ScenarioLevel node={filteredNode} scoreSummary={scoreSummary} isOpen={isOpen} renderMarkdown={renderMarkdown} />
+            <ScenarioLevel node={filteredNode} scoreSummary={scoreSummary} isOpen={isOpen} />
         </Tree>
     );
 };
 
-export const ScoreDetail = ({ scenario, renderMarkdown, scoreSummary }: { scenario: ScenarioRunResult, renderMarkdown: boolean, scoreSummary: ScoreSummary }) => {
+export const ScoreDetail = ({ scenario, scoreSummary }: { scenario: ScenarioRunResult, scoreSummary: ScoreSummary }) => {
     const classes = useStyles();
     const [selectedMetric, setSelectedMetric] = useState<MetricType | null>(null);
     const { messages, model, usage } = getConversationDisplay(scenario.messages, scenario.modelResponse);
@@ -105,7 +103,7 @@ export const ScoreDetail = ({ scenario, renderMarkdown, scoreSummary }: { scenar
             selectedMetric={selectedMetric}
         />
         {selectedMetric && <MetricDetailsSection metric={selectedMetric} />}
-        <ConversationDetails messages={messages} model={model} usage={usage} renderMarkdown={renderMarkdown} />
+        <ConversationDetails messages={messages} model={model} usage={usage} />
         {scenario.chatDetails && <ChatDetailsSection chatDetails={scenario.chatDetails} />}
     </div>);
 };
@@ -418,15 +416,15 @@ const PassFailBadge = ({ pass, total }: { pass: number, total: number }) => {
     </div>);
 };
 
-export const SelectionButton = ({ key }: { key: string }) => {
+export const SelectionButton = ({ nodeKey }: { nodeKey: string }) => {
     const {selectScenarioLevel, selectedScenarioLevel} = useReportContext();
     return (
         <Button
             appearance="transparent"
-            icon={key == selectedScenarioLevel ? <RadioButtonFilled /> : <RadioButtonRegular />}
+            icon={nodeKey === selectedScenarioLevel ? <RadioButtonFilled /> : <RadioButtonRegular />}
             onClick={(evt) => {
                 evt.stopPropagation();
-                selectScenarioLevel(key);
+                selectScenarioLevel(nodeKey);
             }}
             aria-label="Select"
         />
@@ -459,7 +457,7 @@ const ScoreNodeHeader = ({ item, showPrompt }:
     const parts = item.name.split(' / ');
 
     return (<div className={classes.headerContainer}>
-        <SelectionButton key={item.name}  />
+        <SelectionButton nodeKey={item.key}  />
         <PassFailBar pass={ctPass} total={ctPass + ctFail} width="24px" height="12px" />
         <div className={classes.scenarioLabel}>
             {parts.map((part, index) => (
@@ -474,14 +472,14 @@ const ScoreNodeHeader = ({ item, showPrompt }:
     </div>);
 };
 
-export const ConversationDetails = ({ messages, model, usage, renderMarkdown }: {
+export const ConversationDetails = ({ messages, model, usage }: {
     messages: ChatMessageDisplay[],
     model?: string,
     usage?: UsageDetails,
-    renderMarkdown: boolean,
 }) => {
     const classes = useStyles();
     const [isExpanded, setIsExpanded] = useState(true);
+    const { renderMarkdown } = useReportContext();
 
     const isUserSide = (role: string) => role.toLowerCase() === 'user' || role.toLowerCase() === 'system';
 
