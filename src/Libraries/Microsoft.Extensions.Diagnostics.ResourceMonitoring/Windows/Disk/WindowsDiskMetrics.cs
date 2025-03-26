@@ -14,7 +14,6 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Disk;
 [SupportedOSPlatform("windows")]
 internal sealed class WindowsDiskMetrics
 {
-    private const string LogicalDiskCategory = "LogicalDisk";
     private const string DeviceKey = "system.device";
     private const string DirectionKey = "disk.io.direction";
 
@@ -70,9 +69,9 @@ internal sealed class WindowsDiskMetrics
 
     private void InitializeDiskCounters(IPerformanceCounterFactory performanceCounterFactory, TimeProvider timeProvider)
     {
-        var diskCategory = new PerformanceCounterCategory(LogicalDiskCategory);
-        string[] instanceNames = diskCategory.GetInstanceNames();
-        if (instanceNames == null || instanceNames.Length == 0)
+        const string DiskCategoryName = "LogicalDisk";
+        string[] instanceNames = performanceCounterFactory.GetCategoryInstance(DiskCategoryName);
+        if (instanceNames.Length == 0)
         {
             return;
         }
@@ -84,7 +83,7 @@ internal sealed class WindowsDiskMetrics
                 var diskPerfCounter = new WindowsDiskPerSecondPerfCounters(
                     performanceCounterFactory,
                     timeProvider,
-                    diskCategory.CategoryName,
+                    DiskCategoryName,
                     counterName,
                     instanceNames);
                 diskPerfCounter.InitializeDiskCounters();

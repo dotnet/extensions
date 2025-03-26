@@ -16,4 +16,11 @@ internal interface IPerformanceCounterFactory
     /// <param name="instanceName">The name of the instance of the performance counter.</param>
     /// <returns>A new instance of <see cref="IPerformanceCounter"/>.</returns>
     IPerformanceCounter Create(string categoryName, string counterName, string instanceName);
+
+    /// <summary>
+    /// Gets the names of all instances of a performance counter category.
+    /// </summary>
+    /// <param name="categoryName">PerformanceCounter category name.</param>
+    /// <returns>Array of instance names.</returns>
+    string[] GetCategoryInstance(string categoryName);
 }

@@ -31,16 +31,13 @@ public class WindowsDiskPerSecondPerfCountersTests
             CounterName,
             instanceNames: ["C:", "D:", "_Total"]);
 
+        // Set up
         var counterC = new FakePerformanceCounter("C:", [0, 1, 1.5f, 2, 2.5f]);
         var counterD = new FakePerformanceCounter("D:", [0, 2, 2.5f, 3, 3.5f]);
+        performanceCounterFactory.Setup(x => x.Create(CategoryName, CounterName, "C:")).Returns(counterC);
+        performanceCounterFactory.Setup(x => x.Create(CategoryName, CounterName, "D:")).Returns(counterD);
 
-        performanceCounterFactory
-            .Setup(x => x.Create(CategoryName, CounterName, "C:"))
-            .Returns(counterC);
-        performanceCounterFactory
-            .Setup(x => x.Create(CategoryName, CounterName, "D:"))
-            .Returns(counterD);
-
+        // Initialize the counters
         perSecondPerfCounters.InitializeDiskCounters();
         Assert.Equal(2, perSecondPerfCounters.TotalCountDict.Count);
         Assert.Equal(0, perSecondPerfCounters.TotalCountDict["C:"]);
@@ -73,7 +70,6 @@ public class WindowsDiskPerSecondPerfCountersTests
         const string CounterName = WindowsDiskPerfCounterNames.DiskWriteBytesCounter;
         var performanceCounterFactory = new Mock<IPerformanceCounterFactory>();
         var fakeTimeProvider = new FakeTimeProvider { AutoAdvanceAmount = TimeSpan.FromSeconds(30) };
-
         var perSecondPerfCounters = new WindowsDiskPerSecondPerfCounters(
             performanceCounterFactory.Object,
             fakeTimeProvider,
@@ -81,16 +77,13 @@ public class WindowsDiskPerSecondPerfCountersTests
             counterName: CounterName,
             instanceNames: ["C:", "D:", "_Total"]);
 
+        // Set up
         var counterC = new FakePerformanceCounter("C:", [0, 100, 150.5f, 20, 3.1416f]);
         var counterD = new FakePerformanceCounter("D:", [0, 2000, 2025, 0, 2.7183f]);
+        performanceCounterFactory.Setup(x => x.Create(CategoryName, CounterName, "C:")).Returns(counterC);
+        performanceCounterFactory.Setup(x => x.Create(CategoryName, CounterName, "D:")).Returns(counterD);
 
-        performanceCounterFactory
-            .Setup(x => x.Create(CategoryName, CounterName, "C:"))
-            .Returns(counterC);
-        performanceCounterFactory
-            .Setup(x => x.Create(CategoryName, CounterName, "D:"))
-            .Returns(counterD);
-
+        // Initialize the counters
         perSecondPerfCounters.InitializeDiskCounters();
         Assert.Equal(2, perSecondPerfCounters.TotalCountDict.Count);
         Assert.Equal(0, perSecondPerfCounters.TotalCountDict["C:"]);
