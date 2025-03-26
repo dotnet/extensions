@@ -2,26 +2,25 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import React, { useState, useCallback } from "react";
-import { makeStyles, tokens, Tree, TreeItem, TreeItemLayout, TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent, mergeClasses, Table, TableHeader, TableRow, TableHeaderCell, TableBody, TableCell, TableCellLayout } from "@fluentui/react-components";
+import { makeStyles, tokens, Tree, TreeItem, TreeItemLayout, TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent, mergeClasses, Table, TableHeader, TableRow, TableHeaderCell, TableBody, TableCell, TableCellLayout, Button } from "@fluentui/react-components";
 import { ScoreNode, ScoreNodeType, getConversationDisplay, ChatMessageDisplay, ScoreSummary, getScoreHistory } from "./Summary";
 import { PassFailBar } from "./PassFailBar";
 import { MetricCardList, MetricDisplay, type MetricType } from "./MetricCard";
 import ReactMarkdown from "react-markdown";
-import { DismissCircle16Regular, Info16Regular, Warning16Regular, CheckmarkCircle16Regular, Copy16Regular } from "@fluentui/react-icons";
+import { DismissCircle16Regular, Info16Regular, Warning16Regular, CheckmarkCircle16Regular, Copy16Regular, RadioButtonFilled, RadioButtonRegular } from "@fluentui/react-icons";
 import { ChevronDown12Regular, ChevronRight12Regular } from '@fluentui/react-icons';
+import { useReportContext } from "./ReportContext";
 
-const ScenarioLevel = ({ node, scoreSummary, parentPath, isOpen, renderMarkdown }: {
+const ScenarioLevel = ({ node, scoreSummary, isOpen, renderMarkdown }: {
     node: ScoreNode,
     scoreSummary: ScoreSummary,
-    parentPath: string,
     isOpen: (path: string) => boolean,
     renderMarkdown: boolean,
 }) => {
-    const path = `${parentPath}.${node.name}`;
     if (node.isLeafNode) {
-        return <TreeItem itemType="branch" value={path}>
+        return <TreeItem itemType="branch" value={node.key}>
             <TreeItemLayout>
-                <ScoreNodeHeader item={node} showPrompt={!isOpen(path)} />
+                <ScoreNodeHeader item={node} showPrompt={!isOpen(node.key)} />
             </TreeItemLayout>
             <Tree>
                 <TreeItem itemType="leaf" >
@@ -32,13 +31,13 @@ const ScenarioLevel = ({ node, scoreSummary, parentPath, isOpen, renderMarkdown 
             </Tree>
         </TreeItem>
     } else {
-        return <TreeItem itemType="branch" value={path}>
+        return <TreeItem itemType="branch" value={node.key}>
             <TreeItemLayout>
-                <ScoreNodeHeader item={node} showPrompt={!isOpen(path)} />
+                <ScoreNodeHeader item={node} showPrompt={!isOpen(node.key)} />
             </TreeItemLayout>
             <Tree>
                 {node.childNodes.map((n) => (
-                    <ScenarioLevel key={path + '.' + n.name} node={n} scoreSummary={scoreSummary} parentPath={path} isOpen={isOpen} renderMarkdown={renderMarkdown} />
+                    <ScenarioLevel key={n.key} node={n} scoreSummary={scoreSummary} isOpen={isOpen} renderMarkdown={renderMarkdown} />
                 ))}
             </Tree>
         </TreeItem>;
@@ -71,7 +70,7 @@ export const ScenarioGroup = ({ node, scoreSummary, renderMarkdown, selectedTags
             .filter((child): child is ScoreNode => child !== null);
 
         if (filteredChildren.length > 0) {
-            const newNode = new ScoreNode(node.name, node.nodeType);
+            const newNode = new ScoreNode(node.name, node.nodeType, node.key);
             newNode.setChildren(new Map(filteredChildren.map(child => [child.name, child])));
             newNode.aggregate(selectedTags);
             return newNode;
@@ -87,8 +86,8 @@ export const ScenarioGroup = ({ node, scoreSummary, renderMarkdown, selectedTags
     }
 
     return (
-        <Tree aria-label="Default" appearance="transparent" onOpenChange={handleOpenChange} defaultOpenItems={["." + filteredNode.name]}>
-            <ScenarioLevel node={filteredNode} scoreSummary={scoreSummary} parentPath={""} isOpen={isOpen} renderMarkdown={renderMarkdown} />
+        <Tree aria-label="Default" appearance="transparent" onOpenChange={handleOpenChange} defaultOpenItems={[filteredNode.key]}>
+            <ScenarioLevel node={filteredNode} scoreSummary={scoreSummary} isOpen={isOpen} renderMarkdown={renderMarkdown} />
         </Tree>
     );
 };
@@ -405,73 +404,10 @@ const useStyles = makeStyles({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    historyMetricCell : {
+    historyMetricCell: {
         fontSize: tokens.fontSizeBase200,
         fontWeight: '400',
         color: tokens.colorNeutralForeground2,
-    },
-    cacheHitIcon: {
-        color: tokens.colorPaletteGreenForeground1,
-    },
-    cacheMissIcon: {
-        color: tokens.colorPaletteRedForeground1,
-    },
-    cacheHit: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.25rem',
-        color: tokens.colorPaletteGreenForeground1,
-    },
-    cacheMiss: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.25rem',
-        color: tokens.colorPaletteRedForeground1,
-    },
-    cacheKeyCell: {
-        maxWidth: '240px',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-    },
-    cacheKey: {
-        fontFamily: tokens.fontFamilyMonospace,
-        fontSize: '0.7rem',
-        padding: '0.1rem 0.3rem',
-        backgroundColor: tokens.colorNeutralBackground3,
-        borderRadius: '4px',
-        display: 'block',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-    },
-    noCacheKey: {
-        color: tokens.colorNeutralForeground3,
-        fontStyle: 'italic',
-    },
-    tableContainer: {
-        overflowX: 'auto',
-    },
-    cacheKeyContainer: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.25rem',
-    },
-    copyButton: {
-        background: 'none',
-        border: 'none',
-        cursor: 'pointer',
-        padding: '2px',
-        color: tokens.colorNeutralForeground3,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: '3px',
-        '&:hover': {
-            backgroundColor: tokens.colorNeutralBackground4,
-            color: tokens.colorNeutralForeground1,
-        }
-    },
-    preWrap: {
-        whiteSpace: 'pre-wrap',
     },
 });
 
@@ -482,12 +418,26 @@ const PassFailBadge = ({ pass, total }: { pass: number, total: number }) => {
     </div>);
 };
 
-const ScoreNodeHeader = (
-    { item, showPrompt }:
-        {
-            item: ScoreNode,
-            showPrompt?: boolean,
-        }) => {
+export const SelectionButton = ({ key }: { key: string }) => {
+    const {selectScenarioLevel, selectedScenarioLevel} = useReportContext();
+    return (
+        <Button
+            appearance="transparent"
+            icon={key == selectedScenarioLevel ? <RadioButtonFilled /> : <RadioButtonRegular />}
+            onClick={(evt) => {
+                evt.stopPropagation();
+                selectScenarioLevel(key);
+            }}
+            aria-label="Select"
+        />
+    );
+}
+
+const ScoreNodeHeader = ({ item, showPrompt }:
+    {
+        item: ScoreNode,
+        showPrompt?: boolean,
+    }) => {
 
     const classes = useStyles();
     let ctPass, ctFail;
@@ -509,6 +459,7 @@ const ScoreNodeHeader = (
     const parts = item.name.split(' / ');
 
     return (<div className={classes.headerContainer}>
+        <SelectionButton key={item.name}  />
         <PassFailBar pass={ctPass} total={ctPass + ctFail} width="24px" height="12px" />
         <div className={classes.scenarioLabel}>
             {parts.map((part, index) => (
@@ -680,11 +631,11 @@ export const ChatDetailsSection = ({ chatDetails }: { chatDetails: ChatDetails }
 
 
 
-export const ScoreHistory = ({ scoreSummary, scenario}: { scoreSummary: ScoreSummary, scenario: ScenarioRunResult }) => {
+export const ScoreHistory = ({ scoreSummary, scenario }: { scoreSummary: ScoreSummary, scenario: ScenarioRunResult }) => {
     const classes = useStyles();
     const [isExpanded, setIsExpanded] = useState(false);
 
-    if (!scoreSummary.history || scoreSummary.history.size === 0 || 
+    if (!scoreSummary.history || scoreSummary.history.size === 0 ||
         (scoreSummary.history.size === 1 && [...scoreSummary.history.keys()][0] == scenario.executionName)) {
         return null;
     }
@@ -698,7 +649,7 @@ export const ScoreHistory = ({ scoreSummary, scenario}: { scoreSummary: ScoreSum
         if (!scenarioResult) return null;
         const metricResult = scenarioResult.evaluationResult.metrics[metric];
         if (!metricResult) return null;
-        return (<MetricDisplay metric={metricResult}/>);
+        return (<MetricDisplay metric={metricResult} />);
     };
 
     const latestExecution = mergeClasses(classes.verticalText, classes.currentExecutionForeground);
@@ -720,7 +671,7 @@ export const ScoreHistory = ({ scoreSummary, scenario}: { scoreSummary: ScoreSum
                                         <TableHeaderCell key={execution}
                                             className={execution == scenario.executionName ? classes.currentExecutionBackground : undefined}>
                                             <div className={classes.executionHeaderCell}>
-                                                <span className={execution == scenario.executionName ? latestExecution: classes.verticalText}>{execution}</span>
+                                                <span className={execution == scenario.executionName ? latestExecution : classes.verticalText}>{execution}</span>
                                             </div>
                                         </TableHeaderCell>
                                     ))}
@@ -731,9 +682,9 @@ export const ScoreHistory = ({ scoreSummary, scenario}: { scoreSummary: ScoreSum
                                 {metrics.map((metric) => (
                                     <TableRow key={metric}>
                                         {executions.map((execution) => (
-                                            <TableCell key={execution} 
+                                            <TableCell key={execution}
                                                 className={execution == scenario.executionName ? classes.currentExecutionBackground : undefined}>
-                                                    {getMetricDisplay(execution, metric)}
+                                                {getMetricDisplay(execution, metric)}
                                             </TableCell>
                                         ))}
                                         <TableCell className={classes.currentExecutionBackground}>

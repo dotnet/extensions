@@ -13,15 +13,17 @@ export type ScoreSummary = {
 };
 
 export class ScoreNode {
-    constructor(name: string, nodeType: ScoreNodeType) {
+    constructor(name: string, nodeType: ScoreNodeType, key: string) {
         this.name = name;
         this.nodeType = nodeType;
         this.children = new Map<string, ScoreNode>();
+        this.key = key;
     }
     private children: Map<string, ScoreNode>;
 
     nodeType: ScoreNodeType;
     name: string;
+    key: string;
     scenario?: ScenarioRunResult;
     
     shortenedPrompt?: string;
@@ -55,7 +57,7 @@ export class ScoreNode {
                 case 2: nodeType = ScoreNodeType.Scenario; break;
                 default: nodeType = ScoreNodeType.Group; break;
             }
-            const newChild = new ScoreNode(head, nodeType);
+            const newChild = new ScoreNode(head, nodeType, `${this.key}.${head}`);
             newChild.insertNode(tail, scenario);
             this.children.set(head, newChild);
         }
@@ -151,7 +153,7 @@ export const createScoreSummary = (dataset: Dataset): ScoreSummary => {
     for (const scenario of dataset.scenarioRunResults) {
         const executionName = scenario.executionName;
         if (!executionMap.has(executionName)) {
-            const newRoot = new ScoreNode(`All Evaluations [${executionName}]`, ScoreNodeType.Group);
+            const newRoot = new ScoreNode(`All Evaluations [${executionName}]`, ScoreNodeType.Group, executionName);
             executionMap.set(executionName, newRoot );
         }
         const scoreNode = executionMap.get(executionName)!;

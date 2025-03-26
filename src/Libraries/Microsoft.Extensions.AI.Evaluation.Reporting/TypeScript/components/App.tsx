@@ -10,6 +10,8 @@ import { ScoreSummary } from './Summary';
 import { ScenarioGroup } from './ScenarioTree';
 import { GlobalTagsDisplay, FilterableTagsDisplay, categorizeAndSortTags } from './TagsDisplay';
 import { tokens } from '@fluentui/react-components';
+import { ScoreNodeHistory } from './ScoreNodeHistory';
+import { ReportContextProvider } from './ReportContext';
 
 type AppProperties = {
   dataset: Dataset,
@@ -105,7 +107,7 @@ function App({ dataset, scoreSummary }: AppProperties) {
   };
 
   return (
-    <>
+    <ReportContextProvider>
       <div className={classes.header}>
         <div className={classes.headerTop}>
           <h1>AI Evaluation Report</h1>
@@ -132,6 +134,7 @@ function App({ dataset, scoreSummary }: AppProperties) {
           selectedTags={selectedTags}
         />
 
+        <ScoreNodeHistory />
       </div>
 
       <ScenarioGroup
@@ -158,7 +161,7 @@ function App({ dataset, scoreSummary }: AppProperties) {
           />
         </DrawerBody>
       </Drawer>
-    </>
+    </ReportContextProvider>
   );
 }
 
