@@ -127,19 +127,19 @@ internal sealed class WindowsDiskMetrics
     {
         List<Measurement<long>> measurements = [];
 
-        if (_diskIoRateCounters.TryGetValue(WindowsDiskPerfCounterNames.DiskWritesCounter, out WindowsDiskIoRatePerfCounters? perSecondWriteCounter))
+        if (_diskIoRateCounters.TryGetValue(WindowsDiskPerfCounterNames.DiskWritesCounter, out WindowsDiskIoRatePerfCounters? writeCounter))
         {
-            perSecondWriteCounter.UpdateDiskCounters();
-            foreach (KeyValuePair<string, long> pair in perSecondWriteCounter.TotalCountDict)
+            writeCounter.UpdateDiskCounters();
+            foreach (KeyValuePair<string, long> pair in writeCounter.TotalCountDict)
             {
                 measurements.Add(new Measurement<long>(pair.Value, new TagList { _directionWriteTag, new(DeviceKey, pair.Key) }));
             }
         }
 
-        if (_diskIoRateCounters.TryGetValue(WindowsDiskPerfCounterNames.DiskReadsCounter, out WindowsDiskIoRatePerfCounters? perSecondReadCounter))
+        if (_diskIoRateCounters.TryGetValue(WindowsDiskPerfCounterNames.DiskReadsCounter, out WindowsDiskIoRatePerfCounters? readCounter))
         {
-            perSecondReadCounter.UpdateDiskCounters();
-            foreach (KeyValuePair<string, long> pair in perSecondReadCounter.TotalCountDict)
+            readCounter.UpdateDiskCounters();
+            foreach (KeyValuePair<string, long> pair in readCounter.TotalCountDict)
             {
                 measurements.Add(new Measurement<long>(pair.Value, new TagList { _directionReadTag, new(DeviceKey, pair.Key) }));
             }
