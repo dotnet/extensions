@@ -61,7 +61,8 @@ public class OpenAIRealtimeTests
               },
               "required": [
                 "a",
-                "b"
+                "b",
+                "c"
               ]
             }
             """, result.Parameters.ToString());
