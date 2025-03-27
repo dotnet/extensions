@@ -9,6 +9,7 @@ export enum ScoreNodeType {
 
 export type ScoreSummary = {
     primaryResult: ScoreNode;
+    includesReportHistory: boolean;
     executionHistory: Map<string, ScoreNode>;
     nodesByKey: Map<string, Map<string, ScoreNode>>;
 };
@@ -184,6 +185,7 @@ export const createScoreSummary = (dataset: Dataset): ScoreSummary => {
 
     return {
         primaryResult,
+        includesReportHistory: executionHistory.size > 1,
         executionHistory,
         nodesByKey,
     } as ScoreSummary;

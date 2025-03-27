@@ -16,6 +16,7 @@ const defaultReportContext = createContext<ReportContextType>({
     dataset: { scenarioRunResults: [] },
     scoreSummary: {
         primaryResult: new ScoreNode("empty", ScoreNodeType.Group, "empty-root", "execution"),
+        includesReportHistory: false,
         executionHistory: new Map<string, ScoreNode>(),
         nodesByKey: new Map<string, Map<string, ScoreNode>>(),
     },

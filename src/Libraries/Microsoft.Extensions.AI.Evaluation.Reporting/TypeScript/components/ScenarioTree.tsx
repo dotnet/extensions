@@ -111,7 +111,7 @@ const ScoreNodeHeader = ({ item, showPrompt }:
     }) => {
 
     const classes = useStyles();
-    const { selectedScenarioLevel, selectScenarioLevel } = useReportContext();
+    const { scoreSummary, selectedScenarioLevel, selectScenarioLevel } = useReportContext();
 
     let ctPass, ctFail;
     switch (item.nodeType) {
@@ -133,7 +133,7 @@ const ScoreNodeHeader = ({ item, showPrompt }:
     const headerClass = selectedScenarioLevel === item.nodeKey ? mergeClasses(classes.selectedText,classes.headerContainer) : classes.headerContainer;
 
     return (<div className={headerClass}>
-        <SelectionButton nodeKey={item.nodeKey} />
+        {scoreSummary.includesReportHistory && <SelectionButton nodeKey={item.nodeKey} />}
         <PassFailBar pass={ctPass} total={ctPass + ctFail} width="24px" height="12px" 
             selected={item.nodeKey == selectedScenarioLevel} 
             onClick={(event) => {
