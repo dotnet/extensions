@@ -8,7 +8,7 @@ const useStyles = makeStyles({
     display: 'flex',
     flexDirection: 'column',
     gap: '8px',
-    marginBottom: '16px',
+    marginBottom: '8px',
     paddingTop: '6px',
   },
   tagsRow: {

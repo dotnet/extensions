@@ -46,6 +46,7 @@ public class OpenAIRealtimeTests
                   "type": "string"
                 },
                 "c": {
+                  "description": "Default value: null",
                   "type": "object",
                   "properties": {
                     "a": {
@@ -55,13 +56,13 @@ public class OpenAIRealtimeTests
                   "additionalProperties": false,
                   "required": [
                     "a"
-                  ],
-                  "default": "null"
+                  ]
                 }
               },
               "required": [
                 "a",
-                "b"
+                "b",
+                "c"
               ]
             }
             """, result.Parameters.ToString());

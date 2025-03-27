@@ -765,6 +765,22 @@
       ]
     },
     {
+      "Type": "sealed class Microsoft.Extensions.Logging.TagNameAttribute : System.Attribute",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Logging.TagNameAttribute.TagNameAttribute(string name);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.Logging.TagNameAttribute.Name { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
       "Type": "sealed class Microsoft.Extensions.Diagnostics.Metrics.TagNameAttribute : System.Attribute",
       "Stage": "Stable",
       "Methods": [
