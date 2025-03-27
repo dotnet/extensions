@@ -2,7 +2,7 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.AI</RootNamespace>
     <Description>Unit tests for Microsoft.Extensions.AI.OpenAI</Description>
-    <NoWarn>$(NoWarn);OPENAI002</NoWarn>
+    <NoWarn>$(NoWarn);OPENAI002;MEAI001</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -12,6 +12,11 @@
 
   <ItemGroup>
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\AssertExtensions.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\audio001.mp3" />
+    <EmbeddedResource Include="Resources\audio001.wav" />
   </ItemGroup>
 
   <ItemGroup>
