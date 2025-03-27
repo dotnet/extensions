@@ -44,7 +44,8 @@ internal sealed class PerRequestLogBufferManager : PerRequestLogBuffer
         }
 
         string category = logEntry.Category;
-        IncomingRequestLogBufferHolder? bufferHolder = httpContext.RequestServices.GetService<IncomingRequestLogBufferHolder>();
+        IncomingRequestLogBufferHolder? bufferHolder =
+            httpContext.RequestServices.GetService<IncomingRequestLogBufferHolder>();
         IncomingRequestLogBuffer? buffer = bufferHolder?.GetOrAdd(category, _ =>
             new IncomingRequestLogBuffer(bufferedLogger, category, _ruleSelector, _options));
 

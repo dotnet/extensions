@@ -19,7 +19,7 @@ internal sealed class PerRequestLogBufferingConfigureOptions : IConfigureOptions
 
     public void Configure(PerRequestLogBufferingOptions options)
     {
-        if (_configuration == null)
+        if (_configuration is null)
         {
             return;
         }
@@ -35,6 +35,10 @@ internal sealed class PerRequestLogBufferingConfigureOptions : IConfigureOptions
         {
             return;
         }
+
+        options.MaxLogRecordSizeInBytes = parsedOptions.MaxLogRecordSizeInBytes;
+        options.MaxPerRequestBufferSizeInBytes = parsedOptions.MaxPerRequestBufferSizeInBytes;
+        options.AutoFlushDuration = parsedOptions.AutoFlushDuration;
 
         foreach (LogBufferingFilterRule rule in parsedOptions.Rules)
         {

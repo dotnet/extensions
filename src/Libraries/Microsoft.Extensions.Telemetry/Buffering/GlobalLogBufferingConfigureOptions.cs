@@ -30,23 +30,17 @@ internal sealed class GlobalLogBufferingConfigureOptions : IConfigureOptions<Glo
             return;
         }
 
-        var parsedOptions = section.Get<GlobalLogBufferingOptions>();
+        GlobalLogBufferingOptions? parsedOptions = section.Get<GlobalLogBufferingOptions>();
         if (parsedOptions is null)
         {
             return;
         }
 
-        if (parsedOptions.MaxLogRecordSizeInBytes > 0)
-        {
-            options.MaxLogRecordSizeInBytes = parsedOptions.MaxLogRecordSizeInBytes;
-        }
+        options.MaxLogRecordSizeInBytes = parsedOptions.MaxLogRecordSizeInBytes;
+        options.MaxBufferSizeInBytes = parsedOptions.MaxBufferSizeInBytes;
+        options.AutoFlushDuration = parsedOptions.AutoFlushDuration;
 
-        if (parsedOptions.MaxBufferSizeInBytes > 0)
-        {
-            options.MaxBufferSizeInBytes = parsedOptions.MaxBufferSizeInBytes;
-        }
-
-        foreach (var rule in parsedOptions.Rules)
+        foreach (LogBufferingFilterRule rule in parsedOptions.Rules)
         {
             options.Rules.Add(rule);
         }

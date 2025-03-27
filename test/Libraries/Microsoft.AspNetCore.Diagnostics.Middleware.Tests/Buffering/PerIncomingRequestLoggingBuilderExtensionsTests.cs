@@ -60,5 +60,27 @@ public class PerIncomingRequestLoggingBuilderExtensionsTests
         Assert.NotNull(options.CurrentValue);
         Assert.Equivalent(expectedData, options.CurrentValue.Rules);
     }
+
+    [Fact]
+    public void WhenConfigurationActionProvided_RegistersInDI()
+    {
+        List<LogBufferingFilterRule> expectedData =
+        [
+            new(categoryName: "Program.MyLogger", logLevel: LogLevel.Information, eventId: 1, eventName: "number one"),
+            new(logLevel: LogLevel.Information),
+        ];
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddLogging(b => b.AddPerIncomingRequestBuffer(options =>
+        {
+            options.Rules.Add(new LogBufferingFilterRule(categoryName: "Program.MyLogger",
+                logLevel: LogLevel.Information, eventId: 1, eventName: "number one"));
+            options.Rules.Add(new LogBufferingFilterRule(logLevel: LogLevel.Information));
+        }));
+        ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
+        var options = serviceProvider.GetService<IOptionsMonitor<PerRequestLogBufferingOptions>>();
+        Assert.NotNull(options);
+        Assert.NotNull(options.CurrentValue);
+        Assert.Equivalent(expectedData, options.CurrentValue.Rules);
+    }
 }
 #endif
