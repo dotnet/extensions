@@ -67,7 +67,7 @@ internal sealed partial class ReportCommand(ILogger logger)
                 {
                     // Clear the chat data for following executions
                     result.Messages = [];
-                    result.ModelResponse = null;
+                    result.ModelResponse = new ChatResponse();
                 }
 
                 results.Add(result);

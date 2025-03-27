@@ -53,8 +53,8 @@ public sealed class ScenarioRunResult(
     string iterationName,
     string executionName,
     DateTime creationTime,
-    IList<ChatMessage>? messages,
-    ChatResponse? modelResponse,
+    IList<ChatMessage> messages,
+    ChatResponse modelResponse,
     EvaluationResult evaluationResult,
     ChatDetails? chatDetails = null,
     IList<string>? tags = null,
@@ -134,13 +134,13 @@ public sealed class ScenarioRunResult(
     // CA2227: Collection properties should be read only.
     // We disable this warning because we want this type to be fully mutable for serialization purposes and for general
     // convenience.
-    public IList<ChatMessage>? Messages { get; set; } = messages;
+    public IList<ChatMessage> Messages { get; set; } = messages;
 #pragma warning restore CA2227
 
     /// <summary>
     /// Gets or sets the response being evaluated in this <see cref="ScenarioRunResult"/>.
     /// </summary>
-    public ChatResponse? ModelResponse { get; set; } = modelResponse;
+    public ChatResponse ModelResponse { get; set; } = modelResponse;
 
     /// <summary>
     /// Gets or sets the <see cref="Evaluation.EvaluationResult"/> for the <see cref="ScenarioRun"/> corresponding to
