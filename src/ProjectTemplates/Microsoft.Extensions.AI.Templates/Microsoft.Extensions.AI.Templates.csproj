@@ -21,6 +21,17 @@
     <EnableDefaultItems>false</EnableDefaultItems>
     <NoDefaultExcludes>true</NoDefaultExcludes>
     <NoPackageAnalysis>true</NoPackageAnalysis>
+
+    <!--
+      The NU1702 warning gets reported because this project targets netstandard2.0, but one or
+      more of its in-repo dependencies (like M.E.Http.Resilience) don't target netstandard2.0.
+
+      See the <ProjectReference> items below. These project references are actually dependencies
+      of the template projects themselves, not the Microsoft.Extensions.AI.Templates package.
+
+      Since this package does not directly depend on the outputs of those projects, we can safely
+      ignore this warning.
+    -->
     <NoWarn>$(NoWarn);NU1702</NoWarn>
   </PropertyGroup>
 
