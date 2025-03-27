@@ -50,5 +50,5 @@ public class AzureResponseCacheTests : ResponseCacheTester, IAsyncLifetime
         => new AzureStorageResponseCacheProvider(_dirClient!);
 
     internal override IResponseCacheProvider CreateResponseCacheProvider(Func<DateTime> provideDateTime)
-        => new AzureStorageResponseCacheProvider(_dirClient!, timeToLiveForCacheEntries: null, provideDateTime);
+        => new AzureStorageResponseCacheProvider(_dirClient!, provideDateTime);
 }

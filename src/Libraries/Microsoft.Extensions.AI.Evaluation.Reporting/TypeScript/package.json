@@ -33,7 +33,7 @@
     "tfx-cli": "^0.21.0",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
-    "vite": "^6.2.2",
+    "vite": "^6.2.3",
     "vite-plugin-singlefile": "^2.0.2",
     "vite-plugin-babel": "^1.2.0",
     "vite-plugin-commonjs": "^0.10.3"
