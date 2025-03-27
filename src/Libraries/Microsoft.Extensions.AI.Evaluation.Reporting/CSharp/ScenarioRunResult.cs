@@ -98,7 +98,7 @@ public sealed class ScenarioRunResult(
                 iterationName,
                 executionName,
                 creationTime,
-                messages is null ? null : [.. messages],
+                [.. messages],
                 modelResponse,
                 evaluationResult,
                 chatDetails,
