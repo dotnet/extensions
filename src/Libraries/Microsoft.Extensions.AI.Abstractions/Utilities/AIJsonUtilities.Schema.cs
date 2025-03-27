@@ -100,7 +100,7 @@ public static partial class AIJsonUtilities
                 parameterName: parameter.Name,
                 description: parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
                 hasDefaultValue: parameter.HasDefaultValue,
-                defaultValue: parameter.HasDefaultValue ? parameter.DefaultValue : null,
+                defaultValue: GetDefaultValueNormalized(parameter),
                 serializerOptions,
                 inferenceOptions);
 
@@ -203,8 +203,9 @@ public static partial class AIJsonUtilities
             {
                 if (inferenceOptions.RequireAllProperties)
                 {
-                    // Do not emit default values for schemas where all properties
-                    // are required and embed in the description instead.
+                    // Default values are only used in the context of optional parameters.
+                    // Do not include a default keyword (since certain AI vendors don't support it)
+                    // and instead embed its JSON in the description as a hint to the LLM.
                     string defaultValueJson = defaultValue is not null
                         ? JsonSerializer.Serialize(defaultValue, serializerOptions.GetTypeInfo(defaultValue.GetType()))
                         : "null";
@@ -328,8 +329,9 @@ public static partial class AIJsonUtilities
                 // Add root-level default value metadata
                 if (inferenceOptions.RequireAllProperties)
                 {
-                    // Do not emit default values for schemas where all properties
-                    // are required and embed in the description instead.
+                    // Default values are only used in the context of optional parameters.
+                    // Do not include a default keyword (since certain AI vendors don't support it)
+                    // and instead embed its JSON in the description as a hint to the LLM.
                     string defaultValueJson = JsonSerializer.Serialize(defaultValue, ctx.TypeInfo);
                     localDescription = CreateDescriptionWithDefaultValue(localDescription, defaultValueJson);
                 }
@@ -441,5 +443,37 @@ public static partial class AIJsonUtilities
     {
         Utf8JsonReader reader = new(utf8Json);
         return JsonElement.ParseValue(ref reader);
+    }
+
+    private static object? GetDefaultValueNormalized(ParameterInfo parameterInfo)
+    {
+        // Taken from https://github.com/dotnet/runtime/blob/eff415bfd667125c1565680615a6f19152645fbf/src/libraries/System.Text.Json/Common/ReflectionExtensions.cs#L288-L317
+        Type parameterType = parameterInfo.ParameterType;
+        object? defaultValue = parameterInfo.DefaultValue;
+
+        if (defaultValue is null)
+        {
+            return null;
+        }
+
+        // DBNull.Value is sometimes used as the default value (returned by reflection) of nullable params in place of null.
+        if (defaultValue == DBNull.Value && parameterType != typeof(DBNull))
+        {
+            return null;
+        }
+
+        // Default values of enums or nullable enums are represented using the underlying type and need to be cast explicitly
+        // cf. https://github.com/dotnet/runtime/issues/68647
+        if (parameterType.IsEnum)
+        {
+            return Enum.ToObject(parameterType, defaultValue);
+        }
+
+        if (Nullable.GetUnderlyingType(parameterType) is Type underlyingType && underlyingType.IsEnum)
+        {
+            return Enum.ToObject(underlyingType, defaultValue);
+        }
+
+        return defaultValue;
     }
 }
