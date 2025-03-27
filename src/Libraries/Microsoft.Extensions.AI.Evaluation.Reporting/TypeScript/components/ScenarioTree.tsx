@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import React, { useState, useCallback } from "react";
-import { Tree, TreeItem, TreeItemLayout, TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent, Button } from "@fluentui/react-components";
+import { Tree, TreeItem, TreeItemLayout, TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent, Button, tokens, mergeClasses } from "@fluentui/react-components";
 import { ScoreNode, ScoreNodeType, ScoreSummary } from "./Summary";
 import { PassFailBadge, PassFailBar } from "./PassFailBar";
 import { RadioButtonFilled, RadioButtonRegular } from "@fluentui/react-icons";
@@ -111,6 +111,8 @@ const ScoreNodeHeader = ({ item, showPrompt }:
     }) => {
 
     const classes = useStyles();
+    const { selectedScenarioLevel, selectScenarioLevel } = useReportContext();
+
     let ctPass, ctFail;
     switch (item.nodeType) {
         case ScoreNodeType.Group:
@@ -128,10 +130,16 @@ const ScoreNodeHeader = ({ item, showPrompt }:
     }
 
     const parts = item.name.split(' / ');
+    const headerClass = selectedScenarioLevel === item.nodeKey ? mergeClasses(classes.selectedText,classes.headerContainer) : classes.headerContainer;
 
-    return (<div className={classes.headerContainer}>
+    return (<div className={headerClass}>
         <SelectionButton nodeKey={item.nodeKey} />
-        <PassFailBar pass={ctPass} total={ctPass + ctFail} width="24px" height="12px" />
+        <PassFailBar pass={ctPass} total={ctPass + ctFail} width="24px" height="12px" 
+            selected={item.nodeKey == selectedScenarioLevel} 
+            onClick={(event) => {
+                event.stopPropagation();
+                selectScenarioLevel(item.nodeKey);
+            }}/>
         <div className={classes.scenarioLabel}>
             {parts.map((part, index) => (
                 <React.Fragment key={`${part}-${index}`}>

@@ -97,7 +97,7 @@ export const ScoreNodeHistory = () => {
 
     return (<div className={classes.section}>
         <div className={classes.sectionHeader}>
-            <Button icon={<DismissRegular />} appearance="transparent" onClick={() => selectScenarioLevel(selectedScenarioLevel)} />
+            <Button icon={<DismissRegular />} appearance="subtle" onClick={() => selectScenarioLevel(selectedScenarioLevel)} />
             <h3 className={classes.sectionHeaderText}>Pass/Fail Trends for {summaryNode.name}</h3>
         </div>
 

@@ -1,7 +1,15 @@
 import { makeStyles, tokens } from "@fluentui/react-components";
 
 export const useStyles = makeStyles({
-    headerContainer: { display: 'flex', alignItems: 'center', flexDirection: 'row', gap: '0.5rem' },
+    headerContainer: {
+        display: 'flex', 
+        alignItems: 'center', 
+        flexDirection: 'row', 
+        gap: '0.5rem',
+    },
+    selectedText: {
+        fontWeight: '500',
+    },
     hint: {
         fontFamily: tokens.fontFamilyMonospace,
         opacity: 0.6,
@@ -15,7 +23,6 @@ export const useStyles = makeStyles({
     },
     scenarioLabel: {
         whiteSpace: 'nowrap',
-        fontWeight: '500',
         fontSize: tokens.fontSizeBase300,
         display: 'flex',
         gap: '0.5rem',
@@ -206,11 +213,12 @@ export const useStyles = makeStyles({
     },
     scenarioHistoryCell: {
         display: 'flex',
-        flexDirection: 'column',
+        flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         height: '100%',
         width: '100%',
         padding: '0.5rem',
+        gap: '0.25rem',
     },
 });

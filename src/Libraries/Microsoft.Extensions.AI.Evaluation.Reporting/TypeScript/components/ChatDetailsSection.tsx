@@ -1,6 +1,6 @@
 import { Table, TableHeader, TableRow, TableHeaderCell, TableBody, TableCell } from "@fluentui/react-components";
 import { ChevronDown12Regular, ChevronRight12Regular, Warning16Regular, CheckmarkCircle16Regular, Copy16Regular } from "@fluentui/react-icons";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useStyles } from "./Styles";
 
 
