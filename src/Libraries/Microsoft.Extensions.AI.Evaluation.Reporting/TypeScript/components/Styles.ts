@@ -13,15 +13,6 @@ export const useStyles = makeStyles({
         alignItems: 'center',
         gap: '0.25rem',
     },
-    score: { fontSize: tokens.fontSizeBase200 },
-    passFailBadge: {
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: '0 0.25rem',
-        borderRadius: '4px',
-        backgroundColor: tokens.colorNeutralBackground3,
-    },
     scenarioLabel: {
         whiteSpace: 'nowrap',
         fontWeight: '500',
@@ -199,8 +190,8 @@ export const useStyles = makeStyles({
         fontWeight: '600',
     },
     verticalText: {
-        writingMode: 'vertical-rl',
-        transform: 'rotate(180deg)',
+        writingMode: 'sideways-rl',
+        transform: 'rotate(2000deg)',
         fontSize: tokens.fontSizeBase200,
         fontWeight: '400',
         color: tokens.colorNeutralForeground2,
@@ -212,5 +203,14 @@ export const useStyles = makeStyles({
         fontSize: tokens.fontSizeBase200,
         fontWeight: '400',
         color: tokens.colorNeutralForeground2,
+    },
+    scenarioHistoryCell: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100%',
+        width: '100%',
+        padding: '0.5rem',
     },
 });
