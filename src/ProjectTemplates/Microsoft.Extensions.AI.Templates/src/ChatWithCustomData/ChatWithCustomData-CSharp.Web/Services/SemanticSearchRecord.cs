@@ -11,7 +11,7 @@ public class SemanticSearchRecord
     public required string Key { get; set; }
 #endif
 
-    [VectorStoreRecordData]
+    [VectorStoreRecordData(IsFilterable = true)]
     public required string FileName { get; set; }
 
     [VectorStoreRecordData]
