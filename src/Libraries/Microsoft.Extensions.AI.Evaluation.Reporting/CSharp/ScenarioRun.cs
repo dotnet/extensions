@@ -88,9 +88,12 @@ public sealed class ScenarioRun : IAsyncDisposable
     private readonly CompositeEvaluator _compositeEvaluator;
     private readonly IResultStore _resultStore;
     private readonly Func<EvaluationMetric, EvaluationMetricInterpretation?>? _evaluationMetricInterpreter;
+    private readonly ChatDetails? _chatDetails;
+    private readonly IEnumerable<string>? _tags;
 
     private ScenarioRunResult? _result;
 
+#pragma warning disable S107 // Methods should not have too many parameters
     internal ScenarioRun(
         string scenarioName,
         string iterationName,
@@ -98,7 +101,10 @@ public sealed class ScenarioRun : IAsyncDisposable
         IEnumerable<IEvaluator> evaluators,
         IResultStore resultStore,
         ChatConfiguration? chatConfiguration = null,
-        Func<EvaluationMetric, EvaluationMetricInterpretation?>? evaluationMetricInterpreter = null)
+        Func<EvaluationMetric, EvaluationMetricInterpretation?>? evaluationMetricInterpreter = null,
+        ChatDetails? chatDetails = null,
+        IEnumerable<string>? tags = null)
+#pragma warning restore
     {
         ScenarioName = scenarioName;
         IterationName = iterationName;
@@ -108,6 +114,8 @@ public sealed class ScenarioRun : IAsyncDisposable
         _compositeEvaluator = new CompositeEvaluator(evaluators);
         _resultStore = resultStore;
         _evaluationMetricInterpreter = evaluationMetricInterpreter;
+        _chatDetails = chatDetails;
+        _tags = tags;
     }
 
     /// <summary>
@@ -162,7 +170,9 @@ public sealed class ScenarioRun : IAsyncDisposable
                 creationTime: DateTime.UtcNow,
                 messages,
                 modelResponse,
-                evaluationResult);
+                evaluationResult,
+                _chatDetails,
+                _tags);
 
         return evaluationResult;
     }

@@ -19,14 +19,22 @@ public class ResultsTests
 {
     private static readonly ChatMessage _testResponse = "Test response".ToAssistantMessage();
 
-    public static ReportingConfiguration CreateReportingConfiguration(IEvaluator evaluator) =>
-        DiskBasedReportingConfiguration.Create(
+    public static ReportingConfiguration CreateReportingConfiguration(IEvaluator evaluator)
+    {
+        string version = $"Product Version: {Constants.Version}";
+        string date = $"Date: {DateTime.UtcNow:dddd, dd MMMM yyyy}";
+        string projectName = $"Project: Integration Tests";
+        string testClass = $"Test Class: {nameof(ResultsTests)}";
+
+        return DiskBasedReportingConfiguration.Create(
             storageRootPath: Settings.Current.Configured ?
                 Settings.Current.StorageRootPath :
                 Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()),
             evaluators: [evaluator],
             chatConfiguration: null, // Not needed for this test
-            executionName: Constants.Version);
+            executionName: Constants.Version,
+            tags: [version, date, projectName, testClass]);
+    }
 
     #region Interpretations
     private static EvaluationMetricInterpretation? FailIfValueIsTrue(EvaluationMetric m)
@@ -156,7 +164,8 @@ public class ResultsTests
 
         await using ScenarioRun scenarioRun =
             await reportingConfiguration.CreateScenarioRunAsync(
-                $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(ResultsTests)}.{nameof(ResultWithBooleanMetric)}");
+                $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(ResultsTests)}.{nameof(ResultWithBooleanMetric)}",
+                additionalTags: ["Feature: BooleanMetric"]);
 
         EvaluationResult result = await scenarioRun.EvaluateAsync(_testResponse);
 
@@ -183,7 +192,8 @@ public class ResultsTests
 
         await using ScenarioRun scenarioRun =
             await reportingConfiguration.CreateScenarioRunAsync(
-                $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(ResultsTests)}.{nameof(ResultWithBooleanMetricAndInterpretation)}");
+                $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(ResultsTests)}.{nameof(ResultWithBooleanMetricAndInterpretation)}",
+                additionalTags: ["Feature: BooleanMetric", "Feature: Interpretation"]);
 
         EvaluationResult result = await scenarioRun.EvaluateAsync(_testResponse);
         result.Interpret(FailIfValueIsTrue);
@@ -235,7 +245,8 @@ public class ResultsTests
 
         await using ScenarioRun scenarioRun =
             await reportingConfiguration.CreateScenarioRunAsync(
-                $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(ResultsTests)}.{nameof(ResultWithStringMetric)}");
+                $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(ResultsTests)}.{nameof(ResultWithStringMetric)}",
+                additionalTags: ["Feature: StringMetric"]);
 
         EvaluationResult result = await scenarioRun.EvaluateAsync(_testResponse);
 
@@ -290,7 +301,8 @@ public class ResultsTests
 
         await using ScenarioRun scenarioRun =
             await reportingConfiguration.CreateScenarioRunAsync(
-                $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(ResultsTests)}.{nameof(ResultWithStringMetricAndInterpretation)}");
+                $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(ResultsTests)}.{nameof(ResultWithStringMetricAndInterpretation)}",
+                additionalTags: ["Feature: StringMetric", "Feature: Interpretation"]);
 
         EvaluationResult result = await scenarioRun.EvaluateAsync(_testResponse);
         result.Interpret(FailIfNotImperialOrUSCustomary);
@@ -339,7 +351,8 @@ public class ResultsTests
 
         await using ScenarioRun scenarioRun =
             await reportingConfiguration.CreateScenarioRunAsync(
-                $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(ResultsTests)}.{nameof(ResultWithNumericMetrics)}");
+                $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(ResultsTests)}.{nameof(ResultWithNumericMetrics)}",
+                additionalTags: ["Feature: NumericMetric"]);
 
         EvaluationResult result = await scenarioRun.EvaluateAsync(_testResponse);
 
@@ -374,7 +387,8 @@ public class ResultsTests
 
         await using ScenarioRun scenarioRun =
             await reportingConfiguration.CreateScenarioRunAsync(
-                $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(ResultsTests)}.{nameof(ResultWithNumericMetricsAndInterpretation)}");
+                $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(ResultsTests)}.{nameof(ResultWithNumericMetricsAndInterpretation)}",
+                additionalTags: ["Feature: NumericMetric", "Feature: Interpretation"]);
 
         EvaluationResult result = await scenarioRun.EvaluateAsync(_testResponse);
         result.Interpret(FailIfValueIsLessThan4);
@@ -437,7 +451,8 @@ public class ResultsTests
 
         await using ScenarioRun scenarioRun =
             await reportingConfiguration.CreateScenarioRunAsync(
-                $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(ResultsTests)}.{nameof(ResultWithDiagnosticsOnUninterpretedMetrics)}");
+                $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(ResultsTests)}.{nameof(ResultWithDiagnosticsOnUninterpretedMetrics)}",
+                additionalTags: ["Feature: Diagnostics", "Feature: Interpretation"]);
 
         EvaluationResult result = await scenarioRun.EvaluateAsync(_testResponse);
 
@@ -489,7 +504,8 @@ public class ResultsTests
 
         await using ScenarioRun scenarioRun =
             await reportingConfiguration.CreateScenarioRunAsync(
-                $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(ResultsTests)}.{nameof(ResultWithDiagnosticsOnFailingMetrics)}");
+                $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(ResultsTests)}.{nameof(ResultWithDiagnosticsOnFailingMetrics)}",
+                additionalTags: ["Feature: Diagnostics", "Feature: Interpretation"]);
 
         EvaluationResult result = await scenarioRun.EvaluateAsync(_testResponse);
         result.Interpret(FailIfValueIsMissing);
@@ -547,7 +563,8 @@ public class ResultsTests
 
         await using ScenarioRun scenarioRun =
             await reportingConfiguration.CreateScenarioRunAsync(
-                $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(ResultsTests)}.{nameof(ResultWithDiagnosticsOnPassingMetrics)}");
+                $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(ResultsTests)}.{nameof(ResultWithDiagnosticsOnPassingMetrics)}",
+                additionalTags: ["Feature: Diagnostics", "Feature: Interpretation"]);
 
         EvaluationResult result = await scenarioRun.EvaluateAsync(_testResponse);
         result.Interpret(FailIfValueIsMissing);
@@ -579,7 +596,8 @@ public class ResultsTests
 
         await using ScenarioRun scenarioRun =
             await reportingConfiguration.CreateScenarioRunAsync(
-                $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(ResultsTests)}.{nameof(ResultWithException)}");
+                $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(ResultsTests)}.{nameof(ResultWithException)}",
+                additionalTags: ["Feature: Diagnostics"]);
 
         EvaluationResult result = await scenarioRun.EvaluateAsync(_testResponse);
 
