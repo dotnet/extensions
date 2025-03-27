@@ -6,7 +6,6 @@ import { Settings28Regular, FilterDismissRegular, Dismiss20Regular } from '@flue
 import { Drawer, DrawerBody, DrawerHeader, DrawerHeaderTitle, Switch, Tooltip } from '@fluentui/react-components';
 import { makeStyles } from '@fluentui/react-components';
 import './App.css';
-import { ScoreSummary } from './Summary';
 import { ScenarioGroup } from './ScenarioTree';
 import { GlobalTagsDisplay, FilterableTagsDisplay, categorizeAndSortTags } from './TagsDisplay';
 import { tokens } from '@fluentui/react-components';

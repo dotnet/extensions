@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import React, { useState, useCallback } from "react";
-import { Tree, TreeItem, TreeItemLayout, TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent, Button, tokens, mergeClasses } from "@fluentui/react-components";
+import { Tree, TreeItem, TreeItemLayout, TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent, Button, mergeClasses } from "@fluentui/react-components";
 import { ScoreNode, ScoreNodeType, ScoreSummary } from "./Summary";
 import { PassFailBadge, PassFailBar } from "./PassFailBar";
 import { RadioButtonFilled, RadioButtonRegular } from "@fluentui/react-icons";

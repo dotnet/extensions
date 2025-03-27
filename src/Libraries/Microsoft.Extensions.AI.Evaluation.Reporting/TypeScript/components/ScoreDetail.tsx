@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { ChatDetailsSection } from "./ChatDetailsSection";
 import { ConversationDetails } from "./ConversationDetails";
 import { type MetricType, MetricCardList } from "./MetricCard";

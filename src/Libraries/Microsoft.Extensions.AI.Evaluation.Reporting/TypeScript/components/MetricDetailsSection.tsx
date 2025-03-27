@@ -1,5 +1,5 @@
 import { ChevronDown12Regular, ChevronRight12Regular, DismissCircle16Regular } from "@fluentui/react-icons";
-import React, { useState } from "react";
+import { useState } from "react";
 import type { MetricType } from "./MetricCard";
 import { DiagnosticsContent } from "./DiagnosticsContent";
 import { useStyles } from "./Styles";

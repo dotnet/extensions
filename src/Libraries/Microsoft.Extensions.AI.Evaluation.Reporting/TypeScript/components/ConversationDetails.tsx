@@ -1,6 +1,6 @@
 import { mergeClasses } from "@fluentui/react-components";
 import { ChevronDown12Regular, ChevronRight12Regular } from "@fluentui/react-icons";
-import React, { useState } from "react";
+import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { useReportContext } from "./ReportContext";
 import { useStyles } from "./Styles";
