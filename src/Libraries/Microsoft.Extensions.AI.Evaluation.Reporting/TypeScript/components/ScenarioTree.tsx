@@ -2,18 +2,18 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import React, { useState, useCallback } from "react";
-import { makeStyles, tokens, Tree, TreeItem, TreeItemLayout, TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent, mergeClasses } from "@fluentui/react-components";
-import { ScoreNode, ScoreNodeType, getPromptDetails, ChatMessageDisplay } from "./Summary";
+import { makeStyles, tokens, Tree, TreeItem, TreeItemLayout, TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent, mergeClasses, Table, TableHeader, TableRow, TableHeaderCell, TableBody, TableCell } from "@fluentui/react-components";
+import { ScoreNode, ScoreNodeType, getConversationDisplay, ChatMessageDisplay } from "./Summary";
 import { PassFailBar } from "./PassFailBar";
 import { MetricCardList, type MetricType } from "./MetricCard";
 import ReactMarkdown from "react-markdown";
-import { DismissCircle16Regular, Info16Regular, Warning16Regular } from "@fluentui/react-icons";
+import { DismissCircle16Regular, Info16Regular, Warning16Regular, CheckmarkCircle16Regular, Copy16Regular } from "@fluentui/react-icons";
 import { ChevronDown12Regular, ChevronRight12Regular } from '@fluentui/react-icons';
 
-const ScenarioLevel = ({ node, parentPath, isOpen, renderMarkdown }: { 
-  node: ScoreNode, 
-  parentPath: string, 
-  isOpen: (path: string) => boolean, 
+const ScenarioLevel = ({ node, parentPath, isOpen, renderMarkdown }: {
+  node: ScoreNode,
+  parentPath: string,
+  isOpen: (path: string) => boolean,
   renderMarkdown: boolean,
 }) => {
     const path = `${parentPath}.${node.name}`;
@@ -44,23 +44,57 @@ const ScenarioLevel = ({ node, parentPath, isOpen, renderMarkdown }: {
     }
 };
 
-export const ScenarioGroup = ({ node, renderMarkdown }: { node: ScoreNode, renderMarkdown: boolean }) => {
-    const [openItems, setOpenItems] = useState<Set<TreeItemValue>>(() => new Set());
-    const handleOpenChange = useCallback((_: TreeOpenChangeEvent, data: TreeOpenChangeData) => {
-        setOpenItems(data.openItems);
-    }, []);
-    const isOpen = (name: string) => openItems.has(name);
+export const ScenarioGroup = ({ node, renderMarkdown, selectedTags }: {
+  node: ScoreNode,
+  renderMarkdown: boolean,
+  selectedTags: string[]
+}) => {
+  const [openItems, setOpenItems] = useState<Set<TreeItemValue>>(() => new Set());
+  const handleOpenChange = useCallback((_: TreeOpenChangeEvent, data: TreeOpenChangeData) => {
+    setOpenItems(data.openItems);
+  }, []);
+  const isOpen = (name: string) => openItems.has(name);
 
-    return (
-        <Tree aria-label="Default" appearance="transparent" onOpenChange={handleOpenChange} defaultOpenItems={["." + node.name]}>
-            <ScenarioLevel node={node} parentPath={""} isOpen={isOpen} renderMarkdown={renderMarkdown} />
-        </Tree>);        
+  const filterTree = (node: ScoreNode): ScoreNode | null => {
+    if (selectedTags.length === 0) {
+      return node;
+    }
+
+    if (node.isLeafNode) {
+      return node.scenario?.tags?.some(tag => selectedTags.includes(tag)) ? node : null;
+    }
+
+    const filteredChildren = node.childNodes
+      .map(filterTree)
+      .filter((child): child is ScoreNode => child !== null);
+
+    if (filteredChildren.length > 0) {
+      const newNode = new ScoreNode(node.name, node.nodeType);
+      newNode.setChildren(new Map(filteredChildren.map(child => [child.name, child])));
+      newNode.aggregate(selectedTags);
+      return newNode;
+    }
+
+    return null;
+  };
+
+  const filteredNode = filterTree(node);
+
+  if (!filteredNode) {
+    return <div>No results match the selected tags.</div>;
+  }
+
+  return (
+    <Tree aria-label="Default" appearance="transparent" onOpenChange={handleOpenChange} defaultOpenItems={["." + filteredNode.name]}>
+      <ScenarioLevel node={filteredNode} parentPath={""} isOpen={isOpen} renderMarkdown={renderMarkdown} />
+    </Tree>
+  );        
 };
 
 export const ScoreDetail = ({ scenario, renderMarkdown }: { scenario: ScenarioRunResult, renderMarkdown: boolean }) => {
     const classes = useStyles();
     const [selectedMetric, setSelectedMetric] = useState<MetricType | null>(null);
-    const { messages } = getPromptDetails(scenario.messages, scenario.modelResponse);
+    const { messages, model, usage } = getConversationDisplay(scenario.messages, scenario.modelResponse);
 
     return (<div className={classes.iterationArea}>
         <MetricCardList
@@ -69,7 +103,8 @@ export const ScoreDetail = ({ scenario, renderMarkdown }: { scenario: ScenarioRu
           selectedMetric={selectedMetric}
         />
         {selectedMetric && <MetricDetailsSection metric={selectedMetric} />}
-        <PromptDetails messages={messages} renderMarkdown={renderMarkdown} />
+        <ConversationDetails messages={messages} model={model} usage={usage} renderMarkdown={renderMarkdown} />
+        {scenario.chatDetails && <ChatDetailsSection chatDetails={scenario.chatDetails} />}
     </div>);
 };
 
@@ -161,7 +196,17 @@ const DiagnosticsContent = ({ diagnostics }: { diagnostics: EvaluationDiagnostic
 
 const useStyles = makeStyles({
     headerContainer: { display: 'flex', alignItems: 'center', flexDirection: 'row', gap: '0.5rem' },
-    promptHint: { fontFamily: tokens.fontFamilyMonospace, opacity: 0.6, fontSize: '0.7rem', paddingLeft: '1rem', whiteSpace: 'nowrap' },
+    hint: {
+        fontFamily: tokens.fontFamilyMonospace,
+        opacity: 0.6,
+        fontSize: '0.7rem',
+        paddingTop: '0.25rem',
+        paddingLeft: '1rem',
+        whiteSpace: 'nowrap',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.25rem',
+    },
     score: { fontSize: tokens.fontSizeBase200 },
     passFailBadge: {
         display: 'flex',
@@ -225,12 +270,6 @@ const useStyles = makeStyles({
         color: tokens.colorNeutralForeground1,
         marginBottom: '0.25rem',
     },
-    failContainer: {
-        padding: '1rem',
-        border: '1px solid #e0e0e0',
-        backgroundColor: tokens.colorNeutralBackground2,
-        cursor: 'text',
-    },
     sectionContainer: {
         display: 'flex',
         flexDirection: 'column',
@@ -238,6 +277,7 @@ const useStyles = makeStyles({
         padding: '0.75rem 0',
         cursor: 'text',
         position: 'relative',
+        maxWidth: '75rem',
         '& pre': {
             whiteSpace: 'pre-wrap',
             wordWrap: 'break-word',
@@ -268,6 +308,69 @@ const useStyles = makeStyles({
         wordBreak: 'break-word',
         width: '100%',
         backgroundColor: tokens.colorNeutralBackground3,
+    },
+    cacheHitIcon: {
+        color: tokens.colorPaletteGreenForeground1,
+    },
+    cacheMissIcon: {
+        color: tokens.colorPaletteRedForeground1,
+    },
+    cacheHit: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.25rem',
+        color: tokens.colorPaletteGreenForeground1,
+    },
+    cacheMiss: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.25rem',
+        color: tokens.colorPaletteRedForeground1,
+    },
+    cacheKeyCell: {
+        maxWidth: '240px',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+    },
+    cacheKey: {
+        fontFamily: tokens.fontFamilyMonospace,
+        fontSize: '0.7rem',
+        padding: '0.1rem 0.3rem',
+        backgroundColor: tokens.colorNeutralBackground3,
+        borderRadius: '4px',
+        display: 'block',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+    },
+    noCacheKey: {
+        color: tokens.colorNeutralForeground3,
+        fontStyle: 'italic',
+    },
+    tableContainer: {
+        overflowX: 'auto',
+    },
+    cacheKeyContainer: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.25rem',
+    },
+    copyButton: {
+        background: 'none',
+        border: 'none',
+        cursor: 'pointer',
+        padding: '2px',
+        color: tokens.colorNeutralForeground3,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: '3px',
+        '&:hover': {
+            backgroundColor: tokens.colorNeutralBackground4,
+            color: tokens.colorNeutralForeground1,
+        }
+    },
+    preWrap: {
+        whiteSpace: 'pre-wrap',
     },
 });
 
@@ -309,24 +412,34 @@ const ScoreNodeHeader = ({ item, showPrompt }: { item: ScoreNode, showPrompt?: b
             ))}
         </div>
         <PassFailBadge pass={ctPass} total={ctPass + ctFail} />
-        {showPrompt && item.shortenedPrompt && <div className={classes.promptHint}>{item.shortenedPrompt}</div>}
+        {showPrompt && item.shortenedPrompt && <div className={classes.hint}>{item.shortenedPrompt}</div>}
     </div>);
 };
 
-export const PromptDetails = ({ messages, renderMarkdown }: { 
+export const ConversationDetails = ({ messages, model, usage, renderMarkdown }: { 
     messages: ChatMessageDisplay[], 
-    renderMarkdown: boolean 
+    model?: string,
+    usage?: UsageDetails,
+    renderMarkdown: boolean,
 }) => {
     const classes = useStyles();
     const [isExpanded, setIsExpanded] = useState(true);
 
     const isUserSide = (role: string) => role.toLowerCase() === 'user' || role.toLowerCase() === 'system';
 
+    const infoText = [
+        model && `Model: ${model}`,
+        usage?.inputTokenCount && `Input Tokens: ${usage.inputTokenCount}`,
+        usage?.outputTokenCount && `Output Tokens: ${usage.outputTokenCount}`,
+        usage?.totalTokenCount && `Total Tokens: ${usage.totalTokenCount}`,
+    ].filter(Boolean).join(' • ');
+
     return (
         <div className={classes.section}>
             <div className={classes.sectionHeader} onClick={() => setIsExpanded(!isExpanded)}>
                 {isExpanded ? <ChevronDown12Regular /> : <ChevronRight12Regular />}
                 <h3 className={classes.sectionHeaderText}>Conversation</h3>
+                {infoText && <div className={classes.hint}>{infoText}</div>}
             </div>
 
             {isExpanded && (
@@ -344,12 +457,115 @@ export const PromptDetails = ({ messages, renderMarkdown }: {
                                 <div className={classes.messageBubble}>
                                     {renderMarkdown ? 
                                         <ReactMarkdown>{message.content}</ReactMarkdown> : 
-                                        <pre style={{ whiteSpace: 'pre-wrap' }}>{message.content}</pre>
+                                        <pre className={classes.preWrap}>{message.content}</pre>
                                     }
                                 </div>
                             </div>
                         );
                     })}
+                </div>
+            )}
+        </div>
+    );
+};
+
+export const ChatDetailsSection = ({ chatDetails }: { chatDetails: ChatDetails }) => {
+    const classes = useStyles();
+    const [isExpanded, setIsExpanded] = useState(false);
+    
+    const totalTurns = chatDetails.turnDetails.length;
+    const cachedTurns = chatDetails.turnDetails.filter(turn => turn.cacheHit === true).length;
+    
+    const hasCacheKey = chatDetails.turnDetails.some(turn => turn.cacheKey !== undefined);
+    const hasCacheStatus = chatDetails.turnDetails.some(turn => turn.cacheHit !== undefined);
+    const hasModelInfo = chatDetails.turnDetails.some(turn => turn.model !== undefined);
+    const hasInputTokens = chatDetails.turnDetails.some(turn => turn.usage?.inputTokenCount !== undefined);
+    const hasOutputTokens = chatDetails.turnDetails.some(turn => turn.usage?.outputTokenCount !== undefined);
+    const hasTotalTokens = chatDetails.turnDetails.some(turn => turn.usage?.totalTokenCount !== undefined);
+
+    const copyToClipboard = (text: string) => {
+        navigator.clipboard.writeText(text);
+    };
+    
+    return (
+        <div className={classes.section}>
+            <div className={classes.sectionHeader} onClick={() => setIsExpanded(!isExpanded)}>
+                {isExpanded ? <ChevronDown12Regular /> : <ChevronRight12Regular />}
+                <h3 className={classes.sectionHeaderText}>LLM Chat Diagnostic Details</h3>
+                {hasCacheStatus && (
+                    <div className={classes.hint}>
+                        {cachedTurns != totalTurns ?
+                            <Warning16Regular className={classes.cacheMissIcon}/> : 
+                            <CheckmarkCircle16Regular className={classes.cacheHitIcon} />
+                        }
+                        {cachedTurns}/{totalTurns} chat responses for this evaluation were fulfiled from cache
+                    </div>
+                )}
+            </div>
+
+            {isExpanded && (
+                <div className={classes.sectionContainer}>
+                    <div className={classes.tableContainer}>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    {hasCacheKey && <TableHeaderCell>Cache Key</TableHeaderCell>}
+                                    {hasCacheStatus && <TableHeaderCell>Cache Status</TableHeaderCell>}
+                                    <TableHeaderCell>Latency (s)</TableHeaderCell>
+                                    {hasModelInfo && <TableHeaderCell>Model Used</TableHeaderCell>}
+                                    {hasInputTokens && <TableHeaderCell>Input Tokens</TableHeaderCell>}
+                                    {hasOutputTokens && <TableHeaderCell>Output Tokens</TableHeaderCell>}
+                                    {hasTotalTokens && <TableHeaderCell>Total Tokens</TableHeaderCell>}
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {chatDetails.turnDetails.map((turn, index) => (
+                                    <TableRow key={index}>
+                                        {hasCacheKey && (
+                                            <TableCell className={classes.cacheKeyCell}>
+                                                {turn.cacheKey ? (
+                                                    <div className={classes.cacheKeyContainer} title={turn.cacheKey}>
+                                                        <span className={classes.cacheKey}>
+                                                            {turn.cacheKey.substring(0, 8)}...
+                                                        </span>
+                                                        <button 
+                                                            className={classes.copyButton} 
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                copyToClipboard(turn.cacheKey || "");
+                                                            }}
+                                                            title="Copy Cache Key"
+                                                        >
+                                                            <Copy16Regular />
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <span className={classes.noCacheKey}>N/A</span>
+                                                )}
+                                            </TableCell>
+                                        )}
+                                        {hasCacheStatus && (
+                                            <TableCell>
+                                                {turn.cacheHit === true ? 
+                                                    <span className={classes.cacheHit}>
+                                                        <CheckmarkCircle16Regular className={classes.cacheHitIcon} /> Hit
+                                                    </span> : 
+                                                    <span className={classes.cacheMiss}>
+                                                        <Warning16Regular className={classes.cacheMissIcon} /> Miss
+                                                    </span>
+                                                }
+                                            </TableCell>
+                                        )}
+                                        <TableCell>{turn.latency.toFixed(2)}</TableCell>
+                                        {hasModelInfo && <TableCell>{turn.model || '-'}</TableCell>}
+                                        {hasInputTokens && <TableCell>{turn.usage?.inputTokenCount || '-'}</TableCell>}
+                                        {hasOutputTokens && <TableCell>{turn.usage?.outputTokenCount || '-'}</TableCell>}
+                                        {hasTotalTokens && <TableCell>{turn.usage?.totalTokenCount || '-'}</TableCell>}
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
                 </div>
             )}
         </div>

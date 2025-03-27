@@ -37,7 +37,16 @@ namespace Microsoft.Extensions.AI.Evaluation.Reporting;
 /// The <see cref="Evaluation.EvaluationResult"/> for the <see cref="ScenarioRun"/> corresponding to the
 /// <see cref="ScenarioRunResult"/> being constructed.
 /// </param>
-/// <param name="formatVersion">The version of the format used to persist the current <see cref="ScenarioRunResult"/>.</param>
+/// <param name="chatDetails">
+/// An optional <see cref="Reporting.ChatDetails"/> object that contains details related to all LLM chat conversation
+/// turns involved in the execution of the the <see cref="ScenarioRun"/> corresponding to the
+/// <see cref="ScenarioRunResult"/> being constructed. Can be <see langword="null"/> if none of the
+/// <see cref="IEvaluator"/>s invoked during the execution of the <see cref="ScenarioRun"/> use an LLM.
+/// </param>
+/// <param name="tags">An optional set of text tags applicable to this <see cref="ScenarioRunResult"/>.</param>
+/// <param name="formatVersion">
+/// The version of the format used to persist the current <see cref="ScenarioRunResult"/>.
+/// </param>
 [method: JsonConstructor]
 public sealed class ScenarioRunResult(
     string scenarioName,
@@ -47,6 +56,8 @@ public sealed class ScenarioRunResult(
     IList<ChatMessage> messages,
     ChatResponse modelResponse,
     EvaluationResult evaluationResult,
+    ChatDetails? chatDetails = null,
+    IList<string>? tags = null,
     int? formatVersion = null)
 {
     /// <summary>
@@ -57,13 +68,21 @@ public sealed class ScenarioRunResult(
     /// <param name="executionName">The <see cref="ScenarioRun.ExecutionName"/>.</param>
     /// <param name="creationTime">The time at which this <see cref="ScenarioRunResult"/> was created.</param>
     /// <param name="messages">
-    /// The conversation history including the request that produced the <paramref name="modelResponse"/> being evaluated.
+    /// The conversation history including the request that produced the <paramref name="modelResponse"/> being
+    /// evaluated.
     /// </param>
     /// <param name="modelResponse">The response being evaluated.</param>
     /// <param name="evaluationResult">
     /// The <see cref="Evaluation.EvaluationResult"/> for the <see cref="ScenarioRun"/> corresponding to the
     /// <see cref="ScenarioRunResult"/> being constructed.
     /// </param>
+    /// <param name="chatDetails">
+    /// An optional <see cref="Reporting.ChatDetails"/> object that contains details related to all LLM chat
+    /// conversation turns involved in the execution of the the <see cref="ScenarioRun"/> corresponding to the
+    /// <see cref="ScenarioRunResult"/> being constructed. Can be <see langword="null"/> if none of the
+    /// <see cref="IEvaluator"/>s invoked during the execution of the <see cref="ScenarioRun"/> use an LLM.
+    /// </param>
+    /// <param name="tags">An optional set of text tags applicable to this <see cref="ScenarioRunResult"/>.</param>
     public ScenarioRunResult(
         string scenarioName,
         string iterationName,
@@ -71,7 +90,9 @@ public sealed class ScenarioRunResult(
         DateTime creationTime,
         IEnumerable<ChatMessage> messages,
         ChatResponse modelResponse,
-        EvaluationResult evaluationResult)
+        EvaluationResult evaluationResult,
+        ChatDetails? chatDetails = null,
+        IEnumerable<string>? tags = null)
             : this(
                 scenarioName,
                 iterationName,
@@ -79,14 +100,11 @@ public sealed class ScenarioRunResult(
                 creationTime,
                 [.. messages],
                 modelResponse,
-                evaluationResult)
+                evaluationResult,
+                chatDetails,
+                tags is null ? null : [.. tags])
     {
     }
-
-    /// <summary>
-    /// Gets the version of the format used to persist the current <see cref="ScenarioRunResult"/>.
-    /// </summary>
-    public int? FormatVersion { get; } = formatVersion ?? Defaults.ReportingFormatVersion;
 
     /// <summary>
     /// Gets or sets the <see cref="ScenarioRun.ScenarioName"/>.
@@ -134,4 +152,30 @@ public sealed class ScenarioRunResult(
     /// is invoked.
     /// </remarks>
     public EvaluationResult EvaluationResult { get; set; } = evaluationResult;
+
+    /// <summary>
+    /// Gets or sets an optional <see cref="Reporting.ChatDetails"/> object that contains details related to all LLM
+    /// chat conversation turns involved in the execution of the <see cref="ScenarioRun"/> corresponding to this
+    /// <see cref="ScenarioRunResult"/>.
+    /// </summary>
+    /// <remarks>
+    /// Can be <see langword="null"/> if none of the <see cref="IEvaluator"/>s invoked during the execution of the
+    /// <see cref="ScenarioRun"/> use an LLM.
+    /// </remarks>
+    public ChatDetails? ChatDetails { get; set; } = chatDetails;
+
+    /// <summary>
+    /// Gets or sets a set of text tags applicable to this <see cref="ScenarioRunResult"/>.
+    /// </summary>
+#pragma warning disable CA2227
+    // CA2227: Collection properties should be read only.
+    // We disable this warning because we want this type to be fully mutable for serialization purposes and for general
+    // convenience.
+    public IList<string>? Tags { get; set; } = tags;
+#pragma warning restore CA2227
+
+    /// <summary>
+    /// Gets or sets the version of the format used to persist the current <see cref="ScenarioRunResult"/>.
+    /// </summary>
+    public int? FormatVersion { get; set; } = formatVersion ?? Defaults.ReportingFormatVersion;
 }

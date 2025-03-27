@@ -737,6 +737,61 @@ public class FunctionInvokingChatClientTests
     }
 
     [Fact]
+    public async Task CanResumeFunctionCallingAfterTermination()
+    {
+        var function = AIFunctionFactory.Create((string? result = null) =>
+        {
+            if (!string.IsNullOrEmpty(result))
+            {
+                return result;
+            }
+
+            FunctionInvokingChatClient.CurrentContext!.Terminate = true;
+            return (object?)null;
+        }, "Search");
+
+        using var innerChatClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (chatContents, chatOptions, cancellationToken) =>
+            {
+                // We can have a mixture of calls that are not terminated and terminated
+                var existingSearchResult = chatContents.SingleOrDefault(m => m.Role == ChatRole.Tool);
+                AIContent[] resultContents = existingSearchResult is not null && existingSearchResult.Contents.OfType<FunctionResultContent>().ToList() is { } frcs
+                    ? [new TextContent($"The search results were '{string.Join(", ", frcs.Select(frc => frc.Result))}'")]
+                    : [
+                        new FunctionCallContent("callId1", "Search"),
+                        new FunctionCallContent("callId2", "Search", new Dictionary<string, object?> { { "result", "birds" } }),
+                        new FunctionCallContent("callId3", "Search"),
+                      ];
+
+                var message = new ChatMessage(ChatRole.Assistant, resultContents);
+                return Task.FromResult(new ChatResponse(message));
+            }
+        };
+        using var chatClient = new FunctionInvokingChatClient(innerChatClient);
+
+        // The function should terminate the invocation loop without calling the inner client for a final answer
+        // But it still makes all the function calls within the same iteration
+        List<ChatMessage> messages = [new(ChatRole.User, "hello")];
+        var chatOptions = new ChatOptions { Tools = [function] };
+        var result = await chatClient.GetResponseAsync(messages, chatOptions);
+        messages.AddMessages(result);
+
+        // Application code can then set the results
+        var lastMessage = messages.Last();
+        Assert.Equal(ChatRole.Tool, lastMessage.Role);
+        var frcs = lastMessage.Contents.OfType<FunctionResultContent>().ToList();
+        Assert.Equal(3, frcs.Count);
+        Assert.Equal("birds", frcs[1].Result!.ToString());
+        frcs[0].Result = "dogs";
+        frcs[2].Result = "cats";
+
+        // We can re-enter the function calling mechanism to get a final answer
+        result = await chatClient.GetResponseAsync(messages, chatOptions);
+        Assert.Equal("The search results were 'dogs, birds, cats'", result.Text);
+    }
+
+    [Fact]
     public async Task PropagatesResponseChatThreadIdToOptions()
     {
         var options = new ChatOptions
