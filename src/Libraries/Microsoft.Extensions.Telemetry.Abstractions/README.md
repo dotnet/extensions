@@ -43,6 +43,15 @@ internal static partial void LogNewTemperature(ILogger<Program> logger, [LogProp
 internal record Temperature(double value, TemperatureUnit unit);
 ```
 
+The `TagName` attribute can be used to specify a custom tag name for each parameter or property. This is useful when you want to have more control over the naming of tags in your logs.
+
+```csharp
+[LoggerMessage(1, LogLevel.Information, "My custom tag name: {my.custom.tagname}")]
+public static partial void LogMyCustomTagName(
+    this ILogger logger,
+    [TagName("my.custom.tagname")] string name);
+```
+
 ### Log Enrichment
 
 Logging data can be enriched by adding custom log enrichers to the service collection. This can be done using specific implementations or generic types.
