@@ -161,7 +161,7 @@
     <MicrosoftSemanticKernelConnectorsAzureAISearchVersion>1.41.0-preview</MicrosoftSemanticKernelConnectorsAzureAISearchVersion>
     <MicrosoftSemanticKernelConnectorsQdrantVersion>1.41.0-preview</MicrosoftSemanticKernelConnectorsQdrantVersion>
     <MicrosoftSemanticKernelCoreVersion>1.41.0</MicrosoftSemanticKernelCoreVersion>
-    <OllamaSharpVersion>5.1.5</OllamaSharpVersion>
+    <OllamaSharpVersion>5.1.9</OllamaSharpVersion>
     <OpenAIVersion>2.2.0-beta.3</OpenAIVersion>
     <OpenTelemetryVersion>1.9.0</OpenTelemetryVersion>
     <PdfPigVersion>0.1.9</PdfPigVersion>
