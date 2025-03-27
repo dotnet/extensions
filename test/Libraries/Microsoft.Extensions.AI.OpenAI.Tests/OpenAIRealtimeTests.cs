@@ -56,7 +56,7 @@ public class OpenAIRealtimeTests
                   "additionalProperties": false,
                   "required": [
                     "a"
-                  ],
+                  ]
                 }
               },
               "required": [
