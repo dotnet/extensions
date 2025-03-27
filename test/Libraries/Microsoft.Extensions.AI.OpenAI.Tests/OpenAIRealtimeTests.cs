@@ -46,6 +46,7 @@ public class OpenAIRealtimeTests
                   "type": "string"
                 },
                 "c": {
+                  "description": "Default value: null",
                   "type": "object",
                   "properties": {
                     "a": {
@@ -56,7 +57,6 @@ public class OpenAIRealtimeTests
                   "required": [
                     "a"
                   ],
-                  "default": "null"
                 }
               },
               "required": [
