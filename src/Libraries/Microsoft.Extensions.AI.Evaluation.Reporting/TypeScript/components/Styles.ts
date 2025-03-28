@@ -46,6 +46,7 @@ export const useStyles = makeStyles({
         border: '2px solid ' + tokens.colorNeutralStroke1,
         borderRadius: '8px',
         right: '0',
+        maxWidth: '80rem',
     },
     sectionHeader: {
         display: 'flex',
