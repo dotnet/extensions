@@ -20,14 +20,18 @@ builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 #if (IsOllama)
 builder.AddOllamaApiClient("chat")
     .AddChatClient()
-    .UseFunctionInvocation();
+    .UseFunctionInvocation()
+    .UseOpenTelemetry(configure: c =>
+        c.EnableSensitiveData = builder.Environment.IsDevelopment());
 builder.AddOllamaApiClient("embeddings")
     .AddEmbeddingGenerator();
 #elif (IsAzureAiFoundry)
 #else // IsAzureOpenAI || IsOpenAI || IsGHModels
 var openai = builder.AddAzureOpenAIClient("openai");
 openai.AddChatClient("gpt-4o-mini")
-    .UseFunctionInvocation();
+    .UseFunctionInvocation()
+    .UseOpenTelemetry(configure: c =>
+        c.EnableSensitiveData = builder.Environment.IsDevelopment());
 openai.AddEmbeddingGenerator("text-embedding-3-small");
 #endif
 
