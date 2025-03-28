@@ -28,15 +28,8 @@ builder.AddOllamaApiClient("embeddings")
 var openai = builder.AddAzureOpenAIClient("openai");
 openai.AddChatClient("gpt-4o-mini")
     .UseFunctionInvocation()
-    .UseOpenTelemetry(null, null, configure =>
-    {
-        // In development mode, enable the inclusion of sensitive data like
-        // prompt and user messages
-        if (builder.Environment.IsDevelopment())
-        {
-            configure.EnableSensitiveData = true;
-        }
-    });
+    .UseOpenTelemetry(configure: c =>
+        c.EnableSensitiveData = builder.Environment.IsDevelopment());
 openai.AddEmbeddingGenerator("text-embedding-3-small");
 #endif
 
