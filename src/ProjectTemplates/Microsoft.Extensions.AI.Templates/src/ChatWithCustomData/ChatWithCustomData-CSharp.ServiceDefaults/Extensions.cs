@@ -49,16 +49,12 @@ public static class Extensions
             logging.IncludeScopes = true;
         });
 
-        // Enable the output of semantic conventions for generative AI
-        AppContext.SetSwitch("OpenAI.Experimental.EnableOpenTelemetry", true);
-
         builder.Services.AddOpenTelemetry()
             .WithMetrics(metrics =>
             {
                 metrics.AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddRuntimeInstrumentation()
-                    .AddMeter("OpenAI")
                     .AddMeter("Experimental.Microsoft.Extensions.AI");
             })
             .WithTracing(tracing =>
@@ -68,7 +64,6 @@ public static class Extensions
                     // Uncomment the following line to enable gRPC instrumentation (requires the OpenTelemetry.Instrumentation.GrpcNetClient package)
                     //.AddGrpcClientInstrumentation()
                     .AddHttpClientInstrumentation()
-                    .AddSource("OpenAI")
                     .AddSource("Experimental.Microsoft.Extensions.AI");
             });
 
