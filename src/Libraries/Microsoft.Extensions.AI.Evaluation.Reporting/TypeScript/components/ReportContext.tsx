@@ -8,6 +8,9 @@ export type ReportContextType = {
     selectScenarioLevel: (key: string) => void,
     renderMarkdown: boolean,
     setRenderMarkdown: (renderMarkdown: boolean) => void,
+    selectedTags: string[],
+    handleTagClick: (tag: string) => void,
+    clearFilters: () => void,
 };
 
 // Create the default context, which will be used to provide the context value
@@ -27,7 +30,10 @@ const defaultReportContext = createContext<ReportContextType>({
     renderMarkdown: true,
     setRenderMarkdown: (_renderMarkdown: boolean) => {
         throw new Error("setRenderMarkdown function not implemented");
-    }
+    },
+    selectedTags: [],
+    handleTagClick: (_tag: string) => { throw new Error("handleTagClick function not implemented"); },
+    clearFilters: () => { throw new Error("clearFilters function not implemented"); },
 });
 
 export const ReportContextProvider = ({ dataset, scoreSummary, children }:
@@ -49,6 +55,7 @@ export const useReportContext = () => {
 const useProvideReportContext = (dataset: Dataset, scoreSummary: ScoreSummary): ReportContextType => {
     const [selectedScenarioLevel, setSelectedScenarioLevel] = useState<string | undefined>(undefined);
     const [renderMarkdown, setRenderMarkdown] = useState<boolean>(true);
+    const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
     const selectScenarioLevel = (key: string) => {
         if (key === selectedScenarioLevel) {
@@ -59,6 +66,16 @@ const useProvideReportContext = (dataset: Dataset, scoreSummary: ScoreSummary): 
         }
     };
 
+    const handleTagClick = (tag: string) => {
+        setSelectedTags((prevTags) =>
+          prevTags.includes(tag) ? prevTags.filter((t) => t !== tag) : [...prevTags, tag]
+        );
+    };
+    
+    const clearFilters = () => {
+        setSelectedTags([]);
+    };
+
     return {
         dataset,
         scoreSummary,
@@ -66,5 +83,8 @@ const useProvideReportContext = (dataset: Dataset, scoreSummary: ScoreSummary): 
         selectScenarioLevel,
         renderMarkdown,
         setRenderMarkdown,
+        selectedTags,
+        handleTagClick,
+        clearFilters
     };
 };

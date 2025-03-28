@@ -42,11 +42,11 @@ const ScenarioLevel = ({ node, scoreSummary, isOpen }: {
     }
 };
 
-export const ScenarioGroup = ({ node, scoreSummary, selectedTags }: {
+export const ScenarioGroup = ({ node, scoreSummary }: {
     node: ScoreNode,
     scoreSummary: ScoreSummary,
-    selectedTags: string[]
 }) => {
+    const { selectedTags } = useReportContext();
     const [openItems, setOpenItems] = useState<Set<TreeItemValue>>(() => new Set());
     const handleOpenChange = useCallback((_: TreeOpenChangeEvent, data: TreeOpenChangeData) => {
         setOpenItems(data.openItems);

@@ -82,24 +82,13 @@ const useStyles = makeStyles({
 
 function App() {
   const classes = useStyles();
-  const { dataset, scoreSummary } = useReportContext();
+  const { dataset, scoreSummary, selectedTags, clearFilters } = useReportContext();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { renderMarkdown, setRenderMarkdown } = useReportContext();
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const { globalTags, filterableTags } = categorizeAndSortTags(dataset);
 
   const toggleSettings = () => setIsSettingsOpen(!isSettingsOpen);
   const closeSettings = () => setIsSettingsOpen(false);
-
-  const handleTagClick = (tag: string) => {
-    setSelectedTags((prevTags) =>
-      prevTags.includes(tag) ? prevTags.filter((t) => t !== tag) : [...prevTags, tag]
-    );
-  };
-
-  const clearFilters = () => {
-    setSelectedTags([]);
-  };
 
   return (
     <>
@@ -125,8 +114,6 @@ function App() {
 
         <FilterableTagsDisplay
           filterableTags={filterableTags}
-          onTagClick={handleTagClick}
-          selectedTags={selectedTags}
         />
 
         <ScoreNodeHistory />
@@ -135,7 +122,6 @@ function App() {
       <ScenarioGroup
         node={scoreSummary.primaryResult}
         scoreSummary={scoreSummary}
-        selectedTags={selectedTags}
       />
 
       <p className={classes.footerText}>
