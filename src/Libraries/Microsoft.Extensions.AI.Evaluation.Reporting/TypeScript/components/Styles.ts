@@ -37,7 +37,7 @@ export const useStyles = makeStyles({
     iterationArea: {
         marginTop: '1rem',
         marginBottom: '1rem',
-        maxWidth: '72rem',
+        maxWidth: '75rem',
     },
     section: {
         marginTop: '0.75rem',
