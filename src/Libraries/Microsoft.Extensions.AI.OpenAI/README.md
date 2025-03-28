@@ -24,11 +24,10 @@ Or directly in the C# project file:
 
 ```csharp
 using Microsoft.Extensions.AI;
-using OpenAI;
 
 IChatClient client =
-    new OpenAIClient(Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
-        .AsChatClient("gpt-4o-mini");
+    new OpenAI.Chat.ChatClient("gpt-4o-mini", Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
+    .AsIChatClient();
 
 Console.WriteLine(await client.GetResponseAsync("What is AI?"));
 ```
@@ -37,11 +36,10 @@ Console.WriteLine(await client.GetResponseAsync("What is AI?"));
 
 ```csharp
 using Microsoft.Extensions.AI;
-using OpenAI;
 
 IChatClient client =
-    new OpenAIClient(Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
-        .AsChatClient("gpt-4o-mini");
+    new OpenAI.Chat.ChatClient("gpt-4o-mini", Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
+    .AsIChatClient();
 
 Console.WriteLine(await client.GetResponseAsync(
 [
@@ -54,11 +52,10 @@ Console.WriteLine(await client.GetResponseAsync(
 
 ```csharp
 using Microsoft.Extensions.AI;
-using OpenAI;
 
 IChatClient client =
-    new OpenAIClient(Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
-        .AsChatClient("gpt-4o-mini");
+    new OpenAI.Chat.ChatClient("gpt-4o-mini", Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
+    .AsIChatClient();
 
 await foreach (var update in client.GetStreamingResponseAsync("What is AI?"))
 {
@@ -71,11 +68,10 @@ await foreach (var update in client.GetStreamingResponseAsync("What is AI?"))
 ```csharp
 using System.ComponentModel;
 using Microsoft.Extensions.AI;
-using OpenAI;
 
 IChatClient openaiClient =
-    new OpenAIClient(Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
-        .AsChatClient("gpt-4o-mini");
+    new OpenAI.Chat.ChatClient("gpt-4o-mini", Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
+    .AsIChatClient();
 
 IChatClient client = new ChatClientBuilder(openaiClient)
     .UseFunctionInvocation()
@@ -102,13 +98,12 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-using OpenAI;
 
 IDistributedCache cache = new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
 
 IChatClient openaiClient =
-    new OpenAIClient(Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
-        .AsChatClient("gpt-4o-mini");
+    new OpenAI.Chat.ChatClient("gpt-4o-mini", Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
+    .AsIChatClient();
 
 IChatClient client = new ChatClientBuilder(openaiClient)
     .UseDistributedCache(cache)
@@ -130,7 +125,6 @@ for (int i = 0; i < 3; i++)
 
 ```csharp
 using Microsoft.Extensions.AI;
-using OpenAI;
 using OpenTelemetry.Trace;
 
 // Configure OpenTelemetry exporter
@@ -141,8 +135,8 @@ var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
     .Build();
 
 IChatClient openaiClient =
-    new OpenAIClient(Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
-        .AsChatClient("gpt-4o-mini");
+    new OpenAI.Chat.ChatClient("gpt-4o-mini", Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
+    .AsIChatClient();
 
 IChatClient client = new ChatClientBuilder(openaiClient)
     .UseOpenTelemetry(sourceName: sourceName, configure: c => c.EnableSensitiveData = true)
@@ -159,7 +153,6 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-using OpenAI;
 using OpenTelemetry.Trace;
 
 // Configure telemetry
@@ -179,8 +172,8 @@ var chatOptions = new ChatOptions
 };
 
 IChatClient openaiClient =
-    new OpenAIClient(Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
-        .AsChatClient("gpt-4o-mini");
+    new OpenAI.Chat.ChatClient("gpt-4o-mini", Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
+    .AsIChatClient();
 
 IChatClient client = new ChatClientBuilder(openaiClient)
     .UseDistributedCache(cache)
@@ -207,11 +200,10 @@ static int GetPersonAge(string personName) =>
 
 ```csharp
 using Microsoft.Extensions.AI;
-using OpenAI;
 
 IEmbeddingGenerator<string, Embedding<float>> generator =
-    new OpenAIClient(Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
-        .AsEmbeddingGenerator("text-embedding-3-small");
+    new OpenAI.Embeddings.EmbeddingClient("text-embedding-3-small", Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
+    .AsIEmbeddingGenerator();
 
 var embeddings = await generator.GenerateAsync("What is AI?");
 
@@ -225,13 +217,12 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-using OpenAI;
 
 IDistributedCache cache = new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
 
 IEmbeddingGenerator<string, Embedding<float>> openAIGenerator =
-    new OpenAIClient(Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
-        .AsEmbeddingGenerator("text-embedding-3-small");
+    new OpenAI.Embeddings.EmbeddingClient("text-embedding-3-small", Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
+    .AsIEmbeddingGenerator();
 
 IEmbeddingGenerator<string, Embedding<float>> generator = new EmbeddingGeneratorBuilder<string, Embedding<float>>(openAIGenerator)
     .UseDistributedCache(cache)
@@ -252,15 +243,14 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using OpenAI;
 
 // App Setup
 var builder = Host.CreateApplicationBuilder();
-builder.Services.AddSingleton(new OpenAIClient(Environment.GetEnvironmentVariable("OPENAI_API_KEY")));
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddLogging(b => b.AddConsole().SetMinimumLevel(LogLevel.Trace));
 
-builder.Services.AddChatClient(services => services.GetRequiredService<OpenAIClient>().AsChatClient("gpt-4o-mini"))
+builder.Services.AddChatClient(services =>
+    new OpenAI.Chat.ChatClient("gpt-4o-mini", Environment.GetEnvironmentVariable("OPENAI_API_KEY")).AsIChatClient())
     .UseDistributedCache()
     .UseLogging();
 
@@ -275,17 +265,14 @@ Console.WriteLine(await chatClient.GetResponseAsync("What is AI?"));
 
 ```csharp
 using Microsoft.Extensions.AI;
-using OpenAI;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSingleton(new OpenAIClient(builder.Configuration["OPENAI_API_KEY"]));
-
 builder.Services.AddChatClient(services =>
-    services.GetRequiredService<OpenAIClient>().AsChatClient("gpt-4o-mini"));
+    new OpenAI.Chat.ChatClient("gpt-4o-mini", builder.Configuration["OPENAI_API_KEY"]).AsIChatClient());
 
 builder.Services.AddEmbeddingGenerator(services =>
-    services.GetRequiredService<OpenAIClient>().AsEmbeddingGenerator("text-embedding-3-small"));
+    new OpenAI.Embeddings.EmbeddingClient("text-embedding-3-small", builder.Configuration["OPENAI_API_KEY"]).AsIEmbeddingGenerator());
 
 var app = builder.Build();
 

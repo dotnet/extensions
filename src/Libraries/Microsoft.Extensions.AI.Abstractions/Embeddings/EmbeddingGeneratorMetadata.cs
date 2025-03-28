@@ -36,14 +36,14 @@ public class EmbeddingGeneratorMetadata
 
     /// <summary>Gets the ID of the default model used by this embedding generator.</summary>
     /// <remarks>
-    /// This value can be null if no default model is set on the corresponding embedding generator.
+    /// This value can be <see langword="null"/> if no default model is set on the corresponding embedding generator.
     /// An individual request may override this value via <see cref="EmbeddingGenerationOptions.ModelId"/>.
     /// </remarks>
     public string? DefaultModelId { get; }
 
     /// <summary>Gets the number of dimensions in the embeddings produced by the default model.</summary>
     /// <remarks>
-    /// This value can be null if either the number of dimensions is unknown or there are multiple possible lengths associated with this model.
+    /// This value can be <see langword="null"/> if either the number of dimensions is unknown or there are multiple possible lengths associated with this model.
     /// An individual request may override this value via <see cref="EmbeddingGenerationOptions.Dimensions"/>.
     /// </remarks>
     public int? DefaultModelDimensions { get; }
