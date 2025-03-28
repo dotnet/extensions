@@ -6,15 +6,11 @@ import { Settings28Regular, FilterDismissRegular, Dismiss20Regular } from '@flue
 import { Drawer, DrawerBody, DrawerHeader, DrawerHeaderTitle, Switch, Tooltip } from '@fluentui/react-components';
 import { makeStyles } from '@fluentui/react-components';
 import './App.css';
-import { ScoreNode } from './Summary';
 import { ScenarioGroup } from './ScenarioTree';
 import { GlobalTagsDisplay, FilterableTagsDisplay, categorizeAndSortTags } from './TagsDisplay';
 import { tokens } from '@fluentui/react-components';
-
-type AppProperties = {
-  dataset: Dataset,
-  tree: ScoreNode,
-};
+import { ScoreNodeHistory } from './ScoreNodeHistory';
+import { useReportContext } from './ReportContext';
 
 const useStyles = makeStyles({
   header: {
@@ -26,6 +22,8 @@ const useStyles = makeStyles({
     zIndex: 1,
     paddingBottom: '12px',
     backgroundColor: tokens.colorNeutralBackground1,
+    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+    marginBottom: '1rem',
   },
   headerTop: {
     display: 'flex',
@@ -82,27 +80,15 @@ const useStyles = makeStyles({
   drawerBody: { paddingTop: '1rem' },
 });
 
-function App({ dataset, tree }: AppProperties) {
+function App() {
   const classes = useStyles();
+  const { dataset, scoreSummary, selectedTags, clearFilters } = useReportContext();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [renderMarkdown, setRenderMarkdown] = useState(true);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-
+  const { renderMarkdown, setRenderMarkdown } = useReportContext();
   const { globalTags, filterableTags } = categorizeAndSortTags(dataset);
 
   const toggleSettings = () => setIsSettingsOpen(!isSettingsOpen);
-  const toggleRenderMarkdown = () => setRenderMarkdown(!renderMarkdown);
   const closeSettings = () => setIsSettingsOpen(false);
-
-  const handleTagClick = (tag: string) => {
-    setSelectedTags((prevTags) =>
-      prevTags.includes(tag) ? prevTags.filter((t) => t !== tag) : [...prevTags, tag]
-    );
-  };
-
-  const clearFilters = () => {
-    setSelectedTags([]);
-  };
 
   return (
     <>
@@ -125,17 +111,17 @@ function App({ dataset, tree }: AppProperties) {
           </div>
         </div>
         <GlobalTagsDisplay globalTags={globalTags} />
+
         <FilterableTagsDisplay
           filterableTags={filterableTags}
-          onTagClick={handleTagClick}
-          selectedTags={selectedTags}
         />
+
+        <ScoreNodeHistory />
       </div>
 
       <ScenarioGroup
-        node={tree}
-        renderMarkdown={renderMarkdown}
-        selectedTags={selectedTags}
+        node={scoreSummary.primaryResult}
+        scoreSummary={scoreSummary}
       />
 
       <p className={classes.footerText}>
@@ -150,7 +136,7 @@ function App({ dataset, tree }: AppProperties) {
         <DrawerBody className={classes.drawerBody}>
           <Switch
             checked={renderMarkdown}
-            onChange={toggleRenderMarkdown}
+            onChange={(_ev, data) => setRenderMarkdown(data.checked)}
             label={<span className={classes.switchLabel}>Render markdown for conversations</span>}
           />
         </DrawerBody>
