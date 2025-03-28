@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChatDetailsSection } from "./ChatDetailsSection";
 import { ConversationDetails } from "./ConversationDetails";
 import { type MetricType, MetricCardList } from "./MetricCard";
@@ -12,8 +12,17 @@ export const ScoreDetail = ({ scenario, scoreSummary }: { scenario: ScenarioRunR
     const classes = useStyles();
     const [selectedMetric, setSelectedMetric] = useState<MetricType | null>(null);
     const { messages, model, usage } = getConversationDisplay(scenario.messages, scenario.modelResponse);
+    const tagRef = useRef<HTMLDivElement>(null);
 
-    return (<div className={classes.iterationArea}>
+    useEffect(() => {
+        if (tagRef.current) {
+            // Super hacky way to get the parent element to stretch to 100% width
+            // since it is not directly addressable in CSS
+            tagRef.current.parentElement?.style.setProperty("width", "100%");
+        }
+    }, [tagRef]);
+
+    return (<div className={classes.iterationArea} ref={tagRef}>
         <ScenarioRunHistory scoreSummary={scoreSummary} scenario={scenario} />
         <MetricCardList
             scenario={scenario}
