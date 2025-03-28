@@ -11,7 +11,7 @@ namespace aichatweb.Services;
 /// In production, you must replace this with a real vector store. There are many IVectorStore
 /// implementations available, including ones for standalone vector databases like Qdrant or Milvus,
 /// or for integrating with relational databases such as SQL Server or PostgreSQL.
-/// 
+///
 /// This implementation stores the vector records in large JSON files on disk. It is very inefficient
 /// and is provided only for convenience when prototyping.
 /// </summary>
@@ -63,13 +63,13 @@ public class JsonVectorStore(string basePath) : IVectorStore
             }
         }
 
-        public Task DeleteAsync(TKey key, DeleteRecordOptions? options = null, CancellationToken cancellationToken = default)
+        public Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
         {
             _records!.Remove(key);
             return WriteToDiskAsync(cancellationToken);
         }
 
-        public Task DeleteBatchAsync(IEnumerable<TKey> keys, DeleteRecordOptions? options = null, CancellationToken cancellationToken = default)
+        public Task DeleteBatchAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
         {
             foreach (var key in keys)
             {
@@ -92,7 +92,7 @@ public class JsonVectorStore(string basePath) : IVectorStore
         public IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
             => keys.Select(key => _records!.GetValueOrDefault(key)!).Where(r => r is not null).ToAsyncEnumerable();
 
-        public async Task<TKey> UpsertAsync(TRecord record, UpsertRecordOptions? options = null, CancellationToken cancellationToken = default)
+        public async Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
         {
             var key = _getKey(record);
             _records![key] = record;
@@ -100,7 +100,7 @@ public class JsonVectorStore(string basePath) : IVectorStore
             return key;
         }
 
-        public async IAsyncEnumerable<TKey> UpsertBatchAsync(IEnumerable<TRecord> records, UpsertRecordOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        public async IAsyncEnumerable<TKey> UpsertBatchAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             var results = new List<TKey>();
             foreach (var record in records)
@@ -118,7 +118,7 @@ public class JsonVectorStore(string basePath) : IVectorStore
             }
         }
 
-        public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions? options = null, CancellationToken cancellationToken = default)
+        public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
         {
             if (vector is not ReadOnlyMemory<float> floatVector)
             {
@@ -126,25 +126,16 @@ public class JsonVectorStore(string basePath) : IVectorStore
             }
 
             IEnumerable<TRecord> filteredRecords = _records!.Values;
-
-            foreach (var clause in options?.Filter?.FilterClauses ?? [])
+            if (options?.Filter is { } filter)
             {
-                if (clause is EqualToFilterClause equalClause)
-                {
-                    var propertyInfo = typeof(TRecord).GetProperty(equalClause.FieldName);
-                    filteredRecords = filteredRecords.Where(record => propertyInfo!.GetValue(record)!.Equals(equalClause.Value));
-                }
-                else
-                {
-                    throw new NotSupportedException($"The provided filter clause type {clause.GetType().FullName} is not supported.");
-                }
+                filteredRecords = filteredRecords.AsQueryable().Where(filter);
             }
 
-            var ranked = (from record in filteredRecords
-                          let candidateVector = _getVector(record)
-                          let similarity = TensorPrimitives.CosineSimilarity(candidateVector.Span, floatVector.Span)
-                          orderby similarity descending
-                          select (Record: record, Similarity: similarity));
+            var ranked = from record in filteredRecords
+                         let candidateVector = _getVector(record)
+                         let similarity = TensorPrimitives.CosineSimilarity(candidateVector.Span, floatVector.Span)
+                         orderby similarity descending
+                         select (Record: record, Similarity: similarity);
 
             var results = ranked.Skip(options?.Skip ?? 0).Take(options?.Top ?? int.MaxValue);
             return Task.FromResult(new VectorSearchResults<TRecord>(
