@@ -137,8 +137,10 @@ const ScoreNodeHeader = ({ item, showPrompt }:
         <PassFailBar pass={ctPass} total={ctPass + ctFail} width="24px" height="12px" 
             selected={item.nodeKey == selectedScenarioLevel} 
             onClick={(event) => {
-                event.stopPropagation();
-                selectScenarioLevel(item.nodeKey);
+                if (scoreSummary.includesReportHistory) {
+                    event.stopPropagation();
+                    selectScenarioLevel(item.nodeKey);
+                }
             }}/>
         <div className={classes.scenarioLabel}>
             {parts.map((part, index) => (

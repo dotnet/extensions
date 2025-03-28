@@ -8,7 +8,6 @@ import { FluentProvider, webLightTheme } from '@fluentui/react-components';
 import { createScoreSummary } from '../../components/Summary.ts';
 import { ReportContextProvider } from '../../components/ReportContext.tsx';
 
-
 let dataset: Dataset = { scenarioRunResults: [] };
 
 if (!import.meta.env.PROD) {

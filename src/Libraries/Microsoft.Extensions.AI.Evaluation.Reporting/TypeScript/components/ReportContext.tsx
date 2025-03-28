@@ -13,7 +13,7 @@ export type ReportContextType = {
 // Create the default context, which will be used to provide the context value
 // if no provider is found in the component tree. This should never happen in practice.
 const defaultReportContext = createContext<ReportContextType>({
-    dataset: { scenarioRunResults: [] },
+    dataset: {} as Dataset,
     scoreSummary: {
         primaryResult: new ScoreNode("empty", ScoreNodeType.Group, "empty-root", "execution"),
         includesReportHistory: false,
