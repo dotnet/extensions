@@ -36,7 +36,7 @@ public sealed class ChatClientBuilder
     /// <summary>Builds an <see cref="IChatClient"/> that represents the entire pipeline. Calls to this instance will pass through each of the pipeline stages in turn.</summary>
     /// <param name="services">
     /// The <see cref="IServiceProvider"/> that should provide services to the <see cref="IChatClient"/> instances.
-    /// If null, an empty <see cref="IServiceProvider"/> will be used.
+    /// If <see langword="null"/>, an empty <see cref="IServiceProvider"/> will be used.
     /// </param>
     /// <returns>An instance of <see cref="IChatClient"/> that represents the entire pipeline.</returns>
     public IChatClient Build(IServiceProvider? services = null)

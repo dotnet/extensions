@@ -34,7 +34,7 @@ public class ChatClientMetadata
 
     /// <summary>Gets the ID of the default model used by this chat client.</summary>
     /// <remarks>
-    /// This value can be null if no default model is set on the corresponding <see cref="IChatClient"/>.
+    /// This value can be <see langword="null"/> if no default model is set on the corresponding <see cref="IChatClient"/>.
     /// An individual request may override this value via <see cref="ChatOptions.ModelId"/>.
     /// </remarks>
     public string? DefaultModelId { get; }

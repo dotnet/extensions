@@ -41,8 +41,8 @@ var openAIOptions = new OpenAIClientOptions()
 };
 
 var ghModelsClient = new OpenAIClient(credential, openAIOptions);
-var chatClient = ghModelsClient.AsChatClient("gpt-4o-mini");
-var embeddingGenerator = ghModelsClient.AsEmbeddingGenerator("text-embedding-3-small");
+var chatClient = ghModelsClient.GetChatClient("gpt-4o-mini").AsIChatClient();
+var embeddingGenerator = ghModelsClient.GetEmbeddingClient("text-embedding-3-small").AsIEmbeddingGenerator();
 #elif (IsOllama)
 IChatClient chatClient = new OllamaApiClient(new Uri("http://localhost:11434"),
     "llama3.2");
@@ -55,8 +55,8 @@ IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator = new OllamaApi
 //   dotnet user-secrets set OpenAI:Key YOUR-API-KEY
 var openAIClient = new OpenAIClient(
     new ApiKeyCredential(builder.Configuration["OpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: OpenAI:Key. See the README for details.")));
-var chatClient = openAIClient.AsChatClient("gpt-4o-mini");
-var embeddingGenerator = openAIClient.AsEmbeddingGenerator("text-embedding-3-small");
+var chatClient = openAIClient.GetChatClient("gpt-4o-mini").AsIChatClient();
+var embeddingGenerator = openAIClient.GetEmbeddingClient("text-embedding-3-small").AsIEmbeddingGenerator();
 #elif (IsAzureAiFoundry)
 
 #else
@@ -74,8 +74,8 @@ var azureOpenAi = new AzureOpenAIClient(
 #else
     new ApiKeyCredential(builder.Configuration["AzureOpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: AzureOpenAi:Key. See the README for details.")));
 #endif
-var chatClient = azureOpenAi.AsChatClient("gpt-4o-mini");
-var embeddingGenerator = azureOpenAi.AsEmbeddingGenerator("text-embedding-3-small");
+var chatClient = azureOpenAi.GetChatClient("gpt-4o-mini").AsIChatClient();
+var embeddingGenerator = azureOpenAi.GetEmbeddingClient("text-embedding-3-small").AsIEmbeddingGenerator();
 #endif
 
 #if (UseAzureAISearch)

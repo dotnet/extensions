@@ -23,20 +23,15 @@ namespace Microsoft.Extensions.AI;
 public class OpenAIChatClientTests
 {
     [Fact]
-    public void AsChatClient_InvalidArgs_Throws()
+    public void AsIChatClient_InvalidArgs_Throws()
     {
-        Assert.Throws<ArgumentNullException>("openAIClient", () => ((OpenAIClient)null!).AsChatClient("model"));
-        Assert.Throws<ArgumentNullException>("chatClient", () => ((ChatClient)null!).AsChatClient());
-
-        OpenAIClient client = new("key");
-        Assert.Throws<ArgumentNullException>("modelId", () => client.AsChatClient(null!));
-        Assert.Throws<ArgumentException>("modelId", () => client.AsChatClient("   "));
+        Assert.Throws<ArgumentNullException>("chatClient", () => ((ChatClient)null!).AsIChatClient());
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void AsChatClient_OpenAIClient_ProducesExpectedMetadata(bool useAzureOpenAI)
+    public void AsIChatClient_OpenAIClient_ProducesExpectedMetadata(bool useAzureOpenAI)
     {
         Uri endpoint = new("http://localhost/some/endpoint");
         string model = "amazingModel";
@@ -45,13 +40,13 @@ public class OpenAIChatClientTests
             new AzureOpenAIClient(endpoint, new ApiKeyCredential("key")) :
             new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
 
-        IChatClient chatClient = client.AsChatClient(model);
+        IChatClient chatClient = client.GetChatClient(model).AsIChatClient();
         var metadata = chatClient.GetService<ChatClientMetadata>();
         Assert.Equal("openai", metadata?.ProviderName);
         Assert.Equal(endpoint, metadata?.ProviderUri);
         Assert.Equal(model, metadata?.DefaultModelId);
 
-        chatClient = client.GetChatClient(model).AsChatClient();
+        chatClient = client.GetChatClient(model).AsIChatClient();
         metadata = chatClient.GetService<ChatClientMetadata>();
         Assert.Equal("openai", metadata?.ProviderName);
         Assert.Equal(endpoint, metadata?.ProviderUri);
@@ -61,12 +56,12 @@ public class OpenAIChatClientTests
     [Fact]
     public void GetService_OpenAIClient_SuccessfullyReturnsUnderlyingClient()
     {
-        OpenAIClient openAIClient = new(new ApiKeyCredential("key"));
-        IChatClient chatClient = openAIClient.AsChatClient("model");
+        ChatClient openAIClient = new OpenAIClient(new ApiKeyCredential("key")).GetChatClient("model");
+        IChatClient chatClient = openAIClient.AsIChatClient();
 
         Assert.Same(chatClient, chatClient.GetService<IChatClient>());
 
-        Assert.Same(openAIClient, chatClient.GetService<OpenAIClient>());
+        Assert.Same(openAIClient, chatClient.GetService<ChatClient>());
 
         Assert.NotNull(chatClient.GetService<ChatClient>());
 
@@ -82,7 +77,7 @@ public class OpenAIChatClientTests
         Assert.NotNull(pipeline.GetService<CachingChatClient>());
         Assert.NotNull(pipeline.GetService<OpenTelemetryChatClient>());
 
-        Assert.Same(openAIClient, pipeline.GetService<OpenAIClient>());
+        Assert.Same(openAIClient, pipeline.GetService<ChatClient>());
         Assert.IsType<FunctionInvokingChatClient>(pipeline.GetService<IChatClient>());
     }
 
@@ -90,7 +85,7 @@ public class OpenAIChatClientTests
     public void GetService_ChatClient_SuccessfullyReturnsUnderlyingClient()
     {
         ChatClient openAIClient = new OpenAIClient(new ApiKeyCredential("key")).GetChatClient("model");
-        IChatClient chatClient = openAIClient.AsChatClient();
+        IChatClient chatClient = openAIClient.AsIChatClient();
 
         Assert.Same(chatClient, chatClient.GetService<IChatClient>());
         Assert.Same(openAIClient, chatClient.GetService<ChatClient>());
@@ -1040,5 +1035,6 @@ public class OpenAIChatClientTests
 
     private static IChatClient CreateChatClient(HttpClient httpClient, string modelId) =>
         new OpenAIClient(new ApiKeyCredential("apikey"), new OpenAIClientOptions { Transport = new HttpClientPipelineTransport(httpClient) })
-        .AsChatClient(modelId);
+        .GetChatClient(modelId)
+        .AsIChatClient();
 }

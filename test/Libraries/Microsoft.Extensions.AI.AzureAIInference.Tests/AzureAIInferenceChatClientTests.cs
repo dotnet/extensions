@@ -24,23 +24,23 @@ namespace Microsoft.Extensions.AI;
 public class AzureAIInferenceChatClientTests
 {
     [Fact]
-    public void AsChatClient_InvalidArgs_Throws()
+    public void AsIChatClient_InvalidArgs_Throws()
     {
-        Assert.Throws<ArgumentNullException>("chatCompletionsClient", () => ((ChatCompletionsClient)null!).AsChatClient("model"));
+        Assert.Throws<ArgumentNullException>("chatCompletionsClient", () => ((ChatCompletionsClient)null!).AsIChatClient("model"));
 
         ChatCompletionsClient client = new(new("http://somewhere"), new AzureKeyCredential("key"));
-        Assert.Throws<ArgumentException>("modelId", () => client.AsChatClient("   "));
+        Assert.Throws<ArgumentException>("defaultModelId", () => client.AsIChatClient("   "));
     }
 
     [Fact]
-    public void AsChatClient_ProducesExpectedMetadata()
+    public void AsIChatClient_ProducesExpectedMetadata()
     {
         Uri endpoint = new("http://localhost/some/endpoint");
         string model = "amazingModel";
 
         ChatCompletionsClient client = new(endpoint, new AzureKeyCredential("key"));
 
-        IChatClient chatClient = client.AsChatClient(model);
+        IChatClient chatClient = client.AsIChatClient(model);
         var metadata = chatClient.GetService<ChatClientMetadata>();
         Assert.Equal("az.ai.inference", metadata?.ProviderName);
         Assert.Equal(endpoint, metadata?.ProviderUri);
@@ -51,7 +51,7 @@ public class AzureAIInferenceChatClientTests
     public void GetService_SuccessfullyReturnsUnderlyingClient()
     {
         ChatCompletionsClient client = new(new("http://localhost"), new AzureKeyCredential("key"));
-        IChatClient chatClient = client.AsChatClient("model");
+        IChatClient chatClient = client.AsIChatClient("model");
 
         Assert.Same(chatClient, chatClient.GetService<IChatClient>());
         Assert.Same(client, chatClient.GetService<ChatCompletionsClient>());
@@ -893,5 +893,5 @@ public class AzureAIInferenceChatClientTests
             new("http://somewhere"),
             new AzureKeyCredential("key"),
             new AzureAIInferenceClientOptions { Transport = new HttpClientTransport(httpClient) })
-            .AsChatClient(modelId);
+            .AsIChatClient(modelId);
 }

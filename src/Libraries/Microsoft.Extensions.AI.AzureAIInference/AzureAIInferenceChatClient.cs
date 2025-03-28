@@ -35,16 +35,16 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
 
     /// <summary>Initializes a new instance of the <see cref="AzureAIInferenceChatClient"/> class for the specified <see cref="ChatCompletionsClient"/>.</summary>
     /// <param name="chatCompletionsClient">The underlying client.</param>
-    /// <param name="modelId">The ID of the model to use. If null, it can be provided per request via <see cref="ChatOptions.ModelId"/>.</param>
+    /// <param name="defaultModelId">The ID of the model to use. If <see langword="null"/>, it can be provided per request via <see cref="ChatOptions.ModelId"/>.</param>
     /// <exception cref="ArgumentNullException"><paramref name="chatCompletionsClient"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="modelId"/> is empty or composed entirely of whitespace.</exception>
-    public AzureAIInferenceChatClient(ChatCompletionsClient chatCompletionsClient, string? modelId = null)
+    /// <exception cref="ArgumentNullException"><paramref name="defaultModelId"/> is empty or composed entirely of whitespace.</exception>
+    public AzureAIInferenceChatClient(ChatCompletionsClient chatCompletionsClient, string? defaultModelId = null)
     {
         _ = Throw.IfNull(chatCompletionsClient);
 
-        if (modelId is not null)
+        if (defaultModelId is not null)
         {
-            _ = Throw.IfNullOrWhitespace(modelId);
+            _ = Throw.IfNullOrWhitespace(defaultModelId);
         }
 
         _chatCompletionsClient = chatCompletionsClient;
@@ -56,7 +56,7 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
         var providerUrl = typeof(ChatCompletionsClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(chatCompletionsClient) as Uri;
 
-        _metadata = new ChatClientMetadata("az.ai.inference", providerUrl, modelId);
+        _metadata = new ChatClientMetadata("az.ai.inference", providerUrl, defaultModelId);
     }
 
     /// <inheritdoc />
