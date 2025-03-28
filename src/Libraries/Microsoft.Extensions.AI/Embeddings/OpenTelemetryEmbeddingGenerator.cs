@@ -122,7 +122,7 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
         base.Dispose(disposing);
     }
 
-    /// <summary>Creates an activity for an embedding generation request, or returns null if not enabled.</summary>
+    /// <summary>Creates an activity for an embedding generation request, or returns <see langword="null"/> if not enabled.</summary>
     private Activity? CreateAndConfigureActivity(EmbeddingGenerationOptions? options)
     {
         Activity? activity = null;

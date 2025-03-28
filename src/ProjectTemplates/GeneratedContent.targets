@@ -18,7 +18,7 @@
       <TemplatePinnedRepoPackagesVersion>9.3.0-preview.1.25161.3</TemplatePinnedRepoPackagesVersion>
       <TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion>9.0.3</TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion>
 
-      <!-- By default, use pinned dependency versions. -->
+      <!-- By default, don't use pinned dependency versions. -->
       <TemplateUsePinnedRepoPackagesVersion Condition="'$(TemplateUsePinnedRepoPackagesVersion)' == ''">false</TemplateUsePinnedRepoPackagesVersion>
       <TemplateUsePinnedMicrosoftEntityFrameworkCoreSqliteVersion Condition="'$(TemplateUsePinnedMicrosoftEntityFrameworkCoreSqliteVersion)' == ''">false</TemplateUsePinnedMicrosoftEntityFrameworkCoreSqliteVersion>
 

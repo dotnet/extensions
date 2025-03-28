@@ -44,7 +44,7 @@ public class OllamaEmbeddingGeneratorTests
     }
 
     [Fact]
-    public void AsEmbeddingGenerator_ProducesExpectedMetadata()
+    public void AsIEmbeddingGenerator_ProducesExpectedMetadata()
     {
         Uri endpoint = new("http://localhost/some/endpoint");
         string model = "amazingModel";

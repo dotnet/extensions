@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Shared utility methods for integration tests.</summary>
 internal static class IntegrationTestHelpers
 {
-    /// <summary>Gets an <see cref="OpenAIClient"/> to use for testing, or null if the associated tests should be disabled.</summary>
+    /// <summary>Gets an <see cref="OpenAIClient"/> to use for testing, or <see langword="null"/> if the associated tests should be disabled.</summary>
     public static OpenAIClient? GetOpenAIClient()
     {
         var configuration = TestRunnerConfiguration.Instance;

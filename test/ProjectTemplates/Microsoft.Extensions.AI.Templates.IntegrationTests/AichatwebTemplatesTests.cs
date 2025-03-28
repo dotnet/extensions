@@ -52,7 +52,7 @@ public class AichatwebTemplatesTests : TestBase
     [Fact]
     public async Task BasicAspireTest()
     {
-        await TestTemplateCoreAsync(scenarioName: "BasicAspire", templateArgs: ["-as"]);
+        await TestTemplateCoreAsync(scenarioName: "BasicAspire", templateArgs: ["--aspire"]);
     }
 
     private async Task TestTemplateCoreAsync(string scenarioName, IEnumerable<string>? templateArgs = null)
