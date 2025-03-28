@@ -7,6 +7,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Redaction;
+#if NET9_0_OR_GREATER
+using Microsoft.Extensions.Diagnostics.Buffering;
+#endif
 using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
@@ -24,6 +27,9 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
     private readonly IDisposable? _redactionOptionsChangeTokenRegistration;
     private readonly Action<IEnrichmentTagCollector>[] _enrichers;
     private readonly LoggingSampler? _sampler;
+#if NET9_0_OR_GREATER
+    private readonly LogBuffer? _logBuffer;
+#endif
     private readonly KeyValuePair<string, object?>[] _staticTags;
     private readonly Func<DataClassificationSet, Redactor> _redactorProvider;
     private volatile bool _disposed;
@@ -41,10 +47,18 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
         IExternalScopeProvider? scopeProvider = null,
         IOptionsMonitor<LoggerEnrichmentOptions>? enrichmentOptions = null,
         IOptionsMonitor<LoggerRedactionOptions>? redactionOptions = null,
+#if NET9_0_OR_GREATER
+        IRedactorProvider? redactorProvider = null,
+        LogBuffer? logBuffer = null)
+#else
         IRedactorProvider? redactorProvider = null)
+#endif
 #pragma warning restore S107 // Methods should not have too many parameters
     {
         _scopeProvider = scopeProvider;
+#if NET9_0_OR_GREATER
+        _logBuffer = logBuffer;
+#endif
         _sampler = sampler;
 
         _factoryOptions = factoryOptions == null || factoryOptions.Value == null ? new LoggerFactoryOptions() : factoryOptions.Value;
@@ -293,13 +307,18 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
                 enrichmentOptions.IncludeExceptionMessage,
                 enrichmentOptions.MaxStackTraceLength,
                 _redactorProvider,
+#if NET9_0_OR_GREATER
+                redactionOptions.ApplyDiscriminator,
+                _logBuffer);
+#else
                 redactionOptions.ApplyDiscriminator);
+#endif
     }
 
     private void UpdateEnrichmentOptions(LoggerEnrichmentOptions enrichmentOptions) => Config = ComputeConfig(enrichmentOptions, null);
     private void UpdateRedactionOptions(LoggerRedactionOptions redactionOptions) => Config = ComputeConfig(null, redactionOptions);
 
-    private struct ProviderRegistration
+    public struct ProviderRegistration
     {
         public ILoggerProvider Provider;
         public bool ShouldDispose;

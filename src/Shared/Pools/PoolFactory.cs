@@ -119,6 +119,25 @@ internal static class PoolFactory
     }
 
     /// <summary>
+    /// Creates an object pool of <see cref="List{T}"/> instances, each with provided  <paramref name="listCapacity"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of object held by the lists.</typeparam>
+    /// <param name="listCapacity">The capacity of each created <see cref="List{T}"/> instance.</param>
+    /// <param name="maxCapacity">
+    /// The maximum number of items to keep in the pool.
+    /// This defaults to 1024.
+    /// This value is a recommendation, the pool may keep more objects than this.
+    /// </param>
+    /// <returns>The pool.</returns>
+    public static ObjectPool<List<T>> CreateListPoolWithCapacity<T>(int listCapacity, int maxCapacity = DefaultCapacity)
+    {
+        _ = Throw.IfLessThan(maxCapacity, 1);
+        _ = Throw.IfLessThan(listCapacity, 0);
+
+        return MakePool(PooledListWithCapacityPolicy<T>.Instance(listCapacity), maxCapacity);
+    }
+
+    /// <summary>
     /// Creates an object pool of <see cref="Dictionary{TKey, TValue}"/> instances.
     /// </summary>
     /// <typeparam name="TKey">The type of the dictionary keys.</typeparam>
