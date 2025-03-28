@@ -3,24 +3,42 @@
   "symbolInfo": {
     "AiServiceProvider": {
       "longName": "provider",
-      "shortName": "pr"
+      "shortName": ""
     },
     "VectorStore": {
       "longName": "vector-store",
-      "shortName": "vs"
+      "shortName": ""
     },
     "UseManagedIdentity": {
       "longName": "managed-identity",
-      "shortName": "mi"
+      "shortName": ""
     },
     "UseAspire": {
       "longName": "aspire",
-      "shortName": "as"
+      "shortName": ""
     },
-    "kestrelHttpPort": {
+    "webHttpPort": {
       "isHidden": true
     },
-    "kestrelHttpsPort": {
+    "webHttpsPort": {
+      "isHidden": true
+    },
+    "appHostHttpPort": {
+      "isHidden": true
+    },
+    "appHostOtlpHttpPort": {
+      "isHidden": true
+    },
+    "appHostResourceHttpPort": {
+      "isHidden": true
+    },
+    "appHostHttpsPort": {
+      "isHidden": true
+    },
+    "appHostOtlpHttpsPort": {
+      "isHidden": true
+    },
+    "appHostResourceHttpsPort": {
       "isHidden": true
     }
   },

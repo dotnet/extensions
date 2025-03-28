@@ -48,7 +48,7 @@
         {
             var response = await ChatClient.GetResponseAsync<string[]>(
                 [.. ReduceMessages(messages), new(ChatRole.User, Prompt)],
-                useJsonSchema: true, cancellationToken: cancellation.Token);
+                cancellationToken: cancellation.Token);
             if (!response.TryGetResult(out suggestions))
             {
                 suggestions = null;
