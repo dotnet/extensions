@@ -20,7 +20,9 @@ builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 #if (IsOllama)
 builder.AddOllamaApiClient("chat")
     .AddChatClient()
-    .UseFunctionInvocation();
+    .UseFunctionInvocation()
+    .UseOpenTelemetry(configure: c =>
+        c.EnableSensitiveData = builder.Environment.IsDevelopment());
 builder.AddOllamaApiClient("embeddings")
     .AddEmbeddingGenerator();
 #elif (IsAzureAiFoundry)
