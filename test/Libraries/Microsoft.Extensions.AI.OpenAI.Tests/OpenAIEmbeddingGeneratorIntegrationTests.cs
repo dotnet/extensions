@@ -7,5 +7,5 @@ public class OpenAIEmbeddingGeneratorIntegrationTests : EmbeddingGeneratorIntegr
 {
     protected override IEmbeddingGenerator<string, Embedding<float>>? CreateEmbeddingGenerator() =>
         IntegrationTestHelpers.GetOpenAIClient()
-        ?.AsEmbeddingGenerator(TestRunnerConfiguration.Instance["OpenAI:EmbeddingModel"] ?? "text-embedding-3-small");
+        ?.GetEmbeddingClient(TestRunnerConfiguration.Instance["OpenAI:EmbeddingModel"] ?? "text-embedding-3-small").AsIEmbeddingGenerator();
 }

@@ -85,7 +85,7 @@ internal sealed class Program
         };
         reportCmd.AddOption(outputOpt);
 
-        var lastNOpt = new Option<int>(["-n"], () => 1, "Number of most recent executions to include in the report.");
+        var lastNOpt = new Option<int>(["-n"], () => 10, "Number of most recent executions to include in the report.");
         reportCmd.AddOption(lastNOpt);
 
         var formatOpt =

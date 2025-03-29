@@ -10,6 +10,7 @@ namespace Microsoft.Extensions.AI.Evaluation;
 /// <summary>
 /// Evaluates responses produced by an AI model.
 /// </summary>
+/// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/quickstarts/evaluate-ai-response">Evaluate a model's response.</related>
 public interface IEvaluator
 {
     /// <summary>
@@ -48,6 +49,7 @@ public interface IEvaluator
     /// A <see cref="CancellationToken"/> that can cancel the evaluation operation.
     /// </param>
     /// <returns>An <see cref="EvaluationResult"/> containing one or more <see cref="EvaluationMetric"/>s.</returns>
+    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/quickstarts/evaluate-ai-response">Evaluate a model's response.</related>
     ValueTask<EvaluationResult> EvaluateAsync(
         IEnumerable<ChatMessage> messages,
         ChatResponse modelResponse,

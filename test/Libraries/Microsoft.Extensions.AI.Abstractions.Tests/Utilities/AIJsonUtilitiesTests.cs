@@ -136,8 +136,8 @@ public static class AIJsonUtilitiesTests
                         "enum": ["A", "B"]
                     },
                     "Value": {
-                        "type": ["string", "null"],
-                        "default": null
+                        "description": "Default value: \"defaultValue\"",
+                        "type": ["string", "null"]
                     }
                 },
                 "required": ["Key", "EnumValue", "Value"],
@@ -168,11 +168,11 @@ public static class AIJsonUtilitiesTests
                     },
                     "Value": {
                         "type": ["string", "null"],
-                        "default": null
+                        "default": "defaultValue"
                     }
                 },
                 "required": ["Key", "EnumValue"],
-                "default": "42"
+                "default": null
             }
             """).RootElement;
 
@@ -188,7 +188,7 @@ public static class AIJsonUtilitiesTests
             typeof(MyPoco),
             description: "alternative description",
             hasDefaultValue: true,
-            defaultValue: 42,
+            defaultValue: null,
             serializerOptions: JsonSerializerOptions.Default,
             inferenceOptions: inferenceOptions);
 
@@ -212,8 +212,8 @@ public static class AIJsonUtilitiesTests
                         "enum": ["A", "B"]
                     },
                     "Value": {
-                        "type": ["string", "null"],
-                        "default": null
+                        "description": "Default value: \"defaultValue\"",
+                        "type": ["string", "null"]
                     }
                 },
                 "required": ["Key", "EnumValue", "Value"],
@@ -323,7 +323,7 @@ public static class AIJsonUtilitiesTests
     }
 
     [Description("The type")]
-    public record MyPoco([Description("The parameter")] int Key, MyEnumValue EnumValue, string? Value = null);
+    public record MyPoco([Description("The parameter")] int Key, MyEnumValue EnumValue, string? Value = "defaultValue");
 
     [JsonConverter(typeof(JsonStringEnumConverter<MyEnumValue>))]
     public enum MyEnumValue

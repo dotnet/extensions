@@ -1,28 +1,36 @@
 <Project>
 
   <PropertyGroup>
-    <_ChatWithCustomDataWebContentRoot>$(MSBuildThisFileDirectory)Microsoft.Extensions.AI.Templates\src\ChatWithCustomData\ChatWithCustomData.Web-CSharp\</_ChatWithCustomDataWebContentRoot>
+    <!--
+      Configures which chat template variant to use when debugging locally.
+      Options are:
+      - singleproject
+      - aspire
+    -->
+    <_LocalChatTemplateVariant>aspire</_LocalChatTemplateVariant>
+
+    <_ChatWithCustomDataContentRoot>$(MSBuildThisFileDirectory)Microsoft.Extensions.AI.Templates\src\ChatWithCustomData\</_ChatWithCustomDataContentRoot>
   </PropertyGroup>
 
   <Target Name="ComputeGeneratedContentProperties">
     <PropertyGroup>
       <!-- Define optional pinned versions of certain dependencies. -->
-      <TemplatePinnedMicrosoftExtensionsAIVersion>9.3.0-preview.1.25161.3</TemplatePinnedMicrosoftExtensionsAIVersion>
+      <TemplatePinnedRepoPackagesVersion>9.3.0-preview.1.25161.3</TemplatePinnedRepoPackagesVersion>
       <TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion>9.0.3</TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion>
 
-      <!-- By default, use pinned dependency versions. -->
-      <TemplateUsePinnedMicrosoftExtensionsAIVersion Condition="'$(TemplateUsePinnedMicrosoftExtensionsAIVersion)' == ''">false</TemplateUsePinnedMicrosoftExtensionsAIVersion>
+      <!-- By default, don't use pinned dependency versions. -->
+      <TemplateUsePinnedRepoPackagesVersion Condition="'$(TemplateUsePinnedRepoPackagesVersion)' == ''">false</TemplateUsePinnedRepoPackagesVersion>
       <TemplateUsePinnedMicrosoftEntityFrameworkCoreSqliteVersion Condition="'$(TemplateUsePinnedMicrosoftEntityFrameworkCoreSqliteVersion)' == ''">false</TemplateUsePinnedMicrosoftEntityFrameworkCoreSqliteVersion>
 
       <!-- Apply pinned dependency versions if enabled. -->
-      <TemplateMicrosoftExtensionsAIVersion Condition="'$(TemplateUsePinnedMicrosoftExtensionsAIVersion)' == 'true'">$(TemplatePinnedMicrosoftExtensionsAIVersion)</TemplateMicrosoftExtensionsAIVersion>
+      <TemplateRepoPackagesVersion Condition="'$(TemplateUsePinnedRepoPackagesVersion)' == 'true'">$(TemplatePinnedRepoPackagesVersion)</TemplateRepoPackagesVersion>
       <TemplateMicrosoftEntityFrameworkCoreSqliteVersion Condition="'$(TemplateUsePinnedMicrosoftEntityFrameworkCoreSqliteVersion)' == 'true'">$(TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion)</TemplateMicrosoftEntityFrameworkCoreSqliteVersion>
 
       <!-- Fall back on default dependency versions if pinned versions were not applied. -->
-      <TemplateMicrosoftExtensionsAIVersion Condition="'$(TemplateMicrosoftExtensionsAIVersion)' == ''">$(Version)</TemplateMicrosoftExtensionsAIVersion>
+      <TemplateRepoPackagesVersion Condition="'$(TemplateRepoPackagesVersion)' == ''">$(Version)</TemplateRepoPackagesVersion>
       <TemplateMicrosoftEntityFrameworkCoreSqliteVersion Condition="'$(TemplateMicrosoftEntityFrameworkCoreSqliteVersion)' == ''">$(MicrosoftEntityFrameworkCoreSqliteVersion)</TemplateMicrosoftEntityFrameworkCoreSqliteVersion>
 
-      <_TemplateUsingJustBuiltPackages Condition="'$(TemplateMicrosoftExtensionsAIVersion)' == '$(Version)'">true</_TemplateUsingJustBuiltPackages>
+      <_TemplateUsingJustBuiltPackages Condition="'$(TemplateRepoPackagesVersion)' == '$(Version)'">true</_TemplateUsingJustBuiltPackages>
 
       <!-- Specify package version variables used in template content. -->
       <GeneratedContentProperties>
@@ -32,33 +40,59 @@
         ArtifactsShippingPackagesDir=$(ArtifactsShippingPackagesDir);
 
         <!-- Package version properties -->
-        OllamaSharpVersion=$(OllamaSharpVersion);
-        OpenAIVersion=$(OpenAIVersion);
+        AspireVersion=$(AspireVersion);
+        AspireAzureAIOpenAIVersion=$(AspireAzureAIOpenAIVersion);
         AzureAIProjectsVersion=$(AzureAIProjectsVersion);
         AzureAIOpenAIVersion=$(AzureAIOpenAIVersion);
         AzureIdentityVersion=$(AzureIdentityVersion);
+        AzureSearchDocumentsVersion=$(AzureSearchDocumentsVersion);
+        CommunityToolkitAspireHostingOllamaVersion=$(CommunityToolkitAspireHostingOllamaVersion);
+        CommunityToolkitAspireHostingSqliteVersion=$(CommunityToolkitAspireHostingSqliteVersion);
+        CommunityToolkitAspireMicrosoftEntityFrameworkCoreSqliteVersion=$(CommunityToolkitAspireMicrosoftEntityFrameworkCoreSqliteVersion);
+        CommunityToolkitAspireOllamaSharpVersion=$(CommunityToolkitAspireOllamaSharpVersion);
         MicrosoftEntityFrameworkCoreSqliteVersion=$(TemplateMicrosoftEntityFrameworkCoreSqliteVersion);
-        MicrosoftExtensionsAIVersion=$(TemplateMicrosoftExtensionsAIVersion);
+        MicrosoftExtensionsAIVersion=$(TemplateRepoPackagesVersion);
+        MicrosoftExtensionsHttpResilienceVersion=$(TemplateRepoPackagesVersion);
+        MicrosoftExtensionsServiceDiscoveryVersion=$(MicrosoftExtensionsServiceDiscoveryVersion);
+        MicrosoftSemanticKernelConnectorsAzureAISearchVersion=$(MicrosoftSemanticKernelConnectorsAzureAISearchVersion);
+        MicrosoftSemanticKernelConnectorsQdrantVersion=$(MicrosoftSemanticKernelConnectorsQdrantVersion);
         MicrosoftSemanticKernelCoreVersion=$(MicrosoftSemanticKernelCoreVersion);
+        OllamaSharpVersion=$(OllamaSharpVersion);
+        OpenAIVersion=$(OpenAIVersion);
+        OpenTelemetryVersion=$(OpenTelemetryVersion);
         PdfPigVersion=$(PdfPigVersion);
         SystemLinqAsyncVersion=$(SystemLinqAsyncVersion);
-        AzureSearchDocumentsVersion=$(AzureSearchDocumentsVersion);
-        MicrosoftSemanticKernelConnectorsAzureAISearchVersion=$(MicrosoftSemanticKernelConnectorsAzureAISearchVersion);
+
+        <!-- Other properties -->
+        LocalChatTemplateVariant=$(_LocalChatTemplateVariant);
+        UsingJustBuiltPackages=$(_TemplateUsingJustBuiltPackages);
       </GeneratedContentProperties>
     </PropertyGroup>
 
     <ItemGroup>
       <GeneratedContent
-        Include="$(_ChatWithCustomDataWebContentRoot)ChatWithCustomData.Web-CSharp.csproj.in"
-        OutputPath="$(_ChatWithCustomDataWebContentRoot)ChatWithCustomData.Web-CSharp.csproj" />
+        Include="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.sln.in"
+        OutputPath="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.sln" />
+      <GeneratedContent
+        Include="$(_ChatWithCustomDataContentRoot)Directory.Build.targets.in"
+        OutputPath="$(_ChatWithCustomDataContentRoot)Directory.Build.targets" />
+      <GeneratedContent
+        Include="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.Web\ChatWithCustomData-CSharp.Web.csproj.in"
+        OutputPath="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.Web\ChatWithCustomData-CSharp.Web.csproj" />
+      <GeneratedContent
+        Include="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.Web\Directory.Build.targets.in"
+        OutputPath="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.Web\Directory.Build.targets" />
+      <GeneratedContent
+        Include="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.AppHost\ChatWithCustomData-CSharp.AppHost.csproj.in"
+        OutputPath="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.AppHost\ChatWithCustomData-CSharp.AppHost.csproj" />
+      <GeneratedContent
+        Include="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.ServiceDefaults\ChatWithCustomData-CSharp.ServiceDefaults.csproj.in"
+        OutputPath="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.ServiceDefaults\ChatWithCustomData-CSharp.ServiceDefaults.csproj" />
 
       <!-- The following content only gets generated when using just-built packages -->
       <_GeneratedContentEnablingJustBuiltPackages
-        Include="$(_ChatWithCustomDataWebContentRoot)NuGet.config.in"
-        OutputPath="$(_ChatWithCustomDataWebContentRoot)NuGet.config" />
-      <_GeneratedContentEnablingJustBuiltPackages
-        Include="$(_ChatWithCustomDataWebContentRoot)Directory.Build.targets.in"
-        OutputPath="$(_ChatWithCustomDataWebContentRoot)Directory.Build.targets" />
+        Include="$(_ChatWithCustomDataContentRoot)NuGet.config.in"
+        OutputPath="$(_ChatWithCustomDataContentRoot)NuGet.config" />
 
       <GeneratedContent
         Include="@(_GeneratedContentEnablingJustBuiltPackages)"

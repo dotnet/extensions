@@ -4,9 +4,9 @@
 #pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods that take it.
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI.Evaluation;
 using Microsoft.Extensions.AI.Evaluation.Quality;
@@ -37,12 +37,24 @@ public class EndToEndTests
             IEvaluator coherenceEvaluator = new CoherenceEvaluator();
             IEvaluator fluencyEvaluator = new FluencyEvaluator();
 
+            ChatConfiguration chatConfiguration = Setup.CreateChatConfiguration();
+            ChatClientMetadata? clientMetadata = chatConfiguration.ChatClient.GetService<ChatClientMetadata>();
+
+            string version = $"Product Version: {Constants.Version}";
+            string date = $"Date: {DateTime.UtcNow:dddd, dd MMMM yyyy}";
+            string projectName = $"Project: Integration Tests";
+            string testClass = $"Test Class: {nameof(EndToEndTests)}";
+            string provider = $"Model Provider: {clientMetadata?.ProviderName ?? "Unknown"}";
+            string model = $"Model: {clientMetadata?.DefaultModelId ?? "Unknown"}";
+            string temperature = $"Temperature: {_chatOptions.Temperature}";
+
             _reportingConfiguration =
                 DiskBasedReportingConfiguration.Create(
                     storageRootPath: Settings.Current.StorageRootPath,
                     evaluators: [rtcEvaluator, coherenceEvaluator, fluencyEvaluator],
-                    chatConfiguration: Setup.CreateChatConfiguration(),
-                    executionName: Constants.Version);
+                    chatConfiguration: chatConfiguration,
+                    executionName: Constants.Version,
+                    tags: [version, date, projectName, testClass, provider, model, temperature]);
         }
     }
 
@@ -70,11 +82,8 @@ public class EndToEndTests
             messages.Add(promptMessage);
 
             ChatResponse response = await chatClient.GetResponseAsync(messages, _chatOptions);
-            ChatMessage responseMessage = response.Messages.Single();
-            Assert.NotNull(responseMessage.Text);
 
-            EvaluationResult result = await scenarioRun.EvaluateAsync(promptMessage, responseMessage);
-
+            EvaluationResult result = await scenarioRun.EvaluateAsync(promptMessage, response);
             Assert.False(result.ContainsDiagnostics(d => d.Severity >= EvaluationDiagnosticSeverity.Warning));
 
             NumericMetric relevance = result.Get<NumericMetric>(RelevanceTruthAndCompletenessEvaluator.RelevanceMetricName);
@@ -121,11 +130,8 @@ public class EndToEndTests
             messages.Add(promptMessage);
 
             ChatResponse response = await chatClient.GetResponseAsync(messages, _chatOptions);
-            ChatMessage responseMessage = response.Messages.Single();
-            Assert.NotNull(responseMessage.Text);
 
-            EvaluationResult result = await scenarioRun.EvaluateAsync(promptMessage, responseMessage);
-
+            EvaluationResult result = await scenarioRun.EvaluateAsync(promptMessage, response);
             Assert.False(result.ContainsDiagnostics(d => d.Severity >= EvaluationDiagnosticSeverity.Warning));
 
             NumericMetric relevance = result.Get<NumericMetric>(RelevanceTruthAndCompletenessEvaluator.RelevanceMetricName);
