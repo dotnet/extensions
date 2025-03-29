@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -41,16 +42,16 @@ public class DelegatingSpeechToTextClient : ISpeechToTextClient
 
     /// <inheritdoc />
     public virtual Task<SpeechToTextResponse> GetTextAsync(
-        IList<IAsyncEnumerable<DataContent>> speechContents, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
+        Stream audioStream, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return InnerClient.GetTextAsync(speechContents, options, cancellationToken);
+        return InnerClient.GetTextAsync(audioStream, options, cancellationToken);
     }
 
     /// <inheritdoc />
     public virtual IAsyncEnumerable<SpeechToTextResponseUpdate> GetStreamingTextAsync(
-        IList<IAsyncEnumerable<DataContent>> speechContents, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
+        Stream audioStream, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return InnerClient.GetStreamingTextAsync(speechContents, options, cancellationToken);
+        return InnerClient.GetStreamingTextAsync(audioStream, options, cancellationToken);
     }
 
     /// <inheritdoc />

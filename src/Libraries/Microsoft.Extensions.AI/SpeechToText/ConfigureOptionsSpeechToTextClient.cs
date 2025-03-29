@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -36,16 +37,16 @@ public sealed class ConfigureOptionsSpeechToTextClient : DelegatingSpeechToTextC
 
     /// <inheritdoc/>
     public override Task<SpeechToTextResponse> GetTextAsync(
-        IList<IAsyncEnumerable<DataContent>> speechContents, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
+        Stream audioStream, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return base.GetTextAsync(speechContents, Configure(options), cancellationToken);
+        return base.GetTextAsync(audioStream, Configure(options), cancellationToken);
     }
 
     /// <inheritdoc/>
     public override IAsyncEnumerable<SpeechToTextResponseUpdate> GetStreamingTextAsync(
-        IList<IAsyncEnumerable<DataContent>> speechContents, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
+        Stream audioStream, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return base.GetStreamingTextAsync(speechContents, Configure(options), cancellationToken);
+        return base.GetStreamingTextAsync(audioStream, Configure(options), cancellationToken);
     }
 
     /// <summary>Creates and configures the <see cref="SpeechToTextOptions"/> to pass along to the inner client.</summary>

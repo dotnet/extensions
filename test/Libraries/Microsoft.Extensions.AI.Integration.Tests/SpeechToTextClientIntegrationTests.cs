@@ -4,7 +4,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.TestUtilities;
@@ -37,26 +36,9 @@ public abstract class SpeechToTextClientIntegrationTests : IDisposable
         SkipIfNotEnabled();
 
         using var audioStream = GetAudioStream("audio001.wav");
-        var response = await _client.GetTextAsync([audioStream.ToAsyncEnumerable()]);
+        var response = await _client.GetTextAsync(audioStream);
 
         Assert.Contains("gym", response.Message.Text, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [ConditionalFact]
-    public virtual async Task GetTextAsync_MultipleAudioRequestMessage()
-    {
-        SkipIfNotEnabled();
-
-        using var firstAudioStream = GetAudioStream("audio001.wav");
-        using var secondAudioStream = GetAudioStream("audio002.wav");
-
-        var response = await _client.GetTextAsync([firstAudioStream.ToAsyncEnumerable(), secondAudioStream.ToAsyncEnumerable()]);
-
-        var firstFileChoice = Assert.Single(response.Choices.Where(c => c.InputIndex == 0));
-        var secondFileChoice = Assert.Single(response.Choices.Where(c => c.InputIndex == 1));
-
-        Assert.Contains("gym", firstFileChoice.Text);
-        Assert.Contains("who", secondFileChoice.Text);
     }
 
     [ConditionalFact]
@@ -67,7 +49,7 @@ public abstract class SpeechToTextClientIntegrationTests : IDisposable
         using var audioStream = GetAudioStream("audio001.wav");
 
         StringBuilder sb = new();
-        await foreach (var chunk in _client.GetStreamingTextAsync([audioStream.ToAsyncEnumerable()]))
+        await foreach (var chunk in _client.GetStreamingTextAsync(audioStream))
         {
             sb.Append(chunk.Text);
         }
@@ -75,37 +57,6 @@ public abstract class SpeechToTextClientIntegrationTests : IDisposable
         string responseText = sb.ToString();
         Assert.Contains("finally", responseText, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("gym", responseText, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [ConditionalFact]
-    public virtual async Task GetStreamingTextAsync_MultipleStreamingResponseChoice()
-    {
-        SkipIfNotEnabled();
-
-        using var firstAudioStream = GetAudioStream("audio001.wav");
-        using var secondAudioStream = GetAudioStream("audio002.wav");
-
-        StringBuilder firstSb = new();
-        StringBuilder secondSb = new();
-        await foreach (var chunk in _client.GetStreamingTextAsync([firstAudioStream.ToAsyncEnumerable(), secondAudioStream.ToAsyncEnumerable()]))
-        {
-            if (chunk.InputIndex == 0)
-            {
-                firstSb.Append(chunk.Text);
-            }
-            else
-            {
-                secondSb.Append(chunk.Text);
-            }
-        }
-
-        string firstTranscription = firstSb.ToString();
-        Assert.Contains("finally", firstTranscription, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("gym", firstTranscription, StringComparison.OrdinalIgnoreCase);
-
-        string secondTranscription = secondSb.ToString();
-        Assert.Contains("who would", secondTranscription, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("go for", secondTranscription, StringComparison.OrdinalIgnoreCase);
     }
 
     private static Stream GetAudioStream(string fileName)

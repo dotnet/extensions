@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -91,34 +92,28 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
 
     /// <inheritdoc />
     public async IAsyncEnumerable<SpeechToTextResponseUpdate> GetStreamingTextAsync(
-        IList<IAsyncEnumerable<DataContent>> speechContents, SpeechToTextOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        Stream audioStream, SpeechToTextOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNullOrEmpty(speechContents);
+        _ = Throw.IfNull(audioStream);
 
-        for (var inputIndex = 0; inputIndex < speechContents.Count; inputIndex++)
+        var speechResponse = await GetTextAsync(audioStream, options, cancellationToken).ConfigureAwait(false);
+
+        foreach (var choice in speechResponse.Choices)
         {
-            var speechContent = speechContents[inputIndex];
-            _ = Throw.IfNull(speechContent);
-
-            var speechResponse = await GetTextAsync([speechContent], options, cancellationToken).ConfigureAwait(false);
-
-            foreach (var choice in speechResponse.Choices)
+            yield return new SpeechToTextResponseUpdate(choice.Contents)
             {
-                yield return new SpeechToTextResponseUpdate(choice.Contents)
-                {
-                    InputIndex = inputIndex,
-                    Kind = SpeechToTextResponseUpdateKind.TextUpdated,
-                    RawRepresentation = choice.RawRepresentation
-                };
-            }
+                InputIndex = 0,
+                Kind = SpeechToTextResponseUpdateKind.TextUpdated,
+                RawRepresentation = choice.RawRepresentation
+            };
         }
     }
 
     /// <inheritdoc />
     public async Task<SpeechToTextResponse> GetTextAsync(
-        IList<IAsyncEnumerable<DataContent>> speechContents, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
+        Stream audioStream, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNullOrEmpty(speechContents);
+        _ = Throw.IfNull(audioStream);
 
         List<SpeechToTextMessage> choices = [];
 
@@ -127,44 +122,55 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
              => options is not null && options.TextLanguage is not null
                 && (options.SpeechLanguage is null || options.SpeechLanguage != options.TextLanguage);
 
-        for (var inputIndex = 0; inputIndex < speechContents.Count; inputIndex++)
+        if (IsTranslationRequest(options))
         {
-            var speechContent = speechContents[inputIndex];
-            _ = Throw.IfNull(speechContent);
+            _ = Throw.IfNull(options);
 
-            var enumerator = speechContent.GetAsyncEnumerator(cancellationToken);
-            if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
+            // Translation request will be triggered whenever the source language is not specified and a target text language is and different from the output text language
+            if (CultureInfo.GetCultureInfo(options.TextLanguage!).TwoLetterISOLanguageName != "en")
             {
-                throw new InvalidOperationException($"The audio content provided in the index: {inputIndex} is empty.");
+                throw new NotSupportedException($"Only translation to english is supported.");
             }
 
-            var firstChunk = enumerator.Current;
+            var openAIOptions = ToOpenAITranslationOptions(options);
+            AudioTranslation translationResult;
 
-            if (IsTranslationRequest(options))
+#if NET
+            await using (audioStream.ConfigureAwait(false))
+#else
+            using (audioStream)
+#endif
             {
-                _ = Throw.IfNull(options);
-
-                // Translation request will be triggered whenever the source language is not specified and a target text language is and different from the output text language
-                if (CultureInfo.GetCultureInfo(options.TextLanguage!).TwoLetterISOLanguageName != "en")
-                {
-                    throw new NotSupportedException($"Only translation to english is supported.");
-                }
-
-                AudioTranslation translationResult = await GetTranslationResultAsync(options, speechContent, firstChunk, cancellationToken).ConfigureAwait(false);
-
-                var choice = FromOpenAIAudioTranslation(translationResult, inputIndex);
-                choices.Add(choice);
+                translationResult = (await _audioClient.TranslateAudioAsync(
+                    audioStream,
+                    "file.wav", // this information internally is required but is only being used to create a header name in the multipart request.
+                    openAIOptions, cancellationToken).ConfigureAwait(false)).Value;
             }
-            else
+
+            var choice = FromOpenAIAudioTranslation(translationResult, 0);
+            choices.Add(choice);
+        }
+        else
+        {
+            var openAIOptions = ToOpenAITranscriptionOptions(options);
+
+            // Transcription request
+            AudioTranscription transcriptionResult;
+
+#if NET
+            await using (audioStream.ConfigureAwait(false))
+#else
+            using (audioStream)
+#endif
             {
-                var openAIOptions = ToOpenAITranscriptionOptions(options);
-
-                // Transcription request
-                AudioTranscription transcriptionResult = await GetTranscriptionResultAsync(speechContent, firstChunk, openAIOptions, cancellationToken).ConfigureAwait(false);
-
-                var choice = FromOpenAIAudioTranscription(transcriptionResult, inputIndex);
-                choices.Add(choice);
+                transcriptionResult = (await _audioClient.TranscribeAudioAsync(
+                    audioStream,
+                    "file.wav", // this information internally is required but is only being used to create a header name in the multipart request.
+                    openAIOptions, cancellationToken).ConfigureAwait(false)).Value;
             }
+
+            var choice = FromOpenAIAudioTranscription(transcriptionResult, 0);
+            choices.Add(choice);
         }
 
         return new SpeechToTextResponse(choices);
@@ -308,49 +314,6 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
         }
 
         return result;
-    }
-
-    private async Task<AudioTranscription> GetTranscriptionResultAsync(
-        IAsyncEnumerable<DataContent> speechContent, DataContent firstChunk, AudioTranscriptionOptions openAIOptions, CancellationToken cancellationToken)
-    {
-        AudioTranscription transcriptionResult;
-
-        var audioFileStream = speechContent.ToStream(firstChunk, cancellationToken);
-#if NET
-        await using (audioFileStream.ConfigureAwait(false))
-#else
-        using (audioFileStream)
-#endif
-        {
-            transcriptionResult = (await _audioClient.TranscribeAudioAsync(
-                audioFileStream,
-                "file.wav", // this information internally is required but is only being used to create a header name in the multipart request.
-                openAIOptions, cancellationToken).ConfigureAwait(false)).Value;
-        }
-
-        return transcriptionResult;
-    }
-
-    private async Task<AudioTranslation> GetTranslationResultAsync(
-        SpeechToTextOptions? options, IAsyncEnumerable<DataContent> speechContent, DataContent firstChunk, CancellationToken cancellationToken)
-    {
-        var openAIOptions = ToOpenAITranslationOptions(options);
-        AudioTranslation translationResult;
-
-        var audioFileStream = speechContent.ToStream(firstChunk, cancellationToken);
-#if NET
-        await using (audioFileStream.ConfigureAwait(false))
-#else
-        using (audioFileStream)
-#endif
-        {
-            translationResult = (await _audioClient.TranslateAudioAsync(
-                audioFileStream,
-                "file.wav", // this information internally is required but is only being used to create a header name in the multipart request.
-                openAIOptions, cancellationToken).ConfigureAwait(false)).Value;
-        }
-
-        return translationResult;
     }
 }
 

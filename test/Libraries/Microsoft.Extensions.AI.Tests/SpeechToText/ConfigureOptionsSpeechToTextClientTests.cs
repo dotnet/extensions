@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,14 +41,14 @@ public class ConfigureOptionsSpeechToTextClientTests
 
         using ISpeechToTextClient innerClient = new TestSpeechToTextClient
         {
-            GetResponseAsyncCallback = (speechContents, options, cancellationToken) =>
+            GetResponseAsyncCallback = (audioStream, options, cancellationToken) =>
             {
                 Assert.Same(returnedOptions, options);
                 Assert.Equal(cts.Token, cancellationToken);
                 return Task.FromResult(expectedResponse);
             },
 
-            GetStreamingResponseAsyncCallback = (speechContents, options, cancellationToken) =>
+            GetStreamingResponseAsyncCallback = (audioStream, options, cancellationToken) =>
             {
                 Assert.Same(returnedOptions, options);
                 Assert.Equal(cts.Token, cancellationToken);
@@ -73,11 +74,13 @@ public class ConfigureOptionsSpeechToTextClientTests
             })
             .Build();
 
-        var response = await client.GetTextAsync([], providedOptions, cts.Token);
+        using var memoryStream = new MemoryStream(new byte[] { 1, 2, 3, 4 });
+        var response = await client.GetTextAsync(memoryStream, providedOptions, cts.Token);
         Assert.Same(expectedResponse, response);
 
         int i = 0;
-        await using var e = client.GetStreamingTextAsync([], providedOptions, cts.Token).GetAsyncEnumerator();
+        using var memoryStream2 = new MemoryStream(new byte[] { 1, 2, 3, 4 });
+        await using var e = client.GetStreamingTextAsync(memoryStream2, providedOptions, cts.Token).GetAsyncEnumerator();
         while (i < expectedUpdates.Length)
         {
             Assert.True(await e.MoveNextAsync());

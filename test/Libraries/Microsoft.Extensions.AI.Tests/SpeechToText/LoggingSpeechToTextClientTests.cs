@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
@@ -55,7 +56,7 @@ public class LoggingSpeechToTextClientTests
 
         using ISpeechToTextClient innerClient = new TestSpeechToTextClient
         {
-            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
+            GetResponseAsyncCallback = (audioStream, options, cancellationToken) =>
             {
                 return Task.FromResult(new SpeechToTextResponse([new("blue whale")]));
             },
@@ -66,8 +67,9 @@ public class LoggingSpeechToTextClientTests
             .UseLogging()
             .Build(services);
 
+        using var memoryStream = new MemoryStream(new byte[] { 1, 2, 3, 4 });
         await client.GetTextAsync(
-            [YieldAsync([new DataContent("data:audio/wav;base64,AQIDBA==")])],
+            memoryStream,
             new SpeechToTextOptions { SpeechLanguage = "pt" });
 
         var logs = collector.GetSnapshot();
@@ -100,7 +102,7 @@ public class LoggingSpeechToTextClientTests
 
         using ISpeechToTextClient innerClient = new TestSpeechToTextClient
         {
-            GetStreamingResponseAsyncCallback = (speechContents, options, cancellationToken) => GetUpdatesAsync()
+            GetStreamingResponseAsyncCallback = (audioStream, options, cancellationToken) => GetUpdatesAsync()
         };
 
         static async IAsyncEnumerable<SpeechToTextResponseUpdate> GetUpdatesAsync()
@@ -115,8 +117,9 @@ public class LoggingSpeechToTextClientTests
             .UseLogging(loggerFactory)
             .Build();
 
+        using var memoryStream = new MemoryStream(new byte[] { 1, 2, 3, 4 });
         await foreach (var update in client.GetStreamingTextAsync(
-            [YieldAsync([new DataContent("data:audio/wav;base64,AQIDBA==")])],
+            memoryStream,
             new SpeechToTextOptions { SpeechLanguage = "pt" }))
         {
             // nop
@@ -142,15 +145,6 @@ public class LoggingSpeechToTextClientTests
         else
         {
             Assert.Empty(logs);
-        }
-    }
-
-    private static async IAsyncEnumerable<T> YieldAsync<T>(IEnumerable<T> input)
-    {
-        await Task.Yield();
-        foreach (var item in input)
-        {
-            yield return item;
         }
     }
 }

@@ -60,10 +60,8 @@ public class SpeechToTextClientExtensionsTests
 
         using TestSpeechToTextClient client = new()
         {
-            GetStreamingResponseAsyncCallback = (speechContents, options, cancellationToken) =>
+            GetStreamingResponseAsyncCallback = (audioStream, options, cancellationToken) =>
             {
-                Assert.Single(speechContents);
-
                 // For testing, return an async enumerable yielding one streaming update with text "world".
                 return YieldAsync(new SpeechToTextResponseUpdate { Text = "world" });
             },

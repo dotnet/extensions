@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -18,19 +19,19 @@ public class DelegatingSpeechToTextClientTests
     }
 
     [Fact]
-    public async Task GetResponseAsyncDefaultsToInnerClientAsync()
+    public async Task GetTextAsyncDefaultsToInnerClientAsync()
     {
         // Arrange
-        var expectedContents = new List<IAsyncEnumerable<DataContent>>();
+        using var expectedStream = new MemoryStream();
         var expectedOptions = new SpeechToTextOptions();
         var expectedCancellationToken = CancellationToken.None;
         var expectedResult = new TaskCompletionSource<SpeechToTextResponse>();
         var expectedResponse = new SpeechToTextResponse([]);
         using var inner = new TestSpeechToTextClient
         {
-            GetResponseAsyncCallback = (speechContents, options, cancellationToken) =>
+            GetResponseAsyncCallback = (audioStream, options, cancellationToken) =>
             {
-                Assert.Same(expectedContents, speechContents);
+                Assert.Same(expectedStream, audioStream);
                 Assert.Same(expectedOptions, options);
                 Assert.Equal(expectedCancellationToken, cancellationToken);
                 return expectedResult.Task;
@@ -40,7 +41,7 @@ public class DelegatingSpeechToTextClientTests
         using var delegating = new NoOpDelegatingSpeechToTextClient(inner);
 
         // Act
-        var resultTask = delegating.TranscribeAudioAsync(expectedContents, expectedOptions, expectedCancellationToken);
+        var resultTask = delegating.GetTextAsync(expectedStream, expectedOptions, expectedCancellationToken);
 
         // Assert
         Assert.False(resultTask.IsCompleted);
@@ -50,10 +51,10 @@ public class DelegatingSpeechToTextClientTests
     }
 
     [Fact]
-    public async Task GetStreamingAsyncDefaultsToInnerClientAsync()
+    public async Task GetStreamingTextAsyncDefaultsToInnerClientAsync()
     {
         // Arrange
-        var expectedContents = new List<IAsyncEnumerable<DataContent>>();
+        using var expectedStream = new MemoryStream();
         var expectedOptions = new SpeechToTextOptions();
         var expectedCancellationToken = CancellationToken.None;
         SpeechToTextResponseUpdate[] expectedResults =
@@ -64,9 +65,9 @@ public class DelegatingSpeechToTextClientTests
 
         using var inner = new TestSpeechToTextClient
         {
-            GetStreamingResponseAsyncCallback = (speechContents, options, cancellationToken) =>
+            GetStreamingResponseAsyncCallback = (audioStream, options, cancellationToken) =>
             {
-                Assert.Same(expectedContents, speechContents);
+                Assert.Same(expectedStream, audioStream);
                 Assert.Same(expectedOptions, options);
                 Assert.Equal(expectedCancellationToken, cancellationToken);
                 return YieldAsync(expectedResults);
@@ -76,7 +77,7 @@ public class DelegatingSpeechToTextClientTests
         using var delegating = new NoOpDelegatingSpeechToTextClient(inner);
 
         // Act
-        var resultAsyncEnumerable = delegating.TranscribeStreamingAudioAsync(expectedContents, expectedOptions, expectedCancellationToken);
+        var resultAsyncEnumerable = delegating.GetStreamingTextAsync(expectedStream, expectedOptions, expectedCancellationToken);
 
         // Assert
         var enumerator = resultAsyncEnumerable.GetAsyncEnumerator();

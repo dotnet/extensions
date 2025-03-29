@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,15 +19,14 @@ public sealed class TestSpeechToTextClient : ISpeechToTextClient
     public IServiceProvider? Services { get; set; }
 
     // Callbacks for asynchronous operations.
-    public Func<IList<
-        IAsyncEnumerable<DataContent>>,
+    public Func<Stream,
         SpeechToTextOptions?,
         CancellationToken,
         Task<SpeechToTextResponse>>?
         GetResponseAsyncCallback
     { get; set; }
 
-    public Func<IList<IAsyncEnumerable<DataContent>>,
+    public Func<Stream,
         SpeechToTextOptions?,
         CancellationToken,
         IAsyncEnumerable<SpeechToTextResponseUpdate>>?
@@ -39,16 +39,16 @@ public sealed class TestSpeechToTextClient : ISpeechToTextClient
         => serviceType is not null && serviceKey is null && serviceType.IsInstanceOfType(this) ? this : null;
 
     public Task<SpeechToTextResponse> GetTextAsync(
-        IList<IAsyncEnumerable<DataContent>> speechContents,
+        Stream audioStream,
         SpeechToTextOptions? options = null,
         CancellationToken cancellationToken = default)
-        => GetResponseAsyncCallback!.Invoke(speechContents, options, cancellationToken);
+        => GetResponseAsyncCallback!.Invoke(audioStream, options, cancellationToken);
 
     public IAsyncEnumerable<SpeechToTextResponseUpdate> GetStreamingTextAsync(
-        IList<IAsyncEnumerable<DataContent>> speechContents,
+        Stream audioStream,
         SpeechToTextOptions? options = null,
         CancellationToken cancellationToken = default)
-        => GetStreamingResponseAsyncCallback!.Invoke(speechContents, options, cancellationToken);
+        => GetStreamingResponseAsyncCallback!.Invoke(audioStream, options, cancellationToken);
 
     public object? GetService(Type serviceType, object? serviceKey = null)
         => GetServiceCallback!.Invoke(serviceType, serviceKey);
