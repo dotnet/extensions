@@ -22,7 +22,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="IChatClient"/> for an Azure AI Inference <see cref="ChatCompletionsClient"/>.</summary>
-public sealed class AzureAIInferenceChatClient : IChatClient
+internal sealed class AzureAIInferenceChatClient : IChatClient
 {
     /// <summary>Metadata about the client.</summary>
     private readonly ChatClientMetadata _metadata;
@@ -30,24 +30,21 @@ public sealed class AzureAIInferenceChatClient : IChatClient
     /// <summary>The underlying <see cref="ChatCompletionsClient" />.</summary>
     private readonly ChatCompletionsClient _chatCompletionsClient;
 
-    /// <summary>The <see cref="JsonSerializerOptions"/> use for any serialization activities related to tool call arguments and results.</summary>
-    private JsonSerializerOptions _toolCallJsonSerializerOptions = AIJsonUtilities.DefaultOptions;
-
     /// <summary>Gets a ChatRole.Developer value.</summary>
     private static ChatRole ChatRoleDeveloper { get; } = new("developer");
 
     /// <summary>Initializes a new instance of the <see cref="AzureAIInferenceChatClient"/> class for the specified <see cref="ChatCompletionsClient"/>.</summary>
     /// <param name="chatCompletionsClient">The underlying client.</param>
-    /// <param name="modelId">The ID of the model to use. If null, it can be provided per request via <see cref="ChatOptions.ModelId"/>.</param>
+    /// <param name="defaultModelId">The ID of the model to use. If <see langword="null"/>, it can be provided per request via <see cref="ChatOptions.ModelId"/>.</param>
     /// <exception cref="ArgumentNullException"><paramref name="chatCompletionsClient"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="modelId"/> is empty or composed entirely of whitespace.</exception>
-    public AzureAIInferenceChatClient(ChatCompletionsClient chatCompletionsClient, string? modelId = null)
+    /// <exception cref="ArgumentNullException"><paramref name="defaultModelId"/> is empty or composed entirely of whitespace.</exception>
+    public AzureAIInferenceChatClient(ChatCompletionsClient chatCompletionsClient, string? defaultModelId = null)
     {
         _ = Throw.IfNull(chatCompletionsClient);
 
-        if (modelId is not null)
+        if (defaultModelId is not null)
         {
-            _ = Throw.IfNullOrWhitespace(modelId);
+            _ = Throw.IfNullOrWhitespace(defaultModelId);
         }
 
         _chatCompletionsClient = chatCompletionsClient;
@@ -59,14 +56,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
         var providerUrl = typeof(ChatCompletionsClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(chatCompletionsClient) as Uri;
 
-        _metadata = new("az.ai.inference", providerUrl, modelId);
-    }
-
-    /// <summary>Gets or sets <see cref="JsonSerializerOptions"/> to use for any serialization activities related to tool call arguments and results.</summary>
-    public JsonSerializerOptions ToolCallJsonSerializerOptions
-    {
-        get => _toolCallJsonSerializerOptions;
-        set => _toolCallJsonSerializerOptions = Throw.IfNull(value);
+        _metadata = new ChatClientMetadata("az.ai.inference", providerUrl, defaultModelId);
     }
 
     /// <inheritdoc />
@@ -96,6 +86,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
         // Create the return message.
         ChatMessage message = new(ToChatRole(response.Role), response.Content)
         {
+            MessageId = response.Id, // There is no per-message ID, but there's only one message per response, so use the response ID
             RawRepresentation = response,
         };
 
@@ -157,7 +148,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
             // The role and finish reason may arrive during any update, but once they've arrived, the same value should be the same for all subsequent updates.
             streamedRole ??= chatCompletionUpdate.Role is global::Azure.AI.Inference.ChatRole role ? ToChatRole(role) : null;
             finishReason ??= chatCompletionUpdate.FinishReason is CompletionsFinishReason reason ? ToFinishReason(reason) : null;
-            responseId ??= chatCompletionUpdate.Id;
+            responseId ??= chatCompletionUpdate.Id; // While it's unclear from the name, this Id is documented to be the response ID, not the chunk ID
             createdAt ??= chatCompletionUpdate.Created;
             modelId ??= chatCompletionUpdate.Model;
 
@@ -168,7 +159,8 @@ public sealed class AzureAIInferenceChatClient : IChatClient
                 FinishReason = finishReason,
                 ModelId = modelId,
                 RawRepresentation = chatCompletionUpdate,
-                ResponseId = chatCompletionUpdate.Id,
+                ResponseId = responseId,
+                MessageId = responseId, // There is no per-message ID, but there's only one message per response, so use the response ID
                 Role = streamedRole,
             };
 
@@ -229,6 +221,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
                 FinishReason = finishReason,
                 ModelId = modelId,
                 ResponseId = responseId,
+                MessageId = responseId, // There is no per-message ID, but there's only one message per response, so use the response ID
                 Role = streamedRole,
             };
 
@@ -285,7 +278,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
     {
         ChatCompletionsOptions result = new(ToAzureAIInferenceChatMessages(chatContents))
         {
-            Model = options?.ModelId ?? _metadata.ModelId ?? throw new InvalidOperationException("No model id was provided when either constructing the client or in the chat options.")
+            Model = options?.ModelId ?? _metadata.DefaultModelId ?? throw new InvalidOperationException("No model id was provided when either constructing the client or in the chat options.")
         };
 
         if (options is not null)
@@ -321,7 +314,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
                         default:
                             if (prop.Value is not null)
                             {
-                                byte[] data = JsonSerializer.SerializeToUtf8Bytes(prop.Value, ToolCallJsonSerializerOptions.GetTypeInfo(typeof(object)));
+                                byte[] data = JsonSerializer.SerializeToUtf8Bytes(prop.Value, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(object)));
                                 result.AdditionalProperties[prop.Key] = new BinaryData(data);
                             }
 
@@ -410,7 +403,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
     }
 
     /// <summary>Converts an Extensions chat message enumerable to an AzureAI chat message enumerable.</summary>
-    private IEnumerable<ChatRequestMessage> ToAzureAIInferenceChatMessages(IEnumerable<ChatMessage> inputs)
+    private static IEnumerable<ChatRequestMessage> ToAzureAIInferenceChatMessages(IEnumerable<ChatMessage> inputs)
     {
         // Maps all of the M.E.AI types to the corresponding AzureAI types.
         // Unrecognized or non-processable content is ignored.
@@ -436,7 +429,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
                         {
                             try
                             {
-                                result = JsonSerializer.Serialize(resultContent.Result, ToolCallJsonSerializerOptions.GetTypeInfo(typeof(object)));
+                                result = JsonSerializer.Serialize(resultContent.Result, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(object)));
                             }
                             catch (NotSupportedException)
                             {
@@ -479,7 +472,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
                              callRequest.CallId,
                              new FunctionCall(
                                  callRequest.Name,
-                                 JsonSerializer.Serialize(callRequest.Arguments, ToolCallJsonSerializerOptions.GetTypeInfo(typeof(IDictionary<string, object>))))));
+                                 JsonSerializer.Serialize(callRequest.Arguments, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object>))))));
                     }
                 }
 

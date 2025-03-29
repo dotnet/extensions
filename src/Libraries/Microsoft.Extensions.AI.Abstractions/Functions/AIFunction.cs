@@ -1,12 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Shared.Collections;
 
 namespace Microsoft.Extensions.AI;
 
@@ -55,20 +53,16 @@ public abstract class AIFunction : AITool
     /// <param name="arguments">The arguments to pass to the function's invocation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function's execution.</returns>
-    public Task<object?> InvokeAsync(
-        IEnumerable<KeyValuePair<string, object?>>? arguments = null,
-        CancellationToken cancellationToken = default)
-    {
-        arguments ??= EmptyReadOnlyDictionary<string, object?>.Instance;
-
-        return InvokeCoreAsync(arguments, cancellationToken);
-    }
+    public ValueTask<object?> InvokeAsync(
+        AIFunctionArguments? arguments = null,
+        CancellationToken cancellationToken = default) =>
+        InvokeCoreAsync(arguments ?? [], cancellationToken);
 
     /// <summary>Invokes the <see cref="AIFunction"/> and returns its result.</summary>
     /// <param name="arguments">The arguments to pass to the function's invocation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>The result of the function's execution.</returns>
-    protected abstract Task<object?> InvokeCoreAsync(
-        IEnumerable<KeyValuePair<string, object?>> arguments,
+    protected abstract ValueTask<object?> InvokeCoreAsync(
+        AIFunctionArguments arguments,
         CancellationToken cancellationToken);
 }

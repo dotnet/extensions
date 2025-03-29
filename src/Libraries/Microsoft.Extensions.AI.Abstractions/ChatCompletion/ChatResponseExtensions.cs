@@ -49,7 +49,7 @@ public static class ChatResponseExtensions
     /// <exception cref="ArgumentNullException"><paramref name="updates"/> is <see langword="null"/>.</exception>
     /// <remarks>
     /// As part of combining <paramref name="updates"/> into a series of <see cref="ChatMessage"/> instances, the
-    /// method may use <see cref="ChatResponseUpdate.ResponseId"/> to determine message boundaries, as well as coalesce
+    /// method may use <see cref="ChatResponseUpdate.MessageId"/> to determine message boundaries, as well as coalesce
     /// contiguous <see cref="AIContent"/> items where applicable, e.g. multiple
     /// <see cref="TextContent"/> instances in a row may be combined into a single <see cref="TextContent"/>.
     /// </remarks>
@@ -102,7 +102,7 @@ public static class ChatResponseExtensions
     /// <exception cref="ArgumentNullException"><paramref name="updates"/> is <see langword="null"/>.</exception>
     /// <remarks>
     /// As part of combining <paramref name="updates"/> into a series of <see cref="ChatMessage"/> instances, tne
-    /// method may use <see cref="ChatResponseUpdate.ResponseId"/> to determine message boundaries, as well as coalesce
+    /// method may use <see cref="ChatResponseUpdate.MessageId"/> to determine message boundaries, as well as coalesce
     /// contiguous <see cref="AIContent"/> items where applicable, e.g. multiple
     /// <see cref="TextContent"/> instances in a row may be combined into a single <see cref="TextContent"/>.
     /// </remarks>
@@ -125,7 +125,7 @@ public static class ChatResponseExtensions
     /// <exception cref="ArgumentNullException"><paramref name="updates"/> is <see langword="null"/>.</exception>
     /// <remarks>
     /// As part of combining <paramref name="updates"/> into a single <see cref="ChatResponse"/>, the method will attempt to reconstruct
-    /// <see cref="ChatMessage"/> instances. This includes using <see cref="ChatResponseUpdate.ResponseId"/> to determine
+    /// <see cref="ChatMessage"/> instances. This includes using <see cref="ChatResponseUpdate.MessageId"/> to determine
     /// message boundaries, as well as coalescing contiguous <see cref="AIContent"/> items where applicable, e.g. multiple
     /// <see cref="TextContent"/> instances in a row may be combined into a single <see cref="TextContent"/>.
     /// </remarks>
@@ -153,7 +153,7 @@ public static class ChatResponseExtensions
     /// <exception cref="ArgumentNullException"><paramref name="updates"/> is <see langword="null"/>.</exception>
     /// <remarks>
     /// As part of combining <paramref name="updates"/> into a single <see cref="ChatResponse"/>, the method will attempt to reconstruct
-    /// <see cref="ChatMessage"/> instances. This includes using <see cref="ChatResponseUpdate.ResponseId"/> to determine
+    /// <see cref="ChatMessage"/> instances. This includes using <see cref="ChatResponseUpdate.MessageId"/> to determine
     /// message boundaries, as well as coalescing contiguous <see cref="AIContent"/> items where applicable, e.g. multiple
     /// <see cref="TextContent"/> instances in a row may be combined into a single <see cref="TextContent"/>.
     /// </remarks>
@@ -245,10 +245,21 @@ public static class ChatResponseExtensions
     private static void ProcessUpdate(ChatResponseUpdate update, ChatResponse response)
     {
         // If there is no message created yet, or if the last update we saw had a different
-        // response ID than the newest update, create a new message.
+        // message ID than the newest update, create a new message.
         ChatMessage message;
-        if (response.Messages.Count == 0 ||
-            (update.ResponseId is { Length: > 0 } updateId && response.ResponseId is string responseId && updateId != responseId))
+        var isNewMessage = false;
+        if (response.Messages.Count == 0)
+        {
+            isNewMessage = true;
+        }
+        else if (update.MessageId is { Length: > 0 } updateMessageId
+            && response.Messages[response.Messages.Count - 1].MessageId is string lastMessageId
+            && updateMessageId != lastMessageId)
+        {
+            isNewMessage = true;
+        }
+
+        if (isNewMessage)
         {
             message = new ChatMessage(ChatRole.Assistant, []);
             response.Messages.Add(message);
@@ -272,6 +283,13 @@ public static class ChatResponseExtensions
             message.Role = role;
         }
 
+        if (update.MessageId is { Length: > 0 })
+        {
+            // Note that this must come after the message checks earlier, as they depend
+            // on this value for change detection.
+            message.MessageId = update.MessageId;
+        }
+
         foreach (var content in update.Contents)
         {
             switch (content)
@@ -292,8 +310,6 @@ public static class ChatResponseExtensions
 
         if (update.ResponseId is { Length: > 0 })
         {
-            // Note that this must come after the message checks earlier, as they depend
-            // on this value for change detection.
             response.ResponseId = update.ResponseId;
         }
 

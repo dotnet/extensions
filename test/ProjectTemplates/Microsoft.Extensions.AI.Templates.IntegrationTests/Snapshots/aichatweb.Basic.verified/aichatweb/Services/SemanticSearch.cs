@@ -11,14 +11,11 @@ public class SemanticSearch(
     {
         var queryEmbedding = await embeddingGenerator.GenerateEmbeddingVectorAsync(text);
         var vectorCollection = vectorStore.GetCollection<string, SemanticSearchRecord>("data-aichatweb-ingested");
-        var filter = filenameFilter is { Length: > 0 }
-            ? new VectorSearchFilter().EqualTo(nameof(SemanticSearchRecord.FileName), filenameFilter)
-            : null;
 
-        var nearest = await vectorCollection.VectorizedSearchAsync(queryEmbedding, new VectorSearchOptions
+        var nearest = await vectorCollection.VectorizedSearchAsync(queryEmbedding, new VectorSearchOptions<SemanticSearchRecord>
         {
             Top = maxResults,
-            Filter = filter,
+            Filter = filenameFilter is { Length: > 0 } ? record => record.FileName == filenameFilter : null,
         });
         var results = new List<SemanticSearchRecord>();
         await foreach (var item in nearest.Results)

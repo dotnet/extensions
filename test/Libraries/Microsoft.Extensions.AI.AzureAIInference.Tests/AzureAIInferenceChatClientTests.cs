@@ -24,60 +24,36 @@ namespace Microsoft.Extensions.AI;
 public class AzureAIInferenceChatClientTests
 {
     [Fact]
-    public void Ctor_InvalidArgs_Throws()
+    public void AsIChatClient_InvalidArgs_Throws()
     {
-        Assert.Throws<ArgumentNullException>("chatCompletionsClient", () => new AzureAIInferenceChatClient(null!, "model"));
+        Assert.Throws<ArgumentNullException>("chatCompletionsClient", () => ((ChatCompletionsClient)null!).AsIChatClient("model"));
 
         ChatCompletionsClient client = new(new("http://somewhere"), new AzureKeyCredential("key"));
-        Assert.Throws<ArgumentException>("modelId", () => new AzureAIInferenceChatClient(client, "   "));
+        Assert.Throws<ArgumentException>("defaultModelId", () => client.AsIChatClient("   "));
     }
 
     [Fact]
-    public void ToolCallJsonSerializerOptions_HasExpectedValue()
-    {
-        using AzureAIInferenceChatClient client = new(new(new("http://somewhere"), new AzureKeyCredential("key")), "mode");
-
-        Assert.Same(client.ToolCallJsonSerializerOptions, AIJsonUtilities.DefaultOptions);
-        Assert.Throws<ArgumentNullException>("value", () => client.ToolCallJsonSerializerOptions = null!);
-
-        JsonSerializerOptions options = new();
-        client.ToolCallJsonSerializerOptions = options;
-        Assert.Same(options, client.ToolCallJsonSerializerOptions);
-    }
-
-    [Fact]
-    public void AsChatClient_InvalidArgs_Throws()
-    {
-        Assert.Throws<ArgumentNullException>("chatCompletionsClient", () => ((ChatCompletionsClient)null!).AsChatClient("model"));
-
-        ChatCompletionsClient client = new(new("http://somewhere"), new AzureKeyCredential("key"));
-        Assert.Throws<ArgumentException>("modelId", () => client.AsChatClient("   "));
-    }
-
-    [Fact]
-    public void AsChatClient_ProducesExpectedMetadata()
+    public void AsIChatClient_ProducesExpectedMetadata()
     {
         Uri endpoint = new("http://localhost/some/endpoint");
         string model = "amazingModel";
 
         ChatCompletionsClient client = new(endpoint, new AzureKeyCredential("key"));
 
-        IChatClient chatClient = client.AsChatClient(model);
+        IChatClient chatClient = client.AsIChatClient(model);
         var metadata = chatClient.GetService<ChatClientMetadata>();
         Assert.Equal("az.ai.inference", metadata?.ProviderName);
         Assert.Equal(endpoint, metadata?.ProviderUri);
-        Assert.Equal(model, metadata?.ModelId);
+        Assert.Equal(model, metadata?.DefaultModelId);
     }
 
     [Fact]
     public void GetService_SuccessfullyReturnsUnderlyingClient()
     {
         ChatCompletionsClient client = new(new("http://localhost"), new AzureKeyCredential("key"));
-        IChatClient chatClient = client.AsChatClient("model");
+        IChatClient chatClient = client.AsIChatClient("model");
 
         Assert.Same(chatClient, chatClient.GetService<IChatClient>());
-        Assert.Same(chatClient, chatClient.GetService<AzureAIInferenceChatClient>());
-
         Assert.Same(client, chatClient.GetService<ChatCompletionsClient>());
 
         using IChatClient pipeline = chatClient
@@ -97,7 +73,6 @@ public class AzureAIInferenceChatClientTests
         Assert.IsType<FunctionInvokingChatClient>(pipeline.GetService<IChatClient>());
 
         Assert.Null(pipeline.GetService<ChatCompletionsClient>("key"));
-        Assert.Null(pipeline.GetService<AzureAIInferenceChatClient>("key"));
         Assert.Null(pipeline.GetService<string>("key"));
     }
 
@@ -167,6 +142,7 @@ public class AzureAIInferenceChatClientTests
         Assert.Equal("Hello! How can I assist you today?", response.Text);
         Assert.Single(response.Messages.Single().Contents);
         Assert.Equal(ChatRole.Assistant, response.Messages.Single().Role);
+        Assert.Equal("chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI", response.Messages.Single().MessageId);
         Assert.Equal("gpt-4o-mini-2024-07-18", response.ModelId);
         Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_727_888_631), response.CreatedAt);
         Assert.Equal(ChatFinishReason.Stop, response.FinishReason);
@@ -245,6 +221,7 @@ public class AzureAIInferenceChatClientTests
         for (int i = 0; i < updates.Count; i++)
         {
             Assert.Equal("chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK", updates[i].ResponseId);
+            Assert.Equal("chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK", updates[i].MessageId);
             Assert.Equal(createdAt, updates[i].CreatedAt);
             Assert.Equal("gpt-4o-mini-2024-07-18", updates[i].ModelId);
             Assert.Equal(ChatRole.Assistant, updates[i].Role);
@@ -555,6 +532,7 @@ public class AzureAIInferenceChatClientTests
         Assert.Equal("I’m doing well, thank you! What’s on your mind today?", response.Text);
         Assert.Single(response.Messages.Single().Contents);
         Assert.Equal(ChatRole.Assistant, response.Messages.Single().Role);
+        Assert.Equal("chatcmpl-ADyV17bXeSm5rzUx3n46O7m3M0o3P", response.Messages.Single().MessageId);
         Assert.Equal("gpt-4o-mini-2024-07-18", response.ModelId);
         Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_727_894_187), response.CreatedAt);
         Assert.Equal(ChatFinishReason.Stop, response.FinishReason);
@@ -897,6 +875,7 @@ public class AzureAIInferenceChatClientTests
         for (int i = 0; i < updates.Count; i++)
         {
             Assert.Equal("chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl", updates[i].ResponseId);
+            Assert.Equal("chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl", updates[i].MessageId);
             Assert.Equal(createdAt, updates[i].CreatedAt);
             Assert.Equal("gpt-4o-mini-2024-07-18", updates[i].ModelId);
             Assert.Equal(ChatRole.Assistant, updates[i].Role);
@@ -914,5 +893,5 @@ public class AzureAIInferenceChatClientTests
             new("http://somewhere"),
             new AzureKeyCredential("key"),
             new AzureAIInferenceClientOptions { Transport = new HttpClientTransport(httpClient) })
-            .AsChatClient(modelId);
+            .AsIChatClient(modelId);
 }

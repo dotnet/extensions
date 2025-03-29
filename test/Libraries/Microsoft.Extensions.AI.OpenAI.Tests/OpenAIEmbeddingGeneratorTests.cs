@@ -20,32 +20,15 @@ namespace Microsoft.Extensions.AI;
 public class OpenAIEmbeddingGeneratorTests
 {
     [Fact]
-    public void Ctor_InvalidArgs_Throws()
+    public void AsIEmbeddingGenerator_InvalidArgs_Throws()
     {
-        Assert.Throws<ArgumentNullException>("openAIClient", () => new OpenAIEmbeddingGenerator(null!, "model"));
-        Assert.Throws<ArgumentNullException>("embeddingClient", () => new OpenAIEmbeddingGenerator(null!));
-
-        OpenAIClient openAIClient = new("key");
-        Assert.Throws<ArgumentNullException>("modelId", () => new OpenAIEmbeddingGenerator(openAIClient, null!));
-        Assert.Throws<ArgumentException>("modelId", () => new OpenAIEmbeddingGenerator(openAIClient, ""));
-        Assert.Throws<ArgumentException>("modelId", () => new OpenAIEmbeddingGenerator(openAIClient, "   "));
-    }
-
-    [Fact]
-    public void AsEmbeddingGenerator_InvalidArgs_Throws()
-    {
-        Assert.Throws<ArgumentNullException>("openAIClient", () => ((OpenAIClient)null!).AsEmbeddingGenerator("model"));
-        Assert.Throws<ArgumentNullException>("embeddingClient", () => ((EmbeddingClient)null!).AsEmbeddingGenerator());
-
-        OpenAIClient client = new("key");
-        Assert.Throws<ArgumentNullException>("modelId", () => client.AsEmbeddingGenerator(null!));
-        Assert.Throws<ArgumentException>("modelId", () => client.AsEmbeddingGenerator("   "));
+        Assert.Throws<ArgumentNullException>("embeddingClient", () => ((EmbeddingClient)null!).AsIEmbeddingGenerator());
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void AsEmbeddingGenerator_OpenAIClient_ProducesExpectedMetadata(bool useAzureOpenAI)
+    public void AsIEmbeddingGenerator_OpenAIClient_ProducesExpectedMetadata(bool useAzureOpenAI)
     {
         Uri endpoint = new("http://localhost/some/endpoint");
         string model = "amazingModel";
@@ -54,28 +37,27 @@ public class OpenAIEmbeddingGeneratorTests
             new AzureOpenAIClient(endpoint, new ApiKeyCredential("key")) :
             new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
 
-        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator = client.AsEmbeddingGenerator(model);
+        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator = client.GetEmbeddingClient(model).AsIEmbeddingGenerator();
         var metadata = embeddingGenerator.GetService<EmbeddingGeneratorMetadata>();
         Assert.Equal("openai", metadata?.ProviderName);
         Assert.Equal(endpoint, metadata?.ProviderUri);
-        Assert.Equal(model, metadata?.ModelId);
+        Assert.Equal(model, metadata?.DefaultModelId);
 
-        embeddingGenerator = client.GetEmbeddingClient(model).AsEmbeddingGenerator();
+        embeddingGenerator = client.GetEmbeddingClient(model).AsIEmbeddingGenerator();
         Assert.Equal("openai", metadata?.ProviderName);
         Assert.Equal(endpoint, metadata?.ProviderUri);
-        Assert.Equal(model, metadata?.ModelId);
+        Assert.Equal(model, metadata?.DefaultModelId);
     }
 
     [Fact]
     public void GetService_OpenAIClient_SuccessfullyReturnsUnderlyingClient()
     {
-        OpenAIClient openAIClient = new(new ApiKeyCredential("key"));
-        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator = openAIClient.AsEmbeddingGenerator("model");
+        EmbeddingClient openAIClient = new OpenAIClient(new ApiKeyCredential("key")).GetEmbeddingClient("model");
+        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator = openAIClient.AsIEmbeddingGenerator();
 
         Assert.Same(embeddingGenerator, embeddingGenerator.GetService<IEmbeddingGenerator<string, Embedding<float>>>());
-        Assert.Same(embeddingGenerator, embeddingGenerator.GetService<OpenAIEmbeddingGenerator>());
 
-        Assert.Same(openAIClient, embeddingGenerator.GetService<OpenAIClient>());
+        Assert.Same(openAIClient, embeddingGenerator.GetService<EmbeddingClient>());
 
         Assert.NotNull(embeddingGenerator.GetService<EmbeddingClient>());
 
@@ -89,7 +71,7 @@ public class OpenAIEmbeddingGeneratorTests
         Assert.NotNull(pipeline.GetService<CachingEmbeddingGenerator<string, Embedding<float>>>());
         Assert.NotNull(pipeline.GetService<OpenTelemetryEmbeddingGenerator<string, Embedding<float>>>());
 
-        Assert.Same(openAIClient, pipeline.GetService<OpenAIClient>());
+        Assert.Same(openAIClient, pipeline.GetService<EmbeddingClient>());
         Assert.IsType<OpenTelemetryEmbeddingGenerator<string, Embedding<float>>>(pipeline.GetService<IEmbeddingGenerator<string, Embedding<float>>>());
     }
 
@@ -97,7 +79,7 @@ public class OpenAIEmbeddingGeneratorTests
     public void GetService_EmbeddingClient_SuccessfullyReturnsUnderlyingClient()
     {
         EmbeddingClient openAIClient = new OpenAIClient(new ApiKeyCredential("key")).GetEmbeddingClient("model");
-        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator = openAIClient.AsEmbeddingGenerator();
+        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator = openAIClient.AsIEmbeddingGenerator();
 
         Assert.Same(embeddingGenerator, embeddingGenerator.GetService<IEmbeddingGenerator<string, Embedding<float>>>());
         Assert.Same(openAIClient, embeddingGenerator.GetService<EmbeddingClient>());
@@ -151,7 +133,7 @@ public class OpenAIEmbeddingGeneratorTests
         using IEmbeddingGenerator<string, Embedding<float>> generator = new OpenAIClient(new ApiKeyCredential("apikey"), new OpenAIClientOptions
         {
             Transport = new HttpClientPipelineTransport(httpClient),
-        }).AsEmbeddingGenerator("text-embedding-3-small");
+        }).GetEmbeddingClient("text-embedding-3-small").AsIEmbeddingGenerator();
 
         var response = await generator.GenerateAsync([
             "hello, world!",

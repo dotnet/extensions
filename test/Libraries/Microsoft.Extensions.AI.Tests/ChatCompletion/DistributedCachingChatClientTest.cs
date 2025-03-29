@@ -360,6 +360,7 @@ public class DistributedCachingChatClientTest
                 ],
                 CreatedAt = DateTime.Parse("2024-10-11T19:23:36.0152137Z"),
                 ResponseId = "12345",
+                MessageId = "someMessageId123",
                 AuthorName = "Someone",
                 FinishReason = ChatFinishReason.Length,
             },
@@ -385,6 +386,7 @@ public class DistributedCachingChatClientTest
         var item = Assert.Single(items);
         Assert.Equal("Hello world, how are you?", item.Text);
         Assert.Equal("12345", item.ResponseId);
+        Assert.Equal("someMessageId123", item.MessageId);
         Assert.Equal("Someone", item.AuthorName);
         Assert.Equal(ChatFinishReason.Length, item.FinishReason);
         Assert.Equal(DateTime.Parse("2024-10-11T19:23:36.0152137Z"), item.CreatedAt);
