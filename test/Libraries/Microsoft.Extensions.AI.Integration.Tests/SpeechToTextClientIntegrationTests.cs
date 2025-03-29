@@ -32,7 +32,7 @@ public abstract class SpeechToTextClientIntegrationTests : IDisposable
     protected abstract ISpeechToTextClient? CreateClient();
 
     [ConditionalFact]
-    public virtual async Task GetResponseAsync_SingleAudioRequestMessage()
+    public virtual async Task GetTextAsync_SingleAudioRequestMessage()
     {
         SkipIfNotEnabled();
 
@@ -43,7 +43,7 @@ public abstract class SpeechToTextClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
-    public virtual async Task GetResponseAsync_MultipleAudioRequestMessage()
+    public virtual async Task GetTextAsync_MultipleAudioRequestMessage()
     {
         SkipIfNotEnabled();
 
@@ -60,7 +60,7 @@ public abstract class SpeechToTextClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
-    public virtual async Task GetStreamingResponseAsync_SingleStreamingResponseChoice()
+    public virtual async Task GetStreamingTextAsync_SingleStreamingResponseChoice()
     {
         SkipIfNotEnabled();
 
@@ -78,7 +78,7 @@ public abstract class SpeechToTextClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
-    public virtual async Task GetStreamingResponseAsync_MultipleStreamingResponseChoice()
+    public virtual async Task GetStreamingTextAsync_MultipleStreamingResponseChoice()
     {
         SkipIfNotEnabled();
 

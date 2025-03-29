@@ -112,7 +112,7 @@ public class OpenAISpeechToTextClientTests
     [InlineData("en", null)]
     [InlineData("en", "en")]
     [InlineData("pt", "pt")]
-    public async Task BasicTranscribeRequestResponse_NonStreaming(string? speechLanguage, string? textLanguage)
+    public async Task GetTextAsync_BasicRequestResponse(string? speechLanguage, string? textLanguage)
     {
         string input = $$"""
                 {
@@ -148,7 +148,7 @@ public class OpenAISpeechToTextClientTests
     }
 
     [Fact]
-    public async Task CancelledBasicTranscribeRequestResponse_NonStreaming_Throw()
+    public async Task GetTextAsync_Cancelled_Throws()
     {
         using HttpClient httpClient = new();
         using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
@@ -162,7 +162,7 @@ public class OpenAISpeechToTextClientTests
     }
 
     [Fact]
-    public async Task CancelledBasicTranscribeRequestResponse_Streaming_Throw()
+    public async Task GetStreamingTextAsync_Cancelled_Throws()
     {
         using HttpClient httpClient = new();
         using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
@@ -184,7 +184,7 @@ public class OpenAISpeechToTextClientTests
     [InlineData("en", null)]
     [InlineData("en", "en")]
     [InlineData("pt", "pt")]
-    public async Task BasicTranscribeRequestResponse_Streaming(string? speechLanguage, string? textLanguage)
+    public async Task GetStreamingTextAsync_BasicRequestResponse(string? speechLanguage, string? textLanguage)
     {
         // There's no support for streaming audio in the OpenAI API,
         // so we're just testing the client's ability to handle streaming responses.
@@ -224,7 +224,7 @@ public class OpenAISpeechToTextClientTests
     [InlineData(null, "pt")]
     [InlineData(null, "it")]
     [InlineData("en", "pt")]
-    public async Task NonSupportedTranslation_Streaming_Throws(string? speechLanguage, string? textLanguage)
+    public async Task GetStreamingTextAsync_NonSupportedTranslation_Throws(string? speechLanguage, string? textLanguage)
     {
         using HttpClient httpClient = new();
         using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
@@ -243,7 +243,7 @@ public class OpenAISpeechToTextClientTests
     [InlineData(null, "pt")]
     [InlineData(null, "it")]
     [InlineData("en", "pt")]
-    public async Task NonSupportedTranslation_NonStreaming_Throws(string? speechLanguage, string? textLanguage)
+    public async Task GetTextAsync_NonSupportedTranslation_Throws(string? speechLanguage, string? textLanguage)
     {
         using HttpClient httpClient = new();
         using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
@@ -258,7 +258,7 @@ public class OpenAISpeechToTextClientTests
     }
 
     [Fact]
-    public async Task BasicTranslateRequestResponse_Streaming()
+    public async Task GetStreamingTextAsync_BasicTranslateRequestResponse()
     {
         string textLanguage = "en";
 
@@ -294,7 +294,7 @@ public class OpenAISpeechToTextClientTests
     }
 
     [Fact]
-    public async Task NonStronglyTypedOptions_AllSent()
+    public async Task GetTextAsync_NonStronglyTypedOptions_AllSent()
     {
         const string Input = """
                 {
@@ -331,7 +331,7 @@ public class OpenAISpeechToTextClientTests
     }
 
     [Fact]
-    public async Task StronglyTypedOptions_AllSent()
+    public async Task GetTextAsync_StronglyTypedOptions_AllSent()
     {
         const string Input = """
                 {

@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.AI;
 public class SpeechToTextClientTests
 {
     [Fact]
-    public async Task GetResponseAsync_CreatesTextMessageAsync()
+    public async Task GetTextAsync_CreatesTextMessageAsync()
     {
         // Arrange
         var expectedResponse = new SpeechToTextResponse(new SpeechToTextMessage("hello"));

@@ -22,7 +22,7 @@ public class SpeechToTextClientExtensionsTests
     }
 
     [Fact]
-    public void GetResponseAsync_InvalidArgs_Throws()
+    public void GetTextAsync_InvalidArgs_Throws()
     {
         // Note: the extension method now requires a DataContent (not a string).
         Assert.Throws<ArgumentNullException>("client", () =>
@@ -37,7 +37,7 @@ public class SpeechToTextClientExtensionsTests
     }
 
     [Fact]
-    public void GetStreamingResponseAsync_InvalidArgs_Throws()
+    public void GetStreamingTextAsync_InvalidArgs_Throws()
     {
         Assert.Throws<ArgumentNullException>("client", () =>
         {
@@ -52,7 +52,7 @@ public class SpeechToTextClientExtensionsTests
     }
 
     [Fact]
-    public async Task GetStreamingResponseAsync_CreatesTextMessageAsync()
+    public async Task GetStreamingTextAsync_CreatesTextMessageAsync()
     {
         // Arrange
         var expectedOptions = new SpeechToTextOptions();

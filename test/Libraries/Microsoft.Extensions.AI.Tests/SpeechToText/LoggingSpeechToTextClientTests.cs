@@ -45,7 +45,7 @@ public class LoggingSpeechToTextClientTests
     [InlineData(LogLevel.Trace)]
     [InlineData(LogLevel.Debug)]
     [InlineData(LogLevel.Information)]
-    public async Task GetResponseAsync_LogsResponseInvocationAndCompletion(LogLevel level)
+    public async Task GetTextAsync_LogsResponseInvocationAndCompletion(LogLevel level)
     {
         var collector = new FakeLogCollector();
 
@@ -93,7 +93,7 @@ public class LoggingSpeechToTextClientTests
     [InlineData(LogLevel.Trace)]
     [InlineData(LogLevel.Debug)]
     [InlineData(LogLevel.Information)]
-    public async Task GetResponseStreamingStreamAsync_LogsUpdateReceived(LogLevel level)
+    public async Task GetStreamingTextAsync_LogsUpdateReceived(LogLevel level)
     {
         var collector = new FakeLogCollector();
         using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(level));
