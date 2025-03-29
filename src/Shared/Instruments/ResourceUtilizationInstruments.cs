@@ -59,6 +59,22 @@ internal static class ResourceUtilizationInstruments
     public const string ProcessMemoryUtilization = "dotnet.process.memory.virtual.utilization";
 
     /// <summary>
+    /// The name of an instrument to retrieve disk bytes transferred.
+    /// </summary>
+    /// <remarks>
+    /// The type of an instrument is <see cref="System.Diagnostics.Metrics.ObservableCounter{T}"/>.
+    /// </remarks>
+    public const string SystemDiskIo = "system.disk.io";
+
+    /// <summary>
+    /// The name of an instrument to retrieve disk operations.
+    /// </summary>
+    /// <remarks>
+    /// The type of an instrument is <see cref="System.Diagnostics.Metrics.ObservableCounter{T}"/>.
+    /// </remarks>
+    public const string SystemDiskOperations = "system.disk.operations";
+
+    /// <summary>
     /// The name of an instrument to retrieve network connections information.
     /// </summary>
     /// <remarks>

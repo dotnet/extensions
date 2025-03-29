@@ -66,4 +66,8 @@
   <ItemGroup Condition="'$(InjectObsoleteAttributeOnLegacy)' == 'true' AND ('$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netcoreapp3.1')">
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\LegacySupport\ObsoleteAttribute\*.cs" LinkBase="LegacySupport\ObsoleteAttribute" />
   </ItemGroup>
+
+  <ItemGroup Condition="'$(InjectPlatformAttributesOnLegacy)' == 'true' AND ('$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netcoreapp3.1')">
+    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\LegacySupport\PlatformAttributes\*.cs" LinkBase="LegacySupport\PlatformAttributes" />
+  </ItemGroup>
 </Project>
