@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -73,14 +74,14 @@ public class LoggingSpeechToTextClientTests
         if (level is LogLevel.Trace)
         {
             Assert.Collection(logs,
-                entry => Assert.True(entry.Message.Contains("GetResponseAsync invoked:") && entry.Message.Contains("\"speechLanguage\": \"pt\"")),
-                entry => Assert.True(entry.Message.Contains("GetResponseAsync completed:") && entry.Message.Contains("blue whale")));
+                entry => Assert.True(entry.Message.Contains($"{nameof(ISpeechToTextClient.TranscribeAudioAsync)} invoked:") && entry.Message.Contains("\"speechLanguage\": \"pt\"")),
+                entry => Assert.True(entry.Message.Contains($"{nameof(ISpeechToTextClient.TranscribeAudioAsync)} completed:") && entry.Message.Contains("blue whale")));
         }
         else if (level is LogLevel.Debug)
         {
             Assert.Collection(logs,
-                entry => Assert.True(entry.Message.Contains("GetResponseAsync invoked.") && !entry.Message.Contains("\"speechLanguage\": \"pt\"")),
-                entry => Assert.True(entry.Message.Contains("GetResponseAsync completed.") && !entry.Message.Contains("blue whale")));
+                entry => Assert.True(entry.Message.Contains($"{nameof(ISpeechToTextClient.TranscribeAudioAsync)} invoked.") && !entry.Message.Contains("\"speechLanguage\": \"pt\"")),
+                entry => Assert.True(entry.Message.Contains($"{nameof(ISpeechToTextClient.TranscribeAudioAsync)} completed.") && !entry.Message.Contains("blue whale")));
         }
         else
         {
@@ -125,18 +126,18 @@ public class LoggingSpeechToTextClientTests
         if (level is LogLevel.Trace)
         {
             Assert.Collection(logs,
-                entry => Assert.True(entry.Message.Contains("GetStreamingResponseAsync invoked:") && entry.Message.Contains("\"speechLanguage\": \"pt\"")),
-                entry => Assert.True(entry.Message.Contains("GetStreamingResponseAsync received update:") && entry.Message.Contains("blue")),
-                entry => Assert.True(entry.Message.Contains("GetStreamingResponseAsync received update:") && entry.Message.Contains("whale")),
-                entry => Assert.Contains("GetStreamingResponseAsync completed.", entry.Message));
+                entry => Assert.True(entry.Message.Contains($"{nameof(ISpeechToTextClient.TranscribeStreamingAudioAsync)} invoked:") && entry.Message.Contains("\"speechLanguage\": \"pt\"")),
+                entry => Assert.True(entry.Message.Contains($"{nameof(ISpeechToTextClient.TranscribeStreamingAudioAsync)} received update:") && entry.Message.Contains("blue")),
+                entry => Assert.True(entry.Message.Contains($"{nameof(ISpeechToTextClient.TranscribeStreamingAudioAsync)} received update:") && entry.Message.Contains("whale")),
+                entry => Assert.Contains($"{nameof(ISpeechToTextClient.TranscribeStreamingAudioAsync)} completed.", entry.Message));
         }
         else if (level is LogLevel.Debug)
         {
             Assert.Collection(logs,
-                entry => Assert.True(entry.Message.Contains("GetStreamingResponseAsync invoked.") && !entry.Message.Contains("speechLanguage")),
-                entry => Assert.True(entry.Message.Contains("GetStreamingResponseAsync received update.") && !entry.Message.Contains("blue")),
-                entry => Assert.True(entry.Message.Contains("GetStreamingResponseAsync received update.") && !entry.Message.Contains("whale")),
-                entry => Assert.Contains("GetStreamingResponseAsync completed.", entry.Message));
+                entry => Assert.True(entry.Message.Contains($"{nameof(ISpeechToTextClient.TranscribeStreamingAudioAsync)} invoked.") && !entry.Message.Contains("speechLanguage")),
+                entry => Assert.True(entry.Message.Contains($"{nameof(ISpeechToTextClient.TranscribeStreamingAudioAsync)} received update.") && !entry.Message.Contains("blue")),
+                entry => Assert.True(entry.Message.Contains($"{nameof(ISpeechToTextClient.TranscribeStreamingAudioAsync)} received update.") && !entry.Message.Contains("whale")),
+                entry => Assert.Contains($"{nameof(ISpeechToTextClient.TranscribeStreamingAudioAsync)} completed.", entry.Message));
         }
         else
         {

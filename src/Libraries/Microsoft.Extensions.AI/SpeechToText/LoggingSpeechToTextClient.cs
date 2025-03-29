@@ -175,19 +175,19 @@ public partial class LoggingSpeechToTextClient : DelegatingSpeechToTextClient
     [LoggerMessage(LogLevel.Debug, "{MethodName} invoked.")]
     private partial void LogInvoked(string methodName);
 
-    [LoggerMessage(LogLevel.Trace, "{MethodName} invoked: Audio contents: {AudioContents}. Options: {SpeechToTextOptions}. Metadata: {SpeechToTextClientMetadata}.")]
+    [LoggerMessage(LogLevel.Trace, $"{{MethodName}} invoked: Audio contents: {{AudioContents}}. Options: {{{nameof(AI.SpeechToTextOptions)}}}. Metadata: {{{nameof(AI.SpeechToTextClientMetadata)}}}.")]
     private partial void LogInvokedSensitive(string methodName, string audioContents, string SpeechToTextOptions, string SpeechToTextClientMetadata);
 
     [LoggerMessage(LogLevel.Debug, "{MethodName} completed.")]
     private partial void LogCompleted(string methodName);
 
-    [LoggerMessage(LogLevel.Trace, "{MethodName} completed: {SpeechToTextResponse}.")]
+    [LoggerMessage(LogLevel.Trace, $"{{MethodName}} completed: {{{nameof(AI.SpeechToTextResponse)}}}.")]
     private partial void LogCompletedSensitive(string methodName, string SpeechToTextResponse);
 
-    [LoggerMessage(LogLevel.Debug, "GetStreamingResponseAsync received update.")]
+    [LoggerMessage(LogLevel.Debug, $"{nameof(ISpeechToTextClient.TranscribeStreamingAudioAsync)} received update.")]
     private partial void LogStreamingUpdate();
 
-    [LoggerMessage(LogLevel.Trace, "GetStreamingResponseAsync received update: {SpeechToTextResponseUpdate}")]
+    [LoggerMessage(LogLevel.Trace, $"{nameof(ISpeechToTextClient.TranscribeStreamingAudioAsync)} received update: {{{nameof(SpeechToTextResponseUpdate)}}}")]
     private partial void LogStreamingUpdateSensitive(string speechToTextResponseUpdate);
 
     [LoggerMessage(LogLevel.Debug, "{MethodName} canceled.")]
