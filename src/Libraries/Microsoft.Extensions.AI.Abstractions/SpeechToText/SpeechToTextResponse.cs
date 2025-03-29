@@ -4,7 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
+using System.Linq;
+
 using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
 
@@ -14,42 +15,34 @@ namespace Microsoft.Extensions.AI;
 [Experimental("MEAI001")]
 public class SpeechToTextResponse
 {
-    /// <summary>The list of choices in the generated text response.</summary>
-    private IList<SpeechToTextMessage> _choices;
+    /// <summary>The content items in the generated text response.</summary>
+    private IList<AIContent>? _contents;
 
     /// <summary>Initializes a new instance of the <see cref="SpeechToTextResponse"/> class.</summary>
-    /// <param name="message">the generated text representing the singular choice message in the response.</param>
-    public SpeechToTextResponse(SpeechToTextMessage message)
-        : this([Throw.IfNull(message)])
-    {
-    }
-
-    /// <summary>Initializes a new instance of the <see cref="SpeechToTextResponse"/> class.</summary>
-    /// <param name="choices">The list of choices in the response, one message per choice.</param>
     [JsonConstructor]
-    public SpeechToTextResponse(IList<SpeechToTextMessage> choices)
+    public SpeechToTextResponse()
     {
-        _choices = Throw.IfNull(choices);
     }
 
-    /// <summary>Gets the speech to text message details.</summary>
-    /// <remarks>
-    /// If no speech to text was generated, this property will throw.
-    /// </remarks>
-    [JsonIgnore]
-    public SpeechToTextMessage Message
+    /// <summary>Initializes a new instance of the <see cref="SpeechToTextResponse"/> class.</summary>
+    /// <param name="contents">The contents for this response.</param>
+    public SpeechToTextResponse(IList<AIContent> contents)
     {
-        get
-        {
-            var choices = Choices;
-            if (choices.Count == 0)
-            {
-                throw new InvalidOperationException($"The {nameof(SpeechToTextResponse)} instance does not contain any {nameof(SpeechToTextMessage)} choices.");
-            }
-
-            return choices[0];
-        }
+        _contents = Throw.IfNull(contents);
     }
+
+    /// <summary>Initializes a new instance of the <see cref="SpeechToTextResponse"/> class.</summary>
+    /// <param name="content">Content of the response.</param>
+    public SpeechToTextResponse(string? content)
+        : this(content is null ? [] : [new TextContent(content)])
+    {
+    }
+
+    /// <summary>Gets or sets the start time of the text segment in relation to the full audio speech length.</summary>
+    public TimeSpan? StartTime { get; set; }
+
+    /// <summary>Gets or sets the end time of the text segment in relation to the full audio speech length.</summary>
+    public TimeSpan? EndTime { get; set; }
 
     /// <summary>Gets or sets the ID of the speech to text response.</summary>
     public string? ResponseId { get; set; }
@@ -69,77 +62,57 @@ public class SpeechToTextResponse
     /// <summary>Gets or sets any additional properties associated with the speech to text completion.</summary>
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
 
-    /// <inheritdoc />
-    public override string ToString()
+    /// <summary>
+    /// Gets or sets the text of the first <see cref="TextContent"/> instance in <see cref="Contents" />.
+    /// </summary>
+    /// <remarks>
+    /// If there is no <see cref="TextContent"/> instance in <see cref="Contents" />, then the getter returns <see langword="null" />,
+    /// and the setter adds a new <see cref="TextContent"/> instance with the provided value.
+    /// </remarks>
+    [JsonIgnore]
+    public string? Text
     {
-        if (Choices.Count == 1)
+        get => Contents.OfType<TextContent>().FirstOrDefault()?.Text;
+        set
         {
-            return Choices[0].ToString();
-        }
-
-        StringBuilder sb = new();
-        for (int i = 0; i < Choices.Count; i++)
-        {
-            if (i > 0)
+            if (Contents.OfType<TextContent>().FirstOrDefault() is { } textContent)
             {
-                _ = sb.AppendLine().AppendLine();
+                textContent.Text = value;
             }
-
-            _ = sb.Append("Choice ").Append(i).AppendLine(":").Append(Choices[i]);
+            else if (value is not null)
+            {
+                Contents.Add(new TextContent(value));
+            }
         }
-
-        return sb.ToString();
     }
+
+    /// <inheritdoc />
+    public override string ToString() => Contents.ConcatText();
 
     /// <summary>Creates an array of <see cref="SpeechToTextResponseUpdate" /> instances that represent this <see cref="SpeechToTextResponse" />.</summary>
     /// <returns>An array of <see cref="SpeechToTextResponseUpdate" /> instances that may be used to represent this <see cref="SpeechToTextResponse" />.</returns>
     public SpeechToTextResponseUpdate[] ToSpeechToTextResponseUpdates()
     {
-        SpeechToTextResponseUpdate? extra = null;
-        if (AdditionalProperties is not null)
+        SpeechToTextResponseUpdate update = new SpeechToTextResponseUpdate
         {
-            extra = new SpeechToTextResponseUpdate
-            {
-                Kind = SpeechToTextResponseUpdateKind.TextUpdated,
-                AdditionalProperties = AdditionalProperties,
-            };
-        }
+            Contents = Contents,
+            AdditionalProperties = AdditionalProperties,
+            RawRepresentation = RawRepresentation,
+            StartTime = StartTime,
+            EndTime = EndTime,
+            Kind = SpeechToTextResponseUpdateKind.TextUpdated,
+            ResponseId = ResponseId,
+            ModelId = ModelId,
+        };
 
-        int choicesCount = Choices.Count;
-        var updates = new SpeechToTextResponseUpdate[choicesCount + (extra is null ? 0 : 1)];
-
-        for (int choiceIndex = 0; choiceIndex < choicesCount; choiceIndex++)
-        {
-            SpeechToTextMessage choice = Choices[choiceIndex];
-            updates[choiceIndex] = new SpeechToTextResponseUpdate
-            {
-                ChoiceIndex = choiceIndex,
-                InputIndex = choice.InputIndex,
-
-                AdditionalProperties = choice.AdditionalProperties,
-                Contents = choice.Contents,
-                RawRepresentation = choice.RawRepresentation,
-                StartTime = choice.StartTime,
-                EndTime = choice.EndTime,
-
-                Kind = SpeechToTextResponseUpdateKind.TextUpdated,
-                ResponseId = ResponseId,
-                ModelId = ModelId,
-            };
-        }
-
-        if (extra is not null)
-        {
-            updates[choicesCount] = extra;
-        }
-
-        return updates;
+        return [update];
     }
 
-    /// <summary>Gets or sets the list of speech to text choices.</summary>
-    public IList<SpeechToTextMessage> Choices
+    /// <summary>Gets or sets the generated content items.</summary>
+    [AllowNull]
+    public IList<AIContent> Contents
     {
-        get => _choices;
-        set => _choices = Throw.IfNull(value);
+        get => _contents ??= [];
+        set => _contents = value;
     }
 }

@@ -98,15 +98,15 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
 
         var speechResponse = await GetTextAsync(audioSpeechStream, options, cancellationToken).ConfigureAwait(false);
 
-        foreach (var choice in speechResponse.Choices)
+        yield return new SpeechToTextResponseUpdate(speechResponse.Contents)
         {
-            yield return new SpeechToTextResponseUpdate(choice.Contents)
-            {
-                InputIndex = 0,
-                Kind = SpeechToTextResponseUpdateKind.TextUpdated,
-                RawRepresentation = choice.RawRepresentation
-            };
-        }
+            Kind = SpeechToTextResponseUpdateKind.TextUpdated,
+            RawRepresentation = speechResponse.RawRepresentation,
+            StartTime = speechResponse.StartTime,
+            EndTime = speechResponse.EndTime,
+            ResponseId = speechResponse.ResponseId,
+            ModelId = speechResponse.ModelId
+        };
     }
 
     /// <inheritdoc />
@@ -115,7 +115,7 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
     {
         _ = Throw.IfNull(audioSpeechStream);
 
-        List<SpeechToTextMessage> choices = [];
+        SpeechToTextResponse response = new();
 
         // <summary>A translation is triggered when the target text language is specified and the source language is not provided or different.</summary>
         static bool IsTranslationRequest(SpeechToTextOptions? options)
@@ -147,8 +147,7 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
                     openAIOptions, cancellationToken).ConfigureAwait(false)).Value;
             }
 
-            var choice = FromOpenAIAudioTranslation(translationResult, 0);
-            choices.Add(choice);
+            UpdateResponseFromOpenAIAudioTranslation(response, translationResult);
         }
         else
         {
@@ -169,11 +168,10 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
                     openAIOptions, cancellationToken).ConfigureAwait(false)).Value;
             }
 
-            var choice = FromOpenAIAudioTranscription(transcriptionResult, 0);
-            choices.Add(choice);
+            UpdateResponseFromOpenAIAudioTranscription(response, transcriptionResult);
         }
 
-        return new SpeechToTextResponse(choices);
+        return response;
     }
 
     /// <inheritdoc />
@@ -182,7 +180,10 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
         // Nothing to dispose. Implementation required for the IAudioTranscriptionClient interface.
     }
 
-    private static SpeechToTextMessage FromOpenAIAudioTranscription(AudioTranscription audioTranscription, int inputIndex)
+    /// <summary>Updates a <see cref="SpeechToTextResponse"/> from an OpenAI <see cref="AudioTranscription"/>.</summary>
+    /// <param name="response">The response to update.</param>
+    /// <param name="audioTranscription">The OpenAI audio transcription.</param>
+    private static void UpdateResponseFromOpenAIAudioTranscription(SpeechToTextResponse response, AudioTranscription audioTranscription)
     {
         _ = Throw.IfNull(audioTranscription);
 
@@ -202,19 +203,15 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
             startTime = audioTranscription.Words[0].StartTime;
         }
 
-        // Create the return choice.
-        return new SpeechToTextMessage
+        // Update the response
+        response.RawRepresentation = audioTranscription;
+        response.Text = audioTranscription.Text;
+        response.StartTime = startTime;
+        response.EndTime = endTime;
+        response.AdditionalProperties = new AdditionalPropertiesDictionary
         {
-            RawRepresentation = audioTranscription,
-            InputIndex = inputIndex,
-            Text = audioTranscription.Text,
-            StartTime = startTime,
-            EndTime = endTime,
-            AdditionalProperties = new AdditionalPropertiesDictionary
-            {
-                [nameof(audioTranscription.Language)] = audioTranscription.Language,
-                [nameof(audioTranscription.Duration)] = audioTranscription.Duration
-            },
+            [nameof(audioTranscription.Language)] = audioTranscription.Language,
+            [nameof(audioTranscription.Duration)] = audioTranscription.Duration
         };
     }
 
@@ -257,7 +254,10 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
         return result;
     }
 
-    private static SpeechToTextMessage FromOpenAIAudioTranslation(AudioTranslation audioTranslation, int inputIndex)
+    /// <summary>Updates a <see cref="SpeechToTextResponse"/> from an OpenAI <see cref="AudioTranslation"/>.</summary>
+    /// <param name="response">The response to update.</param>
+    /// <param name="audioTranslation">The OpenAI audio translation.</param>
+    private static void UpdateResponseFromOpenAIAudioTranslation(SpeechToTextResponse response, AudioTranslation audioTranslation)
     {
         _ = Throw.IfNull(audioTranslation);
 
@@ -271,19 +271,15 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
             startTime = audioTranslation.Segments[0].StartTime;
         }
 
-        // Create the return choice.
-        return new SpeechToTextMessage
+        // Update the response
+        response.RawRepresentation = audioTranslation;
+        response.Text = audioTranslation.Text;
+        response.StartTime = startTime;
+        response.EndTime = endTime;
+        response.AdditionalProperties = new AdditionalPropertiesDictionary
         {
-            RawRepresentation = audioTranslation,
-            InputIndex = inputIndex,
-            Text = audioTranslation.Text,
-            StartTime = startTime,
-            EndTime = endTime,
-            AdditionalProperties = new AdditionalPropertiesDictionary
-            {
-                [nameof(audioTranslation.Language)] = audioTranslation.Language,
-                [nameof(audioTranslation.Duration)] = audioTranslation.Duration
-            },
+            [nameof(audioTranslation.Language)] = audioTranslation.Language,
+            [nameof(audioTranslation.Duration)] = audioTranslation.Duration
         };
     }
 

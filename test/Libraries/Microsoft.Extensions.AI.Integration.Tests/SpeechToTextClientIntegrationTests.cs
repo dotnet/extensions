@@ -38,7 +38,7 @@ public abstract class SpeechToTextClientIntegrationTests : IDisposable
         using var audioSpeechStream = GetAudioStream("audio001.mp3");
         var response = await _client.GetTextAsync(audioSpeechStream);
 
-        Assert.Contains("gym", response.Message.Text, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("gym", response.Text, StringComparison.OrdinalIgnoreCase);
     }
 
     [ConditionalFact]

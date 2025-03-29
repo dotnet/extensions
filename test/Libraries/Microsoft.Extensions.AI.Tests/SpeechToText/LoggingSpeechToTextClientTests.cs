@@ -58,7 +58,7 @@ public class LoggingSpeechToTextClientTests
         {
             GetTextAsyncCallback = (audioSpeechStream, options, cancellationToken) =>
             {
-                return Task.FromResult(new SpeechToTextResponse([new("blue whale")]));
+                return Task.FromResult(new SpeechToTextResponse("blue whale"));
             },
         };
 

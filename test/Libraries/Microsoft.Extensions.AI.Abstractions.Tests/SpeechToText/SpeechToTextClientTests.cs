@@ -13,7 +13,7 @@ public class SpeechToTextClientTests
     public async Task GetTextAsync_CreatesTextMessageAsync()
     {
         // Arrange
-        var expectedResponse = new SpeechToTextResponse(new SpeechToTextMessage("hello"));
+        var expectedResponse = new SpeechToTextResponse("hello");
         var expectedOptions = new SpeechToTextOptions();
         using var cts = new CancellationTokenSource();
 
@@ -23,8 +23,7 @@ public class SpeechToTextClientTests
             {
                 // For the purpose of the test, we assume that the underlying implementation converts the audio speech stream into a transcription choice.
                 // (In a real implementation, the audio speech data would be processed.)
-                SpeechToTextMessage choice = new("hello");
-                return Task.FromResult(new SpeechToTextResponse(choice));
+                return Task.FromResult(new SpeechToTextResponse("hello"));
             },
         };
 
@@ -36,6 +35,6 @@ public class SpeechToTextClientTests
             cts.Token);
 
         // Assert
-        Assert.Same(expectedResponse.Message.Text, response.Message.Text);
+        Assert.Equal(expectedResponse.Text, response.Text);
     }
 }

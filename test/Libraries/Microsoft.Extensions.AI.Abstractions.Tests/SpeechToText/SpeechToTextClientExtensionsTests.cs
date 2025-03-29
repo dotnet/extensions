@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -22,33 +21,32 @@ public class SpeechToTextClientExtensionsTests
     }
 
     [Fact]
-    public void GetTextAsync_InvalidArgs_Throws()
+    public async Task GetTextAsync_InvalidArgs_Throws()
     {
         // Note: the extension method now requires a DataContent (not a string).
-        Assert.Throws<ArgumentNullException>("client", () =>
-        {
-            _ = SpeechToTextClientExtensions.GetTextAsync(null!, new DataContent("data:audio/wav;base64,AQIDBA=="));
-        });
+        ISpeechToTextClient? client = null;
+        var content = new DataContent("data:audio/wav;base64,AQIDBA==");
+        var ex1 = await Assert.ThrowsAsync<ArgumentNullException>(() => SpeechToTextClientExtensions.GetTextAsync(client!, content));
+        Assert.Equal("client", ex1.ParamName);
 
-        Assert.Throws<ArgumentNullException>("audioSpeechContent", () =>
-        {
-            _ = SpeechToTextClientExtensions.GetTextAsync(new TestSpeechToTextClient(), null!);
-        });
+        using var testClient = new TestSpeechToTextClient();
+        DataContent? nullContent = null;
+        var ex2 = await Assert.ThrowsAsync<ArgumentNullException>(() => SpeechToTextClientExtensions.GetTextAsync(testClient, nullContent!));
+        Assert.Equal("audioSpeechContent", ex2.ParamName);
     }
 
     [Fact]
-    public void GetStreamingTextAsync_InvalidArgs_Throws()
+    public async Task GetStreamingTextAsync_InvalidArgs_Throws()
     {
-        Assert.Throws<ArgumentNullException>("client", () =>
-        {
-            using var stream = new MemoryStream();
-            _ = SpeechToTextClientExtensions.GetStreamingTextAsync(client: null!, new DataContent("data:audio/wav;base64,AQIDBA=="));
-        });
+        ISpeechToTextClient? client = null;
+        var content = new DataContent("data:audio/wav;base64,AQIDBA==");
+        var ex1 = await Assert.ThrowsAsync<ArgumentNullException>(() => SpeechToTextClientExtensions.GetStreamingTextAsync(client!, content).GetAsyncEnumerator().MoveNextAsync().AsTask());
+        Assert.Equal("client", ex1.ParamName);
 
-        Assert.Throws<ArgumentNullException>("audioSpeechContent", () =>
-        {
-            _ = SpeechToTextClientExtensions.GetStreamingTextAsync(new TestSpeechToTextClient(), audioSpeechContent: null!);
-        });
+        using var testClient = new TestSpeechToTextClient();
+        DataContent? nullContent = null;
+        var ex2 = await Assert.ThrowsAsync<ArgumentNullException>(() => SpeechToTextClientExtensions.GetStreamingTextAsync(testClient, nullContent!).GetAsyncEnumerator().MoveNextAsync().AsTask());
+        Assert.Equal("audioSpeechContent", ex2.ParamName);
     }
 
     [Fact]
@@ -63,7 +61,9 @@ public class SpeechToTextClientExtensionsTests
             GetStreamingTextAsyncCallback = (audioSpeechStream, options, cancellationToken) =>
             {
                 // For testing, return an async enumerable yielding one streaming update with text "world".
-                return YieldAsync(new SpeechToTextResponseUpdate { Text = "world" });
+                var update = new SpeechToTextResponseUpdate();
+                update.Contents.Add(new TextContent("world"));
+                return YieldAsync(update);
             },
         };
 

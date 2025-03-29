@@ -43,8 +43,8 @@ public static class SpeechToTextClientExtensions
         SpeechToTextOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(audioSpeechContent);
         _ = Throw.IfNull(client);
+        _ = Throw.IfNull(audioSpeechContent);
 
         using var audioSpeechStream = new MemoryStream(audioSpeechContent.Data.ToArray());
         return await client.GetTextAsync(audioSpeechStream, options, cancellationToken).ConfigureAwait(false);
@@ -62,8 +62,8 @@ public static class SpeechToTextClientExtensions
         SpeechToTextOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(audioSpeechContent);
         _ = Throw.IfNull(client);
+        _ = Throw.IfNull(audioSpeechContent);
 
         using var audioSpeechStream = new MemoryStream(audioSpeechContent.Data.ToArray());
         await foreach (var update in client.GetStreamingTextAsync(audioSpeechStream, options, cancellationToken).ConfigureAwait(false))

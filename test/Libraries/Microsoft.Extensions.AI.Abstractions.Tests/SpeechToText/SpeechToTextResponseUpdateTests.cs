@@ -19,7 +19,6 @@ public class SpeechToTextResponseUpdateTests
         Assert.Null(update.Text);
         Assert.Empty(update.Contents);
         Assert.Null(update.ResponseId);
-        Assert.Equal(0, update.ChoiceIndex);
         Assert.Null(update.StartTime);
         Assert.Null(update.EndTime);
         Assert.Equal(string.Empty, update.ToString());
@@ -30,13 +29,9 @@ public class SpeechToTextResponseUpdateTests
     {
         SpeechToTextResponseUpdate update = new()
         {
-            InputIndex = 5,
-            ChoiceIndex = 42,
             Kind = new SpeechToTextResponseUpdateKind("custom"),
         };
 
-        Assert.Equal(5, update.InputIndex);
-        Assert.Equal(42, update.ChoiceIndex);
         Assert.Equal("custom", update.Kind.Value);
 
         // Test the computed Text property
@@ -137,8 +132,6 @@ public class SpeechToTextResponseUpdateTests
     {
         SpeechToTextResponseUpdate original = new()
         {
-            InputIndex = 7,
-            ChoiceIndex = 3,
             Kind = new SpeechToTextResponseUpdateKind("transcribed"),
             ResponseId = "id123",
             StartTime = TimeSpan.FromSeconds(5),
@@ -154,8 +147,6 @@ public class SpeechToTextResponseUpdateTests
         SpeechToTextResponseUpdate? result = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.SpeechToTextResponseUpdate);
         Assert.NotNull(result);
 
-        Assert.Equal(original.InputIndex, result.InputIndex);
-        Assert.Equal(original.ChoiceIndex, result.ChoiceIndex);
         Assert.Equal(original.Kind, result.Kind);
         Assert.Equal(original.ResponseId, result.ResponseId);
         Assert.Equal(original.StartTime, result.StartTime);

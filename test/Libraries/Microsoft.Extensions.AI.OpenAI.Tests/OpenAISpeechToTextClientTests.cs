@@ -140,11 +140,10 @@ public class OpenAISpeechToTextClientTests
 
         Assert.NotNull(response);
 
-        Assert.Single(response.Choices);
-        Assert.Contains("I finally got back to the gym the other day", response.Message.Text);
+        Assert.Contains("I finally got back to the gym the other day", response.Text);
 
-        Assert.NotNull(response.Message.RawRepresentation);
-        Assert.IsType<OpenAI.Audio.AudioTranscription>(response.Message.RawRepresentation);
+        Assert.NotNull(response.RawRepresentation);
+        Assert.IsType<OpenAI.Audio.AudioTranscription>(response.RawRepresentation);
     }
 
     [Fact]
@@ -216,7 +215,6 @@ public class OpenAISpeechToTextClientTests
             Assert.Contains("I finally got back to the gym the other day", update.Text);
             Assert.NotNull(update.RawRepresentation);
             Assert.IsType<OpenAI.Audio.AudioTranscription>(update.RawRepresentation);
-            Assert.Equal(0, update.InputIndex);
         }
     }
 
@@ -288,8 +286,7 @@ public class OpenAISpeechToTextClientTests
         {
             Assert.Contains("I finally got back to the gym the other day", update.Text);
             Assert.NotNull(update.RawRepresentation);
-            Assert.IsType<OpenAI.Audio.AudioTranslation>(update.RawRepresentation);
-            Assert.Equal(0, update.InputIndex);
+            Assert.IsType<AudioTranslation>(update.RawRepresentation);
         }
     }
 

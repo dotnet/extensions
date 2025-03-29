@@ -54,12 +54,6 @@ public class SpeechToTextResponseUpdate
     {
     }
 
-    /// <summary>Gets or sets the zero-based index of the input list with which this update is associated in the streaming sequence.</summary>
-    public int InputIndex { get; set; }
-
-    /// <summary>Gets or sets the zero-based index of the resulting choice with which this update is associated in the streaming sequence.</summary>
-    public int ChoiceIndex { get; set; }
-
     /// <summary>Gets or sets the kind of the generated text update.</summary>
     public SpeechToTextResponseUpdateKind Kind { get; set; } = SpeechToTextResponseUpdateKind.TextUpdating;
 
