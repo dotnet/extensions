@@ -18,13 +18,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Resources\audio001.wav" />
-    <None Remove="Resources\audio002.wav" />
+    <None Remove="Resources\audio001.mp3" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Resources\audio001.wav" />
-    <EmbeddedResource Include="Resources\audio002.wav" />
+    <EmbeddedResource Include="Resources\audio001.mp3">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="Resources\dotnet.png" />
   </ItemGroup>
 

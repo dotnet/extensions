@@ -42,16 +42,16 @@ public class DelegatingSpeechToTextClient : ISpeechToTextClient
 
     /// <inheritdoc />
     public virtual Task<SpeechToTextResponse> GetTextAsync(
-        Stream audioStream, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
+        Stream audioSpeechStream, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return InnerClient.GetTextAsync(audioStream, options, cancellationToken);
+        return InnerClient.GetTextAsync(audioSpeechStream, options, cancellationToken);
     }
 
     /// <inheritdoc />
     public virtual IAsyncEnumerable<SpeechToTextResponseUpdate> GetStreamingTextAsync(
-        Stream audioStream, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
+        Stream audioSpeechStream, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return InnerClient.GetStreamingTextAsync(audioStream, options, cancellationToken);
+        return InnerClient.GetStreamingTextAsync(audioSpeechStream, options, cancellationToken);
     }
 
     /// <inheritdoc />

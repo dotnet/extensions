@@ -56,7 +56,7 @@ public class LoggingSpeechToTextClientTests
 
         using ISpeechToTextClient innerClient = new TestSpeechToTextClient
         {
-            GetResponseAsyncCallback = (audioStream, options, cancellationToken) =>
+            GetTextAsyncCallback = (audioSpeechStream, options, cancellationToken) =>
             {
                 return Task.FromResult(new SpeechToTextResponse([new("blue whale")]));
             },
@@ -67,9 +67,9 @@ public class LoggingSpeechToTextClientTests
             .UseLogging()
             .Build(services);
 
-        using var memoryStream = new MemoryStream(new byte[] { 1, 2, 3, 4 });
+        using var audioSpeechStream = new MemoryStream(new byte[] { 1, 2, 3, 4 });
         await client.GetTextAsync(
-            memoryStream,
+            audioSpeechStream,
             new SpeechToTextOptions { SpeechLanguage = "pt" });
 
         var logs = collector.GetSnapshot();
@@ -102,7 +102,7 @@ public class LoggingSpeechToTextClientTests
 
         using ISpeechToTextClient innerClient = new TestSpeechToTextClient
         {
-            GetStreamingResponseAsyncCallback = (audioStream, options, cancellationToken) => GetUpdatesAsync()
+            GetStreamingTextAsyncCallback = (audioSpeechStream, options, cancellationToken) => GetUpdatesAsync()
         };
 
         static async IAsyncEnumerable<SpeechToTextResponseUpdate> GetUpdatesAsync()
@@ -117,9 +117,9 @@ public class LoggingSpeechToTextClientTests
             .UseLogging(loggerFactory)
             .Build();
 
-        using var memoryStream = new MemoryStream(new byte[] { 1, 2, 3, 4 });
+        using var audioSpeechStream = new MemoryStream(new byte[] { 1, 2, 3, 4 });
         await foreach (var update in client.GetStreamingTextAsync(
-            memoryStream,
+            audioSpeechStream,
             new SpeechToTextOptions { SpeechLanguage = "pt" }))
         {
             // nop

@@ -23,14 +23,14 @@ public sealed class TestSpeechToTextClient : ISpeechToTextClient
         SpeechToTextOptions?,
         CancellationToken,
         Task<SpeechToTextResponse>>?
-        GetResponseAsyncCallback
+        GetTextAsyncCallback
     { get; set; }
 
     public Func<Stream,
         SpeechToTextOptions?,
         CancellationToken,
         IAsyncEnumerable<SpeechToTextResponseUpdate>>?
-        GetStreamingResponseAsyncCallback
+        GetStreamingTextAsyncCallback
     { get; set; }
 
     public Func<Type, object?, object?> GetServiceCallback { get; set; }
@@ -39,16 +39,16 @@ public sealed class TestSpeechToTextClient : ISpeechToTextClient
         => serviceType is not null && serviceKey is null && serviceType.IsInstanceOfType(this) ? this : null;
 
     public Task<SpeechToTextResponse> GetTextAsync(
-        Stream audioStream,
+        Stream audioSpeechStream,
         SpeechToTextOptions? options = null,
         CancellationToken cancellationToken = default)
-        => GetResponseAsyncCallback!.Invoke(audioStream, options, cancellationToken);
+        => GetTextAsyncCallback!.Invoke(audioSpeechStream, options, cancellationToken);
 
     public IAsyncEnumerable<SpeechToTextResponseUpdate> GetStreamingTextAsync(
-        Stream audioStream,
+        Stream audioSpeechStream,
         SpeechToTextOptions? options = null,
         CancellationToken cancellationToken = default)
-        => GetStreamingResponseAsyncCallback!.Invoke(audioStream, options, cancellationToken);
+        => GetStreamingTextAsyncCallback!.Invoke(audioSpeechStream, options, cancellationToken);
 
     public object? GetService(Type serviceType, object? serviceKey = null)
         => GetServiceCallback!.Invoke(serviceType, serviceKey);

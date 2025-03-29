@@ -16,8 +16,8 @@ namespace Microsoft.Extensions.AI;
 /// <remarks>
 /// <para><see cref="SpeechToTextResponseUpdate"/> is so named because it represents streaming updates
 /// to an speech to text generation. As such, it is considered erroneous for multiple updates that are part
-/// of the same speech audio to contain competing values. For example, some updates that are part of
-/// the same speech audio may have a <see langword="null"/> value, and others may have a non-<see langword="null"/> value,
+/// of the same audio speech to contain competing values. For example, some updates that are part of
+/// the same audio speech may have a <see langword="null"/> value, and others may have a non-<see langword="null"/> value,
 /// but all of those with a non-<see langword="null"/> value must have the same value (e.g. <see cref="SpeechToTextResponseUpdate.ResponseId"/>).
 /// </para>
 /// <para>
@@ -66,10 +66,10 @@ public class SpeechToTextResponseUpdate
     /// <summary>Gets or sets the ID of the generated text response of which this update is a part.</summary>
     public string? ResponseId { get; set; }
 
-    /// <summary>Gets or sets the start time of the text segment associated with this update in relation to the full speech audio length.</summary>
+    /// <summary>Gets or sets the start time of the text segment associated with this update in relation to the full audio speech length.</summary>
     public TimeSpan? StartTime { get; set; }
 
-    /// <summary>Gets or sets the end time of the text segment associated with this update in relation to the full speech audio length.</summary>
+    /// <summary>Gets or sets the end time of the text segment associated with this update in relation to the full audio speech length.</summary>
     public TimeSpan? EndTime { get; set; }
 
     /// <summary>Gets or sets the model ID using in the creation of the speech to text of which this update is a part.</summary>

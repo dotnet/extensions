@@ -38,11 +38,11 @@ public class SpeechToTextMessage
     }
 
     /// <summary>Gets or sets the start time of the speech to text choice.</summary>
-    /// <remarks>This represents the start of the generated text in relation to the original speech audio source length.</remarks>
+    /// <remarks>This represents the start of the generated text in relation to the original audio speech source length.</remarks>
     public TimeSpan? StartTime { get; set; }
 
     /// <summary>Gets or sets the end time of the speech to text choice.</summary>
-    /// <remarks>This represents the end of the generated text in relation to the original speech audio source length.</remarks>
+    /// <remarks>This represents the end of the generated text in relation to the original audio speech source length.</remarks>
     public TimeSpan? EndTime { get; set; }
 
     /// <summary>

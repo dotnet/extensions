@@ -92,11 +92,11 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
 
     /// <inheritdoc />
     public async IAsyncEnumerable<SpeechToTextResponseUpdate> GetStreamingTextAsync(
-        Stream audioStream, SpeechToTextOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        Stream audioSpeechStream, SpeechToTextOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(audioStream);
+        _ = Throw.IfNull(audioSpeechStream);
 
-        var speechResponse = await GetTextAsync(audioStream, options, cancellationToken).ConfigureAwait(false);
+        var speechResponse = await GetTextAsync(audioSpeechStream, options, cancellationToken).ConfigureAwait(false);
 
         foreach (var choice in speechResponse.Choices)
         {
@@ -111,9 +111,9 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
 
     /// <inheritdoc />
     public async Task<SpeechToTextResponse> GetTextAsync(
-        Stream audioStream, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
+        Stream audioSpeechStream, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(audioStream);
+        _ = Throw.IfNull(audioSpeechStream);
 
         List<SpeechToTextMessage> choices = [];
 
@@ -136,13 +136,13 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
             AudioTranslation translationResult;
 
 #if NET
-            await using (audioStream.ConfigureAwait(false))
+            await using (audioSpeechStream.ConfigureAwait(false))
 #else
-            using (audioStream)
+            using (audioSpeechStream)
 #endif
             {
                 translationResult = (await _audioClient.TranslateAudioAsync(
-                    audioStream,
+                    audioSpeechStream,
                     "file.wav", // this information internally is required but is only being used to create a header name in the multipart request.
                     openAIOptions, cancellationToken).ConfigureAwait(false)).Value;
             }
@@ -158,13 +158,13 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
             AudioTranscription transcriptionResult;
 
 #if NET
-            await using (audioStream.ConfigureAwait(false))
+            await using (audioSpeechStream.ConfigureAwait(false))
 #else
-            using (audioStream)
+            using (audioSpeechStream)
 #endif
             {
                 transcriptionResult = (await _audioClient.TranscribeAudioAsync(
-                    audioStream,
+                    audioSpeechStream,
                     "file.wav", // this information internally is required but is only being used to create a header name in the multipart request.
                     openAIOptions, cancellationToken).ConfigureAwait(false)).Value;
             }

@@ -30,9 +30,9 @@ public class SpeechToTextClientExtensionsTests
             _ = SpeechToTextClientExtensions.GetTextAsync(null!, new DataContent("data:audio/wav;base64,AQIDBA=="));
         });
 
-        Assert.Throws<ArgumentNullException>("speechContent", () =>
+        Assert.Throws<ArgumentNullException>("audioSpeechContent", () =>
         {
-            _ = SpeechToTextClientExtensions.GetTextAsync(new TestSpeechToTextClient(), (DataContent)null!);
+            _ = SpeechToTextClientExtensions.GetTextAsync(new TestSpeechToTextClient(), null!);
         });
     }
 
@@ -45,9 +45,9 @@ public class SpeechToTextClientExtensionsTests
             _ = SpeechToTextClientExtensions.GetStreamingTextAsync(client: null!, new DataContent("data:audio/wav;base64,AQIDBA=="));
         });
 
-        Assert.Throws<ArgumentNullException>("speechContent", () =>
+        Assert.Throws<ArgumentNullException>("audioSpeechContent", () =>
         {
-            _ = SpeechToTextClientExtensions.GetStreamingTextAsync(new TestSpeechToTextClient(), speechContent: null!);
+            _ = SpeechToTextClientExtensions.GetStreamingTextAsync(new TestSpeechToTextClient(), audioSpeechContent: null!);
         });
     }
 
@@ -60,7 +60,7 @@ public class SpeechToTextClientExtensionsTests
 
         using TestSpeechToTextClient client = new()
         {
-            GetStreamingResponseAsyncCallback = (audioStream, options, cancellationToken) =>
+            GetStreamingTextAsyncCallback = (audioSpeechStream, options, cancellationToken) =>
             {
                 // For testing, return an async enumerable yielding one streaming update with text "world".
                 return YieldAsync(new SpeechToTextResponseUpdate { Text = "world" });

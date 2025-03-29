@@ -47,13 +47,13 @@ public partial class LoggingSpeechToTextClient : DelegatingSpeechToTextClient
 
     /// <inheritdoc/>
     public override async Task<SpeechToTextResponse> GetTextAsync(
-        Stream audioStream, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
+        Stream audioSpeechStream, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
         {
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokedSensitive(nameof(GetTextAsync), "[audio stream]", AsJson(options), AsJson(this.GetService<SpeechToTextClientMetadata>()));
+                LogInvokedSensitive(nameof(GetTextAsync), "[audio speech stream]", AsJson(options), AsJson(this.GetService<SpeechToTextClientMetadata>()));
             }
             else
             {
@@ -63,7 +63,7 @@ public partial class LoggingSpeechToTextClient : DelegatingSpeechToTextClient
 
         try
         {
-            var completion = await base.GetTextAsync(audioStream, options, cancellationToken).ConfigureAwait(false);
+            var completion = await base.GetTextAsync(audioSpeechStream, options, cancellationToken).ConfigureAwait(false);
 
             if (_logger.IsEnabled(LogLevel.Debug))
             {
@@ -93,13 +93,13 @@ public partial class LoggingSpeechToTextClient : DelegatingSpeechToTextClient
 
     /// <inheritdoc/>
     public override async IAsyncEnumerable<SpeechToTextResponseUpdate> GetStreamingTextAsync(
-        Stream audioStream, SpeechToTextOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        Stream audioSpeechStream, SpeechToTextOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
         {
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokedSensitive(nameof(GetStreamingTextAsync), "[audio stream]", AsJson(options), AsJson(this.GetService<SpeechToTextClientMetadata>()));
+                LogInvokedSensitive(nameof(GetStreamingTextAsync), "[audio speech stream]", AsJson(options), AsJson(this.GetService<SpeechToTextClientMetadata>()));
             }
             else
             {
@@ -110,7 +110,7 @@ public partial class LoggingSpeechToTextClient : DelegatingSpeechToTextClient
         IAsyncEnumerator<SpeechToTextResponseUpdate> e;
         try
         {
-            e = base.GetStreamingTextAsync(audioStream, options, cancellationToken).GetAsyncEnumerator(cancellationToken);
+            e = base.GetStreamingTextAsync(audioSpeechStream, options, cancellationToken).GetAsyncEnumerator(cancellationToken);
         }
         catch (OperationCanceledException)
         {

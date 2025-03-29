@@ -35,8 +35,8 @@ public abstract class SpeechToTextClientIntegrationTests : IDisposable
     {
         SkipIfNotEnabled();
 
-        using var audioStream = GetAudioStream("audio001.wav");
-        var response = await _client.GetTextAsync(audioStream);
+        using var audioSpeechStream = GetAudioStream("audio001.mp3");
+        var response = await _client.GetTextAsync(audioSpeechStream);
 
         Assert.Contains("gym", response.Message.Text, StringComparison.OrdinalIgnoreCase);
     }
@@ -46,10 +46,10 @@ public abstract class SpeechToTextClientIntegrationTests : IDisposable
     {
         SkipIfNotEnabled();
 
-        using var audioStream = GetAudioStream("audio001.wav");
+        using var audioSpeechStream = GetAudioStream("audio001.mp3");
 
         StringBuilder sb = new();
-        await foreach (var chunk in _client.GetStreamingTextAsync(audioStream))
+        await foreach (var chunk in _client.GetStreamingTextAsync(audioSpeechStream))
         {
             sb.Append(chunk.Text);
         }

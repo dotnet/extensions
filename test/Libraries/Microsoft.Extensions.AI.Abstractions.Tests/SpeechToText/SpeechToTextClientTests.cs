@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -20,10 +19,10 @@ public class SpeechToTextClientTests
 
         using TestSpeechToTextClient client = new()
         {
-            GetResponseAsyncCallback = (audioStream, options, cancellationToken) =>
+            GetTextAsyncCallback = (audioSpeechStream, options, cancellationToken) =>
             {
-                // For the purpose of the test, we assume that the underlying implementation converts the audio stream into a transcription choice.
-                // (In a real implementation, the speech audio data would be processed.)
+                // For the purpose of the test, we assume that the underlying implementation converts the audio speech stream into a transcription choice.
+                // (In a real implementation, the audio speech data would be processed.)
                 SpeechToTextMessage choice = new("hello");
                 return Task.FromResult(new SpeechToTextResponse(choice));
             },

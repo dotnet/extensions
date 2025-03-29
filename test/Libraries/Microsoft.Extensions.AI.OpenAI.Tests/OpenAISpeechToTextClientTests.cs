@@ -131,8 +131,8 @@ public class OpenAISpeechToTextClientTests
         using HttpClient httpClient = new(handler);
         using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
 
-        using var fileStream = GetAudioStream("audio001.wav");
-        var response = await client.GetTextAsync(fileStream, new SpeechToTextOptions
+        using var audioSpeechStream = GetAudioStream();
+        var response = await client.GetTextAsync(audioSpeechStream, new SpeechToTextOptions
         {
             SpeechLanguage = speechLanguage,
             TextLanguage = textLanguage
@@ -153,7 +153,7 @@ public class OpenAISpeechToTextClientTests
         using HttpClient httpClient = new();
         using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
 
-        using var fileStream = GetAudioStream("audio001.wav");
+        using var fileStream = GetAudioStream();
         using var cancellationTokenSource = new CancellationTokenSource();
         cancellationTokenSource.Cancel();
 
@@ -167,7 +167,7 @@ public class OpenAISpeechToTextClientTests
         using HttpClient httpClient = new();
         using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
 
-        using var fileStream = GetAudioStream("audio001.wav");
+        using var fileStream = GetAudioStream();
         using var cancellationTokenSource = new CancellationTokenSource();
         cancellationTokenSource.Cancel();
 
@@ -206,8 +206,8 @@ public class OpenAISpeechToTextClientTests
         using HttpClient httpClient = new(handler);
         using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
 
-        using var fileStream = GetAudioStream("audio001.mp3");
-        await foreach (var update in client.GetStreamingTextAsync(fileStream, new SpeechToTextOptions
+        using var audioSpeechStream = GetAudioStream();
+        await foreach (var update in client.GetStreamingTextAsync(audioSpeechStream, new SpeechToTextOptions
         {
             SpeechLanguage = speechLanguage,
             TextLanguage = textLanguage
@@ -229,8 +229,8 @@ public class OpenAISpeechToTextClientTests
         using HttpClient httpClient = new();
         using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
 
-        using var fileStream = GetAudioStream("audio001.mp3");
-        var asyncEnumerator = client.GetStreamingTextAsync(fileStream, new SpeechToTextOptions
+        using var audioSpeechStream = GetAudioStream();
+        var asyncEnumerator = client.GetStreamingTextAsync(audioSpeechStream, new SpeechToTextOptions
         {
             SpeechLanguage = speechLanguage,
             TextLanguage = textLanguage
@@ -248,9 +248,9 @@ public class OpenAISpeechToTextClientTests
         using HttpClient httpClient = new();
         using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
 
-        using var fileStream = GetAudioStream("audio001.mp3");
+        using var audioSpeechStream = GetAudioStream();
 
-        await Assert.ThrowsAsync<NotSupportedException>(() => client.GetTextAsync(fileStream, new SpeechToTextOptions
+        await Assert.ThrowsAsync<NotSupportedException>(() => client.GetTextAsync(audioSpeechStream, new SpeechToTextOptions
         {
             SpeechLanguage = speechLanguage,
             TextLanguage = textLanguage
@@ -279,8 +279,8 @@ public class OpenAISpeechToTextClientTests
         using HttpClient httpClient = new(handler);
         using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
 
-        using var fileStream = GetAudioStream("audio001.mp3");
-        await foreach (var update in client.GetStreamingTextAsync(fileStream, new SpeechToTextOptions
+        using var audioSpeechStream = GetAudioStream();
+        await foreach (var update in client.GetStreamingTextAsync(audioSpeechStream, new SpeechToTextOptions
         {
             SpeechLanguage = "pt",
             TextLanguage = textLanguage
@@ -316,8 +316,8 @@ public class OpenAISpeechToTextClientTests
         using HttpClient httpClient = new(handler);
         using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
 
-        using var fileStream = GetAudioStream("audio001.mp3");
-        Assert.NotNull(await client.GetTextAsync(fileStream, new()
+        using var audioSpeechStream = GetAudioStream();
+        Assert.NotNull(await client.GetTextAsync(audioSpeechStream, new()
         {
             AdditionalProperties = new()
             {
@@ -350,24 +350,15 @@ public class OpenAISpeechToTextClientTests
         using HttpClient httpClient = new(handler);
         using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
 
-        using var fileStream = GetAudioStream("audio001.mp3");
-        Assert.NotNull(await client.GetTextAsync(fileStream, new()
+        using var audioSpeechStream = GetAudioStream();
+        Assert.NotNull(await client.GetTextAsync(audioSpeechStream, new()
         {
             SpeechLanguage = "pt",
         }));
     }
 
-    private static Stream GetAudioStream(string fileName)
-#pragma warning restore S125 // Sections of code should not be commented out
-    {
-        using Stream? s = typeof(OpenAISpeechToTextClientTests).Assembly.GetManifestResourceStream($"Microsoft.Extensions.AI.Resources.{fileName}");
-        Assert.NotNull(s);
-        MemoryStream ms = new();
-        s.CopyTo(ms);
-
-        ms.Position = 0;
-        return ms;
-    }
+    private static Stream GetAudioStream()
+        => new MemoryStream([0x01, 0x02]);
 
     private static ISpeechToTextClient CreateSpeechToTextClient(HttpClient httpClient, string modelId) =>
         new OpenAIClient(new ApiKeyCredential("apikey"), new OpenAIClientOptions { Transport = new HttpClientPipelineTransport(httpClient) })
