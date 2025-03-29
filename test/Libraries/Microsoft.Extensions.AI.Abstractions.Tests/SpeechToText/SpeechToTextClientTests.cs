@@ -32,7 +32,7 @@ public class SpeechToTextClientTests
         };
 
         // Act – call the extension method with a valid DataContent.
-        SpeechToTextResponse response = await SpeechToTextClientExtensions.GetResponseAsync(
+        SpeechToTextResponse response = await SpeechToTextClientExtensions.GetTextAsync(
             client,
             new DataContent("data:audio/wav;base64,AQIDBA=="),
             expectedOptions,

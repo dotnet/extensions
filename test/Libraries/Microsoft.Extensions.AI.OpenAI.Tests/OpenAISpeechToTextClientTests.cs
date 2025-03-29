@@ -132,7 +132,7 @@ public class OpenAISpeechToTextClientTests
         using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
 
         using var fileStream = GetAudioStream("audio001.wav");
-        var response = await client.GetResponseAsync(fileStream, new SpeechToTextOptions
+        var response = await client.GetTextAsync(fileStream, new SpeechToTextOptions
         {
             SpeechLanguage = speechLanguage,
             TextLanguage = textLanguage
@@ -158,7 +158,7 @@ public class OpenAISpeechToTextClientTests
         cancellationTokenSource.Cancel();
 
         await Assert.ThrowsAsync<TaskCanceledException>(()
-            => client.GetResponseAsync(fileStream, cancellationToken: cancellationTokenSource.Token));
+            => client.GetTextAsync(fileStream, cancellationToken: cancellationTokenSource.Token));
     }
 
     [Fact]
@@ -173,7 +173,7 @@ public class OpenAISpeechToTextClientTests
 
         await Assert.ThrowsAsync<TaskCanceledException>(()
             => client
-                .GetStreamingResponseAsync(fileStream, cancellationToken: cancellationTokenSource.Token)
+                .GetStreamingTextAsync(fileStream, cancellationToken: cancellationTokenSource.Token)
                 .GetAsyncEnumerator()
                 .MoveNextAsync()
                 .AsTask());
@@ -207,7 +207,7 @@ public class OpenAISpeechToTextClientTests
         using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
 
         using var fileStream = GetAudioStream("audio001.mp3");
-        await foreach (var update in client.GetStreamingResponseAsync(fileStream, new SpeechToTextOptions
+        await foreach (var update in client.GetStreamingTextAsync(fileStream, new SpeechToTextOptions
         {
             SpeechLanguage = speechLanguage,
             TextLanguage = textLanguage
@@ -230,7 +230,7 @@ public class OpenAISpeechToTextClientTests
         using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
 
         using var fileStream = GetAudioStream("audio001.mp3");
-        var asyncEnumerator = client.GetStreamingResponseAsync(fileStream, new SpeechToTextOptions
+        var asyncEnumerator = client.GetStreamingTextAsync(fileStream, new SpeechToTextOptions
         {
             SpeechLanguage = speechLanguage,
             TextLanguage = textLanguage
@@ -250,7 +250,7 @@ public class OpenAISpeechToTextClientTests
 
         using var fileStream = GetAudioStream("audio001.mp3");
 
-        await Assert.ThrowsAsync<NotSupportedException>(() => client.GetResponseAsync(fileStream, new SpeechToTextOptions
+        await Assert.ThrowsAsync<NotSupportedException>(() => client.GetTextAsync(fileStream, new SpeechToTextOptions
         {
             SpeechLanguage = speechLanguage,
             TextLanguage = textLanguage
@@ -280,7 +280,7 @@ public class OpenAISpeechToTextClientTests
         using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
 
         using var fileStream = GetAudioStream("audio001.mp3");
-        await foreach (var update in client.GetStreamingResponseAsync(fileStream, new SpeechToTextOptions
+        await foreach (var update in client.GetStreamingTextAsync(fileStream, new SpeechToTextOptions
         {
             SpeechLanguage = "pt",
             TextLanguage = textLanguage
@@ -317,7 +317,7 @@ public class OpenAISpeechToTextClientTests
         using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
 
         using var fileStream = GetAudioStream("audio001.mp3");
-        Assert.NotNull(await client.GetResponseAsync(fileStream, new()
+        Assert.NotNull(await client.GetTextAsync(fileStream, new()
         {
             AdditionalProperties = new()
             {
@@ -351,7 +351,7 @@ public class OpenAISpeechToTextClientTests
         using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
 
         using var fileStream = GetAudioStream("audio001.mp3");
-        Assert.NotNull(await client.GetResponseAsync(fileStream, new()
+        Assert.NotNull(await client.GetTextAsync(fileStream, new()
         {
             SpeechLanguage = "pt",
         }));

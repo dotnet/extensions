@@ -45,34 +45,34 @@ public partial class LoggingSpeechToTextClient : DelegatingSpeechToTextClient
     }
 
     /// <inheritdoc/>
-    public override async Task<SpeechToTextResponse> TranscribeAudioAsync(
+    public override async Task<SpeechToTextResponse> GetTextAsync(
         IList<IAsyncEnumerable<DataContent>> speechContents, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
         {
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokedSensitive(nameof(TranscribeAudioAsync), AsJson(speechContents), AsJson(options), AsJson(this.GetService<SpeechToTextClientMetadata>()));
+                LogInvokedSensitive(nameof(GetTextAsync), AsJson(speechContents), AsJson(options), AsJson(this.GetService<SpeechToTextClientMetadata>()));
             }
             else
             {
-                LogInvoked(nameof(TranscribeAudioAsync));
+                LogInvoked(nameof(GetTextAsync));
             }
         }
 
         try
         {
-            var completion = await base.TranscribeAudioAsync(speechContents, options, cancellationToken).ConfigureAwait(false);
+            var completion = await base.GetTextAsync(speechContents, options, cancellationToken).ConfigureAwait(false);
 
             if (_logger.IsEnabled(LogLevel.Debug))
             {
                 if (_logger.IsEnabled(LogLevel.Trace))
                 {
-                    LogCompletedSensitive(nameof(TranscribeAudioAsync), AsJson(completion));
+                    LogCompletedSensitive(nameof(GetTextAsync), AsJson(completion));
                 }
                 else
                 {
-                    LogCompleted(nameof(TranscribeAudioAsync));
+                    LogCompleted(nameof(GetTextAsync));
                 }
             }
 
@@ -80,45 +80,45 @@ public partial class LoggingSpeechToTextClient : DelegatingSpeechToTextClient
         }
         catch (OperationCanceledException)
         {
-            LogInvocationCanceled(nameof(TranscribeAudioAsync));
+            LogInvocationCanceled(nameof(GetTextAsync));
             throw;
         }
         catch (Exception ex)
         {
-            LogInvocationFailed(nameof(TranscribeAudioAsync), ex);
+            LogInvocationFailed(nameof(GetTextAsync), ex);
             throw;
         }
     }
 
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<SpeechToTextResponseUpdate> TranscribeStreamingAudioAsync(
+    public override async IAsyncEnumerable<SpeechToTextResponseUpdate> GetStreamingTextAsync(
         IList<IAsyncEnumerable<DataContent>> speechContents, SpeechToTextOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
         {
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokedSensitive(nameof(TranscribeStreamingAudioAsync), AsJson(speechContents), AsJson(options), AsJson(this.GetService<SpeechToTextClientMetadata>()));
+                LogInvokedSensitive(nameof(GetStreamingTextAsync), AsJson(speechContents), AsJson(options), AsJson(this.GetService<SpeechToTextClientMetadata>()));
             }
             else
             {
-                LogInvoked(nameof(TranscribeStreamingAudioAsync));
+                LogInvoked(nameof(GetStreamingTextAsync));
             }
         }
 
         IAsyncEnumerator<SpeechToTextResponseUpdate> e;
         try
         {
-            e = base.TranscribeStreamingAudioAsync(speechContents, options, cancellationToken).GetAsyncEnumerator(cancellationToken);
+            e = base.GetStreamingTextAsync(speechContents, options, cancellationToken).GetAsyncEnumerator(cancellationToken);
         }
         catch (OperationCanceledException)
         {
-            LogInvocationCanceled(nameof(TranscribeStreamingAudioAsync));
+            LogInvocationCanceled(nameof(GetStreamingTextAsync));
             throw;
         }
         catch (Exception ex)
         {
-            LogInvocationFailed(nameof(TranscribeStreamingAudioAsync), ex);
+            LogInvocationFailed(nameof(GetStreamingTextAsync), ex);
             throw;
         }
 
@@ -138,12 +138,12 @@ public partial class LoggingSpeechToTextClient : DelegatingSpeechToTextClient
                 }
                 catch (OperationCanceledException)
                 {
-                    LogInvocationCanceled(nameof(TranscribeStreamingAudioAsync));
+                    LogInvocationCanceled(nameof(GetStreamingTextAsync));
                     throw;
                 }
                 catch (Exception ex)
                 {
-                    LogInvocationFailed(nameof(TranscribeStreamingAudioAsync), ex);
+                    LogInvocationFailed(nameof(GetStreamingTextAsync), ex);
                     throw;
                 }
 
@@ -162,7 +162,7 @@ public partial class LoggingSpeechToTextClient : DelegatingSpeechToTextClient
                 yield return update;
             }
 
-            LogCompleted(nameof(TranscribeStreamingAudioAsync));
+            LogCompleted(nameof(GetStreamingTextAsync));
         }
         finally
         {
@@ -184,10 +184,10 @@ public partial class LoggingSpeechToTextClient : DelegatingSpeechToTextClient
     [LoggerMessage(LogLevel.Trace, $"{{MethodName}} completed: {{{nameof(AI.SpeechToTextResponse)}}}.")]
     private partial void LogCompletedSensitive(string methodName, string SpeechToTextResponse);
 
-    [LoggerMessage(LogLevel.Debug, $"{nameof(ISpeechToTextClient.TranscribeStreamingAudioAsync)} received update.")]
+    [LoggerMessage(LogLevel.Debug, $"{nameof(ISpeechToTextClient.GetStreamingTextAsync)} received update.")]
     private partial void LogStreamingUpdate();
 
-    [LoggerMessage(LogLevel.Trace, $"{nameof(ISpeechToTextClient.TranscribeStreamingAudioAsync)} received update: {{{nameof(SpeechToTextResponseUpdate)}}}")]
+    [LoggerMessage(LogLevel.Trace, $"{nameof(ISpeechToTextClient.GetStreamingTextAsync)} received update: {{{nameof(SpeechToTextResponseUpdate)}}}")]
     private partial void LogStreamingUpdateSensitive(string speechToTextResponseUpdate);
 
     [LoggerMessage(LogLevel.Debug, "{MethodName} canceled.")]

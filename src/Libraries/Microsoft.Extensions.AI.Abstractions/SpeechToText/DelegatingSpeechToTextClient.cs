@@ -40,17 +40,17 @@ public class DelegatingSpeechToTextClient : ISpeechToTextClient
     protected ISpeechToTextClient InnerClient { get; }
 
     /// <inheritdoc />
-    public virtual Task<SpeechToTextResponse> TranscribeAudioAsync(
+    public virtual Task<SpeechToTextResponse> GetTextAsync(
         IList<IAsyncEnumerable<DataContent>> speechContents, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return InnerClient.TranscribeAudioAsync(speechContents, options, cancellationToken);
+        return InnerClient.GetTextAsync(speechContents, options, cancellationToken);
     }
 
     /// <inheritdoc />
-    public virtual IAsyncEnumerable<SpeechToTextResponseUpdate> TranscribeStreamingAudioAsync(
+    public virtual IAsyncEnumerable<SpeechToTextResponseUpdate> GetStreamingTextAsync(
         IList<IAsyncEnumerable<DataContent>> speechContents, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return InnerClient.TranscribeStreamingAudioAsync(speechContents, options, cancellationToken);
+        return InnerClient.GetStreamingTextAsync(speechContents, options, cancellationToken);
     }
 
     /// <inheritdoc />

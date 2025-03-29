@@ -27,12 +27,12 @@ public class SpeechToTextClientExtensionsTests
         // Note: the extension method now requires a DataContent (not a string).
         Assert.Throws<ArgumentNullException>("client", () =>
         {
-            _ = SpeechToTextClientExtensions.GetResponseAsync(null!, new DataContent("data:audio/wav;base64,AQIDBA=="));
+            _ = SpeechToTextClientExtensions.GetTextAsync(null!, new DataContent("data:audio/wav;base64,AQIDBA=="));
         });
 
         Assert.Throws<ArgumentNullException>("speechContent", () =>
         {
-            _ = SpeechToTextClientExtensions.GetResponseAsync(new TestSpeechToTextClient(), (DataContent)null!);
+            _ = SpeechToTextClientExtensions.GetTextAsync(new TestSpeechToTextClient(), (DataContent)null!);
         });
     }
 
@@ -42,12 +42,12 @@ public class SpeechToTextClientExtensionsTests
         Assert.Throws<ArgumentNullException>("client", () =>
         {
             using var stream = new MemoryStream();
-            _ = SpeechToTextClientExtensions.GetStreamingResponseAsync(client: null!, new DataContent("data:audio/wav;base64,AQIDBA=="));
+            _ = SpeechToTextClientExtensions.GetStreamingTextAsync(client: null!, new DataContent("data:audio/wav;base64,AQIDBA=="));
         });
 
         Assert.Throws<ArgumentNullException>("speechContent", () =>
         {
-            _ = SpeechToTextClientExtensions.GetStreamingResponseAsync(new TestSpeechToTextClient(), speechContent: null!);
+            _ = SpeechToTextClientExtensions.GetStreamingTextAsync(new TestSpeechToTextClient(), speechContent: null!);
         });
     }
 
@@ -70,7 +70,7 @@ public class SpeechToTextClientExtensionsTests
         };
 
         int count = 0;
-        await foreach (var update in SpeechToTextClientExtensions.GetStreamingResponseAsync(
+        await foreach (var update in SpeechToTextClientExtensions.GetStreamingTextAsync(
             client,
             new DataContent("data:audio/wav;base64,AQIDBA=="),
             expectedOptions,

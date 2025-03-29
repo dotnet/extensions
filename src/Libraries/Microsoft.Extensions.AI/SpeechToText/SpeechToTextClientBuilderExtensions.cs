@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides extensions for configuring <see cref="LoggingSpeechToTextClient"/> instances.</summary>
 [Experimental("MEAI001")]
-public static class LoggingSpeechToTextClientExtensions
+public static class SpeechToTextClientBuilderExtensions
 {
     /// <summary>Adds logging to the audio transcription client pipeline.</summary>
     /// <param name="builder">The <see cref="SpeechToTextClientBuilder"/>.</param>

@@ -73,11 +73,11 @@ public class ConfigureOptionsSpeechToTextClientTests
             })
             .Build();
 
-        var response = await client.TranscribeAudioAsync([], providedOptions, cts.Token);
+        var response = await client.GetTextAsync([], providedOptions, cts.Token);
         Assert.Same(expectedResponse, response);
 
         int i = 0;
-        await using var e = client.TranscribeStreamingAudioAsync([], providedOptions, cts.Token).GetAsyncEnumerator();
+        await using var e = client.GetStreamingTextAsync([], providedOptions, cts.Token).GetAsyncEnumerator();
         while (i < expectedUpdates.Length)
         {
             Assert.True(await e.MoveNextAsync());

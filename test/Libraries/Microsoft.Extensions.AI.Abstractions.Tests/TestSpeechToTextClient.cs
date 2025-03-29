@@ -38,13 +38,13 @@ public sealed class TestSpeechToTextClient : ISpeechToTextClient
     private object? DefaultGetServiceCallback(Type serviceType, object? serviceKey)
         => serviceType is not null && serviceKey is null && serviceType.IsInstanceOfType(this) ? this : null;
 
-    public Task<SpeechToTextResponse> TranscribeAudioAsync(
+    public Task<SpeechToTextResponse> GetTextAsync(
         IList<IAsyncEnumerable<DataContent>> speechContents,
         SpeechToTextOptions? options = null,
         CancellationToken cancellationToken = default)
         => GetResponseAsyncCallback!.Invoke(speechContents, options, cancellationToken);
 
-    public IAsyncEnumerable<SpeechToTextResponseUpdate> TranscribeStreamingAudioAsync(
+    public IAsyncEnumerable<SpeechToTextResponseUpdate> GetStreamingTextAsync(
         IList<IAsyncEnumerable<DataContent>> speechContents,
         SpeechToTextOptions? options = null,
         CancellationToken cancellationToken = default)

@@ -35,17 +35,17 @@ public sealed class ConfigureOptionsSpeechToTextClient : DelegatingSpeechToTextC
     }
 
     /// <inheritdoc/>
-    public override Task<SpeechToTextResponse> TranscribeAudioAsync(
+    public override Task<SpeechToTextResponse> GetTextAsync(
         IList<IAsyncEnumerable<DataContent>> speechContents, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return base.TranscribeAudioAsync(speechContents, Configure(options), cancellationToken);
+        return base.GetTextAsync(speechContents, Configure(options), cancellationToken);
     }
 
     /// <inheritdoc/>
-    public override IAsyncEnumerable<SpeechToTextResponseUpdate> TranscribeStreamingAudioAsync(
+    public override IAsyncEnumerable<SpeechToTextResponseUpdate> GetStreamingTextAsync(
         IList<IAsyncEnumerable<DataContent>> speechContents, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return base.TranscribeStreamingAudioAsync(speechContents, Configure(options), cancellationToken);
+        return base.GetStreamingTextAsync(speechContents, Configure(options), cancellationToken);
     }
 
     /// <summary>Creates and configures the <see cref="SpeechToTextOptions"/> to pass along to the inner client.</summary>

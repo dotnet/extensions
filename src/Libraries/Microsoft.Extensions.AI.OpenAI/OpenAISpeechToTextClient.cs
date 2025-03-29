@@ -90,7 +90,7 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<SpeechToTextResponseUpdate> TranscribeStreamingAudioAsync(
+    public async IAsyncEnumerable<SpeechToTextResponseUpdate> GetStreamingTextAsync(
         IList<IAsyncEnumerable<DataContent>> speechContents, SpeechToTextOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNullOrEmpty(speechContents);
@@ -100,7 +100,7 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
             var speechContent = speechContents[inputIndex];
             _ = Throw.IfNull(speechContent);
 
-            var speechResponse = await TranscribeAudioAsync([speechContent], options, cancellationToken).ConfigureAwait(false);
+            var speechResponse = await GetTextAsync([speechContent], options, cancellationToken).ConfigureAwait(false);
 
             foreach (var choice in speechResponse.Choices)
             {
@@ -115,7 +115,7 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
     }
 
     /// <inheritdoc />
-    public async Task<SpeechToTextResponse> TranscribeAudioAsync(
+    public async Task<SpeechToTextResponse> GetTextAsync(
         IList<IAsyncEnumerable<DataContent>> speechContents, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNullOrEmpty(speechContents);
