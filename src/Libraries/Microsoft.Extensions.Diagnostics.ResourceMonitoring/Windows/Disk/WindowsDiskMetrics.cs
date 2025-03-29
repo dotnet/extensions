@@ -19,15 +19,6 @@ internal sealed class WindowsDiskMetrics
 
     private static readonly KeyValuePair<string, object?> _directionReadTag = new(DirectionKey, "read");
     private static readonly KeyValuePair<string, object?> _directionWriteTag = new(DirectionKey, "write");
-
-    private static readonly List<string> _diskIoRatePerformanceCounters =
-    [
-        WindowsDiskPerfCounterNames.DiskWriteBytesCounter,
-        WindowsDiskPerfCounterNames.DiskReadBytesCounter,
-        WindowsDiskPerfCounterNames.DiskWritesCounter,
-        WindowsDiskPerfCounterNames.DiskReadsCounter,
-    ];
-
     private readonly Dictionary<string, WindowsDiskIoRatePerfCounters> _diskIoRateCounters = new();
 
     public WindowsDiskMetrics(
@@ -76,7 +67,14 @@ internal sealed class WindowsDiskMetrics
             return;
         }
 
-        foreach (string counterName in _diskIoRatePerformanceCounters)
+        List<string> diskIoRatePerformanceCounters =
+        [
+            WindowsDiskPerfCounterNames.DiskWriteBytesCounter,
+            WindowsDiskPerfCounterNames.DiskReadBytesCounter,
+            WindowsDiskPerfCounterNames.DiskWritesCounter,
+            WindowsDiskPerfCounterNames.DiskReadsCounter,
+        ];
+        foreach (string counterName in diskIoRatePerformanceCounters)
         {
             try
             {
