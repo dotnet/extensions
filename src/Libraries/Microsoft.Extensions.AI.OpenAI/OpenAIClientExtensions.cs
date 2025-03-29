@@ -3,8 +3,8 @@
 
 using System;
 using System.ComponentModel;
-using Microsoft.Shared.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.Diagnostics;
 using OpenAI;
 using OpenAI.Audio;
 using OpenAI.Chat;

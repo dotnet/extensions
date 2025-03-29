@@ -152,17 +152,17 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
 
                 AudioTranslation translationResult = await GetTranslationResultAsync(options, speechContent, firstChunk, cancellationToken).ConfigureAwait(false);
 
-                var choice = OpenAIModelMappers.FromOpenAIAudioTranslation(translationResult, inputIndex);
+                var choice = FromOpenAIAudioTranslation(translationResult, inputIndex);
                 choices.Add(choice);
             }
             else
             {
-                var openAIOptions = OpenAIModelMappers.ToOpenAITranscriptionOptions(options);
+                var openAIOptions = ToOpenAITranscriptionOptions(options);
 
                 // Transcription request
                 AudioTranscription transcriptionResult = await GetTranscriptionResultAsync(speechContent, firstChunk, openAIOptions, cancellationToken).ConfigureAwait(false);
 
-                var choice = OpenAIModelMappers.FromOpenAIAudioTranscription(transcriptionResult, inputIndex);
+                var choice = FromOpenAIAudioTranscription(transcriptionResult, inputIndex);
                 choices.Add(choice);
             }
         }
@@ -176,10 +176,144 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
         // Nothing to dispose. Implementation required for the IAudioTranscriptionClient interface.
     }
 
+    private static SpeechToTextMessage FromOpenAIAudioTranscription(AudioTranscription audioTranscription, int inputIndex)
+    {
+        _ = Throw.IfNull(audioTranscription);
+
+        var segmentCount = audioTranscription.Segments.Count;
+        var wordCount = audioTranscription.Words.Count;
+
+        TimeSpan? endTime = null;
+        TimeSpan? startTime = null;
+        if (segmentCount > 0)
+        {
+            endTime = audioTranscription.Segments[segmentCount - 1].EndTime;
+            startTime = audioTranscription.Segments[0].StartTime;
+        }
+        else if (wordCount > 0)
+        {
+            endTime = audioTranscription.Words[wordCount - 1].EndTime;
+            startTime = audioTranscription.Words[0].StartTime;
+        }
+
+        // Create the return choice.
+        return new SpeechToTextMessage
+        {
+            RawRepresentation = audioTranscription,
+            InputIndex = inputIndex,
+            Text = audioTranscription.Text,
+            StartTime = startTime,
+            EndTime = endTime,
+            AdditionalProperties = new AdditionalPropertiesDictionary
+            {
+                [nameof(audioTranscription.Language)] = audioTranscription.Language,
+                [nameof(audioTranscription.Duration)] = audioTranscription.Duration
+            },
+        };
+    }
+
+    /// <summary>Converts an extensions options instance to an OpenAI options instance.</summary>
+    private static AudioTranscriptionOptions ToOpenAITranscriptionOptions(SpeechToTextOptions? options)
+    {
+        AudioTranscriptionOptions result = new();
+
+        if (options is not null)
+        {
+            if (options.SpeechLanguage is not null)
+            {
+                result.Language = options.SpeechLanguage;
+            }
+
+            if (options.AdditionalProperties is { Count: > 0 } additionalProperties)
+            {
+                if (additionalProperties.TryGetValue(nameof(result.Temperature), out float? temperature))
+                {
+                    result.Temperature = temperature;
+                }
+
+                if (additionalProperties.TryGetValue(nameof(result.TimestampGranularities), out object? timestampGranularities))
+                {
+                    result.TimestampGranularities = timestampGranularities is AudioTimestampGranularities granularities ? granularities : default;
+                }
+
+                if (additionalProperties.TryGetValue(nameof(result.Prompt), out string? prompt))
+                {
+                    result.Prompt = prompt;
+                }
+
+                if (additionalProperties.TryGetValue(nameof(result.ResponseFormat), out AudioTranscriptionFormat? responseFormat))
+                {
+                    result.ResponseFormat = responseFormat;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private static SpeechToTextMessage FromOpenAIAudioTranslation(AudioTranslation audioTranslation, int inputIndex)
+    {
+        _ = Throw.IfNull(audioTranslation);
+
+        var segmentCount = audioTranslation.Segments.Count;
+
+        TimeSpan? endTime = null;
+        TimeSpan? startTime = null;
+        if (segmentCount > 0)
+        {
+            endTime = audioTranslation.Segments[segmentCount - 1].EndTime;
+            startTime = audioTranslation.Segments[0].StartTime;
+        }
+
+        // Create the return choice.
+        return new SpeechToTextMessage
+        {
+            RawRepresentation = audioTranslation,
+            InputIndex = inputIndex,
+            Text = audioTranslation.Text,
+            StartTime = startTime,
+            EndTime = endTime,
+            AdditionalProperties = new AdditionalPropertiesDictionary
+            {
+                [nameof(audioTranslation.Language)] = audioTranslation.Language,
+                [nameof(audioTranslation.Duration)] = audioTranslation.Duration
+            },
+        };
+    }
+
+    /// <summary>Converts an extensions options instance to an OpenAI options instance.</summary>
+    private static AudioTranslationOptions ToOpenAITranslationOptions(SpeechToTextOptions? options)
+    {
+        AudioTranslationOptions result = new();
+
+        if (options is not null)
+        {
+            if (options.AdditionalProperties is { Count: > 0 } additionalProperties)
+            {
+                if (additionalProperties.TryGetValue(nameof(result.Temperature), out float? temperature))
+                {
+                    result.Temperature = temperature;
+                }
+
+                if (additionalProperties.TryGetValue(nameof(result.Prompt), out string? prompt))
+                {
+                    result.Prompt = prompt;
+                }
+
+                if (additionalProperties.TryGetValue(nameof(result.ResponseFormat), out AudioTranslationFormat? responseFormat))
+                {
+                    result.ResponseFormat = responseFormat;
+                }
+            }
+        }
+
+        return result;
+    }
+
     private async Task<AudioTranscription> GetTranscriptionResultAsync(
         IAsyncEnumerable<DataContent> speechContent, DataContent firstChunk, AudioTranscriptionOptions openAIOptions, CancellationToken cancellationToken)
     {
-        OpenAI.Audio.AudioTranscription transcriptionResult;
+        AudioTranscription transcriptionResult;
 
         var audioFileStream = speechContent.ToStream(firstChunk, cancellationToken);
 #if NET
@@ -200,8 +334,8 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
     private async Task<AudioTranslation> GetTranslationResultAsync(
         SpeechToTextOptions? options, IAsyncEnumerable<DataContent> speechContent, DataContent firstChunk, CancellationToken cancellationToken)
     {
-        var openAIOptions = OpenAIModelMappers.ToOpenAITranslationOptions(options);
-        OpenAI.Audio.AudioTranslation translationResult;
+        var openAIOptions = ToOpenAITranslationOptions(options);
+        AudioTranslation translationResult;
 
         var audioFileStream = speechContent.ToStream(firstChunk, cancellationToken);
 #if NET
