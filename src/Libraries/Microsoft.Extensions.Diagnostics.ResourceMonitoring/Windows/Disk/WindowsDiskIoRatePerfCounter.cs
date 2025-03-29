@@ -9,7 +9,7 @@ using System.Runtime.Versioning;
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Disk;
 
 [SupportedOSPlatform("windows")]
-internal sealed class WindowsDiskIoRatePerfCounters
+internal sealed class WindowsDiskIoRatePerfCounter
 {
     private readonly List<IPerformanceCounter> _counters = [];
     private readonly IPerformanceCounterFactory _performanceCounterFactory;
@@ -19,7 +19,7 @@ internal sealed class WindowsDiskIoRatePerfCounters
     private readonly string[] _instanceNames;
     private long _lastTimestamp;
 
-    internal WindowsDiskIoRatePerfCounters(
+    internal WindowsDiskIoRatePerfCounter(
         IPerformanceCounterFactory performanceCounterFactory,
         TimeProvider timeProvider,
         string categoryName,

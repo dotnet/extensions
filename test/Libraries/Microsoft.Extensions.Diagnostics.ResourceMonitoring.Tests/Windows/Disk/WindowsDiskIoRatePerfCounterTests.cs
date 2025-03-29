@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Disk.Test;
 
 [SupportedOSPlatform("windows")]
 [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Windows specific.")]
-public class WindowsDiskIoRatePerfCountersTests
+public class WindowsDiskIoRatePerfCounterTests
 {
     private const string CategoryName = "LogicalDisk";
 
@@ -24,7 +24,7 @@ public class WindowsDiskIoRatePerfCountersTests
         var performanceCounterFactory = new Mock<IPerformanceCounterFactory>();
         var fakeTimeProvider = new FakeTimeProvider { AutoAdvanceAmount = TimeSpan.FromSeconds(60) };
 
-        var ratePerfCounters = new WindowsDiskIoRatePerfCounters(
+        var ratePerfCounters = new WindowsDiskIoRatePerfCounter(
             performanceCounterFactory.Object,
             fakeTimeProvider,
             CategoryName,
@@ -70,7 +70,7 @@ public class WindowsDiskIoRatePerfCountersTests
         const string CounterName = WindowsDiskPerfCounterNames.DiskWriteBytesCounter;
         var performanceCounterFactory = new Mock<IPerformanceCounterFactory>();
         var fakeTimeProvider = new FakeTimeProvider { AutoAdvanceAmount = TimeSpan.FromSeconds(30) };
-        var ratePerfCounters = new WindowsDiskIoRatePerfCounters(
+        var ratePerfCounters = new WindowsDiskIoRatePerfCounter(
             performanceCounterFactory.Object,
             fakeTimeProvider,
             CategoryName,
