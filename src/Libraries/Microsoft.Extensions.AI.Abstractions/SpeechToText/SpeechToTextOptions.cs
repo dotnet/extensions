@@ -22,9 +22,7 @@ public class SpeechToTextOptions
     /// <summary>Gets or sets the language for the target generated text.</summary>
     public string? TextLanguage { get; set; }
 
-    /// <summary>
-    /// Gets or sets the prompt to be used for the speech to text request.
-    /// </summary>
+    /// <summary>Gets or sets the prompt to be used for the speech to text request.</summary>
     public string? Prompt { get; set; }
 
     /// <summary>Gets or sets the sample rate of the speech input audio.</summary>
@@ -44,6 +42,7 @@ public class SpeechToTextOptions
             SpeechLanguage = SpeechLanguage,
             TextLanguage = TextLanguage,
             SpeechSampleRate = SpeechSampleRate,
+            Prompt = Prompt,
             AdditionalProperties = AdditionalProperties?.Clone(),
         };
 

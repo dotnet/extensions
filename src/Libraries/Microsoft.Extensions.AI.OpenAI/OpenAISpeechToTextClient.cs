@@ -215,6 +215,11 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
 
         if (options is not null)
         {
+            if (options.Prompt is not null)
+            {
+                result.Prompt = options.Prompt;
+            }
+
             if (options.SpeechLanguage is not null)
             {
                 result.Language = options.SpeechLanguage;
@@ -230,11 +235,6 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
                 if (additionalProperties.TryGetValue(nameof(result.TimestampGranularities), out object? timestampGranularities))
                 {
                     result.TimestampGranularities = timestampGranularities is AudioTimestampGranularities granularities ? granularities : default;
-                }
-
-                if (additionalProperties.TryGetValue(nameof(result.Prompt), out string? prompt))
-                {
-                    result.Prompt = prompt;
                 }
 
                 if (additionalProperties.TryGetValue(nameof(result.ResponseFormat), out AudioTranscriptionFormat? responseFormat))
@@ -283,16 +283,16 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
 
         if (options is not null)
         {
+            if (options.Prompt is not null)
+            {
+                result.Prompt = options.Prompt;
+            }
+
             if (options.AdditionalProperties is { Count: > 0 } additionalProperties)
             {
                 if (additionalProperties.TryGetValue(nameof(result.Temperature), out float? temperature))
                 {
                     result.Temperature = temperature;
-                }
-
-                if (additionalProperties.TryGetValue(nameof(result.Prompt), out string? prompt))
-                {
-                    result.Prompt = prompt;
                 }
 
                 if (additionalProperties.TryGetValue(nameof(result.ResponseFormat), out AudioTranslationFormat? responseFormat))

@@ -17,6 +17,7 @@ public class SpeechToTextOptionsTests
         Assert.Null(options.SpeechLanguage);
         Assert.Null(options.SpeechSampleRate);
         Assert.Null(options.AdditionalProperties);
+        Assert.Null(options.Prompt);
 
         SpeechToTextOptions clone = options.Clone();
         Assert.Null(clone.ResponseId);
@@ -24,6 +25,7 @@ public class SpeechToTextOptionsTests
         Assert.Null(clone.SpeechLanguage);
         Assert.Null(clone.SpeechSampleRate);
         Assert.Null(clone.AdditionalProperties);
+        Assert.Null(clone.Prompt);
     }
 
     [Fact]
@@ -40,11 +42,13 @@ public class SpeechToTextOptionsTests
         options.ModelId = "modelId";
         options.SpeechLanguage = "en-US";
         options.SpeechSampleRate = 44100;
+        options.Prompt = "prompt";
         options.AdditionalProperties = additionalProps;
 
         Assert.Equal("completionId", options.ResponseId);
         Assert.Equal("modelId", options.ModelId);
         Assert.Equal("en-US", options.SpeechLanguage);
+        Assert.Equal("prompt", options.Prompt);
         Assert.Equal(44100, options.SpeechSampleRate);
         Assert.Same(additionalProps, options.AdditionalProperties);
 
@@ -52,6 +56,7 @@ public class SpeechToTextOptionsTests
         Assert.Equal("completionId", clone.ResponseId);
         Assert.Equal("modelId", clone.ModelId);
         Assert.Equal("en-US", clone.SpeechLanguage);
+        Assert.Equal("prompt", clone.Prompt);
         Assert.Equal(44100, clone.SpeechSampleRate);
         Assert.Equal(additionalProps, clone.AdditionalProperties);
     }
@@ -70,6 +75,7 @@ public class SpeechToTextOptionsTests
         options.ModelId = "modelId";
         options.SpeechLanguage = "en-US";
         options.SpeechSampleRate = 44100;
+        options.Prompt = "prompt";
         options.AdditionalProperties = additionalProps;
 
         string json = JsonSerializer.Serialize(options, TestJsonSerializerContext.Default.SpeechToTextOptions);
@@ -81,6 +87,7 @@ public class SpeechToTextOptionsTests
         Assert.Equal("modelId", deserialized.ModelId);
         Assert.Equal("en-US", deserialized.SpeechLanguage);
         Assert.Equal(44100, deserialized.SpeechSampleRate);
+        Assert.Equal("prompt", deserialized.Prompt);
 
         Assert.NotNull(deserialized.AdditionalProperties);
         Assert.Single(deserialized.AdditionalProperties);
