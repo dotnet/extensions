@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 
 namespace Microsoft.Extensions.AI;
 
@@ -10,9 +9,6 @@ namespace Microsoft.Extensions.AI;
 [Experimental("MEAI001")]
 public class SpeechToTextOptions
 {
-    private CultureInfo? _speechLanguage;
-    private CultureInfo? _textLanguage;
-
     /// <summary>Gets or sets the ID for the speech to text.</summary>
     /// <remarks>Long running jobs may use this ID for status pooling.</remarks>
     public string? ResponseId { get; set; }
@@ -21,18 +17,15 @@ public class SpeechToTextOptions
     public string? ModelId { get; set; }
 
     /// <summary>Gets or sets the language of source speech.</summary>
-    public string? SpeechLanguage
-    {
-        get => _speechLanguage?.Name;
-        set => _speechLanguage = value is null ? null : CultureInfo.GetCultureInfo(value);
-    }
+    public string? SpeechLanguage { get; set; }
 
     /// <summary>Gets or sets the language for the target generated text.</summary>
-    public string? TextLanguage
-    {
-        get => _textLanguage?.Name;
-        set => _textLanguage = value is null ? null : CultureInfo.GetCultureInfo(value);
-    }
+    public string? TextLanguage { get; set; }
+
+    /// <summary>
+    /// Gets or sets the prompt to be used for the speech to text request.
+    /// </summary>
+    public string? Prompt { get; set; }
 
     /// <summary>Gets or sets the sample rate of the speech input audio.</summary>
     public int? SpeechSampleRate { get; set; }

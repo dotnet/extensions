@@ -218,43 +218,6 @@ public class OpenAISpeechToTextClientTests
         }
     }
 
-    [Theory]
-    [InlineData(null, "pt")]
-    [InlineData(null, "it")]
-    [InlineData("en", "pt")]
-    public async Task GetStreamingTextAsync_NonSupportedTranslation_Throws(string? speechLanguage, string? textLanguage)
-    {
-        using HttpClient httpClient = new();
-        using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
-
-        using var audioSpeechStream = GetAudioStream();
-        var asyncEnumerator = client.GetStreamingTextAsync(audioSpeechStream, new SpeechToTextOptions
-        {
-            SpeechLanguage = speechLanguage,
-            TextLanguage = textLanguage
-        }).GetAsyncEnumerator();
-
-        await Assert.ThrowsAsync<NotSupportedException>(() => asyncEnumerator.MoveNextAsync().AsTask());
-    }
-
-    [Theory]
-    [InlineData(null, "pt")]
-    [InlineData(null, "it")]
-    [InlineData("en", "pt")]
-    public async Task GetTextAsync_NonSupportedTranslation_Throws(string? speechLanguage, string? textLanguage)
-    {
-        using HttpClient httpClient = new();
-        using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "whisper-1");
-
-        using var audioSpeechStream = GetAudioStream();
-
-        await Assert.ThrowsAsync<NotSupportedException>(() => client.GetTextAsync(audioSpeechStream, new SpeechToTextOptions
-        {
-            SpeechLanguage = speechLanguage,
-            TextLanguage = textLanguage
-        }));
-    }
-
     [Fact]
     public async Task GetStreamingTextAsync_BasicTranslateRequestResponse()
     {

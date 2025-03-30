@@ -73,7 +73,9 @@ public abstract class SpeechToTextClientIntegrationTests : IDisposable
     [MemberNotNull(nameof(_client))]
     protected void SkipIfNotEnabled()
     {
-        if (_client is null)
+        string? skipIntegration = TestRunnerConfiguration.Instance["SkipIntegrationTests"];
+
+        if (skipIntegration is not null || _client is null)
         {
             throw new SkipTestException("Client is not enabled.");
         }

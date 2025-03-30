@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
 using System.Text.Json;
 using Xunit;
 
@@ -88,26 +87,5 @@ public class SpeechToTextOptionsTests
         Assert.True(deserialized.AdditionalProperties.TryGetValue("key", out object? value));
         Assert.IsType<JsonElement>(value);
         Assert.Equal("value", ((JsonElement)value!).GetString());
-    }
-
-    [Theory]
-    [InlineData(" ")]
-    [InlineData("   ")]
-    public void AudioLanguage_InvalidCulture_ThrowsCultureNotFoundException(string invalidCulture)
-    {
-        SpeechToTextOptions options = new();
-        Assert.Throws<CultureNotFoundException>(() => options.SpeechLanguage = invalidCulture);
-    }
-
-    [Fact]
-    public void AudioLanguage_EmptyString_SetsInvariantCulture()
-    {
-        SpeechToTextOptions options = new()
-        {
-            SpeechLanguage = string.Empty,
-        };
-
-        // InvariantCulture's Name is returned when an empty string is used.
-        Assert.Equal(CultureInfo.InvariantCulture.Name, options.SpeechLanguage);
     }
 }

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -125,12 +124,6 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
         if (IsTranslationRequest(options))
         {
             _ = Throw.IfNull(options);
-
-            // Translation request will be triggered whenever the source language is not specified and a target text language is and different from the output text language
-            if (CultureInfo.GetCultureInfo(options.TextLanguage!).TwoLetterISOLanguageName != "en")
-            {
-                throw new NotSupportedException($"Only translation to english is supported.");
-            }
 
             var openAIOptions = ToOpenAITranslationOptions(options);
             AudioTranslation translationResult;

@@ -16,6 +16,7 @@ internal static class IntegrationTestHelpers
     public static OpenAIClient? GetOpenAIClient()
     {
         var configuration = TestRunnerConfiguration.Instance;
+
         string? apiKey = configuration["OpenAI:Key"];
 
         if (apiKey is not null)
