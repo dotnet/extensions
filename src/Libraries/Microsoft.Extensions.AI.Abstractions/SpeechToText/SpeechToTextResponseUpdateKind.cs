@@ -13,6 +13,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Describes the intended purpose of a specific update during streaming of speech to text updates.
 /// </summary>
+[Experimental("MEAI001")]
 [JsonConverter(typeof(Converter))]
 public readonly struct SpeechToTextResponseUpdateKind : IEquatable<SpeechToTextResponseUpdateKind>
 {
