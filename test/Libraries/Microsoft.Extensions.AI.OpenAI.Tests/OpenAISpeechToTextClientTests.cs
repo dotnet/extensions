@@ -279,12 +279,12 @@ public class OpenAISpeechToTextClientTests
         using var audioSpeechStream = GetAudioStream();
         Assert.NotNull(await client.GetTextAsync(audioSpeechStream, new()
         {
+            Prompt = "Hide any bad words with ",
             AdditionalProperties = new()
             {
                 ["SpeechLanguage"] = "pt",
                 ["Temperature"] = 0.5f,
                 ["TimestampGranularities"] = AudioTimestampGranularities.Segment | AudioTimestampGranularities.Word,
-                ["Prompt"] = "Hide any bad words with ***",
                 ["ResponseFormat"] = AudioTranscriptionFormat.Vtt,
             },
         }));
