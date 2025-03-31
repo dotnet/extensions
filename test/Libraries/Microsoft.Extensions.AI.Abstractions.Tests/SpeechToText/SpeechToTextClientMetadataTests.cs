@@ -14,7 +14,7 @@ public class SpeechToTextClientMetadataTests
         SpeechToTextClientMetadata metadata = new(null, null, null);
         Assert.Null(metadata.ProviderName);
         Assert.Null(metadata.ProviderUri);
-        Assert.Null(metadata.ModelId);
+        Assert.Null(metadata.DefaultModelId);
     }
 
     [Fact]
@@ -24,6 +24,6 @@ public class SpeechToTextClientMetadataTests
         SpeechToTextClientMetadata metadata = new("providerName", uri, "theModel");
         Assert.Equal("providerName", metadata.ProviderName);
         Assert.Same(uri, metadata.ProviderUri);
-        Assert.Equal("theModel", metadata.ModelId);
+        Assert.Equal("theModel", metadata.DefaultModelId);
     }
 }

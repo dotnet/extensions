@@ -97,15 +97,10 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
 
         var speechResponse = await GetTextAsync(audioSpeechStream, options, cancellationToken).ConfigureAwait(false);
 
-        yield return new SpeechToTextResponseUpdate(speechResponse.Contents)
+        foreach (var update in speechResponse.ToSpeechToTextResponseUpdates())
         {
-            Kind = SpeechToTextResponseUpdateKind.TextUpdated,
-            RawRepresentation = speechResponse.RawRepresentation,
-            StartTime = speechResponse.StartTime,
-            EndTime = speechResponse.EndTime,
-            ResponseId = speechResponse.ResponseId,
-            ModelId = speechResponse.ModelId
-        };
+            yield return update;
+        }
     }
 
     /// <inheritdoc />
@@ -198,7 +193,7 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
 
         // Update the response
         response.RawRepresentation = audioTranscription;
-        response.Text = audioTranscription.Text;
+        response.Contents = [new TextContent(audioTranscription.Text)];
         response.StartTime = startTime;
         response.EndTime = endTime;
         response.AdditionalProperties = new AdditionalPropertiesDictionary
@@ -215,11 +210,6 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
 
         if (options is not null)
         {
-            if (options.Prompt is not null)
-            {
-                result.Prompt = options.Prompt;
-            }
-
             if (options.SpeechLanguage is not null)
             {
                 result.Language = options.SpeechLanguage;
@@ -240,6 +230,11 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
                 if (additionalProperties.TryGetValue(nameof(result.ResponseFormat), out AudioTranscriptionFormat? responseFormat))
                 {
                     result.ResponseFormat = responseFormat;
+                }
+
+                if (additionalProperties.TryGetValue(nameof(result.Prompt), out string? prompt))
+                {
+                    result.Prompt = prompt;
                 }
             }
         }
@@ -266,7 +261,7 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
 
         // Update the response
         response.RawRepresentation = audioTranslation;
-        response.Text = audioTranslation.Text;
+        response.Contents = [new TextContent(audioTranslation.Text)];
         response.StartTime = startTime;
         response.EndTime = endTime;
         response.AdditionalProperties = new AdditionalPropertiesDictionary
@@ -283,11 +278,6 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
 
         if (options is not null)
         {
-            if (options.Prompt is not null)
-            {
-                result.Prompt = options.Prompt;
-            }
-
             if (options.AdditionalProperties is { Count: > 0 } additionalProperties)
             {
                 if (additionalProperties.TryGetValue(nameof(result.Temperature), out float? temperature))
@@ -298,6 +288,11 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
                 if (additionalProperties.TryGetValue(nameof(result.ResponseFormat), out AudioTranslationFormat? responseFormat))
                 {
                     result.ResponseFormat = responseFormat;
+                }
+
+                if (additionalProperties.TryGetValue(nameof(result.Prompt), out string? prompt))
+                {
+                    result.Prompt = prompt;
                 }
             }
         }

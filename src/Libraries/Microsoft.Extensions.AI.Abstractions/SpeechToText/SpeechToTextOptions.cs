@@ -9,10 +9,6 @@ namespace Microsoft.Extensions.AI;
 [Experimental("MEAI001")]
 public class SpeechToTextOptions
 {
-    /// <summary>Gets or sets the ID for the speech to text.</summary>
-    /// <remarks>Long running jobs may use this ID for status pooling.</remarks>
-    public string? ResponseId { get; set; }
-
     /// <summary>Gets or sets the model ID for the speech to text.</summary>
     public string? ModelId { get; set; }
 
@@ -21,9 +17,6 @@ public class SpeechToTextOptions
 
     /// <summary>Gets or sets the language for the target generated text.</summary>
     public string? TextLanguage { get; set; }
-
-    /// <summary>Gets or sets the prompt to be used for the speech to text request.</summary>
-    public string? Prompt { get; set; }
 
     /// <summary>Gets or sets the sample rate of the speech input audio.</summary>
     public int? SpeechSampleRate { get; set; }
@@ -37,12 +30,10 @@ public class SpeechToTextOptions
     {
         SpeechToTextOptions options = new()
         {
-            ResponseId = ResponseId,
             ModelId = ModelId,
             SpeechLanguage = SpeechLanguage,
             TextLanguage = TextLanguage,
             SpeechSampleRate = SpeechSampleRate,
-            Prompt = Prompt,
             AdditionalProperties = AdditionalProperties?.Clone(),
         };
 

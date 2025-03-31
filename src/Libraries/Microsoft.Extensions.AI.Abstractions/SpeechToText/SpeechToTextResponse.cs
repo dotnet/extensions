@@ -4,10 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-
 using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
+
+#pragma warning disable EA0011 // Consider removing unnecessary conditional access operators
 
 namespace Microsoft.Extensions.AI;
 
@@ -62,29 +62,12 @@ public class SpeechToTextResponse
     /// <summary>Gets or sets any additional properties associated with the speech to text completion.</summary>
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
 
-    /// <summary>
-    /// Gets or sets the text of the first <see cref="TextContent"/> instance in <see cref="Contents" />.
-    /// </summary>
+    /// <summary>Gets the text of this speech to text response.</summary>
     /// <remarks>
-    /// If there is no <see cref="TextContent"/> instance in <see cref="Contents" />, then the getter returns <see langword="null" />,
-    /// and the setter adds a new <see cref="TextContent"/> instance with the provided value.
+    /// This property concatenates the text of all <see cref="TextContent"/> objects in <see cref="Contents"/>.
     /// </remarks>
     [JsonIgnore]
-    public string? Text
-    {
-        get => Contents.OfType<TextContent>().FirstOrDefault()?.Text;
-        set
-        {
-            if (Contents.OfType<TextContent>().FirstOrDefault() is { } textContent)
-            {
-                textContent.Text = value;
-            }
-            else if (value is not null)
-            {
-                Contents.Add(new TextContent(value));
-            }
-        }
-    }
+    public string Text => Contents?.ConcatText() ?? string.Empty;
 
     /// <inheritdoc />
     public override string ToString() => Contents.ConcatText();

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -36,17 +37,20 @@ public sealed class ConfigureOptionsSpeechToTextClient : DelegatingSpeechToTextC
     }
 
     /// <inheritdoc/>
-    public override Task<SpeechToTextResponse> GetTextAsync(
+    public override async Task<SpeechToTextResponse> GetTextAsync(
         Stream audioSpeechStream, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return base.GetTextAsync(audioSpeechStream, Configure(options), cancellationToken);
+        return await base.GetTextAsync(audioSpeechStream, Configure(options), cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public override IAsyncEnumerable<SpeechToTextResponseUpdate> GetStreamingTextAsync(
-        Stream audioSpeechStream, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
+    public override async IAsyncEnumerable<SpeechToTextResponseUpdate> GetStreamingTextAsync(
+        Stream audioSpeechStream, SpeechToTextOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        return base.GetStreamingTextAsync(audioSpeechStream, Configure(options), cancellationToken);
+        await foreach (var update in base.GetStreamingTextAsync(audioSpeechStream, Configure(options), cancellationToken).ConfigureAwait(false))
+        {
+            yield return update;
+        }
     }
 
     /// <summary>Creates and configures the <see cref="SpeechToTextOptions"/> to pass along to the inner client.</summary>

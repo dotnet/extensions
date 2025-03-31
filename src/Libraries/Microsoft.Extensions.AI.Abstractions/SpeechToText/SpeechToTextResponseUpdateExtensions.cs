@@ -18,14 +18,9 @@ public static class SpeechToTextResponseUpdateExtensions
 {
     /// <summary>Combines <see cref="SpeechToTextResponseUpdate"/> instances into a single <see cref="SpeechToTextResponse"/>.</summary>
     /// <param name="updates">The updates to be combined.</param>
-    /// <param name="coalesceContent">
-    /// <see langword="true"/> to attempt to coalesce contiguous <see cref="AIContent"/> items, where applicable,
-    /// into a single <see cref="AIContent"/>. When <see langword="false"/>, the original content items are used.
-    /// The default is <see langword="true"/>.
-    /// </param>
     /// <returns>The combined <see cref="SpeechToTextResponse"/>.</returns>
     public static SpeechToTextResponse ToSpeechToTextResponse(
-        this IEnumerable<SpeechToTextResponseUpdate> updates, bool coalesceContent = true)
+        this IEnumerable<SpeechToTextResponseUpdate> updates)
     {
         _ = Throw.IfNull(updates);
 
@@ -41,10 +36,7 @@ public static class SpeechToTextResponseUpdateExtensions
             ProcessUpdate(update, contents, ref responseId, ref modelId, ref rawRepresentation, ref additionalProperties);
         }
 
-        if (coalesceContent)
-        {
-            ChatResponseExtensions.CoalesceTextContent(contents);
-        }
+        ChatResponseExtensions.CoalesceTextContent(contents);
 
         response.Contents = contents;
         response.ResponseId = responseId;
@@ -57,22 +49,17 @@ public static class SpeechToTextResponseUpdateExtensions
 
     /// <summary>Combines <see cref="SpeechToTextResponseUpdate"/> instances into a single <see cref="SpeechToTextResponse"/>.</summary>
     /// <param name="updates">The updates to be combined.</param>
-    /// <param name="coalesceContent">
-    /// <see langword="true"/> to attempt to coalesce contiguous <see cref="AIContent"/> items, where applicable,
-    /// into a single <see cref="AIContent"/>. When <see langword="false"/>, the original content items are used.
-    /// The default is <see langword="true"/>.
-    /// </param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The combined <see cref="SpeechToTextResponse"/>.</returns>
     public static Task<SpeechToTextResponse> ToSpeechToTextResponseAsync(
-        this IAsyncEnumerable<SpeechToTextResponseUpdate> updates, bool coalesceContent = true, CancellationToken cancellationToken = default)
+        this IAsyncEnumerable<SpeechToTextResponseUpdate> updates, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(updates);
 
-        return ToResponseAsync(updates, coalesceContent, cancellationToken);
+        return ToResponseAsync(updates, cancellationToken);
 
         static async Task<SpeechToTextResponse> ToResponseAsync(
-            IAsyncEnumerable<SpeechToTextResponseUpdate> updates, bool coalesceContent, CancellationToken cancellationToken)
+            IAsyncEnumerable<SpeechToTextResponseUpdate> updates, CancellationToken cancellationToken)
         {
             SpeechToTextResponse response = new();
             List<AIContent> contents = [];
@@ -86,10 +73,7 @@ public static class SpeechToTextResponseUpdateExtensions
                 ProcessUpdate(update, contents, ref responseId, ref modelId, ref rawRepresentation, ref additionalProperties);
             }
 
-            if (coalesceContent)
-            {
-                ChatResponseExtensions.CoalesceTextContent(contents);
-            }
+            ChatResponseExtensions.CoalesceTextContent(contents);
 
             response.Contents = contents;
             response.ResponseId = responseId;

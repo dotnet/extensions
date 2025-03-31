@@ -50,14 +50,14 @@ public class OpenAISpeechToTextClientTests
         Assert.NotNull(metadata);
         Assert.Equal("openai", metadata.ProviderName);
         Assert.Equal(endpoint, metadata.ProviderUri);
-        Assert.Equal(model, metadata.ModelId);
+        Assert.Equal(model, metadata.DefaultModelId);
 
         client = openAIClient.GetAudioClient(model).AsSpeechToTextClient();
         metadata = client.GetService<SpeechToTextClientMetadata>();
         Assert.NotNull(metadata);
         Assert.Equal("openai", metadata.ProviderName);
         Assert.Equal(endpoint, metadata.ProviderUri);
-        Assert.Equal(model, metadata.ModelId);
+        Assert.Equal(model, metadata.DefaultModelId);
     }
 
     [Fact]
@@ -279,9 +279,9 @@ public class OpenAISpeechToTextClientTests
         using var audioSpeechStream = GetAudioStream();
         Assert.NotNull(await client.GetTextAsync(audioSpeechStream, new()
         {
-            Prompt = "Hide any bad words with ",
             AdditionalProperties = new()
             {
+                ["Prompt"] = "Hide any bad words with ",
                 ["SpeechLanguage"] = "pt",
                 ["Temperature"] = 0.5f,
                 ["TimestampGranularities"] = AudioTimestampGranularities.Segment | AudioTimestampGranularities.Word,
