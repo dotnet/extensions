@@ -2,12 +2,11 @@
 
   <PropertyGroup>
     <PackageType>Template</PackageType>
-    <TargetFrameworks>$(NetCoreTargetFrameworks);netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
     <Description>Project templates for Microsoft.Extensions.AI.</Description>
     <PackageTags>dotnet-new;templates;ai</PackageTags>
 
     <Stage>preview</Stage>
-    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
     <Workstream>AI</Workstream>
     <MinCodeCoverage>0</MinCodeCoverage>
     <MinMutationScore>0</MinMutationScore>
@@ -23,13 +22,22 @@
     <NoPackageAnalysis>true</NoPackageAnalysis>
   </PropertyGroup>
 
-  <!--
-    Reference the GenerateTemplateContent project so that template content gets generated prior
-    to building this project.
-  -->
   <ItemGroup>
+    <!--
+      Reference the GenerateTemplateContent project so that template content gets generated prior
+      to building this project.
+    -->
     <ProjectReference
       Include="..\GenerateTemplateContent\GenerateTemplateContent.csproj"
+      ReferenceOutputAssembly="false"
+      PrivateAssets="all" />
+
+    <!--
+      Internal packages referenced by the templates that aren't in the AI workstream.
+      We include these references here so that local NuGet packages get generated for use by the templates.
+    -->
+    <ProjectReference
+      Include="..\..\Libraries\Microsoft.Extensions.Http.Resilience\Microsoft.Extensions.Http.Resilience.csproj"
       ReferenceOutputAssembly="false"
       PrivateAssets="all" />
   </ItemGroup>
@@ -41,13 +49,14 @@
       Exclude="
         **\bin\**;
         **\obj\**;
+        **\.vs\**;
         **\node_modules\**;
         **\*.user;
         **\*.in;
         **\*.out.js;
         **\*.generated.css;
         **\package-lock.json;
-        **\ingestioncache.db;
+        **\ingestioncache.*;
         **\NuGet.config;
         **\Directory.Build.targets;" />
     <None Include="THIRD-PARTY-NOTICES.TXT" Pack="true" PackagePath="." />

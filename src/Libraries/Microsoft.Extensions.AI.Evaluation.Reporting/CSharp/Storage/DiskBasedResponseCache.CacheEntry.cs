@@ -17,7 +17,7 @@ using Microsoft.Extensions.AI.Evaluation.Reporting.JsonSerialization;
 
 namespace Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
 
-public partial class DiskBasedResponseCache
+internal partial class DiskBasedResponseCache
 {
     [method: JsonConstructor]
     internal sealed class CacheEntry(

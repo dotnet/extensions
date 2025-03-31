@@ -10,6 +10,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a chat message used by an <see cref="IChatClient" />.</summary>
+/// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/quickstarts/build-chat-app">Build an AI chat app with .NET.</related>
 [DebuggerDisplay("[{Role}] {ContentForDebuggerDisplay}{EllipsesForDebuggerDisplay,nq}")]
 public class ChatMessage
 {

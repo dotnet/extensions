@@ -7,5 +7,5 @@ public class AzureAIInferenceChatClientIntegrationTests : ChatClientIntegrationT
 {
     protected override IChatClient? CreateChatClient() =>
         IntegrationTestHelpers.GetChatCompletionsClient()
-            ?.AsChatClient(TestRunnerConfiguration.Instance["AzureAIInference:ChatModel"] ?? "gpt-4o-mini");
+            ?.AsIChatClient(TestRunnerConfiguration.Instance["AzureAIInference:ChatModel"] ?? "gpt-4o-mini");
 }

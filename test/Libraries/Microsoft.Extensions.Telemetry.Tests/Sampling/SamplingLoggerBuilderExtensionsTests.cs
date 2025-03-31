@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Sampling;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Test;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -70,6 +71,86 @@ public class SamplingLoggerBuilderExtensionsTests
         Assert.NotNull(options);
         Assert.NotNull(options.CurrentValue);
         Assert.Equivalent(expectedData, options.CurrentValue.Rules);
+    }
+
+    [Fact]
+    public void AddRandomProbabilisticSamplerFromConfig_PicksUpConfigChanges()
+    {
+        List<RandomProbabilisticSamplerFilterRule> initialData =
+        [
+            new(probability: 1.0, categoryName: "Program.MyLogger", logLevel: LogLevel.Information, eventId: 1, eventName: "number one"),
+            new(probability : 0.01, logLevel : LogLevel.Information),
+            new(probability : 0.1, logLevel : LogLevel.Warning)
+        ];
+        List<RandomProbabilisticSamplerFilterRule> updatedData =
+        [
+            new(probability: 0, logLevel: LogLevel.Information),
+            new(probability : 0, logLevel : LogLevel.Information),
+            new(probability : 0, logLevel : LogLevel.Warning)
+        ];
+        string jsonConfig =
+            @"
+{
+  ""RandomProbabilisticSampler"": {
+    ""Rules"": [
+      {
+        ""CategoryName"": ""Program.MyLogger"",
+        ""LogLevel"": ""Information"",
+        ""EventId"": 1,
+        ""EventName"": ""number one"",
+        ""Probability"": 1.0
+      },
+      {
+        ""LogLevel"": ""Information"",
+        ""Probability"": 0.01
+      },
+      {
+        ""LogLevel"": ""Warning"",
+        ""Probability"": 0.1
+      }
+    ]
+  }
+}
+";
+
+        using var config = TestConfiguration.Create(() => jsonConfig);
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddLogging(builder =>
+        {
+            builder.AddRandomProbabilisticSampler(config);
+        });
+        ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
+        IOptionsMonitor<RandomProbabilisticSamplerOptions>? options = serviceProvider.GetService<IOptionsMonitor<RandomProbabilisticSamplerOptions>>();
+        Assert.NotNull(options);
+        Assert.NotNull(options.CurrentValue);
+        Assert.Equivalent(initialData, options.CurrentValue.Rules);
+
+        jsonConfig =
+@"
+{
+  ""RandomProbabilisticSampler"": {
+    ""Rules"": [
+      {
+        ""LogLevel"": ""Information"",
+        ""Probability"": 0
+      },
+      {
+        ""LogLevel"": ""Information"",
+        ""Probability"": 0
+      },
+      {
+        ""LogLevel"": ""Warning"",
+        ""Probability"": 0
+      }
+    ]
+  }
+}
+";
+        config.Reload();
+
+        var sampler = serviceProvider.GetRequiredService<LoggingSampler>() as RandomProbabilisticSampler;
+        Assert.NotNull(sampler);
+        Assert.Equivalent(updatedData, sampler.LastKnownGoodSamplerRules);
     }
 
     [Fact]

@@ -17,15 +17,7 @@ using Microsoft.Extensions.Caching.Distributed;
 
 namespace Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
 
-/// <summary>
-/// An <see cref="IDistributedCache"/> implementation that stores cached AI responses for a particular
-/// <see cref="ScenarioRun"/> on disk.
-/// </summary>
-/// <remarks>
-/// <see cref="DiskBasedResponseCache"/> can be used in conjunction with <see cref="ResponseCachingChatClient"/> to
-/// implement disk-based caching of all AI responses that happen as part of an evaluation run.
-/// </remarks>
-public sealed partial class DiskBasedResponseCache : IDistributedCache
+internal sealed partial class DiskBasedResponseCache : IDistributedCache
 {
     private const string EntryFileNotFound = "Cache entry file {0} was not found.";
     private const string ContentsFileNotFound = "Cache contents file {0} was not found.";
@@ -36,21 +28,13 @@ public sealed partial class DiskBasedResponseCache : IDistributedCache
 
     private readonly CacheOptions _options;
     private readonly string _iterationPath;
-    private readonly Func<DateTime> _provideDateTime = () => DateTime.UtcNow;
+    private readonly Func<DateTime> _provideDateTime;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DiskBasedResponseCache"/> class.
-    /// </summary>
-    /// <param name="storageRootPath">
-    /// The path to a directory on disk under which the cached AI responses should be stored.
-    /// </param>
-    /// <param name="scenarioName">
-    /// The <see cref="ScenarioRun.ScenarioName"/> for the returned <see cref="DiskBasedResponseCache"/> instance.
-    /// </param>
-    /// <param name="iterationName">
-    /// The <see cref="ScenarioRun.IterationName"/> for the returned <see cref="DiskBasedResponseCache"/> instance.
-    /// </param>
-    public DiskBasedResponseCache(string storageRootPath, string scenarioName, string iterationName)
+    public DiskBasedResponseCache(
+        string storageRootPath,
+        string scenarioName,
+        string iterationName,
+        Func<DateTime> provideDateTime)
     {
         _scenarioName = scenarioName;
         _iterationName = iterationName;
@@ -60,18 +44,9 @@ public sealed partial class DiskBasedResponseCache : IDistributedCache
         string optionsFilePath = GetOptionsFilePath(cacheRootPath);
         _options = File.Exists(optionsFilePath) ? CacheOptions.Read(optionsFilePath) : CacheOptions.Default;
         _iterationPath = Path.Combine(cacheRootPath, scenarioName, iterationName);
+        _provideDateTime = provideDateTime;
     }
 
-    /// <remarks>
-    /// Intended for testing purposes only.
-    /// </remarks>
-    internal DiskBasedResponseCache(string storageRootPath, string scenarioName, string iterationName, Func<DateTime> timeProvider)
-        : this(storageRootPath, scenarioName, iterationName)
-    {
-        _provideDateTime = timeProvider;
-    }
-
-    /// <inheritdoc/>
     public byte[]? Get(string key)
     {
         if (_options.Mode is CacheMode.Disabled)
@@ -105,7 +80,6 @@ public sealed partial class DiskBasedResponseCache : IDistributedCache
         return File.ReadAllBytes(contentsFilePath);
     }
 
-    /// <inheritdoc/>
     public async Task<byte[]?> GetAsync(string key, CancellationToken cancellationToken = default)
     {
         if (_options.Mode is CacheMode.Disabled)
@@ -186,7 +160,6 @@ public sealed partial class DiskBasedResponseCache : IDistributedCache
 #endif
     }
 
-    /// <inheritdoc/>
     public void Refresh(string key)
     {
         if (_options.Mode is CacheMode.Disabled or CacheMode.EnabledOfflineOnly)
@@ -209,7 +182,6 @@ public sealed partial class DiskBasedResponseCache : IDistributedCache
         entry.Write(entryFilePath);
     }
 
-    /// <inheritdoc/>
     public async Task RefreshAsync(string key, CancellationToken cancellationToken = default)
     {
         if (_options.Mode is CacheMode.Disabled or CacheMode.EnabledOfflineOnly)
@@ -232,7 +204,6 @@ public sealed partial class DiskBasedResponseCache : IDistributedCache
         await entry.WriteAsync(entryFilePath, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
-    /// <inheritdoc/>
     public void Remove(string key)
     {
         if (_options.Mode is CacheMode.Disabled or CacheMode.EnabledOfflineOnly)
@@ -244,7 +215,6 @@ public sealed partial class DiskBasedResponseCache : IDistributedCache
         Directory.Delete(keyPath, recursive: true);
     }
 
-    /// <inheritdoc/>
     public Task RemoveAsync(string key, CancellationToken cancellationToken = default)
     {
         if (_options.Mode is CacheMode.Disabled or CacheMode.EnabledOfflineOnly)
@@ -256,7 +226,6 @@ public sealed partial class DiskBasedResponseCache : IDistributedCache
         return Task.CompletedTask;
     }
 
-    /// <inheritdoc/>
     public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
     {
         if (_options.Mode is CacheMode.Disabled or CacheMode.EnabledOfflineOnly)
@@ -274,7 +243,6 @@ public sealed partial class DiskBasedResponseCache : IDistributedCache
         File.WriteAllBytes(contentsFilePath, value);
     }
 
-    /// <inheritdoc/>
     public async Task SetAsync(
         string key,
         byte[] value,
