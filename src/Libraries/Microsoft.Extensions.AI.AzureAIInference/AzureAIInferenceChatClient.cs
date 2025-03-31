@@ -22,26 +22,29 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="IChatClient"/> for an Azure AI Inference <see cref="ChatCompletionsClient"/>.</summary>
-public sealed class AzureAIInferenceChatClient : IChatClient
+internal sealed class AzureAIInferenceChatClient : IChatClient
 {
-    /// <summary>A default schema to use when a parameter lacks a pre-defined schema.</summary>
-    private static readonly JsonElement _defaultParameterSchema = JsonDocument.Parse("{}").RootElement;
+    /// <summary>Metadata about the client.</summary>
+    private readonly ChatClientMetadata _metadata;
 
     /// <summary>The underlying <see cref="ChatCompletionsClient" />.</summary>
     private readonly ChatCompletionsClient _chatCompletionsClient;
 
-    /// <summary>The <see cref="JsonSerializerOptions"/> use for any serialization activities related to tool call arguments and results.</summary>
-    private JsonSerializerOptions _toolCallJsonSerializerOptions = AIJsonUtilities.DefaultOptions;
+    /// <summary>Gets a ChatRole.Developer value.</summary>
+    private static ChatRole ChatRoleDeveloper { get; } = new("developer");
 
     /// <summary>Initializes a new instance of the <see cref="AzureAIInferenceChatClient"/> class for the specified <see cref="ChatCompletionsClient"/>.</summary>
     /// <param name="chatCompletionsClient">The underlying client.</param>
-    /// <param name="modelId">The ID of the model to use. If null, it can be provided per request via <see cref="ChatOptions.ModelId"/>.</param>
-    public AzureAIInferenceChatClient(ChatCompletionsClient chatCompletionsClient, string? modelId = null)
+    /// <param name="defaultModelId">The ID of the model to use. If <see langword="null"/>, it can be provided per request via <see cref="ChatOptions.ModelId"/>.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="chatCompletionsClient"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="defaultModelId"/> is empty or composed entirely of whitespace.</exception>
+    public AzureAIInferenceChatClient(ChatCompletionsClient chatCompletionsClient, string? defaultModelId = null)
     {
         _ = Throw.IfNull(chatCompletionsClient);
-        if (modelId is not null)
+
+        if (defaultModelId is not null)
         {
-            _ = Throw.IfNullOrWhitespace(modelId);
+            _ = Throw.IfNullOrWhitespace(defaultModelId);
         }
 
         _chatCompletionsClient = chatCompletionsClient;
@@ -53,56 +56,39 @@ public sealed class AzureAIInferenceChatClient : IChatClient
         var providerUrl = typeof(ChatCompletionsClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(chatCompletionsClient) as Uri;
 
-        Metadata = new("az.ai.inference", providerUrl, modelId);
-    }
-
-    /// <summary>Gets or sets <see cref="JsonSerializerOptions"/> to use for any serialization activities related to tool call arguments and results.</summary>
-    public JsonSerializerOptions ToolCallJsonSerializerOptions
-    {
-        get => _toolCallJsonSerializerOptions;
-        set => _toolCallJsonSerializerOptions = Throw.IfNull(value);
+        _metadata = new ChatClientMetadata("az.ai.inference", providerUrl, defaultModelId);
     }
 
     /// <inheritdoc />
-    public ChatClientMetadata Metadata { get; }
-
-    /// <inheritdoc />
-    public object? GetService(Type serviceType, object? serviceKey = null)
+    object? IChatClient.GetService(Type serviceType, object? serviceKey)
     {
         _ = Throw.IfNull(serviceType);
 
         return
             serviceKey is not null ? null :
             serviceType == typeof(ChatCompletionsClient) ? _chatCompletionsClient :
+            serviceType == typeof(ChatClientMetadata) ? _metadata :
             serviceType.IsInstanceOfType(this) ? this :
             null;
     }
 
     /// <inheritdoc />
-    public async Task<ChatCompletion> CompleteAsync(
-        IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<ChatResponse> GetResponseAsync(
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(chatMessages);
+        _ = Throw.IfNull(messages);
 
         // Make the call.
         ChatCompletions response = (await _chatCompletionsClient.CompleteAsync(
-            ToAzureAIOptions(chatMessages, options),
+            ToAzureAIOptions(messages, options),
             cancellationToken: cancellationToken).ConfigureAwait(false)).Value;
 
         // Create the return message.
-        List<ChatMessage> returnMessages = [];
-
-        // Populate its content from those in the response content.
-        ChatMessage message = new()
+        ChatMessage message = new(ToChatRole(response.Role), response.Content)
         {
+            MessageId = response.Id, // There is no per-message ID, but there's only one message per response, so use the response ID
             RawRepresentation = response,
-            Role = ToChatRole(response.Role),
         };
-
-        if (response.Content is string content)
-        {
-            message.Text = content;
-        }
 
         if (response.ToolCalls is { Count: > 0 } toolCalls)
         {
@@ -118,8 +104,6 @@ public sealed class AzureAIInferenceChatClient : IChatClient
             }
         }
 
-        returnMessages.Add(message);
-
         UsageDetails? usage = null;
         if (response.Usage is CompletionsUsage completionsUsage)
         {
@@ -131,58 +115,59 @@ public sealed class AzureAIInferenceChatClient : IChatClient
             };
         }
 
-        // Wrap the content in a ChatCompletion to return.
-        return new ChatCompletion(returnMessages)
+        // Wrap the content in a ChatResponse to return.
+        return new ChatResponse(message)
         {
-            CompletionId = response.Id,
             CreatedAt = response.Created,
             ModelId = response.Model,
             FinishReason = ToFinishReason(response.FinishReason),
             RawRepresentation = response,
+            ResponseId = response.Id,
             Usage = usage,
         };
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(
-        IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(chatMessages);
+        _ = Throw.IfNull(messages);
 
         Dictionary<string, FunctionCallInfo>? functionCallInfos = null;
         ChatRole? streamedRole = default;
         ChatFinishReason? finishReason = default;
-        string? completionId = null;
+        string? responseId = null;
         DateTimeOffset? createdAt = null;
         string? modelId = null;
         string lastCallId = string.Empty;
 
         // Process each update as it arrives
-        var updates = await _chatCompletionsClient.CompleteStreamingAsync(ToAzureAIOptions(chatMessages, options), cancellationToken).ConfigureAwait(false);
+        var updates = await _chatCompletionsClient.CompleteStreamingAsync(ToAzureAIOptions(messages, options), cancellationToken).ConfigureAwait(false);
         await foreach (StreamingChatCompletionsUpdate chatCompletionUpdate in updates.ConfigureAwait(false))
         {
             // The role and finish reason may arrive during any update, but once they've arrived, the same value should be the same for all subsequent updates.
             streamedRole ??= chatCompletionUpdate.Role is global::Azure.AI.Inference.ChatRole role ? ToChatRole(role) : null;
             finishReason ??= chatCompletionUpdate.FinishReason is CompletionsFinishReason reason ? ToFinishReason(reason) : null;
-            completionId ??= chatCompletionUpdate.Id;
+            responseId ??= chatCompletionUpdate.Id; // While it's unclear from the name, this Id is documented to be the response ID, not the chunk ID
             createdAt ??= chatCompletionUpdate.Created;
             modelId ??= chatCompletionUpdate.Model;
 
             // Create the response content object.
-            StreamingChatCompletionUpdate completionUpdate = new()
+            ChatResponseUpdate responseUpdate = new()
             {
-                CompletionId = chatCompletionUpdate.Id,
                 CreatedAt = chatCompletionUpdate.Created,
                 FinishReason = finishReason,
                 ModelId = modelId,
                 RawRepresentation = chatCompletionUpdate,
+                ResponseId = responseId,
+                MessageId = responseId, // There is no per-message ID, but there's only one message per response, so use the response ID
                 Role = streamedRole,
             };
 
             // Transfer over content update items.
             if (chatCompletionUpdate.ContentUpdate is string update)
             {
-                completionUpdate.Contents.Add(new TextContent(update));
+                responseUpdate.Contents.Add(new TextContent(update));
             }
 
             // Transfer over tool call updates.
@@ -215,7 +200,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
 
             if (chatCompletionUpdate.Usage is { } usage)
             {
-                completionUpdate.Contents.Add(new UsageContent(new()
+                responseUpdate.Contents.Add(new UsageContent(new()
                 {
                     InputTokenCount = usage.PromptTokens,
                     OutputTokenCount = usage.CompletionTokens,
@@ -224,18 +209,19 @@ public sealed class AzureAIInferenceChatClient : IChatClient
             }
 
             // Now yield the item.
-            yield return completionUpdate;
+            yield return responseUpdate;
         }
 
         // Now that we've received all updates, combine any for function calls into a single item to yield.
         if (functionCallInfos is not null)
         {
-            var completionUpdate = new StreamingChatCompletionUpdate
+            var responseUpdate = new ChatResponseUpdate
             {
-                CompletionId = completionId,
                 CreatedAt = createdAt,
                 FinishReason = finishReason,
                 ModelId = modelId,
+                ResponseId = responseId,
+                MessageId = responseId, // There is no per-message ID, but there's only one message per response, so use the response ID
                 Role = streamedRole,
             };
 
@@ -248,11 +234,11 @@ public sealed class AzureAIInferenceChatClient : IChatClient
                         fci.Arguments?.ToString() ?? string.Empty,
                         entry.Key,
                         fci.Name!);
-                    completionUpdate.Contents.Add(callContent);
+                    responseUpdate.Contents.Add(callContent);
                 }
             }
 
-            yield return completionUpdate;
+            yield return responseUpdate;
         }
     }
 
@@ -275,6 +261,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
         role.Equals(global::Azure.AI.Inference.ChatRole.User) ? ChatRole.User :
         role.Equals(global::Azure.AI.Inference.ChatRole.Assistant) ? ChatRole.Assistant :
         role.Equals(global::Azure.AI.Inference.ChatRole.Tool) ? ChatRole.Tool :
+        role.Equals(global::Azure.AI.Inference.ChatRole.Developer) ? ChatRoleDeveloper :
         new ChatRole(role.ToString());
 
     /// <summary>Converts an AzureAI finish reason to an Extensions finish reason.</summary>
@@ -287,11 +274,11 @@ public sealed class AzureAIInferenceChatClient : IChatClient
         new(s);
 
     /// <summary>Converts an extensions options instance to an AzureAI options instance.</summary>
-    private ChatCompletionsOptions ToAzureAIOptions(IList<ChatMessage> chatContents, ChatOptions? options)
+    private ChatCompletionsOptions ToAzureAIOptions(IEnumerable<ChatMessage> chatContents, ChatOptions? options)
     {
         ChatCompletionsOptions result = new(ToAzureAIInferenceChatMessages(chatContents))
         {
-            Model = options?.ModelId ?? Metadata.ModelId ?? throw new InvalidOperationException("No model id was provided when either constructing the client or in the chat options.")
+            Model = options?.ModelId ?? _metadata.DefaultModelId ?? throw new InvalidOperationException("No model id was provided when either constructing the client or in the chat options.")
         };
 
         if (options is not null)
@@ -323,11 +310,11 @@ public sealed class AzureAIInferenceChatClient : IChatClient
                 {
                     switch (prop.Key)
                     {
-                        // Propagate everything else to the ChatCompletionOptions' AdditionalProperties.
+                        // Propagate everything else to the ChatCompletionsOptions' AdditionalProperties.
                         default:
                             if (prop.Value is not null)
                             {
-                                byte[] data = JsonSerializer.SerializeToUtf8Bytes(prop.Value, ToolCallJsonSerializerOptions.GetTypeInfo(typeof(object)));
+                                byte[] data = JsonSerializer.SerializeToUtf8Bytes(prop.Value, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(object)));
                                 result.AdditionalProperties[prop.Key] = new BinaryData(data);
                             }
 
@@ -348,7 +335,12 @@ public sealed class AzureAIInferenceChatClient : IChatClient
 
                 switch (options.ToolMode)
                 {
+                    case NoneChatToolMode:
+                        result.ToolChoice = ChatCompletionsToolChoice.None;
+                        break;
+
                     case AutoChatToolMode:
+                    case null:
                         result.ToolChoice = ChatCompletionsToolChoice.Auto;
                         break;
 
@@ -362,52 +354,56 @@ public sealed class AzureAIInferenceChatClient : IChatClient
 
             if (options.ResponseFormat is ChatResponseFormatText)
             {
-                result.ResponseFormat = new ChatCompletionsResponseFormatText();
+                result.ResponseFormat = ChatCompletionsResponseFormat.CreateTextFormat();
             }
-            else if (options.ResponseFormat is ChatResponseFormatJson)
+            else if (options.ResponseFormat is ChatResponseFormatJson json)
             {
-                result.ResponseFormat = new ChatCompletionsResponseFormatJSON();
+                if (json.Schema is { } schema)
+                {
+                    var tool = JsonSerializer.Deserialize(schema, JsonContext.Default.AzureAIChatToolJson)!;
+                    result.ResponseFormat = ChatCompletionsResponseFormat.CreateJsonFormat(
+                        json.SchemaName ?? "json_schema",
+                        new Dictionary<string, BinaryData>
+                        {
+                            ["type"] = _objectString,
+                            ["properties"] = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool.Properties, JsonContext.Default.DictionaryStringJsonElement)),
+                            ["required"] = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool.Required, JsonContext.Default.ListString)),
+                            ["additionalProperties"] = _falseString,
+                        },
+                        json.SchemaDescription,
+                        jsonSchemaIsStrict: true);
+                }
+                else
+                {
+                    result.ResponseFormat = ChatCompletionsResponseFormat.CreateJsonFormat();
+                }
             }
         }
 
         return result;
     }
 
+    /// <summary>Cached <see cref="BinaryData"/> for "object".</summary>
+    private static readonly BinaryData _objectString = BinaryData.FromString("\"object\"");
+
+    /// <summary>Cached <see cref="BinaryData"/> for "false".</summary>
+    private static readonly BinaryData _falseString = BinaryData.FromString("false");
+
     /// <summary>Converts an Extensions function to an AzureAI chat tool.</summary>
     private static ChatCompletionsToolDefinition ToAzureAIChatTool(AIFunction aiFunction)
     {
-        BinaryData resultParameters = AzureAIChatToolJson.ZeroFunctionParametersSchema;
-
-        var parameters = aiFunction.Metadata.Parameters;
-        if (parameters is { Count: > 0 })
+        // Map to an intermediate model so that redundant properties are skipped.
+        var tool = JsonSerializer.Deserialize(aiFunction.JsonSchema, JsonContext.Default.AzureAIChatToolJson)!;
+        var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool, JsonContext.Default.AzureAIChatToolJson));
+        return new(new FunctionDefinition(aiFunction.Name)
         {
-            AzureAIChatToolJson tool = new();
-
-            foreach (AIFunctionParameterMetadata parameter in parameters)
-            {
-                tool.Properties.Add(
-                    parameter.Name,
-                    parameter.Schema is JsonElement schema ? schema : _defaultParameterSchema);
-
-                if (parameter.IsRequired)
-                {
-                    tool.Required.Add(parameter.Name);
-                }
-            }
-
-            resultParameters = BinaryData.FromBytes(
-                JsonSerializer.SerializeToUtf8Bytes(tool, JsonContext.Default.AzureAIChatToolJson));
-        }
-
-        return new(new FunctionDefinition(aiFunction.Metadata.Name)
-        {
-            Description = aiFunction.Metadata.Description,
-            Parameters = resultParameters,
+            Description = aiFunction.Description,
+            Parameters = functionParameters,
         });
     }
 
     /// <summary>Converts an Extensions chat message enumerable to an AzureAI chat message enumerable.</summary>
-    private IEnumerable<ChatRequestMessage> ToAzureAIInferenceChatMessages(IList<ChatMessage> inputs)
+    private static IEnumerable<ChatRequestMessage> ToAzureAIInferenceChatMessages(IEnumerable<ChatMessage> inputs)
     {
         // Maps all of the M.E.AI types to the corresponding AzureAI types.
         // Unrecognized or non-processable content is ignored.
@@ -417,6 +413,10 @@ public sealed class AzureAIInferenceChatClient : IChatClient
             if (input.Role == ChatRole.System)
             {
                 yield return new ChatRequestSystemMessage(input.Text ?? string.Empty);
+            }
+            else if (input.Role == ChatRoleDeveloper)
+            {
+                yield return new ChatRequestDeveloperMessage(input.Text ?? string.Empty);
             }
             else if (input.Role == ChatRole.Tool)
             {
@@ -429,7 +429,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
                         {
                             try
                             {
-                                result = JsonSerializer.Serialize(resultContent.Result, ToolCallJsonSerializerOptions.GetTypeInfo(typeof(object)));
+                                result = JsonSerializer.Serialize(resultContent.Result, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(object)));
                             }
                             catch (NotSupportedException)
                             {
@@ -443,9 +443,20 @@ public sealed class AzureAIInferenceChatClient : IChatClient
             }
             else if (input.Role == ChatRole.User)
             {
-                yield return input.Contents.All(c => c is TextContent) ?
-                    new ChatRequestUserMessage(string.Concat(input.Contents)) :
-                    new ChatRequestUserMessage(GetContentParts(input.Contents));
+                if (input.Contents.Count > 0)
+                {
+                    if (input.Contents.All(c => c is TextContent))
+                    {
+                        if (string.Concat(input.Contents) is { Length: > 0 } text)
+                        {
+                            yield return new ChatRequestUserMessage(text);
+                        }
+                    }
+                    else if (GetContentParts(input.Contents) is { Count: > 0 } parts)
+                    {
+                        yield return new ChatRequestUserMessage(parts);
+                    }
+                }
             }
             else if (input.Role == ChatRole.Assistant)
             {
@@ -461,7 +472,7 @@ public sealed class AzureAIInferenceChatClient : IChatClient
                              callRequest.CallId,
                              new FunctionCall(
                                  callRequest.Name,
-                                 JsonSerializer.Serialize(callRequest.Arguments, ToolCallJsonSerializerOptions.GetTypeInfo(typeof(IDictionary<string, object>))))));
+                                 JsonSerializer.Serialize(callRequest.Arguments, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object>))))));
                     }
                 }
 
@@ -484,16 +495,34 @@ public sealed class AzureAIInferenceChatClient : IChatClient
                     parts.Add(new ChatMessageTextContentItem(textContent.Text));
                     break;
 
-                case DataContent dataContent when dataContent.MediaTypeStartsWith("image/"):
-                    if (dataContent.ContainsData)
+                case UriContent uriContent when uriContent.HasTopLevelMediaType("image"):
+                    parts.Add(new ChatMessageImageContentItem(uriContent.Uri));
+                    break;
+
+                case DataContent dataContent when dataContent.HasTopLevelMediaType("image"):
+                    parts.Add(new ChatMessageImageContentItem(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType));
+                    break;
+
+                case UriContent uriContent when uriContent.HasTopLevelMediaType("audio"):
+                    parts.Add(new ChatMessageAudioContentItem(uriContent.Uri));
+                    break;
+
+                case DataContent dataContent when dataContent.HasTopLevelMediaType("audio"):
+                    AudioContentFormat format;
+                    if (dataContent.MediaType.Equals("audio/mpeg", StringComparison.OrdinalIgnoreCase))
                     {
-                        parts.Add(new ChatMessageImageContentItem(BinaryData.FromBytes(dataContent.Data.Value), dataContent.MediaType));
+                        format = AudioContentFormat.Mp3;
                     }
-                    else if (dataContent.Uri is string uri)
+                    else if (dataContent.MediaType.Equals("audio/wav", StringComparison.OrdinalIgnoreCase))
                     {
-                        parts.Add(new ChatMessageImageContentItem(new Uri(uri)));
+                        format = AudioContentFormat.Wav;
+                    }
+                    else
+                    {
+                        break;
                     }
 
+                    parts.Add(new ChatMessageAudioContentItem(BinaryData.FromBytes(dataContent.Data), format));
                     break;
             }
         }

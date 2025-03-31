@@ -100,6 +100,15 @@ public class LoggingRedactionOptions
 #pragma warning disable CA2227 // Collection properties should be read only
     public ISet<string> ExcludePathStartsWith { get; set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 #pragma warning restore CA2227 // Collection properties should be read only
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to report unmatched routes.
+    /// </summary>
+    /// <remarks>
+    /// If set to true, instead of logging <i>unknown</i> value for path attribute it will log whole path of routes not identified by ASP.NET Routing.
+    /// </remarks>
+    /// <value>Defaults to <see langword="false"/>.</value>
+    public bool IncludeUnmatchedRoutes { get; set; }
 }
 
 #endif

@@ -9,10 +9,14 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Shared.Diagnostics;
 
+#pragma warning disable S109 // Magic numbers should not be used
+#pragma warning disable SA1202 // Elements should be ordered by access
+#pragma warning disable SA1502 // Element should not be on a single line
+
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// A delegating chat client that caches the results of completion calls, storing them as JSON in an <see cref="IDistributedCache"/>.
+/// A delegating chat client that caches the results of response calls, storing them as JSON in an <see cref="IDistributedCache"/>.
 /// </summary>
 /// <remarks>
 /// The provided implementation of <see cref="IChatClient"/> is thread-safe for concurrent use so long as the employed
@@ -43,62 +47,71 @@ public class DistributedCachingChatClient : CachingChatClient
     }
 
     /// <inheritdoc />
-    protected override async Task<ChatCompletion?> ReadCacheAsync(string key, CancellationToken cancellationToken)
+    protected override async Task<ChatResponse?> ReadCacheAsync(string key, CancellationToken cancellationToken)
     {
         _ = Throw.IfNull(key);
         _jsonSerializerOptions.MakeReadOnly();
 
         if (await _storage.GetAsync(key, cancellationToken).ConfigureAwait(false) is byte[] existingJson)
         {
-            return (ChatCompletion?)JsonSerializer.Deserialize(existingJson, _jsonSerializerOptions.GetTypeInfo(typeof(ChatCompletion)));
+            return (ChatResponse?)JsonSerializer.Deserialize(existingJson, _jsonSerializerOptions.GetTypeInfo(typeof(ChatResponse)));
         }
 
         return null;
     }
 
     /// <inheritdoc />
-    protected override async Task<IReadOnlyList<StreamingChatCompletionUpdate>?> ReadCacheStreamingAsync(string key, CancellationToken cancellationToken)
+    protected override async Task<IReadOnlyList<ChatResponseUpdate>?> ReadCacheStreamingAsync(string key, CancellationToken cancellationToken)
     {
         _ = Throw.IfNull(key);
         _jsonSerializerOptions.MakeReadOnly();
 
         if (await _storage.GetAsync(key, cancellationToken).ConfigureAwait(false) is byte[] existingJson)
         {
-            return (IReadOnlyList<StreamingChatCompletionUpdate>?)JsonSerializer.Deserialize(existingJson, _jsonSerializerOptions.GetTypeInfo(typeof(IReadOnlyList<StreamingChatCompletionUpdate>)));
+            return (IReadOnlyList<ChatResponseUpdate>?)JsonSerializer.Deserialize(existingJson, _jsonSerializerOptions.GetTypeInfo(typeof(IReadOnlyList<ChatResponseUpdate>)));
         }
 
         return null;
     }
 
     /// <inheritdoc />
-    protected override async Task WriteCacheAsync(string key, ChatCompletion value, CancellationToken cancellationToken)
+    protected override async Task WriteCacheAsync(string key, ChatResponse value, CancellationToken cancellationToken)
     {
         _ = Throw.IfNull(key);
         _ = Throw.IfNull(value);
         _jsonSerializerOptions.MakeReadOnly();
 
-        var newJson = JsonSerializer.SerializeToUtf8Bytes(value, _jsonSerializerOptions.GetTypeInfo(typeof(ChatCompletion)));
+        var newJson = JsonSerializer.SerializeToUtf8Bytes(value, _jsonSerializerOptions.GetTypeInfo(typeof(ChatResponse)));
         await _storage.SetAsync(key, newJson, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    protected override async Task WriteCacheStreamingAsync(string key, IReadOnlyList<StreamingChatCompletionUpdate> value, CancellationToken cancellationToken)
+    protected override async Task WriteCacheStreamingAsync(string key, IReadOnlyList<ChatResponseUpdate> value, CancellationToken cancellationToken)
     {
         _ = Throw.IfNull(key);
         _ = Throw.IfNull(value);
         _jsonSerializerOptions.MakeReadOnly();
 
-        var newJson = JsonSerializer.SerializeToUtf8Bytes(value, _jsonSerializerOptions.GetTypeInfo(typeof(IReadOnlyList<StreamingChatCompletionUpdate>)));
+        var newJson = JsonSerializer.SerializeToUtf8Bytes(value, _jsonSerializerOptions.GetTypeInfo(typeof(IReadOnlyList<ChatResponseUpdate>)));
         await _storage.SetAsync(key, newJson, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>Computes a cache key for the specified values.</summary>
     /// <param name="values">The values to inform the key.</param>
     /// <returns>The computed key.</returns>
-    /// <remarks>The <paramref name="values"/> are serialized to JSON using <see cref="JsonSerializerOptions"/> in order to compute the key.</remarks>
+    /// <remarks>
+    /// <para>
+    /// The <paramref name="values"/> are serialized to JSON using <see cref="JsonSerializerOptions"/> in order to compute the key.
+    /// </para>
+    /// <para>
+    /// The generated cache key is not guaranteed to be stable across releases of the library.
+    /// </para>
+    /// </remarks>
     protected override string GetCacheKey(params ReadOnlySpan<object?> values)
     {
-        _jsonSerializerOptions.MakeReadOnly();
-        return CachingHelpers.GetCacheKey(values, _jsonSerializerOptions);
+        // Bump the cache version to invalidate existing caches if the serialization format changes in a breaking way.
+        const int CacheVersion = 1;
+
+        return AIJsonUtilities.HashDataToString([CacheVersion, .. values], _jsonSerializerOptions);
     }
 }

@@ -18,7 +18,6 @@ using Xunit;
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
 [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
-[UsesVerify]
 public sealed class LinuxUtilizationProviderTests
 {
     private const string VerifiedDataDirectory = "Verified";

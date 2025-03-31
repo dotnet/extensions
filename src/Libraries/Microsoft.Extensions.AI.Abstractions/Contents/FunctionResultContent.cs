@@ -19,33 +19,26 @@ public sealed class FunctionResultContent : AIContent
     /// Initializes a new instance of the <see cref="FunctionResultContent"/> class.
     /// </summary>
     /// <param name="callId">The function call ID for which this is the result.</param>
-    /// <param name="name">The function name that produced the result.</param>
     /// <param name="result">
     /// <see langword="null"/> if the function returned <see langword="null"/> or was void-returning
     /// and thus had no result, or if the function call failed. Typically, however, to provide meaningfully representative
     /// information to an AI service, a human-readable representation of those conditions should be supplied.
     /// </param>
     [JsonConstructor]
-    public FunctionResultContent(string callId, string name, object? result)
+    public FunctionResultContent(string callId, object? result)
     {
         CallId = Throw.IfNull(callId);
-        Name = Throw.IfNull(name);
         Result = result;
     }
 
     /// <summary>
-    /// Gets or sets the ID of the function call for which this is the result.
+    /// Gets the ID of the function call for which this is the result.
     /// </summary>
     /// <remarks>
     /// If this is the result for a <see cref="FunctionCallContent"/>, this property should contain the same
     /// <see cref="FunctionCallContent.CallId"/> value.
     /// </remarks>
-    public string CallId { get; set; }
-
-    /// <summary>
-    /// Gets or sets the name of the function that was called.
-    /// </summary>
-    public string Name { get; set; }
+    public string CallId { get; }
 
     /// <summary>
     /// Gets or sets the result of the function call, or a generic error message if the function call failed.
@@ -74,13 +67,16 @@ public sealed class FunctionResultContent : AIContent
     {
         get
         {
-            string display = CallId is not null ?
-                $"CallId = {CallId}, " :
-                string.Empty;
+            string display = "FunctionResult = ";
+
+            if (CallId is not null)
+            {
+                display += $"{CallId}, ";
+            }
 
             display += Exception is not null ?
-                $"Error = {Exception.Message}" :
-                $"Result = {Result?.ToString() ?? string.Empty}";
+                $"{Exception.GetType().Name}(\"{Exception.Message}\")" :
+                $"{Result?.ToString() ?? "(null)"}";
 
             return display;
         }

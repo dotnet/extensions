@@ -13,8 +13,14 @@ using static Microsoft.Extensions.Caching.Hybrid.Internal.DefaultHybridCache;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
 
-public class BufferReleaseTests : IClassFixture<TestEventListener> // note that buffer ref-counting is only enabled for DEBUG builds; can only verify general behaviour without that
+// note that buffer ref-counting is only enabled for DEBUG builds; can only verify general behaviour without that
+public class BufferReleaseTests : IClassFixture<TestEventListener>
 {
+    public BufferReleaseTests(TestEventListener toForceFixtureLifetimeOnly)
+    {
+        _ = toForceFixtureLifetimeOnly;
+    }
+
     private static ServiceProvider GetDefaultCache(out DefaultHybridCache cache, Action<ServiceCollection>? config = null)
     {
         var services = new ServiceCollection();
@@ -250,9 +256,11 @@ public class BufferReleaseTests : IClassFixture<TestEventListener> // note that 
     [Fact]
     public void MutableCacheItem_Reservation()
     {
+        using ServiceProvider services = new ServiceCollection().BuildServiceProvider();
+
         var obj = Assert.IsType<MutableCacheItem<Customer>>(CacheItem<Customer>.Create(12345, TagSet.Empty));
 
-        Assert.True(new DefaultJsonSerializerFactory().TryCreateSerializer<Customer>(out var serializer));
+        Assert.True(new DefaultJsonSerializerFactory(services).TryCreateSerializer<Customer>(out var serializer));
         var target = RecyclableArrayBufferWriter<byte>.Create(int.MaxValue);
         serializer.Serialize(new Customer { Id = 42, Name = "Fred" }, target);
         var arr = target.DetachCommitted(out var length);

@@ -2,16 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Schema;
 using System.Text.Json.Serialization;
+using System.Threading;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable S1121 // Assignments should not be made from within sub-expressions
@@ -25,100 +26,116 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Provides a collection of utility methods for marshalling JSON data.</summary>
 public static partial class AIJsonUtilities
 {
+    private const string SchemaPropertyName = "$schema";
+    private const string TitlePropertyName = "title";
+    private const string DescriptionPropertyName = "description";
+    private const string NotPropertyName = "not";
+    private const string TypePropertyName = "type";
+    private const string PatternPropertyName = "pattern";
+    private const string EnumPropertyName = "enum";
+    private const string PropertiesPropertyName = "properties";
+    private const string RequiredPropertyName = "required";
+    private const string AdditionalPropertiesPropertyName = "additionalProperties";
+    private const string DefaultPropertyName = "default";
+    private const string RefPropertyName = "$ref";
+
     /// <summary>The uri used when populating the $schema keyword in inferred schemas.</summary>
     private const string SchemaKeywordUri = "https://json-schema.org/draft/2020-12/schema";
-
-    /// <summary>Soft limit for how many items should be stored in the dictionaries in <see cref="_schemaCaches"/>.</summary>
-    private const int CacheSoftLimit = 4096;
-
-    /// <summary>Caches of generated schemas for each <see cref="JsonSerializerOptions"/> that's employed.</summary>
-    private static readonly ConditionalWeakTable<JsonSerializerOptions, ConcurrentDictionary<SchemaGenerationKey, JsonElement>> _schemaCaches = new();
-
-    /// <summary>Gets a JSON schema accepting all values.</summary>
-    private static readonly JsonElement _trueJsonSchema = ParseJsonElement("true"u8);
-
-    /// <summary>Gets a JSON schema only accepting null values.</summary>
-    private static readonly JsonElement _nullJsonSchema = ParseJsonElement("""{"type":"null"}"""u8);
 
     // List of keywords used by JsonSchemaExporter but explicitly disallowed by some AI vendors.
     // cf. https://platform.openai.com/docs/guides/structured-outputs#some-type-specific-keywords-are-not-yet-supported
     private static readonly string[] _schemaKeywordsDisallowedByAIVendors = ["minLength", "maxLength", "pattern", "format"];
 
     /// <summary>
-    /// Determines a JSON schema for the provided parameter metadata.
+    /// Determines a JSON schema for the provided method.
     /// </summary>
-    /// <param name="parameterMetadata">The parameter metadata from which to infer the schema.</param>
-    /// <param name="functionMetadata">The containing function metadata.</param>
+    /// <param name="method">The method from which to extract schema information.</param>
+    /// <param name="title">The title keyword used by the method schema.</param>
+    /// <param name="description">The description keyword used by the method schema.</param>
     /// <param name="serializerOptions">The options used to extract the schema from the specified type.</param>
     /// <param name="inferenceOptions">The options controlling schema inference.</param>
     /// <returns>A JSON schema document encoded as a <see cref="JsonElement"/>.</returns>
-    public static JsonElement ResolveParameterJsonSchema(
-        AIFunctionParameterMetadata parameterMetadata,
-        AIFunctionMetadata functionMetadata,
-        JsonSerializerOptions? serializerOptions = null,
-        AIJsonSchemaCreateOptions? inferenceOptions = null)
-    {
-        _ = Throw.IfNull(parameterMetadata);
-        _ = Throw.IfNull(functionMetadata);
-
-        serializerOptions ??= functionMetadata.JsonSerializerOptions ?? DefaultOptions;
-
-        if (ReferenceEquals(serializerOptions, functionMetadata.JsonSerializerOptions) &&
-            parameterMetadata.Schema is JsonElement schema)
-        {
-            // If the resolved options matches that of the function metadata,
-            // we can just return the precomputed JSON schema value.
-            return schema;
-        }
-
-        return CreateParameterJsonSchema(
-            parameterMetadata.ParameterType,
-            parameterMetadata.Name,
-            description: parameterMetadata.Description,
-            hasDefaultValue: parameterMetadata.HasDefaultValue,
-            defaultValue: parameterMetadata.DefaultValue,
-            serializerOptions,
-            inferenceOptions);
-    }
-
-    /// <summary>
-    /// Creates a JSON schema for the provided parameter metadata.
-    /// </summary>
-    /// <param name="type">The type of the parameter.</param>
-    /// <param name="parameterName">The name of the parameter.</param>
-    /// <param name="description">The description of the parameter.</param>
-    /// <param name="hasDefaultValue"><see langword="true"/> if the parameter is optional; otherwise, <see langword="false"/>.</param>
-    /// <param name="defaultValue">The default value of the optional parameter, if applicable.</param>
-    /// <param name="serializerOptions">The options used to extract the schema from the specified type.</param>
-    /// <param name="inferenceOptions">The options controlling schema inference.</param>
-    /// <returns>A JSON schema document encoded as a <see cref="JsonElement"/>.</returns>
-    /// <remarks>
-    /// Uses a cache keyed on the <paramref name="serializerOptions"/> to store schema result,
-    /// unless a <see cref="AIJsonSchemaCreateOptions.TransformSchemaNode" /> delegate has been specified.
-    /// </remarks>
-    public static JsonElement CreateParameterJsonSchema(
-        Type? type,
-        string parameterName,
+    /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+    public static JsonElement CreateFunctionJsonSchema(
+        MethodBase method,
+        string? title = null,
         string? description = null,
-        bool hasDefaultValue = false,
-        object? defaultValue = null,
         JsonSerializerOptions? serializerOptions = null,
         AIJsonSchemaCreateOptions? inferenceOptions = null)
     {
-        _ = Throw.IfNull(parameterName);
+        _ = Throw.IfNull(method);
 
         serializerOptions ??= DefaultOptions;
         inferenceOptions ??= AIJsonSchemaCreateOptions.Default;
+        title ??= method.Name;
+        description ??= method.GetCustomAttribute<DescriptionAttribute>()?.Description;
 
-        SchemaGenerationKey key = new(
-            type,
-            parameterName,
-            description,
-            hasDefaultValue,
-            defaultValue,
-            inferenceOptions);
+        JsonObject parameterSchemas = new();
+        JsonArray? requiredProperties = null;
+        foreach (ParameterInfo parameter in method.GetParameters())
+        {
+            if (string.IsNullOrWhiteSpace(parameter.Name))
+            {
+                Throw.ArgumentException(nameof(parameter), "Parameter is missing a name.");
+            }
 
-        return GetJsonSchemaCached(serializerOptions, key);
+            if (parameter.ParameterType == typeof(CancellationToken))
+            {
+                // CancellationToken is a special case that, by convention, we don't want to include in the schema.
+                // Invocations of methods that include a CancellationToken argument should also special-case CancellationToken
+                // to pass along what relevant token into the method's invocation.
+                continue;
+            }
+
+            if (inferenceOptions.IncludeParameter is { } includeParameter &&
+                !includeParameter(parameter))
+            {
+                // Skip parameters that should not be included in the schema.
+                // By default, all parameters are included.
+                continue;
+            }
+
+            JsonNode parameterSchema = CreateJsonSchemaCore(
+                type: parameter.ParameterType,
+                parameterName: parameter.Name,
+                description: parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
+                hasDefaultValue: parameter.HasDefaultValue,
+                defaultValue: GetDefaultValueNormalized(parameter),
+                serializerOptions,
+                inferenceOptions);
+
+            parameterSchemas.Add(parameter.Name, parameterSchema);
+            if (!parameter.IsOptional || inferenceOptions.RequireAllProperties)
+            {
+                (requiredProperties ??= []).Add((JsonNode)parameter.Name);
+            }
+        }
+
+        JsonObject schema = new();
+        if (inferenceOptions.IncludeSchemaKeyword)
+        {
+            schema[SchemaPropertyName] = SchemaKeywordUri;
+        }
+
+        if (!string.IsNullOrWhiteSpace(title))
+        {
+            schema[TitlePropertyName] = title;
+        }
+
+        if (!string.IsNullOrWhiteSpace(description))
+        {
+            schema[DescriptionPropertyName] = description;
+        }
+
+        schema[TypePropertyName] = "object"; // Method schemas always hardcode the type as "object".
+        schema[PropertiesPropertyName] = parameterSchemas;
+
+        if (requiredProperties is not null)
+        {
+            schema[RequiredPropertyName] = requiredProperties;
+        }
+
+        return JsonSerializer.SerializeToElement(schema, JsonContext.Default.JsonNode);
     }
 
     /// <summary>Creates a JSON schema for the specified type.</summary>
@@ -129,10 +146,6 @@ public static partial class AIJsonUtilities
     /// <param name="serializerOptions">The options used to extract the schema from the specified type.</param>
     /// <param name="inferenceOptions">The options controlling schema inference.</param>
     /// <returns>A <see cref="JsonElement"/> representing the schema.</returns>
-    /// <remarks>
-    /// Uses a cache keyed on the <paramref name="serializerOptions"/> to store schema result,
-    /// unless a <see cref="AIJsonSchemaCreateOptions.TransformSchemaNode" /> delegate has been specified.
-    /// </remarks>
     public static JsonElement CreateJsonSchema(
         Type? type,
         string? description = null,
@@ -143,36 +156,20 @@ public static partial class AIJsonUtilities
     {
         serializerOptions ??= DefaultOptions;
         inferenceOptions ??= AIJsonSchemaCreateOptions.Default;
-
-        SchemaGenerationKey key = new(
-            type,
-            parameterName: null,
-            description,
-            hasDefaultValue,
-            defaultValue,
-            inferenceOptions);
-
-        return GetJsonSchemaCached(serializerOptions, key);
+        JsonNode schema = CreateJsonSchemaCore(type, parameterName: null, description, hasDefaultValue, defaultValue, serializerOptions, inferenceOptions);
+        return JsonSerializer.SerializeToElement(schema, JsonContext.Default.JsonNode);
     }
 
-    private static JsonElement GetJsonSchemaCached(JsonSerializerOptions options, SchemaGenerationKey key)
+    /// <summary>Gets the default JSON schema to be used by types or functions.</summary>
+    internal static JsonElement DefaultJsonSchema { get; } = ParseJsonElement("{}"u8);
+
+    /// <summary>Validates the provided JSON schema document.</summary>
+    internal static void ValidateSchemaDocument(JsonElement document, [CallerArgumentExpression("document")] string? paramName = null)
     {
-        options.MakeReadOnly();
-        ConcurrentDictionary<SchemaGenerationKey, JsonElement> cache = _schemaCaches.GetOrCreateValue(options);
-
-        if (key.TransformSchemaNode is not null || cache.Count >= CacheSoftLimit)
+        if (document.ValueKind is not JsonValueKind.Object or JsonValueKind.False or JsonValueKind.True)
         {
-            return GetJsonSchemaCore(options, key);
+            Throw.ArgumentException(paramName ?? "schema", "The schema document must be an object or a boolean value.");
         }
-
-        return cache.GetOrAdd(
-            key: key,
-#if NET
-            valueFactory: static (key, options) => GetJsonSchemaCore(options, key),
-            factoryArgument: options);
-#else
-            valueFactory: key => GetJsonSchemaCore(options, key));
-#endif
     }
 
 #if !NET9_0_OR_GREATER
@@ -180,44 +177,62 @@ public static partial class AIJsonUtilities
         Justification = "Pre STJ-9 schema extraction can fail with a runtime exception if certain reflection metadata have been trimmed. " +
                         "The exception message will guide users to turn off 'IlcTrimMetadata' which resolves all issues.")]
 #endif
-    private static JsonElement GetJsonSchemaCore(JsonSerializerOptions options, SchemaGenerationKey key)
+    private static JsonNode CreateJsonSchemaCore(
+        Type? type,
+        string? parameterName,
+        string? description,
+        bool hasDefaultValue,
+        object? defaultValue,
+        JsonSerializerOptions serializerOptions,
+        AIJsonSchemaCreateOptions inferenceOptions)
     {
-        _ = Throw.IfNull(options);
-        options.MakeReadOnly();
+        serializerOptions.MakeReadOnly();
 
-        if (key.Type is null)
+        if (type is null)
         {
             // For parameters without a type generate a rudimentary schema with available metadata.
 
             JsonObject? schemaObj = null;
 
-            if (key.IncludeSchemaKeyword)
+            if (inferenceOptions.IncludeSchemaKeyword)
             {
-                (schemaObj = [])["$schema"] = SchemaKeywordUri;
+                (schemaObj = [])[SchemaPropertyName] = SchemaKeywordUri;
             }
 
-            if (key.Description is not null)
+            if (hasDefaultValue)
             {
-                (schemaObj ??= [])["description"] = key.Description;
+                if (inferenceOptions.RequireAllProperties)
+                {
+                    // Default values are only used in the context of optional parameters.
+                    // Do not include a default keyword (since certain AI vendors don't support it)
+                    // and instead embed its JSON in the description as a hint to the LLM.
+                    string defaultValueJson = defaultValue is not null
+                        ? JsonSerializer.Serialize(defaultValue, serializerOptions.GetTypeInfo(defaultValue.GetType()))
+                        : "null";
+
+                    description = CreateDescriptionWithDefaultValue(description, defaultValueJson);
+                }
+                else
+                {
+                    JsonNode? defaultValueNode = defaultValue is not null
+                        ? JsonSerializer.SerializeToNode(defaultValue, serializerOptions.GetTypeInfo(defaultValue.GetType()))
+                        : null;
+
+                    (schemaObj ??= [])[DefaultPropertyName] = defaultValueNode;
+                }
             }
 
-            if (key.HasDefaultValue)
+            if (description is not null)
             {
-                JsonNode? defaultValueNode = key.DefaultValue is { } defaultValue
-                    ? JsonSerializer.Serialize(defaultValue, options.GetTypeInfo(defaultValue.GetType()))
-                    : null;
-
-                (schemaObj ??= [])["default"] = defaultValueNode;
+                (schemaObj ??= [])[DescriptionPropertyName] = description;
             }
 
-            return schemaObj is null
-                ? _trueJsonSchema
-                : JsonSerializer.SerializeToElement(schemaObj, JsonContext.Default.JsonNode);
+            return schemaObj ?? (JsonNode)true;
         }
 
-        if (key.Type == typeof(void))
+        if (type == typeof(void))
         {
-            return _nullJsonSchema;
+            return new JsonObject { [TypePropertyName] = null };
         }
 
         JsonSchemaExporterOptions exporterOptions = new()
@@ -226,55 +241,41 @@ public static partial class AIJsonUtilities
             TransformSchemaNode = TransformSchemaNode,
         };
 
-        JsonNode node = options.GetJsonSchemaAsNode(key.Type, exporterOptions);
-        return JsonSerializer.SerializeToElement(node, JsonContext.Default.JsonNode);
+        return serializerOptions.GetJsonSchemaAsNode(type, exporterOptions);
 
         JsonNode TransformSchemaNode(JsonSchemaExporterContext schemaExporterContext, JsonNode schema)
         {
-            const string SchemaPropertyName = "$schema";
-            const string DescriptionPropertyName = "description";
-            const string NotPropertyName = "not";
-            const string TypePropertyName = "type";
-            const string PatternPropertyName = "pattern";
-            const string EnumPropertyName = "enum";
-            const string PropertiesPropertyName = "properties";
-            const string RequiredPropertyName = "required";
-            const string AdditionalPropertiesPropertyName = "additionalProperties";
-            const string DefaultPropertyName = "default";
-            const string RefPropertyName = "$ref";
-
             AIJsonSchemaCreateContext ctx = new(schemaExporterContext);
 
-            if (ctx.GetCustomAttribute<DescriptionAttribute>() is { } attr)
-            {
-                ConvertSchemaToObject(ref schema).InsertAtStart(DescriptionPropertyName, (JsonNode)attr.Description);
-            }
+            string? localDescription = ctx.Path.IsEmpty && description is not null
+                ? description
+                : ctx.GetCustomAttribute<DescriptionAttribute>()?.Description;
 
             if (schema is JsonObject objSchema)
             {
                 // The resulting schema might be a $ref using a pointer to a different location in the document.
                 // As JSON pointer doesn't support relative paths, parameter schemas need to fix up such paths
                 // to accommodate the fact that they're being nested inside of a higher-level schema.
-                if (key.ParameterName is not null && objSchema.TryGetPropertyValue(RefPropertyName, out JsonNode? paramName))
+                if (parameterName is not null && objSchema.TryGetPropertyValue(RefPropertyName, out JsonNode? paramName))
                 {
                     // Fix up any $ref URIs to match the path from the root document.
                     string refUri = paramName!.GetValue<string>();
                     Debug.Assert(refUri is "#" || refUri.StartsWith("#/", StringComparison.Ordinal), $"Expected {nameof(refUri)} to be either # or start with #/, got {refUri}");
                     refUri = refUri == "#"
-                        ? $"#/{PropertiesPropertyName}/{key.ParameterName}"
-                        : $"#/{PropertiesPropertyName}/{key.ParameterName}/{refUri.AsMemory("#/".Length)}";
+                        ? $"#/{PropertiesPropertyName}/{parameterName}"
+                        : $"#/{PropertiesPropertyName}/{parameterName}/{refUri.AsMemory("#/".Length)}";
 
                     objSchema[RefPropertyName] = (JsonNode)refUri;
                 }
 
                 // Include the type keyword in enum types
-                if (key.IncludeTypeInEnumSchemas && ctx.TypeInfo.Type.IsEnum && objSchema.ContainsKey(EnumPropertyName) && !objSchema.ContainsKey(TypePropertyName))
+                if (inferenceOptions.IncludeTypeInEnumSchemas && ctx.TypeInfo.Type.IsEnum && objSchema.ContainsKey(EnumPropertyName) && !objSchema.ContainsKey(TypePropertyName))
                 {
                     objSchema.InsertAtStart(TypePropertyName, "string");
                 }
 
                 // Disallow additional properties in object schemas
-                if (key.DisallowAdditionalProperties &&
+                if (inferenceOptions.DisallowAdditionalProperties &&
                     objSchema.ContainsKey(PropertiesPropertyName) &&
                     !objSchema.ContainsKey(AdditionalPropertiesPropertyName))
                 {
@@ -282,7 +283,7 @@ public static partial class AIJsonUtilities
                 }
 
                 // Mark all properties as required
-                if (key.RequireAllProperties &&
+                if (inferenceOptions.RequireAllProperties &&
                     objSchema.TryGetPropertyValue(PropertiesPropertyName, out JsonNode? properties) &&
                     properties is JsonObject propertiesObj)
                 {
@@ -292,6 +293,15 @@ public static partial class AIJsonUtilities
                         requiredArray = [.. propertiesObj.Select(prop => (JsonNode)prop.Key)];
                         objSchema[RequiredPropertyName] = requiredArray;
                     }
+                }
+
+                // Strip default keywords and embed in description where required
+                if (inferenceOptions.RequireAllProperties &&
+                    objSchema.TryGetPropertyValue(DefaultPropertyName, out JsonNode? defaultValue))
+                {
+                    _ = objSchema.Remove(DefaultPropertyName);
+                    string defaultValueJson = defaultValue?.ToJsonString() ?? "null";
+                    localDescription = CreateDescriptionWithDefaultValue(localDescription, defaultValueJson);
                 }
 
                 // Filter potentially disallowed keywords.
@@ -314,42 +324,38 @@ public static partial class AIJsonUtilities
                 }
             }
 
-            if (ctx.Path.IsEmpty)
+            if (ctx.Path.IsEmpty && hasDefaultValue)
             {
-                // We are at the root-level schema node, update/append parameter-specific metadata
-
-                if (!string.IsNullOrWhiteSpace(key.Description))
+                // Add root-level default value metadata
+                if (inferenceOptions.RequireAllProperties)
                 {
-                    JsonObject obj = ConvertSchemaToObject(ref schema);
-                    JsonNode descriptionNode = (JsonNode)key.Description!;
-                    int index = obj.IndexOf(DescriptionPropertyName);
-                    if (index < 0)
-                    {
-                        // If there's no description property, insert it at the beginning of the doc.
-                        obj.InsertAtStart(DescriptionPropertyName, (JsonNode)key.Description!);
-                    }
-                    else
-                    {
-                        // If there is a description property, just update it in-place.
-                        obj[index] = (JsonNode)key.Description!;
-                    }
+                    // Default values are only used in the context of optional parameters.
+                    // Do not include a default keyword (since certain AI vendors don't support it)
+                    // and instead embed its JSON in the description as a hint to the LLM.
+                    string defaultValueJson = JsonSerializer.Serialize(defaultValue, ctx.TypeInfo);
+                    localDescription = CreateDescriptionWithDefaultValue(localDescription, defaultValueJson);
                 }
-
-                if (key.HasDefaultValue)
+                else
                 {
-                    JsonNode? defaultValue = JsonSerializer.Serialize(key.DefaultValue, options.GetTypeInfo(typeof(object)));
-                    ConvertSchemaToObject(ref schema)[DefaultPropertyName] = defaultValue;
-                }
-
-                if (key.IncludeSchemaKeyword)
-                {
-                    // The $schema property must be the first keyword in the object
-                    ConvertSchemaToObject(ref schema).InsertAtStart(SchemaPropertyName, (JsonNode)SchemaKeywordUri);
+                    JsonNode? defaultValueNode = JsonSerializer.SerializeToNode(defaultValue, ctx.TypeInfo);
+                    ConvertSchemaToObject(ref schema)[DefaultPropertyName] = defaultValueNode;
                 }
             }
 
+            if (localDescription is not null)
+            {
+                // Insert the final description property at the start of the schema object.
+                ConvertSchemaToObject(ref schema).InsertAtStart(DescriptionPropertyName, (JsonNode)localDescription);
+            }
+
+            if (ctx.Path.IsEmpty && inferenceOptions.IncludeSchemaKeyword)
+            {
+                // The $schema property must be the first keyword in the object
+                ConvertSchemaToObject(ref schema).InsertAtStart(SchemaPropertyName, (JsonNode)SchemaKeywordUri);
+            }
+
             // Finally, apply any user-defined transformations if specified.
-            if (key.TransformSchemaNode is { } transformer)
+            if (inferenceOptions.TransformSchemaNode is { } transformer)
             {
                 schema = transformer(ctx, schema);
             }
@@ -426,23 +432,12 @@ public static partial class AIJsonUtilities
 #endif
     }
 
-#if !NET9_0_OR_GREATER
-    private static int IndexOf(this JsonObject jsonObject, string key)
+    private static string CreateDescriptionWithDefaultValue(string? existingDescription, string defaultValueJson)
     {
-        int i = 0;
-        foreach (var entry in jsonObject)
-        {
-            if (string.Equals(entry.Key, key, StringComparison.Ordinal))
-            {
-                return i;
-            }
-
-            i++;
-        }
-
-        return -1;
+        return existingDescription is null
+            ? $"Default value: {defaultValueJson}"
+            : $"{existingDescription} (Default value: {defaultValueJson})";
     }
-#endif
 
     private static JsonElement ParseJsonElement(ReadOnlySpan<byte> utf8Json)
     {
@@ -450,38 +445,35 @@ public static partial class AIJsonUtilities
         return JsonElement.ParseValue(ref reader);
     }
 
-    /// <summary>The equatable key used to look up cached schemas.</summary>
-    private readonly record struct SchemaGenerationKey
+    private static object? GetDefaultValueNormalized(ParameterInfo parameterInfo)
     {
-        public SchemaGenerationKey(
-            Type? type,
-            string? parameterName,
-            string? description,
-            bool hasDefaultValue,
-            object? defaultValue,
-            AIJsonSchemaCreateOptions options)
+        // Taken from https://github.com/dotnet/runtime/blob/eff415bfd667125c1565680615a6f19152645fbf/src/libraries/System.Text.Json/Common/ReflectionExtensions.cs#L288-L317
+        Type parameterType = parameterInfo.ParameterType;
+        object? defaultValue = parameterInfo.DefaultValue;
+
+        if (defaultValue is null)
         {
-            Type = type;
-            ParameterName = parameterName;
-            Description = description;
-            HasDefaultValue = hasDefaultValue;
-            DefaultValue = defaultValue;
-            IncludeSchemaKeyword = options.IncludeSchemaKeyword;
-            DisallowAdditionalProperties = options.DisallowAdditionalProperties;
-            IncludeTypeInEnumSchemas = options.IncludeTypeInEnumSchemas;
-            RequireAllProperties = options.RequireAllProperties;
-            TransformSchemaNode = options.TransformSchemaNode;
+            return null;
         }
 
-        public Type? Type { get; }
-        public string? ParameterName { get; }
-        public string? Description { get; }
-        public bool HasDefaultValue { get; }
-        public object? DefaultValue { get; }
-        public bool IncludeSchemaKeyword { get; }
-        public bool DisallowAdditionalProperties { get; }
-        public bool IncludeTypeInEnumSchemas { get; }
-        public bool RequireAllProperties { get; }
-        public Func<AIJsonSchemaCreateContext, JsonNode, JsonNode>? TransformSchemaNode { get; }
+        // DBNull.Value is sometimes used as the default value (returned by reflection) of nullable params in place of null.
+        if (defaultValue == DBNull.Value && parameterType != typeof(DBNull))
+        {
+            return null;
+        }
+
+        // Default values of enums or nullable enums are represented using the underlying type and need to be cast explicitly
+        // cf. https://github.com/dotnet/runtime/issues/68647
+        if (parameterType.IsEnum)
+        {
+            return Enum.ToObject(parameterType, defaultValue);
+        }
+
+        if (Nullable.GetUnderlyingType(parameterType) is Type underlyingType && underlyingType.IsEnum)
+        {
+            return Enum.ToObject(underlyingType, defaultValue);
+        }
+
+        return defaultValue;
     }
 }

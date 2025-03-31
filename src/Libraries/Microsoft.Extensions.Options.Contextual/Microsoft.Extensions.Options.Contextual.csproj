@@ -11,6 +11,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <Stage>dev</Stage>
+    <StageDevDiagnosticId>EXTEXP0017</StageDevDiagnosticId>
     <MinCodeCoverage>100</MinCodeCoverage>
     <MinMutationScore>80</MinMutationScore>
   </PropertyGroup>

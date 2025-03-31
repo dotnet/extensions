@@ -10,11 +10,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 
+#pragma warning disable S3358 // Ternary operators should not be nested
+
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="IEmbeddingGenerator{String, Embedding}"/> for Ollama.</summary>
 public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>
 {
+    /// <summary>Metadata about the embedding generator.</summary>
+    private readonly EmbeddingGeneratorMetadata _metadata;
+
     /// <summary>The api/embeddings endpoint URI.</summary>
     private readonly Uri _apiEmbeddingsEndpoint;
 
@@ -40,6 +45,8 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator<string, Embed
     /// Either this parameter or <see cref="ChatOptions.ModelId"/> must provide a valid model ID.
     /// </param>
     /// <param name="httpClient">An <see cref="HttpClient"/> instance to use for HTTP operations.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="endpoint"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="modelId"/> is empty or composed entirely of whitespace.</exception>
     public OllamaEmbeddingGenerator(Uri endpoint, string? modelId = null, HttpClient? httpClient = null)
     {
         _ = Throw.IfNull(endpoint);
@@ -50,19 +57,18 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator<string, Embed
 
         _apiEmbeddingsEndpoint = new Uri(endpoint, "api/embed");
         _httpClient = httpClient ?? OllamaUtilities.SharedClient;
-        Metadata = new("ollama", endpoint, modelId);
+        _metadata = new("ollama", endpoint, modelId);
     }
 
     /// <inheritdoc />
-    public EmbeddingGeneratorMetadata Metadata { get; }
-
-    /// <inheritdoc />
-    public object? GetService(Type serviceType, object? serviceKey = null)
+    object? IEmbeddingGenerator.GetService(Type serviceType, object? serviceKey)
     {
         _ = Throw.IfNull(serviceType);
 
         return
-            serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+            serviceKey is not null ? null :
+            serviceType == typeof(EmbeddingGeneratorMetadata) ? _metadata :
+            serviceType.IsInstanceOfType(this) ? this :
             null;
     }
 
@@ -83,7 +89,7 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator<string, Embed
 
         // Create request.
         string[] inputs = values.ToArray();
-        string? requestModel = options?.ModelId ?? Metadata.ModelId;
+        string? requestModel = options?.ModelId ?? _metadata.DefaultModelId;
         var request = new OllamaEmbeddingRequest
         {
             Model = requestModel ?? string.Empty,

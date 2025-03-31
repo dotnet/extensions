@@ -10,6 +10,7 @@ trigger:
       - dev
       - release/*
       - internal/release/*
+      - validation/*
   paths:
     include:
       - '*'
@@ -71,8 +72,10 @@ variables:
     value: $(Build.Arcade.ArtifactsPath)log/$(_BuildConfig)/
   - name: Build.Arcade.TestResultsPath
     value: $(Build.Arcade.ArtifactsPath)TestResults/$(_BuildConfig)/
+  - name: Build.Arcade.VSIXOutputPath
+    value: $(Build.Arcade.ArtifactsPath)VSIX
 
-  - ${{ if or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), eq(variables['Build.Reason'], 'Manual')) }}:
+  - ${{ if or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/validation/'), eq(variables['Build.Reason'], 'Manual')) }}:
     - name: PostBuildSign
       value: false
   - ${{ else }}:
@@ -110,6 +113,14 @@ variables:
     - name: _Sign
       value: true
 
+  # Enable source index only for main branch builds
+  - ${{ if and(ne(variables['runAsPublic'], 'true'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}:
+    - name: enableSourceIndex
+      value: true
+  - ${{ else }}:
+    - name: enableSourceIndex
+      value: false
+
 resources:
   repositories:
   - repository: 1ESPipelineTemplates
@@ -143,7 +154,7 @@ extends:
         parameters:
           enableMicrobuild: true
           enableTelemetry: true
-          enableSourceIndex: true
+          enableSourceIndex: ${{ variables['enableSourceIndex'] }}
           runAsPublic: ${{ variables['runAsPublic'] }}
           # Publish build logs
           enablePublishBuildArtifacts: true
@@ -171,6 +182,14 @@ extends:
 
             variables:
             - _buildScript: $(Build.SourcesDirectory)/build.cmd -ci -NativeToolsOnMachine
+
+            templateContext:
+              outputs:
+              - output: pipelineArtifact
+                displayName: 'Publish Azure DevOps extension artifacts'
+                condition: succeeded()
+                targetPath: '$(Build.Arcade.VSIXOutputPath)'
+                artifactName: 'VSIXArtifacts'
 
             preSteps:
             - checkout: self
