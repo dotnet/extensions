@@ -136,6 +136,12 @@ public class FakeLogCollector
         _ = Throw.IfNull(endWaiting);
         _ = Throw.IfNull(cancellationToken);
 
+        // Before we even start waiting, we check if the cancellation token is already canceled and if yes, we exit early with a canceled task
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return Task.FromCanceled<bool>(cancellationToken);
+        }
+
         Waiter waiter;
 
         lock (_records)
@@ -144,12 +150,6 @@ public class FakeLogCollector
             if (_records.Count > 0 && endWaiting(LatestRecord))
             {
                 return Task.FromResult(true);
-            }
-
-            // Before we even start waiting, we check if the cancellation token is already canceled and if yes, we exit early with a canceled task
-            if (cancellationToken.IsCancellationRequested)
-            {
-                return Task.FromCanceled<bool>(cancellationToken);
             }
 
             // We register the waiter
