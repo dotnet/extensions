@@ -3,7 +3,7 @@
 
 using System;
 using System.Linq;
-#if !NETFRAMEWORK
+#if !NETFRAMEWORK && !NETSTANDARD
 using System.Security.Cryptography;
 #endif
 using Microsoft.Extensions.Logging;
@@ -22,7 +22,7 @@ internal sealed class RandomProbabilisticSampler : LoggingSampler, IDisposable
 {
     internal RandomProbabilisticSamplerFilterRule[] LastKnownGoodSamplerRules;
 
-#if NETFRAMEWORK
+#if NETFRAMEWORK || NETSTANDARD
     private static readonly System.Threading.ThreadLocal<Random> _randomInstance = new(() => new Random());
 #endif
 
@@ -50,7 +50,7 @@ internal sealed class RandomProbabilisticSampler : LoggingSampler, IDisposable
             return true;
         }
 
-#if NETFRAMEWORK
+#if NETFRAMEWORK || NETSTANDARD
         return _randomInstance.Value!.Next(int.MaxValue) < int.MaxValue * probability;
 #else
         return RandomNumberGenerator.GetInt32(int.MaxValue) < int.MaxValue * probability;
