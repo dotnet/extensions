@@ -200,6 +200,8 @@ public class FakeLogCollectorTests
     [Fact]
     public async Task Waiting_ForOneRecord()
     {
+        // Waiting for one record, fulfilling this wait
+
         // Arrange
         var testCaseData = new WaitingTestCase(
             1, null, null, false, [
@@ -222,8 +224,7 @@ public class FakeLogCollectorTests
     [Fact]
     public async Task Waiting_ForTwoRecords()
     {
-        // Waiting for two records
-
+        // Waiting for two records, fulfilling this wait
 
         // Arrange
         var waitingTestCase = new WaitingTestCase(
