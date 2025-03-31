@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Telemetry</RootNamespace>
+    <TargetFrameworks>$(NetCoreTargetFrameworks);netstandard2.0;</TargetFrameworks>
     <Description>Common abstractions for high-level telemetry primitives.</Description>
     <Workstream>Telemetry</Workstream>
   </PropertyGroup>

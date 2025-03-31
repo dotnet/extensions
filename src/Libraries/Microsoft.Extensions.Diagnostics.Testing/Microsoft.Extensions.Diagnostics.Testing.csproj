@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Diagnostics.Testing</RootNamespace>
+    <TargetFrameworks>$(NetCoreTargetFrameworks);netstandard2.0;</TargetFrameworks>
     <Description>Hand-crafted fakes to make telemetry-related testing easier.</Description>
     <Workstream>Telemetry</Workstream>
     <PackageTags>$(PackageTags);Testing</PackageTags>
