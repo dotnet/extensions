@@ -16,7 +16,7 @@ public class SpeechToTextResponseUpdateTests
         SpeechToTextResponseUpdate update = new();
 
         Assert.Equal(SpeechToTextResponseUpdateKind.TextUpdating, update.Kind);
-        Assert.Null(update.Text);
+        Assert.Empty(update.Text);
         Assert.Empty(update.Contents);
         Assert.Null(update.ResponseId);
         Assert.Null(update.StartTime);
@@ -35,9 +35,7 @@ public class SpeechToTextResponseUpdateTests
         Assert.Equal("custom", update.Kind.Value);
 
         // Test the computed Text property
-        Assert.Null(update.Text);
-        update.Text = "sample text";
-        Assert.Equal("sample text", update.Text);
+        Assert.Empty(update.Text);
 
         // Contents: assigning a new list then resetting to null should yield an empty list.
         List<AIContent> newList = new();
@@ -58,7 +56,7 @@ public class SpeechToTextResponseUpdateTests
     }
 
     [Fact]
-    public void Text_GetSet_UsesFirstTextContent()
+    public void Text_Get_UsesFirstTextContent()
     {
         SpeechToTextResponseUpdate update = new(
         [
@@ -73,58 +71,13 @@ public class SpeechToTextResponseUpdateTests
         // The getter returns the text of the first TextContent (which is at index 3).
         TextContent textContent = Assert.IsType<TextContent>(update.Contents[3]);
         Assert.Equal("text-1", textContent.Text);
-        Assert.Equal("text-1", update.Text);
+        Assert.Equal("text-1text-2", update.Text);
 
         // Assume the ToString concatenates the text of all TextContent items.
         Assert.Equal("text-1text-2", update.ToString());
 
-        update.Text = "text-3";
-        Assert.Equal("text-3", update.Text);
-
         // The setter should update the first TextContent item.
         Assert.Same(textContent, update.Contents[3]);
-        Assert.Equal("text-3text-2", update.ToString());
-    }
-
-    [Fact]
-    public void Text_Set_AddsTextMessageToEmptyList()
-    {
-        SpeechToTextResponseUpdate update = new();
-        Assert.Empty(update.Contents);
-
-        update.Text = "text-1";
-        Assert.Equal("text-1", update.Text);
-
-        Assert.Single(update.Contents);
-        TextContent textContent = Assert.IsType<TextContent>(update.Contents[0]);
-        Assert.Equal("text-1", textContent.Text);
-    }
-
-    [Fact]
-    public void Text_Set_AddsTextMessageToListWithNoText()
-    {
-        SpeechToTextResponseUpdate update = new(
-        [
-            new DataContent("data:image/wav;base64,AQIDBA==", "application/octet-stream"),
-            new DataContent("data:audio/wav;base64,AQIDBA==", "application/octet-stream"),
-            new FunctionCallContent("callId1", "fc1"),
-        ]);
-        Assert.Equal(3, update.Contents.Count);
-
-        update.Text = "text-1";
-        Assert.Equal("text-1", update.Text);
-        Assert.Equal(4, update.Contents.Count);
-
-        update.Text = "text-2";
-        Assert.Equal("text-2", update.Text);
-        Assert.Equal(4, update.Contents.Count);
-
-        update.Contents.RemoveAt(3);
-        Assert.Equal(3, update.Contents.Count);
-
-        update.Text = "text-3";
-        Assert.Equal("text-3", update.Text);
-        Assert.Equal(4, update.Contents.Count);
     }
 
     [Fact]

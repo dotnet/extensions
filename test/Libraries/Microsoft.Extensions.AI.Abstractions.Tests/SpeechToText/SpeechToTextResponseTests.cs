@@ -22,7 +22,7 @@ public class SpeechToTextResponseTests
     {
         SpeechToTextResponse response = new();
         Assert.Empty(response.Contents);
-        Assert.Null(response.Text);
+        Assert.Empty(response.Text);
         Assert.NotNull(response.Contents);
         Assert.Same(response.Contents, response.Contents);
         Assert.Empty(response.Contents);
@@ -81,7 +81,7 @@ public class SpeechToTextResponseTests
         if (contentCount == 0)
         {
             Assert.Empty(response.Contents);
-            Assert.Null(response.Text);
+            Assert.Empty(response.Text);
         }
         else
         {
@@ -92,7 +92,7 @@ public class SpeechToTextResponseTests
                 Assert.Equal($"text-{i}", tc.Text);
             }
 
-            Assert.Equal("text-0", response.Text);
+            Assert.Equal(string.Concat(Enumerable.Range(0, contentCount).Select(i => $"text-{i}")), response.Text);
             Assert.Equal(string.Concat(Enumerable.Range(0, contentCount).Select(i => $"text-{i}")), response.ToString());
         }
     }

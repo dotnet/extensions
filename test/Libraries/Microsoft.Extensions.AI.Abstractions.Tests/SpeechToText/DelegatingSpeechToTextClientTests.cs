@@ -59,8 +59,8 @@ public class DelegatingSpeechToTextClientTests
         var expectedCancellationToken = CancellationToken.None;
         SpeechToTextResponseUpdate[] expectedResults =
         [
-            new() { Text = "Text update 1" },
-            new() { Text = "Text update 2" }
+            new("Text update 1"),
+            new("Text update 2")
         ];
 
         using var inner = new TestSpeechToTextClient
