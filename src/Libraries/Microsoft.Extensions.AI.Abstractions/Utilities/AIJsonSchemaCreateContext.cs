@@ -51,7 +51,7 @@ public readonly struct AIJsonSchemaCreateContext
     /// Gets the declaring type of the property or parameter being processed.
     /// </summary>
     public Type? DeclaringType =>
-#if NET9_0_OR_GREATER
+#if !NET8_0
         _exporterContext.PropertyInfo?.DeclaringType;
 #else
         _exporterContext.DeclaringType;
@@ -61,7 +61,7 @@ public readonly struct AIJsonSchemaCreateContext
     /// Gets the <see cref="ICustomAttributeProvider"/> corresponding to the property or field being processed.
     /// </summary>
     public ICustomAttributeProvider? PropertyAttributeProvider =>
-#if NET9_0_OR_GREATER
+#if !NET8_0
         _exporterContext.PropertyInfo?.AttributeProvider;
 #else
         _exporterContext.PropertyAttributeProvider;
@@ -72,7 +72,7 @@ public readonly struct AIJsonSchemaCreateContext
     /// constructor parameter associated with the accompanying <see cref="PropertyInfo"/>.
     /// </summary>
     public ICustomAttributeProvider? ParameterAttributeProvider =>
-#if NET9_0_OR_GREATER
+#if !NET8_0
         _exporterContext.PropertyInfo?.AssociatedParameter?.AttributeProvider;
 #else
         _exporterContext.ParameterInfo;

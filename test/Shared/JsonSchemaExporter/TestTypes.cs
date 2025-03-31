@@ -1300,7 +1300,7 @@ public static partial class TestTypes
         // 2. Parameter-level attributes and
         // 3. Type-level attributes.
         return
-#if NET9_0_OR_GREATER || !TESTS_JSON_SCHEMA_EXPORTER_POLYFILL
+#if !NET8_0 || !TESTS_JSON_SCHEMA_EXPORTER_POLYFILL
             GetAttrs(ctx.PropertyInfo?.AttributeProvider) ??
             GetAttrs(ctx.PropertyInfo?.AssociatedParameter?.AttributeProvider) ??
 #else
