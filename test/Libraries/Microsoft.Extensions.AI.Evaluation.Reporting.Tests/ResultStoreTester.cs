@@ -119,7 +119,7 @@ public abstract class ResultStoreTester
         ];
         await resultStore.WriteResultsAsync(testResults);
 
-        await Task.Delay(TimeSpan.FromSeconds(1.5));
+        await Task.Delay(TimeSpan.FromMilliseconds(500));
 
         string secondExecutionName = $"Test Execution {Path.GetRandomFileName()}";
         testResults = [
@@ -129,7 +129,7 @@ public abstract class ResultStoreTester
         ];
         await resultStore.WriteResultsAsync(testResults);
 
-        await Task.Delay(TimeSpan.FromSeconds(1.5));
+        await Task.Delay(TimeSpan.FromMilliseconds(500));
 
         string thirdExecutionName = $"Test Execution {Path.GetRandomFileName()}";
         testResults = [
@@ -139,7 +139,7 @@ public abstract class ResultStoreTester
         ];
         await resultStore.WriteResultsAsync(testResults);
 
-        (string executionName, string scenarioName, string iterationName)[] results = [.. await LoadResultsAsync(5, resultStore)];
+        (string executionName, string scenarioName, string iterationName)[] results = [.. await LoadResultsAsync(n: 5, resultStore)];
         Assert.Equal(9, results.Length);
 
         Assert.True(results.Take(3).All(r => r.executionName == thirdExecutionName));
