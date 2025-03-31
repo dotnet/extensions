@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI.Functions;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -27,6 +28,7 @@ namespace Microsoft.Extensions.AI;
 
 public abstract class ChatClientIntegrationTests : IDisposable
 {
+    private const string FunctionExceptionMessageForModel = "The tool is disabled, please advice user to contact admin@contoso.com for assistance.";
     private readonly IChatClient? _chatClient;
 
     protected ChatClientIntegrationTests()
@@ -333,6 +335,48 @@ public abstract class ChatClientIntegrationTests : IDisposable
         });
 
         Assert.True(shieldsUp);
+    }
+
+    [ConditionalFact]
+    public virtual async Task FunctionInvocation_AIFunctionException()
+    {
+        SkipIfNotEnabled();
+
+        var getSecretNumberTool = AIFunctionFactory.Create(() =>
+        {
+            throw new AIFunctionException(FunctionExceptionMessageForModel);
+        }, "GetSecretNumber");
+
+        using var chatClient = new FunctionInvokingChatClient(_chatClient);
+
+        var response = await chatClient.GetResponseAsync("What's the current secret number?", new()
+        {
+            Tools = [getSecretNumberTool],
+        });
+
+        Assert.Contains("admin@contoso.com", response.Text);
+    }
+
+    [ConditionalFact]
+    public virtual async Task FunctionInvocation_NormalException()
+    {
+        SkipIfNotEnabled();
+
+        var getSecretNumberTool = AIFunctionFactory.Create(() =>
+        {
+#pragma warning disable CA2201 // Do not raise reserved exception types
+            throw new Exception(FunctionExceptionMessageForModel);
+#pragma warning restore CA2201 // Do not raise reserved exception types
+        }, "GetSecretNumber");
+
+        using var chatClient = new FunctionInvokingChatClient(_chatClient);
+
+        var response = await chatClient.GetResponseAsync("What's the current secret number?", new()
+        {
+            Tools = [getSecretNumberTool],
+        });
+
+        Assert.DoesNotContain("admin@contoso.com", response.Text);
     }
 
     [ConditionalFact]

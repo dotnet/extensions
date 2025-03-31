@@ -10,6 +10,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI.Functions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Diagnostics;
@@ -716,7 +717,8 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 string message = result.Status switch
                 {
                     FunctionInvocationStatus.NotFound => $"Error: Requested function \"{result.CallContent.Name}\" not found.",
-                    FunctionInvocationStatus.Exception => "Error: Function failed.",
+                    FunctionInvocationStatus.Exception when result.Exception is AIFunctionException aife => aife.MessageForModel,
+                    FunctionInvocationStatus.Exception when result.Exception is not AIFunctionException => "Error: Function failed.",
                     _ => "Error: Unknown error.",
                 };
 
