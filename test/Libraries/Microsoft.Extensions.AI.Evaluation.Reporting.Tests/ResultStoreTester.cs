@@ -119,6 +119,8 @@ public abstract class ResultStoreTester
         ];
         await resultStore.WriteResultsAsync(testResults);
 
+        await Task.Delay(TimeSpan.FromSeconds(1.5));
+
         string secondExecutionName = $"Test Execution {Path.GetRandomFileName()}";
         testResults = [
             CreateTestResult(ScenarioName(0), IterationName(0), secondExecutionName),
@@ -126,6 +128,8 @@ public abstract class ResultStoreTester
             CreateTestResult(ScenarioName(2), IterationName(4), secondExecutionName),
         ];
         await resultStore.WriteResultsAsync(testResults);
+
+        await Task.Delay(TimeSpan.FromSeconds(1.5));
 
         string thirdExecutionName = $"Test Execution {Path.GetRandomFileName()}";
         testResults = [

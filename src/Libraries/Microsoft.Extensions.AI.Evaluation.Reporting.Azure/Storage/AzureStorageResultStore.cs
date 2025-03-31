@@ -48,11 +48,10 @@ public sealed class AzureStorageResultStore(DataLakeDirectoryClient client) : IR
             paths.Add(item);
         }
 
-        foreach (PathItem item in paths.OrderBy(item => item.CreatedOn ?? DateTimeOffset.MinValue).Reverse().Take(count ?? 1))
+        foreach (PathItem item in paths.OrderByDescending(item => item.CreatedOn ?? DateTimeOffset.MinValue).Take(count ?? 1))
         {
             yield return GetLastSegmentFromPath(item.Name);
         }
-
     }
 
     /// <inheritdoc/>
