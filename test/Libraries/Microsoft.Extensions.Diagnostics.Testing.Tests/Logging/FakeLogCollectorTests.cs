@@ -204,7 +204,6 @@ public class FakeLogCollectorTests
     [InlineData(3)]
     [InlineData(4)]
     [InlineData(5)]
-    [InlineData(6)]
     public async Task Waiting(int testCase)
     {
         // Arrange
@@ -349,8 +348,7 @@ public class FakeLogCollectorTests
                 "Background action has finished"
             ],
             true,
-            null)
-        );
+            null));
 
         // Waiting for single log record and supplying a cancellation period that would match three logs to get writer
         testCases.Add(new WaitingTestCase(
@@ -365,8 +363,7 @@ public class FakeLogCollectorTests
                 "Background action has finished"
             ],
             false,
-            true)
-        );
+            true));
 
         // Waiting for 3 log attempts, but setting timeout to expire after the second attempt.
         testCases.Add(new WaitingTestCase(
@@ -382,8 +379,7 @@ public class FakeLogCollectorTests
                 "Background action has finished"
             ],
             false,
-            false)
-        );
+            false));
 
         return testCases;
     }
