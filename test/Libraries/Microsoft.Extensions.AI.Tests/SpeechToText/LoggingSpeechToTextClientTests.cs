@@ -108,8 +108,8 @@ public class LoggingSpeechToTextClientTests
         static async IAsyncEnumerable<SpeechToTextResponseUpdate> GetUpdatesAsync()
         {
             await Task.Yield();
-            yield return new SpeechToTextResponseUpdate { Text = "blue " };
-            yield return new SpeechToTextResponseUpdate { Text = "whale" };
+            yield return new SpeechToTextResponseUpdate("blue ");
+            yield return new SpeechToTextResponseUpdate("whale");
         }
 
         using ISpeechToTextClient client = innerClient

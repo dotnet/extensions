@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="ISpeechToTextClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="OpenAI.Audio.AudioClient"/>.</summary>
 [Experimental("MEAI001")]
-internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
+public sealed class OpenAISpeechToTextClient : ISpeechToTextClient
 {
     /// <summary>Default OpenAI endpoint.</summary>
     private static readonly Uri _defaultOpenAIEndpoint = new("https://api.openai.com/v1");
