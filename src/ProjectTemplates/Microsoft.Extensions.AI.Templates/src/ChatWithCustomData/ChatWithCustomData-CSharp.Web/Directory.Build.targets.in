@@ -1,0 +1,21 @@
+<!--
+  This file only exists to support functionality allowing running the template locally.
+  It will not get included in the built project template.
+-->
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <_LocalChatTemplateVariant>${LocalChatTemplateVariant}</_LocalChatTemplateVariant>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Select a 'Program.cs' variant depending on the chat template variant being built locally. -->
+    <Compile
+      Condition="'$(_LocalChatTemplateVariant)' != 'aspire'"
+      Remove="Program.Aspire.cs" />
+    <Compile
+      Condition="'$(_LocalChatTemplateVariant)' != 'singleproject'"
+      Remove="Program.cs" />
+  </ItemGroup>
+</Project>

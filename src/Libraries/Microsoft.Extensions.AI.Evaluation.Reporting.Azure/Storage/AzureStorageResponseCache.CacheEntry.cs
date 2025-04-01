@@ -20,7 +20,7 @@ using Microsoft.Extensions.AI.Evaluation.Reporting.JsonSerialization;
 
 namespace Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
 
-public partial class AzureStorageResponseCache
+internal partial class AzureStorageResponseCache
 {
     [method: JsonConstructor]
     internal sealed class CacheEntry(

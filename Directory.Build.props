@@ -106,6 +106,19 @@
   <!-- Enable the Evaluation report builds on all CI builds -->
   <PropertyGroup>
     <EnableEvaluationReportBuild Condition="'$(ContinuousIntegrationBuild)'=='true'">true</EnableEvaluationReportBuild>
+
+    <!--
+      ProjectStaging.props depends on the $(Stage) property, which is defined in the project file.
+      It also controls $(SuppressFinalPackageVersion) which controls how versions are defined in  Arcade's Version.BeforeCommonTargets.targets.
+
+      Normally, we'd import custom props in Directory.Build.props but it is imported before the project.
+      We can't move the props into ProjectStaging.targets as it is imported after Version.BeforeCommonTargets.targets
+      is imported, which is too late. This allows us to import the props at the right time.
+      -->
+    <BeforeMicrosoftNETSdkTargets>
+      $(BeforeMicrosoftNETSdkTargets);
+      $(MSBuildThisFileDirectory)\eng\MSBuild\ProjectStaging.props
+    </BeforeMicrosoftNETSdkTargets>
   </PropertyGroup>
 
   <!-- Common properties -->

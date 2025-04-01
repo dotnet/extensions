@@ -17,7 +17,7 @@ public class Settings
     public Settings(IConfiguration config)
     {
 #pragma warning disable CA2208 // Pass correct parameter name for ArgumentNullException.
-        Configured = config.GetValue<bool>("Configured", false);
+        Configured = config.GetValue("Configured", false);
 
         DeploymentName =
             config.GetValue<string>("DeploymentName") ??

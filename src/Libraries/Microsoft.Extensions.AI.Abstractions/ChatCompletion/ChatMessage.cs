@@ -10,6 +10,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a chat message used by an <see cref="IChatClient" />.</summary>
+/// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/quickstarts/build-chat-app">Build an AI chat app with .NET.</related>
 [DebuggerDisplay("[{Role}] {ContentForDebuggerDisplay}{EllipsesForDebuggerDisplay,nq}")]
 public class ChatMessage
 {
@@ -54,6 +55,7 @@ public class ChatMessage
             _contents = _contents,
             RawRepresentation = RawRepresentation,
             Role = Role,
+            MessageId = MessageId,
         };
 
     /// <summary>Gets or sets the name of the author of the message.</summary>
@@ -80,6 +82,9 @@ public class ChatMessage
         get => _contents ??= [];
         set => _contents = value;
     }
+
+    /// <summary>Gets or sets the ID of the chat message.</summary>
+    public string? MessageId { get; set; }
 
     /// <summary>Gets or sets the raw representation of the chat message from an underlying implementation.</summary>
     /// <remarks>

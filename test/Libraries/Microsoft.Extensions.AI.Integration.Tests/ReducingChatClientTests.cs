@@ -99,7 +99,7 @@ public interface IChatReducer
     /// <summary>Reduces the size of a list of chat messages.</summary>
     /// <param name="messages">The messages.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The new list of messages, or null if no reduction need be performed or <paramref name="inPlace"/> was true.</returns>
+    /// <returns>The new list of messages, or <see langword="null"/> if no reduction need be performed or <paramref name="inPlace"/> was true.</returns>
     Task<IList<ChatMessage>> ReduceAsync(IEnumerable<ChatMessage> messages, CancellationToken cancellationToken);
 }
 

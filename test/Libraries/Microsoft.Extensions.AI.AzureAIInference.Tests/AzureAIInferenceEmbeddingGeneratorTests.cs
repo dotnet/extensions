@@ -18,48 +18,36 @@ namespace Microsoft.Extensions.AI;
 public class AzureAIInferenceEmbeddingGeneratorTests
 {
     [Fact]
-    public void Ctor_InvalidArgs_Throws()
+    public void AsIEmbeddingGenerator_InvalidArgs_Throws()
     {
-        Assert.Throws<ArgumentNullException>("embeddingsClient", () => new AzureAIInferenceEmbeddingGenerator(null!));
+        Assert.Throws<ArgumentNullException>("embeddingsClient", () => ((EmbeddingsClient)null!).AsIEmbeddingGenerator());
 
         EmbeddingsClient client = new(new("http://somewhere"), new AzureKeyCredential("key"));
-        Assert.Throws<ArgumentException>("modelId", () => new AzureAIInferenceEmbeddingGenerator(client, ""));
-        Assert.Throws<ArgumentException>("modelId", () => new AzureAIInferenceEmbeddingGenerator(client, "   "));
+        Assert.Throws<ArgumentException>("defaultModelId", () => client.AsIEmbeddingGenerator("   "));
 
-        using var _ = new AzureAIInferenceEmbeddingGenerator(client);
+        client.AsIEmbeddingGenerator(null);
     }
 
     [Fact]
-    public void AsEmbeddingGenerator_InvalidArgs_Throws()
-    {
-        Assert.Throws<ArgumentNullException>("embeddingsClient", () => ((EmbeddingsClient)null!).AsEmbeddingGenerator());
-
-        EmbeddingsClient client = new(new("http://somewhere"), new AzureKeyCredential("key"));
-        Assert.Throws<ArgumentException>("modelId", () => client.AsEmbeddingGenerator("   "));
-
-        client.AsEmbeddingGenerator(null);
-    }
-
-    [Fact]
-    public void AsEmbeddingGenerator_OpenAIClient_ProducesExpectedMetadata()
+    public void AsIEmbeddingGenerator_OpenAIClient_ProducesExpectedMetadata()
     {
         Uri endpoint = new("http://localhost/some/endpoint");
         string model = "amazingModel";
 
         EmbeddingsClient client = new(endpoint, new AzureKeyCredential("key"));
 
-        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator = client.AsEmbeddingGenerator(model);
+        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator = client.AsIEmbeddingGenerator(model);
         var metadata = embeddingGenerator.GetService<EmbeddingGeneratorMetadata>();
         Assert.Equal("az.ai.inference", metadata?.ProviderName);
         Assert.Equal(endpoint, metadata?.ProviderUri);
-        Assert.Equal(model, metadata?.ModelId);
+        Assert.Equal(model, metadata?.DefaultModelId);
     }
 
     [Fact]
     public void GetService_SuccessfullyReturnsUnderlyingClient()
     {
         var client = new EmbeddingsClient(new("http://somewhere"), new AzureKeyCredential("key"));
-        var embeddingGenerator = client.AsEmbeddingGenerator("model");
+        var embeddingGenerator = client.AsIEmbeddingGenerator("model");
 
         Assert.Same(embeddingGenerator, embeddingGenerator.GetService<IEmbeddingGenerator<string, Embedding<float>>>());
         Assert.Same(client, embeddingGenerator.GetService<EmbeddingsClient>());
@@ -113,7 +101,7 @@ public class AzureAIInferenceEmbeddingGeneratorTests
         using IEmbeddingGenerator<string, Embedding<float>> generator = new EmbeddingsClient(new("http://somewhere"), new AzureKeyCredential("key"), new()
         {
             Transport = new HttpClientTransport(httpClient),
-        }).AsEmbeddingGenerator("text-embedding-3-small");
+        }).AsIEmbeddingGenerator("text-embedding-3-small");
 
         var response = await generator.GenerateAsync([
             "hello, world!",

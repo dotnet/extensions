@@ -100,12 +100,12 @@ public static partial class AIJsonUtilities
                 parameterName: parameter.Name,
                 description: parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
                 hasDefaultValue: parameter.HasDefaultValue,
-                defaultValue: parameter.HasDefaultValue ? parameter.DefaultValue : null,
+                defaultValue: GetDefaultValueNormalized(parameter),
                 serializerOptions,
                 inferenceOptions);
 
             parameterSchemas.Add(parameter.Name, parameterSchema);
-            if (!parameter.IsOptional)
+            if (!parameter.IsOptional || inferenceOptions.RequireAllProperties)
             {
                 (requiredProperties ??= []).Add((JsonNode)parameter.Name);
             }
@@ -199,18 +199,32 @@ public static partial class AIJsonUtilities
                 (schemaObj = [])[SchemaPropertyName] = SchemaKeywordUri;
             }
 
+            if (hasDefaultValue)
+            {
+                if (inferenceOptions.RequireAllProperties)
+                {
+                    // Default values are only used in the context of optional parameters.
+                    // Do not include a default keyword (since certain AI vendors don't support it)
+                    // and instead embed its JSON in the description as a hint to the LLM.
+                    string defaultValueJson = defaultValue is not null
+                        ? JsonSerializer.Serialize(defaultValue, serializerOptions.GetTypeInfo(defaultValue.GetType()))
+                        : "null";
+
+                    description = CreateDescriptionWithDefaultValue(description, defaultValueJson);
+                }
+                else
+                {
+                    JsonNode? defaultValueNode = defaultValue is not null
+                        ? JsonSerializer.SerializeToNode(defaultValue, serializerOptions.GetTypeInfo(defaultValue.GetType()))
+                        : null;
+
+                    (schemaObj ??= [])[DefaultPropertyName] = defaultValueNode;
+                }
+            }
+
             if (description is not null)
             {
                 (schemaObj ??= [])[DescriptionPropertyName] = description;
-            }
-
-            if (hasDefaultValue)
-            {
-                JsonNode? defaultValueNode = defaultValue is not null
-                    ? JsonSerializer.Serialize(defaultValue, serializerOptions.GetTypeInfo(defaultValue.GetType()))
-                    : null;
-
-                (schemaObj ??= [])[DefaultPropertyName] = defaultValueNode;
             }
 
             return schemaObj ?? (JsonNode)true;
@@ -233,10 +247,9 @@ public static partial class AIJsonUtilities
         {
             AIJsonSchemaCreateContext ctx = new(schemaExporterContext);
 
-            if (ctx.GetCustomAttribute<DescriptionAttribute>() is { } attr)
-            {
-                ConvertSchemaToObject(ref schema).InsertAtStart(DescriptionPropertyName, (JsonNode)attr.Description);
-            }
+            string? localDescription = ctx.Path.IsEmpty && description is not null
+                ? description
+                : ctx.GetCustomAttribute<DescriptionAttribute>()?.Description;
 
             if (schema is JsonObject objSchema)
             {
@@ -282,6 +295,15 @@ public static partial class AIJsonUtilities
                     }
                 }
 
+                // Strip default keywords and embed in description where required
+                if (inferenceOptions.RequireAllProperties &&
+                    objSchema.TryGetPropertyValue(DefaultPropertyName, out JsonNode? defaultValue))
+                {
+                    _ = objSchema.Remove(DefaultPropertyName);
+                    string defaultValueJson = defaultValue?.ToJsonString() ?? "null";
+                    localDescription = CreateDescriptionWithDefaultValue(localDescription, defaultValueJson);
+                }
+
                 // Filter potentially disallowed keywords.
                 foreach (string keyword in _schemaKeywordsDisallowedByAIVendors)
                 {
@@ -302,37 +324,34 @@ public static partial class AIJsonUtilities
                 }
             }
 
-            if (ctx.Path.IsEmpty)
+            if (ctx.Path.IsEmpty && hasDefaultValue)
             {
-                // We are at the root-level schema node, update/append parameter-specific metadata
-
-                if (!string.IsNullOrWhiteSpace(description))
+                // Add root-level default value metadata
+                if (inferenceOptions.RequireAllProperties)
                 {
-                    JsonObject obj = ConvertSchemaToObject(ref schema);
-                    int index = obj.IndexOf(DescriptionPropertyName);
-                    if (index < 0)
-                    {
-                        // If there's no description property, insert it at the beginning of the doc.
-                        obj.InsertAtStart(DescriptionPropertyName, (JsonNode)description!);
-                    }
-                    else
-                    {
-                        // If there is a description property, just update it in-place.
-                        obj[index] = (JsonNode)description!;
-                    }
+                    // Default values are only used in the context of optional parameters.
+                    // Do not include a default keyword (since certain AI vendors don't support it)
+                    // and instead embed its JSON in the description as a hint to the LLM.
+                    string defaultValueJson = JsonSerializer.Serialize(defaultValue, ctx.TypeInfo);
+                    localDescription = CreateDescriptionWithDefaultValue(localDescription, defaultValueJson);
                 }
-
-                if (hasDefaultValue)
+                else
                 {
-                    JsonNode? defaultValueNode = JsonSerializer.Serialize(defaultValue, serializerOptions.GetTypeInfo(typeof(object)));
+                    JsonNode? defaultValueNode = JsonSerializer.SerializeToNode(defaultValue, ctx.TypeInfo);
                     ConvertSchemaToObject(ref schema)[DefaultPropertyName] = defaultValueNode;
                 }
+            }
 
-                if (inferenceOptions.IncludeSchemaKeyword)
-                {
-                    // The $schema property must be the first keyword in the object
-                    ConvertSchemaToObject(ref schema).InsertAtStart(SchemaPropertyName, (JsonNode)SchemaKeywordUri);
-                }
+            if (localDescription is not null)
+            {
+                // Insert the final description property at the start of the schema object.
+                ConvertSchemaToObject(ref schema).InsertAtStart(DescriptionPropertyName, (JsonNode)localDescription);
+            }
+
+            if (ctx.Path.IsEmpty && inferenceOptions.IncludeSchemaKeyword)
+            {
+                // The $schema property must be the first keyword in the object
+                ConvertSchemaToObject(ref schema).InsertAtStart(SchemaPropertyName, (JsonNode)SchemaKeywordUri);
             }
 
             // Finally, apply any user-defined transformations if specified.
@@ -413,27 +432,48 @@ public static partial class AIJsonUtilities
 #endif
     }
 
-#if NET8_0
-    private static int IndexOf(this JsonObject jsonObject, string key)
+    private static string CreateDescriptionWithDefaultValue(string? existingDescription, string defaultValueJson)
     {
-        int i = 0;
-        foreach (var entry in jsonObject)
-        {
-            if (string.Equals(entry.Key, key, StringComparison.Ordinal))
-            {
-                return i;
-            }
-
-            i++;
-        }
-
-        return -1;
+        return existingDescription is null
+            ? $"Default value: {defaultValueJson}"
+            : $"{existingDescription} (Default value: {defaultValueJson})";
     }
-#endif
 
     private static JsonElement ParseJsonElement(ReadOnlySpan<byte> utf8Json)
     {
         Utf8JsonReader reader = new(utf8Json);
         return JsonElement.ParseValue(ref reader);
+    }
+
+    private static object? GetDefaultValueNormalized(ParameterInfo parameterInfo)
+    {
+        // Taken from https://github.com/dotnet/runtime/blob/eff415bfd667125c1565680615a6f19152645fbf/src/libraries/System.Text.Json/Common/ReflectionExtensions.cs#L288-L317
+        Type parameterType = parameterInfo.ParameterType;
+        object? defaultValue = parameterInfo.DefaultValue;
+
+        if (defaultValue is null)
+        {
+            return null;
+        }
+
+        // DBNull.Value is sometimes used as the default value (returned by reflection) of nullable params in place of null.
+        if (defaultValue == DBNull.Value && parameterType != typeof(DBNull))
+        {
+            return null;
+        }
+
+        // Default values of enums or nullable enums are represented using the underlying type and need to be cast explicitly
+        // cf. https://github.com/dotnet/runtime/issues/68647
+        if (parameterType.IsEnum)
+        {
+            return Enum.ToObject(parameterType, defaultValue);
+        }
+
+        if (Nullable.GetUnderlyingType(parameterType) is Type underlyingType && underlyingType.IsEnum)
+        {
+            return Enum.ToObject(underlyingType, defaultValue);
+        }
+
+        return defaultValue;
     }
 }

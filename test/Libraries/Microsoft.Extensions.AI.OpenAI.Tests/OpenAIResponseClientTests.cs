@@ -22,20 +22,15 @@ namespace Microsoft.Extensions.AI;
 public class OpenAIResponseClientTests
 {
     [Fact]
-    public void AsChatClient_InvalidArgs_Throws()
+    public void AsIChatClient_InvalidArgs_Throws()
     {
-        Assert.Throws<ArgumentNullException>("openAIClient", () => ((OpenAIClient)null!).AsChatClient("model"));
-        Assert.Throws<ArgumentNullException>("responseClient", () => ((OpenAIResponseClient)null!).AsChatClient());
-
-        OpenAIClient client = new("key");
-        Assert.Throws<ArgumentNullException>("modelId", () => client.AsChatClient(null!));
-        Assert.Throws<ArgumentException>("modelId", () => client.AsChatClient("   "));
+        Assert.Throws<ArgumentNullException>("responseClient", () => ((OpenAIResponseClient)null!).AsIChatClient());
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void AsChatClient_ProducesExpectedMetadata(bool useAzureOpenAI)
+    public void AsIChatClient_ProducesExpectedMetadata(bool useAzureOpenAI)
     {
         Uri endpoint = new("http://localhost/some/endpoint");
         string model = "amazingModel";
@@ -44,18 +39,18 @@ public class OpenAIResponseClientTests
             new AzureOpenAIClient(endpoint, new ApiKeyCredential("key")) :
             new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
 
-        IChatClient chatClient = client.GetOpenAIResponseClient(model).AsChatClient();
+        IChatClient chatClient = client.GetOpenAIResponseClient(model).AsIChatClient();
         var metadata = chatClient.GetService<ChatClientMetadata>();
         Assert.Equal("openai", metadata?.ProviderName);
         Assert.Equal(endpoint, metadata?.ProviderUri);
-        Assert.Equal(model, metadata?.ModelId);
+        Assert.Equal(model, metadata?.DefaultModelId);
     }
 
     [Fact]
     public void GetService_SuccessfullyReturnsUnderlyingClient()
     {
         OpenAIResponseClient openAIClient = new OpenAIClient(new ApiKeyCredential("key")).GetOpenAIResponseClient("model");
-        IChatClient chatClient = openAIClient.AsChatClient();
+        IChatClient chatClient = openAIClient.AsIChatClient();
 
         Assert.Same(chatClient, chatClient.GetService<IChatClient>());
         Assert.Same(openAIClient, chatClient.GetService<OpenAIResponseClient>());
@@ -88,8 +83,7 @@ public class OpenAIResponseClientTests
                     "role":"user",
                     "content":[{"type":"input_text","text":"hello"}]
                 }],
-                "max_output_tokens":20,
-                "truncation":"auto"
+                "max_output_tokens":20
             }
             """;
 
@@ -135,7 +129,6 @@ public class OpenAIResponseClientTests
               "tool_choice": "auto",
               "tools": [],
               "top_p": 1.0,
-              "truncation": "auto",
               "usage": {
                 "input_tokens": 26,
                 "input_tokens_details": {
@@ -192,17 +185,16 @@ public class OpenAIResponseClientTests
                     }
                 ],
                 "stream":true,
-                "max_output_tokens":20,
-                "truncation":"auto"
+                "max_output_tokens":20
             }
             """;
 
         const string Output = """
             event: response.created
-            data: {"type":"response.created","response":{"id":"resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77","object":"response","created_at":1741892091,"status":"in_progress","error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":20,"model":"gpt-4o-mini-2024-07-18","output":[],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"generate_summary":null},"store":true,"temperature":0.5,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"truncation":"auto","usage":null,"user":null,"metadata":{}}}
+            data: {"type":"response.created","response":{"id":"resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77","object":"response","created_at":1741892091,"status":"in_progress","error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":20,"model":"gpt-4o-mini-2024-07-18","output":[],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"generate_summary":null},"store":true,"temperature":0.5,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"usage":null,"user":null,"metadata":{}}}
 
             event: response.in_progress
-            data: {"type":"response.in_progress","response":{"id":"resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77","object":"response","created_at":1741892091,"status":"in_progress","error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":20,"model":"gpt-4o-mini-2024-07-18","output":[],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"generate_summary":null},"store":true,"temperature":0.5,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"truncation":"auto","usage":null,"user":null,"metadata":{}}}
+            data: {"type":"response.in_progress","response":{"id":"resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77","object":"response","created_at":1741892091,"status":"in_progress","error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":20,"model":"gpt-4o-mini-2024-07-18","output":[],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"generate_summary":null},"store":true,"temperature":0.5,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"usage":null,"user":null,"metadata":{}}}
 
             event: response.output_item.added
             data: {"type":"response.output_item.added","output_index":0,"item":{"type":"message","id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","status":"in_progress","role":"assistant","content":[]}}
@@ -247,7 +239,7 @@ public class OpenAIResponseClientTests
             data: {"type":"response.output_item.done","output_index":0,"item":{"type":"message","id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Hello! How can I assist you today?","annotations":[]}]}}
 
             event: response.completed
-            data: {"type":"response.completed","response":{"id":"resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77","object":"response","created_at":1741892091,"status":"completed","error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":20,"model":"gpt-4o-mini-2024-07-18","output":[{"type":"message","id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Hello! How can I assist you today?","annotations":[]}]}],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"generate_summary":null},"store":true,"temperature":0.5,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"truncation":"auto","usage":{"input_tokens":26,"input_tokens_details":{"cached_tokens":0},"output_tokens":10,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":36},"user":null,"metadata":{}}}
+            data: {"type":"response.completed","response":{"id":"resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77","object":"response","created_at":1741892091,"status":"completed","error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":20,"model":"gpt-4o-mini-2024-07-18","output":[{"type":"message","id":"msg_67d329fc0c0081919696b8ab36713a41029dabe3ee19bb77","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Hello! How can I assist you today?","annotations":[]}]}],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"generate_summary":null},"store":true,"temperature":0.5,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"usage":{"input_tokens":26,"input_tokens_details":{"cached_tokens":0},"output_tokens":10,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":36},"user":null,"metadata":{}}}
 
 
             """;
@@ -292,5 +284,5 @@ public class OpenAIResponseClientTests
             new ApiKeyCredential("apikey"),
             new OpenAIClientOptions { Transport = new HttpClientPipelineTransport(httpClient) })
         .GetOpenAIResponseClient(modelId)
-        .AsChatClient();
+        .AsIChatClient();
 }
