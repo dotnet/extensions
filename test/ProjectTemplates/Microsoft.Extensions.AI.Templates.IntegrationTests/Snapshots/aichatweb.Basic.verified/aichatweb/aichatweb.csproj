@@ -8,7 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="OpenAI" Version="2.2.0-beta.3" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.4.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.3" />
     <PackageReference Include="Microsoft.Extensions.AI" Version="9.4.0" />
