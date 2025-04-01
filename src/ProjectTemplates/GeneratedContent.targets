@@ -58,7 +58,6 @@
         MicrosoftSemanticKernelConnectorsQdrantVersion=$(MicrosoftSemanticKernelConnectorsQdrantVersion);
         MicrosoftSemanticKernelCoreVersion=$(MicrosoftSemanticKernelCoreVersion);
         OllamaSharpVersion=$(OllamaSharpVersion);
-        OpenAIVersion=$(OpenAIVersion);
         OpenTelemetryVersion=$(OpenTelemetryVersion);
         PdfPigVersion=$(PdfPigVersion);
         SystemLinqAsyncVersion=$(SystemLinqAsyncVersion);

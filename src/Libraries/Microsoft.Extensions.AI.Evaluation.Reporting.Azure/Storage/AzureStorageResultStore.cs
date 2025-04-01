@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
@@ -37,25 +38,19 @@ public sealed class AzureStorageResultStore(DataLakeDirectoryClient client) : IR
         int? count = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        int remaining = count ?? 1;
-
         (string path, _) = GetResultPath();
         DataLakeDirectoryClient subClient = client.GetSubDirectoryClient(path);
 
-#pragma warning disable S3254 // Default parameter value (for 'recursive') should not be passed as argument.
-        await foreach (PathItem item in
-            subClient.GetPathsAsync(recursive: false, cancellationToken: cancellationToken).ConfigureAwait(false))
-#pragma warning restore S3254
+        // We need to fetch the entire list of paths to get the latest execution names.
+        List<PathItem> paths = [];
+        await foreach (PathItem item in subClient.GetPathsAsync(cancellationToken: cancellationToken).ConfigureAwait(false))
         {
-            if (remaining > 0)
-            {
-                yield return GetLastSegmentFromPath(item.Name);
-                remaining--;
-            }
-            else
-            {
-                break;
-            }
+            paths.Add(item);
+        }
+
+        foreach (PathItem item in paths.OrderByDescending(item => item.CreatedOn ?? DateTimeOffset.MinValue).Take(count ?? 1))
+        {
+            yield return GetLastSegmentFromPath(item.Name);
         }
     }
 
