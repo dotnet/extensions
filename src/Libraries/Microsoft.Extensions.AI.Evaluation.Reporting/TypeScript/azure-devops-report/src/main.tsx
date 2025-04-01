@@ -10,7 +10,8 @@ import * as SDK from "azure-devops-extension-sdk";
 import { getClient } from "azure-devops-extension-api";
 import { Build, Attachment, BuildRestClient } from "azure-devops-extension-api/Build";
 import { FluentProvider, webLightTheme } from '@fluentui/react-components';
-import { createScoreTree } from '../../components/Summary.ts';
+import { createScoreSummary as createScoreSummary } from '../../components/Summary.ts';
+import { ReportContextProvider } from '../../components/ReportContext.tsx';
 
 const ErrorHtml = ({ message }: { message: string }) =>
   <html>
@@ -67,12 +68,14 @@ const run = async () => {
         throw new Error('No data was available to load.');
       }
 
-      const scoreTree = createScoreTree(dataset);
+      const scoreSummary = createScoreSummary(dataset);
 
       createRoot(document.getElementById('root')!).render(
         <FluentProvider theme={webLightTheme}>
           <StrictMode>
-            <App tree={scoreTree} dataset={dataset} />
+            <ReportContextProvider dataset={dataset} scoreSummary={scoreSummary}>
+              <App />
+            </ReportContextProvider>
           </StrictMode>
         </FluentProvider>
       );

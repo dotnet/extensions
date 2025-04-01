@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Shared utility methods for integration tests.</summary>
 internal static class IntegrationTestHelpers
 {
-    /// <summary>Gets a <see cref="Uri"/> to use for testing, or null if the associated tests should be disabled.</summary>
+    /// <summary>Gets a <see cref="Uri"/> to use for testing, or <see langword="null"/> if the associated tests should be disabled.</summary>
     public static Uri? GetOllamaUri()
     {
         return TestRunnerConfiguration.Instance["Ollama:Endpoint"] is string endpoint

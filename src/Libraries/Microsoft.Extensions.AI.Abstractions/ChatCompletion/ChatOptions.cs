@@ -62,7 +62,7 @@ public class ChatOptions
     /// Gets or sets the response format for the chat request.
     /// </summary>
     /// <remarks>
-    /// If null, no response format is specified and the client will use its default.
+    /// If <see langword="null"/>, no response format is specified and the client will use its default.
     /// This property can be set to <see cref="ChatResponseFormat.Text"/> to specify that the response should be unstructured text,
     /// to <see cref="ChatResponseFormat.Json"/> to specify that the response should be structured JSON data, or
     /// an instance of <see cref="ChatResponseFormatJson"/> constructed with a specific JSON schema to request that the
