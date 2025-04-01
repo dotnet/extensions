@@ -150,7 +150,7 @@
     <AspireVersion>9.1.0</AspireVersion>
     <AspireAzureAIOpenAIVersion>9.1.0-preview.1.25121.10</AspireAzureAIOpenAIVersion>
     <AzureAIProjectsVersion>1.0.0-beta.3</AzureAIProjectsVersion>
-    <AzureAIOpenAIVersion>2.2.0-beta.3</AzureAIOpenAIVersion>
+    <AzureAIOpenAIVersion>2.2.0-beta.4</AzureAIOpenAIVersion>
     <AzureIdentityVersion>1.13.2</AzureIdentityVersion>
     <AzureSearchDocumentsVersion>11.6.0</AzureSearchDocumentsVersion>
     <CommunityToolkitAspireHostingOllamaVersion>9.2.2-beta.236</CommunityToolkitAspireHostingOllamaVersion>
@@ -162,7 +162,6 @@
     <MicrosoftSemanticKernelConnectorsQdrantVersion>1.41.0-preview</MicrosoftSemanticKernelConnectorsQdrantVersion>
     <MicrosoftSemanticKernelCoreVersion>1.41.0</MicrosoftSemanticKernelCoreVersion>
     <OllamaSharpVersion>5.1.9</OllamaSharpVersion>
-    <OpenAIVersion>2.2.0-beta.3</OpenAIVersion>
     <OpenTelemetryVersion>1.9.0</OpenTelemetryVersion>
     <PdfPigVersion>0.1.9</PdfPigVersion>
     <SystemLinqAsyncVersion>6.0.1</SystemLinqAsyncVersion>
