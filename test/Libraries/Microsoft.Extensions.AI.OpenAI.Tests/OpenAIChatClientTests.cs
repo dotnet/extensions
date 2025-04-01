@@ -113,7 +113,7 @@ public class OpenAIChatClientTests
         string model = "amazingModel";
 
         var client = new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
-        IChatClient chatClient = client.AsChatClient(model);
+        IChatClient chatClient = client.GetChatClient(model).AsIChatClient();
 
         InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(() => chatClient.GetResponseAsync(
             [
@@ -141,14 +141,14 @@ public class OpenAIChatClientTests
         string model = "amazingModel";
 
         var client = new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
-        IChatClient chatClient = client.AsChatClient(model);
+        IChatClient chatClient = client.GetChatClient(model).AsIChatClient();
 
         InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(() => chatClient.GetResponseAsync(
             [
             new(ChatRole.User,
                 [
                     new TextContent("What does this logo say?"),
-                    new UriContent("http://my-image.png", "image/png")
+                    new UriContent("http://localhost/my-image.png", "image/png")
                     {
                         AdditionalProperties = new()
                         {
