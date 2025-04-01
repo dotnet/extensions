@@ -24,11 +24,11 @@
     <PackageVersion Include="System.CommandLine.NamingConventionBinder" Version="2.0.0-beta4.22272.1" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
     <PackageVersion Include="System.ComponentModel.Annotations" Version="5.0.0" />
-    <PackageVersion Include="System.Memory" Version="4.5.5" />
+    <PackageVersion Include="System.Memory" Version="4.6.0" />
     <PackageVersion Include="System.Private.Uri" Version="4.3.2" />
     <PackageVersion Include="System.Runtime.Caching" Version="$(SystemRuntimeCachingVersion)" />
     <PackageVersion Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.0" />
-    <PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
+    <PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.6.0" />
     <PackageVersion Include="System.ValueTuple" Version="4.5.0" />
     <PackageVersion Include="YamlDotNet" Version="12.3.1" />
   </ItemGroup>
@@ -48,7 +48,8 @@
     <PackageVersion Include="System.Security.Cryptography.Xml" Version="4.7.1" />
   </ItemGroup>
 
-  <Import Project="General-LTS.props" />
+  <Import Project="General-current.props" />
   <Import Project="General-net9.props" />
+  <Import Project="General-net8.props" />
 
 </Project>
