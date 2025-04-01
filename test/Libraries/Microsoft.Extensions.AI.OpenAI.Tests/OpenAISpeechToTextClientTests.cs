@@ -230,6 +230,8 @@ public class OpenAISpeechToTextClientTests
     private static Stream GetAudioStream()
         => new MemoryStream([0x01, 0x02]);
 
-    private static ISpeechToTextClient CreateSpeechToTextClient(HttpClient httpClient, string modelId)
-        => new OpenAISpeechToTextClient(new OpenAIClient(new ApiKeyCredential("apikey"), new OpenAIClientOptions { Transport = new HttpClientPipelineTransport(httpClient) }), modelId);
+    private static ISpeechToTextClient CreateSpeechToTextClient(HttpClient httpClient, string modelId) =>
+        new OpenAIClient(new ApiKeyCredential("apikey"), new OpenAIClientOptions { Transport = new HttpClientPipelineTransport(httpClient) })
+            .GetAudioClient(modelId)
+            .AsSpeechToTextClient();
 }
