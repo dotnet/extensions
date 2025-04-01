@@ -54,7 +54,7 @@ public readonly struct ChatRole : IEquatable<ChatRole>
     /// </summary>
     /// <param name="left">The first <see cref="ChatRole"/> instance to compare.</param>
     /// <param name="right">The second <see cref="ChatRole"/> instance to compare.</param>
-    /// <returns><see langword="true"/> if left and right are both null or have equivalent values; otherwise, <see langword="false"/>.</returns>
+    /// <returns><see langword="true"/> if left and right are both <see langword="null"/> or have equivalent values; otherwise, <see langword="false"/>.</returns>
     public static bool operator ==(ChatRole left, ChatRole right)
     {
         return left.Equals(right);
@@ -66,7 +66,7 @@ public readonly struct ChatRole : IEquatable<ChatRole>
     /// </summary>
     /// <param name="left">The first <see cref="ChatRole"/> instance to compare. </param>
     /// <param name="right">The second <see cref="ChatRole"/> instance to compare. </param>
-    /// <returns><see langword="true"/> if left and right have different values; <see langword="false"/> if they have equivalent values or are both null.</returns>
+    /// <returns><see langword="true"/> if left and right have different values; <see langword="false"/> if they have equivalent values or are both <see langword="null"/>.</returns>
     public static bool operator !=(ChatRole left, ChatRole right)
     {
         return !(left == right);

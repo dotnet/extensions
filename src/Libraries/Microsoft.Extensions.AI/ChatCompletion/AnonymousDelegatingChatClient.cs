@@ -180,7 +180,7 @@ internal sealed class AnonymousDelegatingChatClient : DelegatingChatClient
         }
     }
 
-    /// <summary>Throws an exception if both of the specified delegates are null.</summary>
+    /// <summary>Throws an exception if both of the specified delegates are <see langword="null"/>.</summary>
     /// <exception cref="ArgumentNullException">Both <paramref name="getResponseFunc"/> and <paramref name="getStreamingResponseFunc"/> are <see langword="null"/>.</exception>
     internal static void ThrowIfBothDelegatesNull(object? getResponseFunc, object? getStreamingResponseFunc)
     {

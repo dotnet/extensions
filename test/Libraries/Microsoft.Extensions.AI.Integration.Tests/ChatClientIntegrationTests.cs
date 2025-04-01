@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -256,6 +257,134 @@ public abstract class ChatClientIntegrationTests : IDisposable
         }
 
         Assert.Contains("3528", sb.ToString());
+    }
+
+    [ConditionalFact]
+    public virtual async Task FunctionInvocation_OptionalParameter()
+    {
+        SkipIfNotEnabled();
+
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using var chatClient = new FunctionInvokingChatClient(
+            new OpenTelemetryChatClient(_chatClient, sourceName: sourceName));
+
+        int secretNumber = 42;
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.User, "What is the secret number for id foo?")
+        ];
+
+        AIFunction func = AIFunctionFactory.Create((string id = "defaultId") => id is "foo" ? secretNumber : -1, "GetSecretNumberById");
+        var response = await chatClient.GetResponseAsync(messages, new()
+        {
+            Tools = [func]
+        });
+
+        Assert.Contains(secretNumber.ToString(), response.Text);
+
+        // If the underlying IChatClient provides usage data, function invocation should aggregate the
+        // usage data across all calls to produce a single Usage value on the final response
+        if (response.Usage is { } finalUsage)
+        {
+            var totalInputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.input_tokens")!);
+            var totalOutputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.output_tokens")!);
+            Assert.Equal(totalInputTokens, finalUsage.InputTokenCount);
+            Assert.Equal(totalOutputTokens, finalUsage.OutputTokenCount);
+        }
+    }
+
+    [ConditionalFact]
+    public virtual async Task FunctionInvocation_NestedParameters()
+    {
+        SkipIfNotEnabled();
+
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using var chatClient = new FunctionInvokingChatClient(
+            new OpenTelemetryChatClient(_chatClient, sourceName: sourceName));
+
+        int secretNumber = 42;
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.User, "What is the secret number for John aged 19?")
+        ];
+
+        AIFunction func = AIFunctionFactory.Create((PersonRecord person) => person.Name is "John" ? secretNumber + person.Age : -1, "GetSecretNumberByPerson");
+        var response = await chatClient.GetResponseAsync(messages, new()
+        {
+            Tools = [func]
+        });
+
+        Assert.Contains((secretNumber + 19).ToString(), response.Text);
+
+        // If the underlying IChatClient provides usage data, function invocation should aggregate the
+        // usage data across all calls to produce a single Usage value on the final response
+        if (response.Usage is { } finalUsage)
+        {
+            var totalInputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.input_tokens")!);
+            var totalOutputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.output_tokens")!);
+            Assert.Equal(totalInputTokens, finalUsage.InputTokenCount);
+            Assert.Equal(totalOutputTokens, finalUsage.OutputTokenCount);
+        }
+    }
+
+    public record PersonRecord(string Name, int Age = 42);
+
+    [ConditionalFact]
+    public virtual async Task AvailableTools_SchemasAreAccepted()
+    {
+        SkipIfNotEnabled();
+
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using var chatClient = new FunctionInvokingChatClient(
+            new OpenTelemetryChatClient(_chatClient, sourceName: sourceName));
+
+        ChatOptions options = new()
+        {
+            MaxOutputTokens = 100,
+            Tools =
+            [
+                AIFunctionFactory.Create((int? i) => i, "Method1"),
+                AIFunctionFactory.Create((string? s) => s, "Method2"),
+                AIFunctionFactory.Create((int? i = null) => i, "Method3"),
+                AIFunctionFactory.Create((bool b) => b, "Method4"),
+                AIFunctionFactory.Create((double d) => d, "Method5"),
+                AIFunctionFactory.Create((decimal d) => d, "Method6"),
+                AIFunctionFactory.Create((float f) => f, "Method7"),
+                AIFunctionFactory.Create((long l) => l, "Method8"),
+                AIFunctionFactory.Create((char c) => c, "Method9"),
+                AIFunctionFactory.Create((DateTime dt) => dt, "Method10"),
+                AIFunctionFactory.Create((DateTime? dt) => dt, "Method11"),
+                AIFunctionFactory.Create((Guid guid) => guid, "Method12"),
+                AIFunctionFactory.Create((List<int> list) => list, "Method13"),
+                AIFunctionFactory.Create((int[] arr) => arr, "Method14"),
+                AIFunctionFactory.Create((string p1 = "str", int p2 = 42, BindingFlags p3 = BindingFlags.IgnoreCase, char p4 = 'x') => p1, "Method15"),
+                AIFunctionFactory.Create((string? p1 = "str", int? p2 = 42, BindingFlags? p3 = BindingFlags.IgnoreCase, char? p4 = 'x') => p1, "Method16"),
+            ],
+        };
+
+        // We don't care about the response, only that we get one and that an exception isn't thrown due to unacceptable schema.
+        var response = await chatClient.GetResponseAsync("Briefly, what is the most popular tower in Paris?", options);
+        Assert.NotNull(response);
     }
 
     protected virtual bool SupportsParallelFunctionCalling => true;
