@@ -230,11 +230,11 @@ internal static partial class OpenAIModelMappers
                     break;
 
                 case UriContent uriContent when uriContent.HasTopLevelMediaType("image"):
-                    parts.Add(ChatMessageContentPart.CreateImagePart(uriContent.Uri));
+                    parts.Add(ChatMessageContentPart.CreateImagePart(uriContent.Uri, GetImageDetail(content)));
                     break;
 
                 case DataContent dataContent when dataContent.HasTopLevelMediaType("image"):
-                    parts.Add(ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType));
+                    parts.Add(ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, GetImageDetail(content)));
                     break;
 
                 case DataContent dataContent when dataContent.HasTopLevelMediaType("audio"):
@@ -258,6 +258,21 @@ internal static partial class OpenAIModelMappers
         }
 
         return parts;
+    }
+
+    private static ChatImageDetailLevel? GetImageDetail(AIContent content)
+    {
+        if (content.AdditionalProperties?.TryGetValue("detail", out object? value) == true)
+        {
+            if (value is not string valueString)
+            {
+                throw new InvalidOperationException($"Additional property 'detail' must be of type '{typeof(string)}'.");
+            }
+
+            return new ChatImageDetailLevel(valueString);
+        }
+
+        return null;
     }
 
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields

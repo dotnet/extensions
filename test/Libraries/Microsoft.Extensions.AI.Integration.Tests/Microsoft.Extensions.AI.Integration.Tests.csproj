@@ -17,7 +17,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="dotnet.png" />
+    <Compile Include="..\..\Shared\ImageDataUri\ImageDataUri.cs" Link="Shared\ImageDataUri\ImageDataUri.cs" />
+    <EmbeddedResource Include="..\..\Shared\ImageDataUri\dotnet.png" Link="Shared\ImageDataUri\dotnet.png"/>
   </ItemGroup>
 
   <ItemGroup>
