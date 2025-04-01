@@ -84,7 +84,10 @@ public class EndToEndTests
             ChatResponse response = await chatClient.GetResponseAsync(messages, _chatOptions);
 
             EvaluationResult result = await scenarioRun.EvaluateAsync(promptMessage, response);
-            Assert.False(result.ContainsDiagnostics(d => d.Severity >= EvaluationDiagnosticSeverity.Warning));
+
+            Assert.False(
+                result.ContainsDiagnostics(d => d.Severity >= EvaluationDiagnosticSeverity.Warning),
+                string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
 
             NumericMetric relevance = result.Get<NumericMetric>(RelevanceTruthAndCompletenessEvaluator.RelevanceMetricName);
             NumericMetric truth = result.Get<NumericMetric>(RelevanceTruthAndCompletenessEvaluator.TruthMetricName);
@@ -132,7 +135,10 @@ public class EndToEndTests
             ChatResponse response = await chatClient.GetResponseAsync(messages, _chatOptions);
 
             EvaluationResult result = await scenarioRun.EvaluateAsync(promptMessage, response);
-            Assert.False(result.ContainsDiagnostics(d => d.Severity >= EvaluationDiagnosticSeverity.Warning));
+
+            Assert.False(
+                result.ContainsDiagnostics(d => d.Severity >= EvaluationDiagnosticSeverity.Warning),
+                string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
 
             NumericMetric relevance = result.Get<NumericMetric>(RelevanceTruthAndCompletenessEvaluator.RelevanceMetricName);
             NumericMetric truth = result.Get<NumericMetric>(RelevanceTruthAndCompletenessEvaluator.TruthMetricName);

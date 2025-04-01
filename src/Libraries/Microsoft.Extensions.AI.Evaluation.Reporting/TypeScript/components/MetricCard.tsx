@@ -188,9 +188,9 @@ export const MetricCard = ({
     const { fg, bg } = useCardColors(metric.interpretation);
     
     const hasReasons = metric.reason != null || metric.interpretation?.reason != null;
-    const hasInformationalMessages = metric.diagnostics.some((d: EvaluationDiagnostic) => d.severity == "informational");
-    const hasWarningMessages = metric.diagnostics.some((d: EvaluationDiagnostic) => d.severity == "warning");
-    const hasErrorMessages = metric.diagnostics.some((d: EvaluationDiagnostic) => d.severity == "error");
+    const hasInformationalMessages = metric.diagnostics && metric.diagnostics.some((d: EvaluationDiagnostic) => d.severity == "informational");
+    const hasWarningMessages = metric.diagnostics && metric.diagnostics.some((d: EvaluationDiagnostic) => d.severity == "warning");
+    const hasErrorMessages = metric.diagnostics && metric.diagnostics.some((d: EvaluationDiagnostic) => d.severity == "error");
     
     const cardClass = mergeClasses(
         bg, 
