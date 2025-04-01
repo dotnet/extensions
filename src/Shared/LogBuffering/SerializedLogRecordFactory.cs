@@ -59,14 +59,6 @@ internal static class SerializedLogRecordFactory
             sizeInBytes);
     }
 
-    public static void Return(SerializedLogRecord[] bufferedRecords)
-    {
-        for (int i = 0; i < bufferedRecords.Length; i++)
-        {
-            _attributesPool.Return(bufferedRecords[i].Attributes);
-        }
-    }
-
     public static void Return(SerializedLogRecord bufferedRecord)
     {
         _attributesPool.Return(bufferedRecord.Attributes);

@@ -107,9 +107,9 @@ internal sealed class GlobalBuffer : IDisposable
         lock (_bufferSwapLock)
         {
             _activeBuffer.Enqueue(serializedLogRecord);
+            _ = Interlocked.Add(ref _activeBufferSize, serializedLogRecord.SizeInBytes);
         }
 
-        _ = Interlocked.Add(ref _activeBufferSize, serializedLogRecord.SizeInBytes);
         TrimExcessRecords();
 
         return true;
@@ -119,30 +119,27 @@ internal sealed class GlobalBuffer : IDisposable
     {
         _lastFlushTimestamp = _timeProvider.GetUtcNow();
 
-        SerializedLogRecord[] bufferedRecords;
+        ConcurrentQueue<SerializedLogRecord> tempBuffer;
+        int numItemsToEmit;
         lock (_bufferSwapLock)
         {
-            bufferedRecords = _activeBuffer.ToArray();
-
-            ConcurrentQueue<SerializedLogRecord> tempBuffer = _activeBuffer;
+            tempBuffer = _activeBuffer;
             _activeBuffer = _standbyBuffer;
-            tempBuffer.Clear();
             _standbyBuffer = tempBuffer;
+
+            numItemsToEmit = tempBuffer.Count;
+
             _ = Interlocked.Exchange(ref _activeBufferSize, 0);
         }
 
-        // Process records in batches
-        for (int offset = 0; offset < bufferedRecords.Length; offset += MaxBatchSize)
+        for (int offset = 0; offset < numItemsToEmit && !tempBuffer.IsEmpty; offset += MaxBatchSize)
         {
-            int currentBatchSize = Math.Min(MaxBatchSize, bufferedRecords.Length - offset);
-            List<DeserializedLogRecord>? recordsToEmit = null;
+            int currentBatchSize = Math.Min(MaxBatchSize, numItemsToEmit - offset);
+            List<DeserializedLogRecord> recordsToEmit = _recordsToEmitListPool.Get();
             try
             {
-                recordsToEmit = _recordsToEmitListPool.Get();
-
-                for (int i = 0; i < currentBatchSize; i++)
+                for (int i = 0; i < currentBatchSize && tempBuffer.TryDequeue(out SerializedLogRecord bufferedRecord); i++)
                 {
-                    SerializedLogRecord bufferedRecord = bufferedRecords[offset + i];
                     recordsToEmit.Add(new DeserializedLogRecord(
                         bufferedRecord.Timestamp,
                         bufferedRecord.LogLevel,
@@ -156,14 +153,9 @@ internal sealed class GlobalBuffer : IDisposable
             }
             finally
             {
-                if (recordsToEmit is not null)
-                {
-                    _recordsToEmitListPool.Return(recordsToEmit);
-                }
+                _recordsToEmitListPool.Return(recordsToEmit);
             }
         }
-
-        SerializedLogRecordFactory.Return(bufferedRecords);
     }
 
     private void OnOptionsChanged(GlobalLogBufferingOptions? updatedOptions)
