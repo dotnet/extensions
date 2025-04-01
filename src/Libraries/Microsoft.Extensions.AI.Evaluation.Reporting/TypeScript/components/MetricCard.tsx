@@ -163,7 +163,7 @@ const getMetricDisplayValue = (metric: MetricType): string => {
         case "boolean":
             return !metric || metric.value === undefined || metric.value === null ? 
                 '??' :
-                metric.value ? 'Pass' : 'Fail';
+                metric.value ? 'Yes' : 'No';
         case "numeric":
             return metric?.value?.toString() ?? "??";
         case "none":
