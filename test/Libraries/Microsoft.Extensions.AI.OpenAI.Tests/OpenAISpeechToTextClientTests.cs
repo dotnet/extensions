@@ -233,5 +233,5 @@ public class OpenAISpeechToTextClientTests
     private static ISpeechToTextClient CreateSpeechToTextClient(HttpClient httpClient, string modelId) =>
         new OpenAIClient(new ApiKeyCredential("apikey"), new OpenAIClientOptions { Transport = new HttpClientPipelineTransport(httpClient) })
             .GetAudioClient(modelId)
-            .AsSpeechToTextClient();
+            .AsISpeechToTextClient();
 }

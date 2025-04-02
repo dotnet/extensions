@@ -41,7 +41,7 @@ public static class OpenAIClientExtensions
     /// <param name="audioClient">The client.</param>
     /// <returns>An <see cref="ISpeechToTextClient"/> that can be used to transcribe audio via the <see cref="AudioClient"/>.</returns>
     [Experimental("MEAI001")]
-    public static ISpeechToTextClient AsSpeechToTextClient(this AudioClient audioClient) =>
+    public static ISpeechToTextClient AsISpeechToTextClient(this AudioClient audioClient) =>
         new OpenAISpeechToTextClient(audioClient);
 
     /// <summary>Gets an <see cref="IEmbeddingGenerator{String, Single}"/> for use with this <see cref="OpenAIClient"/>.</summary>
