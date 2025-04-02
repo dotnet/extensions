@@ -43,19 +43,14 @@ public class SpeechToTextResponseUpdateExtensionsTests
     [InlineData(true)]
     public async Task ToSpeechToTextResponse_SuccessfullyCreatesResponse(bool useAsync)
     {
-        object[] rawRepresentations = [new(), new(), new(), new(), new(), new()];
         SpeechToTextResponseUpdate[] updates =
         [
-            new("Hello ") { ModelId = "model123", RawRepresentation = rawRepresentations[0], StartTime = null, AdditionalProperties = new() { ["a"] = "b" } },
-            new("human, ") { ModelId = "model123", RawRepresentation = rawRepresentations[1], StartTime = TimeSpan.FromSeconds(10), EndTime = TimeSpan.FromSeconds(20) },
-            new("How ") { ModelId = "model123", RawRepresentation = rawRepresentations[2], StartTime = TimeSpan.FromSeconds(22), EndTime = TimeSpan.FromSeconds(23) },
-            new("are ") { ModelId = "model123", RawRepresentation = rawRepresentations[3], StartTime = TimeSpan.FromSeconds(23), EndTime = TimeSpan.FromSeconds(24) },
-            new([new TextContent("You?")])
-            {
-                ModelId = "model123", RawRepresentation = rawRepresentations[4], StartTime = TimeSpan.FromSeconds(24), EndTime = TimeSpan.FromSeconds(25),
-                AdditionalProperties = new() { ["c"] = "d" }
-            },
-            new() { ResponseId = "someResponse", ModelId = "model123", RawRepresentation = rawRepresentations[5], StartTime = TimeSpan.FromSeconds(25), EndTime = TimeSpan.FromSeconds(35) },
+            new("Hello ") { ModelId = "model123", StartTime = null, AdditionalProperties = new() { ["a"] = "b" } },
+            new("human, ") { ModelId = "model123", StartTime = TimeSpan.FromSeconds(10), EndTime = TimeSpan.FromSeconds(20) },
+            new("How ") { ModelId = "model123", StartTime = TimeSpan.FromSeconds(22), EndTime = TimeSpan.FromSeconds(23) },
+            new("are ") { ModelId = "model123", StartTime = TimeSpan.FromSeconds(23), EndTime = TimeSpan.FromSeconds(24) },
+            new([new TextContent("You?")]) { ModelId = "model123", StartTime = TimeSpan.FromSeconds(24), EndTime = TimeSpan.FromSeconds(25), AdditionalProperties = new() { ["c"] = "d" } },
+            new() { ResponseId = "someResponse", ModelId = "model123", StartTime = TimeSpan.FromSeconds(25), EndTime = TimeSpan.FromSeconds(35) },
         ];
 
         SpeechToTextResponse response = useAsync ?
@@ -64,20 +59,10 @@ public class SpeechToTextResponseUpdateExtensionsTests
 
         Assert.NotNull(response);
 
-        Assert.NotNull(response.RawRepresentation);
-
         Assert.Equal("someResponse", response.ResponseId);
         Assert.Equal(TimeSpan.FromSeconds(10), response.StartTime);
         Assert.Equal(TimeSpan.FromSeconds(35), response.EndTime);
         Assert.Equal("model123", response.ModelId);
-        var responseRawRepresentation = Assert.IsAssignableFrom<IEnumerable<object?>>(response.RawRepresentation);
-        Assert.Collection(responseRawRepresentation,
-            response => Assert.Equal(rawRepresentations[0], response),
-            response => Assert.Equal(rawRepresentations[1], response),
-            response => Assert.Equal(rawRepresentations[2], response),
-            response => Assert.Equal(rawRepresentations[3], response),
-            response => Assert.Equal(rawRepresentations[4], response),
-            response => Assert.Equal(rawRepresentations[5], response));
 
         Assert.NotNull(response.AdditionalProperties);
         Assert.Equal(2, response.AdditionalProperties.Count);

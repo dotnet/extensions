@@ -28,7 +28,6 @@ public static class SpeechToTextResponseUpdateExtensions
         List<AIContent> contents = [];
         string? responseId = null;
         string? modelId = null;
-        List<object?>? rawRepresentations = null;
         AdditionalPropertiesDictionary? additionalProperties = null;
 
         TimeSpan? endTime = null;
@@ -43,10 +42,6 @@ public static class SpeechToTextResponseUpdateExtensions
                 endTime = update.EndTime;
             }
 
-            // Add the list of the all raw representation updates
-            rawRepresentations ??= [];
-            rawRepresentations.Add(update.RawRepresentation);
-
             ProcessUpdate(update, contents, ref responseId, ref modelId, ref additionalProperties);
         }
 
@@ -55,7 +50,6 @@ public static class SpeechToTextResponseUpdateExtensions
         response.Contents = contents;
         response.ResponseId = responseId;
         response.ModelId = modelId;
-        response.RawRepresentation = rawRepresentations;
         response.AdditionalProperties = additionalProperties;
 
         return response;
@@ -79,7 +73,6 @@ public static class SpeechToTextResponseUpdateExtensions
             List<AIContent> contents = [];
             string? responseId = null;
             string? modelId = null;
-            List<object?>? rawRepresentations = null;
             AdditionalPropertiesDictionary? additionalProperties = null;
 
             TimeSpan? endTime = null;
@@ -94,10 +87,6 @@ public static class SpeechToTextResponseUpdateExtensions
                     endTime = update.EndTime;
                 }
 
-                // Add the list of the all raw representation updates
-                rawRepresentations ??= [];
-                rawRepresentations.Add(update.RawRepresentation);
-
                 ProcessUpdate(update, contents, ref responseId, ref modelId, ref additionalProperties);
             }
 
@@ -107,7 +96,6 @@ public static class SpeechToTextResponseUpdateExtensions
             response.Contents = contents;
             response.ResponseId = responseId;
             response.ModelId = modelId;
-            response.RawRepresentation = rawRepresentations;
             response.AdditionalProperties = additionalProperties;
 
             return response;
