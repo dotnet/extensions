@@ -9,6 +9,19 @@ namespace Microsoft.Extensions.AI;
 public class ErrorContentTests
 {
     [Fact]
+    public void Constructor_NormalizesNullToEmpty()
+    {
+        ErrorContent content = new(null!);
+        Assert.Empty(content.Message);
+
+        content.Message = "test";
+        Assert.Equal("test", content.Message);
+
+        content.Message = null!;
+        Assert.Empty(content.Message);
+    }
+
+    [Fact]
     public void Constructor_ShouldInitializeProperties()
     {
         // Arrange
