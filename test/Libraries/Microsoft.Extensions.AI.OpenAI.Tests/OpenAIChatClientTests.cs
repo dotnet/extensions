@@ -1034,7 +1034,14 @@ public class OpenAIChatClientTests
     }
 
     [Fact]
-    public async Task DataContentMessage_Image_AdditionalPropertyDetail_NonStreaming()
+    public Task DataContentMessage_Image_AdditionalProperty_ChatImageDetailLevel_NonStreaming()
+        => DataContentMessage_Image_AdditionalPropertyDetail_NonStreaming("high");
+
+    [Fact]
+    public Task DataContentMessage_Image_AdditionalProperty_StringDetail_NonStreaming()
+        => DataContentMessage_Image_AdditionalPropertyDetail_NonStreaming(ChatImageDetailLevel.High);
+
+    private static async Task DataContentMessage_Image_AdditionalPropertyDetail_NonStreaming(object detailValue)
     {
         string input = $$"""
             {
@@ -1110,7 +1117,7 @@ public class OpenAIChatClientTests
                     {
                         AdditionalProperties = new()
                         {
-                            { "detail", "high" }
+                            { "detail", detailValue }
                         }
                     }
                 ])

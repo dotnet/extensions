@@ -222,9 +222,14 @@ internal sealed partial class OpenAIChatClient : IChatClient
 
     private static ChatImageDetailLevel? GetImageDetail(AIContent content)
     {
-        if (content.AdditionalProperties?.TryGetValue("detail", out string? value) == true)
+        if (content.AdditionalProperties?.TryGetValue("detail", out object? value) is true)
         {
-            return new ChatImageDetailLevel(value);
+            return value switch
+            {
+                string detailString => new ChatImageDetailLevel(detailString),
+                ChatImageDetailLevel detail => detail,
+                _ => null
+            };
         }
 
         return null;
