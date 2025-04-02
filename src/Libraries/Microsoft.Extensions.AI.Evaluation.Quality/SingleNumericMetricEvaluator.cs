@@ -80,24 +80,24 @@ public abstract class SingleNumericMetricEvaluator : ChatConversationEvaluator
 
             if (!string.IsNullOrWhiteSpace(evaluationResponse.ModelId))
             {
-                metric.AddOrUpdateMetadata(name: "evaluation_model_used", value: evaluationResponse.ModelId!);
+                metric.AddOrUpdateMetadata(name: "evaluation-model-used", value: evaluationResponse.ModelId!);
             }
 
             if (evaluationResponse.Usage is UsageDetails usage)
             {
                 if (usage.InputTokenCount is not null)
                 {
-                    metric.AddOrUpdateMetadata(name: "evaluation_input_tokens_used", value: $"{usage.InputTokenCount}");
+                    metric.AddOrUpdateMetadata(name: "evaluation-input-tokens-used", value: $"{usage.InputTokenCount}");
                 }
 
                 if (usage.OutputTokenCount is not null)
                 {
-                    metric.AddOrUpdateMetadata(name: "evaluation_output_tokens_used", value: $"{usage.OutputTokenCount}");
+                    metric.AddOrUpdateMetadata(name: "evaluation-output-tokens-used", value: $"{usage.OutputTokenCount}");
                 }
 
                 if (usage.TotalTokenCount is not null)
                 {
-                    metric.AddOrUpdateMetadata(name: "evaluation_total_tokens_used", value: $"{usage.TotalTokenCount}");
+                    metric.AddOrUpdateMetadata(name: "evaluation-total-tokens-used", value: $"{usage.TotalTokenCount}");
                 }
             }
 
@@ -126,7 +126,7 @@ public abstract class SingleNumericMetricEvaluator : ChatConversationEvaluator
         {
             stopwatch.Stop();
             string duration = $"{stopwatch.Elapsed.TotalSeconds.ToString("F2", CultureInfo.InvariantCulture)} s";
-            metric.AddOrUpdateMetadata(name: "evaluation_duration", value: duration);
+            metric.AddOrUpdateMetadata(name: "evaluation-duration", value: duration);
         }
     }
 }

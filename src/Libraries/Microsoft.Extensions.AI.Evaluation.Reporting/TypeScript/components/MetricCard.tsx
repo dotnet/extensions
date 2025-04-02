@@ -42,7 +42,7 @@ const useCardStyles = makeStyles({
         padding: '.75rem', 
         border: `1px solid ${tokens.colorNeutralStroke2}`,
         borderRadius: '4px',
-        width: '8rem',
+        width: '12.5rem',
         cursor: 'pointer',
         transition: 'box-shadow 0.2s ease-in-out, outline 0.2s ease-in-out',
         position: 'relative',

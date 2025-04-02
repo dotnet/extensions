@@ -207,30 +207,32 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator : ChatConvers
             const string Rationales = "Rationales";
             const string Separator = "; ";
 
-            var commonMetadata = new Dictionary<string, string> { ["rtc_evaluation_duration"] = duration };
+            var commonMetadata = new Dictionary<string, string>();
 
             if (!string.IsNullOrWhiteSpace(evaluationResponse.ModelId))
             {
-                commonMetadata["rtc_evaluation_model_used"] = evaluationResponse.ModelId!;
+                commonMetadata["rtc-evaluation-model-used"] = evaluationResponse.ModelId!;
             }
 
             if (evaluationResponse.Usage is UsageDetails usage)
             {
                 if (usage.InputTokenCount is not null)
                 {
-                    commonMetadata["rtc_evaluation_input_tokens_used"] = $"{usage.InputTokenCount}";
+                    commonMetadata["rtc-evaluation-input-tokens-used"] = $"{usage.InputTokenCount}";
                 }
 
                 if (usage.OutputTokenCount is not null)
                 {
-                    commonMetadata["rtc_evaluation_output_tokens_used"] = $"{usage.OutputTokenCount}";
+                    commonMetadata["rtc-evaluation-output-tokens-used"] = $"{usage.OutputTokenCount}";
                 }
 
                 if (usage.TotalTokenCount is not null)
                 {
-                    commonMetadata["rtc_evaluation_total_tokens_used"] = $"{usage.TotalTokenCount}";
+                    commonMetadata["rtc-evaluation-total-tokens-used"] = $"{usage.TotalTokenCount}";
                 }
             }
+
+            commonMetadata["rtc-evaluation-duration"] = duration;
 
             NumericMetric relevance = result.Get<NumericMetric>(RelevanceMetricName);
             relevance.Value = rating.Relevance;
