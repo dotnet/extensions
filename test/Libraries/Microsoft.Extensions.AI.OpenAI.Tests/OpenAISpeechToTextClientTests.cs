@@ -9,12 +9,9 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using OpenAI;
 using OpenAI.Audio;
-using OpenAI.Chat;
 using Xunit;
 
 #pragma warning disable S103 // Lines should not be too long
