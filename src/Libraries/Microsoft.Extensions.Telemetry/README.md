@@ -22,7 +22,7 @@ Or directly in the C# project file:
 
 ### Logging Sampling
 
-The library provides two types of log sampling mechanisms: Trace-based and Random Probabilistic sampling.
+The library provides two types of log sampling mechanisms: **Random Probabilistic Sampling** and **Trace-based Sampling**.
 
 #### Random Probabilistic Sampling
 
