@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -158,7 +159,22 @@ internal sealed class AnonymousDelegatingChatClient : DelegatingChatClient
                 }
             });
 
+#if NET9_0_OR_GREATER
             return updates.Reader.ReadAllAsync(cancellationToken);
+#else
+            return ReadAllAsync(updates, cancellationToken);
+            static async IAsyncEnumerable<ChatResponseUpdate> ReadAllAsync(
+                ChannelReader<ChatResponseUpdate> channel, [EnumeratorCancellation] CancellationToken cancellationToken)
+            {
+                while (await channel.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
+                {
+                    while (channel.TryRead(out var update))
+                    {
+                        yield return update;
+                    }
+                }
+            }
+#endif
         }
         else if (_getStreamingResponseFunc is not null)
         {

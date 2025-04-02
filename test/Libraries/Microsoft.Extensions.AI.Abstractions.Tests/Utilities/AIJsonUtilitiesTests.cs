@@ -147,7 +147,7 @@ public static class AIJsonUtilitiesTests
 
         JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(MyPoco), serializerOptions: JsonSerializerOptions.Default);
 
-        Assert.True(JsonElement.DeepEquals(expected, actual));
+        Assert.True(DeepEquals(expected, actual));
     }
 
     [Fact]
@@ -192,7 +192,7 @@ public static class AIJsonUtilitiesTests
             serializerOptions: JsonSerializerOptions.Default,
             inferenceOptions: inferenceOptions);
 
-        Assert.True(JsonElement.DeepEquals(expected, actual));
+        Assert.True(DeepEquals(expected, actual));
     }
 
     [Fact]
@@ -237,7 +237,7 @@ public static class AIJsonUtilitiesTests
 
         JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(MyPoco), serializerOptions: JsonSerializerOptions.Default, inferenceOptions: inferenceOptions);
 
-        Assert.True(JsonElement.DeepEquals(expected, actual));
+        Assert.True(DeepEquals(expected, actual));
     }
 
     [Fact]
@@ -265,7 +265,7 @@ public static class AIJsonUtilitiesTests
 
         JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(PocoWithTypesWithOpenAIUnsupportedKeywords), serializerOptions: JsonSerializerOptions.Default);
 
-        Assert.True(JsonElement.DeepEquals(expected, actual));
+        Assert.True(DeepEquals(expected, actual));
     }
 
     public class PocoWithTypesWithOpenAIUnsupportedKeywords
@@ -289,7 +289,7 @@ public static class AIJsonUtilitiesTests
         Assert.NotNull(func.UnderlyingMethod);
 
         JsonElement resolvedSchema = AIJsonUtilities.CreateFunctionJsonSchema(func.UnderlyingMethod, title: func.Name);
-        Assert.True(JsonElement.DeepEquals(resolvedSchema, func.JsonSchema));
+        Assert.True(DeepEquals(resolvedSchema, func.JsonSchema));
     }
 
     [Fact]
@@ -301,7 +301,9 @@ public static class AIJsonUtilitiesTests
         JsonElement schemaParameters = func.JsonSchema.GetProperty("properties");
         Assert.NotNull(func.UnderlyingMethod);
         ParameterInfo[] parameters = func.UnderlyingMethod.GetParameters();
+#if NET9_0_OR_GREATER
         Assert.Equal(parameters.Length, schemaParameters.GetPropertyCount());
+#endif
 
         int i = 0;
         foreach (JsonProperty property in schemaParameters.EnumerateObject())
@@ -317,7 +319,7 @@ public static class AIJsonUtilitiesTests
                 """).RootElement;
 
             JsonElement actualSchema = property.Value;
-            Assert.True(JsonElement.DeepEquals(expected, actualSchema));
+            Assert.True(DeepEquals(expected, actualSchema));
             i++;
         }
     }
@@ -479,5 +481,16 @@ public static class AIJsonUtilitiesTests
     private class DerivedAIContent : AIContent
     {
         public int DerivedValue { get; set; }
+    }
+
+    private static bool DeepEquals(JsonElement element1, JsonElement element2)
+    {
+#if NET9_0_OR_GREATER
+        return JsonElement.DeepEquals(element1, element2);
+#else
+        return JsonNode.DeepEquals(
+            JsonSerializer.SerializeToNode(element1),
+            JsonSerializer.SerializeToNode(element2));
+#endif
     }
 }
