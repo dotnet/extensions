@@ -1,8 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.ComponentModel;
+using Microsoft.Shared.Diagnostics;
 using OpenAI;
-using OpenAI.Assistants;
 using OpenAI.Chat;
 using OpenAI.Embeddings;
 using OpenAI.Responses;
@@ -16,46 +18,37 @@ public static class OpenAIClientExtensions
     /// <param name="openAIClient">The client.</param>
     /// <param name="modelId">The model.</param>
     /// <returns>An <see cref="IChatClient"/> that can be used to converse via the <see cref="OpenAIClient"/>.</returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [Obsolete("This method will be removed in an upcoming release.")]
     public static IChatClient AsChatClient(this OpenAIClient openAIClient, string modelId) =>
-        new OpenAIChatClient(openAIClient, modelId);
+        new OpenAIChatClient(Throw.IfNull(openAIClient).GetChatClient(modelId));
 
     /// <summary>Gets an <see cref="IChatClient"/> for use with this <see cref="ChatClient"/>.</summary>
     /// <param name="chatClient">The client.</param>
     /// <returns>An <see cref="IChatClient"/> that can be used to converse via the <see cref="ChatClient"/>.</returns>
-    public static IChatClient AsChatClient(this ChatClient chatClient) =>
+    public static IChatClient AsIChatClient(this ChatClient chatClient) =>
         new OpenAIChatClient(chatClient);
 
     /// <summary>Gets an <see cref="IChatClient"/> for use with this <see cref="OpenAIResponseClient"/>.</summary>
     /// <param name="responseClient">The client.</param>
     /// <returns>An <see cref="IChatClient"/> that can be used to converse via the <see cref="OpenAIResponseClient"/>.</returns>
-    public static IChatClient AsChatClient(this OpenAIResponseClient responseClient) =>
+    public static IChatClient AsIChatClient(this OpenAIResponseClient responseClient) =>
         new OpenAIResponseChatClient(responseClient);
-
-#pragma warning disable OPENAI001 // Type is for evaluation purposes only
-    /// <summary>Gets an <see cref="IChatClient"/> for use with this <see cref="AssistantClient"/>.</summary>
-    /// <param name="assistantClient">The client.</param>
-    /// <param name="assistantId">The ID of the assistant to use.</param>
-    /// <param name="threadId">
-    /// The ID of the thread to use. If not supplied here, it should be supplied per request in <see cref="ChatOptions.ChatThreadId"/>.
-    /// If none is supplied, a new thread will be created for a request.
-    /// </param>
-    /// <returns>An <see cref="IChatClient"/> that can be used to converse via the <see cref="ChatClient"/>.</returns>
-    public static IChatClient AsChatClient(this AssistantClient assistantClient, string assistantId, string? threadId = null) =>
-        new OpenAIAssistantClient(assistantClient, assistantId, threadId);
-#pragma warning restore OPENAI001
 
     /// <summary>Gets an <see cref="IEmbeddingGenerator{String, Single}"/> for use with this <see cref="OpenAIClient"/>.</summary>
     /// <param name="openAIClient">The client.</param>
     /// <param name="modelId">The model to use.</param>
     /// <param name="dimensions">The number of dimensions to generate in each embedding.</param>
     /// <returns>An <see cref="IEmbeddingGenerator{String, Embedding}"/> that can be used to generate embeddings via the <see cref="EmbeddingClient"/>.</returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [Obsolete("This method will be removed in an upcoming release.")]
     public static IEmbeddingGenerator<string, Embedding<float>> AsEmbeddingGenerator(this OpenAIClient openAIClient, string modelId, int? dimensions = null) =>
-        new OpenAIEmbeddingGenerator(openAIClient, modelId, dimensions);
+        new OpenAIEmbeddingGenerator(Throw.IfNull(openAIClient).GetEmbeddingClient(modelId), dimensions);
 
     /// <summary>Gets an <see cref="IEmbeddingGenerator{String, Single}"/> for use with this <see cref="EmbeddingClient"/>.</summary>
     /// <param name="embeddingClient">The client.</param>
-    /// <param name="dimensions">The number of dimensions to generate in each embedding.</param>
+    /// <param name="defaultModelDimensions">The number of dimensions to generate in each embedding.</param>
     /// <returns>An <see cref="IEmbeddingGenerator{String, Embedding}"/> that can be used to generate embeddings via the <see cref="EmbeddingClient"/>.</returns>
-    public static IEmbeddingGenerator<string, Embedding<float>> AsEmbeddingGenerator(this EmbeddingClient embeddingClient, int? dimensions = null) =>
-        new OpenAIEmbeddingGenerator(embeddingClient, dimensions);
+    public static IEmbeddingGenerator<string, Embedding<float>> AsIEmbeddingGenerator(this EmbeddingClient embeddingClient, int? defaultModelDimensions = null) =>
+        new OpenAIEmbeddingGenerator(embeddingClient, defaultModelDimensions);
 }

@@ -24,45 +24,23 @@ namespace Microsoft.Extensions.AI;
 public class AzureAIInferenceChatClientTests
 {
     [Fact]
-    public void Ctor_InvalidArgs_Throws()
+    public void AsIChatClient_InvalidArgs_Throws()
     {
-        Assert.Throws<ArgumentNullException>("chatCompletionsClient", () => new AzureAIInferenceChatClient(null!, "model"));
+        Assert.Throws<ArgumentNullException>("chatCompletionsClient", () => ((ChatCompletionsClient)null!).AsIChatClient("model"));
 
         ChatCompletionsClient client = new(new("http://somewhere"), new AzureKeyCredential("key"));
-        Assert.Throws<ArgumentException>("modelId", () => new AzureAIInferenceChatClient(client, "   "));
+        Assert.Throws<ArgumentException>("defaultModelId", () => client.AsIChatClient("   "));
     }
 
     [Fact]
-    public void ToolCallJsonSerializerOptions_HasExpectedValue()
-    {
-        using AzureAIInferenceChatClient client = new(new(new("http://somewhere"), new AzureKeyCredential("key")), "mode");
-
-        Assert.Same(client.ToolCallJsonSerializerOptions, AIJsonUtilities.DefaultOptions);
-        Assert.Throws<ArgumentNullException>("value", () => client.ToolCallJsonSerializerOptions = null!);
-
-        JsonSerializerOptions options = new();
-        client.ToolCallJsonSerializerOptions = options;
-        Assert.Same(options, client.ToolCallJsonSerializerOptions);
-    }
-
-    [Fact]
-    public void AsChatClient_InvalidArgs_Throws()
-    {
-        Assert.Throws<ArgumentNullException>("chatCompletionsClient", () => ((ChatCompletionsClient)null!).AsChatClient("model"));
-
-        ChatCompletionsClient client = new(new("http://somewhere"), new AzureKeyCredential("key"));
-        Assert.Throws<ArgumentException>("modelId", () => client.AsChatClient("   "));
-    }
-
-    [Fact]
-    public void AsChatClient_ProducesExpectedMetadata()
+    public void AsIChatClient_ProducesExpectedMetadata()
     {
         Uri endpoint = new("http://localhost/some/endpoint");
         string model = "amazingModel";
 
         ChatCompletionsClient client = new(endpoint, new AzureKeyCredential("key"));
 
-        IChatClient chatClient = client.AsChatClient(model);
+        IChatClient chatClient = client.AsIChatClient(model);
         var metadata = chatClient.GetService<ChatClientMetadata>();
         Assert.Equal("az.ai.inference", metadata?.ProviderName);
         Assert.Equal(endpoint, metadata?.ProviderUri);
@@ -73,11 +51,9 @@ public class AzureAIInferenceChatClientTests
     public void GetService_SuccessfullyReturnsUnderlyingClient()
     {
         ChatCompletionsClient client = new(new("http://localhost"), new AzureKeyCredential("key"));
-        IChatClient chatClient = client.AsChatClient("model");
+        IChatClient chatClient = client.AsIChatClient("model");
 
         Assert.Same(chatClient, chatClient.GetService<IChatClient>());
-        Assert.Same(chatClient, chatClient.GetService<AzureAIInferenceChatClient>());
-
         Assert.Same(client, chatClient.GetService<ChatCompletionsClient>());
 
         using IChatClient pipeline = chatClient
@@ -97,7 +73,6 @@ public class AzureAIInferenceChatClientTests
         Assert.IsType<FunctionInvokingChatClient>(pipeline.GetService<IChatClient>());
 
         Assert.Null(pipeline.GetService<ChatCompletionsClient>("key"));
-        Assert.Null(pipeline.GetService<AzureAIInferenceChatClient>("key"));
         Assert.Null(pipeline.GetService<string>("key"));
     }
 
@@ -918,5 +893,5 @@ public class AzureAIInferenceChatClientTests
             new("http://somewhere"),
             new AzureKeyCredential("key"),
             new AzureAIInferenceClientOptions { Transport = new HttpClientTransport(httpClient) })
-            .AsChatClient(modelId);
+            .AsIChatClient(modelId);
 }

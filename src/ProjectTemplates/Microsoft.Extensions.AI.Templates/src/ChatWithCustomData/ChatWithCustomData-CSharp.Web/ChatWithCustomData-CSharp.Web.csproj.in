@@ -1,0 +1,62 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>d5681fae-b21b-4114-b781-48180f08c0c4</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+<!--#if (IsOllama && IsAspire)
+    <PackageReference Include="CommunityToolkit.Aspire.OllamaSharp" Version="${CommunityToolkitAspireOllamaSharpVersion}" />
+#endif -->
+<!--#if (IsOllama)
+    <PackageReference Include="OllamaSharp" Version="${OllamaSharpVersion}" />
+#elif (IsGHModels && !IsAspire)
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${MicrosoftExtensionsAIVersion}" />
+#elif (IsAzureAiFoundry)
+    <PackageReference Include="Azure.AI.Projects" Version="${AzureAIProjectsVersion}" />
+    <PackageReference Include="Azure.AI.OpenAI" Version="${AzureAIOpenAIVersion}" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${MicrosoftExtensionsAIVersion}" />
+#endif -->
+<!--#if ((IsAzureOpenAI || IsOpenAI || IsGHModels) && IsAspire) -->
+    <PackageReference Include="Aspire.Azure.AI.OpenAI" Version="${AspireAzureAIOpenAIVersion}" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${MicrosoftExtensionsAIVersion}" />
+<!--#endif -->
+<!--#if (IsAzureOpenAI && !IsAspire) -->
+    <PackageReference Include="Azure.AI.OpenAI" Version="${AzureAIOpenAIVersion}" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${MicrosoftExtensionsAIVersion}" />
+<!--#endif -->
+<!--#if (UseManagedIdentity) -->
+    <PackageReference Include="Azure.Identity" Version="${AzureIdentityVersion}" />
+<!--#endif -->
+<!--#if (IsAspire) -->
+    <PackageReference Include="CommunityToolkit.Aspire.Microsoft.EntityFrameworkCore.Sqlite" Version="${CommunityToolkitAspireMicrosoftEntityFrameworkCoreSqliteVersion}" />
+<!--#else -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="${MicrosoftEntityFrameworkCoreSqliteVersion}" />
+<!--#endif -->
+    <PackageReference Include="Microsoft.Extensions.AI" Version="${MicrosoftExtensionsAIVersion}" />
+    <PackageReference Include="Microsoft.SemanticKernel.Core" Version="${MicrosoftSemanticKernelCoreVersion}" />
+    <PackageReference Include="PdfPig" Version="${PdfPigVersion}" />
+    <PackageReference Include="System.Linq.Async" Version="${SystemLinqAsyncVersion}" />
+<!--#if (UseAzureAISearch && IsAspire)
+    <PackageReference Include="Aspire.Azure.Search.Documents" Version="${AspireVersion}" />
+#elif (UseAzureAISearch && !IsAspire)
+    <PackageReference Include="Azure.Search.Documents" Version="${AzureSearchDocumentsVersion}" />
+#endif -->
+<!--#if (UseAzureAISearch)
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureAISearch" Version="${MicrosoftSemanticKernelConnectorsAzureAISearchVersion}" />
+#elif (UseQdrant)-->
+    <PackageReference Include="Aspire.Qdrant.Client" Version="${AspireVersion}" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Qdrant" Version="${MicrosoftSemanticKernelConnectorsQdrantVersion}" />
+<!--#endif -->
+  </ItemGroup>
+<!--#if (IsAspire) -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\ChatWithCustomData-CSharp.ServiceDefaults\ChatWithCustomData-CSharp.ServiceDefaults.csproj" />
+  </ItemGroup>
+<!--#endif -->
+
+</Project>
