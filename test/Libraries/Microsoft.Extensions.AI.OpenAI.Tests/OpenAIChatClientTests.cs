@@ -107,62 +107,6 @@ public class OpenAIChatClientTests
     }
 
     [Fact]
-    public async Task GetResponseAsync_OpenAIClient_DataContent_AdditionalPropertyDetail_NonString_Throws()
-    {
-        Uri endpoint = new("http://localhost/some/endpoint");
-        string model = "amazingModel";
-
-        var client = new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
-        IChatClient chatClient = client.GetChatClient(model).AsIChatClient();
-
-        InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(() => chatClient.GetResponseAsync(
-            [
-            new(ChatRole.User,
-                [
-                    new TextContent("What does this logo say?"),
-                    new DataContent(ImageDataUri.GetImageDataUri(), "image/png")
-                    {
-                        AdditionalProperties = new()
-                        {
-                            { "detail", 42 }
-                        }
-                    }
-                ])
-            ]));
-
-        Assert.Contains("'detail'", ex.Message);
-        Assert.Contains(typeof(string).ToString(), ex.Message);
-    }
-
-    [Fact]
-    public async Task GetResponseAsync_OpenAIClient_UriContent_AdditionalPropertyDetail_NonString_Throws()
-    {
-        Uri endpoint = new("http://localhost/some/endpoint");
-        string model = "amazingModel";
-
-        var client = new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
-        IChatClient chatClient = client.GetChatClient(model).AsIChatClient();
-
-        InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(() => chatClient.GetResponseAsync(
-            [
-            new(ChatRole.User,
-                [
-                    new TextContent("What does this logo say?"),
-                    new UriContent("http://localhost/my-image.png", "image/png")
-                    {
-                        AdditionalProperties = new()
-                        {
-                            { "detail", 42 }
-                        }
-                    }
-                ])
-            ]));
-
-        Assert.Contains("'detail'", ex.Message);
-        Assert.Contains(typeof(string).ToString(), ex.Message);
-    }
-
-    [Fact]
     public async Task BasicRequestResponse_NonStreaming()
     {
         const string Input = """

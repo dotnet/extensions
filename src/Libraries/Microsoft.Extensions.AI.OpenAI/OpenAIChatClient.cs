@@ -222,14 +222,9 @@ internal sealed partial class OpenAIChatClient : IChatClient
 
     private static ChatImageDetailLevel? GetImageDetail(AIContent content)
     {
-        if (content.AdditionalProperties?.TryGetValue("detail", out object? value) == true)
+        if (content.AdditionalProperties?.TryGetValue("detail", out string? value) == true)
         {
-            if (value is not string valueString)
-            {
-                throw new InvalidOperationException($"Additional property 'detail' must be of type '{typeof(string)}'.");
-            }
-
-            return new ChatImageDetailLevel(valueString);
+            return new ChatImageDetailLevel(value);
         }
 
         return null;
