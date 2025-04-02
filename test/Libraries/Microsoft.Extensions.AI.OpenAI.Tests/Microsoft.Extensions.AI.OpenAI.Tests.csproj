@@ -2,17 +2,20 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.AI</RootNamespace>
     <Description>Unit tests for Microsoft.Extensions.AI.OpenAI</Description>
-    <NoWarn>$(NoWarn);OPENAI002;S104</NoWarn>
+    <NoWarn>$(NoWarn);OPENAI002;MEAI001;S104</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <InjectDiagnosticAttributesOnLegacy>true</InjectDiagnosticAttributesOnLegacy>
   </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\Shared\ImageDataUri\dotnet.png" Link="Resources\dotnet.png"/>
+  </ItemGroup>
   
   <ItemGroup>
     <Compile Include="..\..\Shared\ImageDataUri\ImageDataUri.cs" Link="Shared\ImageDataUri\ImageDataUri.cs" />
-    <EmbeddedResource Include="..\..\Shared\ImageDataUri\dotnet.png" Link="Shared\ImageDataUri\dotnet.png"/>
   </ItemGroup>
 
   <ItemGroup>

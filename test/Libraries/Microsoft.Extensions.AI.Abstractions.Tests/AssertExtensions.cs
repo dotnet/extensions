@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Xunit;
 using Xunit.Sdk;
 
@@ -57,7 +58,9 @@ internal static class AssertExtensions
         options ??= JsonSerializerOptions.Default;
         JsonElement expectedElement = NormalizeToElement(expected, options);
         JsonElement actualElement = NormalizeToElement(actual, options);
-        if (!JsonElement.DeepEquals(expectedElement, actualElement))
+        if (!JsonNode.DeepEquals(
+            JsonSerializer.SerializeToNode(expectedElement),
+            JsonSerializer.SerializeToNode(actualElement)))
         {
             string message = propertyName is null
                 ? $"Function result does not match expected JSON.\r\nExpected: {expectedElement.GetRawText()}\r\nActual:   {actualElement.GetRawText()}"

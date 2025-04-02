@@ -11,7 +11,7 @@ internal static class ImageDataUri
 {
     internal static Uri GetImageDataUri()
     {
-        using Stream? s = typeof(ImageDataUri).Assembly.GetManifestResourceStream("Microsoft.Extensions.AI.Shared.ImageDataUri.dotnet.png");
+        using Stream? s = typeof(ImageDataUri).Assembly.GetManifestResourceStream("Microsoft.Extensions.AI.Resources.dotnet.png");
         Assert.NotNull(s);
         MemoryStream ms = new();
         s.CopyTo(ms);

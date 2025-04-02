@@ -6,6 +6,7 @@
 
   <PropertyGroup>
     <NoWarn>$(NoWarn);CA1063;CA1861;SA1130;VSTHRD003</NoWarn>
+    <NoWarn>$(NoWarn);MEAI001</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
@@ -16,6 +17,7 @@
   <ItemGroup>
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\AssertExtensions.cs" />
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestChatClient.cs" />
+    <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestSpeechToTextClient.cs" />
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestEmbeddingGenerator.cs" />
   </ItemGroup>
 
