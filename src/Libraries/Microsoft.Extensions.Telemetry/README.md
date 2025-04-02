@@ -54,7 +54,7 @@ Matches logging sampling decisions with the underlying [Distributed Tracing samp
 // Add trace-based sampler
 builder.Logging.AddTraceBasedSampler();
 ```
-This comes in handy when you already use OpenTelemetry .NET Tracing and would like to see sampling decisions being consistent across both logs and and their underlying [`Activity`](https://learn.microsoft.com/en-us/dotnet/core/diagnostics/distributed-tracing-concepts#sampling).
+This comes in handy when you already use OpenTelemetry .NET Tracing and would like to see sampling decisions being consistent across both logs and their underlying [`Activity`](https://learn.microsoft.com/dotnet/core/diagnostics/distributed-tracing-concepts#sampling).
 
 ### Service Log Enrichment
 
