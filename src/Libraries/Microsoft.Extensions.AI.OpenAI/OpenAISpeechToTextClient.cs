@@ -28,32 +28,8 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
     /// <summary>Metadata about the client.</summary>
     private readonly SpeechToTextClientMetadata _metadata;
 
-    /// <summary>The underlying <see cref="OpenAIClient" />.</summary>
-    private readonly OpenAIClient? _openAIClient;
-
     /// <summary>The underlying <see cref="AudioClient" />.</summary>
     private readonly AudioClient _audioClient;
-
-    /// <summary>Initializes a new instance of the <see cref="OpenAISpeechToTextClient"/> class for the specified <see cref="OpenAIClient"/>.</summary>
-    /// <param name="openAIClient">The underlying client.</param>
-    /// <param name="modelId">The model to use.</param>
-    public OpenAISpeechToTextClient(OpenAIClient openAIClient, string modelId)
-    {
-        _ = Throw.IfNull(openAIClient);
-        _ = Throw.IfNullOrWhitespace(modelId);
-
-        _openAIClient = openAIClient;
-        _audioClient = openAIClient.GetAudioClient(modelId);
-
-        // https://github.com/openai/openai-dotnet/issues/215
-        // The endpoint isn't currently exposed, so use reflection to get at it, temporarily. Once packages
-        // implement the abstractions directly rather than providing adapters on top of the public APIs,
-        // the package can provide such implementations separate from what's exposed in the public API.
-        Uri providerUrl = typeof(OpenAIClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            ?.GetValue(openAIClient) as Uri ?? _defaultOpenAIEndpoint;
-
-        _metadata = new("openai", providerUrl, modelId);
-    }
 
     /// <summary>Initializes a new instance of the <see cref="OpenAISpeechToTextClient"/> class for the specified <see cref="AudioClient"/>.</summary>
     /// <param name="audioClient">The underlying client.</param>
@@ -83,7 +59,6 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
         return
             serviceKey is not null ? null :
             serviceType == typeof(SpeechToTextClientMetadata) ? _metadata :
-            serviceType == typeof(OpenAIClient) ? _openAIClient :
             serviceType == typeof(AudioClient) ? _audioClient :
             serviceType.IsInstanceOfType(this) ? this :
             null;

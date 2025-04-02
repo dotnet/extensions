@@ -183,7 +183,7 @@ public partial class LoggingSpeechToTextClient : DelegatingSpeechToTextClient
     private partial void LogCompleted(string methodName);
 
     [LoggerMessage(LogLevel.Trace, "{MethodName} completed: {SpeechToTextResponse}.")]
-    private partial void LogCompletedSensitive(string methodName, string SpeechToTextResponse);
+    private partial void LogCompletedSensitive(string methodName, string speechToTextResponse);
 
     [LoggerMessage(LogLevel.Debug, "GetStreamingTextAsync received update.")]
     private partial void LogStreamingUpdate();

@@ -53,7 +53,7 @@ public class OpenAISpeechToTextClientTests
         Assert.Contains("I finally got back to the gym the other day", response.Text);
 
         Assert.NotNull(response.RawRepresentation);
-        Assert.IsType<OpenAI.Audio.AudioTranscription>(response.RawRepresentation);
+        Assert.IsType<AudioTranscription>(response.RawRepresentation);
     }
 
     [Fact]
