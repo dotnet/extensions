@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Text.Json.Serialization;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.AI;
 
@@ -15,24 +15,21 @@ namespace Microsoft.Extensions.AI;
 public class ErrorContent : AIContent
 {
     /// <summary>The error message.</summary>
-    private string _message;
+    private string? _message;
 
     /// <summary>Initializes a new instance of the <see cref="ErrorContent"/> class with the specified error message.</summary>
     /// <param name="message">The error message to store in this content.</param>
-    [JsonConstructor]
-    public ErrorContent(string message)
+    public ErrorContent(string? message)
     {
-        // The message shouldn't be null. However, if it's being constructed from another system that may end up
-        // producing a null message, we want to be lenient and not produce an exception while trying to store
-        // information about an error. So, rather than throwing if message is null, we just normalize to empty.
-        _message = message ?? string.Empty;
+        _message = message;
     }
 
     /// <summary>Gets or sets the error message.</summary>
+    [AllowNull]
     public string Message
     {
-        get => _message;
-        set => _message = value ?? string.Empty;
+        get => _message ?? string.Empty;
+        set => _message = value;
     }
 
     /// <summary>Gets or sets an error code associated with the error.</summary>
