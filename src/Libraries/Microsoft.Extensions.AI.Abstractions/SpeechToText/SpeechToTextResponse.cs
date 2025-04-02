@@ -67,10 +67,10 @@ public class SpeechToTextResponse
     /// This property concatenates the text of all <see cref="TextContent"/> objects in <see cref="Contents"/>.
     /// </remarks>
     [JsonIgnore]
-    public string Text => Contents?.ConcatText() ?? string.Empty;
+    public string Text => _contents?.ConcatText() ?? string.Empty;
 
     /// <inheritdoc />
-    public override string ToString() => Contents.ConcatText();
+    public override string ToString() => Text;
 
     /// <summary>Creates an array of <see cref="SpeechToTextResponseUpdate" /> instances that represent this <see cref="SpeechToTextResponse" />.</summary>
     /// <returns>An array of <see cref="SpeechToTextResponseUpdate" /> instances that may be used to represent this <see cref="SpeechToTextResponse" />.</returns>

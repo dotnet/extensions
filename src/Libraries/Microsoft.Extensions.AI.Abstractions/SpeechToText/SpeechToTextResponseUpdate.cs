@@ -87,7 +87,7 @@ public class SpeechToTextResponseUpdate
     /// This property concatenates the text of all <see cref="TextContent"/> objects in <see cref="Contents"/>.
     /// </remarks>
     [JsonIgnore]
-    public string Text => Contents?.ConcatText() ?? string.Empty;
+    public string Text => _contents?.ConcatText() ?? string.Empty;
 
     /// <summary>Gets or sets the generated content items.</summary>
     [AllowNull]
@@ -98,5 +98,5 @@ public class SpeechToTextResponseUpdate
     }
 
     /// <inheritdoc/>
-    public override string ToString() => Contents.ConcatText();
+    public override string ToString() => Text;
 }
