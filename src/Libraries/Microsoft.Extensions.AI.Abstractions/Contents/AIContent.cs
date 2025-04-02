@@ -8,6 +8,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Provides a base class for all content used with AI services.</summary>
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
 [JsonDerivedType(typeof(DataContent), typeDiscriminator: "data")]
+[JsonDerivedType(typeof(ErrorContent), typeDiscriminator: "error")]
 [JsonDerivedType(typeof(FunctionCallContent), typeDiscriminator: "functionCall")]
 [JsonDerivedType(typeof(FunctionResultContent), typeDiscriminator: "functionResult")]
 [JsonDerivedType(typeof(TextContent), typeDiscriminator: "text")]

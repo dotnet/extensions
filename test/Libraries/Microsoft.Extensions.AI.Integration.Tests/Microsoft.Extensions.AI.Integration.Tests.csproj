@@ -7,6 +7,7 @@
 
   <PropertyGroup>
     <NoWarn>$(NoWarn);CA1063;CA1861;SA1130;VSTHRD003</NoWarn>
+    <NoWarn>$(NoWarn);MEAI001</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
@@ -17,11 +18,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="dotnet.png" />
+    <None Remove="Resources\audio001.mp3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\audio001.mp3">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\dotnet.png" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestChatClient.cs" />
+    <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestSpeechToTextClient.cs" />
   </ItemGroup>
 
   <ItemGroup>

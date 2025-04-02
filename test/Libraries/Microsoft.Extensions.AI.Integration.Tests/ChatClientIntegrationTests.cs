@@ -967,7 +967,9 @@ public abstract class ChatClientIntegrationTests : IDisposable
     [MemberNotNull(nameof(_chatClient))]
     protected void SkipIfNotEnabled()
     {
-        if (_chatClient is null)
+        string? skipIntegration = TestRunnerConfiguration.Instance["SkipIntegrationTests"];
+
+        if (skipIntegration is not null || _chatClient is null)
         {
             throw new SkipTestException("Client is not enabled.");
         }

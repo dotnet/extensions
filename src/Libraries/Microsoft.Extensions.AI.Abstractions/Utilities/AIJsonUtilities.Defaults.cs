@@ -77,6 +77,11 @@ public static partial class AIJsonUtilities
         UseStringEnumConverter = true,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         WriteIndented = true)]
+    [JsonSerializable(typeof(SpeechToTextOptions))]
+    [JsonSerializable(typeof(SpeechToTextClientMetadata))]
+    [JsonSerializable(typeof(SpeechToTextResponse))]
+    [JsonSerializable(typeof(SpeechToTextResponseUpdate))]
+    [JsonSerializable(typeof(IReadOnlyList<SpeechToTextResponseUpdate>))]
     [JsonSerializable(typeof(IList<ChatMessage>))]
     [JsonSerializable(typeof(ChatOptions))]
     [JsonSerializable(typeof(EmbeddingGenerationOptions))]

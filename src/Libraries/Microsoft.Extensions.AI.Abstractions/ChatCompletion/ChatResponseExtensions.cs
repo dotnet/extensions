@@ -180,6 +180,55 @@ public static class ChatResponseExtensions
         }
     }
 
+    /// <summary>Coalesces sequential <see cref="TextContent"/> content elements.</summary>
+    internal static void CoalesceTextContent(List<AIContent> contents)
+    {
+        StringBuilder? coalescedText = null;
+
+        // Iterate through all of the items in the list looking for contiguous items that can be coalesced.
+        int start = 0;
+        while (start < contents.Count - 1)
+        {
+            // We need at least two TextContents in a row to be able to coalesce.
+            if (contents[start] is not TextContent firstText)
+            {
+                start++;
+                continue;
+            }
+
+            if (contents[start + 1] is not TextContent secondText)
+            {
+                start += 2;
+                continue;
+            }
+
+            // Append the text from those nodes and continue appending subsequent TextContents until we run out.
+            // We null out nodes as their text is appended so that we can later remove them all in one O(N) operation.
+            coalescedText ??= new();
+            _ = coalescedText.Clear().Append(firstText.Text).Append(secondText.Text);
+            contents[start + 1] = null!;
+            int i = start + 2;
+            for (; i < contents.Count && contents[i] is TextContent next; i++)
+            {
+                _ = coalescedText.Append(next.Text);
+                contents[i] = null!;
+            }
+
+            // Store the replacement node.
+            contents[start] = new TextContent(coalescedText.ToString())
+            {
+                // We inherit the properties of the first text node. We don't currently propagate additional
+                // properties from the subsequent nodes. If we ever need to, we can add that here.
+                AdditionalProperties = firstText.AdditionalProperties?.Clone(),
+            };
+
+            start = i;
+        }
+
+        // Remove all of the null slots left over from the coalescing process.
+        _ = contents.RemoveAll(u => u is null);
+    }
+
     /// <summary>Finalizes the <paramref name="response"/> object.</summary>
     private static void FinalizeResponse(ChatResponse response)
     {
@@ -295,54 +344,5 @@ public static class ChatResponseExtensions
                 response.AdditionalProperties.SetAll(update.AdditionalProperties);
             }
         }
-    }
-
-    /// <summary>Coalesces sequential <see cref="TextContent"/> content elements.</summary>
-    private static void CoalesceTextContent(List<AIContent> contents)
-    {
-        StringBuilder? coalescedText = null;
-
-        // Iterate through all of the items in the list looking for contiguous items that can be coalesced.
-        int start = 0;
-        while (start < contents.Count - 1)
-        {
-            // We need at least two TextContents in a row to be able to coalesce.
-            if (contents[start] is not TextContent firstText)
-            {
-                start++;
-                continue;
-            }
-
-            if (contents[start + 1] is not TextContent secondText)
-            {
-                start += 2;
-                continue;
-            }
-
-            // Append the text from those nodes and continue appending subsequent TextContents until we run out.
-            // We null out nodes as their text is appended so that we can later remove them all in one O(N) operation.
-            coalescedText ??= new();
-            _ = coalescedText.Clear().Append(firstText.Text).Append(secondText.Text);
-            contents[start + 1] = null!;
-            int i = start + 2;
-            for (; i < contents.Count && contents[i] is TextContent next; i++)
-            {
-                _ = coalescedText.Append(next.Text);
-                contents[i] = null!;
-            }
-
-            // Store the replacement node.
-            contents[start] = new TextContent(coalescedText.ToString())
-            {
-                // We inherit the properties of the first text node. We don't currently propagate additional
-                // properties from the subsequent nodes. If we ever need to, we can add that here.
-                AdditionalProperties = firstText.AdditionalProperties?.Clone(),
-            };
-
-            start = i;
-        }
-
-        // Remove all of the null slots left over from the coalescing process.
-        _ = contents.RemoveAll(u => u is null);
     }
 }
