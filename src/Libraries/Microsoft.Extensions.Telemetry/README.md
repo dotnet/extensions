@@ -48,7 +48,7 @@ The Random Probabilistic Sampler supports the `IOptionsMonitor<T>` pattern, allo
 
 #### Trace-Based Sampling
 
-Matches logging sampling decisions with the underlying [Distributed Tracing sampling decisions](https://learn.microsoft.com/en-us/dotnet/core/diagnostics/distributed-tracing-concepts#sampling):
+Matches logging sampling decisions with the underlying [Distributed Tracing sampling decisions](https://learn.microsoft.com/dotnet/core/diagnostics/distributed-tracing-concepts#sampling):
 
 ```csharp
 // Add trace-based sampler
