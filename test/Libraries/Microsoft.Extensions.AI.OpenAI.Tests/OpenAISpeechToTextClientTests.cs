@@ -9,8 +9,12 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using OpenAI;
 using OpenAI.Audio;
+using OpenAI.Chat;
 using Xunit;
 
 #pragma warning disable S103 // Lines should not be too long
@@ -42,6 +46,25 @@ public class OpenAISpeechToTextClientTests
         Assert.Equal("openai", metadata?.ProviderName);
         Assert.Equal(endpoint, metadata?.ProviderUri);
         Assert.Equal(model, metadata?.DefaultModelId);
+    }
+
+    [Fact]
+    public void GetService_AudioClient_SuccessfullyReturnsUnderlyingClient()
+    {
+        AudioClient audioClient = new OpenAIClient(new ApiKeyCredential("key")).GetAudioClient("model");
+        ISpeechToTextClient speechToTextClient = audioClient.AsISpeechToTextClient();
+        Assert.Same(speechToTextClient, speechToTextClient.GetService<ISpeechToTextClient>());
+        Assert.Same(audioClient, speechToTextClient.GetService<AudioClient>());
+        using var factory = LoggerFactory.Create(b => b.AddFakeLogging());
+        using ISpeechToTextClient pipeline = speechToTextClient
+            .AsBuilder()
+            .UseLogging(factory)
+            .Build();
+
+        Assert.NotNull(pipeline.GetService<LoggingSpeechToTextClient>());
+
+        Assert.Same(audioClient, pipeline.GetService<AudioClient>());
+        Assert.IsType<LoggingSpeechToTextClient>(pipeline.GetService<ISpeechToTextClient>());
     }
 
     [Theory]
