@@ -1,9 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -28,20 +28,34 @@ public static class SpeechToTextResponseUpdateExtensions
         List<AIContent> contents = [];
         string? responseId = null;
         string? modelId = null;
-        object? rawRepresentation = null;
+        List<object?>? rawRepresentations = null;
         AdditionalPropertiesDictionary? additionalProperties = null;
 
+        TimeSpan? endTime = null;
         foreach (var update in updates)
         {
-            ProcessUpdate(update, contents, ref responseId, ref modelId, ref rawRepresentation, ref additionalProperties);
+            // Track the first start time provided by the updates
+            response.StartTime ??= update.StartTime;
+
+            // Track the last end time provided by the updates
+            if (update.EndTime is not null)
+            {
+                endTime = update.EndTime;
+            }
+
+            // Add the list of the all raw representation updates
+            rawRepresentations ??= [];
+            rawRepresentations.Add(update.RawRepresentation);
+
+            ProcessUpdate(update, contents, ref responseId, ref modelId, ref additionalProperties);
         }
 
         ChatResponseExtensions.CoalesceTextContent(contents);
-
+        response.EndTime = endTime;
         response.Contents = contents;
         response.ResponseId = responseId;
         response.ModelId = modelId;
-        response.RawRepresentation = rawRepresentation;
+        response.RawRepresentation = rawRepresentations;
         response.AdditionalProperties = additionalProperties;
 
         return response;
@@ -65,20 +79,35 @@ public static class SpeechToTextResponseUpdateExtensions
             List<AIContent> contents = [];
             string? responseId = null;
             string? modelId = null;
-            object? rawRepresentation = null;
+            List<object?>? rawRepresentations = null;
             AdditionalPropertiesDictionary? additionalProperties = null;
 
+            TimeSpan? endTime = null;
             await foreach (var update in updates.WithCancellation(cancellationToken).ConfigureAwait(false))
             {
-                ProcessUpdate(update, contents, ref responseId, ref modelId, ref rawRepresentation, ref additionalProperties);
+                // Track the first start time provided by the updates
+                response.StartTime ??= update.StartTime;
+
+                // Track the last end time provided by the updates
+                if (update.EndTime is not null)
+                {
+                    endTime = update.EndTime;
+                }
+
+                // Add the list of the all raw representation updates
+                rawRepresentations ??= [];
+                rawRepresentations.Add(update.RawRepresentation);
+
+                ProcessUpdate(update, contents, ref responseId, ref modelId, ref additionalProperties);
             }
 
             ChatResponseExtensions.CoalesceTextContent(contents);
 
+            response.EndTime = endTime;
             response.Contents = contents;
             response.ResponseId = responseId;
             response.ModelId = modelId;
-            response.RawRepresentation = rawRepresentation;
+            response.RawRepresentation = rawRepresentations;
             response.AdditionalProperties = additionalProperties;
 
             return response;
@@ -90,15 +119,12 @@ public static class SpeechToTextResponseUpdateExtensions
     /// <param name="contents">The list of content items being accumulated.</param>
     /// <param name="responseId">The response ID to update if the update has one.</param>
     /// <param name="modelId">The model ID to update if the update has one.</param>
-    /// <param name="rawRepresentation">The raw representation to update if the update has one.</param>
     /// <param name="additionalProperties">The additional properties to update if the update has any.</param>
-#pragma warning disable S4047 // Generics should be used when appropriate
     private static void ProcessUpdate(
         SpeechToTextResponseUpdate update,
         List<AIContent> contents,
         ref string? responseId,
         ref string? modelId,
-        ref object? rawRepresentation,
         ref AdditionalPropertiesDictionary? additionalProperties)
     {
         if (update.ResponseId is not null)
@@ -109,11 +135,6 @@ public static class SpeechToTextResponseUpdateExtensions
         if (update.ModelId is not null)
         {
             modelId = update.ModelId;
-        }
-
-        if (update.RawRepresentation is not null)
-        {
-            rawRepresentation = update.RawRepresentation;
         }
 
         contents.AddRange(update.Contents);
@@ -133,5 +154,4 @@ public static class SpeechToTextResponseUpdateExtensions
             }
         }
     }
-#pragma warning restore S4047 // Generics should be used when appropriate
 }
