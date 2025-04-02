@@ -1,12 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.AI.OpenAI;
 using OpenAI;
 using OpenAI.Audio;
 using Xunit;
@@ -17,6 +19,31 @@ namespace Microsoft.Extensions.AI;
 
 public class OpenAISpeechToTextClientTests
 {
+    [Fact]
+    public void AsISpeechToTextClient_InvalidArgs_Throws()
+    {
+        Assert.Throws<ArgumentNullException>("audioClient", () => ((AudioClient)null!).AsISpeechToTextClient());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AsISpeechToTextClient_AudioClient_ProducesExpectedMetadata(bool useAzureOpenAI)
+    {
+        Uri endpoint = new("http://localhost/some/endpoint");
+        string model = "amazingModel";
+
+        var client = useAzureOpenAI ?
+            new AzureOpenAIClient(endpoint, new ApiKeyCredential("key")) :
+            new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
+
+        ISpeechToTextClient speechToTextClient = client.GetAudioClient(model).AsISpeechToTextClient();
+        var metadata = speechToTextClient.GetService<SpeechToTextClientMetadata>();
+        Assert.Equal("openai", metadata?.ProviderName);
+        Assert.Equal(endpoint, metadata?.ProviderUri);
+        Assert.Equal(model, metadata?.DefaultModelId);
+    }
+
     [Theory]
     [InlineData("pt", null)]
     [InlineData("en", null)]
