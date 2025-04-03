@@ -487,9 +487,7 @@ public static partial class AIFunctionFactory
                 Throw.ArgumentException(nameof(parameter), "Parameter is missing a name.");
             }
 
-            // Resolve the contract used to marshal the value from JSON -- can throw if not supported or not found.
             Type parameterType = parameter.ParameterType;
-            JsonTypeInfo typeInfo = serializerOptions.GetTypeInfo(parameterType);
 
             // For CancellationToken parameters, we always bind to the token passed directly to InvokeAsync.
             if (parameterType == typeof(CancellationToken))
@@ -530,6 +528,8 @@ public static partial class AIFunctionFactory
             }
 
             // For all other parameters, create a marshaller that tries to extract the value from the arguments dictionary.
+            // Resolve the contract used to marshal the value from JSON -- can throw if not supported or not found.
+            JsonTypeInfo typeInfo = serializerOptions.GetTypeInfo(parameterType);
             return (arguments, _) =>
             {
                 // If the parameter has an argument specified in the dictionary, return that argument.
@@ -636,14 +636,22 @@ public static partial class AIFunctionFactory
                 if (returnType.GetGenericTypeDefinition() == typeof(Task<>))
                 {
                     MethodInfo taskResultGetter = GetMethodFromGenericMethodDefinition(returnType, _taskGetResult);
+                    if (marshalResult is not null)
+                    {
+                        return async (taskObj, cancellationToken) =>
+                        {
+                            await ((Task)ThrowIfNullResult(taskObj)).ConfigureAwait(false);
+                            object? result = ReflectionInvoke(taskResultGetter, taskObj, null);
+                            return await marshalResult(result, taskResultGetter.ReturnType, cancellationToken).ConfigureAwait(false);
+                        };
+                    }
+
                     returnTypeInfo = serializerOptions.GetTypeInfo(taskResultGetter.ReturnType);
                     return async (taskObj, cancellationToken) =>
                     {
                         await ((Task)ThrowIfNullResult(taskObj)).ConfigureAwait(false);
                         object? result = ReflectionInvoke(taskResultGetter, taskObj, null);
-                        return marshalResult is not null ?
-                            await marshalResult(result, returnTypeInfo.Type, cancellationToken).ConfigureAwait(false) :
-                            await SerializeResultAsync(result, returnTypeInfo, cancellationToken).ConfigureAwait(false);
+                        return await SerializeResultAsync(result, returnTypeInfo, cancellationToken).ConfigureAwait(false);
                     };
                 }
 
@@ -652,24 +660,37 @@ public static partial class AIFunctionFactory
                 {
                     MethodInfo valueTaskAsTask = GetMethodFromGenericMethodDefinition(returnType, _valueTaskAsTask);
                     MethodInfo asTaskResultGetter = GetMethodFromGenericMethodDefinition(valueTaskAsTask.ReturnType, _taskGetResult);
+
+                    if (marshalResult is not null)
+                    {
+                        return async (taskObj, cancellationToken) =>
+                        {
+                            var task = (Task)ReflectionInvoke(valueTaskAsTask, ThrowIfNullResult(taskObj), null)!;
+                            await task.ConfigureAwait(false);
+                            object? result = ReflectionInvoke(asTaskResultGetter, task, null);
+                            return await marshalResult(result, asTaskResultGetter.ReturnType, cancellationToken).ConfigureAwait(false);
+                        };
+                    }
+
                     returnTypeInfo = serializerOptions.GetTypeInfo(asTaskResultGetter.ReturnType);
                     return async (taskObj, cancellationToken) =>
                     {
                         var task = (Task)ReflectionInvoke(valueTaskAsTask, ThrowIfNullResult(taskObj), null)!;
                         await task.ConfigureAwait(false);
                         object? result = ReflectionInvoke(asTaskResultGetter, task, null);
-                        return marshalResult is not null ?
-                            await marshalResult(result, returnTypeInfo.Type, cancellationToken).ConfigureAwait(false) :
-                            await SerializeResultAsync(result, returnTypeInfo, cancellationToken).ConfigureAwait(false);
+                        return await SerializeResultAsync(result, returnTypeInfo, cancellationToken).ConfigureAwait(false);
                     };
                 }
             }
 
             // For everything else, just serialize the result as-is.
+            if (marshalResult is not null)
+            {
+                return (result, cancellationToken) => marshalResult(result, returnType, cancellationToken);
+            }
+
             returnTypeInfo = serializerOptions.GetTypeInfo(returnType);
-            return marshalResult is not null ?
-                (result, cancellationToken) => marshalResult(result, returnTypeInfo.Type, cancellationToken) :
-                (result, cancellationToken) => SerializeResultAsync(result, returnTypeInfo, cancellationToken);
+            return (result, cancellationToken) => SerializeResultAsync(result, returnTypeInfo, cancellationToken);
 
             static async ValueTask<object?> SerializeResultAsync(object? result, JsonTypeInfo returnTypeInfo, CancellationToken cancellationToken)
             {
