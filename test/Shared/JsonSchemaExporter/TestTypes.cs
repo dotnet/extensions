@@ -106,7 +106,7 @@ public static partial class TestTypes
         yield return new TestData<JsonNode>(JsonNode.Parse("""[{ "x" : 42 }]"""), "true");
         yield return new TestData<JsonValue>((JsonValue)42, "true");
         yield return new TestData<JsonObject>(new() { ["x"] = 42 }, """{"type":["object","null"]}""");
-        yield return new TestData<JsonArray>([1, 2, 3], """{"type":["array","null"]}""");
+        yield return new TestData<JsonArray>([(JsonNode)1, (JsonNode)2, (JsonNode)3], """{"type":["array","null"]}""");
 
         // Enum types
         yield return new TestData<IntEnum>(IntEnum.A, """{"type":"integer"}""");

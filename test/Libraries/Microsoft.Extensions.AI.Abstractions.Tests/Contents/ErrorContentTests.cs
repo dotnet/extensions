@@ -51,7 +51,7 @@ public class ErrorContentTests
             ErrorCode = "ERR001",
             Details = "Something went wrong"
         };
-        var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+        JsonSerializerOptions options = new(AIJsonUtilities.DefaultOptions) { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
         // Act
         var json = JsonSerializer.Serialize(errorContent, options);
