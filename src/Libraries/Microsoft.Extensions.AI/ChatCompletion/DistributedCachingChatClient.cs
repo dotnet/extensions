@@ -97,21 +97,24 @@ public class DistributedCachingChatClient : CachingChatClient
     }
 
     /// <summary>Computes a cache key for the specified values.</summary>
-    /// <param name="values">The values to inform the key.</param>
+    /// <param name="messages">The messages to inform the key.</param>
+    /// <param name="options">The <see cref="ChatOptions"/> to inform the key.</param>
+    /// <param name="additionalValues">Any other values to inform the key.</param>
     /// <returns>The computed key.</returns>
     /// <remarks>
     /// <para>
-    /// The <paramref name="values"/> are serialized to JSON using <see cref="JsonSerializerOptions"/> in order to compute the key.
+    /// The <paramref name="messages"/>, <paramref name="options"/>, and <paramref name="additionalValues"/> are serialized to JSON using <see cref="JsonSerializerOptions"/>
+    /// in order to compute the key.
     /// </para>
     /// <para>
     /// The generated cache key is not guaranteed to be stable across releases of the library.
     /// </para>
     /// </remarks>
-    protected override string GetCacheKey(params ReadOnlySpan<object?> values)
+    protected override string GetCacheKey(IEnumerable<ChatMessage> messages, ChatOptions? options, params ReadOnlySpan<object?> additionalValues)
     {
         // Bump the cache version to invalidate existing caches if the serialization format changes in a breaking way.
         const int CacheVersion = 1;
 
-        return AIJsonUtilities.HashDataToString([CacheVersion, .. values], _jsonSerializerOptions);
+        return AIJsonUtilities.HashDataToString([CacheVersion, messages, options, .. additionalValues], _jsonSerializerOptions);
     }
 }
