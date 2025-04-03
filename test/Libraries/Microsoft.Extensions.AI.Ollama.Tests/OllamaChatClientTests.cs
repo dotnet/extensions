@@ -65,7 +65,7 @@ public class OllamaChatClientTests
     }
 
     [Fact]
-    public void AsChatClient_ProducesExpectedMetadata()
+    public void Ctor_ProducesExpectedMetadata()
     {
         Uri endpoint = new("http://localhost/some/endpoint");
         string model = "amazingModel";

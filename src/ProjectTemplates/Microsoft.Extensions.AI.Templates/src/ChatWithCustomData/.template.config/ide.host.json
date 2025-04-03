@@ -15,6 +15,10 @@
     {
       "id": "VectorStore",
       "isVisible": true
+    },
+    {
+      "id": "UseAspire",
+      "isVisible": true
     }
   ]
 }

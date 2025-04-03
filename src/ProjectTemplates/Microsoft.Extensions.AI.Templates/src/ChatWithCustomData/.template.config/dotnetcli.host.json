@@ -1,10 +1,44 @@
 {
   "$schema": "https://json.schemastore.org/dotnetcli.host",
   "symbolInfo": {
-    "kestrelHttpPort": {
+    "AiServiceProvider": {
+      "longName": "provider",
+      "shortName": ""
+    },
+    "VectorStore": {
+      "longName": "vector-store",
+      "shortName": ""
+    },
+    "UseManagedIdentity": {
+      "longName": "managed-identity",
+      "shortName": ""
+    },
+    "UseAspire": {
+      "longName": "aspire",
+      "shortName": ""
+    },
+    "webHttpPort": {
       "isHidden": true
     },
-    "kestrelHttpsPort": {
+    "webHttpsPort": {
+      "isHidden": true
+    },
+    "appHostHttpPort": {
+      "isHidden": true
+    },
+    "appHostOtlpHttpPort": {
+      "isHidden": true
+    },
+    "appHostResourceHttpPort": {
+      "isHidden": true
+    },
+    "appHostHttpsPort": {
+      "isHidden": true
+    },
+    "appHostOtlpHttpsPort": {
+      "isHidden": true
+    },
+    "appHostResourceHttpsPort": {
       "isHidden": true
     }
   },
