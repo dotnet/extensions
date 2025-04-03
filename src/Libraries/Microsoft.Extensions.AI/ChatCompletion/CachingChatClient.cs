@@ -53,7 +53,7 @@ public abstract class CachingChatClient : DelegatingChatClient
         // We're only storing the final result, not the in-flight task, so that we can avoid caching failures
         // or having problems when one of the callers cancels but others don't. This has the drawback that
         // concurrent callers might trigger duplicate requests, but that's acceptable.
-        var cacheKey = GetCacheKey(_boxedFalse, messages, options);
+        var cacheKey = GetCacheKey(messages, options, _boxedFalse);
 
         if (await ReadCacheAsync(cacheKey, cancellationToken).ConfigureAwait(false) is not { } result)
         {
@@ -76,7 +76,7 @@ public abstract class CachingChatClient : DelegatingChatClient
             // we make a streaming request, yielding those results, but then convert those into a non-streaming
             // result and cache it. When we get a cache hit, we yield the non-streaming result as a streaming one.
 
-            var cacheKey = GetCacheKey(_boxedTrue, messages, options);
+            var cacheKey = GetCacheKey(messages, options, _boxedTrue);
             if (await ReadCacheAsync(cacheKey, cancellationToken).ConfigureAwait(false) is { } chatResponse)
             {
                 // Yield all of the cached items.
@@ -101,7 +101,7 @@ public abstract class CachingChatClient : DelegatingChatClient
         }
         else
         {
-            var cacheKey = GetCacheKey(_boxedTrue, messages, options);
+            var cacheKey = GetCacheKey(messages, options, _boxedTrue);
             if (await ReadCacheStreamingAsync(cacheKey, cancellationToken).ConfigureAwait(false) is { } existingChunks)
             {
                 // Yield all of the cached items.
@@ -129,9 +129,11 @@ public abstract class CachingChatClient : DelegatingChatClient
     }
 
     /// <summary>Computes a cache key for the specified values.</summary>
-    /// <param name="values">The values to inform the key.</param>
+    /// <param name="messages">The messages to inform the key.</param>
+    /// <param name="options">The <see cref="ChatOptions"/> to inform the key.</param>
+    /// <param name="additionalValues">Any other values to inform the key.</param>
     /// <returns>The computed key.</returns>
-    protected abstract string GetCacheKey(params ReadOnlySpan<object?> values);
+    protected abstract string GetCacheKey(IEnumerable<ChatMessage> messages, ChatOptions? options, params ReadOnlySpan<object?> additionalValues);
 
     /// <summary>
     /// Returns a previously cached <see cref="ChatResponse"/>, if available.
