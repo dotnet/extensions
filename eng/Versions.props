@@ -12,6 +12,15 @@
         When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages
     -->
     <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">true</StabilizePackageVersion>
+
+    <!--
+        When DotNetFinalVersionKind is set to 'release' (only for the release branches),
+        the build will produce stable outputs for 'Shipping' packages.
+
+        This is used by the Arcade SDK (Publish.proj) to determine if the build is a release build or not.
+      -->
+    <DotNetFinalVersionKind>release</DotNetFinalVersionKind>
+
     <!-- Enabling this rule will cause build failures on undocumented public APIs. -->
     <SkipArcadeNoWarnCS1591>true</SkipArcadeNoWarnCS1591>
   </PropertyGroup>
