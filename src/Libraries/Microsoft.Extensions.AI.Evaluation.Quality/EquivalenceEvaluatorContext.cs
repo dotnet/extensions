@@ -9,7 +9,8 @@
 namespace Microsoft.Extensions.AI.Evaluation.Quality;
 
 /// <summary>
-/// Contextual information required to evaluate the 'Equivalence' of a response.
+/// Contextual information that the <see cref="EquivalenceEvaluator"/> uses to evaluate the 'Equivalence' of a
+/// response.
 /// </summary>
 /// <param name="groundTruth">
 /// The ground truth response against which the response that is being evaluated is compared.

@@ -83,7 +83,10 @@ type BaseEvaluationMetric = {
     $type: string;
     name: string;
     interpretation?: EvaluationMetricInterpretation;
-    diagnostics: EvaluationDiagnostic[];
+    diagnostics?: EvaluationDiagnostic[];
+    metadata: { 
+        [K: string]: string 
+    };
 };
 
 type MetricWithNoValue = BaseEvaluationMetric & {
