@@ -13,14 +13,15 @@ namespace Microsoft.Extensions.AI.Evaluation.Reporting;
 /// </summary>
 public sealed class ChatDetails
 {
-    /// <summary>
-    /// Gets or sets the <see cref="ChatTurnDetails"/> for the LLM chat conversation turns recorded in this
-    /// <see cref="ChatDetails"/> object.
-    /// </summary>
 #pragma warning disable CA2227
     // CA2227: Collection properties should be read only.
     // We disable this warning because we want this type to be fully mutable for serialization purposes and for general
     // convenience.
+
+    /// <summary>
+    /// Gets or sets the <see cref="ChatTurnDetails"/> for the LLM chat conversation turns recorded in this
+    /// <see cref="ChatDetails"/> object.
+    /// </summary>
     public IList<ChatTurnDetails> TurnDetails { get; set; }
 #pragma warning restore CA2227
 
@@ -57,14 +58,4 @@ public sealed class ChatDetails
         : this(turnDetails as IEnumerable<ChatTurnDetails>)
     {
     }
-
-    /// <summary>
-    /// Adds <see cref="ChatTurnDetails"/> for a particular LLM chat conversation turn to the <see cref="TurnDetails"/>
-    /// collection.
-    /// </summary>
-    /// <param name="turnDetails">
-    /// The <see cref="ChatTurnDetails"/> for a particular LLM chat conversation turn.
-    /// </param>
-    public void AddTurnDetails(ChatTurnDetails turnDetails)
-        => TurnDetails.Add(turnDetails);
 }

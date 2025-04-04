@@ -18,10 +18,11 @@ internal static class Setup
     {
         var endpoint = new Uri(Settings.Current.Endpoint);
         AzureOpenAIClientOptions options = new();
+        var credential = new ChainedTokenCredential(new AzureCliCredential(), new DefaultAzureCredential());
         AzureOpenAIClient azureClient =
             OfflineOnly
                 ? new AzureOpenAIClient(endpoint, new ApiKeyCredential("Bogus"), options)
-                : new AzureOpenAIClient(endpoint, new DefaultAzureCredential(), options);
+                : new AzureOpenAIClient(endpoint, credential, options);
 
         IChatClient chatClient = azureClient.GetChatClient(Settings.Current.DeploymentName).AsIChatClient();
         Tokenizer tokenizer = TiktokenTokenizer.CreateForModel(Settings.Current.ModelName);

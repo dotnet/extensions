@@ -42,7 +42,7 @@ const useCardStyles = makeStyles({
         padding: '.75rem', 
         border: `1px solid ${tokens.colorNeutralStroke2}`,
         borderRadius: '4px',
-        width: '8rem',
+        width: '12.5rem',
         cursor: 'pointer',
         transition: 'box-shadow 0.2s ease-in-out, outline 0.2s ease-in-out',
         position: 'relative',
@@ -163,7 +163,7 @@ const getMetricDisplayValue = (metric: MetricType): string => {
         case "boolean":
             return !metric || metric.value === undefined || metric.value === null ? 
                 '??' :
-                metric.value ? 'Pass' : 'Fail';
+                metric.value ? 'Yes' : 'No';
         case "numeric":
             return metric?.value?.toString() ?? "??";
         case "none":
@@ -188,9 +188,9 @@ export const MetricCard = ({
     const { fg, bg } = useCardColors(metric.interpretation);
     
     const hasReasons = metric.reason != null || metric.interpretation?.reason != null;
-    const hasInformationalMessages = metric.diagnostics.some((d: EvaluationDiagnostic) => d.severity == "informational");
-    const hasWarningMessages = metric.diagnostics.some((d: EvaluationDiagnostic) => d.severity == "warning");
-    const hasErrorMessages = metric.diagnostics.some((d: EvaluationDiagnostic) => d.severity == "error");
+    const hasInformationalMessages = metric.diagnostics && metric.diagnostics.some((d: EvaluationDiagnostic) => d.severity == "informational");
+    const hasWarningMessages = metric.diagnostics && metric.diagnostics.some((d: EvaluationDiagnostic) => d.severity == "warning");
+    const hasErrorMessages = metric.diagnostics && metric.diagnostics.some((d: EvaluationDiagnostic) => d.severity == "error");
     
     const cardClass = mergeClasses(
         bg, 
