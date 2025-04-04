@@ -28,6 +28,12 @@ using Microsoft.Extensions.Time.Testing;
 using Microsoft.Net.Http.Headers;
 using Microsoft.Shared.Text;
 using Xunit;
+#if NET9_0_OR_GREATER
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using Microsoft.Extensions.Diagnostics.Buffering;
+#endif
 
 namespace Microsoft.AspNetCore.Diagnostics.Logging.Test;
 
@@ -54,7 +60,45 @@ public partial class AcceptanceTests
         {
             app.UseRouting();
             app.UseHttpLogging();
+#if NET9_0_OR_GREATER
+            app.Map("/logatrequest", static x =>
+                x.Run(static async context =>
+                {
+                    await context.Request.Body.DrainAsync(CancellationToken.None);
 
+                    // normally, this would be a Middleware and HttpRequestLogBuffer would be injected via constructor
+                    ILoggerFactory loggerFactory = context.RequestServices.GetRequiredService<ILoggerFactory>();
+                    ILogger logger = loggerFactory.CreateLogger("logatrequest");
+
+                    logger.LogInformation("Log Information from Request");
+
+                    var hugeState = new List<KeyValuePair<string, object?>>
+                    {
+                        new("test", Enumerable.Repeat("test", 10000).ToArray())
+                    };
+                    logger.LogTrace($"Log Trace from Request, {hugeState}");
+                }));
+
+            app.Map("/flushrequestlogs", static x =>
+                x.Run(static async context =>
+                {
+                    await context.Request.Body.DrainAsync(CancellationToken.None);
+
+                    // normally, this would be a Middleware and HttpRequestLogBuffer would be injected via constructor
+                    var bufferManager = context.RequestServices.GetService<PerRequestLogBuffer>();
+                    bufferManager?.Flush();
+                }));
+
+            app.Map("/flushalllogs", static x =>
+                x.Run(static async context =>
+                {
+                    await context.Request.Body.DrainAsync(CancellationToken.None);
+
+                    // normally, this would be a Middleware and HttpRequestLogBuffer would be injected via constructor
+                    var bufferManager = context.RequestServices.GetService<PerRequestLogBuffer>();
+                    bufferManager?.Flush();
+                }));
+#endif
             app.Map("/error", static x =>
                 x.Run(static async context =>
                 {
@@ -755,7 +799,160 @@ public partial class AcceptanceTests
                 }
             });
     }
+#if NET9_0_OR_GREATER
+    [Fact]
+    public async Task HttpRequestBuffering()
+    {
+        await RunAsync<TestStartup>(
+            LogLevel.Trace,
+            services => services
+            .AddLogging(builder =>
+            {
+                // enable Microsoft.AspNetCore.Routing.Matching.DfaMatcher debug logs
+                // which are produced by ASP.NET Core within HTTP context.
+                // This is what is going to be buffered and tested.
+                builder.AddFilter("Microsoft.AspNetCore.Routing.Matching.DfaMatcher", LogLevel.Debug);
 
+                // Disable logs from HTTP logging middleware, otherwise even though they are not buffered,
+                // they will be logged as usual and contaminate test results:
+                builder.AddFilter("Microsoft.AspNetCore.HttpLogging", LogLevel.None);
+
+                builder.AddPerIncomingRequestBuffer(LogLevel.Debug);
+            }),
+            async (logCollector, client, sp) =>
+            {
+                // just HTTP request logs:
+                using HttpResponseMessage response = await client.GetAsync("/flushrequestlogs").ConfigureAwait(false);
+                Assert.True(response.IsSuccessStatusCode);
+                await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout);
+                Assert.Equal(1, logCollector.Count);
+                Assert.Equal(LogLevel.Debug, logCollector.LatestRecord.Level);
+                Assert.Equal("Microsoft.AspNetCore.Routing.Matching.DfaMatcher", logCollector.LatestRecord.Category);
+
+                // HTTP request logs + global logs:
+                using var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+                ILogger logger = loggerFactory.CreateLogger("test");
+                logger.LogTrace("This is a log message");
+                using HttpResponseMessage response2 = await client.GetAsync("/flushalllogs").ConfigureAwait(false);
+                Assert.True(response2.IsSuccessStatusCode);
+                await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout);
+
+                // 1st and 2nd log records are from DfaMatcher, and 3rd is from our test category
+                Assert.Equal(3, logCollector.Count);
+                Assert.Equal(LogLevel.Trace, logCollector.LatestRecord.Level);
+                Assert.Equal("test", logCollector.LatestRecord.Category);
+            });
+    }
+
+    [Fact]
+    public async Task HttpRequestBuffering_RespectsAutoFlush()
+    {
+        await RunAsync<TestStartup>(
+            LogLevel.Trace,
+            services => services
+            .AddLogging(builder =>
+            {
+                // enable Microsoft.AspNetCore.Routing.Matching.DfaMatcher debug logs
+                // which are produced by ASP.NET Core within HTTP context.
+                // This is what is going to be buffered and tested.
+                builder.AddFilter("Microsoft.AspNetCore.Routing.Matching.DfaMatcher", LogLevel.Debug);
+
+                // Disable logs from HTTP logging middleware, otherwise even though they are not buffered,
+                // they will be logged as usual and contaminate test results:
+                builder.AddFilter("Microsoft.AspNetCore.HttpLogging", LogLevel.None);
+
+                builder.AddPerIncomingRequestBuffer(options =>
+                {
+                    options.AutoFlushDuration = TimeSpan.FromMinutes(30);
+                    options.Rules.Add(new LogBufferingFilterRule(logLevel: LogLevel.Debug));
+                });
+
+                builder.Services.Configure<GlobalLogBufferingOptions>(options =>
+                {
+                    options.AutoFlushDuration = TimeSpan.FromMinutes(30);
+                });
+            }),
+            async (logCollector, client, sp) =>
+            {
+                using var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+                ILogger logger = loggerFactory.CreateLogger("test");
+                logger.LogTrace("This is a log message");
+                using HttpResponseMessage response2 = await client.GetAsync("/flushalllogs").ConfigureAwait(false);
+
+                // log again, but since AutoFlushDuration is long enough, the log won't be buffered,
+                // so we don't need to flush() again and expect it to be emitted anyway.
+                logger.LogTrace("This is a log message 2");
+                await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout);
+
+                // 1st log record is from DfaMatcher,
+                // and 2nd 3rd are from our "test" category
+                Assert.Equal(3, logCollector.Count);
+                Assert.Equal(LogLevel.Trace, logCollector.LatestRecord.Level);
+                Assert.Equal("test", logCollector.LatestRecord.Category);
+            });
+    }
+
+    [Fact]
+    public async Task HttpRequestBuffering_DoesNotBufferDisabledOrOversizedLogs()
+    {
+        await RunAsync<TestStartup>(
+            LogLevel.Trace,
+            services => services
+            .AddLogging(builder =>
+            {
+                // enable Microsoft.AspNetCore.Routing.Matching.DfaMatcher debug logs
+                // which are produced by ASP.NET Core within HTTP context.
+                // This is what is going to be buffered and tested.
+                builder.AddFilter("Microsoft.AspNetCore.Routing.Matching.DfaMatcher", LogLevel.Debug);
+
+                // Disable logs from HTTP logging middleware, otherwise even though they are not buffered,
+                // they will be logged as usual and contaminate test results:
+                builder.AddFilter("Microsoft.AspNetCore.HttpLogging", LogLevel.None);
+
+                builder.AddPerIncomingRequestBuffer(options =>
+                {
+                    options.AutoFlushDuration = TimeSpan.Zero;
+                    options.MaxLogRecordSizeInBytes = 500;
+                    options.Rules.Add(new LogBufferingFilterRule(logLevel: LogLevel.Debug));
+                    options.Rules.Add(new LogBufferingFilterRule(logLevel: LogLevel.Debug, categoryName: "logatrequest"));
+                });
+
+                builder.Services.Configure<GlobalLogBufferingOptions>(options =>
+                {
+                    options.AutoFlushDuration = TimeSpan.Zero;
+                    options.MaxLogRecordSizeInBytes = 500;
+                });
+            }),
+            async (logCollector, client, sp) =>
+            {
+                using var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+                ILogger logger = loggerFactory.CreateLogger("test");
+                logger.LogTrace("This is a log message");
+                using HttpResponseMessage response2 = await client.GetAsync("/flushalllogs").ConfigureAwait(false);
+                using HttpResponseMessage response3 = await client.GetAsync("/logatrequest").ConfigureAwait(false);
+
+                // log again, Information log buffering is not enabled,
+                // so we don't need to flush() again and expect it to be emitted anyway.
+                logger.LogInformation("This is a log message 2");
+
+                // log again, but this log size is too big to be buffered,
+                // so we don't need to flush() again and expect it to be emitted anyway.
+                var hugeState = new List<KeyValuePair<string, object?>>
+                {
+                    new("test", Enumerable.Repeat("test", 10000).ToArray())
+                };
+                logger.LogTrace($"This is a  huge log message 3, {hugeState}");
+                await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout);
+
+                // 1st log record is from DfaMatcher,
+                // 2, 3, 4th are from our "test" category
+                // and 5 and 6th are logs from the /logatrequest endpoint
+                Assert.Equal(6, logCollector.Count);
+                Assert.Equal(LogLevel.Trace, logCollector.LatestRecord.Level);
+                Assert.Equal("test", logCollector.LatestRecord.Category);
+            });
+    }
+#endif
     [Fact]
     public async Task HttpLogging_LogRecordIsNotCreated_If_Disabled()
     {
