@@ -17,7 +17,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public static class AIJsonUtilitiesTests
+public static partial class AIJsonUtilitiesTests
 {
     [Fact]
     public static void DefaultOptions_HasExpectedConfiguration()
@@ -51,6 +51,18 @@ public static class AIJsonUtilitiesTests
         var options = AIJsonUtilities.DefaultOptions;
         string json = JsonSerializer.Serialize(input, options);
         Assert.Equal($@"""{expectedJsonString}""", json);
+    }
+
+    [Fact]
+    public static void DefaultOptions_UsesReflectionWhenDefault()
+    {
+        // Reflection is only turned off in .NET Core test environments.
+        bool isDotnetCore = Type.GetType("System.Half") is not null;
+        var options = AIJsonUtilities.DefaultOptions;
+        Type anonType = new { Name = 42 }.GetType();
+
+        Assert.Equal(!isDotnetCore, JsonSerializer.IsReflectionEnabledByDefault);
+        Assert.Equal(JsonSerializer.IsReflectionEnabledByDefault, AIJsonUtilities.DefaultOptions.TryGetTypeInfo(anonType, out _));
     }
 
     [Theory]
@@ -145,7 +157,7 @@ public static class AIJsonUtilitiesTests
             }
             """).RootElement;
 
-        JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(MyPoco), serializerOptions: JsonSerializerOptions.Default);
+        JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(MyPoco), serializerOptions: JsonContext.Default.Options);
 
         Assert.True(DeepEquals(expected, actual));
     }
@@ -189,7 +201,7 @@ public static class AIJsonUtilitiesTests
             description: "alternative description",
             hasDefaultValue: true,
             defaultValue: null,
-            serializerOptions: JsonSerializerOptions.Default,
+            serializerOptions: JsonContext.Default.Options,
             inferenceOptions: inferenceOptions);
 
         Assert.True(DeepEquals(expected, actual));
@@ -235,7 +247,7 @@ public static class AIJsonUtilitiesTests
             }
         };
 
-        JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(MyPoco), serializerOptions: JsonSerializerOptions.Default, inferenceOptions: inferenceOptions);
+        JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(MyPoco), serializerOptions: JsonContext.Default.Options, inferenceOptions: inferenceOptions);
 
         Assert.True(DeepEquals(expected, actual));
     }
@@ -263,7 +275,7 @@ public static class AIJsonUtilitiesTests
             }
             """).RootElement;
 
-        JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(PocoWithTypesWithOpenAIUnsupportedKeywords), serializerOptions: JsonSerializerOptions.Default);
+        JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(PocoWithTypesWithOpenAIUnsupportedKeywords), serializerOptions: JsonContext.Default.Options);
 
         Assert.True(DeepEquals(expected, actual));
     }
@@ -283,7 +295,7 @@ public static class AIJsonUtilitiesTests
     [Fact]
     public static void CreateFunctionJsonSchema_ReturnsExpectedValue()
     {
-        JsonSerializerOptions options = new(JsonSerializerOptions.Default);
+        JsonSerializerOptions options = new(AIJsonUtilities.DefaultOptions);
         AIFunction func = AIFunctionFactory.Create((int x, int y) => x + y, serializerOptions: options);
 
         Assert.NotNull(func.UnderlyingMethod);
@@ -295,7 +307,7 @@ public static class AIJsonUtilitiesTests
     [Fact]
     public static void CreateFunctionJsonSchema_TreatsIntegralTypesAsInteger_EvenWithAllowReadingFromString()
     {
-        JsonSerializerOptions options = new(JsonSerializerOptions.Default) { NumberHandling = JsonNumberHandling.AllowReadingFromString };
+        JsonSerializerOptions options = new(AIJsonUtilities.DefaultOptions) { NumberHandling = JsonNumberHandling.AllowReadingFromString };
         AIFunction func = AIFunctionFactory.Create((int a, int? b, long c, short d, float e, double f, decimal g) => { }, serializerOptions: options);
 
         JsonElement schemaParameters = func.JsonSchema.GetProperty("properties");
@@ -376,7 +388,11 @@ public static class AIJsonUtilitiesTests
     [Fact]
     public static void AddAIContentType_DerivedAIContent()
     {
-        JsonSerializerOptions options = new();
+        JsonSerializerOptions options = new()
+        {
+            TypeInfoResolver = JsonTypeInfoResolver.Combine(AIJsonUtilities.DefaultOptions.TypeInfoResolver, JsonContext.Default),
+        };
+
         options.AddAIContentType<DerivedAIContent>("derivativeContent");
 
         AIContent c = new DerivedAIContent { DerivedValue = 42 };
@@ -465,7 +481,7 @@ public static class AIJsonUtilitiesTests
             {
                 names.Add(p.Name);
                 return p.Name is "first" or "fifth";
-            }
+            },
         });
 
         Assert.Equal(["first", "second", "third", "fifth"], names);
@@ -483,14 +499,19 @@ public static class AIJsonUtilitiesTests
         public int DerivedValue { get; set; }
     }
 
+    [JsonSerializable(typeof(DerivedAIContent))]
+    [JsonSerializable(typeof(MyPoco))]
+    [JsonSerializable(typeof(PocoWithTypesWithOpenAIUnsupportedKeywords))]
+    private partial class JsonContext : JsonSerializerContext;
+
     private static bool DeepEquals(JsonElement element1, JsonElement element2)
     {
 #if NET9_0_OR_GREATER
         return JsonElement.DeepEquals(element1, element2);
 #else
         return JsonNode.DeepEquals(
-            JsonSerializer.SerializeToNode(element1),
-            JsonSerializer.SerializeToNode(element2));
+            JsonSerializer.SerializeToNode(element1, AIJsonUtilities.DefaultOptions),
+            JsonSerializer.SerializeToNode(element2, AIJsonUtilities.DefaultOptions));
 #endif
     }
 }

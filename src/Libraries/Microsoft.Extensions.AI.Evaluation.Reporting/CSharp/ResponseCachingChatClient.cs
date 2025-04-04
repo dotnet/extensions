@@ -125,6 +125,6 @@ internal sealed class ResponseCachingChatClient : DistributedCachingChatClient
         }
     }
 
-    protected override string GetCacheKey(params ReadOnlySpan<object?> values)
-        => base.GetCacheKey([.. values, .. _cachingKeys]);
+    protected override string GetCacheKey(IEnumerable<ChatMessage> messages, ChatOptions? options, params ReadOnlySpan<object?> additionalValues)
+        => base.GetCacheKey(messages, options, [.. additionalValues, .. _cachingKeys]);
 }
