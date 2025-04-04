@@ -2,11 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Telemetry.Metrics;
 
@@ -28,17 +25,29 @@ namespace Microsoft.Extensions.Telemetry.Metrics;
 [Conditional("CODE_GENERATION_ATTRIBUTES")]
 public sealed class CommonTagAttribute : Attribute
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CommonTagAttribute"/> class.
+    /// </summary>
+    /// <param name="tagName">Tag name.</param>
+    /// <param name="tagValue">Tag value.</param>
     public CommonTagAttribute(string tagName, string tagValue)
     {
         if (string.IsNullOrEmpty(tagName))
         {
-            throw new ArgumentException("tagName name cannot be null or empty.", nameof(tagName));
+            Throw.ArgumentException(nameof(tagName), "tagName name cannot be null or empty.");
         }
 
-        this.TagName = tagName;
-        this.TagValue = tagValue;
+        TagName = tagName;
+        TagValue = tagValue;
     }
 
+    /// <summary>
+    /// Gets the metric's tag name.
+    /// </summary>
     public string TagName { get; }
+
+    /// <summary>
+    /// Gets the metric's tag value.
+    /// </summary>
     public string TagValue { get; }
 }

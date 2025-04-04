@@ -146,7 +146,6 @@ internal sealed class Emitter : EmitterBase
     }
 
     private void GenInstrumentClass(MetricMethod metricMethod, List<KeyValuePair<string, string>>? commonTags)
-
     {
         const string CounterObjectName = "counter";
         const string HistogramObjectName = "histogram";
@@ -183,7 +182,6 @@ internal sealed class Emitter : EmitterBase
         var tagListInit = metricMethod.TagKeys.Count != 0 ||
                           metricMethod.StrongTypeConfigs.Count != 0 ||
                           (commonTags != null && commonTags.Count != 0);
-
 
         var accessModifier = metricMethod.MetricTypeModifiers.Contains("public")
             ? "public"
