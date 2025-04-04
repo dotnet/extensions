@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { useState } from 'react';
-import { Settings28Regular, FilterDismissRegular, Dismiss20Regular } from '@fluentui/react-icons';
-import { Drawer, DrawerBody, DrawerHeader, DrawerHeaderTitle, Switch, Tooltip } from '@fluentui/react-components';
+import { Settings28Regular, FilterDismissRegular, Dismiss20Regular, ArrowDownloadRegular } from '@fluentui/react-icons';
+import { Button, Drawer, DrawerBody, DrawerHeader, DrawerHeaderTitle, Switch, Tooltip } from '@fluentui/react-components';
 import { makeStyles } from '@fluentui/react-components';
 import './App.css';
 import { ScenarioGroup } from './ScenarioTree';
@@ -34,30 +34,6 @@ const useStyles = makeStyles({
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
-  },
-  iconButton: {
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '40px',
-    height: '40px',
-    borderRadius: '6px',
-    transition: 'all 0.2s ease-in-out',
-    '&:hover': {
-      backgroundColor: tokens.colorNeutralBackground4,
-    },
-  },
-  filterButton: {
-    backgroundColor: tokens.colorBrandBackground2,
-    border: `1px solid ${tokens.colorBrandStroke1}`,
-    fontSize: '20px',
-    width: '40px',
-    height: '40px',
-    borderRadius: '6px',
-    '&:hover': {
-      backgroundColor: tokens.colorNeutralBackground4,
-    },
   },
   footerText: { fontSize: '0.8rem', marginTop: '2rem' },
   closeButton: {
@@ -90,6 +66,22 @@ function App() {
   const toggleSettings = () => setIsSettingsOpen(!isSettingsOpen);
   const closeSettings = () => setIsSettingsOpen(false);
 
+  const downloadDataset = () => {
+    // create a stringified JSON of the dataset
+    const dataStr = JSON.stringify(dataset, null, 2);
+
+    // create a link to download the JSON file in the page and click it
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${scoreSummary.primaryResult.executionName}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <>
       <div className={classes.header}>
@@ -98,15 +90,14 @@ function App() {
           <div className={classes.headerActions}>
             {selectedTags.length > 0 && (
               <Tooltip content="Clear Filters" relationship="description">
-                <div className={`${classes.iconButton} ${classes.filterButton}`} onClick={clearFilters}>
-                  <FilterDismissRegular />
-                </div>
+                <Button icon={<FilterDismissRegular />} appearance="subtle" onClick={clearFilters} />
               </Tooltip>
             )}
+            <Tooltip content="Download Data as JSON" relationship="description">
+              <Button icon={<ArrowDownloadRegular />} appearance="subtle" onClick={downloadDataset} />
+            </Tooltip>
             <Tooltip content="Settings" relationship="description">
-              <div className={classes.iconButton} onClick={toggleSettings}>
-                <Settings28Regular />
-              </div>
+              <Button icon={<Settings28Regular />} appearance="subtle" onClick={toggleSettings} />
             </Tooltip>
           </div>
         </div>

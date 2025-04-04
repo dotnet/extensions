@@ -801,18 +801,10 @@ public class DistributedCachingChatClientTest
     private sealed class CachingChatClientWithCustomKey(IChatClient innerClient, IDistributedCache storage)
         : DistributedCachingChatClient(innerClient, storage)
     {
-        protected override string GetCacheKey(params ReadOnlySpan<object?> values)
+        protected override string GetCacheKey(IEnumerable<ChatMessage> messages, ChatOptions? options, params ReadOnlySpan<object?> additionalValues)
         {
-            var baseKey = base.GetCacheKey(values);
-            foreach (var value in values)
-            {
-                if (value is ChatOptions options)
-                {
-                    return baseKey + options.AdditionalProperties?["someKey"]?.ToString();
-                }
-            }
-
-            return baseKey;
+            var baseKey = base.GetCacheKey(messages, options, additionalValues);
+            return baseKey + options?.AdditionalProperties?["someKey"]?.ToString();
         }
     }
 
