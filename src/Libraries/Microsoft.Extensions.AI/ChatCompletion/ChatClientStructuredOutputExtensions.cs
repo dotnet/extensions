@@ -221,7 +221,7 @@ public static class ChatClientStructuredOutputExtensions
             messages = [.. messages, promptAugmentation];
         }
 
-        var result = await chatClient.GetResponseAsync(messages, options, cancellationToken).ConfigureAwait(false);
+        var result = await chatClient.GetResponseAsync(messages, options, cancellationToken);
         return new ChatResponse<T>(result, serializerOptions) { IsWrappedInObject = isWrappedInObject };
     }
 

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -62,7 +61,7 @@ public partial class LoggingEmbeddingGenerator<TInput, TEmbedding> : DelegatingE
 
         try
         {
-            var embeddings = await base.GenerateAsync(values, options, cancellationToken).ConfigureAwait(false);
+            var embeddings = await base.GenerateAsync(values, options, cancellationToken);
 
             LogCompleted(embeddings.Count);
 

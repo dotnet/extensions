@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Diagnostics;
-using static Microsoft.Extensions.AI.OpenTelemetryConsts.GenAI;
 
 #pragma warning disable CA2213 // Disposable fields should be disposed
 #pragma warning disable EA0002 // Use 'System.TimeProvider' to make the code easier to test
@@ -233,7 +232,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             functionCallContents?.Clear();
 
             // Make the call to the inner client.
-            response = await base.GetResponseAsync(messages, options, cancellationToken).ConfigureAwait(false);
+            response = await base.GetResponseAsync(messages, options, cancellationToken);
             if (response is null)
             {
                 Throw.InvalidOperationException($"The inner {nameof(IChatClient)} returned a null {nameof(ChatResponse)}.");
@@ -279,7 +278,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
             // Add the responses from the function calls into the augmented history and also into the tracked
             // list of response messages.
-            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options!, functionCallContents!, iteration, consecutiveErrorCount, cancellationToken).ConfigureAwait(false);
+            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options!, functionCallContents!, iteration, consecutiveErrorCount, cancellationToken);
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
             consecutiveErrorCount = modeAndMessages.NewConsecutiveErrorCount;
 
@@ -325,7 +324,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             updates.Clear();
             functionCallContents?.Clear();
 
-            await foreach (var update in base.GetStreamingResponseAsync(messages, options, cancellationToken).ConfigureAwait(false))
+            await foreach (var update in base.GetStreamingResponseAsync(messages, options, cancellationToken))
             {
                 if (update is null)
                 {
@@ -356,7 +355,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             FixupHistories(originalMessages, ref messages, ref augmentedHistory, response, responseMessages, ref lastIterationHadThreadId);
 
             // Process all of the functions, adding their results into the history.
-            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options, functionCallContents, iteration, consecutiveErrorCount, cancellationToken).ConfigureAwait(false);
+            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options, functionCallContents, iteration, consecutiveErrorCount, cancellationToken);
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
             consecutiveErrorCount = modeAndMessages.NewConsecutiveErrorCount;
 
@@ -534,7 +533,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         if (functionCallContents.Count == 1)
         {
             FunctionInvocationResult result = await ProcessFunctionCallAsync(
-                messages, options, functionCallContents, iteration, 0, captureCurrentIterationExceptions, cancellationToken).ConfigureAwait(false);
+                messages, options, functionCallContents, iteration, 0, captureCurrentIterationExceptions, cancellationToken);
 
             IList<ChatMessage> added = CreateResponseMessages([result]);
             ThrowIfNoFunctionResultsAdded(added);
@@ -549,13 +548,15 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
             if (AllowConcurrentInvocation)
             {
-                // Schedule the invocation of every function.
-                // In this case we always capture exceptions because the ordering is nondeterministic
+                // Rather than await'ing each function before invoking the next, invoke all of them
+                // and then await all of them. We avoid forcibly introducing parallelism via Task.Run,
+                // but if a function invocation completes asynchronously, its processing can overlap
+                // with the processing of other the other invocation invocations.
                 results = await Task.WhenAll(
                     from i in Enumerable.Range(0, functionCallContents.Count)
-                    select Task.Run(() => ProcessFunctionCallAsync(
+                    select ProcessFunctionCallAsync(
                         messages, options, functionCallContents,
-                        iteration, i, captureExceptions: true, cancellationToken))).ConfigureAwait(false);
+                        iteration, i, captureExceptions: true, cancellationToken));
             }
             else
             {
@@ -565,7 +566,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 {
                     results[i] = await ProcessFunctionCallAsync(
                         messages, options, functionCallContents,
-                        iteration, i, captureCurrentIterationExceptions, cancellationToken).ConfigureAwait(false);
+                        iteration, i, captureCurrentIterationExceptions, cancellationToken);
                 }
             }
 
@@ -663,7 +664,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         object? result;
         try
         {
-            result = await InvokeFunctionAsync(context, cancellationToken).ConfigureAwait(false);
+            result = await InvokeFunctionAsync(context, cancellationToken);
         }
         catch (Exception e) when (!cancellationToken.IsCancellationRequested)
         {
@@ -763,7 +764,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         try
         {
             CurrentContext = context; // doesn't need to be explicitly reset after, as that's handled automatically at async method exit
-            result = await context.Function.InvokeAsync(context.Arguments, cancellationToken).ConfigureAwait(false);
+            result = await context.Function.InvokeAsync(context.Arguments, cancellationToken);
         }
         catch (Exception e)
         {

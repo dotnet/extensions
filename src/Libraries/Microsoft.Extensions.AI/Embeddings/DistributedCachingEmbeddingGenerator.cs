@@ -57,7 +57,7 @@ public class DistributedCachingEmbeddingGenerator<TInput, TEmbedding> : CachingE
         _ = Throw.IfNull(key);
         _jsonSerializerOptions.MakeReadOnly();
 
-        if (await _storage.GetAsync(key, cancellationToken).ConfigureAwait(false) is byte[] existingJson)
+        if (await _storage.GetAsync(key, cancellationToken) is byte[] existingJson)
         {
             return JsonSerializer.Deserialize(existingJson, (JsonTypeInfo<TEmbedding>)_jsonSerializerOptions.GetTypeInfo(typeof(TEmbedding)));
         }
@@ -73,7 +73,7 @@ public class DistributedCachingEmbeddingGenerator<TInput, TEmbedding> : CachingE
         _jsonSerializerOptions.MakeReadOnly();
 
         var newJson = JsonSerializer.SerializeToUtf8Bytes(value, (JsonTypeInfo<TEmbedding>)_jsonSerializerOptions.GetTypeInfo(typeof(TEmbedding)));
-        await _storage.SetAsync(key, newJson, cancellationToken).ConfigureAwait(false);
+        await _storage.SetAsync(key, newJson, cancellationToken);
     }
 
     /// <summary>Computes a cache key for the specified values.</summary>

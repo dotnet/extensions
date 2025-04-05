@@ -145,7 +145,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         Exception? error = null;
         try
         {
-            response = await base.GetResponseAsync(messages, options, cancellationToken).ConfigureAwait(false);
+            response = await base.GetResponseAsync(messages, options, cancellationToken);
             return response;
         }
         catch (Exception ex)
@@ -183,7 +183,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
             throw;
         }
 
-        var responseEnumerator = updates.ConfigureAwait(false).GetAsyncEnumerator();
+        var responseEnumerator = updates.GetAsyncEnumerator(cancellationToken);
         List<ChatResponseUpdate> trackedUpdates = [];
         Exception? error = null;
         try

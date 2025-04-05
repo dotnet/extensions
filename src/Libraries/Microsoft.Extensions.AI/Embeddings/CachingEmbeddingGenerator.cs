@@ -42,19 +42,19 @@ public abstract class CachingEmbeddingGenerator<TInput, TEmbedding> : Delegating
                     // In the expected common case where we can cheaply tell there's only a single value and access it,
                     // we can avoid all the overhead of splitting the list and reassembling it.
                     var cacheKey = GetCacheKey(valuesList[0], options);
-                    if (await ReadCacheAsync(cacheKey, cancellationToken).ConfigureAwait(false) is TEmbedding e)
+                    if (await ReadCacheAsync(cacheKey, cancellationToken) is TEmbedding e)
                     {
                         return [e];
                     }
                     else
                     {
-                        var generated = await base.GenerateAsync(valuesList, options, cancellationToken).ConfigureAwait(false);
+                        var generated = await base.GenerateAsync(valuesList, options, cancellationToken);
                         if (generated.Count != 1)
                         {
                             Throw.InvalidOperationException($"Expected exactly one embedding to be generated, but received {generated.Count}.");
                         }
 
-                        await WriteCacheAsync(cacheKey, generated[0], cancellationToken).ConfigureAwait(false);
+                        await WriteCacheAsync(cacheKey, generated[0], cancellationToken);
                         return generated;
                     }
             }
@@ -72,7 +72,7 @@ public abstract class CachingEmbeddingGenerator<TInput, TEmbedding> : Delegating
             // concurrent callers might trigger duplicate requests, but that's acceptable.
             var cacheKey = GetCacheKey(input, options);
 
-            if (await ReadCacheAsync(cacheKey, cancellationToken).ConfigureAwait(false) is TEmbedding existing)
+            if (await ReadCacheAsync(cacheKey, cancellationToken) is TEmbedding existing)
             {
                 results.Add(existing);
             }
@@ -87,12 +87,12 @@ public abstract class CachingEmbeddingGenerator<TInput, TEmbedding> : Delegating
         if (uncached is not null)
         {
             // Now make a single call to the wrapped generator to generate embeddings for all of the uncached inputs.
-            var uncachedResults = await base.GenerateAsync(uncached.Select(e => e.Input), options, cancellationToken).ConfigureAwait(false);
+            var uncachedResults = await base.GenerateAsync(uncached.Select(e => e.Input), options, cancellationToken);
 
             // Store the resulting embeddings into the cache individually.
             for (int i = 0; i < uncachedResults.Count; i++)
             {
-                await WriteCacheAsync(uncached[i].CacheKey, uncachedResults[i], cancellationToken).ConfigureAwait(false);
+                await WriteCacheAsync(uncached[i].CacheKey, uncachedResults[i], cancellationToken);
             }
 
             // Fill in the gaps with the newly generated results.

@@ -36,13 +36,13 @@ public sealed class ConfigureOptionsChatClient : DelegatingChatClient
     /// <inheritdoc/>
     public override async Task<ChatResponse> GetResponseAsync(
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default) =>
-        await base.GetResponseAsync(messages, Configure(options), cancellationToken).ConfigureAwait(false);
+        await base.GetResponseAsync(messages, Configure(options), cancellationToken);
 
     /// <inheritdoc/>
     public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var update in base.GetStreamingResponseAsync(messages, Configure(options), cancellationToken).ConfigureAwait(false))
+        await foreach (var update in base.GetStreamingResponseAsync(messages, Configure(options), cancellationToken))
         {
             yield return update;
         }

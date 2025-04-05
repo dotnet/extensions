@@ -303,7 +303,7 @@ public static partial class AIFunctionFactory
                 }
 
                 return await FunctionDescriptor.ReturnParameterMarshaller(
-                    ReflectionInvoke(FunctionDescriptor.Method, target, args), cancellationToken).ConfigureAwait(false);
+                    ReflectionInvoke(FunctionDescriptor.Method, target, args), cancellationToken);
             }
             finally
             {
@@ -311,7 +311,7 @@ public static partial class AIFunctionFactory
                 {
                     if (target is IAsyncDisposable ad)
                     {
-                        await ad.DisposeAsync().ConfigureAwait(false);
+                        await ad.DisposeAsync();
                     }
                     else if (target is IDisposable d)
                     {
@@ -599,14 +599,14 @@ public static partial class AIFunctionFactory
                 {
                     return async (result, cancellationToken) =>
                     {
-                        await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
-                        return await marshalResult(null, null, cancellationToken).ConfigureAwait(false);
+                        await ((Task)ThrowIfNullResult(result));
+                        return await marshalResult(null, null, cancellationToken);
                     };
                 }
 
                 return async static (result, _) =>
                 {
-                    await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
+                    await ((Task)ThrowIfNullResult(result));
                     return null;
                 };
             }
@@ -618,14 +618,14 @@ public static partial class AIFunctionFactory
                 {
                     return async (result, cancellationToken) =>
                     {
-                        await ((ValueTask)ThrowIfNullResult(result)).ConfigureAwait(false);
-                        return await marshalResult(null, null, cancellationToken).ConfigureAwait(false);
+                        await ((ValueTask)ThrowIfNullResult(result));
+                        return await marshalResult(null, null, cancellationToken);
                     };
                 }
 
                 return async static (result, _) =>
                 {
-                    await ((ValueTask)ThrowIfNullResult(result)).ConfigureAwait(false);
+                    await ((ValueTask)ThrowIfNullResult(result));
                     return null;
                 };
             }
@@ -640,18 +640,18 @@ public static partial class AIFunctionFactory
                     {
                         return async (taskObj, cancellationToken) =>
                         {
-                            await ((Task)ThrowIfNullResult(taskObj)).ConfigureAwait(false);
+                            await ((Task)ThrowIfNullResult(taskObj));
                             object? result = ReflectionInvoke(taskResultGetter, taskObj, null);
-                            return await marshalResult(result, taskResultGetter.ReturnType, cancellationToken).ConfigureAwait(false);
+                            return await marshalResult(result, taskResultGetter.ReturnType, cancellationToken);
                         };
                     }
 
                     returnTypeInfo = serializerOptions.GetTypeInfo(taskResultGetter.ReturnType);
                     return async (taskObj, cancellationToken) =>
                     {
-                        await ((Task)ThrowIfNullResult(taskObj)).ConfigureAwait(false);
+                        await ((Task)ThrowIfNullResult(taskObj));
                         object? result = ReflectionInvoke(taskResultGetter, taskObj, null);
-                        return await SerializeResultAsync(result, returnTypeInfo, cancellationToken).ConfigureAwait(false);
+                        return await SerializeResultAsync(result, returnTypeInfo, cancellationToken);
                     };
                 }
 
@@ -666,9 +666,9 @@ public static partial class AIFunctionFactory
                         return async (taskObj, cancellationToken) =>
                         {
                             var task = (Task)ReflectionInvoke(valueTaskAsTask, ThrowIfNullResult(taskObj), null)!;
-                            await task.ConfigureAwait(false);
+                            await task;
                             object? result = ReflectionInvoke(asTaskResultGetter, task, null);
-                            return await marshalResult(result, asTaskResultGetter.ReturnType, cancellationToken).ConfigureAwait(false);
+                            return await marshalResult(result, asTaskResultGetter.ReturnType, cancellationToken);
                         };
                     }
 
@@ -676,9 +676,9 @@ public static partial class AIFunctionFactory
                     return async (taskObj, cancellationToken) =>
                     {
                         var task = (Task)ReflectionInvoke(valueTaskAsTask, ThrowIfNullResult(taskObj), null)!;
-                        await task.ConfigureAwait(false);
+                        await task;
                         object? result = ReflectionInvoke(asTaskResultGetter, task, null);
-                        return await SerializeResultAsync(result, returnTypeInfo, cancellationToken).ConfigureAwait(false);
+                        return await SerializeResultAsync(result, returnTypeInfo, cancellationToken);
                     };
                 }
             }
@@ -702,7 +702,7 @@ public static partial class AIFunctionFactory
 
                 // Serialize asynchronously to support potential IAsyncEnumerable responses.
                 using PooledMemoryStream stream = new();
-                await JsonSerializer.SerializeAsync(stream, result, returnTypeInfo, cancellationToken).ConfigureAwait(false);
+                await JsonSerializer.SerializeAsync(stream, result, returnTypeInfo, cancellationToken);
                 Utf8JsonReader reader = new(stream.GetBuffer());
                 return JsonElement.ParseValue(ref reader);
             }

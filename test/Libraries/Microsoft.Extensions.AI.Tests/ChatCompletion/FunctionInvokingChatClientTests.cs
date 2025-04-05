@@ -122,15 +122,22 @@ public class FunctionInvokingChatClientTests
     [Fact]
     public async Task ParallelFunctionCallsMayBeInvokedConcurrentlyAsync()
     {
-        using var barrier = new Barrier(2);
+        int remaining = 2;
+        var tcs = new TaskCompletionSource<bool>();
 
         var options = new ChatOptions
         {
             Tools =
             [
-                AIFunctionFactory.Create((string arg) =>
+                AIFunctionFactory.Create(async (string arg) =>
                 {
-                    barrier.SignalAndWait();
+                    if (Interlocked.Decrement(ref remaining) == 0)
+                    {
+                        tcs.SetResult(true);
+                    }
+
+                    await tcs.Task;
+
                     return arg + arg;
                 }, "Func"),
             ]
@@ -865,6 +872,62 @@ public class FunctionInvokingChatClientTests
         };
 
         await InvokeAndAssertAsync(options, plan, services: expected);
+    }
+
+    [Fact]
+    public async Task FunctionInvocations_InvokedOnOriginalSynchronizationContext()
+    {
+        SynchronizationContext ctx = new CustomSynchronizationContext();
+        SynchronizationContext.SetSynchronizationContext(ctx);
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [
+                new FunctionCallContent("callId1", "Func1", new Dictionary<string, object?> { ["arg"] = "value1" }),
+                new FunctionCallContent("callId2", "Func1", new Dictionary<string, object?> { ["arg"] = "value2" }),
+            ]),
+            new ChatMessage(ChatRole.Tool,
+            [
+                new FunctionResultContent("callId2", result: "value1"),
+                new FunctionResultContent("callId2", result: "value2")
+            ]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(async (string arg, CancellationToken cancellationToken) =>
+            {
+                await Task.Delay(1, cancellationToken);
+                Assert.Same(ctx, SynchronizationContext.Current);
+                return arg;
+            }, "Func1")]
+        };
+
+        Func<ChatClientBuilder, ChatClientBuilder> configurePipeline = builder => builder
+            .Use(async (messages, options, next, cancellationToken) =>
+            {
+                await Task.Delay(1, cancellationToken);
+                await next(messages, options, cancellationToken);
+            })
+            .UseOpenTelemetry()
+            .UseFunctionInvocation(configure: c => { c.AllowConcurrentInvocation = true; c.IncludeDetailedErrors = true; });
+
+        await InvokeAndAssertAsync(options, plan, configurePipeline: configurePipeline);
+        await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configurePipeline);
+    }
+
+    private sealed class CustomSynchronizationContext : SynchronizationContext
+    {
+        public override void Post(SendOrPostCallback d, object? state)
+        {
+            ThreadPool.QueueUserWorkItem(delegate
+            {
+                SetSynchronizationContext(this);
+                d(state);
+            });
+        }
     }
 
     private static async Task<List<ChatMessage>> InvokeAndAssertAsync(
