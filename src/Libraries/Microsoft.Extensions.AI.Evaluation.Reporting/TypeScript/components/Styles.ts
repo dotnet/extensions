@@ -48,6 +48,10 @@ export const useStyles = makeStyles({
         right: '0',
         maxWidth: '80rem',
     },
+   dismissableSectionHeader: {
+        display: 'flex',
+        alignItems: 'center',
+    },
     sectionHeader: {
         display: 'flex',
         alignItems: 'center',

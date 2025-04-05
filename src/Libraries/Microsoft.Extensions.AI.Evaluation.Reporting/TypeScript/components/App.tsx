@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { useState } from 'react';
-import { Settings28Regular, FilterDismissRegular, Dismiss20Regular, ArrowDownloadRegular } from '@fluentui/react-icons';
+import { Settings28Regular, FilterDismissRegular, DismissRegular, ArrowDownloadRegular } from '@fluentui/react-icons';
 import { Button, Drawer, DrawerBody, DrawerHeader, DrawerHeaderTitle, Switch, Tooltip } from '@fluentui/react-components';
 import { makeStyles } from '@fluentui/react-components';
 import './App.css';
@@ -40,17 +40,6 @@ const useStyles = makeStyles({
     position: 'absolute',
     top: '1.5rem',
     right: '1rem',
-    cursor: 'pointer',
-    fontSize: '2rem',
-    width: '28px',
-    height: '28px',
-    borderRadius: '6px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    '&:hover': {
-      backgroundColor: tokens.colorNeutralBackground4,
-    },
   },
   switchLabel: { fontSize: '1rem', paddingTop: '1rem' },
   drawerBody: { paddingTop: '1rem' },
@@ -61,7 +50,7 @@ function App() {
   const { dataset, scoreSummary, selectedTags, clearFilters } = useReportContext();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { renderMarkdown, setRenderMarkdown } = useReportContext();
-  const { globalTags, filterableTags } = categorizeAndSortTags(dataset);
+  const { globalTags, filterableTags } = categorizeAndSortTags(dataset, scoreSummary.primaryResult.executionName);
 
   const toggleSettings = () => setIsSettingsOpen(!isSettingsOpen);
   const closeSettings = () => setIsSettingsOpen(false);
@@ -122,7 +111,7 @@ function App() {
       <Drawer open={isSettingsOpen} onOpenChange={toggleSettings} position="end">
         <DrawerHeader>
           <DrawerHeaderTitle>Settings</DrawerHeaderTitle>
-          <span className={classes.closeButton} onClick={closeSettings}><Dismiss20Regular /></span>
+          <Button className={classes.closeButton} icon={<DismissRegular />} appearance="subtle" onClick={closeSettings} />
         </DrawerHeader>
         <DrawerBody className={classes.drawerBody}>
           <Switch
