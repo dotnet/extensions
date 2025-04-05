@@ -67,8 +67,16 @@ function App() {
   const closeSettings = () => setIsSettingsOpen(false);
 
   const downloadDataset = () => {
+    // check if dataset has a default property that duplicates the content
+    const containsDefault = 'default' in dataset && 
+      typeof dataset.default === 'object' &&
+      dataset.default !== null &&
+      'scenarioRunResults' in (dataset.default as any);
+      
+    const dataToSerialize = containsDefault ? dataset.default : dataset;
+      
     // create a stringified JSON of the dataset
-    const dataStr = JSON.stringify(dataset, null, 2);
+    const dataStr = JSON.stringify(dataToSerialize, null, 2);
 
     // create a link to download the JSON file in the page and click it
     const blob = new Blob([dataStr], { type: 'application/json' });
