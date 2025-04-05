@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.Versioning;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 #if !NETFRAMEWORK
@@ -11,6 +12,7 @@ using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Network;
 
 #endif
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows;
+using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Disk;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Network;
 using Microsoft.Shared.DiagnosticIds;
@@ -89,6 +91,7 @@ public static class ResourceMonitoringServiceCollectionExtensions
         return services;
     }
 
+    [SupportedOSPlatform("windows")]
     private static ResourceMonitorBuilder AddWindowsProvider(this ResourceMonitorBuilder builder)
     {
         builder.PickWindowsSnapshotProvider();
@@ -96,6 +99,12 @@ public static class ResourceMonitoringServiceCollectionExtensions
         _ = builder.Services
             .AddActivatedSingleton<WindowsNetworkMetrics>()
             .AddActivatedSingleton<ITcpStateInfoProvider, WindowsTcpStateInfo>();
+
+        builder.Services.TryAddSingleton(TimeProvider.System);
+
+        _ = builder.Services
+            .AddActivatedSingleton<WindowsDiskMetrics>()
+            .AddActivatedSingleton<IPerformanceCounterFactory, PerformanceCounterFactory>();
 
         return builder;
     }
