@@ -15,5 +15,5 @@ public interface IExceptionSummarizer
     /// </summary>
     /// <param name="exception">The exception to summarize.</param>
     /// <returns>The summary of the given <see cref="Exception"/>.</returns>
-    public ExceptionSummary Summarize(Exception exception);
+    ExceptionSummary Summarize(Exception exception);
 }
