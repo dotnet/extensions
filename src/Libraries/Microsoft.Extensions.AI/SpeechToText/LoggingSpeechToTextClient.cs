@@ -63,7 +63,7 @@ public partial class LoggingSpeechToTextClient : DelegatingSpeechToTextClient
 
         try
         {
-            var response = await base.GetTextAsync(audioSpeechStream, options, cancellationToken).ConfigureAwait(false);
+            var response = await base.GetTextAsync(audioSpeechStream, options, cancellationToken);
 
             if (_logger.IsEnabled(LogLevel.Debug))
             {
@@ -130,7 +130,7 @@ public partial class LoggingSpeechToTextClient : DelegatingSpeechToTextClient
             {
                 try
                 {
-                    if (!await e.MoveNextAsync().ConfigureAwait(false))
+                    if (!await e.MoveNextAsync())
                     {
                         break;
                     }
@@ -167,7 +167,7 @@ public partial class LoggingSpeechToTextClient : DelegatingSpeechToTextClient
         }
         finally
         {
-            await e.DisposeAsync().ConfigureAwait(false);
+            await e.DisposeAsync();
         }
     }
 
