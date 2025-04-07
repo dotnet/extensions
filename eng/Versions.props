@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup Label="Version settings">
     <MajorVersion>9</MajorVersion>
-    <MinorVersion>4</MinorVersion>
+    <MinorVersion>5</MinorVersion>
     <PatchVersion>0</PatchVersion>
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
@@ -9,9 +9,9 @@
     <ApiCompatBaselineVersion>9.3.0</ApiCompatBaselineVersion>
     <AssemblyVersion>$(MajorVersion).$(MinorVersion).0.0</AssemblyVersion>
     <!--
-        When DotNetFinalVersionKind is set to 'release', this branch will produce stable outputs for 'Shipping' packages
+        When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages
     -->
-    <DotNetFinalVersionKind />
+    <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">false</StabilizePackageVersion>
     <!-- Enabling this rule will cause build failures on undocumented public APIs. -->
     <SkipArcadeNoWarnCS1591>true</SkipArcadeNoWarnCS1591>
   </PropertyGroup>
@@ -77,7 +77,7 @@
     <!-- Dependencies from https://github.com/dotnet/efcore -->
     <MicrosoftEntityFrameworkCoreSqliteVersion>9.0.3</MicrosoftEntityFrameworkCoreSqliteVersion>
     <!-- Dependencies from https://github.com/dotnet/arcade -->
-    <MicrosoftDotNetBuildTasksTemplatingVersion>9.0.0-beta.25164.2</MicrosoftDotNetBuildTasksTemplatingVersion>
+    <MicrosoftDotNetBuildTasksTemplatingVersion>9.0.0-beta.25204.5</MicrosoftDotNetBuildTasksTemplatingVersion>
   </PropertyGroup>
   <PropertyGroup Label="No longer automated Maestro dependency updates">
     <!-- Packages from dotnet/runtime -->
@@ -147,14 +147,22 @@
     <MicrosoftCodeAnalysisVersion>4.8.0</MicrosoftCodeAnalysisVersion>
     <MicrosoftCodeAnalysisAnalyzersVersion>3.3.4</MicrosoftCodeAnalysisAnalyzersVersion>
     <!-- AI templates -->
+    <AspireVersion>9.1.0</AspireVersion>
+    <AspireAzureAIOpenAIVersion>9.1.0-preview.1.25121.10</AspireAzureAIOpenAIVersion>
     <AzureAIProjectsVersion>1.0.0-beta.3</AzureAIProjectsVersion>
-    <AzureAIOpenAIVersion>2.2.0-beta.1</AzureAIOpenAIVersion>
+    <AzureAIOpenAIVersion>2.2.0-beta.4</AzureAIOpenAIVersion>
     <AzureIdentityVersion>1.13.2</AzureIdentityVersion>
     <AzureSearchDocumentsVersion>11.6.0</AzureSearchDocumentsVersion>
-    <MicrosoftSemanticKernelConnectorsAzureAISearchVersion>1.37.0-preview</MicrosoftSemanticKernelConnectorsAzureAISearchVersion>
-    <MicrosoftSemanticKernelCoreVersion>1.37.0</MicrosoftSemanticKernelCoreVersion>
-    <OllamaSharpVersion>5.1.5</OllamaSharpVersion>
-    <OpenAIVersion>2.2.0-beta.1</OpenAIVersion>
+    <CommunityToolkitAspireHostingOllamaVersion>9.2.2-beta.236</CommunityToolkitAspireHostingOllamaVersion>
+    <CommunityToolkitAspireHostingSqliteVersion>9.2.2-beta.236</CommunityToolkitAspireHostingSqliteVersion>
+    <CommunityToolkitAspireMicrosoftEntityFrameworkCoreSqliteVersion>9.2.2-beta.236</CommunityToolkitAspireMicrosoftEntityFrameworkCoreSqliteVersion>
+    <CommunityToolkitAspireOllamaSharpVersion>9.2.2-beta.236</CommunityToolkitAspireOllamaSharpVersion>
+    <MicrosoftExtensionsServiceDiscoveryVersion>9.1.0</MicrosoftExtensionsServiceDiscoveryVersion>
+    <MicrosoftSemanticKernelConnectorsAzureAISearchVersion>1.41.0-preview</MicrosoftSemanticKernelConnectorsAzureAISearchVersion>
+    <MicrosoftSemanticKernelConnectorsQdrantVersion>1.41.0-preview</MicrosoftSemanticKernelConnectorsQdrantVersion>
+    <MicrosoftSemanticKernelCoreVersion>1.41.0</MicrosoftSemanticKernelCoreVersion>
+    <OllamaSharpVersion>5.1.9</OllamaSharpVersion>
+    <OpenTelemetryVersion>1.9.0</OpenTelemetryVersion>
     <PdfPigVersion>0.1.9</PdfPigVersion>
     <SystemLinqAsyncVersion>6.0.1</SystemLinqAsyncVersion>
     <!--

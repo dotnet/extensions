@@ -17,18 +17,36 @@ public class ScenarioRunResultTests
     [Fact]
     public void SerializeScenarioRunResult()
     {
-        BooleanMetric booleanMetric = new BooleanMetric("boolean", value: true);
+        var booleanMetric = new BooleanMetric("boolean", value: true);
         booleanMetric.AddDiagnostic(EvaluationDiagnostic.Error("error"));
         booleanMetric.AddDiagnostic(EvaluationDiagnostic.Warning("warning"));
 
-        NumericMetric numericMetric = new NumericMetric("numeric", value: 3);
+        var numericMetric = new NumericMetric("numeric", value: 3);
         numericMetric.AddDiagnostic(EvaluationDiagnostic.Informational("info"));
 
-        StringMetric stringMetric = new StringMetric("string", value: "A");
+        var stringMetric = new StringMetric("string", value: "A");
 
-        EvaluationMetric metricWithNoValue = new EvaluationMetric("none");
+        var metricWithNoValue = new EvaluationMetric("none");
         metricWithNoValue.AddDiagnostic(EvaluationDiagnostic.Error("error"));
         metricWithNoValue.AddDiagnostic(EvaluationDiagnostic.Informational("info"));
+
+        var turn1 =
+            new ChatTurnDetails(
+                latency: TimeSpan.FromSeconds(1),
+                model: "gpt-4o",
+                usage: new UsageDetails { InputTokenCount = 10, OutputTokenCount = 20, TotalTokenCount = 30 },
+                cacheKey: Guid.NewGuid().ToString(),
+                cacheHit: true);
+
+        var turn2 =
+            new ChatTurnDetails(
+                latency: TimeSpan.FromSeconds(2),
+                model: "gpt-4o",
+                usage: new UsageDetails { InputTokenCount = 20, OutputTokenCount = 30, TotalTokenCount = 50 },
+                cacheKey: Guid.NewGuid().ToString(),
+                cacheHit: false);
+
+        var chatDetails = new ChatDetails(turn1, turn2);
 
         var entry = new ScenarioRunResult(
             scenarioName: "Test Scenario",
@@ -37,11 +55,14 @@ public class ScenarioRunResultTests
             creationTime: DateTime.UtcNow,
             messages: [new ChatMessage(ChatRole.User, "prompt")],
             modelResponse: new ChatResponse(new ChatMessage(ChatRole.Assistant, "response")),
-            evaluationResult: new EvaluationResult(booleanMetric, numericMetric, stringMetric, metricWithNoValue));
+            evaluationResult: new EvaluationResult(booleanMetric, numericMetric, stringMetric, metricWithNoValue),
+            chatDetails: chatDetails,
+            tags: ["first", "second"]);
+
         Assert.Equal(Defaults.ReportingFormatVersion, entry.FormatVersion);
 
         string json = JsonSerializer.Serialize(entry, JsonUtilities.Default.ScenarioRunResultTypeInfo);
-        ScenarioRunResult? deserialized = JsonSerializer.Deserialize<ScenarioRunResult>(json, JsonUtilities.Default.ScenarioRunResultTypeInfo);
+        ScenarioRunResult? deserialized = JsonSerializer.Deserialize(json, JsonUtilities.Default.ScenarioRunResultTypeInfo);
 
         Assert.NotNull(deserialized);
         Assert.Equal(entry.ScenarioName, deserialized!.ScenarioName);
@@ -50,6 +71,8 @@ public class ScenarioRunResultTests
         Assert.Equal(entry.CreationTime, deserialized.CreationTime);
         Assert.True(entry.Messages.SequenceEqual(deserialized.Messages, ChatMessageComparer.Instance));
         Assert.Equal(entry.ModelResponse, deserialized.ModelResponse, ChatResponseComparer.Instance);
+        Assert.True(entry.ChatDetails!.TurnDetails.SequenceEqual(deserialized.ChatDetails!.TurnDetails!, ChatTurnDetailsComparer.Instance));
+        Assert.True(entry.Tags!.SequenceEqual(deserialized.Tags!));
         Assert.Equal(entry.FormatVersion, deserialized.FormatVersion);
 
         ValidateEquivalence(entry.EvaluationResult, deserialized.EvaluationResult);
@@ -58,18 +81,36 @@ public class ScenarioRunResultTests
     [Fact]
     public void SerializeDatasetCompact()
     {
-        BooleanMetric booleanMetric = new BooleanMetric("boolean", value: true);
+        var booleanMetric = new BooleanMetric("boolean", value: true);
         booleanMetric.AddDiagnostic(EvaluationDiagnostic.Error("error"));
         booleanMetric.AddDiagnostic(EvaluationDiagnostic.Warning("warning"));
 
-        NumericMetric numericMetric = new NumericMetric("numeric", value: 3);
+        var numericMetric = new NumericMetric("numeric", value: 3);
         numericMetric.AddDiagnostic(EvaluationDiagnostic.Informational("info"));
 
-        StringMetric stringMetric = new StringMetric("string", value: "A");
+        var stringMetric = new StringMetric("string", value: "A");
 
-        EvaluationMetric metricWithNoValue = new EvaluationMetric("none");
+        var metricWithNoValue = new EvaluationMetric("none");
         metricWithNoValue.AddDiagnostic(EvaluationDiagnostic.Error("error"));
         metricWithNoValue.AddDiagnostic(EvaluationDiagnostic.Informational("info"));
+
+        var turn1 =
+            new ChatTurnDetails(
+                latency: TimeSpan.FromSeconds(1),
+                model: "gpt-4o",
+                usage: new UsageDetails { InputTokenCount = 10, OutputTokenCount = 20, TotalTokenCount = 30 },
+                cacheKey: Guid.NewGuid().ToString(),
+                cacheHit: true);
+
+        var turn2 =
+            new ChatTurnDetails(
+                latency: TimeSpan.FromSeconds(2),
+                model: "gpt-4o",
+                usage: new UsageDetails { InputTokenCount = 20, OutputTokenCount = 30, TotalTokenCount = 50 },
+                cacheKey: Guid.NewGuid().ToString(),
+                cacheHit: false);
+
+        var chatDetails = new ChatDetails(turn1, turn2);
 
         var entry = new ScenarioRunResult(
             scenarioName: "Test Scenario",
@@ -78,7 +119,11 @@ public class ScenarioRunResultTests
             creationTime: DateTime.UtcNow,
             messages: [new ChatMessage(ChatRole.User, "prompt")],
             modelResponse: new ChatResponse(new ChatMessage(ChatRole.Assistant, "response")),
-            evaluationResult: new EvaluationResult(booleanMetric, numericMetric, stringMetric, metricWithNoValue));
+            evaluationResult: new EvaluationResult(booleanMetric, numericMetric, stringMetric, metricWithNoValue),
+            chatDetails,
+            tags: ["first", "second"]);
+
+        Assert.Equal(Defaults.ReportingFormatVersion, entry.FormatVersion);
 
         var dataset = new Dataset([entry], createdAt: DateTime.UtcNow, generatorVersion: "1.2.3.4");
 
@@ -92,6 +137,9 @@ public class ScenarioRunResultTests
         Assert.Equal(entry.CreationTime, deserialized.ScenarioRunResults[0].CreationTime);
         Assert.True(entry.Messages.SequenceEqual(deserialized.ScenarioRunResults[0].Messages, ChatMessageComparer.Instance));
         Assert.Equal(entry.ModelResponse, deserialized.ScenarioRunResults[0].ModelResponse, ChatResponseComparer.Instance);
+        Assert.True(entry.ChatDetails!.TurnDetails.SequenceEqual(deserialized.ScenarioRunResults[0].ChatDetails!.TurnDetails!, ChatTurnDetailsComparer.Instance));
+        Assert.True(entry.Tags!.SequenceEqual(deserialized.ScenarioRunResults[0].Tags!));
+        Assert.Equal(entry.FormatVersion, deserialized.ScenarioRunResults[0].FormatVersion);
 
         Assert.Single(deserialized.ScenarioRunResults);
         Assert.Equal(dataset.CreatedAt, deserialized.CreatedAt);
@@ -129,24 +177,40 @@ public class ScenarioRunResultTests
         BooleanMetric deserializedBooleanMetric = second.Get<BooleanMetric>("boolean");
         Assert.Equal(booleanMetric.Name, deserializedBooleanMetric.Name);
         Assert.Equal(booleanMetric.Value, deserializedBooleanMetric.Value);
-        Assert.True(booleanMetric.Diagnostics.SequenceEqual(deserializedBooleanMetric.Diagnostics, DiagnosticComparer.Instance));
+        Assert.Equal(booleanMetric.Diagnostics is null, deserializedBooleanMetric.Diagnostics is null);
+        if (booleanMetric.Diagnostics is not null && deserializedBooleanMetric.Diagnostics is not null)
+        {
+            Assert.True(booleanMetric.Diagnostics.SequenceEqual(deserializedBooleanMetric.Diagnostics, DiagnosticComparer.Instance));
+        }
 
         NumericMetric numericMetric = first.Get<NumericMetric>("numeric");
         NumericMetric deserializedNumericMetric = second.Get<NumericMetric>("numeric");
         Assert.Equal(numericMetric.Name, deserializedNumericMetric.Name);
         Assert.Equal(numericMetric.Value, deserializedNumericMetric.Value);
-        Assert.True(numericMetric.Diagnostics.SequenceEqual(deserializedNumericMetric.Diagnostics, DiagnosticComparer.Instance));
+        Assert.Equal(numericMetric.Diagnostics is null, deserializedNumericMetric.Diagnostics is null);
+        if (numericMetric.Diagnostics is not null && deserializedNumericMetric.Diagnostics is not null)
+        {
+            Assert.True(numericMetric.Diagnostics.SequenceEqual(deserializedNumericMetric.Diagnostics, DiagnosticComparer.Instance));
+        }
 
         StringMetric stringMetric = first.Get<StringMetric>("string");
         StringMetric deserializedStringMetric = second.Get<StringMetric>("string");
         Assert.Equal(stringMetric.Name, deserializedStringMetric.Name);
         Assert.Equal(stringMetric.Value, deserializedStringMetric.Value);
-        Assert.True(stringMetric.Diagnostics.SequenceEqual(deserializedStringMetric.Diagnostics, DiagnosticComparer.Instance));
+        Assert.Equal(stringMetric.Diagnostics is null, deserializedStringMetric.Diagnostics is null);
+        if (stringMetric.Diagnostics is not null && deserializedStringMetric.Diagnostics is not null)
+        {
+            Assert.True(stringMetric.Diagnostics.SequenceEqual(deserializedStringMetric.Diagnostics, DiagnosticComparer.Instance));
+        }
 
         EvaluationMetric metricWithNoValue = first.Get<EvaluationMetric>("none");
         EvaluationMetric deserializedMetricWithNoValue = second.Get<EvaluationMetric>("none");
         Assert.Equal(metricWithNoValue.Name, deserializedMetricWithNoValue.Name);
-        Assert.True(metricWithNoValue.Diagnostics.SequenceEqual(deserializedMetricWithNoValue.Diagnostics, DiagnosticComparer.Instance));
+        Assert.Equal(metricWithNoValue.Diagnostics is null, deserializedMetricWithNoValue.Diagnostics is null);
+        if (metricWithNoValue.Diagnostics is not null && deserializedMetricWithNoValue.Diagnostics is not null)
+        {
+            Assert.True(metricWithNoValue.Diagnostics.SequenceEqual(deserializedMetricWithNoValue.Diagnostics, DiagnosticComparer.Instance));
+        }
     }
 
     private class ChatMessageComparer : IEqualityComparer<ChatMessage>
@@ -181,6 +245,24 @@ public class ScenarioRunResultTests
             => x?.Severity == y?.Severity && x?.Message == y?.Message;
 
         public int GetHashCode(EvaluationDiagnostic obj)
+            => obj.GetHashCode();
+    }
+
+    private class ChatTurnDetailsComparer : IEqualityComparer<ChatTurnDetails>
+    {
+        public static ChatTurnDetailsComparer Instance { get; } = new ChatTurnDetailsComparer();
+
+#pragma warning disable S1067 // Expressions should not be too complex
+        public bool Equals(ChatTurnDetails? x, ChatTurnDetails? y) =>
+            x?.Latency == y?.Latency &&
+            x?.Usage?.InputTokenCount == y?.Usage?.InputTokenCount &&
+            x?.Usage?.OutputTokenCount == y?.Usage?.OutputTokenCount &&
+            x?.Usage?.TotalTokenCount == y?.Usage?.TotalTokenCount &&
+            x?.CacheKey == y?.CacheKey &&
+            x?.CacheHit == y?.CacheHit;
+#pragma warning restore S1067
+
+        public int GetHashCode(ChatTurnDetails obj)
             => obj.GetHashCode();
     }
 }

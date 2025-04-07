@@ -7,6 +7,9 @@
 // constructor syntax.
 
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -21,11 +24,28 @@ namespace Microsoft.Extensions.AI.Evaluation.Quality;
 /// AI model.
 /// </summary>
 /// <remarks>
+/// <para>
 /// <see cref="RelevanceTruthAndCompletenessEvaluator"/> returns three <see cref="NumericMetric"/>s that contain scores
 /// for 'Relevance', 'Truth' and 'Completeness' respectively. Each score is a number between 1 and 5, with 1 indicating
 /// a poor score, and 5 indicating an excellent score. Each returned score is also accompanied by a
 /// <see cref="EvaluationMetric.Reason"/> that provides an explanation for the score.
+/// </para>
+/// <para>
+/// <b>Note:</b> <see cref="RelevanceTruthAndCompletenessEvaluator"/> is an AI-based evaluator that uses an AI model to
+/// perform its evaluation. While the prompt that this evaluator uses to perform its evaluation is designed to be
+/// model-agnostic, the performance of this prompt (and the resulting evaluation) can vary depending on the model used,
+/// and can be especially poor when a smaller / local model is used.
+/// </para>
+/// <para>
+/// The prompt that <see cref="RelevanceTruthAndCompletenessEvaluator"/> uses has been tested against (and tuned to
+/// work well with) the following models. So, using this evaluator with a model from the following list is likely to
+/// produce the best results. (The model to be used can be configured via <see cref="ChatConfiguration.ChatClient"/>.)
+/// </para>
+/// <para>
+/// <b>GPT-4o</b>
+/// </para>
 /// </remarks>
+/// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/tutorials/evaluate-with-reporting">Tutorial: Evaluate a model's response with response caching and reporting.</related>
 public sealed partial class RelevanceTruthAndCompletenessEvaluator : ChatConversationEvaluator
 {
     /// <summary>
@@ -108,77 +128,125 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator : ChatConvers
         EvaluationResult result,
         CancellationToken cancellationToken)
     {
-        ChatResponse evaluationResponse =
-            await chatConfiguration.ChatClient.GetResponseAsync(
-                evaluationMessages,
-                _chatOptions,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
-
-        string evaluationResponseText = evaluationResponse.Text.Trim();
+        ChatResponse evaluationResponse;
         Rating rating;
+        string duration;
+        Stopwatch stopwatch = Stopwatch.StartNew();
 
-        if (string.IsNullOrEmpty(evaluationResponseText))
+        try
         {
-            rating = Rating.Inconclusive;
-            result.AddDiagnosticToAllMetrics(
-                EvaluationDiagnostic.Error(
-                    "Evaluation failed because the model failed to produce a valid evaluation response."));
-        }
-        else
-        {
-            try
+            evaluationResponse =
+                await chatConfiguration.ChatClient.GetResponseAsync(
+                    evaluationMessages,
+                    _chatOptions,
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            string evaluationResponseText = evaluationResponse.Text.Trim();
+            if (string.IsNullOrEmpty(evaluationResponseText))
             {
-                rating = Rating.FromJson(evaluationResponseText!);
+                rating = Rating.Inconclusive;
+                result.AddDiagnosticToAllMetrics(
+                    EvaluationDiagnostic.Error(
+                        "Evaluation failed because the model failed to produce a valid evaluation response."));
             }
-            catch (JsonException)
+            else
             {
                 try
                 {
-                    string repairedJson =
-                        await JsonOutputFixer.RepairJsonAsync(
-                            chatConfiguration,
-                            evaluationResponseText!,
-                            cancellationToken).ConfigureAwait(false);
+                    rating = Rating.FromJson(evaluationResponseText!);
+                }
+                catch (JsonException)
+                {
+                    try
+                    {
+                        string repairedJson =
+                            await JsonOutputFixer.RepairJsonAsync(
+                                chatConfiguration,
+                                evaluationResponseText!,
+                                cancellationToken).ConfigureAwait(false);
 
-                    if (string.IsNullOrEmpty(repairedJson))
+                        if (string.IsNullOrEmpty(repairedJson))
+                        {
+                            rating = Rating.Inconclusive;
+                            result.AddDiagnosticToAllMetrics(
+                                EvaluationDiagnostic.Error(
+                                    $"""
+                                Failed to repair the following response from the model and parse scores for '{RelevanceMetricName}', '{TruthMetricName}' and '{CompletenessMetricName}'.:
+                                {evaluationResponseText}
+                                """));
+                        }
+                        else
+                        {
+                            rating = Rating.FromJson(repairedJson!);
+                        }
+                    }
+                    catch (JsonException ex)
                     {
                         rating = Rating.Inconclusive;
                         result.AddDiagnosticToAllMetrics(
                             EvaluationDiagnostic.Error(
                                 $"""
-                                Failed to repair the following response from the model and parse scores for '{RelevanceMetricName}', '{TruthMetricName}' and '{CompletenessMetricName}'.:
-                                {evaluationResponseText}
-                                """));
-                    }
-                    else
-                    {
-                        rating = Rating.FromJson(repairedJson!);
-                    }
-                }
-                catch (JsonException ex)
-                {
-                    rating = Rating.Inconclusive;
-                    result.AddDiagnosticToAllMetrics(
-                        EvaluationDiagnostic.Error(
-                            $"""
                             Failed to repair the following response from the model and parse scores for '{RelevanceMetricName}', '{TruthMetricName}' and '{CompletenessMetricName}'.:
                             {evaluationResponseText}
                             {ex}
                             """));
+                    }
                 }
             }
         }
-
-        UpdateResult(rating);
-
-        void UpdateResult(Rating rating)
+        finally
         {
+            stopwatch.Stop();
+            duration = $"{stopwatch.Elapsed.TotalSeconds.ToString("F2", CultureInfo.InvariantCulture)} s";
+        }
+
+        UpdateResult();
+
+        void UpdateResult()
+        {
+            const string Rationales = "Rationales";
+            const string Separator = "; ";
+
+            var commonMetadata = new Dictionary<string, string>();
+
+            if (!string.IsNullOrWhiteSpace(evaluationResponse.ModelId))
+            {
+                commonMetadata["rtc-evaluation-model-used"] = evaluationResponse.ModelId!;
+            }
+
+            if (evaluationResponse.Usage is UsageDetails usage)
+            {
+                if (usage.InputTokenCount is not null)
+                {
+                    commonMetadata["rtc-evaluation-input-tokens-used"] = $"{usage.InputTokenCount}";
+                }
+
+                if (usage.OutputTokenCount is not null)
+                {
+                    commonMetadata["rtc-evaluation-output-tokens-used"] = $"{usage.OutputTokenCount}";
+                }
+
+                if (usage.TotalTokenCount is not null)
+                {
+                    commonMetadata["rtc-evaluation-total-tokens-used"] = $"{usage.TotalTokenCount}";
+                }
+            }
+
+            commonMetadata["rtc-evaluation-duration"] = duration;
+
             NumericMetric relevance = result.Get<NumericMetric>(RelevanceMetricName);
             relevance.Value = rating.Relevance;
             relevance.Interpretation = relevance.InterpretScore();
             if (!string.IsNullOrWhiteSpace(rating.RelevanceReasoning))
             {
                 relevance.Reason = rating.RelevanceReasoning!;
+            }
+
+            relevance.AddOrUpdateMetadata(commonMetadata);
+            if (rating.RelevanceReasons.Any())
+            {
+                string value = string.Join(Separator, rating.RelevanceReasons);
+                relevance.AddOrUpdateMetadata(name: Rationales, value);
             }
 
             NumericMetric truth = result.Get<NumericMetric>(TruthMetricName);
@@ -189,12 +257,26 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator : ChatConvers
                 truth.Reason = rating.TruthReasoning!;
             }
 
+            truth.AddOrUpdateMetadata(commonMetadata);
+            if (rating.TruthReasons.Any())
+            {
+                string value = string.Join(Separator, rating.TruthReasons);
+                truth.AddOrUpdateMetadata(name: Rationales, value);
+            }
+
             NumericMetric completeness = result.Get<NumericMetric>(CompletenessMetricName);
             completeness.Value = rating.Completeness;
             completeness.Interpretation = completeness.InterpretScore();
             if (!string.IsNullOrWhiteSpace(rating.CompletenessReasoning))
             {
                 completeness.Reason = rating.CompletenessReasoning!;
+            }
+
+            completeness.AddOrUpdateMetadata(commonMetadata);
+            if (rating.CompletenessReasons.Any())
+            {
+                string value = string.Join(Separator, rating.CompletenessReasons);
+                completeness.AddOrUpdateMetadata(name: Rationales, value);
             }
 
             if (!string.IsNullOrWhiteSpace(rating.Error))

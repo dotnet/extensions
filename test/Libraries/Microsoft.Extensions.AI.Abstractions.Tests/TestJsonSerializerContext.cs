@@ -16,9 +16,14 @@ namespace Microsoft.Extensions.AI;
     UseStringEnumConverter = true)]
 [JsonSerializable(typeof(ChatResponse))]
 [JsonSerializable(typeof(ChatResponseUpdate))]
+[JsonSerializable(typeof(SpeechToTextResponse))]
+[JsonSerializable(typeof(SpeechToTextResponseUpdate))]
+[JsonSerializable(typeof(SpeechToTextResponseUpdateKind))]
+[JsonSerializable(typeof(SpeechToTextOptions))]
 [JsonSerializable(typeof(ChatOptions))]
 [JsonSerializable(typeof(EmbeddingGenerationOptions))]
 [JsonSerializable(typeof(Dictionary<string, object?>))]
+[JsonSerializable(typeof(AIFunctionArguments))]
 [JsonSerializable(typeof(int[]))] // Used in ChatMessageContentTests
 [JsonSerializable(typeof(Embedding))] // Used in EmbeddingTests
 [JsonSerializable(typeof(Dictionary<string, JsonDocument>))] // Used in Content tests

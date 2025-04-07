@@ -1,16 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.AI</RootNamespace>
     <Description>Utilities for working with generative AI components.</Description>
     <Workstream>AI</Workstream>
-    <!-- This package needs to stay referencing .NET 9 versions of its dependencies -->
-    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
   </PropertyGroup>
 
   <PropertyGroup>
     <Stage>preview</Stage>
-    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
     <EnablePackageValidation>false</EnablePackageValidation>
     <MinCodeCoverage>89</MinCodeCoverage>
     <MinMutationScore>0</MinMutationScore>
@@ -24,6 +21,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
     <InjectStringSyntaxAttributeOnLegacy>true</InjectStringSyntaxAttributeOnLegacy>
     <DisableMicrosoftExtensionsLoggingSourceGenerator>false</DisableMicrosoftExtensionsLoggingSourceGenerator>

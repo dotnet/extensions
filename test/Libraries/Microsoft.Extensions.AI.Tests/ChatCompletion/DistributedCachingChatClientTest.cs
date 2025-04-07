@@ -360,6 +360,7 @@ public class DistributedCachingChatClientTest
                 ],
                 CreatedAt = DateTime.Parse("2024-10-11T19:23:36.0152137Z"),
                 ResponseId = "12345",
+                MessageId = "someMessageId123",
                 AuthorName = "Someone",
                 FinishReason = ChatFinishReason.Length,
             },
@@ -385,6 +386,7 @@ public class DistributedCachingChatClientTest
         var item = Assert.Single(items);
         Assert.Equal("Hello world, how are you?", item.Text);
         Assert.Equal("12345", item.ResponseId);
+        Assert.Equal("someMessageId123", item.MessageId);
         Assert.Equal("Someone", item.AuthorName);
         Assert.Equal(ChatFinishReason.Length, item.FinishReason);
         Assert.Equal(DateTime.Parse("2024-10-11T19:23:36.0152137Z"), item.CreatedAt);
@@ -799,18 +801,10 @@ public class DistributedCachingChatClientTest
     private sealed class CachingChatClientWithCustomKey(IChatClient innerClient, IDistributedCache storage)
         : DistributedCachingChatClient(innerClient, storage)
     {
-        protected override string GetCacheKey(params ReadOnlySpan<object?> values)
+        protected override string GetCacheKey(IEnumerable<ChatMessage> messages, ChatOptions? options, params ReadOnlySpan<object?> additionalValues)
         {
-            var baseKey = base.GetCacheKey(values);
-            foreach (var value in values)
-            {
-                if (value is ChatOptions options)
-                {
-                    return baseKey + options.AdditionalProperties?["someKey"]?.ToString();
-                }
-            }
-
-            return baseKey;
+            var baseKey = base.GetCacheKey(messages, options, additionalValues);
+            return baseKey + options?.AdditionalProperties?["someKey"]?.ToString();
         }
     }
 

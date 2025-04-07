@@ -11,20 +11,43 @@ type ScenarioRunResult = {
     scenarioName: string;
     iterationName: string;
     executionName: string;
-    creationTime?: string;
+    creationTime: string;
     messages: ChatMessage[];
     modelResponse: ChatResponse;
     evaluationResult: EvaluationResult;
+    chatDetails?: ChatDetails;
+    tags?: string[];
+    formatVersion: int;
 };
 
 type ChatResponse = {
     messages: ChatMessage[];
+    modelId?: string;
+    usage?: UsageDetails;
 }
 
 type ChatMessage = {
     authorName?: string;
     role: string;
-    contents: AIContent[]
+    contents: AIContent[];
+};
+
+type ChatDetails = {
+    turnDetails: ChatTurnDetails[];
+}
+
+type ChatTurnDetails = {
+    latency: number;
+    model?: string;
+    usage?: UsageDetails;
+    cacheKey?: string;
+    cacheHit?: boolean;
+}
+
+type UsageDetails = {
+    inputTokenCount?: number;
+    outputTokenCount?: number;
+    totalTokenCount?: number;
 };
 
 type AIContent = {
@@ -60,7 +83,10 @@ type BaseEvaluationMetric = {
     $type: string;
     name: string;
     interpretation?: EvaluationMetricInterpretation;
-    diagnostics: EvaluationDiagnostic[];
+    diagnostics?: EvaluationDiagnostic[];
+    metadata: { 
+        [K: string]: string 
+    };
 };
 
 type MetricWithNoValue = BaseEvaluationMetric & {

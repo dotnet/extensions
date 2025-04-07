@@ -8,44 +8,33 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 using OpenAI.Responses;
+using static Microsoft.Extensions.AI.OpenAIChatClient;
 
 #pragma warning disable S1067 // Expressions should not be too complex
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
-#pragma warning disable SA1204 // Static elements should appear before instance elements
-#pragma warning disable SA1108 // Block statements should not contain embedded comments
+#pragma warning disable S3604 // Member initializer values should not be redundant
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="IChatClient"/> for an <see cref="OpenAIResponseClient"/>.</summary>
-internal sealed class OpenAIResponseChatClient : IChatClient
+internal sealed partial class OpenAIResponseChatClient : IChatClient
 {
     /// <summary>Gets the default OpenAI endpoint.</summary>
-    internal static Uri DefaultOpenAIEndpoint { get; } = new("https://api.openai.com/v1");
+    private static Uri DefaultOpenAIEndpoint { get; } = new("https://api.openai.com/v1");
 
     /// <summary>A <see cref="ChatRole"/> for "developer".</summary>
     private static readonly ChatRole _chatRoleDeveloper = new("developer");
-
-    /// <summary>Cached <see cref="BinaryData"/> for the string "none".</summary>
-    private static readonly BinaryData _none = BinaryData.FromBytes("\"none\""u8.ToArray());
-
-    /// <summary>Cached <see cref="BinaryData"/> for the string "auto".</summary>
-    private static readonly BinaryData _auto = BinaryData.FromBytes("\"auto\""u8.ToArray());
-
-    /// <summary>Cached <see cref="BinaryData"/> for the string "required".</summary>
-    private static readonly BinaryData _required = BinaryData.FromBytes("\"required\""u8.ToArray());
 
     /// <summary>Metadata about the client.</summary>
     private readonly ChatClientMetadata _metadata;
 
     /// <summary>The underlying <see cref="OpenAIResponseClient" />.</summary>
     private readonly OpenAIResponseClient _responseClient;
-
-    /// <summary>The <see cref="JsonSerializerOptions"/> use for any serialization activities related to tool call arguments and results.</summary>
-    private JsonSerializerOptions _toolCallJsonSerializerOptions = AIJsonUtilities.DefaultOptions;
 
     /// <summary>Initializes a new instance of the <see cref="OpenAIResponseChatClient"/> class for the specified <see cref="OpenAIResponseClient"/>.</summary>
     /// <param name="responseClient">The underlying client.</param>
@@ -68,13 +57,6 @@ internal sealed class OpenAIResponseChatClient : IChatClient
         _metadata = new("openai", providerUrl, model);
     }
 
-    /// <summary>Gets or sets <see cref="JsonSerializerOptions"/> to use for any serialization activities related to tool call arguments and results.</summary>
-    public JsonSerializerOptions ToolCallJsonSerializerOptions
-    {
-        get => _toolCallJsonSerializerOptions;
-        set => _toolCallJsonSerializerOptions = Throw.IfNull(value);
-    }
-
     /// <inheritdoc />
     object? IChatClient.GetService(Type serviceType, object? serviceKey)
     {
@@ -95,7 +77,7 @@ internal sealed class OpenAIResponseChatClient : IChatClient
         _ = Throw.IfNull(messages);
 
         // Convert the inputs into what OpenAIResponseClient expects.
-        var openAIResponseItems = ToOpenAIResponseItems(messages, ToolCallJsonSerializerOptions);
+        var openAIResponseItems = ToOpenAIResponseItems(messages);
         var openAIOptions = ToOpenAIResponseCreationOptions(options);
 
         // Make the call to the OpenAIResponseClient.
@@ -132,6 +114,7 @@ internal sealed class OpenAIResponseChatClient : IChatClient
                 switch (outputItem)
                 {
                     case MessageResponseItem messageItem:
+                        message.MessageId = messageItem.Id;
                         message.RawRepresentation = messageItem;
                         message.Role = ToChatRole(messageItem.Role);
                         (message.AdditionalProperties ??= []).Add(nameof(messageItem.Id), messageItem.Id);
@@ -145,9 +128,14 @@ internal sealed class OpenAIResponseChatClient : IChatClient
                                 functionCall.FunctionArguments.ToMemory(),
                                 functionCall.CallId,
                                 functionCall.FunctionName,
-                                static json => JsonSerializer.Deserialize(json.Span, OpenAIJsonContext.Default.IDictionaryStringObject)!));
+                                static json => JsonSerializer.Deserialize(json.Span, ResponseClientJsonContext.Default.IDictionaryStringObject)!));
                         break;
                 }
+            }
+
+            if (openAIResponse.Error is { } error)
+            {
+                message.Contents.Add(new ErrorContent(error.Message) { ErrorCode = error.Code });
             }
         }
 
@@ -161,119 +149,128 @@ internal sealed class OpenAIResponseChatClient : IChatClient
         _ = Throw.IfNull(messages);
 
         // Convert the inputs into what OpenAIResponseClient expects.
-        var openAIResponseItems = ToOpenAIResponseItems(messages, ToolCallJsonSerializerOptions);
+        var openAIResponseItems = ToOpenAIResponseItems(messages);
         var openAIOptions = ToOpenAIResponseCreationOptions(options);
 
         // Make the call to the OpenAIResponseClient and process the streaming results.
-        Dictionary<int, FunctionCallInfo>? functionCallInfos = null;
         DateTimeOffset? createdAt = null;
         string? responseId = null;
         string? modelId = null;
-        ChatRole? role = null;
-        ChatFinishReason? finishReason = null;
-        UsageDetails? usage = null;
+        string? lastMessageId = null;
+        ChatRole? lastRole = null;
+        Dictionary<int, MessageResponseItem> outputIndexToMessages = [];
+        Dictionary<int, FunctionCallInfo>? functionCallInfos = null;
         await foreach (var streamingUpdate in _responseClient.CreateResponseStreamingAsync(openAIResponseItems, openAIOptions, cancellationToken).ConfigureAwait(false))
         {
-            // Handle metadata updates about the overall response.
-            if (streamingUpdate is StreamingResponseStatusUpdate statusUpdate)
+            switch (streamingUpdate)
             {
-                createdAt ??= statusUpdate.Response.CreatedAt;
-                responseId ??= statusUpdate.Response.Id;
-                modelId ??= statusUpdate.Response.Model;
-                finishReason ??= ToFinishReason(statusUpdate.Response?.IncompleteStatusDetails?.Reason);
-                usage ??= ToUsageDetails(statusUpdate.Response);
-                continue;
-            }
+                case StreamingResponseCreatedUpdate createdUpdate:
+                    createdAt = createdUpdate.Response.CreatedAt;
+                    responseId = createdUpdate.Response.Id;
+                    modelId = createdUpdate.Response.Model;
+                    break;
 
-            if (streamingUpdate is StreamingResponseItemUpdate itemUpdate)
-            {
-                // Handle metadata updates about the message.
-                if (itemUpdate.Item is MessageResponseItem messageItem)
-                {
-                    role ??= ToChatRole(messageItem.Role);
-                    continue;
-                }
-
-                // Handle function call updates (name/id). Arguments come as part of content.
-                if (itemUpdate.Item is FunctionCallResponseItem functionCallItem)
-                {
-                    functionCallInfos ??= [];
-                    if (!functionCallInfos.TryGetValue(itemUpdate.ItemIndex, out FunctionCallInfo? callInfo))
+                case StreamingResponseCompletedUpdate completedUpdate:
+                    yield return new()
                     {
-                        functionCallInfos[itemUpdate.ItemIndex] = callInfo = new();
+                        Contents = ToUsageDetails(completedUpdate.Response) is { } usage ? [new UsageContent(usage)] : [],
+                        CreatedAt = createdAt,
+                        ResponseId = responseId,
+                        FinishReason =
+                            ToFinishReason(completedUpdate.Response?.IncompleteStatusDetails?.Reason) ??
+                            (functionCallInfos is not null ? ChatFinishReason.ToolCalls : ChatFinishReason.Stop),
+                        MessageId = lastMessageId,
+                        ModelId = modelId,
+                        Role = lastRole,
+                    };
+                    break;
+
+                case StreamingResponseOutputItemAddedUpdate outputItemAddedUpdate:
+                    switch (outputItemAddedUpdate.Item)
+                    {
+                        case MessageResponseItem mri:
+                            outputIndexToMessages[outputItemAddedUpdate.OutputIndex] = mri;
+                            break;
+
+                        case FunctionCallResponseItem fcri:
+                            (functionCallInfos ??= [])[outputItemAddedUpdate.OutputIndex] = new(fcri);
+                            break;
                     }
 
-                    callInfo.CallId = functionCallItem.CallId;
-                    callInfo.Name = functionCallItem.FunctionName;
-                    continue;
-                }
-            }
+                    break;
 
-            // Handle content updates.
-            if (streamingUpdate is StreamingResponseContentPartDeltaUpdate contentUpdate)
-            {
-                // Update our knowledge of function call requests.
-                if (contentUpdate.FunctionArguments is string argsUpdate)
-                {
-                    functionCallInfos ??= [];
-                    if (!functionCallInfos.TryGetValue(contentUpdate.ItemIndex, out FunctionCallInfo? callInfo))
-                    {
-                        functionCallInfos[contentUpdate.ItemIndex] = callInfo = new();
-                    }
+                case StreamingResponseOutputItemDoneUpdate outputItemDoneUpdate:
+                    _ = outputIndexToMessages.Remove(outputItemDoneUpdate.OutputIndex);
+                    break;
 
-                    _ = (callInfo.Arguments ??= new()).Append(argsUpdate);
-                }
-
-                // If there's any text content, return it.
-                if (!string.IsNullOrEmpty(contentUpdate.Text))
-                {
-                    yield return new(role, contentUpdate.Text)
+                case StreamingResponseOutputTextDeltaUpdate outputTextDeltaUpdate:
+                    _ = outputIndexToMessages.TryGetValue(outputTextDeltaUpdate.OutputIndex, out MessageResponseItem? messageItem);
+                    lastMessageId = messageItem?.Id;
+                    lastRole = ToChatRole(messageItem?.Role);
+                    yield return new ChatResponseUpdate(lastRole, outputTextDeltaUpdate.Delta)
                     {
                         CreatedAt = createdAt,
+                        MessageId = lastMessageId,
                         ModelId = modelId,
-                        RawRepresentation = streamingUpdate,
                         ResponseId = responseId,
                     };
-                }
+                    break;
 
-                continue;
-            }
-        }
-
-        // Now that we've received all updates and yielded all content,
-        // yield a final update with any remaining information.
-        ChatResponseUpdate update = new()
-        {
-            ResponseId = responseId,
-            CreatedAt = createdAt,
-            FinishReason = finishReason ?? (functionCallInfos is not null ? ChatFinishReason.ToolCalls : ChatFinishReason.Stop),
-            ModelId = modelId,
-            Role = role,
-        };
-
-        if (usage is not null)
-        {
-            update.Contents.Add(new UsageContent(usage));
-        }
-
-        if (functionCallInfos is not null)
-        {
-            foreach (var entry in functionCallInfos)
-            {
-                FunctionCallInfo fci = entry.Value;
-                if (!string.IsNullOrWhiteSpace(fci.Name))
+                case StreamingResponseFunctionCallArgumentsDeltaUpdate functionCallArgumentsDeltaUpdate:
                 {
-                    update.Contents.Add(
-                        FunctionCallContent.CreateFromParsedArguments(
-                            fci.Arguments?.ToString() ?? string.Empty,
-                            fci.CallId ?? string.Empty,
-                            fci.Name!,
-                            static json => JsonSerializer.Deserialize(json, OpenAIJsonContext.Default.IDictionaryStringObject)!));
+                    if (functionCallInfos?.TryGetValue(functionCallArgumentsDeltaUpdate.OutputIndex, out FunctionCallInfo? callInfo) is true)
+                    {
+                        _ = (callInfo.Arguments ??= new()).Append(functionCallArgumentsDeltaUpdate.Delta);
+                    }
+
+                    break;
                 }
+
+                case StreamingResponseFunctionCallArgumentsDoneUpdate functionCallOutputDoneUpdate:
+                {
+                    if (functionCallInfos?.TryGetValue(functionCallOutputDoneUpdate.OutputIndex, out FunctionCallInfo? callInfo) is true)
+                    {
+                        _ = functionCallInfos.Remove(functionCallOutputDoneUpdate.OutputIndex);
+
+                        var fci = FunctionCallContent.CreateFromParsedArguments(
+                            callInfo.Arguments?.ToString() ?? string.Empty,
+                            callInfo.ResponseItem.CallId,
+                            callInfo.ResponseItem.FunctionName,
+                            static json => JsonSerializer.Deserialize(json, ResponseClientJsonContext.Default.IDictionaryStringObject)!);
+
+                        lastMessageId = callInfo.ResponseItem.Id;
+                        lastRole = ChatRole.Assistant;
+                        yield return new ChatResponseUpdate(lastRole, [fci])
+                        {
+                            CreatedAt = createdAt,
+                            MessageId = lastMessageId,
+                            ModelId = modelId,
+                            ResponseId = responseId,
+                        };
+                    }
+
+                    break;
+                }
+
+                case StreamingResponseErrorUpdate errorUpdate:
+                    yield return new ChatResponseUpdate
+                    {
+                        CreatedAt = createdAt,
+                        MessageId = lastMessageId,
+                        ModelId = modelId,
+                        ResponseId = responseId,
+                        Contents =
+                        [
+                            new ErrorContent(errorUpdate.Message)
+                            {
+                                ErrorCode = errorUpdate.Code,
+                                Details = errorUpdate.Param,
+                            }
+                        ],
+                    };
+                    break;
             }
         }
-
-        yield return update;
     }
 
     /// <inheritdoc />
@@ -284,10 +281,13 @@ internal sealed class OpenAIResponseChatClient : IChatClient
 
     /// <summary>Creates a <see cref="ChatRole"/> from a <see cref="MessageRole"/>.</summary>
     private static ChatRole ToChatRole(MessageRole? role) =>
-        role == MessageRole.System ? ChatRole.System :
-        role == MessageRole.Developer ? _chatRoleDeveloper :
-        role == MessageRole.User ? ChatRole.User :
-        ChatRole.Assistant;
+        role switch
+        {
+            MessageRole.System => ChatRole.System,
+            MessageRole.Developer => _chatRoleDeveloper,
+            MessageRole.User => ChatRole.User,
+            _ => ChatRole.Assistant,
+        };
 
     /// <summary>Creates a <see cref="ChatFinishReason"/> from a <see cref="ResponseIncompleteStatusReason"/>.</summary>
     private static ChatFinishReason? ToFinishReason(ResponseIncompleteStatusReason? statusReason) =>
@@ -311,9 +311,9 @@ internal sealed class OpenAIResponseChatClient : IChatClient
             // Handle loosely-typed properties from AdditionalProperties.
             if (options.AdditionalProperties is { Count: > 0 } additionalProperties)
             {
-                if (additionalProperties.TryGetValue(nameof(result.AllowParallelToolCalls), out bool allowParallelToolCalls))
+                if (additionalProperties.TryGetValue(nameof(result.ParallelToolCallsEnabled), out bool allowParallelToolCalls))
                 {
-                    result.AllowParallelToolCalls = allowParallelToolCalls;
+                    result.ParallelToolCallsEnabled = allowParallelToolCalls;
                 }
 
                 if (additionalProperties.TryGetValue(nameof(result.EndUserId), out string? endUserId))
@@ -358,8 +358,8 @@ internal sealed class OpenAIResponseChatClient : IChatClient
                     switch (tool)
                     {
                         case AIFunction af:
-                            var oaitool = JsonSerializer.Deserialize(af.JsonSchema, OpenAIJsonContext.Default.OpenAIChatToolJson)!;
-                            var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(oaitool, OpenAIJsonContext.Default.OpenAIChatToolJson));
+                            var oaitool = JsonSerializer.Deserialize(af.JsonSchema, ResponseClientJsonContext.Default.ResponseToolJson)!;
+                            var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(oaitool, ResponseClientJsonContext.Default.ResponseToolJson));
                             result.Tools.Add(ResponseTool.CreateFunctionTool(af.Name, af.Description, functionParameters));
                             break;
 
@@ -385,18 +385,18 @@ internal sealed class OpenAIResponseChatClient : IChatClient
                 switch (options.ToolMode)
                 {
                     case NoneChatToolMode:
-                        result.ToolChoice = _none;
+                        result.ToolChoice = ResponseToolChoice.CreateNoneChoice();
                         break;
 
                     case AutoChatToolMode:
                     case null:
-                        result.ToolChoice = _auto;
+                        result.ToolChoice = ResponseToolChoice.CreateAutoChoice();
                         break;
 
                     case RequiredChatToolMode required:
                         result.ToolChoice = required.RequiredFunctionName is not null ?
-                            BinaryData.FromString($$"""{"type":"function","name":"{{required.RequiredFunctionName}}"}""") :
-                            _required;
+                            ResponseToolChoice.CreateFunctionChoice(required.RequiredFunctionName) :
+                            ResponseToolChoice.CreateRequiredChoice();
                         break;
                 }
             }
@@ -404,17 +404,23 @@ internal sealed class OpenAIResponseChatClient : IChatClient
             // Handle response format.
             if (options.ResponseFormat is ChatResponseFormatText)
             {
-                result.TextOptions.ResponseFormat = ResponseTextFormat.CreateTextFormat();
+                result.TextOptions = new()
+                {
+                    TextFormat = ResponseTextFormat.CreateTextFormat()
+                };
             }
             else if (options.ResponseFormat is ChatResponseFormatJson jsonFormat)
             {
-                result.TextOptions.ResponseFormat = jsonFormat.Schema is { } jsonSchema ?
-                    ResponseTextFormat.CreateJsonSchemaFormat(
-                        jsonFormat.SchemaName ?? "json_schema",
-                        BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(jsonSchema, OpenAIJsonContext.Default.JsonElement)),
-                        jsonFormat.SchemaDescription,
-                        jsonSchemaIsStrict: true) :
-                    ResponseTextFormat.CreateJsonObjectFormat();
+                result.TextOptions = new()
+                {
+                    TextFormat = jsonFormat.Schema is { } jsonSchema ?
+                        ResponseTextFormat.CreateJsonSchemaFormat(
+                            jsonFormat.SchemaName ?? "json_schema",
+                            BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(jsonSchema, ResponseClientJsonContext.Default.JsonElement)),
+                            jsonFormat.SchemaDescription,
+                            jsonSchemaIsStrict: true) :
+                        ResponseTextFormat.CreateJsonObjectFormat(),
+                };
             }
         }
 
@@ -423,7 +429,7 @@ internal sealed class OpenAIResponseChatClient : IChatClient
 
     /// <summary>Convert a sequence of <see cref="ChatMessage"/>s to <see cref="ResponseItem"/>s.</summary>
     private static IEnumerable<ResponseItem> ToOpenAIResponseItems(
-        IEnumerable<ChatMessage> inputs, JsonSerializerOptions options)
+        IEnumerable<ChatMessage> inputs)
     {
         foreach (ChatMessage input in inputs)
         {
@@ -459,7 +465,7 @@ internal sealed class OpenAIResponseChatClient : IChatClient
                             {
                                 try
                                 {
-                                    result = JsonSerializer.Serialize(resultContent.Result, options.GetTypeInfo(typeof(object)));
+                                    result = JsonSerializer.Serialize(resultContent.Result, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(object)));
                                 }
                                 catch (NotSupportedException)
                                 {
@@ -482,19 +488,16 @@ internal sealed class OpenAIResponseChatClient : IChatClient
                     switch (item)
                     {
                         case TextContent textContent:
-                            yield return ResponseItem.CreateAssistantMessageItem(
-                                "msg_ignored",
-                                textContent.Text);
+                            yield return ResponseItem.CreateAssistantMessageItem(textContent.Text);
                             break;
 
                         case FunctionCallContent callContent:
-                            yield return ResponseItem.CreateFunctionCall(
-                                "msg_ignored",
+                            yield return ResponseItem.CreateFunctionCallItem(
                                 callContent.CallId,
                                 callContent.Name,
                                 BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(
                                     callContent.Arguments,
-                                    options.GetTypeInfo(typeof(IDictionary<string, object?>)))));
+                                    AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object?>)))));
                             break;
                     }
                 }
@@ -575,12 +578,38 @@ internal sealed class OpenAIResponseChatClient : IChatClient
         return parts;
     }
 
+    /// <summary>Used to create the JSON payload for an OpenAI chat tool description.</summary>
+    private sealed class ResponseToolJson
+    {
+        [JsonPropertyName("type")]
+        public string Type { get; set; } = "object";
+
+        [JsonPropertyName("required")]
+        public HashSet<string> Required { get; set; } = [];
+
+        [JsonPropertyName("properties")]
+        public Dictionary<string, JsonElement> Properties { get; set; } = [];
+
+        [JsonPropertyName("additionalProperties")]
+        public bool AdditionalProperties { get; set; }
+    }
+
     /// <summary>POCO representing function calling info.</summary>
     /// <remarks>Used to concatenation information for a single function call from across multiple streaming updates.</remarks>
-    private sealed class FunctionCallInfo
+    private sealed class FunctionCallInfo(FunctionCallResponseItem item)
     {
-        public string? CallId;
-        public string? Name;
+        public readonly FunctionCallResponseItem ResponseItem = item;
         public StringBuilder? Arguments;
     }
+
+    /// <summary>Source-generated JSON type information.</summary>
+    [JsonSourceGenerationOptions(JsonSerializerDefaults.Web,
+        UseStringEnumConverter = true,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        WriteIndented = true)]
+    [JsonSerializable(typeof(ResponseToolJson))]
+    [JsonSerializable(typeof(JsonElement))]
+    [JsonSerializable(typeof(IDictionary<string, object?>))]
+    [JsonSerializable(typeof(string[]))]
+    private sealed partial class ResponseClientJsonContext : JsonSerializerContext;
 }

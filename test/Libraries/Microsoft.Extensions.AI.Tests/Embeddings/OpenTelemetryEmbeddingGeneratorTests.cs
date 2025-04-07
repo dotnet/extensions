@@ -15,8 +15,10 @@ namespace Microsoft.Extensions.AI;
 
 public class OpenTelemetryEmbeddingGeneratorTests
 {
-    [Fact]
-    public async Task ExpectedInformationLogged_Async()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("replacementmodel")]
+    public async Task ExpectedInformationLogged_Async(string? perRequestModelId)
     {
         var sourceName = Guid.NewGuid().ToString();
         var activities = new List<Activity>();
@@ -48,7 +50,7 @@ public class OpenTelemetryEmbeddingGeneratorTests
                 };
             },
             GetServiceCallback = (serviceType, serviceKey) =>
-                serviceType == typeof(EmbeddingGeneratorMetadata) ? new EmbeddingGeneratorMetadata("testservice", new Uri("http://localhost:12345/something"), "amazingmodel", 384) :
+                serviceType == typeof(EmbeddingGeneratorMetadata) ? new EmbeddingGeneratorMetadata("testservice", new Uri("http://localhost:12345/something"), "defaultmodel", 1234) :
                 null,
         };
 
@@ -59,7 +61,7 @@ public class OpenTelemetryEmbeddingGeneratorTests
 
         var options = new EmbeddingGenerationOptions
         {
-            ModelId = "replacementmodel",
+            ModelId = perRequestModelId,
             AdditionalProperties = new()
             {
                 ["service_tier"] = "value1",
@@ -70,6 +72,7 @@ public class OpenTelemetryEmbeddingGeneratorTests
         await generator.GenerateEmbeddingVectorAsync("hello", options);
 
         var activity = Assert.Single(activities);
+        var expectedModelName = perRequestModelId ?? "defaultmodel";
 
         Assert.NotNull(activity.Id);
         Assert.NotEmpty(activity.Id);
@@ -77,10 +80,11 @@ public class OpenTelemetryEmbeddingGeneratorTests
         Assert.Equal("http://localhost:12345/something", activity.GetTagItem("server.address"));
         Assert.Equal(12345, (int)activity.GetTagItem("server.port")!);
 
-        Assert.Equal("embeddings replacementmodel", activity.DisplayName);
+        Assert.Equal($"embeddings {expectedModelName}", activity.DisplayName);
         Assert.Equal("testservice", activity.GetTagItem("gen_ai.system"));
 
-        Assert.Equal("replacementmodel", activity.GetTagItem("gen_ai.request.model"));
+        Assert.Equal(expectedModelName, activity.GetTagItem("gen_ai.request.model"));
+        Assert.Equal(1234, activity.GetTagItem("gen_ai.request.embedding.dimensions"));
         Assert.Equal("value1", activity.GetTagItem("gen_ai.testservice.request.service_tier"));
         Assert.Equal("value2", activity.GetTagItem("gen_ai.testservice.request.something_else"));
 

@@ -2,53 +2,131 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { useState } from 'react';
-import { Settings28Regular } from '@fluentui/react-icons';
-import { Drawer, DrawerBody, DrawerHeader, DrawerHeaderTitle, Switch } from '@fluentui/react-components';
+import { Settings28Regular, FilterDismissRegular, DismissRegular, ArrowDownloadRegular } from '@fluentui/react-icons';
+import { Button, Drawer, DrawerBody, DrawerHeader, DrawerHeaderTitle, Switch, Tooltip } from '@fluentui/react-components';
 import { makeStyles } from '@fluentui/react-components';
 import './App.css';
-import { ScoreNode } from './Summary';
 import { ScenarioGroup } from './ScenarioTree';
-
-type AppProperties = {
-  dataset: Dataset,
-  tree: ScoreNode,
-};
+import { GlobalTagsDisplay, FilterableTagsDisplay, categorizeAndSortTags } from './TagsDisplay';
+import { tokens } from '@fluentui/react-components';
+import { ScoreNodeHistory } from './ScoreNodeHistory';
+import { useReportContext } from './ReportContext';
 
 const useStyles = makeStyles({
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, backgroundColor: 'white', zIndex: 1 },
+  header: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+    position: 'sticky',
+    top: 0,
+    zIndex: 1,
+    paddingBottom: '12px',
+    backgroundColor: tokens.colorNeutralBackground1,
+    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+    marginBottom: '1rem',
+  },
+  headerTop: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerActions: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+  },
   footerText: { fontSize: '0.8rem', marginTop: '2rem' },
-  closeButton: { position: 'absolute', top: '1.5rem', right: '1rem', cursor: 'pointer', fontSize: '2rem' },
+  closeButton: {
+    position: 'absolute',
+    top: '1.5rem',
+    right: '1rem',
+  },
   switchLabel: { fontSize: '1rem', paddingTop: '1rem' },
   drawerBody: { paddingTop: '1rem' },
 });
 
-function App({ dataset, tree }: AppProperties) {
+function App() {
   const classes = useStyles();
+  const { dataset, scoreSummary, selectedTags, clearFilters } = useReportContext();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [renderMarkdown, setRenderMarkdown] = useState(true);
+  const { renderMarkdown, setRenderMarkdown } = useReportContext();
+  const { globalTags, filterableTags } = categorizeAndSortTags(dataset, scoreSummary.primaryResult.executionName);
 
   const toggleSettings = () => setIsSettingsOpen(!isSettingsOpen);
-  const toggleRenderMarkdown = () => setRenderMarkdown(!renderMarkdown);
   const closeSettings = () => setIsSettingsOpen(false);
+
+  const downloadDataset = () => {
+    // check if dataset has a default property that duplicates the content
+    const containsDefault = 'default' in dataset && 
+      typeof dataset.default === 'object' &&
+      dataset.default !== null &&
+      'scenarioRunResults' in (dataset.default as any);
+      
+    const dataToSerialize = containsDefault ? dataset.default : dataset;
+      
+    // create a stringified JSON of the dataset
+    const dataStr = JSON.stringify(dataToSerialize, null, 2);
+
+    // create a link to download the JSON file in the page and click it
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${scoreSummary.primaryResult.executionName}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <>
       <div className={classes.header}>
-        <h1>AI Evaluation Report</h1>
-        <Settings28Regular onClick={toggleSettings} style={{ cursor: 'pointer' }} />
+        <div className={classes.headerTop}>
+          <h1>AI Evaluation Report</h1>
+          <div className={classes.headerActions}>
+            {selectedTags.length > 0 && (
+              <Tooltip content="Clear Filters" relationship="description">
+                <Button icon={<FilterDismissRegular />} appearance="subtle" onClick={clearFilters} />
+              </Tooltip>
+            )}
+            <Tooltip content="Download Data as JSON" relationship="description">
+              <Button icon={<ArrowDownloadRegular />} appearance="subtle" onClick={downloadDataset} />
+            </Tooltip>
+            <Tooltip content="Settings" relationship="description">
+              <Button icon={<Settings28Regular />} appearance="subtle" onClick={toggleSettings} />
+            </Tooltip>
+          </div>
+        </div>
+        <GlobalTagsDisplay globalTags={globalTags} />
+
+        <FilterableTagsDisplay
+          filterableTags={filterableTags}
+        />
+
+        <ScoreNodeHistory />
       </div>
 
-      <ScenarioGroup node={tree} renderMarkdown={renderMarkdown} />
+      <ScenarioGroup
+        node={scoreSummary.primaryResult}
+        scoreSummary={scoreSummary}
+      />
 
-      <p className={classes.footerText}>Generated at {dataset.createdAt} by Microsoft.Extensions.AI.Evaluation.Reporting version {dataset.generatorVersion}</p>
+      <p className={classes.footerText}>
+        Generated at {dataset.createdAt} by Microsoft.Extensions.AI.Evaluation.Reporting version {dataset.generatorVersion}
+      </p>
 
-      <Drawer open={isSettingsOpen} onOpenChange={toggleSettings} position='end'>
+      <Drawer open={isSettingsOpen} onOpenChange={toggleSettings} position="end">
         <DrawerHeader>
           <DrawerHeaderTitle>Settings</DrawerHeaderTitle>
-          <span className={classes.closeButton} onClick={closeSettings}>&times;</span>
+          <Button className={classes.closeButton} icon={<DismissRegular />} appearance="subtle" onClick={closeSettings} />
         </DrawerHeader>
         <DrawerBody className={classes.drawerBody}>
-          <Switch checked={renderMarkdown} onChange={toggleRenderMarkdown} label={<span className={classes.switchLabel}>Render markdown for conversations</span>} />
+          <Switch
+            checked={renderMarkdown}
+            onChange={(_ev, data) => setRenderMarkdown(data.checked)}
+            label={<span className={classes.switchLabel}>Render markdown for conversations</span>}
+          />
         </DrawerBody>
       </Drawer>
     </>

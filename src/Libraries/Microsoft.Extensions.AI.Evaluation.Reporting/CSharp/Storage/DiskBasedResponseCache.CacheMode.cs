@@ -3,7 +3,7 @@
 
 namespace Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
 
-public partial class DiskBasedResponseCache
+internal partial class DiskBasedResponseCache
 {
     /// <summary>
     /// An enum representing the mode in which the cache is operating.

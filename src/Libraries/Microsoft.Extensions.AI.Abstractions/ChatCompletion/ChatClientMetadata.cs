@@ -14,10 +14,10 @@ public class ChatClientMetadata
     /// appropriate name defined in the OpenTelemetry Semantic Conventions for Generative AI systems.
     /// </param>
     /// <param name="providerUri">The URL for accessing the chat provider, if applicable.</param>
-    /// <param name="modelId">The ID of the chat model used, if applicable.</param>
-    public ChatClientMetadata(string? providerName = null, Uri? providerUri = null, string? modelId = null)
+    /// <param name="defaultModelId">The ID of the chat model used by default, if applicable.</param>
+    public ChatClientMetadata(string? providerName = null, Uri? providerUri = null, string? defaultModelId = null)
     {
-        ModelId = modelId;
+        DefaultModelId = defaultModelId;
         ProviderName = providerName;
         ProviderUri = providerUri;
     }
@@ -32,10 +32,10 @@ public class ChatClientMetadata
     /// <summary>Gets the URL for accessing the chat provider.</summary>
     public Uri? ProviderUri { get; }
 
-    /// <summary>Gets the ID of the model used by this chat provider.</summary>
+    /// <summary>Gets the ID of the default model used by this chat client.</summary>
     /// <remarks>
-    /// This value can be null if either the name is unknown or there are multiple possible models associated with this instance.
+    /// This value can be <see langword="null"/> if no default model is set on the corresponding <see cref="IChatClient"/>.
     /// An individual request may override this value via <see cref="ChatOptions.ModelId"/>.
     /// </remarks>
-    public string? ModelId { get; }
+    public string? DefaultModelId { get; }
 }

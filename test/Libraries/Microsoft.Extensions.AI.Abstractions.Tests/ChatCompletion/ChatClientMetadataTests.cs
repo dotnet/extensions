@@ -11,19 +11,19 @@ public class ChatClientMetadataTests
     [Fact]
     public void Constructor_NullValues_AllowedAndRoundtrip()
     {
-        ChatClientMetadata metadata = new(null, null, null);
-        Assert.Null(metadata.ProviderName);
-        Assert.Null(metadata.ProviderUri);
-        Assert.Null(metadata.ModelId);
+        ChatClientMetadata providerMetadata = new(null, null, null);
+        Assert.Null(providerMetadata.ProviderName);
+        Assert.Null(providerMetadata.ProviderUri);
+        Assert.Null(providerMetadata.DefaultModelId);
     }
 
     [Fact]
     public void Constructor_Value_Roundtrips()
     {
         var uri = new Uri("https://example.com");
-        ChatClientMetadata metadata = new("providerName", uri, "theModel");
-        Assert.Equal("providerName", metadata.ProviderName);
-        Assert.Same(uri, metadata.ProviderUri);
-        Assert.Equal("theModel", metadata.ModelId);
+        ChatClientMetadata providerMetadata = new("providerName", uri, "theModel");
+        Assert.Equal("providerName", providerMetadata.ProviderName);
+        Assert.Same(uri, providerMetadata.ProviderUri);
+        Assert.Equal("theModel", providerMetadata.DefaultModelId);
     }
 }
