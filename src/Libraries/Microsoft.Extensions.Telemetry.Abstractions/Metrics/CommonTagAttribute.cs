@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Telemetry.Metrics;
@@ -23,6 +24,7 @@ namespace Microsoft.Extensions.Telemetry.Metrics;
 /// </example>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 [Conditional("CODE_GENERATION_ATTRIBUTES")]
+[Experimental("EXPERIMENTAL_COMMON_TAG_ATTRIBUTE")]
 public sealed class CommonTagAttribute : Attribute
 {
     /// <summary>
