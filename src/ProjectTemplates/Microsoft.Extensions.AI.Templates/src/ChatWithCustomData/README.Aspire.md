@@ -70,8 +70,7 @@ This project is configured to run Ollama in a Docker container.
 
 To get started, download, install, and run Docker Desktop from the [official website](https://www.docker.com/). Follow the installation instructions specific to your operating system.
 
-The response time from Ollama depends on your GPU. If you find that default resilience timout of 10 seconds used by .NET Aspire is timing out for the HTTP call from the web app to the Ollama service, you can update the web app's `Program.cs` to extend the timeout by adding the following below the line which reads `builder.AddServiceDefaults();`:
-
+The response time from Ollama depends on your GPU. If you find that default resilience timeout of 10 seconds used by .NET Aspire is timing out for the HTTP call from the web app to the Ollama service, you can update the web app's `Program.cs` to extend the timeout by adding the following below the line which reads `builder.AddServiceDefaults();`:
 ```csharp
 // Extend the HTTP Client timeout for Ollama
 builder.Services.ConfigureHttpClientDefaults(http =>
