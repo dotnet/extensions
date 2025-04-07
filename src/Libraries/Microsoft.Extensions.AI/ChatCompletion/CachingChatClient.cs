@@ -55,10 +55,10 @@ public abstract class CachingChatClient : DelegatingChatClient
         // concurrent callers might trigger duplicate requests, but that's acceptable.
         var cacheKey = GetCacheKey(messages, options, _boxedFalse);
 
-        if (await ReadCacheAsync(cacheKey, cancellationToken).ConfigureAwait(false) is not { } result)
+        if (await ReadCacheAsync(cacheKey, cancellationToken) is not { } result)
         {
-            result = await base.GetResponseAsync(messages, options, cancellationToken).ConfigureAwait(false);
-            await WriteCacheAsync(cacheKey, result, cancellationToken).ConfigureAwait(false);
+            result = await base.GetResponseAsync(messages, options, cancellationToken);
+            await WriteCacheAsync(cacheKey, result, cancellationToken);
         }
 
         return result;
@@ -77,7 +77,7 @@ public abstract class CachingChatClient : DelegatingChatClient
             // result and cache it. When we get a cache hit, we yield the non-streaming result as a streaming one.
 
             var cacheKey = GetCacheKey(messages, options, _boxedTrue);
-            if (await ReadCacheAsync(cacheKey, cancellationToken).ConfigureAwait(false) is { } chatResponse)
+            if (await ReadCacheAsync(cacheKey, cancellationToken) is { } chatResponse)
             {
                 // Yield all of the cached items.
                 foreach (var chunk in chatResponse.ToChatResponseUpdates())
@@ -89,20 +89,20 @@ public abstract class CachingChatClient : DelegatingChatClient
             {
                 // Yield and store all of the items.
                 List<ChatResponseUpdate> capturedItems = [];
-                await foreach (var chunk in base.GetStreamingResponseAsync(messages, options, cancellationToken).ConfigureAwait(false))
+                await foreach (var chunk in base.GetStreamingResponseAsync(messages, options, cancellationToken))
                 {
                     capturedItems.Add(chunk);
                     yield return chunk;
                 }
 
                 // Write the captured items to the cache as a non-streaming result.
-                await WriteCacheAsync(cacheKey, capturedItems.ToChatResponse(), cancellationToken).ConfigureAwait(false);
+                await WriteCacheAsync(cacheKey, capturedItems.ToChatResponse(), cancellationToken);
             }
         }
         else
         {
             var cacheKey = GetCacheKey(messages, options, _boxedTrue);
-            if (await ReadCacheStreamingAsync(cacheKey, cancellationToken).ConfigureAwait(false) is { } existingChunks)
+            if (await ReadCacheStreamingAsync(cacheKey, cancellationToken) is { } existingChunks)
             {
                 // Yield all of the cached items.
                 string? chatThreadId = null;
@@ -116,14 +116,14 @@ public abstract class CachingChatClient : DelegatingChatClient
             {
                 // Yield and store all of the items.
                 List<ChatResponseUpdate> capturedItems = [];
-                await foreach (var chunk in base.GetStreamingResponseAsync(messages, options, cancellationToken).ConfigureAwait(false))
+                await foreach (var chunk in base.GetStreamingResponseAsync(messages, options, cancellationToken))
                 {
                     capturedItems.Add(chunk);
                     yield return chunk;
                 }
 
                 // Write the captured items to the cache.
-                await WriteCacheStreamingAsync(cacheKey, capturedItems, cancellationToken).ConfigureAwait(false);
+                await WriteCacheStreamingAsync(cacheKey, capturedItems, cancellationToken);
             }
         }
     }
