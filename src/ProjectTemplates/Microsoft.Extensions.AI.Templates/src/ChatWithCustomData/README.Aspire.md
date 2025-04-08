@@ -80,8 +80,8 @@ builder.Services.ConfigureHttpClientDefaults(http =>
     http.AddStandardResilienceHandler(config =>
     {
         config.AttemptTimeout.Timeout = TimeSpan.FromMinutes(3);
-        config.CircuitBreaker.SamplingDuration = TimeSpan.FromMinutes(3) * 3;
-        config.TotalRequestTimeout.Timeout = TimeSpan.FromMinutes(3);
+        config.CircuitBreaker.SamplingDuration = TimeSpan.FromMinutes(10); // must be at least double the AttemptTimeout to pass options validation
+        config.TotalRequestTimeout.Timeout = TimeSpan.FromMinutes(10);
     });
     #pragma warning restore EXTEXP0001
 });
