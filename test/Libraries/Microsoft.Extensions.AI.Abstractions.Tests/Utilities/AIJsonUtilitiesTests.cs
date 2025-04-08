@@ -412,7 +412,7 @@ public static partial class AIJsonUtilitiesTests
     [Fact]
     public static void AddAIContentType_NonAIContent_ThrowsArgumentException()
     {
-        JsonSerializerOptions options = new();
+        JsonSerializerOptions options = new(AIJsonUtilities.DefaultOptions);
         Assert.Throws<ArgumentException>("contentType", () => options.AddAIContentType(typeof(int), "discriminator"));
         Assert.Throws<ArgumentException>("contentType", () => options.AddAIContentType(typeof(object), "discriminator"));
         Assert.Throws<ArgumentException>("contentType", () => options.AddAIContentType(typeof(ChatMessage), "discriminator"));
@@ -421,7 +421,7 @@ public static partial class AIJsonUtilitiesTests
     [Fact]
     public static void AddAIContentType_BuiltInAIContent_ThrowsArgumentException()
     {
-        JsonSerializerOptions options = new();
+        JsonSerializerOptions options = new(AIJsonUtilities.DefaultOptions);
         Assert.Throws<ArgumentException>(() => options.AddAIContentType<AIContent>("discriminator"));
         Assert.Throws<ArgumentException>(() => options.AddAIContentType<TextContent>("discriminator"));
     }
@@ -429,7 +429,11 @@ public static partial class AIJsonUtilitiesTests
     [Fact]
     public static void AddAIContentType_ConflictingIdentifier_ThrowsInvalidOperationException()
     {
-        JsonSerializerOptions options = new();
+        JsonSerializerOptions options = new(AIJsonUtilities.DefaultOptions)
+        {
+            TypeInfoResolverChain = { JsonContext.Default }
+        };
+
         options.AddAIContentType<DerivedAIContent>("text");
         options.AddAIContentType<DerivedAIContent>("audio");
 
