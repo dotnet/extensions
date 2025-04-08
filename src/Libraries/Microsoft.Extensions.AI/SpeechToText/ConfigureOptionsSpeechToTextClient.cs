@@ -40,14 +40,14 @@ public sealed class ConfigureOptionsSpeechToTextClient : DelegatingSpeechToTextC
     public override async Task<SpeechToTextResponse> GetTextAsync(
         Stream audioSpeechStream, SpeechToTextOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await base.GetTextAsync(audioSpeechStream, Configure(options), cancellationToken).ConfigureAwait(false);
+        return await base.GetTextAsync(audioSpeechStream, Configure(options), cancellationToken);
     }
 
     /// <inheritdoc/>
     public override async IAsyncEnumerable<SpeechToTextResponseUpdate> GetStreamingTextAsync(
         Stream audioSpeechStream, SpeechToTextOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var update in base.GetStreamingTextAsync(audioSpeechStream, Configure(options), cancellationToken).ConfigureAwait(false))
+        await foreach (var update in base.GetStreamingTextAsync(audioSpeechStream, Configure(options), cancellationToken))
         {
             yield return update;
         }

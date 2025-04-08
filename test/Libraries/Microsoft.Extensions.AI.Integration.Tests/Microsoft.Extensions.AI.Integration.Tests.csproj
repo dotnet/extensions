@@ -25,10 +25,11 @@
     <EmbeddedResource Include="Resources\audio001.mp3">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\dotnet.png" />
+    <EmbeddedResource Include="..\..\Shared\ImageDataUri\dotnet.png" Link="Resources\dotnet.png"/>
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\Shared\ImageDataUri\ImageDataUri.cs" Link="Shared\ImageDataUri\ImageDataUri.cs" />
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestChatClient.cs" />
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestSpeechToTextClient.cs" />
   </ItemGroup>

@@ -9,7 +9,8 @@
 namespace Microsoft.Extensions.AI.Evaluation.Quality;
 
 /// <summary>
-/// Contextual information required to evaluate the 'Groundedness' of a response.
+/// Contextual information that the <see cref="GroundednessEvaluator"/> uses to evaluate the 'Groundedness' of a
+/// response.
 /// </summary>
 /// <param name="groundingContext">
 /// Contextual information against which the 'Groundedness' of a response is evaluated.

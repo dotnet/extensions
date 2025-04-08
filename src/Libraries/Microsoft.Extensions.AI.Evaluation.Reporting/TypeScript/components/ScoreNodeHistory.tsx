@@ -96,7 +96,7 @@ export const ScoreNodeHistory = () => {
     const historyData = calculateScoreNodeHistoryData(scoreSummary, summaryNode);
 
     return (<div className={classes.section}>
-        <div className={classes.sectionHeader}>
+        <div className={classes.dismissableSectionHeader}>
             <Button icon={<DismissRegular />} appearance="subtle" onClick={() => selectScenarioLevel(selectedScenarioLevel)} />
             <h3 className={classes.sectionHeaderText}>Pass/Fail Trends for {summaryNode.name}</h3>
         </div>

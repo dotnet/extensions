@@ -145,7 +145,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         Exception? error = null;
         try
         {
-            response = await base.GetResponseAsync(messages, options, cancellationToken).ConfigureAwait(false);
+            response = await base.GetResponseAsync(messages, options, cancellationToken);
             return response;
         }
         catch (Exception ex)
@@ -183,7 +183,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
             throw;
         }
 
-        var responseEnumerator = updates.ConfigureAwait(false).GetAsyncEnumerator();
+        var responseEnumerator = updates.GetAsyncEnumerator(cancellationToken);
         List<ChatResponseUpdate> trackedUpdates = [];
         Exception? error = null;
         try
@@ -302,7 +302,8 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
                     if (_system is not null)
                     {
-                        if (options.AdditionalProperties is { } props)
+                        // Since AdditionalProperties has undefined meaning, we treat it as potentially sensitive data
+                        if (EnableSensitiveData && options.AdditionalProperties is { } props)
                         {
                             // Log all additional request options as per-provider tags. This is non-normative, but it covers cases where
                             // there's a per-provider specification in a best-effort manner (e.g. gen_ai.openai.request.service_tier),
@@ -404,11 +405,12 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
                 if (_system is not null)
                 {
-                    // Log all additional response properties as per-provider tags. This is non-normative, but it covers cases where
-                    // there's a per-provider specification in a best-effort manner (e.g. gen_ai.openai.response.system_fingerprint),
-                    // and more generally cases where there's additional useful information to be logged.
-                    if (response.AdditionalProperties is { } props)
+                    // Since AdditionalProperties has undefined meaning, we treat it as potentially sensitive data
+                    if (EnableSensitiveData && response.AdditionalProperties is { } props)
                     {
+                        // Log all additional response properties as per-provider tags. This is non-normative, but it covers cases where
+                        // there's a per-provider specification in a best-effort manner (e.g. gen_ai.openai.response.system_fingerprint),
+                        // and more generally cases where there's additional useful information to be logged.
                         foreach (KeyValuePair<string, object?> prop in props)
                         {
                             _ = activity.AddTag(
