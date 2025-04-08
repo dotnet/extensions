@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+import Fuse from "fuse.js";
+
 export enum ScoreNodeType {
     Group,
     Scenario,
@@ -12,6 +14,7 @@ export type ScoreSummary = {
     includesReportHistory: boolean;
     executionHistory: Map<string, ScoreNode>;
     nodesByKey: Map<string, Map<string, ScoreNode>>;
+    fuseIndex: Fuse<ScoreNode>;
 };
 
 export class ScoreNode {
@@ -80,7 +83,7 @@ export class ScoreNode {
         return [...flattener(this)];
     }
 
-    aggregate(filteredTags: string[] = []) {
+    aggregate() {
         this.failed = false;
         this.numPassingIterations = 0;
         this.numFailingIterations = 0;
@@ -88,9 +91,6 @@ export class ScoreNode {
         this.numFailingScenarios = 0;
 
         if (this.isLeafNode) {
-            if (filteredTags.length > 0 && !this.scenario?.tags?.some(tag => filteredTags.includes(tag))) {
-                return;
-            }
 
             this.failed = false;
             for (const metric of Object.values(this.scenario?.evaluationResult.metrics ?? [])) {
@@ -116,8 +116,8 @@ export class ScoreNode {
             this.shortenedPrompt = shortenPrompt(history);
         } else {
             for (const child of this.childNodes) {
-                child.aggregate(filteredTags);
-                if (filteredTags.length === 0 || child.numPassingIterations + child.numFailingIterations > 0) {
+                child.aggregate();
+                if (child.numPassingIterations + child.numFailingIterations > 0) {
                     this.failed = this.failed || child.failed;
                     this.numPassingIterations += child.numPassingIterations;
                     this.numFailingIterations += child.numFailingIterations;
@@ -183,11 +183,24 @@ export const createScoreSummary = (dataset: Dataset): ScoreSummary => {
     const [primaryResult] = executionHistory.values();
     primaryResult.collapseSingleChildNodes();
 
+    const fuseIndex = new Fuse(primaryResult.flattenedNodes, {
+        keys: ["nodeKey", 
+            "scenario.scenarioName", 
+            "scenario.iterationName", 
+            "scenario.messages.contents.text", 
+            "scenario.modelResponse.messages.contents.text" ],
+        includeScore: false,
+        includeMatches: false,
+        threshold: 0.3,
+        ignoreLocation: true,
+    });
+
     return {
         primaryResult,
         includesReportHistory: executionHistory.size > 1,
         executionHistory,
         nodesByKey,
+        fuseIndex,
     } as ScoreSummary;
 };
 

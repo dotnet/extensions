@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { Settings28Regular, FilterDismissRegular, DismissRegular, ArrowDownloadRegular } from '@fluentui/react-icons';
-import { Button, Drawer, DrawerBody, DrawerHeader, DrawerHeaderTitle, Switch, Tooltip } from '@fluentui/react-components';
+import { Button, Drawer, DrawerBody, DrawerHeader, DrawerHeaderTitle, SearchBox, Switch, Tooltip } from '@fluentui/react-components';
 import { makeStyles } from '@fluentui/react-components';
 import './App.css';
 import { ScenarioGroup } from './ScenarioTree';
@@ -47,7 +47,7 @@ const useStyles = makeStyles({
 
 function App() {
   const classes = useStyles();
-  const { dataset, scoreSummary, selectedTags, clearFilters } = useReportContext();
+  const { dataset, scoreSummary, selectedTags, clearFilters, searchValue, setSearchValue } = useReportContext();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { renderMarkdown, setRenderMarkdown } = useReportContext();
   const { globalTags, filterableTags } = categorizeAndSortTags(dataset, scoreSummary.primaryResult.executionName);
@@ -77,11 +77,14 @@ function App() {
         <div className={classes.headerTop}>
           <h1>AI Evaluation Report</h1>
           <div className={classes.headerActions}>
-            {selectedTags.length > 0 && (
+            {(selectedTags.length > 0 || !!searchValue) && (
               <Tooltip content="Clear Filters" relationship="description">
                 <Button icon={<FilterDismissRegular />} appearance="subtle" onClick={clearFilters} />
               </Tooltip>
             )}
+            <SearchBox placeholder="Search / Filter " value={searchValue} type="text" 
+              style={{width: "16rem"}}
+              onChange={(_ev, data) => setSearchValue(data.value)} />
             <Tooltip content="Download Data as JSON" relationship="description">
               <Button icon={<ArrowDownloadRegular />} appearance="subtle" onClick={downloadDataset} />
             </Tooltip>
