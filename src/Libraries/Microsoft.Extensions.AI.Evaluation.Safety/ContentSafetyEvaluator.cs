@@ -32,8 +32,7 @@ public abstract class ContentSafetyEvaluator(
     string contentSafetyServiceAnnotationTask,
     string evaluatorName) : IEvaluator
 {
-    private readonly ContentSafetyService _service =
-        new ContentSafetyService(contentSafetyServiceConfiguration, contentSafetyServiceAnnotationTask, evaluatorName);
+    private readonly ContentSafetyService _service = new ContentSafetyService(contentSafetyServiceConfiguration);
 
     /// <inheritdoc/>
     public abstract IReadOnlyCollection<string> EvaluationMetricNames { get; }
@@ -91,6 +90,8 @@ public abstract class ContentSafetyEvaluator(
         return _service.EvaluateAsync(
             messages,
             modelResponse,
+            contentSafetyServiceAnnotationTask,
+            evaluatorName,
             additionalContext,
             payloadFormat,
             metricNames: string.IsNullOrWhiteSpace(contentSafetyServiceMetricName) ? null : [contentSafetyServiceMetricName!],

@@ -23,10 +23,7 @@ using Azure.Core;
 
 namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
-internal sealed partial class ContentSafetyService(
-    ContentSafetyServiceConfiguration serviceConfiguration,
-    string annotationTask,
-    string evaluatorName)
+internal sealed partial class ContentSafetyService(ContentSafetyServiceConfiguration serviceConfiguration)
 {
     private static HttpClient? _sharedHttpClient;
     private static HttpClient SharedHttpClient
@@ -45,13 +42,17 @@ internal sealed partial class ContentSafetyService(
 
     private string? _serviceUrl;
 
+#pragma warning disable S107 // Methods should not have too many parameters
     public async ValueTask<EvaluationResult> EvaluateAsync(
         IEnumerable<ChatMessage> messages,
         ChatResponse modelResponse,
+        string annotationTask,
+        string evaluatorName,
         IEnumerable<string?>? contexts = null,
         ContentSafetyServicePayloadFormat payloadFormat = ContentSafetyServicePayloadFormat.HumanSystem,
         IEnumerable<string>? metricNames = null,
         CancellationToken cancellationToken = default)
+#pragma warning restore S107
     {
         JsonObject payload;
         IList<EvaluationDiagnostic>? diagnostics;
@@ -61,7 +62,8 @@ internal sealed partial class ContentSafetyService(
 
         try
         {
-            string serviceUrl = await GetServiceUrlAsync(cancellationToken).ConfigureAwait(false);
+            string serviceUrl =
+                await GetServiceUrlAsync(annotationTask, evaluatorName, cancellationToken).ConfigureAwait(false);
 
             (payload, diagnostics) =
                 ContentSafetyServicePayloadUtilities.GetPayload(
@@ -75,9 +77,17 @@ internal sealed partial class ContentSafetyService(
                     cancellationToken);
 
             string resultUrl =
-                await SubmitAnnotationRequestAsync(serviceUrl, payload, cancellationToken).ConfigureAwait(false);
+                await SubmitAnnotationRequestAsync(
+                    serviceUrl,
+                    payload,
+                    evaluatorName,
+                    cancellationToken).ConfigureAwait(false);
 
-            annotationResult = await FetchAnnotationResultAsync(resultUrl, cancellationToken).ConfigureAwait(false);
+            annotationResult =
+                await FetchAnnotationResultAsync(
+                    resultUrl,
+                    evaluatorName,
+                    cancellationToken).ConfigureAwait(false);
         }
         finally
         {
@@ -197,7 +207,10 @@ internal sealed partial class ContentSafetyService(
         return result;
     }
 
-    private async ValueTask<string> GetServiceUrlAsync(CancellationToken cancellationToken)
+    private async ValueTask<string> GetServiceUrlAsync(
+        string annotationTask,
+        string evaluatorName,
+        CancellationToken cancellationToken)
     {
         if (_serviceUrl is not null)
         {
@@ -210,7 +223,8 @@ internal sealed partial class ContentSafetyService(
             return _serviceUrl;
         }
 
-        string discoveryUrl = await GetServiceDiscoveryUrlAsync(cancellationToken).ConfigureAwait(false);
+        string discoveryUrl =
+            await GetServiceDiscoveryUrlAsync(evaluatorName, cancellationToken).ConfigureAwait(false);
 
         serviceUrl =
             $"{discoveryUrl}/raisvc/v1.0" +
@@ -220,7 +234,8 @@ internal sealed partial class ContentSafetyService(
 
         await EnsureServiceAvailabilityAsync(
             serviceUrl,
-            annotationTask,
+            capability: annotationTask,
+            evaluatorName,
             cancellationToken).ConfigureAwait(false);
 
         _ = _serviceUrlCache.TryAdd(serviceConfiguration, serviceUrl);
@@ -228,7 +243,9 @@ internal sealed partial class ContentSafetyService(
         return _serviceUrl;
     }
 
-    private async ValueTask<string> GetServiceDiscoveryUrlAsync(CancellationToken cancellationToken)
+    private async ValueTask<string> GetServiceDiscoveryUrlAsync(
+        string evaluatorName,
+        CancellationToken cancellationToken)
     {
         string requestUrl =
             $"https://management.azure.com/subscriptions/{serviceConfiguration.SubscriptionId}" +
@@ -237,7 +254,10 @@ internal sealed partial class ContentSafetyService(
             $"?api-version=2023-08-01-preview";
 
         HttpResponseMessage response =
-            await GetResponseAsync(requestUrl, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await GetResponseAsync(
+                requestUrl,
+                evaluatorName,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -276,12 +296,16 @@ internal sealed partial class ContentSafetyService(
     private async ValueTask EnsureServiceAvailabilityAsync(
         string serviceUrl,
         string capability,
+        string evaluatorName,
         CancellationToken cancellationToken)
     {
         string serviceAvailabilityUrl = $"{serviceUrl}/checkannotation";
 
         HttpResponseMessage response =
-            await GetResponseAsync(serviceAvailabilityUrl, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await GetResponseAsync(
+                serviceAvailabilityUrl,
+                evaluatorName,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -325,6 +349,7 @@ internal sealed partial class ContentSafetyService(
     private async ValueTask<string> SubmitAnnotationRequestAsync(
         string serviceUrl,
         JsonObject payload,
+        string evaluatorName,
         CancellationToken cancellationToken)
     {
         string annotationUrl = $"{serviceUrl}/submitannotation";
@@ -333,6 +358,7 @@ internal sealed partial class ContentSafetyService(
         HttpResponseMessage response =
             await GetResponseAsync(
                 annotationUrl,
+                evaluatorName,
                 requestMethod: HttpMethod.Post,
                 payloadString,
                 cancellationToken).ConfigureAwait(false);
@@ -372,6 +398,7 @@ internal sealed partial class ContentSafetyService(
 
     private async ValueTask<string> FetchAnnotationResultAsync(
         string resultUrl,
+        string evaluatorName,
         CancellationToken cancellationToken)
     {
         const int InitialDelayInMilliseconds = 500;
@@ -385,7 +412,11 @@ internal sealed partial class ContentSafetyService(
             do
             {
                 ++attempts;
-                response = await GetResponseAsync(resultUrl, cancellationToken: cancellationToken).ConfigureAwait(false);
+                response =
+                    await GetResponseAsync(
+                        resultUrl,
+                        evaluatorName,
+                        cancellationToken: cancellationToken).ConfigureAwait(false);
 
                 if (response.StatusCode != HttpStatusCode.OK)
                 {
@@ -426,6 +457,7 @@ internal sealed partial class ContentSafetyService(
 
     private async ValueTask<HttpResponseMessage> GetResponseAsync(
         string requestUrl,
+        string evaluatorName,
         HttpMethod? requestMethod = null,
         string? payload = null,
         CancellationToken cancellationToken = default)
@@ -434,7 +466,7 @@ internal sealed partial class ContentSafetyService(
         using var request = new HttpRequestMessage(requestMethod, requestUrl);
 
         request.Content = new StringContent(payload ?? string.Empty);
-        await AddHeadersAsync(request, cancellationToken).ConfigureAwait(false);
+        await AddHeadersAsync(request, evaluatorName, cancellationToken).ConfigureAwait(false);
 
         HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
         return response;
@@ -442,6 +474,7 @@ internal sealed partial class ContentSafetyService(
 
     private async ValueTask AddHeadersAsync(
         HttpRequestMessage httpRequestMessage,
+        string evaluatorName,
         CancellationToken cancellationToken = default)
     {
         string userAgent =
