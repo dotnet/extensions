@@ -42,17 +42,14 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
 
     private string? _serviceUrl;
 
-#pragma warning disable S107 // Methods should not have too many parameters
     public async ValueTask<EvaluationResult> EvaluateAsync(
         IEnumerable<ChatMessage> messages,
-        ChatResponse modelResponse,
         string annotationTask,
         string evaluatorName,
         IEnumerable<string?>? contexts = null,
         ContentSafetyServicePayloadFormat payloadFormat = ContentSafetyServicePayloadFormat.HumanSystem,
         IEnumerable<string>? metricNames = null,
         CancellationToken cancellationToken = default)
-#pragma warning restore S107
     {
         JsonObject payload;
         IList<EvaluationDiagnostic>? diagnostics;
@@ -69,7 +66,6 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
                 ContentSafetyServicePayloadUtilities.GetPayload(
                     payloadFormat,
                     messages,
-                    modelResponse,
                     annotationTask,
                     evaluatorName,
                     contexts,

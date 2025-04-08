@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
@@ -78,6 +79,8 @@ public abstract class ContentSafetyEvaluator(
         string? contentSafetyServiceMetricName = null,
         CancellationToken cancellationToken = default)
     {
+        _ = Throw.IfNull(modelResponse);
+
         ContentSafetyServicePayloadFormat payloadFormat =
 #if NET
             Enum.Parse<ContentSafetyServicePayloadFormat>(contentSafetyServicePayloadFormat);
@@ -88,8 +91,7 @@ public abstract class ContentSafetyEvaluator(
 #endif
 
         return _service.EvaluateAsync(
-            messages,
-            modelResponse,
+            [.. messages, .. modelResponse.Messages],
             contentSafetyServiceAnnotationTask,
             evaluatorName,
             additionalContext,

@@ -26,23 +26,19 @@ internal static class ContentSafetyServicePayloadUtilities
     internal static bool ContainImage(this IEnumerable<ChatMessage> messages)
         => messages.Any(ContainsImage);
 
-#pragma warning disable S107 // Methods should not have too many parameters
     internal static (JsonObject payload, IList<EvaluationDiagnostic>? diagnostics) GetPayload(
         ContentSafetyServicePayloadFormat payloadFormat,
         IEnumerable<ChatMessage> messages,
-        ChatResponse modelResponse,
         string annotationTask,
         string evaluatorName,
         IEnumerable<string?>? contexts = null,
         IEnumerable<string>? metricNames = null,
         CancellationToken cancellationToken = default) =>
-#pragma warning restore S107
             payloadFormat switch
             {
                 ContentSafetyServicePayloadFormat.HumanSystem =>
                     GetUserTextListPayloadWithEmbeddedXml(
                         messages,
-                        modelResponse,
                         annotationTask,
                         evaluatorName,
                         contexts,
@@ -52,7 +48,6 @@ internal static class ContentSafetyServicePayloadUtilities
                 ContentSafetyServicePayloadFormat.QuestionAnswer =>
                     GetUserTextListPayloadWithEmbeddedJson(
                         messages,
-                        modelResponse,
                         annotationTask,
                         evaluatorName,
                         contexts,
@@ -62,7 +57,6 @@ internal static class ContentSafetyServicePayloadUtilities
                 ContentSafetyServicePayloadFormat.QueryResponse =>
                     GetUserTextListPayloadWithEmbeddedJson(
                         messages,
-                        modelResponse,
                         annotationTask,
                         evaluatorName,
                         contexts,
@@ -74,7 +68,6 @@ internal static class ContentSafetyServicePayloadUtilities
                 ContentSafetyServicePayloadFormat.ContextCompletion =>
                     GetUserTextListPayloadWithEmbeddedJson(
                         messages,
-                        modelResponse,
                         annotationTask,
                         evaluatorName,
                         contexts,
@@ -86,7 +79,6 @@ internal static class ContentSafetyServicePayloadUtilities
                 ContentSafetyServicePayloadFormat.Conversation =>
                     GetConversationPayload(
                         messages,
-                        modelResponse,
                         annotationTask,
                         evaluatorName,
                         contexts,
@@ -100,7 +92,6 @@ internal static class ContentSafetyServicePayloadUtilities
     private static (JsonObject payload, IList<EvaluationDiagnostic>? diagnostics)
         GetUserTextListPayloadWithEmbeddedXml(
             IEnumerable<ChatMessage> messages,
-            ChatResponse modelResponse,
             string annotationTask,
             string evaluatorName,
             IEnumerable<string?>? contexts = null,
@@ -119,7 +110,6 @@ internal static class ContentSafetyServicePayloadUtilities
         (turns, turnContexts, diagnostics, _) =
             PreProcessMessages(
                 messages,
-                modelResponse,
                 evaluatorName,
                 contexts,
                 returnLastTurnOnly: strategy is ContentSafetyServicePayloadStrategy.AnnotateLastTurn,
@@ -190,7 +180,6 @@ internal static class ContentSafetyServicePayloadUtilities
     private static (JsonObject payload, IList<EvaluationDiagnostic>? diagnostics)
         GetUserTextListPayloadWithEmbeddedJson(
             IEnumerable<ChatMessage> messages,
-            ChatResponse modelResponse,
             string annotationTask,
             string evaluatorName,
             IEnumerable<string?>? contexts = null,
@@ -215,7 +204,6 @@ internal static class ContentSafetyServicePayloadUtilities
         (turns, turnContexts, diagnostics, _) =
             PreProcessMessages(
                 messages,
-                modelResponse,
                 evaluatorName,
                 contexts,
                 returnLastTurnOnly: strategy is ContentSafetyServicePayloadStrategy.AnnotateLastTurn,
@@ -272,17 +260,14 @@ internal static class ContentSafetyServicePayloadUtilities
         return (payload, diagnostics);
     }
 
-#pragma warning disable S107 // Methods should not have too many parameters
     private static (JsonObject payload, IList<EvaluationDiagnostic>? diagnostics) GetConversationPayload(
         IEnumerable<ChatMessage> messages,
-        ChatResponse modelResponse,
         string annotationTask,
         string evaluatorName,
         IEnumerable<string?>? contexts = null,
         IEnumerable<string>? metricNames = null,
         ContentSafetyServicePayloadStrategy strategy = ContentSafetyServicePayloadStrategy.AnnotateConversation,
         CancellationToken cancellationToken = default)
-#pragma warning restore S107
     {
         if (strategy is ContentSafetyServicePayloadStrategy.AnnotateEachTurn)
         {
@@ -298,7 +283,6 @@ internal static class ContentSafetyServicePayloadUtilities
         (turns, turnContexts, diagnostics, contentType) =
             PreProcessMessages(
                 messages,
-                modelResponse,
                 evaluatorName,
                 contexts,
                 returnLastTurnOnly: strategy is ContentSafetyServicePayloadStrategy.AnnotateLastTurn,
@@ -421,7 +405,6 @@ internal static class ContentSafetyServicePayloadUtilities
         List<EvaluationDiagnostic>? diagnostics,
         string contentType) PreProcessMessages(
             IEnumerable<ChatMessage> messages,
-            ChatResponse modelResponse,
             string evaluatorName,
             IEnumerable<string?>? contexts = null,
             bool returnLastTurnOnly = false,
@@ -470,22 +453,6 @@ internal static class ContentSafetyServicePayloadUtilities
             else
             {
                 // System prompts are currently not supported.
-                ignoredMessageCount++;
-            }
-        }
-
-        foreach (ChatMessage message in modelResponse.Messages)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (message.Role == ChatRole.Assistant)
-            {
-                currentTurn["answer"] = message;
-
-                StartNewTurn();
-            }
-            else
-            {
                 ignoredMessageCount++;
             }
         }
