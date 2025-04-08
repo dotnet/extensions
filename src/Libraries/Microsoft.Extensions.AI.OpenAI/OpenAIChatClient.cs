@@ -190,11 +190,11 @@ internal sealed partial class OpenAIChatClient : IChatClient
                     break;
 
                 case UriContent uriContent when uriContent.HasTopLevelMediaType("image"):
-                    parts.Add(ChatMessageContentPart.CreateImagePart(uriContent.Uri));
+                    parts.Add(ChatMessageContentPart.CreateImagePart(uriContent.Uri, GetImageDetail(content)));
                     break;
 
                 case DataContent dataContent when dataContent.HasTopLevelMediaType("image"):
-                    parts.Add(ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType));
+                    parts.Add(ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, GetImageDetail(content)));
                     break;
 
                 case DataContent dataContent when dataContent.HasTopLevelMediaType("audio"):
@@ -218,6 +218,21 @@ internal sealed partial class OpenAIChatClient : IChatClient
         }
 
         return parts;
+    }
+
+    private static ChatImageDetailLevel? GetImageDetail(AIContent content)
+    {
+        if (content.AdditionalProperties?.TryGetValue("detail", out object? value) is true)
+        {
+            return value switch
+            {
+                string detailString => new ChatImageDetailLevel(detailString),
+                ChatImageDetailLevel detail => detail,
+                _ => null
+            };
+        }
+
+        return null;
     }
 
     private static async IAsyncEnumerable<ChatResponseUpdate> FromOpenAIStreamingChatCompletionAsync(

@@ -104,7 +104,7 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
         Exception? error = null;
         try
         {
-            response = await base.GenerateAsync(values, options, cancellationToken).ConfigureAwait(false);
+            response = await base.GenerateAsync(values, options, cancellationToken);
         }
         catch (Exception ex)
         {

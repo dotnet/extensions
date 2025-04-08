@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,7 +19,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
-public class AIFunctionFactoryTest
+public partial class AIFunctionFactoryTest
 {
     [Fact]
     public void InvalidArguments_Throw()
@@ -112,8 +113,8 @@ public class AIFunctionFactoryTest
         AssertExtensions.EqualFunctionCallResults(null, await func.InvokeAsync(new() { ["a"] = 1, ["b"] = 2L }));
         Assert.Equal(3, result);
 
-        func = AIFunctionFactory.Create((int count) => SimpleIAsyncEnumerable(count));
-        AssertExtensions.EqualFunctionCallResults(new int[] { 0, 1, 2, 3, 4 }, await func.InvokeAsync(new() { ["count"] = 5 }));
+        func = AIFunctionFactory.Create((int count) => SimpleIAsyncEnumerable(count), serializerOptions: JsonContext.Default.Options);
+        AssertExtensions.EqualFunctionCallResults(new int[] { 0, 1, 2, 3, 4 }, await func.InvokeAsync(new() { ["count"] = 5 }), JsonContext.Default.Options);
 
         static async IAsyncEnumerable<int> SimpleIAsyncEnumerable(int count)
         {
@@ -124,7 +125,7 @@ public class AIFunctionFactoryTest
             }
         }
 
-        func = AIFunctionFactory.Create(() => (IAsyncEnumerable<int>)new ThrowingAsyncEnumerable());
+        func = AIFunctionFactory.Create(() => (IAsyncEnumerable<int>)new ThrowingAsyncEnumerable(), serializerOptions: JsonContext.Default.Options);
         await Assert.ThrowsAsync<NotImplementedException>(() => func.InvokeAsync().AsTask());
     }
 
@@ -796,4 +797,8 @@ public class AIFunctionFactoryTest
     private class A;
     private class B : A;
     private sealed class C : B;
+
+    [JsonSerializable(typeof(IAsyncEnumerable<int>))]
+    [JsonSerializable(typeof(int[]))]
+    private partial class JsonContext : JsonSerializerContext;
 }
