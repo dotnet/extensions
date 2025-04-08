@@ -429,9 +429,9 @@ public static partial class AIJsonUtilitiesTests
     [Fact]
     public static void AddAIContentType_ConflictingIdentifier_ThrowsInvalidOperationException()
     {
-        JsonSerializerOptions options = new(AIJsonUtilities.DefaultOptions)
+        JsonSerializerOptions options = new()
         {
-            TypeInfoResolverChain = { JsonContext.Default }
+            TypeInfoResolver = JsonTypeInfoResolver.Combine(AIJsonUtilities.DefaultOptions.TypeInfoResolver, JsonContext.Default)
         };
 
         options.AddAIContentType<DerivedAIContent>("text");
