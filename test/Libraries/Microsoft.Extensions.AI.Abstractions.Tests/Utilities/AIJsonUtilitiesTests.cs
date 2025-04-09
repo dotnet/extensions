@@ -159,7 +159,7 @@ public static partial class AIJsonUtilitiesTests
 
         JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(MyPoco), serializerOptions: JsonContext.Default.Options);
 
-        Assert.True(DeepEquals(expected, actual));
+        AssertDeepEquals(expected, actual);
     }
 
     [Fact]
@@ -204,7 +204,7 @@ public static partial class AIJsonUtilitiesTests
             serializerOptions: JsonContext.Default.Options,
             inferenceOptions: inferenceOptions);
 
-        Assert.True(DeepEquals(expected, actual));
+        AssertDeepEquals(expected, actual);
     }
 
     [Fact]
@@ -249,7 +249,7 @@ public static partial class AIJsonUtilitiesTests
 
         JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(MyPoco), serializerOptions: JsonContext.Default.Options, inferenceOptions: inferenceOptions);
 
-        Assert.True(DeepEquals(expected, actual));
+        AssertDeepEquals(expected, actual);
     }
 
     [Fact]
@@ -277,7 +277,7 @@ public static partial class AIJsonUtilitiesTests
 
         JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(PocoWithTypesWithOpenAIUnsupportedKeywords), serializerOptions: JsonContext.Default.Options);
 
-        Assert.True(DeepEquals(expected, actual));
+        AssertDeepEquals(expected, actual);
     }
 
     public class PocoWithTypesWithOpenAIUnsupportedKeywords
@@ -301,7 +301,67 @@ public static partial class AIJsonUtilitiesTests
         Assert.NotNull(func.UnderlyingMethod);
 
         JsonElement resolvedSchema = AIJsonUtilities.CreateFunctionJsonSchema(func.UnderlyingMethod, title: func.Name);
-        Assert.True(DeepEquals(resolvedSchema, func.JsonSchema));
+        AssertDeepEquals(resolvedSchema, func.JsonSchema);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public static void CreateFunctionJsonSchema_OptionalParameters(bool requireAllProperties)
+    {
+        string unitJsonSchema = requireAllProperties ? """
+            {
+                "description": "The unit to calculate the current temperature to (Default value: \u0022celsius\u0022)",
+                "type": "string"
+            }
+            """ :
+            """
+            {
+                "description": "The unit to calculate the current temperature to",
+                "type": "string",
+                "default": "celsius"
+            }
+            """;
+
+        string requiredParamsJsonSchema = requireAllProperties ?
+            """["city", "unit"]""" :
+            """["city"]""";
+
+        JsonElement expected = JsonDocument.Parse($$"""
+            {
+              "title": "get_weather",
+              "description": "Gets the current weather for a current location",
+              "type": "object",
+              "properties": {
+                "city": {
+                  "description": "The city to get the weather for",
+                  "type": "string"
+                },
+                "unit": {{unitJsonSchema}}
+              },
+              "required": {{requiredParamsJsonSchema}}
+            }
+            """).RootElement;
+
+        AIFunction func = AIFunctionFactory.Create((
+            [Description("The city to get the weather for")] string city,
+            [Description("The unit to calculate the current temperature to")] string unit = "celsius") => "sunny",
+            new AIFunctionFactoryOptions
+            {
+                Name = "get_weather",
+                Description = "Gets the current weather for a current location",
+                JsonSchemaCreateOptions = new AIJsonSchemaCreateOptions { RequireAllProperties = requireAllProperties }
+            });
+
+        Assert.NotNull(func.UnderlyingMethod);
+        AssertDeepEquals(expected, func.JsonSchema);
+
+        JsonElement resolvedSchema = AIJsonUtilities.CreateFunctionJsonSchema(
+            func.UnderlyingMethod,
+            title: func.Name,
+            description: func.Description,
+            inferenceOptions: new AIJsonSchemaCreateOptions { RequireAllProperties = requireAllProperties });
+        AssertDeepEquals(expected, resolvedSchema);
     }
 
     [Fact]
@@ -331,7 +391,7 @@ public static partial class AIJsonUtilitiesTests
                 """).RootElement;
 
             JsonElement actualSchema = property.Value;
-            Assert.True(DeepEquals(expected, actualSchema));
+            AssertDeepEquals(expected, actualSchema);
             i++;
         }
     }
@@ -513,5 +573,18 @@ public static partial class AIJsonUtilitiesTests
             JsonSerializer.SerializeToNode(element1, AIJsonUtilities.DefaultOptions),
             JsonSerializer.SerializeToNode(element2, AIJsonUtilities.DefaultOptions));
 #endif
+    }
+
+    private static void AssertDeepEquals(JsonElement element1, JsonElement element2)
+    {
+#pragma warning disable SA1118 // Parameter should not span multiple lines
+        Assert.True(DeepEquals(element1, element2), $"""
+            Elements are not equal.
+            Expected:
+            {element1}
+            Actual:
+            {element2}
+            """);
+#pragma warning restore SA1118 // Parameter should not span multiple lines
     }
 }

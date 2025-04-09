@@ -4,6 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+#if NET9_0_OR_GREATER
+using Microsoft.Extensions.Diagnostics.Buffering;
+#endif
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Pools;
 
@@ -30,11 +33,22 @@ internal sealed partial class ExtendedLogger : ILogger
     public LoggerInformation[] Loggers { get; set; }
     public MessageLogger[] MessageLoggers { get; set; } = Array.Empty<MessageLogger>();
     public ScopeLogger[] ScopeLoggers { get; set; } = Array.Empty<ScopeLogger>();
+#if NET9_0_OR_GREATER
+    private readonly LogBuffer? _logBuffer;
+    private readonly IBufferedLogger? _bufferedLogger;
+#endif
 
     public ExtendedLogger(ExtendedLoggerFactory factory, LoggerInformation[] loggers)
     {
         _factory = factory;
         Loggers = loggers;
+#if NET9_0_OR_GREATER
+        _logBuffer = _factory.Config.LogBuffer;
+        if (_logBuffer is not null)
+        {
+            _bufferedLogger = new BufferedLoggerProxy(this);
+        }
+#endif
     }
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
@@ -261,27 +275,66 @@ internal sealed partial class ExtendedLogger : ILogger
             RecordException(exception, joiner.EnrichmentTagCollector, config);
         }
 
-        bool? samplingDecision = null;
+        bool? shouldSample = null;
+#if NET9_0_OR_GREATER
+        bool shouldBuffer = true;
+#endif
         for (int i = 0; i < loggers.Length; i++)
         {
             ref readonly MessageLogger loggerInfo = ref loggers[i];
             if (loggerInfo.IsNotFilteredOut(logLevel))
             {
-                if (samplingDecision is null && config.Sampler is not null)
+                if (shouldSample is null && config.Sampler is not null)
                 {
-                    var logEntry = new LogEntry<ModernTagJoiner>(logLevel, loggerInfo.Category, eventId, joiner, exception, static (s, e) =>
-                    {
-                        Func<LoggerMessageState, Exception?, string> fmt = s.Formatter!;
-                        return fmt(s.State!, e);
-                    });
-                    samplingDecision = config.Sampler.ShouldSample(in logEntry);
+                    var logEntry = new LogEntry<ModernTagJoiner>(
+                        logLevel,
+                        loggerInfo.Category,
+                        eventId,
+                        joiner,
+                        exception,
+                        static (s, e) =>
+                        {
+                            Func<LoggerMessageState, Exception?, string> fmt = s.Formatter!;
+                            return fmt(s.State!, e);
+                        });
+
+                    shouldSample = config.Sampler.ShouldSample(in logEntry);
                 }
 
-                if (samplingDecision is false)
+                if (shouldSample is false)
                 {
-                    // the record was not selected for being sampled in, so we drop it.
+                    // the record was not selected for being sampled in, so we drop it for all loggers.
                     break;
                 }
+#if NET9_0_OR_GREATER
+                if (shouldBuffer)
+                {
+                    if (_logBuffer is not null)
+                    {
+                        var logEntry = new LogEntry<ModernTagJoiner>(
+                            logLevel,
+                            loggerInfo.Category,
+                            eventId,
+                            joiner,
+                            exception,
+                            static (s, e) =>
+                            {
+                                Func<LoggerMessageState, Exception?, string>? fmt = s.Formatter!;
+                                return fmt(s.State!, e);
+                            });
+
+                        if (_logBuffer.TryEnqueue(_bufferedLogger!, logEntry))
+                        {
+                            // The record was buffered, so we skip logging it here and for all other loggers.
+                            // When a caller needs to flush the buffer and calls Flush(),
+                            // the buffer manager will internally call IBufferedLogger.LogRecords to emit log records.
+                            break;
+                        }
+                    }
+
+                    shouldBuffer = false;
+                }
+#endif
 
                 try
                 {
@@ -362,28 +415,67 @@ internal sealed partial class ExtendedLogger : ILogger
                 break;
         }
 
-        bool? samplingDecision = null;
+        bool? shouldSample = null;
+#if NET9_0_OR_GREATER
+        bool shouldBuffer = true;
+#endif
         for (int i = 0; i < loggers.Length; i++)
         {
             ref readonly MessageLogger loggerInfo = ref loggers[i];
             if (loggerInfo.IsNotFilteredOut(logLevel))
             {
-                if (samplingDecision is null && config.Sampler is not null)
+                if (shouldSample is null && config.Sampler is not null)
                 {
-                    var logEntry = new LogEntry<LegacyTagJoiner>(logLevel, loggerInfo.Category, eventId, joiner, exception, static (s, e) =>
-                    {
-                        var fmt = (Func<TState, Exception?, string>)s.Formatter!;
-                        return fmt((TState)s.State!, e);
-                    });
-                    samplingDecision = config.Sampler.ShouldSample(in logEntry);
+                    var logEntry = new LogEntry<LegacyTagJoiner>(
+                        logLevel,
+                        loggerInfo.Category,
+                        eventId,
+                        joiner,
+                        exception,
+                        static (s, e) =>
+                        {
+                            var fmt = (Func<TState, Exception?, string>)s.Formatter!;
+                            return fmt((TState)s.State!, e);
+                        });
+
+                    shouldSample = config.Sampler.ShouldSample(in logEntry);
                 }
 
-                if (samplingDecision is false)
+                if (shouldSample is false)
                 {
                     // the record was not selected for being sampled in, so we drop it.
                     break;
                 }
+#if NET9_0_OR_GREATER
+                if (shouldBuffer)
+                {
+                    if (_logBuffer is not null)
+                    {
+                        var logEntry = new LogEntry<LegacyTagJoiner>(
+                            logLevel,
+                            loggerInfo.Category,
+                            eventId,
+                            joiner,
+                            exception,
+                            static (s, e) =>
+                            {
+                                var fmt = (Func<TState, Exception?, string>)s.Formatter!;
+                                return fmt((TState)s.State!, e);
+                            });
 
+                        if (_logBuffer.TryEnqueue(_bufferedLogger!, in logEntry))
+                        {
+                            // The record was buffered, so we skip logging it here and for all other loggers.
+                            // When a caller needs to flush the buffer and calls Flush(),
+                            // the buffer manager will internally call IBufferedLogger.LogRecords to emit log records.
+                            break;
+                        }
+
+                    }
+
+                    shouldBuffer = false;
+                }
+#endif
                 try
                 {
                     loggerInfo.Logger.Log(logLevel, eventId, joiner, exception, static (s, e) =>
