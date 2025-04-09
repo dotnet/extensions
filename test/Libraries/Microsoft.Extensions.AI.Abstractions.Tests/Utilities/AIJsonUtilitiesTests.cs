@@ -159,7 +159,7 @@ public static partial class AIJsonUtilitiesTests
 
         JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(MyPoco), serializerOptions: JsonContext.Default.Options);
 
-        Assert.True(DeepEquals(expected, actual));
+        AssertDeepEquals(expected, actual);
     }
 
     [Fact]
@@ -204,7 +204,7 @@ public static partial class AIJsonUtilitiesTests
             serializerOptions: JsonContext.Default.Options,
             inferenceOptions: inferenceOptions);
 
-        Assert.True(DeepEquals(expected, actual));
+        AssertDeepEquals(expected, actual);
     }
 
     [Fact]
@@ -249,7 +249,7 @@ public static partial class AIJsonUtilitiesTests
 
         JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(MyPoco), serializerOptions: JsonContext.Default.Options, inferenceOptions: inferenceOptions);
 
-        Assert.True(DeepEquals(expected, actual));
+        AssertDeepEquals(expected, actual);
     }
 
     [Fact]
@@ -277,7 +277,7 @@ public static partial class AIJsonUtilitiesTests
 
         JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(PocoWithTypesWithOpenAIUnsupportedKeywords), serializerOptions: JsonContext.Default.Options);
 
-        Assert.True(DeepEquals(expected, actual));
+        AssertDeepEquals(expected, actual);
     }
 
     public class PocoWithTypesWithOpenAIUnsupportedKeywords
@@ -301,7 +301,7 @@ public static partial class AIJsonUtilitiesTests
         Assert.NotNull(func.UnderlyingMethod);
 
         JsonElement resolvedSchema = AIJsonUtilities.CreateFunctionJsonSchema(func.UnderlyingMethod, title: func.Name);
-        Assert.True(DeepEquals(resolvedSchema, func.JsonSchema));
+        AssertDeepEquals(resolvedSchema, func.JsonSchema);
     }
 
     [Theory]
@@ -391,7 +391,7 @@ public static partial class AIJsonUtilitiesTests
                 """).RootElement;
 
             JsonElement actualSchema = property.Value;
-            Assert.True(DeepEquals(expected, actualSchema));
+            AssertDeepEquals(expected, actualSchema);
             i++;
         }
     }
