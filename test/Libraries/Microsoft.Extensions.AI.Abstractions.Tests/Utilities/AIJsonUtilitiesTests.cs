@@ -305,6 +305,42 @@ public static partial class AIJsonUtilitiesTests
     }
 
     [Fact]
+    public static void CreateFunctionJsonSchema_OptionalParameters_ShouldNotBeRequired()
+    {
+        JsonElement expected = JsonDocument.Parse("""
+            {
+              "title": "get_weather",
+              "description": "Gets the current weather for a current location",
+              "type": "object",
+              "properties": {
+                "city": {
+                  "description": "The city to get the weather for",
+                  "type": "string"
+                },
+                "unit": {
+                  "description": "The unit to calculate the current temperature to (Default value: \u0022celsius\u0022)",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "city"
+              ]
+            }
+            """).RootElement;
+
+        JsonSerializerOptions options = new(AIJsonUtilities.DefaultOptions);
+        AIFunction func = AIFunctionFactory.Create((
+            [Description("The city to get the weather for")] string city,
+            [Description("The unit to calculate the current temperature to")] string unit = "celsius") => "sunny",
+            "get_weather", "Gets the current weather for a current location");
+
+        Assert.NotNull(func.UnderlyingMethod);
+
+        JsonElement resolvedSchema = AIJsonUtilities.CreateFunctionJsonSchema(func.UnderlyingMethod, title: func.Name, description: func.Description);
+        Assert.True(DeepEquals(expected, resolvedSchema));
+    }
+
+    [Fact]
     public static void CreateFunctionJsonSchema_TreatsIntegralTypesAsInteger_EvenWithAllowReadingFromString()
     {
         JsonSerializerOptions options = new(AIJsonUtilities.DefaultOptions) { NumberHandling = JsonNumberHandling.AllowReadingFromString };
