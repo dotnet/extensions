@@ -5,18 +5,22 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Xunit;
 
+#pragma warning disable IDE1006 // Naming Styles
+#pragma warning disable S103 // Lines should not be too long
+
 namespace Microsoft.Extensions.AI;
 
-public class ChatClientStructuredOutputExtensionsTests
+public partial class ChatClientStructuredOutputExtensionsTests
 {
     [Fact]
     public async Task SuccessUsage_Default()
     {
         var expectedResult = new Animal { Id = 1, FullName = "Tigger", Species = Species.Tiger };
-        var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult)))
+        var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult, JsonContext2.Default.Animal)))
         {
             ResponseId = "test",
             CreatedAt = DateTimeOffset.UtcNow,
@@ -74,7 +78,7 @@ public class ChatClientStructuredOutputExtensionsTests
         };
 
         var chatHistory = new List<ChatMessage> { new(ChatRole.User, "Hello") };
-        var response = await client.GetResponseAsync<Animal>(chatHistory);
+        var response = await client.GetResponseAsync<Animal>(chatHistory, serializerOptions: JsonContext2.Default.Options);
 
         // The response contains the deserialized result and other response properties
         Assert.Equal(1, response.Result.Id);
@@ -98,7 +102,7 @@ public class ChatClientStructuredOutputExtensionsTests
     public async Task SuccessUsage_NoJsonSchema()
     {
         var expectedResult = new Animal { Id = 1, FullName = "Tigger", Species = Species.Tiger };
-        var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult)))
+        var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult, JsonContext2.Default.Options)))
         {
             ResponseId = "test",
             CreatedAt = DateTimeOffset.UtcNow,
@@ -135,7 +139,7 @@ public class ChatClientStructuredOutputExtensionsTests
         };
 
         var chatHistory = new List<ChatMessage> { new(ChatRole.User, "Hello") };
-        var response = await client.GetResponseAsync<Animal>(chatHistory, useJsonSchema: false);
+        var response = await client.GetResponseAsync<Animal>(chatHistory, useJsonSchema: false, serializerOptions: JsonContext2.Default.Options);
 
         // The response contains the deserialized result and other response properties
         Assert.Equal(1, response.Result.Id);
@@ -158,8 +162,8 @@ public class ChatClientStructuredOutputExtensionsTests
     [Fact]
     public async Task WrapsNonObjectValuesInDataProperty()
     {
-        var expectedResult = new { data = 123 };
-        var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult)));
+        var expectedResult = new Envelope<int> { data = 123 };
+        var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult, JsonContext2.Default.Options)));
 
         using var client = new TestChatClient
         {
@@ -200,7 +204,7 @@ public class ChatClientStructuredOutputExtensionsTests
         };
 
         var chatHistory = new List<ChatMessage> { new(ChatRole.User, "Hello") };
-        var response = await client.GetResponseAsync<Animal>(chatHistory);
+        var response = await client.GetResponseAsync<Animal>(chatHistory, serializerOptions: JsonContext2.Default.Options);
 
         var ex = Assert.Throws<JsonException>(() => response.Result);
         Assert.Contains("invalid", ex.Message);
@@ -219,7 +223,7 @@ public class ChatClientStructuredOutputExtensionsTests
         };
 
         var chatHistory = new List<ChatMessage> { new(ChatRole.User, "Hello") };
-        var response = await client.GetResponseAsync<Animal>(chatHistory);
+        var response = await client.GetResponseAsync<Animal>(chatHistory, serializerOptions: JsonContext2.Default.Options);
 
         var ex = Assert.Throws<InvalidOperationException>(() => response.Result);
         Assert.Equal("The deserialized response is null.", ex.Message);
@@ -238,7 +242,7 @@ public class ChatClientStructuredOutputExtensionsTests
         };
 
         var chatHistory = new List<ChatMessage> { new(ChatRole.User, "Hello") };
-        var response = await client.GetResponseAsync<Animal>(chatHistory);
+        var response = await client.GetResponseAsync<Animal>(chatHistory, serializerOptions: JsonContext2.Default.Options);
 
         var ex = Assert.Throws<InvalidOperationException>(() => response.Result);
         Assert.Equal("The response did not contain JSON to be deserialized.", ex.Message);
@@ -251,7 +255,7 @@ public class ChatClientStructuredOutputExtensionsTests
     public async Task CanUseNativeStructuredOutputWithSanitizedTypeName()
     {
         var expectedResult = new Data<Animal> { Value = new Animal { Id = 1, FullName = "Tigger", Species = Species.Tiger } };
-        var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult)));
+        var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult, JsonContext2.Default.Options)));
 
         using var client = new TestChatClient
         {
@@ -266,7 +270,7 @@ public class ChatClientStructuredOutputExtensionsTests
         };
 
         var chatHistory = new List<ChatMessage> { new(ChatRole.User, "Hello") };
-        var response = await client.GetResponseAsync<Data<Animal>>(chatHistory);
+        var response = await client.GetResponseAsync<Data<Animal>>(chatHistory, serializerOptions: JsonContext2.Default.Options);
 
         // The response contains the deserialized result and other response properties
         Assert.Equal(1, response.Result!.Value!.Id);
@@ -285,8 +289,8 @@ public class ChatClientStructuredOutputExtensionsTests
     public async Task CanUseNativeStructuredOutputWithArray()
     {
         var expectedResult = new[] { new Animal { Id = 1, FullName = "Tigger", Species = Species.Tiger } };
-        var payload = new { data = expectedResult };
-        var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(payload)));
+        var payload = new Envelope<Animal[]> { data = expectedResult };
+        var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(payload, JsonContext2.Default.Options)));
 
         using var client = new TestChatClient
         {
@@ -294,7 +298,7 @@ public class ChatClientStructuredOutputExtensionsTests
         };
 
         var chatHistory = new List<ChatMessage> { new(ChatRole.User, "Hello") };
-        var response = await client.GetResponseAsync<Animal[]>(chatHistory);
+        var response = await client.GetResponseAsync<Animal[]>(chatHistory, serializerOptions: JsonContext2.Default.Options);
 
         // The response contains the deserialized result and other response properties
         Assert.Single(response.Result!);
@@ -312,9 +316,10 @@ public class ChatClientStructuredOutputExtensionsTests
     [Fact]
     public async Task CanSpecifyCustomJsonSerializationOptions()
     {
-        var jso = new JsonSerializerOptions
+        var jso = new JsonSerializerOptions(JsonContext2.Default.Options)
         {
             PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+            Converters = { new JsonNumberEnumConverter<Species>() },
         };
         var expectedResult = new Animal { Id = 1, FullName = "Tigger", Species = Species.Tiger };
         var expectedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult, jso)));
@@ -377,7 +382,7 @@ public class ChatClientStructuredOutputExtensionsTests
         // Fortunately we can work around this without breaking any cases of valid output.
 
         var expectedResult = new Animal { Id = 1, FullName = "Tigger", Species = Species.Tiger };
-        var resultDuplicatedJson = JsonSerializer.Serialize(expectedResult) + Environment.NewLine + JsonSerializer.Serialize(expectedResult);
+        var resultDuplicatedJson = JsonSerializer.Serialize(expectedResult, JsonContext2.Default.Options) + Environment.NewLine + JsonSerializer.Serialize(expectedResult, JsonContext2.Default.Options);
 
         using var client = new TestChatClient
         {
@@ -388,7 +393,7 @@ public class ChatClientStructuredOutputExtensionsTests
         };
 
         var chatHistory = new List<ChatMessage> { new(ChatRole.User, "Hello") };
-        var response = await client.GetResponseAsync<Animal>(chatHistory);
+        var response = await client.GetResponseAsync<Animal>(chatHistory, serializerOptions: JsonContext2.Default.Options);
 
         // The response contains the deserialized result and other response properties
         Assert.Equal(1, response.Result.Id);
@@ -415,4 +420,16 @@ public class ChatClientStructuredOutputExtensionsTests
         Tiger,
         Walrus,
     }
+
+    private class Envelope<T>
+    {
+        public T? data { get; set; }
+    }
+
+    [JsonSourceGenerationOptions(UseStringEnumConverter = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
+    [JsonSerializable(typeof(Animal))]
+    [JsonSerializable(typeof(Envelope<int>))]
+    [JsonSerializable(typeof(Envelope<Animal[]>))]
+    [JsonSerializable(typeof(Data<Animal>))]
+    private partial class JsonContext2 : JsonSerializerContext;
 }

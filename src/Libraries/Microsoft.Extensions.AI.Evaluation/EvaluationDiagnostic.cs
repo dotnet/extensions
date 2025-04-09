@@ -67,4 +67,9 @@ public sealed class EvaluationDiagnostic(EvaluationDiagnosticSeverity severity, 
     /// </returns>
     public static EvaluationDiagnostic Error(string message)
         => new EvaluationDiagnostic(EvaluationDiagnosticSeverity.Error, message);
+
+    /// <summary>Returns a string representation of the <see cref="EvaluationDiagnostic"/>.</summary>
+    /// <returns>A string representation of the <see cref="EvaluationDiagnostic"/>.</returns>
+    public override string ToString()
+        => $"{Severity}: {Message}";
 }

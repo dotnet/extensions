@@ -132,6 +132,11 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                         break;
                 }
             }
+
+            if (openAIResponse.Error is { } error)
+            {
+                message.Contents.Add(new ErrorContent(error.Message) { ErrorCode = error.Code });
+            }
         }
 
         return response;
@@ -246,6 +251,24 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
 
                     break;
                 }
+
+                case StreamingResponseErrorUpdate errorUpdate:
+                    yield return new ChatResponseUpdate
+                    {
+                        CreatedAt = createdAt,
+                        MessageId = lastMessageId,
+                        ModelId = modelId,
+                        ResponseId = responseId,
+                        Contents =
+                        [
+                            new ErrorContent(errorUpdate.Message)
+                            {
+                                ErrorCode = errorUpdate.Code,
+                                Details = errorUpdate.Param,
+                            }
+                        ],
+                    };
+                    break;
             }
         }
     }
