@@ -6,6 +6,8 @@
 // We disable this warning because it is a false positive arising from the analyzer's lack of support for C#'s primary
 // constructor syntax.
 
+using System.Collections.Generic;
+
 namespace Microsoft.Extensions.AI.Evaluation.Quality;
 
 /// <summary>
@@ -29,4 +31,8 @@ public sealed class GroundednessEvaluatorContext(string groundingContext) : Eval
     /// in the information present in the supplied <see cref="GroundingContext"/>.
     /// </remarks>
     public string GroundingContext { get; } = groundingContext;
+
+    /// <inheritdoc/>
+    public override IReadOnlyList<AIContent> GetContents()
+        => [new TextContent(GroundingContext)];
 }
