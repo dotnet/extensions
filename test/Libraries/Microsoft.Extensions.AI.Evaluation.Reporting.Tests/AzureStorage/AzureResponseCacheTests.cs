@@ -19,11 +19,12 @@ public class AzureResponseCacheTests : ResponseCacheTester, IAsyncLifetime
     {
         if (Settings.Current.Configured)
         {
+            var credential = new ChainedTokenCredential(new AzureCliCredential(), new DefaultAzureCredential());
             _fsClient = new(
                 new Uri(
                     baseUri: new Uri(Settings.Current.StorageAccountEndpoint),
                     relativeUri: Settings.Current.StorageContainerName),
-                new DefaultAzureCredential());
+                credential);
         }
     }
 

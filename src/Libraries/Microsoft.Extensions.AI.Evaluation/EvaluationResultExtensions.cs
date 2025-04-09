@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Shared.Diagnostics;
 
@@ -29,6 +30,35 @@ public static class EvaluationResultExtensions
             metric.AddDiagnostic(diagnostic);
         }
     }
+
+    /// <summary>
+    /// Adds the supplied <paramref name="diagnostics"/> to all <see cref="EvaluationMetric"/>s contained in the
+    /// supplied <paramref name="result"/>.
+    /// </summary>
+    /// <param name="result">
+    /// The <see cref="EvaluationResult"/> containing the <see cref="EvaluationMetric"/>s that are to be altered.
+    /// </param>
+    /// <param name="diagnostics">The <see cref="EvaluationDiagnostic"/>s that are to be added.</param>
+    public static void AddDiagnosticsToAllMetrics(this EvaluationResult result, IEnumerable<EvaluationDiagnostic> diagnostics)
+    {
+        _ = Throw.IfNull(result);
+
+        foreach (EvaluationMetric metric in result.Metrics.Values)
+        {
+            metric.AddDiagnostics(diagnostics);
+        }
+    }
+
+    /// <summary>
+    /// Adds the supplied <paramref name="diagnostics"/> to all <see cref="EvaluationMetric"/>s contained in the
+    /// supplied <paramref name="result"/>.
+    /// </summary>
+    /// <param name="result">
+    /// The <see cref="EvaluationResult"/> containing the <see cref="EvaluationMetric"/>s that are to be altered.
+    /// </param>
+    /// <param name="diagnostics">The <see cref="EvaluationDiagnostic"/>s that are to be added.</param>
+    public static void AddDiagnosticsToAllMetrics(this EvaluationResult result, params EvaluationDiagnostic[] diagnostics)
+        => AddDiagnosticsToAllMetrics(result, diagnostics as IEnumerable<EvaluationDiagnostic>);
 
     /// <summary>
     /// Returns <see langword="true"/> if any <see cref="EvaluationMetric"/> contained in the supplied

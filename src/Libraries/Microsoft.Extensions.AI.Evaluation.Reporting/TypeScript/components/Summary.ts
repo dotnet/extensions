@@ -95,7 +95,7 @@ export class ScoreNode {
             this.failed = false;
             for (const metric of Object.values(this.scenario?.evaluationResult.metrics ?? [])) {
                 if ((metric.interpretation && metric.interpretation.failed) ||
-                    (metric.diagnostics.some(d => d.severity === "error"))) {
+                    (metric.diagnostics && metric.diagnostics.some(d => d.severity === "error"))) {
                     this.failed = true;
                     break;
                 }

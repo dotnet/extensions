@@ -262,7 +262,7 @@ public class FunctionCallContentTests
             """{"Key1":{}, "Key2":null, "Key3" : [], "Key4" : 42, "Key5" : true }""",
             "callId",
             "functionName",
-            argumentParser: static json => JsonSerializer.Deserialize<Dictionary<string, object?>>(json));
+            argumentParser: static json => JsonSerializer.Deserialize<Dictionary<string, object?>>(json, AIJsonUtilities.DefaultOptions));
 
         Assert.NotNull(content);
         Assert.Null(content.Exception);
