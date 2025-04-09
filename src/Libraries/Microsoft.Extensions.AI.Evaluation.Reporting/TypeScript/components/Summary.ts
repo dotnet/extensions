@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import Fuse from "fuse.js";
+import uFuzzy from "@leeoniya/ufuzzy";
 
 export enum ScoreNodeType {
     Group,
@@ -14,7 +14,7 @@ export type ScoreSummary = {
     includesReportHistory: boolean;
     executionHistory: Map<string, ScoreNode>;
     nodesByKey: Map<string, Map<string, ScoreNode>>;
-    fuseIndex: Fuse<ScoreNode>;
+    reverseTextIndex: ReverseTextIndex
 };
 
 export class ScoreNode {
@@ -152,6 +152,38 @@ export class ScoreNode {
     }
 };
 
+export class ReverseTextIndex {
+
+    private stringsToSearch: string[] = [];
+    private keys: string[] = [];
+
+    addText(key: string, text?: string) {
+        if (!text) {
+            return;
+        }
+        this.stringsToSearch.push(text);
+        this.keys.push(key);
+    }
+
+    search(searchValue: string): Set<string> {
+        const opts = {
+            intraMode: 0,
+            unicode: true,
+        } as uFuzzy.Options;
+        const fz = new uFuzzy(opts);
+        const terms = fz.split(searchValue);
+        const keys = new Set<string>();
+        for (const term of terms) {
+            const searchResult = fz.search(this.stringsToSearch, term) as uFuzzy.FilteredResult;
+            const matches = searchResult[0];
+            for (const match of matches) {
+                keys.add(this.keys[match]);
+            }
+        }
+        return keys;
+    }
+}
+
 export const createScoreSummary = (dataset: Dataset): ScoreSummary => {
 
     const executionHistory = new Map<string, ScoreNode>();
@@ -183,24 +215,34 @@ export const createScoreSummary = (dataset: Dataset): ScoreSummary => {
     const [primaryResult] = executionHistory.values();
     primaryResult.collapseSingleChildNodes();
 
-    const fuseIndex = new Fuse(primaryResult.flattenedNodes, {
-        keys: ["nodeKey", 
-            "scenario.scenarioName", 
-            "scenario.iterationName", 
-            "scenario.messages.contents.text", 
-            "scenario.modelResponse.messages.contents.text" ],
-        includeScore: false,
-        includeMatches: false,
-        threshold: 0.3,
-        ignoreLocation: true,
-    });
+    const reverseTextIndex = new ReverseTextIndex();
+
+    // build the reverse text index from searchable strings in the data
+    for (const node of primaryResult.flattenedNodes) {
+        reverseTextIndex.addText(node.nodeKey, node.scenario?.scenarioName);
+        reverseTextIndex.addText(node.nodeKey, node.scenario?.iterationName);
+        for (const message of node.scenario?.messages ?? []) {
+            for (const content of message.contents) {
+                if (isTextContent(content)) {
+                    reverseTextIndex.addText(node.nodeKey, content.text);
+                }
+            }
+        }
+        for (const message of node.scenario?.modelResponse?.messages ?? []) {
+            for (const content of message.contents) {
+                if (isTextContent(content)) {
+                    reverseTextIndex.addText(node.nodeKey, content.text);
+                }
+            }
+        }
+    }
 
     return {
         primaryResult,
         includesReportHistory: executionHistory.size > 1,
         executionHistory,
         nodesByKey,
-        fuseIndex,
+        reverseTextIndex,
     } as ScoreSummary;
 };
 

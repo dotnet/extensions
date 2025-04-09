@@ -1,6 +1,6 @@
 import { useContext, createContext, useState } from "react";
-import { ScoreNode, ScoreNodeType, ScoreSummary } from "./Summary";
-import Fuse, { FuseResult } from 'fuse.js';
+import { ReverseTextIndex, ScoreNode, ScoreNodeType, ScoreSummary } from "./Summary";
+import uFuzzy from "@leeoniya/ufuzzy";
 
 export type ReportContextType = {
     dataset: Dataset,
@@ -26,7 +26,7 @@ const defaultReportContext = createContext<ReportContextType>({
         includesReportHistory: false,
         executionHistory: new Map<string, ScoreNode>(),
         nodesByKey: new Map<string, Map<string, ScoreNode>>(),
-        fuseIndex: new Fuse([]),
+        reverseTextIndex: new ReverseTextIndex(),
     },
     selectedScenarioLevel: undefined,
     selectScenarioLevel: (_selectedScenarioLevel: string) => {
@@ -91,8 +91,7 @@ const useProvideReportContext = (dataset: Dataset, scoreSummary: ScoreSummary): 
             return node;
         }
 
-        const searchResults = scoreSummary.fuseIndex.search(searchValue);
-        const searchedNodes = new Set<string>(searchResults.map((result) => result.item.nodeKey));
+        const searchedNodes = scoreSummary.reverseTextIndex.search(searchValue);
 
         const srch = (node: ScoreNode) : ScoreNode | null => {
             if (node.isLeafNode) {
