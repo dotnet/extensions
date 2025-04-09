@@ -11,12 +11,6 @@
       -->
     <_IsStable Condition="('$(Stage)' != 'dev' and '$(Stage)' != 'preview') Or '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.Testing'">true</_IsStable>
 
-    <!--
-        When DotNetFinalVersionKind is set to 'release' (only for the release branches),
-        the build will produce stable outputs for 'Shipping' packages.
-      -->
-    <DotNetFinalVersionKind Condition=" '$(StabilizePackageVersion)' == 'true' And '$(DotNetFinalVersionKind)' == '' And '$(_IsStable)' == 'true' ">release</DotNetFinalVersionKind>
-
     <!-- Preview packages: do not use stable branding and do not warn about lack of [Experimental] -->
     <NoWarn Condition="'$(Stage)' == 'dev' or '$(Stage)' == 'preview'">$(NoWarn);LA0003</NoWarn>
     <!--

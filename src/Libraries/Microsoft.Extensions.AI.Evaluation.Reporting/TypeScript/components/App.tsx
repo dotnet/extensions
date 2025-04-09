@@ -55,7 +55,7 @@ function App() {
   const toggleSettings = () => setIsSettingsOpen(!isSettingsOpen);
   const closeSettings = () => setIsSettingsOpen(false);
 
-  const downloadDataset = () => {   
+  const downloadDataset = () => {
     // create a stringified JSON of the dataset
     const dataStr = JSON.stringify(dataset, null, 2);
 

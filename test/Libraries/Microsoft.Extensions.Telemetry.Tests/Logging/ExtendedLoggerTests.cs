@@ -12,6 +12,10 @@ using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
+#if NET9_0_OR_GREATER
+using System.Threading.Tasks;
+using Microsoft.Extensions.Diagnostics.Buffering;
+#endif
 
 namespace Microsoft.Extensions.Logging.Test;
 
@@ -914,6 +918,112 @@ public static class ExtendedLoggerTests
         Assert.Equal("{OriginalFormat}", property.Key);
         Assert.Equal("V4", property.Value);
     }
+
+#if NET9_0_OR_GREATER
+    [Fact]
+    public static void GlobalBuffering_CanonicalUsecase()
+    {
+        using var provider = new Provider();
+        using ILoggerFactory factory = Utils.CreateLoggerFactory(
+             builder =>
+             {
+                 builder.AddProvider(provider);
+                 builder.AddGlobalBuffer(LogLevel.Warning);
+             });
+
+        ILogger logger = factory.CreateLogger("my category");
+        logger.LogWarning("MSG0");
+        logger.Log(LogLevel.Warning, new EventId(2, "ID2"), "some state", null, (_, _) => "MSG2");
+
+        // nothing is logged because the buffer not flushed yet
+        Assert.Equal(0, provider.Logger!.Collector.Count);
+
+        // instead of this, users would get LogBuffer from DI and call Flush on it
+        Utils.DisposingLoggerFactory dlf = (Utils.DisposingLoggerFactory)factory;
+        GlobalLogBuffer buffer = dlf.ServiceProvider.GetRequiredService<GlobalLogBuffer>();
+
+        buffer.Flush();
+
+        // 2 log records emitted because the buffer has been flushed
+        Assert.Equal(2, provider.Logger!.Collector.Count);
+    }
+
+    [Fact]
+    public static void GlobalBuffering_ParallelLogging()
+    {
+        using var provider = new Provider();
+        using ILoggerFactory factory = Utils.CreateLoggerFactory(
+             builder =>
+             {
+                 builder.AddProvider(provider);
+                 builder.AddGlobalBuffer(LogLevel.Warning);
+             });
+
+        ILogger logger = factory.CreateLogger("my category");
+
+        // 1000 threads logging at the same time
+        Parallel.For(0, 1000, _ =>
+        {
+            logger.LogWarning("MSG0");
+            logger.Log(LogLevel.Warning, new EventId(2, "ID2"), "some state", null, (_, _) => "MSG2");
+        });
+
+        // nothing is logged because the buffer not flushed yet
+        Assert.Equal(0, provider.Logger!.Collector.Count);
+
+        Utils.DisposingLoggerFactory dlf = (Utils.DisposingLoggerFactory)factory;
+        GlobalLogBuffer buffer = dlf.ServiceProvider.GetRequiredService<GlobalLogBuffer>();
+
+        buffer.Flush();
+
+        // 2000 log records emitted because the buffer has been flushed
+        Assert.Equal(2000, provider.Logger!.Collector.Count);
+    }
+
+    [Fact]
+    public static async Task GlobalBuffering_ParallelLoggingAndFlushing()
+    {
+        // Arrange
+        using var provider = new Provider();
+        using ILoggerFactory factory = Utils.CreateLoggerFactory(
+             builder =>
+             {
+                 builder.AddProvider(provider);
+                 builder.AddGlobalBuffer(options =>
+                 {
+                     options.AutoFlushDuration = TimeSpan.Zero;
+                     options.Rules.Add(new LogBufferingFilterRule(logLevel: LogLevel.Warning));
+                 });
+             });
+
+        ILogger logger = factory.CreateLogger("my category");
+        Utils.DisposingLoggerFactory dlf = (Utils.DisposingLoggerFactory)factory;
+        GlobalLogBuffer buffer = dlf.ServiceProvider.GetRequiredService<GlobalLogBuffer>();
+
+        // Act - Run logging and flushing operations in parallel
+        await Task.Run(() =>
+        {
+            Parallel.For(0, 100, i =>
+            {
+                logger.LogWarning("MSG0");
+                logger.LogWarning("MSG1");
+                logger.LogWarning("MSG2");
+                logger.LogWarning("MSG3");
+                logger.LogWarning("MSG4");
+                logger.LogWarning("MSG5");
+                logger.LogWarning("MSG6");
+                logger.LogWarning("MSG7");
+                logger.LogWarning("MSG8");
+                logger.LogWarning("MSG9");
+                buffer.Flush();
+            });
+        });
+
+        buffer.Flush();
+        Assert.Equal(1000, provider.Logger!.Collector.Count);
+    }
+
+#endif
 
     private sealed class CustomLoggerProvider : ILoggerProvider
     {
