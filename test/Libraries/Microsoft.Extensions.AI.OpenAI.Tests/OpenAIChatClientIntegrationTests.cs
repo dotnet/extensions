@@ -7,5 +7,5 @@ public class OpenAIChatClientIntegrationTests : ChatClientIntegrationTests
 {
     protected override IChatClient? CreateChatClient() =>
         IntegrationTestHelpers.GetOpenAIClient()
-        ?.AsChatClient(TestRunnerConfiguration.Instance["OpenAI:ChatModel"] ?? "gpt-4o-mini");
+        ?.GetChatClient(TestRunnerConfiguration.Instance["OpenAI:ChatModel"] ?? "gpt-4o-mini").AsIChatClient();
 }

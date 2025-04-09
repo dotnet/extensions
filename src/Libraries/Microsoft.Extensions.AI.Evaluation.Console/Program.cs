@@ -85,7 +85,7 @@ internal sealed class Program
         };
         reportCmd.AddOption(outputOpt);
 
-        var lastNOpt = new Option<int>(["-n"], () => 1, "Number of most recent executions to include in the report.");
+        var lastNOpt = new Option<int>(["-n"], () => 10, "Number of most recent executions to include in the report.");
         reportCmd.AddOption(lastNOpt);
 
         var formatOpt =
@@ -139,7 +139,7 @@ internal sealed class Program
         // TASK: Support some mechanism to fail a build (i.e. return a failure exit code) based on one or more user
         // specified criteria (e.g., if x% of metrics were deemed 'poor'). Ideally this mechanism would be flexible /
         // extensible enough to allow users to configure multiple different kinds of failure criteria.
-
+        // See https://github.com/dotnet/extensions/issues/6038.
 #if DEBUG
         ParseResult parseResult = rootCmd.Parse(args);
         if (parseResult.HasOption(debugOpt))

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { makeStyles, tokens } from '@fluentui/react-components';
+import { useReportContext } from './ReportContext';
 
 const useStyles = makeStyles({
   tagsContainer: {
@@ -45,7 +46,8 @@ const useStyles = makeStyles({
     cursor: 'default',
     ':hover': {
       backgroundColor: tokens.colorBrandBackground2,
-      boxShadow: 'none'
+      boxShadow: 'none',
+      cursor: 'default'
     },
     '&.selected': {
       backgroundColor: tokens.colorBrandBackground2
@@ -55,14 +57,15 @@ const useStyles = makeStyles({
 
 export type TagInfo = { tag: string; count: number };
 
-export function categorizeAndSortTags(dataset: Dataset): { 
+export function categorizeAndSortTags(dataset: Dataset, primaryExecutionName: string): { 
   globalTags: TagInfo[];
   filterableTags: TagInfo[];
 } {
   const tagCounts = new Map<string, number>();
-  const totalResults = dataset.scenarioRunResults.length;
+  const primaryResults = dataset.scenarioRunResults.filter(result => result.executionName === primaryExecutionName);
+  const totalResults = primaryResults.length;
   
-  dataset.scenarioRunResults.forEach(result => {
+  primaryResults.forEach(result => {
     if (result.tags) {
       result.tags.forEach(tag => {
         const currentCount = tagCounts.get(tag) || 0;
@@ -112,12 +115,11 @@ export function GlobalTagsDisplay({ globalTags }: { globalTags: TagInfo[] }) {
 
 export interface FilterableTagsDisplayProps {
   filterableTags: TagInfo[];
-  onTagClick: (tag: string) => void;
-  selectedTags: string[];
 }
 
-export function FilterableTagsDisplay({ filterableTags, onTagClick, selectedTags }: FilterableTagsDisplayProps) {
+export function FilterableTagsDisplay({ filterableTags }: FilterableTagsDisplayProps) {
   const classes = useStyles();
+  const {selectedTags, handleTagClick} = useReportContext();
 
   if (filterableTags.length === 0) {
     return null;
@@ -133,7 +135,7 @@ export function FilterableTagsDisplay({ filterableTags, onTagClick, selectedTags
             key={tag} 
             className={`${classes.tagBubble} ${isSelected(tag) ? 'selected' : ''}`}
             title={`${tag} (appears on ${count} results) - Click to filter by this tag`}
-            onClick={() => onTagClick(tag)}
+            onClick={() => handleTagClick(tag)}
           >
             {tag}
           </div>

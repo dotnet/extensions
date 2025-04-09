@@ -7,5 +7,5 @@ public class AzureAIInferenceEmbeddingGeneratorIntegrationTests : EmbeddingGener
 {
     protected override IEmbeddingGenerator<string, Embedding<float>>? CreateEmbeddingGenerator() =>
         IntegrationTestHelpers.GetEmbeddingsClient()
-        ?.AsEmbeddingGenerator(TestRunnerConfiguration.Instance["AzureAIInference:EmbeddingModel"] ?? "text-embedding-3-small");
+        ?.AsIEmbeddingGenerator(TestRunnerConfiguration.Instance["AzureAIInference:EmbeddingModel"] ?? "text-embedding-3-small");
 }

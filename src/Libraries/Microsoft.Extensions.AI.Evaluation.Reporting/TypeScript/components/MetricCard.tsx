@@ -42,7 +42,7 @@ const useCardStyles = makeStyles({
         padding: '.75rem', 
         border: `1px solid ${tokens.colorNeutralStroke2}`,
         borderRadius: '4px',
-        width: '12rem',
+        width: '12.5rem',
         cursor: 'pointer',
         transition: 'box-shadow 0.2s ease-in-out, outline 0.2s ease-in-out',
         position: 'relative',
@@ -106,6 +106,16 @@ const useCardStyles = makeStyles({
     scoreBg3: { backgroundColor: tokens.colorStatusWarningBackground2 },
     scoreBg4: { backgroundColor: tokens.colorStatusSuccessBackground2 },
     scoreBg5: { backgroundColor: tokens.colorStatusSuccessBackground2 },
+    metricPill: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: tokens.fontSizeBase200,
+        fontWeight: '500',
+        padding: '0.25rem 0.5rem',
+        borderRadius: '4px',
+        border: '1px solid ' + tokens.colorNeutralStroke2,        
+    }
 });
 
 const useCardColors = (interpretation?: EvaluationMetricInterpretation) => {
@@ -146,6 +156,23 @@ const useCardColors = (interpretation?: EvaluationMetricInterpretation) => {
 
 export type MetricType = StringMetric | NumericMetric | BooleanMetric | MetricWithNoValue;
 
+const getMetricDisplayValue = (metric: MetricType): string => {
+    switch (metric.$type) {
+        case "string":
+            return metric?.value ?? "??";
+        case "boolean":
+            return !metric || metric.value === undefined || metric.value === null ? 
+                '??' :
+                metric.value ? 'Yes' : 'No';
+        case "numeric":
+            return metric?.value?.toString() ?? "??";
+        case "none":
+            return "None";
+        default:
+            throw new Error(`Unknown metric type: ${metric["$type"]}`);
+    }
+};
+
 export const MetricCard = ({ 
     metric, 
     onClick,
@@ -155,31 +182,15 @@ export const MetricCard = ({
     onClick: () => void,
     isSelected: boolean
 }) => {
-    const getValue = (metric: MetricType): string => {
-        switch (metric.$type) {
-            case "string":
-                return metric?.value ?? "??";
-            case "boolean":
-                return !metric || metric.value === undefined || metric.value === null ? 
-                    '??' :
-                    metric.value ? 'Pass' : 'Fail';
-            case "numeric":
-                return metric?.value?.toString() ?? "??";
-            case "none":
-                return "None";
-            default:
-                throw new Error(`Unknown metric type: ${metric["$type"]}`);
-        }
-    };
 
-    const metricValue = getValue(metric);
+    const metricValue = getMetricDisplayValue(metric);
     const classes = useCardStyles();
     const { fg, bg } = useCardColors(metric.interpretation);
     
     const hasReasons = metric.reason != null || metric.interpretation?.reason != null;
-    const hasInformationalMessages = metric.diagnostics.some((d: EvaluationDiagnostic) => d.severity == "informational");
-    const hasWarningMessages = metric.diagnostics.some((d: EvaluationDiagnostic) => d.severity == "warning");
-    const hasErrorMessages = metric.diagnostics.some((d: EvaluationDiagnostic) => d.severity == "error");
+    const hasInformationalMessages = metric.diagnostics && metric.diagnostics.some((d: EvaluationDiagnostic) => d.severity == "informational");
+    const hasWarningMessages = metric.diagnostics && metric.diagnostics.some((d: EvaluationDiagnostic) => d.severity == "warning");
+    const hasErrorMessages = metric.diagnostics && metric.diagnostics.some((d: EvaluationDiagnostic) => d.severity == "error");
     
     const cardClass = mergeClasses(
         bg, 
@@ -201,30 +212,33 @@ export const MetricCard = ({
         statusTooltip = 'This metric has additional information. Click the card to view more details.';
     }
     
-    const tooltipContent = (
-        <div>
-            <div>Name: {metric.name}</div>
-            <div>Value: {metricValue}</div>
+    return (
+        <div className={cardClass} onClick={onClick}>
+            <div className={classes.iconPlaceholder}>
+                {statusIcon && (
+                    <Tooltip content={statusTooltip} relationship="description">
+                        <span>{statusIcon}</span>
+                    </Tooltip>
+                )}
+            </div>
+            <div className={classes.metricNameText}>
+                {metric.name}
+            </div>
+            <div className={mergeClasses(fg, classes.metricValueText)}>
+                {metricValue}
+            </div>
         </div>
     );
-    
-    return (
-        <Tooltip content={tooltipContent} relationship="label">
-            <div className={cardClass} onClick={onClick}>
-                <div className={classes.iconPlaceholder}>
-                    {statusIcon && (
-                        <Tooltip content={statusTooltip} relationship="description">
-                            <span>{statusIcon}</span>
-                        </Tooltip>
-                    )}
-                </div>
-                <div className={classes.metricNameText}>
-                    {metric.name}
-                </div>
-                <div className={mergeClasses(fg, classes.metricValueText)}>
-                    {metricValue}
-                </div>
-            </div>
-        </Tooltip>
+};
+
+export const MetricDisplay = ({metric}: {metric: MetricWithNoValue | NumericMetric | BooleanMetric | StringMetric}) => {
+    const metricValue = getMetricDisplayValue(metric);
+    const classes = useCardStyles();
+    const { fg, bg } = useCardColors(metric.interpretation);
+
+    const pillClass = mergeClasses(
+        bg,
+        classes.metricPill,
     );
+    return (<div className={pillClass}><span className={fg}>{metricValue}</span></div>);
 };

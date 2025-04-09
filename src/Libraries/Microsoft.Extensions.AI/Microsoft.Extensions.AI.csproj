@@ -4,8 +4,6 @@
     <RootNamespace>Microsoft.Extensions.AI</RootNamespace>
     <Description>Utilities for working with generative AI components.</Description>
     <Workstream>AI</Workstream>
-    <!-- This package needs to stay referencing .NET 9 versions of its dependencies -->
-    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -18,11 +16,22 @@
   <PropertyGroup>
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
     <NoWarn>$(NoWarn);CA2227;CA1034;SA1316;S1067;S1121;S1994;S3253</NoWarn>
+
+    <!-- CA2007 requires use of ConfigureAwait. While in general we strive to use ConfigureAwait in all our libraries,
+         the exemption is when user code that might care about SynchronizationContext is invoked as part of operation.
+         FunctionInvokingChatClient may invoke AIFunctions created to run user code that cares about the context, such
+         as an AIFunction that invokes code to update a UI. As such, the Microsoft.Extensions.AI library explicitly avoids
+         using ConfigureAwait(false). It could use ConfigureAwait(true), but it's easier to spot the presence of ConfigureAwait
+         at all then to spot ones that use false rather than true. Alternatively, we could try to avoid using ConfigureAwait(false)
+         only on paths that could lead up to the invocation of an AIFunction, but that is challenging to maintain correctly. -->
+    <NoWarn>$(NoWarn);CA2007</NoWarn>
+    
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DisableNETStandardCompatErrors>true</DisableNETStandardCompatErrors>
   </PropertyGroup>
 
   <PropertyGroup>
+    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
     <InjectStringSyntaxAttributeOnLegacy>true</InjectStringSyntaxAttributeOnLegacy>
     <DisableMicrosoftExtensionsLoggingSourceGenerator>false</DisableMicrosoftExtensionsLoggingSourceGenerator>

@@ -2,19 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { useState } from 'react';
-import { Settings28Regular, FilterDismissRegular, Dismiss20Regular } from '@fluentui/react-icons';
-import { Drawer, DrawerBody, DrawerHeader, DrawerHeaderTitle, Switch, Tooltip } from '@fluentui/react-components';
+import { Settings28Regular, FilterDismissRegular, DismissRegular, ArrowDownloadRegular } from '@fluentui/react-icons';
+import { Button, Drawer, DrawerBody, DrawerHeader, DrawerHeaderTitle, Switch, Tooltip } from '@fluentui/react-components';
 import { makeStyles } from '@fluentui/react-components';
 import './App.css';
-import { ScoreNode } from './Summary';
 import { ScenarioGroup } from './ScenarioTree';
 import { GlobalTagsDisplay, FilterableTagsDisplay, categorizeAndSortTags } from './TagsDisplay';
 import { tokens } from '@fluentui/react-components';
-
-type AppProperties = {
-  dataset: Dataset,
-  tree: ScoreNode,
-};
+import { ScoreNodeHistory } from './ScoreNodeHistory';
+import { useReportContext } from './ReportContext';
 
 const useStyles = makeStyles({
   header: {
@@ -26,6 +22,8 @@ const useStyles = makeStyles({
     zIndex: 1,
     paddingBottom: '12px',
     backgroundColor: tokens.colorNeutralBackground1,
+    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+    marginBottom: '1rem',
   },
   headerTop: {
     display: 'flex',
@@ -37,71 +35,40 @@ const useStyles = makeStyles({
     alignItems: 'center',
     gap: '12px',
   },
-  iconButton: {
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '40px',
-    height: '40px',
-    borderRadius: '6px',
-    transition: 'all 0.2s ease-in-out',
-    '&:hover': {
-      backgroundColor: tokens.colorNeutralBackground4,
-    },
-  },
-  filterButton: {
-    backgroundColor: tokens.colorBrandBackground2,
-    border: `1px solid ${tokens.colorBrandStroke1}`,
-    fontSize: '20px',
-    width: '40px',
-    height: '40px',
-    borderRadius: '6px',
-    '&:hover': {
-      backgroundColor: tokens.colorNeutralBackground4,
-    },
-  },
   footerText: { fontSize: '0.8rem', marginTop: '2rem' },
   closeButton: {
     position: 'absolute',
     top: '1.5rem',
     right: '1rem',
-    cursor: 'pointer',
-    fontSize: '2rem',
-    width: '28px',
-    height: '28px',
-    borderRadius: '6px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    '&:hover': {
-      backgroundColor: tokens.colorNeutralBackground4,
-    },
   },
   switchLabel: { fontSize: '1rem', paddingTop: '1rem' },
   drawerBody: { paddingTop: '1rem' },
 });
 
-function App({ dataset, tree }: AppProperties) {
+function App() {
   const classes = useStyles();
+  const { dataset, scoreSummary, selectedTags, clearFilters } = useReportContext();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [renderMarkdown, setRenderMarkdown] = useState(true);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-
-  const { globalTags, filterableTags } = categorizeAndSortTags(dataset);
+  const { renderMarkdown, setRenderMarkdown } = useReportContext();
+  const { globalTags, filterableTags } = categorizeAndSortTags(dataset, scoreSummary.primaryResult.executionName);
 
   const toggleSettings = () => setIsSettingsOpen(!isSettingsOpen);
-  const toggleRenderMarkdown = () => setRenderMarkdown(!renderMarkdown);
   const closeSettings = () => setIsSettingsOpen(false);
 
-  const handleTagClick = (tag: string) => {
-    setSelectedTags((prevTags) =>
-      prevTags.includes(tag) ? prevTags.filter((t) => t !== tag) : [...prevTags, tag]
-    );
-  };
+  const downloadDataset = () => {
+    // create a stringified JSON of the dataset
+    const dataStr = JSON.stringify(dataset, null, 2);
 
-  const clearFilters = () => {
-    setSelectedTags([]);
+    // create a link to download the JSON file in the page and click it
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${scoreSummary.primaryResult.executionName}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -112,30 +79,29 @@ function App({ dataset, tree }: AppProperties) {
           <div className={classes.headerActions}>
             {selectedTags.length > 0 && (
               <Tooltip content="Clear Filters" relationship="description">
-                <div className={`${classes.iconButton} ${classes.filterButton}`} onClick={clearFilters}>
-                  <FilterDismissRegular />
-                </div>
+                <Button icon={<FilterDismissRegular />} appearance="subtle" onClick={clearFilters} />
               </Tooltip>
             )}
+            <Tooltip content="Download Data as JSON" relationship="description">
+              <Button icon={<ArrowDownloadRegular />} appearance="subtle" onClick={downloadDataset} />
+            </Tooltip>
             <Tooltip content="Settings" relationship="description">
-              <div className={classes.iconButton} onClick={toggleSettings}>
-                <Settings28Regular />
-              </div>
+              <Button icon={<Settings28Regular />} appearance="subtle" onClick={toggleSettings} />
             </Tooltip>
           </div>
         </div>
         <GlobalTagsDisplay globalTags={globalTags} />
+
         <FilterableTagsDisplay
           filterableTags={filterableTags}
-          onTagClick={handleTagClick}
-          selectedTags={selectedTags}
         />
+
+        <ScoreNodeHistory />
       </div>
 
       <ScenarioGroup
-        node={tree}
-        renderMarkdown={renderMarkdown}
-        selectedTags={selectedTags}
+        node={scoreSummary.primaryResult}
+        scoreSummary={scoreSummary}
       />
 
       <p className={classes.footerText}>
@@ -145,12 +111,12 @@ function App({ dataset, tree }: AppProperties) {
       <Drawer open={isSettingsOpen} onOpenChange={toggleSettings} position="end">
         <DrawerHeader>
           <DrawerHeaderTitle>Settings</DrawerHeaderTitle>
-          <span className={classes.closeButton} onClick={closeSettings}><Dismiss20Regular /></span>
+          <Button className={classes.closeButton} icon={<DismissRegular />} appearance="subtle" onClick={closeSettings} />
         </DrawerHeader>
         <DrawerBody className={classes.drawerBody}>
           <Switch
             checked={renderMarkdown}
-            onChange={toggleRenderMarkdown}
+            onChange={(_ev, data) => setRenderMarkdown(data.checked)}
             label={<span className={classes.switchLabel}>Render markdown for conversations</span>}
           />
         </DrawerBody>
