@@ -1,6 +1,5 @@
 import { useContext, createContext, useState } from "react";
 import { ReverseTextIndex, ScoreNode, ScoreNodeType, ScoreSummary } from "./Summary";
-import uFuzzy from "@leeoniya/ufuzzy";
 
 export type ReportContextType = {
     dataset: Dataset,
