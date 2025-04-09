@@ -48,7 +48,7 @@ public sealed class HeaderParsingFeatureTests
         var key = Registry.Register(CommonHeaders.Date);
         Context.Request.Headers["Date"] = date;
 
-        var feature = new HeaderParsingFeature(Registry, _logger, metrics) { Context = Context };
+        var feature = new HeaderParsingFeature(_logger, metrics) { Context = Context };
 
         Assert.True(feature.TryGetHeaderValue(key, out var value, out var _));
         Assert.Equal(date, value.ToString("R", CultureInfo.InvariantCulture));
@@ -67,7 +67,7 @@ public sealed class HeaderParsingFeatureTests
         Context.Request.Headers["Date"] = currentDate;
         Context.Request.Headers["Test"] = futureDate;
 
-        var feature = new HeaderParsingFeature(Registry, _logger, metrics) { Context = Context };
+        var feature = new HeaderParsingFeature(_logger, metrics) { Context = Context };
 
         Assert.True(feature.TryGetHeaderValue(key, out var value, out var result));
         Assert.Equal(currentDate, value.ToString("R", CultureInfo.InvariantCulture));
@@ -89,7 +89,7 @@ public sealed class HeaderParsingFeatureTests
 
         Context.Request.Headers["Date"] = date;
 
-        var feature = new HeaderParsingFeature(Registry, _logger, metrics) { Context = Context };
+        var feature = new HeaderParsingFeature(_logger, metrics) { Context = Context };
 
         var key = Registry.Register(CommonHeaders.Date);
 
@@ -103,7 +103,7 @@ public sealed class HeaderParsingFeatureTests
     {
         using var meter = new Meter(nameof(TryParse_returns_false_on_header_not_found));
         var metrics = GetMockedMetrics(meter);
-        var feature = new HeaderParsingFeature(Registry, _logger, metrics) { Context = Context };
+        var feature = new HeaderParsingFeature(_logger, metrics) { Context = Context };
         var key = Registry.Register(CommonHeaders.Date);
 
         Assert.False(feature.TryGetHeaderValue(key, out var value, out var _));
@@ -120,7 +120,7 @@ public sealed class HeaderParsingFeatureTests
         var date = DateTimeOffset.Now.ToString("R", CultureInfo.InvariantCulture);
         _options.Value.DefaultValues.Add("Date", date);
 
-        var feature = new HeaderParsingFeature(Registry, _logger, metrics) { Context = Context };
+        var feature = new HeaderParsingFeature(_logger, metrics) { Context = Context };
         var key = Registry.Register(CommonHeaders.Date);
 
         Assert.True(feature.TryGetHeaderValue(key, out var value, out var result));
@@ -138,7 +138,7 @@ public sealed class HeaderParsingFeatureTests
         using var metricCollector = new MetricCollector<long>(meter, "aspnetcore.header_parsing.parse_errors");
         Context.Request.Headers["Date"] = "Not a date.";
 
-        var feature = new HeaderParsingFeature(Registry, _logger, metrics) { Context = Context };
+        var feature = new HeaderParsingFeature(_logger, metrics) { Context = Context };
         var key = Registry.Register(CommonHeaders.Date);
 
         Assert.False(feature.TryGetHeaderValue(key, out var value, out var result));
@@ -161,7 +161,7 @@ public sealed class HeaderParsingFeatureTests
         var metrics = GetMockedMetrics(meter);
 
         var pool = new Mock<ObjectPool<HeaderParsingFeature.PoolHelper>>(MockBehavior.Strict);
-        var helper = new HeaderParsingFeature.PoolHelper(pool.Object, Registry, _logger, metrics);
+        var helper = new HeaderParsingFeature.PoolHelper(pool.Object, _logger, metrics);
         helper.Feature.Context = Context;
         pool.Setup(x => x.Return(helper));
 
@@ -195,8 +195,8 @@ public sealed class HeaderParsingFeatureTests
 
         Context.Request.Headers[HeaderNames.CacheControl] = "max-age=604800";
 
-        var feature = new HeaderParsingFeature(Registry, _logger, metrics) { Context = Context };
-        var feature2 = new HeaderParsingFeature(Registry, _logger, metrics) { Context = Context };
+        var feature = new HeaderParsingFeature(_logger, metrics) { Context = Context };
+        var feature2 = new HeaderParsingFeature(_logger, metrics) { Context = Context };
         var key = Registry.Register(CommonHeaders.CacheControl);
 
         Assert.True(feature.TryGetHeaderValue(key, out var value1, out var error1));
