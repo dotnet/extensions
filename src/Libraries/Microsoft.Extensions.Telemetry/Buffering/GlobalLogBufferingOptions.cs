@@ -17,17 +17,17 @@ namespace Microsoft.Extensions.Diagnostics.Buffering;
 [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
 public class GlobalLogBufferingOptions
 {
-    private const int DefaultMaxBufferSizeInBytes = 500_000_000; // 500 MB.
-    private const int DefaultMaxLogRecordSizeInBytes = 50_000; // 50 KB.
+    private const int DefaultMaxBufferSizeInBytes = 500 * 1024 * 1024; // 500 MB.
+    private const int DefaultMaxLogRecordSizeInBytes = 50 * 1024; // 50 KB.
 
     private const int MinimumAutoFlushDuration = 0;
     private const int MaximumAutoFlushDuration = 1000 * 60 * 60 * 24; // 1 day.
 
     private const long MinimumBufferSizeInBytes = 1;
-    private const long MaximumBufferSizeInBytes = 10_000_000_000; // 10 GB.
+    private const long MaximumBufferSizeInBytes = 10L * 1024 * 1024 * 1024; // 10 GB.
 
     private const long MinimumLogRecordSizeInBytes = 1;
-    private const long MaximumLogRecordSizeInBytes = 10_000_000; // 10 MB.
+    private const long MaximumLogRecordSizeInBytes = 10 * 1024 * 1024; // 10 MB.
 
     private static readonly TimeSpan _defaultAutoFlushDuration = TimeSpan.FromSeconds(30);
 
