@@ -774,7 +774,7 @@ public class OpenAIChatClientTests
     }
 
     [Fact]
-    public async Task UnavailableFuctionCall_NonStreaming()
+    public async Task UnavailableBuiltInFunctionCall_NonStreaming()
     {
         const string Input = """
             {
