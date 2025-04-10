@@ -582,22 +582,25 @@ internal sealed partial class OpenAIChatClient : IChatClient
                     }
                 }
 
-                switch (options.ToolMode)
+                if (result.Tools.Count > 0)
                 {
-                    case NoneChatToolMode:
-                        result.ToolChoice = ChatToolChoice.CreateNoneChoice();
-                        break;
+                    switch (options.ToolMode)
+                    {
+                        case NoneChatToolMode:
+                            result.ToolChoice = ChatToolChoice.CreateNoneChoice();
+                            break;
 
-                    case AutoChatToolMode:
-                    case null:
-                        result.ToolChoice = ChatToolChoice.CreateAutoChoice();
-                        break;
+                        case AutoChatToolMode:
+                        case null:
+                            result.ToolChoice = ChatToolChoice.CreateAutoChoice();
+                            break;
 
-                    case RequiredChatToolMode required:
-                        result.ToolChoice = required.RequiredFunctionName is null ?
-                            ChatToolChoice.CreateRequiredChoice() :
-                            ChatToolChoice.CreateFunctionChoice(required.RequiredFunctionName);
-                        break;
+                        case RequiredChatToolMode required:
+                            result.ToolChoice = required.RequiredFunctionName is null ?
+                                ChatToolChoice.CreateRequiredChoice() :
+                                ChatToolChoice.CreateFunctionChoice(required.RequiredFunctionName);
+                            break;
+                    }
                 }
             }
 
