@@ -32,8 +32,8 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
         }
     }
 
-    private static readonly ConcurrentDictionary<ContentSafetyServiceConfiguration, string> _serviceUrlCache =
-        new ConcurrentDictionary<ContentSafetyServiceConfiguration, string>(UrlConfigurationComparer.Instance);
+    private static readonly ConcurrentDictionary<UrlCacheKey, string> _serviceUrlCache =
+        new ConcurrentDictionary<UrlCacheKey, string>();
 
     private readonly HttpClient _httpClient = serviceConfiguration.HttpClient ?? SharedHttpClient;
 
@@ -161,7 +161,8 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
             return _serviceUrl;
         }
 
-        if (_serviceUrlCache.TryGetValue(serviceConfiguration, out string? serviceUrl))
+        var key = new UrlCacheKey(serviceConfiguration, annotationTask);
+        if (_serviceUrlCache.TryGetValue(key, out string? serviceUrl))
         {
             _serviceUrl = serviceUrl;
             return _serviceUrl;
@@ -182,7 +183,7 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
             evaluatorName,
             cancellationToken).ConfigureAwait(false);
 
-        _ = _serviceUrlCache.TryAdd(serviceConfiguration, serviceUrl);
+        _ = _serviceUrlCache.TryAdd(key, serviceUrl);
         _serviceUrl = serviceUrl;
         return _serviceUrl;
     }
