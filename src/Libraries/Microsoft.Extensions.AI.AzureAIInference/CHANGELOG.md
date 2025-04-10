@@ -1,5 +1,12 @@
 # Release History
 
+## 9.4.0-preview.1.25207.5
+
+- Updated to Azure.AI.Inference 1.0.0-beta.4.
+- Renamed `AsChatClient`/`AsEmbeddingGenerator` extension methods to `AsIChatClient`/`AsIEmbeddingGenerator`.
+- Removed the public `AzureAIInferenceChatClient`/`AzureAIInferenceEmbeddingGenerator` types. These are only created now via the extension methods.
+- Updated to accomodate the changes in `Microsoft.Extensions.AI.Abstractions`.
+
 ## 9.3.0-preview.1.25161.3
 
 - Updated to accomodate the changes in `Microsoft.Extensions.AI.Abstractions`.
