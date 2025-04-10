@@ -8,15 +8,12 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Core;
@@ -42,79 +39,7 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
 
     private string? _serviceUrl;
 
-    public async ValueTask<EvaluationResult> EvaluateAsync(
-        IEnumerable<ChatMessage> messages,
-        string annotationTask,
-        string evaluatorName,
-        IEnumerable<string?>? contexts = null,
-        ContentSafetyServicePayloadFormat payloadFormat = ContentSafetyServicePayloadFormat.HumanSystem,
-        IEnumerable<string>? metricNames = null,
-        CancellationToken cancellationToken = default)
-    {
-        JsonObject payload;
-        IList<EvaluationDiagnostic>? diagnostics;
-        string annotationResult;
-        string duration;
-        Stopwatch stopwatch = Stopwatch.StartNew();
-
-        try
-        {
-            string serviceUrl =
-                await GetServiceUrlAsync(annotationTask, evaluatorName, cancellationToken).ConfigureAwait(false);
-
-            (payload, diagnostics) =
-                ContentSafetyServicePayloadUtilities.GetPayload(
-                    payloadFormat,
-                    messages,
-                    annotationTask,
-                    evaluatorName,
-                    contexts,
-                    metricNames,
-                    cancellationToken);
-
-            string resultUrl =
-                await SubmitAnnotationRequestAsync(
-                    serviceUrl,
-                    payload,
-                    evaluatorName,
-                    cancellationToken).ConfigureAwait(false);
-
-            annotationResult =
-                await FetchAnnotationResultAsync(
-                    resultUrl,
-                    evaluatorName,
-                    cancellationToken).ConfigureAwait(false);
-        }
-        finally
-        {
-            stopwatch.Stop();
-            duration = $"{stopwatch.Elapsed.TotalSeconds.ToString("F2", CultureInfo.InvariantCulture)} s";
-        }
-
-        EvaluationResult result = ParseAnnotationResult(annotationResult, duration);
-
-        if (diagnostics is not null)
-        {
-            result.AddDiagnosticsToAllMetrics(diagnostics);
-        }
-
-#pragma warning disable S125 // Sections of code should not be commented out
-        // The following commented code can be useful for debugging purposes.
-        // result.AddDiagnosticsToAllMetrics(
-        //     EvaluationDiagnostic.Informational(
-        //         $"""
-        //         Annotation Request Payload:
-        //         {payload.ToJsonString(new JsonSerializerOptions { WriteIndented = true })}
-        //
-        //         Annotation Result:
-        //         {annotationResult}
-        //         """));
-#pragma warning restore S125
-
-        return result;
-    }
-
-    private static EvaluationResult ParseAnnotationResult(string annotationResponse, string evaluationDuration)
+    internal static EvaluationResult ParseAnnotationResult(string annotationResponse)
     {
 #pragma warning disable S125 // Sections of code should not be commented out
         // Example annotation response:
@@ -195,12 +120,35 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
                 }
             }
 
-            metric.AddOrUpdateMetadata("evaluation-duration", evaluationDuration);
-
             result.Metrics[metric.Name] = metric;
         }
 
         return result;
+    }
+
+    internal async ValueTask<string> AnnotateAsync(
+        string payload,
+        string annotationTask,
+        string evaluatorName,
+        CancellationToken cancellationToken = default)
+    {
+        string serviceUrl =
+            await GetServiceUrlAsync(annotationTask, evaluatorName, cancellationToken).ConfigureAwait(false);
+
+        string resultUrl =
+            await SubmitAnnotationRequestAsync(
+                serviceUrl,
+                payload,
+                evaluatorName,
+                cancellationToken).ConfigureAwait(false);
+
+        string annotationResult =
+            await FetchAnnotationResultAsync(
+                resultUrl,
+                evaluatorName,
+                cancellationToken).ConfigureAwait(false);
+
+        return annotationResult;
     }
 
     private async ValueTask<string> GetServiceUrlAsync(
@@ -344,19 +292,18 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
 
     private async ValueTask<string> SubmitAnnotationRequestAsync(
         string serviceUrl,
-        JsonObject payload,
+        string payload,
         string evaluatorName,
         CancellationToken cancellationToken)
     {
         string annotationUrl = $"{serviceUrl}/submitannotation";
-        string payloadString = payload.ToJsonString();
 
         HttpResponseMessage response =
             await GetResponseAsync(
                 annotationUrl,
                 evaluatorName,
                 requestMethod: HttpMethod.Post,
-                payloadString,
+                payload,
                 cancellationToken).ConfigureAwait(false);
 
         if (!response.IsSuccessStatusCode)
