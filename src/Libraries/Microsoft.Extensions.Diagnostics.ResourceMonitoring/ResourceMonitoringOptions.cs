@@ -97,4 +97,12 @@ public partial class ResourceMonitoringOptions
         UrlFormat = DiagnosticIds.UrlFormat)]
     [TimeSpan(MinimumCachingInterval, MaximumCachingInterval)]
     public TimeSpan MemoryConsumptionRefreshInterval { get; set; } = DefaultRefreshInterval;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether CPU metrics are calculated via cgroup CPU limits instead of Host CPU delta.
+    /// </summary>
+    /// <value>
+    /// The default value is true.
+    /// </value>
+    public bool CalculateCpuUsageWithoutHost { get; set; } = false;
 }

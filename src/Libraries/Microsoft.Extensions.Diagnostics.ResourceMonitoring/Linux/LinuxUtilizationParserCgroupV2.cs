@@ -21,14 +21,11 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
 {
     private const int Thousand = 1000;
     private const int CpuShares = 1024;
+    private const string PathPrefix = "/sys/fs/cgroup";
+    private const string CpuStat = "cpu.stat"; // File containing CPU usage in nanoseconds.
+    private const string CpuLimit = "cpu.max"; // File with amount of CPU time available to the group along with the accounting period in microseconds.
+    private const string CpuRequest = "cpu.weight"; // CPU weights, also known as shares in cgroup v1, is used for resource allocation.
     private static readonly ObjectPool<BufferWriter<char>> _sharedBufferWriterPool = BufferWriterPool.CreateBufferWriterPool<char>();
-
-    /// <remarks>
-    /// File contains the amount of CPU time (in microseconds) available to the group during each accounting period.
-    /// and the length of the accounting period in microseconds.
-    /// In Cgroup V1 : /sys/fs/cgroup/cpu/cpu.cfs_quota_us and /sys/fs/cgroup/cpu/cpu.cfs_period_us.
-    /// </remarks>
-    private static readonly FileInfo _cpuCfsQuaotaPeriodUs = new("/sys/fs/cgroup/cpu.max");
 
     /// <remarks>
     /// Stat file contains information about all CPUs and their time.
@@ -72,19 +69,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
     /// </remarks>
     private static readonly FileInfo _memoryStat = new("/sys/fs/cgroup/memory.stat");
 
-    /// <summary>
-    /// File containing usage in nanoseconds.
-    /// </summary>
-    /// <remarks>
-    /// This value refers to the container/cgroup utilization.
-    /// The format is single line with one number value.
-    /// </remarks>
-    private static readonly FileInfo _cpuacctUsage = new("/sys/fs/cgroup/cpu.stat");
-
-    /// <summary>
-    /// CPU weights, also known as shares in cgroup v1, is used for resource allocation.
-    /// </summary>
-    private static readonly FileInfo _cpuPodWeight = new("/sys/fs/cgroup/cpu.weight");
+    private static readonly FileInfo _cpuActualSelfSliceProcFile = new("/proc/self/cgroup");
 
     private readonly IFileSystem _fileSystem;
     private readonly long _userHz;
@@ -95,24 +80,58 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         _userHz = userHz.Value;
     }
 
+    public string GetCgroupActualSlicePath(string filename)
+    {
+        using ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool);
+
+        // Read the content of the file
+        _fileSystem.ReadFirstLine(_cpuActualSelfSliceProcFile, bufferWriter.Buffer);
+        ReadOnlySpan<char> fileContent = bufferWriter.Buffer.WrittenSpan;
+
+        // Ensure the file content is not empty
+        if (fileContent.IsEmpty)
+        {
+            throw new InvalidOperationException($"The file '{_cpuActualSelfSliceProcFile}' is empty or could not be read.");
+        }
+
+        // Find the index of the first colon (:)
+        int colonIndex = fileContent.IndexOf(':');
+        if (colonIndex == -1 || colonIndex + 1 >= fileContent.Length)
+        {
+            throw new InvalidOperationException($"Invalid format in file '{_cpuActualSelfSliceProcFile}'. Expected content with ':' separator.");
+        }
+
+        // Extract the part after the last colon
+        ReadOnlySpan<char> trimmedPath = fileContent.Slice(colonIndex + 1);
+
+        // Prepend the path prefix and append the filename
+        string updatedPath = $"{PathPrefix}{trimmedPath.ToString()}/{filename}";
+
+        return updatedPath;
+    }
+
     public long GetCgroupCpuUsageInNanoseconds()
     {
         // The value we are interested in starts with this. We just want to make sure it is true.
         const string Usage_usec = "usage_usec";
 
+        using ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool);
+
+        FileInfo cpuUsageFile = new(GetCgroupActualSlicePath(CpuStat));
+
         // If the file doesn't exist, we assume that the system is a Host and we read the CPU usage from /proc/stat.
-        if (!_fileSystem.Exists(_cpuacctUsage))
+        if (!_fileSystem.Exists(cpuUsageFile))
         {
             return GetHostCpuUsageInNanoseconds();
         }
 
-        using ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool);
-        _fileSystem.ReadAll(_cpuacctUsage, bufferWriter.Buffer);
+        _fileSystem.ReadAll(cpuUsageFile, bufferWriter.Buffer);
+
         ReadOnlySpan<char> usage = bufferWriter.Buffer.WrittenSpan;
 
         if (!usage.StartsWith(Usage_usec))
         {
-            Throw.InvalidOperationException($"Could not parse '{_cpuacctUsage}'. We expected first line of the file to start with '{Usage_usec}' but it was '{new string(usage)}' instead.");
+            Throw.InvalidOperationException($"Could not parse '{cpuUsageFile}'. We expected first line of the file to start with '{Usage_usec}' but it was '{new string(usage)}' instead.");
         }
 
         ReadOnlySpan<char> cpuUsage = usage.Slice(Usage_usec.Length, usage.Length - Usage_usec.Length);
@@ -121,7 +140,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
 
         if (microseconds == -1)
         {
-            Throw.InvalidOperationException($"Could not get cpu usage from '{_cpuacctUsage}'. Expected positive number, but got '{new string(usage)}'.");
+            Throw.InvalidOperationException($"Could not get cpu usage from '{cpuUsageFile}'. Expected positive number, but got '{new string(usage)}'.");
         }
 
         // In cgroup v2, the Units are microseconds for usage_usec.
@@ -176,7 +195,8 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
     /// </remarks>
     public float GetCgroupLimitedCpus()
     {
-        if (LinuxUtilizationParserCgroupV2.TryGetCpuUnitsFromCgroups(_fileSystem, out float cpus))
+        FileInfo cpuLimitsFile = new(GetCgroupActualSlicePath(CpuLimit));
+        if (LinuxUtilizationParserCgroupV2.TryGetCpuUnitsFromCgroups(_fileSystem, cpuLimitsFile, out float cpus))
         {
             return cpus;
         }
@@ -190,7 +210,8 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
     /// </remarks>
     public float GetCgroupRequestCpu()
     {
-        if (TryGetCgroupRequestCpu(_fileSystem, out float cpuPodRequest))
+        FileInfo cpuRequestsFile = new(GetCgroupActualSlicePath(CpuRequest));
+        if (TryGetCgroupRequestCpu(_fileSystem, cpuRequestsFile, out float cpuPodRequest))
         {
             return cpuPodRequest / CpuShares;
         }
@@ -484,16 +505,16 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
     /// <remarks>
     /// If the file doesn't exist, we assume that the system is a Host and we read the CPU usage from /proc/stat.
     /// </remarks>
-    private static bool TryGetCpuUnitsFromCgroups(IFileSystem fileSystem, out float cpuUnits)
+    private static bool TryGetCpuUnitsFromCgroups(IFileSystem fileSystem, FileInfo cpuLimitsFile, out float cpuUnits)
     {
-        if (!fileSystem.Exists(_cpuCfsQuaotaPeriodUs))
+        if (!fileSystem.Exists(cpuLimitsFile))
         {
             cpuUnits = 0;
             return false;
         }
 
         using ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool);
-        fileSystem.ReadFirstLine(_cpuCfsQuaotaPeriodUs, bufferWriter.Buffer);
+        fileSystem.ReadFirstLine(cpuLimitsFile, bufferWriter.Buffer);
 
         ReadOnlySpan<char> quotaBuffer = bufferWriter.Buffer.WrittenSpan;
 
@@ -513,7 +534,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
 
         if (quota == -1)
         {
-            Throw.InvalidOperationException($"Could not parse '{_cpuCfsQuaotaPeriodUs}'. Expected an integer but got: '{new string(quotaBuffer)}'.");
+            Throw.InvalidOperationException($"Could not parse '{cpuLimitsFile}'. Expected an integer but got: '{new string(quotaBuffer)}'.");
         }
 
         string quotaString = quota.ToString(CultureInfo.CurrentCulture);
@@ -523,7 +544,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
 
         if (period == -1)
         {
-            Throw.InvalidOperationException($"Could not parse '{_cpuCfsQuaotaPeriodUs}'. Expected to get an integer but got: '{new string(cpuPeriodSlice)}'.");
+            Throw.InvalidOperationException($"Could not parse '{cpuLimitsFile}'. Expected to get an integer but got: '{new string(cpuPeriodSlice)}'.");
         }
 
         cpuUnits = (float)quota / period;
@@ -531,25 +552,25 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         return true;
     }
 
-    private static bool TryGetCgroupRequestCpu(IFileSystem fileSystem, out float cpuUnits)
+    private static bool TryGetCgroupRequestCpu(IFileSystem fileSystem, FileInfo cpuRequestsFile, out float cpuUnits)
     {
         const long CpuPodWeightPossibleMax = 10_000;
         const long CpuPodWeightPossibleMin = 1;
 
-        if (!fileSystem.Exists(_cpuPodWeight))
+        if (!fileSystem.Exists(cpuRequestsFile))
         {
             cpuUnits = 0;
             return false;
         }
 
         using ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool);
-        fileSystem.ReadFirstLine(_cpuPodWeight, bufferWriter.Buffer);
+        fileSystem.ReadFirstLine(cpuRequestsFile, bufferWriter.Buffer);
         ReadOnlySpan<char> cpuPodWeightBuffer = bufferWriter.Buffer.WrittenSpan;
 
         if (cpuPodWeightBuffer.IsEmpty || (cpuPodWeightBuffer.Length == 2 && cpuPodWeightBuffer[0] == '-' && cpuPodWeightBuffer[1] == '1'))
         {
             Throw.InvalidOperationException(
-                $"Could not parse '{_cpuPodWeight}' content. Expected to find CPU weight but got '{new string(cpuPodWeightBuffer)}' instead.");
+                $"Could not parse '{cpuRequestsFile}' content. Expected to find CPU weight but got '{new string(cpuPodWeightBuffer)}' instead.");
         }
 
         _ = GetNextNumber(cpuPodWeightBuffer, out long cpuPodWeight);
@@ -557,13 +578,13 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         if (cpuPodWeight == -1)
         {
             Throw.InvalidOperationException(
-                $"Could not parse '{_cpuPodWeight}' content. Expected to get an integer but got: '{cpuPodWeightBuffer}'.");
+                $"Could not parse '{cpuRequestsFile}' content. Expected to get an integer but got: '{cpuPodWeightBuffer}'.");
         }
 
         if (cpuPodWeight < CpuPodWeightPossibleMin || cpuPodWeight > CpuPodWeightPossibleMax)
         {
             Throw.ArgumentOutOfRangeException("CPU weight",
-                $"Expected to find CPU weight in range [{CpuPodWeightPossibleMin}-{CpuPodWeightPossibleMax}] in '{_cpuPodWeight}', but got '{cpuPodWeight}' instead.");
+                $"Expected to find CPU weight in range [{CpuPodWeightPossibleMin}-{CpuPodWeightPossibleMax}] in '{cpuRequestsFile}', but got '{cpuPodWeight}' instead.");
         }
 
         // The formula to calculate CPU pod weight (measured in millicores) from CPU share:
