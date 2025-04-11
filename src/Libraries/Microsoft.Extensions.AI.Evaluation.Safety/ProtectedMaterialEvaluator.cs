@@ -2,9 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
@@ -26,15 +26,17 @@ namespace Microsoft.Extensions.AI.Evaluation.Safety;
 /// <see langword="false"/> indicating the absence of protected material.
 /// </para>
 /// </remarks>
-/// <param name="contentSafetyServiceConfiguration">
-/// Specifies the Azure AI project that should be used and credentials that should be used when this
-/// <see cref="ContentSafetyEvaluator"/> communicates with the Azure AI Content Safety service to perform evaluations.
-/// </param>
-public sealed class ProtectedMaterialEvaluator(ContentSafetyServiceConfiguration contentSafetyServiceConfiguration)
+public sealed class ProtectedMaterialEvaluator()
     : ContentSafetyEvaluator(
-        contentSafetyServiceConfiguration,
         contentSafetyServiceAnnotationTask: "protected material",
-        evaluatorName: nameof(ProtectedMaterialEvaluator))
+        metricNames:
+            new Dictionary<string, string>
+            {
+                ["protected_material"] = ProtectedMaterialMetricName,
+                ["artwork"] = ProtectedArtworkMetricName,
+                ["fictional_characters"] = ProtectedFictionalCharactersMetricName,
+                ["logos_and_brands"] = ProtectedLogosAndBrandsMetricName
+            })
 {
     /// <summary>
     /// Gets the <see cref="EvaluationMetric.Name"/> of the <see cref="BooleanMetric"/> returned by
@@ -61,15 +63,6 @@ public sealed class ProtectedMaterialEvaluator(ContentSafetyServiceConfiguration
     public static string ProtectedLogosAndBrandsMetricName => "Protected Logos And Brands";
 
     /// <inheritdoc/>
-    public override IReadOnlyCollection<string> EvaluationMetricNames =>
-        [
-            ProtectedMaterialMetricName,
-            ProtectedArtworkMetricName,
-            ProtectedFictionalCharactersMetricName,
-            ProtectedLogosAndBrandsMetricName
-        ];
-
-    /// <inheritdoc/>
     public override async ValueTask<EvaluationResult> EvaluateAsync(
         IEnumerable<ChatMessage> messages,
         ChatResponse modelResponse,
@@ -77,23 +70,32 @@ public sealed class ProtectedMaterialEvaluator(ContentSafetyServiceConfiguration
         IEnumerable<EvaluationContext>? additionalContext = null,
         CancellationToken cancellationToken = default)
     {
+        _ = Throw.IfNull(chatConfiguration);
+        _ = Throw.IfNull(modelResponse);
+
+        IChatClient chatClient = chatConfiguration.ChatClient;
+
         // First evaluate the text content in the conversation for protected material.
         EvaluationResult result =
             await EvaluateContentSafetyAsync(
+                chatClient,
                 messages,
                 modelResponse,
                 contentSafetyServicePayloadFormat: ContentSafetyServicePayloadFormat.HumanSystem.ToString(),
+                includeMetricNamesInContentSafetyServicePayload: false,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
         // If images are present in the conversation, do a second evaluation for protected material in images.
         // The content safety service does not support evaluating both text and images in the same request currently.
-        if (messages.ContainImage() || modelResponse.ContainsImage())
+        if (messages.ContainsImage() || modelResponse.ContainsImage())
         {
             EvaluationResult imageResult =
                 await EvaluateContentSafetyAsync(
+                    chatClient,
                     messages,
                     modelResponse,
                     contentSafetyServicePayloadFormat: ContentSafetyServicePayloadFormat.Conversation.ToString(),
+                    includeMetricNamesInContentSafetyServicePayload: false,
                     cancellationToken: cancellationToken).ConfigureAwait(false);
 
             foreach (EvaluationMetric imageMetric in imageResult.Metrics.Values)
@@ -102,31 +104,6 @@ public sealed class ProtectedMaterialEvaluator(ContentSafetyServiceConfiguration
             }
         }
 
-        IEnumerable<EvaluationMetric> updatedMetrics =
-            result.Metrics.Values.Select(
-                metric =>
-                {
-                    switch (metric.Name)
-                    {
-                        case "protected_material":
-                            metric.Name = ProtectedMaterialMetricName;
-                            return metric;
-                        case "artwork":
-                            metric.Name = ProtectedArtworkMetricName;
-                            return metric;
-                        case "fictional_characters":
-                            metric.Name = ProtectedFictionalCharactersMetricName;
-                            return metric;
-                        case "logos_and_brands":
-                            metric.Name = ProtectedLogosAndBrandsMetricName;
-                            return metric;
-                        default:
-                            return metric;
-                    }
-                });
-
-        result = new EvaluationResult(updatedMetrics);
-        result.Interpret(metric => metric is BooleanMetric booleanMetric ? booleanMetric.InterpretScore() : null);
         return result;
     }
 }

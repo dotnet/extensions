@@ -263,7 +263,7 @@ public sealed class ReportingConfiguration
 
     private static IEnumerable<string> GetCachingKeysForChatClient(IChatClient chatClient)
     {
-        var metadata = chatClient.GetService<ChatClientMetadata>();
+        ChatClientMetadata? metadata = chatClient.GetService<ChatClientMetadata>();
 
         string? providerName = metadata?.ProviderName;
         if (!string.IsNullOrWhiteSpace(providerName))
