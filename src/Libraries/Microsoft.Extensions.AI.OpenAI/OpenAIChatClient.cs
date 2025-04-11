@@ -623,11 +623,10 @@ internal sealed partial class OpenAIChatClient : IChatClient
     /// <summary>Converts an Extensions function to an OpenAI chat tool.</summary>
     private static ChatTool ToOpenAIChatTool(AIFunction aiFunction)
     {
-        // Default strict to false, but allow to be overridden by an additional Strict property.
-        bool strict =
+        bool? strict =
             aiFunction.AdditionalProperties.TryGetValue("Strict", out object? strictObj) &&
-            strictObj is bool strictValue &&
-            strictValue;
+            strictObj is bool strictValue ?
+            strictValue : null;
 
         // Map to an intermediate model so that redundant properties are skipped.
         var tool = JsonSerializer.Deserialize(aiFunction.JsonSchema, ChatClientJsonContext.Default.ChatToolJson)!;
