@@ -74,7 +74,7 @@ public static partial class AIJsonUtilitiesTests
         Assert.True(options.IncludeTypeInEnumSchemas);
         Assert.True(options.DisallowAdditionalProperties);
         Assert.False(options.IncludeSchemaKeyword);
-        Assert.True(options.RequireAllProperties);
+        Assert.False(options.RequireAllProperties);
         Assert.Null(options.TransformSchemaNode);
     }
 
@@ -148,11 +148,11 @@ public static partial class AIJsonUtilitiesTests
                         "enum": ["A", "B"]
                     },
                     "Value": {
-                        "description": "Default value: \"defaultValue\"",
-                        "type": ["string", "null"]
+                        "type": ["string", "null"],
+                        "default": "defaultValue"
                     }
                 },
-                "required": ["Key", "EnumValue", "Value"],
+                "required": ["Key", "EnumValue"],
                 "additionalProperties": false
             }
             """).RootElement;
@@ -168,7 +168,7 @@ public static partial class AIJsonUtilitiesTests
         JsonElement expected = JsonDocument.Parse("""
             {
                 "$schema": "https://json-schema.org/draft/2020-12/schema",
-                "description": "alternative description",
+                "description": "alternative description (Default value: null)",
                 "type": "object",
                 "properties": {
                     "Key": {
@@ -179,12 +179,11 @@ public static partial class AIJsonUtilitiesTests
                         "enum": ["A", "B"]
                     },
                     "Value": {
-                        "type": ["string", "null"],
-                        "default": "defaultValue"
+                        "description": "Default value: \"defaultValue\"",
+                        "type": ["string", "null"]
                     }
                 },
-                "required": ["Key", "EnumValue"],
-                "default": null
+                "required": ["Key", "EnumValue", "Value"]
             }
             """).RootElement;
 
@@ -193,7 +192,7 @@ public static partial class AIJsonUtilitiesTests
             IncludeTypeInEnumSchemas = false,
             DisallowAdditionalProperties = false,
             IncludeSchemaKeyword = true,
-            RequireAllProperties = false,
+            RequireAllProperties = true,
         };
 
         JsonElement actual = AIJsonUtilities.CreateJsonSchema(
@@ -224,11 +223,11 @@ public static partial class AIJsonUtilitiesTests
                         "enum": ["A", "B"]
                     },
                     "Value": {
-                        "description": "Default value: \"defaultValue\"",
-                        "type": ["string", "null"]
+                        "type": ["string", "null"],
+                        "default": "defaultValue"
                     }
                 },
-                "required": ["Key", "EnumValue", "Value"],
+                "required": ["Key", "EnumValue"],
                 "additionalProperties": false
             }
             """).RootElement;
@@ -270,7 +269,6 @@ public static partial class AIJsonUtilitiesTests
                         "type": "string"
                     }
                 },
-                "required": ["Date","TimeSpan","Char"],
                 "additionalProperties": false
             }
             """).RootElement;
