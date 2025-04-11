@@ -154,16 +154,16 @@
     <MicrosoftCodeAnalysisVersion>4.8.0</MicrosoftCodeAnalysisVersion>
     <MicrosoftCodeAnalysisAnalyzersVersion>3.3.4</MicrosoftCodeAnalysisAnalyzersVersion>
     <!-- AI templates -->
-    <AspireVersion>9.2.0</AspireVersion>
-    <AspireAzureAIOpenAIVersion>9.2.0-preview.1.25209.2</AspireAzureAIOpenAIVersion>
+    <AspireVersion>9.1.0</AspireVersion>
+    <AspireAzureAIOpenAIVersion>9.1.0-preview.1.25121.10</AspireAzureAIOpenAIVersion>
     <AzureAIProjectsVersion>1.0.0-beta.6</AzureAIProjectsVersion>
     <AzureAIOpenAIVersion>2.2.0-beta.4</AzureAIOpenAIVersion>
     <AzureIdentityVersion>1.13.2</AzureIdentityVersion>
     <AzureSearchDocumentsVersion>11.6.0</AzureSearchDocumentsVersion>
-    <CommunityToolkitAspireHostingOllamaVersion>9.2.2-beta.236</CommunityToolkitAspireHostingOllamaVersion>
-    <CommunityToolkitAspireHostingSqliteVersion>9.2.2-beta.236</CommunityToolkitAspireHostingSqliteVersion>
-    <CommunityToolkitAspireMicrosoftEntityFrameworkCoreSqliteVersion>9.2.2-beta.236</CommunityToolkitAspireMicrosoftEntityFrameworkCoreSqliteVersion>
-    <CommunityToolkitAspireOllamaSharpVersion>9.2.2-beta.236</CommunityToolkitAspireOllamaSharpVersion>
+    <CommunityToolkitAspireHostingOllamaVersion>9.3.1-beta.260</CommunityToolkitAspireHostingOllamaVersion>
+    <CommunityToolkitAspireHostingSqliteVersion>9.3.1-beta.260</CommunityToolkitAspireHostingSqliteVersion>
+    <CommunityToolkitAspireMicrosoftEntityFrameworkCoreSqliteVersion>9.3.1-beta.260</CommunityToolkitAspireMicrosoftEntityFrameworkCoreSqliteVersion>
+    <CommunityToolkitAspireOllamaSharpVersion>9.3.1-beta.260</CommunityToolkitAspireOllamaSharpVersion>
     <MicrosoftExtensionsServiceDiscoveryVersion>9.2.0</MicrosoftExtensionsServiceDiscoveryVersion>
     <MicrosoftSemanticKernelConnectorsAzureAISearchVersion>1.45.0-preview</MicrosoftSemanticKernelConnectorsAzureAISearchVersion>
     <MicrosoftSemanticKernelConnectorsQdrantVersion>1.45.0-preview</MicrosoftSemanticKernelConnectorsQdrantVersion>
