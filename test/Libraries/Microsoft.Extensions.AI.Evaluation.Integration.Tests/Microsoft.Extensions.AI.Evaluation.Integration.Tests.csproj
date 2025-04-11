@@ -2,9 +2,18 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(LatestTargetFramework)</TargetFrameworks>
-    <RootNamespace>Microsoft.Extensions.AI.Evaluation.Integration.Tests</RootNamespace>
+    <RootNamespace>Microsoft.Extensions.AI</RootNamespace>
     <Description>Integration tests for Microsoft.Extensions.AI.Evaluation.</Description>
   </PropertyGroup>
+  
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\Shared\ImageDataUri\dotnet.png" Link="Resources\dotnet.png"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Shared\ImageDataUri\ImageDataUri.cs" Link="Shared\ImageDataUri\ImageDataUri.cs" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <PackageReference Include="Azure.AI.OpenAI" />

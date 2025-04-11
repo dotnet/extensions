@@ -6,6 +6,8 @@
 // We disable this warning because it is a false positive arising from the analyzer's lack of support for C#'s primary
 // constructor syntax.
 
+using System.Collections.Generic;
+
 namespace Microsoft.Extensions.AI.Evaluation.Quality;
 
 /// <summary>
@@ -29,4 +31,8 @@ public sealed class EquivalenceEvaluatorContext(string groundTruth) : Evaluation
     /// the response supplied via <see cref="GroundTruth"/>.
     /// </remarks>
     public string GroundTruth { get; } = groundTruth;
+
+    /// <inheritdoc/>
+    public override IReadOnlyList<AIContent> GetContents()
+        => [new TextContent(GroundTruth)];
 }

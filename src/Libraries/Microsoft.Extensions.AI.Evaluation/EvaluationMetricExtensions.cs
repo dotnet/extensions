@@ -14,9 +14,8 @@ namespace Microsoft.Extensions.AI.Evaluation;
 public static class EvaluationMetricExtensions
 {
     /// <summary>
-    /// Returns <see langword="true"/> if the supplied <paramref name="metric"/> contains any
-    /// <see cref="EvaluationDiagnostic"/> matching the supplied <paramref name="predicate"/>; <see langword="false"/>
-    /// otherwise.
+    /// Determines if the supplied <paramref name="metric"/> contains any
+    /// <see cref="EvaluationDiagnostic"/> matching the supplied <paramref name="predicate"/>.
     /// </summary>
     /// <param name="metric">The <see cref="EvaluationMetric"/> that is to be inspected.</param>
     /// <param name="predicate">
@@ -97,7 +96,7 @@ public static class EvaluationMetricExtensions
     }
 
     /// <summary>
-    /// Adds or updates the supplied <parameterref name="metadata"/> to the supplied <see cref="EvaluationMetric"/>'s
+    /// Adds or updates the supplied <paramref name="metadata"/> to the supplied <see cref="EvaluationMetric"/>'s
     /// <see cref="EvaluationMetric.Metadata"/> collection.
     /// </summary>
     /// <param name="metric">The <see cref="EvaluationMetric"/>.</param>

@@ -171,9 +171,9 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator : ChatConvers
                             result.AddDiagnosticToAllMetrics(
                                 EvaluationDiagnostic.Error(
                                     $"""
-                                Failed to repair the following response from the model and parse scores for '{RelevanceMetricName}', '{TruthMetricName}' and '{CompletenessMetricName}'.:
-                                {evaluationResponseText}
-                                """));
+                                    Failed to repair the following response from the model and parse scores for '{RelevanceMetricName}', '{TruthMetricName}' and '{CompletenessMetricName}'.:
+                                    {evaluationResponseText}
+                                    """));
                         }
                         else
                         {
@@ -186,10 +186,10 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator : ChatConvers
                         result.AddDiagnosticToAllMetrics(
                             EvaluationDiagnostic.Error(
                                 $"""
-                            Failed to repair the following response from the model and parse scores for '{RelevanceMetricName}', '{TruthMetricName}' and '{CompletenessMetricName}'.:
-                            {evaluationResponseText}
-                            {ex}
-                            """));
+                                Failed to repair the following response from the model and parse scores for '{RelevanceMetricName}', '{TruthMetricName}' and '{CompletenessMetricName}'.:
+                                {evaluationResponseText}
+                                {ex}
+                                """));
                     }
                 }
             }
@@ -211,28 +211,28 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator : ChatConvers
 
             if (!string.IsNullOrWhiteSpace(evaluationResponse.ModelId))
             {
-                commonMetadata["rtc-evaluation-model-used"] = evaluationResponse.ModelId!;
+                commonMetadata["evaluation-model-used"] = evaluationResponse.ModelId!;
             }
 
             if (evaluationResponse.Usage is UsageDetails usage)
             {
                 if (usage.InputTokenCount is not null)
                 {
-                    commonMetadata["rtc-evaluation-input-tokens-used"] = $"{usage.InputTokenCount}";
+                    commonMetadata["evaluation-input-tokens-used"] = $"{usage.InputTokenCount}";
                 }
 
                 if (usage.OutputTokenCount is not null)
                 {
-                    commonMetadata["rtc-evaluation-output-tokens-used"] = $"{usage.OutputTokenCount}";
+                    commonMetadata["evaluation-output-tokens-used"] = $"{usage.OutputTokenCount}";
                 }
 
                 if (usage.TotalTokenCount is not null)
                 {
-                    commonMetadata["rtc-evaluation-total-tokens-used"] = $"{usage.TotalTokenCount}";
+                    commonMetadata["evaluation-total-tokens-used"] = $"{usage.TotalTokenCount}";
                 }
             }
 
-            commonMetadata["rtc-evaluation-duration"] = duration;
+            commonMetadata["evaluation-duration"] = duration;
 
             NumericMetric relevance = result.Get<NumericMetric>(RelevanceMetricName);
             relevance.Value = rating.Relevance;

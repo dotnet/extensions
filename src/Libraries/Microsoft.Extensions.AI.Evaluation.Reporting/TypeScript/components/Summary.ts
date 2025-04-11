@@ -108,9 +108,15 @@ export class ScoreNode {
             const { messages } = getConversationDisplay(lastMessage ? [lastMessage] : [], this.scenario?.modelResponse);
             let history = "";
             if (messages.length === 1) {
-                history = messages[0].content;
+                const content = messages[0].content;
+                if (isTextContent(content)) {
+                    history = content.text;
+                }
             } else if (messages.length > 1) {
-                history = messages.map(m => `[${m.participantName}] ${m.content}`).join("\n\n");
+                history = messages
+                    .filter(m => isTextContent(m.content))
+                    .map(m => `[${m.participantName}] ${(m.content as TextContent).text}`)
+                    .join("\n\n");
             }
 
             this.shortenedPrompt = shortenPrompt(history);
@@ -284,8 +290,23 @@ const flattener = function* (node: ScoreNode): Iterable<ScoreNode> {
     }
 };
 
-const isTextContent = (content: AIContent): content is TextContent => {
+export const isTextContent = (content: AIContent): content is TextContent => {
     return (content as TextContent).text !== undefined;
+};
+
+export const isImageContent = (content: AIContent): content is UriContent | DataContent => {
+    if ((content as UriContent).uri !== undefined && (content as UriContent).mediaType) {
+        return (content as UriContent).mediaType.startsWith("image/");
+    }
+    
+    if ((content as DataContent).uri !== undefined) {
+        const dataContent = content as DataContent;
+        if (dataContent.uri.startsWith('data:image/')) {
+            return true;
+        }
+    }
+
+    return false;
 };
 
 export type ConversationDisplay = {
@@ -297,7 +318,7 @@ export type ConversationDisplay = {
 export type ChatMessageDisplay = {
     role: string;
     participantName: string;
-    content: string;
+    content: AIContent;
 };
 
 export const getConversationDisplay = (messages: ChatMessage[], modelResponse?: ChatResponse): ConversationDisplay => {
@@ -305,28 +326,24 @@ export const getConversationDisplay = (messages: ChatMessage[], modelResponse?: 
 
     for (const m of messages) {
         for (const c of m.contents) {
-            if (isTextContent(c)) {
-                const participantName = m.authorName ? `${m.authorName} (${m.role})` : m.role;
-                chatMessages.push({
-                    role: m.role,
-                    participantName: participantName,
-                    content: c.text
-                });
-            }
+            const participantName = m.authorName ? `${m.authorName} (${m.role})` : m.role;
+            chatMessages.push({
+                role: m.role,
+                participantName: participantName,
+                content: c
+            });
         }
     }
 
     if (modelResponse?.messages) {
         for (const m of modelResponse.messages) {
             for (const c of m.contents) {
-                if (isTextContent(c)) {
-                    const participantName = m.authorName ? `${m.authorName} (${m.role})` : m.role || 'Assistant';
-                    chatMessages.push({
-                        role: m.role,
-                        participantName: participantName,
-                        content: c.text
-                    });
-                }
+                const participantName = m.authorName ? `${m.authorName} (${m.role})` : m.role || 'Assistant';
+                chatMessages.push({
+                    role: m.role,
+                    participantName: participantName,
+                    content: c
+                });
             }
         }
     }

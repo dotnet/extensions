@@ -12,8 +12,9 @@ using Azure.Core;
 namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
 /// <summary>
-/// Specifies the Azure AI project that should be used and credentials that should be used when a
-/// <see cref="ContentSafetyEvaluator"/> communicates with the Azure AI Content Safety service to perform evaluations.
+/// Specifies configuration parameters such as the Azure AI project that should be used, and the credentials that
+/// should be used, when a <see cref="ContentSafetyEvaluator"/> communicates with the Azure AI Content Safety service
+/// to perform evaluations.
 /// </summary>
 /// <param name="credential">
 /// The Azure <see cref="TokenCredential"/> that should be used when authenticating requests.

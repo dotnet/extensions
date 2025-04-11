@@ -24,7 +24,7 @@ export const ChatDetailsSection = ({ chatDetails }: { chatDetails: ChatDetails; 
         <div className={classes.section}>
             <div className={classes.sectionHeader} onClick={() => setIsExpanded(!isExpanded)}>
                 {isExpanded ? <ChevronDown12Regular /> : <ChevronRight12Regular />}
-                <h3 className={classes.sectionHeaderText}>LLM Chat Diagnostic Details</h3>
+                <h3 className={classes.sectionHeaderText}>Diagnostic Data</h3>
                 {hasCacheStatus && (
                     <div className={classes.hint}>
                         {cachedTurns != totalTurns ?

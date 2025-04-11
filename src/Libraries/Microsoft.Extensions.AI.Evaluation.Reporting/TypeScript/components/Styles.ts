@@ -205,6 +205,10 @@ export const useStyles = makeStyles({
     preWrap: {
         whiteSpace: 'pre-wrap',
     },
+    imageContent: {
+        maxWidth: '100%',
+        maxHeight: '400px',
+    },
     executionHeaderCell: {
         display: 'flex',
         alignItems: 'center',
