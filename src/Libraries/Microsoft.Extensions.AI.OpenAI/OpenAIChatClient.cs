@@ -615,8 +615,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
                         jsonFormat.SchemaName ?? "json_schema",
                         BinaryData.FromBytes(
                             JsonSerializer.SerializeToUtf8Bytes(jsonSchema, ChatClientJsonContext.Default.JsonElement)),
-                        jsonFormat.SchemaDescription,
-                        jsonSchemaIsStrict: true) :
+                        jsonFormat.SchemaDescription) :
                     OpenAI.Chat.ChatResponseFormat.CreateJsonObjectFormat();
             }
         }
