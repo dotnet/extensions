@@ -55,5 +55,5 @@ public sealed record class AIJsonSchemaCreateOptions
     /// <summary>
     /// Gets a value indicating whether to mark all properties as required in the schema.
     /// </summary>
-    public bool RequireAllProperties { get; init; } = true;
+    public bool RequireAllProperties { get; init; }
 }
