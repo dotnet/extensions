@@ -66,10 +66,18 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         var meter = meterFactory.Create(ResourceUtilizationInstruments.MeterName);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization, observeValue: () => CpuUtilization() * _scaleRelativeToCpuLimit, unit: "1");
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization, observeValue: MemoryUtilization, unit: "1");
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuRequestUtilization, observeValue: () => CpuUtilization() * _scaleRelativeToCpuRequest, unit: "1");
+        if (!options.Value.CalculateCpuUsageWithoutHost)
+        {
+            _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization, observeValue: () => CpuUtilization() * _scaleRelativeToCpuLimit, unit: "1");
+            _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuRequestUtilization, observeValue: () => CpuUtilization() * _scaleRelativeToCpuRequest, unit: "1");
+        }
+        else
+        {
+            _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization, observeValue: () => CpuUtilizationWithoutHost() / cpuLimit, unit: "1");
+            _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuRequestUtilization, observeValue: () => CpuUtilizationWithoutHost() / cpuRequest, unit: "1");
+        }
 
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization, observeValue: MemoryUtilization, unit: "1");
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessCpuUtilization, observeValue: () => CpuUtilization() * _scaleRelativeToCpuRequest, unit: "1");
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessMemoryUtilization, observeValue: MemoryUtilization, unit: "1");
 
@@ -79,6 +87,42 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         // _memoryLimit - To keep the contract, this parameter will get the Host available memory
         Resources = new SystemResources(cpuRequest, cpuLimit, _memoryLimit, _memoryLimit);
         Log.SystemResourcesInfo(_logger, cpuLimit, cpuRequest, _memoryLimit, _memoryLimit);
+    }
+
+    public double CpuUtilizationWithoutHost()
+    {
+        DateTimeOffset now = _timeProvider.GetUtcNow();
+
+        lock (_cpuLocker)
+        {
+            if (now < _refreshAfterCpu)
+            {
+                return _cpuPercentage;
+            }
+        }
+
+        long cgroupCpuTime = _parser.GetCgroupCpuUsageInNanoseconds();
+
+        lock (_cpuLocker)
+        {
+            if (now >= _refreshAfterCpu)
+            {
+                long deltaCgroup = cgroupCpuTime - _previousCgroupCpuTime;
+
+                if (deltaCgroup > 0)
+                {
+                    double percentage = Math.Min(One, deltaCgroup / _cpuRefreshInterval.TotalSeconds);
+
+                    Log.CpuUsageData(_logger, cgroupCpuTime, 0, _previousCgroupCpuTime, 0, percentage);
+
+                    _cpuPercentage = percentage;
+                    _refreshAfterCpu = now.Add(_cpuRefreshInterval);
+                    _previousCgroupCpuTime = cgroupCpuTime;
+                }
+            }
+        }
+
+        return _cpuPercentage;
     }
 
     public double CpuUtilization()
