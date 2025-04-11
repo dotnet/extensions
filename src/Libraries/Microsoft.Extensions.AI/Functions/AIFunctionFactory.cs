@@ -41,15 +41,67 @@ public static partial class AIFunctionFactory
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
     /// <remarks>
     /// <para>
-    /// Return values are serialized to <see cref="JsonElement"/> using <paramref name="options"/>'s
-    /// <see cref="AIFunctionFactoryOptions.SerializerOptions"/>. Arguments that are not already of the expected type are
-    /// marshaled to the expected type via JSON and using <paramref name="options"/>'s
-    /// <see cref="AIFunctionFactoryOptions.SerializerOptions"/>. If the argument is a <see cref="JsonElement"/>,
-    /// <see cref="JsonDocument"/>, or <see cref="JsonNode"/>, it is deserialized directly. If the argument is anything else unknown,
-    /// it is round-tripped through JSON, serializing the object as JSON and then deserializing it to the expected type.
+    /// By default, any parameters to <paramref name="method"/> are sourced from the <see cref="AIFunctionArguments"/>'s dictionary
+    /// of key/value pairs and are represented in the JSON schema for the function, as exposed in the returned <see cref="AIFunction"/>'s
+    /// <see cref="AIFunction.JsonSchema"/>. There are a few exceptions to this:
+    /// <list type="bullet">
+    ///   <item>
+    ///     <description>
+    ///       <see cref="CancellationToken"/> parameters are automatically bound to the <see cref="CancellationToken"/> passed into
+    ///       the invocation via <see cref="AIFunction.InvokeAsync"/>'s <see cref="CancellationToken"/> parameter. The parameter is
+    ///       not included in the generated JSON schema. The behavior of <see cref="CancellationToken"/> parameters may not be overridden.
+    ///     </description>
+    ///   </item>
+    ///   <item>
+    ///     <description>
+    ///       By default, <see cref="IServiceProvider"/> parameters are bound from the <see cref="AIFunctionArguments.Services"/> property
+    ///       and are not included in the JSON schema. If the parameter is optional, such that a default value is provided,
+    ///       <see cref="AIFunctionArguments.Services"/> is allowed to be <see langword="null"/>; otherwise, <see cref="AIFunctionArguments.Services"/>
+    ///       must be non-<see langword="null"/>, or else the invocation will fail with an exception due to the required nature of the parameter.
+    ///       The handling of <see cref="IServiceProvider"/> parameters may be overridden via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
+    ///     </description>
+    ///   </item>
+    ///   <item>
+    ///     <description>
+    ///       By default, <see cref="AIFunctionArguments"/> parameters are bound directly to <see cref="AIFunctionArguments"/> instance
+    ///       passed into <see cref="AIFunction.InvokeAsync"/> and are not included in the JSON schema. If the <see cref="AIFunctionArguments"/>
+    ///       instance passed to <see cref="AIFunction.InvokeAsync"/> is <see langword="null"/>, the <see cref="AIFunction"/> implementation
+    ///       manufactures an empty instance, such that parameters of type <see cref="AIFunctionArguments"/> may always be satisfied, whether
+    ///       optional or not. The handling of <see cref="AIFunctionArguments"/> parameters may be overridden via
+    ///       <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
+    ///     </description>
+    ///   </item>
+    /// </list>
+    /// All other parameter types are, by default, bound from the <see cref="AIFunctionArguments"/> dictionary passed into <see cref="AIFunction.InvokeAsync"/>
+    /// and are included in the generated JSON schema. This may be overridden by the <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/> provided
+    /// via the <paramref name="options"/> parameter; for every parameter, the delegate is enabled to choose if the parameter should be included in the
+    /// generated schema and how its value should be bound, including handling of optionality (by default, required parameters that are not included in the
+    /// <see cref="AIFunctionArguments"/> dictionary will result in an exception being thrown). Loosely-typed additional context information may be passed
+    /// into <see cref="AIFunction.InvokeAsync"/> via the <see cref="AIFunctionArguments"/>'s <see cref="AIFunctionArguments.Context"/> dictionary; the default
+    /// binding ignores this collection, but a custom binding supplied via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/> may choose to
+    /// source arguments from this data.
+    /// </para>
+    /// <para>
+    /// The default marshaling of parameters from the <see cref="AIFunctionArguments"/> dictionary permits values to be passed into the <paramref name="method"/>'s
+    /// invocation directly if the object is already of a compatible type. Otherwise, if the argument is a <see cref="JsonElement"/>, <see cref="JsonDocument"/>,
+    /// or <see cref="JsonNode"/>, it is deserialized into the parameter type, utilizing <see cref="AIFunctionFactoryOptions.SerializerOptions"/> if provided,
+    /// or else using <see cref="AIJsonUtilities.DefaultOptions"/>. If the argument is anything else, it is round-tripped through JSON, serializing the object as JSON
+    /// and then deserializing it to the expected type.
+    /// </para>
+    /// <para>
+    /// In general, the data supplied via an <see cref="AIFunctionArguments"/>'s dictionary is supplied from an AI service and should be considered
+    /// unvalidated and untrusted. To provide validated and trusted data to the invocation of <paramref name="method"/>, consider having <paramref name="method"/>
+    /// point to an instance method on an instance configured to hold the appropriate state. An <see cref="IServiceProvider"/> parameter may also be
+    /// used to resolve services from a dependency injection container.
+    /// </para>
+    /// <para>
+    /// By default, return values are serialized to <see cref="JsonElement"/> using <paramref name="options"/>'s
+    /// <see cref="AIFunctionFactoryOptions.SerializerOptions"/> if provided, or else using <see cref="AIJsonUtilities.DefaultOptions"/>.
+    /// Handling of return values may be overridden via <see cref="AIFunctionFactoryOptions.MarshalResult"/>.
     /// </para>
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+    /// <exception cref="JsonException">A parameter to <paramref name="method"/> is not serializable.</exception>
     public static AIFunction Create(Delegate method, AIFunctionFactoryOptions? options)
     {
         _ = Throw.IfNull(method);
@@ -59,20 +111,72 @@ public static partial class AIFunctionFactory
 
     /// <summary>Creates an <see cref="AIFunction"/> instance for a method, specified via a delegate.</summary>
     /// <param name="method">The method to be represented via the created <see cref="AIFunction"/>.</param>
-    /// <param name="name">The name to use for the <see cref="AIFunction"/>.</param>
-    /// <param name="description">The description to use for the <see cref="AIFunction"/>.</param>
+    /// <param name="name">
+    /// The name to use for the <see cref="AIFunction"/>. If <see langword="null"/>, the name will be derived from
+    /// the name of <paramref name="method"/>.
+    /// </param>
+    /// <param name="description">
+    /// The description to use for the <see cref="AIFunction"/>. If <see langword="null"/>, a description will be derived from
+    /// any <see cref="DescriptionAttribute"/> on <paramref name="method"/>, if available.
+    /// </param>
     /// <param name="serializerOptions">The <see cref="JsonSerializerOptions"/> used to marshal function parameters and any return value.</param>
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
     /// <remarks>
     /// <para>
-    /// Return values are serialized to <see cref="JsonElement"/> using <paramref name="serializerOptions"/>.
-    /// Arguments that are not already of the expected type are marshaled to the expected type via JSON and using
-    /// <paramref name="serializerOptions"/>. If the argument is a <see cref="JsonElement"/>, <see cref="JsonDocument"/>,
-    /// or <see cref="JsonNode"/>, it is deserialized directly. If the argument is anything else unknown, it is
-    /// round-tripped through JSON, serializing the object as JSON and then deserializing it to the expected type.
+    /// Any parameters to <paramref name="method"/> are sourced from the <see cref="AIFunctionArguments"/>'s dictionary
+    /// of key/value pairs and are represented in the JSON schema for the function, as exposed in the returned <see cref="AIFunction"/>'s
+    /// <see cref="AIFunction.JsonSchema"/>. There are a few exceptions to this:
+    /// <list type="bullet">
+    ///   <item>
+    ///     <description>
+    ///       <see cref="CancellationToken"/> parameters are automatically bound to the <see cref="CancellationToken"/> passed into
+    ///       the invocation via <see cref="AIFunction.InvokeAsync"/>'s <see cref="CancellationToken"/> parameter. The parameter is
+    ///       not included in the generated JSON schema. The behavior of <see cref="CancellationToken"/> parameters may not be overridden.
+    ///     </description>
+    ///   </item>
+    ///   <item>
+    ///     <description>
+    ///       By default, <see cref="IServiceProvider"/> parameters are bound from the <see cref="AIFunctionArguments.Services"/> property
+    ///       and are not included in the JSON schema. If the parameter is optional, such that a default value is provided,
+    ///       <see cref="AIFunctionArguments.Services"/> is allowed to be <see langword="null"/>; otherwise, <see cref="AIFunctionArguments.Services"/>
+    ///       must be non-<see langword="null"/>, or else the invocation will fail with an exception due to the required nature of the parameter.
+    ///       The handling of <see cref="IServiceProvider"/> parameters may be overridden via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
+    ///     </description>
+    ///   </item>
+    ///   <item>
+    ///     <description>
+    ///       By default, <see cref="AIFunctionArguments"/> parameters are bound directly to <see cref="AIFunctionArguments"/> instance
+    ///       passed into <see cref="AIFunction.InvokeAsync"/> and are not included in the JSON schema. If the <see cref="AIFunctionArguments"/>
+    ///       instance passed to <see cref="AIFunction.InvokeAsync"/> is <see langword="null"/>, the <see cref="AIFunction"/> implementation
+    ///       manufactures an empty instance, such that parameters of type <see cref="AIFunctionArguments"/> may always be satisfied, whether
+    ///       optional or not. The handling of <see cref="AIFunctionArguments"/> parameters may be overridden via
+    ///       <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
+    ///     </description>
+    ///   </item>
+    /// </list>
+    /// All other parameter types are bound from the <see cref="AIFunctionArguments"/> dictionary passed into <see cref="AIFunction.InvokeAsync"/>
+    /// and are included in the generated JSON schema.
+    /// </para>
+    /// <para>
+    /// The marshaling of parameters from the <see cref="AIFunctionArguments"/> dictionary permits values to be passed into the <paramref name="method"/>'s
+    /// invocation directly if the object is already of a compatible type. Otherwise, if the argument is a <see cref="JsonElement"/>, <see cref="JsonDocument"/>,
+    /// or <see cref="JsonNode"/>, it is deserialized into the parameter type, utilizing <paramref name="serializerOptions"/> if provided, or else
+    /// <see cref="AIJsonUtilities.DefaultOptions"/>. If the argument is anything else, it is round-tripped through JSON, serializing the object as JSON
+    /// and then deserializing it to the expected type.
+    /// </para>
+    /// <para>
+    /// In general, the data supplied via an <see cref="AIFunctionArguments"/>'s dictionary is supplied from an AI service and should be considered
+    /// unvalidated and untrusted. To provide validated and trusted data to the invocation of <paramref name="method"/>, consider having <paramref name="method"/>
+    /// point to an instance method on an instance configured to hold the appropriate state. An <see cref="IServiceProvider"/> parameter may also be
+    /// used to resolve services from a dependency injection container.
+    /// </para>
+    /// <para>
+    /// Return values are serialized to <see cref="JsonElement"/> using <paramref name="serializerOptions"/> if provided,
+    /// or else using <see cref="AIJsonUtilities.DefaultOptions"/>.
     /// </para>
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+    /// <exception cref="JsonException">A parameter to <paramref name="method"/> is not serializable.</exception>
     public static AIFunction Create(Delegate method, string? name = null, string? description = null, JsonSerializerOptions? serializerOptions = null)
     {
         _ = Throw.IfNull(method);
@@ -102,57 +206,75 @@ public static partial class AIFunctionFactory
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
     /// <remarks>
     /// <para>
-    /// Return values are serialized to <see cref="JsonElement"/> using <paramref name="options"/>'s
-    /// <see cref="AIFunctionFactoryOptions.SerializerOptions"/>. Arguments that are not already of the expected type are
-    /// marshaled to the expected type via JSON and using <paramref name="options"/>'s
-    /// <see cref="AIFunctionFactoryOptions.SerializerOptions"/>. If the argument is a <see cref="JsonElement"/>,
-    /// <see cref="JsonDocument"/>, or <see cref="JsonNode"/>, it is deserialized directly. If the argument is anything else unknown,
-    /// it is round-tripped through JSON, serializing the object as JSON and then deserializing it to the expected type.
+    /// By default, any parameters to <paramref name="method"/> are sourced from the <see cref="AIFunctionArguments"/>'s dictionary
+    /// of key/value pairs and are represented in the JSON schema for the function, as exposed in the returned <see cref="AIFunction"/>'s
+    /// <see cref="AIFunction.JsonSchema"/>. There are a few exceptions to this:
+    /// <list type="bullet">
+    ///   <item>
+    ///     <description>
+    ///       <see cref="CancellationToken"/> parameters are automatically bound to the <see cref="CancellationToken"/> passed into
+    ///       the invocation via <see cref="AIFunction.InvokeAsync"/>'s <see cref="CancellationToken"/> parameter. The parameter is
+    ///       not included in the generated JSON schema. The behavior of <see cref="CancellationToken"/> parameters may not be overridden.
+    ///     </description>
+    ///   </item>
+    ///   <item>
+    ///     <description>
+    ///       By default, <see cref="IServiceProvider"/> parameters are bound from the <see cref="AIFunctionArguments.Services"/> property
+    ///       and are not included in the JSON schema. If the parameter is optional, such that a default value is provided,
+    ///       <see cref="AIFunctionArguments.Services"/> is allowed to be <see langword="null"/>; otherwise, <see cref="AIFunctionArguments.Services"/>
+    ///       must be non-<see langword="null"/>, or else the invocation will fail with an exception due to the required nature of the parameter.
+    ///       The handling of <see cref="IServiceProvider"/> parameters may be overridden via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
+    ///     </description>
+    ///   </item>
+    ///   <item>
+    ///     <description>
+    ///       By default, <see cref="AIFunctionArguments"/> parameters are bound directly to <see cref="AIFunctionArguments"/> instance
+    ///       passed into <see cref="AIFunction.InvokeAsync"/> and are not included in the JSON schema. If the <see cref="AIFunctionArguments"/>
+    ///       instance passed to <see cref="AIFunction.InvokeAsync"/> is <see langword="null"/>, the <see cref="AIFunction"/> implementation
+    ///       manufactures an empty instance, such that parameters of type <see cref="AIFunctionArguments"/> may always be satisfied, whether
+    ///       optional or not. The handling of <see cref="AIFunctionArguments"/> parameters may be overridden via
+    ///       <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
+    ///     </description>
+    ///   </item>
+    /// </list>
+    /// All other parameter types are, by default, bound from the <see cref="AIFunctionArguments"/> dictionary passed into <see cref="AIFunction.InvokeAsync"/>
+    /// and are included in the generated JSON schema. This may be overridden by the <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/> provided
+    /// via the <paramref name="options"/> parameter; for every parameter, the delegate is enabled to choose if the parameter should be included in the
+    /// generated schema and how its value should be bound, including handling of optionality (by default, required parameters that are not included in the
+    /// <see cref="AIFunctionArguments"/> dictionary will result in an exception being thrown). Loosely-typed additional context information may be passed
+    /// into <see cref="AIFunction.InvokeAsync"/> via the <see cref="AIFunctionArguments"/>'s <see cref="AIFunctionArguments.Context"/> dictionary; the default
+    /// binding ignores this collection, but a custom binding supplied via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/> may choose to
+    /// source arguments from this data.
+    /// </para>
+    /// <para>
+    /// The default marshaling of parameters from the <see cref="AIFunctionArguments"/> dictionary permits values to be passed into the <paramref name="method"/>'s
+    /// invocation directly if the object is already of a compatible type. Otherwise, if the argument is a <see cref="JsonElement"/>, <see cref="JsonDocument"/>,
+    /// or <see cref="JsonNode"/>, it is deserialized into the parameter type, utilizing <see cref="AIFunctionFactoryOptions.SerializerOptions"/> if provided,
+    /// or else using <see cref="AIJsonUtilities.DefaultOptions"/>. If the argument is anything else, it is round-tripped through JSON, serializing the object as JSON
+    /// and then deserializing it to the expected type.
+    /// </para>
+    /// <para>
+    /// In general, the data supplied via an <see cref="AIFunctionArguments"/>'s dictionary is supplied from an AI service and should be considered
+    /// unvalidated and untrusted. To provide validated and trusted data to the invocation of <paramref name="method"/>, consider having <paramref name="method"/>
+    /// point to an instance method on an instance configured to hold the appropriate state. An <see cref="IServiceProvider"/> parameter may also be
+    /// used to resolve services from a dependency injection container.
+    /// </para>
+    /// <para>
+    /// By default, return values are serialized to <see cref="JsonElement"/> using <paramref name="options"/>'s
+    /// <see cref="AIFunctionFactoryOptions.SerializerOptions"/> if provided, or else using <see cref="AIJsonUtilities.DefaultOptions"/>.
+    /// Handling of return values may be overridden via <see cref="AIFunctionFactoryOptions.MarshalResult"/>.
     /// </para>
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="method"/> represents an instance method but <paramref name="target"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="method"/> represents an open generic method.</exception>
+    /// <exception cref="ArgumentException"><paramref name="method"/> contains a parameter without a parameter name.</exception>
+    /// <exception cref="JsonException">A parameter to <paramref name="method"/> or its return type is not serializable.</exception>
     public static AIFunction Create(MethodInfo method, object? target, AIFunctionFactoryOptions? options)
     {
         _ = Throw.IfNull(method);
 
         return ReflectionAIFunction.Build(method, target, options ?? _defaultOptions);
-    }
-
-    /// <summary>
-    /// Creates an <see cref="AIFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> for
-    /// and instance method, along with a <see cref="Type"/> representing the type of the target object to
-    /// instantiate each time the method is invoked.
-    /// </summary>
-    /// <param name="method">The instance method to be represented via the created <see cref="AIFunction"/>.</param>
-    /// <param name="targetType">
-    /// The <see cref="Type"/> to construct an instance of on which to invoke <paramref name="method"/> when
-    /// the resulting <see cref="AIFunction"/> is invoked. If <see cref="AIFunctionArguments.Services"/> is provided,
-    /// ActivatorUtilities.CreateInstance will be used to construct the instance using those services; otherwise,
-    /// <see cref="Activator.CreateInstance(Type)"/> is used, utilizing the type's public parameterless constructor.
-    /// If an instance can't be constructed, an exception is thrown during the function's invocation.
-    /// </param>
-    /// <param name="options">Metadata to use to override defaults inferred from <paramref name="method"/>.</param>
-    /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
-    /// <remarks>
-    /// <para>
-    /// Return values are serialized to <see cref="JsonElement"/> using <paramref name="options"/>'s
-    /// <see cref="AIFunctionFactoryOptions.SerializerOptions"/>. Arguments that are not already of the expected type are
-    /// marshaled to the expected type via JSON and using <paramref name="options"/>'s
-    /// <see cref="AIFunctionFactoryOptions.SerializerOptions"/>. If the argument is a <see cref="JsonElement"/>,
-    /// <see cref="JsonDocument"/>, or <see cref="JsonNode"/>, it is deserialized directly. If the argument is anything else unknown,
-    /// it is round-tripped through JSON, serializing the object as JSON and then deserializing it to the expected type.
-    /// </para>
-    /// </remarks>
-    /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
-    public static AIFunction Create(
-        MethodInfo method,
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type targetType,
-        AIFunctionFactoryOptions? options = null)
-    {
-        _ = Throw.IfNull(method);
-        _ = Throw.IfNull(targetType);
-
-        return ReflectionAIFunction.Build(method, targetType, options ?? _defaultOptions);
     }
 
     /// <summary>
@@ -164,20 +286,75 @@ public static partial class AIFunctionFactory
     /// The target object for the <paramref name="method"/> if it represents an instance method.
     /// This should be <see langword="null"/> if and only if <paramref name="method"/> is a static method.
     /// </param>
-    /// <param name="name">The name to use for the <see cref="AIFunction"/>.</param>
-    /// <param name="description">The description to use for the <see cref="AIFunction"/>.</param>
+    /// <param name="name">
+    /// The name to use for the <see cref="AIFunction"/>. If <see langword="null"/>, the name will be derived from
+    /// the name of <paramref name="method"/>.
+    /// </param>
+    /// <param name="description">
+    /// The description to use for the <see cref="AIFunction"/>. If <see langword="null"/>, a description will be derived from
+    /// any <see cref="DescriptionAttribute"/> on <paramref name="method"/>, if available.
+    /// </param>
     /// <param name="serializerOptions">The <see cref="JsonSerializerOptions"/> used to marshal function parameters and return value.</param>
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
     /// <remarks>
     /// <para>
-    /// Return values are serialized to <see cref="JsonElement"/> using <paramref name="serializerOptions"/>.
-    /// Arguments that are not already of the expected type are marshaled to the expected type via JSON and using
-    /// <paramref name="serializerOptions"/>. If the argument is a <see cref="JsonElement"/>, <see cref="JsonDocument"/>,
-    /// or <see cref="JsonNode"/>, it is deserialized directly. If the argument is anything else unknown, it is
-    /// round-tripped through JSON, serializing the object as JSON and then deserializing it to the expected type.
+    /// Any parameters to <paramref name="method"/> are sourced from the <see cref="AIFunctionArguments"/>'s dictionary
+    /// of key/value pairs and are represented in the JSON schema for the function, as exposed in the returned <see cref="AIFunction"/>'s
+    /// <see cref="AIFunction.JsonSchema"/>. There are a few exceptions to this:
+    /// <list type="bullet">
+    ///   <item>
+    ///     <description>
+    ///       <see cref="CancellationToken"/> parameters are automatically bound to the <see cref="CancellationToken"/> passed into
+    ///       the invocation via <see cref="AIFunction.InvokeAsync"/>'s <see cref="CancellationToken"/> parameter. The parameter is
+    ///       not included in the generated JSON schema. The behavior of <see cref="CancellationToken"/> parameters may not be overridden.
+    ///     </description>
+    ///   </item>
+    ///   <item>
+    ///     <description>
+    ///       By default, <see cref="IServiceProvider"/> parameters are bound from the <see cref="AIFunctionArguments.Services"/> property
+    ///       and are not included in the JSON schema. If the parameter is optional, such that a default value is provided,
+    ///       <see cref="AIFunctionArguments.Services"/> is allowed to be <see langword="null"/>; otherwise, <see cref="AIFunctionArguments.Services"/>
+    ///       must be non-<see langword="null"/>, or else the invocation will fail with an exception due to the required nature of the parameter.
+    ///       The handling of <see cref="IServiceProvider"/> parameters may be overridden via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
+    ///     </description>
+    ///   </item>
+    ///   <item>
+    ///     <description>
+    ///       By default, <see cref="AIFunctionArguments"/> parameters are bound directly to <see cref="AIFunctionArguments"/> instance
+    ///       passed into <see cref="AIFunction.InvokeAsync"/> and are not included in the JSON schema. If the <see cref="AIFunctionArguments"/>
+    ///       instance passed to <see cref="AIFunction.InvokeAsync"/> is <see langword="null"/>, the <see cref="AIFunction"/> implementation
+    ///       manufactures an empty instance, such that parameters of type <see cref="AIFunctionArguments"/> may always be satisfied, whether
+    ///       optional or not. The handling of <see cref="AIFunctionArguments"/> parameters may be overridden via
+    ///       <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
+    ///     </description>
+    ///   </item>
+    /// </list>
+    /// All other parameter types are bound from the <see cref="AIFunctionArguments"/> dictionary passed into <see cref="AIFunction.InvokeAsync"/>
+    /// and are included in the generated JSON schema.
+    /// </para>
+    /// <para>
+    /// The marshaling of parameters from the <see cref="AIFunctionArguments"/> dictionary permits values to be passed into the <paramref name="method"/>'s
+    /// invocation directly if the object is already of a compatible type. Otherwise, if the argument is a <see cref="JsonElement"/>, <see cref="JsonDocument"/>,
+    /// or <see cref="JsonNode"/>, it is deserialized into the parameter type, utilizing <paramref name="serializerOptions"/> if provided, or else
+    /// <see cref="AIJsonUtilities.DefaultOptions"/>. If the argument is anything else, it is round-tripped through JSON, serializing the object as JSON
+    /// and then deserializing it to the expected type.
+    /// </para>
+    /// <para>
+    /// In general, the data supplied via an <see cref="AIFunctionArguments"/>'s dictionary is supplied from an AI service and should be considered
+    /// unvalidated and untrusted. To provide validated and trusted data to the invocation of <paramref name="method"/>, consider having <paramref name="method"/>
+    /// point to an instance method on an instance configured to hold the appropriate state. An <see cref="IServiceProvider"/> parameter may also be
+    /// used to resolve services from a dependency injection container.
+    /// </para>
+    /// <para>
+    /// Return values are serialized to <see cref="JsonElement"/> using <paramref name="serializerOptions"/> if provided,
+    /// or else using <see cref="AIJsonUtilities.DefaultOptions"/>.
     /// </para>
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="method"/> represents an instance method but <paramref name="target"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="method"/> represents an open generic method.</exception>
+    /// <exception cref="ArgumentException"><paramref name="method"/> contains a parameter without a parameter name.</exception>
+    /// <exception cref="JsonException">A parameter to <paramref name="method"/> or its return type is not serializable.</exception>
     public static AIFunction Create(MethodInfo method, object? target, string? name = null, string? description = null, JsonSerializerOptions? serializerOptions = null)
     {
         _ = Throw.IfNull(method);
@@ -192,6 +369,108 @@ public static partial class AIFunctionFactory
             };
 
         return ReflectionAIFunction.Build(method, target, createOptions);
+    }
+
+    /// <summary>
+    /// Creates an <see cref="AIFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> for
+    /// and instance method, along with a <see cref="Type"/> representing the type of the target object to
+    /// instantiate each time the method is invoked.
+    /// </summary>
+    /// <param name="method">The instance method to be represented via the created <see cref="AIFunction"/>.</param>
+    /// <param name="targetType">
+    /// The <see cref="Type"/> to construct an instance of on which to invoke <paramref name="method"/> when
+    /// the resulting <see cref="AIFunction"/> is invoked. If <see cref="AIFunctionArguments.Services"/> is provided,
+    /// <see cref="ActivatorUtilities.CreateInstance"/> will be used to construct the instance using those services; otherwise,
+    /// <see cref="Activator.CreateInstance(Type)"/> is used, utilizing the type's public parameterless constructor.
+    /// If an instance can't be constructed, an exception is thrown during the function's invocation.
+    /// </param>
+    /// <param name="options">Metadata to use to override defaults inferred from <paramref name="method"/>.</param>
+    /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
+    /// <remarks>
+    /// <para>
+    /// Return values are serialized to <see cref="JsonElement"/> using <paramref name="options"/>'s
+    /// <see cref="AIFunctionFactoryOptions.SerializerOptions"/>. Arguments that are not already of the expected type are
+    /// marshaled to the expected type via JSON and using <paramref name="options"/>'s
+    /// <see cref="AIFunctionFactoryOptions.SerializerOptions"/>. If the argument is a <see cref="JsonElement"/>,
+    /// <see cref="JsonDocument"/>, or <see cref="JsonNode"/>, it is deserialized directly. If the argument is anything else unknown,
+    /// it is round-tripped through JSON, serializing the object as JSON and then deserializing it to the expected type.
+    /// </para>
+    /// <para>
+    /// By default, any parameters to <paramref name="method"/> are sourced from the <see cref="AIFunctionArguments"/>'s dictionary
+    /// of key/value pairs and are represented in the JSON schema for the function, as exposed in the returned <see cref="AIFunction"/>'s
+    /// <see cref="AIFunction.JsonSchema"/>. There are a few exceptions to this:
+    /// <list type="bullet">
+    ///   <item>
+    ///     <description>
+    ///       <see cref="CancellationToken"/> parameters are automatically bound to the <see cref="CancellationToken"/> passed into
+    ///       the invocation via <see cref="AIFunction.InvokeAsync"/>'s <see cref="CancellationToken"/> parameter. The parameter is
+    ///       not included in the generated JSON schema. The behavior of <see cref="CancellationToken"/> parameters may not be overridden.
+    ///     </description>
+    ///   </item>
+    ///   <item>
+    ///     <description>
+    ///       By default, <see cref="IServiceProvider"/> parameters are bound from the <see cref="AIFunctionArguments.Services"/> property
+    ///       and are not included in the JSON schema. If the parameter is optional, such that a default value is provided,
+    ///       <see cref="AIFunctionArguments.Services"/> is allowed to be <see langword="null"/>; otherwise, <see cref="AIFunctionArguments.Services"/>
+    ///       must be non-<see langword="null"/>, or else the invocation will fail with an exception due to the required nature of the parameter.
+    ///       The handling of <see cref="IServiceProvider"/> parameters may be overridden via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
+    ///     </description>
+    ///   </item>
+    ///   <item>
+    ///     <description>
+    ///       By default, <see cref="AIFunctionArguments"/> parameters are bound directly to <see cref="AIFunctionArguments"/> instance
+    ///       passed into <see cref="AIFunction.InvokeAsync"/> and are not included in the JSON schema. If the <see cref="AIFunctionArguments"/>
+    ///       instance passed to <see cref="AIFunction.InvokeAsync"/> is <see langword="null"/>, the <see cref="AIFunction"/> implementation
+    ///       manufactures an empty instance, such that parameters of type <see cref="AIFunctionArguments"/> may always be satisfied, whether
+    ///       optional or not. The handling of <see cref="AIFunctionArguments"/> parameters may be overridden via
+    ///       <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
+    ///     </description>
+    ///   </item>
+    /// </list>
+    /// All other parameter types are, by default, bound from the <see cref="AIFunctionArguments"/> dictionary passed into <see cref="AIFunction.InvokeAsync"/>
+    /// and are included in the generated JSON schema. This may be overridden by the <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/> provided
+    /// via the <paramref name="options"/> parameter; for every parameter, the delegate is enabled to choose if the parameter should be included in the
+    /// generated schema and how its value should be bound, including handling of optionality (by default, required parameters that are not included in the
+    /// <see cref="AIFunctionArguments"/> dictionary will result in an exception being thrown). Loosely-typed additional context information may be passed
+    /// into <see cref="AIFunction.InvokeAsync"/> via the <see cref="AIFunctionArguments"/>'s <see cref="AIFunctionArguments.Context"/> dictionary; the default
+    /// binding ignores this collection, but a custom binding supplied via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/> may choose to
+    /// source arguments from this data.
+    /// </para>
+    /// <para>
+    /// The default marshaling of parameters from the <see cref="AIFunctionArguments"/> dictionary permits values to be passed into the <paramref name="method"/>'s
+    /// invocation directly if the object is already of a compatible type. Otherwise, if the argument is a <see cref="JsonElement"/>, <see cref="JsonDocument"/>,
+    /// or <see cref="JsonNode"/>, it is deserialized into the parameter type, utilizing <see cref="AIFunctionFactoryOptions.SerializerOptions"/> if provided,
+    /// or else using <see cref="AIJsonUtilities.DefaultOptions"/>. If the argument is anything else, it is round-tripped through JSON, serializing the object as JSON
+    /// and then deserializing it to the expected type.
+    /// </para>
+    /// <para>
+    /// In general, the data supplied via an <see cref="AIFunctionArguments"/>'s dictionary is supplied from an AI service and should be considered
+    /// unvalidated and untrusted. To provide validated and trusted data to the invocation of <paramref name="method"/>, the instance constructed
+    /// for each invocation may contain that data in it, such that it's then available to <paramref name="method"/> as instance data.
+    /// An <see cref="IServiceProvider"/> parameter may also be used to resolve services from a dependency injection container.
+    /// </para>
+    /// <para>
+    /// By default, return values are serialized to <see cref="JsonElement"/> using <paramref name="options"/>'s
+    /// <see cref="AIFunctionFactoryOptions.SerializerOptions"/> if provided, or else using <see cref="AIJsonUtilities.DefaultOptions"/>.
+    /// Handling of return values may be overridden via <see cref="AIFunctionFactoryOptions.MarshalResult"/>.
+    /// </para>
+    /// </remarks>
+    /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="targetType"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="method"/> represents a static method.</exception>
+    /// <exception cref="ArgumentException"><paramref name="method"/> represents an open generic method.</exception>
+    /// <exception cref="ArgumentException"><paramref name="method"/> contains a parameter without a parameter name.</exception>
+    /// <exception cref="ArgumentException"><paramref name="targetType"/> is not assignable to <paramref name="method"/>'s declaring type.</exception>
+    /// <exception cref="JsonException">A parameter to <paramref name="method"/> or its return type is not serializable.</exception>
+    public static AIFunction Create(
+        MethodInfo method,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type targetType,
+        AIFunctionFactoryOptions? options = null)
+    {
+        _ = Throw.IfNull(method);
+        _ = Throw.IfNull(targetType);
+
+        return ReflectionAIFunction.Build(method, targetType, options ?? _defaultOptions);
     }
 
     private sealed class ReflectionAIFunction : AIFunction
