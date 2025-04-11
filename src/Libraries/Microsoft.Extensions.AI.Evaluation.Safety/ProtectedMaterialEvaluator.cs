@@ -87,7 +87,7 @@ public sealed class ProtectedMaterialEvaluator()
 
         // If images are present in the conversation, do a second evaluation for protected material in images.
         // The content safety service does not support evaluating both text and images in the same request currently.
-        if (messages.ContainsImage() || modelResponse.ContainsImage())
+        if (messages.ContainsImageWithSupportedFormat() || modelResponse.ContainsImageWithSupportedFormat())
         {
             EvaluationResult imageResult =
                 await EvaluateContentSafetyAsync(

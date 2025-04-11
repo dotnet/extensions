@@ -8,9 +8,9 @@ namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
 internal static class ChatMessageExtensions
 {
-    internal static bool ContainsImage(this ChatMessage message)
-        => message.Contents.Any(c => c.IsImage());
+    internal static bool ContainsImageWithSupportedFormat(this ChatMessage message)
+        => message.Contents.Any(c => c.IsImageWithSupportedFormat());
 
-    internal static bool ContainsImage(this IEnumerable<ChatMessage> conversation)
-        => conversation.Any(ContainsImage);
+    internal static bool ContainsImageWithSupportedFormat(this IEnumerable<ChatMessage> conversation)
+        => conversation.Any(ContainsImageWithSupportedFormat);
 }

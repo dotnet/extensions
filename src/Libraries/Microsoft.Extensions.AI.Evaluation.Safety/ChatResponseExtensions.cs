@@ -5,6 +5,6 @@ namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
 internal static class ChatResponseExtensions
 {
-    internal static bool ContainsImage(this ChatResponse response)
-        => response.Messages.ContainsImage();
+    internal static bool ContainsImageWithSupportedFormat(this ChatResponse response)
+        => response.Messages.ContainsImageWithSupportedFormat();
 }

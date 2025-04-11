@@ -9,9 +9,9 @@ internal static class AIContentExtensions
     internal static bool IsTextOrUsage(this AIContent content)
         => content is TextContent || content is UsageContent;
 
-    internal static bool IsImage(this AIContent content) =>
-        (content is UriContent uriContent && uriContent.HasTopLevelMediaType("image")) ||
-        (content is DataContent dataContent && dataContent.HasTopLevelMediaType("image"));
+    internal static bool IsImageWithSupportedFormat(this AIContent content) =>
+        (content is UriContent uriContent && IsSupportedImageFormat(uriContent.MediaType)) ||
+        (content is DataContent dataContent && IsSupportedImageFormat(dataContent.MediaType));
 
     internal static bool IsUriBase64Encoded(this DataContent dataContent)
     {
@@ -27,5 +27,16 @@ internal static class AIContentExtensions
 
         bool isBase64Encoded = metadata.Span.EndsWith(";base64".AsSpan(), StringComparison.OrdinalIgnoreCase);
         return isBase64Encoded;
+    }
+
+    private static bool IsSupportedImageFormat(string mediaType)
+    {
+        // 'image/jpeg' is the official MIME type for JPEG. However, some systems recognize 'image/jpg' as well.
+
+        return
+            mediaType.Equals("image/jpeg", StringComparison.OrdinalIgnoreCase) ||
+            mediaType.Equals("image/jpg", StringComparison.OrdinalIgnoreCase) ||
+            mediaType.Equals("image/png", StringComparison.OrdinalIgnoreCase) ||
+            mediaType.Equals("image/gif", StringComparison.OrdinalIgnoreCase);
     }
 }

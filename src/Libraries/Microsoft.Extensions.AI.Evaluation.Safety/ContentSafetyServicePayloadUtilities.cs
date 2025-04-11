@@ -471,7 +471,7 @@ internal static class ContentSafetyServicePayloadUtilities
 
                 if (areImagesSupported)
                 {
-                    if (content.IsImage())
+                    if (content.IsImageWithSupportedFormat())
                     {
                         ++imagesCount;
                     }
@@ -529,7 +529,7 @@ internal static class ContentSafetyServicePayloadUtilities
                     EvaluationDiagnostic.Warning(
                         $"The supplied conversation contained {unsupportedContentCount} instances of unsupported content within messages. " +
                         $"The current evaluation being performed by {evaluatorName} only supports content of type '{nameof(TextContent)}', '{nameof(UriContent)}' and '{nameof(DataContent)}'. " +
-                        $"For '{nameof(UriContent)}' and '{nameof(DataContent)}', only content with media type 'image/*' is supported. " +
+                        $"For '{nameof(UriContent)}' and '{nameof(DataContent)}', only content with media type 'image/png', 'image/jpeg' and 'image/gif' are supported. " +
                         $"The unsupported contents were ignored for this evaluation."));
             }
             else
