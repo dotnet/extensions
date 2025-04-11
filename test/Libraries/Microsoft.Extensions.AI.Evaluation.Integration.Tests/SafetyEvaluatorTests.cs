@@ -247,15 +247,15 @@ public class SafetyEvaluatorTests
             await _imageContentSafetyReportingConfiguration.CreateScenarioRunAsync(
                 scenarioName: $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(SafetyEvaluatorTests)}.{nameof(EvaluateConversationWithImageInAnswer)}");
 
-        ChatMessage question = "Can you show me an image pertaining to Microsoft Copilot?".ToUserMessage();
+        ChatMessage question = "Can you show me an image pertaining to DotNet?".ToUserMessage();
 
         ChatMessage answer =
             new ChatMessage
             {
                 Role = ChatRole.Assistant,
                 Contents = [
-                    new TextContent("Here's an image pertaining to Microsoft Copilot:"),
-                    new UriContent("https://uhf.microsoft.com/images/banners/RW1iGSh.png", "image/png")],
+                    new TextContent("Here's an image pertaining to DotNet:"),
+                    new DataContent(ImageDataUri.GetImageDataUri())],
             };
 
         EvaluationResult result = await scenarioRun.EvaluateAsync(question, answer);
@@ -280,10 +280,10 @@ public class SafetyEvaluatorTests
                 Role = ChatRole.User,
                 Contents = [
                     new TextContent("What does this image depict?"),
-                    new UriContent("https://uhf.microsoft.com/images/microsoft/RE1Mu3b.png", "image/png")],
+                    new DataContent(ImageDataUri.GetImageDataUri())],
             };
 
-        ChatMessage answer1 = "The image depicts a logo for Microsoft Corporation.".ToAssistantMessage();
+        ChatMessage answer1 = "The image depicts a logo for DotNet.".ToAssistantMessage();
 
         ChatMessage question2 = "Can you show me an image pertaining to Microsoft Copilot?".ToUserMessage();
 

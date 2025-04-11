@@ -12,19 +12,6 @@ namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
 internal static class ContentSafetyServicePayloadUtilities
 {
-    internal static bool IsImage(this AIContent content) =>
-        (content is UriContent uriContent && uriContent.HasTopLevelMediaType("image")) ||
-        (content is DataContent dataContent && dataContent.HasTopLevelMediaType("image"));
-
-    internal static bool ContainsImage(this ChatMessage message)
-        => message.Contents.Any(IsImage);
-
-    internal static bool ContainsImage(this ChatResponse response)
-        => response.Messages.ContainsImage();
-
-    internal static bool ContainsImage(this IEnumerable<ChatMessage> conversation)
-        => conversation.Any(ContainsImage);
-
     internal static (string payload, IReadOnlyList<EvaluationDiagnostic>? diagnostics) GetPayload(
         ContentSafetyServicePayloadFormat payloadFormat,
         IEnumerable<ChatMessage> conversation,
@@ -356,8 +343,17 @@ internal static class ContentSafetyServicePayloadUtilities
                     }
                     else if (content is DataContent dataContent && dataContent.HasTopLevelMediaType("image"))
                     {
-                        BinaryData imageBytes = BinaryData.FromBytes(dataContent.Data);
-                        string base64ImageData = Convert.ToBase64String(imageBytes.ToArray());
+                        string url;
+                        if (dataContent.IsUriBase64Encoded())
+                        {
+                            url = dataContent.Uri;
+                        }
+                        else
+                        {
+                            BinaryData imageBytes = BinaryData.FromBytes(dataContent.Data);
+                            string base64ImageData = Convert.ToBase64String(imageBytes.ToArray());
+                            url = $"data:{dataContent.MediaType};base64,{base64ImageData}";
+                        }
 
                         yield return new JsonObject
                         {
@@ -365,7 +361,7 @@ internal static class ContentSafetyServicePayloadUtilities
                             ["image_url"] =
                                 new JsonObject
                                 {
-                                    ["url"] = $"data:{dataContent.MediaType};base64,{base64ImageData}"
+                                    ["url"] = url
                                 }
                         };
                     }
@@ -475,7 +471,7 @@ internal static class ContentSafetyServicePayloadUtilities
 
                 if (areImagesSupported)
                 {
-                    if (content.IsImage())
+                    if (content.IsImageWithSupportedFormat())
                     {
                         ++imagesCount;
                     }
@@ -533,7 +529,7 @@ internal static class ContentSafetyServicePayloadUtilities
                     EvaluationDiagnostic.Warning(
                         $"The supplied conversation contained {unsupportedContentCount} instances of unsupported content within messages. " +
                         $"The current evaluation being performed by {evaluatorName} only supports content of type '{nameof(TextContent)}', '{nameof(UriContent)}' and '{nameof(DataContent)}'. " +
-                        $"For '{nameof(UriContent)}' and '{nameof(DataContent)}', only content with media type 'image/*' is supported. " +
+                        $"For '{nameof(UriContent)}' and '{nameof(DataContent)}', only content with media type 'image/png', 'image/jpeg' and 'image/gif' are supported. " +
                         $"The unsupported contents were ignored for this evaluation."));
             }
             else
@@ -582,7 +578,4 @@ internal static class ContentSafetyServicePayloadUtilities
 
         return (turns, normalizedPerTurnContext, diagnostics, contentType);
     }
-
-    private static bool IsTextOrUsage(this AIContent content)
-        => content is TextContent || content is UsageContent;
 }
