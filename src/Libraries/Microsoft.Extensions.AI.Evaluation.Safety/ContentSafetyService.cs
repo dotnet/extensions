@@ -192,7 +192,7 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
         string evaluatorName,
         CancellationToken cancellationToken)
     {
-        string requestUrl =
+        string resourceManagerUrl =
             $"https://management.azure.com/subscriptions/{serviceConfiguration.SubscriptionId}" +
             $"/resourceGroups/{serviceConfiguration.ResourceGroupName}" +
             $"/providers/Microsoft.MachineLearningServices/workspaces/{serviceConfiguration.ProjectName}" +
@@ -200,7 +200,7 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
 
         HttpResponseMessage response =
             await GetResponseAsync(
-                requestUrl,
+                resourceManagerUrl,
                 evaluatorName,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 

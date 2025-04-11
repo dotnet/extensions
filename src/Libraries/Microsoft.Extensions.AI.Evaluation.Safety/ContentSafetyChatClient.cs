@@ -6,6 +6,7 @@
 // We disable this warning because it is a false positive arising from the analyzer's lack of support for C#'s primary
 // constructor syntax.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -15,13 +16,47 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
-internal sealed partial class ContentSafetyChatClient(
-    ContentSafetyServiceConfiguration contentSafetyServiceConfiguration,
-    IChatClient? originalChatClient = null) : DelegatingChatClient(originalChatClient ?? NoOpChatClient.Instance)
+internal sealed class ContentSafetyChatClient : IChatClient
 {
-    private readonly ContentSafetyService _service = new ContentSafetyService(contentSafetyServiceConfiguration);
+    private const string Moniker = "Azure AI Content Safety";
 
-    public override async Task<ChatResponse> GetResponseAsync(
+    private readonly ContentSafetyService _service;
+    private readonly IChatClient? _originalChatClient;
+    private readonly ChatClientMetadata _metadata;
+
+    public ContentSafetyChatClient(
+        ContentSafetyServiceConfiguration contentSafetyServiceConfiguration,
+        IChatClient? originalChatClient = null)
+    {
+        _service = new ContentSafetyService(contentSafetyServiceConfiguration);
+        _originalChatClient = originalChatClient;
+
+        ChatClientMetadata? originalMetadata = _originalChatClient?.GetService<ChatClientMetadata>();
+
+        string providerName =
+            $"{Moniker} (" +
+            $"Subscription: {contentSafetyServiceConfiguration.SubscriptionId}, " +
+            $"Resource Group: {contentSafetyServiceConfiguration.ResourceGroupName}, " +
+            $"Project: {contentSafetyServiceConfiguration.ProjectName})";
+
+        if (originalMetadata?.ProviderName is string originalProviderName &&
+            !string.IsNullOrWhiteSpace(originalProviderName))
+        {
+            providerName = $"{originalProviderName}; {providerName}";
+        }
+
+        string modelId = Moniker;
+
+        if (originalMetadata?.DefaultModelId is string originalModelId &&
+            !string.IsNullOrWhiteSpace(originalModelId))
+        {
+            modelId = $"{originalModelId}; {modelId}";
+        }
+
+        _metadata = new ChatClientMetadata(providerName, originalMetadata?.ProviderUri, modelId);
+    }
+
+    public async Task<ChatResponse> GetResponseAsync(
         IEnumerable<ChatMessage> messages,
         ChatOptions? options = null,
         CancellationToken cancellationToken = default)
@@ -38,15 +73,25 @@ internal sealed partial class ContentSafetyChatClient(
                     contentSafetyChatOptions.EvaluatorName,
                     cancellationToken).ConfigureAwait(false);
 
-            return new ChatResponse(new ChatMessage(ChatRole.Assistant, annotationResult));
+            return new ChatResponse(new ChatMessage(ChatRole.Assistant, annotationResult))
+            {
+                ModelId = Moniker
+            };
+        }
+        else if (_originalChatClient is not null)
+        {
+            return await _originalChatClient.GetResponseAsync(
+                messages,
+                options,
+                cancellationToken).ConfigureAwait(false);
         }
         else
         {
-            return await base.GetResponseAsync(messages, options, cancellationToken).ConfigureAwait(false);
+            throw new NotSupportedException();
         }
     }
 
-    public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+    public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IEnumerable<ChatMessage> messages,
         ChatOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -63,15 +108,45 @@ internal sealed partial class ContentSafetyChatClient(
                     contentSafetyChatOptions.EvaluatorName,
                     cancellationToken).ConfigureAwait(false);
 
-            yield return new ChatResponseUpdate(ChatRole.Assistant, annotationResult);
+            yield return new ChatResponseUpdate(ChatRole.Assistant, annotationResult)
+            {
+                ModelId = Moniker
+            };
         }
-        else
+        else if (_originalChatClient is not null)
         {
             await foreach (var update in
-                base.GetStreamingResponseAsync(messages, options, cancellationToken).ConfigureAwait(false))
+                _originalChatClient.GetStreamingResponseAsync(
+                    messages,
+                    options,
+                    cancellationToken).ConfigureAwait(false))
             {
                 yield return update;
             }
         }
+        else
+        {
+            throw new NotSupportedException();
+        }
     }
+
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        if (serviceKey is null)
+        {
+            if (serviceType == typeof(ChatClientMetadata))
+            {
+                return _metadata;
+            }
+            else if (serviceType == typeof(ContentSafetyChatClient))
+            {
+                return this;
+            }
+        }
+
+        return _originalChatClient?.GetService(serviceType, serviceKey);
+    }
+
+    public void Dispose()
+        => _originalChatClient?.Dispose();
 }

@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Shared.Diagnostics;
+
 namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
 /// <summary>
@@ -33,6 +35,8 @@ public static class ContentSafetyServiceConfigurationExtensions
         this ContentSafetyServiceConfiguration contentSafetyServiceConfiguration,
         ChatConfiguration? originalChatConfiguration = null)
     {
+        _ = Throw.IfNull(contentSafetyServiceConfiguration);
+
 #pragma warning disable CA2000 // Dispose objects before they go out of scope.
         // We can't dispose newChatClient here because it is returned to the caller.
 
@@ -67,5 +71,9 @@ public static class ContentSafetyServiceConfigurationExtensions
     public static IChatClient ToIChatClient(
         this ContentSafetyServiceConfiguration contentSafetyServiceConfiguration,
         IChatClient? originalChatClient = null)
-           => new ContentSafetyChatClient(contentSafetyServiceConfiguration, originalChatClient);
+    {
+        _ = Throw.IfNull(contentSafetyServiceConfiguration);
+
+        return new ContentSafetyChatClient(contentSafetyServiceConfiguration, originalChatClient);
+    }
 }
