@@ -96,7 +96,7 @@ Deploy the `gpt-4o-mini` and `text-embedding-3-small` models to your Azure OpenA
 
 #### ---#if (UseManagedIdentity)
 ### 3. Configure Azure OpenAI for Keyless Authentication
-This template is configured to use keyless authentication (also known as Managed Identity, with Entra ID). In the Azure Portal, when viewing the Azure OpenAI resource you just created, view access control settings and assign yourself the `Cognitive Services OpenAI User` role. [Learn more](https://learn.microsoft.com/azure/developer/ai/keyless-connections).
+This template is configured to use keyless authentication (also known as Managed Identity, with Entra ID). In the Azure Portal, when viewing the Azure OpenAI resource you just created, view access control settings and assign yourself the `Azure AI Developer` role. [Learn more about configuring authentication for local development](https://learn.microsoft.com/azure/developer/ai/keyless-connections?tabs=csharp%2Cazure-cli#authenticate-for-local-development).
 
 ### 4. Configure Azure OpenAI Endpoint
 Configure your Azure OpenAI endpoint for this project, using .NET User Secrets:
