@@ -94,6 +94,10 @@ internal sealed class LinuxUtilizationParserCgroupV1 : ILinuxUtilizationParser
         _userHz = userHz.Value;
     }
 
+    public long GetCgroupCpuUsageInNanosecondsWithoutHost() => throw new NotSupportedException();
+    public float GetCgroupLimitedCpusWithoutHost() => throw new NotSupportedException();
+    public float GetCgroupRequestCpuWithoutHost() => throw new NotSupportedException();
+
     public long GetCgroupCpuUsageInNanoseconds()
     {
         using ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool);
