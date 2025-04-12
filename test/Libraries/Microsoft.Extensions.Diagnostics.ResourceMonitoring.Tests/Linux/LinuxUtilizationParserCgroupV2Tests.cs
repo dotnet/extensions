@@ -33,10 +33,13 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         Assert.Throws<InvalidOperationException>(() => parser.GetAvailableMemoryInBytes());
         Assert.Throws<InvalidOperationException>(() => parser.GetMemoryUsageInBytes());
         Assert.Throws<InvalidOperationException>(() => parser.GetCgroupLimitedCpus());
+        Assert.Throws<InvalidOperationException>(() => parser.GetCgroupLimitedCpusWithoutHost());
         Assert.Throws<InvalidOperationException>(() => parser.GetHostCpuUsageInNanoseconds());
         Assert.Throws<InvalidOperationException>(() => parser.GetHostCpuCount());
         Assert.Throws<InvalidOperationException>(() => parser.GetCgroupCpuUsageInNanoseconds());
+        Assert.Throws<InvalidOperationException>(() => parser.GetCgroupCpuUsageInNanosecondsWithoutHost());
         Assert.Throws<InvalidOperationException>(() => parser.GetCgroupRequestCpu());
+        Assert.Throws<InvalidOperationException>(() => parser.GetCgroupRequestCpuWithoutHost());
     }
 
     [ConditionalFact]
@@ -472,6 +475,23 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
 
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Math.Round(p.GetCgroupRequestCpu());
+
+        Assert.Equal(result, r);
+    }
+
+    [ConditionalTheory]
+    [InlineData("0::/", "filename", "/sys/fs/cgroup/filename")]
+    [InlineData("0::/filesystem.slice", "filename", "/sys/fs/cgroup/filesystem.slice/filename")]
+    [InlineData("0::/filesystem.slice/", "filename", "/sys/fs/cgroup/filesystem.slice/filename")]
+    public void Create_Path_From_Proc_Self_Cgroup(string content, string filename, string result)
+    {
+        var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        {
+            { new FileInfo("/proc/self/cgroup"), content },
+        });
+
+        var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
+        var r = p.GetCgroupActualSlicePath(filename);
 
         Assert.Equal(result, r);
     }
