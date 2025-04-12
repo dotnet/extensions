@@ -35,6 +35,9 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     private long _previousCgroupCpuTime;
     private long _previousHostCpuTime;
 
+    // Track the actual timestamp when we read CPU values
+    private DateTimeOffset _lastCpuMeasurementTime;
+
     public SystemResources Resources { get; }
 
     public LinuxUtilizationProvider(IOptions<ResourceMonitoringOptions> options, ILinuxUtilizationParser parser,
@@ -51,6 +54,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         _memoryLimit = _parser.GetAvailableMemoryInBytes();
         _previousHostCpuTime = _parser.GetHostCpuUsageInNanoseconds();
         _previousCgroupCpuTime = _parser.GetCgroupCpuUsageInNanoseconds();
+        _lastCpuMeasurementTime = now;
 
         float hostCpus = _parser.GetHostCpuCount();
         float cpuLimit = _parser.GetCgroupLimitedCpus();
@@ -92,6 +96,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     public double CpuUtilizationWithoutHost()
     {
         DateTimeOffset now = _timeProvider.GetUtcNow();
+        double actualElapsed = (now - _lastCpuMeasurementTime).TotalSeconds;
 
         lock (_cpuLocker)
         {
@@ -111,13 +116,16 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
                 if (deltaCgroup > 0)
                 {
-                    double percentage = Math.Min(One, deltaCgroup / _cpuRefreshInterval.TotalSeconds);
+                    double percentage = Math.Min(One, deltaCgroup / actualElapsed);
 
                     Log.CpuUsageData(_logger, cgroupCpuTime, 0, _previousCgroupCpuTime, 0, percentage);
 
                     _cpuPercentage = percentage;
                     _refreshAfterCpu = now.Add(_cpuRefreshInterval);
                     _previousCgroupCpuTime = cgroupCpuTime;
+
+                    // Update the timestamp for next calculation
+                    _lastCpuMeasurementTime = now;
                 }
             }
         }
