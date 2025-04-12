@@ -104,5 +104,7 @@ public partial class ResourceMonitoringOptions
     /// <value>
     /// The default value is true.
     /// </value>
+#pragma warning disable CA1805 // Do not initialize unnecessarily
     public bool CalculateCpuUsageWithoutHost { get; set; } = false;
+#pragma warning restore CA1805 // Do not initialize unnecessarily
 }
