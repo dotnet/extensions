@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.Data.Validation;
 using Microsoft.Shared.DiagnosticIds;
 
@@ -105,6 +106,7 @@ public partial class ResourceMonitoringOptions
     /// The default value is true.
     /// </value>
 #pragma warning disable CA1805 // Do not initialize unnecessarily
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.ResourceMonitoring, UrlFormat = DiagnosticIds.UrlFormat)]
     public bool CalculateCpuUsageWithoutHost { get; set; } = false;
 #pragma warning restore CA1805 // Do not initialize unnecessarily
 }
