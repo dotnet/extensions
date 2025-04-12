@@ -28,6 +28,13 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
     private static readonly ObjectPool<BufferWriter<char>> _sharedBufferWriterPool = BufferWriterPool.CreateBufferWriterPool<char>();
 
     /// <remarks>
+    /// File contains the amount of CPU time (in microseconds) available to the group during each accounting period.
+    /// and the length of the accounting period in microseconds.
+    /// In Cgroup V1 : /sys/fs/cgroup/cpu/cpu.cfs_quota_us and /sys/fs/cgroup/cpu/cpu.cfs_period_us.
+    /// </remarks>
+    private static readonly FileInfo _cpuCfsQuaotaPeriodUs = new("/sys/fs/cgroup/cpu.max");
+
+    /// <remarks>
     /// Stat file contains information about all CPUs and their time.
     /// </remarks>
     /// <remarks>
@@ -68,6 +75,20 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
     /// The format is (type of memory spent) (value) (unit of measure).
     /// </remarks>
     private static readonly FileInfo _memoryStat = new("/sys/fs/cgroup/memory.stat");
+
+    /// <summary>
+    /// File containing usage in nanoseconds.
+    /// </summary>
+    /// <remarks>
+    /// This value refers to the container/cgroup utilization.
+    /// The format is single line with one number value.
+    /// </remarks>
+    private static readonly FileInfo _cpuacctUsage = new("/sys/fs/cgroup/cpu.stat");
+
+    /// <summary>
+    /// CPU weights, also known as shares in cgroup v1, is used for resource allocation.
+    /// </summary>
+    private static readonly FileInfo _cpuPodWeight = new("/sys/fs/cgroup/cpu.weight");
 
     private static readonly FileInfo _cpuActualSelfSliceProcFile = new("/proc/self/cgroup");
 
@@ -111,6 +132,40 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
     }
 
     public long GetCgroupCpuUsageInNanoseconds()
+    {
+        // The value we are interested in starts with this. We just want to make sure it is true.
+        const string Usage_usec = "usage_usec";
+
+        // If the file doesn't exist, we assume that the system is a Host and we read the CPU usage from /proc/stat.
+        if (!_fileSystem.Exists(_cpuacctUsage))
+        {
+            return GetHostCpuUsageInNanoseconds();
+        }
+
+        using ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool);
+        _fileSystem.ReadAll(_cpuacctUsage, bufferWriter.Buffer);
+        ReadOnlySpan<char> usage = bufferWriter.Buffer.WrittenSpan;
+
+        if (!usage.StartsWith(Usage_usec))
+        {
+            Throw.InvalidOperationException($"Could not parse '{_cpuacctUsage}'. We expected first line of the file to start with '{Usage_usec}' but it was '{new string(usage)}' instead.");
+        }
+
+        ReadOnlySpan<char> cpuUsage = usage.Slice(Usage_usec.Length, usage.Length - Usage_usec.Length);
+
+        int next = GetNextNumber(cpuUsage, out long microseconds);
+
+        if (microseconds == -1)
+        {
+            Throw.InvalidOperationException($"Could not get cpu usage from '{_cpuacctUsage}'. Expected positive number, but got '{new string(usage)}'.");
+        }
+
+        // In cgroup v2, the Units are microseconds for usage_usec.
+        // We multiply by 1000 to convert to nanoseconds to keep the common calculation logic.
+        return microseconds * Thousand;
+    }
+
+    public long GetCgroupCpuUsageInNanosecondsWithoutHost()
     {
         // The value we are interested in starts with this. We just want to make sure it is true.
         const string Usage_usec = "usage_usec";
@@ -195,8 +250,23 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
     /// </remarks>
     public float GetCgroupLimitedCpus()
     {
+        if (LinuxUtilizationParserCgroupV2.TryGetCpuUnitsFromCgroups(_fileSystem, out float cpus))
+        {
+            return cpus;
+        }
+
+        return GetHostCpuCount();
+    }
+
+    /// <remarks>
+    /// When CGroup limits are set, we can calculate number of cores based on the file settings.
+    /// It should be 99% of the cases when app is hosted in the container environment.
+    /// Otherwise, we assume that all host's CPUs are available, which we read from proc/stat file.
+    /// </remarks>
+    public float GetCgroupLimitedCpusWithoutHost()
+    {
         FileInfo cpuLimitsFile = new(GetCgroupActualSlicePath(CpuLimit));
-        if (LinuxUtilizationParserCgroupV2.TryGetCpuUnitsFromCgroups(_fileSystem, cpuLimitsFile, out float cpus))
+        if (LinuxUtilizationParserCgroupV2.TryGetCpuUnitsFromCgroupsWithoutHost(_fileSystem, cpuLimitsFile, out float cpus))
         {
             return cpus;
         }
@@ -210,8 +280,22 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
     /// </remarks>
     public float GetCgroupRequestCpu()
     {
+        if (TryGetCgroupRequestCpu(_fileSystem, out float cpuPodRequest))
+        {
+            return cpuPodRequest / CpuShares;
+        }
+
+        return GetHostCpuCount();
+    }
+
+    /// <remarks>
+    /// If we are able to read the CPU share, we calculate the CPU request based on the weight by dividing it by 1024.
+    /// If we can't read the CPU weight, we assume that the pod/vm cpu request is 1 core by default.
+    /// </remarks>
+    public float GetCgroupRequestCpuWithoutHost()
+    {
         FileInfo cpuRequestsFile = new(GetCgroupActualSlicePath(CpuRequest));
-        if (TryGetCgroupRequestCpu(_fileSystem, cpuRequestsFile, out float cpuPodRequest))
+        if (TryGetCgroupRequestCpuWithoutHost(_fileSystem, cpuRequestsFile, out float cpuPodRequest))
         {
             return cpuPodRequest / CpuShares;
         }
@@ -505,7 +589,57 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
     /// <remarks>
     /// If the file doesn't exist, we assume that the system is a Host and we read the CPU usage from /proc/stat.
     /// </remarks>
-    private static bool TryGetCpuUnitsFromCgroups(IFileSystem fileSystem, FileInfo cpuLimitsFile, out float cpuUnits)
+    private static bool TryGetCpuUnitsFromCgroups(IFileSystem fileSystem, out float cpuUnits)
+    {
+        if (!fileSystem.Exists(_cpuCfsQuaotaPeriodUs))
+        {
+            cpuUnits = 0;
+            return false;
+        }
+
+        using ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool);
+        fileSystem.ReadFirstLine(_cpuCfsQuaotaPeriodUs, bufferWriter.Buffer);
+
+        ReadOnlySpan<char> quotaBuffer = bufferWriter.Buffer.WrittenSpan;
+
+        if (quotaBuffer.IsEmpty || (quotaBuffer.Length == 2 && quotaBuffer[0] == '-' && quotaBuffer[1] == '1'))
+        {
+            cpuUnits = -1;
+            return false;
+        }
+
+        if (quotaBuffer.StartsWith("max", StringComparison.InvariantCulture))
+        {
+            cpuUnits = 0;
+            return false;
+        }
+
+        _ = GetNextNumber(quotaBuffer, out long quota);
+
+        if (quota == -1)
+        {
+            Throw.InvalidOperationException($"Could not parse '{_cpuCfsQuaotaPeriodUs}'. Expected an integer but got: '{new string(quotaBuffer)}'.");
+        }
+
+        string quotaString = quota.ToString(CultureInfo.CurrentCulture);
+        int index = quotaBuffer.IndexOf(quotaString.AsSpan());
+        ReadOnlySpan<char> cpuPeriodSlice = quotaBuffer.Slice(index + quotaString.Length, quotaBuffer.Length - index - quotaString.Length);
+        _ = GetNextNumber(cpuPeriodSlice, out long period);
+
+        if (period == -1)
+        {
+            Throw.InvalidOperationException($"Could not parse '{_cpuCfsQuaotaPeriodUs}'. Expected to get an integer but got: '{new string(cpuPeriodSlice)}'.");
+        }
+
+        cpuUnits = (float)quota / period;
+
+        return true;
+    }
+
+    /// <remarks>
+    /// If the file doesn't exist, we assume that the system is a Host and we read the CPU usage from /proc/stat.
+    /// </remarks>
+    private static bool TryGetCpuUnitsFromCgroupsWithoutHost(IFileSystem fileSystem, FileInfo cpuLimitsFile, out float cpuUnits)
     {
         if (!fileSystem.Exists(cpuLimitsFile))
         {
@@ -552,7 +686,54 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         return true;
     }
 
-    private static bool TryGetCgroupRequestCpu(IFileSystem fileSystem, FileInfo cpuRequestsFile, out float cpuUnits)
+    private static bool TryGetCgroupRequestCpu(IFileSystem fileSystem, out float cpuUnits)
+    {
+        const long CpuPodWeightPossibleMax = 10_000;
+        const long CpuPodWeightPossibleMin = 1;
+
+        if (!fileSystem.Exists(_cpuPodWeight))
+        {
+            cpuUnits = 0;
+            return false;
+        }
+
+        using ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool);
+        fileSystem.ReadFirstLine(_cpuPodWeight, bufferWriter.Buffer);
+        ReadOnlySpan<char> cpuPodWeightBuffer = bufferWriter.Buffer.WrittenSpan;
+
+        if (cpuPodWeightBuffer.IsEmpty || (cpuPodWeightBuffer.Length == 2 && cpuPodWeightBuffer[0] == '-' && cpuPodWeightBuffer[1] == '1'))
+        {
+            Throw.InvalidOperationException(
+                $"Could not parse '{_cpuPodWeight}' content. Expected to find CPU weight but got '{new string(cpuPodWeightBuffer)}' instead.");
+        }
+
+        _ = GetNextNumber(cpuPodWeightBuffer, out long cpuPodWeight);
+
+        if (cpuPodWeight == -1)
+        {
+            Throw.InvalidOperationException(
+                $"Could not parse '{_cpuPodWeight}' content. Expected to get an integer but got: '{cpuPodWeightBuffer}'.");
+        }
+
+        if (cpuPodWeight < CpuPodWeightPossibleMin || cpuPodWeight > CpuPodWeightPossibleMax)
+        {
+            Throw.ArgumentOutOfRangeException("CPU weight",
+                $"Expected to find CPU weight in range [{CpuPodWeightPossibleMin}-{CpuPodWeightPossibleMax}] in '{_cpuPodWeight}', but got '{cpuPodWeight}' instead.");
+        }
+
+        // The formula to calculate CPU pod weight (measured in millicores) from CPU share:
+        // y = (1 + ((x - 2) * 9999) / 262142),
+        // where y is the CPU pod weight (e.g. cpuPodWeight) and x is the CPU share of cgroup v1 (e.g. cpuUnits).
+        // https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2254-cgroup-v2#phase-1-convert-from-cgroups-v1-settings-to-v2
+        // We invert the formula to calculate CPU share from CPU pod weight:
+#pragma warning disable S109 // Magic numbers should not be used - using the formula, forgive.
+        cpuUnits = ((cpuPodWeight - 1) * 262142 / 9999) + 2;
+#pragma warning restore S109 // Magic numbers should not be used
+
+        return true;
+    }
+
+    private static bool TryGetCgroupRequestCpuWithoutHost(IFileSystem fileSystem, FileInfo cpuRequestsFile, out float cpuUnits)
     {
         const long CpuPodWeightPossibleMax = 10_000;
         const long CpuPodWeightPossibleMin = 1;

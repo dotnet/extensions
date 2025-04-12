@@ -77,6 +77,9 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         }
         else
         {
+            _previousCgroupCpuTime = _parser.GetCgroupCpuUsageInNanosecondsWithoutHost();
+            cpuLimit = _parser.GetCgroupLimitedCpusWithoutHost();
+            cpuRequest = _parser.GetCgroupRequestCpuWithoutHost();
             _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization, observeValue: () => CpuUtilizationWithoutHost() / cpuLimit, unit: "1");
             _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuRequestUtilization, observeValue: () => CpuUtilizationWithoutHost() / cpuRequest, unit: "1");
         }
@@ -106,7 +109,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
             }
         }
 
-        long cgroupCpuTime = _parser.GetCgroupCpuUsageInNanoseconds();
+        long cgroupCpuTime = _parser.GetCgroupCpuUsageInNanosecondsWithoutHost();
 
         lock (_cpuLocker)
         {
