@@ -522,7 +522,7 @@ using Microsoft.Extensions.AI;
 IEmbeddingGenerator<string, Embedding<float>> generator =
     new SampleEmbeddingGenerator(new Uri("http://coolsite.ai"), "my-custom-model");
 
-ReadOnlyMemory<float> vector = generator.GenerateEmbeddingVectorAsync("What is AI?");
+ReadOnlyMemory<float> vector = generator.GenerateVectorAsync("What is AI?");
 ```
 
 #### Pipelines of Functionality

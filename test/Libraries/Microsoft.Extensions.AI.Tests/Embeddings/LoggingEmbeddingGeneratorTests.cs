@@ -64,7 +64,7 @@ public class LoggingEmbeddingGeneratorTests
             .UseLogging()
             .Build(services);
 
-        await generator.GenerateEmbeddingAsync("Blue whale");
+        await generator.GenerateAsync("Blue whale");
 
         var logs = collector.GetSnapshot();
         if (level is LogLevel.Trace)
