@@ -119,7 +119,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
                 if (deltaCgroup > 0)
                 {
-                    double percentage = Math.Min(One, deltaCgroup / actualElapsed);
+                    double percentage = Math.Min(One, deltaCgroup / (actualElapsed * 1_000_000_000.0));
 
                     Log.CpuUsageData(_logger, cgroupCpuTime, 0, _previousCgroupCpuTime, 0, percentage);
 
