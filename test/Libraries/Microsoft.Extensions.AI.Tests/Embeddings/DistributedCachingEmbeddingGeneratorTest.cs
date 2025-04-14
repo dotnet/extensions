@@ -43,12 +43,12 @@ public class DistributedCachingEmbeddingGeneratorTest
         };
 
         // Make the initial request and do a quick sanity check
-        var result1 = await outer.GenerateEmbeddingAsync("abc");
+        var result1 = await outer.GenerateAsync("abc");
         AssertEmbeddingsEqual(_expectedEmbedding, result1);
         Assert.Equal(1, innerCallCount);
 
         // Act
-        var result2 = await outer.GenerateEmbeddingAsync("abc");
+        var result2 = await outer.GenerateAsync("abc");
 
         // Assert
         Assert.Equal(1, innerCallCount);
@@ -134,8 +134,8 @@ public class DistributedCachingEmbeddingGeneratorTest
         };
 
         // Act 1: Concurrent calls before resolution are passed into the inner client
-        var result1 = outer.GenerateEmbeddingAsync("abc");
-        var result2 = outer.GenerateEmbeddingAsync("abc");
+        var result1 = outer.GenerateAsync("abc");
+        var result2 = outer.GenerateAsync("abc");
 
         // Assert 1
         Assert.Equal(2, innerCallCount);
@@ -146,7 +146,7 @@ public class DistributedCachingEmbeddingGeneratorTest
         AssertEmbeddingsEqual(_expectedEmbedding, await result2);
 
         // Act 2: Subsequent calls after completion are resolved from the cache
-        var result3 = await outer.GenerateEmbeddingAsync("abc");
+        var result3 = await outer.GenerateAsync("abc");
         Assert.Equal(2, innerCallCount);
         AssertEmbeddingsEqual(_expectedEmbedding, await result1);
     }
@@ -169,12 +169,12 @@ public class DistributedCachingEmbeddingGeneratorTest
             JsonSerializerOptions = TestJsonSerializerContext.Default.Options,
         };
 
-        var ex1 = await Assert.ThrowsAsync<InvalidTimeZoneException>(() => outer.GenerateEmbeddingAsync("abc"));
+        var ex1 = await Assert.ThrowsAsync<InvalidTimeZoneException>(() => outer.GenerateAsync("abc"));
         Assert.Equal("some failure", ex1.Message);
         Assert.Equal(1, innerCallCount);
 
         // Act
-        var ex2 = await Assert.ThrowsAsync<InvalidTimeZoneException>(() => outer.GenerateEmbeddingAsync("abc"));
+        var ex2 = await Assert.ThrowsAsync<InvalidTimeZoneException>(() => outer.GenerateAsync("abc"));
 
         // Assert
         Assert.NotSame(ex1, ex2);
@@ -207,7 +207,7 @@ public class DistributedCachingEmbeddingGeneratorTest
         };
 
         // First call gets cancelled
-        var result1 = outer.GenerateEmbeddingAsync("abc");
+        var result1 = outer.GenerateAsync("abc");
         Assert.False(result1.IsCompleted);
         Assert.Equal(1, innerCallCount);
         resolutionTcs.SetCanceled();
@@ -215,7 +215,7 @@ public class DistributedCachingEmbeddingGeneratorTest
         Assert.True(result1.IsCanceled);
 
         // Act/Assert: Second call can succeed
-        var result2 = await outer.GenerateEmbeddingAsync("abc");
+        var result2 = await outer.GenerateAsync("abc");
         Assert.Equal(2, innerCallCount);
         AssertEmbeddingsEqual(_expectedEmbedding, result2);
     }
@@ -241,11 +241,11 @@ public class DistributedCachingEmbeddingGeneratorTest
         };
 
         // Act: Call with two different EmbeddingGenerationOptions that have the same values
-        var result1 = await outer.GenerateEmbeddingAsync("abc", new EmbeddingGenerationOptions
+        var result1 = await outer.GenerateAsync("abc", new EmbeddingGenerationOptions
         {
             AdditionalProperties = new() { ["someKey"] = "value 1" }
         });
-        var result2 = await outer.GenerateEmbeddingAsync("abc", new EmbeddingGenerationOptions
+        var result2 = await outer.GenerateAsync("abc", new EmbeddingGenerationOptions
         {
             AdditionalProperties = new() { ["someKey"] = "value 1" }
         });
@@ -256,11 +256,11 @@ public class DistributedCachingEmbeddingGeneratorTest
         AssertEmbeddingsEqual(new("value 1".Select(c => (float)c).ToArray()), result2);
 
         // Act: Call with two different EmbeddingGenerationOptions that have different values
-        var result3 = await outer.GenerateEmbeddingAsync("abc", new EmbeddingGenerationOptions
+        var result3 = await outer.GenerateAsync("abc", new EmbeddingGenerationOptions
         {
             AdditionalProperties = new() { ["someKey"] = "value 1" }
         });
-        var result4 = await outer.GenerateEmbeddingAsync("abc", new EmbeddingGenerationOptions
+        var result4 = await outer.GenerateAsync("abc", new EmbeddingGenerationOptions
         {
             AdditionalProperties = new() { ["someKey"] = "value 2" }
         });
@@ -292,11 +292,11 @@ public class DistributedCachingEmbeddingGeneratorTest
         };
 
         // Act: Call with two different options
-        var result1 = await outer.GenerateEmbeddingAsync("abc", new EmbeddingGenerationOptions
+        var result1 = await outer.GenerateAsync("abc", new EmbeddingGenerationOptions
         {
             AdditionalProperties = new() { ["someKey"] = "value 1" }
         });
-        var result2 = await outer.GenerateEmbeddingAsync("abc", new EmbeddingGenerationOptions
+        var result2 = await outer.GenerateAsync("abc", new EmbeddingGenerationOptions
         {
             AdditionalProperties = new() { ["someKey"] = "value 2" }
         });
@@ -331,7 +331,7 @@ public class DistributedCachingEmbeddingGeneratorTest
 
         // Act: Make a request that should populate the cache
         Assert.Empty(_storage.Keys);
-        var result = await outer.GenerateEmbeddingAsync("abc");
+        var result = await outer.GenerateAsync("abc");
 
         // Assert
         Assert.NotNull(result);
