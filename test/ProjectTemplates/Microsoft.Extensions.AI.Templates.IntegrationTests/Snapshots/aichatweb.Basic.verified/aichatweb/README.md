@@ -16,3 +16,4 @@ dotnet user-secrets set GitHubModels:Token YOUR-TOKEN
 ```
 
 Learn more about [prototyping with AI models using GitHub Models](https://docs.github.com/github-models/prototyping-with-ai-models).
+
