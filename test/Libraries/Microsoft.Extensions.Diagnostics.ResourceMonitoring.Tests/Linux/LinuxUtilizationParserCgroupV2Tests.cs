@@ -412,9 +412,9 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
     }
 
     [ConditionalTheory]
-    [InlineData("0::/", "usage_usec 222222")]
-    [InlineData("0::/fakeslice", "usage_usec 222222")]
-    public void Reads_CpuUsageFromSlices_When_Valid_Input(string slicepath, string content)
+    [InlineData("0::/", "usage_usec 222222", "222222000")]
+    [InlineData("0::/fakeslice", "usage_usec 222222", "222222000")]
+    public void Reads_CpuUsageFromSlices_When_Valid_Input(string slicepath, string content, string result)
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
@@ -426,7 +426,8 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = p.GetCgroupCpuUsageInNanosecondsV2();
 
-        Assert.Equal(222222000, r);
+        Assert.IsType<long>(r);
+        Assert.Equal(result, r.ToString());
     }
 
     [ConditionalFact]
