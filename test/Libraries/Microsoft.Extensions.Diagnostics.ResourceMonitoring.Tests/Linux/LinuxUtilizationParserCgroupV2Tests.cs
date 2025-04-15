@@ -281,6 +281,42 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         Assert.Equal(result, cpus);
     }
 
+    [ConditionalTheory]
+    [InlineData("0::/")]
+    [InlineData("0::/fakeslice")]
+    public void Gets_Available_Cpus_From_CpuSetCpusFromSlices_When_Cpu_Limits_Not_Set(string slicepath)
+    {
+        var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        {
+            { new FileInfo("/sys/fs/cgroup/cpu.max"), "200000 100000" },
+            { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.max"), "200000 100000" },
+            { new FileInfo("/proc/self/cgroup"), slicepath }
+        });
+
+        var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
+        var cpus = p.GetCgroupLimitedCpusWithoutHost();
+
+        Assert.Equal(2, cpus);
+    }
+
+    [ConditionalTheory]
+    [InlineData("2500", 64.0)]
+    [InlineData("10000", 256.0)]
+    public void Calculates_Cpu_Request_From_Cpu_WeightInSlices(string content, float result)
+    {
+        var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        {
+            { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.weight"), content },
+            { new FileInfo("/proc/self/cgroup"), "0::/fakeslice" }
+        });
+
+        var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
+        var r = Math.Round(p.GetCgroupRequestCpuWithoutHost());
+
+        Assert.Equal(result, r);
+    }
+
+
     [ConditionalFact]
     public void Gets_Available_Cpus_From_CpuSetCpus_When_Cpu_Max_Set_To_Max_()
     {
@@ -374,6 +410,24 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var r = p.GetHostCpuUsageInNanoseconds();
 
         Assert.Equal(77_994_900_000_000, r);
+    }
+
+    [ConditionalTheory]
+    [InlineData("0::/", "usage_usec 222222")]
+    [InlineData("0::/fakeslice", "usage_usec 222222")]
+    public void Reads_CpuUsageFromSlices_When_Valid_Input(string slicepath, string content)
+    {
+        var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        {
+            { new FileInfo("/sys/fs/cgroup/cpu.stat"), content },
+            { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat"), content },
+            { new FileInfo("/proc/self/cgroup"), slicepath }
+        });
+
+        var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
+        var r = p.GetCgroupCpuUsageInNanosecondsWithoutHost();
+
+        Assert.Equal(222222000, r);
     }
 
     [ConditionalFact]
