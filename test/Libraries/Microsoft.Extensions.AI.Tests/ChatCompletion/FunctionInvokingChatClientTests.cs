@@ -799,7 +799,7 @@ public class FunctionInvokingChatClientTests
     }
 
     [Fact]
-    public async Task PropagatesResponseChatThreadIdToOptions()
+    public async Task PropagatesResponseConversationIdToOptions()
     {
         var options = new ChatOptions
         {
@@ -815,15 +815,15 @@ public class FunctionInvokingChatClientTests
 
                 if (iteration == 1)
                 {
-                    Assert.Null(chatOptions?.ChatThreadId);
+                    Assert.Null(chatOptions?.ConversationId);
                     return new ChatResponse(new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId-abc", "Func1")]))
                     {
-                        ChatThreadId = "12345",
+                        ConversationId = "12345",
                     };
                 }
                 else if (iteration == 2)
                 {
-                    Assert.Equal("12345", chatOptions?.ChatThreadId);
+                    Assert.Equal("12345", chatOptions?.ConversationId);
                     return new ChatResponse(new ChatMessage(ChatRole.Assistant, "done!"));
                 }
                 else
