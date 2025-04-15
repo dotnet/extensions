@@ -87,6 +87,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
         ChatResponse response = new()
         {
             ResponseId = openAIResponse.Id,
+            ConversationId = openAIResponse.Id,
             CreatedAt = openAIResponse.CreatedAt,
             FinishReason = ToFinishReason(openAIResponse.IncompleteStatusDetails?.Reason),
             Messages = [new(ChatRole.Assistant, [])],
@@ -176,6 +177,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                         Contents = ToUsageDetails(completedUpdate.Response) is { } usage ? [new UsageContent(usage)] : [],
                         CreatedAt = createdAt,
                         ResponseId = responseId,
+                        ConversationId = responseId,
                         FinishReason =
                             ToFinishReason(completedUpdate.Response?.IncompleteStatusDetails?.Reason) ??
                             (functionCallInfos is not null ? ChatFinishReason.ToolCalls : ChatFinishReason.Stop),
@@ -213,6 +215,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                         MessageId = lastMessageId,
                         ModelId = modelId,
                         ResponseId = responseId,
+                        ConversationId = responseId,
                     };
                     break;
 
@@ -246,6 +249,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                             MessageId = lastMessageId,
                             ModelId = modelId,
                             ResponseId = responseId,
+                            ConversationId = responseId,
                         };
                     }
 
@@ -259,6 +263,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                         MessageId = lastMessageId,
                         ModelId = modelId,
                         ResponseId = responseId,
+                        ConversationId = responseId,
                         Contents =
                         [
                             new ErrorContent(errorUpdate.Message)
@@ -304,7 +309,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
         {
             // Handle strongly-typed properties.
             result.MaxOutputTokenCount = options.MaxOutputTokens;
-            result.PreviousResponseId = options.ChatThreadId;
+            result.PreviousResponseId = options.ConversationId;
             result.TopP = options.TopP;
             result.Temperature = options.Temperature;
 

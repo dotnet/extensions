@@ -13,7 +13,7 @@ public class ChatOptionsTests
     public void Constructor_Parameterless_PropsDefaulted()
     {
         ChatOptions options = new();
-        Assert.Null(options.ChatThreadId);
+        Assert.Null(options.ConversationId);
         Assert.Null(options.Temperature);
         Assert.Null(options.MaxOutputTokens);
         Assert.Null(options.TopP);
@@ -29,7 +29,7 @@ public class ChatOptionsTests
         Assert.Null(options.AdditionalProperties);
 
         ChatOptions clone = options.Clone();
-        Assert.Null(options.ChatThreadId);
+        Assert.Null(options.ConversationId);
         Assert.Null(clone.Temperature);
         Assert.Null(clone.MaxOutputTokens);
         Assert.Null(clone.TopP);
@@ -67,7 +67,7 @@ public class ChatOptionsTests
             ["key"] = "value",
         };
 
-        options.ChatThreadId = "12345";
+        options.ConversationId = "12345";
         options.Temperature = 0.1f;
         options.MaxOutputTokens = 2;
         options.TopP = 0.3f;
@@ -82,7 +82,7 @@ public class ChatOptionsTests
         options.Tools = tools;
         options.AdditionalProperties = additionalProps;
 
-        Assert.Equal("12345", options.ChatThreadId);
+        Assert.Equal("12345", options.ConversationId);
         Assert.Equal(0.1f, options.Temperature);
         Assert.Equal(2, options.MaxOutputTokens);
         Assert.Equal(0.3f, options.TopP);
@@ -98,7 +98,7 @@ public class ChatOptionsTests
         Assert.Same(additionalProps, options.AdditionalProperties);
 
         ChatOptions clone = options.Clone();
-        Assert.Equal("12345", options.ChatThreadId);
+        Assert.Equal("12345", options.ConversationId);
         Assert.Equal(0.1f, clone.Temperature);
         Assert.Equal(2, clone.MaxOutputTokens);
         Assert.Equal(0.3f, clone.TopP);
@@ -130,7 +130,7 @@ public class ChatOptionsTests
             ["key"] = "value",
         };
 
-        options.ChatThreadId = "12345";
+        options.ConversationId = "12345";
         options.Temperature = 0.1f;
         options.MaxOutputTokens = 2;
         options.TopP = 0.3f;
@@ -154,7 +154,7 @@ public class ChatOptionsTests
         ChatOptions? deserialized = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.ChatOptions);
         Assert.NotNull(deserialized);
 
-        Assert.Equal("12345", deserialized.ChatThreadId);
+        Assert.Equal("12345", deserialized.ConversationId);
         Assert.Equal(0.1f, deserialized.Temperature);
         Assert.Equal(2, deserialized.MaxOutputTokens);
         Assert.Equal(0.3f, deserialized.TopP);
