@@ -15,8 +15,8 @@
   <Target Name="ComputeGeneratedContentProperties">
     <PropertyGroup>
       <!-- Define optional pinned versions of certain dependencies. -->
-      <TemplatePinnedRepoPackagesVersion>9.3.0-preview.1.25161.3</TemplatePinnedRepoPackagesVersion>
-      <TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion>9.0.3</TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion>
+      <TemplatePinnedRepoPackagesVersion>9.4.0-preview.1.25207.5</TemplatePinnedRepoPackagesVersion>
+      <TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion>9.0.4</TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion>
 
       <!-- By default, don't use pinned dependency versions. -->
       <TemplateUsePinnedRepoPackagesVersion Condition="'$(TemplateUsePinnedRepoPackagesVersion)' == ''">false</TemplateUsePinnedRepoPackagesVersion>
