@@ -426,7 +426,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = p.GetCgroupCpuUsageInNanosecondsV2();
 
-        Assert.Equal(22_222_2000, r);
+        Assert.Equal(222222000, r);
     }
 
     [ConditionalFact]
