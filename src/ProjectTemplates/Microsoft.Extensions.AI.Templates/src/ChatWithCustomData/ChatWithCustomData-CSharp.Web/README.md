@@ -158,7 +158,7 @@ To use Azure AI Search, you will need an Azure account and an Azure AI Search re
 ### 1. Create an Azure AI Search Resource
 Follow the instructions in the [Azure portal](https://portal.azure.com/) to create an Azure AI Search resource. Note that there is a free tier for the service but it is not currently the default setting on the portal.
 
-Note that if you previously used the same Azure AI Search resource with different model using this project name, you may need to delete your `$$VectorStoreIndexName$$` index using the [Azure portal](https://portal.azure.com/) first before continuing; otherwise, data ingestion may fail due to a vector dimension mismatch.
+Note that if you previously used the same Azure AI Search resource with different model using this project name, you may need to delete your `data-ChatWithCustomData-CSharp.Web-ingestion` index using the [Azure portal](https://portal.azure.com/) first before continuing; otherwise, data ingestion may fail due to a vector dimension mismatch.
 
 #### ---#if (UseManagedIdentity)
 ### 2. Configure Azure AI Search for Keyless Authentication
