@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --config html-report/vite.config.ts",
-    "build": "tsc -b && vite build --config html-report/vite.config.ts",
+    "build": "tsc -b --verbose && vite build --config html-report/vite.config.ts",
     "buildtask": "pushd azure-devops-report\\tasks\\PublishAIEvaluationReport && npm install && npm build && popd"
   },
   "dependencies": {
