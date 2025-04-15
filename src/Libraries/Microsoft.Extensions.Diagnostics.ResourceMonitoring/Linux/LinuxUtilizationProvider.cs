@@ -30,14 +30,14 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     private DateTimeOffset _refreshAfterCpu;
     private DateTimeOffset _refreshAfterMemory;
 
-    private double _cpuPercentage = double.NaN;
-    private double _memoryPercentage;
-    private long _previousCgroupCpuTime;
-    private long _previousHostCpuTime;
-
     // Track the actual timestamp when we read CPU values
     private DateTimeOffset _lastCpuMeasurementTime;
 
+    private double _cpuPercentage = double.NaN;
+    private double _lastCpuCoresUsed = double.NaN;
+    private double _memoryPercentage;
+    private long _previousCgroupCpuTime;
+    private long _previousHostCpuTime;
     public SystemResources Resources { get; }
 
     public LinuxUtilizationProvider(IOptions<ResourceMonitoringOptions> options, ILinuxUtilizationParser parser,
@@ -70,18 +70,20 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         var meter = meterFactory.Create(ResourceUtilizationInstruments.MeterName);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-        if (!options.Value.CalculateCpuUsageWithoutHost)
+        if (options.Value.CalculateCpuUsageWithoutHostDelta)
         {
-            _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization, observeValue: () => CpuUtilization() * _scaleRelativeToCpuLimit, unit: "1");
-            _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuRequestUtilization, observeValue: () => CpuUtilization() * _scaleRelativeToCpuRequest, unit: "1");
+            _previousCgroupCpuTime = _parser.GetCgroupCpuUsageInNanosecondsV2();
+            cpuLimit = _parser.GetCgroupLimitV2();
+
+            // Try to get the CPU request from cgroup
+            cpuRequest = _parser.GetCgroupRequestCpuV2();
+            _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization, observeValue: () => CpuUtilizationWithoutHostDelta() / cpuLimit, unit: "1");
+            _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuRequestUtilization, observeValue: () => CpuUtilizationWithoutHostDelta() / cpuRequest, unit: "1");
         }
         else
         {
-            _previousCgroupCpuTime = _parser.GetCgroupCpuUsageInNanosecondsWithoutHost();
-            cpuLimit = _parser.GetCgroupLimitedCpusWithoutHost();
-            cpuRequest = _parser.GetCgroupRequestCpuWithoutHost();
-            _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization, observeValue: () => CpuUtilizationWithoutHost() / cpuLimit, unit: "1");
-            _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuRequestUtilization, observeValue: () => CpuUtilizationWithoutHost() / cpuRequest, unit: "1");
+            _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization, observeValue: () => CpuUtilization() * _scaleRelativeToCpuLimit, unit: "1");
+            _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuRequestUtilization, observeValue: () => CpuUtilization() * _scaleRelativeToCpuRequest, unit: "1");
         }
 
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization, observeValue: MemoryUtilization, unit: "1");
@@ -96,20 +98,20 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         Log.SystemResourcesInfo(_logger, cpuLimit, cpuRequest, _memoryLimit, _memoryLimit);
     }
 
-    public double CpuUtilizationWithoutHost()
+    public double CpuUtilizationWithoutHostDelta()
     {
         DateTimeOffset now = _timeProvider.GetUtcNow();
-        double actualElapsed = (now - _lastCpuMeasurementTime).TotalSeconds;
+        double actualElapsedNanoseconds = (now - _lastCpuMeasurementTime).TotalSeconds * 1_000_000_000.0;
 
         lock (_cpuLocker)
         {
             if (now < _refreshAfterCpu)
             {
-                return _cpuPercentage;
+                return _lastCpuCoresUsed;
             }
         }
 
-        long cgroupCpuTime = _parser.GetCgroupCpuUsageInNanosecondsWithoutHost();
+        long cgroupCpuTime = _parser.GetCgroupCpuUsageInNanosecondsV2();
 
         lock (_cpuLocker)
         {
@@ -119,11 +121,11 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
                 if (deltaCgroup > 0)
                 {
-                    double coresUsed = deltaCgroup / (actualElapsed * 1_000_000_000.0);
+                    double coresUsed = deltaCgroup / actualElapsedNanoseconds;
 
                     Log.CpuUsageData(_logger, cgroupCpuTime, 0, _previousCgroupCpuTime, 0, coresUsed);
 
-                    _cpuPercentage = coresUsed;
+                    _lastCpuCoresUsed = coresUsed;
                     _refreshAfterCpu = now.Add(_cpuRefreshInterval);
                     _previousCgroupCpuTime = cgroupCpuTime;
 
@@ -133,7 +135,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
             }
         }
 
-        return _cpuPercentage;
+        return _lastCpuCoresUsed;
     }
 
     public double CpuUtilization()

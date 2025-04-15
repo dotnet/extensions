@@ -19,17 +19,17 @@ public sealed class ResourceMonitoringOptionsTests
         };
 
         Assert.NotNull(options);
-        Assert.False(options.CalculateCpuUsageWithoutHost);
+        Assert.False(options.CalculateCpuUsageWithoutHostDelta);
     }
 
     [Fact]
-    public void CalculateCpuUsageWithoutHost_WhenSet_ReturnsExpectedValue()
+    public void CalculateCpuUsageWithoutHostDelta_WhenSet_ReturnsExpectedValue()
     {
         var options = new ResourceMonitoringOptions
         {
-            CalculateCpuUsageWithoutHost = true
+            CalculateCpuUsageWithoutHostDelta = true
         };
 
-        Assert.True(options.CalculateCpuUsageWithoutHost);
+        Assert.True(options.CalculateCpuUsageWithoutHostDelta);
     }
 }
