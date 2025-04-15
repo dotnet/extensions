@@ -30,7 +30,7 @@ public class ChatResponseUpdateExtensionsTests
         [
             new(ChatRole.Assistant, "Hello") { ResponseId = "someResponse", MessageId = "12345", CreatedAt = new DateTimeOffset(1, 2, 3, 4, 5, 6, TimeSpan.Zero), ModelId = "model123" },
             new(new("human"), ", ") { AuthorName = "Someone", AdditionalProperties = new() { ["a"] = "b" } },
-            new(null, "world!") { CreatedAt = new DateTimeOffset(2, 2, 3, 4, 5, 6, TimeSpan.Zero), ChatThreadId = "123", AdditionalProperties = new() { ["c"] = "d" } },
+            new(null, "world!") { CreatedAt = new DateTimeOffset(2, 2, 3, 4, 5, 6, TimeSpan.Zero), ConversationId = "123", AdditionalProperties = new() { ["c"] = "d" } },
 
             new() { Contents = [new UsageContent(new() { InputTokenCount = 1, OutputTokenCount = 2 })] },
             new() { Contents = [new UsageContent(new() { InputTokenCount = 4, OutputTokenCount = 5 })] },
@@ -49,7 +49,7 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal(new DateTimeOffset(2, 2, 3, 4, 5, 6, TimeSpan.Zero), response.CreatedAt);
         Assert.Equal("model123", response.ModelId);
 
-        Assert.Equal("123", response.ChatThreadId);
+        Assert.Equal("123", response.ConversationId);
 
         ChatMessage message = response.Messages.Single();
         Assert.Equal("12345", message.MessageId);
