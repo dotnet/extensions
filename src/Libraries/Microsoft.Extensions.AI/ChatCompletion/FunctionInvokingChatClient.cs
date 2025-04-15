@@ -294,6 +294,8 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         response.Messages = responseMessages!;
         response.Usage = totalUsage;
 
+        AddUsageTags(activity, totalUsage);
+
         return response;
     }
 
@@ -306,6 +308,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         // A single request into this GetStreamingResponseAsync may result in multiple requests to the inner client.
         // Create an activity to group them together for better observability.
         using Activity? activity = _activitySource?.StartActivity(nameof(FunctionInvokingChatClient));
+        UsageDetails? totalUsage = activity is { IsAllDataRequested: true } ? new() : null; // tracked usage across all turns, to be used for activity purposes
 
         // Copy the original messages in order to avoid enumerating the original messages multiple times.
         // The IEnumerable can represent an arbitrary amount of work.
@@ -334,6 +337,19 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 updates.Add(update);
 
                 _ = CopyFunctionCalls(update.Contents, ref functionCallContents);
+
+                if (totalUsage is not null)
+                {
+                    IList<AIContent> contents = update.Contents;
+                    int contentsCount = contents.Count;
+                    for (int i = 0; i < contentsCount; i++)
+                    {
+                        if (contents[i] is UsageContent uc)
+                        {
+                            totalUsage.Add(uc.Details);
+                        }
+                    }
+                }
 
                 yield return update;
                 Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
@@ -389,10 +405,29 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
             if (modeAndMessages.ShouldTerminate)
             {
-                yield break;
+                break;
             }
 
             UpdateOptionsForNextIteration(ref options, response.ChatThreadId);
+        }
+
+        AddUsageTags(activity, totalUsage);
+    }
+
+    /// <summary>Adds tags to <paramref name="activity"/> for usage details in <paramref name="usage"/>.</summary>
+    private static void AddUsageTags(Activity? activity, UsageDetails? usage)
+    {
+        if (usage is not null && activity is { IsAllDataRequested: true })
+        {
+            if (usage.InputTokenCount is long inputTokens)
+            {
+                _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.InputTokens, (int)inputTokens);
+            }
+
+            if (usage.OutputTokenCount is long outputTokens)
+            {
+                _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.OutputTokens, (int)outputTokens);
+            }
         }
     }
 
