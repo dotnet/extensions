@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/*
- * ---------------------------------------------------------
- * Copyright(C) Microsoft Corporation. All rights reserved.
- * ---------------------------------------------------------
- */
+
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 // Fetch polyfill for IE11
 // import "whatwg-fetch";

@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { getAccessToken, getService } from "azure-devops-extension-sdk";
 import { IVssRestClientOptions } from "./Context";
 import { CommonServiceIds, ILocationService } from "./CommonServices";

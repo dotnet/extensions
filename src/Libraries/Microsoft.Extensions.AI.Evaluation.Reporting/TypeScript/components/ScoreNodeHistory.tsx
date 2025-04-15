@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { Table, TableHeader, TableRow, TableHeaderCell, TableBody, TableCell, TableCellLayout, Button, mergeClasses } from "@fluentui/react-components";
 import { useReportContext } from "./ReportContext";
 import { useStyles } from "./Styles";

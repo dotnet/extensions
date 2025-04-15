@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { DismissCircle16Regular, Warning16Regular, Info16Regular, Copy16Regular } from "@fluentui/react-icons";
 import { Table, TableHeader, TableRow, TableHeaderCell, TableBody, TableCell } from "@fluentui/react-components";
 import { useStyles } from "./Styles";

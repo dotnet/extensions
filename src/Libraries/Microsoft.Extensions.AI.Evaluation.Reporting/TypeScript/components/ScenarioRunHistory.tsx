@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { mergeClasses, Table, TableHeader, TableRow, TableHeaderCell, TableBody, TableCell, TableCellLayout } from "@fluentui/react-components";
 import { ChevronDown12Regular, ChevronRight12Regular } from "@fluentui/react-icons";
 import { useState } from "react";
