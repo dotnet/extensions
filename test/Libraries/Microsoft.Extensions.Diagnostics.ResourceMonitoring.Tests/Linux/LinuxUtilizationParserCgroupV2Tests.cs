@@ -33,13 +33,13 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         Assert.Throws<InvalidOperationException>(() => parser.GetAvailableMemoryInBytes());
         Assert.Throws<InvalidOperationException>(() => parser.GetMemoryUsageInBytes());
         Assert.Throws<InvalidOperationException>(() => parser.GetCgroupLimitedCpus());
-        Assert.Throws<InvalidOperationException>(() => parser.GetCgroupLimitedCpusWithoutHost());
+        Assert.Throws<InvalidOperationException>(() => parser.GetCgroupLimitV2());
         Assert.Throws<InvalidOperationException>(() => parser.GetHostCpuUsageInNanoseconds());
         Assert.Throws<InvalidOperationException>(() => parser.GetHostCpuCount());
         Assert.Throws<InvalidOperationException>(() => parser.GetCgroupCpuUsageInNanoseconds());
-        Assert.Throws<InvalidOperationException>(() => parser.GetCgroupCpuUsageInNanosecondsWithoutHost());
+        Assert.Throws<InvalidOperationException>(() => parser.GetCgroupCpuUsageInNanosecondsV2());
         Assert.Throws<InvalidOperationException>(() => parser.GetCgroupRequestCpu());
-        Assert.Throws<InvalidOperationException>(() => parser.GetCgroupRequestCpuWithoutHost());
+        Assert.Throws<InvalidOperationException>(() => parser.GetCgroupRequestCpuV2());
     }
 
     [ConditionalFact]
@@ -294,7 +294,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         });
 
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
-        var cpus = p.GetCgroupLimitedCpusWithoutHost();
+        var cpus = p.GetCgroupLimitV2();
 
         Assert.Equal(2, cpus);
     }
@@ -311,11 +311,10 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         });
 
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
-        var r = Math.Round(p.GetCgroupRequestCpuWithoutHost());
+        var r = Math.Round(p.GetCgroupRequestCpuV2());
 
         Assert.Equal(result, r);
     }
-
 
     [ConditionalFact]
     public void Gets_Available_Cpus_From_CpuSetCpus_When_Cpu_Max_Set_To_Max_()
@@ -425,9 +424,9 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         });
 
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
-        var r = p.GetCgroupCpuUsageInNanosecondsWithoutHost();
+        var r = p.GetCgroupCpuUsageInNanosecondsV2();
 
-        Assert.Equal(222222000, r);
+        Assert.Equal(22_222_2000, r);
     }
 
     [ConditionalFact]
@@ -545,7 +544,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         });
 
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
-        var r = p.GetCgroupActualSlicePath(filename);
+        var r = p.GetCgroupPath(filename);
 
         Assert.Equal(result, r);
     }
