@@ -87,6 +87,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
         ChatResponse response = new()
         {
             ResponseId = openAIResponse.Id,
+            ChatThreadId = openAIResponse.Id,
             CreatedAt = openAIResponse.CreatedAt,
             FinishReason = ToFinishReason(openAIResponse.IncompleteStatusDetails?.Reason),
             Messages = [new(ChatRole.Assistant, [])],
@@ -176,6 +177,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                         Contents = ToUsageDetails(completedUpdate.Response) is { } usage ? [new UsageContent(usage)] : [],
                         CreatedAt = createdAt,
                         ResponseId = responseId,
+                        ChatThreadId = responseId,
                         FinishReason =
                             ToFinishReason(completedUpdate.Response?.IncompleteStatusDetails?.Reason) ??
                             (functionCallInfos is not null ? ChatFinishReason.ToolCalls : ChatFinishReason.Stop),
@@ -213,6 +215,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                         MessageId = lastMessageId,
                         ModelId = modelId,
                         ResponseId = responseId,
+                        ChatThreadId = responseId,
                     };
                     break;
 
@@ -246,6 +249,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                             MessageId = lastMessageId,
                             ModelId = modelId,
                             ResponseId = responseId,
+                            ChatThreadId = responseId,
                         };
                     }
 
@@ -259,6 +263,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                         MessageId = lastMessageId,
                         ModelId = modelId,
                         ResponseId = responseId,
+                        ChatThreadId = responseId,
                         Contents =
                         [
                             new ErrorContent(errorUpdate.Message)
