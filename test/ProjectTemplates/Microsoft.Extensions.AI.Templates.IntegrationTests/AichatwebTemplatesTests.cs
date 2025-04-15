@@ -74,6 +74,7 @@ public class AichatwebTemplatesTests : TestBase
             SnapshotsDirectory = "Snapshots",
             OutputDirectory = workingDir,
             DoNotPrependCallerMethodNameToScenarioName = true,
+            DoNotAppendTemplateArgsToScenarioName = true,
             ScenarioName = scenarioName,
             VerificationExcludePatterns = verificationExcludePatterns,
         }
