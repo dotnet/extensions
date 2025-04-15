@@ -287,7 +287,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 break;
             }
 
-            UpdateOptionsForNextIteration(ref options!, response.ChatThreadId);
+            UpdateOptionsForNextIteration(ref options!, response.ConversationId);
         }
 
         Debug.Assert(responseMessages is not null, "Expected to only be here if we have response messages.");
@@ -390,7 +390,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 {
                     AdditionalProperties = message.AdditionalProperties,
                     AuthorName = message.AuthorName,
-                    ChatThreadId = response.ChatThreadId,
+                    ConversationId = response.ConversationId,
                     CreatedAt = DateTimeOffset.UtcNow,
                     Contents = message.Contents,
                     RawRepresentation = message.RawRepresentation,
@@ -408,7 +408,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 break;
             }
 
-            UpdateOptionsForNextIteration(ref options, response.ChatThreadId);
+            UpdateOptionsForNextIteration(ref options, response.ConversationId);
         }
 
         AddUsageTags(activity, totalUsage);
@@ -448,7 +448,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     {
         // We're now going to need to augment the history with function result contents.
         // That means we need a separate list to store the augmented history.
-        if (response.ChatThreadId is not null)
+        if (response.ConversationId is not null)
         {
             // The response indicates the inner client is tracking the history, so we don't want to send
             // anything we've already sent or received.
@@ -533,14 +533,14 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             // as otherwise we'll be in an infinite loop.
             options = options.Clone();
             options.ToolMode = null;
-            options.ChatThreadId = chatThreadId;
+            options.ConversationId = chatThreadId;
         }
-        else if (options.ChatThreadId != chatThreadId)
+        else if (options.ConversationId != chatThreadId)
         {
             // As with the other modes, ensure we've propagated the chat thread ID to the options.
             // We only need to clone the options if we're actually mutating it.
             options = options.Clone();
-            options.ChatThreadId = chatThreadId;
+            options.ConversationId = chatThreadId;
         }
     }
 

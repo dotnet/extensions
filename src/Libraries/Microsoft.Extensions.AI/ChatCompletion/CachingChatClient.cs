@@ -108,7 +108,7 @@ public abstract class CachingChatClient : DelegatingChatClient
                 string? chatThreadId = null;
                 foreach (var chunk in existingChunks)
                 {
-                    chatThreadId ??= chunk.ChatThreadId;
+                    chatThreadId ??= chunk.ConversationId;
                     yield return chunk;
                 }
             }

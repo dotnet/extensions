@@ -39,7 +39,7 @@ public class ChatResponse<T> : ChatResponse
     {
         _serializerOptions = Throw.IfNull(serializerOptions);
         AdditionalProperties = response.AdditionalProperties;
-        ChatThreadId = response.ChatThreadId;
+        ConversationId = response.ConversationId;
         CreatedAt = response.CreatedAt;
         FinishReason = response.FinishReason;
         ModelId = response.ModelId;
