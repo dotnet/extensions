@@ -94,6 +94,8 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
 
     private readonly IFileSystem _fileSystem;
     private readonly long _userHz;
+    // Cache for the trimmed path string to avoid repeated file reads and processing
+    private string _cachedCgroupPath;
 
     public LinuxUtilizationParserCgroupV2(IFileSystem fileSystem, IUserHz userHz)
     {
@@ -103,6 +105,12 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
 
     public string GetCgroupActualSlicePath(string filename)
     {
+        // If we've already parsed the path, use the cached value
+        if (_cachedCgroupPath != null)
+        {
+            return $"{PathPrefix}{_cachedCgroupPath}{filename}";
+        }
+
         using ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool);
 
         // Read the content of the file
@@ -112,28 +120,21 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         // Ensure the file content is not empty
         if (fileContent.IsEmpty)
         {
-            throw new InvalidOperationException($"The file '{_cpuActualSelfSliceProcFile}' is empty or could not be read.");
+            Throw.InvalidOperationException($"The file '{_cpuActualSelfSliceProcFile}' is empty or could not be read.");
         }
 
         // Find the index of the first colon (:)
         int colonIndex = fileContent.LastIndexOf(':');
         if (colonIndex == -1 || colonIndex + 1 >= fileContent.Length)
         {
-            throw new InvalidOperationException($"Invalid format in file '{_cpuActualSelfSliceProcFile}'. Expected content with ':' separator.");
+            Throw.InvalidOperationException($"Invalid format in file '{_cpuActualSelfSliceProcFile}'. Expected content with ':' separator.");
         }
 
-        // Extract the part after the last colon
+        // Extract the part after the last colon and cache it for future use
         ReadOnlySpan<char> trimmedPath = fileContent.Slice(colonIndex + 1);
-        string trimmedPathString = trimmedPath.ToString();
-
-        if (!trimmedPathString.EndsWith('/'))
-        {
-            trimmedPathString += '/';
-        }
-
-        // Prepend the path prefix and append the filename
-        string updatedPath = $"{PathPrefix}{trimmedPathString}{filename}";
-        return updatedPath;
+        _cachedCgroupPath = trimmedPath.ToString().TrimEnd('/') + "/";
+        
+        return $"{PathPrefix}{_cachedCgroupPath}{filename}";
     }
 
     public long GetCgroupCpuUsageInNanoseconds()

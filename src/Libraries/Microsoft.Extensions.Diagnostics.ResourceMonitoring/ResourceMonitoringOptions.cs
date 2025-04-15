@@ -103,7 +103,7 @@ public partial class ResourceMonitoringOptions
     /// Gets or sets a value indicating whether CPU metrics are calculated via cgroup CPU limits instead of Host CPU delta.
     /// </summary>
     /// <value>
-    /// The default value is true.
+    /// The default value is <see langword="false"/>.
     /// </value>
 #pragma warning disable CA1805 // Do not initialize unnecessarily
     [Experimental(diagnosticId: DiagnosticIds.Experiments.ResourceMonitoring, UrlFormat = DiagnosticIds.UrlFormat)]

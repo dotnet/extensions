@@ -19,5 +19,17 @@ public sealed class ResourceMonitoringOptionsTests
         };
 
         Assert.NotNull(options);
+        Assert.False(options.CalculateCpuUsageWithoutHost);
+    }
+
+    [Fact]
+    public void CalculateCpuUsageWithoutHost_WhenSet_ReturnsExpectedValue()
+    {
+        var options = new ResourceMonitoringOptions
+        {
+            CalculateCpuUsageWithoutHost = true
+        };
+
+        Assert.True(options.CalculateCpuUsageWithoutHost);
     }
 }
