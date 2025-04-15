@@ -799,7 +799,7 @@ public class FunctionInvokingChatClientTests
     }
 
     [Fact]
-    public async Task PropagatesResponseChatThreadIdToOptions()
+    public async Task PropagatesResponseConversationIdToOptions()
     {
         var options = new ChatOptions
         {
