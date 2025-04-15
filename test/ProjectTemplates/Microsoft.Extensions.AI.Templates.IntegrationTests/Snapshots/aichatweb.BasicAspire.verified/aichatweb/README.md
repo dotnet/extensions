@@ -33,6 +33,12 @@ Learn more about [prototyping with AI models using GitHub Models](https://docs.g
 3. Once installed, Open the `Program.cs` file in the aichatweb.AppHost project.
 4. Run the project by clicking the "Run" button in the Debug view.
 
+## Trust the localhost certificate
+
+Several .NET Aspire templates include ASP.NET Core projects that are configured to use HTTPS by default. If this is the first time you're running the project, an exception might occur when loading the Aspire dashboard. This error can be resolved by trusting the self-signed development certificate with the .NET CLI.
+
+See [Troubleshoot untrusted localhost certificate in .NET Aspire](https://learn.microsoft.com/dotnet/aspire/troubleshooting/untrusted-localhost-certificate) for more information.
+
 # Learn More
 To learn more about development with .NET and AI, check out the following links:
 
