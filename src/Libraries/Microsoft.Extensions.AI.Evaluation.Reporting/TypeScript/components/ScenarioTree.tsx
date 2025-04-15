@@ -72,8 +72,8 @@ const SelectionButton = ({ nodeKey }: { nodeKey: string }) => {
         <Button
             appearance="transparent"
             icon={nodeKey === selectedScenarioLevel ? <RadioButtonFilled /> : <RadioButtonRegular />}
-            onClick={(evt) => {
-                evt.stopPropagation();
+            onClick={(event: React.MouseEvent) => {
+                event.stopPropagation();
                 selectScenarioLevel(nodeKey);
             }}
             aria-label="Select"
@@ -111,9 +111,9 @@ const ScoreNodeHeader = ({ item, showPrompt }:
 
     return (<div className={headerClass}>
         {scoreSummary.includesReportHistory && <SelectionButton nodeKey={item.nodeKey} />}
-        <PassFailBar pass={ctPass} total={ctPass + ctFail} width="24px" height="12px" 
-            selected={item.nodeKey == selectedScenarioLevel} 
-            onClick={(event) => {
+        <PassFailBar pass={ctPass} total={ctPass + ctFail} width="24px" height="12px"
+            selected={item.nodeKey == selectedScenarioLevel}
+            onClick={(event: React.MouseEvent) => {
                 if (scoreSummary.includesReportHistory) {
                     event.stopPropagation();
                     selectScenarioLevel(item.nodeKey);
