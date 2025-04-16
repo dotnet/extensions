@@ -79,9 +79,6 @@ public class EmbeddingGeneratorExtensionsTests
     public async Task GenerateAsync_InvalidArgs_ThrowsAsync()
     {
         await Assert.ThrowsAsync<ArgumentNullException>("generator", () => ((TestEmbeddingGenerator)null!).GenerateAsync("hello"));
-#pragma warning disable CS0618 // Type or member is obsolete
-        await Assert.ThrowsAsync<ArgumentNullException>("generator", () => ((TestEmbeddingGenerator)null!).GenerateEmbeddingVectorAsync("hello"));
-#pragma warning restore CS0618 // Type or member is obsolete
         await Assert.ThrowsAsync<ArgumentNullException>("generator", () => ((TestEmbeddingGenerator)null!).GenerateVectorAsync("hello"));
         await Assert.ThrowsAsync<ArgumentNullException>("generator", () => ((TestEmbeddingGenerator)null!).GenerateAndZipAsync(["hello"]));
     }
@@ -96,11 +93,6 @@ public class EmbeddingGeneratorExtensionsTests
             GenerateAsyncCallback = (values, options, cancellationToken) =>
                 Task.FromResult<GeneratedEmbeddings<Embedding<float>>>([result])
         };
-
-#pragma warning disable CS0618 // Type or member is obsolete
-        Assert.Same(result, await service.GenerateEmbeddingAsync("hello"));
-        Assert.Equal(result.Vector, await service.GenerateEmbeddingVectorAsync("hello"));
-#pragma warning restore CS0618 // Type or member is obsolete
 
         Assert.Same(result, await service.GenerateAsync("hello"));
         Assert.Equal(result.Vector, await service.GenerateVectorAsync("hello"));
