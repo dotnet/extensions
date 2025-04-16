@@ -13,55 +13,63 @@ To add a new dependency, run `npm install <package-name>` and update the `script
 
 # Running AI templates
 
-By default the templates use just-built versions of `Microsoft.Extensions.AI*` packages, so NuGet packages must be produced before the templates can be run:
-```sh
+## Build the templates using just-built library package versions
+
+By default the templates use just-built versions of library packages from this repository, so NuGet packages must be produced before the templates can be run:
+
+```pwsh
 .\build.cmd -vs AI -noLaunch # Generate an SDK.sln for Microsoft.Extensions.AI* projects
 .\build.cmd -build -pack     # Build a NuGet package for each project
 ```
 
-Alternatively, you can override the `TemplateMicrosoftExtensionsAIVersion` property (defined in the `GeneratedContent.targets` file in this directory) with a publicly-available version. This will disable the template generation logic that utilizes locally-built `Microsoft.Extensions.AI*` packages.
+Once the library packages are built, the `Microsoft.Extensions.AI.Templates` package is built with references to the local package versions using the following commands:
 
-## Installing the templates locally
-
-First, create the template NuGet package by running the following from the repo root:
 ```pwsh
-.\build.cmd # If not done already
 .\build.cmd -pack -projects .\src\ProjectTemplates\Microsoft.Extensions.AI.Templates\Microsoft.Extensions.AI.Templates.csproj
 ```
 
-**Note:** Since package versions don't change between local builds, it may be necessary to occasionally delete `Microsoft.Extensions.AI*` packages from your local nuget cache, especially if you're making changes to these packages. An example of how to do this in PowerShell is:
+## Build the templates using pinned library package versions
+
+The templates can also be built to reference pinned versions of the library packages. This approach is used when the `Microsoft.Extensions.AI.Templates` package is updated off-cycle from the library packages. The pinned versions are hard-coded in the `GeneratedContent.targets` file in this directory. To build the templates package using the pinned versions, run:
+
 ```pwsh
-Remove-Item ~\.nuget\packages\microsoft.extensions.ai* -Recurse -Force
+.\build.cmd -pack -projects .\src\ProjectTemplates\Microsoft.Extensions.AI.Templates\Microsoft.Extensions.AI.Templates.csproj /p:TemplateUsePinnedPackageVersions=true
 ```
+
+Setting `/p:TemplateUsePinnedPackageVersions=true` will apply three different categories of pinned package versions:
+
+1. Packages from this repository that are _not_ part of `Microsoft.Extensions.AI*`, namely `Microsoft.Extensions.Http.Resilience`
+2. Packages from this repository that _are_ part of `Microsoft.Extensions.AI*`
+3. The `Microsoft.EntityFrameworkCoreSqlite` package
+
+## Installing the templates locally
+
+After building the templates package using one of the approaches above, it can be installed locally. **Note:** Since package versions don't change between local builds, the recommended steps include clearing the `Microsoft.Extensions.AI*` packages from your local nuget cache.
 
 **Note:** For the following commands to succeed, you'll need to either install a compatible .NET SDK globally or prepend the repo's generated `.dotnet` folder to the PATH environment variable.
 
-Then, navigate to the directory where you'd like to create the test project and run the following commands:
-```sh
-dotnet new uninstall Microsoft.Extensions.AI.Templates       # Uninstall any existing version of the templates
-dotnet new install "<PATH_TO_TEMPLATE_NUPKG>" --debug:reinit # Install the template from the generated .nupkg file (in the artifacts/packages folder)
+```pwsh
+# Uninstall any existing version of the templates
+dotnet new uninstall Microsoft.Extensions.AI.Templates
+
+# Clear the Microsoft.Extensions.AI packages from the NuGet cache since the local package version does not change
+Remove-Item ~\.nuget\packages\Microsoft.Extensions.AI* -Recurse -Force
+
+# Install the template from the generated .nupkg file (in the artifacts/packages folder)
+dotnet new install .\artifacts\packages\Debug\Shipping\Microsoft.Extensions.AI.Templates*.nupkg
 ```
 
 Finally, create a project from the template and run it:
-```sh
-dotnet new aichatweb [-A <azureopenai | githubmodels | ollama | openai>] [-V <azureaisearch | local>]
-dotnet run
-```
 
-## Running the templates directly within the repo
+```pwsh
+dotnet new aichatweb `
+    [--provider <azureopenai | githubmodels | ollama | openai>] `
+    [--vector-store <azureaisearch | local | qdrant>] `
+    [--aspire] `
+    [--managed-identity]
 
-The project templates are structured in a way that allows them to be run directly within the repo.
+# If using `--aspire`, cd into the *AppHost directory
+# Follow the instructions in the generated README for setting the necessary user-secrets
 
-**Note:** For the following commands to succeed, you'll need to either install a compatible .NET SDK globally or prepend the repo's generated `.dotnet` folder to the PATH environment variable.
-
-Navigate to the `Microsoft.Extensions.AI.Templates` folder and run:
-```sh
-dotnet build
-```
-
-This will generate the necessary template content to build and run AI templates from within this repo.
-
-Now, you can navigate to a folder containing a template's `.csproj` file and run:
-```sh
 dotnet run
 ```
