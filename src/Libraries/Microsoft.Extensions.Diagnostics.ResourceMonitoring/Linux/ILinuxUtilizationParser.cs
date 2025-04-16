@@ -24,7 +24,7 @@ internal interface ILinuxUtilizationParser
     long GetCgroupCpuUsageInNanoseconds();
 
     /// <summary>
-    /// For CgroupV2 only. Reads the file cpu.stat based on /proc/self/cgroup, which is part of the cgroup v2 CPU controller.
+    /// For CgroupV2 only and experimental. Reads the file cpu.stat based on /proc/self/cgroup, which is part of the cgroup v2 CPU controller.
     /// It provides statistics about the CPU usage of a cgroup from its actual slice.
     /// </summary>
     /// <returns>nanoseconds.</returns>
@@ -41,7 +41,7 @@ internal interface ILinuxUtilizationParser
     float GetCgroupLimitedCpus();
 
     /// <summary>
-    /// For CgroupV2 only. Reads the file cpu.max based on /proc/self/cgroup, which is part of the cgroup v2 CPU controller.
+    /// For CgroupV2 only and experimental. Reads the file cpu.max based on /proc/self/cgroup, which is part of the cgroup v2 CPU controller.
     /// It is used to set the maximum amount of CPU time that can be used by a cgroup from actual slice.
     /// The file contains two fields, separated by a space.
     /// The first field is the quota, which specifies the maximum amount of CPU time (in microseconds) that can be used by the cgroup during one period.
@@ -85,7 +85,7 @@ internal interface ILinuxUtilizationParser
     float GetCgroupRequestCpu();
 
     /// <summary>
-    /// For CgroupV2 only. Reads the file cpu.weight based on /proc/self/cgroup. And calculates the Pod CPU Request in millicores based on actual slice.
+    /// For CgroupV2 only and experimental. Reads the file cpu.weight based on /proc/self/cgroup. And calculates the Pod CPU Request in millicores based on actual slice.
     /// </summary>
     /// <returns>cpuPodRequest.</returns>
     float GetCgroupRequestCpuV2();
