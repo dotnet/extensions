@@ -65,7 +65,8 @@ Finally, create a project from the template and run it:
 dotnet new aichatweb `
     [--provider <azureopenai | githubmodels | ollama | openai>] `
     [--vector-store <azureaisearch | local | qdrant>] `
-    [--aspire]
+    [--aspire] `
+    [--managed-identity]
 
 # If using `--aspire`, cd into the *AppHost directory
 # Follow the instructions in the generated README for setting the necessary user-secrets
