@@ -10,6 +10,16 @@ namespace Microsoft.Extensions.AI;
 public class ChatOptions
 {
     /// <summary>Gets or sets an optional identifier used to associate a request with an existing conversation.</summary>
+    /// <remarks>This property is obsolete. Use <see cref="ConversationId"/> instead.</remarks>
+    [System.Obsolete("Use ConversationId instead.")]
+    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+    public string? ChatThreadId
+    {
+        get => ConversationId;
+        set => ConversationId = value;
+    }
+
+    /// <summary>Gets or sets an optional identifier used to associate a request with an existing conversation.</summary>
     public string? ConversationId { get; set; }
 
     /// <summary>Gets or sets the temperature for generating chat responses.</summary>
