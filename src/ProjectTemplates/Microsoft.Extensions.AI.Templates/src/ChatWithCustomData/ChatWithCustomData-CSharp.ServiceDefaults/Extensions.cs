@@ -25,6 +25,10 @@ public static class Extensions
 
         builder.Services.ConfigureHttpClientDefaults(http =>
         {
+#pragma warning disable EXTEXP0001 // RemoveAllResilienceHandlers is experimental
+            http.RemoveAllResilienceHandlers();
+#pragma warning restore EXTEXP0001
+
 #if (IsOllama)
             // Turn on resilience by default
             http.AddStandardResilienceHandler(config =>
