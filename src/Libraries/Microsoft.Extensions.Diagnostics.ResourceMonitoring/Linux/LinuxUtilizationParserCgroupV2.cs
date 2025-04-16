@@ -21,7 +21,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
 {
     private const int Thousand = 1000;
     private const int CpuShares = 1024;
-    private const string PathPrefix = "/sys/fs/cgroup";
+    private const string CgroupPathPrefix = "/sys/fs/cgroup";
     private const string CpuStat = "cpu.stat"; // File containing CPU usage in nanoseconds.
     private const string CpuLimit = "cpu.max"; // File with amount of CPU time available to the group along with the accounting period in microseconds.
     private const string CpuRequest = "cpu.weight"; // CPU weights, also known as shares in cgroup v1, is used for resource allocation.
@@ -109,7 +109,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         // If we've already parsed the path, use the cached value
         if (_cachedCgroupPath != null)
         {
-            return $"{PathPrefix}{_cachedCgroupPath}{filename}";
+            return $"{CgroupPathPrefix}{_cachedCgroupPath}{filename}";
         }
 
         using ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool);
@@ -135,7 +135,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         ReadOnlySpan<char> trimmedPath = fileContent.Slice(colonIndex + 1);
         _cachedCgroupPath = trimmedPath.ToString().TrimEnd('/') + "/";
 
-        return $"{PathPrefix}{_cachedCgroupPath}{filename}";
+        return $"{CgroupPathPrefix}{_cachedCgroupPath}{filename}";
     }
 
     public long GetCgroupCpuUsageInNanoseconds()
