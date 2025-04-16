@@ -101,7 +101,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     public double CpuUtilizationWithoutHostDelta()
     {
         DateTimeOffset now = _timeProvider.GetUtcNow();
-        double actualElapsedNanoseconds = (now - _lastCpuMeasurementTime).TotalSeconds * 1_000_000_000.0;
+        double actualElapsedNanoseconds = (now - _lastCpuMeasurementTime).TotalNanoseconds;
 
         lock (_cpuLocker)
         {
@@ -123,7 +123,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
                 {
                     double coresUsed = deltaCgroup / actualElapsedNanoseconds;
 
-                    Log.CpuUsageData(_logger, cgroupCpuTime, 0, _previousCgroupCpuTime, 0, coresUsed);
+                    Log.CpuUsageDataV2(_logger, cgroupCpuTime, _previousCgroupCpuTime, actualElapsedNanoseconds, coresUsed);
 
                     _lastCpuCoresUsed = coresUsed;
                     _refreshAfterCpu = now.Add(_cpuRefreshInterval);
