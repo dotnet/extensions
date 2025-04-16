@@ -105,7 +105,7 @@ public abstract class SingleNumericMetricEvaluator : ChatConversationEvaluator
 
             if (string.IsNullOrEmpty(evaluationResponseText))
             {
-                metric.AddDiagnostic(
+                metric.AddDiagnostics(
                     EvaluationDiagnostic.Error(
                         "Evaluation failed because the model failed to produce a valid evaluation response."));
             }
@@ -115,7 +115,7 @@ public abstract class SingleNumericMetricEvaluator : ChatConversationEvaluator
             }
             else
             {
-                metric.AddDiagnostic(
+                metric.AddDiagnostics(
                     EvaluationDiagnostic.Error(
                         $"Failed to parse '{evaluationResponseText!}' as an integer score for '{MetricName}'."));
             }

@@ -14,24 +14,6 @@ namespace Microsoft.Extensions.AI.Evaluation;
 public static class EvaluationResultExtensions
 {
     /// <summary>
-    /// Adds the supplied <paramref name="diagnostic"/> to all <see cref="EvaluationMetric"/>s contained in the
-    /// supplied <paramref name="result"/>.
-    /// </summary>
-    /// <param name="result">
-    /// The <see cref="EvaluationResult"/> containing the <see cref="EvaluationMetric"/>s that are to be altered.
-    /// </param>
-    /// <param name="diagnostic">The <see cref="EvaluationDiagnostic"/> that is to be added.</param>
-    public static void AddDiagnosticToAllMetrics(this EvaluationResult result, EvaluationDiagnostic diagnostic)
-    {
-        _ = Throw.IfNull(result);
-
-        foreach (EvaluationMetric metric in result.Metrics.Values)
-        {
-            metric.AddDiagnostic(diagnostic);
-        }
-    }
-
-    /// <summary>
     /// Adds the supplied <paramref name="diagnostics"/> to all <see cref="EvaluationMetric"/>s contained in the
     /// supplied <paramref name="result"/>.
     /// </summary>

@@ -41,20 +41,6 @@ public static class EvaluationMetricExtensions
     }
 
     /// <summary>
-    /// Adds the supplied <see cref="EvaluationDiagnostic"/> to the supplied <see cref="EvaluationMetric"/>'s
-    /// <see cref="EvaluationMetric.Diagnostics"/> collection.
-    /// </summary>
-    /// <param name="metric">The <see cref="EvaluationMetric"/>.</param>
-    /// <param name="diagnostic">The <see cref="EvaluationDiagnostic"/> to be added.</param>
-    public static void AddDiagnostic(this EvaluationMetric metric, EvaluationDiagnostic diagnostic)
-    {
-        _ = Throw.IfNull(metric);
-
-        metric.Diagnostics ??= new List<EvaluationDiagnostic>();
-        metric.Diagnostics.Add(diagnostic);
-    }
-
-    /// <summary>
     /// Adds the supplied <see cref="EvaluationDiagnostic"/>s to the supplied <see cref="EvaluationMetric"/>'s
     /// <see cref="EvaluationMetric.Diagnostics"/> collection.
     /// </summary>
@@ -65,9 +51,14 @@ public static class EvaluationMetricExtensions
         _ = Throw.IfNull(metric);
         _ = Throw.IfNull(diagnostics);
 
-        foreach (EvaluationDiagnostic diagnostic in diagnostics)
+        if (diagnostics.Any())
         {
-            metric.AddDiagnostic(diagnostic);
+            metric.Diagnostics ??= new List<EvaluationDiagnostic>();
+
+            foreach (EvaluationDiagnostic diagnostic in diagnostics)
+            {
+                metric.Diagnostics.Add(diagnostic);
+            }
         }
     }
 

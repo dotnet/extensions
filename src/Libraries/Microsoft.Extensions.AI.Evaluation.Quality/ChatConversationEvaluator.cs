@@ -49,7 +49,7 @@ public abstract class ChatConversationEvaluator : IEvaluator
 
         if (string.IsNullOrWhiteSpace(modelResponse.Text))
         {
-            result.AddDiagnosticToAllMetrics(
+            result.AddDiagnosticsToAllMetrics(
                 EvaluationDiagnostic.Error(
                     "Evaluation failed because the model response supplied for evaluation was null or empty."));
 
@@ -73,7 +73,7 @@ public abstract class ChatConversationEvaluator : IEvaluator
                     EvaluationDiagnostic.Error(
                         $"Evaluation failed because the specified limit of {inputTokenLimit} input tokens was exceeded.");
 
-                result.AddDiagnosticToAllMetrics(tokenBudgetExceeded);
+                result.AddDiagnosticsToAllMetrics(tokenBudgetExceeded);
             }
 
             if (!string.IsNullOrWhiteSpace(SystemPrompt))
@@ -176,7 +176,7 @@ public abstract class ChatConversationEvaluator : IEvaluator
         if (inputTokenLimit > 0 && ignoredMessagesCount > 0)
         {
 #pragma warning disable S103 // Lines should not be too long
-            result.AddDiagnosticToAllMetrics(
+            result.AddDiagnosticsToAllMetrics(
                 EvaluationDiagnostic.Warning(
                     $"The evaluation may be inconclusive because the oldest {ignoredMessagesCount} messages in the supplied conversation history were ignored in order to stay under the specified limit of {inputTokenLimit} input tokens."));
 #pragma warning restore S103

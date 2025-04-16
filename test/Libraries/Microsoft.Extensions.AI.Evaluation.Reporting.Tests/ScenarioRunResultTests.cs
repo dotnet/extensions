@@ -18,17 +18,17 @@ public class ScenarioRunResultTests
     public void SerializeScenarioRunResult()
     {
         var booleanMetric = new BooleanMetric("boolean", value: true);
-        booleanMetric.AddDiagnostic(EvaluationDiagnostic.Error("error"));
-        booleanMetric.AddDiagnostic(EvaluationDiagnostic.Warning("warning"));
+        booleanMetric.AddDiagnostics(EvaluationDiagnostic.Error("error"));
+        booleanMetric.AddDiagnostics(EvaluationDiagnostic.Warning("warning"));
 
         var numericMetric = new NumericMetric("numeric", value: 3);
-        numericMetric.AddDiagnostic(EvaluationDiagnostic.Informational("info"));
+        numericMetric.AddDiagnostics(EvaluationDiagnostic.Informational("info"));
 
         var stringMetric = new StringMetric("string", value: "A");
 
         var metricWithNoValue = new EvaluationMetric("none");
-        metricWithNoValue.AddDiagnostic(EvaluationDiagnostic.Error("error"));
-        metricWithNoValue.AddDiagnostic(EvaluationDiagnostic.Informational("info"));
+        metricWithNoValue.AddDiagnostics(EvaluationDiagnostic.Error("error"));
+        metricWithNoValue.AddDiagnostics(EvaluationDiagnostic.Informational("info"));
 
         var turn1 =
             new ChatTurnDetails(
@@ -82,17 +82,17 @@ public class ScenarioRunResultTests
     public void SerializeDatasetCompact()
     {
         var booleanMetric = new BooleanMetric("boolean", value: true);
-        booleanMetric.AddDiagnostic(EvaluationDiagnostic.Error("error"));
-        booleanMetric.AddDiagnostic(EvaluationDiagnostic.Warning("warning"));
+        booleanMetric.AddDiagnostics(EvaluationDiagnostic.Error("error"));
+        booleanMetric.AddDiagnostics(EvaluationDiagnostic.Warning("warning"));
 
         var numericMetric = new NumericMetric("numeric", value: 3);
-        numericMetric.AddDiagnostic(EvaluationDiagnostic.Informational("info"));
+        numericMetric.AddDiagnostics(EvaluationDiagnostic.Informational("info"));
 
         var stringMetric = new StringMetric("string", value: "A");
 
         var metricWithNoValue = new EvaluationMetric("none");
-        metricWithNoValue.AddDiagnostic(EvaluationDiagnostic.Error("error"));
-        metricWithNoValue.AddDiagnostic(EvaluationDiagnostic.Informational("info"));
+        metricWithNoValue.AddDiagnostics(EvaluationDiagnostic.Error("error"));
+        metricWithNoValue.AddDiagnostics(EvaluationDiagnostic.Informational("info"));
 
         var turn1 =
             new ChatTurnDetails(

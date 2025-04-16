@@ -159,7 +159,7 @@ public sealed class CompositeEvaluator : IEvaluator
                 foreach (string metricName in e.EvaluationMetricNames)
                 {
                     var metric = new EvaluationMetric(metricName);
-                    metric.AddDiagnostic(EvaluationDiagnostic.Error(message));
+                    metric.AddDiagnostics(EvaluationDiagnostic.Error(message));
                     result.Metrics.Add(metric.Name, metric);
                 }
 

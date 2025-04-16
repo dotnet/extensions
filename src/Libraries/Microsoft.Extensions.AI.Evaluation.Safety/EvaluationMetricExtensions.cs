@@ -97,6 +97,6 @@ internal static class EvaluationMetricExtensions
     internal static void LogJsonData(this EvaluationMetric metric, JsonNode data)
     {
         string serializedData = data.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
-        metric.AddDiagnostic(EvaluationDiagnostic.Informational(serializedData));
+        metric.AddDiagnostics(EvaluationDiagnostic.Informational(serializedData));
     }
 }
