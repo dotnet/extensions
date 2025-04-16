@@ -77,9 +77,9 @@ dotnet user-secrets set ConnectionStrings:openai "Key=YOUR-API-KEY"
 #### ---#endif
 #### ---#if (IsOllama)
 ## Setting up a local environment for Ollama
-This project is configured to run Ollama in a Docker container.
+This project is configured to run Ollama in a Docker container. Docker Desktop must be installed and running for the project to run successfully. An Ollama container will automatically start when running the application.
 
-To get started, download, install, and run Docker Desktop from the [official website](https://www.docker.com/). Follow the installation instructions specific to your operating system.
+Download, install, and run Docker Desktop from the [official website](https://www.docker.com/). Follow the installation instructions specific to your operating system.
 
 Note: Ollama and Docker are excellent open source products, but are not maintained by Microsoft.
 #### ---#endif
@@ -152,6 +152,15 @@ Note that if you previously used the same Azure AI Search resource with differen
 #### ---#endif
 
 Make sure to replace `YOUR-DEPLOYMENT-NAME` and `YOUR-API-KEY` with your actual Azure AI Search deployment name and key.
+#### ---#endif
+#### ---#if (UseQdrant)
+
+## Setting up a local environment for Qdrant
+This project is configured to run Qdrant in a Docker container. Docker Desktop must be installed and running for the project to run successfully. A Qdrant container will automatically start when running the application.
+
+Download, install, and run Docker Desktop from the [official website](https://www.docker.com/). Follow the installation instructions specific to your operating system.
+
+Note: Qdrant and Docker are excellent open source products, but are not maintained by Microsoft.
 #### ---#endif
 
 # Running the application
