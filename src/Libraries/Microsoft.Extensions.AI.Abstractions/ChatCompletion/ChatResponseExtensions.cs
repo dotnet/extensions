@@ -320,9 +320,9 @@ public static class ChatResponseExtensions
             response.ResponseId = update.ResponseId;
         }
 
-        if (update.ChatThreadId is not null)
+        if (update.ConversationId is not null)
         {
-            response.ChatThreadId = update.ChatThreadId;
+            response.ConversationId = update.ConversationId;
         }
 
         if (update.CreatedAt is not null)

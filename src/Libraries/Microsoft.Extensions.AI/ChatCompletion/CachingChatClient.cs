@@ -105,10 +105,10 @@ public abstract class CachingChatClient : DelegatingChatClient
             if (await ReadCacheStreamingAsync(cacheKey, cancellationToken) is { } existingChunks)
             {
                 // Yield all of the cached items.
-                string? chatThreadId = null;
+                string? conversationId = null;
                 foreach (var chunk in existingChunks)
                 {
-                    chatThreadId ??= chunk.ChatThreadId;
+                    conversationId ??= chunk.ConversationId;
                     yield return chunk;
                 }
             }

@@ -9,8 +9,8 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents the options for a chat request.</summary>
 public class ChatOptions
 {
-    /// <summary>Gets or sets an optional identifier used to associate a request with an existing chat thread.</summary>
-    public string? ChatThreadId { get; set; }
+    /// <summary>Gets or sets an optional identifier used to associate a request with an existing conversation.</summary>
+    public string? ConversationId { get; set; }
 
     /// <summary>Gets or sets the temperature for generating chat responses.</summary>
     /// <remarks>
@@ -105,7 +105,7 @@ public class ChatOptions
     {
         ChatOptions options = new()
         {
-            ChatThreadId = ChatThreadId,
+            ConversationId = ConversationId,
             Temperature = Temperature,
             MaxOutputTokens = MaxOutputTokens,
             TopP = TopP,

@@ -157,6 +157,7 @@ public class OpenAIResponseClientTests
         Assert.NotNull(response);
 
         Assert.Equal("resp_67d327649b288191aeb46a824e49dc40058a5e08c46a181d", response.ResponseId);
+        Assert.Equal("resp_67d327649b288191aeb46a824e49dc40058a5e08c46a181d", response.ConversationId);
         Assert.Equal("Hello! How can I assist you today?", response.Text);
         Assert.Single(response.Messages.Single().Contents);
         Assert.Equal(ChatRole.Assistant, response.Messages.Single().Role);
@@ -265,6 +266,7 @@ public class OpenAIResponseClientTests
         for (int i = 0; i < updates.Count; i++)
         {
             Assert.Equal("resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77", updates[i].ResponseId);
+            Assert.Equal("resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77", updates[i].ConversationId);
             Assert.Equal(createdAt, updates[i].CreatedAt);
             Assert.Equal("gpt-4o-mini-2024-07-18", updates[i].ModelId);
             Assert.Equal(ChatRole.Assistant, updates[i].Role);

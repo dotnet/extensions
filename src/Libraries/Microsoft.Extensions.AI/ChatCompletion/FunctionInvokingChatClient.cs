@@ -224,7 +224,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         List<ChatMessage>? responseMessages = null; // tracked list of messages, across multiple turns, to be used for the final response
         UsageDetails? totalUsage = null; // tracked usage across all turns, to be used for the final response
         List<FunctionCallContent>? functionCallContents = null; // function call contents that need responding to in the current turn
-        bool lastIterationHadThreadId = false; // whether the last iteration's response had a ChatThreadId set
+        bool lastIterationHadConversationId = false; // whether the last iteration's response had a ConversationId set
         int consecutiveErrorCount = 0;
 
         for (int iteration = 0; ; iteration++)
@@ -274,7 +274,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             }
 
             // Prepare the history for the next iteration.
-            FixupHistories(originalMessages, ref messages, ref augmentedHistory, response, responseMessages, ref lastIterationHadThreadId);
+            FixupHistories(originalMessages, ref messages, ref augmentedHistory, response, responseMessages, ref lastIterationHadConversationId);
 
             // Add the responses from the function calls into the augmented history and also into the tracked
             // list of response messages.
@@ -287,12 +287,14 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 break;
             }
 
-            UpdateOptionsForNextIteration(ref options!, response.ChatThreadId);
+            UpdateOptionsForNextIteration(ref options!, response.ConversationId);
         }
 
         Debug.Assert(responseMessages is not null, "Expected to only be here if we have response messages.");
         response.Messages = responseMessages!;
         response.Usage = totalUsage;
+
+        AddUsageTags(activity, totalUsage);
 
         return response;
     }
@@ -306,6 +308,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         // A single request into this GetStreamingResponseAsync may result in multiple requests to the inner client.
         // Create an activity to group them together for better observability.
         using Activity? activity = _activitySource?.StartActivity(nameof(FunctionInvokingChatClient));
+        UsageDetails? totalUsage = activity is { IsAllDataRequested: true } ? new() : null; // tracked usage across all turns, to be used for activity purposes
 
         // Copy the original messages in order to avoid enumerating the original messages multiple times.
         // The IEnumerable can represent an arbitrary amount of work.
@@ -315,7 +318,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         List<ChatMessage>? augmentedHistory = null; // the actual history of messages sent on turns other than the first
         List<FunctionCallContent>? functionCallContents = null; // function call contents that need responding to in the current turn
         List<ChatMessage>? responseMessages = null; // tracked list of messages, across multiple turns, to be used in fallback cases to reconstitute history
-        bool lastIterationHadThreadId = false; // whether the last iteration's response had a ChatThreadId set
+        bool lastIterationHadConversationId = false; // whether the last iteration's response had a ConversationId set
         List<ChatResponseUpdate> updates = []; // updates from the current response
         int consecutiveErrorCount = 0;
 
@@ -335,6 +338,19 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
                 _ = CopyFunctionCalls(update.Contents, ref functionCallContents);
 
+                if (totalUsage is not null)
+                {
+                    IList<AIContent> contents = update.Contents;
+                    int contentsCount = contents.Count;
+                    for (int i = 0; i < contentsCount; i++)
+                    {
+                        if (contents[i] is UsageContent uc)
+                        {
+                            totalUsage.Add(uc.Details);
+                        }
+                    }
+                }
+
                 yield return update;
                 Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
             }
@@ -352,7 +368,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             (responseMessages ??= []).AddRange(response.Messages);
 
             // Prepare the history for the next iteration.
-            FixupHistories(originalMessages, ref messages, ref augmentedHistory, response, responseMessages, ref lastIterationHadThreadId);
+            FixupHistories(originalMessages, ref messages, ref augmentedHistory, response, responseMessages, ref lastIterationHadConversationId);
 
             // Process all of the functions, adding their results into the history.
             var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options, functionCallContents, iteration, consecutiveErrorCount, cancellationToken);
@@ -374,7 +390,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 {
                     AdditionalProperties = message.AdditionalProperties,
                     AuthorName = message.AuthorName,
-                    ChatThreadId = response.ChatThreadId,
+                    ConversationId = response.ConversationId,
                     CreatedAt = DateTimeOffset.UtcNow,
                     Contents = message.Contents,
                     RawRepresentation = message.RawRepresentation,
@@ -389,10 +405,29 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
             if (modeAndMessages.ShouldTerminate)
             {
-                yield break;
+                break;
             }
 
-            UpdateOptionsForNextIteration(ref options, response.ChatThreadId);
+            UpdateOptionsForNextIteration(ref options, response.ConversationId);
+        }
+
+        AddUsageTags(activity, totalUsage);
+    }
+
+    /// <summary>Adds tags to <paramref name="activity"/> for usage details in <paramref name="usage"/>.</summary>
+    private static void AddUsageTags(Activity? activity, UsageDetails? usage)
+    {
+        if (usage is not null && activity is { IsAllDataRequested: true })
+        {
+            if (usage.InputTokenCount is long inputTokens)
+            {
+                _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.InputTokens, (int)inputTokens);
+            }
+
+            if (usage.OutputTokenCount is long outputTokens)
+            {
+                _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.OutputTokens, (int)outputTokens);
+            }
         }
     }
 
@@ -402,18 +437,18 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <param name="augmentedHistory">The augmented history containing all the messages to be sent.</param>
     /// <param name="response">The most recent response being handled.</param>
     /// <param name="allTurnsResponseMessages">A list of all response messages received up until this point.</param>
-    /// <param name="lastIterationHadThreadId">Whether the previous iteration's response had a thread id.</param>
+    /// <param name="lastIterationHadConversationId">Whether the previous iteration's response had a conversation id.</param>
     private static void FixupHistories(
         IEnumerable<ChatMessage> originalMessages,
         ref IEnumerable<ChatMessage> messages,
         [NotNull] ref List<ChatMessage>? augmentedHistory,
         ChatResponse response,
         List<ChatMessage> allTurnsResponseMessages,
-        ref bool lastIterationHadThreadId)
+        ref bool lastIterationHadConversationId)
     {
         // We're now going to need to augment the history with function result contents.
         // That means we need a separate list to store the augmented history.
-        if (response.ChatThreadId is not null)
+        if (response.ConversationId is not null)
         {
             // The response indicates the inner client is tracking the history, so we don't want to send
             // anything we've already sent or received.
@@ -426,9 +461,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 augmentedHistory = [];
             }
 
-            lastIterationHadThreadId = true;
+            lastIterationHadConversationId = true;
         }
-        else if (lastIterationHadThreadId)
+        else if (lastIterationHadConversationId)
         {
             // In the very rare case where the inner client returned a response with a thread ID but then
             // returned a subsequent response without one, we want to reconstitue the full history. To do that,
@@ -439,7 +474,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             augmentedHistory.AddRange(originalMessages);
             augmentedHistory.AddRange(allTurnsResponseMessages);
 
-            lastIterationHadThreadId = false;
+            lastIterationHadConversationId = false;
         }
         else
         {
@@ -451,7 +486,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             // Now add the most recent response messages.
             augmentedHistory.AddMessages(response);
 
-            lastIterationHadThreadId = false;
+            lastIterationHadConversationId = false;
         }
 
         // Use the augmented history as the new set of messages to send.
@@ -490,7 +525,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         return any;
     }
 
-    private static void UpdateOptionsForNextIteration(ref ChatOptions options, string? chatThreadId)
+    private static void UpdateOptionsForNextIteration(ref ChatOptions options, string? conversationId)
     {
         if (options.ToolMode is RequiredChatToolMode)
         {
@@ -498,14 +533,14 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             // as otherwise we'll be in an infinite loop.
             options = options.Clone();
             options.ToolMode = null;
-            options.ChatThreadId = chatThreadId;
+            options.ConversationId = conversationId;
         }
-        else if (options.ChatThreadId != chatThreadId)
+        else if (options.ConversationId != conversationId)
         {
             // As with the other modes, ensure we've propagated the chat thread ID to the options.
             // We only need to clone the options if we're actually mutating it.
             options = options.Clone();
-            options.ChatThreadId = chatThreadId;
+            options.ConversationId = conversationId;
         }
     }
 
