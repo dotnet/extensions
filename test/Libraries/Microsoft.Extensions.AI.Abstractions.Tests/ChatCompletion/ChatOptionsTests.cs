@@ -13,6 +13,9 @@ public class ChatOptionsTests
     public void Constructor_Parameterless_PropsDefaulted()
     {
         ChatOptions options = new();
+#pragma warning disable CS0618 // Type or member is obsolete
+        Assert.Null(options.ChatThreadId);
+#pragma warning restore CS0618 // Type or member is obsolete
         Assert.Null(options.ConversationId);
         Assert.Null(options.Temperature);
         Assert.Null(options.MaxOutputTokens);
@@ -29,6 +32,9 @@ public class ChatOptionsTests
         Assert.Null(options.AdditionalProperties);
 
         ChatOptions clone = options.Clone();
+#pragma warning disable CS0618 // Type or member is obsolete
+        Assert.Null(options.ChatThreadId);
+#pragma warning restore CS0618 // Type or member is obsolete
         Assert.Null(options.ConversationId);
         Assert.Null(clone.Temperature);
         Assert.Null(clone.MaxOutputTokens);
@@ -66,6 +72,11 @@ public class ChatOptionsTests
         {
             ["key"] = "value",
         };
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        options.ChatThreadId = "54321";
+        Assert.Equal("54321", options.ChatThreadId);
+#pragma warning restore CS0618 // Type or member is obsolete
 
         options.ConversationId = "12345";
         options.Temperature = 0.1f;
@@ -154,6 +165,9 @@ public class ChatOptionsTests
         ChatOptions? deserialized = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.ChatOptions);
         Assert.NotNull(deserialized);
 
+#pragma warning disable CS0618 // Type or member is obsolete
+        Assert.Equal("12345", deserialized.ChatThreadId);
+#pragma warning restore CS0618 // Type or member is obsolete
         Assert.Equal("12345", deserialized.ConversationId);
         Assert.Equal(0.1f, deserialized.Temperature);
         Assert.Equal(2, deserialized.MaxOutputTokens);
