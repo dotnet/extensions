@@ -55,6 +55,12 @@ public class AichatwebTemplatesTests : TestBase
         await TestTemplateCoreAsync(scenarioName: "BasicAspire", templateArgs: ["--aspire"]);
     }
 
+    [Fact]
+    public async Task OpenAI_AzureAISearch()
+    {
+        await TestTemplateCoreAsync(scenarioName: "OpenAI_AzureAISearch", templateArgs: ["--provider", "openai", "--vector-store", "azureaisearch"]);
+    }
+
     private async Task TestTemplateCoreAsync(string scenarioName, IEnumerable<string>? templateArgs = null)
     {
         string workingDir = TestUtils.CreateTemporaryFolder();
@@ -74,6 +80,7 @@ public class AichatwebTemplatesTests : TestBase
             SnapshotsDirectory = "Snapshots",
             OutputDirectory = workingDir,
             DoNotPrependCallerMethodNameToScenarioName = true,
+            DoNotAppendTemplateArgsToScenarioName = true,
             ScenarioName = scenarioName,
             VerificationExcludePatterns = verificationExcludePatterns,
         }
