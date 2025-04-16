@@ -31,6 +31,12 @@ public class ChatResponseTests
     public void Constructor_Messages_Roundtrips()
     {
         ChatResponse response = new();
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        Assert.Same(response.ChatThreadId, response.ChatThreadId);
+#pragma warning restore CS0618 // Type or member is obsolete
+        Assert.Same(response.ConversationId, response.ConversationId);
+
         Assert.NotNull(response.Messages);
         Assert.Same(response.Messages, response.Messages);
 
@@ -48,6 +54,16 @@ public class ChatResponseTests
     public void Properties_Roundtrip()
     {
         ChatResponse response = new();
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        Assert.Null(response.ChatThreadId);
+#pragma warning restore CS0618 // Type or member is obsolete
+        Assert.Null(response.ConversationId);
+        response.ConversationId = "12345";
+        Assert.Equal("12345", response.ConversationId);
+#pragma warning disable CS0618 // Type or member is obsolete
+        Assert.Equal("12345", response.ChatThreadId);
+#pragma warning restore CS0618 // Type or member is obsolete
 
         Assert.Null(response.ResponseId);
         response.ResponseId = "id";
@@ -88,6 +104,7 @@ public class ChatResponseTests
         {
             ResponseId = "id",
             ModelId = "modelId",
+            ConversationId = "12345",
             CreatedAt = new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero),
             FinishReason = ChatFinishReason.ContentFilter,
             Usage = new UsageDetails(),
@@ -105,6 +122,7 @@ public class ChatResponseTests
 
         Assert.Equal("id", result.ResponseId);
         Assert.Equal("modelId", result.ModelId);
+        Assert.Equal("12345", result.ConversationId);
         Assert.Equal(new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero), result.CreatedAt);
         Assert.Equal(ChatFinishReason.ContentFilter, result.FinishReason);
         Assert.NotNull(result.Usage);
@@ -131,6 +149,7 @@ public class ChatResponseTests
         {
             ResponseId = "12345",
             ModelId = "someModel",
+            ConversationId = "someConversation",
             FinishReason = ChatFinishReason.ContentFilter,
             CreatedAt = new DateTimeOffset(2024, 11, 10, 9, 20, 0, TimeSpan.Zero),
             AdditionalProperties = new() { ["key1"] = "value1", ["key2"] = 42 },
@@ -142,6 +161,7 @@ public class ChatResponseTests
 
         ChatResponseUpdate update0 = updates[0];
         Assert.Equal("12345", update0.ResponseId);
+        Assert.Equal("someConversation", update0.ConversationId);
         Assert.Equal("someMessage", update0.MessageId);
         Assert.Equal("someModel", update0.ModelId);
         Assert.Equal(ChatFinishReason.ContentFilter, update0.FinishReason);

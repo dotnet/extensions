@@ -49,6 +49,9 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal(new DateTimeOffset(2, 2, 3, 4, 5, 6, TimeSpan.Zero), response.CreatedAt);
         Assert.Equal("model123", response.ModelId);
 
+#pragma warning disable CS0618 // Type or member is obsolete
+        Assert.Equal("123", response.ChatThreadId);
+#pragma warning restore CS0618 // Type or member is obsolete
         Assert.Equal("123", response.ConversationId);
 
         ChatMessage message = response.Messages.Single();
