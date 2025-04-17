@@ -8,11 +8,13 @@ import ReactMarkdown from "react-markdown";
 import { useReportContext } from "./ReportContext";
 import { useStyles } from "./Styles";
 import { ChatMessageDisplay, isTextContent, isImageContent } from "./Summary";
+import type { MetricType } from "./MetricCard";
 
-export const ConversationDetails = ({ messages, model, usage }: {
+export const ConversationDetails = ({ messages, model, usage, selectedMetric }: {
     messages: ChatMessageDisplay[];
     model?: string;
     usage?: UsageDetails;
+    selectedMetric?: MetricType | null;
 }) => {
     const classes = useStyles();
     const [isExpanded, setIsExpanded] = useState(true);
@@ -59,7 +61,27 @@ export const ConversationDetails = ({ messages, model, usage }: {
         return result;
     };
 
+    const getContextGroups = () => {
+        if (!selectedMetric || !selectedMetric.context) {
+            return [];
+        }
+
+        const contextGroups: { key: string, contents: AIContent[] }[] = [];
+        
+        for (const [key, contents] of Object.entries(selectedMetric.context)) {
+            if (contents && contents.length > 0) {
+                contextGroups.push({
+                    key: key.toLowerCase(),
+                    contents: contents
+                });
+            }
+        }
+
+        return contextGroups;
+    };
+
     const messageGroups = groupMessages();
+    const contextGroups = getContextGroups();
 
     return (
         <div className={classes.section}>
@@ -79,7 +101,7 @@ export const ConversationDetails = ({ messages, model, usage }: {
                         );
 
                         return (
-                            <div key={index} className={messageRowClass}>
+                            <div key={`msg-${index}`} className={messageRowClass}>
                                 <div className={classes.messageParticipantName}>{group.participantName}</div>
                                 <div className={classes.messageBubble}>
                                     {group.contents.map((content, contentIndex) => (
@@ -91,6 +113,19 @@ export const ConversationDetails = ({ messages, model, usage }: {
                             </div>
                         );
                     })}
+                    
+                    {contextGroups.map((group, index) => (
+                        <div key={`context-${index}`} className={mergeClasses(classes.messageRow, classes.userMessageRow)}>
+                            <div className={classes.messageParticipantName}>{`supplied evaluation context (${group.key})`}</div>
+                            <div className={classes.contextBubble}>
+                                {group.contents.map((content, contentIndex) => (
+                                    <div key={contentIndex}>
+                                        {renderContent(content)}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
                 </div>
             )}
         </div>

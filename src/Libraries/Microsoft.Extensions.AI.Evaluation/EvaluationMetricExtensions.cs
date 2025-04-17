@@ -14,6 +14,31 @@ namespace Microsoft.Extensions.AI.Evaluation;
 public static class EvaluationMetricExtensions
 {
     /// <summary>
+    /// Adds or updates contextual information with the specified <paramref name="name"/> and <paramref name="value"/>
+    /// in the supplied <paramref name="metric"/>'s <see cref="EvaluationMetric.Context"/> collection.
+    /// </summary>
+    /// <param name="metric">The <see cref="EvaluationMetric"/>.</param>
+    /// <param name="name">The name for the contextual information to be added or updated.</param>
+    /// <param name="value">The contextual information to be added or updated.</param>
+    public static void AddOrUpdateContext(this EvaluationMetric metric, string name, params AIContent[] value)
+        => metric.AddOrUpdateContext(name, value as IEnumerable<AIContent>);
+
+    /// <summary>
+    /// Adds or updates contextual information with the specified <paramref name="name"/> and <paramref name="value"/>
+    /// in the supplied <paramref name="metric"/>'s <see cref="EvaluationMetric.Context"/> collection.
+    /// </summary>
+    /// <param name="metric">The <see cref="EvaluationMetric"/>.</param>
+    /// <param name="name">The name for the contextual information to be added or updated.</param>
+    /// <param name="value">The contextual information to be added or updated.</param>
+    public static void AddOrUpdateContext(this EvaluationMetric metric, string name, IEnumerable<AIContent> value)
+    {
+        _ = Throw.IfNull(metric);
+
+        metric.Context ??= new Dictionary<string, IList<AIContent>>();
+        metric.Context[name] = [.. value];
+    }
+
+    /// <summary>
     /// Determines if the supplied <paramref name="metric"/> contains any
     /// <see cref="EvaluationDiagnostic"/> matching the supplied <paramref name="predicate"/>.
     /// </summary>
@@ -41,20 +66,6 @@ public static class EvaluationMetricExtensions
     }
 
     /// <summary>
-    /// Adds the supplied <see cref="EvaluationDiagnostic"/> to the supplied <see cref="EvaluationMetric"/>'s
-    /// <see cref="EvaluationMetric.Diagnostics"/> collection.
-    /// </summary>
-    /// <param name="metric">The <see cref="EvaluationMetric"/>.</param>
-    /// <param name="diagnostic">The <see cref="EvaluationDiagnostic"/> to be added.</param>
-    public static void AddDiagnostic(this EvaluationMetric metric, EvaluationDiagnostic diagnostic)
-    {
-        _ = Throw.IfNull(metric);
-
-        metric.Diagnostics ??= new List<EvaluationDiagnostic>();
-        metric.Diagnostics.Add(diagnostic);
-    }
-
-    /// <summary>
     /// Adds the supplied <see cref="EvaluationDiagnostic"/>s to the supplied <see cref="EvaluationMetric"/>'s
     /// <see cref="EvaluationMetric.Diagnostics"/> collection.
     /// </summary>
@@ -65,9 +76,14 @@ public static class EvaluationMetricExtensions
         _ = Throw.IfNull(metric);
         _ = Throw.IfNull(diagnostics);
 
-        foreach (EvaluationDiagnostic diagnostic in diagnostics)
+        if (diagnostics.Any())
         {
-            metric.AddDiagnostic(diagnostic);
+            metric.Diagnostics ??= new List<EvaluationDiagnostic>();
+
+            foreach (EvaluationDiagnostic diagnostic in diagnostics)
+            {
+                metric.Diagnostics.Add(diagnostic);
+            }
         }
     }
 
@@ -82,7 +98,7 @@ public static class EvaluationMetricExtensions
 
     /// <summary>
     /// Adds or updates metadata with the specified <paramref name="name"/> and <paramref name="value"/> in the
-    /// supplied <see cref="EvaluationMetric"/>'s <see cref="EvaluationMetric.Metadata"/> collection.
+    /// supplied <paramref name="metric"/>'s <see cref="EvaluationMetric.Metadata"/> collection.
     /// </summary>
     /// <param name="metric">The <see cref="EvaluationMetric"/>.</param>
     /// <param name="name">The name of the metadata.</param>
@@ -96,7 +112,7 @@ public static class EvaluationMetricExtensions
     }
 
     /// <summary>
-    /// Adds or updates the supplied <paramref name="metadata"/> to the supplied <see cref="EvaluationMetric"/>'s
+    /// Adds or updates the supplied <paramref name="metadata"/> in the supplied <paramref name="metric"/>'s
     /// <see cref="EvaluationMetric.Metadata"/> collection.
     /// </summary>
     /// <param name="metric">The <see cref="EvaluationMetric"/>.</param>

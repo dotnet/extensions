@@ -90,7 +90,7 @@ internal sealed class Program
 
         var formatOpt =
             new Option<ReportCommand.Format>(
-                "--format",
+                ["-f", "--format"],
                 () => ReportCommand.Format.html,
                 "Specify the format for the generated report.");
 

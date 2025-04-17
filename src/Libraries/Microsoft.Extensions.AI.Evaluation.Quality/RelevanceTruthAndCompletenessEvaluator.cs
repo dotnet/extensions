@@ -145,7 +145,7 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator : ChatConvers
             if (string.IsNullOrEmpty(evaluationResponseText))
             {
                 rating = Rating.Inconclusive;
-                result.AddDiagnosticToAllMetrics(
+                result.AddDiagnosticsToAllMetrics(
                     EvaluationDiagnostic.Error(
                         "Evaluation failed because the model failed to produce a valid evaluation response."));
             }
@@ -168,7 +168,7 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator : ChatConvers
                         if (string.IsNullOrEmpty(repairedJson))
                         {
                             rating = Rating.Inconclusive;
-                            result.AddDiagnosticToAllMetrics(
+                            result.AddDiagnosticsToAllMetrics(
                                 EvaluationDiagnostic.Error(
                                     $"""
                                     Failed to repair the following response from the model and parse scores for '{RelevanceMetricName}', '{TruthMetricName}' and '{CompletenessMetricName}'.:
@@ -183,7 +183,7 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator : ChatConvers
                     catch (JsonException ex)
                     {
                         rating = Rating.Inconclusive;
-                        result.AddDiagnosticToAllMetrics(
+                        result.AddDiagnosticsToAllMetrics(
                             EvaluationDiagnostic.Error(
                                 $"""
                                 Failed to repair the following response from the model and parse scores for '{RelevanceMetricName}', '{TruthMetricName}' and '{CompletenessMetricName}'.:
@@ -281,7 +281,7 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator : ChatConvers
 
             if (!string.IsNullOrWhiteSpace(rating.Error))
             {
-                result.AddDiagnosticToAllMetrics(EvaluationDiagnostic.Error(rating.Error!));
+                result.AddDiagnosticsToAllMetrics(EvaluationDiagnostic.Error(rating.Error!));
             }
         }
     }

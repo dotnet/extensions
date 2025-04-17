@@ -32,7 +32,7 @@ export const ScoreDetail = ({ scenario, scoreSummary }: { scenario: ScenarioRunR
             onMetricSelect={setSelectedMetric}
             selectedMetric={selectedMetric} />
         {selectedMetric && <MetricDetailsSection metric={selectedMetric} />}
-        <ConversationDetails messages={messages} model={model} usage={usage} />
+        <ConversationDetails messages={messages} model={model} usage={usage} selectedMetric={selectedMetric} />
         {scenario.chatDetails && scenario.chatDetails.turnDetails.length > 0 && <ChatDetailsSection chatDetails={scenario.chatDetails} />}
     </div>);
 };
