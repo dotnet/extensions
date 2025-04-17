@@ -127,6 +127,14 @@ export const useStyles = makeStyles({
         backgroundColor: tokens.colorNeutralBackground3,
         border: '1px solid ' + tokens.colorNeutralStroke2,
     },
+    contextBubble: {
+        padding: '0.75rem 1rem',
+        borderRadius: '12px',
+        overflow: 'hidden',
+        wordBreak: 'break-word',
+        backgroundColor: tokens.colorBrandBackground2,
+        border: '1px solid ' + tokens.colorNeutralStroke2,
+    },
     cacheHitIcon: {
         color: tokens.colorPaletteGreenForeground1,
     },
