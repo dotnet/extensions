@@ -427,7 +427,7 @@ public partial class AIFunctionFactoryTest
     }
 
     [Fact]
-    public async Task ConfigureParameterBinding_CanBeUsedToSupportFromKeyedServices()
+    public async Task FromKeyedServices_ResolvesFromServiceProvider()
     {
         MyService service = new(42);
 
@@ -435,35 +435,58 @@ public partial class AIFunctionFactoryTest
         sc.AddKeyedSingleton("key", service);
         IServiceProvider sp = sc.BuildServiceProvider();
 
-        AIFunction f = AIFunctionFactory.Create(
-            ([FromKeyedServices("key")] MyService service, int myInteger) => service.Value + myInteger,
-            new AIFunctionFactoryOptions
-            {
-                ConfigureParameterBinding = p =>
-                {
-                    if (p.GetCustomAttribute<FromKeyedServicesAttribute>() is { } attr)
-                    {
-                        return new()
-                        {
-                            BindParameter = (p, a) =>
-                                (a.Services as IKeyedServiceProvider)?.GetKeyedService(p.ParameterType, attr.Key) is { } s ? s :
-                                p.HasDefaultValue ? p.DefaultValue :
-                                throw new ArgumentException($"Unable to resolve argument for '{p.Name}'."),
-                            ExcludeFromSchema = true
-                        };
-                    }
-
-                    return default;
-                },
-            });
+        AIFunction f = AIFunctionFactory.Create(([FromKeyedServices("key")] MyService service, int myInteger) => service.Value + myInteger);
 
         Assert.Contains("myInteger", f.JsonSchema.ToString());
         Assert.DoesNotContain("service", f.JsonSchema.ToString());
 
         Exception e = await Assert.ThrowsAsync<ArgumentException>(() => f.InvokeAsync(new() { ["myInteger"] = 1 }).AsTask());
-        Assert.Contains("Unable to resolve", e.Message);
+        Assert.Contains("No service of type", e.Message);
 
         var result = await f.InvokeAsync(new() { ["myInteger"] = 1, Services = sp });
+        Assert.Contains("43", result?.ToString());
+    }
+
+    [Fact]
+    public async Task FromKeyedServices_NullKeysBindToNonKeyedServices()
+    {
+        MyService service = new(42);
+
+        ServiceCollection sc = new();
+        sc.AddSingleton(service);
+        IServiceProvider sp = sc.BuildServiceProvider();
+
+        AIFunction f = AIFunctionFactory.Create(([FromKeyedServices(null!)] MyService service, int myInteger) => service.Value + myInteger);
+
+        Assert.Contains("myInteger", f.JsonSchema.ToString());
+        Assert.DoesNotContain("service", f.JsonSchema.ToString());
+
+        Exception e = await Assert.ThrowsAsync<ArgumentException>(() => f.InvokeAsync(new() { ["myInteger"] = 1 }).AsTask());
+        Assert.Contains("No service of type", e.Message);
+
+        var result = await f.InvokeAsync(new() { ["myInteger"] = 1, Services = sp });
+        Assert.Contains("43", result?.ToString());
+    }
+
+    [Fact]
+    public async Task FromKeyedServices_OptionalDefaultsToNull()
+    {
+        MyService service = new(42);
+
+        ServiceCollection sc = new();
+        sc.AddKeyedSingleton("key", service);
+        IServiceProvider sp = sc.BuildServiceProvider();
+
+        AIFunction f = AIFunctionFactory.Create(([FromKeyedServices("key")] MyService? service = null, int myInteger = 0) =>
+            service is null ? "null " + 1 : (service.Value + myInteger).ToString());
+
+        Assert.Contains("myInteger", f.JsonSchema.ToString());
+        Assert.DoesNotContain("service", f.JsonSchema.ToString());
+
+        var result = await f.InvokeAsync(new() { ["myInteger"] = 1 });
+        Assert.Contains("null 1", result?.ToString());
+
+        result = await f.InvokeAsync(new() { ["myInteger"] = 1, Services = sp });
         Assert.Contains("43", result?.ToString());
     }
 
