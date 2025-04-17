@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "ChatWithCustomData.Web": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:56983;http://localhost:56984"
+    }
+  }
+}
