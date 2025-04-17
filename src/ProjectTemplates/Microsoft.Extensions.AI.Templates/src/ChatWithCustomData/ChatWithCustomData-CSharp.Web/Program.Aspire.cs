@@ -26,8 +26,12 @@ builder.AddOllamaApiClient("chat")
 builder.AddOllamaApiClient("embeddings")
     .AddEmbeddingGenerator();
 #elif (IsAzureAiFoundry)
-#else // IsAzureOpenAI || IsOpenAI || IsGHModels
+#else // (IsOpenAI || IsAzureOpenAI || IsGHModels)
+#if (IsOpenAI)
+var openai = builder.AddOpenAIClient("openai");
+#else
 var openai = builder.AddAzureOpenAIClient("openai");
+#endif
 openai.AddChatClient("gpt-4o-mini")
     .UseFunctionInvocation()
     .UseOpenTelemetry(configure: c =>

@@ -1,6 +1,6 @@
 # AI Chat with Custom Data
 
-This project is an AI chat application that demonstrates how to chat with custom data using an AI language model. Please note that this template is currently in an early preview stage. If you have feedback, please take a [brief survey](https://aka.ms/dotnet-chat-template-survey).
+This project is an AI chat application that demonstrates how to chat with custom data using an AI language model. Please note that this template is currently in an early preview stage. If you have feedback, please take a [brief survey](https://aka.ms/dotnet-chat-templatePreview2-survey).
 
 >[!NOTE]
 > Before running this project you need to configure the API keys or endpoints for the providers you have chosen. See below for details specific to your choices.
@@ -96,7 +96,7 @@ Deploy the `gpt-4o-mini` and `text-embedding-3-small` models to your Azure OpenA
 
 #### ---#if (UseManagedIdentity)
 ### 3. Configure Azure OpenAI for Keyless Authentication
-This template is configured to use keyless authentication (also known as Managed Identity, with Entra ID). In the Azure Portal, when viewing the Azure OpenAI resource you just created, view access control settings and assign yourself the `Cognitive Services OpenAI User` role. [Learn more](https://learn.microsoft.com/azure/developer/ai/keyless-connections).
+This template is configured to use keyless authentication (also known as Managed Identity, with Entra ID). In the Azure Portal, when viewing the Azure OpenAI resource you just created, view access control settings and assign yourself the `Azure AI Developer` role. [Learn more about configuring authentication for local development](https://learn.microsoft.com/azure/developer/ai/keyless-connections?tabs=csharp%2Cazure-cli#authenticate-for-local-development).
 
 ### 4. Configure Azure OpenAI Endpoint
 Configure your Azure OpenAI endpoint for this project, using .NET User Secrets:
@@ -158,7 +158,7 @@ To use Azure AI Search, you will need an Azure account and an Azure AI Search re
 ### 1. Create an Azure AI Search Resource
 Follow the instructions in the [Azure portal](https://portal.azure.com/) to create an Azure AI Search resource. Note that there is a free tier for the service but it is not currently the default setting on the portal.
 
-Note that if you previously used the same Azure AI Search resource with different model using this project name, you may need to delete your `$$VectorStoreIndexName$$` index using the [Azure portal](https://portal.azure.com/) first before continuing; otherwise, data ingestion may fail due to a vector dimension mismatch.
+Note that if you previously used the same Azure AI Search resource with different model using this project name, you may need to delete your `data-ChatWithCustomData-CSharp.Web-ingestion` index using the [Azure portal](https://portal.azure.com/) first before continuing; otherwise, data ingestion may fail due to a vector dimension mismatch.
 
 #### ---#if (UseManagedIdentity)
 ### 2. Configure Azure AI Search for Keyless Authentication
