@@ -29,10 +29,9 @@ public static class AzureStorageReportingConfiguration
     /// survive in the cache before they are considered expired and evicted.
     /// </param>
     /// <param name="chatConfiguration">
-    /// A <see cref="ChatConfiguration"/> that specifies the <see cref="IChatClient"/> and the
-    /// <see cref="IEvaluationTokenCounter"/> that are used by AI-based <paramref name="evaluators"/> included in the
-    /// returned <see cref="ReportingConfiguration"/>. Can be omitted if none of the included
-    /// <paramref name="evaluators"/> are AI-based.
+    /// A <see cref="ChatConfiguration"/> that specifies the <see cref="IChatClient"/> that is used by AI-based
+    /// <paramref name="evaluators"/> included in the returned <see cref="ReportingConfiguration"/>. Can be omitted if
+    /// none of the included <paramref name="evaluators"/> are AI-based.
     /// </param>
     /// <param name="enableResponseCaching">
     /// <see langword="true"/> to enable caching of AI responses; <see langword="false"/> otherwise.

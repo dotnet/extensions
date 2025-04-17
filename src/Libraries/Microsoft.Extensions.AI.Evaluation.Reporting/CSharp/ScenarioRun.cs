@@ -80,9 +80,9 @@ public sealed class ScenarioRun : IAsyncDisposable
     public string ExecutionName { get; }
 
     /// <summary>
-    /// Gets a <see cref="Evaluation.ChatConfiguration"/> that specifies the <see cref="IChatClient"/> and the
-    /// <see cref="IEvaluationTokenCounter"/> that are used by AI-based <see cref="IEvaluator"/>s that are invoked as
-    /// part of the evaluation of this <see cref="ScenarioRun"/>.
+    /// Gets a <see cref="Evaluation.ChatConfiguration"/> that specifies the <see cref="IChatClient"/> that is used by
+    /// AI-based <see cref="IEvaluator"/>s that are invoked as part of the evaluation of this
+    /// <see cref="ScenarioRun"/>.
     /// </summary>
     public ChatConfiguration? ChatConfiguration { get; }
 

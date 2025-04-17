@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.AI.Evaluation;
 using Microsoft.Extensions.AI.Evaluation.Reporting;
 using Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
+using Microsoft.Extensions.AI.Evaluation.Tests;
 using Xunit;
 
 namespace Microsoft.Extensions.AI.Evaluation.Integration.Tests;

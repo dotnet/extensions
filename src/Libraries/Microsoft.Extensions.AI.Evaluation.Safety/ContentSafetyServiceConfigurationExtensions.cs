@@ -46,7 +46,7 @@ public static class ContentSafetyServiceConfigurationExtensions
                 originalChatClient: originalChatConfiguration?.ChatClient);
 #pragma warning restore CA2000
 
-        return new ChatConfiguration(newChatClient, originalChatConfiguration?.TokenCounter);
+        return new ChatConfiguration(newChatClient);
     }
 
     /// <summary>

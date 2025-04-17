@@ -15,6 +15,10 @@
     <MinMutationScore>0</MinMutationScore>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.ML.Tokenizers" />
   </ItemGroup>
