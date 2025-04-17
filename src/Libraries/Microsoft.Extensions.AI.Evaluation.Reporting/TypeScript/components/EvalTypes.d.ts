@@ -94,6 +94,9 @@ type BaseEvaluationMetric = {
     $type: string;
     name: string;
     interpretation?: EvaluationMetricInterpretation;
+    context?: {
+        [K: string]: AIContent[]
+    };
     diagnostics?: EvaluationDiagnostic[];
     metadata: { 
         [K: string]: string 

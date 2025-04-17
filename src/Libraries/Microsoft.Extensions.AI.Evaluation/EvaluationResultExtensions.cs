@@ -14,6 +14,43 @@ namespace Microsoft.Extensions.AI.Evaluation;
 public static class EvaluationResultExtensions
 {
     /// <summary>
+    /// Adds or updates contextual information with the specified <paramref name="name"/> and <paramref name="value"/>
+    /// in all <see cref="EvaluationMetric"/>s contained in the supplied <paramref name="result"/>.
+    /// </summary>
+    /// <param name="result">
+    /// The <see cref="EvaluationResult"/> containing the <see cref="EvaluationMetric"/>s that are to be altered.
+    /// </param>
+    /// <param name="name">The name for the contextual information to be added or updated.</param>
+    /// <param name="value">The contextual information to be added or updated.</param>
+    public static void AddOrUpdateContextInAllMetrics(
+        this EvaluationResult result,
+        string name,
+        params AIContent[] value)
+            => result.AddOrUpdateContextInAllMetrics(name, value as IEnumerable<AIContent>);
+
+    /// <summary>
+    /// Adds or updates contextual information with the specified <paramref name="name"/> and <paramref name="value"/>
+    /// in all <see cref="EvaluationMetric"/>s contained in the supplied <paramref name="result"/>.
+    /// </summary>
+    /// <param name="result">
+    /// The <see cref="EvaluationResult"/> containing the <see cref="EvaluationMetric"/>s that are to be altered.
+    /// </param>
+    /// <param name="name">The name for the contextual information to be added or updated.</param>
+    /// <param name="value">The contextual information to be added or updated.</param>
+    public static void AddOrUpdateContextInAllMetrics(
+        this EvaluationResult result,
+        string name,
+        IEnumerable<AIContent> value)
+    {
+        _ = Throw.IfNull(result);
+
+        foreach (EvaluationMetric metric in result.Metrics.Values)
+        {
+            metric.AddOrUpdateContext(name, value);
+        }
+    }
+
+    /// <summary>
     /// Adds the supplied <paramref name="diagnostics"/> to all <see cref="EvaluationMetric"/>s contained in the
     /// supplied <paramref name="result"/>.
     /// </summary>
@@ -90,6 +127,45 @@ public static class EvaluationResultExtensions
             {
                 metric.Interpretation = interpretation;
             }
+        }
+    }
+
+    /// <summary>
+    /// Adds or updates metadata with the specified <paramref name="name"/> and <paramref name="value"/> in all
+    /// <see cref="EvaluationMetric"/>s contained in the supplied <paramref name="result"/>.
+    /// </summary>
+    /// <param name="result">
+    /// The <see cref="EvaluationResult"/> containing the <see cref="EvaluationMetric"/>s that are to be altered.
+    /// </param>
+    /// <param name="name">The name of the metadata.</param>
+    /// <param name="value">The value of the metadata.</param>
+    public static void AddOrUpdateMetadataInAllMetrics(this EvaluationResult result, string name, string value)
+    {
+        _ = Throw.IfNull(result);
+
+        foreach (EvaluationMetric metric in result.Metrics.Values)
+        {
+            metric.AddOrUpdateMetadata(name, value);
+        }
+    }
+
+    /// <summary>
+    /// Adds or updates the supplied <paramref name="metadata"/> in all <see cref="EvaluationMetric"/>s contained in
+    /// the supplied <paramref name="result"/>.
+    /// </summary>
+    /// <param name="result">
+    /// The <see cref="EvaluationResult"/> containing the <see cref="EvaluationMetric"/>s that are to be altered.
+    /// </param>
+    /// <param name="metadata">The metadata to be added or updated.</param>
+    public static void AddOrUpdateMetadataInAllMetrics(
+        this EvaluationResult result,
+        IDictionary<string, string> metadata)
+    {
+        _ = Throw.IfNull(result);
+
+        foreach (EvaluationMetric metric in result.Metrics.Values)
+        {
+            metric.AddOrUpdateMetadata(metadata);
         }
     }
 }
