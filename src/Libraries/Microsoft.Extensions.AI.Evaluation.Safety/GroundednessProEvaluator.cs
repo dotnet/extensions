@@ -63,6 +63,9 @@ public sealed class GroundednessProEvaluator()
                 contentSafetyServicePayloadFormat: ContentSafetyServicePayloadFormat.QuestionAnswer.ToString(),
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
+        GroundednessProEvaluatorContext context = GetRelevantContext(additionalContext);
+        result.AddOrUpdateContextInAllMetrics("Grounding Context", context.GetContents());
+
         return result;
     }
 
@@ -70,15 +73,20 @@ public sealed class GroundednessProEvaluator()
     protected override IReadOnlyList<EvaluationContext>? FilterAdditionalContext(
         IEnumerable<EvaluationContext>? additionalContext)
     {
+        GroundednessProEvaluatorContext context = GetRelevantContext(additionalContext);
+        return [context];
+    }
+
+    private static GroundednessProEvaluatorContext GetRelevantContext(
+        IEnumerable<EvaluationContext>? additionalContext)
+    {
         if (additionalContext?.OfType<GroundednessProEvaluatorContext>().FirstOrDefault()
                 is GroundednessProEvaluatorContext context)
         {
-            return [context];
+            return context;
         }
-        else
-        {
-            throw new InvalidOperationException(
-                $"A value of type '{nameof(GroundednessProEvaluatorContext)}' was not found in the '{nameof(additionalContext)}' collection.");
-        }
+
+        throw new InvalidOperationException(
+            $"A value of type '{nameof(GroundednessProEvaluatorContext)}' was not found in the '{nameof(additionalContext)}' collection.");
     }
 }

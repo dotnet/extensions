@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -35,7 +34,7 @@ public abstract class ChatConversationEvaluator : IEvaluator
     protected virtual string? SystemPrompt => null;
 
     /// <inheritdoc/>
-    public async ValueTask<EvaluationResult> EvaluateAsync(
+    public virtual async ValueTask<EvaluationResult> EvaluateAsync(
         IEnumerable<ChatMessage> messages,
         ChatResponse modelResponse,
         ChatConfiguration? chatConfiguration = null,

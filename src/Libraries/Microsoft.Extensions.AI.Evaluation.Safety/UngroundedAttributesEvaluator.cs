@@ -67,6 +67,9 @@ public sealed class UngroundedAttributesEvaluator()
                 contentSafetyServicePayloadFormat: ContentSafetyServicePayloadFormat.QueryResponse.ToString(),
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
+        UngroundedAttributesEvaluatorContext context = GetRelevantContext(additionalContext);
+        result.AddOrUpdateContextInAllMetrics("Grounding Context", context.GetContents());
+
         return result;
     }
 
@@ -74,15 +77,20 @@ public sealed class UngroundedAttributesEvaluator()
     protected override IReadOnlyList<EvaluationContext>? FilterAdditionalContext(
         IEnumerable<EvaluationContext>? additionalContext)
     {
+        UngroundedAttributesEvaluatorContext context = GetRelevantContext(additionalContext);
+        return [context];
+    }
+
+    private static UngroundedAttributesEvaluatorContext GetRelevantContext(
+        IEnumerable<EvaluationContext>? additionalContext)
+    {
         if (additionalContext?.OfType<UngroundedAttributesEvaluatorContext>().FirstOrDefault()
                 is UngroundedAttributesEvaluatorContext context)
         {
-            return [context];
+            return context;
         }
-        else
-        {
-            throw new InvalidOperationException(
-                $"A value of type '{nameof(UngroundedAttributesEvaluatorContext)}' was not found in the '{nameof(additionalContext)}' collection.");
-        }
+
+        throw new InvalidOperationException(
+            $"A value of type '{nameof(UngroundedAttributesEvaluatorContext)}' was not found in the '{nameof(additionalContext)}' collection.");
     }
 }
