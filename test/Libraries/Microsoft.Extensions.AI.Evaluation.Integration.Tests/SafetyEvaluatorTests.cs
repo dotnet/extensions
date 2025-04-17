@@ -10,6 +10,7 @@ using Azure.Identity;
 using Microsoft.Extensions.AI.Evaluation.Reporting;
 using Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
 using Microsoft.Extensions.AI.Evaluation.Safety;
+using Microsoft.Extensions.AI.Evaluation.Tests;
 using Microsoft.TestUtilities;
 using Xunit;
 
