@@ -7,11 +7,12 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <EmbeddedResource Include="..\..\Shared\ImageDataUri\dotnet.png" Link="Resources\dotnet.png"/>
+    <EmbeddedResource Include="..\..\Shared\ImageDataUri\dotnet.png" Link="Resources\dotnet.png" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\..\Shared\ImageDataUri\ImageDataUri.cs" Link="Shared\ImageDataUri\ImageDataUri.cs" />
+    <Compile Include="..\Microsoft.Extensions.AI.Evaluation.Tests\ChatMessageUtilities.cs" Link="Shared\ChatMessageUtilities.cs" />
   </ItemGroup>
 
 
