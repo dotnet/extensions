@@ -662,7 +662,6 @@ public class OpenAIChatClientTests
                         "function": {
                             "description": "Gets the age of the specified person.",
                             "name": "GetPersonAge",
-                            "strict":true,
                             "parameters": {
                                 "type": "object",
                                 "required": [
@@ -868,7 +867,6 @@ public class OpenAIChatClientTests
                         "function": {
                             "description": "Gets the age of the specified person.",
                             "name": "GetPersonAge",
-                            "strict":true,
                             "parameters": {
                                 "type": "object",
                                 "required": [
