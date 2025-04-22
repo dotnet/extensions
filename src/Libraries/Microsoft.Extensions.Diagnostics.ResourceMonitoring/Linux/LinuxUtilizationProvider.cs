@@ -163,7 +163,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         {
             _cpuUtilizationLimit100PercentExceededCounter?.Add(1);
             _cpuUtilizationLimit100PercentExceeded++;
-            Log.CounterMessage(_logger, $"CPU utilization exceeded 100%: {utilization}, Value: {_cpuUtilizationLimit100PercentExceeded}");
+            Log.CounterMessage100(_logger, _cpuUtilizationLimit100PercentExceeded);
         }
 
         // Increment counter if utilization exceeds 110%
@@ -171,7 +171,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         {
             _cpuUtilizationLimit110PercentExceededCounter?.Add(1);
             _cpuUtilizationLimit110PercentExceeded++;
-            Log.CounterMessage(_logger, $"CPU utilization exceeded 110%: {utilization}, Value: {_cpuUtilizationLimit110PercentExceeded}");
+            Log.CounterMessage110(_logger, _cpuUtilizationLimit110PercentExceeded);
         }
 
         return utilization;
