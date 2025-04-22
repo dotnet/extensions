@@ -46,8 +46,14 @@ internal static partial class Log
         double cpuCores);
 
     [LoggerMessage(5, LogLevel.Debug,
-        "Counters for CgroupV2 {message}")]
-    public static partial void CounterMessage(
+        "CPU utilization exceeded 100%: Counter = {counterValue}")]
+    public static partial void CounterMessage100(
         ILogger logger,
-        string message);
+        long counterValue);
+
+    [LoggerMessage(6, LogLevel.Debug,
+        "CPU utilization exceeded 110%: Counter = {counterValue}")]
+    public static partial void CounterMessage110(
+        ILogger logger,
+        long counterValue);
 }
