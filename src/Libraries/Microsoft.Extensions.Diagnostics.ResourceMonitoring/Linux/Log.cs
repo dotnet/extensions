@@ -44,4 +44,16 @@ internal static partial class Log
         long previousCgroupCpuTime,
         double actualElapsedNanoseconds,
         double cpuCores);
+
+    [LoggerMessage(5, LogLevel.Debug,
+        "CPU utilization exceeded 100%: Counter = {counterValue}")]
+    public static partial void CounterMessage100(
+        ILogger logger,
+        long counterValue);
+
+    [LoggerMessage(6, LogLevel.Debug,
+        "CPU utilization exceeded 110%: Counter = {counterValue}")]
+    public static partial void CounterMessage110(
+        ILogger logger,
+        long counterValue);
 }
