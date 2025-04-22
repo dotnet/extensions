@@ -65,6 +65,22 @@ internal static class ResourceUtilizationInstruments
     /// The type of an instrument is <see cref="System.Diagnostics.Metrics.ObservableUpDownCounter{T}"/>.
     /// </remarks>
     public const string SystemNetworkConnections = "system.network.connections";
+
+    /// <summary>
+    /// The name of an instrument to count occurrences when CPU utilization exceeds 100% of the limit.
+    /// </summary>
+    /// <remarks>
+    /// The type of an instrument is <see cref="System.Diagnostics.Metrics.Counter{T}"/>.
+    /// </remarks>
+    public const string CpuUtilizationLimit100PercentExceeded = "cpu.utilization.limit.100percent.exceeded";
+
+    /// <summary>
+    /// The name of an instrument to count occurrences when CPU utilization exceeds 110% of the limit.
+    /// </summary>
+    /// <remarks>
+    /// The type of an instrument is <see cref="System.Diagnostics.Metrics.Counter{T}"/>.
+    /// </remarks>
+    public const string CpuUtilizationLimit110PercentExceeded = "cpu.utilization.limit.110percent.exceeded";
 }
 
 #pragma warning disable CS1574
