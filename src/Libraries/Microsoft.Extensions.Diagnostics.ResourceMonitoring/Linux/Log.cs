@@ -44,4 +44,11 @@ internal static partial class Log
         long previousCgroupCpuTime,
         double actualElapsedNanoseconds,
         double cpuCores);
+
+    [LoggerMessage(5, LogLevel.Debug,
+        "Counters for CgroupV2 {message}, Counter = {counterValue}")]
+    public static partial void CounterMessage(
+        ILogger logger,
+        string message,
+        long counterValue);
 }
