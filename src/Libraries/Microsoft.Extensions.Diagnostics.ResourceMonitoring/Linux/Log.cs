@@ -46,9 +46,8 @@ internal static partial class Log
         double cpuCores);
 
     [LoggerMessage(5, LogLevel.Debug,
-        "Counters for CgroupV2 {message}, Counter = {counterValue}")]
+        "Counters for CgroupV2 {message}")]
     public static partial void CounterMessage(
         ILogger logger,
-        string message,
-        long counterValue);
+        string message);
 }
