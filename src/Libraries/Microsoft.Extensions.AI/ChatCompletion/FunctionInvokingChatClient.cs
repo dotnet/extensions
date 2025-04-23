@@ -35,7 +35,7 @@ namespace Microsoft.Extensions.AI;
 /// such as hitting <see cref="MaximumIterationsPerRequest"/>.
 /// </para>
 /// <para>
-/// The provided implementation of <see cref="IChatClient"/> is conversation-safe for concurrent use so long as the
+/// The provided implementation of <see cref="IChatClient"/> is thread-safe for concurrent use so long as the
 /// <see cref="AIFunction"/> instances employed as part of the supplied <see cref="ChatOptions"/> are also safe.
 /// The <see cref="AllowConcurrentInvocation"/> property can be used to control whether multiple function invocation
 /// requests as part of the same request are invocable concurrently, but even with that set to <see langword="false"/>
