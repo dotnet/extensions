@@ -55,7 +55,8 @@ public abstract class ChatConversationEvaluator : IEvaluator
             return result;
         }
 
-        (ChatMessage? userRequest, List<ChatMessage> history) = GetUserRequestAndHistory(messages);
+        (ChatMessage? userRequest, List<ChatMessage> conversationHistory) =
+            GetUserRequestAndConversationHistory(messages);
 
         var evaluationMessages = new List<ChatMessage>();
         if (!string.IsNullOrWhiteSpace(SystemPrompt))
@@ -67,7 +68,7 @@ public abstract class ChatConversationEvaluator : IEvaluator
             await RenderEvaluationPromptAsync(
                 userRequest,
                 modelResponse,
-                includedHistory: history,
+                conversationHistory,
                 additionalContext,
                 cancellationToken).ConfigureAwait(false);
 
@@ -145,13 +146,13 @@ public abstract class ChatConversationEvaluator : IEvaluator
     /// The request that produced the <paramref name="modelResponse"/> that is to be evaluated.
     /// </param>
     /// <param name="modelResponse">The response that is to be evaluated.</param>
-    /// <param name="includedHistory">
+    /// <param name="conversationHistory">
     /// The conversation history (excluding the <paramref name="userRequest"/> and <paramref name="modelResponse"/>)
     /// that is to be included as part of the evaluation prompt.
     /// </param>
     /// <param name="additionalContext">
     /// Additional contextual information (beyond that which is available in the <paramref name="userRequest"/> and
-    /// <paramref name="includedHistory"/>) that this <see cref="IEvaluator"/> may need to accurately evaluate the
+    /// <paramref name="conversationHistory"/>) that this <see cref="IEvaluator"/> may need to accurately evaluate the
     /// supplied <paramref name="modelResponse"/>.
     /// </param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can cancel the operation.</param>
@@ -159,7 +160,7 @@ public abstract class ChatConversationEvaluator : IEvaluator
     protected abstract ValueTask<string> RenderEvaluationPromptAsync(
         ChatMessage? userRequest,
         ChatResponse modelResponse,
-        IEnumerable<ChatMessage>? includedHistory,
+        IEnumerable<ChatMessage>? conversationHistory,
         IEnumerable<EvaluationContext>? additionalContext,
         CancellationToken cancellationToken);
 
@@ -202,11 +203,11 @@ public abstract class ChatConversationEvaluator : IEvaluator
         EvaluationResult result,
         CancellationToken cancellationToken);
 
-    private (ChatMessage? userRequest, List<ChatMessage> history) GetUserRequestAndHistory(
+    private (ChatMessage? userRequest, List<ChatMessage> conversationHistory) GetUserRequestAndConversationHistory(
         IEnumerable<ChatMessage> messages)
     {
         ChatMessage? userRequest = null;
-        List<ChatMessage> history;
+        List<ChatMessage> conversationHistory;
 
         if (IgnoresHistory)
         {
@@ -215,22 +216,22 @@ public abstract class ChatConversationEvaluator : IEvaluator
                     ? lastMessage
                     : null;
 
-            history = [];
+            conversationHistory = [];
         }
         else
         {
-            history = [.. messages];
-            int lastMessageIndex = history.Count - 1;
+            conversationHistory = [.. messages];
+            int lastMessageIndex = conversationHistory.Count - 1;
 
             if (lastMessageIndex >= 0 &&
-                history[lastMessageIndex] is ChatMessage lastMessage &&
+                conversationHistory[lastMessageIndex] is ChatMessage lastMessage &&
                 lastMessage.Role == ChatRole.User)
             {
                 userRequest = lastMessage;
-                history.RemoveAt(lastMessageIndex);
+                conversationHistory.RemoveAt(lastMessageIndex);
             }
         }
 
-        return (userRequest, history);
+        return (userRequest, conversationHistory);
     }
 }

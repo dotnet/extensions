@@ -77,7 +77,7 @@ public sealed class GroundednessEvaluator : SingleNumericMetricEvaluator
     protected override async ValueTask<string> RenderEvaluationPromptAsync(
         ChatMessage? userRequest,
         ChatResponse modelResponse,
-        IEnumerable<ChatMessage>? includedHistory,
+        IEnumerable<ChatMessage>? conversationHistory,
         IEnumerable<EvaluationContext>? additionalContext,
         CancellationToken cancellationToken)
     {
@@ -99,9 +99,9 @@ public sealed class GroundednessEvaluator : SingleNumericMetricEvaluator
             _ = builder.AppendLine();
         }
 
-        if (includedHistory is not null)
+        if (conversationHistory is not null)
         {
-            foreach (ChatMessage message in includedHistory)
+            foreach (ChatMessage message in conversationHistory)
             {
                 _ = builder.Append(await RenderAsync(message, cancellationToken).ConfigureAwait(false));
             }
