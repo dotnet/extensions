@@ -93,7 +93,7 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator : ChatConvers
     protected override async ValueTask<string> RenderEvaluationPromptAsync(
         ChatMessage? userRequest,
         ChatResponse modelResponse,
-        IEnumerable<ChatMessage>? includedHistory,
+        IEnumerable<ChatMessage>? conversationHistory,
         IEnumerable<EvaluationContext>? additionalContext,
         CancellationToken cancellationToken)
     {
@@ -107,9 +107,9 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator : ChatConvers
                 : string.Empty;
 
         var builder = new StringBuilder();
-        if (includedHistory is not null)
+        if (conversationHistory is not null)
         {
-            foreach (ChatMessage message in includedHistory)
+            foreach (ChatMessage message in conversationHistory)
             {
                 _ = builder.Append(await RenderAsync(message, cancellationToken).ConfigureAwait(false));
             }

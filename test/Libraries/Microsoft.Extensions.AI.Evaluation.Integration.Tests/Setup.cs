@@ -5,7 +5,6 @@ using System;
 using System.ClientModel;
 using Azure.AI.OpenAI;
 using Azure.Identity;
-using Microsoft.ML.Tokenizers;
 
 namespace Microsoft.Extensions.AI.Evaluation.Integration.Tests;
 
@@ -25,8 +24,6 @@ internal static class Setup
                 : new AzureOpenAIClient(endpoint, credential, options);
 
         IChatClient chatClient = azureClient.GetChatClient(Settings.Current.DeploymentName).AsIChatClient();
-        Tokenizer tokenizer = TiktokenTokenizer.CreateForModel(Settings.Current.ModelName);
-        IEvaluationTokenCounter tokenCounter = tokenizer.ToTokenCounter(inputTokenLimit: 6000);
-        return new ChatConfiguration(chatClient, tokenCounter);
+        return new ChatConfiguration(chatClient);
     }
 }

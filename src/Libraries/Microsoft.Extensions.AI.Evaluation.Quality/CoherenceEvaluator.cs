@@ -50,7 +50,7 @@ public sealed class CoherenceEvaluator : SingleNumericMetricEvaluator
     protected override async ValueTask<string> RenderEvaluationPromptAsync(
         ChatMessage? userRequest,
         ChatResponse modelResponse,
-        IEnumerable<ChatMessage>? includedHistory,
+        IEnumerable<ChatMessage>? conversationHistory,
         IEnumerable<EvaluationContext>? additionalContext,
         CancellationToken cancellationToken)
     {
