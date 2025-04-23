@@ -9,7 +9,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides context for an in-flight function invocation.</summary>
-public sealed class FunctionInvocationContext
+public class FunctionInvocationContext
 {
     /// <summary>
     /// A nop function used to allow <see cref="Function"/> to be non-nullable. Default instances of
@@ -94,4 +94,9 @@ public sealed class FunctionInvocationContext
     /// more function call requests in responses.
     /// </remarks>
     public bool Terminate { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the context is happening in a streaming scenario.
+    /// </summary>
+    public bool IsStreaming { get; set; }
 }
