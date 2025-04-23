@@ -8,8 +8,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
-using System.Threading;
-using System.Threading.Tasks;
+using System.conversationing;
+using System.conversationing.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Diagnostics;
@@ -35,7 +35,7 @@ namespace Microsoft.Extensions.AI;
 /// such as hitting <see cref="MaximumIterationsPerRequest"/>.
 /// </para>
 /// <para>
-/// The provided implementation of <see cref="IChatClient"/> is thread-safe for concurrent use so long as the
+/// The provided implementation of <see cref="IChatClient"/> is conversation-safe for concurrent use so long as the
 /// <see cref="AIFunction"/> instances employed as part of the supplied <see cref="ChatOptions"/> are also safe.
 /// The <see cref="AllowConcurrentInvocation"/> property can be used to control whether multiple function invocation
 /// requests as part of the same request are invocable concurrently, but even with that set to <see langword="false"/>
@@ -226,7 +226,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         List<ChatMessage>? responseMessages = null; // tracked list of messages, across multiple turns, to be used for the final response
         UsageDetails? totalUsage = null; // tracked usage across all turns, to be used for the final response
         List<FunctionCallContent>? functionCallContents = null; // function call contents that need responding to in the current turn
-        bool lastIterationHadConversationId = false; // whether the last iteration's response had a ChatConversationId set
+        bool lastIterationHadConversationId = false; // whether the last iteration's response had a ConversationId set
         int consecutiveErrorCount = 0;
 
         for (int iteration = 0; ; iteration++)
@@ -320,7 +320,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         List<ChatMessage>? augmentedHistory = null; // the actual history of messages sent on turns other than the first
         List<FunctionCallContent>? functionCallContents = null; // function call contents that need responding to in the current turn
         List<ChatMessage>? responseMessages = null; // tracked list of messages, across multiple turns, to be used in fallback cases to reconstitute history
-        bool lastIterationHadConversationId = false; // whether the last iteration's response had a ChatConversationId set
+        bool lastIterationHadConversationId = false; // whether the last iteration's response had a ConversationId set
         List<ChatResponseUpdate> updates = []; // updates from the current response
         int consecutiveErrorCount = 0;
 
@@ -439,7 +439,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <param name="augmentedHistory">The augmented history containing all the messages to be sent.</param>
     /// <param name="response">The most recent response being handled.</param>
     /// <param name="allTurnsResponseMessages">A list of all response messages received up until this point.</param>
-    /// <param name="lastIterationHadConversationId">Whether the previous iteration's response had a thread id.</param>
+    /// <param name="lastIterationHadConversationId">Whether the previous iteration's response had a conversation ID.</param>
     private static void FixupHistories(
         IEnumerable<ChatMessage> originalMessages,
         ref IEnumerable<ChatMessage> messages,
@@ -467,7 +467,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         }
         else if (lastIterationHadConversationId)
         {
-            // In the very rare case where the inner client returned a response with a thread ID but then
+            // In the very rare case where the inner client returned a response with a conversation ID but then
             // returned a subsequent response without one, we want to reconstitute the full history. To do that,
             // we can populate the history with the original chat messages and then all of the response
             // messages up until this point, which includes the most recent ones.
@@ -539,7 +539,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         }
         else if (options.ConversationId != conversationId)
         {
-            // As with the other modes, ensure we've propagated the chat thread ID to the options.
+            // As with the other modes, ensure we've propagated the chat conversation ID to the options.
             // We only need to clone the options if we're actually mutating it.
             options = options.Clone();
             options.ConversationId = conversationId;
