@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI.Evaluation.Quality.Utilities;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI.Evaluation.Quality;
@@ -113,11 +114,33 @@ public abstract class SingleNumericMetricEvaluator : ChatConversationEvaluator
             {
                 metric.Value = score;
             }
+            else if (
+                ParsingUtilities.TryParseNumericScore(
+                    evaluationResponseText,
+                    out int? scoreValue,
+                    out string? reason,
+                    out string? chainOfThought))
+            {
+                metric.Value = scoreValue;
+
+                if (!string.IsNullOrWhiteSpace(reason))
+                {
+                    metric.Reason = reason;
+                }
+
+                if (!string.IsNullOrWhiteSpace(chainOfThought))
+                {
+                    metric.AddDiagnostics(EvaluationDiagnostic.Informational(chainOfThought!));
+                }
+            }
             else
             {
                 metric.AddDiagnostics(
                     EvaluationDiagnostic.Error(
-                        $"Failed to parse '{evaluationResponseText!}' as an integer score for '{MetricName}'."));
+                        $"""
+                        Failed to parse numeric score for '{MetricName}' from the following evaluation response:
+                        {evaluationResponseText!}
+                        """));
             }
 
             metric.Interpretation = metric.InterpretScore();

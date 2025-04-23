@@ -65,7 +65,7 @@ public partial class RelevanceTruthAndCompletenessEvaluator
 
         public static Rating FromJson(string jsonResponse)
         {
-            ReadOnlySpan<char> trimmed = JsonOutputFixer.TrimMarkdownDelimiters(jsonResponse);
+            ReadOnlySpan<char> trimmed = ParsingUtilities.TrimJsonMarkdownDelimiters(jsonResponse);
             return JsonSerializer.Deserialize(trimmed, SerializerContext.Default.Rating)!;
         }
     }

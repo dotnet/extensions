@@ -160,9 +160,9 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator : ChatConvers
                     try
                     {
                         string repairedJson =
-                            await JsonOutputFixer.RepairJsonAsync(
-                                chatConfiguration,
+                            await ParsingUtilities.RepairJsonAsync(
                                 evaluationResponseText!,
+                                chatConfiguration,
                                 cancellationToken).ConfigureAwait(false);
 
                         if (string.IsNullOrEmpty(repairedJson))
