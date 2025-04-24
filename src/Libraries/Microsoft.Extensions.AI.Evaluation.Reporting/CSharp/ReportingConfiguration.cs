@@ -30,9 +30,8 @@ public sealed class ReportingConfiguration
     public IResultStore ResultStore { get; }
 
     /// <summary>
-    /// Gets a <see cref="Evaluation.ChatConfiguration"/> that specifies the <see cref="IChatClient"/> and the
-    /// <see cref="IEvaluationTokenCounter"/> that are used by AI-based <see cref="Evaluators"/> included in this
-    /// <see cref="ReportingConfiguration"/>.
+    /// Gets a <see cref="Evaluation.ChatConfiguration"/> that specifies the <see cref="IChatClient"/> that is used by
+    /// AI-based <see cref="Evaluators"/> included in this <see cref="ReportingConfiguration"/>.
     /// </summary>
     public ChatConfiguration? ChatConfiguration { get; }
 
@@ -103,10 +102,9 @@ public sealed class ReportingConfiguration
     /// The <see cref="IResultStore"/> that should be used to persist the <see cref="ScenarioRunResult"/>s.
     /// </param>
     /// <param name="chatConfiguration">
-    /// A <see cref="Evaluation.ChatConfiguration"/> that specifies the <see cref="IChatClient"/> and the
-    /// <see cref="IEvaluationTokenCounter"/> that are used by AI-based <paramref name="evaluators"/> included in this
-    /// <see cref="ReportingConfiguration"/>. Can be omitted if none of the included <paramref name="evaluators"/> are
-    /// AI-based.
+    /// A <see cref="Evaluation.ChatConfiguration"/> that specifies the <see cref="IChatClient"/> that is used by
+    /// AI-based <paramref name="evaluators"/> included in this <see cref="ReportingConfiguration"/>. Can be omitted if
+    /// none of the included <paramref name="evaluators"/> are AI-based.
     /// </param>
     /// <param name="responseCacheProvider">
     /// The <see cref="IResponseCacheProvider"/> that should be used to cache AI responses. If omitted, AI responses
@@ -246,7 +244,7 @@ public sealed class ReportingConfiguration
             }
 #pragma warning restore CA2000
 
-            chatConfiguration = new ChatConfiguration(chatClient, chatConfiguration.TokenCounter);
+            chatConfiguration = new ChatConfiguration(chatClient);
         }
 
         return new ScenarioRun(
@@ -263,7 +261,7 @@ public sealed class ReportingConfiguration
 
     private static IEnumerable<string> GetCachingKeysForChatClient(IChatClient chatClient)
     {
-        var metadata = chatClient.GetService<ChatClientMetadata>();
+        ChatClientMetadata? metadata = chatClient.GetService<ChatClientMetadata>();
 
         string? providerName = metadata?.ProviderName;
         if (!string.IsNullOrWhiteSpace(providerName))

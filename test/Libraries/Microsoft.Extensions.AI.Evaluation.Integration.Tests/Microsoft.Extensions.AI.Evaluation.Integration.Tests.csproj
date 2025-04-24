@@ -2,16 +2,24 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(LatestTargetFramework)</TargetFrameworks>
-    <RootNamespace>Microsoft.Extensions.AI.Evaluation.Integration.Tests</RootNamespace>
+    <RootNamespace>Microsoft.Extensions.AI</RootNamespace>
     <Description>Integration tests for Microsoft.Extensions.AI.Evaluation.</Description>
   </PropertyGroup>
+  
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\Shared\ImageDataUri\dotnet.png" Link="Resources\dotnet.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Shared\ImageDataUri\ImageDataUri.cs" Link="Shared\ImageDataUri\ImageDataUri.cs" />
+    <Compile Include="..\Microsoft.Extensions.AI.Evaluation.Tests\ChatMessageUtilities.cs" Link="Shared\ChatMessageUtilities.cs" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <PackageReference Include="Azure.AI.OpenAI" />
     <PackageReference Include="Azure.Identity" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
-    <PackageReference Include="Microsoft.ML.Tokenizers" />
-    <PackageReference Include="Microsoft.ML.Tokenizers.Data.O200kBase" />
     <PackageReference Include="OpenAI" />
   </ItemGroup>
 
@@ -24,6 +32,7 @@
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Evaluation\Microsoft.Extensions.AI.Evaluation.csproj" />
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Evaluation.Quality\Microsoft.Extensions.AI.Evaluation.Quality.csproj" />
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Evaluation.Reporting\CSharp\Microsoft.Extensions.AI.Evaluation.Reporting.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Evaluation.Safety\Microsoft.Extensions.AI.Evaluation.Safety.csproj" />
     <ProjectReference Include="..\..\TestUtilities\TestUtilities.csproj" />
   </ItemGroup>
 

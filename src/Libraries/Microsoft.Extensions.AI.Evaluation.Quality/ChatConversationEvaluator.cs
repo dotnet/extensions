@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -35,7 +34,7 @@ public abstract class ChatConversationEvaluator : IEvaluator
     protected virtual string? SystemPrompt => null;
 
     /// <inheritdoc/>
-    public async ValueTask<EvaluationResult> EvaluateAsync(
+    public virtual async ValueTask<EvaluationResult> EvaluateAsync(
         IEnumerable<ChatMessage> messages,
         ChatResponse modelResponse,
         ChatConfiguration? chatConfiguration = null,
@@ -49,107 +48,15 @@ public abstract class ChatConversationEvaluator : IEvaluator
 
         if (string.IsNullOrWhiteSpace(modelResponse.Text))
         {
-            result.AddDiagnosticToAllMetrics(
+            result.AddDiagnosticsToAllMetrics(
                 EvaluationDiagnostic.Error(
                     "Evaluation failed because the model response supplied for evaluation was null or empty."));
 
             return result;
         }
 
-        (ChatMessage? userRequest, List<ChatMessage> history) = GetUserRequestAndHistory(messages);
-
-        int inputTokenLimit = 0;
-        int ignoredMessagesCount = 0;
-
-        if (chatConfiguration.TokenCounter is not null)
-        {
-            IEvaluationTokenCounter tokenCounter = chatConfiguration.TokenCounter;
-            inputTokenLimit = tokenCounter.InputTokenLimit;
-            int tokenBudget = inputTokenLimit;
-
-            void OnTokenBudgetExceeded()
-            {
-                EvaluationDiagnostic tokenBudgetExceeded =
-                    EvaluationDiagnostic.Error(
-                        $"Evaluation failed because the specified limit of {inputTokenLimit} input tokens was exceeded.");
-
-                result.AddDiagnosticToAllMetrics(tokenBudgetExceeded);
-            }
-
-            if (!string.IsNullOrWhiteSpace(SystemPrompt))
-            {
-                tokenBudget -= tokenCounter.CountTokens(SystemPrompt!);
-                if (tokenBudget < 0)
-                {
-                    OnTokenBudgetExceeded();
-                    return result;
-                }
-            }
-
-            string baseEvaluationPrompt =
-                await RenderEvaluationPromptAsync(
-                    userRequest,
-                    modelResponse,
-                    includedHistory: [],
-                    additionalContext,
-                    cancellationToken).ConfigureAwait(false);
-
-            tokenBudget -= tokenCounter.CountTokens(baseEvaluationPrompt);
-            if (tokenBudget < 0)
-            {
-                OnTokenBudgetExceeded();
-                return result;
-            }
-
-            if (history.Count > 0 && !IgnoresHistory)
-            {
-                if (history.Count == 1)
-                {
-                    (bool canRender, tokenBudget) =
-                        await CanRenderAsync(
-                            history[0],
-                            tokenBudget,
-                            chatConfiguration,
-                            cancellationToken).ConfigureAwait(false);
-
-                    if (!canRender)
-                    {
-                        ignoredMessagesCount = 1;
-                        history = [];
-                    }
-                }
-                else
-                {
-                    int totalMessagesCount = history.Count;
-                    int includedMessagesCount = 0;
-
-                    history.Reverse();
-
-                    foreach (ChatMessage message in history)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-
-                        (bool canRender, tokenBudget) =
-                            await CanRenderAsync(
-                                message,
-                                tokenBudget,
-                                chatConfiguration,
-                                cancellationToken).ConfigureAwait(false);
-
-                        if (!canRender)
-                        {
-                            ignoredMessagesCount = totalMessagesCount - includedMessagesCount;
-                            history.RemoveRange(index: includedMessagesCount, count: ignoredMessagesCount);
-                            break;
-                        }
-
-                        includedMessagesCount++;
-                    }
-
-                    history.Reverse();
-                }
-            }
-        }
+        (ChatMessage? userRequest, List<ChatMessage> conversationHistory) =
+            GetUserRequestAndConversationHistory(messages);
 
         var evaluationMessages = new List<ChatMessage>();
         if (!string.IsNullOrWhiteSpace(SystemPrompt))
@@ -161,7 +68,7 @@ public abstract class ChatConversationEvaluator : IEvaluator
             await RenderEvaluationPromptAsync(
                 userRequest,
                 modelResponse,
-                includedHistory: history,
+                conversationHistory,
                 additionalContext,
                 cancellationToken).ConfigureAwait(false);
 
@@ -173,82 +80,7 @@ public abstract class ChatConversationEvaluator : IEvaluator
             result,
             cancellationToken).ConfigureAwait(false);
 
-        if (inputTokenLimit > 0 && ignoredMessagesCount > 0)
-        {
-#pragma warning disable S103 // Lines should not be too long
-            result.AddDiagnosticToAllMetrics(
-                EvaluationDiagnostic.Warning(
-                    $"The evaluation may be inconclusive because the oldest {ignoredMessagesCount} messages in the supplied conversation history were ignored in order to stay under the specified limit of {inputTokenLimit} input tokens."));
-#pragma warning restore S103
-        }
-
         return result;
-    }
-
-    /// <summary>
-    /// Determines if there is sufficient <paramref name="tokenBudget"/> remaining to render the
-    /// supplied <paramref name="message"/> as part of the evaluation prompt that this <see cref="IEvaluator"/> uses.
-    /// </summary>
-    /// <param name="message">
-    /// A message that is part of the conversation history for the response being evaluated and that is to be rendered
-    /// as part of the evaluation prompt.
-    /// </param>
-    /// <param name="tokenBudget">
-    /// The number of tokens available for the rendering additional content as part of the evaluation prompt.
-    /// </param>
-    /// <param name="chatConfiguration">
-    /// A <see cref="ChatConfiguration"/> that specifies the <see cref="IChatClient"/> and the
-    /// <see cref="IEvaluationTokenCounter"/> that this <see cref="IEvaluator"/> uses to perform the evaluation.
-    /// </param>
-    /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can cancel the operation.</param>
-    /// <returns>
-    /// A tuple containing a <see langword="bool"/> indicating whether there is sufficient
-    /// <paramref name="tokenBudget"/> remaining to render the supplied <paramref name="message"/> as part of the
-    /// evaluation prompt, and an <see langword="int"/> containing the remaining token budget that would be available
-    /// once this <paramref name="message"/> is rendered.
-    /// </returns>
-    protected virtual ValueTask<(bool canRender, int remainingTokenBudget)> CanRenderAsync(
-        ChatMessage message,
-        int tokenBudget,
-        ChatConfiguration chatConfiguration,
-        CancellationToken cancellationToken)
-    {
-        _ = Throw.IfNull(message);
-        _ = Throw.IfNull(chatConfiguration);
-
-        IEvaluationTokenCounter? tokenCounter = chatConfiguration.TokenCounter;
-        if (tokenCounter is null)
-        {
-            return new ValueTask<(bool, int)>((true, tokenBudget));
-        }
-
-        string? author = message.AuthorName;
-        string role = message.Role.Value;
-        string content = message.Text ?? string.Empty;
-
-        int tokenCount =
-            string.IsNullOrWhiteSpace(author)
-                ? tokenCounter.CountTokens("[") +
-                    tokenCounter.CountTokens(role) +
-                    tokenCounter.CountTokens("] ") +
-                    tokenCounter.CountTokens(content) +
-                    tokenCounter.CountTokens("\n")
-                : tokenCounter.CountTokens("[") +
-                    tokenCounter.CountTokens(author!) +
-                    tokenCounter.CountTokens(" (") +
-                    tokenCounter.CountTokens(role) +
-                    tokenCounter.CountTokens(")] ") +
-                    tokenCounter.CountTokens(content) +
-                    tokenCounter.CountTokens("\n");
-
-        if (tokenCount > tokenBudget)
-        {
-            return new ValueTask<(bool, int)>((false, tokenBudget));
-        }
-        else
-        {
-            return new ValueTask<(bool, int)>((true, tokenBudget - tokenCount));
-        }
     }
 
     /// <summary>
@@ -314,13 +146,13 @@ public abstract class ChatConversationEvaluator : IEvaluator
     /// The request that produced the <paramref name="modelResponse"/> that is to be evaluated.
     /// </param>
     /// <param name="modelResponse">The response that is to be evaluated.</param>
-    /// <param name="includedHistory">
+    /// <param name="conversationHistory">
     /// The conversation history (excluding the <paramref name="userRequest"/> and <paramref name="modelResponse"/>)
     /// that is to be included as part of the evaluation prompt.
     /// </param>
     /// <param name="additionalContext">
     /// Additional contextual information (beyond that which is available in the <paramref name="userRequest"/> and
-    /// <paramref name="includedHistory"/>) that this <see cref="IEvaluator"/> may need to accurately evaluate the
+    /// <paramref name="conversationHistory"/>) that this <see cref="IEvaluator"/> may need to accurately evaluate the
     /// supplied <paramref name="modelResponse"/>.
     /// </param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can cancel the operation.</param>
@@ -328,7 +160,7 @@ public abstract class ChatConversationEvaluator : IEvaluator
     protected abstract ValueTask<string> RenderEvaluationPromptAsync(
         ChatMessage? userRequest,
         ChatResponse modelResponse,
-        IEnumerable<ChatMessage>? includedHistory,
+        IEnumerable<ChatMessage>? conversationHistory,
         IEnumerable<EvaluationContext>? additionalContext,
         CancellationToken cancellationToken);
 
@@ -352,8 +184,8 @@ public abstract class ChatConversationEvaluator : IEvaluator
     /// <see cref="EvaluationMetric"/>s in the supplied <paramref name="result"/>.
     /// </summary>
     /// <param name="chatConfiguration">
-    /// A <see cref="ChatConfiguration"/> that specifies the <see cref="IChatClient"/> and the
-    /// <see cref="IEvaluationTokenCounter"/> that this <see cref="IEvaluator"/> uses to perform the evaluation.
+    /// A <see cref="ChatConfiguration"/> that specifies the <see cref="IChatClient"/> that should be used if one or
+    /// more composed <see cref="IEvaluator"/>s use an AI model to perform evaluation.
     /// </param>
     /// <param name="evaluationMessages">
     /// The set of messages that are to be sent to the supplied <see cref="ChatConfiguration.ChatClient"/> to perform
@@ -371,11 +203,11 @@ public abstract class ChatConversationEvaluator : IEvaluator
         EvaluationResult result,
         CancellationToken cancellationToken);
 
-    private (ChatMessage? userRequest, List<ChatMessage> history) GetUserRequestAndHistory(
+    private (ChatMessage? userRequest, List<ChatMessage> conversationHistory) GetUserRequestAndConversationHistory(
         IEnumerable<ChatMessage> messages)
     {
         ChatMessage? userRequest = null;
-        List<ChatMessage> history;
+        List<ChatMessage> conversationHistory;
 
         if (IgnoresHistory)
         {
@@ -384,22 +216,22 @@ public abstract class ChatConversationEvaluator : IEvaluator
                     ? lastMessage
                     : null;
 
-            history = [];
+            conversationHistory = [];
         }
         else
         {
-            history = [.. messages];
-            int lastMessageIndex = history.Count - 1;
+            conversationHistory = [.. messages];
+            int lastMessageIndex = conversationHistory.Count - 1;
 
             if (lastMessageIndex >= 0 &&
-                history[lastMessageIndex] is ChatMessage lastMessage &&
+                conversationHistory[lastMessageIndex] is ChatMessage lastMessage &&
                 lastMessage.Role == ChatRole.User)
             {
                 userRequest = lastMessage;
-                history.RemoveAt(lastMessageIndex);
+                conversationHistory.RemoveAt(lastMessageIndex);
             }
         }
 
-        return (userRequest, history);
+        return (userRequest, conversationHistory);
     }
 }

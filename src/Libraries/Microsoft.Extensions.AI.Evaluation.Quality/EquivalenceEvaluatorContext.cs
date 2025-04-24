@@ -6,10 +6,13 @@
 // We disable this warning because it is a false positive arising from the analyzer's lack of support for C#'s primary
 // constructor syntax.
 
+using System.Collections.Generic;
+
 namespace Microsoft.Extensions.AI.Evaluation.Quality;
 
 /// <summary>
-/// Contextual information required to evaluate the 'Equivalence' of a response.
+/// Contextual information that the <see cref="EquivalenceEvaluator"/> uses to evaluate the 'Equivalence' of a
+/// response.
 /// </summary>
 /// <param name="groundTruth">
 /// The ground truth response against which the response that is being evaluated is compared.
@@ -28,4 +31,8 @@ public sealed class EquivalenceEvaluatorContext(string groundTruth) : Evaluation
     /// the response supplied via <see cref="GroundTruth"/>.
     /// </remarks>
     public string GroundTruth { get; } = groundTruth;
+
+    /// <inheritdoc/>
+    public override IReadOnlyList<AIContent> GetContents()
+        => [new TextContent(GroundTruth)];
 }

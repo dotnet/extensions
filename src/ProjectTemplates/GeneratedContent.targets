@@ -15,22 +15,24 @@
   <Target Name="ComputeGeneratedContentProperties">
     <PropertyGroup>
       <!-- Define optional pinned versions of certain dependencies. -->
-      <TemplatePinnedRepoPackagesVersion>9.3.0-preview.1.25161.3</TemplatePinnedRepoPackagesVersion>
-      <TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion>9.0.3</TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion>
+      <TemplatePinnedRepoPackagesVersion>9.4.0</TemplatePinnedRepoPackagesVersion>
+      <TemplatePinnedRepoAIPackagesVersion>9.4.0-preview.1.25207.5</TemplatePinnedRepoAIPackagesVersion>
+      <TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion>9.0.4</TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion>
 
       <!-- By default, don't use pinned dependency versions. -->
-      <TemplateUsePinnedRepoPackagesVersion Condition="'$(TemplateUsePinnedRepoPackagesVersion)' == ''">false</TemplateUsePinnedRepoPackagesVersion>
-      <TemplateUsePinnedMicrosoftEntityFrameworkCoreSqliteVersion Condition="'$(TemplateUsePinnedMicrosoftEntityFrameworkCoreSqliteVersion)' == ''">false</TemplateUsePinnedMicrosoftEntityFrameworkCoreSqliteVersion>
+      <TemplateUsePinnedPackageVersions Condition="'$(TemplateUsePinnedPackageVersions)' == ''">false</TemplateUsePinnedPackageVersions>
 
       <!-- Apply pinned dependency versions if enabled. -->
-      <TemplateRepoPackagesVersion Condition="'$(TemplateUsePinnedRepoPackagesVersion)' == 'true'">$(TemplatePinnedRepoPackagesVersion)</TemplateRepoPackagesVersion>
-      <TemplateMicrosoftEntityFrameworkCoreSqliteVersion Condition="'$(TemplateUsePinnedMicrosoftEntityFrameworkCoreSqliteVersion)' == 'true'">$(TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion)</TemplateMicrosoftEntityFrameworkCoreSqliteVersion>
+      <TemplateRepoPackagesVersion Condition="'$(TemplateUsePinnedPackageVersions)' == 'true'">$(TemplatePinnedRepoPackagesVersion)</TemplateRepoPackagesVersion>
+      <TemplateRepoAIPackagesVersion Condition="'$(TemplateUsePinnedPackageVersions)' == 'true'">$(TemplatePinnedRepoAIPackagesVersion)</TemplateRepoAIPackagesVersion>
+      <TemplateMicrosoftEntityFrameworkCoreSqliteVersion Condition="'$(TemplateUsePinnedPackageVersions)' == 'true'">$(TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion)</TemplateMicrosoftEntityFrameworkCoreSqliteVersion>
 
       <!-- Fall back on default dependency versions if pinned versions were not applied. -->
       <TemplateRepoPackagesVersion Condition="'$(TemplateRepoPackagesVersion)' == ''">$(Version)</TemplateRepoPackagesVersion>
+      <TemplateRepoAIPackagesVersion Condition="'$(TemplateRepoAIPackagesVersion)' == ''">$(Version)</TemplateRepoAIPackagesVersion>
       <TemplateMicrosoftEntityFrameworkCoreSqliteVersion Condition="'$(TemplateMicrosoftEntityFrameworkCoreSqliteVersion)' == ''">$(MicrosoftEntityFrameworkCoreSqliteVersion)</TemplateMicrosoftEntityFrameworkCoreSqliteVersion>
 
-      <_TemplateUsingJustBuiltPackages Condition="'$(TemplateRepoPackagesVersion)' == '$(Version)'">true</_TemplateUsingJustBuiltPackages>
+      <_TemplateUsingJustBuiltPackages Condition="'$(TemplateRepoAIPackagesVersion)' == '$(Version)'">true</_TemplateUsingJustBuiltPackages>
 
       <!-- Specify package version variables used in template content. -->
       <GeneratedContentProperties>
@@ -51,14 +53,13 @@
         CommunityToolkitAspireMicrosoftEntityFrameworkCoreSqliteVersion=$(CommunityToolkitAspireMicrosoftEntityFrameworkCoreSqliteVersion);
         CommunityToolkitAspireOllamaSharpVersion=$(CommunityToolkitAspireOllamaSharpVersion);
         MicrosoftEntityFrameworkCoreSqliteVersion=$(TemplateMicrosoftEntityFrameworkCoreSqliteVersion);
-        MicrosoftExtensionsAIVersion=$(TemplateRepoPackagesVersion);
+        MicrosoftExtensionsAIVersion=$(TemplateRepoAIPackagesVersion);
         MicrosoftExtensionsHttpResilienceVersion=$(TemplateRepoPackagesVersion);
         MicrosoftExtensionsServiceDiscoveryVersion=$(MicrosoftExtensionsServiceDiscoveryVersion);
         MicrosoftSemanticKernelConnectorsAzureAISearchVersion=$(MicrosoftSemanticKernelConnectorsAzureAISearchVersion);
         MicrosoftSemanticKernelConnectorsQdrantVersion=$(MicrosoftSemanticKernelConnectorsQdrantVersion);
         MicrosoftSemanticKernelCoreVersion=$(MicrosoftSemanticKernelCoreVersion);
         OllamaSharpVersion=$(OllamaSharpVersion);
-        OpenAIVersion=$(OpenAIVersion);
         OpenTelemetryVersion=$(OpenTelemetryVersion);
         PdfPigVersion=$(PdfPigVersion);
         SystemLinqAsyncVersion=$(SystemLinqAsyncVersion);

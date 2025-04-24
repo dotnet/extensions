@@ -8,11 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="OpenAI" Version="2.2.0-beta.3" />
-    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.4.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.3" />
-    <PackageReference Include="Microsoft.Extensions.AI" Version="9.4.0" />
-    <PackageReference Include="Microsoft.SemanticKernel.Core" Version="1.41.0" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.5.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.4" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="9.5.0" />
+    <PackageReference Include="Microsoft.SemanticKernel.Core" Version="1.45.0" />
     <PackageReference Include="PdfPig" Version="0.1.9" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
   </ItemGroup>

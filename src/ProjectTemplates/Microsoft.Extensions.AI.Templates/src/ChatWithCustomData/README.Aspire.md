@@ -1,6 +1,6 @@
 # AI Chat with Custom Data
 
-This project is an AI chat application that demonstrates how to chat with custom data using an AI language model. Please note that this template is currently in an early preview stage. If you have feedback, please take a [brief survey](https://aka.ms/dotnet-chat-template-survey).
+This project is an AI chat application that demonstrates how to chat with custom data using an AI language model. Please note that this template is currently in an early preview stage. If you have feedback, please take a [brief survey](https://aka.ms/dotnet-chat-templatePreview2-survey).
 
 >[!NOTE]
 > Before running this project you need to configure the API keys or endpoints for the providers you have chosen. See below for details specific to your choices.
@@ -8,6 +8,17 @@ This project is an AI chat application that demonstrates how to chat with custom
 #### ---#if (UseAzure)
 ### Prerequisites
 To use Azure OpenAI or Azure AI Search, you need an Azure account. If you don't already have one, [create an Azure account](https://azure.microsoft.com/free/).
+
+#### ---#endif
+#### ---#if (UseQdrant)
+### Known Issues
+
+#### Errors After Updating to Aspire Version 9.2.0
+This project is not currently compatible with Aspire 9.2.0, and all Aspire package versions are set to 9.1.0. Updating [Aspire.Qdrant.Client](https://www.nuget.org/packages/Aspire.Qdrant.Client) to version 9.2.0 causes an incompatibility with [Microsoft.SemanticKernel.Connectors.Qdrant](https://www.nuget.org/packages/Microsoft.SemanticKernel.Connectors.Qdrant) where different versions of [Qdrant.Client](https://www.nuget.org/packages/Qdrant.Client) are required. Attempting to run the project with `Aspire.Qdrant.Client` version 9.2.0 will result in the following exception:
+
+> System.MissingMethodException: Method not found: 'Qdrant.Client.Grpc.Vectors Qdrant.Client.Grpc.ScoredPoint.get_Vectors()'
+
+Once a version of `Microsoft.SemanticKernel.Connectors.Qdrant` is published with a dependency on `Qdrant.Client` version `>= 1.13.0`, the Aspire packages can also be updated to version 9.2.0.
 
 #### ---#endif
 # Configure the AI Model Provider
@@ -66,11 +77,12 @@ dotnet user-secrets set ConnectionStrings:openai "Key=YOUR-API-KEY"
 #### ---#endif
 #### ---#if (IsOllama)
 ## Setting up a local environment for Ollama
-This project is configured to run Ollama in a Docker container.
+This project is configured to run Ollama in a Docker container. Docker Desktop must be installed and running for the project to run successfully. An Ollama container will automatically start when running the application.
 
-To get started, download, install, and run Docker Desktop from the [official website](https://www.docker.com/). Follow the installation instructions specific to your operating system.
+Download, install, and run Docker Desktop from the [official website](https://www.docker.com/). Follow the installation instructions specific to your operating system.
 
 Note: Ollama and Docker are excellent open source products, but are not maintained by Microsoft.
+
 #### ---#endif
 #### ---#if (IsAzureOpenAI)
 ## Using Azure OpenAI
@@ -116,7 +128,7 @@ To use Azure AI Search, you will need an Azure account and an Azure AI Search re
 ### 1. Create an Azure AI Search Resource
 Follow the instructions in the [Azure portal](https://portal.azure.com/) to create an Azure AI Search resource. Note that there is a free tier for the service but it is not currently the default setting on the portal.
 
-Note that if you previously used the same Azure AI Search resource with different model using this project name, you may need to delete your `$$VectorStoreIndexName$$` index using the [Azure portal](https://portal.azure.com/) first before continuing; otherwise, data ingestion may fail due to a vector dimension mismatch.
+Note that if you previously used the same Azure AI Search resource with different model using this project name, you may need to delete your `data-ChatWithCustomData-CSharp.Web-ingestion` index using the [Azure portal](https://portal.azure.com/) first before continuing; otherwise, data ingestion may fail due to a vector dimension mismatch.
 
 ### 3. Configure API Key and Endpoint
    Configure your Azure AI Search API key and endpoint for this project, using .NET User Secrets:
@@ -142,6 +154,15 @@ Note that if you previously used the same Azure AI Search resource with differen
 
 Make sure to replace `YOUR-DEPLOYMENT-NAME` and `YOUR-API-KEY` with your actual Azure AI Search deployment name and key.
 #### ---#endif
+#### ---#if (UseQdrant)
+
+## Setting up a local environment for Qdrant
+This project is configured to run Qdrant in a Docker container. Docker Desktop must be installed and running for the project to run successfully. A Qdrant container will automatically start when running the application.
+
+Download, install, and run Docker Desktop from the [official website](https://www.docker.com/). Follow the installation instructions specific to your operating system.
+
+Note: Qdrant and Docker are excellent open source products, but are not maintained by Microsoft.
+#### ---#endif
 
 # Running the application
 
@@ -156,6 +177,12 @@ Make sure to replace `YOUR-DEPLOYMENT-NAME` and `YOUR-API-KEY` with your actual 
 2. Install the [C# Dev Kit extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit) for Visual Studio Code.
 3. Once installed, Open the `Program.cs` file in the ChatWithCustomData-CSharp.AppHost project.
 4. Run the project by clicking the "Run" button in the Debug view.
+
+## Trust the localhost certificate
+
+Several .NET Aspire templates include ASP.NET Core projects that are configured to use HTTPS by default. If this is the first time you're running the project, an exception might occur when loading the Aspire dashboard. This error can be resolved by trusting the self-signed development certificate with the .NET CLI.
+
+See [Troubleshoot untrusted localhost certificate in .NET Aspire](https://learn.microsoft.com/dotnet/aspire/troubleshooting/untrusted-localhost-certificate) for more information.
 
 # Learn More
 To learn more about development with .NET and AI, check out the following links:

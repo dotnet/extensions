@@ -13,8 +13,7 @@
 #endif -->
 <!--#if (IsOllama)
     <PackageReference Include="OllamaSharp" Version="${OllamaSharpVersion}" />
-#elif (IsGHModels && !IsAspire)
-    <PackageReference Include="OpenAI" Version="${OpenAIVersion}" />
+#elif ((IsGHModels || IsOpenAI) && !IsAspire)
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${MicrosoftExtensionsAIVersion}" />
 #elif (IsAzureAiFoundry)
     <PackageReference Include="Azure.AI.Projects" Version="${AzureAIProjectsVersion}" />

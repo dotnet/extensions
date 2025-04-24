@@ -1,7 +1,11 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { ChevronDown12Regular, ChevronRight12Regular, DismissCircle16Regular } from "@fluentui/react-icons";
 import { useState } from "react";
 import type { MetricType } from "./MetricCard";
 import { DiagnosticsContent } from "./DiagnosticsContent";
+import { MetadataContent } from "./MetadataContent";
 import { useStyles } from "./Styles";
 
 
@@ -15,8 +19,10 @@ export const MetricDetailsSection = ({ metric }: { metric: MetricType; }) => {
     const hasInterpretationReason = interpretationReason != null;
     const diagnostics = metric.diagnostics || [];
     const hasDiagnostics = diagnostics.length > 0;
+    const metadata = metric.metadata || {};
+    const hasMetadata = Object.keys(metadata).length > 0;
 
-    if (!hasReason && !hasInterpretationReason && !hasDiagnostics) return null;
+    if (!hasReason && !hasInterpretationReason && !hasDiagnostics && !hasMetadata) return null;
 
     return (
         <div className={classes.section}>
@@ -53,6 +59,13 @@ export const MetricDetailsSection = ({ metric }: { metric: MetricType; }) => {
                         <div>
                             <div className={classes.sectionSubHeader}>Diagnostics</div>
                             <DiagnosticsContent diagnostics={diagnostics} />
+                        </div>
+                    )}
+                    
+                    {hasMetadata && (
+                        <div>
+                            <div className={classes.sectionSubHeader}>Metadata</div>
+                            <MetadataContent metadata={metadata} />
                         </div>
                     )}
                 </div>

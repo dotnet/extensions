@@ -190,11 +190,11 @@ internal sealed partial class OpenAIChatClient : IChatClient
                     break;
 
                 case UriContent uriContent when uriContent.HasTopLevelMediaType("image"):
-                    parts.Add(ChatMessageContentPart.CreateImagePart(uriContent.Uri));
+                    parts.Add(ChatMessageContentPart.CreateImagePart(uriContent.Uri, GetImageDetail(content)));
                     break;
 
                 case DataContent dataContent when dataContent.HasTopLevelMediaType("image"):
-                    parts.Add(ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType));
+                    parts.Add(ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, GetImageDetail(content)));
                     break;
 
                 case DataContent dataContent when dataContent.HasTopLevelMediaType("audio"):
@@ -218,6 +218,21 @@ internal sealed partial class OpenAIChatClient : IChatClient
         }
 
         return parts;
+    }
+
+    private static ChatImageDetailLevel? GetImageDetail(AIContent content)
+    {
+        if (content.AdditionalProperties?.TryGetValue("detail", out object? value) is true)
+        {
+            return value switch
+            {
+                string detailString => new ChatImageDetailLevel(detailString),
+                ChatImageDetailLevel detail => detail,
+                _ => null
+            };
+        }
+
+        return null;
     }
 
     private static async IAsyncEnumerable<ChatResponseUpdate> FromOpenAIStreamingChatCompletionAsync(
@@ -481,6 +496,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
             result.TopP = options.TopP;
             result.PresencePenalty = options.PresencePenalty;
             result.Temperature = options.Temperature;
+            result.AllowParallelToolCalls = options.AllowMultipleToolCalls;
 #pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
             result.Seed = options.Seed;
 #pragma warning restore OPENAI001
@@ -495,11 +511,6 @@ internal sealed partial class OpenAIChatClient : IChatClient
 
             if (options.AdditionalProperties is { Count: > 0 } additionalProperties)
             {
-                if (additionalProperties.TryGetValue(nameof(result.AllowParallelToolCalls), out bool allowParallelToolCalls))
-                {
-                    result.AllowParallelToolCalls = allowParallelToolCalls;
-                }
-
                 if (additionalProperties.TryGetValue(nameof(result.AudioOptions), out ChatAudioOptions? audioOptions))
                 {
                     result.AudioOptions = audioOptions;
@@ -567,22 +578,25 @@ internal sealed partial class OpenAIChatClient : IChatClient
                     }
                 }
 
-                switch (options.ToolMode)
+                if (result.Tools.Count > 0)
                 {
-                    case NoneChatToolMode:
-                        result.ToolChoice = ChatToolChoice.CreateNoneChoice();
-                        break;
+                    switch (options.ToolMode)
+                    {
+                        case NoneChatToolMode:
+                            result.ToolChoice = ChatToolChoice.CreateNoneChoice();
+                            break;
 
-                    case AutoChatToolMode:
-                    case null:
-                        result.ToolChoice = ChatToolChoice.CreateAutoChoice();
-                        break;
+                        case AutoChatToolMode:
+                        case null:
+                            result.ToolChoice = ChatToolChoice.CreateAutoChoice();
+                            break;
 
-                    case RequiredChatToolMode required:
-                        result.ToolChoice = required.RequiredFunctionName is null ?
-                            ChatToolChoice.CreateRequiredChoice() :
-                            ChatToolChoice.CreateFunctionChoice(required.RequiredFunctionName);
-                        break;
+                        case RequiredChatToolMode required:
+                            result.ToolChoice = required.RequiredFunctionName is null ?
+                                ChatToolChoice.CreateRequiredChoice() :
+                                ChatToolChoice.CreateFunctionChoice(required.RequiredFunctionName);
+                            break;
+                    }
                 }
             }
 

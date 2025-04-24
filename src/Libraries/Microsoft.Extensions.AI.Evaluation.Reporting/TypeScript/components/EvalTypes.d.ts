@@ -54,10 +54,21 @@ type AIContent = {
     $type: string;
 };
 
-// TODO: Model other types of AIContent such as function calls, function call results, images, audio etc.
+// TODO: Model other types of AIContent such as function calls, function call results, audio etc.
 type TextContent = AIContent & {
     $type: "text";
     text: string;
+};
+
+type UriContent = AIContent & {
+    $type: "uri";
+    uri: string;
+    mediaType: string;
+};
+
+type DataContent = AIContent & {
+    $type: "data";
+    uri: string;
 };
 
 type EvaluationResult = {
@@ -83,7 +94,13 @@ type BaseEvaluationMetric = {
     $type: string;
     name: string;
     interpretation?: EvaluationMetricInterpretation;
-    diagnostics: EvaluationDiagnostic[];
+    context?: {
+        [K: string]: AIContent[]
+    };
+    diagnostics?: EvaluationDiagnostic[];
+    metadata: { 
+        [K: string]: string 
+    };
 };
 
 type MetricWithNoValue = BaseEvaluationMetric & {

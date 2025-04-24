@@ -319,6 +319,7 @@ public class OpenAIChatClientTests
 
         Assert.NotNull(await client.GetResponseAsync("hello", new()
         {
+            AllowMultipleToolCalls = false,
             AdditionalProperties = new()
             {
                 ["StoredOutputEnabled"] = true,
@@ -329,7 +330,6 @@ public class OpenAIChatClientTests
                 ["LogitBiases"] = new Dictionary<int, int> { { 12, 34 } },
                 ["IncludeLogProbabilities"] = true,
                 ["TopLogProbabilityCount"] = 42,
-                ["AllowParallelToolCalls"] = false,
                 ["EndUserId"] = "12345",
             },
         }));
@@ -774,6 +774,91 @@ public class OpenAIChatClientTests
     }
 
     [Fact]
+    public async Task UnavailableBuiltInFunctionCall_NonStreaming()
+    {
+        const string Input = """
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "What day is it?"
+                    }
+                ],
+                "model": "gpt-4o-mini"
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "chatcmpl-ADydKhrSKEBWJ8gy0KCIU74rN3Hmk",
+              "object": "chat.completion",
+              "created": 1727894702,
+              "model": "gpt-4o-mini-2024-07-18",
+              "choices": [
+                {
+                  "index": 0,
+                  "message": {
+                    "role": "assistant",
+                    "content": "December 31, 2023",
+                    "refusal": null
+                  },
+                  "logprobs": null,
+                  "finish_reason": "stop"
+                }
+              ],
+              "usage": {
+                "prompt_tokens": 61,
+                "completion_tokens": 16,
+                "total_tokens": 77,
+                "prompt_tokens_details": {
+                  "cached_tokens": 13
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 90
+                }
+              },
+              "system_fingerprint": "fp_f85bea6784"
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("What day is it?", new()
+        {
+            Tools = [new HostedWebSearchTool()],
+        });
+        Assert.NotNull(response);
+
+        Assert.Equal("December 31, 2023", response.Text);
+        Assert.Equal("gpt-4o-mini-2024-07-18", response.ModelId);
+        Assert.Equal(ChatRole.Assistant, response.Messages.Single().Role);
+        Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_727_894_702), response.CreatedAt);
+        Assert.Equal(ChatFinishReason.Stop, response.FinishReason);
+        Assert.NotNull(response.Usage);
+        Assert.Equal(61, response.Usage.InputTokenCount);
+        Assert.Equal(16, response.Usage.OutputTokenCount);
+        Assert.Equal(77, response.Usage.TotalTokenCount);
+
+        Assert.Equal(new Dictionary<string, long>
+        {
+            { "InputTokenDetails.AudioTokenCount", 0 },
+            { "InputTokenDetails.CachedTokenCount", 13 },
+            { "OutputTokenDetails.ReasoningTokenCount", 90 },
+            { "OutputTokenDetails.AudioTokenCount", 0 },
+            { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
+            { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
+        }, response.Usage.AdditionalCounts);
+
+        Assert.Single(response.Messages.Single().Contents);
+        TextContent fcc = Assert.IsType<TextContent>(response.Messages.Single().Contents[0]);
+
+        Assert.NotNull(response.AdditionalProperties);
+        Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(ChatCompletion.SystemFingerprint)]);
+    }
+
+    [Fact]
     public async Task FunctionCallContent_Streaming()
     {
         const string Input = """
@@ -1031,6 +1116,124 @@ public class OpenAIChatClientTests
 
         Assert.NotNull(response.AdditionalProperties);
         Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(ChatCompletion.SystemFingerprint)]);
+    }
+
+    [Fact]
+    public Task DataContentMessage_Image_AdditionalProperty_ChatImageDetailLevel_NonStreaming()
+        => DataContentMessage_Image_AdditionalPropertyDetail_NonStreaming("high");
+
+    [Fact]
+    public Task DataContentMessage_Image_AdditionalProperty_StringDetail_NonStreaming()
+        => DataContentMessage_Image_AdditionalPropertyDetail_NonStreaming(ChatImageDetailLevel.High);
+
+    private static async Task DataContentMessage_Image_AdditionalPropertyDetail_NonStreaming(object detailValue)
+    {
+        string input = $$"""
+            {
+              "messages": [
+                {
+                  "role": "user",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "What does this logo say?"
+                    },
+                    {
+                      "type": "image_url",
+                      "image_url": {
+                        "detail": "high",
+                        "url": "{{ImageDataUri.GetImageDataUri()}}"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "model": "gpt-4o-mini"
+            }
+            """;
+
+        const string Output = """
+            {
+              "choices": [
+                {
+                  "finish_reason": "stop",
+                  "index": 0,
+                  "logprobs": null,
+                  "message": {
+                    "content": "The logo says \".NET\", which is a software development framework created by Microsoft. It is used for building and running applications on Windows, macOS, and Linux environments. The logo typically also represents the broader .NET ecosystem, which includes various programming languages, libraries, and tools.",
+                    "refusal": null,
+                    "role": "assistant"
+                  }
+                }
+              ],
+              "created": 1743531271,
+              "id": "chatcmpl-BHaQ3nkeSDGhLzLya3mGbB1EXSqve",
+              "model": "gpt-4o-mini-2024-07-18",
+              "object": "chat.completion",
+              "system_fingerprint": "fp_b705f0c291",
+              "usage": {
+                "completion_tokens": 56,
+                "completion_tokens_details": {
+                  "accepted_prediction_tokens": 0,
+                  "audio_tokens": 0,
+                  "reasoning_tokens": 0,
+                  "rejected_prediction_tokens": 0
+                },
+                "prompt_tokens": 8513,
+                "prompt_tokens_details": {
+                  "audio_tokens": 0,
+                  "cached_tokens": 0
+                },
+                "total_tokens": 8569
+              }
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync(
+            [
+            new(ChatRole.User,
+                [
+                    new TextContent("What does this logo say?"),
+                    new DataContent(ImageDataUri.GetImageDataUri(), "image/png")
+                    {
+                        AdditionalProperties = new()
+                        {
+                            { "detail", detailValue }
+                        }
+                    }
+                ])
+            ]);
+        Assert.NotNull(response);
+
+        Assert.Equal("chatcmpl-BHaQ3nkeSDGhLzLya3mGbB1EXSqve", response.ResponseId);
+        Assert.Equal("The logo says \".NET\", which is a software development framework created by Microsoft. It is used for building and running applications on Windows, macOS, and Linux environments. The logo typically also represents the broader .NET ecosystem, which includes various programming languages, libraries, and tools.", response.Text);
+        Assert.Single(response.Messages.Single().Contents);
+        Assert.Equal(ChatRole.Assistant, response.Messages.Single().Role);
+        Assert.Equal("chatcmpl-BHaQ3nkeSDGhLzLya3mGbB1EXSqve", response.Messages.Single().MessageId);
+        Assert.Equal("gpt-4o-mini-2024-07-18", response.ModelId);
+        Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_743_531_271), response.CreatedAt);
+        Assert.Equal(ChatFinishReason.Stop, response.FinishReason);
+
+        Assert.NotNull(response.Usage);
+        Assert.Equal(8513, response.Usage.InputTokenCount);
+        Assert.Equal(56, response.Usage.OutputTokenCount);
+        Assert.Equal(8569, response.Usage.TotalTokenCount);
+        Assert.Equal(new Dictionary<string, long>
+        {
+            { "InputTokenDetails.AudioTokenCount", 0 },
+            { "InputTokenDetails.CachedTokenCount", 0 },
+            { "OutputTokenDetails.ReasoningTokenCount", 0 },
+            { "OutputTokenDetails.AudioTokenCount", 0 },
+            { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
+            { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
+        }, response.Usage.AdditionalCounts);
+
+        Assert.NotNull(response.AdditionalProperties);
+        Assert.Equal("fp_b705f0c291", response.AdditionalProperties[nameof(ChatCompletion.SystemFingerprint)]);
     }
 
     private static IChatClient CreateChatClient(HttpClient httpClient, string modelId) =>

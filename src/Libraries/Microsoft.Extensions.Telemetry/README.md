@@ -20,6 +20,42 @@ Or directly in the C# project file:
 
 ## Usage
 
+### Logging Sampling
+
+The library provides two types of log sampling mechanisms: **Random Probabilistic Sampling** and **Trace-based Sampling**.
+
+#### Random Probabilistic Sampling
+
+Provides configurable probability-based sampling with flexible rules:
+
+```csharp
+// Simple configuration with probability
+builder.Logging.AddRandomProbabilisticSampler(0.1); // Sample 10% of all logs, meaning - 90% of logs will be dropped
+builder.Logging.AddRandomProbabilisticSampler(0.1, LogLevel.Warning); // Sample 10% of Warning and lower level logs
+
+// Configuration using options
+builder.Logging.AddRandomProbabilisticSampler(options =>
+{
+    options.Rules.Add(new RandomProbabilisticSamplerFilterRule(0.1, logLevel: LogLevel.Information)); // Sample 10% of Information and lower level logs
+    options.Rules.Add(new RandomProbabilisticSamplerFilterRule(1.0, logLevel: LogLevel.Error)); // Sample all Error logs
+});
+
+// Configuration using IConfiguration
+builder.Logging.AddRandomProbabilisticSampler(configuration.GetSection("Logging:Sampling"));
+```
+
+The Random Probabilistic Sampler supports the `IOptionsMonitor<T>` pattern, allowing for dynamic configuration updates. This means you can change the sampling rules at runtime without needing to restart your application.
+
+#### Trace-Based Sampling
+
+Matches logging sampling decisions with the underlying [Distributed Tracing sampling decisions](https://learn.microsoft.com/dotnet/core/diagnostics/distributed-tracing-concepts#sampling):
+
+```csharp
+// Add trace-based sampler
+builder.Logging.AddTraceBasedSampler();
+```
+This comes in handy when you already use OpenTelemetry .NET Tracing and would like to see sampling decisions being consistent across both logs and their underlying [`Activity`](https://learn.microsoft.com/dotnet/core/diagnostics/distributed-tracing-concepts#sampling).
+
 ### Service Log Enrichment
 
 Enriches logs with application-specific information based on `ApplicationMetadata` information. The bellow calls will add the service log enricher to the service collection.

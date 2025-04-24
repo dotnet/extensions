@@ -50,10 +50,34 @@ public sealed class GroundednessEvaluator : SingleNumericMetricEvaluator
     protected override bool IgnoresHistory => false;
 
     /// <inheritdoc/>
+    public override async ValueTask<EvaluationResult> EvaluateAsync(
+        IEnumerable<ChatMessage> messages,
+        ChatResponse modelResponse,
+        ChatConfiguration? chatConfiguration = null,
+        IEnumerable<EvaluationContext>? additionalContext = null,
+        CancellationToken cancellationToken = default)
+    {
+        EvaluationResult result =
+            await base.EvaluateAsync(
+                messages,
+                modelResponse,
+                chatConfiguration,
+                additionalContext,
+                cancellationToken).ConfigureAwait(false);
+
+        if (GetRelevantContext(additionalContext) is GroundednessEvaluatorContext context)
+        {
+            result.AddOrUpdateContextInAllMetrics("Grounding Context", context.GetContents());
+        }
+
+        return result;
+    }
+
+    /// <inheritdoc/>
     protected override async ValueTask<string> RenderEvaluationPromptAsync(
         ChatMessage? userRequest,
         ChatResponse modelResponse,
-        IEnumerable<ChatMessage>? includedHistory,
+        IEnumerable<ChatMessage>? conversationHistory,
         IEnumerable<EvaluationContext>? additionalContext,
         CancellationToken cancellationToken)
     {
@@ -68,17 +92,16 @@ public sealed class GroundednessEvaluator : SingleNumericMetricEvaluator
 
         var builder = new StringBuilder();
 
-        if (additionalContext?.OfType<GroundednessEvaluatorContext>().FirstOrDefault()
-                is GroundednessEvaluatorContext context)
+        if (GetRelevantContext(additionalContext) is GroundednessEvaluatorContext context)
         {
             _ = builder.Append(context.GroundingContext);
             _ = builder.AppendLine();
             _ = builder.AppendLine();
         }
 
-        if (includedHistory is not null)
+        if (conversationHistory is not null)
         {
-            foreach (ChatMessage message in includedHistory)
+            foreach (ChatMessage message in conversationHistory)
             {
                 _ = builder.Append(await RenderAsync(message, cancellationToken).ConfigureAwait(false));
             }
@@ -161,5 +184,16 @@ public sealed class GroundednessEvaluator : SingleNumericMetricEvaluator
             """;
 
         return prompt;
+    }
+
+    private static GroundednessEvaluatorContext? GetRelevantContext(IEnumerable<EvaluationContext>? additionalContext)
+    {
+        if (additionalContext?.OfType<GroundednessEvaluatorContext>().FirstOrDefault()
+                is GroundednessEvaluatorContext context)
+        {
+            return context;
+        }
+
+        return null;
     }
 }

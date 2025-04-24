@@ -8,8 +8,6 @@ using ChatWithCustomData_CSharp.Web.Services.Ingestion;
 using Azure;
 #if (UseManagedIdentity)
 using Azure.Identity;
-#else
-using System.ClientModel;
 #endif
 #endif
 #if (IsOllama)

@@ -87,6 +87,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
         ChatResponse response = new()
         {
             ResponseId = openAIResponse.Id,
+            ConversationId = openAIResponse.Id,
             CreatedAt = openAIResponse.CreatedAt,
             FinishReason = ToFinishReason(openAIResponse.IncompleteStatusDetails?.Reason),
             Messages = [new(ChatRole.Assistant, [])],
@@ -132,6 +133,11 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                         break;
                 }
             }
+
+            if (openAIResponse.Error is { } error)
+            {
+                message.Contents.Add(new ErrorContent(error.Message) { ErrorCode = error.Code });
+            }
         }
 
         return response;
@@ -171,6 +177,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                         Contents = ToUsageDetails(completedUpdate.Response) is { } usage ? [new UsageContent(usage)] : [],
                         CreatedAt = createdAt,
                         ResponseId = responseId,
+                        ConversationId = responseId,
                         FinishReason =
                             ToFinishReason(completedUpdate.Response?.IncompleteStatusDetails?.Reason) ??
                             (functionCallInfos is not null ? ChatFinishReason.ToolCalls : ChatFinishReason.Stop),
@@ -208,6 +215,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                         MessageId = lastMessageId,
                         ModelId = modelId,
                         ResponseId = responseId,
+                        ConversationId = responseId,
                     };
                     break;
 
@@ -241,11 +249,31 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                             MessageId = lastMessageId,
                             ModelId = modelId,
                             ResponseId = responseId,
+                            ConversationId = responseId,
                         };
                     }
 
                     break;
                 }
+
+                case StreamingResponseErrorUpdate errorUpdate:
+                    yield return new ChatResponseUpdate
+                    {
+                        CreatedAt = createdAt,
+                        MessageId = lastMessageId,
+                        ModelId = modelId,
+                        ResponseId = responseId,
+                        ConversationId = responseId,
+                        Contents =
+                        [
+                            new ErrorContent(errorUpdate.Message)
+                            {
+                                ErrorCode = errorUpdate.Code,
+                                Details = errorUpdate.Param,
+                            }
+                        ],
+                    };
+                    break;
             }
         }
     }
@@ -281,18 +309,14 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
         {
             // Handle strongly-typed properties.
             result.MaxOutputTokenCount = options.MaxOutputTokens;
-            result.PreviousResponseId = options.ChatThreadId;
+            result.PreviousResponseId = options.ConversationId;
             result.TopP = options.TopP;
             result.Temperature = options.Temperature;
+            result.ParallelToolCallsEnabled = options.AllowMultipleToolCalls;
 
             // Handle loosely-typed properties from AdditionalProperties.
             if (options.AdditionalProperties is { Count: > 0 } additionalProperties)
             {
-                if (additionalProperties.TryGetValue(nameof(result.ParallelToolCallsEnabled), out bool allowParallelToolCalls))
-                {
-                    result.ParallelToolCallsEnabled = allowParallelToolCalls;
-                }
-
                 if (additionalProperties.TryGetValue(nameof(result.EndUserId), out string? endUserId))
                 {
                     result.EndUserId = endUserId;

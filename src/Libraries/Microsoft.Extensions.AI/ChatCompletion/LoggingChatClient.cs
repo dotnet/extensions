@@ -60,7 +60,7 @@ public partial class LoggingChatClient : DelegatingChatClient
 
         try
         {
-            var response = await base.GetResponseAsync(messages, options, cancellationToken).ConfigureAwait(false);
+            var response = await base.GetResponseAsync(messages, options, cancellationToken);
 
             if (_logger.IsEnabled(LogLevel.Debug))
             {
@@ -127,7 +127,7 @@ public partial class LoggingChatClient : DelegatingChatClient
             {
                 try
                 {
-                    if (!await e.MoveNextAsync().ConfigureAwait(false))
+                    if (!await e.MoveNextAsync())
                     {
                         break;
                     }
@@ -164,7 +164,7 @@ public partial class LoggingChatClient : DelegatingChatClient
         }
         finally
         {
-            await e.DisposeAsync().ConfigureAwait(false);
+            await e.DisposeAsync();
         }
     }
 

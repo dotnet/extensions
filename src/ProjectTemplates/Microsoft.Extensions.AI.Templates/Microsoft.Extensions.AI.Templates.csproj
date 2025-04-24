@@ -7,6 +7,7 @@
     <PackageTags>dotnet-new;templates;ai</PackageTags>
 
     <Stage>preview</Stage>
+    <PreReleaseVersionIteration>2</PreReleaseVersionIteration>
     <Workstream>AI</Workstream>
     <MinCodeCoverage>0</MinCodeCoverage>
     <MinMutationScore>0</MinMutationScore>

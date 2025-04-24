@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -79,9 +80,9 @@ public sealed class ScenarioRun : IAsyncDisposable
     public string ExecutionName { get; }
 
     /// <summary>
-    /// Gets a <see cref="Evaluation.ChatConfiguration"/> that specifies the <see cref="IChatClient"/> and the
-    /// <see cref="IEvaluationTokenCounter"/> that are used by AI-based <see cref="IEvaluator"/>s that are invoked as
-    /// part of the evaluation of this <see cref="ScenarioRun"/>.
+    /// Gets a <see cref="Evaluation.ChatConfiguration"/> that specifies the <see cref="IChatClient"/> that is used by
+    /// AI-based <see cref="IEvaluator"/>s that are invoked as part of the evaluation of this
+    /// <see cref="ScenarioRun"/>.
     /// </summary>
     public ChatConfiguration? ChatConfiguration { get; }
 
@@ -162,6 +163,9 @@ public sealed class ScenarioRun : IAsyncDisposable
             evaluationResult.Interpret(_evaluationMetricInterpreter);
         }
 
+        // Reset the chat details to null if not chat conversation turns have been recorded.
+        ChatDetails? chatDetails = _chatDetails is not null && _chatDetails.TurnDetails.Any() ? _chatDetails : null;
+
         _result =
             new ScenarioRunResult(
                 ScenarioName,
@@ -171,7 +175,7 @@ public sealed class ScenarioRun : IAsyncDisposable
                 messages,
                 modelResponse,
                 evaluationResult,
-                _chatDetails,
+                chatDetails,
                 _tags);
 
         return evaluationResult;

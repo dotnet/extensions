@@ -50,10 +50,32 @@ public sealed class EquivalenceEvaluator : SingleNumericMetricEvaluator
     protected override bool IgnoresHistory => true;
 
     /// <inheritdoc/>
+    public override async ValueTask<EvaluationResult> EvaluateAsync(
+        IEnumerable<ChatMessage> messages,
+        ChatResponse modelResponse,
+        ChatConfiguration? chatConfiguration = null,
+        IEnumerable<EvaluationContext>? additionalContext = null,
+        CancellationToken cancellationToken = default)
+    {
+        EvaluationResult result =
+            await base.EvaluateAsync(
+                messages,
+                modelResponse,
+                chatConfiguration,
+                additionalContext,
+                cancellationToken).ConfigureAwait(false);
+
+        EquivalenceEvaluatorContext context = GetRelevantContext(additionalContext);
+        result.AddOrUpdateContextInAllMetrics("Ground Truth", context.GetContents());
+
+        return result;
+    }
+
+    /// <inheritdoc/>
     protected override async ValueTask<string> RenderEvaluationPromptAsync(
         ChatMessage? userRequest,
         ChatResponse modelResponse,
-        IEnumerable<ChatMessage>? includedHistory,
+        IEnumerable<ChatMessage>? conversationHistory,
         IEnumerable<EvaluationContext>? additionalContext,
         CancellationToken cancellationToken)
     {
@@ -66,18 +88,8 @@ public sealed class EquivalenceEvaluator : SingleNumericMetricEvaluator
                 ? await RenderAsync(userRequest, cancellationToken).ConfigureAwait(false)
                 : string.Empty;
 
-        string groundTruth;
-
-        if (additionalContext?.OfType<EquivalenceEvaluatorContext>().FirstOrDefault()
-                is EquivalenceEvaluatorContext context)
-        {
-            groundTruth = context.GroundTruth;
-        }
-        else
-        {
-            throw new InvalidOperationException(
-                $"A value of type '{nameof(EquivalenceEvaluatorContext)}' was not found in the '{nameof(additionalContext)}' collection.");
-        }
+        EquivalenceEvaluatorContext context = GetRelevantContext(additionalContext);
+        string groundTruth = context.GroundTruth;
 
         string prompt =
             $$"""
@@ -148,5 +160,17 @@ public sealed class EquivalenceEvaluator : SingleNumericMetricEvaluator
             """;
 
         return prompt;
+    }
+
+    private static EquivalenceEvaluatorContext GetRelevantContext(IEnumerable<EvaluationContext>? additionalContext)
+    {
+        if (additionalContext?.OfType<EquivalenceEvaluatorContext>().FirstOrDefault()
+                is EquivalenceEvaluatorContext context)
+        {
+            return context;
+        }
+
+        throw new InvalidOperationException(
+            $"A value of type '{nameof(EquivalenceEvaluatorContext)}' was not found in the '{nameof(additionalContext)}' collection.");
     }
 }

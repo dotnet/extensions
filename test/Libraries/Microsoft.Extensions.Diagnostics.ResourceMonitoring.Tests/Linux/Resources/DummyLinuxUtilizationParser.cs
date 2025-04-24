@@ -9,8 +9,11 @@ internal class DummyLinuxUtilizationParser : ILinuxUtilizationParser
 {
     public ulong GetAvailableMemoryInBytes() => 1;
     public long GetCgroupCpuUsageInNanoseconds() => 0;
+    public long GetCgroupCpuUsageInNanosecondsV2() => 0;
     public float GetCgroupLimitedCpus() => 1;
+    public float GetCgroupLimitV2() => 1;
     public float GetCgroupRequestCpu() => 1;
+    public float GetCgroupRequestCpuV2() => 1;
     public ulong GetHostAvailableMemory() => 0;
     public float GetHostCpuCount() => 1;
     public long GetHostCpuUsageInNanoseconds() => 0;

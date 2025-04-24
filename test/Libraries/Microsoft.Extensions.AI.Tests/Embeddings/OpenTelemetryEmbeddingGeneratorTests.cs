@@ -69,7 +69,7 @@ public class OpenTelemetryEmbeddingGeneratorTests
             },
         };
 
-        await generator.GenerateEmbeddingVectorAsync("hello", options);
+        await generator.GenerateVectorAsync("hello", options);
 
         var activity = Assert.Single(activities);
         var expectedModelName = perRequestModelId ?? "defaultmodel";

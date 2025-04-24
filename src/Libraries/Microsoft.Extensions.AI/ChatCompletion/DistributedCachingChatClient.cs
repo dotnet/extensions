@@ -19,8 +19,18 @@ namespace Microsoft.Extensions.AI;
 /// A delegating chat client that caches the results of response calls, storing them as JSON in an <see cref="IDistributedCache"/>.
 /// </summary>
 /// <remarks>
+/// <para>
+/// The <see cref="DistributedCachingChatClient"/> employs JSON serialization as part of storing cached data. It is not guaranteed that
+/// the object models used by <see cref="ChatMessage"/>, <see cref="ChatOptions"/>, <see cref="ChatResponse"/>, <see cref="ChatResponseUpdate"/>,
+/// or any of the other objects in the chat client pipeline will roundtrip through JSON serialization with full fidelity. For example,
+/// <see cref="ChatMessage.RawRepresentation"/> will be ignored, and <see cref="object"/> values in <see cref="ChatMessage.AdditionalProperties"/>
+/// will deserialize as <see cref="JsonElement"/> rather than as the original type. In general, code using <see cref="DistributedCachingChatClient"/>
+/// should only rely on accessing data that can be preserved well enough through JSON serialization and deserialization.
+/// </para>
+/// <para>
 /// The provided implementation of <see cref="IChatClient"/> is thread-safe for concurrent use so long as the employed
 /// <see cref="IDistributedCache"/> is similarly thread-safe for concurrent use.
+/// </para>
 /// </remarks>
 public class DistributedCachingChatClient : CachingChatClient
 {
@@ -52,7 +62,7 @@ public class DistributedCachingChatClient : CachingChatClient
         _ = Throw.IfNull(key);
         _jsonSerializerOptions.MakeReadOnly();
 
-        if (await _storage.GetAsync(key, cancellationToken).ConfigureAwait(false) is byte[] existingJson)
+        if (await _storage.GetAsync(key, cancellationToken) is byte[] existingJson)
         {
             return (ChatResponse?)JsonSerializer.Deserialize(existingJson, _jsonSerializerOptions.GetTypeInfo(typeof(ChatResponse)));
         }
@@ -66,7 +76,7 @@ public class DistributedCachingChatClient : CachingChatClient
         _ = Throw.IfNull(key);
         _jsonSerializerOptions.MakeReadOnly();
 
-        if (await _storage.GetAsync(key, cancellationToken).ConfigureAwait(false) is byte[] existingJson)
+        if (await _storage.GetAsync(key, cancellationToken) is byte[] existingJson)
         {
             return (IReadOnlyList<ChatResponseUpdate>?)JsonSerializer.Deserialize(existingJson, _jsonSerializerOptions.GetTypeInfo(typeof(IReadOnlyList<ChatResponseUpdate>)));
         }
@@ -82,7 +92,7 @@ public class DistributedCachingChatClient : CachingChatClient
         _jsonSerializerOptions.MakeReadOnly();
 
         var newJson = JsonSerializer.SerializeToUtf8Bytes(value, _jsonSerializerOptions.GetTypeInfo(typeof(ChatResponse)));
-        await _storage.SetAsync(key, newJson, cancellationToken).ConfigureAwait(false);
+        await _storage.SetAsync(key, newJson, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -93,25 +103,28 @@ public class DistributedCachingChatClient : CachingChatClient
         _jsonSerializerOptions.MakeReadOnly();
 
         var newJson = JsonSerializer.SerializeToUtf8Bytes(value, _jsonSerializerOptions.GetTypeInfo(typeof(IReadOnlyList<ChatResponseUpdate>)));
-        await _storage.SetAsync(key, newJson, cancellationToken).ConfigureAwait(false);
+        await _storage.SetAsync(key, newJson, cancellationToken);
     }
 
     /// <summary>Computes a cache key for the specified values.</summary>
-    /// <param name="values">The values to inform the key.</param>
+    /// <param name="messages">The messages to inform the key.</param>
+    /// <param name="options">The <see cref="ChatOptions"/> to inform the key.</param>
+    /// <param name="additionalValues">Any other values to inform the key.</param>
     /// <returns>The computed key.</returns>
     /// <remarks>
     /// <para>
-    /// The <paramref name="values"/> are serialized to JSON using <see cref="JsonSerializerOptions"/> in order to compute the key.
+    /// The <paramref name="messages"/>, <paramref name="options"/>, and <paramref name="additionalValues"/> are serialized to JSON using <see cref="JsonSerializerOptions"/>
+    /// in order to compute the key.
     /// </para>
     /// <para>
     /// The generated cache key is not guaranteed to be stable across releases of the library.
     /// </para>
     /// </remarks>
-    protected override string GetCacheKey(params ReadOnlySpan<object?> values)
+    protected override string GetCacheKey(IEnumerable<ChatMessage> messages, ChatOptions? options, params ReadOnlySpan<object?> additionalValues)
     {
         // Bump the cache version to invalidate existing caches if the serialization format changes in a breaking way.
         const int CacheVersion = 1;
 
-        return AIJsonUtilities.HashDataToString([CacheVersion, .. values], _jsonSerializerOptions);
+        return AIJsonUtilities.HashDataToString([CacheVersion, messages, options, .. additionalValues], _jsonSerializerOptions);
     }
 }

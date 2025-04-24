@@ -24,7 +24,7 @@ internal static class JsonOutputFixer
         // Trim 'json' marker from markdown if it exists.
         const string JsonMarker = "json";
         int markerLength = JsonMarker.Length;
-        if (trimmed.Length > markerLength && trimmed[0..markerLength].SequenceEqual(JsonMarker.AsSpan()))
+        if (trimmed.Length > markerLength && trimmed.Slice(0, markerLength).SequenceEqual(JsonMarker.AsSpan()))
         {
             trimmed = trimmed.Slice(markerLength);
         }

@@ -88,9 +88,8 @@ public sealed class CompositeEvaluator : IEvaluator
     /// </param>
     /// <param name="modelResponse">The response that is to be evaluated.</param>
     /// <param name="chatConfiguration">
-    /// A <see cref="ChatConfiguration"/> that specifies the <see cref="IChatClient"/> and the
-    /// <see cref="IEvaluationTokenCounter"/> that should be used if one or more composed <see cref="IEvaluator"/>s use
-    /// an AI model to perform evaluation.
+    /// A <see cref="ChatConfiguration"/> that specifies the <see cref="IChatClient"/> that should be used if one or
+    /// more composed <see cref="IEvaluator"/>s use an AI model to perform evaluation.
     /// </param>
     /// <param name="additionalContext">
     /// Additional contextual information (beyond that which is available in <paramref name="messages"/>) that composed
@@ -159,7 +158,7 @@ public sealed class CompositeEvaluator : IEvaluator
                 foreach (string metricName in e.EvaluationMetricNames)
                 {
                     var metric = new EvaluationMetric(metricName);
-                    metric.AddDiagnostic(EvaluationDiagnostic.Error(message));
+                    metric.AddDiagnostics(EvaluationDiagnostic.Error(message));
                     result.Metrics.Add(metric.Name, metric);
                 }
 

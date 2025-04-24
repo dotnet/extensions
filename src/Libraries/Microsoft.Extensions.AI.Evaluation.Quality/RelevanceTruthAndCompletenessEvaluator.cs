@@ -7,6 +7,9 @@
 // constructor syntax.
 
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -90,7 +93,7 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator : ChatConvers
     protected override async ValueTask<string> RenderEvaluationPromptAsync(
         ChatMessage? userRequest,
         ChatResponse modelResponse,
-        IEnumerable<ChatMessage>? includedHistory,
+        IEnumerable<ChatMessage>? conversationHistory,
         IEnumerable<EvaluationContext>? additionalContext,
         CancellationToken cancellationToken)
     {
@@ -104,9 +107,9 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator : ChatConvers
                 : string.Empty;
 
         var builder = new StringBuilder();
-        if (includedHistory is not null)
+        if (conversationHistory is not null)
         {
-            foreach (ChatMessage message in includedHistory)
+            foreach (ChatMessage message in conversationHistory)
             {
                 _ = builder.Append(await RenderAsync(message, cancellationToken).ConfigureAwait(false));
             }
@@ -125,77 +128,125 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator : ChatConvers
         EvaluationResult result,
         CancellationToken cancellationToken)
     {
-        ChatResponse evaluationResponse =
-            await chatConfiguration.ChatClient.GetResponseAsync(
-                evaluationMessages,
-                _chatOptions,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
-
-        string evaluationResponseText = evaluationResponse.Text.Trim();
+        ChatResponse evaluationResponse;
         Rating rating;
+        string duration;
+        Stopwatch stopwatch = Stopwatch.StartNew();
 
-        if (string.IsNullOrEmpty(evaluationResponseText))
+        try
         {
-            rating = Rating.Inconclusive;
-            result.AddDiagnosticToAllMetrics(
-                EvaluationDiagnostic.Error(
-                    "Evaluation failed because the model failed to produce a valid evaluation response."));
-        }
-        else
-        {
-            try
+            evaluationResponse =
+                await chatConfiguration.ChatClient.GetResponseAsync(
+                    evaluationMessages,
+                    _chatOptions,
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            string evaluationResponseText = evaluationResponse.Text.Trim();
+            if (string.IsNullOrEmpty(evaluationResponseText))
             {
-                rating = Rating.FromJson(evaluationResponseText!);
+                rating = Rating.Inconclusive;
+                result.AddDiagnosticsToAllMetrics(
+                    EvaluationDiagnostic.Error(
+                        "Evaluation failed because the model failed to produce a valid evaluation response."));
             }
-            catch (JsonException)
+            else
             {
                 try
                 {
-                    string repairedJson =
-                        await JsonOutputFixer.RepairJsonAsync(
-                            chatConfiguration,
-                            evaluationResponseText!,
-                            cancellationToken).ConfigureAwait(false);
+                    rating = Rating.FromJson(evaluationResponseText!);
+                }
+                catch (JsonException)
+                {
+                    try
+                    {
+                        string repairedJson =
+                            await JsonOutputFixer.RepairJsonAsync(
+                                chatConfiguration,
+                                evaluationResponseText!,
+                                cancellationToken).ConfigureAwait(false);
 
-                    if (string.IsNullOrEmpty(repairedJson))
+                        if (string.IsNullOrEmpty(repairedJson))
+                        {
+                            rating = Rating.Inconclusive;
+                            result.AddDiagnosticsToAllMetrics(
+                                EvaluationDiagnostic.Error(
+                                    $"""
+                                    Failed to repair the following response from the model and parse scores for '{RelevanceMetricName}', '{TruthMetricName}' and '{CompletenessMetricName}'.:
+                                    {evaluationResponseText}
+                                    """));
+                        }
+                        else
+                        {
+                            rating = Rating.FromJson(repairedJson!);
+                        }
+                    }
+                    catch (JsonException ex)
                     {
                         rating = Rating.Inconclusive;
-                        result.AddDiagnosticToAllMetrics(
+                        result.AddDiagnosticsToAllMetrics(
                             EvaluationDiagnostic.Error(
                                 $"""
                                 Failed to repair the following response from the model and parse scores for '{RelevanceMetricName}', '{TruthMetricName}' and '{CompletenessMetricName}'.:
                                 {evaluationResponseText}
+                                {ex}
                                 """));
                     }
-                    else
-                    {
-                        rating = Rating.FromJson(repairedJson!);
-                    }
-                }
-                catch (JsonException ex)
-                {
-                    rating = Rating.Inconclusive;
-                    result.AddDiagnosticToAllMetrics(
-                        EvaluationDiagnostic.Error(
-                            $"""
-                            Failed to repair the following response from the model and parse scores for '{RelevanceMetricName}', '{TruthMetricName}' and '{CompletenessMetricName}'.:
-                            {evaluationResponseText}
-                            {ex}
-                            """));
                 }
             }
         }
-
-        UpdateResult(rating);
-
-        void UpdateResult(Rating rating)
+        finally
         {
+            stopwatch.Stop();
+            duration = $"{stopwatch.Elapsed.TotalSeconds.ToString("F2", CultureInfo.InvariantCulture)} s";
+        }
+
+        UpdateResult();
+
+        void UpdateResult()
+        {
+            const string Rationales = "Rationales";
+            const string Separator = "; ";
+
+            var commonMetadata = new Dictionary<string, string>();
+
+            if (!string.IsNullOrWhiteSpace(evaluationResponse.ModelId))
+            {
+                commonMetadata["evaluation-model-used"] = evaluationResponse.ModelId!;
+            }
+
+            if (evaluationResponse.Usage is UsageDetails usage)
+            {
+                if (usage.InputTokenCount is not null)
+                {
+                    commonMetadata["evaluation-input-tokens-used"] = $"{usage.InputTokenCount}";
+                }
+
+                if (usage.OutputTokenCount is not null)
+                {
+                    commonMetadata["evaluation-output-tokens-used"] = $"{usage.OutputTokenCount}";
+                }
+
+                if (usage.TotalTokenCount is not null)
+                {
+                    commonMetadata["evaluation-total-tokens-used"] = $"{usage.TotalTokenCount}";
+                }
+            }
+
+            commonMetadata["evaluation-duration"] = duration;
+
             NumericMetric relevance = result.Get<NumericMetric>(RelevanceMetricName);
             relevance.Value = rating.Relevance;
             relevance.Interpretation = relevance.InterpretScore();
             if (!string.IsNullOrWhiteSpace(rating.RelevanceReasoning))
             {
                 relevance.Reason = rating.RelevanceReasoning!;
+            }
+
+            relevance.AddOrUpdateMetadata(commonMetadata);
+            if (rating.RelevanceReasons.Any())
+            {
+                string value = string.Join(Separator, rating.RelevanceReasons);
+                relevance.AddOrUpdateMetadata(name: Rationales, value);
             }
 
             NumericMetric truth = result.Get<NumericMetric>(TruthMetricName);
@@ -206,6 +257,13 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator : ChatConvers
                 truth.Reason = rating.TruthReasoning!;
             }
 
+            truth.AddOrUpdateMetadata(commonMetadata);
+            if (rating.TruthReasons.Any())
+            {
+                string value = string.Join(Separator, rating.TruthReasons);
+                truth.AddOrUpdateMetadata(name: Rationales, value);
+            }
+
             NumericMetric completeness = result.Get<NumericMetric>(CompletenessMetricName);
             completeness.Value = rating.Completeness;
             completeness.Interpretation = completeness.InterpretScore();
@@ -214,9 +272,16 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator : ChatConvers
                 completeness.Reason = rating.CompletenessReasoning!;
             }
 
+            completeness.AddOrUpdateMetadata(commonMetadata);
+            if (rating.CompletenessReasons.Any())
+            {
+                string value = string.Join(Separator, rating.CompletenessReasons);
+                completeness.AddOrUpdateMetadata(name: Rationales, value);
+            }
+
             if (!string.IsNullOrWhiteSpace(rating.Error))
             {
-                result.AddDiagnosticToAllMetrics(EvaluationDiagnostic.Error(rating.Error!));
+                result.AddDiagnosticsToAllMetrics(EvaluationDiagnostic.Error(rating.Error!));
             }
         }
     }

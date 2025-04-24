@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { makeStyles, tokens } from "@fluentui/react-components";
 
 export const useStyles = makeStyles({
@@ -47,6 +50,10 @@ export const useStyles = makeStyles({
         borderRadius: '8px',
         right: '0',
         maxWidth: '80rem',
+    },
+   dismissableSectionHeader: {
+        display: 'flex',
+        alignItems: 'center',
     },
     sectionHeader: {
         display: 'flex',
@@ -120,6 +127,14 @@ export const useStyles = makeStyles({
         backgroundColor: tokens.colorNeutralBackground3,
         border: '1px solid ' + tokens.colorNeutralStroke2,
     },
+    contextBubble: {
+        padding: '0.75rem 1rem',
+        borderRadius: '12px',
+        overflow: 'hidden',
+        wordBreak: 'break-word',
+        backgroundColor: tokens.colorBrandBackground2,
+        border: '1px solid ' + tokens.colorNeutralStroke2,
+    },
     cacheHitIcon: {
         color: tokens.colorPaletteGreenForeground1,
     },
@@ -166,6 +181,23 @@ export const useStyles = makeStyles({
         alignItems: 'center',
         gap: '0.25rem',
     },
+    autoWidthTable: {
+        tableLayout: 'auto',
+        width: '100%',
+    },
+    tableHeaderCell: {
+        fontWeight: '600',
+        fontSize: tokens.fontSizeBase300,
+        borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+    },
+    tablesContainer: {
+        display: 'flex',
+        flexDirection: 'row',
+        gap: '1rem',
+    },
+    tableWrapper: {
+        flex: '1',
+    },
     copyButton: {
         background: 'none',
         border: 'none',
@@ -183,6 +215,10 @@ export const useStyles = makeStyles({
     },
     preWrap: {
         whiteSpace: 'pre-wrap',
+    },
+    imageContent: {
+        maxWidth: '100%',
+        maxHeight: '400px',
     },
     executionHeaderCell: {
         display: 'flex',
@@ -222,5 +258,54 @@ export const useStyles = makeStyles({
         width: '100%',
         padding: '0.5rem',
         gap: '0.25rem',
+    },
+    diagnosticErrorCell: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.25rem',
+        color: tokens.colorStatusDangerForeground2,
+        whiteSpace: 'nowrap',
+    },
+    diagnosticWarningCell: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.25rem',
+        color: tokens.colorStatusWarningForeground2,
+        whiteSpace: 'nowrap',
+    },
+    diagnosticInfoCell: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.25rem',
+        color: tokens.colorNeutralForeground1,
+        whiteSpace: 'nowrap',
+    },
+    diagnosticMessageText: {
+        fontFamily: tokens.fontFamilyBase,
+        whiteSpace: 'pre-wrap',
+        overflow: 'auto',
+        margin: 0,
+        padding: 0,
+        display: 'block',
+    },
+    diagnosticSeverityCell: {
+        width: '1%',
+        height: 'auto',
+        whiteSpace: 'nowrap',
+        verticalAlign: 'top',
+        padding: '1em',
+    },
+    diagnosticMessageCell: {
+        width: '100%',
+        height: 'auto',
+        verticalAlign: 'top',
+        padding: '1em',
+    },
+    diagnosticCopyButtonCell: {
+        width: '1%',
+        height: 'auto',
+        whiteSpace: 'nowrap',
+        verticalAlign: 'top',
+        padding: '1em',
     },
 });

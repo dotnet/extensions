@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,12 +14,13 @@ using Xunit;
 
 #pragma warning disable IDE0004 // Remove Unnecessary Cast
 #pragma warning disable S107 // Methods should not have too many parameters
+#pragma warning disable S2760 // Sequential tests should not check the same condition
 #pragma warning disable S3358 // Ternary operators should not be nested
 #pragma warning disable S5034 // "ValueTask" should be consumed correctly
 
 namespace Microsoft.Extensions.AI;
 
-public class AIFunctionFactoryTest
+public partial class AIFunctionFactoryTest
 {
     [Fact]
     public void InvalidArguments_Throw()
@@ -112,8 +114,8 @@ public class AIFunctionFactoryTest
         AssertExtensions.EqualFunctionCallResults(null, await func.InvokeAsync(new() { ["a"] = 1, ["b"] = 2L }));
         Assert.Equal(3, result);
 
-        func = AIFunctionFactory.Create((int count) => SimpleIAsyncEnumerable(count));
-        AssertExtensions.EqualFunctionCallResults(new int[] { 0, 1, 2, 3, 4 }, await func.InvokeAsync(new() { ["count"] = 5 }));
+        func = AIFunctionFactory.Create((int count) => SimpleIAsyncEnumerable(count), serializerOptions: JsonContext.Default.Options);
+        AssertExtensions.EqualFunctionCallResults(new int[] { 0, 1, 2, 3, 4 }, await func.InvokeAsync(new() { ["count"] = 5 }), JsonContext.Default.Options);
 
         static async IAsyncEnumerable<int> SimpleIAsyncEnumerable(int count)
         {
@@ -124,7 +126,7 @@ public class AIFunctionFactoryTest
             }
         }
 
-        func = AIFunctionFactory.Create(() => (IAsyncEnumerable<int>)new ThrowingAsyncEnumerable());
+        func = AIFunctionFactory.Create(() => (IAsyncEnumerable<int>)new ThrowingAsyncEnumerable(), serializerOptions: JsonContext.Default.Options);
         await Assert.ThrowsAsync<NotImplementedException>(() => func.InvokeAsync().AsTask());
     }
 
@@ -262,7 +264,7 @@ public class AIFunctionFactoryTest
         Assert.DoesNotContain("services", func.JsonSchema.ToString());
         Assert.DoesNotContain("arguments", func.JsonSchema.ToString());
 
-        await Assert.ThrowsAsync<ArgumentException>("arguments", () => func.InvokeAsync(arguments).AsTask());
+        await Assert.ThrowsAsync<ArgumentNullException>("arguments.Services", () => func.InvokeAsync(arguments).AsTask());
 
         arguments.Services = sp;
         var result = await func.InvokeAsync(arguments);
@@ -295,6 +297,55 @@ public class AIFunctionFactoryTest
 
         result = await func.InvokeAsync();
         Assert.Equal("", result?.ToString());
+    }
+
+    [Fact]
+    public async Task IServiceProvider_ServicesInOptionsImpactsFunctionCreation()
+    {
+        ServiceCollection sc = new();
+        sc.AddSingleton(new MyService(123));
+        IServiceProvider sp = sc.BuildServiceProvider();
+
+        AIFunction func;
+
+        // Services not provided to Create, non-optional argument
+        if (JsonSerializer.IsReflectionEnabledByDefault)
+        {
+            func = AIFunctionFactory.Create((MyService myService) => myService.Value);
+            Assert.Contains("myService", func.JsonSchema.ToString());
+            await Assert.ThrowsAsync<ArgumentException>("arguments", () => func.InvokeAsync(new()).AsTask());
+            await Assert.ThrowsAsync<ArgumentException>("arguments", () => func.InvokeAsync(new() { Services = sp }).AsTask());
+        }
+        else
+        {
+            Assert.Throws<NotSupportedException>(() => AIFunctionFactory.Create((MyService myService) => myService.Value));
+        }
+
+        // Services not provided to Create, optional argument
+        if (JsonSerializer.IsReflectionEnabledByDefault)
+        {
+            func = AIFunctionFactory.Create((MyService? myService = null) => myService?.Value ?? 456);
+            Assert.Contains("myService", func.JsonSchema.ToString());
+            Assert.Contains("456", (await func.InvokeAsync(new()))?.ToString());
+            Assert.Contains("456", (await func.InvokeAsync(new() { Services = sp }))?.ToString());
+        }
+        else
+        {
+            Assert.Throws<NotSupportedException>(() => AIFunctionFactory.Create((MyService myService) => myService.Value));
+        }
+
+        // Services provided to Create, non-optional argument
+        func = AIFunctionFactory.Create((MyService myService) => myService.Value, new() { Services = sp });
+        Assert.DoesNotContain("myService", func.JsonSchema.ToString());
+        await Assert.ThrowsAsync<ArgumentNullException>("arguments.Services", () => func.InvokeAsync(new()).AsTask());
+        await Assert.ThrowsAsync<ArgumentException>("arguments", () => func.InvokeAsync(new() { Services = new ServiceCollection().BuildServiceProvider() }).AsTask());
+        Assert.Contains("123", (await func.InvokeAsync(new() { Services = sp }))?.ToString());
+
+        // Services provided to Create, optional argument
+        func = AIFunctionFactory.Create((MyService? myService = null) => myService?.Value ?? 456, new() { Services = sp });
+        Assert.DoesNotContain("myService", func.JsonSchema.ToString());
+        Assert.Contains("456", (await func.InvokeAsync(new()))?.ToString());
+        Assert.Contains("123", (await func.InvokeAsync(new() { Services = sp }))?.ToString());
     }
 
     [Fact]
@@ -426,7 +477,7 @@ public class AIFunctionFactoryTest
     }
 
     [Fact]
-    public async Task ConfigureParameterBinding_CanBeUsedToSupportFromKeyedServices()
+    public async Task FromKeyedServices_ResolvesFromServiceProvider()
     {
         MyService service = new(42);
 
@@ -434,35 +485,58 @@ public class AIFunctionFactoryTest
         sc.AddKeyedSingleton("key", service);
         IServiceProvider sp = sc.BuildServiceProvider();
 
-        AIFunction f = AIFunctionFactory.Create(
-            ([FromKeyedServices("key")] MyService service, int myInteger) => service.Value + myInteger,
-            new AIFunctionFactoryOptions
-            {
-                ConfigureParameterBinding = p =>
-                {
-                    if (p.GetCustomAttribute<FromKeyedServicesAttribute>() is { } attr)
-                    {
-                        return new()
-                        {
-                            BindParameter = (p, a) =>
-                                (a.Services as IKeyedServiceProvider)?.GetKeyedService(p.ParameterType, attr.Key) is { } s ? s :
-                                p.HasDefaultValue ? p.DefaultValue :
-                                throw new ArgumentException($"Unable to resolve argument for '{p.Name}'."),
-                            ExcludeFromSchema = true
-                        };
-                    }
-
-                    return default;
-                },
-            });
+        AIFunction f = AIFunctionFactory.Create(([FromKeyedServices("key")] MyService service, int myInteger) => service.Value + myInteger);
 
         Assert.Contains("myInteger", f.JsonSchema.ToString());
         Assert.DoesNotContain("service", f.JsonSchema.ToString());
 
-        Exception e = await Assert.ThrowsAsync<ArgumentException>(() => f.InvokeAsync(new() { ["myInteger"] = 1 }).AsTask());
-        Assert.Contains("Unable to resolve", e.Message);
+        Exception e = await Assert.ThrowsAsync<ArgumentNullException>("arguments.Services", () => f.InvokeAsync(new() { ["myInteger"] = 1 }).AsTask());
+        Assert.Contains("Services are required", e.Message);
 
         var result = await f.InvokeAsync(new() { ["myInteger"] = 1, Services = sp });
+        Assert.Contains("43", result?.ToString());
+    }
+
+    [Fact]
+    public async Task FromKeyedServices_NullKeysBindToNonKeyedServices()
+    {
+        MyService service = new(42);
+
+        ServiceCollection sc = new();
+        sc.AddSingleton(service);
+        IServiceProvider sp = sc.BuildServiceProvider();
+
+        AIFunction f = AIFunctionFactory.Create(([FromKeyedServices(null!)] MyService service, int myInteger) => service.Value + myInteger);
+
+        Assert.Contains("myInteger", f.JsonSchema.ToString());
+        Assert.DoesNotContain("service", f.JsonSchema.ToString());
+
+        Exception e = await Assert.ThrowsAsync<ArgumentNullException>("arguments.Services", () => f.InvokeAsync(new() { ["myInteger"] = 1 }).AsTask());
+        Assert.Contains("Services are required", e.Message);
+
+        var result = await f.InvokeAsync(new() { ["myInteger"] = 1, Services = sp });
+        Assert.Contains("43", result?.ToString());
+    }
+
+    [Fact]
+    public async Task FromKeyedServices_OptionalDefaultsToNull()
+    {
+        MyService service = new(42);
+
+        ServiceCollection sc = new();
+        sc.AddKeyedSingleton("key", service);
+        IServiceProvider sp = sc.BuildServiceProvider();
+
+        AIFunction f = AIFunctionFactory.Create(([FromKeyedServices("key")] MyService? service = null, int myInteger = 0) =>
+            service is null ? "null " + 1 : (service.Value + myInteger).ToString());
+
+        Assert.Contains("myInteger", f.JsonSchema.ToString());
+        Assert.DoesNotContain("service", f.JsonSchema.ToString());
+
+        var result = await f.InvokeAsync(new() { ["myInteger"] = 1 });
+        Assert.Contains("null 1", result?.ToString());
+
+        result = await f.InvokeAsync(new() { ["myInteger"] = 1, Services = sp });
         Assert.Contains("43", result?.ToString());
     }
 
@@ -796,4 +870,8 @@ public class AIFunctionFactoryTest
     private class A;
     private class B : A;
     private sealed class C : B;
+
+    [JsonSerializable(typeof(IAsyncEnumerable<int>))]
+    [JsonSerializable(typeof(int[]))]
+    private partial class JsonContext : JsonSerializerContext;
 }

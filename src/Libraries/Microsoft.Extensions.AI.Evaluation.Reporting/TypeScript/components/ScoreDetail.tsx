@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { useEffect, useRef, useState } from "react";
 import { ChatDetailsSection } from "./ChatDetailsSection";
 import { ConversationDetails } from "./ConversationDetails";
@@ -29,7 +32,7 @@ export const ScoreDetail = ({ scenario, scoreSummary }: { scenario: ScenarioRunR
             onMetricSelect={setSelectedMetric}
             selectedMetric={selectedMetric} />
         {selectedMetric && <MetricDetailsSection metric={selectedMetric} />}
-        <ConversationDetails messages={messages} model={model} usage={usage} />
-        {scenario.chatDetails && <ChatDetailsSection chatDetails={scenario.chatDetails} />}
+        <ConversationDetails messages={messages} model={model} usage={usage} selectedMetric={selectedMetric} />
+        {scenario.chatDetails && scenario.chatDetails.turnDetails.length > 0 && <ChatDetailsSection chatDetails={scenario.chatDetails} />}
     </div>);
 };

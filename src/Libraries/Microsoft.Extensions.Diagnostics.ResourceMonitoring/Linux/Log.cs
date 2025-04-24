@@ -33,4 +33,27 @@ internal static partial class Log
     [LoggerMessage(3, LogLevel.Debug,
         "System resources information: CpuLimit = {cpuLimit}, CpuRequest = {cpuRequest}, MemoryLimit = {memoryLimit}, MemoryRequest = {memoryRequest}.")]
     public static partial void SystemResourcesInfo(ILogger logger, double cpuLimit, double cpuRequest, ulong memoryLimit, ulong memoryRequest);
+
+    [LoggerMessage(4, LogLevel.Debug,
+#pragma warning disable S103 // Lines should not be too long
+        "For CgroupV2, Computed CPU usage with CgroupCpuTime = {cgroupCpuTime}, PreviousCgroupCpuTime = {previousCgroupCpuTime}, ActualElapsedNanoseconds = {actualElapsedNanoseconds}, CpuCores = {cpuCores}.")]
+#pragma warning restore S103 // Lines should not be too long
+    public static partial void CpuUsageDataV2(
+        ILogger logger,
+        long cgroupCpuTime,
+        long previousCgroupCpuTime,
+        double actualElapsedNanoseconds,
+        double cpuCores);
+
+    [LoggerMessage(5, LogLevel.Debug,
+        "CPU utilization exceeded 100%: Counter = {counterValue}")]
+    public static partial void CounterMessage100(
+        ILogger logger,
+        long counterValue);
+
+    [LoggerMessage(6, LogLevel.Debug,
+        "CPU utilization exceeded 110%: Counter = {counterValue}")]
+    public static partial void CounterMessage110(
+        ILogger logger,
+        long counterValue);
 }

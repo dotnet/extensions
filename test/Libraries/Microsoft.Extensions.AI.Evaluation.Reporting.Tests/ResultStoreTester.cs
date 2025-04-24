@@ -22,7 +22,7 @@ public abstract class ResultStoreTester
         BooleanMetric booleanMetric = new BooleanMetric("boolean", value: true);
 
         NumericMetric numericMetric = new NumericMetric("numeric", value: 3);
-        numericMetric.AddDiagnostic(EvaluationDiagnostic.Informational("Informational Message"));
+        numericMetric.AddDiagnostics(EvaluationDiagnostic.Informational("Informational Message"));
 
         StringMetric stringMetric = new StringMetric("string", value: "Good");
 
@@ -101,6 +101,50 @@ public abstract class ResultStoreTester
         Assert.Equal(IterationName(0), results[3].iterationName);
         Assert.Equal(IterationName(4), results[4].iterationName);
         Assert.Equal(IterationName(5), results[5].iterationName);
+    }
+
+    [ConditionalFact]
+    public async Task WriteAndReadHistoricalResults()
+    {
+        SkipIfNotConfigured();
+
+        IResultStore resultStore = CreateResultStore();
+        Assert.NotNull(resultStore);
+
+        string firstExecutionName = $"Test Execution {Path.GetRandomFileName()}";
+        IEnumerable<ScenarioRunResult> testResults = [
+            CreateTestResult(ScenarioName(0), IterationName(0), firstExecutionName),
+            CreateTestResult(ScenarioName(1), IterationName(2), firstExecutionName),
+            CreateTestResult(ScenarioName(2), IterationName(4), firstExecutionName),
+        ];
+        await resultStore.WriteResultsAsync(testResults);
+
+        await Task.Delay(TimeSpan.FromMilliseconds(500));
+
+        string secondExecutionName = $"Test Execution {Path.GetRandomFileName()}";
+        testResults = [
+            CreateTestResult(ScenarioName(0), IterationName(0), secondExecutionName),
+            CreateTestResult(ScenarioName(1), IterationName(2), secondExecutionName),
+            CreateTestResult(ScenarioName(2), IterationName(4), secondExecutionName),
+        ];
+        await resultStore.WriteResultsAsync(testResults);
+
+        await Task.Delay(TimeSpan.FromMilliseconds(500));
+
+        string thirdExecutionName = $"Test Execution {Path.GetRandomFileName()}";
+        testResults = [
+            CreateTestResult(ScenarioName(0), IterationName(0), thirdExecutionName),
+            CreateTestResult(ScenarioName(1), IterationName(2), thirdExecutionName),
+            CreateTestResult(ScenarioName(2), IterationName(4), thirdExecutionName),
+        ];
+        await resultStore.WriteResultsAsync(testResults);
+
+        (string executionName, string scenarioName, string iterationName)[] results = [.. await LoadResultsAsync(n: 5, resultStore)];
+        Assert.Equal(9, results.Length);
+
+        Assert.True(results.Take(3).All(r => r.executionName == thirdExecutionName));
+        Assert.True(results.Skip(3).Take(3).All(r => r.executionName == secondExecutionName));
+        Assert.True(results.Skip(6).Take(3).All(r => r.executionName == firstExecutionName));
     }
 
     [ConditionalFact]

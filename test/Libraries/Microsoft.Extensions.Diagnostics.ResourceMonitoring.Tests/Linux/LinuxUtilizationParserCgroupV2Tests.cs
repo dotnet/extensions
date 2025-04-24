@@ -33,10 +33,13 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         Assert.Throws<InvalidOperationException>(() => parser.GetAvailableMemoryInBytes());
         Assert.Throws<InvalidOperationException>(() => parser.GetMemoryUsageInBytes());
         Assert.Throws<InvalidOperationException>(() => parser.GetCgroupLimitedCpus());
+        Assert.Throws<InvalidOperationException>(() => parser.GetCgroupLimitV2());
         Assert.Throws<InvalidOperationException>(() => parser.GetHostCpuUsageInNanoseconds());
         Assert.Throws<InvalidOperationException>(() => parser.GetHostCpuCount());
         Assert.Throws<InvalidOperationException>(() => parser.GetCgroupCpuUsageInNanoseconds());
+        Assert.Throws<InvalidOperationException>(() => parser.GetCgroupCpuUsageInNanosecondsV2());
         Assert.Throws<InvalidOperationException>(() => parser.GetCgroupRequestCpu());
+        Assert.Throws<InvalidOperationException>(() => parser.GetCgroupRequestCpuV2());
     }
 
     [ConditionalFact]
@@ -278,6 +281,41 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         Assert.Equal(result, cpus);
     }
 
+    [ConditionalTheory]
+    [InlineData("0::/")]
+    [InlineData("0::/fakeslice")]
+    public void Gets_Available_Cpus_From_CpuSetCpusFromSlices_When_Cpu_Limits_Not_Set(string slicepath)
+    {
+        var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        {
+            { new FileInfo("/sys/fs/cgroup/cpu.max"), "200000 100000" },
+            { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.max"), "200000 100000" },
+            { new FileInfo("/proc/self/cgroup"), slicepath }
+        });
+
+        var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
+        var cpus = p.GetCgroupLimitV2();
+
+        Assert.Equal(2, cpus);
+    }
+
+    [ConditionalTheory]
+    [InlineData("2500", 64.0)]
+    [InlineData("10000", 256.0)]
+    public void Calculates_Cpu_Request_From_Cpu_WeightInSlices(string content, float result)
+    {
+        var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        {
+            { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.weight"), content },
+            { new FileInfo("/proc/self/cgroup"), "0::/fakeslice" }
+        });
+
+        var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
+        var r = Math.Round(p.GetCgroupRequestCpuV2());
+
+        Assert.Equal(result, r);
+    }
+
     [ConditionalFact]
     public void Gets_Available_Cpus_From_CpuSetCpus_When_Cpu_Max_Set_To_Max_()
     {
@@ -371,6 +409,25 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var r = p.GetHostCpuUsageInNanoseconds();
 
         Assert.Equal(77_994_900_000_000, r);
+    }
+
+    [ConditionalTheory]
+    [InlineData("0::/", "usage_usec 222222", "222222000")]
+    [InlineData("0::/fakeslice", "usage_usec 222222", "222222000")]
+    public void Reads_CpuUsageFromSlices_When_Valid_Input(string slicepath, string content, string result)
+    {
+        var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        {
+            { new FileInfo("/sys/fs/cgroup/cpu.stat"), content },
+            { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat"), content },
+            { new FileInfo("/proc/self/cgroup"), slicepath }
+        });
+
+        var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
+        var r = p.GetCgroupCpuUsageInNanosecondsV2();
+
+        Assert.IsType<long>(r);
+        Assert.Equal(result, r.ToString());
     }
 
     [ConditionalFact]
@@ -472,6 +529,23 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
 
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Math.Round(p.GetCgroupRequestCpu());
+
+        Assert.Equal(result, r);
+    }
+
+    [ConditionalTheory]
+    [InlineData("0::/", "filename", "/sys/fs/cgroup/filename")]
+    [InlineData("0::/filesystem.slice", "filename", "/sys/fs/cgroup/filesystem.slice/filename")]
+    [InlineData("0::/filesystem.slice/", "filename", "/sys/fs/cgroup/filesystem.slice/filename")]
+    public void Create_Path_From_Proc_Self_Cgroup(string content, string filename, string result)
+    {
+        var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        {
+            { new FileInfo("/proc/self/cgroup"), content },
+        });
+
+        var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
+        var r = p.GetCgroupPath(filename);
 
         Assert.Equal(result, r);
     }
