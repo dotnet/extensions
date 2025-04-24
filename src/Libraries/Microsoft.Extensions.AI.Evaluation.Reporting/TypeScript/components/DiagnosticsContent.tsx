@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { DismissCircle16Regular, Warning16Regular, Info16Regular, Copy16Regular } from "@fluentui/react-icons";
-import { Table, TableHeader, TableRow, TableHeaderCell, TableBody, TableCell } from "@fluentui/react-components";
+import { Table, TableHeader, TableRow, TableHeaderCell, TableBody, TableCell, mergeClasses } from "@fluentui/react-components";
 import { useStyles } from "./Styles";
 
 export const DiagnosticsContent = ({ diagnostics }: { diagnostics: EvaluationDiagnostic[]; }) => {
@@ -39,13 +39,13 @@ export const DiagnosticsContent = ({ diagnostics }: { diagnostics: EvaluationDia
     };
 
     return (
-        <div className={classes.tableContainer}>
+        <div className={classes.tableContainer} tabIndex={0}>
             <Table className={classes.autoWidthTable}>
                 <TableHeader>
                     <TableRow>
-                        <TableHeaderCell className={`${classes.tableHeaderCell} ${classes.diagnosticSeverityCell}`}>Severity</TableHeaderCell>
-                        <TableHeaderCell className={`${classes.tableHeaderCell} ${classes.diagnosticMessageCell}`}>Message</TableHeaderCell>
-                        <TableHeaderCell className={`${classes.tableHeaderCell} ${classes.diagnosticCopyButtonCell}`}></TableHeaderCell>
+                        <TableHeaderCell className={mergeClasses(classes.tableHeaderCell, classes.diagnosticSeverityCell)}>Severity</TableHeaderCell>
+                        <TableHeaderCell className={mergeClasses(classes.tableHeaderCell, classes.diagnosticMessageCell)}>Message</TableHeaderCell>
+                        <TableHeaderCell className={mergeClasses(classes.tableHeaderCell, classes.diagnosticCopyButtonCell)}></TableHeaderCell>
                     </TableRow>
                 </TableHeader>
                 <TableBody>

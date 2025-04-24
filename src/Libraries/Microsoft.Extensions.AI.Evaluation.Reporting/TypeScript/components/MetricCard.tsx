@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { makeStyles, mergeClasses, tokens, Tooltip } from "@fluentui/react-components";
-import { DismissCircle16Regular, Info16Regular, Warning16Regular } from "@fluentui/react-icons";
+import { DismissCircle16Regular, Info16Regular, Warning16Regular, RadioButtonFilled, RadioButtonRegular } from "@fluentui/react-icons";
 
 const useCardListStyles = makeStyles({
     metricCardList: {
@@ -13,20 +13,20 @@ const useCardListStyles = makeStyles({
     },
 });
 
-export const MetricCardList = ({ scenario, onMetricSelect, selectedMetric }: { 
-  scenario: ScenarioRunResult, 
-  onMetricSelect: (metric: MetricType | null) => void,
-  selectedMetric: MetricType | null
+export const MetricCardList = ({ scenario, onMetricSelect, selectedMetric }: {
+    scenario: ScenarioRunResult,
+    onMetricSelect: (metric: MetricType | null) => void,
+    selectedMetric: MetricType | null
 }) => {
     const classes = useCardListStyles();
     return (
         <div className={classes.metricCardList}>
             {Object.values(scenario.evaluationResult.metrics).map((metric, index) => (
-                <MetricCard 
-                  metric={metric} 
-                  key={index} 
-                  onClick={() => onMetricSelect(selectedMetric === metric ? null : metric)}
-                  isSelected={selectedMetric === metric}
+                <MetricCard
+                    metric={metric}
+                    key={index}
+                    onClick={() => onMetricSelect(selectedMetric === metric ? null : metric)}
+                    isSelected={selectedMetric === metric}
                 />
             ))}
         </div>
@@ -35,11 +35,11 @@ export const MetricCardList = ({ scenario, onMetricSelect, selectedMetric }: {
 
 const useCardStyles = makeStyles({
     card: {
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
         gap: '0.5rem',
-        padding: '.75rem', 
+        padding: '.75rem',
         border: `1px solid ${tokens.colorNeutralStroke2}`,
         borderRadius: '4px',
         width: '12.5rem',
@@ -54,12 +54,9 @@ const useCardStyles = makeStyles({
     selectedCard: {
         zIndex: 1,
         boxShadow: tokens.shadow8,
-        outline: `2px solid ${tokens.colorNeutralForeground3}`,
-        outlineOffset: '0px',
-        border: 'none'
     },
-    metricNameText: { 
-        fontSize: '1rem', 
+    metricNameText: {
+        fontSize: '1rem',
         fontWeight: 'normal',
         width: '80%',
         textAlign: 'center',
@@ -75,15 +72,19 @@ const useCardStyles = makeStyles({
         height: '4px',
         width: '100%',
         position: 'relative',
-        marginBottom: '0',
+    },
+    selectionIcon: {
+        position: 'absolute',
+        top: '-0.25rem',
+        left: '-0.25rem',
     },
     metricIcon: {
         position: 'absolute',
         top: '-0.25rem',
         right: '-0.25rem',
     },
-    metricValueText: { 
-        fontSize: '1rem', 
+    metricValueText: {
+        fontSize: '1rem',
         fontWeight: 'bold',
         width: '80%',
         textAlign: 'center',
@@ -114,7 +115,7 @@ const useCardStyles = makeStyles({
         fontWeight: '500',
         padding: '0.25rem 0.5rem',
         borderRadius: '4px',
-        border: '1px solid ' + tokens.colorNeutralStroke2,        
+        border: '1px solid ' + tokens.colorNeutralStroke2,
     }
 });
 
@@ -161,7 +162,7 @@ const getMetricDisplayValue = (metric: MetricType): string => {
         case "string":
             return metric?.value ?? "??";
         case "boolean":
-            return !metric || metric.value === undefined || metric.value === null ? 
+            return !metric || metric.value === undefined || metric.value === null ?
                 '??' :
                 metric.value ? 'Yes' : 'No';
         case "numeric":
@@ -173,12 +174,12 @@ const getMetricDisplayValue = (metric: MetricType): string => {
     }
 };
 
-export const MetricCard = ({ 
-    metric, 
+export const MetricCard = ({
+    metric,
     onClick,
     isSelected
-}: { 
-    metric: MetricType, 
+}: {
+    metric: MetricType,
     onClick: () => void,
     isSelected: boolean
 }) => {
@@ -186,21 +187,21 @@ export const MetricCard = ({
     const metricValue = getMetricDisplayValue(metric);
     const classes = useCardStyles();
     const { fg, bg } = useCardColors(metric.interpretation);
-    
+
     const hasReasons = metric.reason != null || metric.interpretation?.reason != null;
     const hasInformationalMessages = metric.diagnostics && metric.diagnostics.some((d: EvaluationDiagnostic) => d.severity == "informational");
     const hasWarningMessages = metric.diagnostics && metric.diagnostics.some((d: EvaluationDiagnostic) => d.severity == "warning");
     const hasErrorMessages = metric.diagnostics && metric.diagnostics.some((d: EvaluationDiagnostic) => d.severity == "error");
-    
+
     const cardClass = mergeClasses(
-        bg, 
-        classes.card, 
+        bg,
+        classes.card,
         isSelected ? classes.selectedCard : undefined
     );
-    
+
     let statusIcon = null;
     let statusTooltip = '';
-    
+
     if (hasErrorMessages) {
         statusIcon = <DismissCircle16Regular className={classes.metricIcon} />;
         statusTooltip = 'This metric has errors. Click the card to view more details.';
@@ -211,10 +212,12 @@ export const MetricCard = ({
         statusIcon = <Info16Regular className={classes.metricIcon} />;
         statusTooltip = 'This metric has additional information. Click the card to view more details.';
     }
-    
+
     return (
-        <div className={cardClass} onClick={onClick}>
+        <div className={cardClass} onClick={onClick} tabIndex={0}
+                onKeyUp={e => e.key === 'Enter' && onClick()} >
             <div className={classes.iconPlaceholder}>
+                {isSelected ? <RadioButtonFilled className={classes.selectionIcon} /> : <RadioButtonRegular className={classes.selectionIcon} />}
                 {statusIcon && (
                     <Tooltip content={statusTooltip} relationship="description">
                         <span>{statusIcon}</span>
@@ -231,7 +234,7 @@ export const MetricCard = ({
     );
 };
 
-export const MetricDisplay = ({metric}: {metric: MetricWithNoValue | NumericMetric | BooleanMetric | StringMetric}) => {
+export const MetricDisplay = ({ metric }: { metric: MetricWithNoValue | NumericMetric | BooleanMetric | StringMetric }) => {
     const metricValue = getMetricDisplayValue(metric);
     const classes = useCardStyles();
     const { fg, bg } = useCardColors(metric.interpretation);

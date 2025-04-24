@@ -3,7 +3,7 @@
 
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import App from '../../components/App.tsx';
+import { App } from '../../components/App.tsx';
 import './index.css'
 import { init, ready, getAccessToken, getConfiguration } from "azure-devops-extension-sdk";
 import { getClient } from "./azure-devops-extension-api";
