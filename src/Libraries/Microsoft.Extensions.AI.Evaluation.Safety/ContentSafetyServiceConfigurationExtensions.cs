@@ -40,10 +40,7 @@ public static class ContentSafetyServiceConfigurationExtensions
 #pragma warning disable CA2000 // Dispose objects before they go out of scope.
         // We can't dispose newChatClient here because it is returned to the caller.
 
-        var newChatClient =
-            new ContentSafetyChatClient(
-                contentSafetyServiceConfiguration,
-                originalChatClient: originalChatConfiguration?.ChatClient);
+        var newChatClient = contentSafetyServiceConfiguration.ToIChatClient(originalChatConfiguration?.ChatClient);
 #pragma warning restore CA2000
 
         return new ChatConfiguration(newChatClient);

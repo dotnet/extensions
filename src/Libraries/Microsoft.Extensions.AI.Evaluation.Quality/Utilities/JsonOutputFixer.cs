@@ -3,16 +3,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.AI.Evaluation.Quality.Utilities;
 
-internal static class ParsingUtilities
+internal static class JsonOutputFixer
 {
-    internal static ReadOnlySpan<char> TrimJsonMarkdownDelimiters(string json)
+    internal static ReadOnlySpan<char> TrimMarkdownDelimiters(string json)
     {
 #if NET
         ReadOnlySpan<char> trimmed = json;
@@ -77,77 +75,5 @@ internal static class ParsingUtilities
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
         return response.Text.Trim();
-    }
-
-    internal static bool TryParseNumericScore(
-        string evaluationResponse,
-        [NotNullWhen(true)] out int? score,
-        out string? reason,
-        out string? chainOfThought)
-    {
-        if (string.IsNullOrWhiteSpace(evaluationResponse))
-        {
-            score = null;
-            reason = null;
-            chainOfThought = null;
-            return false;
-        }
-
-        evaluationResponse = evaluationResponse.Trim();
-
-        // Format: <S0>chain of thought</S0>, <S1>explanation</S1>, <S2>score</S2>
-
-        if (!TryParseScore(evaluationResponse, tag: "S2", out score))
-        {
-            score = null;
-            reason = null;
-            chainOfThought = null;
-            return false;
-        }
-
-        _ = TryParseText(evaluationResponse, tag: "S1", out reason);
-        _ = TryParseText(evaluationResponse, tag: "S0", out chainOfThought);
-
-        return true;
-
-        static bool TryParseScore(string evaluationResponse, string tag, [NotNullWhen(true)] out int? score)
-        {
-            if (!TryParseText(evaluationResponse, tag, out string? text))
-            {
-                score = null;
-                return false;
-            }
-
-            if (!int.TryParse(text, out int scoreValue))
-            {
-                score = null;
-                return false;
-            }
-
-            score = scoreValue;
-            return true;
-        }
-
-        static bool TryParseText(string evaluationResponse, string tag, [NotNullWhen(true)] out string? text)
-        {
-            Match match = Regex.Match(evaluationResponse, $@"<{tag}>(?<value>.*?)</{tag}>", RegexOptions.Multiline);
-
-            if (!match.Success || match.Groups["value"] is not Group valueGroup || !valueGroup.Success)
-            {
-                text = null;
-                return false;
-            }
-
-            if (valueGroup.Value is not string matchText ||
-                matchText.Trim() is not string trimmedMatchText ||
-                string.IsNullOrEmpty(trimmedMatchText))
-            {
-                text = null;
-                return false;
-            }
-
-            text = trimmedMatchText;
-            return true;
-        }
     }
 }

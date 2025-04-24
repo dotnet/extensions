@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.Shared.Diagnostics;
 
@@ -125,6 +126,53 @@ public static class EvaluationMetricExtensions
         foreach (KeyValuePair<string, string> item in metadata)
         {
             metric.AddOrUpdateMetadata(item.Key, item.Value);
+        }
+    }
+
+    /// <summary>
+    /// Adds or updates metadata available as part of the evaluation <paramref name="response"/> produced by an AI
+    /// model, in the supplied <paramref name="metric"/>'s <see cref="EvaluationMetric.Metadata"/> collection.
+    /// </summary>
+    /// <param name="metric">The <see cref="EvaluationMetric"/>.</param>
+    /// <param name="response">The <see cref="ChatResponse"/> that contains metadata to be added or updated.</param>
+    /// <param name="duration">
+    /// An optional duration that represents the amount of time that it took for the AI model to produce the supplied
+    /// <paramref name="response"/>. If supplied, the duration will also be included as part of the added metadata.
+    /// </param>
+    public static void AddOrUpdateChatMetadata(
+        this EvaluationMetric metric,
+        ChatResponse response,
+        TimeSpan? duration = null)
+    {
+        _ = Throw.IfNull(response);
+
+        if (!string.IsNullOrWhiteSpace(response.ModelId))
+        {
+            metric.AddOrUpdateMetadata(name: "evaluation-model-used", value: response.ModelId!);
+        }
+
+        if (response.Usage is UsageDetails usage)
+        {
+            if (usage.InputTokenCount is not null)
+            {
+                metric.AddOrUpdateMetadata(name: "evaluation-input-tokens-used", value: $"{usage.InputTokenCount}");
+            }
+
+            if (usage.OutputTokenCount is not null)
+            {
+                metric.AddOrUpdateMetadata(name: "evaluation-output-tokens-used", value: $"{usage.OutputTokenCount}");
+            }
+
+            if (usage.TotalTokenCount is not null)
+            {
+                metric.AddOrUpdateMetadata(name: "evaluation-total-tokens-used", value: $"{usage.TotalTokenCount}");
+            }
+        }
+
+        if (duration is not null)
+        {
+            string durationText = $"{duration.Value.TotalSeconds.ToString("F2", CultureInfo.InvariantCulture)} s";
+            metric.AddOrUpdateMetadata(name: "evaluation-duration", value: durationText);
         }
     }
 }

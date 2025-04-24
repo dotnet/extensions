@@ -47,7 +47,10 @@ public class QualityEvaluatorTests
             string temperature = $"Temperature: {_chatOptions.Temperature}";
             string usesContext = $"Feature: Context";
 
+#pragma warning disable AIEVAL001
             IEvaluator rtcEvaluator = new RelevanceTruthAndCompletenessEvaluator();
+#pragma warning restore AIEVAL001
+
             IEvaluator coherenceEvaluator = new CoherenceEvaluator();
             IEvaluator fluencyEvaluator = new FluencyEvaluator();
 

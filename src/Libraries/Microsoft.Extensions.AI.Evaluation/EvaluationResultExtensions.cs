@@ -168,4 +168,29 @@ public static class EvaluationResultExtensions
             metric.AddOrUpdateMetadata(metadata);
         }
     }
+
+    /// <summary>
+    /// Adds or updates metadata available as part of the evaluation <paramref name="response"/> produced by an AI
+    /// model, in all <see cref="EvaluationMetric"/>s contained in the supplied <paramref name="result"/>.
+    /// </summary>
+    /// <param name="result">
+    /// The <see cref="EvaluationResult"/> containing the <see cref="EvaluationMetric"/>s that are to be altered.
+    /// </param>
+    /// <param name="response">The <see cref="ChatResponse"/> that contains metadata to be added or updated.</param>
+    /// <param name="duration">
+    /// An optional duration that represents the amount of time that it took for the AI model to produce the supplied
+    /// <paramref name="response"/>. If supplied, the duration will also be included as part of the added metadata.
+    /// </param>
+    public static void AddOrUpdateChatMetadataInAllMetrics(
+        this EvaluationResult result,
+        ChatResponse response,
+        TimeSpan? duration = null)
+    {
+        _ = Throw.IfNull(result);
+
+        foreach (EvaluationMetric metric in result.Metrics.Values)
+        {
+            metric.AddOrUpdateChatMetadata(response, duration);
+        }
+    }
 }

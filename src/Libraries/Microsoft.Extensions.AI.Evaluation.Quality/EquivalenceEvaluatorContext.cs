@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.AI.Evaluation.Quality;
 /// The ground truth response against which the response that is being evaluated is compared.
 /// </param>
 /// <remarks>
-/// The <see cref="EquivalenceEvaluator"/> measures the degree to which the response being evaluated is similar to the
+/// <see cref="EquivalenceEvaluator"/> measures the degree to which the response being evaluated is similar to the
 /// response supplied via <paramref name="groundTruth"/>.
 /// </remarks>
 public sealed class EquivalenceEvaluatorContext(string groundTruth) : EvaluationContext

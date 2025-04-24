@@ -18,8 +18,8 @@ namespace Microsoft.Extensions.AI.Evaluation.Quality;
 /// Contextual information against which the 'Groundedness' of a response is evaluated.
 /// </param>
 /// <remarks>
-/// The <see cref="GroundednessEvaluator"/> measures the degree to which the response being evaluated is grounded in
-/// the information present in the supplied <paramref name="groundingContext"/>.
+/// <see cref="GroundednessEvaluator"/> measures the degree to which the response being evaluated is grounded in the
+/// information present in the supplied <paramref name="groundingContext"/>.
 /// </remarks>
 public sealed class GroundednessEvaluatorContext(string groundingContext) : EvaluationContext
 {
