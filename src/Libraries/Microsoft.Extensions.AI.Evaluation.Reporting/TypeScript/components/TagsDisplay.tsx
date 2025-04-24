@@ -3,7 +3,6 @@
 
 import { makeStyles, tokens } from '@fluentui/react-components';
 import { useReportContext } from './ReportContext';
-import { getTabsterAttribute, MoverDirections } from 'tabster';
 
 const useStyles = makeStyles({
   tagsContainer: {
