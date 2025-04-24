@@ -93,6 +93,23 @@ public class ChatOptions
     /// </remarks>
     public IList<string>? StopSequences { get; set; }
 
+    /// <summary>
+    /// Gets or sets a flag to indicate whether a single response is allowed to include multiple tool calls.
+    /// If <see langword="false"/>, the <see cref="IChatClient"/> is asked to return a maximum of one tool call per request.
+    /// If <see langword="true"/>, there is no limit.
+    /// If <see langword="null"/>, the provider may select its own default.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// When used with function calling middleware, this does not affect the ability to perform multiple function calls in sequence.
+    /// It only affects the number of function calls within a single iteration of the function calling loop.
+    /// </para>
+    /// <para>
+    /// The underlying provider is not guaranteed to support or honor this flag. For example it may choose to ignore it and return multiple tool calls regardless.
+    /// </para>
+    /// </remarks>
+    public bool? AllowMultipleToolCalls { get; set; }
+
     /// <summary>Gets or sets the tool mode for the chat request.</summary>
     /// <remarks>The default value is <see langword="null"/>, which is treated the same as <see cref="ChatToolMode.Auto"/>.</remarks>
     public ChatToolMode? ToolMode { get; set; }
@@ -125,6 +142,7 @@ public class ChatOptions
             Seed = Seed,
             ResponseFormat = ResponseFormat,
             ModelId = ModelId,
+            AllowMultipleToolCalls = AllowMultipleToolCalls,
             ToolMode = ToolMode,
             AdditionalProperties = AdditionalProperties?.Clone(),
         };

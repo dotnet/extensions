@@ -312,15 +312,11 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
             result.PreviousResponseId = options.ConversationId;
             result.TopP = options.TopP;
             result.Temperature = options.Temperature;
+            result.ParallelToolCallsEnabled = options.AllowMultipleToolCalls;
 
             // Handle loosely-typed properties from AdditionalProperties.
             if (options.AdditionalProperties is { Count: > 0 } additionalProperties)
             {
-                if (additionalProperties.TryGetValue(nameof(result.ParallelToolCallsEnabled), out bool allowParallelToolCalls))
-                {
-                    result.ParallelToolCallsEnabled = allowParallelToolCalls;
-                }
-
                 if (additionalProperties.TryGetValue(nameof(result.EndUserId), out string? endUserId))
                 {
                     result.EndUserId = endUserId;

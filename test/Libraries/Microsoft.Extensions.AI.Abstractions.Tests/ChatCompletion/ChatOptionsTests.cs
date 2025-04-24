@@ -24,22 +24,24 @@ public class ChatOptionsTests
         Assert.Null(options.ResponseFormat);
         Assert.Null(options.ModelId);
         Assert.Null(options.StopSequences);
+        Assert.Null(options.AllowMultipleToolCalls);
         Assert.Null(options.ToolMode);
         Assert.Null(options.Tools);
         Assert.Null(options.AdditionalProperties);
 
         ChatOptions clone = options.Clone();
-        Assert.Null(options.ConversationId);
+        Assert.Null(clone.ConversationId);
         Assert.Null(clone.Temperature);
         Assert.Null(clone.MaxOutputTokens);
         Assert.Null(clone.TopP);
         Assert.Null(clone.TopK);
         Assert.Null(clone.FrequencyPenalty);
         Assert.Null(clone.PresencePenalty);
-        Assert.Null(options.Seed);
+        Assert.Null(clone.Seed);
         Assert.Null(clone.ResponseFormat);
         Assert.Null(clone.ModelId);
         Assert.Null(clone.StopSequences);
+        Assert.Null(clone.AllowMultipleToolCalls);
         Assert.Null(clone.ToolMode);
         Assert.Null(clone.Tools);
         Assert.Null(clone.AdditionalProperties);
@@ -78,6 +80,7 @@ public class ChatOptionsTests
         options.ResponseFormat = ChatResponseFormat.Json;
         options.ModelId = "modelId";
         options.StopSequences = stopSequences;
+        options.AllowMultipleToolCalls = true;
         options.ToolMode = ChatToolMode.RequireAny;
         options.Tools = tools;
         options.AdditionalProperties = additionalProps;
@@ -93,22 +96,24 @@ public class ChatOptionsTests
         Assert.Same(ChatResponseFormat.Json, options.ResponseFormat);
         Assert.Equal("modelId", options.ModelId);
         Assert.Same(stopSequences, options.StopSequences);
+        Assert.True(options.AllowMultipleToolCalls);
         Assert.Same(ChatToolMode.RequireAny, options.ToolMode);
         Assert.Same(tools, options.Tools);
         Assert.Same(additionalProps, options.AdditionalProperties);
 
         ChatOptions clone = options.Clone();
-        Assert.Equal("12345", options.ConversationId);
+        Assert.Equal("12345", clone.ConversationId);
         Assert.Equal(0.1f, clone.Temperature);
         Assert.Equal(2, clone.MaxOutputTokens);
         Assert.Equal(0.3f, clone.TopP);
         Assert.Equal(42, clone.TopK);
         Assert.Equal(0.4f, clone.FrequencyPenalty);
         Assert.Equal(0.5f, clone.PresencePenalty);
-        Assert.Equal(12345, options.Seed);
+        Assert.Equal(12345, clone.Seed);
         Assert.Same(ChatResponseFormat.Json, clone.ResponseFormat);
         Assert.Equal("modelId", clone.ModelId);
         Assert.Equal(stopSequences, clone.StopSequences);
+        Assert.True(clone.AllowMultipleToolCalls);
         Assert.Same(ChatToolMode.RequireAny, clone.ToolMode);
         Assert.Equal(tools, clone.Tools);
         Assert.Equal(additionalProps, clone.AdditionalProperties);
@@ -141,6 +146,7 @@ public class ChatOptionsTests
         options.ResponseFormat = ChatResponseFormat.Json;
         options.ModelId = "modelId";
         options.StopSequences = stopSequences;
+        options.AllowMultipleToolCalls = false;
         options.ToolMode = ChatToolMode.RequireAny;
         options.Tools =
         [
@@ -166,6 +172,7 @@ public class ChatOptionsTests
         Assert.Equal("modelId", deserialized.ModelId);
         Assert.NotSame(stopSequences, deserialized.StopSequences);
         Assert.Equal(stopSequences, deserialized.StopSequences);
+        Assert.False(deserialized.AllowMultipleToolCalls);
         Assert.Equal(ChatToolMode.RequireAny, deserialized.ToolMode);
         Assert.Null(deserialized.Tools);
 
