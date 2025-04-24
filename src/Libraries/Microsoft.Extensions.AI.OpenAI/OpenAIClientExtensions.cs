@@ -3,8 +3,10 @@
 
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.Diagnostics;
 using OpenAI;
+using OpenAI.Audio;
 using OpenAI.Chat;
 using OpenAI.Embeddings;
 using OpenAI.Responses;
@@ -34,6 +36,13 @@ public static class OpenAIClientExtensions
     /// <returns>An <see cref="IChatClient"/> that can be used to converse via the <see cref="OpenAIResponseClient"/>.</returns>
     public static IChatClient AsIChatClient(this OpenAIResponseClient responseClient) =>
         new OpenAIResponseChatClient(responseClient);
+
+    /// <summary>Gets an <see cref="ISpeechToTextClient"/> for use with this <see cref="AudioClient"/>.</summary>
+    /// <param name="audioClient">The client.</param>
+    /// <returns>An <see cref="ISpeechToTextClient"/> that can be used to transcribe audio via the <see cref="AudioClient"/>.</returns>
+    [Experimental("MEAI001")]
+    public static ISpeechToTextClient AsISpeechToTextClient(this AudioClient audioClient) =>
+        new OpenAISpeechToTextClient(audioClient);
 
     /// <summary>Gets an <see cref="IEmbeddingGenerator{String, Single}"/> for use with this <see cref="OpenAIClient"/>.</summary>
     /// <param name="openAIClient">The client.</param>

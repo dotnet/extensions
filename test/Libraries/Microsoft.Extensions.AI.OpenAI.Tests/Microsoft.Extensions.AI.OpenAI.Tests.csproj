@@ -2,13 +2,21 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.AI</RootNamespace>
     <Description>Unit tests for Microsoft.Extensions.AI.OpenAI</Description>
-    <NoWarn>$(NoWarn);OPENAI002</NoWarn>
+    <NoWarn>$(NoWarn);OPENAI002;MEAI001;S104</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <InjectDiagnosticAttributesOnLegacy>true</InjectDiagnosticAttributesOnLegacy>
   </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\Shared\ImageDataUri\dotnet.png" Link="Resources\dotnet.png"/>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Include="..\..\Shared\ImageDataUri\ImageDataUri.cs" Link="Shared\ImageDataUri\ImageDataUri.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\AssertExtensions.cs" />
@@ -24,5 +32,6 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.AI.OpenAI" />
+    <PackageReference Include="Azure.Identity" />
   </ItemGroup>
 </Project>

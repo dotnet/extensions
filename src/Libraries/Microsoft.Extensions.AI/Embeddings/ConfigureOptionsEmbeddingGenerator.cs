@@ -46,7 +46,7 @@ public sealed class ConfigureOptionsEmbeddingGenerator<TInput, TEmbedding> : Del
         EmbeddingGenerationOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        return await base.GenerateAsync(values, Configure(options), cancellationToken).ConfigureAwait(false);
+        return await base.GenerateAsync(values, Configure(options), cancellationToken);
     }
 
     /// <summary>Creates and configures the <see cref="EmbeddingGenerationOptions"/> to pass along to the inner client.</summary>

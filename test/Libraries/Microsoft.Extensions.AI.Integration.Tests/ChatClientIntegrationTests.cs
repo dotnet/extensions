@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -176,7 +175,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
                 new(ChatRole.User,
                 [
                     new TextContent("What does this logo say?"),
-                    new DataContent(GetImageDataUri(), "image/png"),
+                    new DataContent(ImageDataUri.GetImageDataUri(), "image/png"),
                 ])
             ],
             new() { ModelId = GetModel_MultiModal_DescribeImage() });
@@ -955,19 +954,12 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Unknown,
     }
 
-    private static Uri GetImageDataUri()
-    {
-        using Stream? s = typeof(ChatClientIntegrationTests).Assembly.GetManifestResourceStream("Microsoft.Extensions.AI.dotnet.png");
-        Assert.NotNull(s);
-        MemoryStream ms = new();
-        s.CopyTo(ms);
-        return new Uri($"data:image/png;base64,{Convert.ToBase64String(ms.ToArray())}");
-    }
-
     [MemberNotNull(nameof(_chatClient))]
     protected void SkipIfNotEnabled()
     {
-        if (_chatClient is null)
+        string? skipIntegration = TestRunnerConfiguration.Instance["SkipIntegrationTests"];
+
+        if (skipIntegration is not null || _chatClient is null)
         {
             throw new SkipTestException("Client is not enabled.");
         }

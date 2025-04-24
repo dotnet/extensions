@@ -14,14 +14,15 @@ namespace Microsoft.Extensions.AI.Evaluation;
 /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/quickstarts/evaluate-ai-response">Evaluate a model's response.</related>
 public sealed class EvaluationResult
 {
-    /// <summary>
-    /// Gets or sets a collection of one or more <see cref="EvaluationMetric"/>s that represent the result of an
-    /// evaluation.
-    /// </summary>
 #pragma warning disable CA2227
     // CA2227: Collection properties should be read only.
     // We disable this warning because we want this type to be fully mutable for serialization purposes and for general
     // convenience.
+
+    /// <summary>
+    /// Gets or sets a collection of one or more <see cref="EvaluationMetric"/>s that represent the result of an
+    /// evaluation.
+    /// </summary>
     public IDictionary<string, EvaluationMetric> Metrics { get; set; }
 #pragma warning restore CA2227
 

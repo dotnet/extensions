@@ -24,6 +24,7 @@
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Evaluation\Microsoft.Extensions.AI.Evaluation.csproj" />
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Evaluation.Quality\Microsoft.Extensions.AI.Evaluation.Quality.csproj" />
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Evaluation.Reporting\CSharp\Microsoft.Extensions.AI.Evaluation.Reporting.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Evaluation.Safety\Microsoft.Extensions.AI.Evaluation.Safety.csproj" />
     <ProjectReference Include="..\..\TestUtilities\TestUtilities.csproj" />
   </ItemGroup>
 

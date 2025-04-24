@@ -5,6 +5,9 @@ namespace Microsoft.Extensions.AI.Evaluation.Integration.Tests;
 
 internal static class ChatMessageUtilities
 {
+    internal static ChatMessage ToSystemMessage(this string message)
+        => new ChatMessage(ChatRole.System, message);
+
     internal static ChatMessage ToUserMessage(this string message)
         => new ChatMessage(ChatRole.User, message);
 

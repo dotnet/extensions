@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.AI</RootNamespace>
+    <Description>Integration tests for OllamaSharp</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.AI.Ollama.Tests\Microsoft.Extensions.AI.Ollama.Tests.csproj" ProjectUnderTest="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OllamaSharp" />
+  </ItemGroup>
+</Project>
