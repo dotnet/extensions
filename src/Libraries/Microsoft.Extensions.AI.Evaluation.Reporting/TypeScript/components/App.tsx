@@ -85,14 +85,14 @@ export const App = () => {
                 <Button icon={<FilterDismissRegular />} appearance="subtle" onClick={clearFilters} />
               </Tooltip>
             )}
-            <SearchBox placeholder="Search / Filter " value={searchValue} type="text" 
-              style={{width: "16rem"}}
+            <SearchBox placeholder="Search / Filter " value={searchValue} type="text"
+              style={{ width: "16rem" }}
               onChange={(_ev, data) => setSearchValue(data.value)} />
             <Tooltip content="Download Data as JSON" relationship="description">
-              <Button icon={<ArrowDownloadRegular />} appearance="subtle" onClick={downloadDataset} aria-label="Download Data as JSON"/>
+              <Button icon={<ArrowDownloadRegular />} appearance="subtle" onClick={downloadDataset} aria-label="Download Data as JSON" />
             </Tooltip>
             <Tooltip content="Settings" relationship="description">
-              <Button icon={<Settings28Regular />} appearance="subtle" onClick={toggleSettings} aria-label="Settings"/>
+              <Button icon={<Settings28Regular />} appearance="subtle" onClick={toggleSettings} aria-label="Settings" />
             </Tooltip>
           </div>
         </div>
