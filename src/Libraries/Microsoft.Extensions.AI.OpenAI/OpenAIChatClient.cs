@@ -624,7 +624,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
     private static ChatTool ToOpenAIChatTool(AIFunction aiFunction)
     {
         bool? strict =
-            aiFunction.AdditionalProperties.TryGetValue("Strict", out object? strictObj) &&
+            aiFunction.AdditionalProperties.TryGetValue("strictJsonSchema", out object? strictObj) &&
             strictObj is bool strictValue ?
             strictValue : null;
 
