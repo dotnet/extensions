@@ -44,6 +44,7 @@ public sealed class ChatResponseFormatJson : ChatResponseFormat
     public string? SchemaDescription { get; }
 
     /// <summary>Gets a value indicating whether the response should strictly adhere to the schema.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public bool SchemaIsStrict { get; }
 
     /// <summary>Gets a string representing this instance to display in the debugger.</summary>
