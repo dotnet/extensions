@@ -496,6 +496,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
             result.TopP = options.TopP;
             result.PresencePenalty = options.PresencePenalty;
             result.Temperature = options.Temperature;
+            result.AllowParallelToolCalls = options.AllowMultipleToolCalls;
 #pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
             result.Seed = options.Seed;
 #pragma warning restore OPENAI001
@@ -510,11 +511,6 @@ internal sealed partial class OpenAIChatClient : IChatClient
 
             if (options.AdditionalProperties is { Count: > 0 } additionalProperties)
             {
-                if (additionalProperties.TryGetValue(nameof(result.AllowParallelToolCalls), out bool allowParallelToolCalls))
-                {
-                    result.AllowParallelToolCalls = allowParallelToolCalls;
-                }
-
                 if (additionalProperties.TryGetValue(nameof(result.AudioOptions), out ChatAudioOptions? audioOptions))
                 {
                     result.AudioOptions = audioOptions;
