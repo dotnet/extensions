@@ -3,7 +3,6 @@ import { ChevronDown12Regular, ChevronRight12Regular, Warning16Regular, Checkmar
 import { useState } from "react";
 import { useStyles } from "./Styles";
 
-
 export const ChatDetailsSection = ({ chatDetails }: { chatDetails: ChatDetails; }) => {
     const classes = useStyles();
     const [isExpanded, setIsExpanded] = useState(false);
@@ -42,13 +41,13 @@ export const ChatDetailsSection = ({ chatDetails }: { chatDetails: ChatDetails; 
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    {hasCacheKey && <TableHeaderCell>Cache Key</TableHeaderCell>}
-                                    {hasCacheStatus && <TableHeaderCell>Cache Status</TableHeaderCell>}
-                                    <TableHeaderCell>Latency (s)</TableHeaderCell>
-                                    {hasModelInfo && <TableHeaderCell>Model Used</TableHeaderCell>}
-                                    {hasInputTokens && <TableHeaderCell>Input Tokens</TableHeaderCell>}
-                                    {hasOutputTokens && <TableHeaderCell>Output Tokens</TableHeaderCell>}
-                                    {hasTotalTokens && <TableHeaderCell>Total Tokens</TableHeaderCell>}
+                                    {hasCacheKey && <TableHeaderCell className={classes.tableHeaderCell}>Cache Key</TableHeaderCell>}
+                                    {hasCacheStatus && <TableHeaderCell className={classes.tableHeaderCell}>Cache Status</TableHeaderCell>}
+                                    <TableHeaderCell className={classes.tableHeaderCell}>Latency (s)</TableHeaderCell>
+                                    {hasModelInfo && <TableHeaderCell className={classes.tableHeaderCell}>Model Used</TableHeaderCell>}
+                                    {hasInputTokens && <TableHeaderCell className={classes.tableHeaderCell}>Input Tokens</TableHeaderCell>}
+                                    {hasOutputTokens && <TableHeaderCell className={classes.tableHeaderCell}>Output Tokens</TableHeaderCell>}
+                                    {hasTotalTokens && <TableHeaderCell className={classes.tableHeaderCell}>Total Tokens</TableHeaderCell>}
                                 </TableRow>
                             </TableHeader>
                             <TableBody>

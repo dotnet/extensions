@@ -126,14 +126,15 @@ public sealed class ScenarioRunResult(
     /// </summary>
     public DateTime CreationTime { get; set; } = creationTime;
 
-    /// <summary>
-    /// Gets or sets the conversation history including the request that produced the <see cref="ModelResponse"/> being
-    /// evaluated in this <see cref="ScenarioRunResult"/>.
-    /// </summary>
 #pragma warning disable CA2227
     // CA2227: Collection properties should be read only.
     // We disable this warning because we want this type to be fully mutable for serialization purposes and for general
     // convenience.
+
+    /// <summary>
+    /// Gets or sets the conversation history including the request that produced the <see cref="ModelResponse"/> being
+    /// evaluated in this <see cref="ScenarioRunResult"/>.
+    /// </summary>
     public IList<ChatMessage> Messages { get; set; } = messages;
 #pragma warning restore CA2227
 
@@ -164,13 +165,14 @@ public sealed class ScenarioRunResult(
     /// </remarks>
     public ChatDetails? ChatDetails { get; set; } = chatDetails;
 
-    /// <summary>
-    /// Gets or sets a set of text tags applicable to this <see cref="ScenarioRunResult"/>.
-    /// </summary>
 #pragma warning disable CA2227
     // CA2227: Collection properties should be read only.
     // We disable this warning because we want this type to be fully mutable for serialization purposes and for general
     // convenience.
+
+    /// <summary>
+    /// Gets or sets a set of text tags applicable to this <see cref="ScenarioRunResult"/>.
+    /// </summary>
     public IList<string>? Tags { get; set; } = tags;
 #pragma warning restore CA2227
 

@@ -42,30 +42,18 @@ public static partial class AIJsonUtilities
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026", Justification = "DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled")]
     private static JsonSerializerOptions CreateDefaultOptions()
     {
-        // If reflection-based serialization is enabled by default, use it, as it's the most permissive in terms of what it can serialize,
-        // and we want to be flexible in terms of what can be put into the various collections in the object model.
-        // Otherwise, use the source-generated options to enable trimming and Native AOT.
-        JsonSerializerOptions options;
+        // Copy configuration from the source generated context.
+        JsonSerializerOptions options = new(JsonContext.Default.Options)
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        };
 
         if (JsonSerializer.IsReflectionEnabledByDefault)
         {
-            // Keep in sync with the JsonSourceGenerationOptions attribute on JsonContext below.
-            options = new(JsonSerializerDefaults.Web)
-            {
-                TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
-                Converters = { new JsonStringEnumConverter() },
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                WriteIndented = true,
-            };
-        }
-        else
-        {
-            options = new(JsonContext.Default.Options)
-            {
-                // Compile-time encoder setting not yet available
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            };
+            // If reflection-based serialization is enabled by default, use it as a fallback for all other types.
+            // Also turn on string-based enum serialization for all unknown enums.
+            options.TypeInfoResolverChain.Add(new DefaultJsonTypeInfoResolver());
+            options.Converters.Add(new JsonStringEnumConverter());
         }
 
         options.MakeReadOnly();
@@ -77,7 +65,14 @@ public static partial class AIJsonUtilities
         UseStringEnumConverter = true,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         WriteIndented = true)]
+    [JsonSerializable(typeof(SpeechToTextOptions))]
+    [JsonSerializable(typeof(SpeechToTextClientMetadata))]
+    [JsonSerializable(typeof(SpeechToTextResponse))]
+    [JsonSerializable(typeof(SpeechToTextResponseUpdate))]
+    [JsonSerializable(typeof(IReadOnlyList<SpeechToTextResponseUpdate>))]
     [JsonSerializable(typeof(IList<ChatMessage>))]
+    [JsonSerializable(typeof(IEnumerable<ChatMessage>))]
+    [JsonSerializable(typeof(ChatMessage[]))]
     [JsonSerializable(typeof(ChatOptions))]
     [JsonSerializable(typeof(EmbeddingGenerationOptions))]
     [JsonSerializable(typeof(ChatClientMetadata))]
@@ -90,14 +85,24 @@ public static partial class AIJsonUtilities
     [JsonSerializable(typeof(JsonDocument))]
     [JsonSerializable(typeof(JsonElement))]
     [JsonSerializable(typeof(JsonNode))]
+    [JsonSerializable(typeof(JsonObject))]
+    [JsonSerializable(typeof(JsonValue))]
+    [JsonSerializable(typeof(JsonArray))]
     [JsonSerializable(typeof(IEnumerable<string>))]
+    [JsonSerializable(typeof(char))]
     [JsonSerializable(typeof(string))]
     [JsonSerializable(typeof(int))]
+    [JsonSerializable(typeof(short))]
     [JsonSerializable(typeof(long))]
+    [JsonSerializable(typeof(uint))]
+    [JsonSerializable(typeof(ushort))]
+    [JsonSerializable(typeof(ulong))]
     [JsonSerializable(typeof(float))]
     [JsonSerializable(typeof(double))]
+    [JsonSerializable(typeof(decimal))]
     [JsonSerializable(typeof(bool))]
     [JsonSerializable(typeof(TimeSpan))]
+    [JsonSerializable(typeof(DateTime))]
     [JsonSerializable(typeof(DateTimeOffset))]
     [JsonSerializable(typeof(Embedding))]
     [JsonSerializable(typeof(Embedding<byte>))]
