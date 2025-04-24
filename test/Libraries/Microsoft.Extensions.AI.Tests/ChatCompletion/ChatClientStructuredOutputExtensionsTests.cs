@@ -58,7 +58,12 @@ public partial class ChatClientStructuredOutputExtensionsTests
                           ]
                         }
                       },
-                      "additionalProperties": false
+                      "additionalProperties": false,
+                      "required": [
+                        "id",
+                        "fullName",
+                        "species"
+                      ]
                     }
                     """, responseFormat.Schema.ToString());
                 Assert.Equal(nameof(Animal), responseFormat.SchemaName);
@@ -346,7 +351,12 @@ public partial class ChatClientStructuredOutputExtensionsTests
                           "type": "integer"
                         }
                       },
-                      "additionalProperties": false
+                      "additionalProperties": false,
+                      "required": [
+                        "id",
+                        "full_name",
+                        "species"
+                      ]
                     }
                     """, responseFormat.Schema.ToString());
 

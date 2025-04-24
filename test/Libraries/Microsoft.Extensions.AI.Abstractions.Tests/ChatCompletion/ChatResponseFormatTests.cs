@@ -80,5 +80,6 @@ public class ChatResponseFormatTests
         Assert.Equal("[1,2,3]", JsonSerializer.Serialize(actual.Schema, TestJsonSerializerContext.Default.JsonElement));
         Assert.Equal("name", actual.SchemaName);
         Assert.Equal("description", actual.SchemaDescription);
+        Assert.False(actual.SchemaIsStrict);
     }
 }

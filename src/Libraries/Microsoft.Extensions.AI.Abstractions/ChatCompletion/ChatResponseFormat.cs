@@ -30,10 +30,12 @@ public class ChatResponseFormat
     /// <param name="schema">The JSON schema.</param>
     /// <param name="schemaName">An optional name of the schema. For example, if the schema represents a particular class, this could be the name of the class.</param>
     /// <param name="schemaDescription">An optional description of the schema.</param>
+    /// <param name="schemaIsStrict">Whether the response should strictly adhere to the schema.</param>
     /// <returns>The <see cref="ChatResponseFormatJson"/> instance.</returns>
     public static ChatResponseFormatJson ForJsonSchema(
-        JsonElement schema, string? schemaName = null, string? schemaDescription = null) =>
+        JsonElement schema, string? schemaName = null, string? schemaDescription = null, bool schemaIsStrict = false) =>
         new(schema,
             schemaName,
-            schemaDescription);
+            schemaDescription,
+            schemaIsStrict);
 }

@@ -25,6 +25,7 @@ public static class ChatClientStructuredOutputExtensions
         IncludeSchemaKeyword = true,
         DisallowAdditionalProperties = true,
         IncludeTypeInEnumSchemas = true,
+        RequireAllProperties = true,
     };
 
     /// <summary>Sends chat messages, requesting a response matching the type <typeparamref name="T"/>.</summary>
