@@ -370,8 +370,7 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
                             ["required"] = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool.Required, JsonContext.Default.ListString)),
                             ["additionalProperties"] = _falseString,
                         },
-                        json.SchemaDescription,
-                        json.SchemaIsStrict);
+                        json.SchemaDescription);
                 }
                 else
                 {

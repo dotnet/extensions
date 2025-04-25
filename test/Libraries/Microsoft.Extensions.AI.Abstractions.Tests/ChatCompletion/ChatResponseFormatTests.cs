@@ -71,15 +71,14 @@ public class ChatResponseFormatTests
     public void Serialization_ForJsonSchemaRoundtrips()
     {
         string json = JsonSerializer.Serialize(
-            ChatResponseFormat.ForJsonSchema(JsonSerializer.Deserialize<JsonElement>("[1,2,3]", AIJsonUtilities.DefaultOptions), "name", "description", schemaIsStrict: true),
+            ChatResponseFormat.ForJsonSchema(JsonSerializer.Deserialize<JsonElement>("[1,2,3]", AIJsonUtilities.DefaultOptions), "name", "description"),
             TestJsonSerializerContext.Default.ChatResponseFormat);
-        Assert.Equal("""{"$type":"json","schema":[1,2,3],"schemaName":"name","schemaDescription":"description","schemaIsStrict":true}""", json);
+        Assert.Equal("""{"$type":"json","schema":[1,2,3],"schemaName":"name","schemaDescription":"description"}""", json);
 
         ChatResponseFormat? result = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.ChatResponseFormat);
         var actual = Assert.IsType<ChatResponseFormatJson>(result);
         Assert.Equal("[1,2,3]", JsonSerializer.Serialize(actual.Schema, TestJsonSerializerContext.Default.JsonElement));
         Assert.Equal("name", actual.SchemaName);
         Assert.Equal("description", actual.SchemaDescription);
-        Assert.True(actual.SchemaIsStrict);
     }
 }

@@ -16,10 +16,9 @@ public sealed class ChatResponseFormatJson : ChatResponseFormat
     /// <param name="schema">The schema to associate with the JSON response.</param>
     /// <param name="schemaName">A name for the schema.</param>
     /// <param name="schemaDescription">A description of the schema.</param>
-    /// <param name="schemaIsStrict">Whether the response should strictly adhere to the schema.</param>
     [JsonConstructor]
     public ChatResponseFormatJson(
-        JsonElement? schema, string? schemaName = null, string? schemaDescription = null, bool? schemaIsStrict = null)
+        JsonElement? schema, string? schemaName = null, string? schemaDescription = null)
     {
         if (schema is null && (schemaName is not null || schemaDescription is not null))
         {
@@ -31,7 +30,6 @@ public sealed class ChatResponseFormatJson : ChatResponseFormat
         Schema = schema;
         SchemaName = schemaName;
         SchemaDescription = schemaDescription;
-        SchemaIsStrict = schemaIsStrict;
     }
 
     /// <summary>Gets the JSON schema associated with the response, or <see langword="null"/> if there is none.</summary>
@@ -42,9 +40,6 @@ public sealed class ChatResponseFormatJson : ChatResponseFormat
 
     /// <summary>Gets a description of the schema.</summary>
     public string? SchemaDescription { get; }
-
-    /// <summary>Gets a value indicating whether the response should strictly adhere to the schema.</summary>
-    public bool? SchemaIsStrict { get; }
 
     /// <summary>Gets a string representing this instance to display in the debugger.</summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
