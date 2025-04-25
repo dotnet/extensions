@@ -33,7 +33,7 @@ public class ChatResponseFormat
     /// <param name="schemaIsStrict">Whether the response should strictly adhere to the schema.</param>
     /// <returns>The <see cref="ChatResponseFormatJson"/> instance.</returns>
     public static ChatResponseFormatJson ForJsonSchema(
-        JsonElement schema, string? schemaName = null, string? schemaDescription = null, bool schemaIsStrict = false) =>
+        JsonElement schema, string? schemaName = null, string? schemaDescription = null, bool? schemaIsStrict = false) =>
         new(schema,
             schemaName,
             schemaDescription,
