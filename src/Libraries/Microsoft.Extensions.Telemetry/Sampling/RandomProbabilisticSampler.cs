@@ -13,7 +13,7 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Diagnostics.Sampling;
 
-#pragma warning disable CA5394 // Do not use insecure randomness - not needed for sampling
+#pragma warning disable CA5394 // Do not use insecure randomness - acceptable for the purposes of sampling
 
 /// <summary>
 /// Randomly samples logs according to the specified probability.
@@ -38,14 +38,14 @@ internal sealed class RandomProbabilisticSampler : LoggingSampler, IDisposable
         IOptionsMonitor<RandomProbabilisticSamplerOptions> options)
     {
         _ruleSelector = Throw.IfNull(ruleSelector);
-        LastKnownGoodSamplerRules = Throw.IfNullOrMemberNull(options, options!.CurrentValue).Rules.ToArray();
+        LastKnownGoodSamplerRules = Throw.IfNullOrMemberNull(options, options.CurrentValue).Rules.ToArray();
         _samplerOptionsChangeTokenRegistration = options.OnChange(OnSamplerOptionsChanged);
     }
 
     /// <inheritdoc/>
     public override bool ShouldSample<TState>(in LogEntry<TState> logEntry)
     {
-        if (!TryApply(logEntry, out var probability))
+        if (!TryApply(logEntry, out double probability))
         {
             return true;
         }
@@ -85,7 +85,11 @@ internal sealed class RandomProbabilisticSampler : LoggingSampler, IDisposable
     {
         probability = 0.0;
 
-        RandomProbabilisticSamplerFilterRule? rule = _ruleSelector.Select(LastKnownGoodSamplerRules, logEntry.Category, logEntry.LogLevel, logEntry.EventId);
+        RandomProbabilisticSamplerFilterRule? rule = _ruleSelector.Select(
+            LastKnownGoodSamplerRules,
+            logEntry.Category,
+            logEntry.LogLevel,
+            logEntry.EventId);
 
         if (rule is null)
         {
