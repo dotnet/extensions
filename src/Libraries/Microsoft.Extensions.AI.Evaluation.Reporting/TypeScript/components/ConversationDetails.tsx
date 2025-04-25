@@ -67,7 +67,7 @@ export const ConversationDetails = ({ messages, model, usage, selectedMetric }: 
         }
 
         const contextGroups: { key: string, contents: AIContent[] }[] = [];
-        
+
         for (const [key, contents] of Object.entries(selectedMetric.context)) {
             if (contents && contents.length > 0) {
                 contextGroups.push({
@@ -84,8 +84,8 @@ export const ConversationDetails = ({ messages, model, usage, selectedMetric }: 
     const contextGroups = getContextGroups();
 
     return (
-        <div className={classes.section} tabIndex={0} 
-                onKeyUp={e => e.key === 'Enter' && setIsExpanded(!isExpanded)}>
+        <div className={classes.section} tabIndex={0}
+            onKeyUp={e => e.key === 'Enter' && setIsExpanded(!isExpanded)}>
             <div className={classes.sectionHeader} onClick={() => setIsExpanded(!isExpanded)}>
                 {isExpanded ? <ChevronDown12Regular /> : <ChevronRight12Regular />}
                 <h3 className={classes.sectionHeaderText}>Conversation</h3>
@@ -93,7 +93,7 @@ export const ConversationDetails = ({ messages, model, usage, selectedMetric }: 
             </div>
 
             {isExpanded && (
-                <div className={classes.sectionContainer}>  
+                <div className={classes.sectionContainer}>
                     {messageGroups.map((group, index) => {
                         const isFromUserSide = isUserSide(group.role);
                         const messageRowClass = mergeClasses(
@@ -114,7 +114,7 @@ export const ConversationDetails = ({ messages, model, usage, selectedMetric }: 
                             </div>
                         );
                     })}
-                    
+
                     {contextGroups.map((group, index) => (
                         <div key={`context-${index}`} className={mergeClasses(classes.messageRow, classes.userMessageRow)}>
                             <div className={classes.messageParticipantName}>{`supplied evaluation context (${group.key})`}</div>
