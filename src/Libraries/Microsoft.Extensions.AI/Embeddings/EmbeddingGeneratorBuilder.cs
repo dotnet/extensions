@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -15,10 +16,12 @@ namespace Microsoft.Extensions.AI;
 public sealed class EmbeddingGeneratorBuilder<TInput, TEmbedding>
     where TEmbedding : Embedding
 {
+    private delegate IEmbeddingGenerator<TInput, TEmbedding> EmbeddingGeneratorFactory(IFeatureCollection features, IServiceProvider services);
+
     private readonly Func<IServiceProvider, IEmbeddingGenerator<TInput, TEmbedding>> _innerGeneratorFactory;
 
     /// <summary>The registered client factory instances.</summary>
-    private List<Func<IEmbeddingGenerator<TInput, TEmbedding>, IServiceProvider, IEmbeddingGenerator<TInput, TEmbedding>>>? _generatorFactories;
+    private List<Func<EmbeddingGeneratorFactory, EmbeddingGeneratorFactory>>? _generatorMiddleware;
 
     /// <summary>Initializes a new instance of the <see cref="EmbeddingGeneratorBuilder{TInput, TEmbedding}"/> class.</summary>
     /// <param name="innerGenerator">The inner <see cref="EmbeddingGeneratorBuilder{TInput, TEmbedding}"/> that represents the underlying backend.</param>
@@ -46,25 +49,58 @@ public sealed class EmbeddingGeneratorBuilder<TInput, TEmbedding>
     /// <returns>An instance of <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> that represents the entire pipeline.</returns>
     public IEmbeddingGenerator<TInput, TEmbedding> Build(IServiceProvider? services = null)
     {
-        services ??= EmptyServiceProvider.Instance;
-        var embeddingGenerator = _innerGeneratorFactory(services);
+        EmbeddingGeneratorFactory embeddingGeneratorFactory = (f, s) => _innerGeneratorFactory(s);
 
         // To match intuitive expectations, apply the factories in reverse order, so that the first factory added is the outermost.
-        if (_generatorFactories is not null)
+        if (_generatorMiddleware is not null)
         {
-            for (var i = _generatorFactories.Count - 1; i >= 0; i--)
+            for (var i = _generatorMiddleware.Count - 1; i >= 0; i--)
             {
-                embeddingGenerator = _generatorFactories[i](embeddingGenerator, services);
-                if (embeddingGenerator is null)
+                embeddingGeneratorFactory = _generatorMiddleware[i](embeddingGeneratorFactory);
+                if (embeddingGeneratorFactory is null)
                 {
                     Throw.InvalidOperationException(
-                        $"The {nameof(IEmbeddingGenerator<TInput, TEmbedding>)} entry at index {i} returned null. " +
-                        $"Ensure that the callbacks passed to {nameof(Use)} return non-null {nameof(IEmbeddingGenerator<TInput, TEmbedding>)} instances.");
+                        $"The {nameof(EmbeddingGeneratorBuilder<TInput, TEmbedding>)} middleware entry at index {i} returned null. " +
+                        $"Ensure that the callbacks passed to {nameof(Use)} return non-null {nameof(Func<IFeatureCollection, IEmbeddingGenerator<TInput, TEmbedding>>)} instances.");
                 }
             }
         }
 
+        var features = new FeatureCollection();
+        services ??= EmptyServiceProvider.Instance;
+        var embeddingGenerator = embeddingGeneratorFactory(features, services);
+
+        if (embeddingGenerator is null)
+        {
+            Throw.InvalidOperationException(
+                $"The {nameof(EmbeddingGeneratorBuilder<TInput, TEmbedding>)} middleware pipeline returned null." +
+                $"Ensure that the callbacks passed to {nameof(Use)} return non-null {nameof(IEmbeddingGenerator<TInput, TEmbedding>)} instances.");
+        }
+
         return embeddingGenerator;
+    }
+
+    /// <summary>Adds a factory for an intermediate embedding generator to the embedding generator pipeline.</summary>
+    /// <param name="generatorMiddleware">The generator factory function.</param>
+    /// <returns>The updated <see cref="EmbeddingGeneratorBuilder{TInput, TEmbedding}"/> instance.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="generatorMiddleware"/> is <see langword="null"/>.</exception>
+    public EmbeddingGeneratorBuilder<TInput, TEmbedding> Use(
+        Func<Func<IFeatureCollection, IEmbeddingGenerator<TInput, TEmbedding>>, IServiceProvider,
+                Func<IFeatureCollection, IEmbeddingGenerator<TInput, TEmbedding>>> generatorMiddleware)
+    {
+        _ = Throw.IfNull(generatorMiddleware);
+
+        _generatorMiddleware ??= [];
+        _generatorMiddleware.Add(nextFactory =>
+        {
+            return (features, services) =>
+            {
+                var appliedMiddleware = generatorMiddleware(fc => nextFactory(fc, services), services);
+                return appliedMiddleware(features);
+            };
+        });
+
+        return this;
     }
 
     /// <summary>Adds a factory for an intermediate embedding generator to the embedding generator pipeline.</summary>
@@ -87,9 +123,14 @@ public sealed class EmbeddingGeneratorBuilder<TInput, TEmbedding>
     {
         _ = Throw.IfNull(generatorFactory);
 
-        _generatorFactories ??= [];
-        _generatorFactories.Add(generatorFactory);
-        return this;
+        return Use((nextFactory, services) =>
+        {
+            return features =>
+            {
+                var nextGenerator = nextFactory(features);
+                return generatorFactory(nextGenerator, services);
+            };
+        });
     }
 
     /// <summary>

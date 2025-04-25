@@ -29,13 +29,16 @@ public static class FunctionInvokingChatClientBuilderExtensions
     {
         _ = Throw.IfNull(builder);
 
-        return builder.Use((innerClient, services) =>
+        return builder.Use((innerClientFactory, services) =>
         {
             loggerFactory ??= services.GetService<ILoggerFactory>();
 
-            var chatClient = new FunctionInvokingChatClient(innerClient, loggerFactory, services);
-            configure?.Invoke(chatClient);
-            return chatClient;
+            return features =>
+            {
+                var chatClient = new FunctionInvokingChatClient(innerClientFactory(features), loggerFactory, services, features);
+                configure?.Invoke(chatClient);
+                return chatClient;
+            };
         });
     }
 }

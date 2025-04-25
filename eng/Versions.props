@@ -45,6 +45,7 @@
     <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>9.0.4</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
     <MicrosoftExtensionsDependencyInjectionVersion>9.0.4</MicrosoftExtensionsDependencyInjectionVersion>
     <MicrosoftExtensionsDiagnosticsVersion>9.0.4</MicrosoftExtensionsDiagnosticsVersion>
+    <MicrosoftExtensionsFeaturesVersion>9.0.4</MicrosoftExtensionsFeaturesVersion>
     <MicrosoftExtensionsHostingAbstractionsVersion>9.0.4</MicrosoftExtensionsHostingAbstractionsVersion>
     <MicrosoftExtensionsHostingVersion>9.0.4</MicrosoftExtensionsHostingVersion>
     <MicrosoftExtensionsHttpVersion>9.0.4</MicrosoftExtensionsHttpVersion>
@@ -99,6 +100,7 @@
     <MicrosoftExtensionsDependencyInjectionAbstractionsLTSVersion>8.0.2</MicrosoftExtensionsDependencyInjectionAbstractionsLTSVersion>
     <MicrosoftExtensionsDependencyInjectionLTSVersion>8.0.1</MicrosoftExtensionsDependencyInjectionLTSVersion>
     <MicrosoftExtensionsDiagnosticsLTSVersion>8.0.1</MicrosoftExtensionsDiagnosticsLTSVersion>
+    <MicrosoftExtensionsFeaturesLTSVersion>8.0.1</MicrosoftExtensionsFeaturesLTSVersion>
     <MicrosoftExtensionsHostingAbstractionsLTSVersion>8.0.1</MicrosoftExtensionsHostingAbstractionsLTSVersion>
     <MicrosoftExtensionsHostingLTSVersion>8.0.1</MicrosoftExtensionsHostingLTSVersion>
     <MicrosoftExtensionsHttpLTSVersion>8.0.1</MicrosoftExtensionsHttpLTSVersion>

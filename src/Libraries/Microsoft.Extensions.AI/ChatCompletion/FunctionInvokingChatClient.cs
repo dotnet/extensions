@@ -10,6 +10,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Diagnostics;
@@ -71,11 +72,12 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <param name="innerClient">The underlying <see cref="IChatClient"/>, or the next instance in a chain of clients.</param>
     /// <param name="loggerFactory">An <see cref="ILoggerFactory"/> to use for logging information about function invocation.</param>
     /// <param name="functionInvocationServices">An optional <see cref="IServiceProvider"/> to use for resolving services required by the <see cref="AIFunction"/> instances being invoked.</param>
-    public FunctionInvokingChatClient(IChatClient innerClient, ILoggerFactory? loggerFactory = null, IServiceProvider? functionInvocationServices = null)
+    /// <param name="features">An <see cref="IFeatureCollection"/> for acquiring the <see cref="ActivitySource"/> possibly set by earlier <see cref="OpenTelemetryChatClient"/> middleware.</param>
+    public FunctionInvokingChatClient(IChatClient innerClient, ILoggerFactory? loggerFactory = null, IServiceProvider? functionInvocationServices = null, IFeatureCollection? features = null)
         : base(innerClient)
     {
         _logger = (ILogger?)loggerFactory?.CreateLogger<FunctionInvokingChatClient>() ?? NullLogger.Instance;
-        _activitySource = innerClient.GetService<ActivitySource>();
+        _activitySource = features?.Get<ActivitySource>();
         _functionInvocationServices = functionInvocationServices;
     }
 

@@ -49,6 +49,11 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
 #pragma warning disable IDE0060 // Remove unused parameter; it exists for future use and consistency with OpenTelemetryChatClient
     public OpenTelemetryEmbeddingGenerator(IEmbeddingGenerator<TInput, TEmbedding> innerGenerator, ILogger? logger = null, string? sourceName = null)
 #pragma warning restore IDE0060
+        : this(innerGenerator, logger, new ActivitySource(GetSourceNameOrDefault(sourceName)))
+    {
+    }
+
+    internal OpenTelemetryEmbeddingGenerator(IEmbeddingGenerator<TInput, TEmbedding> innerGenerator, ILogger? logger, ActivitySource activitySource)
         : base(innerGenerator)
     {
         Debug.Assert(innerGenerator is not null, "Should have been validated by the base ctor.");
@@ -63,9 +68,8 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
             _endpointPort = metadata.ProviderUri?.Port ?? 0;
         }
 
-        string name = string.IsNullOrEmpty(sourceName) ? OpenTelemetryConsts.DefaultSourceName : sourceName!;
-        _activitySource = new(name);
-        _meter = new(name);
+        _activitySource = activitySource;
+        _meter = new(activitySource.Name);
 
         _tokenUsageHistogram = _meter.CreateHistogram<int>(
             OpenTelemetryConsts.GenAI.Client.TokenUsage.Name,
@@ -85,11 +89,6 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
 #endif
             );
     }
-
-    /// <inheritdoc/>
-    public override object? GetService(Type serviceType, object? serviceKey = null) =>
-        serviceType == typeof(ActivitySource) ? _activitySource :
-        base.GetService(serviceType, serviceKey);
 
     /// <inheritdoc/>
     public override async Task<GeneratedEmbeddings<TEmbedding>> GenerateAsync(IEnumerable<TInput> values, EmbeddingGenerationOptions? options = null, CancellationToken cancellationToken = default)
@@ -130,6 +129,8 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
 
         base.Dispose(disposing);
     }
+
+    private static string GetSourceNameOrDefault(string? sourceName) => string.IsNullOrEmpty(sourceName) ? OpenTelemetryConsts.DefaultSourceName : sourceName!;
 
     /// <summary>Creates an activity for an embedding generation request, or returns <see langword="null"/> if not enabled.</summary>
     private Activity? CreateAndConfigureActivity(EmbeddingGenerationOptions? options)

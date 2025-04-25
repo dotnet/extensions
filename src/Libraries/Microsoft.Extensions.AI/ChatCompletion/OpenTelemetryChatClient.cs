@@ -51,6 +51,11 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     /// <param name="logger">The <see cref="ILogger"/> to use for emitting events.</param>
     /// <param name="sourceName">An optional source name that will be used on the telemetry data.</param>
     public OpenTelemetryChatClient(IChatClient innerClient, ILogger? logger = null, string? sourceName = null)
+        : this(innerClient, logger, new ActivitySource(GetSourceNameOrDefault(sourceName)))
+    {
+    }
+
+    internal OpenTelemetryChatClient(IChatClient innerClient, ILogger? logger, ActivitySource activitySource)
         : base(innerClient)
     {
         Debug.Assert(innerClient is not null, "Should have been validated by the base ctor");
@@ -65,9 +70,8 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
             _serverPort = metadata.ProviderUri?.Port ?? 0;
         }
 
-        string name = string.IsNullOrEmpty(sourceName) ? OpenTelemetryConsts.DefaultSourceName : sourceName!;
-        _activitySource = new(name);
-        _meter = new(name);
+        _activitySource = activitySource;
+        _meter = new(activitySource.Name);
 
         _tokenUsageHistogram = _meter.CreateHistogram<int>(
             OpenTelemetryConsts.GenAI.Client.TokenUsage.Name,
@@ -122,11 +126,6 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     /// and outputs, such as message content, function call arguments, and function call results.
     /// </remarks>
     public bool EnableSensitiveData { get; set; }
-
-    /// <inheritdoc/>
-    public override object? GetService(Type serviceType, object? serviceKey = null) =>
-        serviceType == typeof(ActivitySource) ? _activitySource :
-        base.GetService(serviceType, serviceKey);
 
     /// <inheritdoc/>
     public override async Task<ChatResponse> GetResponseAsync(
@@ -218,6 +217,8 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
             await responseEnumerator.DisposeAsync();
         }
     }
+
+    internal static string GetSourceNameOrDefault(string? sourceName) => string.IsNullOrEmpty(sourceName) ? OpenTelemetryConsts.DefaultSourceName : sourceName!;
 
     /// <summary>Creates an activity for a chat request, or returns <see langword="null"/> if not enabled.</summary>
     private Activity? CreateAndConfigureActivity(ChatOptions? options)

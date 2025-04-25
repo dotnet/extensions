@@ -75,7 +75,7 @@ public class ChatClientBuilderTest
         ChatClientBuilder builder = new(innerClient);
         builder.Use(_ => null!);
         var ex = Assert.Throws<InvalidOperationException>(() => builder.Build());
-        Assert.Contains("entry at index 0", ex.Message);
+        Assert.Contains("middleware pipeline returned null", ex.Message);
     }
 
     [Fact]
@@ -83,7 +83,7 @@ public class ChatClientBuilderTest
     {
         using var innerClient = new TestChatClient();
         ChatClientBuilder builder = new(innerClient);
-        builder.Use((innerClient, serviceProvider) =>
+        builder.Use((IChatClient innerClient, IServiceProvider serviceProvider) =>
         {
             Assert.Null(serviceProvider.GetService(typeof(object)));
 

@@ -80,6 +80,10 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>f57e6dc747158ab7ade4e62a75a6750d16b771e8</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Extensions.Features" Version="9.0.4" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
+      <Sha>f57e6dc747158ab7ade4e62a75a6750d16b771e8</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.4" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>f57e6dc747158ab7ade4e62a75a6750d16b771e8</Sha>

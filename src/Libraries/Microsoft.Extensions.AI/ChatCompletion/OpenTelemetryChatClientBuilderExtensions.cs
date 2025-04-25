@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Diagnostics;
@@ -28,13 +29,18 @@ public static class OpenTelemetryChatClientBuilderExtensions
         ILoggerFactory? loggerFactory = null,
         string? sourceName = null,
         Action<OpenTelemetryChatClient>? configure = null) =>
-        Throw.IfNull(builder).Use((innerClient, services) =>
+        Throw.IfNull(builder).Use((innerClientFactory, services) =>
         {
             loggerFactory ??= services.GetService<ILoggerFactory>();
 
-            var chatClient = new OpenTelemetryChatClient(innerClient, loggerFactory?.CreateLogger(typeof(OpenTelemetryChatClient)), sourceName);
-            configure?.Invoke(chatClient);
+            return features =>
+            {
+                ActivitySource activitySource = new(OpenTelemetryChatClient.GetSourceNameOrDefault(sourceName));
+                features.Set(activitySource);
 
-            return chatClient;
+                var chatClient = new OpenTelemetryChatClient(innerClientFactory(features), loggerFactory?.CreateLogger(typeof(OpenTelemetryChatClient)), activitySource);
+                configure?.Invoke(chatClient);
+                return chatClient;
+            };
         });
 }

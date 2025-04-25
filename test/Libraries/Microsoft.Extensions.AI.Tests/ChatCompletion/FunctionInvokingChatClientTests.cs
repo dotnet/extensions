@@ -529,8 +529,8 @@ public class FunctionInvokingChatClientTests
             Tools = [AIFunctionFactory.Create(() => "Result 1", "Func1")]
         };
 
-        Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(c =>
-            new FunctionInvokingChatClient(new OpenTelemetryChatClient(c, sourceName: sourceName)));
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b =>
+            b.UseOpenTelemetry(sourceName: sourceName).UseFunctionInvocation().UseOpenTelemetry(sourceName: sourceName);
 
         await InvokeAsync(() => InvokeAndAssertAsync(options, plan, configurePipeline: configure));
 
@@ -554,12 +554,13 @@ public class FunctionInvokingChatClientTests
                     activity => Assert.Equal("chat", activity.DisplayName),
                     activity => Assert.Equal("Func1", activity.DisplayName),
                     activity => Assert.Equal("chat", activity.DisplayName),
-                    activity => Assert.Equal(nameof(FunctionInvokingChatClient), activity.DisplayName));
+                    activity => Assert.Equal(nameof(FunctionInvokingChatClient), activity.DisplayName),
+                    activity => Assert.Equal("chat", activity.DisplayName));
 
-                for (int i = 0; i < activities.Count - 1; i++)
+                for (int i = 0; i < activities.Count - 2; i++)
                 {
-                    // Activities are exported in the order of completion, so all except the last are children of the last (i.e., outer)
-                    Assert.Same(activities[activities.Count - 1], activities[i].Parent);
+                    // Activities are exported in the order of completion, so all except the last two are children of the FunctionInvokingChatClient activity.
+                    Assert.Same(activities[activities.Count - 2], activities[i].Parent);
                 }
             }
             else

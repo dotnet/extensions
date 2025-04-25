@@ -75,7 +75,7 @@ public class EmbeddingGeneratorBuilderTests
         var builder = innerGenerator.AsBuilder();
         builder.Use(_ => null!);
         var ex = Assert.Throws<InvalidOperationException>(() => builder.Build());
-        Assert.Contains("entry at index 0", ex.Message);
+        Assert.Contains("middleware pipeline returned null", ex.Message);
     }
 
     private sealed class InnerServiceCapturingEmbeddingGenerator(string name, IEmbeddingGenerator<string, Embedding<float>> innerGenerator) :

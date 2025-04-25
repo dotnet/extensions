@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -12,10 +13,12 @@ namespace Microsoft.Extensions.AI;
 /// <summary>A builder for creating pipelines of <see cref="IChatClient"/>.</summary>
 public sealed class ChatClientBuilder
 {
+    private delegate IChatClient ClientFactory(IFeatureCollection features, IServiceProvider services);
+
     private readonly Func<IServiceProvider, IChatClient> _innerClientFactory;
 
     /// <summary>The registered client factory instances.</summary>
-    private List<Func<IChatClient, IServiceProvider, IChatClient>>? _clientFactories;
+    private List<Func<ClientFactory, ClientFactory>>? _clientMiddleware;
 
     /// <summary>Initializes a new instance of the <see cref="ChatClientBuilder"/> class.</summary>
     /// <param name="innerClient">The inner <see cref="IChatClient"/> that represents the underlying backend.</param>
@@ -30,6 +33,8 @@ public sealed class ChatClientBuilder
     /// <param name="innerClientFactory">A callback that produces the inner <see cref="IChatClient"/> that represents the underlying backend.</param>
     public ChatClientBuilder(Func<IServiceProvider, IChatClient> innerClientFactory)
     {
+        // NOTE: We would probably also add ChatClientBuilder overload that takes a ClientFactory delegate with an IFeatureCollection
+        // instead of only making it accessible through middleware
         _innerClientFactory = Throw.IfNull(innerClientFactory);
     }
 
@@ -41,25 +46,59 @@ public sealed class ChatClientBuilder
     /// <returns>An instance of <see cref="IChatClient"/> that represents the entire pipeline.</returns>
     public IChatClient Build(IServiceProvider? services = null)
     {
-        services ??= EmptyServiceProvider.Instance;
-        var chatClient = _innerClientFactory(services);
+        ClientFactory chatClientFactory = (f, s) => _innerClientFactory(s);
 
         // To match intuitive expectations, apply the factories in reverse order, so that the first factory added is the outermost.
-        if (_clientFactories is not null)
+        if (_clientMiddleware is not null)
         {
-            for (var i = _clientFactories.Count - 1; i >= 0; i--)
+            for (var i = _clientMiddleware.Count - 1; i >= 0; i--)
             {
-                chatClient = _clientFactories[i](chatClient, services);
-                if (chatClient is null)
+                chatClientFactory = _clientMiddleware[i](chatClientFactory);
+
+                if (chatClientFactory is null)
                 {
                     Throw.InvalidOperationException(
-                        $"The {nameof(ChatClientBuilder)} entry at index {i} returned null. " +
-                        $"Ensure that the callbacks passed to {nameof(Use)} return non-null {nameof(IChatClient)} instances.");
+                        $"The {nameof(ChatClientBuilder)} middleware entry at index {i} returned null. " +
+                        $"Ensure that the callbacks passed to {nameof(Use)} return non-null {nameof(Func<IFeatureCollection, IChatClient>)} instances.");
                 }
             }
         }
 
+        var features = new FeatureCollection();
+        services ??= EmptyServiceProvider.Instance;
+        var chatClient = chatClientFactory(features, services);
+
+        if (chatClient is null)
+        {
+            Throw.InvalidOperationException(
+                $"The {nameof(ChatClientBuilder)} middleware pipeline returned null." +
+                $"Ensure that the callbacks passed to {nameof(Use)} return non-null {nameof(IChatClient)} instances.");
+        }
+
         return chatClient;
+    }
+
+    /// <summary>Adds a factory for an intermediate chat client to the chat client pipeline.</summary>
+    /// <param name="clientMiddleware">The client middleware function.</param>
+    /// <returns>The updated <see cref="ChatClientBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="clientMiddleware"/> is <see langword="null"/>.</exception>
+    public ChatClientBuilder Use(Func<Func<IFeatureCollection, IChatClient>, IServiceProvider, Func<IFeatureCollection, IChatClient>> clientMiddleware)
+    {
+        _ = Throw.IfNull(clientMiddleware);
+
+        (_clientMiddleware ??= []).Add(nextFactory =>
+        {
+            // Pass the services around the user-defined middleware since we don't allow them to pass the IServiceProvider to the next() middleware.
+            // It'd be simpler to make passing the IServiceProvider to the next middleware explicit, but as before, it's probably best to
+            // not allow IServiceProvider to be changed from one middleware to the next.
+            return (features, services) =>
+            {
+                var appliedMiddleware = clientMiddleware(fc => nextFactory(fc, services), services);
+                return appliedMiddleware(features);
+            };
+        });
+
+        return this;
     }
 
     /// <summary>Adds a factory for an intermediate chat client to the chat client pipeline.</summary>
@@ -81,8 +120,14 @@ public sealed class ChatClientBuilder
     {
         _ = Throw.IfNull(clientFactory);
 
-        (_clientFactories ??= []).Add(clientFactory);
-        return this;
+        return Use((nextFactory, services) =>
+        {
+            return features =>
+            {
+                var nextClient = nextFactory(features);
+                return clientFactory(nextClient, services);
+            };
+        });
     }
 
     /// <summary>
