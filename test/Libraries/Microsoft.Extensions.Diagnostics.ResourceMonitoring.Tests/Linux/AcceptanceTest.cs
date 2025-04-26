@@ -162,7 +162,7 @@ public sealed class AcceptanceTest
             .AddSingleton<IFileSystem>(new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
             {
                 { new FileInfo("/proc/stat"), "cpu  10 10 10 10 10 10 10 10 10 10"},
-                { new FileInfo("/sys/fs/cgroup/cpu.stat"), "usage_usec 102312"},
+                { new FileInfo("/sys/fs/cgroup/cpu.stat"), "usage_usec 102312\nnr_periods 50"},
                 { new FileInfo("/proc/meminfo"), "MemTotal: 102312 kB"},
                 { new FileInfo("/sys/fs/cgroup/cpuset.cpus.effective"), "0-1"},
                 { new FileInfo("/sys/fs/cgroup/cpu.max"), "20000 100000"},
@@ -282,7 +282,7 @@ public sealed class AcceptanceTest
         var fileSystem = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
             { new FileInfo("/proc/stat"), "cpu  10 10 10 10 10 10 10 10 10 10"},
-            { new FileInfo("/sys/fs/cgroup/cpu.stat"), "usage_usec 102"},
+            { new FileInfo("/sys/fs/cgroup/cpu.stat"), "usage_usec 102\nnr_periods 50"},
             { new FileInfo("/sys/fs/cgroup/memory.max"), "1048576" },
             { new FileInfo("/proc/meminfo"), "MemTotal: 1024 kB"},
             { new FileInfo("/sys/fs/cgroup/cpuset.cpus.effective"), "0-19"},
@@ -335,7 +335,7 @@ public sealed class AcceptanceTest
         Assert.Equal(utilization.MemoryUsedPercentage, memoryFromGauge * 100);
 
         fileSystem.ReplaceFileContent(new FileInfo("/proc/stat"), "cpu  11 10 10 10 10 10 10 10 10 10");
-        fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/cpu.stat"), "usage_usec 112");
+        fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/cpu.stat"), "usage_usec 112\nnr_periods 56");
         fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/memory.current"), "524298");
         fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/memory.stat"), "inactive_file 10");
 
@@ -370,7 +370,7 @@ public sealed class AcceptanceTest
         {
             { new FileInfo("/proc/self/cgroup"), "0::/fakeslice"},
             { new FileInfo("/proc/stat"), "cpu  10 10 10 10 10 10 10 10 10 10"},
-            { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat"), "usage_usec 102000000"},
+            { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat"), "usage_usec 1020000\nnr_periods 50"},
             { new FileInfo("/sys/fs/cgroup/memory.max"), "1048576" },
             { new FileInfo("/proc/meminfo"), "MemTotal: 1024 kB"},
             { new FileInfo("/sys/fs/cgroup/cpuset.cpus.effective"), "0-19"},
@@ -416,7 +416,7 @@ public sealed class AcceptanceTest
         var utilization = tracker.GetUtilization(TimeSpan.FromSeconds(5));
 
         fileSystem.ReplaceFileContent(new FileInfo("/proc/stat"), "cpu  11 10 10 10 10 10 10 10 10 10");
-        fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat"), "usage_usec 112000000");
+        fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat"), "usage_usec 1120000\nnr_periods 56");
         fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/memory.current"), "524298");
         fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/memory.stat"), "inactive_file 10");
 

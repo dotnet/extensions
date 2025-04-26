@@ -145,17 +145,17 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
             return GetHostCpuUsageInNanoseconds();
         }
 
-        return ParseCpuUsageFromFile(_fileSystem, _cpuacctUsage);
+        return ParseCpuUsageFromFile(_fileSystem, _cpuacctUsage).cpuUsageNanoseconds;
     }
 
-    public long GetCgroupCpuUsageInNanosecondsV2()
+    public (long cpuUsageNanoseconds, long elapsedPeriods) GetCgroupCpuUsageInNanosecondsAndCpuPeriodsV2()
     {
         FileInfo cpuUsageFile = new(GetCgroupPath(CpuStat));
 
         // If the file doesn't exist, we assume that the system is a Host and we read the CPU usage from /proc/stat.
         if (!_fileSystem.Exists(cpuUsageFile))
         {
-            return GetHostCpuUsageInNanoseconds();
+            return (GetHostCpuUsageInNanoseconds(), 1);
         }
 
         return ParseCpuUsageFromFile(_fileSystem, cpuUsageFile);
@@ -230,6 +230,12 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         }
 
         return GetHostCpuCount();
+    }
+
+    public long GetCgroupPeriodsIntervalInMicroSecondsV2()
+    {
+        FileInfo cpuLimitsFile = new(GetCgroupPath(CpuLimit));
+        return LinuxUtilizationParserCgroupV2.GetCpuPeriodsIntervalFromCgroupsV2(_fileSystem, cpuLimitsFile);
     }
 
     /// <remarks>
@@ -510,32 +516,49 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
                 $"Could not parse '{_cpuSetCpus}'. Expected comma-separated list of integers, with dashes (\"-\") based ranges (\"0\", \"2-6,12\") but got '{new string(content)}'.");
     }
 
-    private static long ParseCpuUsageFromFile(IFileSystem fileSystem, FileInfo cpuUsageFile)
+    private static (long cpuUsageNanoseconds, long nrPeriods) ParseCpuUsageFromFile(IFileSystem fileSystem, FileInfo cpuUsageFile)
     {
-        // The value we are interested in starts with this. We just want to make sure it is true.
-        const string Usage_usec = "usage_usec";
+        // The values we are interested in start with these prefixes
+        const string UsageUsec = "usage_usec";
+        const string NrPeriods = "nr_periods";
 
         using ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool);
         fileSystem.ReadAll(cpuUsageFile, bufferWriter.Buffer);
-        ReadOnlySpan<char> usage = bufferWriter.Buffer.WrittenSpan;
+        ReadOnlySpan<char> content = bufferWriter.Buffer.WrittenSpan;
 
-        if (!usage.StartsWith(Usage_usec))
+        // Parse usage_usec
+        int usageIndex = content.IndexOf(UsageUsec);
+        if (usageIndex == -1)
         {
-            Throw.InvalidOperationException($"Could not parse '{cpuUsageFile}'. We expected first line of the file to start with '{Usage_usec}' but it was '{new string(usage)}' instead.");
+            Throw.InvalidOperationException($"Could not parse '{cpuUsageFile}'. Expected to find 'usage_usec' but it was not present in the file content.");
         }
 
-        ReadOnlySpan<char> cpuUsage = usage.Slice(Usage_usec.Length, usage.Length - Usage_usec.Length);
-
-        int next = GetNextNumber(cpuUsage, out long microseconds);
+        ReadOnlySpan<char> usageSlice = content.Slice(usageIndex + UsageUsec.Length);
+        int usageNext = GetNextNumber(usageSlice, out long microseconds);
 
         if (microseconds == -1)
         {
-            Throw.InvalidOperationException($"Could not get cpu usage from '{cpuUsageFile}'. Expected positive number, but got '{new string(usage)}'.");
+            Throw.InvalidOperationException($"Could not get usage_usec from '{cpuUsageFile}'. Expected positive number, but got '{new string(content.Slice(usageIndex))}'.");
+        }
+
+        // Parse nr_periods
+        int periodsIndex = content.IndexOf(NrPeriods);
+        if (periodsIndex == -1)
+        {
+            Throw.InvalidOperationException($"Could not parse '{cpuUsageFile}'. Expected to find 'nr_periods' but it was not present in the file content.");
+        }
+
+        ReadOnlySpan<char> periodsSlice = content.Slice(periodsIndex + NrPeriods.Length);
+        int periodsNext = GetNextNumber(periodsSlice, out long periods);
+
+        if (periods == -1)
+        {
+            Throw.InvalidOperationException($"Could not get nr_periods from '{cpuUsageFile}'. Expected positive number, but got '{new string(content.Slice(periodsIndex))}'.");
         }
 
         // In cgroup v2, the Units are microseconds for usage_usec.
         // We multiply by 1000 to convert to nanoseconds to keep the common calculation logic.
-        return microseconds * Thousand;
+        return (microseconds * Thousand, periods);
     }
 
     /// <remarks>
@@ -639,6 +662,74 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         cpuUnits = (float)quota / period;
 
         return true;
+    }
+
+    private static long GetCpuPeriodsIntervalFromCgroupsV2(IFileSystem fileSystem, FileInfo cpuLimitsFile)
+    {
+        using ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool);
+        fileSystem.ReadFirstLine(cpuLimitsFile, bufferWriter.Buffer);
+
+        ReadOnlySpan<char> content = bufferWriter.Buffer.WrittenSpan;
+
+        if (content.IsEmpty)
+        {
+            Throw.InvalidOperationException($"Could not read content from '{cpuLimitsFile}'. The file was empty.");
+        }
+
+        // Check if the first value is "max" (unlimited quota)
+        if (content.StartsWith("max", StringComparison.InvariantCulture))
+        {
+            // Skip "max" and any whitespace
+            ReadOnlySpan<char> periodSlice = content.Slice(3);
+            _ = GetNextNumber(periodSlice, out long period);
+
+            if (period == -1)
+            {
+                Throw.InvalidOperationException($"Could not parse period value from '{cpuLimitsFile}'. Expected an integer after 'max' but got: '{new string(content)}'.");
+            }
+
+            return period;
+        }
+
+        // Check if the first value is "-1" (also unlimited quota)
+        else if (content.Length >= 2 && content[0] == '-' && content[1] == '1')
+        {
+            // Skip "-1" and any whitespace
+            ReadOnlySpan<char> periodSlice = content.Slice(2);
+            _ = GetNextNumber(periodSlice, out long period);
+
+            if (period == -1)
+            {
+                Throw.InvalidOperationException($"Could not parse period value from '{cpuLimitsFile}'. Expected an integer after '-1' but got: '{new string(content)}'.");
+            }
+
+            return period;
+        }
+        else
+        {
+            // First get the first number (quota)
+            _ = GetNextNumber(content, out long quota);
+
+            if (quota == -1)
+            {
+                Throw.InvalidOperationException($"Could not parse quota value from '{cpuLimitsFile}'. Expected an integer but got: '{new string(content)}'.");
+            }
+
+            // Convert quota to string to find its position in the content
+            string quotaString = quota.ToString(CultureInfo.CurrentCulture);
+            int index = content.IndexOf(quotaString.AsSpan());
+
+            // Get the content after the first number
+            ReadOnlySpan<char> periodSlice = content.Slice(index + quotaString.Length);
+            _ = GetNextNumber(periodSlice, out long period);
+
+            if (period == -1)
+            {
+                Throw.InvalidOperationException($"Could not parse period value from '{cpuLimitsFile}'. Expected an integer after quota but got: '{new string(content)}'.");
+            }
+
+            return period;
+        }
     }
 
     private static bool TryGetCgroupRequestCpu(IFileSystem fileSystem, out float cpuUnits)

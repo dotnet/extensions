@@ -34,10 +34,6 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
     private DateTimeOffset _refreshAfterCpu;
     private DateTimeOffset _refreshAfterMemory;
-
-    // Track the actual timestamp when we read CPU values
-    private DateTimeOffset _lastCpuMeasurementTime;
-
     private double _cpuPercentage = double.NaN;
     private double _lastCpuCoresUsed = double.NaN;
     private double _memoryPercentage;
@@ -45,6 +41,8 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     private long _previousHostCpuTime;
     private long _cpuUtilizationLimit100PercentExceeded;
     private long _cpuUtilizationLimit110PercentExceeded;
+    private long _cpuPeriodsInterval;
+    private long _previousCgroupCpuPeriodCounter;
     public SystemResources Resources { get; }
 
     public LinuxUtilizationProvider(IOptions<ResourceMonitoringOptions> options, ILinuxUtilizationParser parser,
@@ -61,7 +59,6 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         _memoryLimit = _parser.GetAvailableMemoryInBytes();
         _previousHostCpuTime = _parser.GetHostCpuUsageInNanoseconds();
         _previousCgroupCpuTime = _parser.GetCgroupCpuUsageInNanoseconds();
-        _lastCpuMeasurementTime = now;
 
         float hostCpus = _parser.GetHostCpuCount();
         float cpuLimit = _parser.GetCgroupLimitedCpus();
@@ -79,11 +76,14 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
         if (options.Value.CalculateCpuUsageWithoutHostDelta)
         {
-            _previousCgroupCpuTime = _parser.GetCgroupCpuUsageInNanosecondsV2();
             cpuLimit = _parser.GetCgroupLimitV2();
 
             // Try to get the CPU request from cgroup
             cpuRequest = _parser.GetCgroupRequestCpuV2();
+
+            // Get Cpu periods interval from cgroup
+            _cpuPeriodsInterval = _parser.GetCgroupPeriodsIntervalInMicroSecondsV2();
+            (_previousCgroupCpuTime, _previousCgroupCpuPeriodCounter) = _parser.GetCgroupCpuUsageInNanosecondsAndCpuPeriodsV2();
 
             // Initialize the counters
             _cpuUtilizationLimit100PercentExceededCounter = meter.CreateCounter<long>("cpu_utilization_limit_100_percent_exceeded");
@@ -112,8 +112,6 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     public double CpuUtilizationWithoutHostDelta()
     {
         DateTimeOffset now = _timeProvider.GetUtcNow();
-        double actualElapsedNanoseconds = (now - _lastCpuMeasurementTime).TotalNanoseconds;
-
         lock (_cpuLocker)
         {
             if (now < _refreshAfterCpu)
@@ -122,26 +120,25 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
             }
         }
 
-        long cgroupCpuTime = _parser.GetCgroupCpuUsageInNanosecondsV2();
-
+        var (cpuUsageTime, cpuPeriodCounter) = _parser.GetCgroupCpuUsageInNanosecondsAndCpuPeriodsV2();
         lock (_cpuLocker)
         {
             if (now >= _refreshAfterCpu)
             {
-                long deltaCgroup = cgroupCpuTime - _previousCgroupCpuTime;
+                long deltaCgroup = cpuUsageTime - _previousCgroupCpuTime;
+                long deltaPeriodCount = cpuPeriodCounter - _previousCgroupCpuPeriodCounter;
+                long deltaCpuPeriodInNanoseconds = deltaPeriodCount * _cpuPeriodsInterval * 1000;
 
-                if (deltaCgroup > 0)
+                if (deltaCgroup > 0 && deltaPeriodCount > 0)
                 {
-                    double coresUsed = deltaCgroup / actualElapsedNanoseconds;
+                    double coresUsed = deltaCgroup / (double)deltaCpuPeriodInNanoseconds;
 
-                    Log.CpuUsageDataV2(_logger, cgroupCpuTime, _previousCgroupCpuTime, actualElapsedNanoseconds, coresUsed);
+                    Log.CpuUsageDataV2(_logger, cpuUsageTime, _previousCgroupCpuTime, deltaCpuPeriodInNanoseconds, coresUsed);
 
                     _lastCpuCoresUsed = coresUsed;
                     _refreshAfterCpu = now.Add(_cpuRefreshInterval);
-                    _previousCgroupCpuTime = cgroupCpuTime;
-
-                    // Update the timestamp for next calculation
-                    _lastCpuMeasurementTime = now;
+                    _previousCgroupCpuTime = cpuUsageTime;
+                    _previousCgroupCpuPeriodCounter = cpuPeriodCounter;
                 }
             }
         }
