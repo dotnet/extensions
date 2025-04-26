@@ -103,7 +103,7 @@ public sealed class GroundednessEvaluator : IEvaluator
                     cancellationToken)).ConfigureAwait(false);
 
         _ = metric.TryParseEvaluationResponseWithTags(evaluationResponse, evaluationDuration);
-        metric.AddOrUpdateContext("Grounding Context", context.GetContents());
+        metric.AddOrUpdateContext(context);
         metric.Interpretation = metric.InterpretScore();
         return result;
     }

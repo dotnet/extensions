@@ -103,7 +103,7 @@ public sealed class EquivalenceEvaluator : IEvaluator
                     cancellationToken)).ConfigureAwait(false);
 
         _ = metric.TryParseEvaluationResponseWithValue(evaluationResponse, evaluationDuration);
-        metric.AddOrUpdateContext("Ground Truth", context.GetContents());
+        metric.AddOrUpdateContext(context);
         metric.Interpretation = metric.InterpretScore();
         return result;
     }

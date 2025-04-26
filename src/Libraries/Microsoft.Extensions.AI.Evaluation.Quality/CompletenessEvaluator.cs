@@ -102,7 +102,7 @@ public sealed class CompletenessEvaluator : IEvaluator
                     cancellationToken)).ConfigureAwait(false);
 
         _ = metric.TryParseEvaluationResponseWithTags(evaluationResponse, evaluationDuration);
-        metric.AddOrUpdateContext("Ground Truth", context.GetContents());
+        metric.AddOrUpdateContext(context);
         metric.Interpretation = metric.InterpretScore();
         return result;
     }

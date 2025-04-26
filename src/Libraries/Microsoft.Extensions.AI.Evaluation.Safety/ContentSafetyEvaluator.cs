@@ -117,9 +117,9 @@ public abstract class ContentSafetyEvaluator(
 
 #pragma warning disable S1067 // Expressions should not be too complex
             if (relevantContext is not null && relevantContext.Any() &&
-                relevantContext.SelectMany(c => c.GetContents()) is IEnumerable<AIContent> content && content.Any() &&
-                content.OfType<TextContent>() is IEnumerable<TextContent> textContent && textContent.Any() &&
-                string.Join(Environment.NewLine, textContent.Select(c => c.Text)) is string contextString &&
+                relevantContext.SelectMany(c => c.Contents) is IEnumerable<AIContent> contents && contents.Any() &&
+                contents.OfType<TextContent>() is IEnumerable<TextContent> textContents && textContents.Any() &&
+                string.Join(Environment.NewLine, textContents.Select(c => c.Text)) is string contextString &&
                 !string.IsNullOrWhiteSpace(contextString))
 #pragma warning restore S1067
             {

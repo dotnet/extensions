@@ -6,8 +6,6 @@
 // We disable this warning because it is a false positive arising from the analyzer's lack of support for C#'s primary
 // constructor syntax.
 
-using System.Collections.Generic;
-
 namespace Microsoft.Extensions.AI.Evaluation.Quality;
 
 /// <summary>
@@ -22,8 +20,15 @@ namespace Microsoft.Extensions.AI.Evaluation.Quality;
 /// responses. It assesses how thoroughly the response aligns with the key information, claims, and statements
 /// established in the supplied <paramref name="groundTruth"/>.
 /// </remarks>
-public sealed class CompletenessEvaluatorContext(string groundTruth) : EvaluationContext
+public sealed class CompletenessEvaluatorContext(string groundTruth)
+    : EvaluationContext(name: GroundTruthContextName, content: groundTruth)
 {
+    /// <summary>
+    /// Gets the unique <see cref="EvaluationContext.Name"/> that is used for
+    /// <see cref="CompletenessEvaluatorContext"/>.
+    /// </summary>
+    public static string GroundTruthContextName => "Ground Truth (Completeness)";
+
     /// <summary>
     /// Gets the ground truth against which the response that is being evaluated is assessed.
     /// </summary>
@@ -33,8 +38,4 @@ public sealed class CompletenessEvaluatorContext(string groundTruth) : Evaluatio
     /// established in the supplied <see cref="GroundTruth"/>.
     /// </remarks>
     public string GroundTruth { get; } = groundTruth;
-
-    /// <inheritdoc/>
-    public override IReadOnlyList<AIContent> GetContents()
-        => [new TextContent(GroundTruth)];
 }

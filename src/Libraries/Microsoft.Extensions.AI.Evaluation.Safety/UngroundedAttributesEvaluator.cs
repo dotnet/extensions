@@ -68,7 +68,7 @@ public sealed class UngroundedAttributesEvaluator()
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
         UngroundedAttributesEvaluatorContext context = GetRelevantContext(additionalContext);
-        result.AddOrUpdateContextInAllMetrics("Grounding Context", context.GetContents());
+        result.AddOrUpdateContextInAllMetrics(context);
 
         return result;
     }

@@ -64,7 +64,7 @@ public sealed class GroundednessProEvaluator()
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
         GroundednessProEvaluatorContext context = GetRelevantContext(additionalContext);
-        result.AddOrUpdateContextInAllMetrics("Grounding Context", context.GetContents());
+        result.AddOrUpdateContextInAllMetrics(context);
 
         return result;
     }

@@ -110,7 +110,7 @@ public sealed class RetrievalEvaluator : IEvaluator
                     cancellationToken)).ConfigureAwait(false);
 
         _ = metric.TryParseEvaluationResponseWithTags(evaluationResponse, evaluationDuration);
-        metric.AddOrUpdateContext("Retrieved Context Chunks", context.GetContents());
+        metric.AddOrUpdateContext(context);
         metric.Interpretation = metric.InterpretScore();
         return result;
     }

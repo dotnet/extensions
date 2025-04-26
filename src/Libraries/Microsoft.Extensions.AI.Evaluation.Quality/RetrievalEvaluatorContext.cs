@@ -1,11 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable S3604
-// S3604: Member initializer values should not be redundant.
-// We disable this warning because it is a false positive arising from the analyzer's lack of support for C#'s primary
-// constructor syntax.
-
 using System.Collections.Generic;
 using System.Linq;
 
@@ -31,6 +26,11 @@ namespace Microsoft.Extensions.AI.Evaluation.Quality;
 public sealed class RetrievalEvaluatorContext : EvaluationContext
 {
     /// <summary>
+    /// Gets the unique <see cref="EvaluationContext.Name"/> that is used for <see cref="RetrievalEvaluatorContext"/>.
+    /// </summary>
+    public static string RetrievedContextChunksContextName => "Retrieved Context Chunks (Retrieval)";
+
+    /// <summary>
     /// Gets the context chunks that were retrieved in response to the user request being evaluated.
     /// </summary>
     public IReadOnlyList<string> RetrievedContextChunks { get; }
@@ -42,6 +42,9 @@ public sealed class RetrievalEvaluatorContext : EvaluationContext
     /// The context chunks that were retrieved in response to the user request being evaluated.
     /// </param>
     public RetrievalEvaluatorContext(IEnumerable<string> retrievedContextChunks)
+        : base(
+            name: RetrievedContextChunksContextName,
+            contents: [.. retrievedContextChunks.Select(c => new TextContent(c))])
     {
         RetrievedContextChunks = [.. retrievedContextChunks];
     }
@@ -56,8 +59,4 @@ public sealed class RetrievalEvaluatorContext : EvaluationContext
         : this(retrievedContextChunks as IEnumerable<string>)
     {
     }
-
-    /// <inheritdoc/>
-    public override IReadOnlyList<AIContent> GetContents()
-        => [.. RetrievedContextChunks.Select(c => new TextContent(c))];
 }

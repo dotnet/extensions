@@ -61,27 +61,8 @@ export const ConversationDetails = ({ messages, model, usage, selectedMetric }: 
         return result;
     };
 
-    const getContextGroups = () => {
-        if (!selectedMetric || !selectedMetric.context) {
-            return [];
-        }
-
-        const contextGroups: { key: string, contents: AIContent[] }[] = [];
-
-        for (const [key, contents] of Object.entries(selectedMetric.context)) {
-            if (contents && contents.length > 0) {
-                contextGroups.push({
-                    key: key.toLowerCase(),
-                    contents: contents
-                });
-            }
-        }
-
-        return contextGroups;
-    };
-
     const messageGroups = groupMessages();
-    const contextGroups = getContextGroups();
+    const contextGroups = selectedMetric?.context ? Object.values(selectedMetric.context) : [];
 
     return (
         <div className={classes.section} tabIndex={0}
@@ -117,7 +98,7 @@ export const ConversationDetails = ({ messages, model, usage, selectedMetric }: 
 
                     {contextGroups.map((group, index) => (
                         <div key={`context-${index}`} className={mergeClasses(classes.messageRow, classes.userMessageRow)}>
-                            <div className={classes.messageParticipantName}>{`supplied evaluation context (${group.key})`}</div>
+                            <div className={classes.messageParticipantName}>{`supplied ${group.name.toLowerCase()}`}</div>
                             <div className={classes.contextBubble}>
                                 {group.contents.map((content, contentIndex) => (
                                     <div key={contentIndex}>

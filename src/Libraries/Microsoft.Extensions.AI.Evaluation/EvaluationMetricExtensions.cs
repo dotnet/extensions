@@ -15,29 +15,35 @@ namespace Microsoft.Extensions.AI.Evaluation;
 public static class EvaluationMetricExtensions
 {
     /// <summary>
-    /// Adds or updates contextual information with the specified <paramref name="name"/> and <paramref name="value"/>
-    /// in the supplied <paramref name="metric"/>'s <see cref="EvaluationMetric.Context"/> collection.
+    /// Adds or updates the supplied <paramref name="context"/> objects in the supplied <paramref name="metric"/>'s
+    /// <see cref="EvaluationMetric.Context"/> collection.
     /// </summary>
     /// <param name="metric">The <see cref="EvaluationMetric"/>.</param>
-    /// <param name="name">The name for the contextual information to be added or updated.</param>
-    /// <param name="value">The contextual information to be added or updated.</param>
-    public static void AddOrUpdateContext(this EvaluationMetric metric, string name, params AIContent[] value)
-        => metric.AddOrUpdateContext(name, value as IEnumerable<AIContent>);
-
-    /// <summary>
-    /// Adds or updates contextual information with the specified <paramref name="name"/> and <paramref name="value"/>
-    /// in the supplied <paramref name="metric"/>'s <see cref="EvaluationMetric.Context"/> collection.
-    /// </summary>
-    /// <param name="metric">The <see cref="EvaluationMetric"/>.</param>
-    /// <param name="name">The name for the contextual information to be added or updated.</param>
-    /// <param name="value">The contextual information to be added or updated.</param>
-    public static void AddOrUpdateContext(this EvaluationMetric metric, string name, IEnumerable<AIContent> value)
+    /// <param name="context">The <see cref="EvaluationContext"/> objects to be added or updated.</param>
+    public static void AddOrUpdateContext(this EvaluationMetric metric, IEnumerable<EvaluationContext> context)
     {
         _ = Throw.IfNull(metric);
+        _ = Throw.IfNull(context);
 
-        metric.Context ??= new Dictionary<string, IList<AIContent>>();
-        metric.Context[name] = [.. value];
+        if (context.Any())
+        {
+            metric.Context ??= new Dictionary<string, EvaluationContext>();
+
+            foreach (var c in context)
+            {
+                metric.Context[c.Name] = c;
+            }
+        }
     }
+
+    /// <summary>
+    /// Adds or updates the supplied <paramref name="context"/> objects in the supplied <paramref name="metric"/>'s
+    /// <see cref="EvaluationMetric.Context"/> collection.
+    /// </summary>
+    /// <param name="metric">The <see cref="EvaluationMetric"/>.</param>
+    /// <param name="context">The <see cref="EvaluationContext"/> objects to be added or updated.</param>
+    public static void AddOrUpdateContext(this EvaluationMetric metric, params EvaluationContext[] context)
+        => metric.AddOrUpdateContext(context as IEnumerable<EvaluationContext>);
 
     /// <summary>
     /// Determines if the supplied <paramref name="metric"/> contains any
