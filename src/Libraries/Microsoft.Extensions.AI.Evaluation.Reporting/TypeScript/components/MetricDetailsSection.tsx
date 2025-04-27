@@ -25,7 +25,8 @@ export const MetricDetailsSection = ({ metric }: { metric: MetricType; }) => {
     if (!hasReason && !hasInterpretationReason && !hasDiagnostics && !hasMetadata) return null;
 
     return (
-        <div className={classes.section}>
+        <div className={classes.section} tabIndex={0}
+                onKeyUp={e => e.key === 'Enter' && setIsExpanded(!isExpanded)}>
             <div className={classes.sectionHeader} onClick={() => setIsExpanded(!isExpanded)}>
                 {isExpanded ? <ChevronDown12Regular /> : <ChevronRight12Regular />}
                 <h3 className={classes.sectionHeaderText}>Metric Details: {metric.name}</h3>

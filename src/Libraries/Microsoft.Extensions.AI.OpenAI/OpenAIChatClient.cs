@@ -611,8 +611,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
                         jsonFormat.SchemaName ?? "json_schema",
                         BinaryData.FromBytes(
                             JsonSerializer.SerializeToUtf8Bytes(jsonSchema, ChatClientJsonContext.Default.JsonElement)),
-                        jsonFormat.SchemaDescription,
-                        jsonSchemaIsStrict: true) :
+                        jsonFormat.SchemaDescription) :
                     OpenAI.Chat.ChatResponseFormat.CreateJsonObjectFormat();
             }
         }
@@ -623,11 +622,10 @@ internal sealed partial class OpenAIChatClient : IChatClient
     /// <summary>Converts an Extensions function to an OpenAI chat tool.</summary>
     private static ChatTool ToOpenAIChatTool(AIFunction aiFunction)
     {
-        // Default strict to true, but allow to be overridden by an additional Strict property.
-        bool strict =
-            !aiFunction.AdditionalProperties.TryGetValue("Strict", out object? strictObj) ||
-            strictObj is not bool strictValue ||
-            strictValue;
+        bool? strict =
+            aiFunction.AdditionalProperties.TryGetValue("strictJsonSchema", out object? strictObj) &&
+            strictObj is bool strictValue ?
+            strictValue : null;
 
         // Map to an intermediate model so that redundant properties are skipped.
         var tool = JsonSerializer.Deserialize(aiFunction.JsonSchema, ChatClientJsonContext.Default.ChatToolJson)!;

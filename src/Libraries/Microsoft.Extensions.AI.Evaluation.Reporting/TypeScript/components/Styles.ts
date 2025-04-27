@@ -15,7 +15,7 @@ export const useStyles = makeStyles({
     },
     hint: {
         fontFamily: tokens.fontFamilyMonospace,
-        opacity: 0.6,
+        opacity: 0.75,
         fontSize: '0.7rem',
         paddingTop: '0.25rem',
         paddingLeft: '1rem',

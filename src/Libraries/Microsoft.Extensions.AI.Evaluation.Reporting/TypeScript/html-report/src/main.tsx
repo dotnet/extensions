@@ -3,7 +3,7 @@
 
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import App from '../../components/App.tsx'
+import { App } from '../../components/App.tsx'
 import { FluentProvider, webLightTheme } from '@fluentui/react-components';
 import { createScoreSummary } from '../../components/Summary.ts';
 import { ReportContextProvider } from '../../components/ReportContext.tsx';

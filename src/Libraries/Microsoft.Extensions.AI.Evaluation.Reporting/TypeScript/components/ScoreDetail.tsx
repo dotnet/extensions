@@ -9,7 +9,7 @@ import { MetricDetailsSection } from "./MetricDetailsSection";
 import { ScenarioRunHistory } from "./ScenarioRunHistory";
 import { useStyles } from "./Styles";
 import { ScoreSummary, getConversationDisplay } from "./Summary";
-
+import { MoverDirections, getTabsterAttribute } from "tabster";
 
 export const ScoreDetail = ({ scenario, scoreSummary }: { scenario: ScenarioRunResult; scoreSummary: ScoreSummary; }) => {
     const classes = useStyles();
@@ -25,7 +25,9 @@ export const ScoreDetail = ({ scenario, scoreSummary }: { scenario: ScenarioRunR
         }
     }, [tagRef]);
 
-    return (<div className={classes.iterationArea} ref={tagRef}>
+    return (<div className={classes.iterationArea} ref={tagRef} {...getTabsterAttribute({
+        mover: { direction: MoverDirections.Both },
+    })}>
         <ScenarioRunHistory scoreSummary={scoreSummary} scenario={scenario} />
         <MetricCardList
             scenario={scenario}
