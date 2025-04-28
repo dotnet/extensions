@@ -25,15 +25,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Microsoft.Extensions.AI\Microsoft.Extensions.AI.csproj" />
-    <ProjectReference Include="..\..\Microsoft.Extensions.AI.Evaluation\Microsoft.Extensions.AI.Evaluation.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <EmbeddedResource Condition="'$(EnableEvaluationReportBuild)'=='true'"
         Include="..\TypeScript\html-report\dist\index.html" Visible="false">
       <LogicalName>Reporting.HTML.index.html</LogicalName>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Microsoft.Extensions.AI\Microsoft.Extensions.AI.csproj" />
+    <ProjectReference Include="..\..\Microsoft.Extensions.AI.Evaluation\Microsoft.Extensions.AI.Evaluation.csproj" />
   </ItemGroup>
 
   <ItemGroup>

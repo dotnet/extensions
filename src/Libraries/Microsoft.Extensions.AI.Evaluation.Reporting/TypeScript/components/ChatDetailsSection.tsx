@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { Table, TableHeader, TableRow, TableHeaderCell, TableBody, TableCell } from "@fluentui/react-components";
 import { ChevronDown12Regular, ChevronRight12Regular, Warning16Regular, CheckmarkCircle16Regular, Copy16Regular } from "@fluentui/react-icons";
 import { useState } from "react";
@@ -21,10 +24,11 @@ export const ChatDetailsSection = ({ chatDetails }: { chatDetails: ChatDetails; 
         navigator.clipboard.writeText(text);
     };
     return (
-        <div className={classes.section}>
+        <div className={classes.section} tabIndex={0} 
+                onKeyUp={e => e.key === 'Enter' && setIsExpanded(!isExpanded)}>
             <div className={classes.sectionHeader} onClick={() => setIsExpanded(!isExpanded)}>
                 {isExpanded ? <ChevronDown12Regular /> : <ChevronRight12Regular />}
-                <h3 className={classes.sectionHeaderText}>LLM Chat Diagnostic Details</h3>
+                <h3 className={classes.sectionHeaderText}>Diagnostic Data</h3>
                 {hasCacheStatus && (
                     <div className={classes.hint}>
                         {cachedTurns != totalTurns ?

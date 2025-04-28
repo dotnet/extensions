@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { Settings28Regular, FilterDismissRegular, DismissRegular, ArrowDownloadRegular } from '@fluentui/react-icons';
-import { Button, Drawer, DrawerBody, DrawerHeader, DrawerHeaderTitle, Switch, Tooltip } from '@fluentui/react-components';
+import { Button, Drawer, DrawerBody, DrawerHeader, DrawerHeaderTitle, SearchBox, Switch, Tooltip } from '@fluentui/react-components';
 import { makeStyles } from '@fluentui/react-components';
 import './App.css';
 import { ScenarioGroup } from './ScenarioTree';
@@ -20,7 +20,7 @@ const useStyles = makeStyles({
     position: 'sticky',
     top: 0,
     zIndex: 1,
-    paddingBottom: '12px',
+    padding: '0rem 2rem 1rem 2rem',
     backgroundColor: tokens.colorNeutralBackground1,
     borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
     marginBottom: '1rem',
@@ -29,6 +29,9 @@ const useStyles = makeStyles({
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  body: {
+    padding: '0rem 2rem',
   },
   headerActions: {
     display: 'flex',
@@ -45,9 +48,9 @@ const useStyles = makeStyles({
   drawerBody: { paddingTop: '1rem' },
 });
 
-function App() {
+export const App = () => {
   const classes = useStyles();
-  const { dataset, scoreSummary, selectedTags, clearFilters } = useReportContext();
+  const { dataset, scoreSummary, selectedTags, clearFilters, searchValue, setSearchValue } = useReportContext();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { renderMarkdown, setRenderMarkdown } = useReportContext();
   const { globalTags, filterableTags } = categorizeAndSortTags(dataset, scoreSummary.primaryResult.executionName);
@@ -55,7 +58,7 @@ function App() {
   const toggleSettings = () => setIsSettingsOpen(!isSettingsOpen);
   const closeSettings = () => setIsSettingsOpen(false);
 
-  const downloadDataset = () => {
+  const downloadDataset = () => {   
     // create a stringified JSON of the dataset
     const dataStr = JSON.stringify(dataset, null, 2);
 
@@ -77,16 +80,19 @@ function App() {
         <div className={classes.headerTop}>
           <h1>AI Evaluation Report</h1>
           <div className={classes.headerActions}>
-            {selectedTags.length > 0 && (
+            {(selectedTags.length > 0 || !!searchValue) && (
               <Tooltip content="Clear Filters" relationship="description">
                 <Button icon={<FilterDismissRegular />} appearance="subtle" onClick={clearFilters} />
               </Tooltip>
             )}
+            <SearchBox placeholder="Search / Filter " value={searchValue} type="text"
+              style={{ width: "16rem" }}
+              onChange={(_ev, data) => setSearchValue(data.value)} />
             <Tooltip content="Download Data as JSON" relationship="description">
-              <Button icon={<ArrowDownloadRegular />} appearance="subtle" onClick={downloadDataset} />
+              <Button icon={<ArrowDownloadRegular />} appearance="subtle" onClick={downloadDataset} aria-label="Download Data as JSON" />
             </Tooltip>
             <Tooltip content="Settings" relationship="description">
-              <Button icon={<Settings28Regular />} appearance="subtle" onClick={toggleSettings} />
+              <Button icon={<Settings28Regular />} appearance="subtle" onClick={toggleSettings} aria-label="Settings" />
             </Tooltip>
           </div>
         </div>
@@ -99,10 +105,12 @@ function App() {
         <ScoreNodeHistory />
       </div>
 
-      <ScenarioGroup
-        node={scoreSummary.primaryResult}
-        scoreSummary={scoreSummary}
-      />
+      <div className={classes.body}>
+        <ScenarioGroup
+          node={scoreSummary.primaryResult}
+          scoreSummary={scoreSummary}
+        />
+      </div>
 
       <p className={classes.footerText}>
         Generated at {dataset.createdAt} by Microsoft.Extensions.AI.Evaluation.Reporting version {dataset.generatorVersion}
@@ -123,6 +131,4 @@ function App() {
       </Drawer>
     </>
   );
-}
-
-export default App;
+};
