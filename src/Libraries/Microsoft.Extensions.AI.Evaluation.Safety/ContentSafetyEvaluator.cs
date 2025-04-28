@@ -8,11 +8,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI.Evaluation.Utilities;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI.Evaluation.Safety;
@@ -98,73 +97,59 @@ public abstract class ContentSafetyEvaluator(
         _ = Throw.IfNull(contentSafetyServiceChatClient);
         _ = Throw.IfNull(modelResponse);
 
-        string payload;
-        string annotationResult;
-        IReadOnlyList<EvaluationDiagnostic>? diagnostics;
-        EvaluationResult result;
-        Stopwatch stopwatch = Stopwatch.StartNew();
-
-        try
-        {
-            ContentSafetyServicePayloadFormat payloadFormat =
+        ContentSafetyServicePayloadFormat payloadFormat =
 #if NET
-                Enum.Parse<ContentSafetyServicePayloadFormat>(contentSafetyServicePayloadFormat);
+            Enum.Parse<ContentSafetyServicePayloadFormat>(contentSafetyServicePayloadFormat);
 #else
-                (ContentSafetyServicePayloadFormat)Enum.Parse(
-                    typeof(ContentSafetyServicePayloadFormat),
-                    contentSafetyServicePayloadFormat);
+            (ContentSafetyServicePayloadFormat)Enum.Parse(
+                typeof(ContentSafetyServicePayloadFormat),
+                contentSafetyServicePayloadFormat);
 #endif
 
-            IEnumerable<ChatMessage> conversation = [.. messages, .. modelResponse.Messages];
+        IEnumerable<ChatMessage> conversation = [.. messages, .. modelResponse.Messages];
 
-            string evaluatorName = GetType().Name;
+        string evaluatorName = GetType().Name;
 
-            IEnumerable<string>? perTurnContext = null;
-            if (additionalContext is not null && additionalContext.Any())
-            {
-                IReadOnlyList<EvaluationContext>? relevantContext = FilterAdditionalContext(additionalContext);
+        IEnumerable<string>? perTurnContext = null;
+        if (additionalContext is not null && additionalContext.Any())
+        {
+            IReadOnlyList<EvaluationContext>? relevantContext = FilterAdditionalContext(additionalContext);
 
 #pragma warning disable S1067 // Expressions should not be too complex
-                if (relevantContext is not null && relevantContext.Any() &&
-                    relevantContext.SelectMany(c => c.GetContents()) is IEnumerable<AIContent> content && content.Any() &&
-                    content.OfType<TextContent>() is IEnumerable<TextContent> textContent && textContent.Any() &&
-                    string.Join(Environment.NewLine, textContent.Select(c => c.Text)) is string contextString &&
-                    !string.IsNullOrWhiteSpace(contextString))
+            if (relevantContext is not null && relevantContext.Any() &&
+                relevantContext.SelectMany(c => c.Contents) is IEnumerable<AIContent> contents && contents.Any() &&
+                contents.OfType<TextContent>() is IEnumerable<TextContent> textContents && textContents.Any() &&
+                string.Join(Environment.NewLine, textContents.Select(c => c.Text)) is string contextString &&
+                !string.IsNullOrWhiteSpace(contextString))
 #pragma warning restore S1067
-                {
-                    // Currently we only support supplying a context for the last conversation turn (which is the main one
-                    // that is being evaluated).
-                    perTurnContext = [contextString];
-                }
+            {
+                // Currently we only support supplying a context for the last conversation turn (which is the main one
+                // that is being evaluated).
+                perTurnContext = [contextString];
             }
+        }
 
-            (payload, diagnostics) =
-                ContentSafetyServicePayloadUtilities.GetPayload(
-                    payloadFormat,
-                    conversation,
-                    contentSafetyServiceAnnotationTask,
-                    evaluatorName,
-                    perTurnContext,
-                    metricNames: includeMetricNamesInContentSafetyServicePayload ? metricNames.Keys : null,
-                    cancellationToken);
+        (string payload, IReadOnlyList<EvaluationDiagnostic>? diagnostics) =
+            ContentSafetyServicePayloadUtilities.GetPayload(
+                payloadFormat,
+                conversation,
+                contentSafetyServiceAnnotationTask,
+                evaluatorName,
+                perTurnContext,
+                metricNames: includeMetricNamesInContentSafetyServicePayload ? metricNames.Keys : null,
+                cancellationToken);
 
-            var payloadMessage = new ChatMessage(ChatRole.User, payload);
+        var payloadMessage = new ChatMessage(ChatRole.User, payload);
 
-            ChatResponse annotationResponse =
-                await contentSafetyServiceChatClient.GetResponseAsync(
+        (ChatResponse annotationResponse, TimeSpan annotationDuration) =
+            await TimingHelper.ExecuteWithTimingAsync(() =>
+                contentSafetyServiceChatClient.GetResponseAsync(
                     payloadMessage,
                     options: new ContentSafetyChatOptions(contentSafetyServiceAnnotationTask, evaluatorName),
-                    cancellationToken: cancellationToken).ConfigureAwait(false);
+                    cancellationToken: cancellationToken)).ConfigureAwait(false);
 
-            annotationResult = annotationResponse.Text;
-            result = ContentSafetyService.ParseAnnotationResult(annotationResult);
-        }
-        finally
-        {
-            stopwatch.Stop();
-        }
-
-        string duration = $"{stopwatch.Elapsed.TotalSeconds.ToString("F2", CultureInfo.InvariantCulture)} s";
+        string annotationResult = annotationResponse.Text;
+        EvaluationResult result = ContentSafetyService.ParseAnnotationResult(annotationResult);
 
         UpdateMetrics();
 
@@ -180,7 +165,7 @@ public abstract class ContentSafetyEvaluator(
                     metric.Name = metricName;
                 }
 
-                metric.AddOrUpdateMetadata(name: "evaluation-duration", value: duration);
+                metric.AddOrUpdateChatMetadata(annotationResponse, annotationDuration);
 
                 metric.Interpretation =
                     metric switch

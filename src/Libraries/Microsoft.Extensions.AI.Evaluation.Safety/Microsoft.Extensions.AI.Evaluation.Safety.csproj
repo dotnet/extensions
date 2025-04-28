@@ -15,8 +15,13 @@
     <MinCodeCoverage>0</MinCodeCoverage>
     <MinMutationScore>0</MinMutationScore>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Microsoft.Extensions.AI.Evaluation\Utilities\TimingHelper.cs" Link="Utilities\TimingHelper.cs" />
+  </ItemGroup>
   
   <ItemGroup>
+    <PackageReference Include="Azure.Core" />
     <PackageReference Include="Microsoft.Bcl.HashCode" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))" />
   </ItemGroup>
 
@@ -28,8 +33,4 @@
     <InternalsVisibleToTest Include="Microsoft.Extensions.AI.Evaluation.Tests" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Azure.Core" />
-  </ItemGroup>
-  
 </Project>

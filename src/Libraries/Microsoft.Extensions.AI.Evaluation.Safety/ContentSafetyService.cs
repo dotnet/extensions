@@ -57,7 +57,7 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
         // ]
 #pragma warning restore S125
 
-        EvaluationResult result = new EvaluationResult();
+        var result = new EvaluationResult();
 
         using JsonDocument annotationResponseDocument = JsonDocument.Parse(annotationResponse);
 

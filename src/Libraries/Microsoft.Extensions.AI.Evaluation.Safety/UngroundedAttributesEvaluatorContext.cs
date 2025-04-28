@@ -6,8 +6,6 @@
 // We disable this warning because it is a false positive arising from the analyzer's lack of support for C#'s primary
 // constructor syntax.
 
-using System.Collections.Generic;
-
 namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
 /// <summary>
@@ -18,12 +16,19 @@ namespace Microsoft.Extensions.AI.Evaluation.Safety;
 /// Contextual information against which the groundedness (or ungroundedness) of a response is evaluated.
 /// </param>
 /// <remarks>
-/// The <see cref="UngroundedAttributesEvaluator"/> measures whether the response being evaluated is first, ungrounded
+/// <see cref="UngroundedAttributesEvaluator"/> measures whether the response being evaluated is first, ungrounded
 /// based on the information present in the supplied <paramref name="groundingContext"/>. It then checks whether the
 /// response contains information about the protected class or emotional state of a person.
 /// </remarks>
-public sealed class UngroundedAttributesEvaluatorContext(string groundingContext) : EvaluationContext
+public sealed class UngroundedAttributesEvaluatorContext(string groundingContext)
+    : EvaluationContext(name: GroundingContextName, content: groundingContext)
 {
+    /// <summary>
+    /// Gets the unique <see cref="EvaluationContext.Name"/> that is used for
+    /// <see cref="UngroundedAttributesEvaluatorContext"/>.
+    /// </summary>
+    public static string GroundingContextName => "Grounding Context (Ungrounded Attributes)";
+
     /// <summary>
     /// Gets the contextual information against which the groundedness (or ungroundedness) of a response is evaluated.
     /// </summary>
@@ -33,8 +38,4 @@ public sealed class UngroundedAttributesEvaluatorContext(string groundingContext
     /// whether the response contains information about the protected class or emotional state of a person.
     /// </remarks>
     public string GroundingContext { get; } = groundingContext;
-
-    /// <inheritdoc/>
-    public override IReadOnlyList<AIContent> GetContents()
-        => [new TextContent(GroundingContext)];
 }

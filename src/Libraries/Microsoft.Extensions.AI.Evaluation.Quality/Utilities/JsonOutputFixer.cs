@@ -33,8 +33,8 @@ internal static class JsonOutputFixer
     }
 
     internal static async ValueTask<string> RepairJsonAsync(
-        ChatConfiguration chatConfig,
         string json,
+        ChatConfiguration chatConfig,
         CancellationToken cancellationToken)
     {
         const string SystemPrompt =
