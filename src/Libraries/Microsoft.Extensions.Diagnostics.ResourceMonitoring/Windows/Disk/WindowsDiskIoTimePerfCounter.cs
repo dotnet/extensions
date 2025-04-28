@@ -66,8 +66,9 @@ internal sealed class WindowsDiskIoTimePerfCounter
         foreach (IPerformanceCounter counter in _counters)
         {
             // io busy time = (1 - (% idle time / 100)) * elapsed seconds
-            double value = (1 - (counter.NextValue() / 100f)) * elapsedSeconds;
-            TotalSeconds[counter.InstanceName] += value;
+            float idleTimePercentage = Math.Min(counter.NextValue(), 100f);
+            double busyTimeSeconds = (1 - (idleTimePercentage / 100f)) * elapsedSeconds;
+            TotalSeconds[counter.InstanceName] += busyTimeSeconds;
         }
 
         _lastTimestamp = currentTimestamp;
