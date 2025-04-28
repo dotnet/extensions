@@ -55,7 +55,7 @@ public class PDFDirectorySource(string sourceDirectory) : IIngestionSource
 
         var embeddings = await embeddingGenerator.GenerateAsync(paragraphs.Select(c => c.Text));
 
-        return paragraphs.Zip(embeddings).Select((pair, index) => new SemanticSearchRecord
+        return paragraphs.Zip(embeddings).Select(pair => new SemanticSearchRecord
         {
 #if (UseQdrant)
             Key = Guid.CreateVersion7(),
