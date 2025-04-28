@@ -1,15 +1,13 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Runtime.Versioning;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Disk;
 
-[SupportedOSPlatform("windows")]
-internal sealed class WindowsDiskIoRatePerfCounter
+internal sealed class WindowsDiskIoTimePerfCounter
 {
     private readonly List<IPerformanceCounter> _counters = [];
     private readonly IPerformanceCounterFactory _performanceCounterFactory;
@@ -19,7 +17,7 @@ internal sealed class WindowsDiskIoRatePerfCounter
     private readonly string[] _instanceNames;
     private long _lastTimestamp;
 
-    internal WindowsDiskIoRatePerfCounter(
+    internal WindowsDiskIoTimePerfCounter(
         IPerformanceCounterFactory performanceCounterFactory,
         TimeProvider timeProvider,
         string categoryName,
@@ -34,10 +32,10 @@ internal sealed class WindowsDiskIoRatePerfCounter
     }
 
     /// <summary>
-    /// Gets the disk I/O measurements.
-    /// Key: Disk name, Value: Total count.
+    /// Gets the disk time measurements.
+    /// Key: Disk name, Value: Real elapsed time used in busy state.
     /// </summary>
-    internal IDictionary<string, long> TotalCountDict { get; } = new ConcurrentDictionary<string, long>();
+    internal IDictionary<string, double> TotalSeconds { get; } = new ConcurrentDictionary<string, double>();
 
     internal void InitializeDiskCounters()
     {
@@ -45,7 +43,7 @@ internal sealed class WindowsDiskIoRatePerfCounter
         {
             // Create counters for each disk
             _counters.Add(_performanceCounterFactory.Create(_categoryName, _counterName, instanceName));
-            TotalCountDict[instanceName] = 0L;
+            TotalSeconds[instanceName] = 0f;
         }
 
         // Initialize the counters to get the first value
@@ -62,15 +60,14 @@ internal sealed class WindowsDiskIoRatePerfCounter
         long currentTimestamp = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
         double elapsedSeconds = (currentTimestamp - _lastTimestamp) / 1000.0; // Convert to seconds
 
-        // For the kind of "rate" perf counters, this algorithm calculates the total value over a time interval
-        // by multiplying the per-second rate (e.g., Disk Bytes/sec) by the time interval between two samples.
-        // This effectively reverses the per-second rate calculation to a total amount (e.g., total bytes transferred) during that period.
-        // See https://learn.microsoft.com/zh-cn/archive/blogs/askcore/windows-performance-monitor-disk-counters-explained#windows-performance-monitor-disk-counters-explained
+        // The real elapsed time ("wall clock") used in the I/O path (time from operations running in parallel are not counted).
+        // Measured as the complement of "Disk\% Idle Time" performance counter: uptime * (100 - "Disk\% Idle Time") / 100
+        // See https://opentelemetry.io/docs/specs/semconv/system/system-metrics/#metric-systemdiskio_time
         foreach (IPerformanceCounter counter in _counters)
         {
-            // total value = per-second rate * elapsed seconds
-            double value = counter.NextValue() * elapsedSeconds;
-            TotalCountDict[counter.InstanceName] += (long)value;
+            // io busy time = (1 - (% idle time / 100)) * elapsed seconds
+            double value = (1 - (counter.NextValue() / 100f)) * elapsedSeconds;
+            TotalSeconds[counter.InstanceName] += value;
         }
 
         _lastTimestamp = currentTimestamp;

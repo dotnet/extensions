@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.Linq;
 using System.Runtime.Versioning;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Instruments;
@@ -20,6 +21,7 @@ internal sealed class WindowsDiskMetrics
     private static readonly KeyValuePair<string, object?> _directionReadTag = new(DirectionKey, "read");
     private static readonly KeyValuePair<string, object?> _directionWriteTag = new(DirectionKey, "write");
     private readonly Dictionary<string, WindowsDiskIoRatePerfCounter> _diskIoRateCounters = new();
+    private WindowsDiskIoTimePerfCounter? _diskIoTimePerfCounter;
 
     public WindowsDiskMetrics(
         IMeterFactory meterFactory,
@@ -42,7 +44,7 @@ internal sealed class WindowsDiskMetrics
         InitializeDiskCounters(performanceCounterFactory, timeProvider);
 
         // The metric is aligned with
-        // https://github.com/open-telemetry/semantic-conventions/blob/main/docs/system/system-metrics.md#metric-systemdiskio
+        // https://opentelemetry.io/docs/specs/semconv/system/system-metrics/#metric-systemdiskio
         _ = meter.CreateObservableCounter(
             ResourceUtilizationInstruments.SystemDiskIo,
             GetDiskIoMeasurements,
@@ -50,31 +52,61 @@ internal sealed class WindowsDiskMetrics
             description: "Disk bytes transferred");
 
         // The metric is aligned with
-        // https://github.com/open-telemetry/semantic-conventions/blob/main/docs/system/system-metrics.md#metric-systemdiskoperations
+        // https://opentelemetry.io/docs/specs/semconv/system/system-metrics/#metric-systemdiskoperations
         _ = meter.CreateObservableCounter(
             ResourceUtilizationInstruments.SystemDiskOperations,
             GetDiskOperationMeasurements,
             unit: "{operation}",
             description: "Disk operations");
+
+        // The metric is aligned with
+        // https://opentelemetry.io/docs/specs/semconv/system/system-metrics/#metric-systemdiskio_time
+        _ = meter.CreateObservableCounter(
+            ResourceUtilizationInstruments.SystemDiskIoTime,
+            GetDiskIoTimeMeasurements,
+            unit: "s",
+            description: "Time disk spent activated");
     }
 
     private void InitializeDiskCounters(IPerformanceCounterFactory performanceCounterFactory, TimeProvider timeProvider)
     {
         const string DiskCategoryName = "LogicalDisk";
-        string[] instanceNames = performanceCounterFactory.GetCategoryInstances(DiskCategoryName);
+        string[] instanceNames = performanceCounterFactory.GetCategoryInstances(DiskCategoryName)
+            .Where(instanceName => !instanceName.Equals("_Total", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
         if (instanceNames.Length == 0)
         {
             return;
         }
 
-        List<string> diskIoRatePerformanceCounters =
+        // Initialize disk performance counters for "system.disk.io_time" metric
+        try
+        {
+            var ioTimePerfCounter = new WindowsDiskIoTimePerfCounter(
+                performanceCounterFactory,
+                timeProvider,
+                DiskCategoryName,
+                WindowsDiskPerfCounterNames.DiskIdleTimeCounter,
+                instanceNames);
+            ioTimePerfCounter.InitializeDiskCounters();
+            _diskIoTimePerfCounter = ioTimePerfCounter;
+        }
+#pragma warning disable CA1031
+        catch (Exception ex)
+#pragma warning restore CA1031
+        {
+            Debug.WriteLine("Error initializing disk io time perf counter: " + ex.Message);
+        }
+
+        // Initialize disk performance counters for "system.disk.io" and "system.disk.operations" metrics
+        List<string> diskIoRatePerfCounterNames =
         [
             WindowsDiskPerfCounterNames.DiskWriteBytesCounter,
             WindowsDiskPerfCounterNames.DiskReadBytesCounter,
             WindowsDiskPerfCounterNames.DiskWritesCounter,
             WindowsDiskPerfCounterNames.DiskReadsCounter,
         ];
-        foreach (string counterName in diskIoRatePerformanceCounters)
+        foreach (string counterName in diskIoRatePerfCounterNames)
         {
             try
             {
@@ -91,7 +123,7 @@ internal sealed class WindowsDiskMetrics
             catch (Exception ex)
 #pragma warning restore CA1031
             {
-                Debug.WriteLine("Error initializing disk performance counter: " + ex.Message);
+                Debug.WriteLine("Error initializing disk io rate perf counter: " + ex.Message);
             }
         }
     }
@@ -140,6 +172,21 @@ internal sealed class WindowsDiskMetrics
             foreach (KeyValuePair<string, long> pair in readCounter.TotalCountDict)
             {
                 measurements.Add(new Measurement<long>(pair.Value, new TagList { _directionReadTag, new(DeviceKey, pair.Key) }));
+            }
+        }
+
+        return measurements;
+    }
+
+    private IEnumerable<Measurement<double>> GetDiskIoTimeMeasurements()
+    {
+        List<Measurement<double>> measurements = [];
+        if (_diskIoTimePerfCounter != null)
+        {
+            _diskIoTimePerfCounter.UpdateDiskCounters();
+            foreach (KeyValuePair<string, double> pair in _diskIoTimePerfCounter.TotalSeconds)
+            {
+                measurements.Add(new Measurement<double>(pair.Value, new TagList { new(DeviceKey, pair.Key) }));
             }
         }
 
