@@ -22,7 +22,7 @@ public class QualityEvaluatorTests
 {
     private static readonly ChatOptions? _chatOptions;
     private static readonly ReportingConfiguration? _qualityReportingConfiguration;
-    private static readonly ReportingConfiguration? _equivalenceAndGroundednessReportingConfiguration;
+    private static readonly ReportingConfiguration? _needsContextReportingConfiguration;
 
     static QualityEvaluatorTests()
     {
@@ -53,22 +53,25 @@ public class QualityEvaluatorTests
 
             IEvaluator coherenceEvaluator = new CoherenceEvaluator();
             IEvaluator fluencyEvaluator = new FluencyEvaluator();
+            IEvaluator relevanceEvaluator = new RelevanceEvaluator();
 
             _qualityReportingConfiguration =
                 DiskBasedReportingConfiguration.Create(
                     storageRootPath: Settings.Current.StorageRootPath,
-                    evaluators: [rtcEvaluator, coherenceEvaluator, fluencyEvaluator],
+                    evaluators: [rtcEvaluator, coherenceEvaluator, fluencyEvaluator, relevanceEvaluator],
                     chatConfiguration: chatConfiguration,
                     executionName: Constants.Version,
                     tags: [version, date, projectName, testClass, provider, model, temperature,]);
 
             IEvaluator groundednessEvaluator = new GroundednessEvaluator();
             IEvaluator equivalenceEvaluator = new EquivalenceEvaluator();
+            IEvaluator completenessEvaluator = new CompletenessEvaluator();
+            IEvaluator retrievalEvaluator = new RetrievalEvaluator();
 
-            _equivalenceAndGroundednessReportingConfiguration =
+            _needsContextReportingConfiguration =
                 DiskBasedReportingConfiguration.Create(
                     storageRootPath: Settings.Current.StorageRootPath,
-                    evaluators: [groundednessEvaluator, equivalenceEvaluator],
+                    evaluators: [groundednessEvaluator, equivalenceEvaluator, completenessEvaluator, retrievalEvaluator],
                     chatConfiguration,
                     executionName: Constants.Version,
                     tags: [version, date, projectName, testClass, provider, model, temperature, usesContext]);
@@ -142,7 +145,7 @@ public class QualityEvaluatorTests
         SkipIfNotConfigured();
 
         await using ScenarioRun scenarioRun =
-            await _equivalenceAndGroundednessReportingConfiguration.CreateScenarioRunAsync(
+            await _needsContextReportingConfiguration.CreateScenarioRunAsync(
                 scenarioName: $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(QualityEvaluatorTests)}.{nameof(AdditionalContextIsNotPassed)}");
 
         IChatClient chatClient = scenarioRun.ChatConfiguration!.ChatClient;
@@ -156,7 +159,7 @@ public class QualityEvaluatorTests
         EvaluationResult result = await scenarioRun.EvaluateAsync(messages, response);
 
         Assert.True(
-            result.ContainsDiagnostics(d => d.Severity is EvaluationDiagnosticSeverity.Error),
+            result.Metrics.Values.All(m => m.ContainsDiagnostics(d => d.Severity is EvaluationDiagnosticSeverity.Error)),
             string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
     }
 
@@ -166,7 +169,7 @@ public class QualityEvaluatorTests
         SkipIfNotConfigured();
 
         await using ScenarioRun scenarioRun =
-            await _equivalenceAndGroundednessReportingConfiguration.CreateScenarioRunAsync(
+            await _needsContextReportingConfiguration.CreateScenarioRunAsync(
                 scenarioName: $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(QualityEvaluatorTests)}.{nameof(AdditionalContextIsPassed)}");
 
         IChatClient chatClient = scenarioRun.ChatConfiguration!.ChatClient;
@@ -194,15 +197,37 @@ public class QualityEvaluatorTests
                 Distance between Venus and Earth at superior conjunction: About 162 million miles.
                 """);
 
+        var groundTruthForCompletenessEvaluator =
+            new CompletenessEvaluatorContext(
+                """
+                At their closest approach, known as inferior conjunction, Venus can be about 24.8
+                million miles away from Earth. At their furthest point, when Venus is on the opposite side of the Sun
+                from Earth, known as superior conjunction, the distance can be about 162 million miles. These distances
+                can vary slightly due to the specific orbital positions of the planets at any given time.
+                """);
+
+        var retrievedContextChunksForRetrievalEvaluator =
+            new RetrievalEvaluatorContext(
+                "Distance between Venus and Earth at inferior conjunction: About 24.8 million miles.",
+                "Distance between Venus and Earth at superior conjunction: About 162 million miles.",
+                "Venus and earth are planets in our solar system.",
+                "The orbits of most planets in the solar system are elliptical in nature and different planets may have different orbital planes.",
+                "Venus and earth both orbit the Sun.",
+                "Closest approach between planets is known as inferior conjunction. The planets are farthest apart at what is known as the superior conjunction.");
+
         EvaluationResult result =
             await scenarioRun.EvaluateAsync(
                 messages,
                 response,
-                additionalContext: [baselineResponseForEquivalenceEvaluator, groundingContextForGroundednessEvaluator]);
+                additionalContext: [
+                    baselineResponseForEquivalenceEvaluator,
+                    groundingContextForGroundednessEvaluator,
+                    groundTruthForCompletenessEvaluator,
+                    retrievedContextChunksForRetrievalEvaluator]);
     }
 
     [MemberNotNull(nameof(_qualityReportingConfiguration))]
-    [MemberNotNull(nameof(_equivalenceAndGroundednessReportingConfiguration))]
+    [MemberNotNull(nameof(_needsContextReportingConfiguration))]
     private static void SkipIfNotConfigured()
     {
         if (!Settings.Current.Configured)
@@ -211,6 +236,6 @@ public class QualityEvaluatorTests
         }
 
         Assert.NotNull(_qualityReportingConfiguration);
-        Assert.NotNull(_equivalenceAndGroundednessReportingConfiguration);
+        Assert.NotNull(_needsContextReportingConfiguration);
     }
 }
