@@ -269,21 +269,21 @@ public class AzureAIInferenceChatClientTests
         using HttpClient httpClient = new(handler);
         using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
 
+        ChatCompletionsOptions azureAIOptions = new();
+        azureAIOptions.AdditionalProperties.Add("top_k", new BinaryData(JsonSerializer.SerializeToUtf8Bytes(40, typeof(object))));
+        azureAIOptions.AdditionalProperties.Add("something_else", new BinaryData(JsonSerializer.SerializeToUtf8Bytes("value1", typeof(object))));
+        azureAIOptions.AdditionalProperties.Add("and_something_further", new BinaryData(JsonSerializer.SerializeToUtf8Bytes(123, typeof(object))));
+
         Assert.NotNull(await client.GetResponseAsync("hello", new()
         {
             MaxOutputTokens = 10,
             Temperature = 0.5f,
             TopP = 0.5f,
-            TopK = 40,
             FrequencyPenalty = 0.75f,
             PresencePenalty = 0.5f,
             Seed = 42,
             StopSequences = ["yes", "no"],
-            AdditionalProperties = new()
-            {
-                ["something_else"] = "value1",
-                ["and_something_further"] = 123,
-            },
+            RawRepresentation = azureAIOptions,
         }));
     }
 

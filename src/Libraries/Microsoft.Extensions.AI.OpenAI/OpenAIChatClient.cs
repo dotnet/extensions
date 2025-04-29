@@ -434,16 +434,8 @@ internal sealed partial class OpenAIChatClient : IChatClient
             return new ChatCompletionOptions();
         }
 
-        ChatCompletionOptions result;
-        if (options.AdditionalProperties is { Count: > 0 } additionalProperties &&
-            additionalProperties.TryGetValue(nameof(ChatCompletionOptions), out ChatCompletionOptions? optionsFromAdditionalProperties))
-        {
-            result = optionsFromAdditionalProperties;
-        }
-        else
-        {
-            result = new ChatCompletionOptions();
-        }
+        ChatCompletionOptions result = options.RawRepresentation is ChatCompletionOptions openAIOptions ?
+            openAIOptions : new ChatCompletionOptions();
 
         result.FrequencyPenalty = options.FrequencyPenalty;
         result.MaxOutputTokenCount = options.MaxOutputTokens;

@@ -312,24 +312,20 @@ public class OpenAIChatClientTests
         using HttpClient httpClient = new(handler);
         using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
 
-        var options = new ChatCompletionOptions
+        var openAIOptions = new ChatCompletionOptions
         {
             StoredOutputEnabled = true,
             IncludeLogProbabilities = true,
             TopLogProbabilityCount = 42,
-            AllowParallelToolCalls = false,
             EndUserId = "12345",
         };
-        options.Metadata.Add("something", "else");
-        options.LogitBiases.Add(12, 34);
+        openAIOptions.Metadata.Add("something", "else");
+        openAIOptions.LogitBiases.Add(12, 34);
 
         Assert.NotNull(await client.GetResponseAsync("hello", new()
         {
             AllowMultipleToolCalls = false,
-            AdditionalProperties = new()
-            {
-                [nameof(ChatCompletionOptions)] = options
-            },
+            RawRepresentation = openAIOptions
         }));
     }
 

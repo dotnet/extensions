@@ -118,6 +118,11 @@ public class ChatOptions
     [JsonIgnore]
     public IList<AITool>? Tools { get; set; }
 
+    /// <summary>
+    /// Gets or sets the raw representation of the chat options from an underlying implementation.
+    /// </summary>
+    public object? RawRepresentation { get; set; }
+
     /// <summary>Gets or sets any additional properties associated with the options.</summary>
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
 
