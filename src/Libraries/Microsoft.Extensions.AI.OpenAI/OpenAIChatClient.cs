@@ -246,11 +246,9 @@ internal sealed partial class OpenAIChatClient : IChatClient
         Dictionary<int, FunctionCallInfo>? functionCallInfos = null;
         ChatRole? streamedRole = null;
         ChatFinishReason? finishReason = null;
-        StringBuilder? refusal = null;
         string? responseId = null;
         DateTimeOffset? createdAt = null;
         string? modelId = null;
-        string? fingerprint = null;
 
         // Process each update as it arrives
         await foreach (StreamingChatCompletionUpdate update in updates.WithCancellation(cancellationToken).ConfigureAwait(false))
@@ -261,7 +259,6 @@ internal sealed partial class OpenAIChatClient : IChatClient
             responseId ??= update.CompletionId;
             createdAt ??= update.CreatedAt;
             modelId ??= update.Model;
-            fingerprint ??= update.SystemFingerprint;
 
             // Create the response content object.
             ChatResponseUpdate responseUpdate = new()
@@ -285,12 +282,6 @@ internal sealed partial class OpenAIChatClient : IChatClient
                         responseUpdate.Contents.Add(aiContent);
                     }
                 }
-            }
-
-            // Transfer over refusal updates.
-            if (update.RefusalUpdate is not null)
-            {
-                _ = (refusal ??= new()).Append(update.RefusalUpdate);
             }
 
             // Transfer over tool call updates.
