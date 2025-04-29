@@ -444,6 +444,20 @@ public static partial class AIJsonUtilitiesTests
     }
 
     [Fact]
+    public static void CreateJsonSchema_AcceptsOptionsWithoutResolver()
+    {
+        JsonSerializerOptions options = new() { WriteIndented = true };
+        Assert.Null(options.TypeInfoResolver);
+        Assert.False(options.IsReadOnly);
+
+        JsonElement schema = AIJsonUtilities.CreateJsonSchema(typeof(AIContent), serializerOptions: options);
+        Assert.Equal(JsonValueKind.Object, schema.ValueKind);
+
+        Assert.True(options.IsReadOnly);
+        Assert.Same(options.TypeInfoResolver, AIJsonUtilities.DefaultOptions.TypeInfoResolver);
+    }
+
+    [Fact]
     public static void AddAIContentType_DerivedAIContent()
     {
         JsonSerializerOptions options = new()
