@@ -52,8 +52,10 @@ public class AIFunctionArguments : IDictionary<string, object?>, IReadOnlyDictio
     /// A shallow clone of the provided <paramref name="arguments"/> will be used to populate this instance.
     /// A <see langword="null"/> <paramref name="arguments"/> is treated as an empty dictionary.
     /// </remarks>
-    public AIFunctionArguments(IDictionary<string, object?>? arguments, IEqualityComparer<string>? comparer)
+    public AIFunctionArguments(IDictionary<string, object?>? arguments, IEqualityComparer<string> comparer)
     {
+        _ = Throw.IfNull(comparer);
+
         _arguments =
             arguments is null
                 ? new Dictionary<string, object?>(comparer)
