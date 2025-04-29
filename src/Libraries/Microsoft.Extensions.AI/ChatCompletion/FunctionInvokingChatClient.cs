@@ -661,7 +661,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <param name="added">Added messages.</param>
     /// <param name="consecutiveErrorCount">Consecutive error count.</param>
     /// <exception cref="AggregateException">Thrown if the maximum consecutive error count is exceeded.</exception>
-    protected void UpdateConsecutiveErrorCountOrThrow(IList<ChatMessage> added, ref int consecutiveErrorCount)
+    private void UpdateConsecutiveErrorCountOrThrow(IList<ChatMessage> added, ref int consecutiveErrorCount)
     {
         var allExceptions = added.SelectMany(m => m.Contents.OfType<FunctionResultContent>())
             .Select(frc => frc.Exception!)
@@ -693,7 +693,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <summary>
     /// Throws an exception if <see cref="CreateResponseMessages"/> doesn't create any messages.
     /// </summary>
-    protected void ThrowIfNoFunctionResultsAdded(IList<ChatMessage>? messages)
+    private void ThrowIfNoFunctionResultsAdded(IList<ChatMessage>? messages)
     {
         if (messages is null || messages.Count == 0)
         {
