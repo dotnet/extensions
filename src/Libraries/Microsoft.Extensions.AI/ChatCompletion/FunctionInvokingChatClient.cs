@@ -15,10 +15,10 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable CA2213 // Disposable fields should be disposed
+#pragma warning disable CA1002 // Do not expose generic lists
 #pragma warning disable EA0002 // Use 'System.TimeProvider' to make the code easier to test
 #pragma warning disable SA1202 // 'protected' members should come before 'private' members
 #pragma warning disable S107 // Methods should not have too many parameters
-#pragma warning disable CA1002 // Do not expose generic lists
 
 namespace Microsoft.Extensions.AI;
 
@@ -51,7 +51,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <summary>The <see cref="FunctionInvocationContext"/> for the current function invocation.</summary>
     private static readonly AsyncLocal<FunctionInvocationContext?> _currentContext = new();
 
-    /// <summary>Gets services used for function invocation.</summary>
+    /// <summary>Gets the <see cref="IServiceProvider"/> specified when constructing the <see cref="FunctionInvokingChatClient"/>, if any.</summary>
     protected IServiceProvider? FunctionInvocationServices { get; }
 
     /// <summary>The logger to use for logging information about function invocation.</summary>
@@ -407,7 +407,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
             if (modeAndMessages.ShouldTerminate)
             {
-                yield break;
+                break;
             }
 
             UpdateOptionsForNextIteration(ref options, response.ConversationId);
@@ -582,9 +582,16 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             ThrowIfNoFunctionResultsAdded(addedMessages);
             UpdateConsecutiveErrorCountOrThrow(addedMessages, ref consecutiveErrorCount);
 
-            foreach (var addedMessage in addedMessages)
+            if (messages is List<ChatMessage> messagesList)
             {
-                messages.Add(addedMessage);
+                messagesList.AddRange(addedMessages);
+            }
+            else
+            {
+                foreach (var addedMessage in addedMessages)
+                {
+                    messages.Add(addedMessage);
+                }
             }
 
             return (result.ShouldTerminate, consecutiveErrorCount, addedMessages);
@@ -631,9 +638,16 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             ThrowIfNoFunctionResultsAdded(addedMessages);
             UpdateConsecutiveErrorCountOrThrow(addedMessages, ref consecutiveErrorCount);
 
-            foreach (var addedMessage in addedMessages)
+            if (messages is List<ChatMessage> messagesList)
             {
-                messages.Add(addedMessage);
+                messagesList.AddRange(addedMessages);
+            }
+            else
+            {
+                foreach (var addedMessage in addedMessages)
+                {
+                    messages.Add(addedMessage);
+                }
             }
 
             return (shouldTerminate, consecutiveErrorCount, addedMessages);

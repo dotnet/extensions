@@ -240,4 +240,51 @@ public class AIFunctionArgumentsTests
         var args = new Dictionary<string, object?>();
         Assert.Throws<ArgumentNullException>(() => new AIFunctionArguments(args, null!));
     }
+
+    [Fact]
+    public void Constructor_ReusesDictionaryInstance_WhenSameComparer()
+    {
+        // Arrange
+        var comparer = StringComparer.OrdinalIgnoreCase;
+        var originalDict = new Dictionary<string, object?>(comparer)
+        {
+            ["key1"] = "value1",
+            ["key2"] = "value2"
+        };
+
+        // Act
+        var args = new AIFunctionArguments(originalDict, comparer);
+
+        // Assert
+
+        // Verify modifications affect both instances
+        originalDict["key3"] = "value3";
+        Assert.Equal("value3", args["key3"]);
+
+        args["key4"] = "value4";
+        Assert.Equal("value4", originalDict["key4"]);
+    }
+
+    [Fact]
+    public void Constructor_CreateNewDictionary_WhenDifferentComparer()
+    {
+        // Arrange
+        var originalDict = new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["key1"] = "value1",
+            ["key2"] = "value2"
+        };
+
+        // Act
+        var args = new AIFunctionArguments(originalDict, StringComparer.OrdinalIgnoreCase);
+
+        // Assert
+
+        // Verify modifications don't affect each other
+        originalDict["key3"] = "value3";
+        Assert.False(args.ContainsKey("key3"));
+
+        args["key4"] = "value4";
+        Assert.False(originalDict.ContainsKey("key4"));
+    }
 }

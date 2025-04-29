@@ -10,6 +10,7 @@ using Microsoft.Shared.Diagnostics;
 #pragma warning disable SA1112 // Closing parenthesis should be on line of opening parenthesis
 #pragma warning disable SA1114 // Parameter list should follow declaration
 #pragma warning disable S3358 // Extract this nested ternary operation into an independent statement.
+#pragma warning disable S1698 // Consider using 'Equals' if value comparison is intended.
 #pragma warning disable CA1710 // Identifiers should have correct suffix
 
 namespace Microsoft.Extensions.AI;
@@ -36,7 +37,8 @@ public class AIFunctionArguments : IDictionary<string, object?>, IReadOnlyDictio
         _arguments = new Dictionary<string, object?>(comparer);
     }
 
-    /// <summary>Initializes a new instance of the <see cref="AIFunctionArguments"/> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="AIFunctionArguments"/> class, and uses the default comparer for key comparisons.</summary>
+    /// <remarks>The <see cref="IEqualityComparer{T}"/> is ordinal by default.</remarks>
     public AIFunctionArguments()
     {
         _arguments = new Dictionary<string, object?>();
@@ -49,6 +51,9 @@ public class AIFunctionArguments : IDictionary<string, object?>, IReadOnlyDictio
     /// <param name="arguments">The arguments represented by this instance.</param>
     /// <param name="comparer">The <see cref="IEqualityComparer{T}"/> to be used.</param>
     /// <remarks>
+    /// The <paramref name="arguments"/> reference will be stored if the instance is already a
+    /// <see cref="Dictionary{TKey, TValue}"/> with the same <see cref="IEqualityComparer{T}"/>,
+    /// in which case all dictionary operations on this instance will be routed directly to that instance.
     /// A shallow clone of the provided <paramref name="arguments"/> will be used to populate this instance.
     /// A <see langword="null"/> <paramref name="arguments"/> is treated as an empty dictionary.
     /// </remarks>
@@ -59,7 +64,9 @@ public class AIFunctionArguments : IDictionary<string, object?>, IReadOnlyDictio
         _arguments =
             arguments is null
                 ? new Dictionary<string, object?>(comparer)
-                : new Dictionary<string, object?>(arguments, comparer);
+                : (arguments is Dictionary<string, object?> dc) && dc.Comparer == comparer
+                    ? dc
+                    : new Dictionary<string, object?>(arguments, comparer);
     }
 
     /// <summary>
@@ -110,8 +117,12 @@ public class AIFunctionArguments : IDictionary<string, object?>, IReadOnlyDictio
     /// <inheritdoc />
     public int Count => _arguments.Count;
 
+#pragma warning disable CA1033 // Make 'AIFunctionArguments' sealed
+#pragma warning disable S4039 // Make 'AIFunctionArguments' sealed
     /// <inheritdoc />
-    public bool IsReadOnly => false;
+    bool ICollection<KeyValuePair<string, object?>>.IsReadOnly => false;
+#pragma warning restore S4039 // Make 'AIFunctionArguments' sealed
+#pragma warning restore CA1033 // Make 'AIFunctionArguments' sealed
 
     /// <inheritdoc />
     IEnumerable<string> IReadOnlyDictionary<string, object?>.Keys => Keys;
@@ -129,9 +140,13 @@ public class AIFunctionArguments : IDictionary<string, object?>, IReadOnlyDictio
     /// <inheritdoc />
     public void Clear() => _arguments.Clear();
 
+#pragma warning disable CA1033 // Make 'AIFunctionArguments' sealed
+#pragma warning disable S4039 // Make 'AIFunctionArguments' sealed
     /// <inheritdoc />
-    public bool Contains(KeyValuePair<string, object?> item) =>
+    bool ICollection<KeyValuePair<string, object?>>.Contains(KeyValuePair<string, object?> item) =>
         ((ICollection<KeyValuePair<string, object?>>)_arguments).Contains(item);
+#pragma warning restore S4039 // Make 'AIFunctionArguments' sealed
+#pragma warning restore CA1033 // Make 'AIFunctionArguments' sealed
 
     /// <inheritdoc />
     public bool ContainsKey(string key) => _arguments.ContainsKey(key);
