@@ -15,7 +15,7 @@ public static class ChatDetailsExtensions
     /// <see cref="ChatDetails.TurnDetails"/> collection.
     /// </summary>
     /// <param name="chatDetails">
-    /// The <see cref="ChatDetails"/> object to which the <parameref name="turnDetails"/> is to be added.
+    /// The <see cref="ChatDetails"/> object to which the <paramref name="turnDetails"/> is to be added.
     /// </param>
     /// <param name="turnDetails">
     /// The <see cref="ChatTurnDetails"/> for a particular LLM chat conversation turn.
