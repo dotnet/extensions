@@ -610,7 +610,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             else
             {
                 // Invoke each function serially.
-                for (int i = 0; i < results.Count; i++)
+                for (int i = 0; i < functionCallContents.Count; i++)
                 {
                     var functionResult = await ProcessFunctionCallAsync(
                         messages, options, functionCallContents,
@@ -873,7 +873,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         return result;
     }
 
-    /// <summary>This method will invoke the fuction within the try block.</summary>
+    /// <summary>This method will invoke the function within the try block.</summary>
     /// <param name="context">The function invocation context.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The function invocation context and result.</returns>

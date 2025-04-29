@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable SA1111 // Closing parenthesis should be on line of last parameter
 #pragma warning disable SA1112 // Closing parenthesis should be on line of opening parenthesis
@@ -27,10 +28,18 @@ public class AIFunctionArguments : IDictionary<string, object?>, IReadOnlyDictio
     private readonly Dictionary<string, object?> _arguments;
 
     /// <summary>Initializes a new instance of the <see cref="AIFunctionArguments"/> class.</summary>
-    /// <param name="comparer">The optional <see cref="IEqualityComparer{T}"/> to use for key comparisons.</param>
-    public AIFunctionArguments(IEqualityComparer<string>? comparer = null)
+    /// <param name="comparer">The <see cref="IEqualityComparer{T}"/> to use for key comparisons.</param>
+    public AIFunctionArguments(IEqualityComparer<string> comparer)
     {
+        _ = Throw.IfNull(comparer);
+
         _arguments = new Dictionary<string, object?>(comparer);
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="AIFunctionArguments"/> class.</summary>
+    public AIFunctionArguments()
+    {
+        _arguments = new Dictionary<string, object?>();
     }
 
     /// <summary>
@@ -40,23 +49,36 @@ public class AIFunctionArguments : IDictionary<string, object?>, IReadOnlyDictio
     /// <param name="arguments">The arguments represented by this instance.</param>
     /// <param name="comparer">The <see cref="IEqualityComparer{T}"/> to be used.</param>
     /// <remarks>
-    /// The <paramref name="arguments"/> reference will be stored if the instance is
-    /// already a <see cref="Dictionary{TKey, TValue}"/> and no <paramref name="comparer"/> is specified,
-    /// in which case all dictionary operations on this instance will be routed directly to that instance.
-    /// If <paramref name="arguments"/> is not a dictionary or a <paramref name="comparer"/> is specified,
-    /// a shallow clone of its data will be used to populate this instance.
+    /// A shallow clone of the provided <paramref name="arguments"/> will be used to populate this instance.
     /// A <see langword="null"/> <paramref name="arguments"/> is treated as an empty dictionary.
     /// </remarks>
-    public AIFunctionArguments(IDictionary<string, object?>? arguments, IEqualityComparer<string>? comparer = null)
+    public AIFunctionArguments(IDictionary<string, object?>? arguments, IEqualityComparer<string>? comparer)
     {
-        _arguments = comparer is null
-            ? arguments is null
-                ? []
-                : arguments as Dictionary<string, object?> ??
-                  new Dictionary<string, object?>(arguments)
-            : arguments is null
+        _arguments =
+            arguments is null
                 ? new Dictionary<string, object?>(comparer)
                 : new Dictionary<string, object?>(arguments, comparer);
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AIFunctionArguments"/> class containing
+    /// the specified <paramref name="arguments"/>.
+    /// </summary>
+    /// <param name="arguments">The arguments represented by this instance.</param>
+    /// <remarks>
+    /// The <paramref name="arguments"/> reference will be stored if the instance is
+    /// already a <see cref="Dictionary{TKey, TValue}"/>, in which case all dictionary
+    /// operations on this instance will be routed directly to that instance. If <paramref name="arguments"/>
+    /// is not a dictionary, a shallow clone of its data will be used to populate this
+    /// instance. A <see langword="null"/> <paramref name="arguments"/> is treated as an
+    /// empty dictionary.
+    /// </remarks>
+    public AIFunctionArguments(IDictionary<string, object?>? arguments)
+    {
+        _arguments =
+            arguments is null ? [] :
+            arguments as Dictionary<string, object?> ??
+            new Dictionary<string, object?>(arguments);
     }
 
     /// <summary>Gets or sets services optionally associated with these arguments.</summary>
