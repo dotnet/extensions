@@ -184,9 +184,6 @@ public class OpenAIChatClientTests
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, response.Usage.AdditionalCounts);
-
-        Assert.NotNull(response.AdditionalProperties);
-        Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(ChatCompletion.SystemFingerprint)]);
     }
 
     [Fact]
@@ -257,8 +254,6 @@ public class OpenAIChatClientTests
             Assert.Equal(createdAt, updates[i].CreatedAt);
             Assert.Equal("gpt-4o-mini-2024-07-18", updates[i].ModelId);
             Assert.Equal(ChatRole.Assistant, updates[i].Role);
-            Assert.NotNull(updates[i].AdditionalProperties);
-            Assert.Equal("fp_f85bea6784", updates[i].AdditionalProperties![nameof(ChatCompletion.SystemFingerprint)]);
             Assert.Equal(i == 10 ? 0 : 1, updates[i].Contents.Count);
             Assert.Equal(i < 10 ? null : ChatFinishReason.Stop, updates[i].FinishReason);
         }
@@ -280,7 +275,7 @@ public class OpenAIChatClientTests
     }
 
     [Fact]
-    public async Task NonStronglyTypedOptions_AllSent()
+    public async Task StronglyTypedOptions_AllSent()
     {
         const string Input = """
             {
@@ -317,20 +312,23 @@ public class OpenAIChatClientTests
         using HttpClient httpClient = new(handler);
         using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
 
+        var options = new ChatCompletionOptions
+        {
+            StoredOutputEnabled = true,
+            IncludeLogProbabilities = true,
+            TopLogProbabilityCount = 42,
+            AllowParallelToolCalls = false,
+            EndUserId = "12345",
+        };
+        options.Metadata.Add("something", "else");
+        options.LogitBiases.Add(12, 34);
+
         Assert.NotNull(await client.GetResponseAsync("hello", new()
         {
             AllowMultipleToolCalls = false,
             AdditionalProperties = new()
             {
-                ["StoredOutputEnabled"] = true,
-                ["Metadata"] = new Dictionary<string, string>
-                {
-                    ["something"] = "else",
-                },
-                ["LogitBiases"] = new Dictionary<int, int> { { 12, 34 } },
-                ["IncludeLogProbabilities"] = true,
-                ["TopLogProbabilityCount"] = 42,
-                ["EndUserId"] = "12345",
+                [nameof(ChatCompletionOptions)] = options
             },
         }));
     }
@@ -446,9 +444,6 @@ public class OpenAIChatClientTests
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, response.Usage.AdditionalCounts);
-
-        Assert.NotNull(response.AdditionalProperties);
-        Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(ChatCompletion.SystemFingerprint)]);
     }
 
     [Fact]
@@ -546,9 +541,6 @@ public class OpenAIChatClientTests
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, response.Usage.AdditionalCounts);
-
-        Assert.NotNull(response.AdditionalProperties);
-        Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(ChatCompletion.SystemFingerprint)]);
     }
 
     [Fact]
@@ -647,9 +639,6 @@ public class OpenAIChatClientTests
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, response.Usage.AdditionalCounts);
-
-        Assert.NotNull(response.AdditionalProperties);
-        Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(ChatCompletion.SystemFingerprint)]);
     }
 
     [Fact]
@@ -767,9 +756,6 @@ public class OpenAIChatClientTests
         FunctionCallContent fcc = Assert.IsType<FunctionCallContent>(response.Messages.Single().Contents[0]);
         Assert.Equal("GetPersonAge", fcc.Name);
         AssertExtensions.EqualFunctionCallParameters(new Dictionary<string, object?> { ["personName"] = "Alice" }, fcc.Arguments);
-
-        Assert.NotNull(response.AdditionalProperties);
-        Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(ChatCompletion.SystemFingerprint)]);
     }
 
     [Fact]
@@ -852,9 +838,6 @@ public class OpenAIChatClientTests
 
         Assert.Single(response.Messages.Single().Contents);
         TextContent fcc = Assert.IsType<TextContent>(response.Messages.Single().Contents[0]);
-
-        Assert.NotNull(response.AdditionalProperties);
-        Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(ChatCompletion.SystemFingerprint)]);
     }
 
     [Fact]
@@ -946,8 +929,6 @@ public class OpenAIChatClientTests
             Assert.Equal(createdAt, updates[i].CreatedAt);
             Assert.Equal("gpt-4o-mini-2024-07-18", updates[i].ModelId);
             Assert.Equal(ChatRole.Assistant, updates[i].Role);
-            Assert.NotNull(updates[i].AdditionalProperties);
-            Assert.Equal("fp_f85bea6784", updates[i].AdditionalProperties![nameof(ChatCompletion.SystemFingerprint)]);
             Assert.Equal(i < 7 ? null : ChatFinishReason.ToolCalls, updates[i].FinishReason);
         }
 
@@ -1111,9 +1092,6 @@ public class OpenAIChatClientTests
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, response.Usage.AdditionalCounts);
-
-        Assert.NotNull(response.AdditionalProperties);
-        Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(ChatCompletion.SystemFingerprint)]);
     }
 
     [Fact]
@@ -1229,9 +1207,6 @@ public class OpenAIChatClientTests
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, response.Usage.AdditionalCounts);
-
-        Assert.NotNull(response.AdditionalProperties);
-        Assert.Equal("fp_b705f0c291", response.AdditionalProperties[nameof(ChatCompletion.SystemFingerprint)]);
     }
 
     private static IChatClient CreateChatClient(HttpClient httpClient, string modelId) =>
