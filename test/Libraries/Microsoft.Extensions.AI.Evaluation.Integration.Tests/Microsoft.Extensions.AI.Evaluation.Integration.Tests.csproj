@@ -24,6 +24,7 @@
     <PackageReference Include="Azure.Identity" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="OpenAI" />
+    <PackageReference Include="PdfPig" />
   </ItemGroup>
 
   <ItemGroup>
