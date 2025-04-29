@@ -28,6 +28,7 @@ public class ChatOptionsTests
         Assert.Null(options.ToolMode);
         Assert.Null(options.Tools);
         Assert.Null(options.AdditionalProperties);
+        Assert.Null(options.RawRepresentation);
 
         ChatOptions clone = options.Clone();
         Assert.Null(clone.ConversationId);
@@ -45,6 +46,7 @@ public class ChatOptionsTests
         Assert.Null(clone.ToolMode);
         Assert.Null(clone.Tools);
         Assert.Null(clone.AdditionalProperties);
+        Assert.Null(clone.RawRepresentation);
     }
 
     [Fact]
@@ -69,6 +71,8 @@ public class ChatOptionsTests
             ["key"] = "value",
         };
 
+        object rawRepresentation = new();
+
         options.ConversationId = "12345";
         options.Temperature = 0.1f;
         options.MaxOutputTokens = 2;
@@ -83,6 +87,7 @@ public class ChatOptionsTests
         options.AllowMultipleToolCalls = true;
         options.ToolMode = ChatToolMode.RequireAny;
         options.Tools = tools;
+        options.RawRepresentation = rawRepresentation;
         options.AdditionalProperties = additionalProps;
 
         Assert.Equal("12345", options.ConversationId);
@@ -99,6 +104,7 @@ public class ChatOptionsTests
         Assert.True(options.AllowMultipleToolCalls);
         Assert.Same(ChatToolMode.RequireAny, options.ToolMode);
         Assert.Same(tools, options.Tools);
+        Assert.Same(rawRepresentation, options.RawRepresentation);
         Assert.Same(additionalProps, options.AdditionalProperties);
 
         ChatOptions clone = options.Clone();
@@ -116,6 +122,7 @@ public class ChatOptionsTests
         Assert.True(clone.AllowMultipleToolCalls);
         Assert.Same(ChatToolMode.RequireAny, clone.ToolMode);
         Assert.Equal(tools, clone.Tools);
+        Assert.Same(rawRepresentation, clone.RawRepresentation);
         Assert.Equal(additionalProps, clone.AdditionalProperties);
     }
 
@@ -153,6 +160,7 @@ public class ChatOptionsTests
             AIFunctionFactory.Create(() => 42),
             AIFunctionFactory.Create(() => 43),
         ];
+        options.RawRepresentation = new object();
         options.AdditionalProperties = additionalProps;
 
         string json = JsonSerializer.Serialize(options, TestJsonSerializerContext.Default.ChatOptions);
@@ -175,6 +183,7 @@ public class ChatOptionsTests
         Assert.False(deserialized.AllowMultipleToolCalls);
         Assert.Equal(ChatToolMode.RequireAny, deserialized.ToolMode);
         Assert.Null(deserialized.Tools);
+        Assert.Null(deserialized.RawRepresentation);
 
         Assert.NotNull(deserialized.AdditionalProperties);
         Assert.Single(deserialized.AdditionalProperties);

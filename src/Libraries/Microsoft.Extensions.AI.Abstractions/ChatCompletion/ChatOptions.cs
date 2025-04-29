@@ -121,6 +121,12 @@ public class ChatOptions
     /// <summary>
     /// Gets or sets the raw representation of the chat options from an underlying implementation.
     /// </summary>
+    /// <remarks>
+    /// If a <see cref="ChatOptions"/> is created to represent some underlying object from another object
+    /// model, this property can be used to store that original object. This can be useful for debugging or
+    /// for enabling a consumer to access the underlying object model if needed.
+    /// </remarks>
+    [JsonIgnore]
     public object? RawRepresentation { get; set; }
 
     /// <summary>Gets or sets any additional properties associated with the options.</summary>
@@ -149,6 +155,7 @@ public class ChatOptions
             ModelId = ModelId,
             AllowMultipleToolCalls = AllowMultipleToolCalls,
             ToolMode = ToolMode,
+            RawRepresentation = RawRepresentation,
             AdditionalProperties = AdditionalProperties?.Clone(),
         };
 
