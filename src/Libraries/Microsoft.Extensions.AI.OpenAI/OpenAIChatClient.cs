@@ -496,6 +496,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
             result.TopP = options.TopP;
             result.PresencePenalty = options.PresencePenalty;
             result.Temperature = options.Temperature;
+            result.AllowParallelToolCalls = options.AllowMultipleToolCalls;
 #pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
             result.Seed = options.Seed;
 #pragma warning restore OPENAI001
@@ -510,11 +511,6 @@ internal sealed partial class OpenAIChatClient : IChatClient
 
             if (options.AdditionalProperties is { Count: > 0 } additionalProperties)
             {
-                if (additionalProperties.TryGetValue(nameof(result.AllowParallelToolCalls), out bool allowParallelToolCalls))
-                {
-                    result.AllowParallelToolCalls = allowParallelToolCalls;
-                }
-
                 if (additionalProperties.TryGetValue(nameof(result.AudioOptions), out ChatAudioOptions? audioOptions))
                 {
                     result.AudioOptions = audioOptions;
@@ -582,22 +578,25 @@ internal sealed partial class OpenAIChatClient : IChatClient
                     }
                 }
 
-                switch (options.ToolMode)
+                if (result.Tools.Count > 0)
                 {
-                    case NoneChatToolMode:
-                        result.ToolChoice = ChatToolChoice.CreateNoneChoice();
-                        break;
+                    switch (options.ToolMode)
+                    {
+                        case NoneChatToolMode:
+                            result.ToolChoice = ChatToolChoice.CreateNoneChoice();
+                            break;
 
-                    case AutoChatToolMode:
-                    case null:
-                        result.ToolChoice = ChatToolChoice.CreateAutoChoice();
-                        break;
+                        case AutoChatToolMode:
+                        case null:
+                            result.ToolChoice = ChatToolChoice.CreateAutoChoice();
+                            break;
 
-                    case RequiredChatToolMode required:
-                        result.ToolChoice = required.RequiredFunctionName is null ?
-                            ChatToolChoice.CreateRequiredChoice() :
-                            ChatToolChoice.CreateFunctionChoice(required.RequiredFunctionName);
-                        break;
+                        case RequiredChatToolMode required:
+                            result.ToolChoice = required.RequiredFunctionName is null ?
+                                ChatToolChoice.CreateRequiredChoice() :
+                                ChatToolChoice.CreateFunctionChoice(required.RequiredFunctionName);
+                            break;
+                    }
                 }
             }
 
@@ -612,8 +611,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
                         jsonFormat.SchemaName ?? "json_schema",
                         BinaryData.FromBytes(
                             JsonSerializer.SerializeToUtf8Bytes(jsonSchema, ChatClientJsonContext.Default.JsonElement)),
-                        jsonFormat.SchemaDescription,
-                        jsonSchemaIsStrict: true) :
+                        jsonFormat.SchemaDescription) :
                     OpenAI.Chat.ChatResponseFormat.CreateJsonObjectFormat();
             }
         }
@@ -624,11 +622,10 @@ internal sealed partial class OpenAIChatClient : IChatClient
     /// <summary>Converts an Extensions function to an OpenAI chat tool.</summary>
     private static ChatTool ToOpenAIChatTool(AIFunction aiFunction)
     {
-        // Default strict to true, but allow to be overridden by an additional Strict property.
-        bool strict =
-            !aiFunction.AdditionalProperties.TryGetValue("Strict", out object? strictObj) ||
-            strictObj is not bool strictValue ||
-            strictValue;
+        bool? strict =
+            aiFunction.AdditionalProperties.TryGetValue("strictJsonSchema", out object? strictObj) &&
+            strictObj is bool strictValue ?
+            strictValue : null;
 
         // Map to an intermediate model so that redundant properties are skipped.
         var tool = JsonSerializer.Deserialize(aiFunction.JsonSchema, ChatClientJsonContext.Default.ChatToolJson)!;

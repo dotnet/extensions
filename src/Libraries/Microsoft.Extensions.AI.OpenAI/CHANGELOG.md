@@ -1,5 +1,15 @@
 # Release History
 
+## 9.4.0-preview.1.25207.5
+
+- Updated to OpenAI 2.2.0-beta-4.
+- Added `AsISpeechToTextClient` extension method for `AudioClient`.
+- Removed `AsChatClient(OpenAIClient)`/`AsEmbeddingGenerator(OpenAIClient)` extension methods, renamed the remaining `AsChatClient` methods to `AsIChatClient`, renamed the remaining `AsEmbeddingGenerator` methods to `AsIEmbeddingGenerator`, and added an `AsIChatClient` for `OpenAIResponseClient`.
+- Removed the public `OpenAIChatClient`/`OpenAIEmbeddingGenerator` types. These are only created now via the extension methods.
+- Removed serialization/deserialization helpers.
+- Updated to support pulling propagating image detail from `AdditionalProperties`.
+- Updated to accomodate the changes in `Microsoft.Extensions.AI.Abstractions`.
+
 ## 9.3.0-preview.1.25161.3
 
 - Updated to accomodate the changes in `Microsoft.Extensions.AI.Abstractions`.

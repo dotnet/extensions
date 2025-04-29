@@ -63,15 +63,36 @@ public class ChatResponse
     /// <summary>Gets or sets the ID of the chat response.</summary>
     public string? ResponseId { get; set; }
 
-    /// <summary>Gets or sets the chat thread ID associated with this chat response.</summary>
+    /// <summary>Gets or sets an identifier for the state of the conversation.</summary>
     /// <remarks>
-    /// Some <see cref="IChatClient"/> implementations are capable of storing the state for a chat thread, such that
+    /// Some <see cref="IChatClient"/> implementations are capable of storing the state for a conversation, such that
     /// the input messages supplied to <see cref="IChatClient.GetResponseAsync"/> need only be the additional messages beyond
     /// what's already stored. If this property is non-<see langword="null"/>, it represents an identifier for that state,
-    /// and it should be used in a subsequent <see cref="ChatOptions.ChatThreadId"/> instead of supplying the same messages
-    /// (and this <see cref="ChatResponse"/>'s message) as part of the <c>messages</c> parameter.
+    /// and it should be used in a subsequent <see cref="ChatOptions.ConversationId"/> instead of supplying the same messages
+    /// (and this <see cref="ChatResponse"/>'s message) as part of the <c>messages</c> parameter. Note that the value may
+    /// or may not differ on every response, depending on whether the underlying provider uses a fixed ID for each conversation
+    /// or updates it for each message.
     /// </remarks>
-    public string? ChatThreadId { get; set; }
+    /// <remarks>This method is obsolete. Use <see cref="ConversationId"/> instead.</remarks>
+    [Obsolete("Use ConversationId instead.")]
+    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+    public string? ChatThreadId
+    {
+        get => ConversationId;
+        set => ConversationId = value;
+    }
+
+    /// <summary>Gets or sets an identifier for the state of the conversation.</summary>
+    /// <remarks>
+    /// Some <see cref="IChatClient"/> implementations are capable of storing the state for a conversation, such that
+    /// the input messages supplied to <see cref="IChatClient.GetResponseAsync"/> need only be the additional messages beyond
+    /// what's already stored. If this property is non-<see langword="null"/>, it represents an identifier for that state,
+    /// and it should be used in a subsequent <see cref="ChatOptions.ConversationId"/> instead of supplying the same messages
+    /// (and this <see cref="ChatResponse"/>'s message) as part of the <c>messages</c> parameter. Note that the value may
+    /// or may not differ on every response, depending on whether the underlying provider uses a fixed ID for each conversation
+    /// or updates it for each message.
+    /// </remarks>
+    public string? ConversationId { get; set; }
 
     /// <summary>Gets or sets the model ID used in the creation of the chat response.</summary>
     public string? ModelId { get; set; }
@@ -127,7 +148,7 @@ public class ChatResponse
             ChatMessage message = _messages![i];
             updates[i] = new ChatResponseUpdate
             {
-                ChatThreadId = ChatThreadId,
+                ConversationId = ConversationId,
 
                 AdditionalProperties = message.AdditionalProperties,
                 AuthorName = message.AuthorName,
