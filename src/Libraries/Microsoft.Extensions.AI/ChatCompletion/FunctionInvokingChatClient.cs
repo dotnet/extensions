@@ -569,7 +569,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
 
         Debug.Assert(functionCallContents.Count > 0, "Expected at least one function call.");
-
+        var shouldTerminate = false;
         var captureCurrentIterationExceptions = consecutiveErrorCount < _maximumConsecutiveErrorsPerRequest;
 
         // Process all functions. If there's more than one and concurrent invocation is enabled, do so in parallel.
@@ -591,7 +591,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         }
         else
         {
-            FunctionInvocationResult[] results;
+            List<FunctionInvocationResult> results = [];
 
             if (AllowConcurrentInvocation)
             {
@@ -599,37 +599,41 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 // and then await all of them. We avoid forcibly introducing parallelism via Task.Run,
                 // but if a function invocation completes asynchronously, its processing can overlap
                 // with the processing of other the other invocation invocations.
-                results = await Task.WhenAll(
+                results.AddRange(await Task.WhenAll(
                     from i in Enumerable.Range(0, functionCallContents.Count)
                     select ProcessFunctionCallAsync(
                         messages, options, functionCallContents,
-                        iteration, i, captureExceptions: true, isStreaming, cancellationToken));
+                        iteration, i, captureExceptions: true, isStreaming, cancellationToken)));
+
+                shouldTerminate = results.Any(r => r.ShouldTerminate);
             }
             else
             {
                 // Invoke each function serially.
-                results = new FunctionInvocationResult[functionCallContents.Count];
-                for (int i = 0; i < results.Length; i++)
+                for (int i = 0; i < results.Count; i++)
                 {
-                    results[i] = await ProcessFunctionCallAsync(
+                    var functionResult = await ProcessFunctionCallAsync(
                         messages, options, functionCallContents,
                         iteration, i, captureCurrentIterationExceptions, isStreaming, cancellationToken);
+
+                    results.Add(functionResult);
+
+                    // If any function requested termination, we should stop right away.
+                    if (functionResult.ShouldTerminate)
+                    {
+                        shouldTerminate = true;
+                        break;
+                    }
                 }
             }
 
-            var shouldTerminate = false;
-
-            IList<ChatMessage> addedMessages = CreateResponseMessages(results);
+            IList<ChatMessage> addedMessages = CreateResponseMessages(results.ToArray());
             ThrowIfNoFunctionResultsAdded(addedMessages);
             UpdateConsecutiveErrorCountOrThrow(addedMessages, ref consecutiveErrorCount);
+
             foreach (var addedMessage in addedMessages)
             {
                 messages.Add(addedMessage);
-            }
-
-            foreach (FunctionInvocationResult fir in results)
-            {
-                shouldTerminate = shouldTerminate || fir.ShouldTerminate;
             }
 
             return (shouldTerminate, consecutiveErrorCount, addedMessages);
@@ -804,7 +808,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function invocation, or <see langword="null"/> if the function invocation returned <see langword="null"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
-    protected virtual async Task<object?> InvokeFunctionAsync(FunctionInvocationContext context, CancellationToken cancellationToken)
+    protected async Task<object?> InvokeFunctionAsync(FunctionInvocationContext context, CancellationToken cancellationToken)
     {
         _ = Throw.IfNull(context);
 
@@ -828,7 +832,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         try
         {
             CurrentContext = context; // doesn't need to be explicitly reset after, as that's handled automatically at async method exit
-            (context, result) = await TryInvokeFunctionAsync(context, cancellationToken);
+            (context, result) = await InvokeFunctionCoreAsync(context, cancellationToken);
         }
         catch (Exception e)
         {
@@ -873,7 +877,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <param name="context">The function invocation context.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The function invocation context and result.</returns>
-    protected virtual async Task<(FunctionInvocationContext context, object? result)> TryInvokeFunctionAsync(FunctionInvocationContext context, CancellationToken cancellationToken)
+    protected virtual async Task<(FunctionInvocationContext context, object? result)> InvokeFunctionCoreAsync(FunctionInvocationContext context, CancellationToken cancellationToken)
     {
         _ = Throw.IfNull(context);
 
@@ -910,7 +914,15 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <summary>Provides information about the invocation of a function call.</summary>
     public sealed class FunctionInvocationResult
     {
-        internal FunctionInvocationResult(bool shouldTerminate, FunctionInvocationStatus status, FunctionCallContent callContent, object? result, Exception? exception)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FunctionInvocationResult"/> class.
+        /// </summary>
+        /// <param name="shouldTerminate">Indicates whether the caller should terminate the processing loop.</param>
+        /// <param name="status">Indicates the status of the function invocation.</param>
+        /// <param name="callContent">Contains information about the function call.</param>
+        /// <param name="result">The result of the function call.</param>
+        /// <param name="exception">The exception thrown by the function call, if any.</param>
+        public FunctionInvocationResult(bool shouldTerminate, FunctionInvocationStatus status, FunctionCallContent callContent, object? result, Exception? exception)
         {
             ShouldTerminate = shouldTerminate;
             Status = status;
@@ -932,7 +944,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         public Exception? Exception { get; }
 
         /// <summary>Gets a value indicating whether the caller should terminate the processing loop.</summary>
-        internal bool ShouldTerminate { get; }
+        public bool ShouldTerminate { get; }
     }
 
     /// <summary>Provides error codes for when errors occur as part of the function calling loop.</summary>
