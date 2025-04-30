@@ -567,6 +567,11 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                 case DataContent dataContent when dataContent.HasTopLevelMediaType("image"):
                     parts.Add(ResponseContentPart.CreateInputImagePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType));
                     break;
+
+                case DataContent dataContent when dataContent.MediaType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase):
+                    parts.Add(ResponseContentPart.CreateInputFilePart(null, $"{Guid.NewGuid():N}.pdf",
+                        BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(dataContent.Uri, ResponseClientJsonContext.Default.String))));
+                    break;
             }
         }
 
