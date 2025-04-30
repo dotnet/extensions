@@ -9,41 +9,28 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.AI.Templates.Tests;
 
-public abstract class TemplateTestFixture : IAsyncLifetime
+public abstract class TemplateExecutionTestClassFixtureBase : IAsyncLifetime
 {
-    private readonly TemplateConfiguration _configuration;
-    private readonly string _templateInstallNuGetConfigPath;
-    private readonly string _templateTestNuGetConfigPath;
-    private readonly string _localShippingPackagesPath;
-    private readonly string _nuGetPackagesPath;
+    private readonly TemplateExecutionTestConfiguration _configuration;
     private readonly string _templateTestOutputPath;
     private readonly string _customHivePath;
-    private readonly MessageSinkTestOutputHelper _fallbackGlobalOutputHelper;
+    private readonly MessageSinkTestOutputHelper _messageSinkTestOutputHelper;
     private ITestOutputHelper? _currentTestOutputHelper;
 
-    private ITestOutputHelper OutputHelper => _currentTestOutputHelper ?? _fallbackGlobalOutputHelper;
+    /// <summary>
+    /// Gets the current preferred output helper.
+    /// If a test is underway, the output will be associated with that test.
+    /// Otherwise, the output will appear as a diagnostic message via <see cref="IMessageSink"/>.
+    /// </summary>
+    private ITestOutputHelper OutputHelper => _currentTestOutputHelper ?? _messageSinkTestOutputHelper;
 
-    protected TemplateTestFixture(TemplateConfiguration configuration, IMessageSink messageSink)
+    protected TemplateExecutionTestClassFixtureBase(TemplateExecutionTestConfiguration configuration, IMessageSink messageSink)
     {
         _configuration = configuration;
-        _fallbackGlobalOutputHelper = new(messageSink);
+        _messageSinkTestOutputHelper = new(messageSink);
 
-        var templateSandboxRoot = Path.Combine(TestBase.TestProjectRoot, "TemplateSandbox");
-        _templateInstallNuGetConfigPath = Path.Combine(templateSandboxRoot, "nuget.template_install.config");
-        _templateTestNuGetConfigPath = Path.Combine(templateSandboxRoot, "nuget.template_test.config");
-
-        const string BuildConfigurationFolder =
-#if DEBUG
-            "Debug";
-#else
-            "Release";
-#endif
-        _localShippingPackagesPath = Path.Combine(TestBase.CodeBaseRoot, "artifacts", "packages", BuildConfigurationFolder, "Shipping");
-
-        var templateSandboxOutputRoot = Path.Combine(templateSandboxRoot, "output");
-        _nuGetPackagesPath = Path.Combine(templateSandboxOutputRoot, "packages");
         var outputFolderName = GetRandomizedFileName(prefix: _configuration.TestOutputFolderPrefix);
-        _templateTestOutputPath = Path.Combine(templateSandboxOutputRoot, outputFolderName);
+        _templateTestOutputPath = Path.Combine(WellKnownPaths.TemplateSandboxOutputRoot, outputFolderName);
         _customHivePath = Path.Combine(_templateTestOutputPath, "hive");
     }
 
@@ -62,12 +49,12 @@ public abstract class TemplateTestFixture : IAsyncLifetime
             Directory.CreateDirectory(installSandboxPath);
 
             var installNuGetConfigPath = Path.Combine(installSandboxPath, "nuget.config");
-            File.Copy(_templateInstallNuGetConfigPath, installNuGetConfigPath);
+            File.Copy(WellKnownPaths.TemplateInstallNuGetConfigPath, installNuGetConfigPath);
 
             var installResult = await new DotNetNewCommand("install", _configuration.TemplatePackageName)
                 .WithWorkingDirectory(installSandboxPath)
-                .WithEnvironmentVariable("LOCAL_SHIPPING_PATH", _localShippingPackagesPath)
-                .WithEnvironmentVariable("NUGET_PACKAGES", _nuGetPackagesPath)
+                .WithEnvironmentVariable("LOCAL_SHIPPING_PATH", WellKnownPaths.LocalShippingPackagesPath)
+                .WithEnvironmentVariable("NUGET_PACKAGES", WellKnownPaths.NuGetPackagesPath)
                 .WithCustomHive(_customHivePath)
                 .ExecuteAsync(OutputHelper);
             installResult.AssertSucceeded();
@@ -94,7 +81,7 @@ public abstract class TemplateTestFixture : IAsyncLifetime
         newProjectResult.AssertSucceeded();
 
         var templateNuGetConfigPath = Path.Combine(outputFolderPath, "nuget.config");
-        File.Copy(_templateTestNuGetConfigPath, templateNuGetConfigPath);
+        File.Copy(WellKnownPaths.TemplateTestNuGetConfigPath, templateNuGetConfigPath);
 
         return new Project(outputFolderPath, projectName);
     }
@@ -103,8 +90,8 @@ public abstract class TemplateTestFixture : IAsyncLifetime
     {
         var restoreResult = await new DotNetCommand("restore")
             .WithWorkingDirectory(project.StartupProjectFullPath)
-            .WithEnvironmentVariable("LOCAL_SHIPPING_PATH", _localShippingPackagesPath)
-            .WithEnvironmentVariable("NUGET_PACKAGES", _nuGetPackagesPath)
+            .WithEnvironmentVariable("LOCAL_SHIPPING_PATH", WellKnownPaths.LocalShippingPackagesPath)
+            .WithEnvironmentVariable("NUGET_PACKAGES", WellKnownPaths.NuGetPackagesPath)
             .ExecuteAsync(OutputHelper);
         restoreResult.AssertSucceeded();
     }
@@ -119,6 +106,11 @@ public abstract class TemplateTestFixture : IAsyncLifetime
 
     public void SetCurrentTestOutputHelper(ITestOutputHelper? outputHelper)
     {
+        if (_currentTestOutputHelper is not null && outputHelper is not null)
+        {
+            throw new InvalidOperationException("");
+        }
+
         _currentTestOutputHelper = outputHelper;
     }
 

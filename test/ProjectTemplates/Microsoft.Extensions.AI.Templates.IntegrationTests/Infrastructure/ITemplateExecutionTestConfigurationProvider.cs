@@ -3,9 +3,7 @@
 
 namespace Microsoft.Extensions.AI.Templates.Tests;
 
-public sealed class TemplateConfiguration
+public interface ITemplateExecutionTestConfigurationProvider
 {
-    public required string TemplatePackageName { get; init; }
-
-    public required string TestOutputFolderPrefix { get; init; }
+    static abstract TemplateExecutionTestConfiguration Configuration { get; }
 }

@@ -9,7 +9,7 @@ public class DotNetCommand : TestCommand
 {
     public DotNetCommand(params ReadOnlySpan<string> args)
     {
-        FileName = TestBase.RepoDotNetExePath;
+        FileName = WellKnownPaths.RepoDotNetExePath;
 
         foreach (var arg in args)
         {

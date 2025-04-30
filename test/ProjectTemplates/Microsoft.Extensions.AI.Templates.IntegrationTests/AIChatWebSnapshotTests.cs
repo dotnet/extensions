@@ -15,7 +15,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.AI.Templates.Tests;
 
-public class AichatwebTemplatesTests : TestBase
+public class AIChatWebSnapshotTests
 {
     // Keep the exclude patterns below in sync with those in Microsoft.Extensions.AI.Templates.csproj.
     private static readonly string[] _verificationExcludePatterns = [
@@ -35,7 +35,7 @@ public class AichatwebTemplatesTests : TestBase
 
     private readonly ILogger _log;
 
-    public AichatwebTemplatesTests(ITestOutputHelper log)
+    public AIChatWebSnapshotTests(ITestOutputHelper log)
     {
 #pragma warning disable CA2000 // Dispose objects before losing scope
         _log = new XunitLoggerProvider(log).CreateLogger("TestRun");
@@ -66,7 +66,7 @@ public class AichatwebTemplatesTests : TestBase
         string templateShortName = "aichatweb";
 
         // Get the template location
-        string templateLocation = Path.Combine(TemplateFeedLocation, "Microsoft.Extensions.AI.Templates", "src", "ChatWithCustomData");
+        string templateLocation = Path.Combine(WellKnownPaths.TemplateFeedLocation, "Microsoft.Extensions.AI.Templates", "src", "ChatWithCustomData");
 
         var verificationExcludePatterns = Path.DirectorySeparatorChar is '/'
             ? _verificationExcludePatterns
