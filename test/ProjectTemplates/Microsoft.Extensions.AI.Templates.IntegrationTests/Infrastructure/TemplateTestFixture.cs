@@ -15,8 +15,8 @@ public abstract class TemplateTestFixture : IAsyncLifetime
     private readonly string _templateInstallNuGetConfigPath;
     private readonly string _templateTestNuGetConfigPath;
     private readonly string _localShippingPackagesPath;
-    private readonly string _templateTestOutputPath;
     private readonly string _nuGetPackagesPath;
+    private readonly string _templateTestOutputPath;
     private readonly string _customHivePath;
     private readonly MessageSinkTestOutputHelper _fallbackGlobalOutputHelper;
     private ITestOutputHelper? _currentTestOutputHelper;
@@ -40,9 +40,10 @@ public abstract class TemplateTestFixture : IAsyncLifetime
 #endif
         _localShippingPackagesPath = Path.Combine(TestBase.CodeBaseRoot, "artifacts", "packages", BuildConfigurationFolder, "Shipping");
 
+        var templateSandboxOutputRoot = Path.Combine(templateSandboxRoot, "output");
+        _nuGetPackagesPath = Path.Combine(templateSandboxOutputRoot, "packages");
         var outputFolderName = GetRandomizedFileName(prefix: _configuration.TestOutputFolderPrefix);
-        _templateTestOutputPath = Path.Combine(TestBase.TestProjectRoot, "TemplateSandbox", "output", outputFolderName);
-        _nuGetPackagesPath = Path.Combine(_templateTestOutputPath, "packages");
+        _templateTestOutputPath = Path.Combine(templateSandboxOutputRoot, outputFolderName);
         _customHivePath = Path.Combine(_templateTestOutputPath, "hive");
     }
 
@@ -69,10 +70,7 @@ public abstract class TemplateTestFixture : IAsyncLifetime
                 .WithEnvironmentVariable("NUGET_PACKAGES", _nuGetPackagesPath)
                 .WithCustomHive(_customHivePath)
                 .ExecuteAsync(OutputHelper);
-
-            installResult
-                .AssertZeroExitCode()
-                .AssertEmptyStandardError();
+            installResult.AssertSucceeded();
         }
     }
 
@@ -93,10 +91,7 @@ public abstract class TemplateTestFixture : IAsyncLifetime
             .WithWorkingDirectory(_templateTestOutputPath)
             .WithCustomHive(_customHivePath)
             .ExecuteAsync(OutputHelper);
-
-        newProjectResult
-            .AssertZeroExitCode()
-            .AssertEmptyStandardError();
+        newProjectResult.AssertSucceeded();
 
         var templateNuGetConfigPath = Path.Combine(outputFolderPath, "nuget.config");
         File.Copy(_templateTestNuGetConfigPath, templateNuGetConfigPath);
@@ -104,16 +99,22 @@ public abstract class TemplateTestFixture : IAsyncLifetime
         return new Project(outputFolderPath, projectName);
     }
 
-    public Task RestoreProjectAsync(Project project)
+    public async Task RestoreProjectAsync(Project project)
     {
-        // TODO
-        return Task.CompletedTask;
+        var restoreResult = await new DotNetCommand("restore")
+            .WithWorkingDirectory(project.StartupProjectFullPath)
+            .WithEnvironmentVariable("LOCAL_SHIPPING_PATH", _localShippingPackagesPath)
+            .WithEnvironmentVariable("NUGET_PACKAGES", _nuGetPackagesPath)
+            .ExecuteAsync(OutputHelper);
+        restoreResult.AssertSucceeded();
     }
 
-    public Task BuildProjectAsync(Project project)
+    public async Task BuildProjectAsync(Project project)
     {
-        // TODO
-        return Task.CompletedTask;
+        var buildResult = await new DotNetCommand("build", "--no-restore")
+            .WithWorkingDirectory(project.StartupProjectFullPath)
+            .ExecuteAsync(OutputHelper);
+        buildResult.AssertSucceeded();
     }
 
     public void SetCurrentTestOutputHelper(ITestOutputHelper? outputHelper)
@@ -123,7 +124,7 @@ public abstract class TemplateTestFixture : IAsyncLifetime
 
     public Task DisposeAsync()
     {
-        Directory.Delete(_templateTestOutputPath, recursive: true);
+        // Only here to implement IAsyncLifetime. Not currently used.
         return Task.CompletedTask;
     }
 }

@@ -19,4 +19,9 @@ public static class TestCommandResultExtensions
         Assert.True(string.IsNullOrWhiteSpace(standardError), $"Standard error output was unexpectedly non-empty:\n{standardError}");
         return result;
     }
+
+    public static TestCommandResult AssertSucceeded(this TestCommandResult result)
+        => result
+            .AssertZeroExitCode()
+            .AssertEmptyStandardError();
 }

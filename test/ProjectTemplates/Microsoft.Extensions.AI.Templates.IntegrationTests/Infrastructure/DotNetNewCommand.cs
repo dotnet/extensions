@@ -12,13 +12,8 @@ public sealed class DotNetNewCommand : DotNetCommand
     private bool _customHiveSpecified;
 
     public DotNetNewCommand(params ReadOnlySpan<string> args)
+        : base(["new", .. args])
     {
-        Arguments.Add("new");
-
-        foreach (var arg in args)
-        {
-            Arguments.Add(arg);
-        }
     }
 
     public DotNetNewCommand WithCustomHive(string path)

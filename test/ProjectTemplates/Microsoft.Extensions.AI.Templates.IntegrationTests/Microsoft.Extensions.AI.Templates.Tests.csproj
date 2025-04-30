@@ -16,7 +16,9 @@
   <ItemGroup>
     <Compile Remove="Snapshots\**\*.*" />
     <None Include="Snapshots\**\*.*" />
+
+    <Compile Remove="TemplateSandbox\**\*.*" />
+    <None Include="TemplateSandbox\**\*.*" />
   </ItemGroup>
 
 </Project>
-

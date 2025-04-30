@@ -7,6 +7,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.AI.Templates.Tests;
 
+[Collection("Template sandbox")]
 public abstract class TemplateTestBase<TSelf> : IClassFixture<TemplateTestBase<TSelf>.Fixture>, IDisposable
     where TSelf : TemplateTestBase<TSelf>, ITemplateConfigurationProvider
 {
