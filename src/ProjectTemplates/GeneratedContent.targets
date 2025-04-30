@@ -19,8 +19,8 @@
       <TemplatePinnedRepoAIPackagesVersion>9.4.0-preview.1.25207.5</TemplatePinnedRepoAIPackagesVersion>
       <TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion>9.0.4</TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion>
 
-      <!-- Use pinned package versions by default for servicing the template -->
-      <TemplateUsePinnedPackageVersions Condition="'$(TemplateUsePinnedPackageVersions)' == ''">true</TemplateUsePinnedPackageVersions>
+      <!-- By default, don't use pinned dependency versions. -->
+      <TemplateUsePinnedPackageVersions Condition="'$(TemplateUsePinnedPackageVersions)' == ''">false</TemplateUsePinnedPackageVersions>
 
       <!-- Apply pinned dependency versions if enabled. -->
       <TemplateRepoPackagesVersion Condition="'$(TemplateUsePinnedPackageVersions)' == 'true'">$(TemplatePinnedRepoPackagesVersion)</TemplateRepoPackagesVersion>
