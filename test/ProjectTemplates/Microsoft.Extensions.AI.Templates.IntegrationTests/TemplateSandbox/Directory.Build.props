@@ -1,0 +1,6 @@
+<Project>
+  <!--
+    This file exists to detach generated projects from other Director.Build.props
+    files in this repo.
+  -->
+</Project>

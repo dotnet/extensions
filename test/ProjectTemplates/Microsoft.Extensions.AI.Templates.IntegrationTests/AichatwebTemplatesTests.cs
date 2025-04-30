@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.AI.Templates.IntegrationTests;
 using Microsoft.Extensions.AI.Templates.Tests;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
@@ -14,7 +13,7 @@ using Microsoft.TemplateEngine.TestHelper;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.Extensions.AI.Templates.InegrationTests;
+namespace Microsoft.Extensions.AI.Templates.Tests;
 
 public class AichatwebTemplatesTests : TestBase
 {

@@ -1,0 +1,129 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
+using System.IO;
+using System.Threading.Tasks;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace Microsoft.Extensions.AI.Templates.Tests;
+
+public abstract class TemplateTestFixture : IAsyncLifetime
+{
+    private readonly TemplateConfiguration _configuration;
+    private readonly string _templateInstallNuGetConfigPath;
+    private readonly string _templateTestNuGetConfigPath;
+    private readonly string _localShippingPackagesPath;
+    private readonly string _templateTestOutputPath;
+    private readonly string _nuGetPackagesPath;
+    private readonly string _customHivePath;
+    private readonly MessageSinkTestOutputHelper _fallbackGlobalOutputHelper;
+    private ITestOutputHelper? _currentTestOutputHelper;
+
+    private ITestOutputHelper OutputHelper => _currentTestOutputHelper ?? _fallbackGlobalOutputHelper;
+
+    protected TemplateTestFixture(TemplateConfiguration configuration, IMessageSink messageSink)
+    {
+        _configuration = configuration;
+        _fallbackGlobalOutputHelper = new(messageSink);
+
+        var templateSandboxRoot = Path.Combine(TestBase.TestProjectRoot, "TemplateSandbox");
+        _templateInstallNuGetConfigPath = Path.Combine(templateSandboxRoot, "nuget.template_install.config");
+        _templateTestNuGetConfigPath = Path.Combine(templateSandboxRoot, "nuget.template_test.config");
+
+        const string BuildConfigurationFolder =
+#if DEBUG
+            "Debug";
+#else
+            "Release";
+#endif
+        _localShippingPackagesPath = Path.Combine(TestBase.CodeBaseRoot, "artifacts", "packages", BuildConfigurationFolder, "Shipping");
+
+        var outputFolderName = GetRandomizedFileName(prefix: _configuration.TestOutputFolderPrefix);
+        _templateTestOutputPath = Path.Combine(TestBase.TestProjectRoot, "TemplateSandbox", "output", outputFolderName);
+        _nuGetPackagesPath = Path.Combine(_templateTestOutputPath, "packages");
+        _customHivePath = Path.Combine(_templateTestOutputPath, "hive");
+    }
+
+    private static string GetRandomizedFileName(string prefix)
+        => prefix + "_" + Guid.NewGuid().ToString("N").Substring(0, 10).ToLowerInvariant();
+
+    public async Task InitializeAsync()
+    {
+        Directory.CreateDirectory(_templateTestOutputPath);
+
+        await InstallTemplatesAsync();
+
+        async Task InstallTemplatesAsync()
+        {
+            var installSandboxPath = Path.Combine(_templateTestOutputPath, "install");
+            Directory.CreateDirectory(installSandboxPath);
+
+            var installNuGetConfigPath = Path.Combine(installSandboxPath, "nuget.config");
+            File.Copy(_templateInstallNuGetConfigPath, installNuGetConfigPath);
+
+            var installResult = await new DotNetNewCommand("install", _configuration.TemplatePackageName)
+                .WithWorkingDirectory(installSandboxPath)
+                .WithEnvironmentVariable("LOCAL_SHIPPING_PATH", _localShippingPackagesPath)
+                .WithEnvironmentVariable("NUGET_PACKAGES", _nuGetPackagesPath)
+                .WithCustomHive(_customHivePath)
+                .ExecuteAsync(OutputHelper);
+
+            installResult
+                .AssertZeroExitCode()
+                .AssertEmptyStandardError();
+        }
+    }
+
+    public async Task<Project> CreateProjectAsync(string templateName, string projectName, params string[] args)
+    {
+        var outputFolderName = GetRandomizedFileName(projectName);
+        var outputFolderPath = Path.Combine(_templateTestOutputPath, outputFolderName);
+
+        ReadOnlySpan<string> dotNetNewCommandArgs = [
+            templateName,
+            "-o", outputFolderPath,
+            "-n", projectName,
+            "--no-update-check",
+            .. args
+        ];
+
+        var newProjectResult = await new DotNetNewCommand(dotNetNewCommandArgs)
+            .WithWorkingDirectory(_templateTestOutputPath)
+            .WithCustomHive(_customHivePath)
+            .ExecuteAsync(OutputHelper);
+
+        newProjectResult
+            .AssertZeroExitCode()
+            .AssertEmptyStandardError();
+
+        var templateNuGetConfigPath = Path.Combine(outputFolderPath, "nuget.config");
+        File.Copy(_templateTestNuGetConfigPath, templateNuGetConfigPath);
+
+        return new Project(outputFolderPath, projectName);
+    }
+
+    public Task RestoreProjectAsync(Project project)
+    {
+        // TODO
+        return Task.CompletedTask;
+    }
+
+    public Task BuildProjectAsync(Project project)
+    {
+        // TODO
+        return Task.CompletedTask;
+    }
+
+    public void SetCurrentTestOutputHelper(ITestOutputHelper? outputHelper)
+    {
+        _currentTestOutputHelper = outputHelper;
+    }
+
+    public Task DisposeAsync()
+    {
+        Directory.Delete(_templateTestOutputPath, recursive: true);
+        return Task.CompletedTask;
+    }
+}
