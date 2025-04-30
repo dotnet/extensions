@@ -9,6 +9,10 @@ public sealed class TemplateExecutionTestCollectionFixture
 {
     public TemplateExecutionTestCollectionFixture()
     {
-        Directory.Delete(WellKnownPaths.TemplateSandboxOutputRoot, recursive: true);
+        // Clear output from previous test run, if it exists.
+        if (Directory.Exists(WellKnownPaths.TemplateSandboxOutputRoot))
+        {
+            Directory.Delete(WellKnownPaths.TemplateSandboxOutputRoot, recursive: true);
+        }
     }
 }
