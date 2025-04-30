@@ -20,7 +20,7 @@ const useStyles = makeStyles({
     position: 'sticky',
     top: 0,
     zIndex: 1,
-    paddingBottom: '12px',
+    padding: '0rem 2rem 1rem 2rem',
     backgroundColor: tokens.colorNeutralBackground1,
     borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
     marginBottom: '1rem',
@@ -29,6 +29,9 @@ const useStyles = makeStyles({
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  body: {
+    padding: '0rem 2rem',
   },
   headerActions: {
     display: 'flex',
@@ -45,7 +48,7 @@ const useStyles = makeStyles({
   drawerBody: { paddingTop: '1rem' },
 });
 
-function App() {
+export const App = () => {
   const classes = useStyles();
   const { dataset, scoreSummary, selectedTags, clearFilters, searchValue, setSearchValue } = useReportContext();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -82,14 +85,14 @@ function App() {
                 <Button icon={<FilterDismissRegular />} appearance="subtle" onClick={clearFilters} />
               </Tooltip>
             )}
-            <SearchBox placeholder="Search / Filter " value={searchValue} type="text" 
-              style={{width: "16rem"}}
+            <SearchBox placeholder="Search / Filter " value={searchValue} type="text"
+              style={{ width: "16rem" }}
               onChange={(_ev, data) => setSearchValue(data.value)} />
             <Tooltip content="Download Data as JSON" relationship="description">
-              <Button icon={<ArrowDownloadRegular />} appearance="subtle" onClick={downloadDataset} />
+              <Button icon={<ArrowDownloadRegular />} appearance="subtle" onClick={downloadDataset} aria-label="Download Data as JSON" />
             </Tooltip>
             <Tooltip content="Settings" relationship="description">
-              <Button icon={<Settings28Regular />} appearance="subtle" onClick={toggleSettings} />
+              <Button icon={<Settings28Regular />} appearance="subtle" onClick={toggleSettings} aria-label="Settings" />
             </Tooltip>
           </div>
         </div>
@@ -102,10 +105,12 @@ function App() {
         <ScoreNodeHistory />
       </div>
 
-      <ScenarioGroup
-        node={scoreSummary.primaryResult}
-        scoreSummary={scoreSummary}
-      />
+      <div className={classes.body}>
+        <ScenarioGroup
+          node={scoreSummary.primaryResult}
+          scoreSummary={scoreSummary}
+        />
+      </div>
 
       <p className={classes.footerText}>
         Generated at {dataset.createdAt} by Microsoft.Extensions.AI.Evaluation.Reporting version {dataset.generatorVersion}
@@ -126,6 +131,4 @@ function App() {
       </Drawer>
     </>
   );
-}
-
-export default App;
+};

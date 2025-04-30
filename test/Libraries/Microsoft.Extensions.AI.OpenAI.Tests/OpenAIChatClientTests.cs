@@ -319,6 +319,7 @@ public class OpenAIChatClientTests
 
         Assert.NotNull(await client.GetResponseAsync("hello", new()
         {
+            AllowMultipleToolCalls = false,
             AdditionalProperties = new()
             {
                 ["StoredOutputEnabled"] = true,
@@ -329,7 +330,6 @@ public class OpenAIChatClientTests
                 ["LogitBiases"] = new Dictionary<int, int> { { 12, 34 } },
                 ["IncludeLogProbabilities"] = true,
                 ["TopLogProbabilityCount"] = 42,
-                ["AllowParallelToolCalls"] = false,
                 ["EndUserId"] = "12345",
             },
         }));
@@ -662,7 +662,6 @@ public class OpenAIChatClientTests
                         "function": {
                             "description": "Gets the age of the specified person.",
                             "name": "GetPersonAge",
-                            "strict":true,
                             "parameters": {
                                 "type": "object",
                                 "required": [
@@ -868,7 +867,6 @@ public class OpenAIChatClientTests
                         "function": {
                             "description": "Gets the age of the specified person.",
                             "name": "GetPersonAge",
-                            "strict":true,
                             "parameters": {
                                 "type": "object",
                                 "required": [

@@ -16,7 +16,9 @@ namespace Microsoft.Extensions.AI.Evaluation.Reporting;
 /// used by these <see cref="IEvaluator"/>s, how the resulting <see cref="ScenarioRunResult"/>s should be persisted,
 /// and how AI responses should be cached.
 /// </summary>
-/// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/tutorials/evaluate-with-reporting">Tutorial: Evaluate a model's response with response caching and reporting.</related>
+/// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/tutorials/evaluate-with-reporting">
+/// Tutorial: Evaluate a model's response with response caching and reporting.
+/// </related>
 public sealed class ReportingConfiguration
 {
     /// <summary>
@@ -30,9 +32,8 @@ public sealed class ReportingConfiguration
     public IResultStore ResultStore { get; }
 
     /// <summary>
-    /// Gets a <see cref="Evaluation.ChatConfiguration"/> that specifies the <see cref="IChatClient"/> and the
-    /// <see cref="IEvaluationTokenCounter"/> that are used by AI-based <see cref="Evaluators"/> included in this
-    /// <see cref="ReportingConfiguration"/>.
+    /// Gets a <see cref="Evaluation.ChatConfiguration"/> that specifies the <see cref="IChatClient"/> that is used by
+    /// AI-based <see cref="Evaluators"/> included in this <see cref="ReportingConfiguration"/>.
     /// </summary>
     public ChatConfiguration? ChatConfiguration { get; }
 
@@ -103,10 +104,9 @@ public sealed class ReportingConfiguration
     /// The <see cref="IResultStore"/> that should be used to persist the <see cref="ScenarioRunResult"/>s.
     /// </param>
     /// <param name="chatConfiguration">
-    /// A <see cref="Evaluation.ChatConfiguration"/> that specifies the <see cref="IChatClient"/> and the
-    /// <see cref="IEvaluationTokenCounter"/> that are used by AI-based <paramref name="evaluators"/> included in this
-    /// <see cref="ReportingConfiguration"/>. Can be omitted if none of the included <paramref name="evaluators"/> are
-    /// AI-based.
+    /// A <see cref="Evaluation.ChatConfiguration"/> that specifies the <see cref="IChatClient"/> that is used by
+    /// AI-based <paramref name="evaluators"/> included in this <see cref="ReportingConfiguration"/>. Can be omitted if
+    /// none of the included <paramref name="evaluators"/> are AI-based.
     /// </param>
     /// <param name="responseCacheProvider">
     /// The <see cref="IResponseCacheProvider"/> that should be used to cache AI responses. If omitted, AI responses
@@ -181,7 +181,9 @@ public sealed class ReportingConfiguration
     /// A new <see cref="ScenarioRun"/> with the specified <paramref name="scenarioName"/> and
     /// <paramref name="iterationName"/>.
     /// </returns>
-    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/tutorials/evaluate-with-reporting">Tutorial: Evaluate a model's response with response caching and reporting.</related>
+    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/tutorials/evaluate-with-reporting">
+    /// Tutorial: Evaluate a model's response with response caching and reporting.
+    /// </related>
     public async ValueTask<ScenarioRun> CreateScenarioRunAsync(
         string scenarioName,
         string iterationName = Defaults.DefaultIterationName,
@@ -246,7 +248,7 @@ public sealed class ReportingConfiguration
             }
 #pragma warning restore CA2000
 
-            chatConfiguration = new ChatConfiguration(chatClient, chatConfiguration.TokenCounter);
+            chatConfiguration = new ChatConfiguration(chatClient);
         }
 
         return new ScenarioRun(

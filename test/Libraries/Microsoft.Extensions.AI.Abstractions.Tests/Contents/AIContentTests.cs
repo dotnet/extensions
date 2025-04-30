@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using Xunit;
 
 namespace Microsoft.Extensions.AI;
@@ -10,7 +11,7 @@ public class AIContentTests
     [Fact]
     public void Constructor_PropsDefault()
     {
-        DerivedAIContent c = new();
+        AIContent c = new();
         Assert.Null(c.RawRepresentation);
         Assert.Null(c.AdditionalProperties);
     }
@@ -18,7 +19,7 @@ public class AIContentTests
     [Fact]
     public void Constructor_PropsRoundtrip()
     {
-        DerivedAIContent c = new();
+        AIContent c = new();
 
         Assert.Null(c.RawRepresentation);
         object raw = new();
@@ -31,5 +32,25 @@ public class AIContentTests
         Assert.Same(props, c.AdditionalProperties);
     }
 
-    private sealed class DerivedAIContent : AIContent;
+    [Fact]
+    public void Serialization_Roundtrips()
+    {
+        AIContent original = new()
+        {
+            RawRepresentation = new object(),
+            AdditionalProperties = new AdditionalPropertiesDictionary { { "key", "value" } }
+        };
+
+        Assert.NotNull(original.RawRepresentation);
+        Assert.Single(original.AdditionalProperties);
+
+        string json = JsonSerializer.Serialize(original, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(AIContent)));
+        Assert.NotNull(json);
+
+        AIContent? deserialized = (AIContent?)JsonSerializer.Deserialize(json, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(AIContent)));
+        Assert.NotNull(deserialized);
+        Assert.Null(deserialized.RawRepresentation);
+        Assert.NotNull(deserialized.AdditionalProperties);
+        Assert.Single(deserialized.AdditionalProperties);
+    }
 }

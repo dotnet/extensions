@@ -24,7 +24,8 @@ export const ChatDetailsSection = ({ chatDetails }: { chatDetails: ChatDetails; 
         navigator.clipboard.writeText(text);
     };
     return (
-        <div className={classes.section}>
+        <div className={classes.section} tabIndex={0} 
+                onKeyUp={e => e.key === 'Enter' && setIsExpanded(!isExpanded)}>
             <div className={classes.sectionHeader} onClick={() => setIsExpanded(!isExpanded)}>
                 {isExpanded ? <ChevronDown12Regular /> : <ChevronRight12Regular />}
                 <h3 className={classes.sectionHeaderText}>Diagnostic Data</h3>

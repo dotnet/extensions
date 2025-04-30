@@ -33,7 +33,8 @@ export const ScenarioRunHistory = ({ scoreSummary, scenario }: { scoreSummary: S
     const latestExecution = mergeClasses(classes.verticalText, classes.currentExecutionForeground);
 
     return (
-        <div className={classes.section}>
+        <div className={classes.section} tabIndex={0}
+                onKeyUp={e => e.key === 'Enter' && setIsExpanded(!isExpanded)}>
             <div className={classes.sectionHeader} onClick={() => setIsExpanded(!isExpanded)}>
                 {isExpanded ? <ChevronDown12Regular /> : <ChevronRight12Regular />}
                 <h3 className={classes.sectionHeaderText}>Trends</h3>

@@ -14,21 +14,51 @@ namespace Microsoft.Extensions.AI.Evaluation.Reporting.Tests;
 
 public class ScenarioRunResultTests
 {
+    private sealed class TestContext(string name, params AIContent[] contents)
+        : EvaluationContext(name, contents);
+
     [Fact]
     public void SerializeScenarioRunResult()
     {
-        var booleanMetric = new BooleanMetric("boolean", value: true);
+        var content1 = new TextContent("content1");
+        var content2 = new TextContent("content2");
+        var content3 = new TextContent("content3");
+
+        var context1 = new TestContext("context1", content1, content2);
+        var context2 = new TestContext("context2", content1);
+        var context3 = new TestContext("context3", content2, content3);
+
+        var interpretation1 = new EvaluationMetricInterpretation(EvaluationRating.Poor, failed: true, "int-reason1");
+        var interpretation2 = new EvaluationMetricInterpretation(EvaluationRating.Exceptional, failed: false, "int-reason2");
+
+        var booleanMetric = new BooleanMetric("boolean", value: true, reason: "reason1")
+        {
+            Interpretation = interpretation1
+        };
+
+        booleanMetric.AddOrUpdateContext(context1);
         booleanMetric.AddDiagnostics(EvaluationDiagnostic.Error("error"));
         booleanMetric.AddDiagnostics(EvaluationDiagnostic.Warning("warning"));
+        booleanMetric.AddOrUpdateMetadata("metadata1", "value1");
+        booleanMetric.AddOrUpdateMetadata("metadata2", "value2");
 
-        var numericMetric = new NumericMetric("numeric", value: 3);
+        var numericMetric = new NumericMetric("numeric", value: 3)
+        {
+            Interpretation = interpretation2
+        };
+
+        numericMetric.AddOrUpdateContext(context2);
         numericMetric.AddDiagnostics(EvaluationDiagnostic.Informational("info"));
+        numericMetric.AddOrUpdateMetadata("metadata3", "value3");
+        numericMetric.AddOrUpdateMetadata("metadata4", "value4");
 
-        var stringMetric = new StringMetric("string", value: "A");
+        var stringMetric = new StringMetric("string", value: "A", reason: string.Empty);
+        stringMetric.AddOrUpdateContext(context3);
 
-        var metricWithNoValue = new EvaluationMetric("none");
+        var metricWithNoValue = new EvaluationMetric("none", reason: "reason2");
         metricWithNoValue.AddDiagnostics(EvaluationDiagnostic.Error("error"));
         metricWithNoValue.AddDiagnostics(EvaluationDiagnostic.Informational("info"));
+        metricWithNoValue.AddOrUpdateMetadata("metadata5", "value5");
 
         var turn1 =
             new ChatTurnDetails(
@@ -81,18 +111,45 @@ public class ScenarioRunResultTests
     [Fact]
     public void SerializeDatasetCompact()
     {
-        var booleanMetric = new BooleanMetric("boolean", value: true);
+        var content1 = new TextContent("content1");
+        var content2 = new TextContent("content2");
+        var content3 = new TextContent("content3");
+
+        var context1 = new TestContext("context1", content1, content2);
+        var context2 = new TestContext("context2", content1);
+        var context3 = new TestContext("context3", content2, content3);
+
+        var interpretation1 = new EvaluationMetricInterpretation(EvaluationRating.Poor, failed: true, "int-reason1");
+        var interpretation2 = new EvaluationMetricInterpretation(EvaluationRating.Exceptional, failed: false, "int-reason2");
+
+        var booleanMetric = new BooleanMetric("boolean", value: true, reason: "reason1")
+        {
+            Interpretation = interpretation1
+        };
+
+        booleanMetric.AddOrUpdateContext(context1);
         booleanMetric.AddDiagnostics(EvaluationDiagnostic.Error("error"));
         booleanMetric.AddDiagnostics(EvaluationDiagnostic.Warning("warning"));
+        booleanMetric.AddOrUpdateMetadata("metadata1", "value1");
+        booleanMetric.AddOrUpdateMetadata("metadata2", "value2");
 
-        var numericMetric = new NumericMetric("numeric", value: 3);
+        var numericMetric = new NumericMetric("numeric", value: 3)
+        {
+            Interpretation = interpretation2
+        };
+
+        numericMetric.AddOrUpdateContext(context2);
         numericMetric.AddDiagnostics(EvaluationDiagnostic.Informational("info"));
+        numericMetric.AddOrUpdateMetadata("metadata3", "value3");
+        numericMetric.AddOrUpdateMetadata("metadata4", "value4");
 
-        var stringMetric = new StringMetric("string", value: "A");
+        var stringMetric = new StringMetric("string", value: "A", reason: string.Empty);
+        stringMetric.AddOrUpdateContext(context3);
 
-        var metricWithNoValue = new EvaluationMetric("none");
+        var metricWithNoValue = new EvaluationMetric("none", reason: "reason2");
         metricWithNoValue.AddDiagnostics(EvaluationDiagnostic.Error("error"));
         metricWithNoValue.AddDiagnostics(EvaluationDiagnostic.Informational("info"));
+        metricWithNoValue.AddOrUpdateMetadata("metadata5", "value5");
 
         var turn1 =
             new ChatTurnDetails(
@@ -175,41 +232,59 @@ public class ScenarioRunResultTests
 
         BooleanMetric booleanMetric = first.Get<BooleanMetric>("boolean");
         BooleanMetric deserializedBooleanMetric = second.Get<BooleanMetric>("boolean");
-        Assert.Equal(booleanMetric.Name, deserializedBooleanMetric.Name);
         Assert.Equal(booleanMetric.Value, deserializedBooleanMetric.Value);
-        Assert.Equal(booleanMetric.Diagnostics is null, deserializedBooleanMetric.Diagnostics is null);
-        if (booleanMetric.Diagnostics is not null && deserializedBooleanMetric.Diagnostics is not null)
-        {
-            Assert.True(booleanMetric.Diagnostics.SequenceEqual(deserializedBooleanMetric.Diagnostics, DiagnosticComparer.Instance));
-        }
+        ValidateEquivalence(booleanMetric, deserializedBooleanMetric);
 
         NumericMetric numericMetric = first.Get<NumericMetric>("numeric");
         NumericMetric deserializedNumericMetric = second.Get<NumericMetric>("numeric");
-        Assert.Equal(numericMetric.Name, deserializedNumericMetric.Name);
         Assert.Equal(numericMetric.Value, deserializedNumericMetric.Value);
-        Assert.Equal(numericMetric.Diagnostics is null, deserializedNumericMetric.Diagnostics is null);
-        if (numericMetric.Diagnostics is not null && deserializedNumericMetric.Diagnostics is not null)
-        {
-            Assert.True(numericMetric.Diagnostics.SequenceEqual(deserializedNumericMetric.Diagnostics, DiagnosticComparer.Instance));
-        }
+        ValidateEquivalence(numericMetric, deserializedNumericMetric);
 
         StringMetric stringMetric = first.Get<StringMetric>("string");
         StringMetric deserializedStringMetric = second.Get<StringMetric>("string");
-        Assert.Equal(stringMetric.Name, deserializedStringMetric.Name);
         Assert.Equal(stringMetric.Value, deserializedStringMetric.Value);
-        Assert.Equal(stringMetric.Diagnostics is null, deserializedStringMetric.Diagnostics is null);
-        if (stringMetric.Diagnostics is not null && deserializedStringMetric.Diagnostics is not null)
-        {
-            Assert.True(stringMetric.Diagnostics.SequenceEqual(deserializedStringMetric.Diagnostics, DiagnosticComparer.Instance));
-        }
+        ValidateEquivalence(stringMetric, deserializedStringMetric);
 
         EvaluationMetric metricWithNoValue = first.Get<EvaluationMetric>("none");
         EvaluationMetric deserializedMetricWithNoValue = second.Get<EvaluationMetric>("none");
-        Assert.Equal(metricWithNoValue.Name, deserializedMetricWithNoValue.Name);
-        Assert.Equal(metricWithNoValue.Diagnostics is null, deserializedMetricWithNoValue.Diagnostics is null);
-        if (metricWithNoValue.Diagnostics is not null && deserializedMetricWithNoValue.Diagnostics is not null)
+        ValidateEquivalence(metricWithNoValue, deserializedMetricWithNoValue);
+    }
+
+    private static void ValidateEquivalence(EvaluationMetric metric, EvaluationMetric deserializedMetric)
+    {
+        Assert.Equal(metric.Name, deserializedMetric.Name);
+        Assert.Equal(metric.Reason, deserializedMetric.Reason);
+
+        Assert.Equal(metric.Interpretation is null, deserializedMetric.Interpretation is null);
+        if (metric.Interpretation is not null && deserializedMetric.Interpretation is not null)
         {
-            Assert.True(metricWithNoValue.Diagnostics.SequenceEqual(deserializedMetricWithNoValue.Diagnostics, DiagnosticComparer.Instance));
+            Assert.Equal(metric.Interpretation, deserializedMetric.Interpretation, InterpretationComparer.Instance);
+        }
+
+        Assert.Equal(metric.Context is null, deserializedMetric.Context is null);
+        if (metric.Context is not null && deserializedMetric.Context is not null)
+        {
+            Assert.Equal(metric.Context.Count, deserializedMetric.Context.Count);
+            foreach (var key in metric.Context.Keys)
+            {
+                Assert.Equal(metric.Context[key], deserializedMetric.Context[key], ContextComparer.Instance);
+            }
+        }
+
+        Assert.Equal(metric.Diagnostics is null, deserializedMetric.Diagnostics is null);
+        if (metric.Diagnostics is not null && deserializedMetric.Diagnostics is not null)
+        {
+            Assert.True(metric.Diagnostics.SequenceEqual(deserializedMetric.Diagnostics, DiagnosticComparer.Instance));
+        }
+
+        Assert.Equal(metric.Metadata is null, deserializedMetric.Metadata is null);
+        if (metric.Metadata is not null && deserializedMetric.Metadata is not null)
+        {
+            Assert.Equal(metric.Metadata.Count, deserializedMetric.Metadata.Count);
+            foreach (var key in metric.Metadata.Keys)
+            {
+                Assert.Equal(metric.Metadata[key], deserializedMetric.Metadata[key]);
+            }
         }
     }
 
@@ -235,6 +310,68 @@ public class ScenarioRunResultTests
 
         public int GetHashCode(ChatResponse obj)
             => obj.Text.GetHashCode();
+    }
+
+    private class InterpretationComparer : IEqualityComparer<EvaluationMetricInterpretation>
+    {
+        public static InterpretationComparer Instance { get; } = new InterpretationComparer();
+
+        public bool Equals(EvaluationMetricInterpretation? x, EvaluationMetricInterpretation? y)
+            => x?.Rating == y?.Rating && x?.Failed == y?.Failed && x?.Reason == y?.Reason;
+
+        public int GetHashCode(EvaluationMetricInterpretation obj)
+            => obj.GetHashCode();
+    }
+
+    private class ContextComparer : IEqualityComparer<EvaluationContext>
+    {
+        public static ContextComparer Instance { get; } = new ContextComparer();
+
+        public bool Equals(EvaluationContext? x, EvaluationContext? y)
+        {
+            if (x?.Name != y?.Name)
+            {
+                return false;
+            }
+
+            if (x?.Contents.Count != y?.Contents.Count)
+            {
+                return false;
+            }
+
+            if (x?.Contents is IList<AIContent> xContents && y?.Contents is IList<AIContent> yContents)
+            {
+                return xContents.SequenceEqual(yContents, AIContentComparer.Instance);
+            }
+
+            return true;
+        }
+
+        public int GetHashCode(EvaluationContext obj)
+            => obj.GetHashCode();
+    }
+
+    private class AIContentComparer : IEqualityComparer<AIContent>
+    {
+        public static AIContentComparer Instance { get; } = new AIContentComparer();
+
+        public bool Equals(AIContent? x, AIContent? y)
+        {
+            if (x?.GetType().Name != y?.GetType().Name)
+            {
+                return false;
+            }
+
+            if (x is TextContent xText && y is TextContent yText)
+            {
+                return xText.Text == yText.Text;
+            }
+
+            return true;
+        }
+
+        public int GetHashCode(AIContent obj)
+            => obj.GetHashCode();
     }
 
     private class DiagnosticComparer : IEqualityComparer<EvaluationDiagnostic>

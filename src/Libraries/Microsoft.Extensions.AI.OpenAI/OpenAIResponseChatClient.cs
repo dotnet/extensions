@@ -312,15 +312,11 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
             result.PreviousResponseId = options.ConversationId;
             result.TopP = options.TopP;
             result.Temperature = options.Temperature;
+            result.ParallelToolCallsEnabled = options.AllowMultipleToolCalls;
 
             // Handle loosely-typed properties from AdditionalProperties.
             if (options.AdditionalProperties is { Count: > 0 } additionalProperties)
             {
-                if (additionalProperties.TryGetValue(nameof(result.ParallelToolCallsEnabled), out bool allowParallelToolCalls))
-                {
-                    result.ParallelToolCallsEnabled = allowParallelToolCalls;
-                }
-
                 if (additionalProperties.TryGetValue(nameof(result.EndUserId), out string? endUserId))
                 {
                     result.EndUserId = endUserId;
@@ -422,8 +418,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                         ResponseTextFormat.CreateJsonSchemaFormat(
                             jsonFormat.SchemaName ?? "json_schema",
                             BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(jsonSchema, ResponseClientJsonContext.Default.JsonElement)),
-                            jsonFormat.SchemaDescription,
-                            jsonSchemaIsStrict: true) :
+                            jsonFormat.SchemaDescription) :
                         ResponseTextFormat.CreateJsonObjectFormat(),
                 };
             }
@@ -571,6 +566,11 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
 
                 case DataContent dataContent when dataContent.HasTopLevelMediaType("image"):
                     parts.Add(ResponseContentPart.CreateInputImagePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType));
+                    break;
+
+                case DataContent dataContent when dataContent.MediaType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase):
+                    parts.Add(ResponseContentPart.CreateInputFilePart(null, $"{Guid.NewGuid():N}.pdf",
+                        BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(dataContent.Uri, ResponseClientJsonContext.Default.String))));
                     break;
             }
         }
