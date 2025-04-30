@@ -583,7 +583,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             UpdateConsecutiveErrorCountOrThrow(addedMessages, ref consecutiveErrorCount);
             messages.AddRange(addedMessages);
 
-            return (result.ShouldTerminate, consecutiveErrorCount, addedMessages);
+            return (result.Terminate, consecutiveErrorCount, addedMessages);
         }
         else
         {
@@ -601,7 +601,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                         messages, options, functionCallContents,
                         iteration, callIndex, captureExceptions: true, isStreaming, cancellationToken)));
 
-                shouldTerminate = results.Any(r => r.ShouldTerminate);
+                shouldTerminate = results.Any(r => r.Terminate);
             }
             else
             {
@@ -615,7 +615,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                     results.Add(functionResult);
 
                     // If any function requested termination, we should stop right away.
-                    if (functionResult.ShouldTerminate)
+                    if (functionResult.Terminate)
                     {
                         shouldTerminate = true;
                         break;
@@ -703,7 +703,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         AIFunction? aiFunction = options.Tools!.OfType<AIFunction>().FirstOrDefault(t => t.Name == callContent.Name);
         if (aiFunction is null)
         {
-            return new(shouldTerminate: false, FunctionInvocationStatus.NotFound, callContent, result: null, exception: null);
+            return new(terminate: false, FunctionInvocationStatus.NotFound, callContent, result: null, exception: null);
         }
 
         FunctionInvocationContext context = new()
@@ -732,7 +732,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             }
 
             return new(
-                shouldTerminate: false,
+                terminate: false,
                 FunctionInvocationStatus.Exception,
                 callContent,
                 result: null,
@@ -740,7 +740,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         }
 
         return new(
-            shouldTerminate: context.Terminate,
+            terminate: context.Terminate,
             FunctionInvocationStatus.RanToCompletion,
             callContent,
             result,
@@ -905,14 +905,14 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         /// <summary>
         /// Initializes a new instance of the <see cref="FunctionInvocationResult"/> class.
         /// </summary>
-        /// <param name="shouldTerminate">Indicates whether the caller should terminate the processing loop.</param>
+        /// <param name="terminate">Indicates whether the caller should terminate the processing loop.</param>
         /// <param name="status">Indicates the status of the function invocation.</param>
         /// <param name="callContent">Contains information about the function call.</param>
         /// <param name="result">The result of the function call.</param>
         /// <param name="exception">The exception thrown by the function call, if any.</param>
-        public FunctionInvocationResult(bool shouldTerminate, FunctionInvocationStatus status, FunctionCallContent callContent, object? result, Exception? exception)
+        public FunctionInvocationResult(bool terminate, FunctionInvocationStatus status, FunctionCallContent callContent, object? result, Exception? exception)
         {
-            ShouldTerminate = shouldTerminate;
+            Terminate = terminate;
             Status = status;
             CallContent = callContent;
             Result = result;
@@ -932,7 +932,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         public Exception? Exception { get; }
 
         /// <summary>Gets a value indicating whether the caller should terminate the processing loop.</summary>
-        public bool ShouldTerminate { get; }
+        public bool Terminate { get; }
     }
 
     /// <summary>Provides error codes for when errors occur as part of the function calling loop.</summary>
