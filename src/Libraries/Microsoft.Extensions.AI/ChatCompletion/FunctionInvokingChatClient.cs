@@ -910,7 +910,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         /// <param name="callContent">Contains information about the function call.</param>
         /// <param name="result">The result of the function call.</param>
         /// <param name="exception">The exception thrown by the function call, if any.</param>
-        public FunctionInvocationResult(bool terminate, FunctionInvocationStatus status, FunctionCallContent callContent, object? result, Exception? exception)
+        internal FunctionInvocationResult(bool terminate, FunctionInvocationStatus status, FunctionCallContent callContent, object? result, Exception? exception)
         {
             Terminate = terminate;
             Status = status;
