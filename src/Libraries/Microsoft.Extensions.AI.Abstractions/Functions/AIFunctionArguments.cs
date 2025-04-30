@@ -58,8 +58,8 @@ public class AIFunctionArguments : IDictionary<string, object?>, IReadOnlyDictio
     /// <summary>Initializes a new instance of the <see cref="AIFunctionArguments"/> class.</summary>
     /// <param name="comparer">The <see cref="IEqualityComparer{T}"/> to use for key comparisons.</param>
     public AIFunctionArguments(IEqualityComparer<string>? comparer)
+        : this(null, comparer)
     {
-        _arguments = new Dictionary<string, object?>(comparer);
     }
 
     /// <summary>
