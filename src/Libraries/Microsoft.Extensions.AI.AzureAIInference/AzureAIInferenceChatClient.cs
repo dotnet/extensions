@@ -287,24 +287,22 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
             return CreateAzureAIOptions(chatContents, options);
         }
 
-        ChatCompletionsOptions result;
-        if (options.RawRepresentation is ChatCompletionsOptions azureAIOptions)
+        if (options.RawRepresentation is ChatCompletionsOptions result)
         {
-            result = azureAIOptions;
             result.Messages = ToAzureAIInferenceChatMessages(chatContents).ToList();
-            result.Model = options.ModelId ?? _metadata.DefaultModelId ?? throw new InvalidOperationException("No model id was provided when either constructing the client or in the chat options.");
+            result.Model ??= options.ModelId ?? _metadata.DefaultModelId ?? throw new InvalidOperationException("No model id was provided when either constructing the client or in the chat options.");
         }
         else
         {
             result = CreateAzureAIOptions(chatContents, options);
         }
 
-        result.FrequencyPenalty = options.FrequencyPenalty;
-        result.MaxTokens = options.MaxOutputTokens;
-        result.NucleusSamplingFactor = options.TopP;
-        result.PresencePenalty = options.PresencePenalty;
-        result.Temperature = options.Temperature;
-        result.Seed = options.Seed;
+        result.FrequencyPenalty ??= options.FrequencyPenalty;
+        result.MaxTokens ??= options.MaxOutputTokens;
+        result.NucleusSamplingFactor ??= options.TopP;
+        result.PresencePenalty ??= options.PresencePenalty;
+        result.Temperature ??= options.Temperature;
+        result.Seed ??= options.Seed;
 
         if (options.StopSequences is { Count: > 0 } stopSequences)
         {
@@ -324,48 +322,54 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
                 }
             }
 
-            switch (options.ToolMode)
+            if (result.ToolChoice is null && result.Tools.Count > 0)
             {
-                case NoneChatToolMode:
-                    result.ToolChoice = ChatCompletionsToolChoice.None;
-                    break;
+                switch (options.ToolMode)
+                {
+                    case NoneChatToolMode:
+                        result.ToolChoice = ChatCompletionsToolChoice.None;
+                        break;
 
-                case AutoChatToolMode:
-                case null:
-                    result.ToolChoice = ChatCompletionsToolChoice.Auto;
-                    break;
+                    case AutoChatToolMode:
+                    case null:
+                        result.ToolChoice = ChatCompletionsToolChoice.Auto;
+                        break;
 
-                case RequiredChatToolMode required:
-                    result.ToolChoice = required.RequiredFunctionName is null ?
-                        ChatCompletionsToolChoice.Required :
-                        new ChatCompletionsToolChoice(new FunctionDefinition(required.RequiredFunctionName));
-                    break;
+                    case RequiredChatToolMode required:
+                        result.ToolChoice = required.RequiredFunctionName is null ?
+                            ChatCompletionsToolChoice.Required :
+                            new ChatCompletionsToolChoice(new FunctionDefinition(required.RequiredFunctionName));
+                        break;
+                }
             }
         }
 
-        if (options.ResponseFormat is ChatResponseFormatText)
+        if (result.ResponseFormat is null)
         {
-            result.ResponseFormat = ChatCompletionsResponseFormat.CreateTextFormat();
-        }
-        else if (options.ResponseFormat is ChatResponseFormatJson json)
-        {
-            if (json.Schema is { } schema)
+            if (options.ResponseFormat is ChatResponseFormatText)
             {
-                var tool = JsonSerializer.Deserialize(schema, JsonContext.Default.AzureAIChatToolJson)!;
-                result.ResponseFormat = ChatCompletionsResponseFormat.CreateJsonFormat(
-                    json.SchemaName ?? "json_schema",
-                    new Dictionary<string, BinaryData>
-                    {
-                        ["type"] = _objectString,
-                        ["properties"] = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool.Properties, JsonContext.Default.DictionaryStringJsonElement)),
-                        ["required"] = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool.Required, JsonContext.Default.ListString)),
-                        ["additionalProperties"] = _falseString,
-                    },
-                    json.SchemaDescription);
+                result.ResponseFormat = ChatCompletionsResponseFormat.CreateTextFormat();
             }
-            else
+            else if (options.ResponseFormat is ChatResponseFormatJson json)
             {
-                result.ResponseFormat = ChatCompletionsResponseFormat.CreateJsonFormat();
+                if (json.Schema is { } schema)
+                {
+                    var tool = JsonSerializer.Deserialize(schema, JsonContext.Default.AzureAIChatToolJson)!;
+                    result.ResponseFormat = ChatCompletionsResponseFormat.CreateJsonFormat(
+                        json.SchemaName ?? "json_schema",
+                        new Dictionary<string, BinaryData>
+                        {
+                            ["type"] = _objectString,
+                            ["properties"] = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool.Properties, JsonContext.Default.DictionaryStringJsonElement)),
+                            ["required"] = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool.Required, JsonContext.Default.ListString)),
+                            ["additionalProperties"] = _falseString,
+                        },
+                        json.SchemaDescription);
+                }
+                else
+                {
+                    result.ResponseFormat = ChatCompletionsResponseFormat.CreateJsonFormat();
+                }
             }
         }
 

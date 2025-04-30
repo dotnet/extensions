@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Azure;
 using Azure.AI.Inference;
@@ -30,6 +31,19 @@ public class AzureAIInferenceChatClientTests
 
         ChatCompletionsClient client = new(new("http://somewhere"), new AzureKeyCredential("key"));
         Assert.Throws<ArgumentException>("defaultModelId", () => client.AsIChatClient("   "));
+    }
+
+    [Fact]
+    public async Task NullModel_Throws()
+    {
+        ChatCompletionsClient client = new(new("http://localhost/some/endpoint"), new AzureKeyCredential("key"));
+        IChatClient chatClient = client.AsIChatClient(modelId: null);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => chatClient.GetResponseAsync("hello"));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => chatClient.GetStreamingResponseAsync("hello").GetAsyncEnumerator().MoveNextAsync().AsTask());
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => chatClient.GetResponseAsync("hello", new ChatOptions { ModelId = null }));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => chatClient.GetStreamingResponseAsync("hello", new ChatOptions { ModelId = null }).GetAsyncEnumerator().MoveNextAsync().AsTask());
     }
 
     [Fact]
@@ -76,54 +90,54 @@ public class AzureAIInferenceChatClientTests
         Assert.Null(pipeline.GetService<string>("key"));
     }
 
+    private const string BasicInputNonStreaming = """
+        {
+            "messages": [{"role":"user", "content":"hello"}],
+            "max_tokens":10,
+            "temperature":0.5,
+            "model":"gpt-4o-mini"
+        }
+        """;
+
+    private const string BasicOutputNonStreaming = """
+        {
+            "id": "chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI",
+            "object": "chat.completion",
+            "created": 1727888631,
+            "model": "gpt-4o-mini-2024-07-18",
+            "choices": [
+            {
+                "index": 0,
+                "message": {
+                "role": "assistant",
+                "content": "Hello! How can I assist you today?",
+                "refusal": null
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+            }
+            ],
+            "usage": {
+            "prompt_tokens": 8,
+            "completion_tokens": 9,
+            "total_tokens": 17,
+            "prompt_tokens_details": {
+                "cached_tokens": 0
+            },
+            "completion_tokens_details": {
+                "reasoning_tokens": 0
+            }
+            },
+            "system_fingerprint": "fp_f85bea6784"
+        }
+        """;
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task BasicRequestResponse_NonStreaming(bool multiContent)
     {
-        const string Input = """
-            {
-                "messages": [{"role":"user", "content":"hello"}],
-                "max_tokens":10,
-                "temperature":0.5,
-                "model":"gpt-4o-mini"
-            }
-            """;
-
-        const string Output = """
-            {
-              "id": "chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI",
-              "object": "chat.completion",
-              "created": 1727888631,
-              "model": "gpt-4o-mini-2024-07-18",
-              "choices": [
-                {
-                  "index": 0,
-                  "message": {
-                    "role": "assistant",
-                    "content": "Hello! How can I assist you today?",
-                    "refusal": null
-                  },
-                  "logprobs": null,
-                  "finish_reason": "stop"
-                }
-              ],
-              "usage": {
-                "prompt_tokens": 8,
-                "completion_tokens": 9,
-                "total_tokens": 17,
-                "prompt_tokens_details": {
-                  "cached_tokens": 0
-                },
-                "completion_tokens_details": {
-                  "reasoning_tokens": 0
-                }
-              },
-              "system_fingerprint": "fp_f85bea6784"
-            }
-            """;
-
-        using VerbatimHttpHandler handler = new(Input, Output);
+        using VerbatimHttpHandler handler = new(BasicInputNonStreaming, BasicOutputNonStreaming);
         using HttpClient httpClient = new(handler);
         using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
 
@@ -153,50 +167,50 @@ public class AzureAIInferenceChatClientTests
         Assert.Equal(17, response.Usage.TotalTokenCount);
     }
 
+    private const string BasicInputStreaming = """
+        {
+            "messages": [{"role":"user", "content":"hello"}],
+            "max_tokens":20,
+            "temperature":0.5,
+            "stream":true,
+            "model":"gpt-4o-mini"}
+        """;
+
+    private const string BasicOutputStreaming = """
+        data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{"role":"assistant","content":"","refusal":null},"logprobs":null,"finish_reason":null}],"usage":null}
+
+        data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{"content":"Hello"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+        data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{"content":"!"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+        data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{"content":" How"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+        data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{"content":" can"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+        data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{"content":" I"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+        data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{"content":" assist"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+        data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{"content":" you"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+        data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{"content":" today"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+        data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{"content":"?"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+        data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{},"logprobs":null,"finish_reason":"stop"}],"usage":null}
+
+        data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[],"usage":{"prompt_tokens":8,"completion_tokens":9,"total_tokens":17,"prompt_tokens_details":{"cached_tokens":0},"completion_tokens_details":{"reasoning_tokens":0}}}
+
+        data: [DONE]
+
+        """;
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task BasicRequestResponse_Streaming(bool multiContent)
     {
-        const string Input = """
-            {
-                "messages": [{"role":"user", "content":"hello"}],
-                "max_tokens":20,
-                "temperature":0.5,
-                "stream":true,
-                "model":"gpt-4o-mini"}
-            """;
-
-        const string Output = """
-            data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{"role":"assistant","content":"","refusal":null},"logprobs":null,"finish_reason":null}],"usage":null}
-
-            data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{"content":"Hello"},"logprobs":null,"finish_reason":null}],"usage":null}
-
-            data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{"content":"!"},"logprobs":null,"finish_reason":null}],"usage":null}
-
-            data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{"content":" How"},"logprobs":null,"finish_reason":null}],"usage":null}
-
-            data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{"content":" can"},"logprobs":null,"finish_reason":null}],"usage":null}
-
-            data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{"content":" I"},"logprobs":null,"finish_reason":null}],"usage":null}
-
-            data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{"content":" assist"},"logprobs":null,"finish_reason":null}],"usage":null}
-
-            data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{"content":" you"},"logprobs":null,"finish_reason":null}],"usage":null}
-
-            data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{"content":" today"},"logprobs":null,"finish_reason":null}],"usage":null}
-
-            data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{"content":"?"},"logprobs":null,"finish_reason":null}],"usage":null}
-
-            data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[{"index":0,"delta":{},"logprobs":null,"finish_reason":"stop"}],"usage":null}
-
-            data: {"id":"chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_f85bea6784","choices":[],"usage":{"prompt_tokens":8,"completion_tokens":9,"total_tokens":17,"prompt_tokens_details":{"cached_tokens":0},"completion_tokens_details":{"reasoning_tokens":0}}}
-
-            data: [DONE]
-
-            """;
-
-        using VerbatimHttpHandler handler = new(Input, Output);
+        using VerbatimHttpHandler handler = new(BasicInputStreaming, BasicOutputStreaming);
         using HttpClient httpClient = new(handler);
         using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
 
@@ -228,6 +242,384 @@ public class AzureAIInferenceChatClientTests
             Assert.Equal(i is < 10 or 11 ? 1 : 0, updates[i].Contents.Count);
             Assert.Equal(i < 10 ? null : ChatFinishReason.Stop, updates[i].FinishReason);
         }
+    }
+
+    [Fact]
+    public async Task IChatClient_WithNullModel_ChatOptions_WithNotNullModel_NonStreaming()
+    {
+        using VerbatimHttpHandler handler = new(BasicInputNonStreaming, BasicOutputNonStreaming);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, modelId: null!);
+
+        var response = await client.GetResponseAsync("hello", new ChatOptions
+        {
+            ModelId = "gpt-4o-mini",
+            MaxOutputTokens = 10,
+            Temperature = 0.5f,
+        });
+        Assert.NotNull(response);
+        Assert.Equal("Hello! How can I assist you today?", response.Text);
+    }
+
+    [Fact]
+    public async Task IChatClient_WithNullModel_ChatOptions_WithNotNullModel_Streaming()
+    {
+        using VerbatimHttpHandler handler = new(BasicInputStreaming, BasicOutputStreaming);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, modelId: null!);
+
+        string responseText = string.Empty;
+        await foreach (var update in client.GetStreamingResponseAsync("hello", new ChatOptions
+        {
+            ModelId = "gpt-4o-mini",
+            MaxOutputTokens = 20,
+            Temperature = 0.5f,
+        }))
+        {
+            responseText += update.Text;
+        }
+
+        Assert.Equal("Hello! How can I assist you today?", responseText);
+    }
+
+    [Fact]
+    public async Task ChatOptions_DoNotOverwrite_NotNullPropertiesInRawRepresentation_NonStreaming()
+    {
+        const string Input = """
+            {
+              "messages":[{"role":"user","content":"hello"}],
+              "model":"gpt-4o-mini",
+              "frequency_penalty":0.75,
+              "max_tokens":10,
+              "top_p":0.5,
+              "presence_penalty":0.5,
+              "temperature":0.5,
+              "seed":42,
+              "stop":["hello","world"],
+              "response_format":{"type":"text"},
+              "tools":[
+                  {"type":"function","function":{"name":"GetPersonAge","description":"Gets the age of the specified person.","parameters":{"type":"object","required":["personName"],"properties":{"personName":{"description":"The person whose age is being requested","type":"string"}}}}},
+                  {"type":"function","function":{"name":"GetPersonAge","description":"Gets the age of the specified person.","parameters":{"type": "object","required": ["personName"],"properties": {"personName": {"description": "The person whose age is being requested","type": "string"}}}}}
+                ],
+              "tool_choice":"auto"
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI",
+              "object": "chat.completion",
+              "choices": [
+                {
+                  "message": {
+                    "role": "assistant",
+                    "content": "Hello! How can I assist you today?"
+                  }
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, modelId: null!);
+        AIFunction tool = AIFunctionFactory.Create(([Description("The person whose age is being requested")] string personName) => 42, "GetPersonAge", "Gets the age of the specified person.");
+
+        ChatCompletionsOptions azureAIOptions = new()
+        {
+            Messages = [new ChatRequestUserMessage("overwrite me!")], // this one should be overwritten.
+            Model = "gpt-4o-mini",
+            FrequencyPenalty = 0.75f,
+            MaxTokens = 10,
+            NucleusSamplingFactor = 0.5f,
+            PresencePenalty = 0.5f,
+            Temperature = 0.5f,
+            Seed = 42,
+        };
+        azureAIOptions.StopSequences.Add("hello"); // this one merges with the other.
+        azureAIOptions.Tools.Add(ToAzureAIChatTool(tool)); // this one merges with the other.
+        azureAIOptions.ToolChoice = ChatCompletionsToolChoice.Auto;
+        azureAIOptions.ResponseFormat = ChatCompletionsResponseFormat.CreateTextFormat();
+
+        ChatOptions chatOptions = new ChatOptions
+        {
+            RawRepresentation = azureAIOptions,
+            ModelId = null,
+            FrequencyPenalty = 0.1f,
+            MaxOutputTokens = 1,
+            TopP = 0.1f,
+            PresencePenalty = 0.1f,
+            Temperature = 0.1f,
+            Seed = 1,
+            StopSequences = ["world"],
+            Tools = [tool],
+            ToolMode = ChatToolMode.None,
+            ResponseFormat = ChatResponseFormat.Json
+        };
+
+        var response = await client.GetResponseAsync("hello", chatOptions);
+        Assert.NotNull(response);
+        Assert.Equal("Hello! How can I assist you today?", response.Text);
+    }
+
+    [Fact]
+    public async Task ChatOptions_DoNotOverwrite_NotNullPropertiesInRawRepresentation_Streaming()
+    {
+        const string Input = """
+            {
+              "messages":[{"role":"user","content":"hello"}],
+              "model":"gpt-4o-mini",
+              "frequency_penalty":0.75,
+              "max_tokens":10,
+              "top_p":0.5,
+              "presence_penalty":0.5,
+              "temperature":0.5,
+              "seed":42,
+              "stop":["hello","world"],
+              "response_format":{"type":"text"},
+              "tools":[
+                  {"type":"function","function":{"name":"GetPersonAge","description":"Gets the age of the specified person.","parameters":{"type":"object","required":["personName"],"properties":{"personName":{"description":"The person whose age is being requested","type":"string"}}}}},
+                  {"type":"function","function":{"name":"GetPersonAge","description":"Gets the age of the specified person.","parameters":{"type": "object","required": ["personName"],"properties": {"personName": {"description": "The person whose age is being requested","type": "string"}}}}}
+                ],
+              "tool_choice":"auto",
+              "stream":true
+            }
+            """;
+
+        const string Output = """
+            data: {"id":"chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI","object":"chat.completion.chunk","choices":[{"delta":{"role":"assistant","content":"Hello! "}}]}
+            
+            data: {"id":"chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI","object":"chat.completion.chunk","choices":[{"delta":{"content":"How can I assist you today?"}}]}
+            
+            data: {"id":"chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI","object":"chat.completion.chunk","choices":[{"delta":{},"finish_reason":"stop"}]}
+            
+            data: [DONE]
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, modelId: null!);
+        AIFunction tool = AIFunctionFactory.Create(([Description("The person whose age is being requested")] string personName) => 42, "GetPersonAge", "Gets the age of the specified person.");
+
+        ChatCompletionsOptions azureAIOptions = new()
+        {
+            Messages = [new ChatRequestUserMessage("overwrite me!")], // this one should be overwritten.
+            Model = "gpt-4o-mini",
+            FrequencyPenalty = 0.75f,
+            MaxTokens = 10,
+            NucleusSamplingFactor = 0.5f,
+            PresencePenalty = 0.5f,
+            Temperature = 0.5f,
+            Seed = 42,
+        };
+        azureAIOptions.StopSequences.Add("hello"); // this one merges with the other.
+        azureAIOptions.Tools.Add(ToAzureAIChatTool(tool)); // this one merges with the other.
+        azureAIOptions.ToolChoice = ChatCompletionsToolChoice.Auto;
+        azureAIOptions.ResponseFormat = ChatCompletionsResponseFormat.CreateTextFormat();
+
+        ChatOptions chatOptions = new ChatOptions
+        {
+            RawRepresentation = azureAIOptions,
+            ModelId = null,
+            FrequencyPenalty = 0.1f,
+            MaxOutputTokens = 1,
+            TopP = 0.1f,
+            PresencePenalty = 0.1f,
+            Temperature = 0.1f,
+            Seed = 1,
+            StopSequences = ["world"],
+            Tools = [tool],
+            ToolMode = ChatToolMode.None,
+            ResponseFormat = ChatResponseFormat.Json
+        };
+
+        string responseText = string.Empty;
+        await foreach (var update in client.GetStreamingResponseAsync("hello", chatOptions))
+        {
+            responseText += update.Text;
+        }
+
+        Assert.Equal("Hello! How can I assist you today?", responseText);
+    }
+
+    [Fact]
+    public async Task ChatOptions_Overwrite_NullPropertiesInRawRepresentation_NonStreaming()
+    {
+        const string Input = """
+            {
+              "messages":[{"role":"user","content":"hello"}],
+              "model":"gpt-4o-mini",
+              "frequency_penalty":0.1,
+              "max_tokens":1,
+              "top_p":0.1,
+              "presence_penalty":0.1,
+              "temperature":0.1,
+              "seed":1,
+              "stop":["world"],
+              "response_format":{"type":"json_object"},
+              "tools":[
+                  {"type":"function","function":{"name":"GetPersonAge","description":"Gets the age of the specified person.","parameters":{"type":"object","required":["personName"],"properties":{"personName":{"description":"The person whose age is being requested","type":"string"}}}}}
+                ],
+              "tool_choice":"none"
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI",
+              "object": "chat.completion",
+              "choices": [
+                {
+                  "message": {
+                    "role": "assistant",
+                    "content": "Hello! How can I assist you today?"
+                  }
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, modelId: null!);
+        AIFunction tool = AIFunctionFactory.Create(([Description("The person whose age is being requested")] string personName) => 42, "GetPersonAge", "Gets the age of the specified person.");
+
+        ChatCompletionsOptions azureAIOptions = new();
+        Assert.Empty(azureAIOptions.Messages);
+        Assert.Null(azureAIOptions.Model);
+        Assert.Null(azureAIOptions.FrequencyPenalty);
+        Assert.Null(azureAIOptions.MaxTokens);
+        Assert.Null(azureAIOptions.NucleusSamplingFactor);
+        Assert.Null(azureAIOptions.PresencePenalty);
+        Assert.Null(azureAIOptions.Temperature);
+        Assert.Null(azureAIOptions.Seed);
+        Assert.Empty(azureAIOptions.StopSequences);
+        Assert.Empty(azureAIOptions.Tools);
+        Assert.Null(azureAIOptions.ToolChoice);
+        Assert.Null(azureAIOptions.ResponseFormat);
+
+        ChatOptions chatOptions = new ChatOptions
+        {
+            RawRepresentation = azureAIOptions,
+            ModelId = "gpt-4o-mini",
+            FrequencyPenalty = 0.1f,
+            MaxOutputTokens = 1,
+            TopP = 0.1f,
+            PresencePenalty = 0.1f,
+            Temperature = 0.1f,
+            Seed = 1,
+            StopSequences = ["world"],
+            Tools = [tool],
+            ToolMode = ChatToolMode.None,
+            ResponseFormat = ChatResponseFormat.Json
+        };
+
+        var response = await client.GetResponseAsync("hello", chatOptions);
+        Assert.NotNull(response);
+        Assert.Equal("Hello! How can I assist you today?", response.Text);
+    }
+
+    [Fact]
+    public async Task ChatOptions_Overwrite_NullPropertiesInRawRepresentation_Streaming()
+    {
+        const string Input = """
+            {
+              "messages":[{"role":"user","content":"hello"}],
+              "model":"gpt-4o-mini",
+              "frequency_penalty":0.1,
+              "max_tokens":1,
+              "top_p":0.1,
+              "presence_penalty":0.1,
+              "temperature":0.1,
+              "seed":1,
+              "stop":["world"],
+              "response_format":{"type":"json_object"},
+              "tools":[
+                  {"type":"function","function":{"name":"GetPersonAge","description":"Gets the age of the specified person.","parameters":{"type":"object","required":["personName"],"properties":{"personName":{"description":"The person whose age is being requested","type":"string"}}}}}
+                ],
+              "tool_choice":"none",
+              "stream":true
+            }
+            """;
+
+        const string Output = """
+            data: {"id":"chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI","object":"chat.completion.chunk","choices":[{"delta":{"role":"assistant","content":"Hello! "}}]}
+            
+            data: {"id":"chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI","object":"chat.completion.chunk","choices":[{"delta":{"content":"How can I assist you today?"}}]}
+            
+            data: {"id":"chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI","object":"chat.completion.chunk","choices":[{"delta":{},"finish_reason":"stop"}]}
+            
+            data: [DONE]
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, modelId: null!);
+        AIFunction tool = AIFunctionFactory.Create(([Description("The person whose age is being requested")] string personName) => 42, "GetPersonAge", "Gets the age of the specified person.");
+
+        ChatCompletionsOptions azureAIOptions = new();
+        Assert.Empty(azureAIOptions.Messages);
+        Assert.Null(azureAIOptions.Model);
+        Assert.Null(azureAIOptions.FrequencyPenalty);
+        Assert.Null(azureAIOptions.MaxTokens);
+        Assert.Null(azureAIOptions.NucleusSamplingFactor);
+        Assert.Null(azureAIOptions.PresencePenalty);
+        Assert.Null(azureAIOptions.Temperature);
+        Assert.Null(azureAIOptions.Seed);
+        Assert.Empty(azureAIOptions.StopSequences);
+        Assert.Empty(azureAIOptions.Tools);
+        Assert.Null(azureAIOptions.ToolChoice);
+        Assert.Null(azureAIOptions.ResponseFormat);
+
+        ChatOptions chatOptions = new ChatOptions
+        {
+            RawRepresentation = azureAIOptions,
+            ModelId = "gpt-4o-mini",
+            FrequencyPenalty = 0.1f,
+            MaxOutputTokens = 1,
+            TopP = 0.1f,
+            PresencePenalty = 0.1f,
+            Temperature = 0.1f,
+            Seed = 1,
+            StopSequences = ["world"],
+            Tools = [tool],
+            ToolMode = ChatToolMode.None,
+            ResponseFormat = ChatResponseFormat.Json
+        };
+
+        string responseText = string.Empty;
+        await foreach (var update in client.GetStreamingResponseAsync("hello", chatOptions))
+        {
+            responseText += update.Text;
+        }
+
+        Assert.Equal("Hello! How can I assist you today?", responseText);
+    }
+
+    /// <summary>Converts an Extensions function to an AzureAI chat tool.</summary>
+    private static ChatCompletionsToolDefinition ToAzureAIChatTool(AIFunction aiFunction)
+    {
+        // Map to an intermediate model so that redundant properties are skipped.
+        var tool = JsonSerializer.Deserialize<AzureAIChatToolJson>(aiFunction.JsonSchema)!;
+        var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool));
+        return new(new FunctionDefinition(aiFunction.Name)
+        {
+            Description = aiFunction.Description,
+            Parameters = functionParameters,
+        });
+    }
+
+    /// <summary>Used to create the JSON payload for an AzureAI chat tool description.</summary>
+    private sealed class AzureAIChatToolJson
+    {
+        [JsonPropertyName("type")]
+        public string Type { get; set; } = "object";
+
+        [JsonPropertyName("required")]
+        public List<string> Required { get; set; } = [];
+
+        [JsonPropertyName("properties")]
+        public Dictionary<string, JsonElement> Properties { get; set; } = [];
     }
 
     [Fact]

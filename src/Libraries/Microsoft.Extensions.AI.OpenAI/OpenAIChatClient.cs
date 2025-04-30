@@ -425,17 +425,16 @@ internal sealed partial class OpenAIChatClient : IChatClient
             return new ChatCompletionOptions();
         }
 
-        ChatCompletionOptions result = options.RawRepresentation is ChatCompletionOptions openAIOptions ?
-            openAIOptions : new ChatCompletionOptions();
+        ChatCompletionOptions result = options.RawRepresentation as ChatCompletionOptions ?? new();
 
-        result.FrequencyPenalty = options.FrequencyPenalty;
-        result.MaxOutputTokenCount = options.MaxOutputTokens;
-        result.TopP = options.TopP;
-        result.PresencePenalty = options.PresencePenalty;
-        result.Temperature = options.Temperature;
-        result.AllowParallelToolCalls = options.AllowMultipleToolCalls;
+        result.FrequencyPenalty ??= options.FrequencyPenalty;
+        result.MaxOutputTokenCount ??= options.MaxOutputTokens;
+        result.TopP ??= options.TopP;
+        result.PresencePenalty ??= options.PresencePenalty;
+        result.Temperature ??= options.Temperature;
+        result.AllowParallelToolCalls ??= options.AllowMultipleToolCalls;
 #pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
-        result.Seed = options.Seed;
+        result.Seed ??= options.Seed;
 #pragma warning restore OPENAI001
 
         if (options.StopSequences is { Count: > 0 } stopSequences)
@@ -456,7 +455,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
                 }
             }
 
-            if (result.Tools.Count > 0)
+            if (result.ToolChoice is null && result.Tools.Count > 0)
             {
                 switch (options.ToolMode)
                 {
@@ -478,19 +477,22 @@ internal sealed partial class OpenAIChatClient : IChatClient
             }
         }
 
-        if (options.ResponseFormat is ChatResponseFormatText)
+        if (result.ResponseFormat is null)
         {
-            result.ResponseFormat = OpenAI.Chat.ChatResponseFormat.CreateTextFormat();
-        }
-        else if (options.ResponseFormat is ChatResponseFormatJson jsonFormat)
-        {
-            result.ResponseFormat = jsonFormat.Schema is { } jsonSchema ?
-                OpenAI.Chat.ChatResponseFormat.CreateJsonSchemaFormat(
-                    jsonFormat.SchemaName ?? "json_schema",
-                    BinaryData.FromBytes(
-                        JsonSerializer.SerializeToUtf8Bytes(jsonSchema, ChatClientJsonContext.Default.JsonElement)),
-                    jsonFormat.SchemaDescription) :
-                OpenAI.Chat.ChatResponseFormat.CreateJsonObjectFormat();
+            if (options.ResponseFormat is ChatResponseFormatText)
+            {
+                result.ResponseFormat = OpenAI.Chat.ChatResponseFormat.CreateTextFormat();
+            }
+            else if (options.ResponseFormat is ChatResponseFormatJson jsonFormat)
+            {
+                result.ResponseFormat = jsonFormat.Schema is { } jsonSchema ?
+                    OpenAI.Chat.ChatResponseFormat.CreateJsonSchemaFormat(
+                        jsonFormat.SchemaName ?? "json_schema",
+                        BinaryData.FromBytes(
+                            JsonSerializer.SerializeToUtf8Bytes(jsonSchema, ChatClientJsonContext.Default.JsonElement)),
+                        jsonFormat.SchemaDescription) :
+                    OpenAI.Chat.ChatResponseFormat.CreateJsonObjectFormat();
+            }
         }
 
         return result;

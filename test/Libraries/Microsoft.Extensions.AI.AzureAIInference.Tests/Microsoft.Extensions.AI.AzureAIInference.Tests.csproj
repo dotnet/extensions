@@ -6,6 +6,7 @@
 
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoWarn>$(NoWarn);S104</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

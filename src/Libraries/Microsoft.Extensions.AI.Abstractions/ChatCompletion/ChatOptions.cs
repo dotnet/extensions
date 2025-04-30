@@ -122,9 +122,17 @@ public class ChatOptions
     /// Gets or sets the raw representation of the chat options from an underlying implementation.
     /// </summary>
     /// <remarks>
-    /// If a <see cref="ChatOptions"/> is created to represent some underlying object from another object
-    /// model, this property can be used to store that original object. This can be useful for debugging or
-    /// for enabling a consumer to access the underlying object model if needed.
+    /// The underlying <see cref="IChatClient" /> implementation may have its own representation of options.
+    /// When <see cref="IChatClient.GetResponseAsync" /> or <see cref="IChatClient.GetStreamingResponseAsync" />
+    /// is invoked with a <see cref="ChatOptions" />, that implementation may convert the provided options into
+    /// its own representation in order to use it while performing the operation. For situations where a consumer knows
+    /// which concrete <see cref="IChatClient" /> is being used and how it represents options, an instance of that
+    /// implementation-specific options type may be stored into this <see cref="RawRepresentation" /> property, for
+    /// the <see cref="IChatClient" /> implementation to use instead of creating a new instance. Such implementations
+    /// may mutate the supplied options instance further based on other settings supplied on this <see cref="ChatOptions" /> 
+    /// instance or from other inputs, like the enumerable of <see cref="ChatMessage"/>s. This is typically used
+    /// in order to set an implementation-specific setting that isn't otherwise exposed from the strongly-typed properties
+    /// on <see cref="ChatOptions" />.
     /// </remarks>
     [JsonIgnore]
     public object? RawRepresentation { get; set; }
