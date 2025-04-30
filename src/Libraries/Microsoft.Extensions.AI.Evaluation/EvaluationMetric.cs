@@ -49,6 +49,12 @@ public class EvaluationMetric(string name, string? reason = null)
     // convenience.
 
     /// <summary>
+    /// Gets or sets any <see cref="EvaluationContext"/>s that were considered by the <see cref="IEvaluator"/> as part
+    /// of the evaluation that produced the current <see cref="EvaluationMetric"/>.
+    /// </summary>
+    public IDictionary<string, EvaluationContext>? Context { get; set; }
+
+    /// <summary>
     /// Gets or sets a collection of zero or more <see cref="EvaluationDiagnostic"/>s associated with the current
     /// <see cref="EvaluationMetric"/>.
     /// </summary>

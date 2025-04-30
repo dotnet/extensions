@@ -1,5 +1,8 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { useContext, createContext, useState } from "react";
-import { ScoreNode, ScoreNodeType, ScoreSummary } from "./Summary";
+import { ReverseTextIndex, ScoreNode, ScoreNodeType, ScoreSummary } from "./Summary";
 
 export type ReportContextType = {
     dataset: Dataset,
@@ -8,9 +11,12 @@ export type ReportContextType = {
     selectScenarioLevel: (key: string) => void,
     renderMarkdown: boolean,
     setRenderMarkdown: (renderMarkdown: boolean) => void,
+    searchValue: string,
+    setSearchValue: (searchValue: string) => void,
     selectedTags: string[],
     handleTagClick: (tag: string) => void,
     clearFilters: () => void,
+    filterTree: (node: ScoreNode) => ScoreNode | null,
 };
 
 // Create the default context, which will be used to provide the context value
@@ -22,6 +28,7 @@ const defaultReportContext = createContext<ReportContextType>({
         includesReportHistory: false,
         executionHistory: new Map<string, ScoreNode>(),
         nodesByKey: new Map<string, Map<string, ScoreNode>>(),
+        reverseTextIndex: new ReverseTextIndex(),
     },
     selectedScenarioLevel: undefined,
     selectScenarioLevel: (_selectedScenarioLevel: string) => {
@@ -31,9 +38,12 @@ const defaultReportContext = createContext<ReportContextType>({
     setRenderMarkdown: (_renderMarkdown: boolean) => {
         throw new Error("setRenderMarkdown function not implemented");
     },
+    searchValue: '',
+    setSearchValue: (_searchValue: string | undefined) => { throw new Error("setSearchValue function not implemented"); },
     selectedTags: [],
     handleTagClick: (_tag: string) => { throw new Error("handleTagClick function not implemented"); },
     clearFilters: () => { throw new Error("clearFilters function not implemented"); },
+    filterTree: (_node: ScoreNode) => { throw new Error("filterTree function not implemented"); },
 });
 
 export const ReportContextProvider = ({ dataset, scoreSummary, children }:
@@ -56,6 +66,7 @@ const useProvideReportContext = (dataset: Dataset, scoreSummary: ScoreSummary): 
     const [selectedScenarioLevel, setSelectedScenarioLevel] = useState<string | undefined>(undefined);
     const [renderMarkdown, setRenderMarkdown] = useState<boolean>(true);
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
+    const [searchValue, setSearchValue] = useState<string>("");
 
     const selectScenarioLevel = (key: string) => {
         if (key === selectedScenarioLevel) {
@@ -74,7 +85,39 @@ const useProvideReportContext = (dataset: Dataset, scoreSummary: ScoreSummary): 
     
     const clearFilters = () => {
         setSelectedTags([]);
+        setSearchValue("");
     };
+
+    const filterTree = (node: ScoreNode): ScoreNode | null => {
+        if (selectedTags.length === 0 && searchValue === "") {
+            return node;
+        }
+
+        const searchedNodes = scoreSummary.reverseTextIndex.search(searchValue);
+
+        const srch = (node: ScoreNode) : ScoreNode | null => {
+            if (node.isLeafNode) {
+                const tagMatches = selectedTags.length > 0 && node.scenario?.tags?.some(tag => selectedTags.includes(tag));
+                const searchMatches = searchValue !== "" && searchedNodes.has(node.nodeKey);
+                return tagMatches || searchMatches ? node : null;
+            }
+
+            const filteredChildren = node.childNodes
+                .map(srch)
+                .filter((child): child is ScoreNode => child !== null);
+
+            if (filteredChildren.length > 0) {
+                const newNode = new ScoreNode(node.name, node.nodeType, node.nodeKey, node.executionName);
+                newNode.setChildren(new Map(filteredChildren.map(child => [child.name, child])));
+                newNode.aggregate();
+                return newNode;
+            }
+
+            return null;
+        };  
+
+        return srch(node);
+    }
 
     return {
         dataset,
@@ -83,8 +126,11 @@ const useProvideReportContext = (dataset: Dataset, scoreSummary: ScoreSummary): 
         selectScenarioLevel,
         renderMarkdown,
         setRenderMarkdown,
+        searchValue,
+        setSearchValue,
         selectedTags,
         handleTagClick,
-        clearFilters
+        clearFilters,
+        filterTree,
     };
 };

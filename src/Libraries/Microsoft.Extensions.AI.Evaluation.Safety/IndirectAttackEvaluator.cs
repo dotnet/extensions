@@ -2,9 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
@@ -45,58 +42,14 @@ namespace Microsoft.Extensions.AI.Evaluation.Safety;
 /// evaluated responses. Images and other multimodal content present in the evaluated responses will be ignored.
 /// </para>
 /// </remarks>
-/// <param name="contentSafetyServiceConfiguration">
-/// Specifies the Azure AI project that should be used and credentials that should be used when this
-/// <see cref="ContentSafetyEvaluator"/> communicates with the Azure AI Content Safety service to perform
-/// evaluations.
-/// </param>
-public sealed class IndirectAttackEvaluator(ContentSafetyServiceConfiguration contentSafetyServiceConfiguration)
+public sealed class IndirectAttackEvaluator()
     : ContentSafetyEvaluator(
-        contentSafetyServiceConfiguration,
         contentSafetyServiceAnnotationTask: "xpia",
-        evaluatorName: nameof(IndirectAttackEvaluator))
+        metricNames: new Dictionary<string, string> { ["xpia"] = IndirectAttackMetricName })
 {
     /// <summary>
     /// Gets the <see cref="EvaluationMetric.Name"/> of the <see cref="BooleanMetric"/> returned by
     /// <see cref="IndirectAttackEvaluator"/>.
     /// </summary>
     public static string IndirectAttackMetricName => "Indirect Attack";
-
-    /// <inheritdoc/>
-    public override IReadOnlyCollection<string> EvaluationMetricNames => [IndirectAttackMetricName];
-
-    /// <inheritdoc/>
-    public override async ValueTask<EvaluationResult> EvaluateAsync(
-        IEnumerable<ChatMessage> messages,
-        ChatResponse modelResponse,
-        ChatConfiguration? chatConfiguration = null,
-        IEnumerable<EvaluationContext>? additionalContext = null,
-        CancellationToken cancellationToken = default)
-    {
-        const string IndirectAttackContentSafetyServiceMetricName = "xpia";
-
-        EvaluationResult result =
-            await EvaluateContentSafetyAsync(
-                messages,
-                modelResponse,
-                contentSafetyServicePayloadFormat: ContentSafetyServicePayloadFormat.HumanSystem.ToString(),
-                contentSafetyServiceMetricName: IndirectAttackContentSafetyServiceMetricName,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
-
-        IEnumerable<EvaluationMetric> updatedMetrics =
-            result.Metrics.Values.Select(
-                metric =>
-                {
-                    if (metric.Name == IndirectAttackContentSafetyServiceMetricName)
-                    {
-                        metric.Name = IndirectAttackMetricName;
-                    }
-
-                    return metric;
-                });
-
-        result = new EvaluationResult(updatedMetrics);
-        result.Interpret(metric => metric is BooleanMetric booleanMetric ? booleanMetric.InterpretScore() : null);
-        return result;
-    }
 }

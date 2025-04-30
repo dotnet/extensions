@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
+
 namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
 /// <summary>
@@ -18,17 +20,8 @@ namespace Microsoft.Extensions.AI.Evaluation.Safety;
 /// currently not supported.
 /// </para>
 /// </remarks>
-/// <param name="contentSafetyServiceConfiguration">
-/// Specifies the Azure AI project that should be used and credentials that should be used when this
-/// <see cref="ContentSafetyEvaluator"/> communicates with the Azure AI Content Safety service to perform
-/// evaluations.
-/// </param>
-public sealed class ViolenceEvaluator(ContentSafetyServiceConfiguration contentSafetyServiceConfiguration)
-    : ContentHarmEvaluator(
-        contentSafetyServiceConfiguration,
-        contentSafetyServiceMetricName: "violence",
-        metricName: ViolenceMetricName,
-        evaluatorName: nameof(ViolenceEvaluator))
+public sealed class ViolenceEvaluator()
+    : ContentHarmEvaluator(metricNames: new Dictionary<string, string> { ["violence"] = ViolenceMetricName })
 {
     /// <summary>
     /// Gets the <see cref="EvaluationMetric.Name"/> of the <see cref="NumericMetric"/> returned by

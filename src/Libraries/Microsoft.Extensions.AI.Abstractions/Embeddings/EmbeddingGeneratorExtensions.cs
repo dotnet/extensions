@@ -99,16 +99,45 @@ public static class EmbeddingGeneratorExtensions
     /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/>.</exception>
     /// <exception cref="InvalidOperationException">The generator did not produce exactly one embedding.</exception>
     /// <remarks>
-    /// This operation is equivalent to using <see cref="GenerateEmbeddingAsync"/> and returning the
+    /// This operation is equivalent to using <see cref="GenerateAsync"/> and returning the
     /// resulting <see cref="Embedding{T}"/>'s <see cref="Embedding{T}.Vector"/> property.
     /// </remarks>
+    /// <remarks>
+    /// This method is obsolete. Use <see cref="GenerateVectorAsync{TInput, TEmbeddingElement}"/> instead.
+    /// </remarks>
+    [Obsolete("Use GenerateVectorAsync<TInput, TEmbeddingElement> instead.")]
+    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
     public static async Task<ReadOnlyMemory<TEmbeddingElement>> GenerateEmbeddingVectorAsync<TInput, TEmbeddingElement>(
         this IEmbeddingGenerator<TInput, Embedding<TEmbeddingElement>> generator,
         TInput value,
         EmbeddingGenerationOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        var embedding = await GenerateEmbeddingAsync(generator, value, options, cancellationToken).ConfigureAwait(false);
+        return await GenerateVectorAsync(generator, value, options, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>Generates an embedding vector from the specified <paramref name="value"/>.</summary>
+    /// <typeparam name="TInput">The type from which embeddings will be generated.</typeparam>
+    /// <typeparam name="TEmbeddingElement">The numeric type of the embedding data.</typeparam>
+    /// <param name="generator">The embedding generator.</param>
+    /// <param name="value">A value from which an embedding will be generated.</param>
+    /// <param name="options">The embedding generation options to configure the request.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The generated embedding for the specified <paramref name="value"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/>.</exception>
+    /// <exception cref="InvalidOperationException">The generator did not produce exactly one embedding.</exception>
+    /// <remarks>
+    /// This operation is equivalent to using <see cref="GenerateAsync"/> and returning the
+    /// resulting <see cref="Embedding{T}"/>'s <see cref="Embedding{T}.Vector"/> property.
+    /// </remarks>
+    public static async Task<ReadOnlyMemory<TEmbeddingElement>> GenerateVectorAsync<TInput, TEmbeddingElement>(
+        this IEmbeddingGenerator<TInput, Embedding<TEmbeddingElement>> generator,
+        TInput value,
+        EmbeddingGenerationOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        var embedding = await GenerateAsync(generator, value, options, cancellationToken).ConfigureAwait(false);
         return embedding.Vector;
     }
 
@@ -130,7 +159,40 @@ public static class EmbeddingGeneratorExtensions
     /// collection composed of the single <paramref name="value"/> and then returning the first embedding element from the
     /// resulting <see cref="GeneratedEmbeddings{TEmbedding}"/> collection.
     /// </remarks>
+    /// <remarks>
+    /// This method is obsolete. Use <see cref="GenerateAsync{TInput, TEmbedding}"/> instead.
+    /// </remarks>
+    [Obsolete("Use GenerateAsync<TInput, TEmbedding> instead.")]
+    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
     public static async Task<TEmbedding> GenerateEmbeddingAsync<TInput, TEmbedding>(
+        this IEmbeddingGenerator<TInput, TEmbedding> generator,
+        TInput value,
+        EmbeddingGenerationOptions? options = null,
+        CancellationToken cancellationToken = default)
+        where TEmbedding : Embedding
+    {
+        return await GenerateAsync(generator, value, options, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>Generates an embedding from the specified <paramref name="value"/>.</summary>
+    /// <typeparam name="TInput">The type from which embeddings will be generated.</typeparam>
+    /// <typeparam name="TEmbedding">The type of embedding to generate.</typeparam>
+    /// <param name="generator">The embedding generator.</param>
+    /// <param name="value">A value from which an embedding will be generated.</param>
+    /// <param name="options">The embedding generation options to configure the request.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>
+    /// The generated embedding for the specified <paramref name="value"/>.
+    /// </returns>
+    /// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/>.</exception>
+    /// <exception cref="InvalidOperationException">The generator did not produce exactly one embedding.</exception>
+    /// <remarks>
+    /// This operations is equivalent to using <see cref="IEmbeddingGenerator{TInput, TEmbedding}.GenerateAsync"/> with a
+    /// collection composed of the single <paramref name="value"/> and then returning the first embedding element from the
+    /// resulting <see cref="GeneratedEmbeddings{TEmbedding}"/> collection.
+    /// </remarks>
+    public static async Task<TEmbedding> GenerateAsync<TInput, TEmbedding>(
         this IEmbeddingGenerator<TInput, TEmbedding> generator,
         TInput value,
         EmbeddingGenerationOptions? options = null,

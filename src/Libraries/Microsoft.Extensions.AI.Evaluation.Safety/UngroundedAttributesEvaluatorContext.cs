@@ -16,12 +16,19 @@ namespace Microsoft.Extensions.AI.Evaluation.Safety;
 /// Contextual information against which the groundedness (or ungroundedness) of a response is evaluated.
 /// </param>
 /// <remarks>
-/// The <see cref="UngroundedAttributesEvaluator"/> measures whether the response being evaluated is first, ungrounded
+/// <see cref="UngroundedAttributesEvaluator"/> measures whether the response being evaluated is first, ungrounded
 /// based on the information present in the supplied <paramref name="groundingContext"/>. It then checks whether the
 /// response contains information about the protected class or emotional state of a person.
 /// </remarks>
-public sealed class UngroundedAttributesEvaluatorContext(string groundingContext) : EvaluationContext
+public sealed class UngroundedAttributesEvaluatorContext(string groundingContext)
+    : EvaluationContext(name: GroundingContextName, content: groundingContext)
 {
+    /// <summary>
+    /// Gets the unique <see cref="EvaluationContext.Name"/> that is used for
+    /// <see cref="UngroundedAttributesEvaluatorContext"/>.
+    /// </summary>
+    public static string GroundingContextName => "Grounding Context (Ungrounded Attributes)";
+
     /// <summary>
     /// Gets the contextual information against which the groundedness (or ungroundedness) of a response is evaluated.
     /// </summary>

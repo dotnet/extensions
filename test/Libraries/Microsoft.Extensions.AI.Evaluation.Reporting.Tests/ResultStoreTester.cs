@@ -22,7 +22,7 @@ public abstract class ResultStoreTester
         BooleanMetric booleanMetric = new BooleanMetric("boolean", value: true);
 
         NumericMetric numericMetric = new NumericMetric("numeric", value: 3);
-        numericMetric.AddDiagnostic(EvaluationDiagnostic.Informational("Informational Message"));
+        numericMetric.AddDiagnostics(EvaluationDiagnostic.Informational("Informational Message"));
 
         StringMetric stringMetric = new StringMetric("string", value: "Good");
 

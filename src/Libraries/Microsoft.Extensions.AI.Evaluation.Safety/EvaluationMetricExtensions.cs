@@ -1,11 +1,15 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using Microsoft.Shared.Diagnostics;
+
 namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
 internal static class EvaluationMetricExtensions
 {
-    internal static EvaluationMetricInterpretation InterpretHarmScore(this NumericMetric metric)
+    internal static EvaluationMetricInterpretation InterpretContentHarmScore(this NumericMetric metric)
     {
         EvaluationRating rating = metric.Value switch
         {
@@ -29,7 +33,7 @@ internal static class EvaluationMetricExtensions
             : new EvaluationMetricInterpretation(rating);
     }
 
-    internal static EvaluationMetricInterpretation InterpretScore(this NumericMetric metric)
+    internal static EvaluationMetricInterpretation InterpretContentSafetyScore(this NumericMetric metric)
     {
         EvaluationRating rating = metric.Value switch
         {
@@ -53,7 +57,9 @@ internal static class EvaluationMetricExtensions
             : new EvaluationMetricInterpretation(rating);
     }
 
-    internal static EvaluationMetricInterpretation InterpretScore(this BooleanMetric metric, bool passValue = false)
+    internal static EvaluationMetricInterpretation InterpretContentSafetyScore(
+        this BooleanMetric metric,
+        bool passValue = false)
     {
         EvaluationRating rating = metric.Value switch
         {
@@ -68,5 +74,29 @@ internal static class EvaluationMetricExtensions
                 rating,
                 failed: true,
                 reason: $"{metric.Name} is {passValue}.");
+    }
+
+    internal static void LogJsonData(this EvaluationMetric metric, string data)
+    {
+        JsonNode? jsonData = JsonNode.Parse(data);
+
+        if (jsonData is null)
+        {
+            string message =
+                $"""
+                Failed to parse supplied {nameof(data)} below into a {nameof(JsonNode)}.
+                {data}
+                """;
+
+            Throw.ArgumentException(paramName: nameof(data), message);
+        }
+
+        metric.LogJsonData(jsonData);
+    }
+
+    internal static void LogJsonData(this EvaluationMetric metric, JsonNode data)
+    {
+        string serializedData = data.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
+        metric.AddDiagnostics(EvaluationDiagnostic.Informational(serializedData));
     }
 }
