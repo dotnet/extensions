@@ -4,13 +4,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable SA1111 // Closing parenthesis should be on line of last parameter
 #pragma warning disable SA1112 // Closing parenthesis should be on line of opening parenthesis
 #pragma warning disable SA1114 // Parameter list should follow declaration
 #pragma warning disable S3358 // Extract this nested ternary operation into an independent statement.
-#pragma warning disable S1698 // Consider using 'Equals' if value comparison is intended.
+#pragma warning disable S1067 // Expressions should not be too complex
+#pragma warning disable S4039 // Make 'AIFunctionArguments' sealed
+#pragma warning disable CA1033 // Make 'AIFunctionArguments' sealed
 #pragma warning disable CA1710 // Identifiers should have correct suffix
 
 namespace Microsoft.Extensions.AI;
@@ -28,20 +29,18 @@ public class AIFunctionArguments : IDictionary<string, object?>, IReadOnlyDictio
     /// <summary>The nominal arguments.</summary>
     private readonly Dictionary<string, object?> _arguments;
 
-    /// <summary>Initializes a new instance of the <see cref="AIFunctionArguments"/> class.</summary>
-    /// <param name="comparer">The <see cref="IEqualityComparer{T}"/> to use for key comparisons.</param>
-    public AIFunctionArguments(IEqualityComparer<string> comparer)
-    {
-        _ = Throw.IfNull(comparer);
-
-        _arguments = new Dictionary<string, object?>(comparer);
-    }
-
     /// <summary>Initializes a new instance of the <see cref="AIFunctionArguments"/> class, and uses the default comparer for key comparisons.</summary>
     /// <remarks>The <see cref="IEqualityComparer{T}"/> is ordinal by default.</remarks>
     public AIFunctionArguments()
     {
         _arguments = new Dictionary<string, object?>();
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="AIFunctionArguments"/> class.</summary>
+    /// <param name="comparer">The <see cref="IEqualityComparer{T}"/> to use for key comparisons.</param>
+    public AIFunctionArguments(IEqualityComparer<string>? comparer)
+    {
+        _arguments = new Dictionary<string, object?>(comparer);
     }
 
     /// <summary>
@@ -52,21 +51,21 @@ public class AIFunctionArguments : IDictionary<string, object?>, IReadOnlyDictio
     /// <param name="comparer">The <see cref="IEqualityComparer{T}"/> to be used.</param>
     /// <remarks>
     /// The <paramref name="arguments"/> reference will be stored if the instance is already a
-    /// <see cref="Dictionary{TKey, TValue}"/> with the same <see cref="IEqualityComparer{T}"/>,
-    /// in which case all dictionary operations on this instance will be routed directly to that instance.
-    /// A shallow clone of the provided <paramref name="arguments"/> will be used to populate this instance.
-    /// A <see langword="null"/> <paramref name="arguments"/> is treated as an empty dictionary.
+    /// <see cref="Dictionary{TKey, TValue}"/> with the same <see cref="IEqualityComparer{T}"/> or if
+    /// <paramref name="arguments"/> is <see langword="null" /> in which case all dictionary operations
+    /// on this instance will be routed directly to that instance otherwise a shallow clone of the provided <paramref name="arguments"/>.
+    /// A <see langword="null"/> <paramref name="arguments"/> is will be treated as an empty parameters dictionary.
     /// </remarks>
-    public AIFunctionArguments(IDictionary<string, object?>? arguments, IEqualityComparer<string> comparer)
+    public AIFunctionArguments(IDictionary<string, object?>? arguments, IEqualityComparer<string>? comparer)
     {
-        _ = Throw.IfNull(comparer);
-
+#pragma warning disable S1698 // Consider using 'Equals' if value comparison is intended.
         _arguments =
             arguments is null
                 ? new Dictionary<string, object?>(comparer)
-                : (arguments is Dictionary<string, object?> dc) && dc.Comparer == comparer
+                : (arguments is Dictionary<string, object?> dc) && (comparer is null || dc.Comparer == comparer)
                     ? dc
                     : new Dictionary<string, object?>(arguments, comparer);
+#pragma warning restore S1698 // Consider using 'Equals' if value comparison is intended.
     }
 
     /// <summary>
@@ -80,7 +79,8 @@ public class AIFunctionArguments : IDictionary<string, object?>, IReadOnlyDictio
     /// operations on this instance will be routed directly to that instance. If <paramref name="arguments"/>
     /// is not a dictionary, a shallow clone of its data will be used to populate this
     /// instance. A <see langword="null"/> <paramref name="arguments"/> is treated as an
-    /// empty dictionary.
+    /// empty parameters dictionary.
+    /// The <see cref="IEqualityComparer{T}"/> is ordinal by default.
     /// </remarks>
     public AIFunctionArguments(IDictionary<string, object?>? arguments)
     {
@@ -117,12 +117,8 @@ public class AIFunctionArguments : IDictionary<string, object?>, IReadOnlyDictio
     /// <inheritdoc />
     public int Count => _arguments.Count;
 
-#pragma warning disable CA1033 // Make 'AIFunctionArguments' sealed
-#pragma warning disable S4039 // Make 'AIFunctionArguments' sealed
     /// <inheritdoc />
     bool ICollection<KeyValuePair<string, object?>>.IsReadOnly => false;
-#pragma warning restore S4039 // Make 'AIFunctionArguments' sealed
-#pragma warning restore CA1033 // Make 'AIFunctionArguments' sealed
 
     /// <inheritdoc />
     IEnumerable<string> IReadOnlyDictionary<string, object?>.Keys => Keys;
@@ -140,13 +136,9 @@ public class AIFunctionArguments : IDictionary<string, object?>, IReadOnlyDictio
     /// <inheritdoc />
     public void Clear() => _arguments.Clear();
 
-#pragma warning disable CA1033 // Make 'AIFunctionArguments' sealed
-#pragma warning disable S4039 // Make 'AIFunctionArguments' sealed
     /// <inheritdoc />
     bool ICollection<KeyValuePair<string, object?>>.Contains(KeyValuePair<string, object?> item) =>
         ((ICollection<KeyValuePair<string, object?>>)_arguments).Contains(item);
-#pragma warning restore S4039 // Make 'AIFunctionArguments' sealed
-#pragma warning restore CA1033 // Make 'AIFunctionArguments' sealed
 
     /// <inheritdoc />
     public bool ContainsKey(string key) => _arguments.ContainsKey(key);

@@ -233,15 +233,6 @@ public class AIFunctionArgumentsTests
     }
 
     [Fact]
-    public void Constructor_WithNullComparer_ThrowsArgumentNullException()
-    {
-        Assert.Throws<ArgumentNullException>(() => new AIFunctionArguments((IEqualityComparer<string>)null!));
-
-        var args = new Dictionary<string, object?>();
-        Assert.Throws<ArgumentNullException>(() => new AIFunctionArguments(args, null!));
-    }
-
-    [Fact]
     public void Constructor_ReusesDictionaryInstance_WhenSameComparer()
     {
         // Arrange
@@ -263,6 +254,34 @@ public class AIFunctionArgumentsTests
 
         args["key4"] = "value4";
         Assert.Equal("value4", originalDict["key4"]);
+    }
+
+    [Fact]
+    public void Constructor_ReusesDictionaryInstance_WhenIsDictionaryWithoutComparerProvided()
+    {
+        // Arrange
+        var comparer = StringComparer.OrdinalIgnoreCase;
+        var originalDict = new Dictionary<string, object?>(comparer)
+        {
+            ["key1"] = "value1",
+            ["key2"] = "value2"
+        };
+
+        // Act
+        var args = new AIFunctionArguments(originalDict);
+        var args2 = new AIFunctionArguments(originalDict, null);
+
+        // Assert
+
+        // Verify modifications affect both instances
+        originalDict["key3"] = "value3";
+        Assert.Equal("value3", args["key3"]);
+        Assert.Equal("value3", args2["key3"]);
+
+        args["key4"] = "value4";
+        args2["newKey"] = "new value";
+        Assert.Equal("value4", originalDict["key4"]);
+        Assert.Equal("new value", originalDict["newKey"]);
     }
 
     [Fact]

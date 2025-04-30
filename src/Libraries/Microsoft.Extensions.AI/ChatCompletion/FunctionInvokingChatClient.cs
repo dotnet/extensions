@@ -253,7 +253,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 return response;
             }
 
-            // Track aggregatable details from the response, including all of the response messages and usage details.
+            // Track aggregate details from the response, including all of the response messages and usage details.
             (responseMessages ??= []).AddRange(response.Messages);
             if (response.Usage is not null)
             {
@@ -280,7 +280,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
             // Add the responses from the function calls into the augmented history and also into the tracked
             // list of response messages.
-            var modeAndMessages = await ProcessFunctionCallsAsync(response, augmentedHistory, options!, functionCallContents!, iteration, consecutiveErrorCount, isStreaming: false, cancellationToken);
+            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options!, functionCallContents!, iteration, consecutiveErrorCount, isStreaming: false, cancellationToken);
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
             consecutiveErrorCount = modeAndMessages.NewConsecutiveErrorCount;
 
@@ -365,7 +365,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 break;
             }
 
-            // Reconsistitue a response from the response updates.
+            // Reconstitute a response from the response updates.
             var response = updates.ToChatResponse();
             (responseMessages ??= []).AddRange(response.Messages);
 
@@ -373,7 +373,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             FixupHistories(originalMessages, ref messages, ref augmentedHistory, response, responseMessages, ref lastIterationHadConversationId);
 
             // Process all of the functions, adding their results into the history.
-            var modeAndMessages = await ProcessFunctionCallsAsync(response, augmentedHistory, options, functionCallContents, iteration, consecutiveErrorCount, isStreaming: true, cancellationToken);
+            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options, functionCallContents, iteration, consecutiveErrorCount, isStreaming: true, cancellationToken);
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
             consecutiveErrorCount = modeAndMessages.NewConsecutiveErrorCount;
 
@@ -385,7 +385,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             string toolResponseId = Guid.NewGuid().ToString("N");
 
             // Stream any generated function results. This mirrors what's done for GetResponseAsync, where the returned messages
-            // includes all activitys, including generated function results.
+            // includes all activities, including generated function results.
             foreach (var message in modeAndMessages.MessagesAdded)
             {
                 var toolResultUpdate = new ChatResponseUpdate
@@ -549,7 +549,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <summary>
     /// Processes the function calls in the <paramref name="functionCallContents"/> list.
     /// </summary>
-    /// <param name="response">The response being processed.</param>
     /// <param name="messages">The current chat contents, inclusive of the function call contents being processed.</param>
     /// <param name="options">The options used for the response being processed.</param>
     /// <param name="functionCallContents">The function call contents representing the functions to be invoked.</param>
@@ -558,8 +557,8 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <param name="isStreaming">Whether the function calls are being processed in a streaming context.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>A value indicating how the caller should proceed.</returns>
-    protected virtual async Task<(bool ShouldTerminate, int NewConsecutiveErrorCount, IList<ChatMessage> MessagesAdded)> ProcessFunctionCallsAsync(
-        ChatResponse response, IList<ChatMessage> messages, ChatOptions options, IList<FunctionCallContent> functionCallContents, int iteration, int consecutiveErrorCount,
+    private async Task<(bool ShouldTerminate, int NewConsecutiveErrorCount, IList<ChatMessage> MessagesAdded)> ProcessFunctionCallsAsync(
+        List<ChatMessage> messages, ChatOptions options, List<FunctionCallContent> functionCallContents, int iteration, int consecutiveErrorCount,
         bool isStreaming, CancellationToken cancellationToken)
     {
         _ = Throw.IfNull(messages);
@@ -576,23 +575,13 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         if (functionCallContents.Count == 1)
         {
             FunctionInvocationResult result = await ProcessFunctionCallAsync(
-                messages, options, functionCallContents, iteration, 0, captureCurrentIterationExceptions, isStreaming, cancellationToken);
+                messages, options, functionCallContents,
+                iteration, 0, captureCurrentIterationExceptions, isStreaming, cancellationToken);
 
             IList<ChatMessage> addedMessages = CreateResponseMessages([result]);
             ThrowIfNoFunctionResultsAdded(addedMessages);
             UpdateConsecutiveErrorCountOrThrow(addedMessages, ref consecutiveErrorCount);
-
-            if (messages is List<ChatMessage> messagesList)
-            {
-                messagesList.AddRange(addedMessages);
-            }
-            else
-            {
-                foreach (var addedMessage in addedMessages)
-                {
-                    messages.Add(addedMessage);
-                }
-            }
+            messages.AddRange(addedMessages);
 
             return (result.ShouldTerminate, consecutiveErrorCount, addedMessages);
         }
@@ -607,21 +596,21 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 // but if a function invocation completes asynchronously, its processing can overlap
                 // with the processing of other the other invocation invocations.
                 results.AddRange(await Task.WhenAll(
-                    from i in Enumerable.Range(0, functionCallContents.Count)
+                    from callIndex in Enumerable.Range(0, functionCallContents.Count)
                     select ProcessFunctionCallAsync(
                         messages, options, functionCallContents,
-                        iteration, i, captureExceptions: true, isStreaming, cancellationToken)));
+                        iteration, callIndex, captureExceptions: true, isStreaming, cancellationToken)));
 
                 shouldTerminate = results.Any(r => r.ShouldTerminate);
             }
             else
             {
                 // Invoke each function serially.
-                for (int i = 0; i < functionCallContents.Count; i++)
+                for (int callIndex = 0; callIndex < functionCallContents.Count; callIndex++)
                 {
                     var functionResult = await ProcessFunctionCallAsync(
                         messages, options, functionCallContents,
-                        iteration, i, captureCurrentIterationExceptions, isStreaming, cancellationToken);
+                        iteration, callIndex, captureCurrentIterationExceptions, isStreaming, cancellationToken);
 
                     results.Add(functionResult);
 
@@ -637,18 +626,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             IList<ChatMessage> addedMessages = CreateResponseMessages(results.ToArray());
             ThrowIfNoFunctionResultsAdded(addedMessages);
             UpdateConsecutiveErrorCountOrThrow(addedMessages, ref consecutiveErrorCount);
-
-            if (messages is List<ChatMessage> messagesList)
-            {
-                messagesList.AddRange(addedMessages);
-            }
-            else
-            {
-                foreach (var addedMessage in addedMessages)
-                {
-                    messages.Add(addedMessage);
-                }
-            }
+            messages.AddRange(addedMessages);
 
             return (shouldTerminate, consecutiveErrorCount, addedMessages);
         }
@@ -711,8 +689,8 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <param name="isStreaming">Whether the function calls are being processed in a streaming context.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>A value indicating how the caller should proceed.</returns>
-    protected virtual async Task<FunctionInvocationResult> ProcessFunctionCallAsync(
-        IList<ChatMessage> messages, ChatOptions options, IList<FunctionCallContent> callContents,
+    private async Task<FunctionInvocationResult> ProcessFunctionCallAsync(
+        List<ChatMessage> messages, ChatOptions options, List<FunctionCallContent> callContents,
         int iteration, int functionCallIndex, bool captureExceptions, bool isStreaming, CancellationToken cancellationToken)
     {
         _ = Throw.IfNull(messages);
@@ -722,20 +700,18 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         var callContent = callContents[functionCallIndex];
 
         // Look up the AIFunction for the function call. If the requested function isn't available, send back an error.
-        AIFunction? function = options.Tools!.OfType<AIFunction>().FirstOrDefault(t => t.Name == callContent.Name);
-        if (function is null)
+        AIFunction? aiFunction = options.Tools!.OfType<AIFunction>().FirstOrDefault(t => t.Name == callContent.Name);
+        if (aiFunction is null)
         {
             return new(shouldTerminate: false, FunctionInvocationStatus.NotFound, callContent, result: null, exception: null);
         }
 
         FunctionInvocationContext context = new()
         {
-            Function = function,
+            Function = aiFunction,
             Arguments = new(callContent.Arguments) { Services = FunctionInvocationServices },
-
             Messages = messages,
             Options = options,
-
             CallContent = callContent,
             Iteration = iteration,
             FunctionCallIndex = functionCallIndex,
@@ -746,7 +722,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         object? result;
         try
         {
-            result = await InvokeFunctionAsync(context, cancellationToken);
+            result = await InstrumentedInvokeFunctionAsync(context, cancellationToken);
         }
         catch (Exception e) when (!cancellationToken.IsCancellationRequested)
         {
@@ -822,7 +798,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function invocation, or <see langword="null"/> if the function invocation returned <see langword="null"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
-    protected async Task<object?> InvokeFunctionAsync(FunctionInvocationContext context, CancellationToken cancellationToken)
+    private async Task<object?> InstrumentedInvokeFunctionAsync(FunctionInvocationContext context, CancellationToken cancellationToken)
     {
         _ = Throw.IfNull(context);
 
@@ -846,7 +822,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         try
         {
             CurrentContext = context; // doesn't need to be explicitly reset after, as that's handled automatically at async method exit
-            (context, result) = await InvokeFunctionCoreAsync(context, cancellationToken);
+            result = await InvokeFunctionAsync(context, cancellationToken);
         }
         catch (Exception e)
         {
@@ -890,14 +866,12 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <summary>This method will invoke the function within the try block.</summary>
     /// <param name="context">The function invocation context.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>The function invocation context and result.</returns>
-    protected virtual async Task<(FunctionInvocationContext context, object? result)> InvokeFunctionCoreAsync(FunctionInvocationContext context, CancellationToken cancellationToken)
+    /// <returns>The function result.</returns>
+    protected virtual async Task<object?> InvokeFunctionAsync(FunctionInvocationContext context, CancellationToken cancellationToken)
     {
         _ = Throw.IfNull(context);
 
-        var result = await context.Function.InvokeAsync(context.Arguments, cancellationToken);
-
-        return (context, result);
+        return await context.Function.InvokeAsync(context.Arguments, cancellationToken);
     }
 
     private static TimeSpan GetElapsedTime(long startingTimestamp) =>
