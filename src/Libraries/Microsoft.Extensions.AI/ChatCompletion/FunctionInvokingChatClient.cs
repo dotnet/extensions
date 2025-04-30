@@ -561,9 +561,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         List<ChatMessage> messages, ChatOptions options, List<FunctionCallContent> functionCallContents, int iteration, int consecutiveErrorCount,
         bool isStreaming, CancellationToken cancellationToken)
     {
-        _ = Throw.IfNull(messages);
-        _ = Throw.IfNull(functionCallContents);
-
         // We must add a response for every tool call, regardless of whether we successfully executed it or not.
         // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
 
@@ -693,10 +690,6 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         List<ChatMessage> messages, ChatOptions options, List<FunctionCallContent> callContents,
         int iteration, int functionCallIndex, bool captureExceptions, bool isStreaming, CancellationToken cancellationToken)
     {
-        _ = Throw.IfNull(messages);
-        _ = Throw.IfNull(options);
-        _ = Throw.IfNull(callContents);
-
         var callContent = callContents[functionCallIndex];
 
         // Look up the AIFunction for the function call. If the requested function isn't available, send back an error.
@@ -867,11 +860,11 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <param name="context">The function invocation context.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The function result.</returns>
-    protected virtual async Task<object?> InvokeFunctionAsync(FunctionInvocationContext context, CancellationToken cancellationToken)
+    protected virtual ValueTask<object?> InvokeFunctionAsync(FunctionInvocationContext context, CancellationToken cancellationToken)
     {
         _ = Throw.IfNull(context);
 
-        return await context.Function.InvokeAsync(context.Arguments, cancellationToken);
+        return context.Function.InvokeAsync(context.Arguments, cancellationToken);
     }
 
     private static TimeSpan GetElapsedTime(long startingTimestamp) =>

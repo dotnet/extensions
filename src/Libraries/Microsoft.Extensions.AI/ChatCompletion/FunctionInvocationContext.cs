@@ -92,6 +92,10 @@ public class FunctionInvocationContext
     /// and a new request issued to the wrapped client. If this property is set to <see langword="true"/>, that subsequent request
     /// will not be issued and instead the loop immediately terminated rather than continuing until there are no
     /// more function call requests in responses.
+    /// <para>
+    /// If multiple function call requests are issued as part of a single iteration (a single response from the inner <see cref="IChatClient"/>),
+    /// setting <see cref="Terminate" /> to <see langword="true" /> may also prevent subsequent requests within that same iteration from being processed.
+    /// </para>
     /// </remarks>
     public bool Terminate { get; set; }
 

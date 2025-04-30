@@ -32,8 +32,27 @@ public class AIFunctionArguments : IDictionary<string, object?>, IReadOnlyDictio
     /// <summary>Initializes a new instance of the <see cref="AIFunctionArguments"/> class, and uses the default comparer for key comparisons.</summary>
     /// <remarks>The <see cref="IEqualityComparer{T}"/> is ordinal by default.</remarks>
     public AIFunctionArguments()
+        : this(null, null)
     {
-        _arguments = new Dictionary<string, object?>();
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AIFunctionArguments"/> class containing
+    /// the specified <paramref name="arguments"/>.
+    /// </summary>
+    /// <param name="arguments">The arguments represented by this instance.</param>
+    /// <remarks>
+    /// The <paramref name="arguments"/> reference will be stored if the instance is
+    /// already a <see cref="Dictionary{TKey, TValue}"/>, in which case all dictionary
+    /// operations on this instance will be routed directly to that instance. If <paramref name="arguments"/>
+    /// is not a dictionary, a shallow clone of its data will be used to populate this
+    /// instance. A <see langword="null"/> <paramref name="arguments"/> is treated as an
+    /// empty parameters dictionary.
+    /// The <see cref="IEqualityComparer{T}"/> is ordinal by default.
+    /// </remarks>
+    public AIFunctionArguments(IDictionary<string, object?>? arguments)
+        : this(arguments, null)
+    {
     }
 
     /// <summary>Initializes a new instance of the <see cref="AIFunctionArguments"/> class.</summary>
@@ -66,28 +85,6 @@ public class AIFunctionArguments : IDictionary<string, object?>, IReadOnlyDictio
                     ? dc
                     : new Dictionary<string, object?>(arguments, comparer);
 #pragma warning restore S1698 // Consider using 'Equals' if value comparison is intended.
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="AIFunctionArguments"/> class containing
-    /// the specified <paramref name="arguments"/>.
-    /// </summary>
-    /// <param name="arguments">The arguments represented by this instance.</param>
-    /// <remarks>
-    /// The <paramref name="arguments"/> reference will be stored if the instance is
-    /// already a <see cref="Dictionary{TKey, TValue}"/>, in which case all dictionary
-    /// operations on this instance will be routed directly to that instance. If <paramref name="arguments"/>
-    /// is not a dictionary, a shallow clone of its data will be used to populate this
-    /// instance. A <see langword="null"/> <paramref name="arguments"/> is treated as an
-    /// empty parameters dictionary.
-    /// The <see cref="IEqualityComparer{T}"/> is ordinal by default.
-    /// </remarks>
-    public AIFunctionArguments(IDictionary<string, object?>? arguments)
-    {
-        _arguments =
-            arguments is null ? [] :
-            arguments as Dictionary<string, object?> ??
-            new Dictionary<string, object?>(arguments);
     }
 
     /// <summary>Gets or sets services optionally associated with these arguments.</summary>
