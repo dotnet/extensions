@@ -17,12 +17,26 @@ public class AIChatWebExecutionTests : TemplateExecutionTestBase<AIChatWebExecut
     public static TemplateExecutionTestConfiguration Configuration { get; } = new()
     {
         TemplatePackageName = "Microsoft.Extensions.AI.Templates",
-        TestOutputFolderPrefix = "BuildWebTemplate"
+        TestOutputFolderPrefix = "AIChatWeb"
     };
 
     [Theory]
-    [InlineData("BasicAppDefault")]
-    [InlineData("BasicAppWithAzureOpenAI", "--provider", "azureopenai")]
+    [InlineData("AzureApp",
+        "--provider", "azureopenai",
+        "--vector-store", "azureaisearch")]
+    [InlineData("AzureAppManagedIdentity",
+        "--provider", "azureopenai",
+        "--vector-store", "azureaisearch",
+        "--managed-identity")]
+    [InlineData("GitHubModelsWithLocalStore",
+        "--provider", "githubmodels",
+        "--vector-store", "local")]
+    [InlineData("OllamaWithLocalStore",
+        "--provider", "ollama",
+        "--vector-store", "local")]
+    [InlineData("OpenAIWithLocalStore",
+        "--provider", "openai",
+        "--vector-store", "local")]
     public async Task CreateRestoreAndBuild_BasicTemplate(string projectName, params string[] args)
     {
         var project = await Fixture.CreateProjectAsync(
@@ -35,7 +49,18 @@ public class AIChatWebExecutionTests : TemplateExecutionTestBase<AIChatWebExecut
     }
 
     [Theory]
-    [InlineData("BasicAspireAppDefault")]
+    [InlineData("AzureApp",
+        "--provider", "azureopenai",
+        "--vector-store", "azureaisearch")]
+    [InlineData("GitHubModelsWithQdrant",
+        "--provider", "githubmodels",
+        "--vector-store", "qdrant")]
+    [InlineData("OllamaWithLocalStore",
+        "--provider", "ollama",
+        "--vector-store", "local")]
+    [InlineData("OpenAIWithLocalStore",
+        "--provider", "ollama",
+        "--vector-store", "local")]
     public async Task CreateRestoreAndBuild_AspireTemplate(string projectName, params string[] args)
     {
         var project = await Fixture.CreateProjectAsync(

@@ -5,6 +5,10 @@ using System.IO;
 
 namespace Microsoft.Extensions.AI.Templates.Tests;
 
+/// <summary>
+/// Provides functionality scoped to the lifetime of all tests defined in
+/// test classes extending <see cref="TemplateExecutionTestBase{TConfiguration}"/>.
+/// </summary>
 public sealed class TemplateExecutionTestCollectionFixture
 {
     public TemplateExecutionTestCollectionFixture()

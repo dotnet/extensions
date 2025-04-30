@@ -9,6 +9,10 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.AI.Templates.Tests;
 
+/// <summary>
+/// Provides functionality scoped to the duration of all the tests in a single test class
+/// extending <see cref="TemplateExecutionTestBase{TConfiguration}"/>.
+/// </summary>
 public abstract class TemplateExecutionTestClassFixtureBase : IAsyncLifetime
 {
     private readonly TemplateExecutionTestConfiguration _configuration;
