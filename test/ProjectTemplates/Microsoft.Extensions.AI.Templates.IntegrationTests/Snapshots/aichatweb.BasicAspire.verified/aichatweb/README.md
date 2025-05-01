@@ -5,6 +5,14 @@ This project is an AI chat application that demonstrates how to chat with custom
 >[!NOTE]
 > Before running this project you need to configure the API keys or endpoints for the providers you have chosen. See below for details specific to your choices.
 
+### Known Issues
+
+#### Errors running Ollama or Docker
+
+A recent incompatibility was found between Ollama and Docker Desktop. This issue results in runtime errors when connecting to Ollama, and the workaround for that can lead to Docker not working for Aspire projects.
+
+This incompatibility can be addressed by upgrading to Docker Desktop 4.41.1. See [ollama/ollama#9509](https://github.com/ollama/ollama/issues/9509#issuecomment-2842461831) for more information and a link to install the version of Docker Desktop with the fix.
+
 # Configure the AI Model Provider
 
 ## Using GitHub Models
