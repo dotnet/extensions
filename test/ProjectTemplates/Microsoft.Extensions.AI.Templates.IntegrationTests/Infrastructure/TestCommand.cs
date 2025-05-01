@@ -83,7 +83,7 @@ public abstract class TestCommand
             }
         };
 
-        outputHelper.WriteLine($"Executing '{processStartInfo.FileName} {processStartInfo.Arguments}' in working directory '{processStartInfo.WorkingDirectory}'");
+        outputHelper.WriteLine($"Executing '{processStartInfo.FileName} {string.Join(" ", Arguments)}' in working directory '{processStartInfo.WorkingDirectory}'");
 
         using var timeoutCts = new CancellationTokenSource();
         if (Timeout is { } timeout)
