@@ -10,6 +10,8 @@ Before running template execution tests, make sure that packages defined in this
 ./build.cmd -pack
 ```
 
+**Note:** These commands currently need to be run separately so that generated template content gets included in the template `.nupkg`.
+
 Template tests can be debugged either in VS or by running `dotnet test`.
 
 However, it's sometimes helpful to debug failures by building, running, and modifying the generated projects directly instead of tinkering with test code.
