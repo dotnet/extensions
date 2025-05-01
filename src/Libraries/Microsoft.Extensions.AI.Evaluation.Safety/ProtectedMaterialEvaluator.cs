@@ -100,7 +100,7 @@ public sealed class ProtectedMaterialEvaluator()
 
             foreach (EvaluationMetric imageMetric in imageResult.Metrics.Values)
             {
-                result.Metrics[imageMetric.Name] = imageMetric;
+                result.Metrics.Add(imageMetric.Name, imageMetric);
             }
         }
 
