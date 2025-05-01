@@ -64,4 +64,3 @@ public abstract class TemplateExecutionTestBase<TConfiguration> : IClassFixture<
     public sealed class TemplateExecutionTestFixture(IMessageSink messageSink)
         : TemplateExecutionTestClassFixtureBase(TConfiguration.Configuration, messageSink);
 }
-

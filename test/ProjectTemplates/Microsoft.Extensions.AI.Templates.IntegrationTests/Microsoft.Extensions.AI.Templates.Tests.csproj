@@ -21,6 +21,8 @@
 
     <Compile Remove="TemplateSandbox\**\*.*" />
     <None Include="TemplateSandbox\**\*.*" />
+
+    <None Include="README.md" />
   </ItemGroup>
 
 </Project>
