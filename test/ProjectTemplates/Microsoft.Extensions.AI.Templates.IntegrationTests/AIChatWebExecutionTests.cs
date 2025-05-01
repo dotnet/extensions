@@ -50,7 +50,7 @@ public class AIChatWebExecutionTests : TemplateExecutionTestBase<AIChatWebExecut
         var project = await Fixture.CreateProjectAsync(
             templateName: "aichatweb",
             ProjectName,
-            args: ["--aspire", .. args]);
+            args);
 
         project.StartupProjectRelativePath = $"{ProjectName}.AppHost";
 
