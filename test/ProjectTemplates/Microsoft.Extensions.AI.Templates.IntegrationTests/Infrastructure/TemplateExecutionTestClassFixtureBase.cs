@@ -112,7 +112,10 @@ public abstract class TemplateExecutionTestClassFixtureBase : IAsyncLifetime
     {
         if (_currentTestOutputHelper is not null && outputHelper is not null)
         {
-            throw new InvalidOperationException("");
+            throw new InvalidOperationException(
+                "Cannot set the template execution test output helper when one is already present. " +
+                "This might be a sign that template execution tests are running in parallel, " +
+                "which is not currently supported.");
         }
 
         _currentTestOutputHelper = outputHelper;
