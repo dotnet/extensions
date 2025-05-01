@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.ClientModel.Primitives;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -417,6 +419,17 @@ internal sealed partial class OpenAIChatClient : IChatClient
         return response;
     }
 
+    private static ChatCompletionOptions CloneRawRepresentation(IJsonModel<ChatCompletionOptions> optionsAsModel)
+    {
+        using MemoryStream ms = new MemoryStream();
+        using Utf8JsonWriter writer = new Utf8JsonWriter(ms);
+        optionsAsModel.Write(writer, ModelReaderWriterOptions.Json);
+        writer.Flush();
+
+        var reader = new Utf8JsonReader(ms.ToArray());
+        return optionsAsModel.Create(ref reader, ModelReaderWriterOptions.Json);
+    }
+
     /// <summary>Converts an extensions options instance to an OpenAI options instance.</summary>
     private static ChatCompletionOptions ToOpenAIOptions(ChatOptions? options)
     {
@@ -425,7 +438,15 @@ internal sealed partial class OpenAIChatClient : IChatClient
             return new ChatCompletionOptions();
         }
 
-        ChatCompletionOptions result = options.RawRepresentation as ChatCompletionOptions ?? new();
+        if (options.RawRepresentation is ChatCompletionOptions result)
+        {
+            // Clone the options to avoid modifying the original.
+            result = CloneRawRepresentation(result);
+        }
+        else
+        {
+            result = new ChatCompletionOptions();
+        }
 
         result.FrequencyPenalty ??= options.FrequencyPenalty;
         result.MaxOutputTokenCount ??= options.MaxOutputTokens;

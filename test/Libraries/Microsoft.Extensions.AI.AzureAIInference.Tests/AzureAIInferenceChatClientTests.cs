@@ -283,6 +283,156 @@ public class AzureAIInferenceChatClientTests
     }
 
     [Fact]
+    public async Task ChatOptions_DoNotMutateRawRepresentation_NonStreaming()
+    {
+        const string Input = """
+            {
+              "messages":[{"role":"user","content":"hello"}],
+              "model":"gpt-4o-mini",
+              "frequency_penalty":0.75,
+              "max_tokens":10,
+              "top_p":0.5,
+              "presence_penalty":0.5,
+              "temperature":0.5,
+              "seed":42,
+              "stop":["hello","world"],
+              "response_format":{"type":"text"},
+              "tools":[
+                  {"type":"function","function":{"name":"GetPersonAge","description":"Gets the age of the specified person.","parameters":{"type":"object","required":["personName"],"properties":{"personName":{"description":"The person whose age is being requested","type":"string"}}}}}
+                ],
+              "tool_choice":"auto"
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI",
+              "object": "chat.completion",
+              "choices": [
+                {
+                  "message": {
+                    "role": "assistant",
+                    "content": "Hello! How can I assist you today?"
+                  }
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
+
+        ChatCompletionsOptions openAIOptions = new();
+        ChatOptions chatOptions = new()
+        {
+            RawRepresentation = openAIOptions,
+            FrequencyPenalty = 0.75f,
+            MaxOutputTokens = 10,
+            TopP = 0.5f,
+            PresencePenalty = 0.5f,
+            Temperature = 0.5f,
+            Seed = 42,
+            ToolMode = ChatToolMode.Auto,
+            ResponseFormat = ChatResponseFormat.Text,
+            Tools = [AIFunctionFactory.Create(([Description("The person whose age is being requested")] string personName) => 42, "GetPersonAge", "Gets the age of the specified person.")],
+            StopSequences = ["hello", "world"]
+        };
+
+        var response = await client.GetResponseAsync("hello", chatOptions);
+        Assert.NotNull(response);
+        Assert.Equal("Hello! How can I assist you today?", response.Text);
+        Assert.Same(openAIOptions, chatOptions.RawRepresentation);
+        Assert.Null(openAIOptions.FrequencyPenalty);
+        Assert.Null(openAIOptions.MaxTokens);
+        Assert.Null(openAIOptions.NucleusSamplingFactor);
+        Assert.Null(openAIOptions.PresencePenalty);
+        Assert.Null(openAIOptions.Temperature);
+#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+        Assert.Null(openAIOptions.Seed);
+#pragma warning restore OPENAI001
+        Assert.Null(openAIOptions.ToolChoice);
+        Assert.Null(openAIOptions.ResponseFormat);
+        Assert.Empty(openAIOptions.Tools);
+        Assert.Empty(openAIOptions.StopSequences);
+    }
+
+    [Fact]
+    public async Task ChatOptions_DoNotMutateRawRepresentation_Streaming()
+    {
+        const string Input = """
+            {
+              "messages":[{"role":"user","content":"hello"}],
+              "model":"gpt-4o-mini",
+              "frequency_penalty":0.75,
+              "max_tokens":10,
+              "top_p":0.5,
+              "presence_penalty":0.5,
+              "temperature":0.5,
+              "seed":42,
+              "stop":["hello","world"],
+              "response_format":{"type":"text"},
+              "tools":[
+                  {"type":"function","function":{"name":"GetPersonAge","description":"Gets the age of the specified person.","parameters":{"type":"object","required":["personName"],"properties":{"personName":{"description":"The person whose age is being requested","type":"string"}}}}}
+                ],
+              "tool_choice":"auto",
+              "stream":true
+            }
+            """;
+
+        const string Output = """
+            data: {"id":"chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI","object":"chat.completion.chunk","choices":[{"delta":{"role":"assistant","content":"Hello! "}}]}
+            
+            data: {"id":"chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI","object":"chat.completion.chunk","choices":[{"delta":{"content":"How can I assist you today?"}}]}
+            
+            data: {"id":"chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI","object":"chat.completion.chunk","choices":[{"delta":{},"finish_reason":"stop"}]}
+            
+            data: [DONE]
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
+
+        ChatCompletionsOptions openAIOptions = new();
+        ChatOptions chatOptions = new()
+        {
+            RawRepresentation = openAIOptions,
+            FrequencyPenalty = 0.75f,
+            MaxOutputTokens = 10,
+            TopP = 0.5f,
+            PresencePenalty = 0.5f,
+            Temperature = 0.5f,
+            Seed = 42,
+            ToolMode = ChatToolMode.Auto,
+            ResponseFormat = ChatResponseFormat.Text,
+            Tools = [AIFunctionFactory.Create(([Description("The person whose age is being requested")] string personName) => 42, "GetPersonAge", "Gets the age of the specified person.")],
+            StopSequences = ["hello", "world"]
+        };
+
+        string responseText = string.Empty;
+        await foreach (var update in client.GetStreamingResponseAsync("hello", chatOptions))
+        {
+            responseText += update.Text;
+        }
+
+        Assert.Equal("Hello! How can I assist you today?", responseText);
+        Assert.Same(openAIOptions, chatOptions.RawRepresentation);
+        Assert.Null(openAIOptions.FrequencyPenalty);
+        Assert.Null(openAIOptions.MaxTokens);
+        Assert.Null(openAIOptions.NucleusSamplingFactor);
+        Assert.Null(openAIOptions.PresencePenalty);
+        Assert.Null(openAIOptions.Temperature);
+#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+        Assert.Null(openAIOptions.Seed);
+#pragma warning restore OPENAI001
+        Assert.Null(openAIOptions.ToolChoice);
+        Assert.Null(openAIOptions.ResponseFormat);
+        Assert.Empty(openAIOptions.Tools);
+        Assert.Empty(openAIOptions.StopSequences);
+    }
+
+    [Fact]
     public async Task ChatOptions_DoNotOverwrite_NotNullPropertiesInRawRepresentation_NonStreaming()
     {
         const string Input = """

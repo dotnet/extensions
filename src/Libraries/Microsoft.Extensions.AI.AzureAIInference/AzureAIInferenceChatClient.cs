@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -279,6 +281,17 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
             Model = options?.ModelId ?? _metadata.DefaultModelId ?? throw new InvalidOperationException("No model id was provided when either constructing the client or in the chat options.")
         };
 
+    private static ChatCompletionsOptions CloneRawRepresentation(IJsonModel<ChatCompletionsOptions> optionsAsModel)
+    {
+        using MemoryStream ms = new MemoryStream();
+        using Utf8JsonWriter writer = new Utf8JsonWriter(ms);
+        optionsAsModel.Write(writer, ModelReaderWriterOptions.Json);
+        writer.Flush();
+
+        var reader = new Utf8JsonReader(ms.ToArray());
+        return optionsAsModel.Create(ref reader, ModelReaderWriterOptions.Json);
+    }
+
     /// <summary>Converts an extensions options instance to an AzureAI options instance.</summary>
     private ChatCompletionsOptions ToAzureAIOptions(IEnumerable<ChatMessage> chatContents, ChatOptions? options)
     {
@@ -289,6 +302,9 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
 
         if (options.RawRepresentation is ChatCompletionsOptions result)
         {
+            // Clone the options to avoid modifying the original.
+            ////TODO: ToolChoice is not being cloned.
+            result = CloneRawRepresentation(result);
             result.Messages = ToAzureAIInferenceChatMessages(chatContents).ToList();
             result.Model ??= options.ModelId ?? _metadata.DefaultModelId ?? throw new InvalidOperationException("No model id was provided when either constructing the client or in the chat options.");
         }
