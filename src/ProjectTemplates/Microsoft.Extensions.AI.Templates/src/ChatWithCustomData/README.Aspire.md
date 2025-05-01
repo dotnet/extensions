@@ -10,17 +10,14 @@ This project is an AI chat application that demonstrates how to chat with custom
 To use Azure OpenAI or Azure AI Search, you need an Azure account. If you don't already have one, [create an Azure account](https://azure.microsoft.com/free/).
 
 #### ---#endif
-#### ---#if (UseQdrant)
 ### Known Issues
 
-#### Errors After Updating to Aspire Version 9.2.0
-This project is not currently compatible with Aspire 9.2.0, and all Aspire package versions are set to 9.1.0. Updating [Aspire.Qdrant.Client](https://www.nuget.org/packages/Aspire.Qdrant.Client) to version 9.2.0 causes an incompatibility with [Microsoft.SemanticKernel.Connectors.Qdrant](https://www.nuget.org/packages/Microsoft.SemanticKernel.Connectors.Qdrant) where different versions of [Qdrant.Client](https://www.nuget.org/packages/Qdrant.Client) are required. Attempting to run the project with `Aspire.Qdrant.Client` version 9.2.0 will result in the following exception:
+#### Errors running Ollama or Docker
 
-> System.MissingMethodException: Method not found: 'Qdrant.Client.Grpc.Vectors Qdrant.Client.Grpc.ScoredPoint.get_Vectors()'
+A recent incompatibility was found between Ollama and Docker Desktop. This issue results in runtime errors when connecting to Ollama, and the workaround for that can lead to Docker not working for Aspire projects.
 
-Once a version of `Microsoft.SemanticKernel.Connectors.Qdrant` is published with a dependency on `Qdrant.Client` version `>= 1.13.0`, the Aspire packages can also be updated to version 9.2.0.
+This incompatibility can be addressed by upgrading to Docker Desktop 4.41.1. See [ollama/ollama#9509](https://github.com/ollama/ollama/issues/9509#issuecomment-2842461831) for more information and a link to install the version of Docker Desktop with the fix.
 
-#### ---#endif
 # Configure the AI Model Provider
 
 #### ---#if (IsGHModels)
