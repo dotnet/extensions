@@ -1,5 +1,9 @@
 # Release History
 
+## 9.4.3-preview.1.25230.7
+
+- Updated to accomodate the changes in `Microsoft.Extensions.AI.Abstractions`.
+
 ## 9.4.0-preview.1.25207.5
 
 - Updated to accomodate the changes in `Microsoft.Extensions.AI.Abstractions`.
@@ -29,4 +33,4 @@
 
 ## 9.0.0-preview.9.24507.7
 
-Initial Preview
+- Initial Preview
