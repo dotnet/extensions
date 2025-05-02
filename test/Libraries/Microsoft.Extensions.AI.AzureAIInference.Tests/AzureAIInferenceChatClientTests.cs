@@ -485,11 +485,12 @@ public class AzureAIInferenceChatClientTests
             PresencePenalty = 0.5f,
             Temperature = 0.5f,
             Seed = 42,
+            ToolChoice = ChatCompletionsToolChoice.Auto,
+            ResponseFormat = ChatCompletionsResponseFormat.CreateTextFormat()
         };
         azureAIOptions.StopSequences.Add("hello"); // this one merges with the other.
         azureAIOptions.Tools.Add(ToAzureAIChatTool(tool)); // this one merges with the other.
-        azureAIOptions.ToolChoice = ChatCompletionsToolChoice.Auto;
-        azureAIOptions.ResponseFormat = ChatCompletionsResponseFormat.CreateTextFormat();
+        ////azureAIOptions.AdditionalProperties["something_else"] = new BinaryData("\"value\"");
 
         ChatOptions chatOptions = new ChatOptions
         {
@@ -561,11 +562,12 @@ public class AzureAIInferenceChatClientTests
             PresencePenalty = 0.5f,
             Temperature = 0.5f,
             Seed = 42,
+            ToolChoice = ChatCompletionsToolChoice.Auto,
+            ResponseFormat = ChatCompletionsResponseFormat.CreateTextFormat()
         };
         azureAIOptions.StopSequences.Add("hello"); // this one merges with the other.
         azureAIOptions.Tools.Add(ToAzureAIChatTool(tool)); // this one merges with the other.
-        azureAIOptions.ToolChoice = ChatCompletionsToolChoice.Auto;
-        azureAIOptions.ResponseFormat = ChatCompletionsResponseFormat.CreateTextFormat();
+        ////azureAIOptions.AdditionalProperties["something_else"] = new BinaryData("\"value\"");
 
         ChatOptions chatOptions = new ChatOptions
         {

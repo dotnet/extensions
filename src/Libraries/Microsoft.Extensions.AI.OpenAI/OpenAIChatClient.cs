@@ -419,15 +419,15 @@ internal sealed partial class OpenAIChatClient : IChatClient
         return response;
     }
 
-    private static ChatCompletionOptions CloneRawRepresentation(IJsonModel<ChatCompletionOptions> optionsAsModel)
+    private static ChatCompletionOptions CloneUsingIJsonModel(IJsonModel<ChatCompletionOptions> optionsAsIJsonModel)
     {
         using MemoryStream ms = new MemoryStream();
         using Utf8JsonWriter writer = new Utf8JsonWriter(ms);
-        optionsAsModel.Write(writer, ModelReaderWriterOptions.Json);
+        optionsAsIJsonModel.Write(writer, ModelReaderWriterOptions.Json);
         writer.Flush();
 
         var reader = new Utf8JsonReader(ms.ToArray());
-        return optionsAsModel.Create(ref reader, ModelReaderWriterOptions.Json);
+        return optionsAsIJsonModel.Create(ref reader, ModelReaderWriterOptions.Json);
     }
 
     /// <summary>Converts an extensions options instance to an OpenAI options instance.</summary>
@@ -441,7 +441,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
         if (options.RawRepresentation is ChatCompletionOptions result)
         {
             // Clone the options to avoid modifying the original.
-            result = CloneRawRepresentation(result);
+            result = CloneUsingIJsonModel(result);
         }
         else
         {

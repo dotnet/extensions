@@ -480,11 +480,11 @@ public class OpenAIChatClientTests
 #pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
             Seed = 42,
 #pragma warning restore OPENAI001
+            ToolChoice = ChatToolChoice.CreateAutoChoice(),
+            ResponseFormat = OpenAI.Chat.ChatResponseFormat.CreateTextFormat()
         };
         openAIOptions.StopSequences.Add("hello");
         openAIOptions.Tools.Add(ToOpenAIChatTool(tool));
-        openAIOptions.ToolChoice = ChatToolChoice.CreateAutoChoice();
-        openAIOptions.ResponseFormat = OpenAI.Chat.ChatResponseFormat.CreateTextFormat();
 
         ChatOptions chatOptions = new()
         {
@@ -557,11 +557,11 @@ public class OpenAIChatClientTests
 #pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
             Seed = 42,
 #pragma warning restore OPENAI001
+            ToolChoice = ChatToolChoice.CreateAutoChoice(),
+            ResponseFormat = OpenAI.Chat.ChatResponseFormat.CreateTextFormat()
         };
         openAIOptions.StopSequences.Add("hello");
         openAIOptions.Tools.Add(ToOpenAIChatTool(tool));
-        openAIOptions.ToolChoice = ChatToolChoice.CreateAutoChoice();
-        openAIOptions.ResponseFormat = OpenAI.Chat.ChatResponseFormat.CreateTextFormat();
 
         ChatOptions chatOptions = new()
         {
