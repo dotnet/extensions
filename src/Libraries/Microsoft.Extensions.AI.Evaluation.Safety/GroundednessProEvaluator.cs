@@ -11,7 +11,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
 /// <summary>
-/// An <see cref="IEvaluator"/> that utilizes the Azure AI Content Safety service to evaluate the groundedness of
+/// An <see cref="IEvaluator"/> that utilizes the Azure AI Foundry Evaluation service to evaluate the groundedness of
 /// responses produced by an AI model.
 /// </summary>
 /// <remarks>
@@ -28,7 +28,7 @@ namespace Microsoft.Extensions.AI.Evaluation.Safety;
 /// evaluate the contents of the last conversation turn. The contents of previous conversation turns will be ignored.
 /// </para>
 /// <para>
-/// The Azure AI Content Safety service uses a finetuned model to perform this evaluation which is expected to
+/// The Azure AI Foundry Evaluation service uses a finetuned model to perform this evaluation which is expected to
 /// produce more accurate results than similar evaluations performed using a regular (non-finetuned) model.
 /// </para>
 /// </remarks>
