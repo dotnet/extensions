@@ -6,8 +6,8 @@ using System.Collections.Generic;
 namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
 /// <summary>
-/// An <see cref="IEvaluator"/> that utilizes the Azure AI Content Safety service to evaluate responses produced by an
-/// AI model for the presence of sexual content.
+/// An <see cref="IEvaluator"/> that utilizes the Azure AI Foundry Evaluation service to evaluate responses produced by
+/// an AI model for the presence of sexual content.
 /// </summary>
 /// <remarks>
 /// <para>

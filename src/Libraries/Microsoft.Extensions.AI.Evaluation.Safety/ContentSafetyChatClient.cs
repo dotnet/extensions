@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
 internal sealed class ContentSafetyChatClient : IChatClient
 {
-    private const string Moniker = "Azure AI Content Safety";
+    private const string Moniker = "Azure AI Foundry Evaluation";
 
     private readonly ContentSafetyService _service;
     private readonly IChatClient? _originalChatClient;

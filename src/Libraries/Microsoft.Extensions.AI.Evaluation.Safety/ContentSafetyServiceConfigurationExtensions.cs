@@ -11,12 +11,12 @@ namespace Microsoft.Extensions.AI.Evaluation.Safety;
 public static class ContentSafetyServiceConfigurationExtensions
 {
     /// <summary>
-    /// Returns a <see cref="ChatConfiguration"/> that can be used to communicate with the Azure AI Content Safety
+    /// Returns a <see cref="ChatConfiguration"/> that can be used to communicate with the Azure AI Foundry Evaluation
     /// service for performing content safety evaluations.
     /// </summary>
     /// <param name="contentSafetyServiceConfiguration">
     /// An object that specifies configuration parameters such as the Azure AI project that should be used, and the
-    /// credentials that should be used, when communicating with the Azure AI Content Safety service to perform
+    /// credentials that should be used, when communicating with the Azure AI Foundry Evaluation service to perform
     /// content safety evaluations.
     /// </param>
     /// <param name="originalChatConfiguration">
@@ -25,11 +25,11 @@ public static class ContentSafetyServiceConfigurationExtensions
     /// <see cref="ChatConfiguration.ChatClient"/> in <paramref name="originalChatConfiguration"/> being replaced with
     /// a new <see cref="IChatClient"/> that can be used both to communicate with the AI model that
     /// <paramref name="originalChatConfiguration"/> is configured to communicate with, as well as to communicate with
-    /// the Azure AI Content Safety service.
+    /// the Azure AI Foundry Evaluation service.
     /// </param>
     /// <returns>
-    /// A <see cref="ChatConfiguration"/> that can be used to communicate with the Azure AI Content Safety service for
-    /// performing content safety evaluations.
+    /// A <see cref="ChatConfiguration"/> that can be used to communicate with the Azure AI Foundry Evaluation service
+    /// for performing content safety evaluations.
     /// </returns>
     public static ChatConfiguration ToChatConfiguration(
         this ContentSafetyServiceConfiguration contentSafetyServiceConfiguration,
@@ -47,23 +47,23 @@ public static class ContentSafetyServiceConfigurationExtensions
     }
 
     /// <summary>
-    /// Returns an <see cref="IChatClient"/> that can be used to communicate with the Azure AI Content Safety service
-    /// for performing content safety evaluations.
+    /// Returns an <see cref="IChatClient"/> that can be used to communicate with the Azure AI Foundry Evaluation
+    /// service for performing content safety evaluations.
     /// </summary>
     /// <param name="contentSafetyServiceConfiguration">
     /// An object that specifies configuration parameters such as the Azure AI project that should be used, and the
-    /// credentials that should be used, when communicating with the Azure AI Content Safety service to perform
+    /// credentials that should be used, when communicating with the Azure AI Foundry Evaluation service to perform
     /// content safety evaluations.
     /// </param>
     /// <param name="originalChatClient">
     /// The original <see cref="IChatClient"/>, if any. If specified, the returned
     /// <see cref="IChatClient"/> will be a wrapper around <paramref name="originalChatClient"/> that can be used both
     /// to communicate with the AI model that <paramref name="originalChatClient"/> is configured to communicate with,
-    /// as well as to communicate with the Azure AI Content Safety service.
+    /// as well as to communicate with the Azure AI Foundry Evaluation service.
     /// </param>
     /// <returns>
-    /// A <see cref="ChatConfiguration"/> that can be used to communicate with the Azure AI Content Safety service for
-    /// performing content safety evaluations.
+    /// A <see cref="ChatConfiguration"/> that can be used to communicate with the Azure AI Foundry Evaluation service
+    /// for performing content safety evaluations.
     /// </returns>
     public static IChatClient ToIChatClient(
         this ContentSafetyServiceConfiguration contentSafetyServiceConfiguration,
