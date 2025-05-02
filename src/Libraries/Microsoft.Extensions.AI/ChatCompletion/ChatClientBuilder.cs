@@ -66,6 +66,7 @@ public sealed class ChatClientBuilder
     /// <param name="clientFactory">The client factory function.</param>
     /// <returns>The updated <see cref="ChatClientBuilder"/> instance.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="clientFactory"/> is <see langword="null"/>.</exception>
+    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#functionality-pipelines">Pipelines of functionality</related>
     public ChatClientBuilder Use(Func<IChatClient, IChatClient> clientFactory)
     {
         _ = Throw.IfNull(clientFactory);
@@ -77,6 +78,7 @@ public sealed class ChatClientBuilder
     /// <param name="clientFactory">The client factory function.</param>
     /// <returns>The updated <see cref="ChatClientBuilder"/> instance.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="clientFactory"/> is <see langword="null"/>.</exception>
+    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#functionality-pipelines">Pipelines of functionality</related>
     public ChatClientBuilder Use(Func<IChatClient, IServiceProvider, IChatClient> clientFactory)
     {
         _ = Throw.IfNull(clientFactory);
@@ -98,10 +100,11 @@ public sealed class ChatClientBuilder
     /// </param>
     /// <returns>The updated <see cref="ChatClientBuilder"/> instance.</returns>
     /// <remarks>
-    /// This overload may be used when the anonymous implementation needs to provide pre- and/or post-processing, but doesn't
+    /// This overload can be used when the anonymous implementation needs to provide pre-processing and/or post-processing, but doesn't
     /// need to interact with the results of the operation, which will come from the inner client.
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="sharedFunc"/> is <see langword="null"/>.</exception>
+    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#functionality-pipelines">Pipelines of functionality</related>
     public ChatClientBuilder Use(Func<IEnumerable<ChatMessage>, ChatOptions?, Func<IEnumerable<ChatMessage>, ChatOptions?, CancellationToken, Task>, CancellationToken, Task> sharedFunc)
     {
         _ = Throw.IfNull(sharedFunc);
@@ -125,7 +128,7 @@ public sealed class ChatClientBuilder
     /// </param>
     /// <returns>The updated <see cref="ChatClientBuilder"/> instance.</returns>
     /// <remarks>
-    /// One or both delegates may be provided. If both are provided, they will be used for their respective methods:
+    /// One or both delegates can be provided. If both are provided, they will be used for their respective methods:
     /// <paramref name="getResponseFunc"/> will provide the implementation of <see cref="IChatClient.GetResponseAsync"/>, and
     /// <paramref name="getStreamingResponseFunc"/> will provide the implementation of <see cref="IChatClient.GetStreamingResponseAsync"/>.
     /// If only one of the delegates is provided, it will be used for both methods. That means that if <paramref name="getResponseFunc"/>
@@ -135,6 +138,7 @@ public sealed class ChatClientBuilder
     /// <see cref="IChatClient.GetResponseAsync"/> will be implemented by combining the updates from <paramref name="getStreamingResponseFunc"/>.
     /// </remarks>
     /// <exception cref="ArgumentNullException">Both <paramref name="getResponseFunc"/> and <paramref name="getStreamingResponseFunc"/> are <see langword="null"/>.</exception>
+    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#functionality-pipelines">Pipelines of functionality</related>
     public ChatClientBuilder Use(
         Func<IEnumerable<ChatMessage>, ChatOptions?, IChatClient, CancellationToken, Task<ChatResponse>>? getResponseFunc,
         Func<IEnumerable<ChatMessage>, ChatOptions?, IChatClient, CancellationToken, IAsyncEnumerable<ChatResponseUpdate>>? getStreamingResponseFunc)

@@ -16,6 +16,7 @@ namespace Microsoft.Extensions.AI;
 /// This is recommended as a base type when building clients that can be chained around an underlying <see cref="IChatClient"/>.
 /// The default implementation simply passes each call to the inner client instance.
 /// </remarks>
+/// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#custom-ichatclient-middleware">Custom IChatClient middleware</related>
 public class DelegatingChatClient : IChatClient
 {
     /// <summary>
