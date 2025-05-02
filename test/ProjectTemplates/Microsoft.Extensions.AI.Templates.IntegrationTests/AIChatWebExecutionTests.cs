@@ -9,6 +9,17 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.AI.Templates.Tests;
 
+/// <summary>
+/// Contains execution tests for the "AI Chat Web" template.
+/// </summary>
+/// <remarks>
+/// In addition to validating that the templates build and restore correctly,
+/// these tests are also responsible for template component governance reporting.
+/// This is because the generated output is left on disk after tests complete,
+/// most importantly the project.assets.json file that gets created during restore.
+/// Therefore, it's *critical* that these tests remain in a working state,
+/// as disabling them will also disable CG reporting.
+/// </remarks>
 public class AIChatWebExecutionTests : TemplateExecutionTestBase<AIChatWebExecutionTests>, ITemplateExecutionTestConfigurationProvider
 {
     public AIChatWebExecutionTests(TemplateExecutionTestFixture fixture, ITestOutputHelper outputHelper)
@@ -28,6 +39,7 @@ public class AIChatWebExecutionTests : TemplateExecutionTestBase<AIChatWebExecut
     public static IEnumerable<object[]> GetAspireTemplateOptions()
         => GetFilteredTemplateOptions("--aspire", "true");
 
+    // Do not skip. See XML docs for this test class.
     [Theory]
     [MemberData(nameof(GetBasicTemplateOptions))]
     public async Task CreateRestoreAndBuild_BasicTemplate(params string[] args)
@@ -42,6 +54,7 @@ public class AIChatWebExecutionTests : TemplateExecutionTestBase<AIChatWebExecut
         await Fixture.BuildProjectAsync(project);
     }
 
+    // Do not skip. See XML docs for this test class.
     [Theory]
     [MemberData(nameof(GetAspireTemplateOptions))]
     public async Task CreateRestoreAndBuild_AspireTemplate(params string[] args)

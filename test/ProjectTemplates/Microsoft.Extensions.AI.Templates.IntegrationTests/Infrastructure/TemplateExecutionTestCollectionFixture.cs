@@ -13,7 +13,14 @@ public sealed class TemplateExecutionTestCollectionFixture
 {
     public TemplateExecutionTestCollectionFixture()
     {
-        // Clear output from previous test run, if it exists.
+        // Here, we clear execution test output from the previous test run, if it exists.
+        //
+        // It's critical that this clearing happens *before* the tests start, *not* after they complete.
+        //
+        // This is because:
+        // 1. This enables debugging the previous test run by building/running generated projects manually.
+        // 2. The existence of a project.assets.json file on disk is what allows template content to get discovered
+        //    for component governance reporting.
         if (Directory.Exists(WellKnownPaths.TemplateSandboxOutputRoot))
         {
             Directory.Delete(WellKnownPaths.TemplateSandboxOutputRoot, recursive: true);
