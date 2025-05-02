@@ -9,8 +9,8 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
 /// <summary>
-/// An <see cref="IEvaluator"/> that utilizes the Azure AI Content Safety service to evaluate responses produced by an
-/// AI model for presence of protected material.
+/// An <see cref="IEvaluator"/> that utilizes the Azure AI Foundry Evaluation service to evaluate responses produced by
+/// an AI model for presence of protected material.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -85,8 +85,9 @@ public sealed class ProtectedMaterialEvaluator()
                 includeMetricNamesInContentSafetyServicePayload: false,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        // If images are present in the conversation, do a second evaluation for protected material in images.
-        // The content safety service does not support evaluating both text and images in the same request currently.
+        // If images are present in the conversation, do a second evaluation for protected material in images. The
+        // Azure AI Foundry Evaluation service does not support evaluating both text and images as part of the same
+        // request currently.
         if (messages.ContainsImageWithSupportedFormat() || modelResponse.ContainsImageWithSupportedFormat())
         {
             EvaluationResult imageResult =

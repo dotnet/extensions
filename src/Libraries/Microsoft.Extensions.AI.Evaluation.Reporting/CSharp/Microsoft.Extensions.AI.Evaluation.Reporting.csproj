@@ -8,7 +8,7 @@
   -->
 
   <PropertyGroup>
-    <Description>A library for aggregating and reporting evaluation data. This library also includes support for caching LLM responses.</Description>
+    <Description>A library that contains support for caching LLM responses, storing the results of evaluations and generating reports from that data.</Description>
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
     <RootNamespace>Microsoft.Extensions.AI.Evaluation.Reporting</RootNamespace>
     <!-- EA0002: Use System.TimeProvider to make the code easier to test. -->

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>A library containing core abstractions for evaluating responses received from an LLM.</Description>
+    <Description>A library that defines core abstractions and types for supporting evaluation.</Description>
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
     <RootNamespace>Microsoft.Extensions.AI.Evaluation</RootNamespace>
   </PropertyGroup>
