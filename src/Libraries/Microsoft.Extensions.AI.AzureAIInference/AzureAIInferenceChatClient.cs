@@ -349,6 +349,15 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
             }
         }
 
+        if (options.AdditionalProperties is { } props)
+        {
+            foreach (var prop in props)
+            {
+                byte[] data = JsonSerializer.SerializeToUtf8Bytes(prop.Value, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(object)));
+                result.AdditionalProperties[prop.Key] = new BinaryData(data);
+            }
+        }
+
         if (options.Tools is { Count: > 0 } tools)
         {
             foreach (AITool tool in tools)

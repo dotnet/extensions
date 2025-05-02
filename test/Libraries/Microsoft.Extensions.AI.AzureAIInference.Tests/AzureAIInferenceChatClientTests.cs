@@ -451,7 +451,9 @@ public class AzureAIInferenceChatClientTests
                   {"type":"function","function":{"name":"GetPersonAge","description":"Gets the age of the specified person.","parameters":{"type":"object","required":["personName"],"properties":{"personName":{"description":"The person whose age is being requested","type":"string"}}}}},
                   {"type":"function","function":{"name":"GetPersonAge","description":"Gets the age of the specified person.","parameters":{"type": "object","required": ["personName"],"properties": {"personName": {"description": "The person whose age is being requested","type": "string"}}}}}
                 ],
-              "tool_choice":"auto"
+              "tool_choice":"auto",
+              "additional_property_from_raw_representation":42,
+              "additional_property_from_MEAI_options":42
             }
             """;
 
@@ -477,7 +479,6 @@ public class AzureAIInferenceChatClientTests
 
         ChatCompletionsOptions azureAIOptions = new()
         {
-            Messages = [new ChatRequestUserMessage("overwrite me!")], // this one should be overwritten.
             Model = "gpt-4o-mini",
             FrequencyPenalty = 0.75f,
             MaxTokens = 10,
@@ -488,9 +489,9 @@ public class AzureAIInferenceChatClientTests
             ToolChoice = ChatCompletionsToolChoice.Auto,
             ResponseFormat = ChatCompletionsResponseFormat.CreateTextFormat()
         };
-        azureAIOptions.StopSequences.Add("hello"); // this one merges with the other.
-        azureAIOptions.Tools.Add(ToAzureAIChatTool(tool)); // this one merges with the other.
-        ////azureAIOptions.AdditionalProperties["something_else"] = new BinaryData("\"value\"");
+        azureAIOptions.StopSequences.Add("hello");
+        azureAIOptions.Tools.Add(ToAzureAIChatTool(tool));
+        azureAIOptions.AdditionalProperties["additional_property_from_raw_representation"] = new BinaryData("42");
 
         ChatOptions chatOptions = new ChatOptions
         {
@@ -505,7 +506,11 @@ public class AzureAIInferenceChatClientTests
             StopSequences = ["world"],
             Tools = [tool],
             ToolMode = ChatToolMode.None,
-            ResponseFormat = ChatResponseFormat.Json
+            ResponseFormat = ChatResponseFormat.Json,
+            AdditionalProperties = new AdditionalPropertiesDictionary
+            {
+                ["additional_property_from_MEAI_options"] = 42
+            }
         };
 
         var response = await client.GetResponseAsync("hello", chatOptions);
@@ -533,6 +538,8 @@ public class AzureAIInferenceChatClientTests
                   {"type":"function","function":{"name":"GetPersonAge","description":"Gets the age of the specified person.","parameters":{"type": "object","required": ["personName"],"properties": {"personName": {"description": "The person whose age is being requested","type": "string"}}}}}
                 ],
               "tool_choice":"auto",
+              "additional_property_from_raw_representation":42,
+              "additional_property_from_MEAI_options":42,
               "stream":true
             }
             """;
@@ -554,7 +561,6 @@ public class AzureAIInferenceChatClientTests
 
         ChatCompletionsOptions azureAIOptions = new()
         {
-            Messages = [new ChatRequestUserMessage("overwrite me!")], // this one should be overwritten.
             Model = "gpt-4o-mini",
             FrequencyPenalty = 0.75f,
             MaxTokens = 10,
@@ -565,9 +571,9 @@ public class AzureAIInferenceChatClientTests
             ToolChoice = ChatCompletionsToolChoice.Auto,
             ResponseFormat = ChatCompletionsResponseFormat.CreateTextFormat()
         };
-        azureAIOptions.StopSequences.Add("hello"); // this one merges with the other.
-        azureAIOptions.Tools.Add(ToAzureAIChatTool(tool)); // this one merges with the other.
-        ////azureAIOptions.AdditionalProperties["something_else"] = new BinaryData("\"value\"");
+        azureAIOptions.StopSequences.Add("hello");
+        azureAIOptions.Tools.Add(ToAzureAIChatTool(tool));
+        azureAIOptions.AdditionalProperties["additional_property_from_raw_representation"] = new BinaryData("42");
 
         ChatOptions chatOptions = new ChatOptions
         {
@@ -582,7 +588,11 @@ public class AzureAIInferenceChatClientTests
             StopSequences = ["world"],
             Tools = [tool],
             ToolMode = ChatToolMode.None,
-            ResponseFormat = ChatResponseFormat.Json
+            ResponseFormat = ChatResponseFormat.Json,
+            AdditionalProperties = new AdditionalPropertiesDictionary
+            {
+                ["additional_property_from_MEAI_options"] = 42
+            }
         };
 
         string responseText = string.Empty;
