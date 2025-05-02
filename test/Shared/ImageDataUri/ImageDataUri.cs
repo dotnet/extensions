@@ -19,7 +19,7 @@ internal static class ImageDataUri
         Assert.NotNull(s);
         MemoryStream ms = new();
         s.CopyTo(ms);
-        return new Uri($"data:image/png;base64,{Convert.ToBase64String(ms.ToArray())}");
+        return new Uri(new DataContent(ms.ToArray(), "image/png").Uri);
     }
 
     internal static Uri GetPdfDataUri()
@@ -28,6 +28,6 @@ internal static class ImageDataUri
         PdfPageBuilder page = builder.AddPage(PageSize.A4);
         PdfDocumentBuilder.AddedFont font = builder.AddStandard14Font(Standard14Font.Helvetica);
         page.AddText("Hello World!", 12, new PdfPoint(25, 700), font);
-        return new Uri($"data:application/pdf;base64,{Convert.ToBase64String(builder.Build())}");
+        return new Uri(new DataContent(builder.Build(), "application/pdf").Uri);
     }
 }

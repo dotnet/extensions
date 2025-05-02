@@ -402,12 +402,7 @@ public sealed class OllamaChatClient : IChatClient
             if (item is DataContent dataContent && dataContent.HasTopLevelMediaType("image"))
             {
                 IList<string> images = currentTextMessage?.Images ?? [];
-                images.Add(Convert.ToBase64String(dataContent.Data
-#if NET
-                    .Span));
-#else
-                    .ToArray()));
-#endif
+                images.Add(dataContent.Base64Data.ToString());
 
                 if (currentTextMessage is not null)
                 {

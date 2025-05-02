@@ -66,21 +66,27 @@ public sealed class DataContentTests
     {
         var content = new DataContent("data:image/png;base64,aGVsbG8=", mediaType);
         Assert.Equal(mediaType, content.MediaType);
+        Assert.Equal("aGVsbG8=", content.Base64Data.ToString());
 
         content = new DataContent("data:,", mediaType);
         Assert.Equal(mediaType, content.MediaType);
+        Assert.Equal("", content.Base64Data.ToString());
 
         content = new DataContent("data:text/plain,", mediaType);
         Assert.Equal(mediaType, content.MediaType);
+        Assert.Equal("", content.Base64Data.ToString());
 
         content = new DataContent(new Uri("data:text/plain,"), mediaType);
         Assert.Equal(mediaType, content.MediaType);
+        Assert.Equal("", content.Base64Data.ToString());
 
         content = new DataContent(new byte[] { 0, 1, 2 }, mediaType);
         Assert.Equal(mediaType, content.MediaType);
+        Assert.Equal("AAEC", content.Base64Data.ToString());
 
         content = new DataContent(content.Uri);
         Assert.Equal(mediaType, content.MediaType);
+        Assert.Equal("AAEC", content.Base64Data.ToString());
     }
 
     [Fact]
@@ -91,10 +97,12 @@ public sealed class DataContentTests
         content = new DataContent("data:image/png;base64,aGVsbG8=");
         Assert.Equal("data:image/png;base64,aGVsbG8=", content.Uri);
         Assert.Equal("image/png", content.MediaType);
+        Assert.Equal("aGVsbG8=", content.Base64Data.ToString());
 
         content = new DataContent(new Uri("data:image/png;base64,aGVsbG8="));
         Assert.Equal("data:image/png;base64,aGVsbG8=", content.Uri);
         Assert.Equal("image/png", content.MediaType);
+        Assert.Equal("aGVsbG8=", content.Base64Data.ToString());
     }
 
     [Fact]
@@ -128,6 +136,7 @@ public sealed class DataContentTests
 
         Assert.Equal("data:application/octet-stream;base64,AQIDBA==", content.Uri);
         Assert.Equal([0x01, 0x02, 0x03, 0x04], content.Data.ToArray());
+        Assert.Equal("AQIDBA==", content.Base64Data.ToString());
         Assert.Equal("application/octet-stream", content.MediaType);
 
         // Uri referenced content-only
@@ -150,6 +159,7 @@ public sealed class DataContentTests
 
         Assert.Equal("data:audio/wav;base64,AQIDBA==", content.Uri);
         Assert.Equal([0x01, 0x02, 0x03, 0x04], content.Data.ToArray());
+        Assert.Equal("AQIDBA==", content.Base64Data.ToString());
         Assert.Equal("audio/wav", content.MediaType);
         Assert.Equal("value", content.AdditionalProperties!["key"]!.ToString());
     }
@@ -223,5 +233,21 @@ public sealed class DataContentTests
     {
         var content = new DataContent("data:application/octet-stream;base64,AQIDBA==", mediaType);
         Assert.False(content.HasTopLevelMediaType(prefix));
+    }
+
+    [Fact]
+    public void Data_Roundtrips()
+    {
+        Random rand = new(42);
+        for (int length = 0; length < 100; length++)
+        {
+            byte[] data = new byte[length];
+            rand.NextBytes(data);
+
+            var content = new DataContent(data, "application/octet-stream");
+            Assert.Equal(data, content.Data.ToArray());
+            Assert.Equal(Convert.ToBase64String(data), content.Base64Data.ToString());
+            Assert.Equal($"data:application/octet-stream;base64,{Convert.ToBase64String(data)}", content.Uri);
+        }
     }
 }
