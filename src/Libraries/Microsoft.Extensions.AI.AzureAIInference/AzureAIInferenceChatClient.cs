@@ -281,15 +281,36 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
             Model = options?.ModelId ?? _metadata.DefaultModelId ?? throw new InvalidOperationException("No model id was provided when either constructing the client or in the chat options.")
         };
 
-    private static ChatCompletionsOptions CloneRawRepresentation(IJsonModel<ChatCompletionsOptions> optionsAsModel)
+    private static ChatCompletionsOptions CloneUsingIJsonModel(ChatCompletionsOptions options)
     {
+        IJsonModel<ChatCompletionsOptions> optionsAsIJsonModel = options;
         using MemoryStream ms = new MemoryStream();
         using Utf8JsonWriter writer = new Utf8JsonWriter(ms);
-        optionsAsModel.Write(writer, ModelReaderWriterOptions.Json);
+        optionsAsIJsonModel.Write(writer, ModelReaderWriterOptions.Json);
         writer.Flush();
 
         var reader = new Utf8JsonReader(ms.ToArray());
-        return optionsAsModel.Create(ref reader, ModelReaderWriterOptions.Json);
+        ChatCompletionsOptions ret = optionsAsIJsonModel.Create(ref reader, ModelReaderWriterOptions.Json);
+
+        // Workaround for ToolChoice not being cloned.
+        if (options.ToolChoice != null)
+        {
+            FunctionDefinition? toolChoiceFunction = typeof(ChatCompletionsToolChoice)
+                .GetProperty("Function", BindingFlags.NonPublic | BindingFlags.Instance)!
+                .GetValue(options.ToolChoice) as FunctionDefinition;
+
+            if (toolChoiceFunction is null)
+            {
+                // assume its a preset value e.g. ChatCompletionsToolChoice.Auto
+                ret.ToolChoice = options.ToolChoice;
+            }
+            else
+            {
+                ret.ToolChoice = new ChatCompletionsToolChoice(new FunctionDefinition(toolChoiceFunction.Name));
+            }
+        }
+
+        return ret;
     }
 
     /// <summary>Converts an extensions options instance to an AzureAI options instance.</summary>
@@ -304,7 +325,7 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
         {
             // Clone the options to avoid modifying the original.
             ////TODO: ToolChoice is not being cloned.
-            result = CloneRawRepresentation(result);
+            result = CloneUsingIJsonModel(result);
             result.Messages = ToAzureAIInferenceChatMessages(chatContents).ToList();
             result.Model ??= options.ModelId ?? _metadata.DefaultModelId ?? throw new InvalidOperationException("No model id was provided when either constructing the client or in the chat options.");
         }
