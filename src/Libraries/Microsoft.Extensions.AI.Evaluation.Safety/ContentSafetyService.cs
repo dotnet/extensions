@@ -120,7 +120,7 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
                 }
             }
 
-            result.Metrics[metric.Name] = metric;
+            result.Metrics.Add(metric.Name, metric);
         }
 
         return result;
