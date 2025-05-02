@@ -151,12 +151,13 @@ public abstract class ContentSafetyEvaluator(
         string annotationResult = annotationResponse.Text;
         EvaluationResult result = ContentSafetyService.ParseAnnotationResult(annotationResult);
 
-        UpdateMetrics();
+        EvaluationResult updatedResult = UpdateMetrics();
+        return updatedResult;
 
-        return result;
-
-        void UpdateMetrics()
+        EvaluationResult UpdateMetrics()
         {
+            EvaluationResult updatedResult = new EvaluationResult();
+
             foreach (EvaluationMetric metric in result.Metrics.Values)
             {
                 string contentSafetyServiceMetricName = metric.Name;
@@ -185,7 +186,11 @@ public abstract class ContentSafetyEvaluator(
                 // metric.LogJsonData(payload);
                 // metric.LogJsonData(annotationResult);
 #pragma warning restore S125
+
+                updatedResult.Metrics.Add(metric.Name, metric);
             }
+
+            return updatedResult;
         }
     }
 

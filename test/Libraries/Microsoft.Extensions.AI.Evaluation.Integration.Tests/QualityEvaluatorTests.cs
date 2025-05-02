@@ -18,6 +18,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI.Evaluation.Integration.Tests;
 
+[Experimental("AIEVAL001")]
 public class QualityEvaluatorTests
 {
     private static readonly ChatOptions? _chatOptions;
@@ -47,9 +48,7 @@ public class QualityEvaluatorTests
             string temperature = $"Temperature: {_chatOptions.Temperature}";
             string usesContext = $"Feature: Context";
 
-#pragma warning disable AIEVAL001
             IEvaluator rtcEvaluator = new RelevanceTruthAndCompletenessEvaluator();
-#pragma warning restore AIEVAL001
 
             IEvaluator coherenceEvaluator = new CoherenceEvaluator();
             IEvaluator fluencyEvaluator = new FluencyEvaluator();
@@ -101,6 +100,14 @@ public class QualityEvaluatorTests
         Assert.False(
             result.ContainsDiagnostics(d => d.Severity >= EvaluationDiagnosticSeverity.Warning),
             string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
+
+        Assert.Equal(6, result.Metrics.Count);
+        Assert.True(result.TryGet(RelevanceTruthAndCompletenessEvaluator.RelevanceMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(RelevanceTruthAndCompletenessEvaluator.TruthMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(RelevanceTruthAndCompletenessEvaluator.CompletenessMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(CoherenceEvaluator.CoherenceMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(FluencyEvaluator.FluencyMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(RelevanceEvaluator.RelevanceMetricName, out NumericMetric? _));
     }
 
     [ConditionalFact]
@@ -132,6 +139,14 @@ public class QualityEvaluatorTests
             Assert.False(
                 result.ContainsDiagnostics(d => d.Severity >= EvaluationDiagnosticSeverity.Warning),
                 string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
+
+            Assert.Equal(6, result.Metrics.Count);
+            Assert.True(result.TryGet(RelevanceTruthAndCompletenessEvaluator.RelevanceMetricName, out NumericMetric? _));
+            Assert.True(result.TryGet(RelevanceTruthAndCompletenessEvaluator.TruthMetricName, out NumericMetric? _));
+            Assert.True(result.TryGet(RelevanceTruthAndCompletenessEvaluator.CompletenessMetricName, out NumericMetric? _));
+            Assert.True(result.TryGet(CoherenceEvaluator.CoherenceMetricName, out NumericMetric? _));
+            Assert.True(result.TryGet(FluencyEvaluator.FluencyMetricName, out NumericMetric? _));
+            Assert.True(result.TryGet(RelevanceEvaluator.RelevanceMetricName, out NumericMetric? _));
 #if NET
         });
 #else
@@ -161,6 +176,17 @@ public class QualityEvaluatorTests
         Assert.True(
             result.Metrics.Values.All(m => m.ContainsDiagnostics(d => d.Severity is EvaluationDiagnosticSeverity.Error)),
             string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
+
+        Assert.Equal(4, result.Metrics.Count);
+        Assert.True(result.TryGet(GroundednessEvaluator.GroundednessMetricName, out NumericMetric? groundedness));
+        Assert.True(result.TryGet(EquivalenceEvaluator.EquivalenceMetricName, out NumericMetric? equivalence));
+        Assert.True(result.TryGet(CompletenessEvaluator.CompletenessMetricName, out NumericMetric? completeness));
+        Assert.True(result.TryGet(RetrievalEvaluator.RetrievalMetricName, out NumericMetric? retrieval));
+
+        Assert.Null(groundedness.Context);
+        Assert.Null(equivalence.Context);
+        Assert.Null(completeness.Context);
+        Assert.Null(retrieval.Context);
     }
 
     [ConditionalFact]
@@ -224,6 +250,32 @@ public class QualityEvaluatorTests
                     groundingContextForGroundednessEvaluator,
                     groundTruthForCompletenessEvaluator,
                     retrievedContextChunksForRetrievalEvaluator]);
+
+        Assert.Equal(4, result.Metrics.Count);
+        Assert.True(result.TryGet(GroundednessEvaluator.GroundednessMetricName, out NumericMetric? groundedness));
+        Assert.True(result.TryGet(EquivalenceEvaluator.EquivalenceMetricName, out NumericMetric? equivalence));
+        Assert.True(result.TryGet(CompletenessEvaluator.CompletenessMetricName, out NumericMetric? completeness));
+        Assert.True(result.TryGet(RetrievalEvaluator.RetrievalMetricName, out NumericMetric? retrieval));
+
+        Assert.True(
+            groundedness.Context?.Count is 1 &&
+            groundedness.Context.TryGetValue(GroundednessEvaluatorContext.GroundingContextName, out EvaluationContext? context1) &&
+            ReferenceEquals(context1, groundingContextForGroundednessEvaluator));
+
+        Assert.True(
+            equivalence.Context?.Count is 1 &&
+            equivalence.Context.TryGetValue(EquivalenceEvaluatorContext.GroundTruthContextName, out EvaluationContext? context2) &&
+            ReferenceEquals(context2, baselineResponseForEquivalenceEvaluator));
+
+        Assert.True(
+            completeness.Context?.Count is 1 &&
+            completeness.Context.TryGetValue(CompletenessEvaluatorContext.GroundTruthContextName, out EvaluationContext? context3) &&
+            ReferenceEquals(context3, groundTruthForCompletenessEvaluator));
+
+        Assert.True(
+            retrieval.Context?.Count is 1 &&
+            retrieval.Context.TryGetValue(RetrievalEvaluatorContext.RetrievedContextChunksContextName, out EvaluationContext? context4) &&
+            ReferenceEquals(context4, retrievedContextChunksForRetrievalEvaluator));
     }
 
     [MemberNotNull(nameof(_qualityReportingConfiguration))]
