@@ -56,7 +56,25 @@ steps:
               --settings $(Build.SourcesDirectory)/eng/CodeCoverage.config
               --output ${{ parameters.repoTestResultsPath }}/$(Agent.JobName)_CodeCoverageResults/$(Agent.JobName)_cobertura.xml
               "${{ parameters.buildScript }} -test -configuration ${{ parameters.buildConfig }} /bl:${{ parameters.repoLogPath }}/tests.binlog $(_OfficialBuildIdArgs)"
-      displayName: Run tests
+      displayName: Run unit tests
+
+  - script: ${{ parameters.buildScript }}
+            -pack
+            -configuration ${{ parameters.buildConfig }}
+            -warnAsError 1
+            /bl:${{ parameters.repoLogPath }}/pack.binlog
+            /p:Restore=false /p:Build=false
+            $(_OfficialBuildIdArgs)
+    displayName: Pack
+    
+  - ${{ if ne(parameters.skipTests, 'true') }}:
+    - script: ${{ parameters.buildScript }}
+              -integrationTest
+              -configuration ${{ parameters.buildConfig }}
+              -warnAsError 1
+              /bl:${{ parameters.repoLogPath }}/integration_tests.binlog
+              $(_OfficialBuildIdArgs)
+      displayName: Run integration tests
 
     - pwsh: |
         $SourcesDirectory = '$(Build.SourcesDirectory)';
@@ -151,12 +169,11 @@ steps:
       displayName: Build Azure DevOps plugin
 
     - script: ${{ parameters.buildScript }}
-              -pack
               -sign $(_SignArgs)
               -publish $(_PublishArgs)
               -configuration ${{ parameters.buildConfig }}
               -warnAsError 1
-              /bl:${{ parameters.repoLogPath }}/pack.binlog
+              /bl:${{ parameters.repoLogPath }}/publish.binlog
               /p:Restore=false /p:Build=false
               $(_OfficialBuildIdArgs)
-      displayName: Pack, sign, and publish
+      displayName: Sign and publish
