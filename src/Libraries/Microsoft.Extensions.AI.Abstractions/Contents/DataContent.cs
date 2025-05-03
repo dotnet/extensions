@@ -17,6 +17,7 @@ using Microsoft.Shared.Diagnostics;
 #pragma warning disable S3996 // URI properties should not be strings
 #pragma warning disable CA1054 // URI-like parameters should not be strings
 #pragma warning disable CA1056 // URI-like properties should not be strings
+#pragma warning disable CA1307 // Specify StringComparison for clarity
 
 namespace Microsoft.Extensions.AI;
 
@@ -213,12 +214,10 @@ public class DataContent : AIContent
     {
         get
         {
-            const string Base64Separator = ";base64,";
             string uri = Uri;
-            int pos = uri.IndexOf(Base64Separator, StringComparison.OrdinalIgnoreCase);
-            Debug.Assert(pos >= 0, "Expected base64 to be present in the URI.");
-            pos += Base64Separator.Length;
-            return uri.AsMemory(pos);
+            int pos = uri.IndexOf(',');
+            Debug.Assert(pos >= 0, "Expected comma to be present in the URI.");
+            return uri.AsMemory(pos + 1);
         }
     }
 

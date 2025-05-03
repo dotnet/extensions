@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Text;
 using System.Text.Json;
 using Xunit;
 
@@ -249,5 +250,14 @@ public sealed class DataContentTests
             Assert.Equal(Convert.ToBase64String(data), content.Base64Data.ToString());
             Assert.Equal($"data:application/octet-stream;base64,{Convert.ToBase64String(data)}", content.Uri);
         }
+    }
+
+    [Fact]
+    public void NonBase64Data_Normalized()
+    {
+        var content = new DataContent("data:text/plain,hello world");
+        Assert.Equal("data:text/plain;base64,aGVsbG8gd29ybGQ=", content.Uri);
+        Assert.Equal("aGVsbG8gd29ybGQ=", content.Base64Data.ToString());
+        Assert.Equal("hello world", Encoding.ASCII.GetString(content.Data.ToArray()));
     }
 }
