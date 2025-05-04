@@ -18,12 +18,12 @@ internal sealed class LinuxNetworkUtilizationParser
     private static readonly ObjectPool<BufferWriter<char>> _sharedBufferWriterPool = BufferWriterPool.CreateBufferWriterPool<char>();
 
     /// <remarks>
-    /// File that provide information about currently active TCP_IPv4 connections.
+    /// File that provides information about currently active TCP_IPv4 connections.
     /// </remarks>
     private static readonly FileInfo _tcp = new("/proc/net/tcp");
 
     /// <remarks>
-    /// File that provide information about currently active TCP_IPv6 connections.
+    /// File that provides information about currently active TCP_IPv6 connections.
     /// </remarks>
     private static readonly FileInfo _tcp6 = new("/proc/net/tcp6");
 
