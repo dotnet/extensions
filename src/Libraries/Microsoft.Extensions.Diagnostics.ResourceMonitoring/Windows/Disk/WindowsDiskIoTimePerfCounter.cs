@@ -15,7 +15,7 @@ internal sealed class WindowsDiskIoTimePerfCounter
     private readonly string _categoryName;
     private readonly string _counterName;
     private readonly string[] _instanceNames;
-    private long _lastTimeTick;
+    private long _lastTimeTicks;
 
     internal WindowsDiskIoTimePerfCounter(
         IPerformanceCounterFactory performanceCounterFactory,
@@ -52,13 +52,13 @@ internal sealed class WindowsDiskIoTimePerfCounter
             _ = counter.NextValue();
         }
 
-        _lastTimeTick = _timeProvider.GetUtcNow().Ticks;
+        _lastTimeTicks = _timeProvider.GetUtcNow().Ticks;
     }
 
     internal void UpdateDiskCounters()
     {
         long currentTimeTicks = _timeProvider.GetUtcNow().Ticks;
-        long elapsedTimeTicks = currentTimeTicks - _lastTimeTick;
+        long elapsedTimeTicks = currentTimeTicks - _lastTimeTicks;
 
         // The real elapsed time ("wall clock") used in the I/O path (time from operations running in parallel are not counted).
         // Measured as the complement of "Disk\% Idle Time" performance counter: uptime * (100 - "Disk\% Idle Time") / 100
@@ -71,6 +71,6 @@ internal sealed class WindowsDiskIoTimePerfCounter
             TotalSeconds[counter.InstanceName] += busyTimeTicks / TimeSpan.TicksPerSecond;
         }
 
-        _lastTimeTick = currentTimeTicks;
+        _lastTimeTicks = currentTimeTicks;
     }
 }

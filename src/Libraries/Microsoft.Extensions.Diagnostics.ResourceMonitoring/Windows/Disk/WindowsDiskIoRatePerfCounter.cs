@@ -17,7 +17,7 @@ internal sealed class WindowsDiskIoRatePerfCounter
     private readonly string _categoryName;
     private readonly string _counterName;
     private readonly string[] _instanceNames;
-    private long _lastTimeTick;
+    private long _lastTimeTicks;
 
     internal WindowsDiskIoRatePerfCounter(
         IPerformanceCounterFactory performanceCounterFactory,
@@ -54,13 +54,13 @@ internal sealed class WindowsDiskIoRatePerfCounter
             _ = counter.NextValue();
         }
 
-        _lastTimeTick = _timeProvider.GetUtcNow().Ticks;
+        _lastTimeTicks = _timeProvider.GetUtcNow().Ticks;
     }
 
     internal void UpdateDiskCounters()
     {
         long currentTimeTicks = _timeProvider.GetUtcNow().Ticks;
-        long elapsedTimeTicks = currentTimeTicks - _lastTimeTick;
+        long elapsedTimeTicks = currentTimeTicks - _lastTimeTicks;
 
         // For the kind of "rate" perf counters, this algorithm calculates the total value over a time interval
         // by multiplying the per-second rate (e.g., Disk Bytes/sec) by the time interval between two samples.
@@ -73,6 +73,6 @@ internal sealed class WindowsDiskIoRatePerfCounter
             TotalCountDict[counter.InstanceName] += (long)value / TimeSpan.TicksPerSecond;
         }
 
-        _lastTimeTick = currentTimeTicks;
+        _lastTimeTicks = currentTimeTicks;
     }
 }
