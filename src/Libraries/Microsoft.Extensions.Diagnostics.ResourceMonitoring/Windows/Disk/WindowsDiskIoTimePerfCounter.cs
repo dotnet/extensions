@@ -15,7 +15,7 @@ internal sealed class WindowsDiskIoTimePerfCounter
     private readonly string _categoryName;
     private readonly string _counterName;
     private readonly string[] _instanceNames;
-    private long _lastTimestamp;
+    private long _lastTimeTick;
 
     internal WindowsDiskIoTimePerfCounter(
         IPerformanceCounterFactory performanceCounterFactory,
@@ -52,13 +52,13 @@ internal sealed class WindowsDiskIoTimePerfCounter
             _ = counter.NextValue();
         }
 
-        _lastTimestamp = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
+        _lastTimeTick = _timeProvider.GetUtcNow().Ticks;
     }
 
     internal void UpdateDiskCounters()
     {
-        long currentTimestamp = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
-        double elapsedSeconds = (currentTimestamp - _lastTimestamp) / 1000.0; // Convert to seconds
+        long currentTimeTicks = _timeProvider.GetUtcNow().Ticks;
+        long elapsedTimeTicks = currentTimeTicks - _lastTimeTick;
 
         // The real elapsed time ("wall clock") used in the I/O path (time from operations running in parallel are not counted).
         // Measured as the complement of "Disk\% Idle Time" performance counter: uptime * (100 - "Disk\% Idle Time") / 100
@@ -67,10 +67,10 @@ internal sealed class WindowsDiskIoTimePerfCounter
         {
             // io busy time = (1 - (% idle time / 100)) * elapsed seconds
             float idleTimePercentage = Math.Min(counter.NextValue(), 100f);
-            double busyTimeSeconds = (1 - (idleTimePercentage / 100f)) * elapsedSeconds;
-            TotalSeconds[counter.InstanceName] += busyTimeSeconds;
+            double busyTimeTicks = (1 - (idleTimePercentage / 100f)) * (double)elapsedTimeTicks;
+            TotalSeconds[counter.InstanceName] += busyTimeTicks / TimeSpan.TicksPerSecond;
         }
 
-        _lastTimestamp = currentTimestamp;
+        _lastTimeTick = currentTimeTicks;
     }
 }
