@@ -58,7 +58,7 @@ const useCardStyles = makeStyles({
     metricNameText: {
         fontSize: '1rem',
         fontWeight: 'normal',
-        width: '80%',
+        width: '75%',
         textAlign: 'center',
         overflow: 'hidden',
         textOverflow: 'ellipsis',
@@ -77,6 +77,7 @@ const useCardStyles = makeStyles({
         position: 'absolute',
         top: '-0.25rem',
         left: '-0.25rem',
+        fontSize: '16px',
     },
     metricIcon: {
         position: 'absolute',
@@ -86,7 +87,7 @@ const useCardStyles = makeStyles({
     metricValueText: {
         fontSize: '1rem',
         fontWeight: 'bold',
-        width: '80%',
+        width: '75%',
         textAlign: 'center',
         overflow: 'hidden',
         textOverflow: 'ellipsis',
@@ -214,23 +215,25 @@ export const MetricCard = ({
     }
 
     return (
-        <div className={cardClass} onClick={onClick} tabIndex={0}
-                onKeyUp={e => e.key === 'Enter' && onClick()} >
-            <div className={classes.iconPlaceholder}>
-                {isSelected ? <RadioButtonFilled className={classes.selectionIcon} /> : <RadioButtonRegular className={classes.selectionIcon} />}
-                {statusIcon && (
-                    <Tooltip content={statusTooltip} relationship="description">
-                        <span>{statusIcon}</span>
-                    </Tooltip>
-                )}
+        <Tooltip content={`${metric.name}: ${metricValue}`} relationship="description">
+            <div className={cardClass} onClick={onClick} tabIndex={0}
+                    onKeyUp={e => e.key === 'Enter' && onClick()} >
+                <div className={classes.iconPlaceholder}>
+                    {isSelected ? <RadioButtonFilled className={classes.selectionIcon} /> : <RadioButtonRegular className={classes.selectionIcon} />}
+                    {statusIcon && (
+                        <Tooltip content={statusTooltip} relationship="description">
+                            <span>{statusIcon}</span>
+                        </Tooltip>
+                    )}
+                </div>
+                <div className={classes.metricNameText}>
+                    {metric.name}
+                </div>
+                <div className={mergeClasses(fg, classes.metricValueText)}>
+                    {metricValue}
+                </div>
             </div>
-            <div className={classes.metricNameText}>
-                {metric.name}
-            </div>
-            <div className={mergeClasses(fg, classes.metricValueText)}>
-                {metricValue}
-            </div>
-        </div>
+        </Tooltip>
     );
 };
 

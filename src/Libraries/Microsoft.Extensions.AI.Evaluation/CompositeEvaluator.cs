@@ -145,7 +145,7 @@ public sealed class CompositeEvaluator : IEvaluator
             catch (Exception ex)
             {
                 string message = ex.ToString();
-                EvaluationResult result = new EvaluationResult();
+                var result = new EvaluationResult();
 
                 if (e.EvaluationMetricNames.Count == 0)
                 {

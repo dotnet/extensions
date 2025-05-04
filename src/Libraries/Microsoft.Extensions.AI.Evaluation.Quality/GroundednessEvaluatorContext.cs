@@ -6,8 +6,6 @@
 // We disable this warning because it is a false positive arising from the analyzer's lack of support for C#'s primary
 // constructor syntax.
 
-using System.Collections.Generic;
-
 namespace Microsoft.Extensions.AI.Evaluation.Quality;
 
 /// <summary>
@@ -18,11 +16,18 @@ namespace Microsoft.Extensions.AI.Evaluation.Quality;
 /// Contextual information against which the 'Groundedness' of a response is evaluated.
 /// </param>
 /// <remarks>
-/// The <see cref="GroundednessEvaluator"/> measures the degree to which the response being evaluated is grounded in
-/// the information present in the supplied <paramref name="groundingContext"/>.
+/// <see cref="GroundednessEvaluator"/> measures the degree to which the response being evaluated is grounded in the
+/// information present in the supplied <paramref name="groundingContext"/>.
 /// </remarks>
-public sealed class GroundednessEvaluatorContext(string groundingContext) : EvaluationContext
+public sealed class GroundednessEvaluatorContext(string groundingContext)
+    : EvaluationContext(name: GroundingContextName, content: groundingContext)
 {
+    /// <summary>
+    /// Gets the unique <see cref="EvaluationContext.Name"/> that is used for
+    /// <see cref="GroundednessEvaluatorContext"/>.
+    /// </summary>
+    public static string GroundingContextName => "Grounding Context (Groundedness)";
+
     /// <summary>
     /// Gets the contextual information against which the 'Groundedness' of a response is evaluated.
     /// </summary>
@@ -31,8 +36,4 @@ public sealed class GroundednessEvaluatorContext(string groundingContext) : Eval
     /// in the information present in the supplied <see cref="GroundingContext"/>.
     /// </remarks>
     public string GroundingContext { get; } = groundingContext;
-
-    /// <inheritdoc/>
-    public override IReadOnlyList<AIContent> GetContents()
-        => [new TextContent(GroundingContext)];
 }

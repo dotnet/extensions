@@ -184,6 +184,24 @@ public abstract class ChatClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
+    public virtual async Task MultiModal_DescribePdf()
+    {
+        SkipIfNotEnabled();
+
+        var response = await _chatClient.GetResponseAsync(
+            [
+                new(ChatRole.User,
+                [
+                    new TextContent("What text does this document contain?"),
+                    new DataContent(ImageDataUri.GetPdfDataUri(), "application/pdf"),
+                ])
+            ],
+            new() { ModelId = GetModel_MultiModal_DescribeImage() });
+
+        Assert.True(response.Text.IndexOf("hello", StringComparison.OrdinalIgnoreCase) >= 0, response.Text);
+    }
+
+    [ConditionalFact]
     public virtual async Task FunctionInvocation_AutomaticallyInvokeFunction_Parameterless()
     {
         SkipIfNotEnabled();

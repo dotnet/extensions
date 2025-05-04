@@ -186,6 +186,7 @@ public static partial class AIJsonUtilities
         JsonSerializerOptions serializerOptions,
         AIJsonSchemaCreateOptions inferenceOptions)
     {
+        serializerOptions.TypeInfoResolver ??= DefaultOptions.TypeInfoResolver;
         serializerOptions.MakeReadOnly();
 
         if (type is null)

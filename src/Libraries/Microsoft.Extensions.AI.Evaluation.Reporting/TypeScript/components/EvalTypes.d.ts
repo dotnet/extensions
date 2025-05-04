@@ -77,6 +77,11 @@ type EvaluationResult = {
     };
 };
 
+type EvaluationContext = {
+    name: string;
+    contents: AIContent[];
+}
+
 type EvaluationDiagnostic = {
     severity: "informational" | "warning" | "error";
     message: string;
@@ -95,7 +100,7 @@ type BaseEvaluationMetric = {
     name: string;
     interpretation?: EvaluationMetricInterpretation;
     context?: {
-        [K: string]: AIContent[]
+        [K: string]: EvaluationContext;
     };
     diagnostics?: EvaluationDiagnostic[];
     metadata: { 

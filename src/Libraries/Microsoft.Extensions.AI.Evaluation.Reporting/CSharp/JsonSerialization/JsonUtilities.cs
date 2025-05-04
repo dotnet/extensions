@@ -56,12 +56,12 @@ internal static partial class JsonUtilities
             typeof(CamelCaseEnumConverter<EvaluationDiagnosticSeverity>),
             typeof(CamelCaseEnumConverter<EvaluationRating>),
             typeof(CamelCaseEnumConverter<CacheMode>),
-            typeof(TimeSpanConverter)
+            typeof(TimeSpanConverter),
+            typeof(EvaluationContextConverter)
         ],
         WriteIndented = true,
         IgnoreReadOnlyProperties = false,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
     private sealed partial class JsonContext : JsonSerializerContext;
-
 }

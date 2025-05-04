@@ -44,23 +44,15 @@ public class EvaluationMetric(string name, string? reason = null)
     public EvaluationMetricInterpretation? Interpretation { get; set; }
 
 #pragma warning disable CA2227
-    /// <summary>
-    /// Gets or sets any contextual information that was considered by the <see cref="IEvaluator"/> as part of the
-    /// evaluation that produced the current <see cref="EvaluationMetric"/>.
-    /// </summary>
-    /// <remarks>
-    /// Each entry in the returned dictionary has a name (key), and a collection of <see cref="AIContent"/> objects
-    /// (value). An <see cref="IEvaluator"/> can use this dictionary to record one or more
-    /// <see cref="EvaluationContext"/>s that it considred as part of the evaluation that produced this
-    /// <see cref="EvaluationMetric"/>. For example, it can do so by including an entry with a name for the considered
-    /// <see cref="EvaluationContext"/> as the key, and the <see cref="AIContent"/> objects returned from
-    /// <see cref="EvaluationContext.GetContents"/> as the value.
-    /// </remarks>
-    public IDictionary<string, IList<AIContent>>? Context { get; set; }
-
     // CA2227: Collection properties should be read only.
     // We disable this warning because we want this type to be fully mutable for serialization purposes and for general
     // convenience.
+
+    /// <summary>
+    /// Gets or sets any <see cref="EvaluationContext"/>s that were considered by the <see cref="IEvaluator"/> as part
+    /// of the evaluation that produced the current <see cref="EvaluationMetric"/>.
+    /// </summary>
+    public IDictionary<string, EvaluationContext>? Context { get; set; }
 
     /// <summary>
     /// Gets or sets a collection of zero or more <see cref="EvaluationDiagnostic"/>s associated with the current

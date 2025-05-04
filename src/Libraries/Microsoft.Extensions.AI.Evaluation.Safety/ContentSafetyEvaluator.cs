@@ -8,28 +8,27 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI.Evaluation.Utilities;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
 /// <summary>
 /// An <see langword="abstract"/> base class that can be used to implement <see cref="IEvaluator"/>s that utilize the
-/// Azure AI Content Safety service to evaluate responses produced by an AI model for the presence of a variety of
+/// Azure AI Foundry Evaluation service to evaluate responses produced by an AI model for the presence of a variety of
 /// unsafe content such as protected material, vulnerable code, harmful content etc.
 /// </summary>
 /// <param name="contentSafetyServiceAnnotationTask">
-/// The name of the annotation task that should be used when communicating with the Azure AI Content Safety service to
-/// perform evaluations.
+/// The name of the annotation task that should be used when communicating with the Azure AI Foundry Evaluation service
+/// to perform evaluations.
 /// </param>
 /// <param name="metricNames">
 /// A dictionary containing the mapping from the names of the metrics that are used when communicating with the Azure
-/// AI Content Safety to the <see cref="EvaluationMetric.Name"/>s of the <see cref="EvaluationMetric"/>s returned by
-/// this <see cref="IEvaluator"/>.
+/// AI Foundry Evaluation service, to the <see cref="EvaluationMetric.Name"/>s of the <see cref="EvaluationMetric"/>s
+/// returned by this <see cref="IEvaluator"/>.
 /// </param>
 #pragma warning disable S1694 // An abstract class should have both abstract and concrete methods
 public abstract class ContentSafetyEvaluator(
@@ -59,12 +58,12 @@ public abstract class ContentSafetyEvaluator(
     }
 
     /// <summary>
-    /// Evaluates the supplied <paramref name="modelResponse"/> using the Azure AI Content Safety Service and returns
-    /// an <see cref="EvaluationResult"/> containing one or more <see cref="EvaluationMetric"/>s.
+    /// Evaluates the supplied <paramref name="modelResponse"/> using the Azure AI Foundry Evaluation Service and
+    /// returns an <see cref="EvaluationResult"/> containing one or more <see cref="EvaluationMetric"/>s.
     /// </summary>
     /// <param name="contentSafetyServiceChatClient">
-    /// The <see cref="IChatClient"/> that should be used to communicate with the Azure AI Content Safety Service when
-    /// performing evaluations.
+    /// The <see cref="IChatClient"/> that should be used to communicate with the Azure AI Foundry Evaluation Service
+    /// when performing evaluations.
     /// </param>
     /// <param name="messages">
     /// The conversation history including the request that produced the supplied <paramref name="modelResponse"/>.
@@ -76,11 +75,11 @@ public abstract class ContentSafetyEvaluator(
     /// </param>
     /// <param name="contentSafetyServicePayloadFormat">
     /// An identifier that specifies the format of the payload that should be used when communicating with the Azure AI
-    /// Content Safety service to perform evaluations.
+    /// Foundry Evaluation service to perform evaluations.
     /// </param>
     /// <param name="includeMetricNamesInContentSafetyServicePayload">
     /// A <see cref="bool"/> flag that indicates whether the names of the metrics should be included in the payload
-    /// that is sent to the Azure AI Content Safety service when performing evaluations.
+    /// that is sent to the Azure AI Foundry Evaluation service when performing evaluations.
     /// </param>
     /// <param name="cancellationToken">
     /// A <see cref="CancellationToken"/> that can cancel the evaluation operation.
@@ -98,80 +97,67 @@ public abstract class ContentSafetyEvaluator(
         _ = Throw.IfNull(contentSafetyServiceChatClient);
         _ = Throw.IfNull(modelResponse);
 
-        string payload;
-        string annotationResult;
-        IReadOnlyList<EvaluationDiagnostic>? diagnostics;
-        EvaluationResult result;
-        Stopwatch stopwatch = Stopwatch.StartNew();
-
-        try
-        {
-            ContentSafetyServicePayloadFormat payloadFormat =
+        ContentSafetyServicePayloadFormat payloadFormat =
 #if NET
-                Enum.Parse<ContentSafetyServicePayloadFormat>(contentSafetyServicePayloadFormat);
+            Enum.Parse<ContentSafetyServicePayloadFormat>(contentSafetyServicePayloadFormat);
 #else
-                (ContentSafetyServicePayloadFormat)Enum.Parse(
-                    typeof(ContentSafetyServicePayloadFormat),
-                    contentSafetyServicePayloadFormat);
+            (ContentSafetyServicePayloadFormat)Enum.Parse(
+                typeof(ContentSafetyServicePayloadFormat),
+                contentSafetyServicePayloadFormat);
 #endif
 
-            IEnumerable<ChatMessage> conversation = [.. messages, .. modelResponse.Messages];
+        IEnumerable<ChatMessage> conversation = [.. messages, .. modelResponse.Messages];
 
-            string evaluatorName = GetType().Name;
+        string evaluatorName = GetType().Name;
 
-            IEnumerable<string>? perTurnContext = null;
-            if (additionalContext is not null && additionalContext.Any())
-            {
-                IReadOnlyList<EvaluationContext>? relevantContext = FilterAdditionalContext(additionalContext);
+        IEnumerable<string>? perTurnContext = null;
+        if (additionalContext is not null && additionalContext.Any())
+        {
+            IReadOnlyList<EvaluationContext>? relevantContext = FilterAdditionalContext(additionalContext);
 
 #pragma warning disable S1067 // Expressions should not be too complex
-                if (relevantContext is not null && relevantContext.Any() &&
-                    relevantContext.SelectMany(c => c.GetContents()) is IEnumerable<AIContent> content && content.Any() &&
-                    content.OfType<TextContent>() is IEnumerable<TextContent> textContent && textContent.Any() &&
-                    string.Join(Environment.NewLine, textContent.Select(c => c.Text)) is string contextString &&
-                    !string.IsNullOrWhiteSpace(contextString))
+            if (relevantContext is not null && relevantContext.Any() &&
+                relevantContext.SelectMany(c => c.Contents) is IEnumerable<AIContent> contents && contents.Any() &&
+                contents.OfType<TextContent>() is IEnumerable<TextContent> textContents && textContents.Any() &&
+                string.Join(Environment.NewLine, textContents.Select(c => c.Text)) is string contextString &&
+                !string.IsNullOrWhiteSpace(contextString))
 #pragma warning restore S1067
-                {
-                    // Currently we only support supplying a context for the last conversation turn (which is the main one
-                    // that is being evaluated).
-                    perTurnContext = [contextString];
-                }
+            {
+                // Currently we only support supplying a context for the last conversation turn (which is the main one
+                // that is being evaluated).
+                perTurnContext = [contextString];
             }
+        }
 
-            (payload, diagnostics) =
-                ContentSafetyServicePayloadUtilities.GetPayload(
-                    payloadFormat,
-                    conversation,
-                    contentSafetyServiceAnnotationTask,
-                    evaluatorName,
-                    perTurnContext,
-                    metricNames: includeMetricNamesInContentSafetyServicePayload ? metricNames.Keys : null,
-                    cancellationToken);
+        (string payload, IReadOnlyList<EvaluationDiagnostic>? diagnostics) =
+            ContentSafetyServicePayloadUtilities.GetPayload(
+                payloadFormat,
+                conversation,
+                contentSafetyServiceAnnotationTask,
+                evaluatorName,
+                perTurnContext,
+                metricNames: includeMetricNamesInContentSafetyServicePayload ? metricNames.Keys : null,
+                cancellationToken);
 
-            var payloadMessage = new ChatMessage(ChatRole.User, payload);
+        var payloadMessage = new ChatMessage(ChatRole.User, payload);
 
-            ChatResponse annotationResponse =
-                await contentSafetyServiceChatClient.GetResponseAsync(
+        (ChatResponse annotationResponse, TimeSpan annotationDuration) =
+            await TimingHelper.ExecuteWithTimingAsync(() =>
+                contentSafetyServiceChatClient.GetResponseAsync(
                     payloadMessage,
                     options: new ContentSafetyChatOptions(contentSafetyServiceAnnotationTask, evaluatorName),
-                    cancellationToken: cancellationToken).ConfigureAwait(false);
+                    cancellationToken: cancellationToken)).ConfigureAwait(false);
 
-            annotationResult = annotationResponse.Text;
-            result = ContentSafetyService.ParseAnnotationResult(annotationResult);
-        }
-        finally
+        string annotationResult = annotationResponse.Text;
+        EvaluationResult result = ContentSafetyService.ParseAnnotationResult(annotationResult);
+
+        EvaluationResult updatedResult = UpdateMetrics();
+        return updatedResult;
+
+        EvaluationResult UpdateMetrics()
         {
-            stopwatch.Stop();
-        }
+            EvaluationResult updatedResult = new EvaluationResult();
 
-        string duration = $"{stopwatch.Elapsed.TotalSeconds.ToString("F2", CultureInfo.InvariantCulture)} s";
-
-        UpdateMetrics();
-
-        return result;
-
-        void UpdateMetrics()
-        {
             foreach (EvaluationMetric metric in result.Metrics.Values)
             {
                 string contentSafetyServiceMetricName = metric.Name;
@@ -180,7 +166,7 @@ public abstract class ContentSafetyEvaluator(
                     metric.Name = metricName;
                 }
 
-                metric.AddOrUpdateMetadata(name: "evaluation-duration", value: duration);
+                metric.AddOrUpdateChatMetadata(annotationResponse, annotationDuration);
 
                 metric.Interpretation =
                     metric switch
@@ -200,7 +186,11 @@ public abstract class ContentSafetyEvaluator(
                 // metric.LogJsonData(payload);
                 // metric.LogJsonData(annotationResult);
 #pragma warning restore S125
+
+                updatedResult.Metrics.Add(metric.Name, metric);
             }
+
+            return updatedResult;
         }
     }
 
