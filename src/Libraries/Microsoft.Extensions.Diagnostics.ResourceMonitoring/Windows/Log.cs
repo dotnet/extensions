@@ -45,4 +45,8 @@ internal static partial class Log
     [LoggerMessage(6, LogLevel.Debug,
         "System resources information: CpuLimit = {cpuLimit}, CpuRequest = {cpuRequest}, MemoryLimit = {memoryLimit}, MemoryRequest = {memoryRequest}.")]
     public static partial void SystemResourcesInfo(ILogger logger, double cpuLimit, double cpuRequest, ulong memoryLimit, ulong memoryRequest);
+
+    [LoggerMessage(7, LogLevel.Warning,
+        "Error initializing disk io perf counter: PerfCounter={counterName}, Error={errorMessage}")]
+    public static partial void DiskIoPerfCounterException(ILogger logger, string counterName, string errorMessage);
 }

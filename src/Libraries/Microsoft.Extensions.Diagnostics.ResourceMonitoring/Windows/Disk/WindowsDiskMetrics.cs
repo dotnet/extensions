@@ -7,6 +7,8 @@ using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Runtime.Versioning;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Instruments;
 
@@ -20,15 +22,18 @@ internal sealed class WindowsDiskMetrics
 
     private static readonly KeyValuePair<string, object?> _directionReadTag = new(DirectionKey, "read");
     private static readonly KeyValuePair<string, object?> _directionWriteTag = new(DirectionKey, "write");
+    private readonly ILogger<WindowsDiskMetrics> _logger;
     private readonly Dictionary<string, WindowsDiskIoRatePerfCounter> _diskIoRateCounters = new();
     private WindowsDiskIoTimePerfCounter? _diskIoTimePerfCounter;
 
     public WindowsDiskMetrics(
+        ILogger<WindowsDiskMetrics>? logger,
         IMeterFactory meterFactory,
         IPerformanceCounterFactory performanceCounterFactory,
         TimeProvider timeProvider,
         IOptions<ResourceMonitoringOptions> options)
     {
+        _logger = logger ?? NullLogger<WindowsDiskMetrics>.Instance;
         if (!options.Value.EnableDiskIoMetrics)
         {
             return;
@@ -95,7 +100,7 @@ internal sealed class WindowsDiskMetrics
         catch (Exception ex)
 #pragma warning restore CA1031
         {
-            Debug.WriteLine("Error initializing disk io time perf counter: " + ex.Message);
+            Log.DiskIoPerfCounterException(_logger, WindowsDiskPerfCounterNames.DiskIdleTimeCounter, ex.Message);
         }
 
         // Initialize disk performance counters for "system.disk.io" and "system.disk.operations" metrics
@@ -123,7 +128,7 @@ internal sealed class WindowsDiskMetrics
             catch (Exception ex)
 #pragma warning restore CA1031
             {
-                Debug.WriteLine("Error initializing disk io rate perf counter: " + ex.Message);
+                Log.DiskIoPerfCounterException(_logger, counterName, ex.Message);
             }
         }
     }
