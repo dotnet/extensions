@@ -66,7 +66,7 @@ public sealed class ChatClientBuilder
     /// <param name="clientFactory">The client factory function.</param>
     /// <returns>The updated <see cref="ChatClientBuilder"/> instance.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="clientFactory"/> is <see langword="null"/>.</exception>
-    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#functionality-pipelines">Pipelines of functionality</related>
+    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#functionality-pipelines">Pipelines of functionality.</related>
     public ChatClientBuilder Use(Func<IChatClient, IChatClient> clientFactory)
     {
         _ = Throw.IfNull(clientFactory);
@@ -78,7 +78,7 @@ public sealed class ChatClientBuilder
     /// <param name="clientFactory">The client factory function.</param>
     /// <returns>The updated <see cref="ChatClientBuilder"/> instance.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="clientFactory"/> is <see langword="null"/>.</exception>
-    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#functionality-pipelines">Pipelines of functionality</related>
+    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#functionality-pipelines">Pipelines of functionality.</related>
     public ChatClientBuilder Use(Func<IChatClient, IServiceProvider, IChatClient> clientFactory)
     {
         _ = Throw.IfNull(clientFactory);
@@ -104,7 +104,7 @@ public sealed class ChatClientBuilder
     /// need to interact with the results of the operation, which will come from the inner client.
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="sharedFunc"/> is <see langword="null"/>.</exception>
-    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#functionality-pipelines">Pipelines of functionality</related>
+    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#functionality-pipelines">Pipelines of functionality.</related>
     public ChatClientBuilder Use(Func<IEnumerable<ChatMessage>, ChatOptions?, Func<IEnumerable<ChatMessage>, ChatOptions?, CancellationToken, Task>, CancellationToken, Task> sharedFunc)
     {
         _ = Throw.IfNull(sharedFunc);
@@ -138,7 +138,7 @@ public sealed class ChatClientBuilder
     /// <see cref="IChatClient.GetResponseAsync"/> will be implemented by combining the updates from <paramref name="getStreamingResponseFunc"/>.
     /// </remarks>
     /// <exception cref="ArgumentNullException">Both <paramref name="getResponseFunc"/> and <paramref name="getStreamingResponseFunc"/> are <see langword="null"/>.</exception>
-    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#functionality-pipelines">Pipelines of functionality</related>
+    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#functionality-pipelines">Pipelines of functionality.</related>
     public ChatClientBuilder Use(
         Func<IEnumerable<ChatMessage>, ChatOptions?, IChatClient, CancellationToken, Task<ChatResponse>>? getResponseFunc,
         Func<IEnumerable<ChatMessage>, ChatOptions?, IChatClient, CancellationToken, IAsyncEnumerable<ChatResponseUpdate>>? getStreamingResponseFunc)

@@ -24,7 +24,7 @@ namespace Microsoft.Extensions.AI;
 /// no <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> instances are used which might employ such mutation.
 /// </para>
 /// </remarks>
-/// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#the-iembeddinggenerator-interface">The IEmbeddingGenerator interface</related>
+/// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#the-iembeddinggenerator-interface">The IEmbeddingGenerator interface.</related>
 public interface IEmbeddingGenerator<in TInput, TEmbedding> : IEmbeddingGenerator
     where TEmbedding : Embedding
 {
@@ -34,7 +34,7 @@ public interface IEmbeddingGenerator<in TInput, TEmbedding> : IEmbeddingGenerato
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The generated embeddings.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="values"/> is <see langword="null"/>.</exception>
-    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#create-embeddings">Create embeddings</related>
+    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#create-embeddings">Create embeddings.</related>
     Task<GeneratedEmbeddings<TEmbedding>> GenerateAsync(
         IEnumerable<TInput> values,
         EmbeddingGenerationOptions? options = null,

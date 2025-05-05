@@ -92,7 +92,7 @@ public class ChatResponse
     /// or may not differ on every response, depending on whether the underlying provider uses a fixed ID for each conversation
     /// or updates it for each message.
     /// </remarks>
-    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#stateless-vs-stateful-clients">Stateless vs. stateful clients</related>
+    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#stateless-vs-stateful-clients">Stateless vs. stateful clients.</related>
     public string? ConversationId { get; set; }
 
     /// <summary>Gets or sets the model ID used in the creation of the chat response.</summary>
