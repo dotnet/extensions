@@ -24,4 +24,13 @@ public static class AzureAIInferenceExtensions
     public static IEmbeddingGenerator<string, Embedding<float>> AsIEmbeddingGenerator(
         this EmbeddingsClient embeddingsClient, string? defaultModelId = null, int? defaultModelDimensions = null) =>
         new AzureAIInferenceEmbeddingGenerator(embeddingsClient, defaultModelId, defaultModelDimensions);
+
+    /// <summary>Gets an <see cref="IEmbeddingGenerator{DataContent, Single}"/> for use with this <see cref="EmbeddingsClient"/>.</summary>
+    /// <param name="imageEmbeddingsClient">The client.</param>
+    /// <param name="defaultModelId">The ID of the model to use. If <see langword="null"/>, it can be provided per request via <see cref="ChatOptions.ModelId"/>.</param>
+    /// <param name="defaultModelDimensions">The number of dimensions generated in each embedding.</param>
+    /// <returns>An <see cref="IEmbeddingGenerator{DataContent, Embedding}"/> that can be used to generate embeddings via the <see cref="ImageEmbeddingsClient"/>.</returns>
+    public static IEmbeddingGenerator<DataContent, Embedding<float>> AsIEmbeddingGenerator(
+        this ImageEmbeddingsClient imageEmbeddingsClient, string? defaultModelId = null, int? defaultModelDimensions = null) =>
+        new AzureAIInferenceImageEmbeddingGenerator(imageEmbeddingsClient, defaultModelId, defaultModelDimensions);
 }
