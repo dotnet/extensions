@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Disk;
 
 internal sealed class LinuxDiskMetrics
 {
-    // The kernel’s block layer always reports counts in 512-byte "sectors" regardless of the underlying device’s real block size
+    // The kernel's block layer always reports counts in 512-byte "sectors" regardless of the underlying device's real block size
     // https://docs.kernel.org/block/stat.html#read-sectors-write-sectors-discard-sectors
     private const int LinuxDiskSectorSize = 512;
     private const int MinimumDiskStatsRefreshIntervalInSeconds = 10;
@@ -64,6 +64,22 @@ internal sealed class LinuxDiskMetrics
             GetDiskIoMeasurements,
             unit: "By",
             description: "Disk bytes transferred");
+
+        // The metric is aligned with
+        // https://opentelemetry.io/docs/specs/semconv/system/system-metrics/#metric-systemdiskoperations
+        _ = meter.CreateObservableCounter(
+            ResourceUtilizationInstruments.SystemDiskOperations,
+            GetDiskOperationMeasurements,
+            unit: "{operation}",
+            description: "Disk operations");
+
+        // The metric is aligned with
+        // https://opentelemetry.io/docs/specs/semconv/system/system-metrics/#metric-systemdiskio_time
+        _ = meter.CreateObservableCounter(
+            ResourceUtilizationInstruments.SystemDiskIoTime,
+            GetDiskIoTimeMeasurements,
+            unit: "s",
+            description: "Time disk spent activated");
     }
 
     private IEnumerable<Measurement<long>> GetDiskIoMeasurements()
@@ -82,6 +98,46 @@ internal sealed class LinuxDiskMetrics
             long writeBytes = (long)(diskStats.SectorsWritten - baselineDiskStats.SectorsWritten) * LinuxDiskSectorSize;
             measurements.Add(new Measurement<long>(readBytes, new TagList { _directionReadTag, new(DeviceKey, diskStats.DeviceName) }));
             measurements.Add(new Measurement<long>(writeBytes, new TagList { _directionWriteTag, new(DeviceKey, diskStats.DeviceName) }));
+        }
+
+        return measurements;
+    }
+
+    private IEnumerable<Measurement<long>> GetDiskOperationMeasurements()
+    {
+        List<Measurement<long>> measurements = [];
+        List<DiskStats> diskStatsSnapshot = GetDiskStatsSnapshot();
+
+        foreach (DiskStats diskStats in diskStatsSnapshot)
+        {
+            if (!_baselineDiskStatsDict.TryGetValue(diskStats.DeviceName, out DiskStats? baselineDiskStats))
+            {
+                continue;
+            }
+
+            long readCounts = (long)(diskStats.ReadsCompleted - baselineDiskStats.ReadsCompleted);
+            long writeBytes = (long)(diskStats.WritesCompleted - baselineDiskStats.WritesCompleted);
+            measurements.Add(new Measurement<long>(readCounts, new TagList { _directionReadTag, new(DeviceKey, diskStats.DeviceName) }));
+            measurements.Add(new Measurement<long>(writeBytes, new TagList { _directionWriteTag, new(DeviceKey, diskStats.DeviceName) }));
+        }
+
+        return measurements;
+    }
+
+    private IEnumerable<Measurement<double>> GetDiskIoTimeMeasurements()
+    {
+        List<Measurement<double>> measurements = [];
+        List<DiskStats> diskStatsSnapshot = GetDiskStatsSnapshot();
+
+        foreach (DiskStats diskStats in diskStatsSnapshot)
+        {
+            if (!_baselineDiskStatsDict.TryGetValue(diskStats.DeviceName, out DiskStats? baselineDiskStats))
+            {
+                continue;
+            }
+
+            double ioTimeSeconds = (diskStats.TimeIoMs - baselineDiskStats.TimeIoMs) / 1000.0; // Convert to seconds
+            measurements.Add(new Measurement<double>(ioTimeSeconds, new TagList { new(DeviceKey, diskStats.DeviceName) }));
         }
 
         return measurements;
