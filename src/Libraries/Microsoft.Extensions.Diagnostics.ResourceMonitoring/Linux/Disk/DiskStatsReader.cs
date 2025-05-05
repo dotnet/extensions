@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Disk;
 /// <summary>
 /// Handles reading and parsing of Linux procfs-diskstats file(/proc/diskstats).
 /// </summary>
-internal sealed class DiskStatsReader(IFileSystem fileSystem)
+internal sealed class DiskStatsReader(IFileSystem fileSystem) : IDiskStatsReader
 {
     private static readonly FileInfo _diskStatsFile = new("/proc/diskstats");
     private static readonly ObjectPool<BufferWriter<char>> _sharedBufferWriterPool = BufferWriterPool.CreateBufferWriterPool<char>();
@@ -23,7 +23,7 @@ internal sealed class DiskStatsReader(IFileSystem fileSystem)
     /// Reads and returns all disk statistics entries.
     /// </summary>
     /// <returns>List of <see cref="DiskStats"/>.</returns>
-    internal List<DiskStats> ReadAll()
+    public List<DiskStats> ReadAll()
     {
         var diskStatsList = new List<DiskStats>();
 

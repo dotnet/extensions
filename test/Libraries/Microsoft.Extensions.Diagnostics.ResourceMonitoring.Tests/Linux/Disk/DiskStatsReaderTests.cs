@@ -10,10 +10,10 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Disk.Test;
 
-[OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
+[OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
 public class DiskStatsReaderTests
 {
-    [ConditionalFact]
+    [Fact]
     public void ReadAll_Test_Valid_DiskStats()
     {
         string diskStatsFileContent =
