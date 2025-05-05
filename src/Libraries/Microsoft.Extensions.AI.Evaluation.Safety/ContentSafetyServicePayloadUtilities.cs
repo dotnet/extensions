@@ -343,25 +343,13 @@ internal static class ContentSafetyServicePayloadUtilities
                     }
                     else if (content is DataContent dataContent && dataContent.HasTopLevelMediaType("image"))
                     {
-                        string url;
-                        if (dataContent.IsUriBase64Encoded())
-                        {
-                            url = dataContent.Uri;
-                        }
-                        else
-                        {
-                            BinaryData imageBytes = BinaryData.FromBytes(dataContent.Data);
-                            string base64ImageData = Convert.ToBase64String(imageBytes.ToArray());
-                            url = $"data:{dataContent.MediaType};base64,{base64ImageData}";
-                        }
-
                         yield return new JsonObject
                         {
                             ["type"] = "image_url",
                             ["image_url"] =
                                 new JsonObject
                                 {
-                                    ["url"] = url
+                                    ["url"] = dataContent.Uri
                                 }
                         };
                     }
