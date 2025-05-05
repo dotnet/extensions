@@ -5,9 +5,9 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Disk;
 
 /// <summary>
 /// Represents one line of statistics from "/proc/diskstats"
-/// See https://www.kernel.org/doc/Documentation/ABI/testing/procfs-diskstats
+/// See https://www.kernel.org/doc/Documentation/ABI/testing/procfs-diskstats for details.
 /// </summary>
-public class DiskStats
+internal sealed class DiskStats
 {
     public int MajorNumber { get; set; }
     public int MinorNumber { get; set; }

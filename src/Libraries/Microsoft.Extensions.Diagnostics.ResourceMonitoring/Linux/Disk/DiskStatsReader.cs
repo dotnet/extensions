@@ -6,36 +6,33 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
+using Microsoft.Extensions.ObjectPool;
+using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Disk;
 
 /// <summary>
-/// Handles reading and parsing of /proc/diskstats
+/// Handles reading and parsing of Linux procfs-diskstats file(/proc/diskstats).
 /// </summary>
-/// <param name="path">path of diskstats file.</param>
-public class DiskStatsReader(string path = "/proc/diskstats")
+internal sealed class DiskStatsReader(IFileSystem fileSystem)
 {
+    private static readonly FileInfo _diskStatsFile = new("/proc/diskstats");
+    private static readonly ObjectPool<BufferWriter<char>> _sharedBufferWriterPool = BufferWriterPool.CreateBufferWriterPool<char>();
+
     /// <summary>
-    /// Reads and returns all disk statistics entries
+    /// Reads and returns all disk statistics entries.
     /// </summary>
     /// <returns>List of <see cref="DiskStats"/>.</returns>
-    public List<DiskStats> ReadAll()
+    internal List<DiskStats> ReadAll()
     {
         var diskStatsList = new List<DiskStats>();
-        string[] lines;
 
-        try
-        {
-            lines = File.ReadAllLines(path);
-        }
-        catch (Exception ex) when (
-            ex is IOException or UnauthorizedAccessException or DirectoryNotFoundException or FileNotFoundException)
-        {
-            return diskStatsList;
-        }
+        using ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool);
+        using IEnumerator<ReadOnlyMemory<char>> enumerableLines = fileSystem.ReadAllByLines(_diskStatsFile, bufferWriter.Buffer).GetEnumerator();
 
-        foreach (string line in lines)
+        while (enumerableLines.MoveNext())
         {
+            string line = enumerableLines.Current.Trim().ToString();
             if (string.IsNullOrWhiteSpace(line))
             {
                 continue;
@@ -58,7 +55,7 @@ public class DiskStatsReader(string path = "/proc/diskstats")
     }
 
     /// <summary>
-    /// Parses one line of text into a DiskStats object
+    /// Parses one line of text into a DiskStats object.
     /// </summary>
     /// <param name="line">one line in "/proc/diskstats".</param>
     /// <returns>parsed DiskStats object.</returns>
