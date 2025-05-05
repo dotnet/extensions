@@ -26,6 +26,12 @@ public interface IResponseCacheProvider
     /// Returns an <see cref="IDistributedCache"/> that caches the AI responses associated with a particular
     /// <see cref="ScenarioRun"/>.
     /// </summary>
+    /// <remarks>
+    /// The <see cref="IDistributedCache"/> returned from this method is specifically designed to support
+    /// the caching of responses for evaluation purposes. It is not intended for use as a general-purpose
+    /// distributed cache. For general purposes, consider using a different caching provider such as an 
+    /// implementation of <see cref="Microsoft.Extensions.Caching.Memory.IMemoryCache"/>.
+    /// </remarks>
     /// <param name="scenarioName">The <see cref="ScenarioRun.ScenarioName"/>.</param>
     /// <param name="iterationName">The <see cref="ScenarioRun.IterationName"/>.</param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can cancel the operation.</param>
