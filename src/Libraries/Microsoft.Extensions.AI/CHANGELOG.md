@@ -1,5 +1,33 @@
 # Release History
 
+## 9.4.3-preview.1.25230.7
+
+- Updated the diagnostic spans emitted by `FunctionInvokingChatClient` to include total input and output token counts.
+- Updated `AIFunctionFactory` to recognize `[FromKeyedServices]` attribute on parameters in order to resolve those parameters from the `IServiceProvider`.
+- Added `AIFunctionFactoryOptions.Services`, and used it with `IServiceProviderIsService` to automatically resolve `IServiceProvider`-based parameters in `AIFunction` methods.
+- Added `ChatOptions.AllowMultipleToolCalls`.
+- Changed `AIJsonSchemaCreateOptions.RequireAllProperties` to default to `false` instead of `true`.
+- Unsealed `AIFunctionArguments`.
+- Added `AIFunctionArguments` constructors accepting `IEqualityComparer<string>` arguments.
+- Unsealed `FunctionInvocationContext`.
+- Added `FunctionInvocationContext.IsStreaming`.
+- Added protected `FunctionInvokingChatClient.FunctionInvocationServices` property to surface the corresponding `IServiceProvider` provided at construction time.
+- Changed protected virtual `FunctionInvokingChatClient.InvokeFunctionAsync` to return `ValueTask<object?>` instead of `Task<object?>`. Diagnostics are now emitted even if the method is overridden.
+- Added `FunctionInvocationResult.Terminate`.
+
+## 9.4.0-preview.1.25207.5
+
+- Updated `GetResponseAsync<T>` to default to using JSON-schema based structured output by default.
+- Updated `AIFunctionFactory` with support for customizable marshaling of function parameters and return values.
+- Updated `AIFunctionFactory` with a new `Create` overload that supports creating a new receiver instance on each invocation, with either Activator.CreateInstance or ActivatorUtilities.CreateInstance.
+- Updated `AIFunctionFactory` to support injecting an `IServiceProvider` as an argument, sourced from the `AIFunctionArguments` passed to `AIFunction.InvokeAsync`.
+- Simplified `FunctionInvokingChatClient` error handling, removing `RetryOnError` and replacing it with `MaximumConsecutiveErrorsPerRequest`.
+- `FunctionInvokingChatClient` will now ensure that it invokes `AIFunction`s in the same `SynchronizationContext` that `GetResponseAsync`/`GetStreamingResponseAsync` was called in.
+- `OpenTelemetryChatClient` now considers `AdditionalProperties` to be sensitive and will only use that data as tags when `EnableSensitiveData` is set to `true`.
+- Updated `OpenTelemetryChatClient`/`OpenTelemetryEmbeddingGenerator` to conform to the latest 1.32 draft specification of the Semantic Conventions for Generative AI systems.
+- Updated the key used by `DistributedCachingChatClient` to employ SHA384 instead of SHA256.
+- Lowered `System.Text.Json` 9.x dependency to 8.x when targeting `net8.0` or older.
+ 
 ## 9.3.0-preview.1.25161.3
 
 - Added caching to `AIFunctionFactory.Create` to improve performance of creating the same functions repeatedly. As part of this, `AIJsonSchemaCreateOptions` now implements `IEquatable<AIJsonSchemaCreateOptions>`.
@@ -61,4 +89,4 @@
 
 ## 9.0.0-preview.9.24507.7
 
-Initial Preview
+- Initial Preview

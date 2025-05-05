@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -13,59 +12,40 @@ namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
 internal static class ContentSafetyServicePayloadUtilities
 {
-    internal static bool IsImage(this AIContent content) =>
-        (content is UriContent uriContent && uriContent.HasTopLevelMediaType("image")) ||
-        (content is DataContent dataContent && dataContent.HasTopLevelMediaType("image"));
-
-    internal static bool ContainsImage(this ChatMessage message)
-        => message.Contents.Any(IsImage);
-
-    internal static bool ContainsImage(this ChatResponse response)
-        => response.Messages.ContainImage();
-
-    internal static bool ContainImage(this IEnumerable<ChatMessage> messages)
-        => messages.Any(ContainsImage);
-
-#pragma warning disable S107 // Methods should not have too many parameters
-    internal static (JsonObject payload, IList<EvaluationDiagnostic>? diagnostics) GetPayload(
+    internal static (string payload, IReadOnlyList<EvaluationDiagnostic>? diagnostics) GetPayload(
         ContentSafetyServicePayloadFormat payloadFormat,
-        IEnumerable<ChatMessage> messages,
-        ChatResponse modelResponse,
+        IEnumerable<ChatMessage> conversation,
         string annotationTask,
         string evaluatorName,
-        IEnumerable<string?>? contexts = null,
+        IEnumerable<string?>? perTurnContext = null,
         IEnumerable<string>? metricNames = null,
         CancellationToken cancellationToken = default) =>
-#pragma warning restore S107
             payloadFormat switch
             {
                 ContentSafetyServicePayloadFormat.HumanSystem =>
                     GetUserTextListPayloadWithEmbeddedXml(
-                        messages,
-                        modelResponse,
+                        conversation,
                         annotationTask,
                         evaluatorName,
-                        contexts,
+                        perTurnContext,
                         metricNames,
                         cancellationToken: cancellationToken),
 
                 ContentSafetyServicePayloadFormat.QuestionAnswer =>
                     GetUserTextListPayloadWithEmbeddedJson(
-                        messages,
-                        modelResponse,
+                        conversation,
                         annotationTask,
                         evaluatorName,
-                        contexts,
+                        perTurnContext,
                         metricNames,
                         cancellationToken: cancellationToken),
 
                 ContentSafetyServicePayloadFormat.QueryResponse =>
                     GetUserTextListPayloadWithEmbeddedJson(
-                        messages,
-                        modelResponse,
+                        conversation,
                         annotationTask,
                         evaluatorName,
-                        contexts,
+                        perTurnContext,
                         metricNames,
                         questionPropertyName: "query",
                         answerPropertyName: "response",
@@ -73,11 +53,10 @@ internal static class ContentSafetyServicePayloadUtilities
 
                 ContentSafetyServicePayloadFormat.ContextCompletion =>
                     GetUserTextListPayloadWithEmbeddedJson(
-                        messages,
-                        modelResponse,
+                        conversation,
                         annotationTask,
                         evaluatorName,
-                        contexts,
+                        perTurnContext,
                         metricNames,
                         questionPropertyName: "context",
                         answerPropertyName: "completion",
@@ -85,11 +64,10 @@ internal static class ContentSafetyServicePayloadUtilities
 
                 ContentSafetyServicePayloadFormat.Conversation =>
                     GetConversationPayload(
-                        messages,
-                        modelResponse,
+                        conversation,
                         annotationTask,
                         evaluatorName,
-                        contexts,
+                        perTurnContext,
                         metricNames,
                         cancellationToken: cancellationToken),
 
@@ -97,13 +75,12 @@ internal static class ContentSafetyServicePayloadUtilities
             };
 
 #pragma warning disable S107 // Methods should not have too many parameters
-    private static (JsonObject payload, IList<EvaluationDiagnostic>? diagnostics)
+    private static (string payload, IReadOnlyList<EvaluationDiagnostic>? diagnostics)
         GetUserTextListPayloadWithEmbeddedXml(
-            IEnumerable<ChatMessage> messages,
-            ChatResponse modelResponse,
+            IEnumerable<ChatMessage> conversation,
             string annotationTask,
             string evaluatorName,
-            IEnumerable<string?>? contexts = null,
+            IEnumerable<string?>? perTurnContext = null,
             IEnumerable<string>? metricNames = null,
             string questionElementName = "Human",
             string answerElementName = "System",
@@ -113,15 +90,14 @@ internal static class ContentSafetyServicePayloadUtilities
 #pragma warning restore S107
     {
         List<Dictionary<string, ChatMessage>> turns;
-        List<string?>? turnContexts;
+        List<string?>? normalizedPerTurnContext;
         List<EvaluationDiagnostic>? diagnostics;
 
-        (turns, turnContexts, diagnostics, _) =
-            PreProcessMessages(
-                messages,
-                modelResponse,
+        (turns, normalizedPerTurnContext, diagnostics, _) =
+            PreProcessConversation(
+                conversation,
                 evaluatorName,
-                contexts,
+                perTurnContext,
                 returnLastTurnOnly: strategy is ContentSafetyServicePayloadStrategy.AnnotateLastTurn,
                 cancellationToken: cancellationToken);
 
@@ -143,9 +119,9 @@ internal static class ContentSafetyServicePayloadUtilities
                         item.Add(new XElement(answerElementName, answer.Text));
                     }
 
-                    if (turnContexts is not null && turnContexts.Any())
+                    if (normalizedPerTurnContext is not null && normalizedPerTurnContext.Any())
                     {
-                        item.Add(new XElement(contextElementName, turnContexts[index]));
+                        item.Add(new XElement(contextElementName, normalizedPerTurnContext[index]));
                     }
 
                     return item;
@@ -183,17 +159,16 @@ internal static class ContentSafetyServicePayloadUtilities
             payload["MetricList"] = new JsonArray([.. metricNames]);
         }
 
-        return (payload, diagnostics);
+        return (payload.ToJsonString(), diagnostics);
     }
 
 #pragma warning disable S107 // Methods should not have too many parameters
-    private static (JsonObject payload, IList<EvaluationDiagnostic>? diagnostics)
+    private static (string payload, IReadOnlyList<EvaluationDiagnostic>? diagnostics)
         GetUserTextListPayloadWithEmbeddedJson(
-            IEnumerable<ChatMessage> messages,
-            ChatResponse modelResponse,
+            IEnumerable<ChatMessage> conversation,
             string annotationTask,
             string evaluatorName,
-            IEnumerable<string?>? contexts = null,
+            IEnumerable<string?>? perTurnContext = null,
             IEnumerable<string>? metricNames = null,
             string questionPropertyName = "question",
             string answerPropertyName = "answer",
@@ -209,15 +184,14 @@ internal static class ContentSafetyServicePayloadUtilities
         }
 
         List<Dictionary<string, ChatMessage>> turns;
-        List<string?>? turnContexts;
+        List<string?>? normalizedPerTurnContext;
         List<EvaluationDiagnostic>? diagnostics;
 
-        (turns, turnContexts, diagnostics, _) =
-            PreProcessMessages(
-                messages,
-                modelResponse,
+        (turns, normalizedPerTurnContext, diagnostics, _) =
+            PreProcessConversation(
+                conversation,
                 evaluatorName,
-                contexts,
+                perTurnContext,
                 returnLastTurnOnly: strategy is ContentSafetyServicePayloadStrategy.AnnotateLastTurn,
                 cancellationToken: cancellationToken);
 
@@ -239,9 +213,9 @@ internal static class ContentSafetyServicePayloadUtilities
                         item[answerPropertyName] = answer.Text;
                     }
 
-                    if (turnContexts is not null && turnContexts.Any())
+                    if (normalizedPerTurnContext is not null && normalizedPerTurnContext.Any())
                     {
-                        item[contextPropertyName] = turnContexts[index];
+                        item[contextPropertyName] = normalizedPerTurnContext[index];
                     }
 
                     return item;
@@ -269,20 +243,17 @@ internal static class ContentSafetyServicePayloadUtilities
             payload["MetricList"] = new JsonArray([.. metricNames]);
         }
 
-        return (payload, diagnostics);
+        return (payload.ToJsonString(), diagnostics);
     }
 
-#pragma warning disable S107 // Methods should not have too many parameters
-    private static (JsonObject payload, IList<EvaluationDiagnostic>? diagnostics) GetConversationPayload(
-        IEnumerable<ChatMessage> messages,
-        ChatResponse modelResponse,
+    private static (string payload, IReadOnlyList<EvaluationDiagnostic>? diagnostics) GetConversationPayload(
+        IEnumerable<ChatMessage> conversation,
         string annotationTask,
         string evaluatorName,
-        IEnumerable<string?>? contexts = null,
+        IEnumerable<string?>? perTurnContext = null,
         IEnumerable<string>? metricNames = null,
         ContentSafetyServicePayloadStrategy strategy = ContentSafetyServicePayloadStrategy.AnnotateConversation,
         CancellationToken cancellationToken = default)
-#pragma warning restore S107
     {
         if (strategy is ContentSafetyServicePayloadStrategy.AnnotateEachTurn)
         {
@@ -291,16 +262,15 @@ internal static class ContentSafetyServicePayloadUtilities
         }
 
         List<Dictionary<string, ChatMessage>> turns;
-        List<string?>? turnContexts;
+        List<string?>? normalizedPerTurnContext;
         List<EvaluationDiagnostic>? diagnostics;
         string contentType;
 
-        (turns, turnContexts, diagnostics, contentType) =
-            PreProcessMessages(
-                messages,
-                modelResponse,
+        (turns, normalizedPerTurnContext, diagnostics, contentType) =
+            PreProcessConversation(
+                conversation,
                 evaluatorName,
-                contexts,
+                perTurnContext,
                 returnLastTurnOnly: strategy is ContentSafetyServicePayloadStrategy.AnnotateLastTurn,
                 areImagesSupported: true,
                 cancellationToken);
@@ -324,7 +294,9 @@ internal static class ContentSafetyServicePayloadUtilities
             {
                 IEnumerable<JsonObject> contents = GetContents(answer);
 
-                if (turnContexts is not null && turnContexts.Any() && turnContexts[turnIndex] is string context)
+                if (normalizedPerTurnContext is not null &&
+                    normalizedPerTurnContext.Any() &&
+                    normalizedPerTurnContext[turnIndex] is string context)
                 {
                     yield return new JsonObject
                     {
@@ -371,8 +343,17 @@ internal static class ContentSafetyServicePayloadUtilities
                     }
                     else if (content is DataContent dataContent && dataContent.HasTopLevelMediaType("image"))
                     {
-                        BinaryData imageBytes = BinaryData.FromBytes(dataContent.Data);
-                        string base64ImageData = Convert.ToBase64String(imageBytes.ToArray());
+                        string url;
+                        if (dataContent.IsUriBase64Encoded())
+                        {
+                            url = dataContent.Uri;
+                        }
+                        else
+                        {
+                            BinaryData imageBytes = BinaryData.FromBytes(dataContent.Data);
+                            string base64ImageData = Convert.ToBase64String(imageBytes.ToArray());
+                            url = $"data:{dataContent.MediaType};base64,{base64ImageData}";
+                        }
 
                         yield return new JsonObject
                         {
@@ -380,7 +361,7 @@ internal static class ContentSafetyServicePayloadUtilities
                             ["image_url"] =
                                 new JsonObject
                                 {
-                                    ["url"] = $"data:{dataContent.MediaType};base64,{base64ImageData}"
+                                    ["url"] = url
                                 }
                         };
                     }
@@ -412,25 +393,25 @@ internal static class ContentSafetyServicePayloadUtilities
         //
         // On the other hand, if ContentSafetyServicePayloadStrategy.AnnotateConversation is used, the service will
         // produce a single annotation result for the entire conversation.
-        return (payload, diagnostics);
+        return (payload.ToJsonString(), diagnostics);
     }
 
     private static
         (List<Dictionary<string, ChatMessage>> turns,
-        List<string?>? turnContexts,
+        List<string?>? normalizedPerTurnContext,
         List<EvaluationDiagnostic>? diagnostics,
-        string contentType) PreProcessMessages(
-            IEnumerable<ChatMessage> messages,
-            ChatResponse modelResponse,
+        string contentType) PreProcessConversation(
+            IEnumerable<ChatMessage> conversation,
             string evaluatorName,
-            IEnumerable<string?>? contexts = null,
+            IEnumerable<string?>? perTurnContext = null,
             bool returnLastTurnOnly = false,
             bool areImagesSupported = false,
             CancellationToken cancellationToken = default)
     {
         List<Dictionary<string, ChatMessage>> turns = [];
         Dictionary<string, ChatMessage> currentTurn = [];
-        List<string?>? turnContexts = contexts is null || !contexts.Any() ? null : [.. contexts];
+        List<string?>? normalizedPerTurnContext =
+            perTurnContext is null || !perTurnContext.Any() ? null : [.. perTurnContext];
 
         int currentTurnIndex = 0;
         int ignoredMessageCount = 0;
@@ -448,7 +429,7 @@ internal static class ContentSafetyServicePayloadUtilities
             ++currentTurnIndex;
         }
 
-        foreach (ChatMessage message in messages)
+        foreach (ChatMessage message in conversation)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -474,22 +455,6 @@ internal static class ContentSafetyServicePayloadUtilities
             }
         }
 
-        foreach (ChatMessage message in modelResponse.Messages)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (message.Role == ChatRole.Assistant)
-            {
-                currentTurn["answer"] = message;
-
-                StartNewTurn();
-            }
-            else
-            {
-                ignoredMessageCount++;
-            }
-        }
-
         if (returnLastTurnOnly)
         {
             turns.RemoveRange(index: 0, count: turns.Count - 1);
@@ -506,7 +471,7 @@ internal static class ContentSafetyServicePayloadUtilities
 
                 if (areImagesSupported)
                 {
-                    if (content.IsImage())
+                    if (content.IsImageWithSupportedFormat())
                     {
                         ++imagesCount;
                     }
@@ -541,9 +506,8 @@ internal static class ContentSafetyServicePayloadUtilities
             diagnostics = [
                 EvaluationDiagnostic.Warning(
                     $"The supplied conversation contained {ignoredMessageCount} messages with unsupported roles. " +
-                    $"{evaluatorName} only considers messages with role '{ChatRole.User}' and '{ChatRole.Assistant}' in the supplied conversation history. " +
-                    $"In the supplied model response, it only considers messages with role '{ChatRole.Assistant}'. " +
-                    $"The unsupported messages were ignored.")];
+                    $"{evaluatorName} only considers messages with role '{ChatRole.User}' and '{ChatRole.Assistant}'. " +
+                    $"The unsupported messages (which may include messages with role '{ChatRole.System}' and '{ChatRole.Tool}') were ignored.")];
         }
 
         if (incompleteTurnCount > 0)
@@ -565,7 +529,7 @@ internal static class ContentSafetyServicePayloadUtilities
                     EvaluationDiagnostic.Warning(
                         $"The supplied conversation contained {unsupportedContentCount} instances of unsupported content within messages. " +
                         $"The current evaluation being performed by {evaluatorName} only supports content of type '{nameof(TextContent)}', '{nameof(UriContent)}' and '{nameof(DataContent)}'. " +
-                        $"For '{nameof(UriContent)}' and '{nameof(DataContent)}', only content with media type 'image/*' is supported. " +
+                        $"For '{nameof(UriContent)}' and '{nameof(DataContent)}', only content with media type 'image/png', 'image/jpeg' and 'image/gif' are supported. " +
                         $"The unsupported contents were ignored for this evaluation."));
             }
             else
@@ -578,45 +542,40 @@ internal static class ContentSafetyServicePayloadUtilities
             }
         }
 
-        if (turnContexts is not null && turnContexts.Any())
+        if (normalizedPerTurnContext is not null && normalizedPerTurnContext.Any())
         {
-            if (turnContexts.Count > turns.Count)
+            if (normalizedPerTurnContext.Count > turns.Count)
             {
-                var ignoredContextCount = turnContexts.Count - turns.Count;
+                var ignoredContextCount = normalizedPerTurnContext.Count - turns.Count;
 
                 diagnostics ??= [];
                 diagnostics.Add(
                     EvaluationDiagnostic.Warning(
                         $"The supplied conversation contained {turns.Count} turns. " +
-                        $"However, the supplied context object contained contexts for {turnContexts.Count} turns. " +
-                        $"The initial {ignoredContextCount} contexts in the context object were ignored. " +
-                        $"Only the last {turns.Count} contexts were used."));
+                        $"However, context for {normalizedPerTurnContext.Count} turns were supplied as part of the context collection. " +
+                        $"The initial {ignoredContextCount} items from the context collection were ignored. " +
+                        $"Only the last {turns.Count} items from the context collection were used."));
 
-                turnContexts.RemoveRange(0, ignoredContextCount);
+                normalizedPerTurnContext.RemoveRange(0, ignoredContextCount);
             }
-            else if (turnContexts.Count < turns.Count)
+            else if (normalizedPerTurnContext.Count < turns.Count)
             {
-                int missingContextCount = turns.Count - turnContexts.Count;
+                int missingContextCount = turns.Count - normalizedPerTurnContext.Count;
 
                 diagnostics ??= [];
                 diagnostics.Add(
                     EvaluationDiagnostic.Warning(
                         $"The supplied conversation contained {turns.Count} turns. " +
-                        $"However, the supplied context object only contained contexts for {turnContexts.Count} turns. " +
-                        $"The initial {missingContextCount} turns in the conversations were evaluated without a context. " +
-                        $"The supplied contexts were applied to the last {turnContexts.Count} turns."));
+                        $"However, context for only {normalizedPerTurnContext.Count} turns were supplied as part of the context collection. " +
+                        $"The initial {missingContextCount} turns in the conversations were evaluated without any context. " +
+                        $"The supplied items in the context collection were applied to the last {normalizedPerTurnContext.Count} turns."));
 
-                turnContexts.InsertRange(0, Enumerable.Repeat<string?>(null, missingContextCount));
+                normalizedPerTurnContext.InsertRange(0, Enumerable.Repeat<string?>(null, missingContextCount));
             }
-
-            Debug.Assert(turns.Count == turnContexts.Count, "The returned number of turns and contexts should match.");
         }
 
         string contentType = areImagesSupported && imagesCount > 0 ? "image" : "text";
 
-        return (turns, turnContexts, diagnostics, contentType);
+        return (turns, normalizedPerTurnContext, diagnostics, contentType);
     }
-
-    private static bool IsTextOrUsage(this AIContent content)
-        => content is TextContent || content is UsageContent;
 }

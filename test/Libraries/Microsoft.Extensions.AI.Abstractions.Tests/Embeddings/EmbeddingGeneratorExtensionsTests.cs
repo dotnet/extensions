@@ -78,8 +78,8 @@ public class EmbeddingGeneratorExtensionsTests
     [Fact]
     public async Task GenerateAsync_InvalidArgs_ThrowsAsync()
     {
-        await Assert.ThrowsAsync<ArgumentNullException>("generator", () => ((TestEmbeddingGenerator)null!).GenerateEmbeddingAsync("hello"));
-        await Assert.ThrowsAsync<ArgumentNullException>("generator", () => ((TestEmbeddingGenerator)null!).GenerateEmbeddingVectorAsync("hello"));
+        await Assert.ThrowsAsync<ArgumentNullException>("generator", () => ((TestEmbeddingGenerator)null!).GenerateAsync("hello"));
+        await Assert.ThrowsAsync<ArgumentNullException>("generator", () => ((TestEmbeddingGenerator)null!).GenerateVectorAsync("hello"));
         await Assert.ThrowsAsync<ArgumentNullException>("generator", () => ((TestEmbeddingGenerator)null!).GenerateAndZipAsync(["hello"]));
     }
 
@@ -94,8 +94,8 @@ public class EmbeddingGeneratorExtensionsTests
                 Task.FromResult<GeneratedEmbeddings<Embedding<float>>>([result])
         };
 
-        Assert.Same(result, await service.GenerateEmbeddingAsync("hello"));
-        Assert.Equal(result.Vector, await service.GenerateEmbeddingVectorAsync("hello"));
+        Assert.Same(result, await service.GenerateAsync("hello"));
+        Assert.Equal(result.Vector, await service.GenerateVectorAsync("hello"));
     }
 
     [Theory]

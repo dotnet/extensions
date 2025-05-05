@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>A library containing a set of evaluators for evaluating the content safety (hate and unfairness, self-harm, violence etc.) of responses received from an LLM.</Description>
+    <Description>A library that contains a set of evaluators that are built atop the Azure AI Foundry Evaluation service that can be used to evaluate the content safety of AI responses in your projects including Protected Material, Groundedness Pro, Ungrounded Attributes, Hate and Unfairness, Self Harm, Violence, Sexual, Code Vulnerability and Indirect Attack.</Description>
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
     <RootNamespace>Microsoft.Extensions.AI.Evaluation.Safety</RootNamespace>
   </PropertyGroup>
@@ -17,6 +17,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\Microsoft.Extensions.AI.Evaluation\Utilities\TimingHelper.cs" Link="Utilities\TimingHelper.cs" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Azure.Core" />
+    <PackageReference Include="Microsoft.Bcl.HashCode" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Microsoft.Extensions.AI.Evaluation\Microsoft.Extensions.AI.Evaluation.csproj" />
   </ItemGroup>
 
@@ -24,8 +33,4 @@
     <InternalsVisibleToTest Include="Microsoft.Extensions.AI.Evaluation.Tests" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Azure.Core" />
-  </ItemGroup>
-  
 </Project>

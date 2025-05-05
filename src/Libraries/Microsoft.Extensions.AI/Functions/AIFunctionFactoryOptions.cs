@@ -106,6 +106,16 @@ public sealed class AIFunctionFactoryOptions
     /// </remarks>
     public Func<object?, Type?, CancellationToken, ValueTask<object?>>? MarshalResult { get; set; }
 
+    /// <summary>
+    /// Gets or sets optional services used in the construction of the <see cref="AIFunction"/>.
+    /// </summary>
+    /// <remarks>
+    /// These services will be used to determine which parameters should be satisifed from dependency injection. As such,
+    /// what services are satisfied via this provider should match what's satisfied via the provider passed into
+    /// <see cref="AIFunction.InvokeAsync"/> via <see cref="AIFunctionArguments.Services"/>.
+    /// </remarks>
+    public IServiceProvider? Services { get; set; }
+
     /// <summary>Provides configuration options produced by the <see cref="ConfigureParameterBinding"/> delegate.</summary>
     public readonly record struct ParameterBindingOptions
     {

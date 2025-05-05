@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.Data.Validation;
 using Microsoft.Shared.DiagnosticIds;
 
@@ -97,4 +98,13 @@ public partial class ResourceMonitoringOptions
         UrlFormat = DiagnosticIds.UrlFormat)]
     [TimeSpan(MinimumCachingInterval, MaximumCachingInterval)]
     public TimeSpan MemoryConsumptionRefreshInterval { get; set; } = DefaultRefreshInterval;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether CPU metrics are calculated via cgroup CPU limits instead of Host CPU delta.
+    /// </summary>
+    /// <value>
+    /// The default value is <see langword="false"/>.
+    /// </value>
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.ResourceMonitoring, UrlFormat = DiagnosticIds.UrlFormat)]
+    public bool CalculateCpuUsageWithoutHostDelta { get; set; }
 }

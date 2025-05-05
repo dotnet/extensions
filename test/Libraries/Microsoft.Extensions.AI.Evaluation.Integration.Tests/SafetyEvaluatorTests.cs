@@ -7,9 +7,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Azure.Identity;
+using Microsoft.Extensions.AI.Evaluation.Quality;
 using Microsoft.Extensions.AI.Evaluation.Reporting;
 using Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
 using Microsoft.Extensions.AI.Evaluation.Safety;
+using Microsoft.Extensions.AI.Evaluation.Tests;
 using Microsoft.TestUtilities;
 using Xunit;
 
@@ -21,6 +23,7 @@ public class SafetyEvaluatorTests
     private static readonly ReportingConfiguration? _contentSafetyReportingConfiguration;
     private static readonly ReportingConfiguration? _imageContentSafetyReportingConfiguration;
     private static readonly ReportingConfiguration? _codeVulnerabilityReportingConfiguration;
+    private static readonly ReportingConfiguration? _mixedQualityAndSafetyReportingConfiguration;
 
     static SafetyEvaluatorTests()
     {
@@ -33,8 +36,8 @@ public class SafetyEvaluatorTests
                     ResponseFormat = ChatResponseFormat.Text
                 };
 
-            ChatConfiguration chatConfiguration = Setup.CreateChatConfiguration();
-            ChatClientMetadata? clientMetadata = chatConfiguration.ChatClient.GetService<ChatClientMetadata>();
+            ChatConfiguration llmChatConfiguration = Setup.CreateChatConfiguration();
+            ChatClientMetadata? clientMetadata = llmChatConfiguration.ChatClient.GetService<ChatClientMetadata>();
 
             string version = $"Product Version: {Constants.Version}";
             string date = $"Date: {DateTime.UtcNow:dddd, dd MMMM yyyy}";
@@ -53,14 +56,17 @@ public class SafetyEvaluatorTests
                     resourceGroupName: Settings.Current.AzureResourceGroupName,
                     projectName: Settings.Current.AzureAIProjectName);
 
-            IEvaluator hateAndUnfairnessEvaluator = new HateAndUnfairnessEvaluator(contentSafetyServiceConfiguration);
-            IEvaluator selfHarmEvaluator = new SelfHarmEvaluator(contentSafetyServiceConfiguration);
-            IEvaluator sexualEvaluator = new SexualEvaluator(contentSafetyServiceConfiguration);
-            IEvaluator violenceEvaluator = new ViolenceEvaluator(contentSafetyServiceConfiguration);
-            IEvaluator protectedMaterialEvaluator = new ProtectedMaterialEvaluator(contentSafetyServiceConfiguration);
-            IEvaluator groundednessProEvaluator = new GroundednessProEvaluator(contentSafetyServiceConfiguration);
-            IEvaluator ungroundedAttributesEvaluator = new UngroundedAttributesEvaluator(contentSafetyServiceConfiguration);
-            IEvaluator indirectAttackEvaluator = new IndirectAttackEvaluator(contentSafetyServiceConfiguration);
+            ChatConfiguration contentSafetyChatConfiguration =
+                contentSafetyServiceConfiguration.ToChatConfiguration(llmChatConfiguration);
+
+            IEvaluator hateAndUnfairnessEvaluator = new HateAndUnfairnessEvaluator();
+            IEvaluator selfHarmEvaluator = new SelfHarmEvaluator();
+            IEvaluator sexualEvaluator = new SexualEvaluator();
+            IEvaluator violenceEvaluator = new ViolenceEvaluator();
+            IEvaluator protectedMaterialEvaluator = new ProtectedMaterialEvaluator();
+            IEvaluator groundednessProEvaluator = new GroundednessProEvaluator();
+            IEvaluator ungroundedAttributesEvaluator = new UngroundedAttributesEvaluator();
+            IEvaluator indirectAttackEvaluator = new IndirectAttackEvaluator();
 
             _contentSafetyReportingConfiguration =
                 DiskBasedReportingConfiguration.Create(
@@ -72,9 +78,12 @@ public class SafetyEvaluatorTests
                         groundednessProEvaluator,
                         ungroundedAttributesEvaluator,
                         indirectAttackEvaluator],
-                    chatConfiguration: chatConfiguration,
+                    chatConfiguration: contentSafetyChatConfiguration,
                     executionName: Constants.Version,
                     tags: [version, date, projectName, testClass, provider, model, temperature, usesContext]);
+
+            ChatConfiguration contentSafetyChatConfigurationWithoutLLM =
+                contentSafetyServiceConfiguration.ToChatConfiguration();
 
             _imageContentSafetyReportingConfiguration =
                 DiskBasedReportingConfiguration.Create(
@@ -84,15 +93,28 @@ public class SafetyEvaluatorTests
                         violenceEvaluator,
                         protectedMaterialEvaluator,
                         indirectAttackEvaluator],
+                    chatConfiguration: contentSafetyChatConfigurationWithoutLLM,
                     executionName: Constants.Version,
                     tags: [version, date, projectName, testClass, provider, model, temperature]);
 
-            IEvaluator codeVulnerabilityEvaluator = new CodeVulnerabilityEvaluator(contentSafetyServiceConfiguration);
+            IEvaluator codeVulnerabilityEvaluator = new CodeVulnerabilityEvaluator();
 
             _codeVulnerabilityReportingConfiguration =
                 DiskBasedReportingConfiguration.Create(
                     storageRootPath: Settings.Current.StorageRootPath,
                     evaluators: [codeVulnerabilityEvaluator],
+                    chatConfiguration: contentSafetyChatConfigurationWithoutLLM,
+                    executionName: Constants.Version,
+                    tags: [version, date, projectName, testClass, provider, model, temperature]);
+
+            IEvaluator fluencyEvaluator = new FluencyEvaluator();
+            IEvaluator contentHarmEvaluator = new ContentHarmEvaluator();
+
+            _mixedQualityAndSafetyReportingConfiguration =
+                DiskBasedReportingConfiguration.Create(
+                    storageRootPath: Settings.Current.StorageRootPath,
+                    evaluators: [fluencyEvaluator, contentHarmEvaluator],
+                    chatConfiguration: contentSafetyChatConfiguration,
                     executionName: Constants.Version,
                     tags: [version, date, projectName, testClass, provider, model, temperature]);
         }
@@ -130,17 +152,34 @@ public class SafetyEvaluatorTests
             At its furthest point (conjunction), Mars is about 250 million miles from Earth.
             The distance varies due to the elliptical orbits of both planets.
             """;
-        IEnumerable<EvaluationContext> contexts =
-            [
-                new GroundednessProEvaluatorContext(groundingContext),
-                new UngroundedAttributesEvaluatorContext(groundingContext)
-            ];
 
-        EvaluationResult result = await scenarioRun.EvaluateAsync(messages, response, contexts);
+        GroundednessProEvaluatorContext groundednessProContext = new GroundednessProEvaluatorContext(groundingContext);
+        UngroundedAttributesEvaluatorContext ungroundedAttributesContext = new UngroundedAttributesEvaluatorContext(groundingContext);
+        IEnumerable<EvaluationContext> additionalContext = [groundednessProContext, ungroundedAttributesContext];
+
+        EvaluationResult result = await scenarioRun.EvaluateAsync(messages, response, additionalContext);
 
         Assert.False(
             result.ContainsDiagnostics(d => d.Severity is EvaluationDiagnosticSeverity.Error),
             string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
+
+        Assert.Equal(6, result.Metrics.Count);
+        Assert.True(result.TryGet(SelfHarmEvaluator.SelfHarmMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(SexualEvaluator.SexualMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedMaterialMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(GroundednessProEvaluator.GroundednessProMetricName, out NumericMetric? groundednessPro));
+        Assert.True(result.TryGet(UngroundedAttributesEvaluator.UngroundedAttributesMetricName, out BooleanMetric? ungroundedAttributes));
+        Assert.True(result.TryGet(IndirectAttackEvaluator.IndirectAttackMetricName, out BooleanMetric? _));
+
+        Assert.True(
+            groundednessPro.Context?.Count is 1 &&
+            groundednessPro.Context.TryGetValue(GroundednessProEvaluatorContext.GroundingContextName, out EvaluationContext? context1) &&
+            ReferenceEquals(context1, groundednessProContext));
+
+        Assert.True(
+            ungroundedAttributes.Context?.Count is 1 &&
+            ungroundedAttributes.Context.TryGetValue(UngroundedAttributesEvaluatorContext.GroundingContextName, out EvaluationContext? context2) &&
+            ReferenceEquals(context2, ungroundedAttributesContext));
     }
 
     [ConditionalFact]
@@ -175,6 +214,9 @@ public class SafetyEvaluatorTests
 
         ChatResponse response2 = await chatClient.GetResponseAsync(messages, _chatOptions);
 
+        // At the moment, the GroundednessProEvaluator only supports evaluating the last turn of the conversation. We
+        // include context that is relevant to both turns as part of the string above. However, only the included
+        // context relevant to the last (second) turn matters for the evaluation.
         string groundingContext =
             """
             Mercury's distance from Earth varies due to their elliptical orbits.
@@ -186,19 +228,33 @@ public class SafetyEvaluatorTests
             At its furthest (conjunction), it can be approximately 601 million miles away.
             """;
 
-        // At the moment, the GroundednessProEvaluator only supports evaluating the last turn of the conversation.
-        // We include context for the first turn below, however, this is essentially redundant at the moment.
-        IEnumerable<EvaluationContext> contexts =
-            [
-                new GroundednessProEvaluatorContext(groundingContext),
-                new UngroundedAttributesEvaluatorContext(groundingContext)
-            ];
+        GroundednessProEvaluatorContext groundednessProContext = new GroundednessProEvaluatorContext(groundingContext);
+        UngroundedAttributesEvaluatorContext ungroundedAttributesContext = new UngroundedAttributesEvaluatorContext(groundingContext);
+        IEnumerable<EvaluationContext> additionalContext = [groundednessProContext, ungroundedAttributesContext];
 
-        EvaluationResult result = await scenarioRun.EvaluateAsync(messages, response2, contexts);
+        EvaluationResult result = await scenarioRun.EvaluateAsync(messages, response2, additionalContext);
 
         Assert.False(
             result.ContainsDiagnostics(d => d.Severity is EvaluationDiagnosticSeverity.Error),
             string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
+
+        Assert.Equal(6, result.Metrics.Count);
+        Assert.True(result.TryGet(SelfHarmEvaluator.SelfHarmMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(SexualEvaluator.SexualMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedMaterialMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(GroundednessProEvaluator.GroundednessProMetricName, out NumericMetric? groundednessPro));
+        Assert.True(result.TryGet(UngroundedAttributesEvaluator.UngroundedAttributesMetricName, out BooleanMetric? ungroundedAttributes));
+        Assert.True(result.TryGet(IndirectAttackEvaluator.IndirectAttackMetricName, out BooleanMetric? _));
+
+        Assert.True(
+            groundednessPro.Context?.Count is 1 &&
+            groundednessPro.Context.TryGetValue(GroundednessProEvaluatorContext.GroundingContextName, out EvaluationContext? context1) &&
+            ReferenceEquals(context1, groundednessProContext));
+
+        Assert.True(
+            ungroundedAttributes.Context?.Count is 1 &&
+            ungroundedAttributes.Context.TryGetValue(UngroundedAttributesEvaluatorContext.GroundingContextName, out EvaluationContext? context2) &&
+            ReferenceEquals(context2, ungroundedAttributesContext));
     }
 
     [ConditionalFact]
@@ -226,6 +282,15 @@ public class SafetyEvaluatorTests
         Assert.False(
             result.ContainsDiagnostics(d => d.Severity is EvaluationDiagnosticSeverity.Error),
             string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
+
+        Assert.Equal(7, result.Metrics.Count);
+        Assert.True(result.TryGet(HateAndUnfairnessEvaluator.HateAndUnfairnessMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(ViolenceEvaluator.ViolenceMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedMaterialMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedArtworkMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedFictionalCharactersMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedLogosAndBrandsMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(IndirectAttackEvaluator.IndirectAttackMetricName, out BooleanMetric? _));
     }
 
     [ConditionalFact]
@@ -237,15 +302,15 @@ public class SafetyEvaluatorTests
             await _imageContentSafetyReportingConfiguration.CreateScenarioRunAsync(
                 scenarioName: $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(SafetyEvaluatorTests)}.{nameof(EvaluateConversationWithImageInAnswer)}");
 
-        ChatMessage question = "Can you show me an image pertaining to Microsoft Copilot?".ToUserMessage();
+        ChatMessage question = "Can you show me an image pertaining to DotNet?".ToUserMessage();
 
         ChatMessage answer =
             new ChatMessage
             {
                 Role = ChatRole.Assistant,
                 Contents = [
-                    new TextContent("Here's an image pertaining to Microsoft Copilot:"),
-                    new UriContent("https://uhf.microsoft.com/images/banners/RW1iGSh.png", "image/png")],
+                    new TextContent("Here's an image pertaining to DotNet:"),
+                    new DataContent(ImageDataUri.GetImageDataUri())],
             };
 
         EvaluationResult result = await scenarioRun.EvaluateAsync(question, answer);
@@ -253,6 +318,15 @@ public class SafetyEvaluatorTests
         Assert.False(
             result.ContainsDiagnostics(d => d.Severity is EvaluationDiagnosticSeverity.Error),
             string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
+
+        Assert.Equal(7, result.Metrics.Count);
+        Assert.True(result.TryGet(HateAndUnfairnessEvaluator.HateAndUnfairnessMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(ViolenceEvaluator.ViolenceMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedMaterialMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedArtworkMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedFictionalCharactersMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedLogosAndBrandsMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(IndirectAttackEvaluator.IndirectAttackMetricName, out BooleanMetric? _));
     }
 
     [ConditionalFact]
@@ -270,10 +344,10 @@ public class SafetyEvaluatorTests
                 Role = ChatRole.User,
                 Contents = [
                     new TextContent("What does this image depict?"),
-                    new UriContent("https://uhf.microsoft.com/images/microsoft/RE1Mu3b.png", "image/png")],
+                    new DataContent(ImageDataUri.GetImageDataUri())],
             };
 
-        ChatMessage answer1 = "The image depicts a logo for Microsoft Corporation.".ToAssistantMessage();
+        ChatMessage answer1 = "The image depicts a logo for DotNet.".ToAssistantMessage();
 
         ChatMessage question2 = "Can you show me an image pertaining to Microsoft Copilot?".ToUserMessage();
 
@@ -293,6 +367,15 @@ public class SafetyEvaluatorTests
         Assert.False(
             result.ContainsDiagnostics(d => d.Severity is EvaluationDiagnosticSeverity.Error),
             string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
+
+        Assert.Equal(7, result.Metrics.Count);
+        Assert.True(result.TryGet(HateAndUnfairnessEvaluator.HateAndUnfairnessMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(ViolenceEvaluator.ViolenceMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedMaterialMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedArtworkMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedFictionalCharactersMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedLogosAndBrandsMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(IndirectAttackEvaluator.IndirectAttackMetricName, out BooleanMetric? _));
     }
 
     [ConditionalFact]
@@ -346,6 +429,15 @@ public class SafetyEvaluatorTests
         Assert.False(
             result.ContainsDiagnostics(d => d.Severity is EvaluationDiagnosticSeverity.Error),
             string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
+
+        Assert.Equal(7, result.Metrics.Count);
+        Assert.True(result.TryGet(HateAndUnfairnessEvaluator.HateAndUnfairnessMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(ViolenceEvaluator.ViolenceMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedMaterialMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedArtworkMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedFictionalCharactersMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedLogosAndBrandsMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(IndirectAttackEvaluator.IndirectAttackMetricName, out BooleanMetric? _));
     }
 
     [ConditionalFact]
@@ -372,6 +464,9 @@ public class SafetyEvaluatorTests
         Assert.False(
             result.ContainsDiagnostics(d => d.Severity is EvaluationDiagnosticSeverity.Error),
             string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
+
+        Assert.Single(result.Metrics);
+        Assert.True(result.TryGet(CodeVulnerabilityEvaluator.CodeVulnerabilityMetricName, out BooleanMetric? _));
     }
 
     [ConditionalFact]
@@ -410,11 +505,53 @@ public class SafetyEvaluatorTests
         Assert.False(
             result.ContainsDiagnostics(d => d.Severity is EvaluationDiagnosticSeverity.Error),
             string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
+
+        Assert.Single(result.Metrics);
+        Assert.True(result.TryGet(CodeVulnerabilityEvaluator.CodeVulnerabilityMetricName, out BooleanMetric? _));
+    }
+
+    [ConditionalFact]
+    public async Task EvaluateSafetyAndQualityMetricsForSameConversation()
+    {
+        SkipIfNotConfigured();
+
+        await using ScenarioRun scenarioRun =
+            await _mixedQualityAndSafetyReportingConfiguration.CreateScenarioRunAsync(
+                scenarioName: $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(SafetyEvaluatorTests)}.{nameof(EvaluateSafetyAndQualityMetricsForSameConversation)}");
+
+        IChatClient chatClient = scenarioRun.ChatConfiguration!.ChatClient;
+
+        var messages = new List<ChatMessage>();
+
+        string prompt1 = "How far is the planet Saturn from the Earth at its closest and furthest points? Keep your responses concise staying under 100 words as much as possible.";
+        messages.Add(prompt1.ToUserMessage());
+
+        ChatResponse response1 = await chatClient.GetResponseAsync(messages, _chatOptions);
+        messages.AddRange(response1.Messages);
+
+        string prompt2 = "How far is the planet Neptune from the Earth at its closest and furthest points? Keep your responses concise staying under 100 words as much as possible.";
+        messages.Add(prompt2.ToUserMessage());
+
+        ChatResponse response2 = await chatClient.GetResponseAsync(messages, _chatOptions);
+
+        EvaluationResult result = await scenarioRun.EvaluateAsync(messages, response2);
+
+        Assert.False(
+            result.ContainsDiagnostics(d => d.Severity is EvaluationDiagnosticSeverity.Error),
+            string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
+
+        Assert.Equal(5, result.Metrics.Count);
+        Assert.True(result.TryGet(FluencyEvaluator.FluencyMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(HateAndUnfairnessEvaluator.HateAndUnfairnessMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(SelfHarmEvaluator.SelfHarmMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(SexualEvaluator.SexualMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(ViolenceEvaluator.ViolenceMetricName, out NumericMetric? _));
     }
 
     [MemberNotNull(nameof(_contentSafetyReportingConfiguration))]
     [MemberNotNull(nameof(_imageContentSafetyReportingConfiguration))]
     [MemberNotNull(nameof(_codeVulnerabilityReportingConfiguration))]
+    [MemberNotNull(nameof(_mixedQualityAndSafetyReportingConfiguration))]
     private static void SkipIfNotConfigured()
     {
         if (!Settings.Current.Configured)
@@ -425,5 +562,6 @@ public class SafetyEvaluatorTests
         Assert.NotNull(_contentSafetyReportingConfiguration);
         Assert.NotNull(_codeVulnerabilityReportingConfiguration);
         Assert.NotNull(_imageContentSafetyReportingConfiguration);
+        Assert.NotNull(_mixedQualityAndSafetyReportingConfiguration);
     }
 }

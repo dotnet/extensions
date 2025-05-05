@@ -396,10 +396,10 @@ while (true)
 }
 ```
 
-For stateful services, you may know ahead of time an identifier used for the relevant conversation. That identifier can be put into `ChatOptions.ChatThreadId`.
+For stateful services, you may know ahead of time an identifier used for the relevant conversation. That identifier can be put into `ChatOptions.ConversationId`.
 Usage then follows the same pattern, except there's no need to maintain a history manually.
 ```csharp
-ChatOptions options = new() { ChatThreadId = "my-conversation-id" };
+ChatOptions options = new() { ConversationId = "my-conversation-id" };
 while (true)
 {
     Console.Write("Q: ");
@@ -409,8 +409,8 @@ while (true)
 }
 ```
 
-Some services may support automatically creating a thread ID for a request that doesn't have one. In such cases, you can transfer the `ChatResponse.ChatThreadId` over
-to the `ChatOptions.ChatThreadId` for subsequent requests, e.g.
+Some services may support automatically creating a thread ID for a request that doesn't have one. In such cases, you can transfer the `ChatResponse.ConversationId` over
+to the `ChatOptions.ConversationId` for subsequent requests, e.g.
 ```csharp
 ChatOptions options = new();
 while (true)
@@ -421,13 +421,13 @@ while (true)
     ChatResponse response = await client.GetResponseAsync(message, options);
     Console.WriteLine(response);
 
-    options.ChatThreadId = response.ChatThreadId;
+    options.ConversationId = response.ConversationId;
 }
 ```
 
-If you don't know ahead of time whether the service is stateless or stateful, both can be accomodated by checking the response `ChatThreadId`
-and acting based on its value. Here, if the response `ChatThreadId` is set, then that value is propagated to the options and the history
-cleared so as to not resend the same history again. If, however, the `ChatThreadId` is not set, then the response message is added to the
+If you don't know ahead of time whether the service is stateless or stateful, both can be accomodated by checking the response `ConversationId`
+and acting based on its value. Here, if the response `ConversationId` is set, then that value is propagated to the options and the history
+cleared so as to not resend the same history again. If, however, the `ConversationId` is not set, then the response message is added to the
 history so that it's sent back to the service on the next turn.
 ```csharp
 List<ChatMessage> history = [];
@@ -440,8 +440,8 @@ while (true)
     ChatResponse response = await client.GetResponseAsync(history);
     Console.WriteLine(response);
 
-    options.ChatThreadId = response.ChatThreadId;
-    if (response.ChatThreadId is not null)
+    options.ConversationId = response.ConversationId;
+    if (response.ConversationId is not null)
     {
         history.Clear();
     }
@@ -522,7 +522,7 @@ using Microsoft.Extensions.AI;
 IEmbeddingGenerator<string, Embedding<float>> generator =
     new SampleEmbeddingGenerator(new Uri("http://coolsite.ai"), "my-custom-model");
 
-ReadOnlyMemory<float> vector = generator.GenerateEmbeddingVectorAsync("What is AI?");
+ReadOnlyMemory<float> vector = generator.GenerateVectorAsync("What is AI?");
 ```
 
 #### Pipelines of Functionality

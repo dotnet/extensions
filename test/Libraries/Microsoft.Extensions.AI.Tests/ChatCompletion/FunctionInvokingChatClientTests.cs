@@ -744,7 +744,7 @@ public class FunctionInvokingChatClientTests
     }
 
     [Fact]
-    public async Task CanResumeFunctionCallingAfterTermination()
+    public async Task HaltFunctionCallingAfterTermination()
     {
         var function = AIFunctionFactory.Create((string? result = null) =>
         {
@@ -788,18 +788,16 @@ public class FunctionInvokingChatClientTests
         var lastMessage = messages.Last();
         Assert.Equal(ChatRole.Tool, lastMessage.Role);
         var frcs = lastMessage.Contents.OfType<FunctionResultContent>().ToList();
-        Assert.Equal(3, frcs.Count);
-        Assert.Equal("birds", frcs[1].Result!.ToString());
+        Assert.Single(frcs);
         frcs[0].Result = "dogs";
-        frcs[2].Result = "cats";
 
         // We can re-enter the function calling mechanism to get a final answer
         result = await chatClient.GetResponseAsync(messages, chatOptions);
-        Assert.Equal("The search results were 'dogs, birds, cats'", result.Text);
+        Assert.Equal("The search results were 'dogs'", result.Text);
     }
 
     [Fact]
-    public async Task PropagatesResponseChatThreadIdToOptions()
+    public async Task PropagatesResponseConversationIdToOptions()
     {
         var options = new ChatOptions
         {
@@ -815,15 +813,15 @@ public class FunctionInvokingChatClientTests
 
                 if (iteration == 1)
                 {
-                    Assert.Null(chatOptions?.ChatThreadId);
+                    Assert.Null(chatOptions?.ConversationId);
                     return new ChatResponse(new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId-abc", "Func1")]))
                     {
-                        ChatThreadId = "12345",
+                        ConversationId = "12345",
                     };
                 }
                 else if (iteration == 2)
                 {
-                    Assert.Equal("12345", chatOptions?.ChatThreadId);
+                    Assert.Equal("12345", chatOptions?.ConversationId);
                     return new ChatResponse(new ChatMessage(ChatRole.Assistant, "done!"));
                 }
                 else
