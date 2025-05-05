@@ -9,6 +9,7 @@ using System.Runtime.Versioning;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Helpers;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.Shared.Instruments;
 using Microsoft.TestUtilities;
@@ -22,6 +23,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Disk.Test;
 public class WindowsDiskMetricsTests
 {
     private const string CategoryName = "LogicalDisk";
+    private readonly FakeLogger<WindowsDiskMetrics> _fakeLogger = new();
 
     [ConditionalFact]
     public void Creates_Meter_With_Correct_Name()
@@ -31,6 +33,7 @@ public class WindowsDiskMetricsTests
         var options = new ResourceMonitoringOptions { EnableDiskIoMetrics = true };
 
         _ = new WindowsDiskMetrics(
+            _fakeLogger,
             meterFactory,
             performanceCounterFactoryMock.Object,
             TimeProvider.System,
@@ -62,6 +65,7 @@ public class WindowsDiskMetricsTests
         performanceCounterFactory.Setup(x => x.GetCategoryInstances(CategoryName)).Returns(["_Total", "C:", "D:"]);
 
         _ = new WindowsDiskMetrics(
+            _fakeLogger,
             meterFactory,
             performanceCounterFactory.Object,
             fakeTimeProvider,
@@ -135,6 +139,7 @@ public class WindowsDiskMetricsTests
         performanceCounterFactory.Setup(x => x.GetCategoryInstances(CategoryName)).Returns(["_Total", "C:", "D:"]);
 
         _ = new WindowsDiskMetrics(
+            _fakeLogger,
             meterFactory,
             performanceCounterFactory.Object,
             fakeTimeProvider,

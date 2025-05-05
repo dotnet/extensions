@@ -67,6 +67,14 @@ internal static class ResourceUtilizationInstruments
     public const string SystemDiskIo = "system.disk.io";
 
     /// <summary>
+    /// The name of an instrument to retrieve the time disk spent activated.
+    /// </summary>
+    /// <remarks>
+    /// The type of an instrument is <see cref="System.Diagnostics.Metrics.ObservableCounter{T}"/>.
+    /// </remarks>
+    public const string SystemDiskIoTime = "system.disk.io_time";
+
+    /// <summary>
     /// The name of an instrument to retrieve disk operations.
     /// </summary>
     /// <remarks>
