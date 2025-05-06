@@ -457,7 +457,11 @@ public static partial class AIJsonUtilities
         if (defaultValue is null || (defaultValue == DBNull.Value && parameterType != typeof(DBNull)))
         {
             return parameterType.IsValueType
-                ? Activator.CreateInstance(parameterType)
+#if NET
+                ? RuntimeHelpers.GetUninitializedObject(parameterType)
+#else
+                ? System.Runtime.Serialization.FormatterServices.GetUninitializedObject(parameterType)
+#endif
                 : null;
         }
 
