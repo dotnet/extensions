@@ -812,10 +812,12 @@ public partial class AIFunctionFactoryTest
     [Fact]
     public async Task AIFunctionFactory_DefaultDefaultParameter()
     {
-        AIFunction f = AIFunctionFactory.Create((Guid g = default) => g, serializerOptions: JsonContext.Default.Options);
+        Assert.NotEqual(new StructWithDefaultCtor().Value, default(StructWithDefaultCtor).Value);
+
+        AIFunction f = AIFunctionFactory.Create((Guid g = default, StructWithDefaultCtor s = default) => g.ToString() + "," + s.Value.ToString(), serializerOptions: JsonContext.Default.Options);
 
         object? result = await f.InvokeAsync();
-        Assert.Contains("00000000-0000-0000-0000-000000000000", result?.ToString());
+        Assert.Contains("00000000-0000-0000-0000-000000000000,0", result?.ToString());
     }
 
     private sealed class MyService(int value)
@@ -880,8 +882,19 @@ public partial class AIFunctionFactoryTest
     private class B : A;
     private sealed class C : B;
 
+    public readonly struct StructWithDefaultCtor
+    {
+        public int Value { get; }
+        public StructWithDefaultCtor()
+        {
+            Value = 42;
+        }
+    }
+
     [JsonSerializable(typeof(IAsyncEnumerable<int>))]
     [JsonSerializable(typeof(int[]))]
+    [JsonSerializable(typeof(string))]
     [JsonSerializable(typeof(Guid))]
+    [JsonSerializable(typeof(StructWithDefaultCtor))]
     private partial class JsonContext : JsonSerializerContext;
 }
