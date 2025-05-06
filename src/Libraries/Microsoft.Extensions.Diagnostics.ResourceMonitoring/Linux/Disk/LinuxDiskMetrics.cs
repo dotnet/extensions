@@ -115,10 +115,10 @@ internal sealed class LinuxDiskMetrics
                 continue;
             }
 
-            long readCounts = (long)(diskStats.ReadsCompleted - baselineDiskStats.ReadsCompleted);
-            long writeBytes = (long)(diskStats.WritesCompleted - baselineDiskStats.WritesCompleted);
-            measurements.Add(new Measurement<long>(readCounts, new TagList { _directionReadTag, new(DeviceKey, diskStats.DeviceName) }));
-            measurements.Add(new Measurement<long>(writeBytes, new TagList { _directionWriteTag, new(DeviceKey, diskStats.DeviceName) }));
+            long readCount = (long)(diskStats.ReadsCompleted - baselineDiskStats.ReadsCompleted);
+            long writeCount = (long)(diskStats.WritesCompleted - baselineDiskStats.WritesCompleted);
+            measurements.Add(new Measurement<long>(readCount, new TagList { _directionReadTag, new(DeviceKey, diskStats.DeviceName) }));
+            measurements.Add(new Measurement<long>(writeCount, new TagList { _directionWriteTag, new(DeviceKey, diskStats.DeviceName) }));
         }
 
         return measurements;
