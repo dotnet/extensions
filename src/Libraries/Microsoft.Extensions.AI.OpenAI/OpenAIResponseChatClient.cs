@@ -359,7 +359,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                     switch (tool)
                     {
                         case AIFunction af:
-                            var oaitool = JsonSerializer.Deserialize(af.JsonSchema, ResponseClientJsonContext.Default.ResponseToolJson)!;
+                            var oaitool = JsonSerializer.Deserialize(SchemaTransformerCache.GetTransformedSchema(af), ResponseClientJsonContext.Default.ResponseToolJson)!;
                             var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(oaitool, ResponseClientJsonContext.Default.ResponseToolJson));
                             result.Tools.Add(ResponseTool.CreateFunctionTool(af.Name, af.Description, functionParameters));
                             break;
