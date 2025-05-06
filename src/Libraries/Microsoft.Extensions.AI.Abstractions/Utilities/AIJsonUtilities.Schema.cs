@@ -446,21 +446,23 @@ public static partial class AIJsonUtilities
         return JsonElement.ParseValue(ref reader);
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2072:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method.",
+        Justification = "Called conditionally on structs whose default ctor never gets trimmed.")]
     private static object? GetDefaultValueNormalized(ParameterInfo parameterInfo)
     {
         // Taken from https://github.com/dotnet/runtime/blob/eff415bfd667125c1565680615a6f19152645fbf/src/libraries/System.Text.Json/Common/ReflectionExtensions.cs#L288-L317
         Type parameterType = parameterInfo.ParameterType;
         object? defaultValue = parameterInfo.DefaultValue;
 
-        if (defaultValue is null)
+        if (defaultValue is null || (defaultValue == DBNull.Value && parameterType != typeof(DBNull)))
         {
-            return null;
-        }
-
-        // DBNull.Value is sometimes used as the default value (returned by reflection) of nullable params in place of null.
-        if (defaultValue == DBNull.Value && parameterType != typeof(DBNull))
-        {
-            return null;
+            return parameterType.IsValueType
+#if NET
+                ? RuntimeHelpers.GetUninitializedObject(parameterType)
+#else
+                ? System.Runtime.Serialization.FormatterServices.GetUninitializedObject(parameterType)
+#endif
+                : null;
         }
 
         // Default values of enums or nullable enums are represented using the underlying type and need to be cast explicitly
