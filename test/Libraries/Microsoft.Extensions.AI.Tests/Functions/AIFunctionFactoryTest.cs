@@ -809,6 +809,15 @@ public partial class AIFunctionFactoryTest
         Assert.Equal("marshalResultInvoked", result);
     }
 
+    [Fact]
+    public async Task AIFunctionFactory_DefaultDefaultParameter()
+    {
+        AIFunction f = AIFunctionFactory.Create((Guid g = default) => g, serializerOptions: JsonContext.Default.Options);
+
+        object? result = await f.InvokeAsync();
+        Assert.Contains("00000000-0000-0000-0000-000000000000", result?.ToString());
+    }
+
     private sealed class MyService(int value)
     {
         public int Value => value;
@@ -873,5 +882,6 @@ public partial class AIFunctionFactoryTest
 
     [JsonSerializable(typeof(IAsyncEnumerable<int>))]
     [JsonSerializable(typeof(int[]))]
+    [JsonSerializable(typeof(Guid))]
     private partial class JsonContext : JsonSerializerContext;
 }
