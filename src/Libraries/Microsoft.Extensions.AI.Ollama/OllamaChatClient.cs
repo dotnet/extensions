@@ -12,6 +12,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI.Utilities;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable EA0011 // Consider removing unnecessary conditional access operator (?)
@@ -24,6 +25,11 @@ namespace Microsoft.Extensions.AI;
 public sealed class OllamaChatClient : IChatClient
 {
     private static readonly JsonElement _schemalessJsonResponseFormatValue = JsonDocument.Parse("\"json\"").RootElement;
+
+    private static readonly AIJsonSchemaTransformCache _schemaTransformCache = new(new()
+    {
+        ConvertBooleanSchemas = true,
+    });
 
     /// <summary>Metadata about the client.</summary>
     private readonly ChatClientMetadata _metadata;
@@ -292,7 +298,7 @@ public sealed class OllamaChatClient : IChatClient
     {
         if (format is ChatResponseFormatJson jsonFormat)
         {
-            return jsonFormat.Schema ?? _schemalessJsonResponseFormatValue;
+            return _schemaTransformCache.GetOrCreateTransformedSchema(jsonFormat) ?? _schemalessJsonResponseFormatValue;
         }
         else
         {
@@ -483,7 +489,7 @@ public sealed class OllamaChatClient : IChatClient
             {
                 Name = function.Name,
                 Description = function.Description,
-                Parameters = JsonSerializer.Deserialize(function.JsonSchema, JsonContext.Default.OllamaFunctionToolParameters)!,
+                Parameters = JsonSerializer.Deserialize(_schemaTransformCache.GetOrCreateTransformedSchema(function), JsonContext.Default.OllamaFunctionToolParameters)!,
             }
         };
     }

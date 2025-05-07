@@ -83,10 +83,11 @@ public static partial class AIJsonUtilities
                     path?.RemoveAt(path.Count - 1);
                 }
 
-                if (schemaObj.TryGetPropertyValue(AdditionalPropertiesPropertyName, out JsonNode? additionalProps) && additionalProps is JsonObject additionalPropsSchema)
+                if (schemaObj.TryGetPropertyValue(AdditionalPropertiesPropertyName, out JsonNode? additionalProps) &&
+                    additionalProps?.GetValueKind() is not JsonValueKind.False)
                 {
                     path?.Add(AdditionalPropertiesPropertyName);
-                    schemaObj[AdditionalPropertiesPropertyName] = TransformSchemaCore(additionalPropsSchema, transformOptions, path);
+                    schemaObj[AdditionalPropertiesPropertyName] = TransformSchemaCore(additionalProps, transformOptions, path);
                     path?.RemoveAt(path.Count - 1);
                 }
 
@@ -97,6 +98,7 @@ public static partial class AIJsonUtilities
                     path?.RemoveAt(path.Count - 1);
                 }
 
+                // Traverse keywords that contain arrays of schemas
                 ReadOnlySpan<string> combinatorKeywords = ["anyOf", "oneOf", "allOf"];
                 foreach (string combinatorKeyword in combinatorKeywords)
                 {
@@ -176,6 +178,7 @@ public static partial class AIJsonUtilities
                 break;
         }
 
+        // Apply user-defined transformations as the final step.
         if (transformOptions.TransformSchemaNode is { } transformer)
         {
             Debug.Assert(path != null, "Path should not be null when TransformSchemaNode is provided.");

@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.AI;
 internal sealed partial class OpenAIChatClient : IChatClient
 {
     /// <summary>Gets the JSON schema transformer cache conforming to OpenAI restrictions per https://platform.openai.com/docs/guides/structured-outputs?api-mode=responses#supported-schemas.</summary>
-    internal static AIFunctionSchemaTransformerCache SchemaTransformerCache { get; } = new(new()
+    internal static AIJsonSchemaTransformCache SchemaTransformCache { get; } = new(new()
     {
         RequireAllProperties = true,
         DisallowAdditionalProperties = true,
@@ -619,7 +619,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
             }
             else if (options.ResponseFormat is ChatResponseFormatJson jsonFormat)
             {
-                result.ResponseFormat = jsonFormat.Schema is { } jsonSchema ?
+                result.ResponseFormat = SchemaTransformCache.GetOrCreateTransformedSchema(jsonFormat) is { } jsonSchema ?
                     OpenAI.Chat.ChatResponseFormat.CreateJsonSchemaFormat(
                         jsonFormat.SchemaName ?? "json_schema",
                         BinaryData.FromBytes(
@@ -641,7 +641,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
             strictValue : null;
 
         // Perform transformations making the schema legal per OpenAI restrictions
-        JsonElement jsonSchema = SchemaTransformerCache.GetTransformedSchema(aiFunction);
+        JsonElement jsonSchema = SchemaTransformCache.GetOrCreateTransformedSchema(aiFunction);
 
         // Map to an intermediate model so that redundant properties are skipped.
         var tool = JsonSerializer.Deserialize(jsonSchema, ChatClientJsonContext.Default.ChatToolJson)!;
