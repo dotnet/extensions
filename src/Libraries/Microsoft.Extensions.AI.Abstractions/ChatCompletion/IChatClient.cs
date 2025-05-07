@@ -24,6 +24,7 @@ namespace Microsoft.Extensions.AI;
 /// </para>
 /// </remarks>
 /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/quickstarts/build-chat-app">Build an AI chat app with .NET.</related>
+/// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#the-ichatclient-interface">The IChatClient interface.</related>
 public interface IChatClient : IDisposable
 {
     /// <summary>Sends chat messages and returns the response.</summary>
@@ -48,6 +49,7 @@ public interface IChatClient : IDisposable
     /// Callers are expected to apply rate limits on a per-user or per-session basis as needed.
     /// </para>
     /// </remarks>
+    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#request-a-chat-response">Request a chat response.</related>
     Task<ChatResponse> GetResponseAsync(
         IEnumerable<ChatMessage> messages,
         ChatOptions? options = null,
@@ -75,6 +77,7 @@ public interface IChatClient : IDisposable
     /// Callers are expected to apply rate limits on a per-user or per-session basis as needed.
     /// </para>
     /// </remarks>
+    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#request-a-streaming-chat-response">Request a streaming chat response.</related>
     IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IEnumerable<ChatMessage> messages,
         ChatOptions? options = null,
