@@ -31,10 +31,10 @@ public static partial class AIJsonUtilities
             throw new ArgumentException("The options instance does not specify any transformations.", nameof(transformOptions));
         }
 
-        JsonNode nodeSchema = JsonSerializer.SerializeToNode(schema, JsonContext.Default.JsonElement)!;
+        JsonNode? nodeSchema = JsonSerializer.SerializeToNode(schema, JsonContext.Default.JsonElement);
         List<string>? path = transformOptions.TransformSchemaNode is not null ? [] : null;
         JsonNode transformedSchema = TransformSchemaCore(nodeSchema, transformOptions, path);
-        return JsonSerializer.Deserialize(transformedSchema, JsonContext.Default.JsonElement)!;
+        return JsonSerializer.Deserialize(transformedSchema, JsonContext.Default.JsonElement);
     }
 
     private static JsonNode TransformSchemaCore(JsonNode? schema, AIJsonSchemaTransformOptions transformOptions, List<string>? path)
