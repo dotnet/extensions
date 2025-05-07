@@ -108,7 +108,7 @@ public sealed class LinuxUtilizationProviderTests
         {
             { new FileInfo("/sys/fs/cgroup/memory.max"), "9223372036854771712" },
             { new FileInfo("/proc/stat"), "cpu 10 10 10 10 10 10 10 10 10 10"},
-            { new FileInfo("/sys/fs/cgroup/cpu.stat"), "usage_usec 102312"},
+            { new FileInfo("/sys/fs/cgroup/cpu.stat"), "usage_usec 102312\nnr_periods 50"},
             { new FileInfo("/proc/meminfo"), "MemTotal: 1024 kB"},
             { new FileInfo("/sys/fs/cgroup/cpuset.cpus.effective"), "0-19"},
             { new FileInfo("/sys/fs/cgroup/cpu/cpu.max"), "20000 100000"},
@@ -176,7 +176,7 @@ public sealed class LinuxUtilizationProviderTests
         {
             { new FileInfo("/sys/fs/cgroup/memory.max"), "9223372036854771712" },
             { new FileInfo("/proc/stat"), "cpu 10 10 10 10 10 10 10 10 10 10"},
-            { new FileInfo("/sys/fs/cgroup/cpu.stat"), "usage_usec 102312"},
+            { new FileInfo("/sys/fs/cgroup/cpu.stat"), "usage_usec 102312\nnr_periods 50"},
             { new FileInfo("/proc/meminfo"), "MemTotal: 1024 kB"},
             { new FileInfo("/sys/fs/cgroup/cpuset.cpus.effective"), "0-19"},
             { new FileInfo("/sys/fs/cgroup/cpu/cpu.max"), "20000 100000"},
@@ -223,7 +223,7 @@ public sealed class LinuxUtilizationProviderTests
             { new FileInfo("/proc/self/cgroup"), "0::/fakeslice" },
             { new FileInfo("/sys/fs/cgroup/memory.max"), "9223372036854771712" },
             { new FileInfo("/proc/stat"), "cpu 10 10 10 10 10 10 10 10 10 10"},
-            { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat"), "usage_usec 102312"},
+            { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat"), "usage_usec 102312\nnr_periods 50"},
             { new FileInfo("/proc/meminfo"), "MemTotal: 1024 kB"},
             { new FileInfo("/sys/fs/cgroup/cpuset.cpus.effective"), "0-19"},
             { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.max"), "20000 100000"},

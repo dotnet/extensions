@@ -107,4 +107,14 @@ public partial class ResourceMonitoringOptions
     /// </value>
     [Experimental(diagnosticId: DiagnosticIds.Experiments.ResourceMonitoring, UrlFormat = DiagnosticIds.UrlFormat)]
     public bool CalculateCpuUsageWithoutHostDelta { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to use the number of periods in cpu.stat for cgroup CPU usage.
+    /// We use delta time for CPU usage calculation when this flag is not set.
+    /// <value>
+    /// The default value is <see langword="false"/>.
+    /// </value>
+    ///  </summary>
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.ResourceMonitoring, UrlFormat = DiagnosticIds.UrlFormat)]
+    public bool UseDeltaNrPeriodsForCpuCalculation { get; set; }
 }

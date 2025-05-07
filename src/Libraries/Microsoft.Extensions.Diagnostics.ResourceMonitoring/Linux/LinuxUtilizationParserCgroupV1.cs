@@ -97,6 +97,8 @@ internal sealed class LinuxUtilizationParserCgroupV1 : ILinuxUtilizationParser
     public float GetCgroupLimitV2() => throw new NotSupportedException();
     public float GetCgroupRequestCpuV2() => throw new NotSupportedException();
     public long GetCgroupCpuUsageInNanosecondsV2() => throw new NotSupportedException();
+    public (long cpuUsageNanoseconds, long elapsedPeriods) GetCgroupCpuUsageInNanosecondsAndCpuPeriodsV2() => throw new NotSupportedException();
+    public long GetCgroupPeriodsIntervalInMicroSecondsV2() => throw new NotSupportedException();
 
     public long GetCgroupCpuUsageInNanoseconds()
     {
