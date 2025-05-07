@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.ClientModel.Primitives;
 using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -20,6 +18,7 @@ using OpenAI.Chat;
 #pragma warning disable EA0011 // Consider removing unnecessary conditional access operator (?)
 #pragma warning disable S1067 // Expressions should not be too complex
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
+#pragma warning disable SA1204 // Static elements should appear before instance elements
 
 namespace Microsoft.Extensions.AI;
 
@@ -419,31 +418,15 @@ internal sealed partial class OpenAIChatClient : IChatClient
         return response;
     }
 
-    private static ChatCompletionOptions CloneUsingIJsonModel(IJsonModel<ChatCompletionOptions> optionsAsIJsonModel)
-    {
-        using MemoryStream ms = new MemoryStream();
-        using Utf8JsonWriter writer = new Utf8JsonWriter(ms);
-        optionsAsIJsonModel.Write(writer, ModelReaderWriterOptions.Json);
-        writer.Flush();
-
-        var reader = new Utf8JsonReader(ms.ToArray());
-        return optionsAsIJsonModel.Create(ref reader, ModelReaderWriterOptions.Json);
-    }
-
     /// <summary>Converts an extensions options instance to an OpenAI options instance.</summary>
-    private static ChatCompletionOptions ToOpenAIOptions(ChatOptions? options)
+    private ChatCompletionOptions ToOpenAIOptions(ChatOptions? options)
     {
         if (options is null)
         {
             return new ChatCompletionOptions();
         }
 
-        if (options.RawRepresentation is ChatCompletionOptions result)
-        {
-            // Clone the options to avoid modifying the original.
-            result = CloneUsingIJsonModel(result);
-        }
-        else
+        if (options.RawRepresentationFactory?.Invoke(this) is not ChatCompletionOptions result)
         {
             result = new ChatCompletionOptions();
         }

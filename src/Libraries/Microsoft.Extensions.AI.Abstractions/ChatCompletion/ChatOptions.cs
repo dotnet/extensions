@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -119,7 +120,7 @@ public class ChatOptions
     public IList<AITool>? Tools { get; set; }
 
     /// <summary>
-    /// Gets or sets the raw representation of the chat options from an underlying implementation.
+    /// Gets or sets a callback responsible of creating the raw representation of the chat options from an underlying implementation.
     /// </summary>
     /// <remarks>
     /// The underlying <see cref="IChatClient" /> implementation may have its own representation of options.
@@ -127,15 +128,15 @@ public class ChatOptions
     /// is invoked with a <see cref="ChatOptions" />, that implementation may convert the provided options into
     /// its own representation in order to use it while performing the operation. For situations where a consumer knows
     /// which concrete <see cref="IChatClient" /> is being used and how it represents options, an instance of that
-    /// implementation-specific options type may be stored into this <see cref="RawRepresentation" /> property, for
-    /// the <see cref="IChatClient" /> implementation to use instead of creating a new instance. Such implementations
-    /// may mutate the supplied options instance further based on other settings supplied on this <see cref="ChatOptions" /> 
-    /// instance or from other inputs, like the enumerable of <see cref="ChatMessage"/>s. This is typically used
-    /// in order to set an implementation-specific setting that isn't otherwise exposed from the strongly-typed properties
-    /// on <see cref="ChatOptions" />.
+    /// implementation-specific options type may be returned by this callback, for the <see cref="IChatClient" />
+    /// implementation to use instead of creating a new instance. Such implementations may mutate the supplied options
+    /// instance further based on other settings supplied on this <see cref="ChatOptions" /> instance or from other inputs,
+    /// like the enumerable of <see cref="ChatMessage"/>s.
+    /// This is typically used to set an implementation-specific setting that isn't otherwise exposed from the strongly-typed
+    /// properties on <see cref="ChatOptions" />.
     /// </remarks>
     [JsonIgnore]
-    public object? RawRepresentation { get; set; }
+    public Func<IChatClient, object?>? RawRepresentationFactory { get; set; }
 
     /// <summary>Gets or sets any additional properties associated with the options.</summary>
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
@@ -163,7 +164,7 @@ public class ChatOptions
             ModelId = ModelId,
             AllowMultipleToolCalls = AllowMultipleToolCalls,
             ToolMode = ToolMode,
-            RawRepresentation = RawRepresentation,
+            RawRepresentationFactory = RawRepresentationFactory,
             AdditionalProperties = AdditionalProperties?.Clone(),
         };
 
