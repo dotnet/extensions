@@ -9,7 +9,7 @@ internal class DummyLinuxUtilizationParser : ILinuxUtilizationParser
 {
     public ulong GetAvailableMemoryInBytes() => 1;
     public long GetCgroupCpuUsageInNanoseconds() => 0;
-    public long GetCgroupCpuUsageInNanosecondsV2() => 0;
+    public (long cpuUsageNanoseconds, long elapsedPeriods) GetCgroupCpuUsageInNanosecondsAndCpuPeriodsV2() => (0, 0);
     public float GetCgroupLimitedCpus() => 1;
     public float GetCgroupLimitV2() => 1;
     public float GetCgroupRequestCpu() => 1;
@@ -18,4 +18,5 @@ internal class DummyLinuxUtilizationParser : ILinuxUtilizationParser
     public float GetHostCpuCount() => 1;
     public long GetHostCpuUsageInNanoseconds() => 0;
     public ulong GetMemoryUsageInBytes() => 0;
+    public long GetCgroupPeriodsIntervalInMicroSecondsV2() => 1;
 }

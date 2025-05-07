@@ -20,6 +20,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     private readonly Counter<long>? _cpuUtilizationLimit100PercentExceededCounter;
     private readonly Counter<long>? _cpuUtilizationLimit110PercentExceededCounter;
 
+    private readonly bool _useDeltaNrPeriods;
     private readonly object _cpuLocker = new();
     private readonly object _memoryLocker = new();
     private readonly ILogger<LinuxUtilizationProvider> _logger;
@@ -45,6 +46,8 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     private long _previousHostCpuTime;
     private long _cpuUtilizationLimit100PercentExceeded;
     private long _cpuUtilizationLimit110PercentExceeded;
+    private long _cpuPeriodsInterval;
+    private long _previousCgroupCpuPeriodCounter;
     public SystemResources Resources { get; }
 
     public LinuxUtilizationProvider(IOptions<ResourceMonitoringOptions> options, ILinuxUtilizationParser parser,
@@ -56,12 +59,12 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         DateTimeOffset now = _timeProvider.GetUtcNow();
         _cpuRefreshInterval = options.Value.CpuConsumptionRefreshInterval;
         _memoryRefreshInterval = options.Value.MemoryConsumptionRefreshInterval;
+        _useDeltaNrPeriods = options.Value.UseDeltaNrPeriodsForCpuCalculation;
         _refreshAfterCpu = now;
         _refreshAfterMemory = now;
         _memoryLimit = _parser.GetAvailableMemoryInBytes();
         _previousHostCpuTime = _parser.GetHostCpuUsageInNanoseconds();
         _previousCgroupCpuTime = _parser.GetCgroupCpuUsageInNanoseconds();
-        _lastCpuMeasurementTime = now;
 
         float hostCpus = _parser.GetHostCpuCount();
         float cpuLimit = _parser.GetCgroupLimitedCpus();
@@ -79,11 +82,14 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
         if (options.Value.CalculateCpuUsageWithoutHostDelta)
         {
-            _previousCgroupCpuTime = _parser.GetCgroupCpuUsageInNanosecondsV2();
             cpuLimit = _parser.GetCgroupLimitV2();
 
             // Try to get the CPU request from cgroup
             cpuRequest = _parser.GetCgroupRequestCpuV2();
+
+            // Get Cpu periods interval from cgroup
+            _cpuPeriodsInterval = _parser.GetCgroupPeriodsIntervalInMicroSecondsV2();
+            (_previousCgroupCpuTime, _previousCgroupCpuPeriodCounter) = _parser.GetCgroupCpuUsageInNanosecondsAndCpuPeriodsV2();
 
             // Initialize the counters
             _cpuUtilizationLimit100PercentExceededCounter = meter.CreateCounter<long>("cpu_utilization_limit_100_percent_exceeded");
@@ -113,7 +119,6 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     {
         DateTimeOffset now = _timeProvider.GetUtcNow();
         double actualElapsedNanoseconds = (now - _lastCpuMeasurementTime).TotalNanoseconds;
-
         lock (_cpuLocker)
         {
             if (now < _refreshAfterCpu)
@@ -122,26 +127,46 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
             }
         }
 
-        long cgroupCpuTime = _parser.GetCgroupCpuUsageInNanosecondsV2();
-
+        var (cpuUsageTime, cpuPeriodCounter) = _parser.GetCgroupCpuUsageInNanosecondsAndCpuPeriodsV2();
         lock (_cpuLocker)
         {
             if (now >= _refreshAfterCpu)
             {
-                long deltaCgroup = cgroupCpuTime - _previousCgroupCpuTime;
+                long deltaCgroup = cpuUsageTime - _previousCgroupCpuTime;
+                double coresUsed;
 
-                if (deltaCgroup > 0)
+                if (_useDeltaNrPeriods)
                 {
-                    double coresUsed = deltaCgroup / actualElapsedNanoseconds;
+                    long deltaPeriodCount = cpuPeriodCounter - _previousCgroupCpuPeriodCounter;
+                    long deltaCpuPeriodInNanoseconds = deltaPeriodCount * _cpuPeriodsInterval * 1000;
 
-                    Log.CpuUsageDataV2(_logger, cgroupCpuTime, _previousCgroupCpuTime, actualElapsedNanoseconds, coresUsed);
+                    if (deltaCgroup > 0 && deltaPeriodCount > 0)
+                    {
+                        coresUsed = deltaCgroup / (double)deltaCpuPeriodInNanoseconds;
 
-                    _lastCpuCoresUsed = coresUsed;
-                    _refreshAfterCpu = now.Add(_cpuRefreshInterval);
-                    _previousCgroupCpuTime = cgroupCpuTime;
+                        Log.CpuUsageDataV2(_logger, cpuUsageTime, _previousCgroupCpuTime, deltaCpuPeriodInNanoseconds, coresUsed);
 
-                    // Update the timestamp for next calculation
-                    _lastCpuMeasurementTime = now;
+                        _lastCpuCoresUsed = coresUsed;
+                        _refreshAfterCpu = now.Add(_cpuRefreshInterval);
+                        _previousCgroupCpuTime = cpuUsageTime;
+                        _previousCgroupCpuPeriodCounter = cpuPeriodCounter;
+                    }
+                }
+                else
+                {
+                    if (deltaCgroup > 0)
+                    {
+                        coresUsed = deltaCgroup / actualElapsedNanoseconds;
+
+                        Log.CpuUsageDataV2(_logger, cpuUsageTime, _previousCgroupCpuTime, actualElapsedNanoseconds, coresUsed);
+
+                        _lastCpuCoresUsed = coresUsed;
+                        _refreshAfterCpu = now.Add(_cpuRefreshInterval);
+                        _previousCgroupCpuTime = cpuUsageTime;
+
+                        // Update the timestamp for next calculation
+                        _lastCpuMeasurementTime = now;
+                    }
                 }
             }
         }
