@@ -25,6 +25,14 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents an <see cref="IChatClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="ChatClient"/>.</summary>
 internal sealed partial class OpenAIChatClient : IChatClient
 {
+    /// <summary>Gets the JSON schema transformer cache conforming to OpenAI restrictions per https://platform.openai.com/docs/guides/structured-outputs?api-mode=responses#supported-schemas.</summary>
+    internal static AIJsonSchemaTransformCache SchemaTransformCache { get; } = new(new()
+    {
+        RequireAllProperties = true,
+        DisallowAdditionalProperties = true,
+        ConvertBooleanSchemas = true
+    });
+
     /// <summary>Gets the default OpenAI endpoint.</summary>
     private static Uri DefaultOpenAIEndpoint { get; } = new("https://api.openai.com/v1");
 
@@ -156,21 +164,22 @@ internal sealed partial class OpenAIChatClient : IChatClient
 
                 foreach (var content in input.Contents)
                 {
-                    if (content is FunctionCallContent callRequest)
+                    switch (content)
                     {
-                        message.ToolCalls.Add(
-                            ChatToolCall.CreateFunctionToolCall(
-                                callRequest.CallId,
-                                callRequest.Name,
-                                new(JsonSerializer.SerializeToUtf8Bytes(
-                                    callRequest.Arguments,
-                                    options.GetTypeInfo(typeof(IDictionary<string, object?>))))));
-                    }
-                }
+                        case ErrorContent errorContent when errorContent.ErrorCode is nameof(message.Refusal):
+                            message.Refusal = errorContent.Message;
+                            break;
 
-                if (input.AdditionalProperties?.TryGetValue(nameof(message.Refusal), out string? refusal) is true)
-                {
-                    message.Refusal = refusal;
+                        case FunctionCallContent callRequest:
+                            message.ToolCalls.Add(
+                                ChatToolCall.CreateFunctionToolCall(
+                                    callRequest.CallId,
+                                    callRequest.Name,
+                                    new(JsonSerializer.SerializeToUtf8Bytes(
+                                        callRequest.Arguments,
+                                        options.GetTypeInfo(typeof(IDictionary<string, object?>))))));
+                            break;
+                    }
                 }
 
                 yield return message;
@@ -247,6 +256,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
         Dictionary<int, FunctionCallInfo>? functionCallInfos = null;
         ChatRole? streamedRole = null;
         ChatFinishReason? finishReason = null;
+        StringBuilder? refusal = null;
         string? responseId = null;
         DateTimeOffset? createdAt = null;
         string? modelId = null;
@@ -283,6 +293,12 @@ internal sealed partial class OpenAIChatClient : IChatClient
                         responseUpdate.Contents.Add(aiContent);
                     }
                 }
+            }
+
+            // Transfer over refusal updates.
+            if (update.RefusalUpdate is not null)
+            {
+                _ = (refusal ??= new()).Append(update.RefusalUpdate);
             }
 
             // Transfer over tool call updates.
@@ -342,6 +358,13 @@ internal sealed partial class OpenAIChatClient : IChatClient
                 }
             }
 
+            // Refusals are about the model not following the schema for tool calls. As such, if we have any refusal,
+            // add it to this function calling item.
+            if (refusal is not null)
+            {
+                responseUpdate.Contents.Add(new ErrorContent(refusal.ToString()) { ErrorCode = "Refusal" });
+            }
+
             yield return responseUpdate;
         }
     }
@@ -398,6 +421,12 @@ internal sealed partial class OpenAIChatClient : IChatClient
                     returnMessage.Contents.Add(callContent);
                 }
             }
+        }
+
+        // And add error content for any refusals, which represent errors in generating output that conforms to a provided schema.
+        if (openAICompletion.Refusal is string refusal)
+        {
+            returnMessage.Contents.Add(new ErrorContent(refusal) { ErrorCode = nameof(openAICompletion.Refusal) });
         }
 
         // Wrap the content in a ChatResponse to return.
@@ -489,7 +518,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
             }
             else if (options.ResponseFormat is ChatResponseFormatJson jsonFormat)
             {
-                result.ResponseFormat = jsonFormat.Schema is { } jsonSchema ?
+                result.ResponseFormat = SchemaTransformCache.GetOrCreateTransformedSchema(jsonFormat) is { } jsonSchema ?
                     OpenAI.Chat.ChatResponseFormat.CreateJsonSchemaFormat(
                         jsonFormat.SchemaName ?? "json_schema",
                         BinaryData.FromBytes(
@@ -510,8 +539,11 @@ internal sealed partial class OpenAIChatClient : IChatClient
             strictObj is bool strictValue ?
             strictValue : null;
 
+        // Perform transformations making the schema legal per OpenAI restrictions
+        JsonElement jsonSchema = SchemaTransformCache.GetOrCreateTransformedSchema(aiFunction);
+
         // Map to an intermediate model so that redundant properties are skipped.
-        var tool = JsonSerializer.Deserialize(aiFunction.JsonSchema, ChatClientJsonContext.Default.ChatToolJson)!;
+        var tool = JsonSerializer.Deserialize(jsonSchema, ChatClientJsonContext.Default.ChatToolJson)!;
         var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool, ChatClientJsonContext.Default.ChatToolJson));
         return ChatTool.CreateFunctionTool(aiFunction.Name, aiFunction.Description, functionParameters, strict);
     }

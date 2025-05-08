@@ -942,7 +942,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         var response = await captureOutputChatClient.GetResponseAsync<Person>("""
             Supply an object to represent Jimbo Smith from Cardiff.
-            """, useJsonSchema: false);
+            """, useJsonSchemaResponseFormat: false);
 
         Assert.Equal("Jimbo Smith", response.Result.FullName);
         Assert.Contains("Cardiff", response.Result.HomeTown);

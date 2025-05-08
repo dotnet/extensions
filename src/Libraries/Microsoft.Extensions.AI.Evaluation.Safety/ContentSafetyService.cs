@@ -120,7 +120,7 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
                 }
             }
 
-            result.Metrics[metric.Name] = metric;
+            result.Metrics.Add(metric.Name, metric);
         }
 
         return result;
@@ -208,7 +208,7 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
         {
             throw new InvalidOperationException(
                 $"""
-                {evaluatorName} failed to retrieve discovery URL for Azure AI Content Safety service.
+                {evaluatorName} failed to retrieve discovery URL for Azure AI Foundry Evaluation service.
                 {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase}.
                 To troubleshoot, see https://aka.ms/azsdk/python/evaluation/safetyevaluator/troubleshoot.
                 """);
@@ -227,7 +227,7 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
         {
             throw new InvalidOperationException(
                 $"""
-                {evaluatorName} failed to retrieve discovery URL from the Azure AI Content Safety service's response below.
+                {evaluatorName} failed to retrieve discovery URL from the Azure AI Foundry Evaluation service's response below.
                 To troubleshoot, see https://aka.ms/azsdk/python/evaluation/safetyevaluator/troubleshoot.
 
                 {responseContent}
@@ -256,7 +256,7 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
         {
             throw new InvalidOperationException(
                 $"""
-                {evaluatorName} failed to check service availability for the Azure AI Content Safety service.
+                {evaluatorName} failed to check service availability for the Azure AI Foundry Evaluation service.
                 The service is either unavailable in this region, or you lack the necessary permissions to access the AI project.
                 {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase}.
                 To troubleshoot, see https://aka.ms/azsdk/python/evaluation/safetyevaluator/troubleshoot.
@@ -283,7 +283,7 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
 
         throw new InvalidOperationException(
             $"""
-            The required {nameof(capability)} '{capability}' required for {evaluatorName} is not supported by the Azure AI Content Safety service in this region.
+            The required {nameof(capability)} '{capability}' required for {evaluatorName} is not supported by the Azure AI Foundry Evaluation service in this region.
             To troubleshoot, see https://aka.ms/azsdk/python/evaluation/safetyevaluator/troubleshoot.
 
             The following response identifies the capabilities that are supported:
@@ -311,7 +311,7 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
         {
             throw new InvalidOperationException(
                 $"""
-                {evaluatorName} failed to submit annotation request to the Azure AI Content Safety service.
+                {evaluatorName} failed to submit annotation request to the Azure AI Foundry Evaluation service.
                 {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase}.
                 To troubleshoot, see https://aka.ms/azsdk/python/evaluation/safetyevaluator/troubleshoot.
                 """);
@@ -331,7 +331,7 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
         {
             throw new InvalidOperationException(
                 $"""
-                {evaluatorName} failed to retrieve the result location from the following response for the annotation request submitted to The Azure AI Content Safety service.
+                {evaluatorName} failed to retrieve the result location from the following response for the annotation request submitted to The Azure AI Foundry Evaluation service.
 
                 {responseContent}
                 """);
@@ -369,7 +369,7 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
                     {
                         throw new InvalidOperationException(
                             $"""
-                            {evaluatorName} failed to retrieve annotation result from the Azure AI Content Safety service.
+                            {evaluatorName} failed to retrieve annotation result from the Azure AI Foundry Evaluation service.
                             The evaluation was timed out after {elapsedDuration} seconds (and {attempts} attempts).
                             {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase}.
                             """);

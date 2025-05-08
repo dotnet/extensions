@@ -1,6 +1,6 @@
 ﻿{
   Type: InvalidOperationException,
-  Message: Could not parse '/sys/fs/cgroup/cpu.stat'. We expected first line of the file to start with 'usage_usec' but it was 'dasd -1' instead.,
+  Message: Could not parse '/sys/fs/cgroup/cpu.stat'. Expected to find 'usage_usec' but it was not present in the file content.,
   StackTrace:
 at Microsoft.Shared.Diagnostics.Throw.InvalidOperationException(String message)
 at Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.LinuxUtilizationParserCgroupV2.ParseCpuUsageFromFile(IFileSystem fileSystem, FileInfo cpuUsageFile)

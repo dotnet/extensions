@@ -8,6 +8,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents the options for a chat request.</summary>
+/// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#provide-options">Provide options.</related>
 public class ChatOptions
 {
     /// <summary>Gets or sets an optional identifier used to associate a request with an existing conversation.</summary>
@@ -21,6 +22,7 @@ public class ChatOptions
     }
 
     /// <summary>Gets or sets an optional identifier used to associate a request with an existing conversation.</summary>
+    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#stateless-vs-stateful-clients">Stateless vs. stateful clients.</related>
     public string? ConversationId { get; set; }
 
     /// <summary>Gets or sets the temperature for generating chat responses.</summary>
@@ -116,6 +118,7 @@ public class ChatOptions
     public ChatToolMode? ToolMode { get; set; }
 
     /// <summary>Gets or sets the list of tools to include with a chat request.</summary>
+    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#tool-calling">Tool calling.</related>
     [JsonIgnore]
     public IList<AITool>? Tools { get; set; }
 

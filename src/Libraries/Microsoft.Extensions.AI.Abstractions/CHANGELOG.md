@@ -1,5 +1,12 @@
 # Release History
 
+## 9.4.3-preview.1.25230.7
+
+- Renamed `ChatThreadId` to `ConversationId` on `ChatResponse`, `ChatResponseUpdate`, and `ChatOptions`.
+- Renamed `EmbeddingGeneratorExtensions` method `GenerateEmbeddingAsync` to `GenerateAsync` and `GenerateEmbeddingVectorAsync` to `GenerateVectorAsync`.
+- Made `AIContent`'s constructor `public` instead of `protected`.
+- Fixed `AIJsonUtilities.CreateJsonSchema` to tolerate `JsonSerializerOptions` instances that don't have a `TypeInfoResolver` already configured.
+
 ## 9.4.0-preview.1.25207.5
 
 - Added `ErrorContent` and `TextReasoningContent`.
@@ -83,4 +90,4 @@
 
 ## 9.0.0-preview.9.24507.7
 
-Initial Preview
+- Initial Preview

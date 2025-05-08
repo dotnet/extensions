@@ -97,8 +97,9 @@ public static class ChatMessageExtensions
     /// <remarks>
     /// <para>
     /// This function only considers the <see cref="ChatMessage.Text"/> and ignores any <see cref="AIContent"/>s
-    /// present within the <see cref="ChatMessage.Contents"/> of the <paramref name="message"/> that are not
-    /// <see cref="TextContent"/>s.
+    /// (present within the <see cref="ChatMessage.Contents"/> of the <paramref name="message"/>) that are not
+    /// <see cref="TextContent"/>s. If the <paramref name="message"/> does not contain any <see cref="TextContent"/>s
+    /// then this function returns an empty string.
     /// </para>
     /// <para>
     /// The returned string is prefixed with the <see cref="ChatMessage.Role"/> and
@@ -111,6 +112,12 @@ public static class ChatMessageExtensions
     public static string RenderText(this ChatMessage message)
     {
         _ = Throw.IfNull(message);
+
+        if (!message.Contents.OfType<TextContent>().Any())
+        {
+            // Don't render messages (such as messages with role ChatRole.Tool) that don't contain any textual content.
+            return string.Empty;
+        }
 
         string? author = message.AuthorName;
         string role = message.Role.Value;
@@ -129,8 +136,10 @@ public static class ChatMessageExtensions
     /// <remarks>
     /// <para>
     /// This function only considers the <see cref="ChatMessage.Text"/> and ignores any <see cref="AIContent"/>s
-    /// present within the <see cref="ChatMessage.Contents"/> of the <paramref name="messages"/> that are not
-    /// <see cref="TextContent"/>s.
+    /// (present within the <see cref="ChatMessage.Contents"/> of the <paramref name="messages"/>) that are not
+    /// <see cref="TextContent"/>s. Any <paramref name="messages"/> that contain no <see cref="TextContent"/>s will be
+    /// skipped and will not be rendered. If none of the <paramref name="messages"/> include any
+    /// <see cref="TextContent"/>s then this function will return an empty string.
     /// </para>
     /// <para>
     /// The rendered <paramref name="messages"/> are each prefixed with the <see cref="ChatMessage.Role"/> and

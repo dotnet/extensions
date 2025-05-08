@@ -11,8 +11,8 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
 /// <summary>
-/// An <see cref="IEvaluator"/> that utilizes the Azure AI Content Safety service to evaluate responses produced by an
-/// AI model for presence of content that indicates ungrounded inference of human attributes.
+/// An <see cref="IEvaluator"/> that utilizes the Azure AI Foundry Evaluation service to evaluate responses produced by
+/// an AI model for presence of content that indicates ungrounded inference of human attributes.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -31,7 +31,7 @@ namespace Microsoft.Extensions.AI.Evaluation.Safety;
 /// ignored.
 /// </para>
 /// <para>
-/// The Azure AI Content Safety service uses a finetuned model to perform this evaluation which is expected to
+/// The Azure AI Foundry Evaluation service uses a finetuned model to perform this evaluation which is expected to
 /// produce more accurate results than similar evaluations performed using a regular (non-finetuned) model.
 /// </para>
 /// </remarks>
