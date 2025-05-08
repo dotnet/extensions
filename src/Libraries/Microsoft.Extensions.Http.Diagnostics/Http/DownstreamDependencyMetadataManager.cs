@@ -100,31 +100,30 @@ internal sealed class DownstreamDependencyMetadataManager : IDownstreamDependenc
         var trieCurrent = routeMetadataTrieRoot;
         trieCurrent.Parent = trieCurrent;
 
-        ReadOnlySpan<char> requestRouteAsSpan = routeMetadata.RequestRoute.AsSpan();
-
-        if (requestRouteAsSpan.Length > 0)
+        var route = routeMetadata.RequestRoute;
+        if (!string.IsNullOrEmpty(route))
         {
-            if (requestRouteAsSpan[0] != '/')
+            if (route[0] != '/')
             {
-                requestRouteAsSpan = $"/{routeMetadata.RequestRoute}".AsSpan();
+                route = $"/{routeMetadata.RequestRoute}";
             }
-            else if (requestRouteAsSpan.StartsWith("//".AsSpan(), StringComparison.OrdinalIgnoreCase))
+            else if (route.StartsWith("//", StringComparison.Ordinal))
             {
-                requestRouteAsSpan = requestRouteAsSpan.Slice(1);
+                route = route.Substring(1);
             }
 
-            if (requestRouteAsSpan.Length > 1 && requestRouteAsSpan[requestRouteAsSpan.Length - 1] == '/')
+            if (route.Length > 1 && route[route.Length - 1] == '/')
             {
-                requestRouteAsSpan = requestRouteAsSpan.Slice(0, requestRouteAsSpan.Length - 1);
+                route = route.Substring(0, route.Length - 1);
             }
+
+            route = _routeRegex.Replace(route, "*").ToUpperInvariant();
         }
         else
         {
-            requestRouteAsSpan = "/".AsSpan();
+            route = "/";
         }
 
-        var route = _routeRegex.Replace(requestRouteAsSpan.ToString(), "*");
-        route = route.ToUpperInvariant();
         for (int i = 0; i < route.Length; i++)
         {
             char ch = route[i];
