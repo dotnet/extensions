@@ -263,6 +263,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                         MessageId = lastMessageId,
                         ModelId = modelId,
                         ResponseId = responseId,
+                        Role = lastRole,
                         ConversationId = responseId,
                         Contents =
                         [
@@ -272,6 +273,19 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                                 Details = errorUpdate.Param,
                             }
                         ],
+                    };
+                    break;
+
+                case StreamingResponseRefusalDoneUpdate refusalDone:
+                    yield return new ChatResponseUpdate
+                    {
+                        CreatedAt = createdAt,
+                        MessageId = lastMessageId,
+                        ModelId = modelId,
+                        ResponseId = responseId,
+                        Role = lastRole,
+                        ConversationId = responseId,
+                        Contents = [new ErrorContent(refusalDone.Refusal) { ErrorCode = nameof(ResponseContentPart.Refusal) }],
                     };
                     break;
             }
@@ -539,9 +553,15 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
 
         foreach (ResponseContentPart part in contents)
         {
-            if (part.Kind == ResponseContentPartKind.OutputText)
+            switch (part.Kind)
             {
-                results.Add(new TextContent(part.Text));
+                case ResponseContentPartKind.OutputText:
+                    results.Add(new TextContent(part.Text));
+                    break;
+
+                case ResponseContentPartKind.Refusal:
+                    results.Add(new ErrorContent(part.Refusal) { ErrorCode = nameof(ResponseContentPartKind.Refusal) });
+                    break;
             }
         }
 
@@ -571,6 +591,10 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                 case DataContent dataContent when dataContent.MediaType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase):
                     parts.Add(ResponseContentPart.CreateInputFilePart(null, $"{Guid.NewGuid():N}.pdf",
                         BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(dataContent.Uri, ResponseClientJsonContext.Default.String))));
+                    break;
+
+                case ErrorContent errorContent when errorContent.ErrorCode == nameof(ResponseContentPartKind.Refusal):
+                    parts.Add(ResponseContentPart.CreateRefusalPart(errorContent.Message));
                     break;
             }
         }
