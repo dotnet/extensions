@@ -24,6 +24,14 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents an <see cref="IChatClient"/> for an Azure AI Inference <see cref="ChatCompletionsClient"/>.</summary>
 internal sealed class AzureAIInferenceChatClient : IChatClient
 {
+    /// <summary>Gets the JSON schema transform cache conforming to OpenAI restrictions per https://platform.openai.com/docs/guides/structured-outputs?api-mode=responses#supported-schemas.</summary>
+    private static AIJsonSchemaTransformCache SchemaTransformCache { get; } = new(new()
+    {
+        RequireAllProperties = true,
+        DisallowAdditionalProperties = true,
+        ConvertBooleanSchemas = true
+    });
+
     /// <summary>Metadata about the client.</summary>
     private readonly ChatClientMetadata _metadata;
 
@@ -358,7 +366,7 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
             }
             else if (options.ResponseFormat is ChatResponseFormatJson json)
             {
-                if (json.Schema is { } schema)
+                if (SchemaTransformCache.GetOrCreateTransformedSchema(json) is { } schema)
                 {
                     var tool = JsonSerializer.Deserialize(schema, JsonContext.Default.AzureAIChatToolJson)!;
                     result.ResponseFormat = ChatCompletionsResponseFormat.CreateJsonFormat(
@@ -392,7 +400,7 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
     private static ChatCompletionsToolDefinition ToAzureAIChatTool(AIFunction aiFunction)
     {
         // Map to an intermediate model so that redundant properties are skipped.
-        var tool = JsonSerializer.Deserialize(aiFunction.JsonSchema, JsonContext.Default.AzureAIChatToolJson)!;
+        var tool = JsonSerializer.Deserialize(SchemaTransformCache.GetOrCreateTransformedSchema(aiFunction), JsonContext.Default.AzureAIChatToolJson)!;
         var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool, JsonContext.Default.AzureAIChatToolJson));
         return new(new FunctionDefinition(aiFunction.Name)
         {
