@@ -163,21 +163,22 @@ internal sealed partial class OpenAIChatClient : IChatClient
 
                 foreach (var content in input.Contents)
                 {
-                    if (content is FunctionCallContent callRequest)
+                    switch (content)
                     {
-                        message.ToolCalls.Add(
-                            ChatToolCall.CreateFunctionToolCall(
-                                callRequest.CallId,
-                                callRequest.Name,
-                                new(JsonSerializer.SerializeToUtf8Bytes(
-                                    callRequest.Arguments,
-                                    options.GetTypeInfo(typeof(IDictionary<string, object?>))))));
-                    }
-                }
+                        case ErrorContent errorContent when errorContent.ErrorCode is nameof(message.Refusal):
+                            message.Refusal = errorContent.Message;
+                            break;
 
-                if (input.AdditionalProperties?.TryGetValue(nameof(message.Refusal), out string? refusal) is true)
-                {
-                    message.Refusal = refusal;
+                        case FunctionCallContent callRequest:
+                            message.ToolCalls.Add(
+                                ChatToolCall.CreateFunctionToolCall(
+                                    callRequest.CallId,
+                                    callRequest.Name,
+                                    new(JsonSerializer.SerializeToUtf8Bytes(
+                                        callRequest.Arguments,
+                                        options.GetTypeInfo(typeof(IDictionary<string, object?>))))));
+                            break;
+                    }
                 }
 
                 yield return message;
@@ -378,7 +379,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
             // add it to this function calling item.
             if (refusal is not null)
             {
-                (responseUpdate.AdditionalProperties ??= [])[nameof(ChatMessageContentPart.Refusal)] = refusal.ToString();
+                responseUpdate.Contents.Add(new ErrorContent(refusal.ToString()) { ErrorCode = "Refusal" });
             }
 
             // Propagate additional relevant metadata.
@@ -458,6 +459,12 @@ internal sealed partial class OpenAIChatClient : IChatClient
             }
         }
 
+        // And add error content for any refusals, which represent errors in generating output that conforms to a provided schema.
+        if (openAICompletion.Refusal is string refusal)
+        {
+            returnMessage.Contents.Add(new ErrorContent(refusal) { ErrorCode = nameof(openAICompletion.Refusal) });
+        }
+
         // Wrap the content in a ChatResponse to return.
         var response = new ChatResponse(returnMessage)
         {
@@ -476,11 +483,6 @@ internal sealed partial class OpenAIChatClient : IChatClient
         if (openAICompletion.ContentTokenLogProbabilities is { Count: > 0 } contentTokenLogProbs)
         {
             (response.AdditionalProperties ??= [])[nameof(openAICompletion.ContentTokenLogProbabilities)] = contentTokenLogProbs;
-        }
-
-        if (openAICompletion.Refusal is string refusal)
-        {
-            (response.AdditionalProperties ??= [])[nameof(openAICompletion.Refusal)] = refusal;
         }
 
         if (openAICompletion.RefusalTokenLogProbabilities is { Count: > 0 } refusalTokenLogProbs)
