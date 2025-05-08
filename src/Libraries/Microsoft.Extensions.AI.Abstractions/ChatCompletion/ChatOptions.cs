@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -121,6 +122,26 @@ public class ChatOptions
     [JsonIgnore]
     public IList<AITool>? Tools { get; set; }
 
+    /// <summary>
+    /// Gets or sets a callback responsible of creating the raw representation of the chat options from an underlying implementation.
+    /// </summary>
+    /// <remarks>
+    /// The underlying <see cref="IChatClient" /> implementation may have its own representation of options.
+    /// When <see cref="IChatClient.GetResponseAsync" /> or <see cref="IChatClient.GetStreamingResponseAsync" />
+    /// is invoked with a <see cref="ChatOptions" />, that implementation may convert the provided options into
+    /// its own representation in order to use it while performing the operation. For situations where a consumer knows
+    /// which concrete <see cref="IChatClient" /> is being used and how it represents options, a new instance of that
+    /// implementation-specific options type may be returned by this callback, for the <see cref="IChatClient" />
+    /// implementation to use instead of creating a new instance. Such implementations may mutate the supplied options
+    /// instance further based on other settings supplied on this <see cref="ChatOptions" /> instance or from other inputs,
+    /// like the enumerable of <see cref="ChatMessage"/>s, therefore, its **strongly recommended** to not return shared instances
+    /// and instead make the callback return a new instance per each call.
+    /// This is typically used to set an implementation-specific setting that isn't otherwise exposed from the strongly-typed
+    /// properties on <see cref="ChatOptions" />.
+    /// </remarks>
+    [JsonIgnore]
+    public Func<IChatClient, object?>? RawRepresentationFactory { get; set; }
+
     /// <summary>Gets or sets any additional properties associated with the options.</summary>
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
 
@@ -147,6 +168,7 @@ public class ChatOptions
             ModelId = ModelId,
             AllowMultipleToolCalls = AllowMultipleToolCalls,
             ToolMode = ToolMode,
+            RawRepresentationFactory = RawRepresentationFactory,
             AdditionalProperties = AdditionalProperties?.Clone(),
         };
 
