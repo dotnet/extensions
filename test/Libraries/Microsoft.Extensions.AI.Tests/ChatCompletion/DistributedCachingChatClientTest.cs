@@ -32,10 +32,13 @@ public class DistributedCachingChatClientTest
         Assert.True(cachingClient.CoalesceStreamingUpdates);
     }
 
-    [Fact]
-    public async Task CachesSuccessResultsAsync()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CachesSuccessResultsAsync(bool conversationIdSet)
     {
         // Arrange
+        ChatOptions options = new() { ConversationId = conversationIdSet ? "123" : null };
 
         // Verify that all the expected properties will round-trip through the cache,
         // even if this involves serialization
@@ -82,20 +85,20 @@ public class DistributedCachingChatClientTest
         };
 
         // Make the initial request and do a quick sanity check
-        var result1 = await outer.GetResponseAsync("some input");
+        var result1 = await outer.GetResponseAsync("some input", options);
         Assert.Same(expectedResponse, result1);
         Assert.Equal(1, innerCallCount);
 
         // Act
-        var result2 = await outer.GetResponseAsync("some input");
+        var result2 = await outer.GetResponseAsync("some input", options);
 
         // Assert
-        Assert.Equal(1, innerCallCount);
+        Assert.Equal(conversationIdSet ? 2 : 1, innerCallCount);
         AssertResponsesEqual(expectedResponse, result2);
 
         // Act/Assert 2: Cache misses do not return cached results
-        await outer.GetResponseAsync("some modified input");
-        Assert.Equal(2, innerCallCount);
+        await outer.GetResponseAsync("some modified input", options);
+        Assert.Equal(conversationIdSet ? 3 : 2, innerCallCount);
     }
 
     [Fact]
@@ -207,10 +210,13 @@ public class DistributedCachingChatClientTest
         Assert.Equal("A good result", result2.Text);
     }
 
-    [Fact]
-    public async Task StreamingCachesSuccessResultsAsync()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task StreamingCachesSuccessResultsAsync(bool conversationIdSet)
     {
         // Arrange
+        ChatOptions options = new() { ConversationId = conversationIdSet ? "123" : null };
 
         // Verify that all the expected properties will round-trip through the cache,
         // even if this involves serialization
@@ -255,20 +261,20 @@ public class DistributedCachingChatClientTest
         };
 
         // Make the initial request and do a quick sanity check
-        var result1 = outer.GetStreamingResponseAsync("some input");
+        var result1 = outer.GetStreamingResponseAsync("some input", options);
         await AssertResponsesEqualAsync(actualUpdate, result1);
         Assert.Equal(1, innerCallCount);
 
         // Act
-        var result2 = outer.GetStreamingResponseAsync("some input");
+        var result2 = outer.GetStreamingResponseAsync("some input", options);
 
         // Assert
-        Assert.Equal(1, innerCallCount);
-        await AssertResponsesEqualAsync(expectedCachedResponse, result2);
+        Assert.Equal(conversationIdSet ? 2 : 1, innerCallCount);
+        await AssertResponsesEqualAsync(conversationIdSet ? actualUpdate : expectedCachedResponse, result2);
 
         // Act/Assert 2: Cache misses do not return cached results
-        await ToListAsync(outer.GetStreamingResponseAsync("some modified input"));
-        Assert.Equal(2, innerCallCount);
+        await ToListAsync(outer.GetStreamingResponseAsync("some modified input", options));
+        Assert.Equal(conversationIdSet ? 3 : 2, innerCallCount);
     }
 
     [Theory]
