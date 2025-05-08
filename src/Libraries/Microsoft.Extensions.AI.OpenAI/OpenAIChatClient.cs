@@ -24,6 +24,14 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents an <see cref="IChatClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="ChatClient"/>.</summary>
 internal sealed partial class OpenAIChatClient : IChatClient
 {
+    /// <summary>Gets the JSON schema transformer cache conforming to OpenAI restrictions per https://platform.openai.com/docs/guides/structured-outputs?api-mode=responses#supported-schemas.</summary>
+    internal static AIJsonSchemaTransformCache SchemaTransformCache { get; } = new(new()
+    {
+        RequireAllProperties = true,
+        DisallowAdditionalProperties = true,
+        ConvertBooleanSchemas = true
+    });
+
     /// <summary>Gets the default OpenAI endpoint.</summary>
     private static Uri DefaultOpenAIEndpoint { get; } = new("https://api.openai.com/v1");
 
@@ -612,7 +620,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
             }
             else if (options.ResponseFormat is ChatResponseFormatJson jsonFormat)
             {
-                result.ResponseFormat = jsonFormat.Schema is { } jsonSchema ?
+                result.ResponseFormat = SchemaTransformCache.GetOrCreateTransformedSchema(jsonFormat) is { } jsonSchema ?
                     OpenAI.Chat.ChatResponseFormat.CreateJsonSchemaFormat(
                         jsonFormat.SchemaName ?? "json_schema",
                         BinaryData.FromBytes(
@@ -633,8 +641,11 @@ internal sealed partial class OpenAIChatClient : IChatClient
             strictObj is bool strictValue ?
             strictValue : null;
 
+        // Perform transformations making the schema legal per OpenAI restrictions
+        JsonElement jsonSchema = SchemaTransformCache.GetOrCreateTransformedSchema(aiFunction);
+
         // Map to an intermediate model so that redundant properties are skipped.
-        var tool = JsonSerializer.Deserialize(aiFunction.JsonSchema, ChatClientJsonContext.Default.ChatToolJson)!;
+        var tool = JsonSerializer.Deserialize(jsonSchema, ChatClientJsonContext.Default.ChatToolJson)!;
         var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool, ChatClientJsonContext.Default.ChatToolJson));
         return ChatTool.CreateFunctionTool(aiFunction.Name, aiFunction.Description, functionParameters, strict);
     }

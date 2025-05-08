@@ -29,8 +29,7 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
     {
         RequireAllProperties = true,
         DisallowAdditionalProperties = true,
-        ConvertBooleanSchemas = true,
-        MoveDefaultKeywordToDescription = true,
+        ConvertBooleanSchemas = true
     });
 
     /// <summary>Metadata about the client.</summary>
@@ -282,74 +281,66 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
         finishReason == CompletionsFinishReason.ToolCalls ? ChatFinishReason.ToolCalls :
         new(s);
 
-    private ChatCompletionsOptions CreateAzureAIOptions(IEnumerable<ChatMessage> chatContents, ChatOptions? options) =>
-        new(ToAzureAIInferenceChatMessages(chatContents))
-        {
-            Model = options?.ModelId ?? _metadata.DefaultModelId ??
-                throw new InvalidOperationException("No model id was provided when either constructing the client or in the chat options.")
-        };
-
     /// <summary>Converts an extensions options instance to an AzureAI options instance.</summary>
     private ChatCompletionsOptions ToAzureAIOptions(IEnumerable<ChatMessage> chatContents, ChatOptions? options)
     {
-        if (options is null)
+        ChatCompletionsOptions result = new(ToAzureAIInferenceChatMessages(chatContents))
         {
-            return CreateAzureAIOptions(chatContents, options);
-        }
+            Model = options?.ModelId ?? _metadata.DefaultModelId ?? throw new InvalidOperationException("No model id was provided when either constructing the client or in the chat options.")
+        };
 
-        if (options.RawRepresentationFactory?.Invoke(this) is ChatCompletionsOptions result)
+        if (options is not null)
         {
-            result.Messages = ToAzureAIInferenceChatMessages(chatContents).ToList();
-            result.Model ??= options.ModelId ?? _metadata.DefaultModelId ??
-                throw new InvalidOperationException("No model id was provided when either constructing the client or in the chat options.");
-        }
-        else
-        {
-            result = CreateAzureAIOptions(chatContents, options);
-        }
+            result.FrequencyPenalty = options.FrequencyPenalty;
+            result.MaxTokens = options.MaxOutputTokens;
+            result.NucleusSamplingFactor = options.TopP;
+            result.PresencePenalty = options.PresencePenalty;
+            result.Temperature = options.Temperature;
+            result.Seed = options.Seed;
 
-        result.FrequencyPenalty ??= options.FrequencyPenalty;
-        result.MaxTokens ??= options.MaxOutputTokens;
-        result.NucleusSamplingFactor ??= options.TopP;
-        result.PresencePenalty ??= options.PresencePenalty;
-        result.Temperature ??= options.Temperature;
-        result.Seed ??= options.Seed;
-
-        if (options.StopSequences is { Count: > 0 } stopSequences)
-        {
-            foreach (string stopSequence in stopSequences)
+            if (options.StopSequences is { Count: > 0 } stopSequences)
             {
-                result.StopSequences.Add(stopSequence);
-            }
-        }
-
-        // This property is strongly typed on ChatOptions but not on ChatCompletionsOptions.
-        if (options.TopK is int topK && !result.AdditionalProperties.ContainsKey("top_k"))
-        {
-            result.AdditionalProperties["top_k"] = new BinaryData(JsonSerializer.SerializeToUtf8Bytes(topK, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(int))));
-        }
-
-        if (options.AdditionalProperties is { } props)
-        {
-            foreach (var prop in props)
-            {
-                byte[] data = JsonSerializer.SerializeToUtf8Bytes(prop.Value, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(object)));
-                result.AdditionalProperties[prop.Key] = new BinaryData(data);
-            }
-        }
-
-        if (options.Tools is { Count: > 0 } tools)
-        {
-            foreach (AITool tool in tools)
-            {
-                if (tool is AIFunction af)
+                foreach (string stopSequence in stopSequences)
                 {
-                    result.Tools.Add(ToAzureAIChatTool(af));
+                    result.StopSequences.Add(stopSequence);
                 }
             }
 
-            if (result.ToolChoice is null && result.Tools.Count > 0)
+            // These properties are strongly typed on ChatOptions but not on ChatCompletionsOptions.
+            if (options.TopK is int topK)
             {
+                result.AdditionalProperties["top_k"] = new BinaryData(JsonSerializer.SerializeToUtf8Bytes(topK, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(int))));
+            }
+
+            if (options.AdditionalProperties is { } props)
+            {
+                foreach (var prop in props)
+                {
+                    switch (prop.Key)
+                    {
+                        // Propagate everything else to the ChatCompletionsOptions' AdditionalProperties.
+                        default:
+                            if (prop.Value is not null)
+                            {
+                                byte[] data = JsonSerializer.SerializeToUtf8Bytes(prop.Value, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(object)));
+                                result.AdditionalProperties[prop.Key] = new BinaryData(data);
+                            }
+
+                            break;
+                    }
+                }
+            }
+
+            if (options.Tools is { Count: > 0 } tools)
+            {
+                foreach (AITool tool in tools)
+                {
+                    if (tool is AIFunction af)
+                    {
+                        result.Tools.Add(ToAzureAIChatTool(af));
+                    }
+                }
+
                 switch (options.ToolMode)
                 {
                     case NoneChatToolMode:
@@ -368,10 +359,7 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
                         break;
                 }
             }
-        }
 
-        if (result.ResponseFormat is null)
-        {
             if (options.ResponseFormat is ChatResponseFormatText)
             {
                 result.ResponseFormat = ChatCompletionsResponseFormat.CreateTextFormat();
