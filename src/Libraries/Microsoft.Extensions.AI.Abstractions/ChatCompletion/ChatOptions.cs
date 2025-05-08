@@ -127,7 +127,7 @@ public class ChatOptions
     /// When <see cref="IChatClient.GetResponseAsync" /> or <see cref="IChatClient.GetStreamingResponseAsync" />
     /// is invoked with a <see cref="ChatOptions" />, that implementation may convert the provided options into
     /// its own representation in order to use it while performing the operation. For situations where a consumer knows
-    /// which concrete <see cref="IChatClient" /> is being used and how it represents options, an instance of that
+    /// which concrete <see cref="IChatClient" /> is being used and how it represents options, a new instance of that
     /// implementation-specific options type may be returned by this callback, for the <see cref="IChatClient" />
     /// implementation to use instead of creating a new instance. Such implementations may mutate the supplied options
     /// instance further based on other settings supplied on this <see cref="ChatOptions" /> instance or from other inputs,
