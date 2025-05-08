@@ -702,6 +702,66 @@ public class AzureAIInferenceChatClientTests
             MaxOutputTokens = 10,
             Temperature = 0.5f,
             TopP = 0.5f,
+            TopK = 40,
+            FrequencyPenalty = 0.75f,
+            PresencePenalty = 0.5f,
+            Seed = 42,
+            StopSequences = ["yes", "no"],
+            RawRepresentationFactory = (c) =>
+            {
+                ChatCompletionsOptions azureAIOptions = new();
+                azureAIOptions.AdditionalProperties.Add("something_else", new BinaryData(JsonSerializer.SerializeToUtf8Bytes("value1", typeof(object))));
+                azureAIOptions.AdditionalProperties.Add("and_something_further", new BinaryData(JsonSerializer.SerializeToUtf8Bytes(123, typeof(object))));
+                return azureAIOptions;
+            },
+        }));
+    }
+
+    [Fact]
+    public async Task TopK_DoNotOverwrite_NonStreaming()
+    {
+        const string Input = """
+            {
+                "messages":[{"role":"user", "content":"hello"}],
+                "max_tokens":10,
+                "temperature":0.5,
+                "top_p":0.5,
+                "stop":["yes","no"],
+                "presence_penalty":0.5,
+                "frequency_penalty":0.75,
+                "seed":42,
+                "model":"gpt-4o-mini",
+                "top_k":40,
+                "something_else":"value1",
+                "and_something_further":123
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI",
+              "object": "chat.completion",
+              "choices": [
+                {
+                  "message": {
+                    "role": "assistant",
+                    "content": "Hello! How can I assist you today?"
+                  }
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
+
+        Assert.NotNull(await client.GetResponseAsync("hello", new()
+        {
+            MaxOutputTokens = 10,
+            Temperature = 0.5f,
+            TopP = 0.5f,
+            TopK = 20, // will be ignored because the raw representation already specifies it.
             FrequencyPenalty = 0.75f,
             PresencePenalty = 0.5f,
             Seed = 42,

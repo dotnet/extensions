@@ -322,6 +322,12 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
             }
         }
 
+        // This property is strongly typed on ChatOptions but not on ChatCompletionsOptions.
+        if (options.TopK is int topK && !result.AdditionalProperties.ContainsKey("top_k"))
+        {
+            result.AdditionalProperties["top_k"] = new BinaryData(JsonSerializer.SerializeToUtf8Bytes(topK, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(int))));
+        }
+
         if (options.AdditionalProperties is { } props)
         {
             foreach (var prop in props)
