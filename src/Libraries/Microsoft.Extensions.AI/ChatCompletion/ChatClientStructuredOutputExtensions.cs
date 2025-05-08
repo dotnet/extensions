@@ -191,7 +191,7 @@ public static class ChatClientStructuredOutputExtensions
         // We default to assuming that models support JSON schema because developers will normally use
         // GetResponseAsync<T> only with models that do. If the model doesn't support JSON schema, it may
         // throw or it may ignore the schema. In these cases developers should pass useJsonSchemaResponseFormat: false.
-        if (useJsonSchemaResponseFormat.GetValueOrDefault(true))
+        if (useJsonSchemaResponseFormat ?? true)
         {
             // When using native structured output, we don't add any additional prompt, because
             // the LLM backend is meant to do whatever's needed to explain the schema to the LLM.
