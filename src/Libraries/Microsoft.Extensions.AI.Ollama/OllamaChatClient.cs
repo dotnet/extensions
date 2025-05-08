@@ -12,7 +12,6 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.AI.Utilities;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable EA0011 // Consider removing unnecessary conditional access operator (?)

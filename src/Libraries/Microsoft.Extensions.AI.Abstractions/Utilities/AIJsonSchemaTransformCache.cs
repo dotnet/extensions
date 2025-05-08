@@ -6,9 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable LA0001 // Use the 'Microsoft.Shared.Diagnostics.Throws' class instead of explicitly throwing exception for improved performance
-
-namespace Microsoft.Extensions.AI.Utilities;
+namespace Microsoft.Extensions.AI;
 
 /// <summary>
 /// Defines a cache for JSON schemas transformed according to the specified <see cref="AIJsonSchemaTransformOptions"/> policy.
@@ -28,6 +26,9 @@ public sealed class AIJsonSchemaTransformCache
     private readonly ConditionalWeakTable<AIFunction, object> _functionSchemaCache = new();
     private readonly ConditionalWeakTable<ChatResponseFormatJson, object> _responseFormatCache = new();
 
+    private readonly ConditionalWeakTable<AIFunction, object>.CreateValueCallback _functionSchemaCreateValueCallback;
+    private readonly ConditionalWeakTable<ChatResponseFormatJson, object>.CreateValueCallback _responseFormatCreateValueCallback;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="AIJsonSchemaTransformCache"/> class with the specified options.
     /// </summary>
@@ -38,10 +39,12 @@ public sealed class AIJsonSchemaTransformCache
 
         if (transformOptions == AIJsonSchemaTransformOptions.Default)
         {
-            throw new ArgumentException("The options instance does not specify any transformations.", nameof(transformOptions));
+            Throw.ArgumentException("The options instance does not specify any transformations.", nameof(transformOptions));
         }
 
         TransformOptions = transformOptions;
+        _functionSchemaCreateValueCallback = function => AIJsonUtilities.TransformSchema(function.JsonSchema, TransformOptions);
+        _responseFormatCreateValueCallback = responseFormat => AIJsonUtilities.TransformSchema(responseFormat.Schema!.Value, TransformOptions);
     }
 
     /// <summary>
@@ -57,23 +60,19 @@ public sealed class AIJsonSchemaTransformCache
     public JsonElement GetOrCreateTransformedSchema(AIFunction function)
     {
         _ = Throw.IfNull(function);
-        return (JsonElement)_functionSchemaCache.GetValue(function, function => AIJsonUtilities.TransformSchema(function.JsonSchema, TransformOptions));
+        return (JsonElement)_functionSchemaCache.GetValue(function, _functionSchemaCreateValueCallback);
     }
 
     /// <summary>
     /// Gets or creates a transformed JSON schema for the specified <see cref="ChatResponseFormatJson"/> instance.
     /// </summary>
-    /// <param name="responseFormat">The function whose JSON schema we want to transform.</param>
+    /// <param name="responseFormat">The response format whose JSON schema we want to transform.</param>
     /// <returns>The transformed JSON schema corresponding to <see cref="TransformOptions"/>.</returns>
     public JsonElement? GetOrCreateTransformedSchema(ChatResponseFormatJson responseFormat)
     {
         _ = Throw.IfNull(responseFormat);
-
-        if (responseFormat.Schema is null)
-        {
-            return null;
-        }
-
-        return (JsonElement)_responseFormatCache.GetValue(responseFormat, responseFormat => AIJsonUtilities.TransformSchema(responseFormat.Schema!.Value, TransformOptions));
+        return responseFormat.Schema is not null
+            ? (JsonElement?)_responseFormatCache.GetValue(responseFormat, _responseFormatCreateValueCallback)
+            : null;
     }
 }

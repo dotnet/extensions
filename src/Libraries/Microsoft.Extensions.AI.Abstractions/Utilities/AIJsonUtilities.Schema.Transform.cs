@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable LA0001 // Use the 'Microsoft.Shared.Diagnostics.Throws' class instead of explicitly throwing exception for improved performance
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -28,7 +26,7 @@ public static partial class AIJsonUtilities
 
         if (transformOptions == AIJsonSchemaTransformOptions.Default)
         {
-            throw new ArgumentException("The options instance does not specify any transformations.", nameof(transformOptions));
+            Throw.ArgumentException("The options instance does not specify any transformations.", nameof(transformOptions));
         }
 
         JsonNode? nodeSchema = JsonSerializer.SerializeToNode(schema, JsonContext.Default.JsonElement);

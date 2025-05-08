@@ -13,7 +13,6 @@ using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.Inference;
-using Microsoft.Extensions.AI.Utilities;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable S1135 // Track uses of "TODO" tags
