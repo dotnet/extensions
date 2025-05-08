@@ -34,6 +34,7 @@ public static partial class AIJsonUtilities
     private const string PatternPropertyName = "pattern";
     private const string EnumPropertyName = "enum";
     private const string PropertiesPropertyName = "properties";
+    private const string ItemsPropertyName = "items";
     private const string RequiredPropertyName = "required";
     private const string AdditionalPropertiesPropertyName = "additionalProperties";
     private const string DefaultPropertyName = "default";
