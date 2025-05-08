@@ -40,9 +40,9 @@ internal sealed partial class AzureStorageResponseCache(
     private const string EntryAndContentsFilesNotFound = "Cache entry file {0} and contents file {1} were not found.";
 
     private readonly string _iterationPath = $"cache/{scenarioName}/{iterationName}";
+    private readonly Func<DateTime> _provideDateTime = provideDateTime;
     private readonly TimeSpan _timeToLiveForCacheEntries =
         timeToLiveForCacheEntries ?? Defaults.DefaultTimeToLiveForCacheEntries;
-    private readonly Func<DateTime> _provideDateTime = provideDateTime;
 
     public byte[]? Get(string key)
     {

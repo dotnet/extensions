@@ -20,7 +20,13 @@ namespace Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
 /// <param name="storageRootPath">
 /// The path to a directory on disk under which the cached AI responses should be stored.
 /// </param>
-public sealed class DiskBasedResponseCacheProvider(string storageRootPath) : IResponseCacheProvider
+/// <param name="timeToLiveForCacheEntries">
+/// An optional <see cref="TimeSpan"/> that specifies the maximum amount of time that cached AI responses should
+/// survive in the cache before they are considered expired and evicted.
+/// </param>
+public sealed class DiskBasedResponseCacheProvider(
+    string storageRootPath,
+    TimeSpan? timeToLiveForCacheEntries = null) : IResponseCacheProvider
 {
     private readonly Func<DateTime> _provideDateTime = () => DateTime.UtcNow;
 
@@ -39,7 +45,13 @@ public sealed class DiskBasedResponseCacheProvider(string storageRootPath) : IRe
         string iterationName,
         CancellationToken cancellationToken = default)
     {
-        var cache = new DiskBasedResponseCache(storageRootPath, scenarioName, iterationName, _provideDateTime);
+        var cache =
+            new DiskBasedResponseCache(
+                storageRootPath,
+                scenarioName,
+                iterationName,
+                _provideDateTime,
+                timeToLiveForCacheEntries);
 
         return new ValueTask<IDistributedCache>(cache);
     }
