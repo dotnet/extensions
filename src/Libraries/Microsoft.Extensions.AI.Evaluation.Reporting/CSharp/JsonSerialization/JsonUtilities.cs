@@ -19,7 +19,6 @@ internal static partial class JsonUtilities
         internal static JsonSerializerOptions Options => _options ??= CreateJsonSerializerOptions(writeIndented: true);
         internal static JsonTypeInfo<Dataset> DatasetTypeInfo => Options.GetTypeInfo<Dataset>();
         internal static JsonTypeInfo<CacheEntry> CacheEntryTypeInfo => Options.GetTypeInfo<CacheEntry>();
-        internal static JsonTypeInfo<CacheOptions> CacheOptionsTypeInfo => Options.GetTypeInfo<CacheOptions>();
         internal static JsonTypeInfo<ScenarioRunResult> ScenarioRunResultTypeInfo => Options.GetTypeInfo<ScenarioRunResult>();
     }
 
@@ -29,7 +28,6 @@ internal static partial class JsonUtilities
         internal static JsonSerializerOptions Options => _options ??= CreateJsonSerializerOptions(writeIndented: false);
         internal static JsonTypeInfo<Dataset> DatasetTypeInfo => Options.GetTypeInfo<Dataset>();
         internal static JsonTypeInfo<CacheEntry> CacheEntryTypeInfo => Options.GetTypeInfo<CacheEntry>();
-        internal static JsonTypeInfo<CacheOptions> CacheOptionsTypeInfo => Options.GetTypeInfo<CacheOptions>();
         internal static JsonTypeInfo<ScenarioRunResult> ScenarioRunResultTypeInfo => Options.GetTypeInfo<ScenarioRunResult>();
     }
 
@@ -50,12 +48,10 @@ internal static partial class JsonUtilities
     [JsonSerializable(typeof(EvaluationResult))]
     [JsonSerializable(typeof(Dataset))]
     [JsonSerializable(typeof(CacheEntry))]
-    [JsonSerializable(typeof(CacheOptions))]
     [JsonSourceGenerationOptions(
         Converters = [
             typeof(CamelCaseEnumConverter<EvaluationDiagnosticSeverity>),
             typeof(CamelCaseEnumConverter<EvaluationRating>),
-            typeof(CamelCaseEnumConverter<CacheMode>),
             typeof(TimeSpanConverter),
             typeof(EvaluationContextConverter)
         ],

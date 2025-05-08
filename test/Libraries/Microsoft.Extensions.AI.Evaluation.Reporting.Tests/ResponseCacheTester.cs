@@ -5,7 +5,6 @@ using System;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.TestUtilities;
 using Xunit;
@@ -96,7 +95,7 @@ public abstract class ResponseCacheTester
         cache.Set(_keyB, _responseB);
         Assert.True(_responseB.SequenceEqual(cache.Get(_keyB) ?? []));
 
-        now = DateTime.UtcNow + DiskBasedResponseCache.CacheOptions.Default.TimeToLiveForCacheEntries;
+        now = DateTime.UtcNow + Defaults.DefaultTimeToLiveForCacheEntries;
 
         Assert.Null(await cache.GetAsync(_keyA));
         Assert.Null(cache.Get(_keyB));
@@ -144,7 +143,7 @@ public abstract class ResponseCacheTester
         cache.Set(_keyB, _responseB);
         Assert.True(_responseB.SequenceEqual(cache.Get(_keyB) ?? []));
 
-        now = DateTime.UtcNow + DiskBasedResponseCache.CacheOptions.Default.TimeToLiveForCacheEntries;
+        now = DateTime.UtcNow + Defaults.DefaultTimeToLiveForCacheEntries;
 
         await provider.DeleteExpiredCacheEntriesAsync();
 
