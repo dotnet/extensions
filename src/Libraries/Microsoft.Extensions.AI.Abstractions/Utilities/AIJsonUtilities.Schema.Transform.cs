@@ -26,7 +26,7 @@ public static partial class AIJsonUtilities
 
         if (transformOptions == AIJsonSchemaTransformOptions.Default)
         {
-            Throw.ArgumentException("The options instance does not specify any transformations.", nameof(transformOptions));
+            Throw.ArgumentException(nameof(transformOptions), "The options instance does not specify any transformations.");
         }
 
         JsonNode? nodeSchema = JsonSerializer.SerializeToNode(schema, JsonContext.Default.JsonElement);

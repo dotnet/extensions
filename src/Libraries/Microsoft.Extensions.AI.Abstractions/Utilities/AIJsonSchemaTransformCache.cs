@@ -39,7 +39,7 @@ public sealed class AIJsonSchemaTransformCache
 
         if (transformOptions == AIJsonSchemaTransformOptions.Default)
         {
-            Throw.ArgumentException("The options instance does not specify any transformations.", nameof(transformOptions));
+            Throw.ArgumentException(nameof(transformOptions), "The options instance does not specify any transformations.");
         }
 
         TransformOptions = transformOptions;
