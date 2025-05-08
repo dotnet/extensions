@@ -26,7 +26,6 @@ public interface IResponseCacheProvider
     /// Returns an <see cref="IDistributedCache"/> that caches the AI responses associated with a particular
     /// <see cref="ScenarioRun"/>.
     /// </summary>
-    /// <remarks>
     /// <param name="scenarioName">The <see cref="ScenarioRun.ScenarioName"/>.</param>
     /// <param name="iterationName">The <see cref="ScenarioRun.IterationName"/>.</param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can cancel the operation.</param>
