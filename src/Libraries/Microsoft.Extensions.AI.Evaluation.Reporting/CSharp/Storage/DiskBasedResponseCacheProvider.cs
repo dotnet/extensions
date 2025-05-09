@@ -14,8 +14,9 @@ using Microsoft.Extensions.Caching.Distributed;
 namespace Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
 
 /// <summary>
-/// An <see cref="IResponseCacheProvider"/> that returns an <see cref="IDistributedCache"/> that can cache AI responses
-/// for a particular <see cref="ScenarioRun"/> under the specified <paramref name="storageRootPath"/> on disk.
+/// An <see cref="IEvaluationResponseCacheProvider"/> that returns an <see cref="IDistributedCache"/> that can cache
+/// AI responses for a particular <see cref="ScenarioRun"/> under the specified <paramref name="storageRootPath"/> on
+/// disk.
 /// </summary>
 /// <param name="storageRootPath">
 /// The path to a directory on disk under which the cached AI responses should be stored.
@@ -26,7 +27,7 @@ namespace Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
 /// </param>
 public sealed class DiskBasedResponseCacheProvider(
     string storageRootPath,
-    TimeSpan? timeToLiveForCacheEntries = null) : IResponseCacheProvider
+    TimeSpan? timeToLiveForCacheEntries = null) : IEvaluationResponseCacheProvider
 {
     private readonly Func<DateTime> _provideDateTime = () => DateTime.UtcNow;
 

@@ -18,7 +18,7 @@ internal sealed class CleanCacheCommand(ILogger logger)
 {
     internal async Task<int> InvokeAsync(DirectoryInfo? storageRootDir, Uri? endpointUri, CancellationToken cancellationToken = default)
     {
-        IResponseCacheProvider cacheProvider;
+        IEvaluationResponseCacheProvider cacheProvider;
 
         if (storageRootDir is not null)
         {

@@ -72,12 +72,12 @@ public static class AzureStorageReportingConfiguration
         IEnumerable<string>? tags = null)
 #pragma warning restore S107
     {
-        IResponseCacheProvider? responseCacheProvider =
+        IEvaluationResponseCacheProvider? responseCacheProvider =
             chatConfiguration is not null && enableResponseCaching
                 ? new AzureStorageResponseCacheProvider(client, timeToLiveForCacheEntries)
                 : null;
 
-        IResultStore resultStore = new AzureStorageResultStore(client);
+        IEvaluationResultStore resultStore = new AzureStorageResultStore(client);
 
         return new ReportingConfiguration(
             evaluators,

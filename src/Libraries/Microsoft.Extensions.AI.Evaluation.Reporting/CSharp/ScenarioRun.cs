@@ -93,7 +93,7 @@ public sealed class ScenarioRun : IAsyncDisposable
     public ChatConfiguration? ChatConfiguration { get; }
 
     private readonly CompositeEvaluator _compositeEvaluator;
-    private readonly IResultStore _resultStore;
+    private readonly IEvaluationResultStore _resultStore;
     private readonly Func<EvaluationMetric, EvaluationMetricInterpretation?>? _evaluationMetricInterpreter;
     private readonly ChatDetails? _chatDetails;
     private readonly IEnumerable<string>? _tags;
@@ -106,7 +106,7 @@ public sealed class ScenarioRun : IAsyncDisposable
         string iterationName,
         string executionName,
         IEnumerable<IEvaluator> evaluators,
-        IResultStore resultStore,
+        IEvaluationResultStore resultStore,
         ChatConfiguration? chatConfiguration = null,
         Func<EvaluationMetric, EvaluationMetricInterpretation?>? evaluationMetricInterpreter = null,
         ChatDetails? chatDetails = null,
@@ -189,7 +189,7 @@ public sealed class ScenarioRun : IAsyncDisposable
 
     /// <summary>
     /// Disposes the <see cref="ScenarioRun"/> and writes the <see cref="ScenarioRunResult"/> to the configured
-    /// <see cref="IResultStore"/>.
+    /// <see cref="IEvaluationResultStore"/>.
     /// </summary>
     /// <returns>A <see cref="ValueTask"/> that represents the asynchronous operation.</returns>
     public async ValueTask DisposeAsync()

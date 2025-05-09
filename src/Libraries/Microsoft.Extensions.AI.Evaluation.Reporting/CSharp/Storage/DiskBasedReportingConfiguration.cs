@@ -69,12 +69,12 @@ public static class DiskBasedReportingConfiguration
     {
         storageRootPath = Path.GetFullPath(storageRootPath);
 
-        IResponseCacheProvider? responseCacheProvider =
+        IEvaluationResponseCacheProvider? responseCacheProvider =
             chatConfiguration is not null && enableResponseCaching
                 ? new DiskBasedResponseCacheProvider(storageRootPath)
                 : null;
 
-        IResultStore resultStore = new DiskBasedResultStore(storageRootPath);
+        IEvaluationResultStore resultStore = new DiskBasedResultStore(storageRootPath);
 
         return new ReportingConfiguration(
             evaluators,

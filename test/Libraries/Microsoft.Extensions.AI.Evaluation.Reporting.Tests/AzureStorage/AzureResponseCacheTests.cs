@@ -47,9 +47,9 @@ public class AzureResponseCacheTests : ResponseCacheTester, IAsyncLifetime
 
     internal override bool IsConfigured => Settings.Current.Configured;
 
-    internal override IResponseCacheProvider CreateResponseCacheProvider()
+    internal override IEvaluationResponseCacheProvider CreateResponseCacheProvider()
         => new AzureStorageResponseCacheProvider(_dirClient!);
 
-    internal override IResponseCacheProvider CreateResponseCacheProvider(Func<DateTime> provideDateTime)
+    internal override IEvaluationResponseCacheProvider CreateResponseCacheProvider(Func<DateTime> provideDateTime)
         => new AzureStorageResponseCacheProvider(_dirClient!, provideDateTime);
 }
