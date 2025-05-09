@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+#if NET
+using System.Collections;
+#endif
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -148,7 +151,14 @@ public abstract class EmbeddingGeneratorIntegrationTests : IDisposable
         {
             for (int j = 0; j < embeddings.Count; j++)
             {
-                distances[i, j] = TensorPrimitives.HammingBitDistance(embeddings[i].Bits.Span, embeddings[j].Bits.Span);
+                distances[i, j] = TensorPrimitives.HammingBitDistance<byte>(ToArray(embeddings[i].Vector), ToArray(embeddings[j].Vector));
+
+                static byte[] ToArray(BitArray array)
+                {
+                    byte[] result = new byte[(array.Length + 7) / 8];
+                    array.CopyTo(result, 0);
+                    return result;
+                }
             }
         }
 
