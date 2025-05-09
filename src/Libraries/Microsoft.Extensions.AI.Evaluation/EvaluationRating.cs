@@ -20,19 +20,9 @@ public enum EvaluationRating
     Inconclusive,
 
     /// <summary>
-    /// A value that indicates that the <see cref="EvaluationMetric{T}.Value"/> is interpreted as being exceptional.
+    /// A value that indicates that the <see cref="EvaluationMetric{T}.Value"/> is interpreted as being unacceptable.
     /// </summary>
-    Exceptional,
-
-    /// <summary>
-    /// A value that indicates that the <see cref="EvaluationMetric{T}.Value"/> is interpreted as being good.
-    /// </summary>
-    Good,
-
-    /// <summary>
-    /// A value that indicates that the <see cref="EvaluationMetric{T}.Value"/> is interpreted as being average.
-    /// </summary>
-    Average,
+    Unacceptable,
 
     /// <summary>
     /// A value that indicates that the <see cref="EvaluationMetric{T}.Value"/> is interpreted as being poor.
@@ -40,7 +30,17 @@ public enum EvaluationRating
     Poor,
 
     /// <summary>
-    /// A value that indicates that the <see cref="EvaluationMetric{T}.Value"/> is interpreted as being unacceptable.
+    /// A value that indicates that the <see cref="EvaluationMetric{T}.Value"/> is interpreted as being average.
     /// </summary>
-    Unacceptable,
+    Average,
+
+    /// <summary>
+    /// A value that indicates that the <see cref="EvaluationMetric{T}.Value"/> is interpreted as being good.
+    /// </summary>
+    Good,
+
+    /// <summary>
+    /// A value that indicates that the <see cref="EvaluationMetric{T}.Value"/> is interpreted as being exceptional.
+    /// </summary>
+    Exceptional
 }
