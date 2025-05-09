@@ -60,21 +60,9 @@ public sealed class BinaryEmbedding : Embedding
             }
             else
             {
-                if (reader.HasValueSequence)
-                {
-                    long sequenceLength = reader.ValueSequence.Length;
-                    if (sequenceLength > int.MaxValue)
-                    {
-                        throw new JsonException("Value is too long.");
-                    }
-
-                    tmpArray = ArrayPool<byte>.Shared.Rent((int)sequenceLength);
-                }
-                else
-                {
-                    tmpArray = ArrayPool<byte>.Shared.Rent(reader.ValueSpan.Length);
-                }
-
+                // This path should be rare.
+                int length = reader.HasValueSequence ? checked((int)reader.ValueSequence.Length) : reader.ValueSpan.Length;
+                tmpArray = ArrayPool<byte>.Shared.Rent(length);
                 utf8 = tmpArray.AsSpan(0, reader.CopyString(tmpArray));
             }
 
