@@ -71,7 +71,7 @@ public class QualityEvaluatorTests
                 DiskBasedReportingConfiguration.Create(
                     storageRootPath: Settings.Current.StorageRootPath,
                     evaluators: [groundednessEvaluator, equivalenceEvaluator, completenessEvaluator, retrievalEvaluator],
-                    chatConfiguration,
+                    chatConfiguration: chatConfiguration,
                     executionName: Constants.Version,
                     tags: [version, date, projectName, testClass, provider, model, temperature, usesContext]);
         }
