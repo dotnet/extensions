@@ -229,16 +229,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         });
 
         Assert.Contains(secretNumber.ToString(), response.Text);
-
-        // If the underlying IChatClient provides usage data, function invocation should aggregate the
-        // usage data across all calls to produce a single Usage value on the final response
-        if (response.Usage is { } finalUsage)
-        {
-            var totalInputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.input_tokens")!);
-            var totalOutputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.output_tokens")!);
-            Assert.Equal(totalInputTokens, finalUsage.InputTokenCount);
-            Assert.Equal(totalOutputTokens, finalUsage.OutputTokenCount);
-        }
+        AssertUsageAgainstActivities(response, activities);
     }
 
     [ConditionalFact]
@@ -306,16 +297,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         });
 
         Assert.Contains(secretNumber.ToString(), response.Text);
-
-        // If the underlying IChatClient provides usage data, function invocation should aggregate the
-        // usage data across all calls to produce a single Usage value on the final response
-        if (response.Usage is { } finalUsage)
-        {
-            var totalInputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.input_tokens")!);
-            var totalOutputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.output_tokens")!);
-            Assert.Equal(totalInputTokens, finalUsage.InputTokenCount);
-            Assert.Equal(totalOutputTokens, finalUsage.OutputTokenCount);
-        }
+        AssertUsageAgainstActivities(response, activities);
     }
 
     [ConditionalFact]
@@ -347,15 +329,21 @@ public abstract class ChatClientIntegrationTests : IDisposable
         });
 
         Assert.Contains((secretNumber + 19).ToString(), response.Text);
+        AssertUsageAgainstActivities(response, activities);
+    }
 
+    private static void AssertUsageAgainstActivities(ChatResponse response, List<Activity> activities)
+    {
         // If the underlying IChatClient provides usage data, function invocation should aggregate the
-        // usage data across all calls to produce a single Usage value on the final response
+        // usage data across all calls to produce a single Usage value on the final response.
+        // The FunctionInvokingChatClient then itself creates a span that will also be tagged with a sum
+        // across all consituent calls, which means our final answer will be double.
         if (response.Usage is { } finalUsage)
         {
             var totalInputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.input_tokens")!);
             var totalOutputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.output_tokens")!);
-            Assert.Equal(totalInputTokens, finalUsage.InputTokenCount);
-            Assert.Equal(totalOutputTokens, finalUsage.OutputTokenCount);
+            Assert.Equal(totalInputTokens, finalUsage.InputTokenCount * 2);
+            Assert.Equal(totalOutputTokens, finalUsage.OutputTokenCount * 2);
         }
     }
 
