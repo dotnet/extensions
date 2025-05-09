@@ -23,6 +23,14 @@ public static class LoggingEmbeddingGeneratorBuilderExtensions
     /// <param name="configure">An optional callback that can be used to configure the <see cref="LoggingEmbeddingGenerator{TInput, TEmbedding}"/> instance.</param>
     /// <returns>The <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
+    /// <remarks>
+    /// <para>
+    /// When the employed <see cref="ILogger"/> enables <see cref="Logging.LogLevel.Trace"/>, the contents of
+    /// values and options are logged. These values and options may contain sensitive application data.
+    /// <see cref="Logging.LogLevel.Trace"/> is disabled by default and should never be enabled in a production environment.
+    /// Messages and options are not logged at other logging levels.
+    /// </para>
+    /// </remarks>
     public static EmbeddingGeneratorBuilder<TInput, TEmbedding> UseLogging<TInput, TEmbedding>(
         this EmbeddingGeneratorBuilder<TInput, TEmbedding> builder,
         ILoggerFactory? loggerFactory = null,

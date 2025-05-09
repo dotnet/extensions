@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Extensions.AI;
 
@@ -19,4 +20,8 @@ public sealed class Embedding<T> : Embedding
 
     /// <summary>Gets or sets the embedding vector this embedding represents.</summary>
     public ReadOnlyMemory<T> Vector { get; set; }
+
+    /// <inheritdoc />
+    [JsonIgnore]
+    public override int Dimensions => Vector.Length;
 }
