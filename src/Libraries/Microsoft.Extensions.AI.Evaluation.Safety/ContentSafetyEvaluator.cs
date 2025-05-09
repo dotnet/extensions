@@ -18,17 +18,17 @@ namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
 /// <summary>
 /// An <see langword="abstract"/> base class that can be used to implement <see cref="IEvaluator"/>s that utilize the
-/// Azure AI Content Safety service to evaluate responses produced by an AI model for the presence of a variety of
+/// Azure AI Foundry Evaluation service to evaluate responses produced by an AI model for the presence of a variety of
 /// unsafe content such as protected material, vulnerable code, harmful content etc.
 /// </summary>
 /// <param name="contentSafetyServiceAnnotationTask">
-/// The name of the annotation task that should be used when communicating with the Azure AI Content Safety service to
-/// perform evaluations.
+/// The name of the annotation task that should be used when communicating with the Azure AI Foundry Evaluation service
+/// to perform evaluations.
 /// </param>
 /// <param name="metricNames">
 /// A dictionary containing the mapping from the names of the metrics that are used when communicating with the Azure
-/// AI Content Safety to the <see cref="EvaluationMetric.Name"/>s of the <see cref="EvaluationMetric"/>s returned by
-/// this <see cref="IEvaluator"/>.
+/// AI Foundry Evaluation service, to the <see cref="EvaluationMetric.Name"/>s of the <see cref="EvaluationMetric"/>s
+/// returned by this <see cref="IEvaluator"/>.
 /// </param>
 #pragma warning disable S1694 // An abstract class should have both abstract and concrete methods
 public abstract class ContentSafetyEvaluator(
@@ -58,12 +58,12 @@ public abstract class ContentSafetyEvaluator(
     }
 
     /// <summary>
-    /// Evaluates the supplied <paramref name="modelResponse"/> using the Azure AI Content Safety Service and returns
-    /// an <see cref="EvaluationResult"/> containing one or more <see cref="EvaluationMetric"/>s.
+    /// Evaluates the supplied <paramref name="modelResponse"/> using the Azure AI Foundry Evaluation Service and
+    /// returns an <see cref="EvaluationResult"/> containing one or more <see cref="EvaluationMetric"/>s.
     /// </summary>
     /// <param name="contentSafetyServiceChatClient">
-    /// The <see cref="IChatClient"/> that should be used to communicate with the Azure AI Content Safety Service when
-    /// performing evaluations.
+    /// The <see cref="IChatClient"/> that should be used to communicate with the Azure AI Foundry Evaluation Service
+    /// when performing evaluations.
     /// </param>
     /// <param name="messages">
     /// The conversation history including the request that produced the supplied <paramref name="modelResponse"/>.
@@ -75,11 +75,11 @@ public abstract class ContentSafetyEvaluator(
     /// </param>
     /// <param name="contentSafetyServicePayloadFormat">
     /// An identifier that specifies the format of the payload that should be used when communicating with the Azure AI
-    /// Content Safety service to perform evaluations.
+    /// Foundry Evaluation service to perform evaluations.
     /// </param>
     /// <param name="includeMetricNamesInContentSafetyServicePayload">
     /// A <see cref="bool"/> flag that indicates whether the names of the metrics should be included in the payload
-    /// that is sent to the Azure AI Content Safety service when performing evaluations.
+    /// that is sent to the Azure AI Foundry Evaluation service when performing evaluations.
     /// </param>
     /// <param name="cancellationToken">
     /// A <see cref="CancellationToken"/> that can cancel the evaluation operation.
@@ -151,12 +151,13 @@ public abstract class ContentSafetyEvaluator(
         string annotationResult = annotationResponse.Text;
         EvaluationResult result = ContentSafetyService.ParseAnnotationResult(annotationResult);
 
-        UpdateMetrics();
+        EvaluationResult updatedResult = UpdateMetrics();
+        return updatedResult;
 
-        return result;
-
-        void UpdateMetrics()
+        EvaluationResult UpdateMetrics()
         {
+            EvaluationResult updatedResult = new EvaluationResult();
+
             foreach (EvaluationMetric metric in result.Metrics.Values)
             {
                 string contentSafetyServiceMetricName = metric.Name;
@@ -185,7 +186,11 @@ public abstract class ContentSafetyEvaluator(
                 // metric.LogJsonData(payload);
                 // metric.LogJsonData(annotationResult);
 #pragma warning restore S125
+
+                updatedResult.Metrics.Add(metric.Name, metric);
             }
+
+            return updatedResult;
         }
     }
 

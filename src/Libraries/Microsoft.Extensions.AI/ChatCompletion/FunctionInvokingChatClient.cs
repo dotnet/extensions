@@ -15,7 +15,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable CA2213 // Disposable fields should be disposed
-#pragma warning disable CA1002 // Do not expose generic lists
 #pragma warning disable EA0002 // Use 'System.TimeProvider' to make the code easier to test
 #pragma warning disable SA1202 // 'protected' members should come before 'private' members
 #pragma warning disable S107 // Methods should not have too many parameters
@@ -214,7 +213,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
         // A single request into this GetResponseAsync may result in multiple requests to the inner client.
         // Create an activity to group them together for better observability.
-        using Activity? activity = _activitySource?.StartActivity(nameof(FunctionInvokingChatClient));
+        using Activity? activity = _activitySource?.StartActivity($"{nameof(FunctionInvokingChatClient)}.{nameof(GetResponseAsync)}");
 
         // Copy the original messages in order to avoid enumerating the original messages multiple times.
         // The IEnumerable can represent an arbitrary amount of work.
@@ -309,7 +308,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
         // A single request into this GetStreamingResponseAsync may result in multiple requests to the inner client.
         // Create an activity to group them together for better observability.
-        using Activity? activity = _activitySource?.StartActivity(nameof(FunctionInvokingChatClient));
+        using Activity? activity = _activitySource?.StartActivity($"{nameof(FunctionInvokingChatClient)}.{nameof(GetStreamingResponseAsync)}");
         UsageDetails? totalUsage = activity is { IsAllDataRequested: true } ? new() : null; // tracked usage across all turns, to be used for activity purposes
 
         // Copy the original messages in order to avoid enumerating the original messages multiple times.
@@ -795,7 +794,16 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     {
         _ = Throw.IfNull(context);
 
-        using Activity? activity = _activitySource?.StartActivity(context.Function.Name);
+        using Activity? activity = _activitySource?.StartActivity(
+            $"execute_tool {context.Function.Name}",
+            ActivityKind.Internal,
+            default(ActivityContext),
+            [
+                new(OpenTelemetryConsts.GenAI.Operation.Name, "execute_tool"),
+                new(OpenTelemetryConsts.GenAI.Tool.Call.Id, context.CallContent.CallId),
+                new(OpenTelemetryConsts.GenAI.Tool.Name, context.Function.Name),
+                new(OpenTelemetryConsts.GenAI.Tool.Description, context.Function.Description),
+            ]);
 
         long startingTimestamp = 0;
         if (_logger.IsEnabled(LogLevel.Debug))

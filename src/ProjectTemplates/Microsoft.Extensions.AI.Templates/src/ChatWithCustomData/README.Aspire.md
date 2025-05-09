@@ -181,6 +181,10 @@ Several .NET Aspire templates include ASP.NET Core projects that are configured 
 
 See [Troubleshoot untrusted localhost certificate in .NET Aspire](https://learn.microsoft.com/dotnet/aspire/troubleshooting/untrusted-localhost-certificate) for more information.
 
+# Updating JavaScript dependencies
+
+This template leverages JavaScript libraries to provide essential functionality. These libraries are located in the wwwroot/lib folder of the ChatWithCustomData-CSharp.Web project. For instructions on updating each dependency, please refer to the README.md file in each respective folder.
+
 # Learn More
 To learn more about development with .NET and AI, check out the following links:
 

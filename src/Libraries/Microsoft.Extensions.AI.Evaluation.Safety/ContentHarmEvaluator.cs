@@ -9,8 +9,8 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
 /// <summary>
-/// An <see cref="IEvaluator"/> that utilizes the Azure AI Content Safety service to evaluate responses produced by an
-/// AI model for the presence of a variety of harmful content such as violence, hate speech, etc.
+/// An <see cref="IEvaluator"/> that utilizes the Azure AI Foundry Evaluation service to evaluate responses produced by
+/// an AI model for the presence of a variety of harmful content such as violence, hate speech, etc.
 /// </summary>
 /// <remarks>
 /// <see cref="ContentHarmEvaluator"/> can be used to evaluate responses for all supported content harm metrics in one
@@ -22,10 +22,10 @@ namespace Microsoft.Extensions.AI.Evaluation.Safety;
 /// </remarks>
 /// <param name="metricNames">
 /// A optional dictionary containing the mapping from the names of the metrics that are used when communicating
-/// with the Azure AI Content Safety to the <see cref="EvaluationMetric.Name"/>s of the
+/// with the Azure AI Foundry Evaluation service, to the <see cref="EvaluationMetric.Name"/>s of the
 /// <see cref="EvaluationMetric"/>s returned by this <see cref="IEvaluator"/>.
 ///
-/// If omitted, includes mappings for all content harm metrics that are supported by the Azure AI Content Safety
+/// If omitted, includes mappings for all content harm metrics that are supported by the Azure AI Foundry Evaluation
 /// service. This includes <see cref="HateAndUnfairnessEvaluator.HateAndUnfairnessMetricName"/>,
 /// <see cref="ViolenceEvaluator.ViolenceMetricName"/>, <see cref="SelfHarmEvaluator.SelfHarmMetricName"/> and
 /// <see cref="SexualEvaluator.SexualMetricName"/>.
