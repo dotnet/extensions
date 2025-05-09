@@ -4,6 +4,7 @@
 using System;
 
 namespace Microsoft.Extensions.AI.Evaluation.Safety;
+
 internal static class AIContentExtensions
 {
     internal static bool IsTextOrUsage(this AIContent content)

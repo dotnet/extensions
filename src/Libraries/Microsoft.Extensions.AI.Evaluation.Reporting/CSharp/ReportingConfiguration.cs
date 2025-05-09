@@ -27,9 +27,10 @@ public sealed class ReportingConfiguration
     public IReadOnlyList<IEvaluator> Evaluators { get; }
 
     /// <summary>
-    /// Gets the <see cref="IResultStore"/> that should be used to persist the <see cref="ScenarioRunResult"/>s.
+    /// Gets the <see cref="IEvaluationResultStore"/> that should be used to persist the
+    /// <see cref="ScenarioRunResult"/>s.
     /// </summary>
-    public IResultStore ResultStore { get; }
+    public IEvaluationResultStore ResultStore { get; }
 
     /// <summary>
     /// Gets a <see cref="Evaluation.ChatConfiguration"/> that specifies the <see cref="IChatClient"/> that is used by
@@ -38,9 +39,9 @@ public sealed class ReportingConfiguration
     public ChatConfiguration? ChatConfiguration { get; }
 
     /// <summary>
-    /// Gets the <see cref="IResponseCacheProvider"/> that should be used to cache AI responses.
+    /// Gets the <see cref="IEvaluationResponseCacheProvider"/> that should be used to cache AI responses.
     /// </summary>
-    public IResponseCacheProvider? ResponseCacheProvider { get; }
+    public IEvaluationResponseCacheProvider? ResponseCacheProvider { get; }
 
     /// <summary>
     /// Gets the collection of unique strings that should be hashed when generating the cache keys for cached AI
@@ -101,7 +102,7 @@ public sealed class ReportingConfiguration
     /// The set of <see cref="IEvaluator"/>s that should be invoked to evaluate AI responses.
     /// </param>
     /// <param name="resultStore">
-    /// The <see cref="IResultStore"/> that should be used to persist the <see cref="ScenarioRunResult"/>s.
+    /// The <see cref="IEvaluationResultStore"/> that should be used to persist the <see cref="ScenarioRunResult"/>s.
     /// </param>
     /// <param name="chatConfiguration">
     /// A <see cref="Evaluation.ChatConfiguration"/> that specifies the <see cref="IChatClient"/> that is used by
@@ -109,8 +110,8 @@ public sealed class ReportingConfiguration
     /// none of the included <paramref name="evaluators"/> are AI-based.
     /// </param>
     /// <param name="responseCacheProvider">
-    /// The <see cref="IResponseCacheProvider"/> that should be used to cache AI responses. If omitted, AI responses
-    /// will not be cached.
+    /// The <see cref="IEvaluationResponseCacheProvider"/> that should be used to cache AI responses. If omitted, AI
+    /// responses will not be cached.
     /// </param>
     /// <param name="cachingKeys">
     /// An optional collection of unique strings that should be hashed when generating the cache keys for cached AI
@@ -134,9 +135,9 @@ public sealed class ReportingConfiguration
 #pragma warning disable S107 // Methods should not have too many parameters
     public ReportingConfiguration(
         IEnumerable<IEvaluator> evaluators,
-        IResultStore resultStore,
+        IEvaluationResultStore resultStore,
         ChatConfiguration? chatConfiguration = null,
-        IResponseCacheProvider? responseCacheProvider = null,
+        IEvaluationResponseCacheProvider? responseCacheProvider = null,
         IEnumerable<string>? cachingKeys = null,
         string executionName = Defaults.DefaultExecutionName,
         Func<EvaluationMetric, EvaluationMetricInterpretation?>? evaluationMetricInterpreter = null,

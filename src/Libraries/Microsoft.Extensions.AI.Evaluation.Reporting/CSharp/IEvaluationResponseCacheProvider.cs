@@ -12,26 +12,28 @@ namespace Microsoft.Extensions.AI.Evaluation.Reporting;
 /// <see cref="ScenarioRun"/>.
 /// </summary>
 /// <remarks>
-/// <see cref="IResponseCacheProvider"/> can be used to set up caching of AI-generated responses (both the AI responses
-/// under evaluation as well as the AI responses for the evaluations themselves). When caching is enabled, the AI
-/// responses associated with each <see cref="ScenarioRun"/> are stored in the <see cref="IDistributedCache"/> that is
-/// returned from this <see cref="IResponseCacheProvider"/>. So long as the inputs (such as the content included in the
-/// requests, the AI model being invoked etc.) remain unchanged, subsequent evaluations of the same
-/// <see cref="ScenarioRun"/> use the cached responses instead of invoking the AI model to generate new ones. Bypassing
-/// the AI model when the inputs remain unchanged results in faster execution at a lower cost.
+/// <see cref="IEvaluationResponseCacheProvider"/> can be used to set up caching of AI-generated responses (both the AI
+/// responses under evaluation as well as the AI responses for the evaluations themselves). When caching is enabled,
+/// the AI responses associated with each <see cref="ScenarioRun"/> are stored in the <see cref="IDistributedCache"/>
+/// that is returned from this <see cref="IEvaluationResponseCacheProvider"/>. So long as the inputs (such as the
+/// content included in the requests, the AI model being invoked etc.) remain unchanged, subsequent evaluations of the
+/// same <see cref="ScenarioRun"/> use the cached responses instead of invoking the AI model to generate new ones.
+/// Bypassing the AI model when the inputs remain unchanged results in faster execution at a lower cost.
 /// </remarks>
-public interface IResponseCacheProvider
+public interface IEvaluationResponseCacheProvider
 {
     /// <summary>
-    /// Returns an <see cref="IDistributedCache"/> that caches the AI responses associated with a particular
-    /// <see cref="ScenarioRun"/>.
+    /// Returns an <see cref="IDistributedCache"/> that caches all the AI responses associated with the
+    /// <see cref="ScenarioRun"/> with the supplied <paramref name="scenarioName"/> and
+    /// <paramref name="iterationName"/>.
     /// </summary>
     /// <param name="scenarioName">The <see cref="ScenarioRun.ScenarioName"/>.</param>
     /// <param name="iterationName">The <see cref="ScenarioRun.IterationName"/>.</param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can cancel the operation.</param>
     /// <returns>
-    /// An <see cref="IDistributedCache"/> that caches the AI responses associated with a particular
-    /// <see cref="ScenarioRun"/>.
+    /// An <see cref="IDistributedCache"/> that caches all the AI responses associated with the
+    /// <see cref="ScenarioRun"/> with the supplied <paramref name="scenarioName"/> and
+    /// <paramref name="iterationName"/>.
     /// </returns>
     ValueTask<IDistributedCache> GetCacheAsync(
         string scenarioName,
