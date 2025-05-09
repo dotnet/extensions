@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -158,40 +157,54 @@ internal sealed partial class OpenAIChatClient : IChatClient
             }
             else if (input.Role == ChatRole.Assistant)
             {
-                var contentParts = ToOpenAIChatContent(input.Contents, ensureNotEmpty: false);
-
-                var toolCalls = input.Contents.OfType<FunctionCallContent>().Select(c =>
-                    ChatToolCall.CreateFunctionToolCall(c.CallId, c.Name, new(JsonSerializer.SerializeToUtf8Bytes(
-                        c.Arguments, options.GetTypeInfo(typeof(IDictionary<string, object?>)))))).ToArray();
-
-                AssistantChatMessage message;
-                if (contentParts.Count > 0)
+                List<ChatMessageContentPart>? contentParts = null;
+                List<ChatToolCall>? toolCalls = null;
+                string? refusal = null;
+                foreach (var content in input.Contents)
                 {
-                    message = new(contentParts);
-                    foreach (var toolCall in toolCalls)
+                    switch (content)
                     {
-                        message.ToolCalls.Add(toolCall);
+                        case ErrorContent ec when ec.ErrorCode == nameof(AssistantChatMessage.Refusal):
+                            refusal = ec.Message;
+                            break;
+
+                        case FunctionCallContent fc:
+                            (toolCalls ??= []).Add(
+                                ChatToolCall.CreateFunctionToolCall(fc.CallId, fc.Name, new(JsonSerializer.SerializeToUtf8Bytes(
+                                    fc.Arguments, options.GetTypeInfo(typeof(IDictionary<string, object?>))))));
+                            break;
+
+                        default:
+                            if (ToChatMessageContentPart(content) is { } part)
+                            {
+                                (contentParts ??= []).Add(part);
+                            }
+
+                            break;
                     }
                 }
-                else if (toolCalls.Length > 0)
+
+                AssistantChatMessage message;
+                if (contentParts is not null)
                 {
-                    message = new(toolCalls);
+                    message = new(contentParts);
+                    if (toolCalls is not null)
+                    {
+                        foreach (var toolCall in toolCalls)
+                        {
+                            message.ToolCalls.Add(toolCall);
+                        }
+                    }
                 }
                 else
                 {
-                    message = new(ChatMessageContentPart.CreateTextPart(string.Empty));
+                    message = toolCalls is not null ?
+                        new(toolCalls) :
+                        new(ChatMessageContentPart.CreateTextPart(string.Empty));
                 }
 
                 message.ParticipantName = input.AuthorName;
-
-                foreach (var content in input.Contents)
-                {
-                    if (content is ErrorContent { ErrorCode: nameof(message.Refusal) } refusal)
-                    {
-                        message.Refusal = refusal.Message;
-                        break;
-                    }
-                }
+                message.Refusal = refusal;
 
                 yield return message;
             }
@@ -199,51 +212,57 @@ internal sealed partial class OpenAIChatClient : IChatClient
     }
 
     /// <summary>Converts a list of <see cref="AIContent"/> to a list of <see cref="ChatMessageContentPart"/>.</summary>
-    private static List<ChatMessageContentPart> ToOpenAIChatContent(
-        IList<AIContent> contents, bool ensureNotEmpty = true)
+    private static List<ChatMessageContentPart> ToOpenAIChatContent(IList<AIContent> contents)
     {
         List<ChatMessageContentPart> parts = [];
+
         foreach (var content in contents)
         {
-            switch (content)
+            if (ToChatMessageContentPart(content) is { } part)
             {
-                case TextContent textContent:
-                    parts.Add(ChatMessageContentPart.CreateTextPart(textContent.Text));
-                    break;
-
-                case UriContent uriContent when uriContent.HasTopLevelMediaType("image"):
-                    parts.Add(ChatMessageContentPart.CreateImagePart(uriContent.Uri, GetImageDetail(content)));
-                    break;
-
-                case DataContent dataContent when dataContent.HasTopLevelMediaType("image"):
-                    parts.Add(ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, GetImageDetail(content)));
-                    break;
-
-                case DataContent dataContent when dataContent.HasTopLevelMediaType("audio"):
-                    var audioData = BinaryData.FromBytes(dataContent.Data);
-                    if (dataContent.MediaType.Equals("audio/mpeg", StringComparison.OrdinalIgnoreCase))
-                    {
-                        parts.Add(ChatMessageContentPart.CreateInputAudioPart(audioData, ChatInputAudioFormat.Mp3));
-                    }
-                    else if (dataContent.MediaType.Equals("audio/wav", StringComparison.OrdinalIgnoreCase))
-                    {
-                        parts.Add(ChatMessageContentPart.CreateInputAudioPart(audioData, ChatInputAudioFormat.Wav));
-                    }
-
-                    break;
-
-                case DataContent dataContent when dataContent.MediaType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase):
-                    parts.Add(ChatMessageContentPart.CreateFilePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, $"{Guid.NewGuid():N}.pdf"));
-                    break;
+                parts.Add(part);
             }
         }
 
-        if (ensureNotEmpty && parts.Count == 0)
+        if (parts.Count == 0)
         {
             parts.Add(ChatMessageContentPart.CreateTextPart(string.Empty));
         }
 
         return parts;
+    }
+
+    private static ChatMessageContentPart? ToChatMessageContentPart(AIContent content)
+    {
+        switch (content)
+        {
+            case TextContent textContent:
+                return ChatMessageContentPart.CreateTextPart(textContent.Text);
+
+            case UriContent uriContent when uriContent.HasTopLevelMediaType("image"):
+                return ChatMessageContentPart.CreateImagePart(uriContent.Uri, GetImageDetail(content));
+
+            case DataContent dataContent when dataContent.HasTopLevelMediaType("image"):
+                return ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, GetImageDetail(content));
+
+            case DataContent dataContent when dataContent.HasTopLevelMediaType("audio"):
+                var audioData = BinaryData.FromBytes(dataContent.Data);
+                if (dataContent.MediaType.Equals("audio/mpeg", StringComparison.OrdinalIgnoreCase))
+                {
+                    return ChatMessageContentPart.CreateInputAudioPart(audioData, ChatInputAudioFormat.Mp3);
+                }
+                else if (dataContent.MediaType.Equals("audio/wav", StringComparison.OrdinalIgnoreCase))
+                {
+                    return ChatMessageContentPart.CreateInputAudioPart(audioData, ChatInputAudioFormat.Wav);
+                }
+
+                break;
+
+            case DataContent dataContent when dataContent.MediaType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase):
+                return ChatMessageContentPart.CreateFilePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, $"{Guid.NewGuid():N}.pdf");
+        }
+
+        return null;
     }
 
     private static ChatImageDetailLevel? GetImageDetail(AIContent content)

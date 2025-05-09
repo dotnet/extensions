@@ -620,8 +620,10 @@ public abstract class ChatClientIntegrationTests : IDisposable
         var secondResponse = await chatClient.GetResponseAsync([message]);
         Assert.Equal(response.Text, secondResponse.Text);
         Assert.Equal(2, functionCallCount);
-        Assert.Equal(2, llmCallCount!.CallCount);
+        Assert.Equal(FunctionInvokingChatClientSetsConversationId ? 3 : 2, llmCallCount!.CallCount);
     }
+
+    public virtual bool FunctionInvokingChatClientSetsConversationId => false;
 
     [ConditionalFact]
     public virtual async Task Caching_AfterFunctionInvocation_FunctionOutputChangedAsync()
