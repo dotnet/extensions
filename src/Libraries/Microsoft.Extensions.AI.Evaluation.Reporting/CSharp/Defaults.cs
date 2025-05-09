@@ -27,7 +27,7 @@ public static class Defaults
 
     /// <summary>
     /// Gets a <see cref="TimeSpan"/> that specifies the default amount of time that cached AI responses should survive
-    /// in the <see cref="IResponseCacheProvider"/>'s cache before they are considered expired and evicted.
+    /// in the <see cref="IEvaluationResponseCacheProvider"/>'s cache before they are considered expired and evicted.
     /// </summary>
     public static TimeSpan DefaultTimeToLiveForCacheEntries { get; } = TimeSpan.FromDays(14);
 

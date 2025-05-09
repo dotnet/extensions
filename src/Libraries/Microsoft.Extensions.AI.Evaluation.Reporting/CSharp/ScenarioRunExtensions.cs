@@ -85,16 +85,11 @@ public static class ScenarioRunExtensions
         this ScenarioRun scenarioRun,
         ChatMessage modelResponse,
         IEnumerable<EvaluationContext>? additionalContext = null,
-        CancellationToken cancellationToken = default)
-    {
-        _ = Throw.IfNull(scenarioRun);
-
-        return scenarioRun.EvaluateAsync(
-                messages: [],
+        CancellationToken cancellationToken = default) =>
+            scenarioRun.EvaluateAsync(
                 new ChatResponse(modelResponse),
                 additionalContext,
                 cancellationToken);
-    }
 
     /// <summary>
     /// Evaluates the supplied <paramref name="modelResponse"/> and returns an <see cref="EvaluationResult"/>
@@ -148,16 +143,12 @@ public static class ScenarioRunExtensions
         ChatMessage userRequest,
         ChatMessage modelResponse,
         IEnumerable<EvaluationContext>? additionalContext = null,
-        CancellationToken cancellationToken = default)
-    {
-        _ = Throw.IfNull(scenarioRun);
-
-        return scenarioRun.EvaluateAsync(
-                messages: [userRequest],
+        CancellationToken cancellationToken = default) =>
+            scenarioRun.EvaluateAsync(
+                userRequest,
                 new ChatResponse(modelResponse),
                 additionalContext,
                 cancellationToken);
-    }
 
     /// <summary>
     /// Evaluates the supplied <paramref name="modelResponse"/> and returns an <see cref="EvaluationResult"/>

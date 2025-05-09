@@ -18,8 +18,8 @@ public abstract class ResponseCacheTester
     private static readonly string _keyB = "B Key";
     private static readonly byte[] _responseB = Encoding.UTF8.GetBytes("Content B");
 
-    internal abstract IResponseCacheProvider CreateResponseCacheProvider();
-    internal abstract IResponseCacheProvider CreateResponseCacheProvider(Func<DateTime> provideDateTime);
+    internal abstract IEvaluationResponseCacheProvider CreateResponseCacheProvider();
+    internal abstract IEvaluationResponseCacheProvider CreateResponseCacheProvider(Func<DateTime> provideDateTime);
     internal abstract bool IsConfigured { get; }
 
     private void SkipIfNotConfigured()
@@ -37,7 +37,7 @@ public abstract class ResponseCacheTester
 
         string iterationName = "TestIteration";
 
-        IResponseCacheProvider provider = CreateResponseCacheProvider();
+        IEvaluationResponseCacheProvider provider = CreateResponseCacheProvider();
         IDistributedCache cache = await provider.GetCacheAsync(nameof(AddUncachedEntry), iterationName);
         Assert.NotNull(cache);
 
@@ -58,7 +58,7 @@ public abstract class ResponseCacheTester
 
         string iterationName = "TestIteration";
 
-        IResponseCacheProvider provider = CreateResponseCacheProvider();
+        IEvaluationResponseCacheProvider provider = CreateResponseCacheProvider();
         IDistributedCache cache = await provider.GetCacheAsync(nameof(RemoveCachedEntry), iterationName);
         Assert.NotNull(cache);
 
@@ -85,7 +85,7 @@ public abstract class ResponseCacheTester
         DateTime now = DateTime.UtcNow;
         DateTime provideDateTime() => now;
 
-        IResponseCacheProvider provider = CreateResponseCacheProvider(provideDateTime);
+        IEvaluationResponseCacheProvider provider = CreateResponseCacheProvider(provideDateTime);
         IDistributedCache cache = await provider.GetCacheAsync(nameof(RemoveCachedEntry), iterationName);
         Assert.NotNull(cache);
 
@@ -106,7 +106,7 @@ public abstract class ResponseCacheTester
     {
         SkipIfNotConfigured();
 
-        IResponseCacheProvider provider = CreateResponseCacheProvider();
+        IEvaluationResponseCacheProvider provider = CreateResponseCacheProvider();
         IDistributedCache cache = await provider.GetCacheAsync(nameof(MultipleCacheInstances), "Async");
         Assert.NotNull(cache);
         IDistributedCache cache2 = await provider.GetCacheAsync(nameof(MultipleCacheInstances), "Async");
@@ -133,7 +133,7 @@ public abstract class ResponseCacheTester
         DateTime now = DateTime.UtcNow;
         DateTime provideDateTime() => now;
 
-        IResponseCacheProvider provider = CreateResponseCacheProvider(provideDateTime);
+        IEvaluationResponseCacheProvider provider = CreateResponseCacheProvider(provideDateTime);
         IDistributedCache cache = await provider.GetCacheAsync(nameof(RemoveCachedEntry), iterationName);
         Assert.NotNull(cache);
 
@@ -163,7 +163,7 @@ public abstract class ResponseCacheTester
 
         string iterationName = "TestIteration";
 
-        IResponseCacheProvider provider = CreateResponseCacheProvider();
+        IEvaluationResponseCacheProvider provider = CreateResponseCacheProvider();
         IDistributedCache cache = await provider.GetCacheAsync(nameof(RemoveCachedEntry), iterationName);
         Assert.NotNull(cache);
 

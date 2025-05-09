@@ -16,9 +16,9 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
 
 /// <summary>
-/// An <see cref="IResultStore"/> implementation that stores <see cref="ScenarioRunResult"/>s on disk.
+/// An <see cref="IEvaluationResultStore"/> implementation that stores <see cref="ScenarioRunResult"/>s on disk.
 /// </summary>
-public sealed class DiskBasedResultStore : IResultStore
+public sealed class DiskBasedResultStore : IEvaluationResultStore
 {
     private const string DeserializationFailedMessage = "Unable to deserialize the scenario run result file at {0}.";
 
