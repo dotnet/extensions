@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -157,28 +158,38 @@ internal sealed partial class OpenAIChatClient : IChatClient
             }
             else if (input.Role == ChatRole.Assistant)
             {
-                AssistantChatMessage message = new(ToOpenAIChatContent(input.Contents))
+                var contentParts = ToOpenAIChatContent(input.Contents, ensureNotEmpty: false);
+
+                var toolCalls = input.Contents.OfType<FunctionCallContent>().Select(c =>
+                    ChatToolCall.CreateFunctionToolCall(c.CallId, c.Name, new(JsonSerializer.SerializeToUtf8Bytes(
+                        c.Arguments, options.GetTypeInfo(typeof(IDictionary<string, object?>)))))).ToArray();
+
+                AssistantChatMessage message;
+                if (contentParts.Count > 0)
                 {
-                    ParticipantName = input.AuthorName
-                };
+                    message = new(contentParts);
+                    foreach (var toolCall in toolCalls)
+                    {
+                        message.ToolCalls.Add(toolCall);
+                    }
+                }
+                else if (toolCalls.Length > 0)
+                {
+                    message = new(toolCalls);
+                }
+                else
+                {
+                    message = new(ChatMessageContentPart.CreateTextPart(string.Empty));
+                }
+
+                message.ParticipantName = input.AuthorName;
 
                 foreach (var content in input.Contents)
                 {
-                    switch (content)
+                    if (content is ErrorContent { ErrorCode: nameof(message.Refusal) } refusal)
                     {
-                        case ErrorContent errorContent when errorContent.ErrorCode is nameof(message.Refusal):
-                            message.Refusal = errorContent.Message;
-                            break;
-
-                        case FunctionCallContent callRequest:
-                            message.ToolCalls.Add(
-                                ChatToolCall.CreateFunctionToolCall(
-                                    callRequest.CallId,
-                                    callRequest.Name,
-                                    new(JsonSerializer.SerializeToUtf8Bytes(
-                                        callRequest.Arguments,
-                                        options.GetTypeInfo(typeof(IDictionary<string, object?>))))));
-                            break;
+                        message.Refusal = refusal.Message;
+                        break;
                     }
                 }
 
@@ -188,7 +199,8 @@ internal sealed partial class OpenAIChatClient : IChatClient
     }
 
     /// <summary>Converts a list of <see cref="AIContent"/> to a list of <see cref="ChatMessageContentPart"/>.</summary>
-    private static List<ChatMessageContentPart> ToOpenAIChatContent(IList<AIContent> contents)
+    private static List<ChatMessageContentPart> ToOpenAIChatContent(
+        IList<AIContent> contents, bool ensureNotEmpty = true)
     {
         List<ChatMessageContentPart> parts = [];
         foreach (var content in contents)
@@ -226,7 +238,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
             }
         }
 
-        if (parts.Count == 0)
+        if (ensureNotEmpty && parts.Count == 0)
         {
             parts.Add(ChatMessageContentPart.CreateTextPart(string.Empty));
         }

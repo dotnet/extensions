@@ -77,7 +77,9 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         var response = await _chatClient.GetResponseAsync(
         [
+            new(ChatRole.System, []),
             new(ChatRole.User, []),
+            new(ChatRole.Assistant, []),
             new(ChatRole.User, "What is 1 + 2? Reply with a single number."),
         ]);
 
