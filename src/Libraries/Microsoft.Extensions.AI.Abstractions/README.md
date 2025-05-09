@@ -97,12 +97,15 @@ while (true)
     Console.Write("Q: ");
     history.Add(new(ChatRole.User, Console.ReadLine()));
 
+    List<ChatResponseUpdate> updates = [];
     await foreach (var update in client.GetStreamingResponseAsync(history))
     {
         Console.Write(update);
-        history.AddMessages(update);
+        updates.Add(update);
     }
     Console.WriteLine();
+
+    history.AddMessages(updates);
 }
 ```
 
