@@ -24,10 +24,6 @@ public static class AzureStorageReportingConfiguration
     /// <param name="evaluators">
     /// The set of <see cref="IEvaluator"/>s that should be invoked to evaluate AI responses.
     /// </param>
-    /// <param name="timeToLiveForCacheEntries">
-    /// An optional <see cref="TimeSpan"/> that specifies the maximum amount of time that cached AI responses should
-    /// survive in the cache before they are considered expired and evicted.
-    /// </param>
     /// <param name="chatConfiguration">
     /// A <see cref="ChatConfiguration"/> that specifies the <see cref="IChatClient"/> that is used by AI-based
     /// <paramref name="evaluators"/> included in the returned <see cref="ReportingConfiguration"/>. Can be omitted if
@@ -35,6 +31,10 @@ public static class AzureStorageReportingConfiguration
     /// </param>
     /// <param name="enableResponseCaching">
     /// <see langword="true"/> to enable caching of AI responses; <see langword="false"/> otherwise.
+    /// </param>
+    /// <param name="timeToLiveForCacheEntries">
+    /// An optional <see cref="TimeSpan"/> that specifies the maximum amount of time that cached AI responses should
+    /// survive in the cache before they are considered expired and evicted.
     /// </param>
     /// <param name="cachingKeys">
     /// An optional collection of unique strings that should be hashed when generating the cache keys for cached AI
@@ -63,9 +63,9 @@ public static class AzureStorageReportingConfiguration
     public static ReportingConfiguration Create(
         DataLakeDirectoryClient client,
         IEnumerable<IEvaluator> evaluators,
-        TimeSpan? timeToLiveForCacheEntries = null,
         ChatConfiguration? chatConfiguration = null,
         bool enableResponseCaching = true,
+        TimeSpan? timeToLiveForCacheEntries = null,
         IEnumerable<string>? cachingKeys = null,
         string executionName = Defaults.DefaultExecutionName,
         Func<EvaluationMetric, EvaluationMetricInterpretation?>? evaluationMetricInterpreter = null,

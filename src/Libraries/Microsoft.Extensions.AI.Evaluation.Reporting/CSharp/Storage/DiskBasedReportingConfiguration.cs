@@ -32,6 +32,10 @@ public static class DiskBasedReportingConfiguration
     /// <param name="enableResponseCaching">
     /// <see langword="true"/> to enable caching of AI responses; <see langword="false"/> otherwise.
     /// </param>
+    /// <param name="timeToLiveForCacheEntries">
+    /// An optional <see cref="TimeSpan"/> that specifies the maximum amount of time that cached AI responses should
+    /// survive in the cache before they are considered expired and evicted.
+    /// </param>
     /// <param name="cachingKeys">
     /// An optional collection of unique strings that should be hashed when generating the cache keys for cached AI
     /// responses. See <see cref="ReportingConfiguration.CachingKeys"/> for more information about this concept.
@@ -61,6 +65,7 @@ public static class DiskBasedReportingConfiguration
         IEnumerable<IEvaluator> evaluators,
         ChatConfiguration? chatConfiguration = null,
         bool enableResponseCaching = true,
+        TimeSpan? timeToLiveForCacheEntries = null,
         IEnumerable<string>? cachingKeys = null,
         string executionName = Defaults.DefaultExecutionName,
         Func<EvaluationMetric, EvaluationMetricInterpretation?>? evaluationMetricInterpreter = null,
@@ -71,7 +76,7 @@ public static class DiskBasedReportingConfiguration
 
         IEvaluationResponseCacheProvider? responseCacheProvider =
             chatConfiguration is not null && enableResponseCaching
-                ? new DiskBasedResponseCacheProvider(storageRootPath)
+                ? new DiskBasedResponseCacheProvider(storageRootPath, timeToLiveForCacheEntries)
                 : null;
 
         IEvaluationResultStore resultStore = new DiskBasedResultStore(storageRootPath);

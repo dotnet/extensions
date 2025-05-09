@@ -34,8 +34,11 @@ public sealed class DiskBasedResponseCacheProvider(
     /// <remarks>
     /// Intended for testing purposes only.
     /// </remarks>
-    internal DiskBasedResponseCacheProvider(string storageRootPath, Func<DateTime> provideDateTime)
-        : this(storageRootPath)
+    internal DiskBasedResponseCacheProvider(
+        string storageRootPath,
+        Func<DateTime> provideDateTime,
+        TimeSpan? timeToLiveForCacheEntries = null)
+            : this(storageRootPath, timeToLiveForCacheEntries)
     {
         _provideDateTime = provideDateTime;
     }
