@@ -13,10 +13,18 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>A delegating chat client that logs chat operations to an <see cref="ILogger"/>.</summary>
+/// <remarks>
 /// <para>
 /// The provided implementation of <see cref="IChatClient"/> is thread-safe for concurrent use so long as the
 /// <see cref="ILogger"/> employed is also thread-safe for concurrent use.
 /// </para>
+/// <para>
+/// When the employed <see cref="ILogger"/> enables <see cref="Logging.LogLevel.Trace"/>, the contents of
+/// chat messages and options are logged. These messages and options may contain sensitive application data.
+/// <see cref="Logging.LogLevel.Trace"/> is disabled by default and should never be enabled in a production environment.
+/// Messages and options are not logged at other logging levels.
+/// </para>
+/// </remarks>
 public partial class LoggingChatClient : DelegatingChatClient
 {
     /// <summary>An <see cref="ILogger"/> instance used for all logging.</summary>

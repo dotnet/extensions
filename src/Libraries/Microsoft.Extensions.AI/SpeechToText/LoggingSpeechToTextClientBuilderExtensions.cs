@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides extensions for configuring <see cref="LoggingSpeechToTextClient"/> instances.</summary>
 [Experimental("MEAI001")]
-public static class SpeechToTextClientBuilderExtensions
+public static class LoggingSpeechToTextClientBuilderExtensions
 {
     /// <summary>Adds logging to the audio transcription client pipeline.</summary>
     /// <param name="builder">The <see cref="SpeechToTextClientBuilder"/>.</param>
@@ -22,6 +22,14 @@ public static class SpeechToTextClientBuilderExtensions
     /// </param>
     /// <param name="configure">An optional callback that can be used to configure the <see cref="LoggingSpeechToTextClient"/> instance.</param>
     /// <returns>The <paramref name="builder"/>.</returns>
+    /// <remarks>
+    /// <para>
+    /// When the employed <see cref="ILogger"/> enables <see cref="Logging.LogLevel.Trace"/>, the contents of
+    /// messages and options are logged. These messages and options may contain sensitive application data.
+    /// <see cref="Logging.LogLevel.Trace"/> is disabled by default and should never be enabled in a production environment.
+    /// Messages and options are not logged at other logging levels.
+    /// </para>
+    /// </remarks>
     public static SpeechToTextClientBuilder UseLogging(
         this SpeechToTextClientBuilder builder,
         ILoggerFactory? loggerFactory = null,
