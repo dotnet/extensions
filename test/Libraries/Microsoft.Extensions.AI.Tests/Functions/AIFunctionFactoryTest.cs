@@ -29,8 +29,7 @@ public partial class AIFunctionFactoryTest
         Assert.Throws<ArgumentNullException>("method", () => AIFunctionFactory.Create(method: null!, target: new object()));
         Assert.Throws<ArgumentNullException>("method", () => AIFunctionFactory.Create(method: null!, target: new object(), name: "myAiFunk"));
         Assert.Throws<ArgumentNullException>("target", () => AIFunctionFactory.Create(typeof(AIFunctionFactoryTest).GetMethod(nameof(InvalidArguments_Throw))!, (object?)null));
-        Assert.Throws<ArgumentNullException>("createInstanceFunc", () =>
-            AIFunctionFactory.Create(typeof(AIFunctionFactoryTest).GetMethod(nameof(InvalidArguments_Throw))!, (Func<AIFunctionArguments, object>)null!));
+        Assert.Throws<ArgumentNullException>("targetType", () => AIFunctionFactory.Create(typeof(AIFunctionFactoryTest).GetMethod(nameof(InvalidArguments_Throw))!, (Type)null!));
         Assert.Throws<ArgumentException>("method", () => AIFunctionFactory.Create(typeof(List<>).GetMethod("Add")!, new List<int>()));
     }
 
@@ -313,12 +312,16 @@ public partial class AIFunctionFactoryTest
 
         AIFunction func = AIFunctionFactory.Create(
             typeof(MyFunctionTypeWithOneArg).GetMethod(nameof(MyFunctionTypeWithOneArg.InstanceMethod))!,
-            static arguments =>
+            typeof(MyFunctionTypeWithOneArg),
+            new()
             {
-                Assert.NotNull(arguments.Services);
-                return ActivatorUtilities.CreateInstance(arguments.Services, typeof(MyFunctionTypeWithOneArg));
-            },
-            new() { MarshalResult = (result, type, cancellationToken) => new ValueTask<object?>(result) });
+                CreateInstance = (type, arguments) =>
+                {
+                    Assert.NotNull(arguments.Services);
+                    return ActivatorUtilities.CreateInstance(arguments.Services, type);
+                },
+                MarshalResult = (result, type, cancellationToken) => new ValueTask<object?>(result),
+            });
 
         Assert.NotNull(func);
         var result = (Tuple<MyFunctionTypeWithOneArg, MyArgumentType>?)await func.InvokeAsync(new() { Services = sp });
@@ -327,25 +330,31 @@ public partial class AIFunctionFactoryTest
     }
 
     [Fact]
-    public async Task Create_CreateInstanceReturnsNull_ThrowsDuringInvocation()
+    public async Task Create_NoInstance_UsesActivatorWhenServicesUnavailable()
     {
         AIFunction func = AIFunctionFactory.Create(
-            typeof(MyFunctionTypeWithOneArg).GetMethod(nameof(MyFunctionTypeWithOneArg.InstanceMethod))!,
-            static _ => null!);
+            typeof(MyFunctionTypeWithNoArgs).GetMethod(nameof(MyFunctionTypeWithNoArgs.InstanceMethod))!,
+            typeof(MyFunctionTypeWithNoArgs),
+            new()
+            {
+                MarshalResult = (result, type, cancellationToken) => new ValueTask<object?>(result),
+            });
 
         Assert.NotNull(func);
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await func.InvokeAsync());
+        Assert.Equal("42", await func.InvokeAsync());
     }
 
     [Fact]
-    public async Task Create_WrongConstructedType_ThrowsDuringInvocation()
+    public async Task Create_NoInstance_ThrowsWhenCantConstructInstance()
     {
+        var sp = new ServiceCollection().BuildServiceProvider();
+
         AIFunction func = AIFunctionFactory.Create(
             typeof(MyFunctionTypeWithOneArg).GetMethod(nameof(MyFunctionTypeWithOneArg.InstanceMethod))!,
-            static _ => new MyFunctionTypeWithNoArgs());
+            typeof(MyFunctionTypeWithOneArg));
 
         Assert.NotNull(func);
-        await Assert.ThrowsAsync<TargetException>(async () => await func.InvokeAsync());
+        await Assert.ThrowsAsync<MissingMethodException>(async () => await func.InvokeAsync(new() { Services = sp }));
     }
 
     [Fact]
@@ -353,7 +362,15 @@ public partial class AIFunctionFactoryTest
     {
         Assert.Throws<ArgumentException>("method", () => AIFunctionFactory.Create(
             typeof(MyFunctionTypeWithNoArgs).GetMethod(nameof(MyFunctionTypeWithNoArgs.StaticMethod))!,
-            static _ => new MyFunctionTypeWithNoArgs()));
+            typeof(MyFunctionTypeWithNoArgs)));
+    }
+
+    [Fact]
+    public void Create_NoInstance_ThrowsForMismatchedMethod()
+    {
+        Assert.Throws<ArgumentException>("targetType", () => AIFunctionFactory.Create(
+            typeof(MyFunctionTypeWithNoArgs).GetMethod(nameof(MyFunctionTypeWithNoArgs.InstanceMethod))!,
+            typeof(MyFunctionTypeWithOneArg)));
     }
 
     [Fact]
@@ -361,7 +378,7 @@ public partial class AIFunctionFactoryTest
     {
         AIFunction func = AIFunctionFactory.Create(
             typeof(DisposableService).GetMethod(nameof(DisposableService.GetThis))!,
-            static _ => new DisposableService(),
+            typeof(DisposableService),
             new()
             {
                 MarshalResult = (result, type, cancellationToken) => new ValueTask<object?>(result),
@@ -380,7 +397,7 @@ public partial class AIFunctionFactoryTest
     {
         AIFunction func = AIFunctionFactory.Create(
             typeof(AsyncDisposableService).GetMethod(nameof(AsyncDisposableService.GetThis))!,
-            static _ => new AsyncDisposableService(),
+            typeof(AsyncDisposableService),
             new()
             {
                 MarshalResult = (result, type, cancellationToken) => new ValueTask<object?>(result),
@@ -399,7 +416,7 @@ public partial class AIFunctionFactoryTest
     {
         AIFunction func = AIFunctionFactory.Create(
             typeof(DisposableAndAsyncDisposableService).GetMethod(nameof(DisposableAndAsyncDisposableService.GetThis))!,
-            static _ => new DisposableAndAsyncDisposableService(),
+            typeof(DisposableAndAsyncDisposableService),
             new()
             {
                 MarshalResult = (result, type, cancellationToken) => new ValueTask<object?>(result),
@@ -804,7 +821,11 @@ public partial class AIFunctionFactoryTest
 
     private sealed class MyFunctionTypeWithNoArgs
     {
+        private string _value = "42";
+
         public static void StaticMethod() => throw new NotSupportedException();
+
+        public string InstanceMethod() => _value;
     }
 
     private sealed class MyFunctionTypeWithOneArg(MyArgumentType arg)
