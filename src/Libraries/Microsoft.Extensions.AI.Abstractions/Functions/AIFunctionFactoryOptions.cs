@@ -107,14 +107,22 @@ public sealed class AIFunctionFactoryOptions
     public Func<object?, Type?, CancellationToken, ValueTask<object?>>? MarshalResult { get; set; }
 
     /// <summary>
-    /// Gets or sets optional services used in the construction of the <see cref="AIFunction"/>.
+    /// Gets or sets a delegate used with <see cref="AIFunctionFactory.Create(MethodInfo, Type, AIFunctionFactoryOptions?)"/> to create the receiver instance.
     /// </summary>
     /// <remarks>
-    /// These services will be used to determine which parameters should be satisifed from dependency injection. As such,
-    /// what services are satisfied via this provider should match what's satisfied via the provider passed into
-    /// <see cref="AIFunction.InvokeAsync"/> via <see cref="AIFunctionArguments.Services"/>.
+    /// <para>
+    /// <see cref="AIFunctionFactory.Create(MethodInfo, Type, AIFunctionFactoryOptions?)"/> creates <see cref="AIFunction"/> instances that invoke an
+    /// instance method on the specified <see cref="Type"/>. This delegate is used to create the instance of the type that will be used to invoke the method.
+    /// By default if <see cref="CreateInstance"/> is <see langword="null"/>, <see cref="Activator.CreateInstance(Type)"/> is used. If
+    /// <see cref="CreateInstance"/> is non-<see langword="null"/>, the delegate is invoked with the <see cref="Type"/> to be instantiated and the
+    /// <see cref="AIFunctionArguments"/> provided to the <see cref="AIFunction.InvokeAsync"/> method.
+    /// </para>
+    /// <para>
+    /// Each created instance will be used for a single invocation. If the object is <see cref="IAsyncDisposable"/> or <see cref="IDisposable"/>, it will
+    /// be disposed of after the invocation completes.
+    /// </para>
     /// </remarks>
-    public IServiceProvider? Services { get; set; }
+    public Func<Type, AIFunctionArguments, object>? CreateInstance { get; set; }
 
     /// <summary>Provides configuration options produced by the <see cref="ConfigureParameterBinding"/> delegate.</summary>
     public readonly record struct ParameterBindingOptions
