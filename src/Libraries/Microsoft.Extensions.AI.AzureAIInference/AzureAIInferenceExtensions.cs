@@ -9,6 +9,20 @@ namespace Microsoft.Extensions.AI;
 public static class AzureAIInferenceExtensions
 {
     /// <summary>Gets an <see cref="IChatClient"/> for use with this <see cref="ChatCompletionsClient"/>.</summary>
+    /// <remarks>
+    /// <para>
+    /// No prompt injection defense is performed by default. Applications are expected to implement
+    /// guards against prompt injection attacks as needed.
+    /// </para>
+    /// <para>
+    /// There are no limits or restrictions imposed on data sizes sent to the underlying provider or returned from it
+    /// by default. Applications are expected to apply data size limits as needed.
+    /// </para>
+    /// <para>
+    /// There are no limits or restrictions imposed on the number of messages sent to the underlying provider or returned from
+    /// it by default. Applications are expected to apply rate limits on a per-user or per-session basis as needed.
+    /// </para>
+    /// </remarks>
     /// <param name="chatCompletionsClient">The client.</param>
     /// <param name="modelId">The ID of the model to use. If <see langword="null"/>, it can be provided per request via <see cref="ChatOptions.ModelId"/>.</param>
     /// <returns>An <see cref="IChatClient"/> that can be used to converse via the <see cref="ChatCompletionsClient"/>.</returns>
