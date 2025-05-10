@@ -300,6 +300,36 @@ public partial class AIFunctionFactoryTest
     }
 
     [Fact]
+    public async Task Create_NoInstance_UsesActivatorUtilitiesWhenServicesAvailable()
+    {
+        MyFunctionTypeWithOneArg mft = new(new());
+        MyArgumentType mat = new();
+
+        ServiceCollection sc = new();
+        sc.AddSingleton(mft);
+        sc.AddSingleton(mat);
+        IServiceProvider sp = sc.BuildServiceProvider();
+
+        AIFunction func = AIFunctionFactory.Create(
+            typeof(MyFunctionTypeWithOneArg).GetMethod(nameof(MyFunctionTypeWithOneArg.InstanceMethod))!,
+            typeof(MyFunctionTypeWithOneArg),
+            new()
+            {
+                CreateInstance = (type, arguments) =>
+                {
+                    Assert.NotNull(arguments.Services);
+                    return ActivatorUtilities.CreateInstance(arguments.Services, type);
+                },
+                MarshalResult = (result, type, cancellationToken) => new ValueTask<object?>(result),
+            });
+
+        Assert.NotNull(func);
+        var result = (Tuple<MyFunctionTypeWithOneArg, MyArgumentType>?)await func.InvokeAsync(new() { Services = sp });
+        Assert.NotSame(mft, result?.Item1);
+        Assert.Same(mat, result?.Item2);
+    }
+
+    [Fact]
     public async Task Create_NoInstance_UsesActivatorWhenServicesUnavailable()
     {
         AIFunction func = AIFunctionFactory.Create(

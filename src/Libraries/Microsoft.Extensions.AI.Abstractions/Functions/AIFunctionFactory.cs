@@ -536,6 +536,7 @@ public static partial class AIFunctionFactory
         {
             FunctionDescriptor = functionDescriptor;
             TargetType = targetType;
+            CreateInstance = options.CreateInstance;
             AdditionalProperties = options.AdditionalProperties ?? EmptyReadOnlyDictionary<string, object?>.Instance;
         }
 
@@ -543,6 +544,8 @@ public static partial class AIFunctionFactory
         public object? Target { get; }
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
         public Type? TargetType { get; }
+        public Func<Type, AIFunctionArguments, object>? CreateInstance { get; }
+
         public override IReadOnlyDictionary<string, object?> AdditionalProperties { get; }
         public override string Name => FunctionDescriptor.Name;
         public override string Description => FunctionDescriptor.Description;
@@ -563,7 +566,14 @@ public static partial class AIFunctionFactory
                     Debug.Assert(target is null, "Expected target to be null when we have a non-null target type");
                     Debug.Assert(!FunctionDescriptor.Method.IsStatic, "Expected an instance method");
 
-                    target = Activator.CreateInstance(targetType);
+                    target = CreateInstance is not null ?
+                        CreateInstance(targetType, arguments) :
+                        Activator.CreateInstance(targetType);
+                    if (target is null)
+                    {
+                        Throw.InvalidOperationException("Unable to create an instance of the target type.");
+                    }
+
                     disposeTarget = true;
                 }
 
