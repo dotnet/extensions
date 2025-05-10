@@ -12,16 +12,6 @@ namespace Microsoft.Extensions.AI;
 public class ChatOptions
 {
     /// <summary>Gets or sets an optional identifier used to associate a request with an existing conversation.</summary>
-    /// <remarks>This property is obsolete. Use <see cref="ConversationId"/> instead.</remarks>
-    [System.Obsolete("Use ConversationId instead.")]
-    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-    public string? ChatThreadId
-    {
-        get => ConversationId;
-        set => ConversationId = value;
-    }
-
-    /// <summary>Gets or sets an optional identifier used to associate a request with an existing conversation.</summary>
     /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#stateless-vs-stateful-clients">Stateless vs. stateful clients.</related>
     public string? ConversationId { get; set; }
 
