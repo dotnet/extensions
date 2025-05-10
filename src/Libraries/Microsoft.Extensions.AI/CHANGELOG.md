@@ -1,5 +1,11 @@
 # Release History
 
+## 9.4.4-preview.1.25259.16
+
+- Fixed `CachingChatClient` to avoid caching when `ConversationId` is set.
+- Renamved `useJsonSchema` parameter in `GetResponseAsync<T>` to `useJsonSchemaResponseFormat`.
+- Updated `OpenTelemetryChatClient` and `OpenTelemetryEmbeddingGenerator` to conform to the latest 1.33.0 draft specification of the Semantic Conventions for Generative AI systems.
+
 ## 9.4.3-preview.1.25230.7
 
 - Updated the diagnostic spans emitted by `FunctionInvokingChatClient` to include total input and output token counts.
