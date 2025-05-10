@@ -77,7 +77,9 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         var response = await _chatClient.GetResponseAsync(
         [
+            new(ChatRole.System, []),
             new(ChatRole.User, []),
+            new(ChatRole.Assistant, []),
             new(ChatRole.User, "What is 1 + 2? Reply with a single number."),
         ]);
 
@@ -618,8 +620,10 @@ public abstract class ChatClientIntegrationTests : IDisposable
         var secondResponse = await chatClient.GetResponseAsync([message]);
         Assert.Equal(response.Text, secondResponse.Text);
         Assert.Equal(2, functionCallCount);
-        Assert.Equal(2, llmCallCount!.CallCount);
+        Assert.Equal(FunctionInvokingChatClientSetsConversationId ? 3 : 2, llmCallCount!.CallCount);
     }
+
+    public virtual bool FunctionInvokingChatClientSetsConversationId => false;
 
     [ConditionalFact]
     public virtual async Task Caching_AfterFunctionInvocation_FunctionOutputChangedAsync()
