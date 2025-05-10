@@ -46,6 +46,17 @@ builder.Logging.AddRandomProbabilisticSampler(configuration.GetSection("Logging:
 
 The Random Probabilistic Sampler supports the `IOptionsMonitor<T>` pattern, allowing for dynamic configuration updates. This means you can change the sampling rules at runtime without needing to restart your application.
 
+#### Trace-Based Sampling
+
+Matches logging sampling decisions with the underlying [Distributed Tracing sampling decisions](https://learn.microsoft.com/dotnet/core/diagnostics/distributed-tracing-concepts#sampling):
+
+```csharp
+// Add trace-based sampler
+builder.Logging.AddTraceBasedSampler();
+```
+
+This comes in handy when you already use OpenTelemetry .NET Tracing and would like to see sampling decisions being consistent across both logs and their underlying [`Activity`](https://learn.microsoft.com/dotnet/core/diagnostics/distributed-tracing-concepts#sampling).
+
 ### Log Buffering
 
 Provides a buffering mechanism for logs, allowing you to store logs in temporary circular buffers in memory. If the buffer is full, the oldest logs will be dropped. If you want to emit the buffered logs, you can call `Flush()` on the buffer. That way, if you don't flush buffers, all buffered logs will eventually be dropped and that makes sense - if you don't flush buffers, chances are
@@ -102,28 +113,18 @@ public class MyService
 
 The Global Log Buffer supports the `IOptionsMonitor<T>` pattern, allowing for dynamic configuration updates. This means you can change the buffering rules at runtime without needing to restart your application.
 
-##### Limitations
+#### Limitations
 
 1. This library does not preserve the order of log records. However, original timestamps are preserved.
 1. The library does not support custom configuration per each logger provider. Same configuration is applied to all logger providers.
-1. When buffering and then flushing buffers, not all information of the original log record is preserved. This is due to serialing/deserialing limitation, but can be
+1. Log scopes are not supported. This means that if you use `ILogger.BeginScope()` method, the buffered log records will not be associated with the scope.
+1. When buffering and then flushing buffers, not all information of the original log record is preserved. This is due to serializing/deserializing limitation, but can be
 revisited in future. Namely, this library uses `Microsoft.Extensions.Logging.Abstractions.BufferedLogRecord` class when converting buffered log records to actual log records, but omits following properties:
 
 - `Microsoft.Extensions.Logging.Abstractions.BufferedLogRecord.ActivitySpanId`
 - `Microsoft.Extensions.Logging.Abstractions.BufferedLogRecord.ActivityTraceId`
 - `Microsoft.Extensions.Logging.Abstractions.BufferedLogRecord.ManagedThreadId`
 - `Microsoft.Extensions.Logging.Abstractions.BufferedLogRecord.MessageTemplate`
-
-#### Trace-Based Sampling
-
-Matches logging sampling decisions with the underlying [Distributed Tracing sampling decisions](https://learn.microsoft.com/dotnet/core/diagnostics/distributed-tracing-concepts#sampling):
-
-```csharp
-// Add trace-based sampler
-builder.Logging.AddTraceBasedSampler();
-```
-
-This comes in handy when you already use OpenTelemetry .NET Tracing and would like to see sampling decisions being consistent across both logs and their underlying [`Activity`](https://learn.microsoft.com/dotnet/core/diagnostics/distributed-tracing-concepts#sampling).
 
 ### Service Log Enrichment
 
