@@ -33,6 +33,10 @@ namespace Microsoft.Extensions.AI;
 /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/quickstarts/use-function-calling">Invoke .NET functions using an AI model.</related>
 public static partial class AIFunctionFactory
 {
+    // NOTE:
+    // Unlike most library code, AIFunctionFactory uses ConfigureAwait(true) rather than ConfigureAwait(false). This is to
+    // enable AIFunctionFactory to be used with methods that might be context-aware, such as those employing a UI framework.
+
     /// <summary>Holds the default options instance used when creating function.</summary>
     private static readonly AIFunctionFactoryOptions _defaultOptions = new();
 
