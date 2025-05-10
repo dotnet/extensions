@@ -154,21 +154,21 @@
     <MicrosoftCodeAnalysisVersion>4.8.0</MicrosoftCodeAnalysisVersion>
     <MicrosoftCodeAnalysisAnalyzersVersion>3.3.4</MicrosoftCodeAnalysisAnalyzersVersion>
     <!-- AI templates -->
-    <AspireVersion>9.1.0</AspireVersion>
-    <AspireAzureAIOpenAIVersion>9.1.0-preview.1.25121.10</AspireAzureAIOpenAIVersion>
+    <AspireVersion>9.2.1</AspireVersion>
+    <AspireAzureAIOpenAIVersion>9.2.1-preview.1.25222.1</AspireAzureAIOpenAIVersion>
     <AzureAIProjectsVersion>1.0.0-beta.6</AzureAIProjectsVersion>
     <AzureAIOpenAIVersion>2.2.0-beta.4</AzureAIOpenAIVersion>
     <AzureIdentityVersion>1.13.2</AzureIdentityVersion>
     <AzureSearchDocumentsVersion>11.6.0</AzureSearchDocumentsVersion>
-    <CommunityToolkitAspireHostingOllamaVersion>9.3.1-beta.260</CommunityToolkitAspireHostingOllamaVersion>
-    <CommunityToolkitAspireHostingSqliteVersion>9.3.1-beta.260</CommunityToolkitAspireHostingSqliteVersion>
-    <CommunityToolkitAspireMicrosoftEntityFrameworkCoreSqliteVersion>9.3.1-beta.260</CommunityToolkitAspireMicrosoftEntityFrameworkCoreSqliteVersion>
-    <CommunityToolkitAspireOllamaSharpVersion>9.3.1-beta.260</CommunityToolkitAspireOllamaSharpVersion>
+    <CommunityToolkitAspireHostingOllamaVersion>9.4.1-beta.277</CommunityToolkitAspireHostingOllamaVersion>
+    <CommunityToolkitAspireHostingSqliteVersion>9.4.1-beta.277</CommunityToolkitAspireHostingSqliteVersion>
+    <CommunityToolkitAspireMicrosoftEntityFrameworkCoreSqliteVersion>9.4.1-beta.277</CommunityToolkitAspireMicrosoftEntityFrameworkCoreSqliteVersion>
+    <CommunityToolkitAspireOllamaSharpVersion>9.4.1-beta.277</CommunityToolkitAspireOllamaSharpVersion>
     <MicrosoftExtensionsServiceDiscoveryVersion>9.2.0</MicrosoftExtensionsServiceDiscoveryVersion>
-    <MicrosoftSemanticKernelConnectorsAzureAISearchVersion>1.45.0-preview</MicrosoftSemanticKernelConnectorsAzureAISearchVersion>
-    <MicrosoftSemanticKernelConnectorsQdrantVersion>1.45.0-preview</MicrosoftSemanticKernelConnectorsQdrantVersion>
-    <MicrosoftSemanticKernelCoreVersion>1.45.0</MicrosoftSemanticKernelCoreVersion>
-    <OllamaSharpVersion>5.1.12</OllamaSharpVersion>
+    <MicrosoftSemanticKernelConnectorsAzureAISearchVersion>1.47.0-preview</MicrosoftSemanticKernelConnectorsAzureAISearchVersion>
+    <MicrosoftSemanticKernelConnectorsQdrantVersion>1.47.0-preview</MicrosoftSemanticKernelConnectorsQdrantVersion>
+    <MicrosoftSemanticKernelCoreVersion>1.47.0</MicrosoftSemanticKernelCoreVersion>
+    <OllamaSharpVersion>5.1.13</OllamaSharpVersion>
     <OpenTelemetryVersion>1.9.0</OpenTelemetryVersion>
     <PdfPigVersion>0.1.9</PdfPigVersion>
     <SystemLinqAsyncVersion>6.0.1</SystemLinqAsyncVersion>
