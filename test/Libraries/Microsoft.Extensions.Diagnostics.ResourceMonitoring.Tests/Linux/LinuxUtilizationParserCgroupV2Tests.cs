@@ -37,9 +37,10 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         Assert.Throws<InvalidOperationException>(() => parser.GetHostCpuUsageInNanoseconds());
         Assert.Throws<InvalidOperationException>(() => parser.GetHostCpuCount());
         Assert.Throws<InvalidOperationException>(() => parser.GetCgroupCpuUsageInNanoseconds());
-        Assert.Throws<InvalidOperationException>(() => parser.GetCgroupCpuUsageInNanosecondsV2());
+        Assert.Throws<InvalidOperationException>(() => parser.GetCgroupCpuUsageInNanosecondsAndCpuPeriodsV2());
         Assert.Throws<InvalidOperationException>(() => parser.GetCgroupRequestCpu());
         Assert.Throws<InvalidOperationException>(() => parser.GetCgroupRequestCpuV2());
+        Assert.Throws<InvalidOperationException>(() => parser.GetCgroupPeriodsIntervalInMicroSecondsV2());
     }
 
     [ConditionalFact]
@@ -412,9 +413,9 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
     }
 
     [ConditionalTheory]
-    [InlineData("0::/", "usage_usec 222222", "222222000")]
-    [InlineData("0::/fakeslice", "usage_usec 222222", "222222000")]
-    public void Reads_CpuUsageFromSlices_When_Valid_Input(string slicepath, string content, string result)
+    [InlineData("0::/", "usage_usec 222222\nnr_periods 50", "222222000", "50")]
+    [InlineData("0::/fakeslice", "usage_usec 222222\nnr_periods 75", "222222000", "75")]
+    public void Reads_CpuUsageFromSlices_When_Valid_Input(string slicepath, string content, string expectedUsage, string expectedPeriods)
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
@@ -424,10 +425,12 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         });
 
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
-        var r = p.GetCgroupCpuUsageInNanosecondsV2();
+        var (usage, periods) = p.GetCgroupCpuUsageInNanosecondsAndCpuPeriodsV2();
 
-        Assert.IsType<long>(r);
-        Assert.Equal(result, r.ToString());
+        Assert.IsType<long>(usage);
+        Assert.IsType<long>(periods);
+        Assert.Equal(expectedUsage, usage.ToString());
+        Assert.Equal(expectedPeriods, periods.ToString());
     }
 
     [ConditionalFact]

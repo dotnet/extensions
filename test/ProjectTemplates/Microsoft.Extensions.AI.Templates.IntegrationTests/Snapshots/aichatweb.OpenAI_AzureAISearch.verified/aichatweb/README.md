@@ -57,6 +57,10 @@ Make sure to replace `YOUR-AZURE-AI-SEARCH-ENDPOINT` with your actual Azure AI S
 3. Once installed, Open the `Program.cs` file.
 4. Run the project by clicking the "Run" button in the Debug view.
 
+# Updating JavaScript dependencies
+
+This template leverages JavaScript libraries to provide essential functionality. These libraries are located in the wwwroot/lib folder. For instructions on updating each dependency, please refer to the README.md file in each respective folder.
+
 # Learn More
 To learn more about development with .NET and AI, check out the following links:
 

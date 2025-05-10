@@ -9,4 +9,6 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         IntegrationTestHelpers.GetOpenAIClient()
         ?.GetOpenAIResponseClient(TestRunnerConfiguration.Instance["OpenAI:ChatModel"] ?? "gpt-4o-mini")
         .AsIChatClient();
+
+    public override bool FunctionInvokingChatClientSetsConversationId => true;
 }

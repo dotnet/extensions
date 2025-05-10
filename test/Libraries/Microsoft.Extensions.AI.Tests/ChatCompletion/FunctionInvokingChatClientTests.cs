@@ -532,11 +532,11 @@ public class FunctionInvokingChatClientTests
         Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(c =>
             new FunctionInvokingChatClient(new OpenTelemetryChatClient(c, sourceName: sourceName)));
 
-        await InvokeAsync(() => InvokeAndAssertAsync(options, plan, configurePipeline: configure));
+        await InvokeAsync(() => InvokeAndAssertAsync(options, plan, configurePipeline: configure), streaming: false);
 
-        await InvokeAsync(() => InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configure));
+        await InvokeAsync(() => InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configure), streaming: true);
 
-        async Task InvokeAsync(Func<Task> work)
+        async Task InvokeAsync(Func<Task> work, bool streaming)
         {
             var activities = new List<Activity>();
             using TracerProvider? tracerProvider = enableTelemetry ?
@@ -552,9 +552,9 @@ public class FunctionInvokingChatClientTests
             {
                 Assert.Collection(activities,
                     activity => Assert.Equal("chat", activity.DisplayName),
-                    activity => Assert.Equal("Func1", activity.DisplayName),
+                    activity => Assert.Equal("execute_tool Func1", activity.DisplayName),
                     activity => Assert.Equal("chat", activity.DisplayName),
-                    activity => Assert.Equal(nameof(FunctionInvokingChatClient), activity.DisplayName));
+                    activity => Assert.Equal(streaming ? "FunctionInvokingChatClient.GetStreamingResponseAsync" : "FunctionInvokingChatClient.GetResponseAsync", activity.DisplayName));
 
                 for (int i = 0; i < activities.Count - 1; i++)
                 {

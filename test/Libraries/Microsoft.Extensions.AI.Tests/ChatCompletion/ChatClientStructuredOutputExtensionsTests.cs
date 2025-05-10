@@ -139,7 +139,7 @@ public partial class ChatClientStructuredOutputExtensionsTests
         };
 
         var chatHistory = new List<ChatMessage> { new(ChatRole.User, "Hello") };
-        var response = await client.GetResponseAsync<Animal>(chatHistory, useJsonSchema: false, serializerOptions: JsonContext2.Default.Options);
+        var response = await client.GetResponseAsync<Animal>(chatHistory, useJsonSchemaResponseFormat: false, serializerOptions: JsonContext2.Default.Options);
 
         // The response contains the deserialized result and other response properties
         Assert.Equal(1, response.Result.Id);

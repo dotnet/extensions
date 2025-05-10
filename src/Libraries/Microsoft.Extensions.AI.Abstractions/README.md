@@ -101,6 +101,7 @@ while (true)
     await foreach (var update in client.GetStreamingResponseAsync(history))
     {
         Console.Write(update);
+        updates.Add(update);
     }
     Console.WriteLine();
 

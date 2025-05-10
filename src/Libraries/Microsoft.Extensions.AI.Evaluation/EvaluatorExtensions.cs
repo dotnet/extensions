@@ -131,17 +131,12 @@ public static class EvaluatorExtensions
         ChatMessage modelResponse,
         ChatConfiguration? chatConfiguration = null,
         IEnumerable<EvaluationContext>? additionalContext = null,
-        CancellationToken cancellationToken = default)
-    {
-        _ = Throw.IfNull(evaluator);
-
-        return evaluator.EvaluateAsync(
-                messages: [],
+        CancellationToken cancellationToken = default) =>
+            evaluator.EvaluateAsync(
                 new ChatResponse(modelResponse),
                 chatConfiguration,
                 additionalContext,
                 cancellationToken);
-    }
 
     /// <summary>
     /// Evaluates the supplied <paramref name="modelResponse"/> and returns an <see cref="EvaluationResult"/>
@@ -225,17 +220,13 @@ public static class EvaluatorExtensions
         ChatMessage modelResponse,
         ChatConfiguration? chatConfiguration = null,
         IEnumerable<EvaluationContext>? additionalContext = null,
-        CancellationToken cancellationToken = default)
-    {
-        _ = Throw.IfNull(evaluator);
-
-        return evaluator.EvaluateAsync(
-                messages: [userRequest],
+        CancellationToken cancellationToken = default) =>
+            evaluator.EvaluateAsync(
+                userRequest,
                 new ChatResponse(modelResponse),
                 chatConfiguration,
                 additionalContext,
                 cancellationToken);
-    }
 
     /// <summary>
     /// Evaluates the supplied <paramref name="modelResponse"/> and returns an <see cref="EvaluationResult"/>
