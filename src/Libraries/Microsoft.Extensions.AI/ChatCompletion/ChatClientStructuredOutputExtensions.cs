@@ -7,11 +7,13 @@ using System.ComponentModel;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable SA1118 // Parameter should not span multiple lines
+#pragma warning disable S2333 // Redundant modifiers should not be used
 
 namespace Microsoft.Extensions.AI;
 
@@ -19,7 +21,7 @@ namespace Microsoft.Extensions.AI;
 /// Provides extension methods on <see cref="IChatClient"/> that simplify working with structured output.
 /// </summary>
 /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/quickstarts/structured-output">Request a response with structured output.</related>
-public static class ChatClientStructuredOutputExtensions
+public static partial class ChatClientStructuredOutputExtensions
 {
     private static readonly AIJsonSchemaCreateOptions _inferenceOptions = new()
     {
@@ -197,7 +199,7 @@ public static class ChatClientStructuredOutputExtensions
             // the LLM backend is meant to do whatever's needed to explain the schema to the LLM.
             options.ResponseFormat = ChatResponseFormat.ForJsonSchema(
                 schema,
-                schemaName: AIFunctionFactory.SanitizeMemberName(typeof(T).Name),
+                schemaName: SanitizeMemberName(typeof(T).Name),
                 schemaDescription: typeof(T).GetCustomAttribute<DescriptionAttribute>()?.Description);
         }
         else
@@ -246,4 +248,24 @@ public static class ChatClientStructuredOutputExtensions
             _ => JsonValue.Create(element)
         };
     }
+
+    /// <summary>
+    /// Removes characters from a .NET member name that shouldn't be used in an AI function name.
+    /// </summary>
+    /// <param name="memberName">The .NET member name that should be sanitized.</param>
+    /// <returns>
+    /// Replaces non-alphanumeric characters in the identifier with the underscore character.
+    /// Primarily intended to remove characters produced by compiler-generated method name mangling.
+    /// </returns>
+    private static string SanitizeMemberName(string memberName) =>
+        InvalidNameCharsRegex().Replace(memberName, "_");
+
+    /// <summary>Regex that flags any character other than ASCII digits or letters or the underscore.</summary>
+#if NET
+    [GeneratedRegex("[^0-9A-Za-z_]")]
+    private static partial Regex InvalidNameCharsRegex();
+#else
+    private static Regex InvalidNameCharsRegex() => _invalidNameCharsRegex;
+    private static readonly Regex _invalidNameCharsRegex = new("[^0-9A-Za-z_]", RegexOptions.Compiled);
+#endif
 }

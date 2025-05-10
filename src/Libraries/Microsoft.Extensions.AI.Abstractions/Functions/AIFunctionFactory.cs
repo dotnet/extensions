@@ -2,11 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 #if !NET
 using System.Linq;
 #endif
@@ -15,17 +17,19 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Collections;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable CA1031 // Do not catch general exception types
+#pragma warning disable S2333 // Redundant modifiers should not be used
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Provides factory methods for creating commonly used implementations of <see cref="AIFunction"/>.</summary>
+/// <summary>Provides factory methods for creating commonly-used implementations of <see cref="AIFunction"/>.</summary>
 /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/quickstarts/use-function-calling">Invoke .NET functions using an AI model.</related>
 public static partial class AIFunctionFactory
 {
@@ -572,7 +576,7 @@ public static partial class AIFunctionFactory
                 }
 
                 return await FunctionDescriptor.ReturnParameterMarshaller(
-                    ReflectionInvoke(FunctionDescriptor.Method, target, args), cancellationToken);
+                    ReflectionInvoke(FunctionDescriptor.Method, target, args), cancellationToken).ConfigureAwait(true);
             }
             finally
             {
@@ -580,7 +584,7 @@ public static partial class AIFunctionFactory
                 {
                     if (target is IAsyncDisposable ad)
                     {
-                        await ad.DisposeAsync();
+                        await ad.DisposeAsync().ConfigureAwait(true);
                     }
                     else if (target is IDisposable d)
                     {
@@ -872,14 +876,14 @@ public static partial class AIFunctionFactory
                 {
                     return async (result, cancellationToken) =>
                     {
-                        await ((Task)ThrowIfNullResult(result));
-                        return await marshalResult(null, null, cancellationToken);
+                        await ((Task)ThrowIfNullResult(result)).ConfigureAwait(true);
+                        return await marshalResult(null, null, cancellationToken).ConfigureAwait(true);
                     };
                 }
 
                 return async static (result, _) =>
                 {
-                    await ((Task)ThrowIfNullResult(result));
+                    await ((Task)ThrowIfNullResult(result)).ConfigureAwait(true);
                     return null;
                 };
             }
@@ -891,14 +895,14 @@ public static partial class AIFunctionFactory
                 {
                     return async (result, cancellationToken) =>
                     {
-                        await ((ValueTask)ThrowIfNullResult(result));
-                        return await marshalResult(null, null, cancellationToken);
+                        await ((ValueTask)ThrowIfNullResult(result)).ConfigureAwait(true);
+                        return await marshalResult(null, null, cancellationToken).ConfigureAwait(true);
                     };
                 }
 
                 return async static (result, _) =>
                 {
-                    await ((ValueTask)ThrowIfNullResult(result));
+                    await ((ValueTask)ThrowIfNullResult(result)).ConfigureAwait(true);
                     return null;
                 };
             }
@@ -913,18 +917,18 @@ public static partial class AIFunctionFactory
                     {
                         return async (taskObj, cancellationToken) =>
                         {
-                            await ((Task)ThrowIfNullResult(taskObj));
+                            await ((Task)ThrowIfNullResult(taskObj)).ConfigureAwait(true);
                             object? result = ReflectionInvoke(taskResultGetter, taskObj, null);
-                            return await marshalResult(result, taskResultGetter.ReturnType, cancellationToken);
+                            return await marshalResult(result, taskResultGetter.ReturnType, cancellationToken).ConfigureAwait(true);
                         };
                     }
 
                     returnTypeInfo = serializerOptions.GetTypeInfo(taskResultGetter.ReturnType);
                     return async (taskObj, cancellationToken) =>
                     {
-                        await ((Task)ThrowIfNullResult(taskObj));
+                        await ((Task)ThrowIfNullResult(taskObj)).ConfigureAwait(true);
                         object? result = ReflectionInvoke(taskResultGetter, taskObj, null);
-                        return await SerializeResultAsync(result, returnTypeInfo, cancellationToken);
+                        return await SerializeResultAsync(result, returnTypeInfo, cancellationToken).ConfigureAwait(true);
                     };
                 }
 
@@ -939,9 +943,9 @@ public static partial class AIFunctionFactory
                         return async (taskObj, cancellationToken) =>
                         {
                             var task = (Task)ReflectionInvoke(valueTaskAsTask, ThrowIfNullResult(taskObj), null)!;
-                            await task;
+                            await task.ConfigureAwait(true);
                             object? result = ReflectionInvoke(asTaskResultGetter, task, null);
-                            return await marshalResult(result, asTaskResultGetter.ReturnType, cancellationToken);
+                            return await marshalResult(result, asTaskResultGetter.ReturnType, cancellationToken).ConfigureAwait(true);
                         };
                     }
 
@@ -949,9 +953,9 @@ public static partial class AIFunctionFactory
                     return async (taskObj, cancellationToken) =>
                     {
                         var task = (Task)ReflectionInvoke(valueTaskAsTask, ThrowIfNullResult(taskObj), null)!;
-                        await task;
+                        await task.ConfigureAwait(true);
                         object? result = ReflectionInvoke(asTaskResultGetter, task, null);
-                        return await SerializeResultAsync(result, returnTypeInfo, cancellationToken);
+                        return await SerializeResultAsync(result, returnTypeInfo, cancellationToken).ConfigureAwait(true);
                     };
                 }
             }
@@ -975,7 +979,7 @@ public static partial class AIFunctionFactory
 
                 // Serialize asynchronously to support potential IAsyncEnumerable responses.
                 using PooledMemoryStream stream = new();
-                await JsonSerializer.SerializeAsync(stream, result, returnTypeInfo, cancellationToken);
+                await JsonSerializer.SerializeAsync(stream, result, returnTypeInfo, cancellationToken).ConfigureAwait(true);
                 Utf8JsonReader reader = new(stream.GetBuffer());
                 return JsonElement.ParseValue(ref reader);
             }
@@ -1005,5 +1009,125 @@ public static partial class AIFunctionFactory
             Func<ParameterInfo, AIFunctionFactoryOptions.ParameterBindingOptions>? GetBindParameterOptions,
             Func<object?, Type?, CancellationToken, ValueTask<object?>>? MarshalResult,
             AIJsonSchemaCreateOptions SchemaOptions);
+    }
+
+    /// <summary>
+    /// Removes characters from a .NET member name that shouldn't be used in an AI function name.
+    /// </summary>
+    /// <param name="memberName">The .NET member name that should be sanitized.</param>
+    /// <returns>
+    /// Replaces non-alphanumeric characters in the identifier with the underscore character.
+    /// Primarily intended to remove characters produced by compiler-generated method name mangling.
+    /// </returns>
+    private static string SanitizeMemberName(string memberName) =>
+        InvalidNameCharsRegex().Replace(memberName, "_");
+
+    /// <summary>Regex that flags any character other than ASCII digits or letters or the underscore.</summary>
+#if NET
+    [GeneratedRegex("[^0-9A-Za-z_]")]
+    private static partial Regex InvalidNameCharsRegex();
+#else
+    private static Regex InvalidNameCharsRegex() => _invalidNameCharsRegex;
+    private static readonly Regex _invalidNameCharsRegex = new("[^0-9A-Za-z_]", RegexOptions.Compiled);
+#endif
+
+    /// <summary>Invokes the MethodInfo with the specified target object and arguments.</summary>
+    private static object? ReflectionInvoke(MethodInfo method, object? target, object?[]? arguments)
+    {
+#if NET
+        return method.Invoke(target, BindingFlags.DoNotWrapExceptions, binder: null, arguments, culture: null);
+#else
+        try
+        {
+            return method.Invoke(target, BindingFlags.Default, binder: null, arguments, culture: null);
+        }
+        catch (TargetInvocationException e) when (e.InnerException is not null)
+        {
+            // If we're targeting .NET Framework, such that BindingFlags.DoNotWrapExceptions
+            // is ignored, the original exception will be wrapped in a TargetInvocationException.
+            // Unwrap it and throw that original exception, maintaining its stack information.
+            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(e.InnerException).Throw();
+            throw;
+        }
+#endif
+    }
+
+    /// <summary>
+    /// Implements a simple write-only memory stream that uses pooled buffers.
+    /// </summary>
+    private sealed class PooledMemoryStream : Stream
+    {
+        private const int DefaultBufferSize = 4096;
+        private byte[] _buffer;
+        private int _position;
+
+        public PooledMemoryStream(int initialCapacity = DefaultBufferSize)
+        {
+            _buffer = ArrayPool<byte>.Shared.Rent(initialCapacity);
+            _position = 0;
+        }
+
+        public ReadOnlySpan<byte> GetBuffer() => _buffer.AsSpan(0, _position);
+        public override bool CanWrite => true;
+        public override bool CanRead => false;
+        public override bool CanSeek => false;
+        public override long Length => _position;
+        public override long Position
+        {
+            get => _position;
+            set => throw new NotSupportedException();
+        }
+
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+            EnsureNotDisposed();
+            EnsureCapacity(_position + count);
+
+            Buffer.BlockCopy(buffer, offset, _buffer, _position, count);
+            _position += count;
+        }
+
+        public override void Flush()
+        {
+        }
+
+        public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+        public override void SetLength(long value) => throw new NotSupportedException();
+
+        protected override void Dispose(bool disposing)
+        {
+            if (_buffer is not null)
+            {
+                ArrayPool<byte>.Shared.Return(_buffer);
+                _buffer = null!;
+            }
+
+            base.Dispose(disposing);
+        }
+
+        private void EnsureCapacity(int requiredCapacity)
+        {
+            if (requiredCapacity <= _buffer.Length)
+            {
+                return;
+            }
+
+            int newCapacity = Math.Max(requiredCapacity, _buffer.Length * 2);
+            byte[] newBuffer = ArrayPool<byte>.Shared.Rent(newCapacity);
+            Buffer.BlockCopy(_buffer, 0, newBuffer, 0, _position);
+
+            ArrayPool<byte>.Shared.Return(_buffer);
+            _buffer = newBuffer;
+        }
+
+        private void EnsureNotDisposed()
+        {
+            if (_buffer is null)
+            {
+                Throw();
+                static void Throw() => throw new ObjectDisposedException(nameof(PooledMemoryStream));
+            }
+        }
     }
 }
