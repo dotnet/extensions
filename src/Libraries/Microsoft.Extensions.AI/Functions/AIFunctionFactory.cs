@@ -17,14 +17,11 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Shared.Collections;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable CA1031 // Do not catch general exception types
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
-#pragma warning disable SA1118 // Parameter should not span multiple lines
-#pragma warning disable SA1500 // Braces for multi-line statements should not share line
 
 namespace Microsoft.Extensions.AI;
 
@@ -68,25 +65,6 @@ public static partial class AIFunctionFactory
     ///       instance passed to <see cref="AIFunction.InvokeAsync"/> is <see langword="null"/>, the <see cref="AIFunction"/> implementation
     ///       manufactures an empty instance, such that parameters of type <see cref="AIFunctionArguments"/> may always be satisfied, whether
     ///       optional or not. The handling of <see cref="AIFunctionArguments"/> parameters may be overridden via
-    ///       <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
-    ///     </description>
-    ///   </item>
-    ///   <item>
-    ///     <description>
-    ///       By default, parameters attributed with <see cref="FromKeyedServicesAttribute"/> are resolved from the <see cref="AIFunctionArguments.Services"/>
-    ///       property and are not included in the JSON schema. If the parameter is optional, such that a default value is provided,
-    ///       <see cref="AIFunctionArguments.Services"/> is allowed to be <see langword="null"/>; otherwise, <see cref="AIFunctionArguments.Services"/>
-    ///       must be non-<see langword="null"/>, or else the invocation will fail with an exception due to the required nature of the parameter.
-    ///       The handling of such parameters may be overridden via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
-    ///     </description>
-    ///   </item>
-    ///   <item>
-    ///     <description>
-    ///       When the <see cref="AIFunction"/> is constructed, it may be passed an <see cref="IServiceProvider"/> via 
-    ///       <see cref="AIFunctionFactoryOptions.Services"/>. Any parameter that can be satisfied by that <see cref="IServiceProvider"/>
-    ///       according to <see cref="IServiceProviderIsService"/> will not be included in the generated JSON schema and will be resolved 
-    ///       from the <see cref="IServiceProvider"/> provided to <see cref="AIFunction.InvokeAsync"/> via <see cref="AIFunctionArguments.Services"/>,
-    ///       rather than from the argument collection. The handling of such parameters may be overridden via
     ///       <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
     ///     </description>
     ///   </item>
@@ -170,23 +148,6 @@ public static partial class AIFunctionFactory
     ///       optional or not.
     ///     </description>
     ///   </item>
-    ///   <item>
-    ///     <description>
-    ///       By default, parameters attributed with <see cref="FromKeyedServicesAttribute"/> are resolved from the <see cref="AIFunctionArguments.Services"/>
-    ///       property and are not included in the JSON schema. If the parameter is optional, such that a default value is provided,
-    ///       <see cref="AIFunctionArguments.Services"/> is allowed to be <see langword="null"/>; otherwise, <see cref="AIFunctionArguments.Services"/>
-    ///       must be non-<see langword="null"/>, or else the invocation will fail with an exception due to the required nature of the parameter.
-    ///     </description>
-    ///   </item>
-    ///   <item>
-    ///     <description>
-    ///       When the <see cref="AIFunction"/> is constructed, it may be passed an <see cref="IServiceProvider"/> via 
-    ///       <see cref="AIFunctionFactoryOptions.Services"/>. Any parameter that can be satisfied by that <see cref="IServiceProvider"/>
-    ///       according to <see cref="IServiceProviderIsService"/> will not be included in the generated JSON schema and will be resolved 
-    ///       from the <see cref="IServiceProvider"/> provided to <see cref="AIFunction.InvokeAsync"/> via <see cref="AIFunctionArguments.Services"/>,
-    ///       rather than from the argument collection.
-    ///     </description>
-    ///   </item>
     /// </list>
     /// All other parameter types are bound from the <see cref="AIFunctionArguments"/> dictionary passed into <see cref="AIFunction.InvokeAsync"/>
     /// and are included in the generated JSON schema.
@@ -267,25 +228,6 @@ public static partial class AIFunctionFactory
     ///       instance passed to <see cref="AIFunction.InvokeAsync"/> is <see langword="null"/>, the <see cref="AIFunction"/> implementation
     ///       manufactures an empty instance, such that parameters of type <see cref="AIFunctionArguments"/> may always be satisfied, whether
     ///       optional or not. The handling of <see cref="AIFunctionArguments"/> parameters may be overridden via
-    ///       <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
-    ///     </description>
-    ///   </item>
-    ///   <item>
-    ///     <description>
-    ///       By default, parameters attributed with <see cref="FromKeyedServicesAttribute"/> are resolved from the <see cref="AIFunctionArguments.Services"/>
-    ///       property and are not included in the JSON schema. If the parameter is optional, such that a default value is provided,
-    ///       <see cref="AIFunctionArguments.Services"/> is allowed to be <see langword="null"/>; otherwise, <see cref="AIFunctionArguments.Services"/>
-    ///       must be non-<see langword="null"/>, or else the invocation will fail with an exception due to the required nature of the parameter.
-    ///       The handling of such parameters may be overridden via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
-    ///     </description>
-    ///   </item>
-    ///   <item>
-    ///     <description>
-    ///       When the <see cref="AIFunction"/> is constructed, it may be passed an <see cref="IServiceProvider"/> via 
-    ///       <see cref="AIFunctionFactoryOptions.Services"/>. Any parameter that can be satisfied by that <see cref="IServiceProvider"/>
-    ///       according to <see cref="IServiceProviderIsService"/> will not be included in the generated JSON schema and will be resolved 
-    ///       from the <see cref="IServiceProvider"/> provided to <see cref="AIFunction.InvokeAsync"/> via <see cref="AIFunctionArguments.Services"/>,
-    ///       rather than from the argument collection. The handling of such parameters may be overridden via
     ///       <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
     ///     </description>
     ///   </item>
@@ -379,23 +321,6 @@ public static partial class AIFunctionFactory
     ///       optional or not.
     ///     </description>
     ///   </item>
-    ///   <item>
-    ///     <description>
-    ///       By default, parameters attributed with <see cref="FromKeyedServicesAttribute"/> are resolved from the <see cref="AIFunctionArguments.Services"/>
-    ///       property and are not included in the JSON schema. If the parameter is optional, such that a default value is provided,
-    ///       <see cref="AIFunctionArguments.Services"/> is allowed to be <see langword="null"/>; otherwise, <see cref="AIFunctionArguments.Services"/>
-    ///       must be non-<see langword="null"/>, or else the invocation will fail with an exception due to the required nature of the parameter.
-    ///     </description>
-    ///   <item>
-    ///     <description>
-    ///       When the <see cref="AIFunction"/> is constructed, it may be passed an <see cref="IServiceProvider"/> via 
-    ///       <see cref="AIFunctionFactoryOptions.Services"/>. Any parameter that can be satisfied by that <see cref="IServiceProvider"/>
-    ///       according to <see cref="IServiceProviderIsService"/> will not be included in the generated JSON schema and will be resolved 
-    ///       from the <see cref="IServiceProvider"/> provided to <see cref="AIFunction.InvokeAsync"/> via <see cref="AIFunctionArguments.Services"/>,
-    ///       rather than from the argument collection.
-    ///     </description>
-    ///   </item>
-    ///   </item>
     /// </list>
     /// All other parameter types are bound from the <see cref="AIFunctionArguments"/> dictionary passed into <see cref="AIFunction.InvokeAsync"/>
     /// and are included in the generated JSON schema.
@@ -447,10 +372,9 @@ public static partial class AIFunctionFactory
     /// <param name="method">The instance method to be represented via the created <see cref="AIFunction"/>.</param>
     /// <param name="targetType">
     /// The <see cref="Type"/> to construct an instance of on which to invoke <paramref name="method"/> when
-    /// the resulting <see cref="AIFunction"/> is invoked. If <see cref="AIFunctionArguments.Services"/> is provided,
-    /// <see cref="ActivatorUtilities.CreateInstance"/> will be used to construct the instance using those services; otherwise,
-    /// <see cref="Activator.CreateInstance(Type)"/> is used, utilizing the type's public parameterless constructor.
-    /// If an instance can't be constructed, an exception is thrown during the function's invocation.
+    /// the resulting <see cref="AIFunction"/> is invoked. <see cref="Activator.CreateInstance(Type)"/> is used,
+    /// utilizing the type's public parameterless constructor. If an instance can't be constructed, an exception is
+    /// thrown during the function's invocation.
     /// </param>
     /// <param name="options">Metadata to use to override defaults inferred from <paramref name="method"/>.</param>
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
@@ -491,25 +415,6 @@ public static partial class AIFunctionFactory
     ///       instance passed to <see cref="AIFunction.InvokeAsync"/> is <see langword="null"/>, the <see cref="AIFunction"/> implementation
     ///       manufactures an empty instance, such that parameters of type <see cref="AIFunctionArguments"/> may always be satisfied, whether
     ///       optional or not. The handling of <see cref="AIFunctionArguments"/> parameters may be overridden via
-    ///       <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
-    ///     </description>
-    ///   </item>
-    ///   <item>
-    ///     <description>
-    ///       By default, parameters attributed with <see cref="FromKeyedServicesAttribute"/> are resolved from the <see cref="AIFunctionArguments.Services"/>
-    ///       property and are not included in the JSON schema. If the parameter is optional, such that a default value is provided,
-    ///       <see cref="AIFunctionArguments.Services"/> is allowed to be <see langword="null"/>; otherwise, <see cref="AIFunctionArguments.Services"/>
-    ///       must be non-<see langword="null"/>, or else the invocation will fail with an exception due to the required nature of the parameter.
-    ///       The handling of such parameters may be overridden via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
-    ///     </description>
-    ///   </item>
-    ///   <item>
-    ///     <description>
-    ///       When the <see cref="AIFunction"/> is constructed, it may be passed an <see cref="IServiceProvider"/> via 
-    ///       <see cref="AIFunctionFactoryOptions.Services"/>. Any parameter that can be satisfied by that <see cref="IServiceProvider"/>
-    ///       according to <see cref="IServiceProviderIsService"/> will not be included in the generated JSON schema and will be resolved 
-    ///       from the <see cref="IServiceProvider"/> provided to <see cref="AIFunction.InvokeAsync"/> via <see cref="AIFunctionArguments.Services"/>,
-    ///       rather than from the argument collection. The handling of such parameters may be overridden via
     ///       <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
     ///     </description>
     ///   </item>
@@ -654,9 +559,7 @@ public static partial class AIFunctionFactory
                     Debug.Assert(target is null, "Expected target to be null when we have a non-null target type");
                     Debug.Assert(!FunctionDescriptor.Method.IsStatic, "Expected an instance method");
 
-                    target = arguments.Services is { } services ?
-                        ActivatorUtilities.CreateInstance(services, targetType!) :
-                        Activator.CreateInstance(targetType);
+                    target = Activator.CreateInstance(targetType);
                     disposeTarget = true;
                 }
 
@@ -709,7 +612,7 @@ public static partial class AIFunctionFactory
             serializerOptions.MakeReadOnly();
             ConcurrentDictionary<DescriptorKey, ReflectionAIFunctionDescriptor> innerCache = _descriptorCache.GetOrCreateValue(serializerOptions);
 
-            DescriptorKey key = new(method, options.Name, options.Description, options.ConfigureParameterBinding, options.MarshalResult, options.Services, schemaOptions);
+            DescriptorKey key = new(method, options.Name, options.Description, options.ConfigureParameterBinding, options.MarshalResult, schemaOptions);
             if (innerCache.TryGetValue(key, out ReflectionAIFunctionDescriptor? descriptor))
             {
                 return descriptor;
@@ -736,8 +639,6 @@ public static partial class AIFunctionFactory
                 }
             }
 
-            IServiceProviderIsService? serviceProviderIsService = key.Services?.GetService<IServiceProviderIsService>();
-
             // Use that binding information to impact the schema generation.
             AIJsonSchemaCreateOptions schemaOptions = key.SchemaOptions with
             {
@@ -753,21 +654,6 @@ public static partial class AIFunctionFactory
                     // If the parameter is marked as excluded by GetBindParameterOptions, exclude it.
                     if (boundParameters?.TryGetValue(parameterInfo, out var options) is true &&
                         options.ExcludeFromSchema)
-                    {
-                        return false;
-                    }
-
-                    // If the parameter is attributed as [FromKeyedServices], exclude it, as we'll instead
-                    // get its value from the IServiceProvider.
-                    if (parameterInfo.GetCustomAttribute<FromKeyedServicesAttribute>(inherit: true) is not null)
-                    {
-                        return false;
-                    }
-
-                    // We assume that if the services used to create the function support a particular type,
-                    // so too do the services that will be passed into InvokeAsync. This is the same basic assumption
-                    // made in ASP.NET.
-                    if (serviceProviderIsService?.IsService(parameterInfo.ParameterType) is true)
                     {
                         return false;
                     }
@@ -793,7 +679,7 @@ public static partial class AIFunctionFactory
                     options = default;
                 }
 
-                ParameterMarshallers[i] = GetParameterMarshaller(serializerOptions, options, parameters[i], serviceProviderIsService);
+                ParameterMarshallers[i] = GetParameterMarshaller(serializerOptions, options, parameters[i]);
             }
 
             // Get a marshaling delegate for the return value.
@@ -863,8 +749,7 @@ public static partial class AIFunctionFactory
         private static Func<AIFunctionArguments, CancellationToken, object?> GetParameterMarshaller(
             JsonSerializerOptions serializerOptions,
             AIFunctionFactoryOptions.ParameterBindingOptions bindingOptions,
-            ParameterInfo parameter,
-            IServiceProviderIsService? serviceProviderIsService)
+            ParameterInfo parameter)
         {
             if (string.IsNullOrWhiteSpace(parameter.Name))
             {
@@ -908,56 +793,6 @@ public static partial class AIFunctionFactory
                     }
 
                     return services;
-                };
-            }
-
-            // For [FromKeyedServices] parameters, we resolve from the services passed to InvokeAsync via AIFunctionArguments.
-            if (parameter.GetCustomAttribute<FromKeyedServicesAttribute>(inherit: true) is { } keyedAttr)
-            {
-                return (arguments, _) =>
-                {
-                    if ((arguments.Services as IKeyedServiceProvider)?.GetKeyedService(parameterType, keyedAttr.Key) is { } service)
-                    {
-                        return service;
-                    }
-
-                    if (!parameter.HasDefaultValue)
-                    {
-                        if (arguments.Services is null)
-                        {
-                            ThrowNullServices(parameter.Name);
-                        }
-
-                        Throw.ArgumentException(nameof(arguments), $"No service of type '{parameterType}' with key '{keyedAttr.Key}' was found for parameter '{parameter.Name}'.");
-                    }
-
-                    return parameter.DefaultValue;
-                };
-            }
-
-            // For any parameters that are satisfiable from the IServiceProvider, we resolve from the services passed to InvokeAsync
-            // via AIFunctionArguments. This is determined by the same same IServiceProviderIsService instance used to determine whether
-            // the parameter should be included in the schema.
-            if (serviceProviderIsService?.IsService(parameterType) is true)
-            {
-                return (arguments, _) =>
-                {
-                    if (arguments.Services?.GetService(parameterType) is { } service)
-                    {
-                        return service;
-                    }
-
-                    if (!parameter.HasDefaultValue)
-                    {
-                        if (arguments.Services is null)
-                        {
-                            ThrowNullServices(parameter.Name);
-                        }
-
-                        Throw.ArgumentException(nameof(arguments), $"No service of type '{parameterType}' was found for parameter '{parameter.Name}'.");
-                    }
-
-                    return parameter.DefaultValue;
                 };
             }
 
@@ -1169,7 +1004,6 @@ public static partial class AIFunctionFactory
             string? Description,
             Func<ParameterInfo, AIFunctionFactoryOptions.ParameterBindingOptions>? GetBindParameterOptions,
             Func<object?, Type?, CancellationToken, ValueTask<object?>>? MarshalResult,
-            IServiceProvider? Services,
             AIJsonSchemaCreateOptions SchemaOptions);
     }
 }
