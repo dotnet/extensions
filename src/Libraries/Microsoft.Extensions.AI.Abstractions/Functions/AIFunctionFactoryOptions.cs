@@ -106,6 +106,18 @@ public sealed class AIFunctionFactoryOptions
     /// </remarks>
     public Func<object?, Type?, CancellationToken, ValueTask<object?>>? MarshalResult { get; set; }
 
+    /// <summary>
+    /// Gets or sets a delegate used with <see cref="AIFunctionFactory.Create(MethodInfo, Type, AIFunctionFactoryOptions?)"/> to create the receiver instance.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="AIFunctionFactory.Create(MethodInfo, Type, AIFunctionFactoryOptions?)"/> creates <see cref="AIFunction"/> instances that invoke an
+    /// instance method on the specified <see cref="Type"/>. This delegate is used to create the instance of the type that will be used to invoke the method.
+    /// By default if <see cref="CreateInstance"/> is <see langword="null"/>, <see cref="Activator.CreateInstance(Type)"/> is used. If
+    /// <see cref="CreateInstance"/> is non-<see langword="null"/>, the delegate is invoked with the <see cref="Type"/> to be instantiated and the
+    /// <see cref="AIFunctionArguments"/> provided to the <see cref="AIFunction.InvokeAsync"/> method.
+    /// </remarks>
+    public Func<Type, AIFunctionArguments, object>? CreateInstance { get; set; }
+
     /// <summary>Provides configuration options produced by the <see cref="ConfigureParameterBinding"/> delegate.</summary>
     public readonly record struct ParameterBindingOptions
     {
