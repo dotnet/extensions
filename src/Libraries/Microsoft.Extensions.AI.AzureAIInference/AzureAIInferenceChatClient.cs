@@ -73,6 +73,20 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// <para>
+    /// No prompt injection defense is performed by default for data within <paramref name="messages"/>.
+    /// Applications are expected to implement guards against prompt injection attacks as needed.
+    /// </para>
+    /// <para>
+    /// There are no limits or restrictions imposed on data sizes sent to the underlying provider or returned from it
+    /// by default. Applications are expected to apply data size limits as needed.
+    /// </para>
+    /// <para>
+    /// There are no limits or restrictions imposed on the number of messages sent to the underlying provider or returned from
+    /// it by default. Applications are expected to apply rate limits on a per-user or per-session basis as needed.
+    /// </para>
+    /// </remarks>
     public async Task<ChatResponse> GetResponseAsync(
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
@@ -128,6 +142,20 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// <para>
+    /// No prompt injection defense is performed by default for data within <paramref name="messages"/>.
+    /// Applications are expected to implement guards against prompt injection attacks as needed.
+    /// </para>
+    /// <para>
+    /// There are no limits or restrictions imposed on data sizes sent to the underlying provider or returned from it
+    /// by default. Applications are expected to apply data size limits as needed.
+    /// </para>
+    /// <para>
+    /// There are no limits or restrictions imposed on the number of messages sent to the underlying provider or returned from
+    /// it by default. Applications are expected to apply rate limits on a per-user or per-session basis as needed.
+    /// </para>
+    /// </remarks>
     public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
