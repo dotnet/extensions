@@ -1,5 +1,11 @@
 # Release History
 
+## 9.4.4-preview.1.25259.16
+
+- Made `IChatClient` implementation more resilient with non-OpenAI services.
+- Added `ErrorContent` to represent refusals.
+- Updated to accomodate the changes in `Microsoft.Extensions.AI.Abstractions`.
+
 ## 9.4.3-preview.1.25230.7
 
 - Reverted previous change that enabled `strict` schemas by default.
