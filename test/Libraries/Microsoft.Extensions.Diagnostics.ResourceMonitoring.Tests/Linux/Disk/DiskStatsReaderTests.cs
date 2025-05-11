@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Disk.Test;
 public class DiskStatsReaderTests
 {
     [Fact]
-    public void ReadAll_Test_Valid_DiskStats()
+    public void Test_ReadAll_Valid_DiskStats()
     {
         string diskStatsFileContent =
             "   7       0 loop0 269334 0 12751202 147117 11604772 0 97447664 1402945 0 12193892 2255752 0 0 0 0 1206808 705690\n" +
@@ -86,5 +86,50 @@ public class DiskStatsReaderTests
         Assert.Equal(0ul, disk3.IoInProgress);
         Assert.Equal(0ul, disk3.TimeIoMs);
         Assert.Equal(0ul, disk3.WeightedTimeIoMs);
+    }
+
+    [Fact]
+    public void Test_ReadAll_With_Invalid_Lines()
+    {
+        string diskStatsFileContent =
+            " 259       1 nvme1n1 4180498 5551 247430002 746099 96474435 12677267 2160066791 23514624 0 68786140 29777259 0 0 0 0 22111407 5516535\n" +
+            " 259       2 nvme1n1p1 4180387 5551 247422458\n" +
+            " 259       2 nvme1n1p1 4180387 5551 247422458 746080 96474435 12677267 2160066791 23514624 0 68786108 24260705 0 0 0 0 0 0\n" +
+            " 259       0 nvme0n1 6090587 689465 1120208521 1810566 19069165 8947684 406356430 3897150 0 38134844 6246643 69106 0 271818368 23139 1659742 515787\n" +
+            " 259       nvme0n1p1 378 0 26406 96 0 0 0 0 0 760 96 0 0 0 0 0 0\n";
+
+        var fileSystem = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        {
+            { new FileInfo("/proc/diskstats"), diskStatsFileContent }
+        });
+
+        var reader = new DiskStatsReader(fileSystem);
+        var dictionary = reader.ReadAll().ToDictionary(x => x.DeviceName);
+        Assert.Equal(3, dictionary.Count);
+
+        var disk1 = dictionary["nvme1n1"];
+        Assert.Equal(4_180_498ul, disk1.ReadsCompleted);
+        Assert.Equal(5_551ul, disk1.ReadsMerged);
+        Assert.Equal(247_430_002ul, disk1.SectorsRead);
+        Assert.Equal(746_099ul, disk1.TimeReadingMs);
+        Assert.Equal(96_474_435ul, disk1.WritesCompleted);
+        Assert.Equal(12_677_267ul, disk1.WritesMerged);
+        Assert.Equal(2_160_066_791ul, disk1.SectorsWritten);
+        Assert.Equal(23_514_624ul, disk1.TimeWritingMs);
+        Assert.Equal(0ul, disk1.IoInProgress);
+        Assert.Equal(68_786_140ul, disk1.TimeIoMs);
+        Assert.Equal(29_777_259ul, disk1.WeightedTimeIoMs);
+        Assert.Equal(0ul, disk1.DiscardsCompleted);
+        Assert.Equal(0ul, disk1.DiscardsMerged);
+        Assert.Equal(0ul, disk1.SectorsDiscarded);
+        Assert.Equal(0ul, disk1.TimeDiscardingMs);
+        Assert.Equal(22_111_407ul, disk1.FlushRequestsCompleted);
+        Assert.Equal(5_516_535ul, disk1.TimeFlushingMs);
+
+        var disk2 = dictionary["nvme1n1p1"];
+        Assert.NotNull(disk2);
+
+        var disk3 = dictionary["nvme0n1"];
+        Assert.NotNull(disk3);
     }
 }
