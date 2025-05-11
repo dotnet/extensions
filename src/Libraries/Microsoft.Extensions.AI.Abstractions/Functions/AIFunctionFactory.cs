@@ -26,6 +26,7 @@ using Microsoft.Shared.Diagnostics;
 #pragma warning disable CA1031 // Do not catch general exception types
 #pragma warning disable S2333 // Redundant modifiers should not be used
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
+#pragma warning disable SA1202 // Public members should come before private members
 
 namespace Microsoft.Extensions.AI;
 
@@ -1103,6 +1104,34 @@ public static partial class AIFunctionFactory
 
         public override void Flush()
         {
+        }
+
+        public override Task FlushAsync(CancellationToken cancellationToken) =>
+            Task.CompletedTask;
+
+        public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) =>
+            WriteAsync(new ReadOnlyMemory<byte>(buffer, offset, count), cancellationToken).AsTask();
+
+#if NET
+        public override
+#else
+        private
+#endif
+        ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            EnsureNotDisposed();
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return new ValueTask(Task.FromCanceled(cancellationToken));
+            }
+
+            EnsureCapacity(_position + buffer.Length);
+
+            buffer.Span.CopyTo(_buffer.AsSpan(_position));
+            _position += buffer.Length;
+
+            return default;
         }
 
         public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
