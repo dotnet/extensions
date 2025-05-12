@@ -29,7 +29,8 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
     {
         RequireAllProperties = true,
         DisallowAdditionalProperties = true,
-        ConvertBooleanSchemas = true
+        ConvertBooleanSchemas = true,
+        MoveDefaultKeywordToDescription = true,
     });
 
     /// <summary>Metadata about the client.</summary>
