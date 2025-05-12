@@ -39,6 +39,11 @@ public sealed record class AIJsonSchemaTransformOptions
     public bool UseNullableKeyword { get; init; }
 
     /// <summary>
+    /// Gets a value indicating whether to move the default keyword to the description field in the schema.
+    /// </summary>
+    public bool MoveDefaultKeywordToDescription { get; init; }
+
+    /// <summary>
     /// Gets the default options instance.
     /// </summary>
     internal static AIJsonSchemaTransformOptions Default { get; } = new();
