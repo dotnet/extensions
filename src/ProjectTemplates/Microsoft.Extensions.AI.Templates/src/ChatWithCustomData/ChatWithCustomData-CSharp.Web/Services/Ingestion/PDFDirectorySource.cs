@@ -30,7 +30,7 @@ public class PDFDirectorySource(string sourceDirectory) : IIngestionSource
 #if (UseQdrant)
                 results.Add(new() { Key = Guid.CreateVersion7(), SourceId = SourceId, DocumentId = sourceFileId, DocumentVersion = sourceFileVersion });
 #else
-                results.Add(new() { Key = $"{SourceId}_{sourceFileId}", SourceId = SourceId, DocumentId = sourceFileId, DocumentVersion = sourceFileVersion });
+                results.Add(new() { Key = Guid.CreateVersion7().ToString(), SourceId = SourceId, DocumentId = sourceFileId, DocumentVersion = sourceFileVersion });
 #endif
             }
         }
@@ -58,7 +58,7 @@ public class PDFDirectorySource(string sourceDirectory) : IIngestionSource
 #if (UseQdrant)
             Key = Guid.CreateVersion7(),
 #else
-            Key = $"{Path.GetFileNameWithoutExtension(document.DocumentId)}_{pair.First.PageNumber}_{pair.First.IndexOnPage}",
+            Key = Guid.CreateVersion7().ToString(),
 #endif
             DocumentId = document.DocumentId,
             PageNumber = pair.First.PageNumber,
