@@ -14,60 +14,18 @@ namespace Microsoft.Extensions.AI;
 public static class OpenAIClientExtensions
 {
     /// <summary>Gets an <see cref="IChatClient"/> for use with this <see cref="ChatClient"/>.</summary>
-    /// <remarks>
-    /// <para>
-    /// No prompt injection defense is performed by default. Applications are expected to implement
-    /// guards against prompt injection attacks as needed.
-    /// </para>
-    /// <para>
-    /// There are no limits or restrictions imposed on data sizes sent to the underlying provider or returned from it
-    /// by default. Applications are expected to apply data size limits as needed.
-    /// </para>
-    /// <para>
-    /// There are no limits or restrictions imposed on the number of messages sent to the underlying provider or returned from
-    /// it by default. Applications are expected to apply rate limits on a per-user or per-session basis as needed.
-    /// </para>
-    /// </remarks>
     /// <param name="chatClient">The client.</param>
     /// <returns>An <see cref="IChatClient"/> that can be used to converse via the <see cref="ChatClient"/>.</returns>
     public static IChatClient AsIChatClient(this ChatClient chatClient) =>
         new OpenAIChatClient(chatClient);
 
     /// <summary>Gets an <see cref="IChatClient"/> for use with this <see cref="OpenAIResponseClient"/>.</summary>
-    /// <remarks>
-    /// <para>
-    /// No prompt injection defense is performed by default. Applications are expected to implement
-    /// guards against prompt injection attacks as needed.
-    /// </para>
-    /// <para>
-    /// There are no limits or restrictions imposed on data sizes sent to the underlying provider or returned from it
-    /// by default. Applications are expected to apply data size limits as needed.
-    /// </para>
-    /// <para>
-    /// There are no limits or restrictions imposed on the number of messages sent to the underlying provider or returned from
-    /// it by default. Applications are expected to apply rate limits on a per-user or per-session basis as needed.
-    /// </para>
-    /// </remarks>
     /// <param name="responseClient">The client.</param>
     /// <returns>An <see cref="IChatClient"/> that can be used to converse via the <see cref="OpenAIResponseClient"/>.</returns>
     public static IChatClient AsIChatClient(this OpenAIResponseClient responseClient) =>
         new OpenAIResponseChatClient(responseClient);
 
     /// <summary>Gets an <see cref="ISpeechToTextClient"/> for use with this <see cref="AudioClient"/>.</summary>
-    /// <remarks>
-    /// <para>
-    /// No prompt injection defense is performed by default. Applications are expected to implement
-    /// guards against prompt injection attacks as needed.
-    /// </para>
-    /// <para>
-    /// There are no limits or restrictions imposed on data sizes sent to the underlying provider or returned from it
-    /// by default. Applications are expected to apply data size limits as needed.
-    /// </para>
-    /// <para>
-    /// There are no limits or restrictions imposed on the number of messages sent to the underlying provider or returned from
-    /// it by default. Applications are expected to apply rate limits on a per-user or per-session basis as needed.
-    /// </para>
-    /// </remarks>
     /// <param name="audioClient">The client.</param>
     /// <returns>An <see cref="ISpeechToTextClient"/> that can be used to transcribe audio via the <see cref="AudioClient"/>.</returns>
     [Experimental("MEAI001")]
