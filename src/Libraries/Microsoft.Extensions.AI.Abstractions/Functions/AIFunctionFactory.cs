@@ -7,7 +7,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 #if !NET
 using System.Linq;
@@ -374,16 +373,15 @@ public static partial class AIFunctionFactory
     }
 
     /// <summary>
-    /// Creates an <see cref="AIFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> for
-    /// and instance method, along with a <see cref="Type"/> representing the type of the target object to
-    /// instantiate each time the method is invoked.
+    /// Creates an <see cref="AIFunction"/> instance for a method, specified via a <see cref="MethodInfo"/> for
+    /// an instance method and a <see cref="Func{AIFunctionArguments,Object}"/> for constructing an instance of
+    /// the receiver object each time the <see cref="AIFunction"/> is invoked.
     /// </summary>
     /// <param name="method">The instance method to be represented via the created <see cref="AIFunction"/>.</param>
-    /// <param name="targetType">
-    /// The <see cref="Type"/> to construct an instance of on which to invoke <paramref name="method"/> when
-    /// the resulting <see cref="AIFunction"/> is invoked. <see cref="Activator.CreateInstance(Type)"/> is used,
-    /// utilizing the type's public parameterless constructor. If an instance can't be constructed, an exception is
-    /// thrown during the function's invocation.
+    /// <param name="createInstanceFunc">
+    /// Callback used on each function invocation to create an instance of the type on which the instance method <paramref name="method"/>
+    /// will be invoked. If the returned instance is <see cref="IAsyncDisposable"/> or <see cref="IDisposable"/>, it will be disposed of
+    /// after <paramref name="method"/> completes its invocation.
     /// </param>
     /// <param name="options">Metadata to use to override defaults inferred from <paramref name="method"/>.</param>
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
@@ -457,22 +455,16 @@ public static partial class AIFunctionFactory
     /// </para>
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="targetType"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="createInstanceFunc"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="method"/> represents a static method.</exception>
     /// <exception cref="ArgumentException"><paramref name="method"/> represents an open generic method.</exception>
     /// <exception cref="ArgumentException"><paramref name="method"/> contains a parameter without a parameter name.</exception>
-    /// <exception cref="ArgumentException"><paramref name="targetType"/> is not assignable to <paramref name="method"/>'s declaring type.</exception>
     /// <exception cref="JsonException">A parameter to <paramref name="method"/> or its return type is not serializable.</exception>
     public static AIFunction Create(
         MethodInfo method,
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type targetType,
-        AIFunctionFactoryOptions? options = null)
-    {
-        _ = Throw.IfNull(method);
-        _ = Throw.IfNull(targetType);
-
-        return ReflectionAIFunction.Build(method, targetType, options ?? _defaultOptions);
-    }
+        Func<AIFunctionArguments, object> createInstanceFunc,
+        AIFunctionFactoryOptions? options = null) =>
+        ReflectionAIFunction.Build(method, createInstanceFunc, options ?? _defaultOptions);
 
     private sealed class ReflectionAIFunction : AIFunction
     {
@@ -503,10 +495,11 @@ public static partial class AIFunctionFactory
 
         public static ReflectionAIFunction Build(
             MethodInfo method,
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type targetType,
+            Func<AIFunctionArguments, object> createInstanceFunc,
             AIFunctionFactoryOptions options)
         {
             _ = Throw.IfNull(method);
+            _ = Throw.IfNull(createInstanceFunc);
 
             if (method.ContainsGenericParameters)
             {
@@ -518,13 +511,7 @@ public static partial class AIFunctionFactory
                 Throw.ArgumentException(nameof(method), "The method must be an instance method.");
             }
 
-            if (method.DeclaringType is { } declaringType &&
-                !declaringType.IsAssignableFrom(targetType))
-            {
-                Throw.ArgumentException(nameof(targetType), "The target type must be assignable to the method's declaring type.");
-            }
-
-            return new(ReflectionAIFunctionDescriptor.GetOrCreate(method, options), targetType, options);
+            return new(ReflectionAIFunctionDescriptor.GetOrCreate(method, options), createInstanceFunc, options);
         }
 
         private ReflectionAIFunction(ReflectionAIFunctionDescriptor functionDescriptor, object? target, AIFunctionFactoryOptions options)
@@ -536,20 +523,17 @@ public static partial class AIFunctionFactory
 
         private ReflectionAIFunction(
             ReflectionAIFunctionDescriptor functionDescriptor,
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type targetType,
+            Func<AIFunctionArguments, object> createInstanceFunc,
             AIFunctionFactoryOptions options)
         {
             FunctionDescriptor = functionDescriptor;
-            TargetType = targetType;
-            CreateInstance = options.CreateInstance;
+            CreateInstanceFunc = createInstanceFunc;
             AdditionalProperties = options.AdditionalProperties ?? EmptyReadOnlyDictionary<string, object?>.Instance;
         }
 
         public ReflectionAIFunctionDescriptor FunctionDescriptor { get; }
         public object? Target { get; }
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-        public Type? TargetType { get; }
-        public Func<Type, AIFunctionArguments, object>? CreateInstance { get; }
+        public Func<AIFunctionArguments, object>? CreateInstanceFunc { get; }
 
         public override IReadOnlyDictionary<string, object?> AdditionalProperties { get; }
         public override string Name => FunctionDescriptor.Name;
@@ -566,14 +550,12 @@ public static partial class AIFunctionFactory
             object? target = Target;
             try
             {
-                if (TargetType is { } targetType)
+                if (CreateInstanceFunc is { } func)
                 {
                     Debug.Assert(target is null, "Expected target to be null when we have a non-null target type");
                     Debug.Assert(!FunctionDescriptor.Method.IsStatic, "Expected an instance method");
 
-                    target = CreateInstance is not null ?
-                        CreateInstance(targetType, arguments) :
-                        Activator.CreateInstance(targetType);
+                    target = func(arguments);
                     if (target is null)
                     {
                         Throw.InvalidOperationException("Unable to create an instance of the target type.");
