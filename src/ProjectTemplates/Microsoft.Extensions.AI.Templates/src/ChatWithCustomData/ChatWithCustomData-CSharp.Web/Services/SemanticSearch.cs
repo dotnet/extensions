@@ -16,13 +16,12 @@ public class SemanticSearch(
         var vectorCollection = vectorStore.GetCollection<string, SemanticSearchRecord>("data-ChatWithCustomData-CSharp.Web-ingestion");
 #endif
 
-        var nearest = await vectorCollection.VectorizedSearchAsync(queryEmbedding, new VectorSearchOptions<SemanticSearchRecord>
+        var nearest = vectorCollection.SearchEmbeddingAsync(queryEmbedding, maxResults, new VectorSearchOptions<SemanticSearchRecord>
         {
-            Top = maxResults,
             Filter = filenameFilter is { Length: > 0 } ? record => record.FileName == filenameFilter : null,
         });
         var results = new List<SemanticSearchRecord>();
-        await foreach (var item in nearest.Results)
+        await foreach (var item in nearest)
         {
             results.Add(item.Record);
         }
