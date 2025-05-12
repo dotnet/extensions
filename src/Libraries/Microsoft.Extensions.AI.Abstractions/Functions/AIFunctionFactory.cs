@@ -548,7 +548,7 @@ public static partial class AIFunctionFactory
         public object? Target { get; }
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
         public Type? TargetType { get; }
-        public Func<Type, AIFunctionArguments, object>? CreateInstance { get; }
+        public AIFunctionFactoryOptions.CreateInstanceFunc? CreateInstance { get; }
 
         public override IReadOnlyDictionary<string, object?> AdditionalProperties { get; }
         public override string Name => FunctionDescriptor.Name;

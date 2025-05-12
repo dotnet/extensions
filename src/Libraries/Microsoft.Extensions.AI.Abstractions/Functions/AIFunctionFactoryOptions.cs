@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading;
@@ -122,7 +123,15 @@ public sealed class AIFunctionFactoryOptions
     /// be disposed of after the invocation completes.
     /// </para>
     /// </remarks>
-    public Func<Type, AIFunctionArguments, object>? CreateInstance { get; set; }
+    public CreateInstanceFunc? CreateInstance { get; set; }
+
+    /// <summary>Delegate used with <see cref="CreateInstance"/> to create an instance of <paramref name="targetType"/>.</summary>
+    /// <param name="targetType">The type to instantiate.</param>
+    /// <param name="arguments">The arguments passed to <see cref="AIFunction.InvokeAsync"/>.</param>
+    /// <returns>The instantiated object.</returns>
+    public delegate object CreateInstanceFunc(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type targetType,
+        AIFunctionArguments arguments);
 
     /// <summary>Provides configuration options produced by the <see cref="ConfigureParameterBinding"/> delegate.</summary>
     public readonly record struct ParameterBindingOptions
