@@ -12,13 +12,13 @@ public class IngestedDocument
 #endif
 
     [VectorStoreRecordData(IsIndexed = true)]
+    public required string SourceId { get; set; }
+
+    [VectorStoreRecordData]
     public required string DocumentId { get; set; }
 
     [VectorStoreRecordData]
     public required string DocumentVersion { get; set; }
-
-    [VectorStoreRecordData(IsIndexed = true)]
-    public required string SourceId { get; set; }
 
     // The vector is not used but required for some vector databases
     [VectorStoreRecordVector(1, DistanceFunction = DistanceFunction.CosineSimilarity)]

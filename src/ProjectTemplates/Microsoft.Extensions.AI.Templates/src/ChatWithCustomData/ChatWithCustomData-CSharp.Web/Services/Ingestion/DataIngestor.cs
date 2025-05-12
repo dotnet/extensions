@@ -34,7 +34,7 @@ public class DataIngestor(
         foreach (var deletedDocument in deletedDocuments)
         {
             logger.LogInformation("Removing ingested data for {documentId}", deletedDocument.DocumentId);
-            await DeleteRecordsForDocumentAsync(deletedDocument);
+            await DeleteChunksForDocumentAsync(deletedDocument);
             await documentsCollection.DeleteAsync(deletedDocument.Key);
         }
 
@@ -42,7 +42,7 @@ public class DataIngestor(
         foreach (var modifiedDocument in modifiedDocuments)
         {
             logger.LogInformation("Processing {documentId}", modifiedDocument.DocumentId);
-            await DeleteRecordsForDocumentAsync(modifiedDocument);
+            await DeleteChunksForDocumentAsync(modifiedDocument);
 
             await documentsCollection.UpsertAsync(modifiedDocument);
 
@@ -52,7 +52,7 @@ public class DataIngestor(
 
         logger.LogInformation("Ingestion is up-to-date");
 
-        async Task DeleteRecordsForDocumentAsync(IngestedDocument document)
+        async Task DeleteChunksForDocumentAsync(IngestedDocument document)
         {
             var documentId = document.DocumentId;
             var chunksToDelete = await chunksCollection.GetAsync(record => record.DocumentId == documentId, int.MaxValue).ToListAsync();
