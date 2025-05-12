@@ -20,12 +20,7 @@ public class SemanticSearch(
         {
             Filter = documentIdFilter is { Length: > 0 } ? record => record.DocumentId == documentIdFilter : null,
         });
-        var results = new List<IngestedChunk>();
-        await foreach (var item in nearest)
-        {
-            results.Add(item.Record);
-        }
 
-        return results;
+        return await nearest.Select(result => result.Record).ToListAsync();
     }
 }
