@@ -27,7 +27,8 @@ public class DataIngestor(
         await chunksCollection.CreateCollectionIfNotExistsAsync();
         await documentsCollection.CreateCollectionIfNotExistsAsync();
 
-        var documentsForSource = await documentsCollection.GetAsync(doc => doc.SourceId == source.SourceId, top: int.MaxValue).ToListAsync();
+        var sourceId = source.SourceId;
+        var documentsForSource = await documentsCollection.GetAsync(doc => doc.SourceId == sourceId, top: int.MaxValue).ToListAsync();
 
         var deletedDocuments = await source.GetDeletedDocumentsAsync(documentsForSource);
         foreach (var deletedDocument in deletedDocuments)
