@@ -43,7 +43,7 @@ public sealed record class AIJsonSchemaCreateOptions
     public AIJsonSchemaTransformOptions? TransformOptions { get; init; }
 
     /// <summary>
-    /// Gets a value indicating whether to include the type keyword in inferred schemas for .NET enums.
+    /// Gets a value indicating whether to include the type keyword in created schemas for .NET enums.
     /// </summary>
     [Obsolete("This property has been deprecated.")]
     [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
@@ -57,7 +57,7 @@ public sealed record class AIJsonSchemaCreateOptions
     public bool DisallowAdditionalProperties { get; init; }
 
     /// <summary>
-    /// Gets a value indicating whether to include the $schema keyword in inferred schemas.
+    /// Gets a value indicating whether to include the $schema keyword in created schemas.
     /// </summary>
     public bool IncludeSchemaKeyword { get; init; }
 

@@ -39,7 +39,7 @@ public static partial class AIJsonUtilities
     private const string DefaultPropertyName = "default";
     private const string RefPropertyName = "$ref";
 
-    /// <summary>The uri used when populating the $schema keyword in inferred schemas.</summary>
+    /// <summary>The uri used when populating the $schema keyword in created schemas.</summary>
     private const string SchemaKeywordUri = "https://json-schema.org/draft/2020-12/schema";
 
     // List of keywords used by JsonSchemaExporter but explicitly disallowed by some AI vendors.
@@ -53,7 +53,7 @@ public static partial class AIJsonUtilities
     /// <param name="title">The title keyword used by the method schema.</param>
     /// <param name="description">The description keyword used by the method schema.</param>
     /// <param name="serializerOptions">The options used to extract the schema from the specified type.</param>
-    /// <param name="inferenceOptions">The options controlling schema inference.</param>
+    /// <param name="inferenceOptions">The options controlling schema creation.</param>
     /// <returns>A JSON schema document encoded as a <see cref="JsonElement"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
     public static JsonElement CreateFunctionJsonSchema(
@@ -150,7 +150,7 @@ public static partial class AIJsonUtilities
     /// <param name="hasDefaultValue"><see langword="true"/> if the parameter is optional; otherwise, <see langword="false"/>.</param>
     /// <param name="defaultValue">The default value of the optional parameter, if applicable.</param>
     /// <param name="serializerOptions">The options used to extract the schema from the specified type.</param>
-    /// <param name="inferenceOptions">The options controlling schema inference.</param>
+    /// <param name="inferenceOptions">The options controlling schema creation.</param>
     /// <returns>A <see cref="JsonElement"/> representing the schema.</returns>
     public static JsonElement CreateJsonSchema(
         Type? type,
