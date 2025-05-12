@@ -2,13 +2,13 @@
 
 namespace aichatweb.Web.Services;
 
-public class SemanticSearchRecord
+public class IngestedChunk
 {
     [VectorStoreRecordKey]
     public required string Key { get; set; }
 
-    [VectorStoreRecordData(IsFilterable = true)]
-    public required string FileName { get; set; }
+    [VectorStoreRecordData(IsIndexed = true)]
+    public required string DocumentId { get; set; }
 
     [VectorStoreRecordData]
     public int PageNumber { get; set; }
@@ -16,6 +16,6 @@ public class SemanticSearchRecord
     [VectorStoreRecordData]
     public required string Text { get; set; }
 
-    [VectorStoreRecordVector(1536, DistanceFunction.CosineSimilarity)] // 1536 is the default vector size for the OpenAI text-embedding-3-small model
+    [VectorStoreRecordVector(1536, DistanceFunction = DistanceFunction.CosineSimilarity)] // 1536 is the default vector size for the OpenAI text-embedding-3-small model
     public ReadOnlyMemory<float> Vector { get; set; }
 }
