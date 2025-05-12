@@ -153,16 +153,9 @@ public partial class LoggingChatClient : DelegatingChatClient
                     throw;
                 }
 
-                if (_logger.IsEnabled(LogLevel.Debug))
+                if (_logger.IsEnabled(LogLevel.Trace))
                 {
-                    if (_logger.IsEnabled(LogLevel.Trace))
-                    {
-                        LogStreamingUpdateSensitive(AsJson(update));
-                    }
-                    else
-                    {
-                        LogStreamingUpdate();
-                    }
+                    LogStreamingUpdateSensitive(AsJson(update));
                 }
 
                 yield return update;
@@ -189,9 +182,6 @@ public partial class LoggingChatClient : DelegatingChatClient
 
     [LoggerMessage(LogLevel.Trace, "{MethodName} completed: {ChatResponse}.")]
     private partial void LogCompletedSensitive(string methodName, string chatResponse);
-
-    [LoggerMessage(LogLevel.Debug, "GetStreamingResponseAsync received update.")]
-    private partial void LogStreamingUpdate();
 
     [LoggerMessage(LogLevel.Trace, "GetStreamingResponseAsync received update: {ChatResponseUpdate}")]
     private partial void LogStreamingUpdateSensitive(string chatResponseUpdate);
