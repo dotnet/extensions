@@ -30,9 +30,14 @@ public static partial class AIJsonUtilities
         }
 
         JsonNode? nodeSchema = JsonSerializer.SerializeToNode(schema, JsonContext.Default.JsonElement);
+        JsonNode transformedSchema = TransformSchema(nodeSchema, transformOptions);
+        return JsonSerializer.SerializeToElement(transformedSchema, JsonContextNoIndentation.Default.JsonNode);
+    }
+
+    private static JsonNode TransformSchema(JsonNode? schema, AIJsonSchemaTransformOptions transformOptions)
+    {
         List<string>? path = transformOptions.TransformSchemaNode is not null ? [] : null;
-        JsonNode transformedSchema = TransformSchemaCore(nodeSchema, transformOptions, path);
-        return JsonSerializer.Deserialize(transformedSchema, JsonContext.Default.JsonElement);
+        return TransformSchemaCore(schema, transformOptions, path);
     }
 
     private static JsonNode TransformSchemaCore(JsonNode? schema, AIJsonSchemaTransformOptions transformOptions, List<string>? path)
@@ -167,6 +172,18 @@ public static partial class AIJsonUtilities
                         schemaObj["type"] = (JsonNode)foundType;
                         schemaObj["nullable"] = (JsonNode)true;
                     }
+                }
+
+                if (transformOptions.MoveDefaultKeywordToDescription &&
+                    schemaObj.TryGetPropertyValue(DefaultPropertyName, out JsonNode? defaultSchema))
+                {
+                    string? description = schemaObj.TryGetPropertyValue(DescriptionPropertyName, out JsonNode? descriptionSchema) ? descriptionSchema?.GetValue<string>() : null;
+                    string defaultValueJson = JsonSerializer.Serialize(defaultSchema, JsonContextNoIndentation.Default.JsonNode!);
+                    description = description is null
+                        ? $"Default value: {defaultValueJson}"
+                        : $"{description} (Default value: {defaultValueJson})";
+                    schemaObj[DescriptionPropertyName] = description;
+                    _ = schemaObj.Remove(DefaultPropertyName);
                 }
 
                 break;

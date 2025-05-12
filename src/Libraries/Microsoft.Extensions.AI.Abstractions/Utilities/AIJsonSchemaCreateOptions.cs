@@ -38,22 +38,33 @@ public sealed record class AIJsonSchemaCreateOptions
     public Func<ParameterInfo, bool>? IncludeParameter { get; init; }
 
     /// <summary>
-    /// Gets a value indicating whether to include the type keyword in inferred schemas for .NET enums.
+    /// Gets a <see cref="AIJsonSchemaTransformOptions"/> governing transformations on the JSON schema after it has been generated.
     /// </summary>
+    public AIJsonSchemaTransformOptions? TransformOptions { get; init; }
+
+    /// <summary>
+    /// Gets a value indicating whether to include the type keyword in created schemas for .NET enums.
+    /// </summary>
+    [Obsolete("This property has been deprecated.")]
+    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
     public bool IncludeTypeInEnumSchemas { get; init; } = true;
 
     /// <summary>
     /// Gets a value indicating whether to generate schemas with the additionalProperties set to false for .NET objects.
     /// </summary>
-    public bool DisallowAdditionalProperties { get; init; } = true;
+    [Obsolete("This property has been deprecated. Use the equivalent property in TransformOptions instead.")]
+    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+    public bool DisallowAdditionalProperties { get; init; }
 
     /// <summary>
-    /// Gets a value indicating whether to include the $schema keyword in inferred schemas.
+    /// Gets a value indicating whether to include the $schema keyword in created schemas.
     /// </summary>
     public bool IncludeSchemaKeyword { get; init; }
 
     /// <summary>
     /// Gets a value indicating whether to mark all properties as required in the schema.
     /// </summary>
+    [Obsolete("This property has been deprecated. Use the equivalent property in TransformOptions instead.")]
+    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
     public bool RequireAllProperties { get; init; }
 }

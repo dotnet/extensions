@@ -26,9 +26,12 @@ public static partial class ChatClientStructuredOutputExtensions
     private static readonly AIJsonSchemaCreateOptions _inferenceOptions = new()
     {
         IncludeSchemaKeyword = true,
-        DisallowAdditionalProperties = true,
-        IncludeTypeInEnumSchemas = true,
-        RequireAllProperties = true,
+        TransformOptions = new AIJsonSchemaTransformOptions
+        {
+            DisallowAdditionalProperties = true,
+            RequireAllProperties = true,
+            MoveDefaultKeywordToDescription = true,
+        },
     };
 
     /// <summary>Sends chat messages, requesting a response matching the type <typeparamref name="T"/>.</summary>

@@ -34,7 +34,8 @@ public partial class ChatClientStructuredOutputExtensionsTests
             GetResponseAsyncCallback = (messages, options, cancellationToken) =>
             {
                 var responseFormat = Assert.IsType<ChatResponseFormatJson>(options!.ResponseFormat);
-                Assert.Equal("""
+                Assert.NotNull(responseFormat.Schema);
+                AssertDeepEquals(JsonDocument.Parse("""
                     {
                       "$schema": "https://json-schema.org/draft/2020-12/schema",
                       "description": "Some test description",
@@ -65,7 +66,7 @@ public partial class ChatClientStructuredOutputExtensionsTests
                         "species"
                       ]
                     }
-                    """, responseFormat.Schema.ToString());
+                    """).RootElement, responseFormat.Schema.Value);
                 Assert.Equal(nameof(Animal), responseFormat.SchemaName);
                 Assert.Equal("Some test description", responseFormat.SchemaDescription);
 
@@ -332,7 +333,8 @@ public partial class ChatClientStructuredOutputExtensionsTests
                 //  - The property is named full_name, because we specified SnakeCaseLower
                 //  - The species value is an integer instead of a string, because we didn't use enum-to-string conversion
                 var responseFormat = Assert.IsType<ChatResponseFormatJson>(options!.ResponseFormat);
-                Assert.Equal("""
+                Assert.NotNull(responseFormat.Schema);
+                AssertDeepEquals(JsonDocument.Parse("""
                     {
                       "$schema": "https://json-schema.org/draft/2020-12/schema",
                       "description": "Some test description",
@@ -358,7 +360,7 @@ public partial class ChatClientStructuredOutputExtensionsTests
                         "species"
                       ]
                     }
-                    """, responseFormat.Schema.ToString());
+                    """).RootElement, responseFormat.Schema.Value);
 
                 return Task.FromResult(expectedResponse);
             },
@@ -432,4 +434,28 @@ public partial class ChatClientStructuredOutputExtensionsTests
     [JsonSerializable(typeof(Envelope<Animal[]>))]
     [JsonSerializable(typeof(Data<Animal>))]
     private partial class JsonContext2 : JsonSerializerContext;
+
+    private static void AssertDeepEquals(JsonElement element1, JsonElement element2)
+    {
+#pragma warning disable SA1118 // Parameter should not span multiple lines
+        Assert.True(DeepEquals(element1, element2), $"""
+            Elements are not equal.
+            Expected:
+            {element1}
+            Actual:
+            {element2}
+            """);
+#pragma warning restore SA1118 // Parameter should not span multiple lines
+    }
+
+    private static bool DeepEquals(JsonElement element1, JsonElement element2)
+    {
+#if NET9_0_OR_GREATER
+        return JsonElement.DeepEquals(element1, element2);
+#else
+        return System.Text.Json.Nodes.JsonNode.DeepEquals(
+            JsonSerializer.SerializeToNode(element1, AIJsonUtilities.DefaultOptions),
+            JsonSerializer.SerializeToNode(element2, AIJsonUtilities.DefaultOptions));
+#endif
+    }
 }
