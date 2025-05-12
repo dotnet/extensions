@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.AI;
+﻿using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
 namespace ChatWithCustomData_CSharp.Web.Services.Ingestion;
@@ -7,8 +6,7 @@ namespace ChatWithCustomData_CSharp.Web.Services.Ingestion;
 public class DataIngestor(
     ILogger<DataIngestor> logger,
     IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
-    IVectorStore vectorStore,
-    IngestionCacheDbContext ingestionCacheDb)
+    IVectorStore vectorStore)
 {
     public static async Task IngestDataAsync(IServiceProvider services, IIngestionSource source)
     {
@@ -26,42 +24,31 @@ public class DataIngestor(
 #endif
         await vectorCollection.CreateCollectionIfNotExistsAsync();
 
-        var documentsForSource = ingestionCacheDb.Documents
-            .Where(d => d.SourceId == source.SourceId)
-            .Include(d => d.Records);
+        var recordsForSource = await vectorCollection.GetAsync(record => record.SourceId == source.SourceId, top: int.MaxValue).ToListAsync();
+        var documentsForSource = recordsForSource.Select(r => new IngestedDocument(r.DocumentId, r.DocumentVersion)).Distinct().ToList();
 
-        var deletedFiles = await source.GetDeletedDocumentsAsync(documentsForSource);
-        foreach (var deletedFile in deletedFiles)
+        var deletedDocuments = await source.GetDeletedDocumentsAsync(documentsForSource);
+        foreach (var deletedDocument in deletedDocuments)
         {
-            logger.LogInformation("Removing ingested data for {file}", deletedFile.Id);
-            await vectorCollection.DeleteAsync(deletedFile.Records.Select(r => r.Id));
-            ingestionCacheDb.Documents.Remove(deletedFile);
+            logger.LogInformation("Removing ingested data for {documentId}", deletedDocument.DocumentId);
+            await vectorCollection.DeleteAsync(recordsForSource.Where(r => r.DocumentId == deletedDocument.DocumentId).Select(r => r.Key));
         }
-        await ingestionCacheDb.SaveChangesAsync();
 
-        var modifiedDocs = await source.GetNewOrModifiedDocumentsAsync(documentsForSource);
-        foreach (var modifiedDoc in modifiedDocs)
+        var modifiedDocuments = await source.GetNewOrModifiedDocumentsAsync(documentsForSource);
+        foreach (var modifiedDocument in modifiedDocuments)
         {
-            logger.LogInformation("Processing {file}", modifiedDoc.Id);
+            logger.LogInformation("Processing {documentId}", modifiedDocument.DocumentId);
 
-            if (modifiedDoc.Records.Count > 0)
+            var oldRecordsToDelete = recordsForSource.Where(r => r.DocumentId == modifiedDocument.DocumentId);
+            if (oldRecordsToDelete.Any())
             {
-                await vectorCollection.DeleteAsync(modifiedDoc.Records.Select(r => r.Id));
+                await vectorCollection.DeleteAsync(oldRecordsToDelete.Select(r => r.Key));
             }
 
-            var newRecords = await source.CreateRecordsForDocumentAsync(embeddingGenerator, modifiedDoc.Id);
+            var newRecords = await source.CreateRecordsForDocumentAsync(embeddingGenerator, modifiedDocument);
             await vectorCollection.UpsertAsync(newRecords);
-
-            modifiedDoc.Records.Clear();
-            modifiedDoc.Records.AddRange(newRecords.Select(r => new IngestedRecord { Id = r.Key, DocumentId = modifiedDoc.Id }));
-
-            if (ingestionCacheDb.Entry(modifiedDoc).State == EntityState.Detached)
-            {
-                ingestionCacheDb.Documents.Add(modifiedDoc);
-            }
         }
 
-        await ingestionCacheDb.SaveChangesAsync();
         logger.LogInformation("Ingestion is up-to-date");
     }
 }

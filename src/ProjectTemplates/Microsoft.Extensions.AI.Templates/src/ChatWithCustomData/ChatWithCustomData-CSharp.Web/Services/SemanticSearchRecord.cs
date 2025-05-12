@@ -12,7 +12,13 @@ public class SemanticSearchRecord
 #endif
 
     [VectorStoreRecordData(IsIndexed = true)]
-    public required string FileName { get; set; }
+    public required string SourceId { get; set; }
+
+    [VectorStoreRecordData(IsIndexed = true)]
+    public required string DocumentId { get; set; }
+
+    [VectorStoreRecordData]
+    public required string DocumentVersion { get; set; }
 
     [VectorStoreRecordData]
     public int PageNumber { get; set; }
