@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 #pragma warning disable SA1111 // Closing parenthesis should be on line of last parameter
 #pragma warning disable SA1112 // Closing parenthesis should be on line of opening parenthesis
@@ -24,6 +25,7 @@ namespace Microsoft.Extensions.AI;
 /// an <see cref="AIFunction"/> if it needs to resolve any services from a dependency injection
 /// container.
 /// </remarks>
+[DebuggerDisplay("Count = {Count}")]
 public class AIFunctionArguments : IDictionary<string, object?>, IReadOnlyDictionary<string, object?>
 {
     /// <summary>The nominal arguments.</summary>
