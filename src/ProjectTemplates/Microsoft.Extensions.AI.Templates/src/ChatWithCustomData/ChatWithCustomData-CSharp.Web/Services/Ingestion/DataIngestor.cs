@@ -18,37 +18,47 @@ public class DataIngestor(
     public async Task IngestDataAsync(IIngestionSource source)
     {
 #if (UseQdrant)
-        var vectorCollection = vectorStore.GetCollection<Guid, SemanticSearchRecord>("data-ChatWithCustomData-CSharp.Web-ingestion");
+        var chunksCollection = vectorStore.GetCollection<Guid, IngestedChunk>("data-ChatWithCustomData-CSharp.Web-chunks");
+        var documentsCollection = vectorStore.GetCollection<Guid, IngestedDocument>("data-ChatWithCustomData-CSharp.Web-documents");
 #else
-        var vectorCollection = vectorStore.GetCollection<string, SemanticSearchRecord>("data-ChatWithCustomData-CSharp.Web-ingestion");
+        var chunksCollection = vectorStore.GetCollection<string, IngestedChunk>("data-ChatWithCustomData-CSharp.Web-chunks");
+        var documentsCollection = vectorStore.GetCollection<string, IngestedDocument>("data-ChatWithCustomData-CSharp.Web-documents");
 #endif
-        await vectorCollection.CreateCollectionIfNotExistsAsync();
+        await chunksCollection.CreateCollectionIfNotExistsAsync();
+        await documentsCollection.CreateCollectionIfNotExistsAsync();
 
-        var recordsForSource = await vectorCollection.GetAsync(record => record.SourceId == source.SourceId, top: int.MaxValue).ToListAsync();
-        var documentsForSource = recordsForSource.Select(r => new IngestedDocument(r.DocumentId, r.DocumentVersion)).Distinct().ToList();
+        var documentsForSource = await documentsCollection.GetAsync(doc => doc.SourceId == source.SourceId, top: int.MaxValue).ToListAsync();
 
         var deletedDocuments = await source.GetDeletedDocumentsAsync(documentsForSource);
         foreach (var deletedDocument in deletedDocuments)
         {
             logger.LogInformation("Removing ingested data for {documentId}", deletedDocument.DocumentId);
-            await vectorCollection.DeleteAsync(recordsForSource.Where(r => r.DocumentId == deletedDocument.DocumentId).Select(r => r.Key));
+            await DeleteRecordsForDocumentAsync(deletedDocument);
+            await documentsCollection.DeleteAsync(deletedDocument.Key);
         }
 
         var modifiedDocuments = await source.GetNewOrModifiedDocumentsAsync(documentsForSource);
         foreach (var modifiedDocument in modifiedDocuments)
         {
             logger.LogInformation("Processing {documentId}", modifiedDocument.DocumentId);
+            await DeleteRecordsForDocumentAsync(modifiedDocument);
 
-            var oldRecordsToDelete = recordsForSource.Where(r => r.DocumentId == modifiedDocument.DocumentId);
-            if (oldRecordsToDelete.Any())
-            {
-                await vectorCollection.DeleteAsync(oldRecordsToDelete.Select(r => r.Key));
-            }
+            await documentsCollection.UpsertAsync(modifiedDocument);
 
-            var newRecords = await source.CreateRecordsForDocumentAsync(embeddingGenerator, modifiedDocument);
-            await vectorCollection.UpsertAsync(newRecords);
+            var newRecords = await source.CreateChunksForDocumentAsync(embeddingGenerator, modifiedDocument);
+            await chunksCollection.UpsertAsync(newRecords);
         }
 
         logger.LogInformation("Ingestion is up-to-date");
+
+        async Task DeleteRecordsForDocumentAsync(IngestedDocument document)
+        {
+            var documentId = document.DocumentId;
+            var chunksToDelete = await chunksCollection.GetAsync(record => record.DocumentId == documentId, int.MaxValue).ToListAsync();
+            if (chunksToDelete.Any())
+            {
+                await chunksCollection.DeleteAsync(chunksToDelete.Select(r => r.Key));
+            }
+        }
     }
 }

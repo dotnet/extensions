@@ -8,9 +8,7 @@ public interface IIngestionSource
 
     Task<IEnumerable<IngestedDocument>> GetNewOrModifiedDocumentsAsync(IReadOnlyList<IngestedDocument> existingDocuments);
 
-    Task<IEnumerable<IngestedDocument>> GetDeletedDocumentsAsync(IReadOnlyList<IngestedDocument> existingDocumentsIds);
+    Task<IEnumerable<IngestedDocument>> GetDeletedDocumentsAsync(IReadOnlyList<IngestedDocument> existingDocuments);
 
-    Task<IEnumerable<SemanticSearchRecord>> CreateRecordsForDocumentAsync(IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator, IngestedDocument document);
+    Task<IEnumerable<IngestedChunk>> CreateChunksForDocumentAsync(IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator, IngestedDocument document);
 }
-
-public record IngestedDocument(string DocumentId, string DocumentVersion);

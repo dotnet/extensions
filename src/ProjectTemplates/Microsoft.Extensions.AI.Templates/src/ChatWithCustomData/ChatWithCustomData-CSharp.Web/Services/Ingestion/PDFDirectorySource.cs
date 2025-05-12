@@ -27,7 +27,11 @@ public class PDFDirectorySource(string sourceDirectory) : IIngestionSource
             var existingDocumentVersion = existingDocumentsById.TryGetValue(sourceFileId, out var existingDocument) ? existingDocument.DocumentVersion : null;
             if (existingDocumentVersion != sourceFileVersion)
             {
-                results.Add(new(sourceFileId, sourceFileVersion));
+#if (UseQdrant)
+                results.Add(new() { Key = Guid.CreateVersion7(), SourceId = SourceId, DocumentId = sourceFileId, DocumentVersion = sourceFileVersion });
+#else
+                results.Add(new() { Key = $"{SourceId}_{sourceFileId}", SourceId = SourceId, DocumentId = sourceFileId, DocumentVersion = sourceFileVersion });
+#endif
             }
         }
 
@@ -42,23 +46,21 @@ public class PDFDirectorySource(string sourceDirectory) : IIngestionSource
         return Task.FromResult(deletedDocuments);
     }
 
-    public async Task<IEnumerable<SemanticSearchRecord>> CreateRecordsForDocumentAsync(IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator, IngestedDocument document)
+    public async Task<IEnumerable<IngestedChunk>> CreateChunksForDocumentAsync(IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator, IngestedDocument document)
     {
         using var pdf = PdfDocument.Open(Path.Combine(sourceDirectory, document.DocumentId));
         var paragraphs = pdf.GetPages().SelectMany(GetPageParagraphs).ToList();
 
         var embeddings = await embeddingGenerator.GenerateAsync(paragraphs.Select(c => c.Text));
 
-        return paragraphs.Zip(embeddings).Select((pair, index) => new SemanticSearchRecord
+        return paragraphs.Zip(embeddings).Select((pair, index) => new IngestedChunk
         {
 #if (UseQdrant)
             Key = Guid.CreateVersion7(),
 #else
             Key = $"{Path.GetFileNameWithoutExtension(document.DocumentId)}_{pair.First.PageNumber}_{pair.First.IndexOnPage}",
 #endif
-            SourceId = SourceId,
             DocumentId = document.DocumentId,
-            DocumentVersion = document.DocumentVersion,
             PageNumber = pair.First.PageNumber,
             Text = pair.First.Text,
             Vector = pair.Second.Vector,

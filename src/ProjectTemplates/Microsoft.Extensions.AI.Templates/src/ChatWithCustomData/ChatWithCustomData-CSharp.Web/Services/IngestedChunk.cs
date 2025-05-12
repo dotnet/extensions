@@ -2,7 +2,7 @@
 
 namespace ChatWithCustomData_CSharp.Web.Services;
 
-public class SemanticSearchRecord
+public class IngestedChunk
 {
     [VectorStoreRecordKey]
 #if (UseQdrant)
@@ -12,13 +12,7 @@ public class SemanticSearchRecord
 #endif
 
     [VectorStoreRecordData(IsIndexed = true)]
-    public required string SourceId { get; set; }
-
-    [VectorStoreRecordData(IsIndexed = true)]
     public required string DocumentId { get; set; }
-
-    [VectorStoreRecordData]
-    public required string DocumentVersion { get; set; }
 
     [VectorStoreRecordData]
     public int PageNumber { get; set; }
