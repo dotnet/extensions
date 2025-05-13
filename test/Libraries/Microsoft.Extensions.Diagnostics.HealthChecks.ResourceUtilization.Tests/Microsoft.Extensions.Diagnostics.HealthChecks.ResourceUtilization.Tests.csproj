@@ -15,7 +15,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net481'">
     <Compile Remove="Linux\**\*.cs" />
   </ItemGroup>
 </Project>
