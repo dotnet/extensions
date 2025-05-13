@@ -12,10 +12,11 @@ namespace Microsoft.AspNetCore.Diagnostics.Buffering;
 
 internal sealed class PerRequestLogBufferManager : PerRequestLogBuffer
 {
+    internal readonly IOptionsMonitor<PerRequestLogBufferingOptions> Options;
+
     private readonly GlobalLogBuffer _globalBuffer;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly LogBufferingFilterRuleSelector _ruleSelector;
-    private readonly IOptionsMonitor<PerRequestLogBufferingOptions> _options;
 
     public PerRequestLogBufferManager(
         GlobalLogBuffer globalBuffer,
@@ -26,7 +27,7 @@ internal sealed class PerRequestLogBufferManager : PerRequestLogBuffer
         _globalBuffer = globalBuffer;
         _httpContextAccessor = httpContextAccessor;
         _ruleSelector = ruleSelector;
-        _options = options;
+        Options = options;
     }
 
     public override void Flush()
@@ -47,7 +48,7 @@ internal sealed class PerRequestLogBufferManager : PerRequestLogBuffer
         IncomingRequestLogBufferHolder? bufferHolder =
             httpContext.RequestServices.GetService<IncomingRequestLogBufferHolder>();
         IncomingRequestLogBuffer? buffer = bufferHolder?.GetOrAdd(category, _ =>
-            new IncomingRequestLogBuffer(bufferedLogger, category, _ruleSelector, _options));
+            new IncomingRequestLogBuffer(bufferedLogger, category, _ruleSelector, Options));
 
         if (buffer is null)
         {

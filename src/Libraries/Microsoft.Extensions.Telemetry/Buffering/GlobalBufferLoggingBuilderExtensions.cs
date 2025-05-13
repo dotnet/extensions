@@ -38,7 +38,10 @@ public static class GlobalBufferLoggingBuilderExtensions
         _ = builder
             .Services.AddOptionsWithValidateOnStart<GlobalLogBufferingOptions, GlobalLogBufferingOptionsValidator>()
             .Services.AddOptionsWithValidateOnStart<GlobalLogBufferingOptions, GlobalLogBufferingOptionsCustomValidator>()
-            .Services.AddSingleton<IConfigureOptions<GlobalLogBufferingOptions>>(new GlobalLogBufferingConfigureOptions(configuration));
+            .Services.AddSingleton<IConfigureOptions<GlobalLogBufferingOptions>>(
+                new GlobalLogBufferingConfigureOptions(configuration))
+            .AddSingleton<IOptionsChangeTokenSource<GlobalLogBufferingOptions>>(
+                new ConfigurationChangeTokenSource<GlobalLogBufferingOptions>(configuration));
 
         return builder.AddGlobalBufferManager();
     }

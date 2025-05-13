@@ -3,15 +3,23 @@
 #if NET9_0_OR_GREATER
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.Buffering;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Buffering;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting.Testing;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Test;
 using Microsoft.Extensions.Options;
 using Xunit;
 using PerRequestLogBuffer = Microsoft.Extensions.Diagnostics.Buffering.PerRequestLogBuffer;
 
-namespace Microsoft.Extensions.Logging;
+namespace Microsoft.AspNetCore.Diagnostics.Logging.Test;
 
 public class PerIncomingRequestLoggingBuilderExtensionsTests
 {
@@ -81,6 +89,73 @@ public class PerIncomingRequestLoggingBuilderExtensionsTests
         Assert.NotNull(options);
         Assert.NotNull(options.CurrentValue);
         Assert.Equivalent(expectedData, options.CurrentValue.Rules);
+    }
+
+    [Fact]
+    public async Task WhenConfigUpdated_PicksUpConfigChanges()
+    {
+        List<LogBufferingFilterRule> initialData =
+        [
+            new(categoryName: "Program.MyLogger", logLevel: LogLevel.Information, eventId: 1, eventName: "number one"),
+            new(logLevel : LogLevel.Information),
+        ];
+        List<LogBufferingFilterRule> updatedData =
+        [
+            new(logLevel: LogLevel.Information),
+        ];
+        string jsonConfig =
+            @"
+{
+    ""PerIncomingRequestLogBuffering"": {
+     ""Rules"": [
+       {
+         ""CategoryName"": ""Program.MyLogger"",
+         ""LogLevel"": ""Information"",
+         ""EventId"": 1,
+         ""EventName"": ""number one"",
+       },
+       {
+         ""LogLevel"": ""Information"",
+       },
+     ]
+    }
+}
+";
+
+        using ConfigurationRoot config = TestConfiguration.Create(() => jsonConfig);
+        using IHost host = await FakeHost.CreateBuilder()
+            .ConfigureWebHost(builder => builder
+                .UseTestServer()
+                .ConfigureServices(x => x.AddRouting())
+                .ConfigureLogging(loggingBuilder => loggingBuilder
+                    .AddPerIncomingRequestBuffer(config))
+                .Configure(app => app.UseRouting()))
+            .StartAsync();
+
+        IOptionsMonitor<PerRequestLogBufferingOptions>? options = host.Services.GetService<IOptionsMonitor<PerRequestLogBufferingOptions>>();
+        Assert.NotNull(options);
+        Assert.NotNull(options.CurrentValue);
+        Assert.Equivalent(initialData, options.CurrentValue.Rules);
+
+        jsonConfig =
+@"
+{
+    ""PerIncomingRequestLogBuffering"": {
+     ""Rules"": [
+       {
+         ""LogLevel"": ""Information"",
+       },
+     ]
+    }
+}
+";
+        config.Reload();
+
+        var bufferManager = host.Services.GetRequiredService<PerRequestLogBuffer>() as PerRequestLogBufferManager;
+        Assert.NotNull(bufferManager);
+        Assert.Equivalent(updatedData, bufferManager.Options.CurrentValue.Rules, strict: true);
+
+        await host.StopAsync();
     }
 }
 #endif

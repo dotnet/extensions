@@ -17,6 +17,8 @@ namespace Microsoft.Extensions.Diagnostics.Buffering;
 
 internal sealed class GlobalBuffer : IDisposable
 {
+    internal LogBufferingFilterRule[] LastKnownGoodFilterRules;
+
     private const int MaxBatchSize = 256;
     private static readonly ObjectPool<List<DeserializedLogRecord>> _recordsToEmitListPool =
         PoolFactory.CreateListPoolWithCapacity<DeserializedLogRecord>(MaxBatchSize);
@@ -34,7 +36,6 @@ internal sealed class GlobalBuffer : IDisposable
 
     private DateTimeOffset _lastFlushTimestamp;
     private int _activeBufferSize;
-    private LogBufferingFilterRule[] _lastKnownGoodFilterRules;
 
     private volatile bool _disposed;
 
@@ -50,7 +51,7 @@ internal sealed class GlobalBuffer : IDisposable
         _bufferedLogger = bufferedLogger;
         _category = Throw.IfNullOrEmpty(category);
         _ruleSelector = Throw.IfNull(ruleSelector);
-        _lastKnownGoodFilterRules = LogBufferingFilterRuleSelector.SelectByCategory(_options.CurrentValue.Rules.ToArray(), _category);
+        LastKnownGoodFilterRules = LogBufferingFilterRuleSelector.SelectByCategory(_options.CurrentValue.Rules.ToArray(), _category);
         _optionsChangeTokenRegistration = options.OnChange(OnOptionsChanged);
     }
 
@@ -83,7 +84,7 @@ internal sealed class GlobalBuffer : IDisposable
                 $"Unsupported type of log state detected: {typeof(TState)}, expected IReadOnlyList<KeyValuePair<string, object?>>");
         }
 
-        if (_ruleSelector.Select(_lastKnownGoodFilterRules, logEntry.LogLevel, logEntry.EventId, attributes) is null)
+        if (_ruleSelector.Select(LastKnownGoodFilterRules, logEntry.LogLevel, logEntry.EventId, attributes) is null)
         {
             // buffering is not enabled for this log entry,
             // return false to indicate that the log entry should be logged normally.
@@ -162,11 +163,11 @@ internal sealed class GlobalBuffer : IDisposable
     {
         if (updatedOptions is null)
         {
-            _lastKnownGoodFilterRules = [];
+            LastKnownGoodFilterRules = [];
         }
         else
         {
-            _lastKnownGoodFilterRules = LogBufferingFilterRuleSelector.SelectByCategory(updatedOptions.Rules.ToArray(), _category);
+            LastKnownGoodFilterRules = LogBufferingFilterRuleSelector.SelectByCategory(updatedOptions.Rules.ToArray(), _category);
         }
 
         _ruleSelector.InvalidateCache();
