@@ -27,7 +27,7 @@ public class PDFDirectorySource(string sourceDirectory) : IIngestionSource
             var existingDocumentVersion = existingDocumentsById.TryGetValue(sourceFileId, out var existingDocument) ? existingDocument.DocumentVersion : null;
             if (existingDocumentVersion != sourceFileVersion)
             {
-                results.Add(new() { Key = $"{SourceId}_{sourceFileId}", SourceId = SourceId, DocumentId = sourceFileId, DocumentVersion = sourceFileVersion });
+                results.Add(new() { Key = Guid.CreateVersion7().ToString(), SourceId = SourceId, DocumentId = sourceFileId, DocumentVersion = sourceFileVersion });
             }
         }
 
@@ -51,7 +51,7 @@ public class PDFDirectorySource(string sourceDirectory) : IIngestionSource
 
         return paragraphs.Zip(embeddings).Select((pair, index) => new IngestedChunk
         {
-            Key = $"{Path.GetFileNameWithoutExtension(document.DocumentId)}_{pair.First.PageNumber}_{pair.First.IndexOnPage}",
+            Key = Guid.CreateVersion7().ToString(),
             DocumentId = document.DocumentId,
             PageNumber = pair.First.PageNumber,
             Text = pair.First.Text,

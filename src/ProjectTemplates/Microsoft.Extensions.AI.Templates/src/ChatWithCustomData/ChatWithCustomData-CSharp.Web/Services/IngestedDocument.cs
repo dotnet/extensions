@@ -21,6 +21,6 @@ public class IngestedDocument
     public required string DocumentVersion { get; set; }
 
     // The vector is not used but required for some vector databases
-    [VectorStoreRecordVector(1, DistanceFunction = DistanceFunction.CosineSimilarity)]
-    public ReadOnlyMemory<float> Vector { get; set; } = new ReadOnlyMemory<float>([0]);
+    [VectorStoreRecordVector(2, DistanceFunction = DistanceFunction.CosineSimilarity)]
+    public ReadOnlyMemory<float> Vector { get; set; } = new ReadOnlyMemory<float>([0, 0]);
 }
