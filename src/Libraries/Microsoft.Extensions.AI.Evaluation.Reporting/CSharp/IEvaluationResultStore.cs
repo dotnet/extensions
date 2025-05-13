@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.AI.Evaluation.Reporting;
 /// <summary>
 /// Represents a store for <see cref="ScenarioRunResult"/>s.
 /// </summary>
-public interface IResultStore
+public interface IEvaluationResultStore
 {
     /// <summary>
     /// Returns <see cref="ScenarioRunResult"/>s for <see cref="ScenarioRun"/>s filtered by the specified
