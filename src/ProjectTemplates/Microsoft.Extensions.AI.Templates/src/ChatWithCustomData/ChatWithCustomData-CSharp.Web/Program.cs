@@ -21,6 +21,8 @@ using System.ClientModel;
 #if (UseAzureAISearch)
 using Azure.Search.Documents.Indexes;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
+#else // UseLocalVectorStore
+using Microsoft.SemanticKernel.Connectors.SqliteVec;
 #endif
 
 var builder = WebApplication.CreateBuilder(args);
@@ -92,10 +94,14 @@ var vectorStore = new AzureAISearchVectorStore(
         new AzureKeyCredential(builder.Configuration["AzureAISearch:Key"] ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Key. See the README for details."))));
 #endif
 #else // UseLocalVectorStore
-var vectorStore = new JsonVectorStore(Path.Combine(AppContext.BaseDirectory, "vector-store"));
+var vectorStorePath = Path.Combine(AppContext.BaseDirectory, "vector-store.db");
+var vectorStore = new SqliteVectorStore($"Data Source={vectorStorePath}", new SqliteVectorStoreOptions()
+{
+    EmbeddingGenerator = embeddingGenerator,
+});
 #endif
 
-builder.Services.AddSingleton<IVectorStore>(vectorStore);
+builder.Services.AddSingleton<VectorStore>(vectorStore);
 builder.Services.AddScoped<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();
 builder.Services.AddChatClient(chatClient).UseFunctionInvocation().UseLogging();

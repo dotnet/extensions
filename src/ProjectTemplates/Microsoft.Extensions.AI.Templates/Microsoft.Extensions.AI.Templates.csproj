@@ -44,7 +44,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Keep the exclude patterns below in sync with those in AichatwebTemplatesTests.cs -->
+    <!-- Keep the exclude patterns below in sync with those in AIChatWebSnapshotTests.cs -->
     <Content
       Include="src\ChatWithCustomData\**\*"
       Exclude="
@@ -59,7 +59,8 @@
         **\package-lock.json;
         **\ingestioncache.*;
         **\NuGet.config;
-        **\Directory.Build.targets;" />
+        **\Directory.Build.targets;
+        **\Directory.Build.props;" />
     <None Include="THIRD-PARTY-NOTICES.TXT" Pack="true" PackagePath="." />
     <Compile Remove="**\*" />
   </ItemGroup>

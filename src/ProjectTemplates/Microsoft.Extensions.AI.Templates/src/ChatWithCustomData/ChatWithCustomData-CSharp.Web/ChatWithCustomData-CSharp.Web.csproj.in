@@ -45,6 +45,8 @@
 #elif (UseQdrant)-->
     <PackageReference Include="Aspire.Qdrant.Client" Version="${AspireVersion}" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.Qdrant" Version="${MicrosoftSemanticKernelConnectorsQdrantVersion}" />
+<!--#elif (UseLocalVectorStore)-->
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.SqliteVec" Version="${MicrosoftSemanticKernelConnectorsSqliteVecVersion}" />
 <!--#endif -->
   </ItemGroup>
 <!--#if (IsAspire) -->

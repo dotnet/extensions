@@ -5,6 +5,7 @@ using aichatweb.Services;
 using aichatweb.Services.Ingestion;
 using OpenAI;
 using System.ClientModel;
+using Microsoft.SemanticKernel.Connectors.SqliteVec;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
@@ -23,9 +24,13 @@ var ghModelsClient = new OpenAIClient(credential, openAIOptions);
 var chatClient = ghModelsClient.GetChatClient("gpt-4o-mini").AsIChatClient();
 var embeddingGenerator = ghModelsClient.GetEmbeddingClient("text-embedding-3-small").AsIEmbeddingGenerator();
 
-var vectorStore = new JsonVectorStore(Path.Combine(AppContext.BaseDirectory, "vector-store"));
+var vectorStorePath = Path.Combine(AppContext.BaseDirectory, "vector-store.db");
+var vectorStore = new SqliteVectorStore($"Data Source={vectorStorePath}", new SqliteVectorStoreOptions()
+{
+    EmbeddingGenerator = embeddingGenerator,
+});
 
-builder.Services.AddSingleton<IVectorStore>(vectorStore);
+builder.Services.AddSingleton<VectorStore>(vectorStore);
 builder.Services.AddScoped<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();
 builder.Services.AddChatClient(chatClient).UseFunctionInvocation().UseLogging();

@@ -31,7 +31,7 @@ var vectorStore = new AzureAISearchVectorStore(
         new Uri(builder.Configuration["AzureAISearch:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Endpoint. See the README for details.")),
         new DefaultAzureCredential()));
 
-builder.Services.AddSingleton<IVectorStore>(vectorStore);
+builder.Services.AddSingleton<VectorStore>(vectorStore);
 builder.Services.AddScoped<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();
 builder.Services.AddChatClient(chatClient).UseFunctionInvocation().UseLogging();

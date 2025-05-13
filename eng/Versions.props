@@ -167,6 +167,7 @@
     <MicrosoftExtensionsServiceDiscoveryVersion>9.2.0</MicrosoftExtensionsServiceDiscoveryVersion>
     <MicrosoftSemanticKernelConnectorsAzureAISearchVersion>1.49.0-preview</MicrosoftSemanticKernelConnectorsAzureAISearchVersion>
     <MicrosoftSemanticKernelConnectorsQdrantVersion>1.49.0-preview</MicrosoftSemanticKernelConnectorsQdrantVersion>
+    <MicrosoftSemanticKernelConnectorsSqliteVecVersion>1.49.0-preview</MicrosoftSemanticKernelConnectorsSqliteVecVersion>
     <MicrosoftSemanticKernelCoreVersion>1.49.0</MicrosoftSemanticKernelCoreVersion>
     <OllamaSharpVersion>5.1.13</OllamaSharpVersion>
     <OpenTelemetryVersion>1.9.0</OpenTelemetryVersion>
