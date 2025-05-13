@@ -53,7 +53,7 @@ public class PDFDirectorySource(string sourceDirectory) : IIngestionSource
 
         var embeddings = await embeddingGenerator.GenerateAsync(paragraphs.Select(c => c.Text));
 
-        return paragraphs.Zip(embeddings).Select((pair, index) => new IngestedChunk
+        return paragraphs.Zip(embeddings).Select(pair => new IngestedChunk
         {
 #if (UseQdrant)
             Key = Guid.CreateVersion7(),
