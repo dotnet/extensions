@@ -42,7 +42,7 @@
     <PackageVersion Include="StyleCop.Analyzers.Unstable" Version="1.2.0.556" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'net481'">
     <PackageVersion Include="Microsoft.AspNetCore.Http.Features" Version="2.2.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
     <PackageVersion Include="Microsoft.AspNetCore.Routing.Abstractions" Version="2.2.0" />
