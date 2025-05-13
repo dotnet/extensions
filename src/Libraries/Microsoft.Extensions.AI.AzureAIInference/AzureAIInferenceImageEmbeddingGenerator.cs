@@ -117,37 +117,19 @@ internal sealed class AzureAIInferenceImageEmbeddingGenerator :
     }
 
     /// <summary>Converts an extensions options instance to an Azure.AI.Inference options instance.</summary>
+    /// <remarks>
+    /// Note: we can't currently use RawRepresentationFactory due to https://github.com/Azure/azure-sdk-for-net/issues/50018.
+    /// </remarks>
     private ImageEmbeddingsOptions ToAzureAIOptions(IEnumerable<DataContent> inputs, EmbeddingGenerationOptions? options)
     {
-        var imageEmbeddingInputs = inputs.Select(dc => new ImageEmbeddingInput(dc.Uri));
-
-        if (options is null)
+        ImageEmbeddingsOptions result = new(inputs.Select(dc => new ImageEmbeddingInput(dc.Uri)))
         {
-            return new ImageEmbeddingsOptions(imageEmbeddingInputs)
-            {
-                Dimensions = _dimensions,
-                Model = _metadata.DefaultModelId,
-                EncodingFormat = EmbeddingEncodingFormat.Base64,
-            };
-        }
+            Dimensions = options?.Dimensions ?? _dimensions,
+            Model = options?.ModelId ?? _metadata.DefaultModelId,
+            EncodingFormat = EmbeddingEncodingFormat.Base64,
+        };
 
-        if (options.RawRepresentationFactory?.Invoke(this) is ImageEmbeddingsOptions result)
-        {
-            // Input doesn't have a setter, so use reflection to set it.
-            typeof(ImageEmbeddingsOptions)
-                .GetField("<Input>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance)!
-                .SetValue(result, imageEmbeddingInputs.ToList());
-        }
-        else
-        {
-            result = new ImageEmbeddingsOptions(imageEmbeddingInputs);
-        }
-
-        result.Dimensions ??= options.Dimensions ?? _dimensions;
-        result.Model ??= options.ModelId ?? _metadata.DefaultModelId;
-        result.EncodingFormat ??= EmbeddingEncodingFormat.Base64;
-
-        if (options.AdditionalProperties is { } props)
+        if (options?.AdditionalProperties is { } props)
         {
             foreach (var prop in props)
             {

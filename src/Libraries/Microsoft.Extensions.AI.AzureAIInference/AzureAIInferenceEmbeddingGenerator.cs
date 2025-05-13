@@ -164,35 +164,19 @@ internal sealed class AzureAIInferenceEmbeddingGenerator :
     }
 
     /// <summary>Converts an extensions options instance to an Azure.AI.Inference options instance.</summary>
+    /// <remarks>
+    /// Note: we can't currently use RawRepresentationFactory due to https://github.com/Azure/azure-sdk-for-net/issues/50018.
+    /// </remarks>
     private EmbeddingsOptions ToAzureAIOptions(IEnumerable<string> inputs, EmbeddingGenerationOptions? options)
     {
-        if (options is null)
+        EmbeddingsOptions result = new(inputs)
         {
-            return new EmbeddingsOptions(inputs)
-            {
-                Dimensions = _dimensions,
-                Model = _metadata.DefaultModelId,
-                EncodingFormat = EmbeddingEncodingFormat.Base64,
-            };
-        }
+            Dimensions = options?.Dimensions ?? _dimensions,
+            Model = options?.ModelId ?? _metadata.DefaultModelId,
+            EncodingFormat = EmbeddingEncodingFormat.Base64,
+        };
 
-        if (options.RawRepresentationFactory?.Invoke(this) is EmbeddingsOptions result)
-        {
-            // Input doesn't have a setter, so use reflection to set it.
-            typeof(EmbeddingsOptions)
-                .GetField("<Input>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance)!
-                .SetValue(result, inputs.ToList());
-        }
-        else
-        {
-            result = new EmbeddingsOptions(inputs);
-        }
-
-        result.Dimensions ??= options.Dimensions ?? _dimensions;
-        result.Model ??= options.ModelId ?? _metadata.DefaultModelId;
-        result.EncodingFormat ??= EmbeddingEncodingFormat.Base64;
-
-        if (options.AdditionalProperties is { } props)
+        if (options?.AdditionalProperties is { } props)
         {
             foreach (var prop in props)
             {
