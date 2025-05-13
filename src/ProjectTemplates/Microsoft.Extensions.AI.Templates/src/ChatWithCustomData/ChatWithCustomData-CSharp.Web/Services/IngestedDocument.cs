@@ -27,6 +27,6 @@ public class IngestedDocument
     public required string DocumentVersion { get; set; }
 
     // The vector is not used but required for some vector databases
-    [VectorStoreVector(1, DistanceFunction = VectorDistanceFunction)]
-    public ReadOnlyMemory<float> Vector { get; set; } = new ReadOnlyMemory<float>([0]);
+    [VectorStoreVector(2, DistanceFunction = VectorDistanceFunction)]
+    public ReadOnlyMemory<float> Vector { get; set; } = new ReadOnlyMemory<float>([0, 0]);
 }

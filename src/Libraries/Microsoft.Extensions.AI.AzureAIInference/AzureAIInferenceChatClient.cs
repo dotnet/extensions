@@ -289,7 +289,7 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
                 throw new InvalidOperationException("No model id was provided when either constructing the client or in the chat options.")
         };
 
-    /// <summary>Converts an extensions options instance to an AzureAI options instance.</summary>
+    /// <summary>Converts an extensions options instance to an Azure.AI.Inference options instance.</summary>
     private ChatCompletionsOptions ToAzureAIOptions(IEnumerable<ChatMessage> chatContents, ChatOptions? options)
     {
         if (options is null)

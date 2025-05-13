@@ -11,6 +11,11 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents a chat client.</summary>
 /// <remarks>
 /// <para>
+/// Applications must consider risks such as prompt injection attacks, data sizes, and the number of messages
+/// sent to the underlying provider or returned from it. Unless a specific <see cref="IChatClient"/> implementation
+/// explicitly documents safeguards for these concerns, the application is expected to implement appropriate protections.
+/// </para>
+/// <para>
 /// Unless otherwise specified, all members of <see cref="IChatClient"/> are thread-safe for concurrent use.
 /// It is expected that all implementations of <see cref="IChatClient"/> support being used by multiple requests concurrently.
 /// Instances must not be disposed of while the instance is still in use.

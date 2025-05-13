@@ -18,6 +18,7 @@ using static Microsoft.Extensions.AI.OpenAIChatClient;
 #pragma warning disable S1067 // Expressions should not be too complex
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 #pragma warning disable S3604 // Member initializer values should not be redundant
+#pragma warning disable SA1204 // Static elements should appear before instance elements
 
 namespace Microsoft.Extensions.AI;
 
@@ -315,88 +316,59 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
         null;
 
     /// <summary>Converts a <see cref="ChatOptions"/> to a <see cref="ResponseCreationOptions"/>.</summary>
-    private static ResponseCreationOptions ToOpenAIResponseCreationOptions(ChatOptions? options)
+    private ResponseCreationOptions ToOpenAIResponseCreationOptions(ChatOptions? options)
     {
-        ResponseCreationOptions result = new();
-
-        if (options is not null)
+        if (options is null)
         {
-            // Handle strongly-typed properties.
-            result.MaxOutputTokenCount = options.MaxOutputTokens;
-            result.PreviousResponseId = options.ConversationId;
-            result.TopP = options.TopP;
-            result.Temperature = options.Temperature;
-            result.ParallelToolCallsEnabled = options.AllowMultipleToolCalls;
+            return new ResponseCreationOptions();
+        }
 
-            // Handle loosely-typed properties from AdditionalProperties.
-            if (options.AdditionalProperties is { Count: > 0 } additionalProperties)
+        if (options.RawRepresentationFactory?.Invoke(this) is not ResponseCreationOptions result)
+        {
+            result = new ResponseCreationOptions();
+        }
+
+        // Handle strongly-typed properties.
+        result.MaxOutputTokenCount ??= options.MaxOutputTokens;
+        result.PreviousResponseId ??= options.ConversationId;
+        result.TopP ??= options.TopP;
+        result.Temperature ??= options.Temperature;
+        result.ParallelToolCallsEnabled ??= options.AllowMultipleToolCalls;
+
+        // Populate tools if there are any.
+        if (options.Tools is { Count: > 0 } tools)
+        {
+            foreach (AITool tool in tools)
             {
-                if (additionalProperties.TryGetValue(nameof(result.EndUserId), out string? endUserId))
+                switch (tool)
                 {
-                    result.EndUserId = endUserId;
-                }
+                    case AIFunction af:
+                        var oaitool = JsonSerializer.Deserialize(SchemaTransformCache.GetOrCreateTransformedSchema(af), ResponseClientJsonContext.Default.ResponseToolJson)!;
+                        var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(oaitool, ResponseClientJsonContext.Default.ResponseToolJson));
+                        result.Tools.Add(ResponseTool.CreateFunctionTool(af.Name, af.Description, functionParameters));
+                        break;
 
-                if (additionalProperties.TryGetValue(nameof(result.Instructions), out string? instructions))
-                {
-                    result.Instructions = instructions;
-                }
+                    case HostedWebSearchTool:
+                        WebSearchToolLocation? location = null;
+                        if (tool.AdditionalProperties.TryGetValue(nameof(WebSearchToolLocation), out object? objLocation))
+                        {
+                            location = objLocation as WebSearchToolLocation;
+                        }
 
-                if (additionalProperties.TryGetValue(nameof(result.Metadata), out IDictionary<string, string>? metadata))
-                {
-                    foreach (KeyValuePair<string, string> kvp in metadata)
-                    {
-                        result.Metadata[kvp.Key] = kvp.Value;
-                    }
-                }
+                        WebSearchToolContextSize? size = null;
+                        if (tool.AdditionalProperties.TryGetValue(nameof(WebSearchToolContextSize), out object? objSize) &&
+                            objSize is WebSearchToolContextSize)
+                        {
+                            size = (WebSearchToolContextSize)objSize;
+                        }
 
-                if (additionalProperties.TryGetValue(nameof(result.ReasoningOptions), out ResponseReasoningOptions? reasoningOptions))
-                {
-                    result.ReasoningOptions = reasoningOptions;
-                }
-
-                if (additionalProperties.TryGetValue(nameof(result.StoredOutputEnabled), out bool storeOutputEnabled))
-                {
-                    result.StoredOutputEnabled = storeOutputEnabled;
-                }
-
-                if (additionalProperties.TryGetValue(nameof(result.TruncationMode), out ResponseTruncationMode truncationMode))
-                {
-                    result.TruncationMode = truncationMode;
+                        result.Tools.Add(ResponseTool.CreateWebSearchTool(location, size));
+                        break;
                 }
             }
 
-            // Populate tools if there are any.
-            if (options.Tools is { Count: > 0 } tools)
+            if (result.ToolChoice is null && result.Tools.Count > 0)
             {
-                foreach (AITool tool in tools)
-                {
-                    switch (tool)
-                    {
-                        case AIFunction af:
-                            var oaitool = JsonSerializer.Deserialize(SchemaTransformCache.GetOrCreateTransformedSchema(af), ResponseClientJsonContext.Default.ResponseToolJson)!;
-                            var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(oaitool, ResponseClientJsonContext.Default.ResponseToolJson));
-                            result.Tools.Add(ResponseTool.CreateFunctionTool(af.Name, af.Description, functionParameters));
-                            break;
-
-                        case HostedWebSearchTool:
-                            WebSearchToolLocation? location = null;
-                            if (tool.AdditionalProperties.TryGetValue(nameof(WebSearchToolLocation), out object? objLocation))
-                            {
-                                location = objLocation as WebSearchToolLocation;
-                            }
-
-                            WebSearchToolContextSize? size = null;
-                            if (tool.AdditionalProperties.TryGetValue(nameof(WebSearchToolContextSize), out object? objSize) &&
-                                objSize is WebSearchToolContextSize)
-                            {
-                                size = (WebSearchToolContextSize)objSize;
-                            }
-
-                            result.Tools.Add(ResponseTool.CreateWebSearchTool(location, size));
-                            break;
-                    }
-                }
-
                 switch (options.ToolMode)
                 {
                     case NoneChatToolMode:
@@ -415,8 +387,10 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                         break;
                 }
             }
+        }
 
-            // Handle response format.
+        if (result.TextOptions is null)
+        {
             if (options.ResponseFormat is ChatResponseFormatText)
             {
                 result.TextOptions = new()
