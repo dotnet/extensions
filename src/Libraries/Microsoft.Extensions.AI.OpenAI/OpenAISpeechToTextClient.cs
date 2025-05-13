@@ -15,6 +15,7 @@ using OpenAI.Audio;
 
 #pragma warning disable S1067 // Expressions should not be too complex
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
+#pragma warning disable SA1204 // Static elements should appear before instance elements
 
 namespace Microsoft.Extensions.AI;
 
@@ -179,41 +180,14 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
     }
 
     /// <summary>Converts an extensions options instance to an OpenAI options instance.</summary>
-    private static AudioTranscriptionOptions ToOpenAITranscriptionOptions(SpeechToTextOptions? options)
+    private AudioTranscriptionOptions ToOpenAITranscriptionOptions(SpeechToTextOptions? options)
     {
-        AudioTranscriptionOptions result = new();
-
-        if (options is not null)
+        if (options?.RawRepresentationFactory?.Invoke(this) is not AudioTranscriptionOptions result)
         {
-            if (options.SpeechLanguage is not null)
-            {
-                result.Language = options.SpeechLanguage;
-            }
-
-            if (options.AdditionalProperties is { Count: > 0 } additionalProperties)
-            {
-                if (additionalProperties.TryGetValue(nameof(result.Temperature), out float? temperature))
-                {
-                    result.Temperature = temperature;
-                }
-
-                if (additionalProperties.TryGetValue(nameof(result.TimestampGranularities), out object? timestampGranularities))
-                {
-                    result.TimestampGranularities = timestampGranularities is AudioTimestampGranularities granularities ? granularities : default;
-                }
-
-                if (additionalProperties.TryGetValue(nameof(result.ResponseFormat), out AudioTranscriptionFormat? responseFormat))
-                {
-                    result.ResponseFormat = responseFormat;
-                }
-
-                if (additionalProperties.TryGetValue(nameof(result.Prompt), out string? prompt))
-                {
-                    result.Prompt = prompt;
-                }
-            }
+            result = new AudioTranscriptionOptions();
         }
 
+        result.Language ??= options?.SpeechLanguage;
         return result;
     }
 
@@ -247,32 +221,6 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
     }
 
     /// <summary>Converts an extensions options instance to an OpenAI options instance.</summary>
-    private static AudioTranslationOptions ToOpenAITranslationOptions(SpeechToTextOptions? options)
-    {
-        AudioTranslationOptions result = new();
-
-        if (options is not null)
-        {
-            if (options.AdditionalProperties is { Count: > 0 } additionalProperties)
-            {
-                if (additionalProperties.TryGetValue(nameof(result.Temperature), out float? temperature))
-                {
-                    result.Temperature = temperature;
-                }
-
-                if (additionalProperties.TryGetValue(nameof(result.ResponseFormat), out AudioTranslationFormat? responseFormat))
-                {
-                    result.ResponseFormat = responseFormat;
-                }
-
-                if (additionalProperties.TryGetValue(nameof(result.Prompt), out string? prompt))
-                {
-                    result.Prompt = prompt;
-                }
-            }
-        }
-
-        return result;
-    }
+    private AudioTranslationOptions ToOpenAITranslationOptions(SpeechToTextOptions? options)
+        => options?.RawRepresentationFactory?.Invoke(this) as AudioTranslationOptions ?? new AudioTranslationOptions();
 }
-

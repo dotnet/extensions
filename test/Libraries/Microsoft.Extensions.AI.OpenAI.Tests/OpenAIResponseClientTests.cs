@@ -5,8 +5,10 @@ using System;
 using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.Caching.Distributed;
@@ -279,6 +281,135 @@ public class OpenAIResponseClientTests
         Assert.Equal(26, usage.Details.InputTokenCount);
         Assert.Equal(10, usage.Details.OutputTokenCount);
         Assert.Equal(36, usage.Details.TotalTokenCount);
+    }
+
+    [Fact]
+    public async Task ChatOptions_DoNotOverwrite_NotNullPropertiesInRawRepresentation_NonStreaming()
+    {
+        const string Input = """
+            {
+              "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"hello"}]}],
+              "model":"gpt-4o-mini",
+              "max_output_tokens":10,
+              "previous_response_id":"resp_42",
+              "top_p":0.5,
+              "temperature":0.5,
+              "parallel_tool_calls":true,
+              "text": {"format": {"type": "text"}
+            },
+              "tool_choice":"auto",
+              "tools":[
+                {"description":"Gets the age of the specified person.","name":"GetPersonAge","parameters":{"additionalProperties":false,"properties":{"personName":{"description":"The person whose age is being requested","type":"string"}},"required":["personName"],"type":"object"},"strict":false,"type":"function"},
+                {"description":"Gets the age of the specified person.","name":"GetPersonAge","parameters":{"additionalProperties":false,"properties":{"personName":{"description":"The person whose age is being requested","type":"string"}},"required":["personName"],"type":"object"},"strict":false,"type":"function"}
+              ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "resp_67d327649b288191aeb46a824e49dc40058a5e08c46a181d",
+              "object": "response",
+              "created_at": 1741891428,
+              "status": "completed",
+              "error": null,
+              "incomplete_details": null,
+              "instructions": null,
+              "max_output_tokens": 20,
+              "model": "gpt-4o-mini-2024-07-18",
+              "output": [
+                {
+                  "type": "message",
+                  "id": "msg_67d32764fcdc8191bcf2e444d4088804058a5e08c46a181d",
+                  "status": "completed",
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "type": "output_text",
+                      "text": "Hello! How can I assist you today?",
+                      "annotations": []
+                    }
+                  ]
+                }
+              ],
+              "parallel_tool_calls": true,
+              "previous_response_id": null,
+              "reasoning": {
+                "effort": null,
+                "generate_summary": null
+              },
+              "store": true,
+              "temperature": 0.5,
+              "text": {
+                "format": {
+                  "type": "text"
+                }
+              },
+              "tool_choice": "auto",
+              "tools": [],
+              "top_p": 1.0,
+              "usage": {
+                "input_tokens": 26,
+                "input_tokens_details": {
+                  "cached_tokens": 0
+                },
+                "output_tokens": 10,
+                "output_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "total_tokens": 36
+              },
+              "user": null,
+              "metadata": {}
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, modelId: "gpt-4o-mini");
+        AIFunction tool = AIFunctionFactory.Create(([Description("The person whose age is being requested")] string personName) => 42, "GetPersonAge", "Gets the age of the specified person.");
+
+        ChatOptions chatOptions = new()
+        {
+            RawRepresentationFactory = (c) =>
+            {
+                ResponseCreationOptions openAIOptions = new()
+                {
+                    MaxOutputTokenCount = 10,
+                    PreviousResponseId = "resp_42",
+                    TopP = 0.5f,
+                    Temperature = 0.5f,
+                    ParallelToolCallsEnabled = true,
+                    ToolChoice = ResponseToolChoice.CreateAutoChoice(),
+                    TextOptions = new ResponseTextOptions
+                    {
+                        TextFormat = ResponseTextFormat.CreateTextFormat()
+                    },
+                };
+                openAIOptions.Tools.Add(ToOpenAIResponseChatTool(tool));
+                return openAIOptions;
+            },
+            ModelId = null,
+            MaxOutputTokens = 1,
+            ConversationId = "foo",
+            TopP = 0.125f,
+            Temperature = 0.125f,
+            AllowMultipleToolCalls = false,
+            Tools = [tool],
+            ToolMode = ChatToolMode.None,
+            ResponseFormat = ChatResponseFormat.Json
+        };
+
+        var response = await client.GetResponseAsync("hello", chatOptions);
+        Assert.NotNull(response);
+        Assert.Equal("Hello! How can I assist you today?", response.Text);
+    }
+
+    /// <summary>Converts an Extensions function to an OpenAI response chat tool.</summary>
+    private static ResponseTool ToOpenAIResponseChatTool(AIFunction aiFunction)
+    {
+        var tool = JsonSerializer.Deserialize<OpenAIChatClientTests.ChatToolJson>(aiFunction.JsonSchema)!;
+        var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool));
+        return ResponseTool.CreateFunctionTool(aiFunction.Name, aiFunction.Description, functionParameters);
     }
 
     private static IChatClient CreateResponseClient(HttpClient httpClient, string modelId) =>
