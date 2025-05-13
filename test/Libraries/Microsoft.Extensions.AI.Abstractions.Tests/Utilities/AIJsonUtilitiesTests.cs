@@ -15,8 +15,6 @@ using System.Threading;
 using Microsoft.Extensions.AI.JsonSchemaExporter;
 using Xunit;
 
-#pragma warning disable 0618 // Suppress obsolete warnings
-
 namespace Microsoft.Extensions.AI;
 
 public static partial class AIJsonUtilitiesTests
@@ -73,10 +71,7 @@ public static partial class AIJsonUtilitiesTests
     public static void AIJsonSchemaCreateOptions_DefaultInstance_ReturnsExpectedValues(bool useSingleton)
     {
         AIJsonSchemaCreateOptions options = useSingleton ? AIJsonSchemaCreateOptions.Default : new AIJsonSchemaCreateOptions();
-        Assert.True(options.IncludeTypeInEnumSchemas);
-        Assert.False(options.DisallowAdditionalProperties);
         Assert.False(options.IncludeSchemaKeyword);
-        Assert.False(options.RequireAllProperties);
         Assert.Null(options.TransformSchemaNode);
         Assert.Null(options.TransformOptions);
     }
