@@ -124,7 +124,7 @@ public class ChatOptions
     /// implementation-specific options type may be returned by this callback, for the <see cref="IChatClient" />
     /// implementation to use instead of creating a new instance. Such implementations may mutate the supplied options
     /// instance further based on other settings supplied on this <see cref="ChatOptions" /> instance or from other inputs,
-    /// like the enumerable of <see cref="ChatMessage"/>s, therefore, its **strongly recommended** to not return shared instances
+    /// like the enumerable of <see cref="ChatMessage"/>s, therefore, its <b>strongly recommended</b> to not return shared instances
     /// and instead make the callback return a new instance per each call.
     /// This is typically used to set an implementation-specific setting that isn't otherwise exposed from the strongly-typed
     /// properties on <see cref="ChatOptions" />.

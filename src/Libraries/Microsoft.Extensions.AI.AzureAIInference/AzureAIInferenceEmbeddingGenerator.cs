@@ -91,7 +91,7 @@ internal sealed class AzureAIInferenceEmbeddingGenerator :
     {
         _ = Throw.IfNull(values);
 
-        var azureAIOptions = ToAzureAIOptions(values, options, EmbeddingEncodingFormat.Base64);
+        var azureAIOptions = ToAzureAIOptions(values, options);
 
         var embeddings = (await _embeddingsClient.EmbedAsync(azureAIOptions, cancellationToken).ConfigureAwait(false)).Value;
 
@@ -164,16 +164,35 @@ internal sealed class AzureAIInferenceEmbeddingGenerator :
     }
 
     /// <summary>Converts an extensions options instance to an Azure.AI.Inference options instance.</summary>
-    private EmbeddingsOptions ToAzureAIOptions(IEnumerable<string> inputs, EmbeddingGenerationOptions? options, EmbeddingEncodingFormat format)
+    private EmbeddingsOptions ToAzureAIOptions(IEnumerable<string> inputs, EmbeddingGenerationOptions? options)
     {
-        EmbeddingsOptions result = new(inputs)
+        if (options is null)
         {
-            Dimensions = options?.Dimensions ?? _dimensions,
-            Model = options?.ModelId ?? _metadata.DefaultModelId,
-            EncodingFormat = format,
-        };
+            return new EmbeddingsOptions(inputs)
+            {
+                Dimensions = _dimensions,
+                Model = _metadata.DefaultModelId,
+                EncodingFormat = EmbeddingEncodingFormat.Base64,
+            };
+        }
 
-        if (options?.AdditionalProperties is { } props)
+        if (options.RawRepresentationFactory?.Invoke(this) is EmbeddingsOptions result)
+        {
+            // Input doesn't have a setter, so use reflection to set it.
+            typeof(EmbeddingsOptions)
+                .GetField("<Input>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance)!
+                .SetValue(result, inputs.ToList());
+        }
+        else
+        {
+            result = new EmbeddingsOptions(inputs);
+        }
+
+        result.Dimensions ??= options.Dimensions ?? _dimensions;
+        result.Model ??= options.ModelId ?? _metadata.DefaultModelId;
+        result.EncodingFormat ??= EmbeddingEncodingFormat.Base64;
+
+        if (options.AdditionalProperties is { } props)
         {
             foreach (var prop in props)
             {

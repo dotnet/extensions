@@ -615,7 +615,7 @@ public class OpenAIChatClientTests
     }
 
     /// <summary>Used to create the JSON payload for an OpenAI chat tool description.</summary>
-    private sealed class ChatToolJson
+    internal sealed class ChatToolJson
     {
         [JsonPropertyName("type")]
         public string Type { get; set; } = "object";

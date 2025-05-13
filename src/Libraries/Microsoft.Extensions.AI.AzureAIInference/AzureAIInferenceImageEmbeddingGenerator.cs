@@ -87,7 +87,7 @@ internal sealed class AzureAIInferenceImageEmbeddingGenerator :
     {
         _ = Throw.IfNull(values);
 
-        var azureAIOptions = ToAzureAIOptions(values, options, EmbeddingEncodingFormat.Base64);
+        var azureAIOptions = ToAzureAIOptions(values, options);
 
         var embeddings = (await _imageEmbeddingsClient.EmbedAsync(azureAIOptions, cancellationToken).ConfigureAwait(false)).Value;
 
@@ -117,16 +117,37 @@ internal sealed class AzureAIInferenceImageEmbeddingGenerator :
     }
 
     /// <summary>Converts an extensions options instance to an Azure.AI.Inference options instance.</summary>
-    private ImageEmbeddingsOptions ToAzureAIOptions(IEnumerable<DataContent> inputs, EmbeddingGenerationOptions? options, EmbeddingEncodingFormat format)
+    private ImageEmbeddingsOptions ToAzureAIOptions(IEnumerable<DataContent> inputs, EmbeddingGenerationOptions? options)
     {
-        ImageEmbeddingsOptions result = new(inputs.Select(dc => new ImageEmbeddingInput(dc.Uri)))
-        {
-            Dimensions = options?.Dimensions ?? _dimensions,
-            Model = options?.ModelId ?? _metadata.DefaultModelId,
-            EncodingFormat = format,
-        };
+        var imageEmbeddingInputs = inputs.Select(dc => new ImageEmbeddingInput(dc.Uri));
 
-        if (options?.AdditionalProperties is { } props)
+        if (options is null)
+        {
+            return new ImageEmbeddingsOptions(imageEmbeddingInputs)
+            {
+                Dimensions = _dimensions,
+                Model = _metadata.DefaultModelId,
+                EncodingFormat = EmbeddingEncodingFormat.Base64,
+            };
+        }
+
+        if (options.RawRepresentationFactory?.Invoke(this) is ImageEmbeddingsOptions result)
+        {
+            // Input doesn't have a setter, so use reflection to set it.
+            typeof(ImageEmbeddingsOptions)
+                .GetField("<Input>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance)!
+                .SetValue(result, imageEmbeddingInputs.ToList());
+        }
+        else
+        {
+            result = new ImageEmbeddingsOptions(imageEmbeddingInputs);
+        }
+
+        result.Dimensions ??= options.Dimensions ?? _dimensions;
+        result.Model ??= options.ModelId ?? _metadata.DefaultModelId;
+        result.EncodingFormat ??= EmbeddingEncodingFormat.Base64;
+
+        if (options.AdditionalProperties is { } props)
         {
             foreach (var prop in props)
             {
