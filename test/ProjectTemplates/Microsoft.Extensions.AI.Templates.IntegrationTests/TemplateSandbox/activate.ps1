@@ -86,6 +86,7 @@ $env:PATH = "${env:DOTNET_ROOT};${env:PATH}"
 # Set NUGET_PACKAGES and LOCAL_SHIPPING_PATH
 $env:NUGET_PACKAGES = "$PSScriptRoot\output\packages"
 $env:LOCAL_SHIPPING_PATH = "$repoRoot\artifacts\packages\$configuration\Shipping\"
+$env:ADDITIONAL_PACKAGES_PATH = "$repoRoot\src\ProjectTemplates\AdditionalPackages\"
 
 # Set the shell prompt
 $function:_old_prompt = $function:prompt
@@ -107,3 +108,4 @@ else {
 }
 Write-Host "NUGET_PACKAGES = ${env:NUGET_PACKAGES}"
 Write-Host "LOCAL_SHIPPING_PATH = ${env:LOCAL_SHIPPING_PATH}"
+Write-Host "ADDITIONAL_PACKAGES_PATH = ${env:ADDITIONAL_PACKAGES_PATH}"
