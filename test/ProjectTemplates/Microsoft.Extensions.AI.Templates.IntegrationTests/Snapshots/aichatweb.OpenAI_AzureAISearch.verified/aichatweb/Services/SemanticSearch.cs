@@ -7,22 +7,16 @@ public class SemanticSearch(
     IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
     IVectorStore vectorStore)
 {
-    public async Task<IReadOnlyList<SemanticSearchRecord>> SearchAsync(string text, string? filenameFilter, int maxResults)
+    public async Task<IReadOnlyList<IngestedChunk>> SearchAsync(string text, string? documentIdFilter, int maxResults)
     {
         var queryEmbedding = await embeddingGenerator.GenerateVectorAsync(text);
-        var vectorCollection = vectorStore.GetCollection<string, SemanticSearchRecord>("data-aichatweb-ingested");
+        var vectorCollection = vectorStore.GetCollection<string, IngestedChunk>("data-aichatweb-chunks");
 
-        var nearest = await vectorCollection.VectorizedSearchAsync(queryEmbedding, new VectorSearchOptions<SemanticSearchRecord>
+        var nearest = vectorCollection.SearchEmbeddingAsync(queryEmbedding, maxResults, new VectorSearchOptions<IngestedChunk>
         {
-            Top = maxResults,
-            Filter = filenameFilter is { Length: > 0 } ? record => record.FileName == filenameFilter : null,
+            Filter = documentIdFilter is { Length: > 0 } ? record => record.DocumentId == documentIdFilter : null,
         });
-        var results = new List<SemanticSearchRecord>();
-        await foreach (var item in nearest.Results)
-        {
-            results.Add(item.Record);
-        }
 
-        return results;
+        return await nearest.Select(result => result.Record).ToListAsync();
     }
 }

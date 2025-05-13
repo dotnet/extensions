@@ -13,25 +13,29 @@ namespace Microsoft.Extensions.AI.Evaluation.Safety;
 internal sealed partial class ContentSafetyService
 {
     private sealed class UrlCacheKey(ContentSafetyServiceConfiguration configuration, string annotationTask)
+        : IEquatable<UrlCacheKey>
     {
         internal ContentSafetyServiceConfiguration Configuration { get; } = configuration;
         internal string AnnotationTask { get; } = annotationTask;
 
-        public override bool Equals(object? other)
+        public bool Equals(UrlCacheKey? other)
         {
-            if (other is not UrlCacheKey otherKey)
+            if (other is null)
             {
                 return false;
             }
             else
             {
                 return
-                    otherKey.Configuration.SubscriptionId == Configuration.SubscriptionId &&
-                    otherKey.Configuration.ResourceGroupName == Configuration.ResourceGroupName &&
-                    otherKey.Configuration.ProjectName == Configuration.ProjectName &&
-                    otherKey.AnnotationTask == AnnotationTask;
+                    other.Configuration.SubscriptionId == Configuration.SubscriptionId &&
+                    other.Configuration.ResourceGroupName == Configuration.ResourceGroupName &&
+                    other.Configuration.ProjectName == Configuration.ProjectName &&
+                    other.AnnotationTask == AnnotationTask;
             }
         }
+
+        public override bool Equals(object? other)
+            => other is UrlCacheKey otherKey && Equals(otherKey);
 
         public override int GetHashCode() =>
             HashCode.Combine(

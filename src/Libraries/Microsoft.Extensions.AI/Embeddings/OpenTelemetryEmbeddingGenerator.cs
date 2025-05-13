@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a delegating embedding generator that implements the OpenTelemetry Semantic Conventions for Generative AI systems.</summary>
 /// <remarks>
-/// This class provides an implementation of the Semantic Conventions for Generative AI systems v1.32, defined at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
+/// This class provides an implementation of the Semantic Conventions for Generative AI systems v1.33, defined at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
 /// The specification is still experimental and subject to change; as such, the telemetry output by this client is also subject to change.
 /// </remarks>
 /// <typeparam name="TInput">The type of input used to produce embeddings.</typeparam>
@@ -85,6 +85,20 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
 #endif
             );
     }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether potentially sensitive information should be included in telemetry.
+    /// </summary>
+    /// <value>
+    /// <see langword="true"/> if potentially sensitive information should be included in telemetry;
+    /// <see langword="false"/> if telemetry shouldn't include raw inputs and outputs.
+    /// The default value is <see langword="false"/>.
+    /// </value>
+    /// <remarks>
+    /// By default, telemetry includes metadata, such as token counts, but not raw inputs
+    /// and outputs or additional options data.
+    /// </remarks>
+    public bool EnableSensitiveData { get; set; }
 
     /// <inheritdoc/>
     public override object? GetService(Type serviceType, object? serviceKey = null) =>
@@ -163,20 +177,19 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
                     _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.EmbeddingDimensions, dimensionsValue);
                 }
 
-                if (options is not null &&
-                    _system is not null)
+                // Log all additional request options as per-provider tags. This is non-normative, but it covers cases where
+                // there's a per-provider specification in a best-effort manner (e.g. gen_ai.openai.request.service_tier),
+                // and more generally cases where there's additional useful information to be logged.
+                // Since AdditionalProperties has undefined meaning, we treat it as potentially sensitive data.
+                if (EnableSensitiveData &&
+                    _system is not null &&
+                    options?.AdditionalProperties is { } props)
                 {
-                    // Log all additional request options as per-provider tags. This is non-normative, but it covers cases where
-                    // there's a per-provider specification in a best-effort manner (e.g. gen_ai.openai.request.service_tier),
-                    // and more generally cases where there's additional useful information to be logged.
-                    if (options.AdditionalProperties is { } props)
+                    foreach (KeyValuePair<string, object?> prop in props)
                     {
-                        foreach (KeyValuePair<string, object?> prop in props)
-                        {
-                            _ = activity.AddTag(
-                                OpenTelemetryConsts.GenAI.Request.PerProvider(_system, JsonNamingPolicy.SnakeCaseLower.ConvertName(prop.Key)),
-                                prop.Value);
-                        }
+                        _ = activity.AddTag(
+                            OpenTelemetryConsts.GenAI.Request.PerProvider(_system, JsonNamingPolicy.SnakeCaseLower.ConvertName(prop.Key)),
+                            prop.Value);
                     }
                 }
             }
@@ -247,7 +260,8 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
             // Log all additional response properties as per-provider tags. This is non-normative, but it covers cases where
             // there's a per-provider specification in a best-effort manner (e.g. gen_ai.openai.response.system_fingerprint),
             // and more generally cases where there's additional useful information to be logged.
-            if (_system is not null &&
+            if (EnableSensitiveData &&
+                _system is not null &&
                 embeddings?.AdditionalProperties is { } props)
             {
                 foreach (KeyValuePair<string, object?> prop in props)

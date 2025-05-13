@@ -168,4 +168,142 @@ public class AIFunctionArgumentsTests
         Assert.Equal(["key1", "key2"], args.Keys);
         Assert.Equal(["value1", "value2"], args.Values);
     }
+
+    [Fact]
+    public void Constructor_WithComparer_CreatesEmptyDictionary()
+    {
+        var comparer = StringComparer.OrdinalIgnoreCase;
+        var args = new AIFunctionArguments(comparer);
+
+        Assert.Null(args.Services);
+        Assert.Empty(args);
+
+        // Verify case insensitivity
+        args.Add("key", "value");
+        Assert.Single(args);
+        Assert.True(args.ContainsKey("KEY"));
+        Assert.Equal("value", args["KEY"]);
+    }
+
+    [Fact]
+    public void Constructor_WithComparerAndNullArguments_CreatesEmptyDictionary()
+    {
+        var comparer = StringComparer.OrdinalIgnoreCase;
+        var args = new AIFunctionArguments(null, comparer);
+
+        Assert.Null(args.Services);
+        Assert.Empty(args);
+
+        // Verify case insensitivity
+        args.Add("key", "value");
+        Assert.Single(args);
+        Assert.True(args.ContainsKey("KEY"));
+        Assert.Equal("value", args["KEY"]);
+    }
+
+    [Fact]
+    public void Constructor_WithComparerAndArguments_CopiesArguments()
+    {
+        var comparer = StringComparer.OrdinalIgnoreCase;
+        var originalArgs = new Dictionary<string, object?>
+        {
+            ["key1"] = "value1",
+            ["key2"] = "value2"
+        };
+
+        var args = new AIFunctionArguments(originalArgs, comparer);
+
+        Assert.Null(args.Services);
+        Assert.Equal(2, args.Count);
+        Assert.True(args.ContainsKey("KEY1"));
+        Assert.True(args.ContainsKey("KEY2"));
+        Assert.Equal("value1", args["KEY1"]);
+        Assert.Equal("value2", args["KEY2"]);
+
+        // Verify that adding to original doesn't affect our copy
+        originalArgs["key3"] = "value3";
+        Assert.Equal(2, args.Count);
+        Assert.False(args.ContainsKey("key3"));
+
+        // Verify case insensitivity for new additions
+        args.Add("key4", "value4");
+        Assert.Equal(3, args.Count);
+        Assert.True(args.ContainsKey("KEY4"));
+        Assert.Equal("value4", args["KEY4"]);
+    }
+
+    [Fact]
+    public void Constructor_ReusesDictionaryInstance_WhenSameComparer()
+    {
+        // Arrange
+        var comparer = StringComparer.OrdinalIgnoreCase;
+        var originalDict = new Dictionary<string, object?>(comparer)
+        {
+            ["key1"] = "value1",
+            ["key2"] = "value2"
+        };
+
+        // Act
+        var args = new AIFunctionArguments(originalDict, comparer);
+
+        // Assert
+
+        // Verify modifications affect both instances
+        originalDict["key3"] = "value3";
+        Assert.Equal("value3", args["key3"]);
+
+        args["key4"] = "value4";
+        Assert.Equal("value4", originalDict["key4"]);
+    }
+
+    [Fact]
+    public void Constructor_ReusesDictionaryInstance_WhenIsDictionaryWithoutComparerProvided()
+    {
+        // Arrange
+        var comparer = StringComparer.OrdinalIgnoreCase;
+        var originalDict = new Dictionary<string, object?>(comparer)
+        {
+            ["key1"] = "value1",
+            ["key2"] = "value2"
+        };
+
+        // Act
+        var args = new AIFunctionArguments(originalDict);
+        var args2 = new AIFunctionArguments(originalDict, null);
+
+        // Assert
+
+        // Verify modifications affect both instances
+        originalDict["key3"] = "value3";
+        Assert.Equal("value3", args["key3"]);
+        Assert.Equal("value3", args2["key3"]);
+
+        args["key4"] = "value4";
+        args2["newKey"] = "new value";
+        Assert.Equal("value4", originalDict["key4"]);
+        Assert.Equal("new value", originalDict["newKey"]);
+    }
+
+    [Fact]
+    public void Constructor_CreateNewDictionary_WhenDifferentComparer()
+    {
+        // Arrange
+        var originalDict = new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["key1"] = "value1",
+            ["key2"] = "value2"
+        };
+
+        // Act
+        var args = new AIFunctionArguments(originalDict, StringComparer.OrdinalIgnoreCase);
+
+        // Assert
+
+        // Verify modifications don't affect each other
+        originalDict["key3"] = "value3";
+        Assert.False(args.ContainsKey("key3"));
+
+        args["key4"] = "value4";
+        Assert.False(originalDict.ContainsKey("key4"));
+    }
 }

@@ -9,4 +9,5 @@ internal static class WindowsDiskPerfCounterNames
     internal const string DiskReadBytesCounter = "Disk Read Bytes/sec";
     internal const string DiskWritesCounter = "Disk Writes/sec";
     internal const string DiskReadsCounter = "Disk Reads/sec";
+    internal const string DiskIdleTimeCounter = "% Idle Time";
 }

@@ -28,7 +28,7 @@ internal interface ILinuxUtilizationParser
     /// It provides statistics about the CPU usage of a cgroup from its actual slice.
     /// </summary>
     /// <returns>nanoseconds.</returns>
-    long GetCgroupCpuUsageInNanosecondsV2();
+    (long cpuUsageNanoseconds, long elapsedPeriods) GetCgroupCpuUsageInNanosecondsAndCpuPeriodsV2();
 
     /// <summary>
     /// Reads the file /sys/fs/cgroup/cpu.max, which is part of the cgroup v2 CPU controller.
@@ -89,4 +89,10 @@ internal interface ILinuxUtilizationParser
     /// </summary>
     /// <returns>cpuPodRequest.</returns>
     float GetCgroupRequestCpuV2();
+
+    /// <summary>
+    /// For CgroupV2 only and experimental. Reads the CPU period interval in microseconds from cpu.max based on /proc/self/cgroup.
+    /// </summary>
+    /// <returns>The number of CPU periods.</returns>
+    long GetCgroupPeriodsIntervalInMicroSecondsV2();
 }

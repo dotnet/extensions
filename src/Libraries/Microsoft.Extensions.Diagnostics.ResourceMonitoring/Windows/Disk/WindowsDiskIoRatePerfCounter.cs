@@ -17,7 +17,7 @@ internal sealed class WindowsDiskIoRatePerfCounter
     private readonly string _categoryName;
     private readonly string _counterName;
     private readonly string[] _instanceNames;
-    private long _lastTimestamp;
+    private long _lastTimeTicks;
 
     internal WindowsDiskIoRatePerfCounter(
         IPerformanceCounterFactory performanceCounterFactory,
@@ -43,15 +43,9 @@ internal sealed class WindowsDiskIoRatePerfCounter
     {
         foreach (string instanceName in _instanceNames)
         {
-            // Skip the total instance
-            if (instanceName.Equals("_Total", StringComparison.OrdinalIgnoreCase))
-            {
-                continue;
-            }
-
             // Create counters for each disk
             _counters.Add(_performanceCounterFactory.Create(_categoryName, _counterName, instanceName));
-            TotalCountDict.Add(instanceName, 0);
+            TotalCountDict[instanceName] = 0L;
         }
 
         // Initialize the counters to get the first value
@@ -60,24 +54,25 @@ internal sealed class WindowsDiskIoRatePerfCounter
             _ = counter.NextValue();
         }
 
-        _lastTimestamp = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
+        _lastTimeTicks = _timeProvider.GetUtcNow().Ticks;
     }
 
     internal void UpdateDiskCounters()
     {
-        long currentTimestamp = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
-        double elapsedSeconds = (currentTimestamp - _lastTimestamp) / 1000.0; // Convert to seconds
+        long currentTimeTicks = _timeProvider.GetUtcNow().Ticks;
+        long elapsedTimeTicks = currentTimeTicks - _lastTimeTicks;
 
         // For the kind of "rate" perf counters, this algorithm calculates the total value over a time interval
         // by multiplying the per-second rate (e.g., Disk Bytes/sec) by the time interval between two samples.
         // This effectively reverses the per-second rate calculation to a total amount (e.g., total bytes transferred) during that period.
+        // See https://learn.microsoft.com/zh-cn/archive/blogs/askcore/windows-performance-monitor-disk-counters-explained#windows-performance-monitor-disk-counters-explained
         foreach (IPerformanceCounter counter in _counters)
         {
             // total value = per-second rate * elapsed seconds
-            double value = counter.NextValue() * elapsedSeconds;
-            TotalCountDict[counter.InstanceName] += (long)value;
+            double value = counter.NextValue() * (double)elapsedTimeTicks;
+            TotalCountDict[counter.InstanceName] += (long)value / TimeSpan.TicksPerSecond;
         }
 
-        _lastTimestamp = currentTimestamp;
+        _lastTimeTicks = currentTimeTicks;
     }
 }

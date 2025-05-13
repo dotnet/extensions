@@ -16,7 +16,7 @@ public static class EvaluationMetricExtensions
 {
     /// <summary>
     /// Adds or updates the supplied <paramref name="context"/> objects in the supplied <paramref name="metric"/>'s
-    /// <see cref="EvaluationMetric.Context"/> collection.
+    /// <see cref="EvaluationMetric.Context"/> dictionary.
     /// </summary>
     /// <param name="metric">The <see cref="EvaluationMetric"/>.</param>
     /// <param name="context">The <see cref="EvaluationContext"/> objects to be added or updated.</param>
@@ -38,7 +38,7 @@ public static class EvaluationMetricExtensions
 
     /// <summary>
     /// Adds or updates the supplied <paramref name="context"/> objects in the supplied <paramref name="metric"/>'s
-    /// <see cref="EvaluationMetric.Context"/> collection.
+    /// <see cref="EvaluationMetric.Context"/> dictionary.
     /// </summary>
     /// <param name="metric">The <see cref="EvaluationMetric"/>.</param>
     /// <param name="context">The <see cref="EvaluationContext"/> objects to be added or updated.</param>
@@ -105,7 +105,7 @@ public static class EvaluationMetricExtensions
 
     /// <summary>
     /// Adds or updates metadata with the specified <paramref name="name"/> and <paramref name="value"/> in the
-    /// supplied <paramref name="metric"/>'s <see cref="EvaluationMetric.Metadata"/> collection.
+    /// supplied <paramref name="metric"/>'s <see cref="EvaluationMetric.Metadata"/> dictionary.
     /// </summary>
     /// <param name="metric">The <see cref="EvaluationMetric"/>.</param>
     /// <param name="name">The name of the metadata.</param>
@@ -120,7 +120,7 @@ public static class EvaluationMetricExtensions
 
     /// <summary>
     /// Adds or updates the supplied <paramref name="metadata"/> in the supplied <paramref name="metric"/>'s
-    /// <see cref="EvaluationMetric.Metadata"/> collection.
+    /// <see cref="EvaluationMetric.Metadata"/> dictionary.
     /// </summary>
     /// <param name="metric">The <see cref="EvaluationMetric"/>.</param>
     /// <param name="metadata">The metadata to be added or updated.</param>
@@ -137,7 +137,7 @@ public static class EvaluationMetricExtensions
 
     /// <summary>
     /// Adds or updates metadata available as part of the evaluation <paramref name="response"/> produced by an AI
-    /// model, in the supplied <paramref name="metric"/>'s <see cref="EvaluationMetric.Metadata"/> collection.
+    /// model, in the supplied <paramref name="metric"/>'s <see cref="EvaluationMetric.Metadata"/> dictionary.
     /// </summary>
     /// <param name="metric">The <see cref="EvaluationMetric"/>.</param>
     /// <param name="response">The <see cref="ChatResponse"/> that contains metadata to be added or updated.</param>

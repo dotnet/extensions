@@ -1,64 +1,58 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.Text;
+using UglyToad.PdfPig;
+using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.PageSegmenter;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.WordExtractor;
-using UglyToad.PdfPig;
-using Microsoft.Extensions.AI;
-using UglyToad.PdfPig.Content;
 
 namespace aichatweb.Web.Services.Ingestion;
 
 public class PDFDirectorySource(string sourceDirectory) : IIngestionSource
 {
     public static string SourceFileId(string path) => Path.GetFileName(path);
+    public static string SourceFileVersion(string path) => File.GetLastWriteTimeUtc(path).ToString("o");
 
     public string SourceId => $"{nameof(PDFDirectorySource)}:{sourceDirectory}";
 
-    public async Task<IEnumerable<IngestedDocument>> GetNewOrModifiedDocumentsAsync(IQueryable<IngestedDocument> existingDocuments)
+    public Task<IEnumerable<IngestedDocument>> GetNewOrModifiedDocumentsAsync(IReadOnlyList<IngestedDocument> existingDocuments)
     {
         var results = new List<IngestedDocument>();
         var sourceFiles = Directory.GetFiles(sourceDirectory, "*.pdf");
+        var existingDocumentsById = existingDocuments.ToDictionary(d => d.DocumentId);
 
         foreach (var sourceFile in sourceFiles)
         {
             var sourceFileId = SourceFileId(sourceFile);
-            var sourceFileVersion = File.GetLastWriteTimeUtc(sourceFile).ToString("o");
-
-            var existingDocument = await existingDocuments.Where(d => d.SourceId == SourceId && d.Id == sourceFileId).FirstOrDefaultAsync();
-            if (existingDocument is null)
+            var sourceFileVersion = SourceFileVersion(sourceFile);
+            var existingDocumentVersion = existingDocumentsById.TryGetValue(sourceFileId, out var existingDocument) ? existingDocument.DocumentVersion : null;
+            if (existingDocumentVersion != sourceFileVersion)
             {
-                results.Add(new() { Id = sourceFileId, Version = sourceFileVersion, SourceId = SourceId });
-            }
-            else if (existingDocument.Version != sourceFileVersion)
-            {
-                existingDocument.Version = sourceFileVersion;
-                results.Add(existingDocument);
+                results.Add(new() { Key = Guid.CreateVersion7().ToString(), SourceId = SourceId, DocumentId = sourceFileId, DocumentVersion = sourceFileVersion });
             }
         }
 
-        return results;
+        return Task.FromResult((IEnumerable<IngestedDocument>)results);
     }
 
-    public async Task<IEnumerable<IngestedDocument>> GetDeletedDocumentsAsync(IQueryable<IngestedDocument> existingDocuments)
+    public Task<IEnumerable<IngestedDocument>> GetDeletedDocumentsAsync(IReadOnlyList<IngestedDocument> existingDocuments)
     {
-        var sourceFiles = Directory.GetFiles(sourceDirectory, "*.pdf");
-        var sourceFileIds = sourceFiles.Select(SourceFileId).ToList();
-        return await existingDocuments
-            .Where(d => !sourceFileIds.Contains(d.Id))
-            .ToListAsync();
+        var currentFiles = Directory.GetFiles(sourceDirectory, "*.pdf");
+        var currentFileIds = currentFiles.ToLookup(SourceFileId);
+        var deletedDocuments = existingDocuments.Where(d => !currentFileIds.Contains(d.DocumentId));
+        return Task.FromResult(deletedDocuments);
     }
 
-    public async Task<IEnumerable<SemanticSearchRecord>> CreateRecordsForDocumentAsync(IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator, string documentId)
+    public async Task<IEnumerable<IngestedChunk>> CreateChunksForDocumentAsync(IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator, IngestedDocument document)
     {
-        using var pdf = PdfDocument.Open(Path.Combine(sourceDirectory, documentId));
+        using var pdf = PdfDocument.Open(Path.Combine(sourceDirectory, document.DocumentId));
         var paragraphs = pdf.GetPages().SelectMany(GetPageParagraphs).ToList();
 
         var embeddings = await embeddingGenerator.GenerateAsync(paragraphs.Select(c => c.Text));
 
-        return paragraphs.Zip(embeddings).Select((pair, index) => new SemanticSearchRecord
+        return paragraphs.Zip(embeddings).Select(pair => new IngestedChunk
         {
-            Key = $"{Path.GetFileNameWithoutExtension(documentId)}_{pair.First.PageNumber}_{pair.First.IndexOnPage}",
-            FileName = documentId,
+            Key = Guid.CreateVersion7().ToString(),
+            DocumentId = document.DocumentId,
             PageNumber = pair.First.PageNumber,
             Text = pair.First.Text,
             Vector = pair.Second.Vector,

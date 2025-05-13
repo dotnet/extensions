@@ -38,8 +38,6 @@ var vectorDB = builder.AddQdrant("vectordb")
 #else // UseLocalVectorStore
 #endif
 
-var ingestionCache = builder.AddSqlite("ingestionCache");
-
 var webApp = builder.AddProject<Projects.ChatWithCustomData_CSharp_Web>("aichatweb-app");
 #if (IsOllama) // AI SERVICE PROVIDER REFERENCES
 webApp
@@ -58,8 +56,5 @@ webApp
     .WaitFor(vectorDB);
 #else // UseLocalVectorStore
 #endif
-webApp
-    .WithReference(ingestionCache)
-    .WaitFor(ingestionCache);
 
 builder.Build().Run();

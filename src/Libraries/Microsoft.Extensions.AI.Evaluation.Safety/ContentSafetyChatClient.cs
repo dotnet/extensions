@@ -13,12 +13,13 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
 internal sealed class ContentSafetyChatClient : IChatClient
 {
-    private const string Moniker = "Azure AI Content Safety";
+    private const string Moniker = "Azure AI Foundry Evaluation";
 
     private readonly ContentSafetyService _service;
     private readonly IChatClient? _originalChatClient;
@@ -63,7 +64,7 @@ internal sealed class ContentSafetyChatClient : IChatClient
     {
         if (options is ContentSafetyChatOptions contentSafetyChatOptions)
         {
-            Debug.Assert(messages.Any() && !messages.Skip(1).Any(), $"Expected exactly one message.");
+            ValidateSingleMessage(messages);
             string payload = messages.Single().Text;
 
             string annotationResult =
@@ -98,7 +99,7 @@ internal sealed class ContentSafetyChatClient : IChatClient
     {
         if (options is ContentSafetyChatOptions contentSafetyChatOptions)
         {
-            Debug.Assert(messages.Any() && !messages.Skip(1).Any(), $"Expected exactly one message.");
+            ValidateSingleMessage(messages);
             string payload = messages.Single().Text;
 
             string annotationResult =
@@ -149,4 +150,25 @@ internal sealed class ContentSafetyChatClient : IChatClient
 
     public void Dispose()
         => _originalChatClient?.Dispose();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] // Inline if possible.
+    private static void ValidateSingleMessage(IEnumerable<ChatMessage> messages)
+    {
+        if (!messages.Any())
+        {
+            const string ErrorMessage =
+                $"Expected '{nameof(messages)}' to contain exactly one message, but found none.";
+
+            Debug.Fail(ErrorMessage);
+            Throw.ArgumentException(nameof(messages), ErrorMessage);
+        }
+        else if (messages.Skip(1).Any())
+        {
+            const string ErrorMessage =
+                $"Expected '{nameof(messages)}' to contain exactly one message, but found more than one.";
+
+            Debug.Fail(ErrorMessage);
+            Throw.ArgumentException(nameof(messages), ErrorMessage);
+        }
+    }
 }

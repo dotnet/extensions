@@ -15,6 +15,8 @@ using System.Threading;
 using Microsoft.Extensions.AI.JsonSchemaExporter;
 using Xunit;
 
+#pragma warning disable 0618 // Suppress obsolete warnings
+
 namespace Microsoft.Extensions.AI;
 
 public static partial class AIJsonUtilitiesTests
@@ -72,10 +74,11 @@ public static partial class AIJsonUtilitiesTests
     {
         AIJsonSchemaCreateOptions options = useSingleton ? AIJsonSchemaCreateOptions.Default : new AIJsonSchemaCreateOptions();
         Assert.True(options.IncludeTypeInEnumSchemas);
-        Assert.True(options.DisallowAdditionalProperties);
+        Assert.False(options.DisallowAdditionalProperties);
         Assert.False(options.IncludeSchemaKeyword);
         Assert.False(options.RequireAllProperties);
         Assert.Null(options.TransformSchemaNode);
+        Assert.Null(options.TransformOptions);
     }
 
     [Fact]
@@ -104,6 +107,12 @@ public static partial class AIJsonUtilitiesTests
                     Func<ParameterInfo, bool> includeParameter = static (parameter) => true;
                     property.SetValue(options1, includeParameter);
                     property.SetValue(options2, includeParameter);
+                    break;
+
+                case null when property.PropertyType == typeof(AIJsonSchemaTransformOptions):
+                    AIJsonSchemaTransformOptions transformOptions = new AIJsonSchemaTransformOptions { RequireAllProperties = true };
+                    property.SetValue(options1, transformOptions);
+                    property.SetValue(options2, transformOptions);
                     break;
 
                 default:
@@ -152,8 +161,7 @@ public static partial class AIJsonUtilitiesTests
                         "default": "defaultValue"
                     }
                 },
-                "required": ["Key", "EnumValue"],
-                "additionalProperties": false
+                "required": ["Key", "EnumValue"]
             }
             """).RootElement;
 
@@ -176,6 +184,7 @@ public static partial class AIJsonUtilitiesTests
                         "type": "integer"
                     },
                     "EnumValue": {
+                        "type": "string",
                         "enum": ["A", "B"]
                     },
                     "Value": {
@@ -183,16 +192,20 @@ public static partial class AIJsonUtilitiesTests
                         "type": ["string", "null"]
                     }
                 },
-                "required": ["Key", "EnumValue", "Value"]
+                "required": ["Key", "EnumValue", "Value"],
+                "additionalProperties": false
             }
             """).RootElement;
 
         AIJsonSchemaCreateOptions inferenceOptions = new AIJsonSchemaCreateOptions
         {
-            IncludeTypeInEnumSchemas = false,
-            DisallowAdditionalProperties = false,
             IncludeSchemaKeyword = true,
-            RequireAllProperties = true,
+            TransformOptions = new()
+            {
+                DisallowAdditionalProperties = true,
+                RequireAllProperties = true,
+                MoveDefaultKeywordToDescription = true,
+            }
         };
 
         JsonElement actual = AIJsonUtilities.CreateJsonSchema(
@@ -227,8 +240,7 @@ public static partial class AIJsonUtilitiesTests
                         "default": "defaultValue"
                     }
                 },
-                "required": ["Key", "EnumValue"],
-                "additionalProperties": false
+                "required": ["Key", "EnumValue"]
             }
             """).RootElement;
 
@@ -268,8 +280,7 @@ public static partial class AIJsonUtilitiesTests
                     "Char" : {
                         "type": "string"
                     }
-                },
-                "additionalProperties": false
+                }
             }
             """).RootElement;
 
@@ -341,6 +352,15 @@ public static partial class AIJsonUtilitiesTests
             }
             """).RootElement;
 
+        AIJsonSchemaCreateOptions inferenceOptions = new()
+        {
+            TransformOptions = new()
+            {
+                RequireAllProperties = requireAllProperties,
+                MoveDefaultKeywordToDescription = requireAllProperties,
+            }
+        };
+
         AIFunction func = AIFunctionFactory.Create((
             [Description("The city to get the weather for")] string city,
             [Description("The unit to calculate the current temperature to")] string unit = "celsius") => "sunny",
@@ -348,7 +368,7 @@ public static partial class AIJsonUtilitiesTests
             {
                 Name = "get_weather",
                 Description = "Gets the current weather for a current location",
-                JsonSchemaCreateOptions = new AIJsonSchemaCreateOptions { RequireAllProperties = requireAllProperties }
+                JsonSchemaCreateOptions = inferenceOptions
             });
 
         Assert.NotNull(func.UnderlyingMethod);
@@ -358,7 +378,7 @@ public static partial class AIJsonUtilitiesTests
             func.UnderlyingMethod,
             title: func.Name,
             description: func.Description,
-            inferenceOptions: new AIJsonSchemaCreateOptions { RequireAllProperties = requireAllProperties });
+            inferenceOptions: inferenceOptions);
         AssertDeepEquals(expected, resolvedSchema);
     }
 
@@ -423,7 +443,7 @@ public static partial class AIJsonUtilitiesTests
 
         JsonTypeInfo typeInfo = options.GetTypeInfo(testData.Type);
         AIJsonSchemaCreateOptions? createOptions = typeInfo.Properties.Any(prop => prop.IsExtensionData)
-            ? new() { DisallowAdditionalProperties = false } // Do not append additionalProperties: false to the schema if the type has extension data.
+            ? new() { TransformOptions = new() { DisallowAdditionalProperties = false } } // Do not append additionalProperties: false to the schema if the type has extension data.
             : null;
 
         JsonElement schema = AIJsonUtilities.CreateJsonSchema(testData.Type, serializerOptions: options, inferenceOptions: createOptions);
@@ -441,6 +461,20 @@ public static partial class AIJsonUtilitiesTests
 
         JsonNode? serializedValue = JsonSerializer.SerializeToNode(testData.Value, testData.Type, options);
         SchemaTestHelpers.AssertDocumentMatchesSchema(schemaAsNode, serializedValue);
+    }
+
+    [Fact]
+    public static void CreateJsonSchema_AcceptsOptionsWithoutResolver()
+    {
+        JsonSerializerOptions options = new() { WriteIndented = true };
+        Assert.Null(options.TypeInfoResolver);
+        Assert.False(options.IsReadOnly);
+
+        JsonElement schema = AIJsonUtilities.CreateJsonSchema(typeof(AIContent), serializerOptions: options);
+        Assert.Equal(JsonValueKind.Object, schema.ValueKind);
+
+        Assert.True(options.IsReadOnly);
+        Assert.Same(options.TypeInfoResolver, AIJsonUtilities.DefaultOptions.TypeInfoResolver);
     }
 
     [Fact]
@@ -550,6 +584,258 @@ public static partial class AIJsonUtilitiesTests
         Assert.DoesNotContain("third", schemaString);
         Assert.DoesNotContain("fourth", schemaString);
         Assert.Contains("fifth", schemaString);
+    }
+
+    [Fact]
+    public static void TransformJsonSchema_ConvertBooleanSchemas()
+    {
+        JsonElement schema = JsonDocument.Parse("""
+            {
+                "properties" : {
+                    "foo": { "type": "string" },
+                    "bar": { "properties": { "x": false } },
+                    "baz": true
+                },
+                "required": ["foo"]
+            }
+            """).RootElement;
+
+        JsonElement expectedSchema = JsonDocument.Parse("""
+            {
+                "properties" : {
+                    "foo": { "type": "string" },
+                    "bar": { "properties": { "x": { "not": true } } },
+                    "baz": { }
+                },
+                "required": ["foo"]
+            }
+            """).RootElement;
+
+        AIJsonSchemaTransformOptions options = new()
+        {
+            ConvertBooleanSchemas = true,
+        };
+
+        JsonElement transformedSchema = AIJsonUtilities.TransformSchema(schema, options);
+        AssertDeepEquals(expectedSchema, transformedSchema);
+    }
+
+    [Fact]
+    public static void TransformJsonSchema_RequireAllProperties()
+    {
+        JsonElement schema = JsonDocument.Parse("""
+            {
+                "properties" : {
+                    "foo": { "type": "string" },
+                    "bar": { "properties": { "x": false } },
+                    "baz": true
+                },
+                "required": ["foo"]
+            }
+            """).RootElement;
+
+        JsonElement expectedSchema = JsonDocument.Parse("""
+            {
+                "properties" : {
+                    "foo": { "type": "string" },
+                    "bar": { "properties": { "x": false }, "required": ["x"] },
+                    "baz": true
+                },
+                "required": ["foo", "bar", "baz"]
+            }
+            """).RootElement;
+
+        AIJsonSchemaTransformOptions options = new()
+        {
+            RequireAllProperties = true,
+        };
+
+        JsonElement transformedSchema = AIJsonUtilities.TransformSchema(schema, options);
+        AssertDeepEquals(expectedSchema, transformedSchema);
+    }
+
+    [Fact]
+    public static void TransformJsonSchema_DisallowAdditionalProperties()
+    {
+        JsonElement schema = JsonDocument.Parse("""
+            {
+                "properties" : {
+                    "foo": { "type": "string" },
+                    "bar": { "properties": { "x": false } },
+                    "baz": true
+                },
+                "required": ["foo"]
+            }
+            """).RootElement;
+
+        JsonElement expectedSchema = JsonDocument.Parse("""
+            {
+                "properties" : {
+                    "foo": { "type": "string" },
+                    "bar": { "properties": { "x": false }, "additionalProperties": false },
+                    "baz": true
+                },
+                "required": ["foo"],
+                "additionalProperties": false
+            }
+            """).RootElement;
+
+        AIJsonSchemaTransformOptions options = new()
+        {
+            DisallowAdditionalProperties = true,
+        };
+
+        JsonElement transformedSchema = AIJsonUtilities.TransformSchema(schema, options);
+        AssertDeepEquals(expectedSchema, transformedSchema);
+    }
+
+    [Fact]
+    public static void TransformJsonSchema_UseNullableKeyword()
+    {
+        JsonElement schema = JsonDocument.Parse("""
+            {
+                "type": ["object","null"],
+                "properties" : {
+                    "foo": { "type": ["null","string"] },
+                    "bar": { "type":"object", "properties": { "x": false } },
+                    "baz": { "type" : ["string","array","null"] }
+                },
+                "required": ["foo"]
+            }
+            """).RootElement;
+
+        JsonElement expectedSchema = JsonDocument.Parse("""
+            {
+                "type": "object",
+                "properties" : {
+                    "foo": { "type": "string", "nullable": true },
+                    "bar": { "type":"object", "properties": { "x": false } },
+                    "baz": { "type" : ["string","array","null"] }
+                },
+                "required": ["foo"],
+                "nullable": true
+            }
+            """).RootElement;
+
+        AIJsonSchemaTransformOptions options = new()
+        {
+            UseNullableKeyword = true,
+        };
+
+        JsonElement transformedSchema = AIJsonUtilities.TransformSchema(schema, options);
+        AssertDeepEquals(expectedSchema, transformedSchema);
+    }
+
+    [Fact]
+    public static void TransformJsonSchema_MoveDefaultKeywordToDescription()
+    {
+        JsonElement schema = JsonDocument.Parse("""
+            {
+                "description": "My awesome schema",
+                "type": "array",
+                "default": [1,2,3]
+            }
+            """).RootElement;
+
+        JsonElement expectedSchema = JsonDocument.Parse("""
+            {
+                "description": "My awesome schema (Default value: [1,2,3])",
+                "type": "array"
+            }
+            """).RootElement;
+
+        AIJsonSchemaTransformOptions options = new()
+        {
+            MoveDefaultKeywordToDescription = true,
+        };
+
+        JsonElement transformedSchema = AIJsonUtilities.TransformSchema(schema, options);
+        AssertDeepEquals(expectedSchema, transformedSchema);
+    }
+
+    [Theory]
+    [MemberData(nameof(TestTypes.GetTestDataUsingAllValues), MemberType = typeof(TestTypes))]
+    public static void TransformJsonSchema_ValidateWithTestData(ITestData testData)
+    {
+        // Stress tests the schema generation method using types from the JsonSchemaExporter test battery.
+
+        JsonSerializerOptions options = testData.Options is { } opts
+            ? new(opts) { TypeInfoResolver = TestTypes.TestTypesContext.Default }
+            : TestTypes.TestTypesContext.Default.Options;
+
+        JsonTypeInfo typeInfo = options.GetTypeInfo(testData.Type);
+        AIJsonSchemaCreateOptions? createOptions = typeInfo.Properties.Any(prop => prop.IsExtensionData)
+            ? new() { TransformOptions = new() { DisallowAdditionalProperties = false } } // Do not append additionalProperties: false to the schema if the type has extension data.
+            : null;
+
+        JsonElement schema = AIJsonUtilities.CreateJsonSchema(testData.Type, serializerOptions: options, inferenceOptions: createOptions);
+
+        int totalSchemaNodes = 0;
+        AIJsonSchemaTransformOptions transformOptions = new()
+        {
+            ConvertBooleanSchemas = true,
+            RequireAllProperties = true,
+            DisallowAdditionalProperties = true,
+            UseNullableKeyword = true,
+            TransformSchemaNode = (context, schema) =>
+            {
+                totalSchemaNodes++;
+                var schemaObj = Assert.IsType<JsonObject>(schema);
+                schemaObj.Add("myAwesomeKeyword", (JsonNode)42);
+                return schemaObj;
+            }
+        };
+
+        JsonElement transformedSchema = AIJsonUtilities.TransformSchema(schema, transformOptions);
+        Assert.True(totalSchemaNodes > 0, "TransformSchema was not invoked.");
+
+        int totalSchemaNodes2 = 0;
+        transformOptions = new()
+        {
+            TransformSchemaNode = (context, schema) =>
+            {
+                totalSchemaNodes2++;
+                var schemaObj = Assert.IsType<JsonObject>(schema);
+                Assert.Contains("myAwesomeKeyword", schemaObj);
+                if (schemaObj.TryGetPropertyValue("properties", out JsonNode? props))
+                {
+                    Assert.Contains("required", schemaObj);
+                    Assert.Contains("additionalProperties", schemaObj);
+                    Assert.Equal(((JsonArray)schemaObj["required"]!).Count, ((JsonObject)props!).Count);
+                }
+
+                if (schemaObj.TryGetPropertyValue("type", out JsonNode? type) && type is JsonArray typeArray)
+                {
+                    Assert.DoesNotContain("null", typeArray);
+                }
+
+                return schemaObj;
+            }
+        };
+
+        AIJsonUtilities.TransformSchema(transformedSchema, transformOptions);
+        Assert.Equal(totalSchemaNodes, totalSchemaNodes2);
+    }
+
+    [Fact]
+    public static void TransformJsonSchema_InvalidOptions_ThrowsArgumentException()
+    {
+        JsonElement schema = JsonDocument.Parse("{}").RootElement;
+        Assert.Throws<ArgumentNullException>(() => AIJsonUtilities.TransformSchema(schema, transformOptions: null!));
+        Assert.Throws<ArgumentException>(() => AIJsonUtilities.TransformSchema(schema, transformOptions: new()));
+    }
+
+    [Theory]
+    [InlineData("null")]
+    [InlineData("42")]
+    [InlineData("[1,2,3]")]
+    [InlineData("""{"properties":{"x": 42 }}""")]
+    [InlineData("""{"oneOf":[42]}""")]
+    public static void TransformJsonSchema_InvalidInput_ThrowsArgumentException(string invalidSchema)
+    {
+        JsonElement schema = JsonDocument.Parse(invalidSchema).RootElement;
+        AIJsonSchemaTransformOptions transformOptions = new() { ConvertBooleanSchemas = true };
+        Assert.Throws<ArgumentException>(() => AIJsonUtilities.TransformSchema(schema, transformOptions));
     }
 
     private class DerivedAIContent : AIContent

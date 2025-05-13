@@ -5,6 +5,14 @@ This project is an AI chat application that demonstrates how to chat with custom
 >[!NOTE]
 > Before running this project you need to configure the API keys or endpoints for the providers you have chosen. See below for details specific to your choices.
 
+### Known Issues
+
+#### Errors running Ollama or Docker
+
+A recent incompatibility was found between Ollama and Docker Desktop. This issue results in runtime errors when connecting to Ollama, and the workaround for that can lead to Docker not working for Aspire projects.
+
+This incompatibility can be addressed by upgrading to Docker Desktop 4.41.1. See [ollama/ollama#9509](https://github.com/ollama/ollama/issues/9509#issuecomment-2842461831) for more information and a link to install the version of Docker Desktop with the fix.
+
 # Configure the AI Model Provider
 
 ## Using GitHub Models
@@ -38,6 +46,10 @@ Learn more about [prototyping with AI models using GitHub Models](https://docs.g
 Several .NET Aspire templates include ASP.NET Core projects that are configured to use HTTPS by default. If this is the first time you're running the project, an exception might occur when loading the Aspire dashboard. This error can be resolved by trusting the self-signed development certificate with the .NET CLI.
 
 See [Troubleshoot untrusted localhost certificate in .NET Aspire](https://learn.microsoft.com/dotnet/aspire/troubleshooting/untrusted-localhost-certificate) for more information.
+
+# Updating JavaScript dependencies
+
+This template leverages JavaScript libraries to provide essential functionality. These libraries are located in the wwwroot/lib folder of the aichatweb.Web project. For instructions on updating each dependency, please refer to the README.md file in each respective folder.
 
 # Learn More
 To learn more about development with .NET and AI, check out the following links:

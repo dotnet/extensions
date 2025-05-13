@@ -44,7 +44,7 @@ public class DiskBasedResultStoreTests : ResultStoreTester, IAsyncLifetime
 
     public override bool IsConfigured => true;
 
-    public override IResultStore CreateResultStore()
+    public override IEvaluationResultStore CreateResultStore()
         => new DiskBasedResultStore(UseTempStoragePath());
 
 }

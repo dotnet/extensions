@@ -153,17 +153,33 @@ public class SafetyEvaluatorTests
             The distance varies due to the elliptical orbits of both planets.
             """;
 
-        IEnumerable<EvaluationContext> additionalContext =
-            [
-                new GroundednessProEvaluatorContext(groundingContext),
-                new UngroundedAttributesEvaluatorContext(groundingContext)
-            ];
+        GroundednessProEvaluatorContext groundednessProContext = new GroundednessProEvaluatorContext(groundingContext);
+        UngroundedAttributesEvaluatorContext ungroundedAttributesContext = new UngroundedAttributesEvaluatorContext(groundingContext);
+        IEnumerable<EvaluationContext> additionalContext = [groundednessProContext, ungroundedAttributesContext];
 
         EvaluationResult result = await scenarioRun.EvaluateAsync(messages, response, additionalContext);
 
         Assert.False(
             result.ContainsDiagnostics(d => d.Severity is EvaluationDiagnosticSeverity.Error),
             string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
+
+        Assert.Equal(6, result.Metrics.Count);
+        Assert.True(result.TryGet(SelfHarmEvaluator.SelfHarmMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(SexualEvaluator.SexualMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedMaterialMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(GroundednessProEvaluator.GroundednessProMetricName, out NumericMetric? groundednessPro));
+        Assert.True(result.TryGet(UngroundedAttributesEvaluator.UngroundedAttributesMetricName, out BooleanMetric? ungroundedAttributes));
+        Assert.True(result.TryGet(IndirectAttackEvaluator.IndirectAttackMetricName, out BooleanMetric? _));
+
+        Assert.True(
+            groundednessPro.Context?.Count is 1 &&
+            groundednessPro.Context.TryGetValue(GroundednessProEvaluatorContext.GroundingContextName, out EvaluationContext? context1) &&
+            ReferenceEquals(context1, groundednessProContext));
+
+        Assert.True(
+            ungroundedAttributes.Context?.Count is 1 &&
+            ungroundedAttributes.Context.TryGetValue(UngroundedAttributesEvaluatorContext.GroundingContextName, out EvaluationContext? context2) &&
+            ReferenceEquals(context2, ungroundedAttributesContext));
     }
 
     [ConditionalFact]
@@ -212,17 +228,33 @@ public class SafetyEvaluatorTests
             At its furthest (conjunction), it can be approximately 601 million miles away.
             """;
 
-        IEnumerable<EvaluationContext> additionalContext =
-            [
-                new GroundednessProEvaluatorContext(groundingContext),
-                new UngroundedAttributesEvaluatorContext(groundingContext)
-            ];
+        GroundednessProEvaluatorContext groundednessProContext = new GroundednessProEvaluatorContext(groundingContext);
+        UngroundedAttributesEvaluatorContext ungroundedAttributesContext = new UngroundedAttributesEvaluatorContext(groundingContext);
+        IEnumerable<EvaluationContext> additionalContext = [groundednessProContext, ungroundedAttributesContext];
 
         EvaluationResult result = await scenarioRun.EvaluateAsync(messages, response2, additionalContext);
 
         Assert.False(
             result.ContainsDiagnostics(d => d.Severity is EvaluationDiagnosticSeverity.Error),
             string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
+
+        Assert.Equal(6, result.Metrics.Count);
+        Assert.True(result.TryGet(SelfHarmEvaluator.SelfHarmMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(SexualEvaluator.SexualMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedMaterialMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(GroundednessProEvaluator.GroundednessProMetricName, out NumericMetric? groundednessPro));
+        Assert.True(result.TryGet(UngroundedAttributesEvaluator.UngroundedAttributesMetricName, out BooleanMetric? ungroundedAttributes));
+        Assert.True(result.TryGet(IndirectAttackEvaluator.IndirectAttackMetricName, out BooleanMetric? _));
+
+        Assert.True(
+            groundednessPro.Context?.Count is 1 &&
+            groundednessPro.Context.TryGetValue(GroundednessProEvaluatorContext.GroundingContextName, out EvaluationContext? context1) &&
+            ReferenceEquals(context1, groundednessProContext));
+
+        Assert.True(
+            ungroundedAttributes.Context?.Count is 1 &&
+            ungroundedAttributes.Context.TryGetValue(UngroundedAttributesEvaluatorContext.GroundingContextName, out EvaluationContext? context2) &&
+            ReferenceEquals(context2, ungroundedAttributesContext));
     }
 
     [ConditionalFact]
@@ -250,6 +282,15 @@ public class SafetyEvaluatorTests
         Assert.False(
             result.ContainsDiagnostics(d => d.Severity is EvaluationDiagnosticSeverity.Error),
             string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
+
+        Assert.Equal(7, result.Metrics.Count);
+        Assert.True(result.TryGet(HateAndUnfairnessEvaluator.HateAndUnfairnessMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(ViolenceEvaluator.ViolenceMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedMaterialMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedArtworkMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedFictionalCharactersMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedLogosAndBrandsMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(IndirectAttackEvaluator.IndirectAttackMetricName, out BooleanMetric? _));
     }
 
     [ConditionalFact]
@@ -277,6 +318,15 @@ public class SafetyEvaluatorTests
         Assert.False(
             result.ContainsDiagnostics(d => d.Severity is EvaluationDiagnosticSeverity.Error),
             string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
+
+        Assert.Equal(7, result.Metrics.Count);
+        Assert.True(result.TryGet(HateAndUnfairnessEvaluator.HateAndUnfairnessMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(ViolenceEvaluator.ViolenceMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedMaterialMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedArtworkMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedFictionalCharactersMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedLogosAndBrandsMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(IndirectAttackEvaluator.IndirectAttackMetricName, out BooleanMetric? _));
     }
 
     [ConditionalFact]
@@ -317,6 +367,15 @@ public class SafetyEvaluatorTests
         Assert.False(
             result.ContainsDiagnostics(d => d.Severity is EvaluationDiagnosticSeverity.Error),
             string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
+
+        Assert.Equal(7, result.Metrics.Count);
+        Assert.True(result.TryGet(HateAndUnfairnessEvaluator.HateAndUnfairnessMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(ViolenceEvaluator.ViolenceMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedMaterialMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedArtworkMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedFictionalCharactersMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedLogosAndBrandsMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(IndirectAttackEvaluator.IndirectAttackMetricName, out BooleanMetric? _));
     }
 
     [ConditionalFact]
@@ -370,6 +429,15 @@ public class SafetyEvaluatorTests
         Assert.False(
             result.ContainsDiagnostics(d => d.Severity is EvaluationDiagnosticSeverity.Error),
             string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
+
+        Assert.Equal(7, result.Metrics.Count);
+        Assert.True(result.TryGet(HateAndUnfairnessEvaluator.HateAndUnfairnessMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(ViolenceEvaluator.ViolenceMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedMaterialMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedArtworkMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedFictionalCharactersMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(ProtectedMaterialEvaluator.ProtectedLogosAndBrandsMetricName, out BooleanMetric? _));
+        Assert.True(result.TryGet(IndirectAttackEvaluator.IndirectAttackMetricName, out BooleanMetric? _));
     }
 
     [ConditionalFact]
@@ -396,6 +464,9 @@ public class SafetyEvaluatorTests
         Assert.False(
             result.ContainsDiagnostics(d => d.Severity is EvaluationDiagnosticSeverity.Error),
             string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
+
+        Assert.Single(result.Metrics);
+        Assert.True(result.TryGet(CodeVulnerabilityEvaluator.CodeVulnerabilityMetricName, out BooleanMetric? _));
     }
 
     [ConditionalFact]
@@ -434,6 +505,9 @@ public class SafetyEvaluatorTests
         Assert.False(
             result.ContainsDiagnostics(d => d.Severity is EvaluationDiagnosticSeverity.Error),
             string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
+
+        Assert.Single(result.Metrics);
+        Assert.True(result.TryGet(CodeVulnerabilityEvaluator.CodeVulnerabilityMetricName, out BooleanMetric? _));
     }
 
     [ConditionalFact]
@@ -465,6 +539,13 @@ public class SafetyEvaluatorTests
         Assert.False(
             result.ContainsDiagnostics(d => d.Severity is EvaluationDiagnosticSeverity.Error),
             string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
+
+        Assert.Equal(5, result.Metrics.Count);
+        Assert.True(result.TryGet(FluencyEvaluator.FluencyMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(HateAndUnfairnessEvaluator.HateAndUnfairnessMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(SelfHarmEvaluator.SelfHarmMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(SexualEvaluator.SexualMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(ViolenceEvaluator.ViolenceMetricName, out NumericMetric? _));
     }
 
     [MemberNotNull(nameof(_contentSafetyReportingConfiguration))]

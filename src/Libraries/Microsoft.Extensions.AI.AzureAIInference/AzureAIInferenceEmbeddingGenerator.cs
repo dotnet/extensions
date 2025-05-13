@@ -89,6 +89,8 @@ internal sealed class AzureAIInferenceEmbeddingGenerator :
     public async Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(
         IEnumerable<string> values, EmbeddingGenerationOptions? options = null, CancellationToken cancellationToken = default)
     {
+        _ = Throw.IfNull(values);
+
         var azureAIOptions = ToAzureAIOptions(values, options, EmbeddingEncodingFormat.Base64);
 
         var embeddings = (await _embeddingsClient.EmbedAsync(azureAIOptions, cancellationToken).ConfigureAwait(false)).Value;
@@ -118,7 +120,7 @@ internal sealed class AzureAIInferenceEmbeddingGenerator :
         // Nothing to dispose. Implementation required for the IEmbeddingGenerator interface.
     }
 
-    private static float[] ParseBase64Floats(BinaryData binaryData)
+    internal static float[] ParseBase64Floats(BinaryData binaryData)
     {
         ReadOnlySpan<byte> base64 = binaryData.ToMemory().Span;
 
@@ -161,7 +163,7 @@ internal sealed class AzureAIInferenceEmbeddingGenerator :
             throw new FormatException("The input is not a valid Base64 string of encoded floats.");
     }
 
-    /// <summary>Converts an extensions options instance to an OpenAI options instance.</summary>
+    /// <summary>Converts an extensions options instance to an Azure.AI.Inference options instance.</summary>
     private EmbeddingsOptions ToAzureAIOptions(IEnumerable<string> inputs, EmbeddingGenerationOptions? options, EmbeddingEncodingFormat format)
     {
         EmbeddingsOptions result = new(inputs)

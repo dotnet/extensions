@@ -1,5 +1,21 @@
 # Release History
 
+## 9.4.4-preview.1.25259.16
+
+- Added `AIJsonUtilities.TransformSchema` and supporting types.
+- Added `BinaryEmbedding` for bit embeddings.
+- Added `ChatOptions.RawRepresentationFactory` to make it easier to pass options to the underlying service.
+- Added `Base64Data` property to `DataContent`.
+- Moved `AIFunctionFactory` to `Microsoft.Extensions.AI.Abstractions`.
+- Fixed `AIFunctionFactory` handling of default struct arguments.
+
+## 9.4.3-preview.1.25230.7
+
+- Renamed `ChatThreadId` to `ConversationId` on `ChatResponse`, `ChatResponseUpdate`, and `ChatOptions`.
+- Renamed `EmbeddingGeneratorExtensions` method `GenerateEmbeddingAsync` to `GenerateAsync` and `GenerateEmbeddingVectorAsync` to `GenerateVectorAsync`.
+- Made `AIContent`'s constructor `public` instead of `protected`.
+- Fixed `AIJsonUtilities.CreateJsonSchema` to tolerate `JsonSerializerOptions` instances that don't have a `TypeInfoResolver` already configured.
+
 ## 9.4.0-preview.1.25207.5
 
 - Added `ErrorContent` and `TextReasoningContent`.
@@ -83,4 +99,4 @@
 
 ## 9.0.0-preview.9.24507.7
 
-Initial Preview
+- Initial Preview

@@ -19,7 +19,9 @@ public static class ChatResponseExtensions
     /// <para>
     /// This function only considers the <see cref="ChatResponse.Text"/> and ignores any <see cref="AIContent"/>s
     /// (present within the <see cref="ChatMessage.Contents"/> of the <see cref="ChatResponse.Messages"/>) that are not
-    /// <see cref="TextContent"/>s.
+    /// <see cref="TextContent"/>s. Any <see cref="ChatResponse.Messages"/> that contain no <see cref="TextContent"/>s
+    /// will be skipped and will not be rendered. If none of the <see cref="ChatResponse.Messages"/> include any
+    /// <see cref="TextContent"/>s then this function will return an empty string.
     /// </para>
     /// <para>
     /// The rendered <see cref="ChatResponse.Messages"/> are each prefixed with the <see cref="ChatMessage.Role"/> and

@@ -11,6 +11,16 @@ To update project template JavaScript dependencies:
 
 To add a new dependency, run `npm install <package-name>` and update the `scripts` section in `package.json` to specify how the new dependency should be copied into its template.
 
+# Component governance
+
+There are two types of template dependencies that need to get scanned for component governance (CG):
+* .NET dependencies (specified via `<PackageReference />` in each `.csproj` file)
+* JS dependencies (everything in the `wwwroot/lib` folder of the `.Web` project)
+
+There are template execution tests in the `test/ProjectTemplates` folder of this repo that create, restore, and build each possible variation of the template. These tests execute before the CG step of the internal CI pipeline, which scans the build artifacts from each generated project (namely the `project.assets.json` file and the local NuGet package cache) to detect which .NET dependencies got pulled in.
+
+However, CG can't detect JS dependencies by scanning execution test output, because the generated projects don't contain manifests describing JS dependencies. Instead, we have a `package.json` and `package-lock.json` in the same folder as this README that define which JS dependencies get included in the template and how they get copied into template content (see previous section in this document). CG then automatically tracks packages listed in this `package-lock.json`.
+
 # Running AI templates
 
 ## Build the templates using just-built library package versions

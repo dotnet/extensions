@@ -2,14 +2,22 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+#if NET
+using System.Buffers;
+using System.Buffers.Text;
+#endif
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+#if !NET
+using System.Runtime.InteropServices;
+#endif
 using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable S3996 // URI properties should not be strings
 #pragma warning disable CA1054 // URI-like parameters should not be strings
 #pragma warning disable CA1056 // URI-like properties should not be strings
+#pragma warning disable CA1307 // Specify StringComparison for clarity
 
 namespace Microsoft.Extensions.AI;
 
@@ -70,39 +78,35 @@ public class DataContent : AIContent
     [JsonConstructor]
     public DataContent([StringSyntax(StringSyntaxAttribute.Uri)] string uri, string? mediaType = null)
     {
+        // Store and validate the data URI.
         _uri = Throw.IfNullOrWhitespace(uri);
-
         if (!uri.StartsWith(DataUriParser.Scheme, StringComparison.OrdinalIgnoreCase))
         {
             Throw.ArgumentException(nameof(uri), "The provided URI is not a data URI.");
         }
 
+        // Parse the data URI to extract the data and media type.
         _dataUri = DataUriParser.Parse(uri.AsMemory());
 
+        // Validate and store the media type.
+        mediaType ??= _dataUri.MediaType;
         if (mediaType is null)
         {
-            mediaType = _dataUri.MediaType;
-            if (mediaType is null)
-            {
-                Throw.ArgumentNullException(nameof(mediaType), $"{nameof(uri)} did not contain a media type, and {nameof(mediaType)} was not provided.");
-            }
-        }
-        else
-        {
-            if (mediaType != _dataUri.MediaType)
-            {
-                // If the data URI contains a media type that's different from a non-null media type
-                // explicitly provided, prefer the one explicitly provided as an override.
-
-                // Extract the bytes from the data URI and null out the uri.
-                // Then we'll lazily recreate it later if needed based on the updated media type.
-                _data = _dataUri.ToByteArray();
-                _dataUri = null;
-                _uri = null;
-            }
+            Throw.ArgumentNullException(nameof(mediaType), $"{nameof(uri)} did not contain a media type, and {nameof(mediaType)} was not provided.");
         }
 
         MediaType = DataUriParser.ThrowIfInvalidMediaType(mediaType);
+
+        if (!_dataUri.IsBase64 || mediaType != _dataUri.MediaType)
+        {
+            // In rare cases, the data URI may contain non-base64 data, in which case we
+            // want to normalize it to base64. The supplied media type may also be different
+            // from the one in the data URI. In either case, we extract the bytes from the data URI
+            // and then throw away the uri; we'll recreate it lazily in the canonical form.
+            _data = _dataUri.ToByteArray();
+            _dataUri = null;
+            _uri = null;
+        }
     }
 
     /// <summary>
@@ -134,9 +138,8 @@ public class DataContent : AIContent
 
     /// <summary>Gets the data URI for this <see cref="DataContent"/>.</summary>
     /// <remarks>
-    /// The returned URI is always a valid URI string, even if the instance was constructed from a <see cref="ReadOnlyMemory{Byte}"/>
-    /// or from a <see cref="System.Uri"/>. In the case of a <see cref="ReadOnlyMemory{T}"/>, this property returns a data URI containing
-    /// that data.
+    /// The returned URI is always a valid data URI string, even if the instance was constructed from a <see cref="ReadOnlyMemory{Byte}"/>
+    /// or from a <see cref="System.Uri"/>.
     /// </remarks>
     [StringSyntax(StringSyntaxAttribute.Uri)]
     public string Uri
@@ -145,27 +148,26 @@ public class DataContent : AIContent
         {
             if (_uri is null)
             {
-                if (_dataUri is null)
-                {
-                    Debug.Assert(_data is not null, "Expected _data to be initialized.");
-                    _uri = string.Concat("data:", MediaType, ";base64,", Convert.ToBase64String(_data.GetValueOrDefault()
+                Debug.Assert(_data is not null, "Expected _data to be initialized.");
+                ReadOnlyMemory<byte> data = _data.GetValueOrDefault();
+
 #if NET
-                        .Span));
+                char[] array = ArrayPool<char>.Shared.Rent(
+                    "data:".Length + MediaType.Length + ";base64,".Length + Base64.GetMaxEncodedToUtf8Length(data.Length));
+
+                bool wrote = array.AsSpan().TryWrite($"data:{MediaType};base64,", out int prefixLength);
+                wrote |= Convert.TryToBase64Chars(data.Span, array.AsSpan(prefixLength), out int dataLength);
+                Debug.Assert(wrote, "Expected to successfully write the data URI.");
+                _uri = array.AsSpan(0, prefixLength + dataLength).ToString();
+
+                ArrayPool<char>.Shared.Return(array);
 #else
-                        .Span.ToArray()));
+                string base64 = MemoryMarshal.TryGetArray(data, out ArraySegment<byte> segment) ?
+                    Convert.ToBase64String(segment.Array!, segment.Offset, segment.Count) :
+                    Convert.ToBase64String(data.ToArray());
+
+                _uri = $"data:{MediaType};base64,{base64}";
 #endif
-                }
-                else
-                {
-                    _uri = _dataUri.IsBase64 ?
-#if NET
-                        $"data:{MediaType};base64,{_dataUri.Data.Span}" :
-                        $"data:{MediaType};,{_dataUri.Data.Span}";
-#else
-                        $"data:{MediaType};base64,{_dataUri.Data}" :
-                        $"data:{MediaType};,{_dataUri.Data}";
-#endif
-                }
             }
 
             return _uri;
@@ -202,6 +204,20 @@ public class DataContent : AIContent
 
             Debug.Assert(_data is not null, "Expected data to be initialized.");
             return _data.GetValueOrDefault();
+        }
+    }
+
+    /// <summary>Gets the data represented by this instance as a Base64 character sequence.</summary>
+    /// <returns>The base64 representation of the data.</returns>
+    [JsonIgnore]
+    public ReadOnlyMemory<char> Base64Data
+    {
+        get
+        {
+            string uri = Uri;
+            int pos = uri.IndexOf(',');
+            Debug.Assert(pos >= 0, "Expected comma to be present in the URI.");
+            return uri.AsMemory(pos + 1);
         }
     }
 

@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.AI;
+﻿using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using aichatweb.Components;
 using aichatweb.Services;
@@ -32,11 +31,7 @@ builder.Services.AddSingleton<SemanticSearch>();
 builder.Services.AddChatClient(chatClient).UseFunctionInvocation().UseLogging();
 builder.Services.AddEmbeddingGenerator(embeddingGenerator);
 
-builder.Services.AddDbContext<IngestionCacheDbContext>(options =>
-    options.UseSqlite("Data Source=ingestioncache.db"));
-
 var app = builder.Build();
-IngestionCacheDbContext.Initialize(app.Services);
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

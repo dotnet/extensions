@@ -116,4 +116,11 @@ public static partial class AIJsonUtilities
     [JsonSerializable(typeof(AIFunctionArguments))]
     [EditorBrowsable(EditorBrowsableState.Never)] // Never use JsonContext directly, use DefaultOptions instead.
     private sealed partial class JsonContext : JsonSerializerContext;
+
+    [JsonSourceGenerationOptions(JsonSerializerDefaults.Web,
+        UseStringEnumConverter = true,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        WriteIndented = false)]
+    [JsonSerializable(typeof(JsonNode))]
+    private sealed partial class JsonContextNoIndentation : JsonSerializerContext;
 }

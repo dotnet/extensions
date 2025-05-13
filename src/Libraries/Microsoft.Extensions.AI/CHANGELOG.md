@@ -1,5 +1,26 @@
 # Release History
 
+## 9.4.4-preview.1.25259.16
+
+- Fixed `CachingChatClient` to avoid caching when `ConversationId` is set.
+- Renamed `useJsonSchema` parameter in `GetResponseAsync<T>` to `useJsonSchemaResponseFormat`.
+- Updated `OpenTelemetryChatClient` and `OpenTelemetryEmbeddingGenerator` to conform to the latest 1.33.0 draft specification of the Semantic Conventions for Generative AI systems.
+
+## 9.4.3-preview.1.25230.7
+
+- Updated the diagnostic spans emitted by `FunctionInvokingChatClient` to include total input and output token counts.
+- Updated `AIFunctionFactory` to recognize `[FromKeyedServices]` attribute on parameters in order to resolve those parameters from the `IServiceProvider`.
+- Added `AIFunctionFactoryOptions.Services`, and used it with `IServiceProviderIsService` to automatically resolve `IServiceProvider`-based parameters in `AIFunction` methods.
+- Added `ChatOptions.AllowMultipleToolCalls`.
+- Changed `AIJsonSchemaCreateOptions.RequireAllProperties` to default to `false` instead of `true`.
+- Unsealed `AIFunctionArguments`.
+- Added `AIFunctionArguments` constructors accepting `IEqualityComparer<string>` arguments.
+- Unsealed `FunctionInvocationContext`.
+- Added `FunctionInvocationContext.IsStreaming`.
+- Added protected `FunctionInvokingChatClient.FunctionInvocationServices` property to surface the corresponding `IServiceProvider` provided at construction time.
+- Changed protected virtual `FunctionInvokingChatClient.InvokeFunctionAsync` to return `ValueTask<object?>` instead of `Task<object?>`. Diagnostics are now emitted even if the method is overridden.
+- Added `FunctionInvocationResult.Terminate`.
+
 ## 9.4.0-preview.1.25207.5
 
 - Updated `GetResponseAsync<T>` to default to using JSON-schema based structured output by default.
@@ -74,4 +95,4 @@
 
 ## 9.0.0-preview.9.24507.7
 
-Initial Preview
+- Initial Preview
