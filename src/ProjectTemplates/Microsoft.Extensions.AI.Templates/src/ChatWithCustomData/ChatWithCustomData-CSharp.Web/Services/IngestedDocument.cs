@@ -5,9 +5,9 @@ namespace ChatWithCustomData_CSharp.Web.Services;
 public class IngestedDocument
 {
 #if (UseAzureAISearch || UseQdrant)
-    const string VectorDistanceFunction = DistanceFunction.CosineSimilarity;
+    private const string VectorDistanceFunction = DistanceFunction.CosineSimilarity;
 #else
-    const string VectorDistanceFunction = DistanceFunction.CosineDistance;
+    private const string VectorDistanceFunction = DistanceFunction.CosineDistance;
 #endif
 
     [VectorStoreKey]

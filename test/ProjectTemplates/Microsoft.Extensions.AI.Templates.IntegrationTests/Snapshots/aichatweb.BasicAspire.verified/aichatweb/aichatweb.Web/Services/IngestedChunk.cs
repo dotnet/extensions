@@ -4,8 +4,8 @@ namespace aichatweb.Web.Services;
 
 public class IngestedChunk
 {
-    const int VectorDimensions = 1536; // 1536 is the default vector size for the OpenAI text-embedding-3-small model
-    const string VectorDistanceFunction = DistanceFunction.CosineDistance;
+    private const int VectorDimensions = 1536; // 1536 is the default vector size for the OpenAI text-embedding-3-small model
+    private const string VectorDistanceFunction = DistanceFunction.CosineDistance;
 
     [VectorStoreKey]
     public required string Key { get; set; }

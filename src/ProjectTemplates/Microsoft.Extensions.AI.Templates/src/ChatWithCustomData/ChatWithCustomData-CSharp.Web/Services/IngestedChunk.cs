@@ -5,14 +5,14 @@ namespace ChatWithCustomData_CSharp.Web.Services;
 public class IngestedChunk
 {
 #if (IsOllama)
-    const int VectorDimensions = 384; // 384 is the default vector size for the all-minilm embedding model
+    private const int VectorDimensions = 384; // 384 is the default vector size for the all-minilm embedding model
 #else
-    const int VectorDimensions = 1536; // 1536 is the default vector size for the OpenAI text-embedding-3-small model
+    private const int VectorDimensions = 1536; // 1536 is the default vector size for the OpenAI text-embedding-3-small model
 #endif
 #if (UseAzureAISearch || UseQdrant)
-    const string VectorDistanceFunction = DistanceFunction.CosineSimilarity;
+    private const string VectorDistanceFunction = DistanceFunction.CosineSimilarity;
 #else
-    const string VectorDistanceFunction = DistanceFunction.CosineDistance;
+    private const string VectorDistanceFunction = DistanceFunction.CosineDistance;
 #endif
 
     [VectorStoreKey]

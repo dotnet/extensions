@@ -4,7 +4,7 @@ namespace aichatweb.Services;
 
 public class IngestedDocument
 {
-    const string VectorDistanceFunction = DistanceFunction.CosineSimilarity;
+    private const string VectorDistanceFunction = DistanceFunction.CosineSimilarity;
 
     [VectorStoreKey]
     public required string Key { get; set; }
