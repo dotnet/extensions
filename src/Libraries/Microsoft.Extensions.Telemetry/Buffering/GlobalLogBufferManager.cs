@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Diagnostics.Buffering;
 
 internal sealed class GlobalLogBufferManager : GlobalLogBuffer
 {
-    private readonly ConcurrentDictionary<string, GlobalBuffer> _buffers = [];
+    internal readonly ConcurrentDictionary<string, GlobalBuffer> Buffers = [];
     private readonly IOptionsMonitor<GlobalLogBufferingOptions> _options;
     private readonly TimeProvider _timeProvider;
     private readonly LogBufferingFilterRuleSelector _ruleSelector;
@@ -35,7 +35,7 @@ internal sealed class GlobalLogBufferManager : GlobalLogBuffer
 
     public override void Flush()
     {
-        foreach (GlobalBuffer buffer in _buffers.Values)
+        foreach (GlobalBuffer buffer in Buffers.Values)
         {
             buffer.Flush();
         }
@@ -44,7 +44,7 @@ internal sealed class GlobalLogBufferManager : GlobalLogBuffer
     public override bool TryEnqueue<TState>(IBufferedLogger bufferedLogger, in LogEntry<TState> logEntry)
     {
         string category = logEntry.Category;
-        GlobalBuffer buffer = _buffers.GetOrAdd(category, _ => new GlobalBuffer(
+        GlobalBuffer buffer = Buffers.GetOrAdd(category, _ => new GlobalBuffer(
             bufferedLogger,
             category,
             _ruleSelector,
