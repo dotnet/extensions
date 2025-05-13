@@ -14,7 +14,6 @@
     <PackageReference Include="PdfPig" Version="0.1.9" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.SqliteVec" Version="1.49.0-preview" />
-    <PackageReference Include="Microsoft.Extensions.VectorData.Abstractions" Version="9.0.0" />
   </ItemGroup>
 
 </Project>
