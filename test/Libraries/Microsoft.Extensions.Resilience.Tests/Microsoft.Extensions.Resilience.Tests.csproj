@@ -8,7 +8,7 @@
     <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net481' ">
+  <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' != '.NETCoreApp' ">
     <!-- See https://github.com/dotnet/extensions/issues/4531 -->
     <SkipTests>true</SkipTests>
   </PropertyGroup>
