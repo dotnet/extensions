@@ -1114,7 +1114,7 @@ public static class ExtendedLoggerTests
         IsEnabled
     }
 
-    private sealed class Provider : ILoggerProvider
+    internal sealed class Provider : ILoggerProvider
     {
         public FakeLogger? Logger { get; private set; }
 

@@ -6,12 +6,7 @@
 //   dotnet user-secrets set ConnectionStrings:openai "Endpoint=https://models.inference.ai.azure.com;Key=YOUR-API-KEY"
 var openai = builder.AddConnectionString("openai");
 
-var ingestionCache = builder.AddSqlite("ingestionCache");
-
 var webApp = builder.AddProject<Projects.aichatweb_Web>("aichatweb-app");
 webApp.WithReference(openai);
-webApp
-    .WithReference(ingestionCache)
-    .WaitFor(ingestionCache);
 
 builder.Build().Run();

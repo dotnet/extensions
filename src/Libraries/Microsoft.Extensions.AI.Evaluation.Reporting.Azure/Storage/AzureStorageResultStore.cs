@@ -20,14 +20,14 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
 
 /// <summary>
-/// An <see cref="IResultStore"/> implementation that stores <see cref="ScenarioRunResult"/>s under an Azure Storage
-/// container.
+/// An <see cref="IEvaluationResultStore"/> implementation that stores <see cref="ScenarioRunResult"/>s under an Azure
+/// Storage container.
 /// </summary>
 /// <param name="client">
 /// A <see cref="DataLakeDirectoryClient"/> with access to an Azure Storage container under which the
 /// <see cref="ScenarioRunResult"/>s should be stored.
 /// </param>
-public sealed class AzureStorageResultStore(DataLakeDirectoryClient client) : IResultStore
+public sealed class AzureStorageResultStore(DataLakeDirectoryClient client) : IEvaluationResultStore
 {
     private const string ResultsRootPrefix = "results";
 

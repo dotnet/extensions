@@ -29,7 +29,7 @@ public class AzureAIInferenceEmbeddingGeneratorTests
     }
 
     [Fact]
-    public void AsIEmbeddingGenerator_OpenAIClient_ProducesExpectedMetadata()
+    public void AsIEmbeddingGenerator_AzureAIClient_ProducesExpectedMetadata()
     {
         Uri endpoint = new("http://localhost/some/endpoint");
         string model = "amazingModel";

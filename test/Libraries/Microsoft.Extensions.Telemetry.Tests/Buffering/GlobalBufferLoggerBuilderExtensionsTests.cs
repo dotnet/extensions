@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Test;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -67,6 +68,80 @@ public class GlobalBufferLoggerBuilderExtensionsTests
         Assert.Equal(1000, options.CurrentValue.MaxBufferSizeInBytes); // value comes from appsettings.json
         Assert.Equal(TimeSpan.FromSeconds(30), options.CurrentValue.AutoFlushDuration); // value comes from default
         Assert.Equivalent(expectedData, options.CurrentValue.Rules);
+    }
+
+    [Fact]
+    public void WhenConfigUpdated_PicksUpConfigChanges()
+    {
+        List<LogBufferingFilterRule> initialData =
+        [
+            new(categoryName: "Program.MyLogger", logLevel: LogLevel.Information, eventId: 1, eventName: "number one"),
+            new(logLevel : LogLevel.Information),
+        ];
+        List<LogBufferingFilterRule> updatedData =
+        [
+            new(logLevel: LogLevel.Information),
+        ];
+        string jsonConfig =
+            @"
+{
+    ""GlobalLogBuffering"": {
+     ""Rules"": [
+       {
+         ""CategoryName"": ""Program.MyLogger"",
+         ""LogLevel"": ""Information"",
+         ""EventId"": 1,
+         ""EventName"": ""number one"",
+       },
+       {
+         ""LogLevel"": ""Information"",
+       },
+     ]
+    }
+}
+";
+
+        using ConfigurationRoot config = TestConfiguration.Create(() => jsonConfig);
+
+        using ExtendedLoggerTests.Provider provider = new ExtendedLoggerTests.Provider();
+        using ILoggerFactory factory = Utils.CreateLoggerFactory(
+            builder =>
+            {
+                builder.AddProvider(provider);
+                builder.AddGlobalBuffer(config);
+            });
+        ILogger logger = factory.CreateLogger("Program.MyLogger");
+        Utils.DisposingLoggerFactory dlf = (Utils.DisposingLoggerFactory)factory;
+        var bufferManager = dlf.ServiceProvider.GetRequiredService<GlobalLogBuffer>() as GlobalLogBufferManager;
+
+        IOptionsMonitor<GlobalLogBufferingOptions>? options = dlf.ServiceProvider.GetService<IOptionsMonitor<GlobalLogBufferingOptions>>();
+        Assert.NotNull(options);
+        Assert.NotNull(options.CurrentValue);
+        Assert.Equivalent(initialData, options.CurrentValue.Rules);
+
+        // this is just to trigger creating an internal buffer:
+        logger.LogInformation(new EventId(1, "number one"), null);
+
+        jsonConfig =
+@"
+{
+    ""GlobalLogBuffering"": {
+     ""Rules"": [
+       {
+         ""LogLevel"": ""Information"",
+       },
+     ]
+    }
+}
+";
+        config.Reload();
+
+        Assert.NotNull(bufferManager);
+        Assert.NotEmpty(bufferManager.Buffers);
+        foreach (GlobalBuffer buffer in bufferManager.Buffers.Values)
+        {
+            Assert.Equivalent(updatedData, buffer.LastKnownGoodFilterRules, strict: true);
+        }
     }
 }
 #endif

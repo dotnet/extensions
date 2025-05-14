@@ -16,9 +16,10 @@ namespace Microsoft.Extensions.AI;
 public class OpenTelemetryEmbeddingGeneratorTests
 {
     [Theory]
-    [InlineData(null)]
-    [InlineData("replacementmodel")]
-    public async Task ExpectedInformationLogged_Async(string? perRequestModelId)
+    [InlineData(null, false)]
+    [InlineData("replacementmodel", false)]
+    [InlineData("replacementmodel", true)]
+    public async Task ExpectedInformationLogged_Async(string? perRequestModelId, bool enableSensitiveData)
     {
         var sourceName = Guid.NewGuid().ToString();
         var activities = new List<Activity>();
@@ -45,7 +46,7 @@ public class OpenTelemetryEmbeddingGeneratorTests
                     AdditionalProperties = new()
                     {
                         ["system_fingerprint"] = "abcdefgh",
-                        ["AndSomethingElse"] = "value2",
+                        ["AndSomethingElse"] = "value3",
                     }
                 };
             },
@@ -56,7 +57,7 @@ public class OpenTelemetryEmbeddingGeneratorTests
 
         using var generator = innerGenerator
             .AsBuilder()
-            .UseOpenTelemetry(loggerFactory, sourceName)
+            .UseOpenTelemetry(loggerFactory, sourceName, configure: g => g.EnableSensitiveData = enableSensitiveData)
             .Build();
 
         var options = new EmbeddingGenerationOptions
@@ -85,12 +86,12 @@ public class OpenTelemetryEmbeddingGeneratorTests
 
         Assert.Equal(expectedModelName, activity.GetTagItem("gen_ai.request.model"));
         Assert.Equal(1234, activity.GetTagItem("gen_ai.request.embedding.dimensions"));
-        Assert.Equal("value1", activity.GetTagItem("gen_ai.testservice.request.service_tier"));
-        Assert.Equal("value2", activity.GetTagItem("gen_ai.testservice.request.something_else"));
+        Assert.Equal(enableSensitiveData ? "value1" : null, activity.GetTagItem("gen_ai.testservice.request.service_tier"));
+        Assert.Equal(enableSensitiveData ? "value2" : null, activity.GetTagItem("gen_ai.testservice.request.something_else"));
 
         Assert.Equal(10, activity.GetTagItem("gen_ai.response.input_tokens"));
-        Assert.Equal("abcdefgh", activity.GetTagItem("gen_ai.testservice.response.system_fingerprint"));
-        Assert.Equal("value2", activity.GetTagItem("gen_ai.testservice.response.and_something_else"));
+        Assert.Equal(enableSensitiveData ? "abcdefgh" : null, activity.GetTagItem("gen_ai.testservice.response.system_fingerprint"));
+        Assert.Equal(enableSensitiveData ? "value3" : null, activity.GetTagItem("gen_ai.testservice.response.and_something_else"));
 
         Assert.True(activity.Duration.TotalMilliseconds > 0);
     }

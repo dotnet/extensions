@@ -23,7 +23,7 @@ internal sealed class CleanResultsCommand(ILogger logger)
         int lastN,
         CancellationToken cancellationToken = default)
     {
-        IResultStore resultStore;
+        IEvaluationResultStore resultStore;
 
         if (storageRootDir is not null)
         {

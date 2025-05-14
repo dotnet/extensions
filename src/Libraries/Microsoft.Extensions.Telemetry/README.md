@@ -20,7 +20,7 @@ Or directly in the C# project file:
 
 ## Usage
 
-### Logging Sampling
+### Log Sampling
 
 The library provides two types of log sampling mechanisms: **Random Probabilistic Sampling** and **Trace-based Sampling**.
 
@@ -54,7 +54,77 @@ Matches logging sampling decisions with the underlying [Distributed Tracing samp
 // Add trace-based sampler
 builder.Logging.AddTraceBasedSampler();
 ```
+
 This comes in handy when you already use OpenTelemetry .NET Tracing and would like to see sampling decisions being consistent across both logs and their underlying [`Activity`](https://learn.microsoft.com/dotnet/core/diagnostics/distributed-tracing-concepts#sampling).
+
+### Log Buffering
+
+Provides a buffering mechanism for logs, allowing you to store logs in temporary circular buffers in memory. If the buffer is full, the oldest logs will be dropped. If you want to emit the buffered logs, you can call `Flush()` on the buffer. That way, if you don't flush buffers, all buffered logs will eventually be dropped and that makes sense - if you don't flush buffers, chances are
+those logs are not important. At the same time, you can trigger a flush on the buffer when certain conditions are met, such as when an exception occurs.
+
+This library works with all logger providers, even if they do not implement the `Microsoft.Extensions.Logging.Abstractions.IBufferedLogger` interface. In that case, the library will
+be calling `ILogger.Log()` method directly on every single buffered log record when flushing the buffer.
+
+#### Global Buffering
+
+Provides application-wide log buffering with configurable rules:
+
+```csharp
+// Simple configuration with log level
+builder.Logging.AddGlobalBuffer(LogLevel.Warning); // Buffer Warning and lower level logs
+
+// Configuration using options
+builder.Logging.AddGlobalBuffer(options =>
+{
+    options.Rules.Add(new LogBufferingFilterRule(logLevel: LogLevel.Information)); // Buffer Information and lower level logs
+    options.Rules.Add(new LogBufferingFilterRule(categoryName: "Microsoft.*")); // Buffer logs from Microsoft namespaces
+});
+
+// Configuration using IConfiguration
+builder.Logging.AddGlobalBuffer(configuration.GetSection("Logging:Buffering"));
+```
+
+Then, to flush the global buffer when a bad thing happens, call the `Flush()` method on the injected GlobalLogBuffer instance:
+
+```csharp
+public class MyService
+{
+    private readonly GlobalLogBuffer _globalLogBuffer;
+
+    public MyService(GlobalLogBuffer globalLogBuffer)
+    {
+        _globalLogBuffer = globalLogBuffer;
+    }
+
+    public void DoSomething()
+    {
+        try
+        {    
+            // ...
+        }
+        catch (Exception ex)
+        {
+            // Flush the global buffer when an exception occurs
+            _globalLogBuffer.Flush();
+        }
+    }
+}
+```
+
+The Global Log Buffer supports the `IOptionsMonitor<T>` pattern, allowing for dynamic configuration updates. This means you can change the buffering rules at runtime without needing to restart your application.
+
+#### Limitations
+
+1. This library does not preserve the order of log records. However, original timestamps are preserved.
+1. The library does not support custom configuration per each logger provider. Same configuration is applied to all logger providers.
+1. Log scopes are not supported. This means that if you use `ILogger.BeginScope()` method, the buffered log records will not be associated with the scope.
+1. When buffering and then flushing buffers, not all information of the original log record is preserved. This is due to serializing/deserializing limitation, but can be
+revisited in future. Namely, this library uses `Microsoft.Extensions.Logging.Abstractions.BufferedLogRecord` class when converting buffered log records to actual log records, but omits following properties:
+
+- `Microsoft.Extensions.Logging.Abstractions.BufferedLogRecord.ActivitySpanId`
+- `Microsoft.Extensions.Logging.Abstractions.BufferedLogRecord.ActivityTraceId`
+- `Microsoft.Extensions.Logging.Abstractions.BufferedLogRecord.ManagedThreadId`
+- `Microsoft.Extensions.Logging.Abstractions.BufferedLogRecord.MessageTemplate`
 
 ### Service Log Enrichment
 

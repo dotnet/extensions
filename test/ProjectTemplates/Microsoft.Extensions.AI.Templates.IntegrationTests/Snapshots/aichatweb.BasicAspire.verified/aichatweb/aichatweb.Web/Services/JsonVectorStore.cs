@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.VectorData;
+using System.Linq.Expressions;
 using System.Numerics.Tensors;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 namespace aichatweb.Web.Services;
@@ -17,14 +17,34 @@ namespace aichatweb.Web.Services;
 /// </summary>
 public class JsonVectorStore(string basePath) : IVectorStore
 {
-    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null) where TKey : notnull
-        => new JsonVectorStoreRecordCollection<TKey, TRecord>(name, Path.Combine(basePath, name + ".json"), vectorStoreRecordDefinition);
+    public Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
+        => Task.FromResult(File.Exists(FilePath(name)));
+
+    public Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default)
+    {
+        File.Delete(FilePath(name));
+        return Task.CompletedTask;
+    }
+
+    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+        where TKey : notnull
+        where TRecord : notnull
+        => new JsonVectorStoreRecordCollection<TKey, TRecord>(name, FilePath(name), vectorStoreRecordDefinition);
+
+    public object? GetService(Type serviceType, object? serviceKey = null)
+        => serviceKey is not null ? null :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
 
     public IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)
-        => Directory.EnumerateFiles(basePath, "*.json").ToAsyncEnumerable();
+        => Directory.EnumerateFiles(basePath, "*.json").Select(f => Path.GetFileNameWithoutExtension(f)!).ToAsyncEnumerable();
+
+    private string FilePath(string collectionName)
+        => Path.Combine(basePath, collectionName + ".json");
 
     private class JsonVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>
         where TKey : notnull
+        where TRecord : notnull
     {
         private static readonly Func<TRecord, TKey> _getKey = CreateKeyReader();
         private static readonly Func<TRecord, ReadOnlyMemory<float>> _getVector = CreateVectorReader();
@@ -44,7 +64,7 @@ public class JsonVectorStore(string basePath) : IVectorStore
             }
         }
 
-        public string CollectionName => _name;
+        public string Name => _name;
 
         public Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
             => Task.FromResult(_records is not null);
@@ -69,7 +89,7 @@ public class JsonVectorStore(string basePath) : IVectorStore
             return WriteToDiskAsync(cancellationToken);
         }
 
-        public Task DeleteBatchAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
+        public Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
         {
             foreach (var key in keys)
             {
@@ -89,36 +109,36 @@ public class JsonVectorStore(string basePath) : IVectorStore
         public Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
             => Task.FromResult(_records!.GetValueOrDefault(key));
 
-        public IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
             => keys.Select(key => _records!.GetValueOrDefault(key)!).Where(r => r is not null).ToAsyncEnumerable();
 
-        public async Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, GetFilteredRecordOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
         {
-            var key = _getKey(record);
-            _records![key] = record;
-            await WriteToDiskAsync(cancellationToken);
-            return key;
-        }
+            var filterCompiled = filter.Compile();
+            var matches = _records!.Values.Where(r => filterCompiled(r));
 
-        public async IAsyncEnumerable<TKey> UpsertBatchAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        {
-            var results = new List<TKey>();
-            foreach (var record in records)
+            if (options?.OrderBy is { } orderBy)
             {
-                var key = _getKey(record);
-                _records![key] = record;
-                results.Add(key);
+                var matchesQueryable = matches.AsQueryable();
+                foreach (var sort in orderBy.Values)
+                {
+                    matchesQueryable = sort.Ascending ? matchesQueryable.OrderBy(sort.PropertySelector) : matchesQueryable.OrderByDescending(sort.PropertySelector);
+                }
+                matches = matchesQueryable;
             }
 
-            await WriteToDiskAsync(cancellationToken);
-
-            foreach (var key in results)
-            {
-                yield return key;
-            }
+            return matches.Take(top).Skip(options?.Skip ?? 0).ToAsyncEnumerable();
         }
 
-        public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+        public object? GetService(Type serviceType, object? serviceKey = null)
+            => null;
+
+        public IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(TInput value, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default) where TInput : notnull
+        {
+            throw new NotImplementedException("The temporary JsonVectorStore type does not support generating embeddings. Use SearchEmbeddingAsync instead.");
+        }
+
+        public IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default) where TVector : notnull
         {
             if (vector is not ReadOnlyMemory<float> floatVector)
             {
@@ -137,9 +157,40 @@ public class JsonVectorStore(string basePath) : IVectorStore
                          orderby similarity descending
                          select (Record: record, Similarity: similarity);
 
-            var results = ranked.Skip(options?.Skip ?? 0).Take(options?.Top ?? int.MaxValue);
-            return Task.FromResult(new VectorSearchResults<TRecord>(
-                results.Select(r => new VectorSearchResult<TRecord>(r.Record, r.Similarity)).ToAsyncEnumerable()));
+            var results = ranked.Skip(options?.Skip ?? 0).Take(top).Select(r => new VectorSearchResult<TRecord>(r.Record, r.Similarity));
+            return results.ToAsyncEnumerable();
+        }
+
+        public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default) where TVector : notnull
+            => SearchEmbeddingAsync(vector, top, options, cancellationToken);
+
+        public async Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+        {
+            var key = _getKey(record);
+            _records![key] = record;
+            await WriteToDiskAsync(cancellationToken);
+            return key;
+        }
+
+        public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+        {
+            var results = new List<TKey>();
+            foreach (var record in records)
+            {
+                var key = _getKey(record);
+                _records![key] = record;
+                results.Add(key);
+            }
+
+            await WriteToDiskAsync(cancellationToken);
+            return results;
+        }
+
+        private async Task WriteToDiskAsync(CancellationToken cancellationToken = default)
+        {
+            var json = JsonSerializer.Serialize(_records);
+            Directory.CreateDirectory(Path.GetDirectoryName(_filePath)!);
+            await File.WriteAllTextAsync(_filePath, json, cancellationToken);
         }
 
         private static Func<TRecord, TKey> CreateKeyReader()
@@ -158,13 +209,6 @@ public class JsonVectorStore(string basePath) : IVectorStore
                     && p.PropertyType == typeof(ReadOnlyMemory<float>))
                 .Single();
             return record => (ReadOnlyMemory<float>)propertyInfo.GetValue(record)!;
-        }
-
-        private async Task WriteToDiskAsync(CancellationToken cancellationToken = default)
-        {
-            var json = JsonSerializer.Serialize(_records);
-            Directory.CreateDirectory(Path.GetDirectoryName(_filePath)!);
-            await File.WriteAllTextAsync(_filePath, json, cancellationToken);
         }
     }
 }

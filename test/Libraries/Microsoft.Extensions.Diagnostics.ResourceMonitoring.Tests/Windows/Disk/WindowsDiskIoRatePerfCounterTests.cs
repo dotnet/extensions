@@ -29,7 +29,7 @@ public class WindowsDiskIoRatePerfCounterTests
             fakeTimeProvider,
             CategoryName,
             CounterName,
-            instanceNames: ["C:", "D:", "_Total"]);
+            instanceNames: ["C:", "D:"]);
 
         // Set up
         var counterC = new FakePerformanceCounter("C:", [0, 1, 1.5f, 2, 2.5f]);
@@ -75,7 +75,7 @@ public class WindowsDiskIoRatePerfCounterTests
             fakeTimeProvider,
             CategoryName,
             counterName: CounterName,
-            instanceNames: ["C:", "D:", "_Total"]);
+            instanceNames: ["C:", "D:"]);
 
         // Set up
         var counterC = new FakePerformanceCounter("C:", [0, 100, 150.5f, 20, 3.1416f]);

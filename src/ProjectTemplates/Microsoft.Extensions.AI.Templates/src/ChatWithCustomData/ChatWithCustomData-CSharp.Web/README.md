@@ -10,6 +10,16 @@ This project is an AI chat application that demonstrates how to chat with custom
 To use Azure OpenAI or Azure AI Search, you need an Azure account. If you don't already have one, [create an Azure account](https://azure.microsoft.com/free/).
 
 #### ---#endif
+#### ---#if (IsOllama)
+### Known Issues
+
+#### Errors running Ollama or Docker
+
+A recent incompatibility was found between Ollama and Docker Desktop. This issue results in runtime errors when connecting to Ollama, and the workaround for that can lead to Docker not working for Aspire projects.
+
+This incompatibility can be addressed by upgrading to Docker Desktop 4.41.1. See [ollama/ollama#9509](https://github.com/ollama/ollama/issues/9509#issuecomment-2842461831) for more information and a link to install the version of Docker Desktop with the fix.
+
+#### ---#endif
 # Configure the AI Model Provider
 #### ---#if (IsGHModels)
 To use models hosted by GitHub Models, you will need to create a GitHub personal access token. The token should not have any scopes or permissions. See [Managing your personal access tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens).
@@ -229,6 +239,10 @@ Make sure to replace `YOUR-AZURE-AI-SEARCH-KEY` and `YOUR-AZURE-AI-SEARCH-ENDPOI
 2. Install the [C# Dev Kit extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit) for Visual Studio Code.
 3. Once installed, Open the `Program.cs` file.
 4. Run the project by clicking the "Run" button in the Debug view.
+
+# Updating JavaScript dependencies
+
+This template leverages JavaScript libraries to provide essential functionality. These libraries are located in the wwwroot/lib folder. For instructions on updating each dependency, please refer to the README.md file in each respective folder.
 
 # Learn More
 To learn more about development with .NET and AI, check out the following links:

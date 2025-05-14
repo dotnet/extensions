@@ -2,11 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
+using System.IO;
 #if !NET
 using System.Linq;
 #endif
@@ -15,23 +16,27 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Shared.Collections;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable CA1031 // Do not catch general exception types
+#pragma warning disable S2333 // Redundant modifiers should not be used
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
-#pragma warning disable SA1118 // Parameter should not span multiple lines
-#pragma warning disable SA1500 // Braces for multi-line statements should not share line
+#pragma warning disable SA1202 // Public members should come before private members
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Provides factory methods for creating commonly used implementations of <see cref="AIFunction"/>.</summary>
+/// <summary>Provides factory methods for creating commonly-used implementations of <see cref="AIFunction"/>.</summary>
 /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/quickstarts/use-function-calling">Invoke .NET functions using an AI model.</related>
 public static partial class AIFunctionFactory
 {
+    // NOTE:
+    // Unlike most library code, AIFunctionFactory uses ConfigureAwait(true) rather than ConfigureAwait(false). This is to
+    // enable AIFunctionFactory to be used with methods that might be context-aware, such as those employing a UI framework.
+
     /// <summary>Holds the default options instance used when creating function.</summary>
     private static readonly AIFunctionFactoryOptions _defaultOptions = new();
 
@@ -68,25 +73,6 @@ public static partial class AIFunctionFactory
     ///       instance passed to <see cref="AIFunction.InvokeAsync"/> is <see langword="null"/>, the <see cref="AIFunction"/> implementation
     ///       manufactures an empty instance, such that parameters of type <see cref="AIFunctionArguments"/> may always be satisfied, whether
     ///       optional or not. The handling of <see cref="AIFunctionArguments"/> parameters may be overridden via
-    ///       <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
-    ///     </description>
-    ///   </item>
-    ///   <item>
-    ///     <description>
-    ///       By default, parameters attributed with <see cref="FromKeyedServicesAttribute"/> are resolved from the <see cref="AIFunctionArguments.Services"/>
-    ///       property and are not included in the JSON schema. If the parameter is optional, such that a default value is provided,
-    ///       <see cref="AIFunctionArguments.Services"/> is allowed to be <see langword="null"/>; otherwise, <see cref="AIFunctionArguments.Services"/>
-    ///       must be non-<see langword="null"/>, or else the invocation will fail with an exception due to the required nature of the parameter.
-    ///       The handling of such parameters may be overridden via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
-    ///     </description>
-    ///   </item>
-    ///   <item>
-    ///     <description>
-    ///       When the <see cref="AIFunction"/> is constructed, it may be passed an <see cref="IServiceProvider"/> via 
-    ///       <see cref="AIFunctionFactoryOptions.Services"/>. Any parameter that can be satisfied by that <see cref="IServiceProvider"/>
-    ///       according to <see cref="IServiceProviderIsService"/> will not be included in the generated JSON schema and will be resolved 
-    ///       from the <see cref="IServiceProvider"/> provided to <see cref="AIFunction.InvokeAsync"/> via <see cref="AIFunctionArguments.Services"/>,
-    ///       rather than from the argument collection. The handling of such parameters may be overridden via
     ///       <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
     ///     </description>
     ///   </item>
@@ -170,23 +156,6 @@ public static partial class AIFunctionFactory
     ///       optional or not.
     ///     </description>
     ///   </item>
-    ///   <item>
-    ///     <description>
-    ///       By default, parameters attributed with <see cref="FromKeyedServicesAttribute"/> are resolved from the <see cref="AIFunctionArguments.Services"/>
-    ///       property and are not included in the JSON schema. If the parameter is optional, such that a default value is provided,
-    ///       <see cref="AIFunctionArguments.Services"/> is allowed to be <see langword="null"/>; otherwise, <see cref="AIFunctionArguments.Services"/>
-    ///       must be non-<see langword="null"/>, or else the invocation will fail with an exception due to the required nature of the parameter.
-    ///     </description>
-    ///   </item>
-    ///   <item>
-    ///     <description>
-    ///       When the <see cref="AIFunction"/> is constructed, it may be passed an <see cref="IServiceProvider"/> via 
-    ///       <see cref="AIFunctionFactoryOptions.Services"/>. Any parameter that can be satisfied by that <see cref="IServiceProvider"/>
-    ///       according to <see cref="IServiceProviderIsService"/> will not be included in the generated JSON schema and will be resolved 
-    ///       from the <see cref="IServiceProvider"/> provided to <see cref="AIFunction.InvokeAsync"/> via <see cref="AIFunctionArguments.Services"/>,
-    ///       rather than from the argument collection.
-    ///     </description>
-    ///   </item>
     /// </list>
     /// All other parameter types are bound from the <see cref="AIFunctionArguments"/> dictionary passed into <see cref="AIFunction.InvokeAsync"/>
     /// and are included in the generated JSON schema.
@@ -267,25 +236,6 @@ public static partial class AIFunctionFactory
     ///       instance passed to <see cref="AIFunction.InvokeAsync"/> is <see langword="null"/>, the <see cref="AIFunction"/> implementation
     ///       manufactures an empty instance, such that parameters of type <see cref="AIFunctionArguments"/> may always be satisfied, whether
     ///       optional or not. The handling of <see cref="AIFunctionArguments"/> parameters may be overridden via
-    ///       <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
-    ///     </description>
-    ///   </item>
-    ///   <item>
-    ///     <description>
-    ///       By default, parameters attributed with <see cref="FromKeyedServicesAttribute"/> are resolved from the <see cref="AIFunctionArguments.Services"/>
-    ///       property and are not included in the JSON schema. If the parameter is optional, such that a default value is provided,
-    ///       <see cref="AIFunctionArguments.Services"/> is allowed to be <see langword="null"/>; otherwise, <see cref="AIFunctionArguments.Services"/>
-    ///       must be non-<see langword="null"/>, or else the invocation will fail with an exception due to the required nature of the parameter.
-    ///       The handling of such parameters may be overridden via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
-    ///     </description>
-    ///   </item>
-    ///   <item>
-    ///     <description>
-    ///       When the <see cref="AIFunction"/> is constructed, it may be passed an <see cref="IServiceProvider"/> via 
-    ///       <see cref="AIFunctionFactoryOptions.Services"/>. Any parameter that can be satisfied by that <see cref="IServiceProvider"/>
-    ///       according to <see cref="IServiceProviderIsService"/> will not be included in the generated JSON schema and will be resolved 
-    ///       from the <see cref="IServiceProvider"/> provided to <see cref="AIFunction.InvokeAsync"/> via <see cref="AIFunctionArguments.Services"/>,
-    ///       rather than from the argument collection. The handling of such parameters may be overridden via
     ///       <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
     ///     </description>
     ///   </item>
@@ -379,23 +329,6 @@ public static partial class AIFunctionFactory
     ///       optional or not.
     ///     </description>
     ///   </item>
-    ///   <item>
-    ///     <description>
-    ///       By default, parameters attributed with <see cref="FromKeyedServicesAttribute"/> are resolved from the <see cref="AIFunctionArguments.Services"/>
-    ///       property and are not included in the JSON schema. If the parameter is optional, such that a default value is provided,
-    ///       <see cref="AIFunctionArguments.Services"/> is allowed to be <see langword="null"/>; otherwise, <see cref="AIFunctionArguments.Services"/>
-    ///       must be non-<see langword="null"/>, or else the invocation will fail with an exception due to the required nature of the parameter.
-    ///     </description>
-    ///   <item>
-    ///     <description>
-    ///       When the <see cref="AIFunction"/> is constructed, it may be passed an <see cref="IServiceProvider"/> via 
-    ///       <see cref="AIFunctionFactoryOptions.Services"/>. Any parameter that can be satisfied by that <see cref="IServiceProvider"/>
-    ///       according to <see cref="IServiceProviderIsService"/> will not be included in the generated JSON schema and will be resolved 
-    ///       from the <see cref="IServiceProvider"/> provided to <see cref="AIFunction.InvokeAsync"/> via <see cref="AIFunctionArguments.Services"/>,
-    ///       rather than from the argument collection.
-    ///     </description>
-    ///   </item>
-    ///   </item>
     /// </list>
     /// All other parameter types are bound from the <see cref="AIFunctionArguments"/> dictionary passed into <see cref="AIFunction.InvokeAsync"/>
     /// and are included in the generated JSON schema.
@@ -440,17 +373,15 @@ public static partial class AIFunctionFactory
     }
 
     /// <summary>
-    /// Creates an <see cref="AIFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> for
-    /// and instance method, along with a <see cref="Type"/> representing the type of the target object to
-    /// instantiate each time the method is invoked.
+    /// Creates an <see cref="AIFunction"/> instance for a method, specified via a <see cref="MethodInfo"/> for
+    /// an instance method and a <see cref="Func{AIFunctionArguments,Object}"/> for constructing an instance of
+    /// the receiver object each time the <see cref="AIFunction"/> is invoked.
     /// </summary>
     /// <param name="method">The instance method to be represented via the created <see cref="AIFunction"/>.</param>
-    /// <param name="targetType">
-    /// The <see cref="Type"/> to construct an instance of on which to invoke <paramref name="method"/> when
-    /// the resulting <see cref="AIFunction"/> is invoked. If <see cref="AIFunctionArguments.Services"/> is provided,
-    /// <see cref="ActivatorUtilities.CreateInstance"/> will be used to construct the instance using those services; otherwise,
-    /// <see cref="Activator.CreateInstance(Type)"/> is used, utilizing the type's public parameterless constructor.
-    /// If an instance can't be constructed, an exception is thrown during the function's invocation.
+    /// <param name="createInstanceFunc">
+    /// Callback used on each function invocation to create an instance of the type on which the instance method <paramref name="method"/>
+    /// will be invoked. If the returned instance is <see cref="IAsyncDisposable"/> or <see cref="IDisposable"/>, it will be disposed of
+    /// after <paramref name="method"/> completes its invocation.
     /// </param>
     /// <param name="options">Metadata to use to override defaults inferred from <paramref name="method"/>.</param>
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
@@ -494,25 +425,6 @@ public static partial class AIFunctionFactory
     ///       <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
     ///     </description>
     ///   </item>
-    ///   <item>
-    ///     <description>
-    ///       By default, parameters attributed with <see cref="FromKeyedServicesAttribute"/> are resolved from the <see cref="AIFunctionArguments.Services"/>
-    ///       property and are not included in the JSON schema. If the parameter is optional, such that a default value is provided,
-    ///       <see cref="AIFunctionArguments.Services"/> is allowed to be <see langword="null"/>; otherwise, <see cref="AIFunctionArguments.Services"/>
-    ///       must be non-<see langword="null"/>, or else the invocation will fail with an exception due to the required nature of the parameter.
-    ///       The handling of such parameters may be overridden via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
-    ///     </description>
-    ///   </item>
-    ///   <item>
-    ///     <description>
-    ///       When the <see cref="AIFunction"/> is constructed, it may be passed an <see cref="IServiceProvider"/> via 
-    ///       <see cref="AIFunctionFactoryOptions.Services"/>. Any parameter that can be satisfied by that <see cref="IServiceProvider"/>
-    ///       according to <see cref="IServiceProviderIsService"/> will not be included in the generated JSON schema and will be resolved 
-    ///       from the <see cref="IServiceProvider"/> provided to <see cref="AIFunction.InvokeAsync"/> via <see cref="AIFunctionArguments.Services"/>,
-    ///       rather than from the argument collection. The handling of such parameters may be overridden via
-    ///       <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
-    ///     </description>
-    ///   </item>
     /// </list>
     /// All other parameter types are, by default, bound from the <see cref="AIFunctionArguments"/> dictionary passed into <see cref="AIFunction.InvokeAsync"/>
     /// and are included in the generated JSON schema. This may be overridden by the <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/> provided
@@ -543,22 +455,16 @@ public static partial class AIFunctionFactory
     /// </para>
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="targetType"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="createInstanceFunc"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="method"/> represents a static method.</exception>
     /// <exception cref="ArgumentException"><paramref name="method"/> represents an open generic method.</exception>
     /// <exception cref="ArgumentException"><paramref name="method"/> contains a parameter without a parameter name.</exception>
-    /// <exception cref="ArgumentException"><paramref name="targetType"/> is not assignable to <paramref name="method"/>'s declaring type.</exception>
     /// <exception cref="JsonException">A parameter to <paramref name="method"/> or its return type is not serializable.</exception>
     public static AIFunction Create(
         MethodInfo method,
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type targetType,
-        AIFunctionFactoryOptions? options = null)
-    {
-        _ = Throw.IfNull(method);
-        _ = Throw.IfNull(targetType);
-
-        return ReflectionAIFunction.Build(method, targetType, options ?? _defaultOptions);
-    }
+        Func<AIFunctionArguments, object> createInstanceFunc,
+        AIFunctionFactoryOptions? options = null) =>
+        ReflectionAIFunction.Build(method, createInstanceFunc, options ?? _defaultOptions);
 
     private sealed class ReflectionAIFunction : AIFunction
     {
@@ -589,10 +495,11 @@ public static partial class AIFunctionFactory
 
         public static ReflectionAIFunction Build(
             MethodInfo method,
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type targetType,
+            Func<AIFunctionArguments, object> createInstanceFunc,
             AIFunctionFactoryOptions options)
         {
             _ = Throw.IfNull(method);
+            _ = Throw.IfNull(createInstanceFunc);
 
             if (method.ContainsGenericParameters)
             {
@@ -604,13 +511,7 @@ public static partial class AIFunctionFactory
                 Throw.ArgumentException(nameof(method), "The method must be an instance method.");
             }
 
-            if (method.DeclaringType is { } declaringType &&
-                !declaringType.IsAssignableFrom(targetType))
-            {
-                Throw.ArgumentException(nameof(targetType), "The target type must be assignable to the method's declaring type.");
-            }
-
-            return new(ReflectionAIFunctionDescriptor.GetOrCreate(method, options), targetType, options);
+            return new(ReflectionAIFunctionDescriptor.GetOrCreate(method, options), createInstanceFunc, options);
         }
 
         private ReflectionAIFunction(ReflectionAIFunctionDescriptor functionDescriptor, object? target, AIFunctionFactoryOptions options)
@@ -622,18 +523,18 @@ public static partial class AIFunctionFactory
 
         private ReflectionAIFunction(
             ReflectionAIFunctionDescriptor functionDescriptor,
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type targetType,
+            Func<AIFunctionArguments, object> createInstanceFunc,
             AIFunctionFactoryOptions options)
         {
             FunctionDescriptor = functionDescriptor;
-            TargetType = targetType;
+            CreateInstanceFunc = createInstanceFunc;
             AdditionalProperties = options.AdditionalProperties ?? EmptyReadOnlyDictionary<string, object?>.Instance;
         }
 
         public ReflectionAIFunctionDescriptor FunctionDescriptor { get; }
         public object? Target { get; }
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-        public Type? TargetType { get; }
+        public Func<AIFunctionArguments, object>? CreateInstanceFunc { get; }
+
         public override IReadOnlyDictionary<string, object?> AdditionalProperties { get; }
         public override string Name => FunctionDescriptor.Name;
         public override string Description => FunctionDescriptor.Description;
@@ -649,14 +550,17 @@ public static partial class AIFunctionFactory
             object? target = Target;
             try
             {
-                if (TargetType is { } targetType)
+                if (CreateInstanceFunc is { } func)
                 {
                     Debug.Assert(target is null, "Expected target to be null when we have a non-null target type");
                     Debug.Assert(!FunctionDescriptor.Method.IsStatic, "Expected an instance method");
 
-                    target = arguments.Services is { } services ?
-                        ActivatorUtilities.CreateInstance(services, targetType!) :
-                        Activator.CreateInstance(targetType);
+                    target = func(arguments);
+                    if (target is null)
+                    {
+                        Throw.InvalidOperationException("Unable to create an instance of the target type.");
+                    }
+
                     disposeTarget = true;
                 }
 
@@ -669,7 +573,7 @@ public static partial class AIFunctionFactory
                 }
 
                 return await FunctionDescriptor.ReturnParameterMarshaller(
-                    ReflectionInvoke(FunctionDescriptor.Method, target, args), cancellationToken);
+                    ReflectionInvoke(FunctionDescriptor.Method, target, args), cancellationToken).ConfigureAwait(true);
             }
             finally
             {
@@ -677,7 +581,7 @@ public static partial class AIFunctionFactory
                 {
                     if (target is IAsyncDisposable ad)
                     {
-                        await ad.DisposeAsync();
+                        await ad.DisposeAsync().ConfigureAwait(true);
                     }
                     else if (target is IDisposable d)
                     {
@@ -709,7 +613,7 @@ public static partial class AIFunctionFactory
             serializerOptions.MakeReadOnly();
             ConcurrentDictionary<DescriptorKey, ReflectionAIFunctionDescriptor> innerCache = _descriptorCache.GetOrCreateValue(serializerOptions);
 
-            DescriptorKey key = new(method, options.Name, options.Description, options.ConfigureParameterBinding, options.MarshalResult, options.Services, schemaOptions);
+            DescriptorKey key = new(method, options.Name, options.Description, options.ConfigureParameterBinding, options.MarshalResult, schemaOptions);
             if (innerCache.TryGetValue(key, out ReflectionAIFunctionDescriptor? descriptor))
             {
                 return descriptor;
@@ -736,8 +640,6 @@ public static partial class AIFunctionFactory
                 }
             }
 
-            IServiceProviderIsService? serviceProviderIsService = key.Services?.GetService<IServiceProviderIsService>();
-
             // Use that binding information to impact the schema generation.
             AIJsonSchemaCreateOptions schemaOptions = key.SchemaOptions with
             {
@@ -753,21 +655,6 @@ public static partial class AIFunctionFactory
                     // If the parameter is marked as excluded by GetBindParameterOptions, exclude it.
                     if (boundParameters?.TryGetValue(parameterInfo, out var options) is true &&
                         options.ExcludeFromSchema)
-                    {
-                        return false;
-                    }
-
-                    // If the parameter is attributed as [FromKeyedServices], exclude it, as we'll instead
-                    // get its value from the IServiceProvider.
-                    if (parameterInfo.GetCustomAttribute<FromKeyedServicesAttribute>(inherit: true) is not null)
-                    {
-                        return false;
-                    }
-
-                    // We assume that if the services used to create the function support a particular type,
-                    // so too do the services that will be passed into InvokeAsync. This is the same basic assumption
-                    // made in ASP.NET.
-                    if (serviceProviderIsService?.IsService(parameterInfo.ParameterType) is true)
                     {
                         return false;
                     }
@@ -793,7 +680,7 @@ public static partial class AIFunctionFactory
                     options = default;
                 }
 
-                ParameterMarshallers[i] = GetParameterMarshaller(serializerOptions, options, parameters[i], serviceProviderIsService);
+                ParameterMarshallers[i] = GetParameterMarshaller(serializerOptions, options, parameters[i]);
             }
 
             // Get a marshaling delegate for the return value.
@@ -863,8 +750,7 @@ public static partial class AIFunctionFactory
         private static Func<AIFunctionArguments, CancellationToken, object?> GetParameterMarshaller(
             JsonSerializerOptions serializerOptions,
             AIFunctionFactoryOptions.ParameterBindingOptions bindingOptions,
-            ParameterInfo parameter,
-            IServiceProviderIsService? serviceProviderIsService)
+            ParameterInfo parameter)
         {
             if (string.IsNullOrWhiteSpace(parameter.Name))
             {
@@ -908,56 +794,6 @@ public static partial class AIFunctionFactory
                     }
 
                     return services;
-                };
-            }
-
-            // For [FromKeyedServices] parameters, we resolve from the services passed to InvokeAsync via AIFunctionArguments.
-            if (parameter.GetCustomAttribute<FromKeyedServicesAttribute>(inherit: true) is { } keyedAttr)
-            {
-                return (arguments, _) =>
-                {
-                    if ((arguments.Services as IKeyedServiceProvider)?.GetKeyedService(parameterType, keyedAttr.Key) is { } service)
-                    {
-                        return service;
-                    }
-
-                    if (!parameter.HasDefaultValue)
-                    {
-                        if (arguments.Services is null)
-                        {
-                            ThrowNullServices(parameter.Name);
-                        }
-
-                        Throw.ArgumentException(nameof(arguments), $"No service of type '{parameterType}' with key '{keyedAttr.Key}' was found for parameter '{parameter.Name}'.");
-                    }
-
-                    return parameter.DefaultValue;
-                };
-            }
-
-            // For any parameters that are satisfiable from the IServiceProvider, we resolve from the services passed to InvokeAsync
-            // via AIFunctionArguments. This is determined by the same same IServiceProviderIsService instance used to determine whether
-            // the parameter should be included in the schema.
-            if (serviceProviderIsService?.IsService(parameterType) is true)
-            {
-                return (arguments, _) =>
-                {
-                    if (arguments.Services?.GetService(parameterType) is { } service)
-                    {
-                        return service;
-                    }
-
-                    if (!parameter.HasDefaultValue)
-                    {
-                        if (arguments.Services is null)
-                        {
-                            ThrowNullServices(parameter.Name);
-                        }
-
-                        Throw.ArgumentException(nameof(arguments), $"No service of type '{parameterType}' was found for parameter '{parameter.Name}'.");
-                    }
-
-                    return parameter.DefaultValue;
                 };
             }
 
@@ -1037,14 +873,14 @@ public static partial class AIFunctionFactory
                 {
                     return async (result, cancellationToken) =>
                     {
-                        await ((Task)ThrowIfNullResult(result));
-                        return await marshalResult(null, null, cancellationToken);
+                        await ((Task)ThrowIfNullResult(result)).ConfigureAwait(true);
+                        return await marshalResult(null, null, cancellationToken).ConfigureAwait(true);
                     };
                 }
 
                 return async static (result, _) =>
                 {
-                    await ((Task)ThrowIfNullResult(result));
+                    await ((Task)ThrowIfNullResult(result)).ConfigureAwait(true);
                     return null;
                 };
             }
@@ -1056,14 +892,14 @@ public static partial class AIFunctionFactory
                 {
                     return async (result, cancellationToken) =>
                     {
-                        await ((ValueTask)ThrowIfNullResult(result));
-                        return await marshalResult(null, null, cancellationToken);
+                        await ((ValueTask)ThrowIfNullResult(result)).ConfigureAwait(true);
+                        return await marshalResult(null, null, cancellationToken).ConfigureAwait(true);
                     };
                 }
 
                 return async static (result, _) =>
                 {
-                    await ((ValueTask)ThrowIfNullResult(result));
+                    await ((ValueTask)ThrowIfNullResult(result)).ConfigureAwait(true);
                     return null;
                 };
             }
@@ -1078,18 +914,18 @@ public static partial class AIFunctionFactory
                     {
                         return async (taskObj, cancellationToken) =>
                         {
-                            await ((Task)ThrowIfNullResult(taskObj));
+                            await ((Task)ThrowIfNullResult(taskObj)).ConfigureAwait(true);
                             object? result = ReflectionInvoke(taskResultGetter, taskObj, null);
-                            return await marshalResult(result, taskResultGetter.ReturnType, cancellationToken);
+                            return await marshalResult(result, taskResultGetter.ReturnType, cancellationToken).ConfigureAwait(true);
                         };
                     }
 
                     returnTypeInfo = serializerOptions.GetTypeInfo(taskResultGetter.ReturnType);
                     return async (taskObj, cancellationToken) =>
                     {
-                        await ((Task)ThrowIfNullResult(taskObj));
+                        await ((Task)ThrowIfNullResult(taskObj)).ConfigureAwait(true);
                         object? result = ReflectionInvoke(taskResultGetter, taskObj, null);
-                        return await SerializeResultAsync(result, returnTypeInfo, cancellationToken);
+                        return await SerializeResultAsync(result, returnTypeInfo, cancellationToken).ConfigureAwait(true);
                     };
                 }
 
@@ -1104,9 +940,9 @@ public static partial class AIFunctionFactory
                         return async (taskObj, cancellationToken) =>
                         {
                             var task = (Task)ReflectionInvoke(valueTaskAsTask, ThrowIfNullResult(taskObj), null)!;
-                            await task;
+                            await task.ConfigureAwait(true);
                             object? result = ReflectionInvoke(asTaskResultGetter, task, null);
-                            return await marshalResult(result, asTaskResultGetter.ReturnType, cancellationToken);
+                            return await marshalResult(result, asTaskResultGetter.ReturnType, cancellationToken).ConfigureAwait(true);
                         };
                     }
 
@@ -1114,9 +950,9 @@ public static partial class AIFunctionFactory
                     return async (taskObj, cancellationToken) =>
                     {
                         var task = (Task)ReflectionInvoke(valueTaskAsTask, ThrowIfNullResult(taskObj), null)!;
-                        await task;
+                        await task.ConfigureAwait(true);
                         object? result = ReflectionInvoke(asTaskResultGetter, task, null);
-                        return await SerializeResultAsync(result, returnTypeInfo, cancellationToken);
+                        return await SerializeResultAsync(result, returnTypeInfo, cancellationToken).ConfigureAwait(true);
                     };
                 }
             }
@@ -1140,7 +976,7 @@ public static partial class AIFunctionFactory
 
                 // Serialize asynchronously to support potential IAsyncEnumerable responses.
                 using PooledMemoryStream stream = new();
-                await JsonSerializer.SerializeAsync(stream, result, returnTypeInfo, cancellationToken);
+                await JsonSerializer.SerializeAsync(stream, result, returnTypeInfo, cancellationToken).ConfigureAwait(true);
                 Utf8JsonReader reader = new(stream.GetBuffer());
                 return JsonElement.ParseValue(ref reader);
             }
@@ -1169,7 +1005,154 @@ public static partial class AIFunctionFactory
             string? Description,
             Func<ParameterInfo, AIFunctionFactoryOptions.ParameterBindingOptions>? GetBindParameterOptions,
             Func<object?, Type?, CancellationToken, ValueTask<object?>>? MarshalResult,
-            IServiceProvider? Services,
             AIJsonSchemaCreateOptions SchemaOptions);
+    }
+
+    /// <summary>
+    /// Removes characters from a .NET member name that shouldn't be used in an AI function name.
+    /// </summary>
+    /// <param name="memberName">The .NET member name that should be sanitized.</param>
+    /// <returns>
+    /// Replaces non-alphanumeric characters in the identifier with the underscore character.
+    /// Primarily intended to remove characters produced by compiler-generated method name mangling.
+    /// </returns>
+    private static string SanitizeMemberName(string memberName) =>
+        InvalidNameCharsRegex().Replace(memberName, "_");
+
+    /// <summary>Regex that flags any character other than ASCII digits or letters or the underscore.</summary>
+#if NET
+    [GeneratedRegex("[^0-9A-Za-z_]")]
+    private static partial Regex InvalidNameCharsRegex();
+#else
+    private static Regex InvalidNameCharsRegex() => _invalidNameCharsRegex;
+    private static readonly Regex _invalidNameCharsRegex = new("[^0-9A-Za-z_]", RegexOptions.Compiled);
+#endif
+
+    /// <summary>Invokes the MethodInfo with the specified target object and arguments.</summary>
+    private static object? ReflectionInvoke(MethodInfo method, object? target, object?[]? arguments)
+    {
+#if NET
+        return method.Invoke(target, BindingFlags.DoNotWrapExceptions, binder: null, arguments, culture: null);
+#else
+        try
+        {
+            return method.Invoke(target, BindingFlags.Default, binder: null, arguments, culture: null);
+        }
+        catch (TargetInvocationException e) when (e.InnerException is not null)
+        {
+            // If we're targeting .NET Framework, such that BindingFlags.DoNotWrapExceptions
+            // is ignored, the original exception will be wrapped in a TargetInvocationException.
+            // Unwrap it and throw that original exception, maintaining its stack information.
+            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(e.InnerException).Throw();
+            throw;
+        }
+#endif
+    }
+
+    /// <summary>
+    /// Implements a simple write-only memory stream that uses pooled buffers.
+    /// </summary>
+    private sealed class PooledMemoryStream : Stream
+    {
+        private const int DefaultBufferSize = 4096;
+        private byte[] _buffer;
+        private int _position;
+
+        public PooledMemoryStream(int initialCapacity = DefaultBufferSize)
+        {
+            _buffer = ArrayPool<byte>.Shared.Rent(initialCapacity);
+            _position = 0;
+        }
+
+        public ReadOnlySpan<byte> GetBuffer() => _buffer.AsSpan(0, _position);
+        public override bool CanWrite => true;
+        public override bool CanRead => false;
+        public override bool CanSeek => false;
+        public override long Length => _position;
+        public override long Position
+        {
+            get => _position;
+            set => throw new NotSupportedException();
+        }
+
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+            EnsureNotDisposed();
+            EnsureCapacity(_position + count);
+
+            Buffer.BlockCopy(buffer, offset, _buffer, _position, count);
+            _position += count;
+        }
+
+        public override void Flush()
+        {
+        }
+
+        public override Task FlushAsync(CancellationToken cancellationToken) =>
+            Task.CompletedTask;
+
+        public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) =>
+            WriteAsync(new ReadOnlyMemory<byte>(buffer, offset, count), cancellationToken).AsTask();
+
+#if NET
+        public override
+#else
+        private
+#endif
+        ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            EnsureNotDisposed();
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return new ValueTask(Task.FromCanceled(cancellationToken));
+            }
+
+            EnsureCapacity(_position + buffer.Length);
+
+            buffer.Span.CopyTo(_buffer.AsSpan(_position));
+            _position += buffer.Length;
+
+            return default;
+        }
+
+        public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+        public override void SetLength(long value) => throw new NotSupportedException();
+
+        protected override void Dispose(bool disposing)
+        {
+            if (_buffer is not null)
+            {
+                ArrayPool<byte>.Shared.Return(_buffer);
+                _buffer = null!;
+            }
+
+            base.Dispose(disposing);
+        }
+
+        private void EnsureCapacity(int requiredCapacity)
+        {
+            if (requiredCapacity <= _buffer.Length)
+            {
+                return;
+            }
+
+            int newCapacity = Math.Max(requiredCapacity, _buffer.Length * 2);
+            byte[] newBuffer = ArrayPool<byte>.Shared.Rent(newCapacity);
+            Buffer.BlockCopy(_buffer, 0, newBuffer, 0, _position);
+
+            ArrayPool<byte>.Shared.Return(_buffer);
+            _buffer = newBuffer;
+        }
+
+        private void EnsureNotDisposed()
+        {
+            if (_buffer is null)
+            {
+                Throw();
+                static void Throw() => throw new ObjectDisposedException(nameof(PooledMemoryStream));
+            }
+        }
     }
 }
