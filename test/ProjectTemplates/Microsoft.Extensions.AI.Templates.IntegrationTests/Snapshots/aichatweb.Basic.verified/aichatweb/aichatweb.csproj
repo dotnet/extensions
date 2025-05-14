@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.5.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.5" />
     <PackageReference Include="Microsoft.Extensions.AI" Version="9.5.0" />
     <PackageReference Include="Microsoft.SemanticKernel.Core" Version="1.47.0" />
     <PackageReference Include="PdfPig" Version="0.1.9" />
