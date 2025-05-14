@@ -1,5 +1,4 @@
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using ChatWithCustomData_CSharp.Web.Components;
 using ChatWithCustomData_CSharp.Web.Services;
 using ChatWithCustomData_CSharp.Web.Services.Ingestion;
@@ -18,12 +17,7 @@ using System.ClientModel;
 using Azure.AI.OpenAI;
 using System.ClientModel;
 #endif
-#if (UseAzureAISearch)
-using Azure.Search.Documents.Indexes;
-using Microsoft.SemanticKernel.Connectors.AzureAISearch;
-#else // UseLocalVectorStore
-using Microsoft.SemanticKernel.Connectors.SqliteVec;
-#endif
+using Microsoft.SemanticKernel;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
@@ -85,23 +79,18 @@ var embeddingGenerator = azureOpenAi.GetEmbeddingClient("text-embedding-3-small"
 #if (!UseManagedIdentity)
 //   dotnet user-secrets set AzureAISearch:Key YOUR-API-KEY
 #endif
-var vectorStore = new AzureAISearchVectorStore(
-    new SearchIndexClient(
-        new Uri(builder.Configuration["AzureAISearch:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Endpoint. See the README for details.")),
+builder.Services.AddAzureAISearchVectorStore(
+    new Uri(builder.Configuration["AzureAISearch:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Endpoint. See the README for details.")),
 #if (UseManagedIdentity)
-        new DefaultAzureCredential()));
+    new DefaultAzureCredential());
 #else
-        new AzureKeyCredential(builder.Configuration["AzureAISearch:Key"] ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Key. See the README for details."))));
+    new AzureKeyCredential(builder.Configuration["AzureAISearch:Key"] ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Key. See the README for details.")));
 #endif
 #else // UseLocalVectorStore
 var vectorStorePath = Path.Combine(AppContext.BaseDirectory, "vector-store.db");
-var vectorStore = new SqliteVectorStore($"Data Source={vectorStorePath}", new SqliteVectorStoreOptions()
-{
-    EmbeddingGenerator = embeddingGenerator,
-});
+builder.Services.AddSqliteVectorStore($"Data Source={vectorStorePath}");
 #endif
 
-builder.Services.AddSingleton<VectorStore>(vectorStore);
 builder.Services.AddScoped<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();
 builder.Services.AddChatClient(chatClient).UseFunctionInvocation().UseLogging();

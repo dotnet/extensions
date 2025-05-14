@@ -4,12 +4,6 @@ namespace ChatWithCustomData_CSharp.Web.Services;
 
 public class IngestedDocument
 {
-#if (UseAzureAISearch || UseQdrant)
-    private const string VectorDistanceFunction = DistanceFunction.CosineSimilarity;
-#else
-    private const string VectorDistanceFunction = DistanceFunction.CosineDistance;
-#endif
-
     [VectorStoreKey]
 #if (UseQdrant)
     public required Guid Key { get; set; }
@@ -27,6 +21,6 @@ public class IngestedDocument
     public required string DocumentVersion { get; set; }
 
     // The vector is not used but required for some vector databases
-    [VectorStoreVector(2, DistanceFunction = VectorDistanceFunction)]
+    [VectorStoreVector(2, DistanceFunction = DistanceFunction.EuclideanDistance)]
     public ReadOnlyMemory<float> Vector { get; set; } = new ReadOnlyMemory<float>([0, 0]);
 }

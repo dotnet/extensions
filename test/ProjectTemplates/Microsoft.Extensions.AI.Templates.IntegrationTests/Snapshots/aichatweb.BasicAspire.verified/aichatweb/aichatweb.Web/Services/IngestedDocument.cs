@@ -4,8 +4,6 @@ namespace aichatweb.Web.Services;
 
 public class IngestedDocument
 {
-    private const string VectorDistanceFunction = DistanceFunction.CosineDistance;
-
     [VectorStoreKey]
     public required string Key { get; set; }
 
@@ -19,6 +17,6 @@ public class IngestedDocument
     public required string DocumentVersion { get; set; }
 
     // The vector is not used but required for some vector databases
-    [VectorStoreVector(2, DistanceFunction = VectorDistanceFunction)]
+    [VectorStoreVector(2, DistanceFunction = DistanceFunction.EuclideanDistance)]
     public ReadOnlyMemory<float> Vector { get; set; } = new ReadOnlyMemory<float>([0, 0]);
 }
