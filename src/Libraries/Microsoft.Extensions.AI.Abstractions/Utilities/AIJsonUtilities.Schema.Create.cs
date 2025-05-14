@@ -274,6 +274,12 @@ public static partial class AIJsonUtilities
                     objSchema.InsertAtStart(TypePropertyName, "string");
                 }
 
+                // Include the type keyword in nullable enum types
+                if (Nullable.GetUnderlyingType(ctx.TypeInfo.Type)?.IsEnum is true && objSchema.ContainsKey(EnumPropertyName) && !objSchema.ContainsKey(TypePropertyName))
+                {
+                    objSchema.InsertAtStart(TypePropertyName, new JsonArray { (JsonNode)"string", (JsonNode)"null" });
+                }
+
                 // Filter potentially disallowed keywords.
                 foreach (string keyword in _schemaKeywordsDisallowedByAIVendors)
                 {
