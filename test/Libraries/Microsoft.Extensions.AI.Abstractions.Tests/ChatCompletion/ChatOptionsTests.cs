@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using Xunit;
@@ -28,6 +29,7 @@ public class ChatOptionsTests
         Assert.Null(options.ToolMode);
         Assert.Null(options.Tools);
         Assert.Null(options.AdditionalProperties);
+        Assert.Null(options.RawRepresentationFactory);
 
         ChatOptions clone = options.Clone();
         Assert.Null(clone.ConversationId);
@@ -45,6 +47,7 @@ public class ChatOptionsTests
         Assert.Null(clone.ToolMode);
         Assert.Null(clone.Tools);
         Assert.Null(clone.AdditionalProperties);
+        Assert.Null(clone.RawRepresentationFactory);
     }
 
     [Fact]
@@ -69,6 +72,8 @@ public class ChatOptionsTests
             ["key"] = "value",
         };
 
+        Func<IChatClient, object?> rawRepresentationFactory = (c) => null;
+
         options.ConversationId = "12345";
         options.Temperature = 0.1f;
         options.MaxOutputTokens = 2;
@@ -83,6 +88,7 @@ public class ChatOptionsTests
         options.AllowMultipleToolCalls = true;
         options.ToolMode = ChatToolMode.RequireAny;
         options.Tools = tools;
+        options.RawRepresentationFactory = rawRepresentationFactory;
         options.AdditionalProperties = additionalProps;
 
         Assert.Equal("12345", options.ConversationId);
@@ -99,6 +105,7 @@ public class ChatOptionsTests
         Assert.True(options.AllowMultipleToolCalls);
         Assert.Same(ChatToolMode.RequireAny, options.ToolMode);
         Assert.Same(tools, options.Tools);
+        Assert.Same(rawRepresentationFactory, options.RawRepresentationFactory);
         Assert.Same(additionalProps, options.AdditionalProperties);
 
         ChatOptions clone = options.Clone();
@@ -116,6 +123,7 @@ public class ChatOptionsTests
         Assert.True(clone.AllowMultipleToolCalls);
         Assert.Same(ChatToolMode.RequireAny, clone.ToolMode);
         Assert.Equal(tools, clone.Tools);
+        Assert.Same(rawRepresentationFactory, clone.RawRepresentationFactory);
         Assert.Equal(additionalProps, clone.AdditionalProperties);
     }
 
@@ -153,6 +161,7 @@ public class ChatOptionsTests
             AIFunctionFactory.Create(() => 42),
             AIFunctionFactory.Create(() => 43),
         ];
+        options.RawRepresentationFactory = (c) => null;
         options.AdditionalProperties = additionalProps;
 
         string json = JsonSerializer.Serialize(options, TestJsonSerializerContext.Default.ChatOptions);
@@ -175,6 +184,7 @@ public class ChatOptionsTests
         Assert.False(deserialized.AllowMultipleToolCalls);
         Assert.Equal(ChatToolMode.RequireAny, deserialized.ToolMode);
         Assert.Null(deserialized.Tools);
+        Assert.Null(deserialized.RawRepresentationFactory);
 
         Assert.NotNull(deserialized.AdditionalProperties);
         Assert.Single(deserialized.AdditionalProperties);

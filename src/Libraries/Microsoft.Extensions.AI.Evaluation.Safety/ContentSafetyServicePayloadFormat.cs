@@ -9,5 +9,5 @@ internal enum ContentSafetyServicePayloadFormat
     QuestionAnswer,
     QueryResponse,
     ContextCompletion,
-    Conversation,
+    Conversation
 }

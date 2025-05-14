@@ -15,16 +15,17 @@
   <Target Name="ComputeGeneratedContentProperties">
     <PropertyGroup>
       <!-- Define optional pinned versions of certain dependencies. -->
-      <TemplatePinnedRepoPackagesVersion>9.4.0</TemplatePinnedRepoPackagesVersion>
-      <TemplatePinnedRepoAIPackagesVersion>9.4.0-preview.1.25207.5</TemplatePinnedRepoAIPackagesVersion>
-      <TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion>9.0.4</TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion>
+      <TemplatePinnedRepoPackagesVersion>9.5.0</TemplatePinnedRepoPackagesVersion>
+      <TemplatePinnedRepoAIPackagesVersion>9.5.0-preview.1.25262.9</TemplatePinnedRepoAIPackagesVersion>
+      <TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion>9.0.5</TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion>
 
       <!-- By default, don't use pinned dependency versions. -->
-      <TemplateUsePinnedPackageVersions Condition="'$(TemplateUsePinnedPackageVersions)' == ''">false</TemplateUsePinnedPackageVersions>
+      <TemplateUsePinnedPackageVersions Condition="'$(TemplateUsePinnedPackageVersions)' == ''">true</TemplateUsePinnedPackageVersions>
+      <TemplateUsePinnedAIPackageVersions Condition="'$(TemplateUsePinnedAIPackageVersions)' == ''">false</TemplateUsePinnedAIPackageVersions>
 
       <!-- Apply pinned dependency versions if enabled. -->
       <TemplateRepoPackagesVersion Condition="'$(TemplateUsePinnedPackageVersions)' == 'true'">$(TemplatePinnedRepoPackagesVersion)</TemplateRepoPackagesVersion>
-      <TemplateRepoAIPackagesVersion Condition="'$(TemplateUsePinnedPackageVersions)' == 'true'">$(TemplatePinnedRepoAIPackagesVersion)</TemplateRepoAIPackagesVersion>
+      <TemplateRepoAIPackagesVersion Condition="'$(TemplateUsePinnedAIPackageVersions)' == 'true'">$(TemplatePinnedRepoAIPackagesVersion)</TemplateRepoAIPackagesVersion>
       <TemplateMicrosoftEntityFrameworkCoreSqliteVersion Condition="'$(TemplateUsePinnedPackageVersions)' == 'true'">$(TemplatePinnedMicrosoftEntityFrameworkCoreSqliteVersion)</TemplateMicrosoftEntityFrameworkCoreSqliteVersion>
 
       <!-- Fall back on default dependency versions if pinned versions were not applied. -->

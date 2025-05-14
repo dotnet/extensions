@@ -5,7 +5,6 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -34,12 +33,13 @@ public static partial class AIJsonUtilities
     private const string PatternPropertyName = "pattern";
     private const string EnumPropertyName = "enum";
     private const string PropertiesPropertyName = "properties";
+    private const string ItemsPropertyName = "items";
     private const string RequiredPropertyName = "required";
     private const string AdditionalPropertiesPropertyName = "additionalProperties";
     private const string DefaultPropertyName = "default";
     private const string RefPropertyName = "$ref";
 
-    /// <summary>The uri used when populating the $schema keyword in inferred schemas.</summary>
+    /// <summary>The uri used when populating the $schema keyword in created schemas.</summary>
     private const string SchemaKeywordUri = "https://json-schema.org/draft/2020-12/schema";
 
     // List of keywords used by JsonSchemaExporter but explicitly disallowed by some AI vendors.
@@ -53,7 +53,7 @@ public static partial class AIJsonUtilities
     /// <param name="title">The title keyword used by the method schema.</param>
     /// <param name="description">The description keyword used by the method schema.</param>
     /// <param name="serializerOptions">The options used to extract the schema from the specified type.</param>
-    /// <param name="inferenceOptions">The options controlling schema inference.</param>
+    /// <param name="inferenceOptions">The options controlling schema creation.</param>
     /// <returns>A JSON schema document encoded as a <see cref="JsonElement"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
     public static JsonElement CreateFunctionJsonSchema(
@@ -105,13 +105,13 @@ public static partial class AIJsonUtilities
                 inferenceOptions);
 
             parameterSchemas.Add(parameter.Name, parameterSchema);
-            if (!parameter.IsOptional || inferenceOptions.RequireAllProperties)
+            if (!parameter.IsOptional)
             {
                 (requiredProperties ??= []).Add((JsonNode)parameter.Name);
             }
         }
 
-        JsonObject schema = new();
+        JsonNode schema = new JsonObject();
         if (inferenceOptions.IncludeSchemaKeyword)
         {
             schema[SchemaPropertyName] = SchemaKeywordUri;
@@ -135,7 +135,13 @@ public static partial class AIJsonUtilities
             schema[RequiredPropertyName] = requiredProperties;
         }
 
-        return JsonSerializer.SerializeToElement(schema, JsonContext.Default.JsonNode);
+        // Finally, apply any schema transformations if specified.
+        if (inferenceOptions.TransformOptions is { } options)
+        {
+            schema = TransformSchema(schema, options);
+        }
+
+        return JsonSerializer.SerializeToElement(schema, JsonContextNoIndentation.Default.JsonNode);
     }
 
     /// <summary>Creates a JSON schema for the specified type.</summary>
@@ -144,7 +150,7 @@ public static partial class AIJsonUtilities
     /// <param name="hasDefaultValue"><see langword="true"/> if the parameter is optional; otherwise, <see langword="false"/>.</param>
     /// <param name="defaultValue">The default value of the optional parameter, if applicable.</param>
     /// <param name="serializerOptions">The options used to extract the schema from the specified type.</param>
-    /// <param name="inferenceOptions">The options controlling schema inference.</param>
+    /// <param name="inferenceOptions">The options controlling schema creation.</param>
     /// <returns>A <see cref="JsonElement"/> representing the schema.</returns>
     public static JsonElement CreateJsonSchema(
         Type? type,
@@ -157,7 +163,14 @@ public static partial class AIJsonUtilities
         serializerOptions ??= DefaultOptions;
         inferenceOptions ??= AIJsonSchemaCreateOptions.Default;
         JsonNode schema = CreateJsonSchemaCore(type, parameterName: null, description, hasDefaultValue, defaultValue, serializerOptions, inferenceOptions);
-        return JsonSerializer.SerializeToElement(schema, JsonContext.Default.JsonNode);
+
+        // Finally, apply any schema transformations if specified.
+        if (inferenceOptions.TransformOptions is { } options)
+        {
+            schema = TransformSchema(schema, options);
+        }
+
+        return JsonSerializer.SerializeToElement(schema, JsonContextNoIndentation.Default.JsonNode);
     }
 
     /// <summary>Gets the default JSON schema to be used by types or functions.</summary>
@@ -202,25 +215,11 @@ public static partial class AIJsonUtilities
 
             if (hasDefaultValue)
             {
-                if (inferenceOptions.RequireAllProperties)
-                {
-                    // Default values are only used in the context of optional parameters.
-                    // Do not include a default keyword (since certain AI vendors don't support it)
-                    // and instead embed its JSON in the description as a hint to the LLM.
-                    string defaultValueJson = defaultValue is not null
-                        ? JsonSerializer.Serialize(defaultValue, serializerOptions.GetTypeInfo(defaultValue.GetType()))
-                        : "null";
+                JsonNode? defaultValueNode = defaultValue is not null
+                    ? JsonSerializer.SerializeToNode(defaultValue, serializerOptions.GetTypeInfo(defaultValue.GetType()))
+                    : null;
 
-                    description = CreateDescriptionWithDefaultValue(description, defaultValueJson);
-                }
-                else
-                {
-                    JsonNode? defaultValueNode = defaultValue is not null
-                        ? JsonSerializer.SerializeToNode(defaultValue, serializerOptions.GetTypeInfo(defaultValue.GetType()))
-                        : null;
-
-                    (schemaObj ??= [])[DefaultPropertyName] = defaultValueNode;
-                }
+                (schemaObj ??= [])[DefaultPropertyName] = defaultValueNode;
             }
 
             if (description is not null)
@@ -270,39 +269,9 @@ public static partial class AIJsonUtilities
                 }
 
                 // Include the type keyword in enum types
-                if (inferenceOptions.IncludeTypeInEnumSchemas && ctx.TypeInfo.Type.IsEnum && objSchema.ContainsKey(EnumPropertyName) && !objSchema.ContainsKey(TypePropertyName))
+                if (ctx.TypeInfo.Type.IsEnum && objSchema.ContainsKey(EnumPropertyName) && !objSchema.ContainsKey(TypePropertyName))
                 {
                     objSchema.InsertAtStart(TypePropertyName, "string");
-                }
-
-                // Disallow additional properties in object schemas
-                if (inferenceOptions.DisallowAdditionalProperties &&
-                    objSchema.ContainsKey(PropertiesPropertyName) &&
-                    !objSchema.ContainsKey(AdditionalPropertiesPropertyName))
-                {
-                    objSchema.Add(AdditionalPropertiesPropertyName, (JsonNode)false);
-                }
-
-                // Mark all properties as required
-                if (inferenceOptions.RequireAllProperties &&
-                    objSchema.TryGetPropertyValue(PropertiesPropertyName, out JsonNode? properties) &&
-                    properties is JsonObject propertiesObj)
-                {
-                    _ = objSchema.TryGetPropertyValue(RequiredPropertyName, out JsonNode? required);
-                    if (required is not JsonArray { } requiredArray || requiredArray.Count != propertiesObj.Count)
-                    {
-                        requiredArray = [.. propertiesObj.Select(prop => (JsonNode)prop.Key)];
-                        objSchema[RequiredPropertyName] = requiredArray;
-                    }
-                }
-
-                // Strip default keywords and embed in description where required
-                if (inferenceOptions.RequireAllProperties &&
-                    objSchema.TryGetPropertyValue(DefaultPropertyName, out JsonNode? defaultValue))
-                {
-                    _ = objSchema.Remove(DefaultPropertyName);
-                    string defaultValueJson = defaultValue?.ToJsonString() ?? "null";
-                    localDescription = CreateDescriptionWithDefaultValue(localDescription, defaultValueJson);
                 }
 
                 // Filter potentially disallowed keywords.
@@ -327,20 +296,8 @@ public static partial class AIJsonUtilities
 
             if (ctx.Path.IsEmpty && hasDefaultValue)
             {
-                // Add root-level default value metadata
-                if (inferenceOptions.RequireAllProperties)
-                {
-                    // Default values are only used in the context of optional parameters.
-                    // Do not include a default keyword (since certain AI vendors don't support it)
-                    // and instead embed its JSON in the description as a hint to the LLM.
-                    string defaultValueJson = JsonSerializer.Serialize(defaultValue, ctx.TypeInfo);
-                    localDescription = CreateDescriptionWithDefaultValue(localDescription, defaultValueJson);
-                }
-                else
-                {
-                    JsonNode? defaultValueNode = JsonSerializer.SerializeToNode(defaultValue, ctx.TypeInfo);
-                    ConvertSchemaToObject(ref schema)[DefaultPropertyName] = defaultValueNode;
-                }
+                JsonNode? defaultValueNode = JsonSerializer.SerializeToNode(defaultValue, ctx.TypeInfo);
+                ConvertSchemaToObject(ref schema)[DefaultPropertyName] = defaultValueNode;
             }
 
             if (localDescription is not null)
@@ -422,7 +379,7 @@ public static partial class AIJsonUtilities
         jsonObject.Insert(0, key, value);
 #else
         jsonObject.Remove(key);
-        var copiedEntries = jsonObject.ToArray();
+        var copiedEntries = System.Linq.Enumerable.ToArray(jsonObject);
         jsonObject.Clear();
 
         jsonObject.Add(key, value);
@@ -431,13 +388,6 @@ public static partial class AIJsonUtilities
             jsonObject[entry.Key] = entry.Value;
         }
 #endif
-    }
-
-    private static string CreateDescriptionWithDefaultValue(string? existingDescription, string defaultValueJson)
-    {
-        return existingDescription is null
-            ? $"Default value: {defaultValueJson}"
-            : $"{existingDescription} (Default value: {defaultValueJson})";
     }
 
     private static JsonElement ParseJsonElement(ReadOnlySpan<byte> utf8Json)
