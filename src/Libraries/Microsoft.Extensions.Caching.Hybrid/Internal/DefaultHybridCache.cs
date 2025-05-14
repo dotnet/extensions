@@ -252,6 +252,26 @@ internal sealed partial class DefaultHybridCache : HybridCache
         return null;
     }
 
+    // reserve non-printable characters from keys, to prevent potential L2 abuse
+    private static bool ContainsReservedCharacters(ReadOnlySpan<char> key)
+    {
+        const char MaxControlChar = (char)31;
+
+#if NET8_0_OR_GREATER
+        return key.IndexOfAnyInRange((char)0, MaxControlChar) >= 0;
+#else
+        foreach (char c in key)
+        {
+            if (c <= MaxControlChar)
+            {
+                return true;
+            }
+        }
+
+        return false;
+#endif
+    }
+
     private bool ValidateKey(string key)
     {
         if (string.IsNullOrWhiteSpace(key))
@@ -274,26 +294,6 @@ internal sealed partial class DefaultHybridCache : HybridCache
 
         // nothing to complain about
         return true;
-    }
-
-    // reserve non-printable characters from keys, to prevent potential L2 abuse
-    private bool ContainsReservedCharacters(ReadOnlySpan<char> key)
-    {
-        const char MaxControlChar = (char)31;
-
-#if NET8_0_OR_GREATER
-        return key.IndexOfAnyInRange((char)0, MaxControlChar) >= 0;
-#else
-        foreach (char c in key)
-        {
-            if (c <= MaxControlChar)
-            {
-                return true;
-            }
-        }
-
-        return false;
-#endif
     }
 
     private bool TryGetExisting<T>(string key, [NotNullWhen(true)] out CacheItem<T>? value)
