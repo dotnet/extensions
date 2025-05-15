@@ -15,22 +15,22 @@ internal sealed class DiskStats
     public ulong ReadsCompleted { get; set; }
     public ulong ReadsMerged { get; set; }
     public ulong SectorsRead { get; set; }
-    public ulong TimeReadingMs { get; set; }
+    public uint TimeReadingMs { get; set; }
     public ulong WritesCompleted { get; set; }
     public ulong WritesMerged { get; set; }
     public ulong SectorsWritten { get; set; }
-    public ulong TimeWritingMs { get; set; }
-    public ulong IoInProgress { get; set; }
-    public ulong TimeIoMs { get; set; }
-    public ulong WeightedTimeIoMs { get; set; }
+    public uint TimeWritingMs { get; set; }
+    public uint IoInProgress { get; set; }
+    public uint TimeIoMs { get; set; }
+    public uint WeightedTimeIoMs { get; set; }
 
     // The following fields are available starting from kernel 4.18; if absent, remain 0
     public ulong DiscardsCompleted { get; set; }
     public ulong DiscardsMerged { get; set; }
     public ulong SectorsDiscarded { get; set; }
-    public ulong TimeDiscardingMs { get; set; }
+    public uint TimeDiscardingMs { get; set; }
 
     // The following fields are available starting from kernel 5.5; if absent, remain 0
     public ulong FlushRequestsCompleted { get; set; }
-    public ulong TimeFlushingMs { get; set; }
+    public uint TimeFlushingMs { get; set; }
 }

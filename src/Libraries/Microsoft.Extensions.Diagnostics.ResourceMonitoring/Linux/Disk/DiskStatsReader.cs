@@ -81,14 +81,14 @@ internal sealed class DiskStatsReader(IFileSystem fileSystem) : IDiskStatsReader
             ReadsCompleted = ulong.Parse(parts[3], CultureInfo.InvariantCulture),
             ReadsMerged = ulong.Parse(parts[4], CultureInfo.InvariantCulture),
             SectorsRead = ulong.Parse(parts[5], CultureInfo.InvariantCulture),
-            TimeReadingMs = ulong.Parse(parts[6], CultureInfo.InvariantCulture),
+            TimeReadingMs = uint.Parse(parts[6], CultureInfo.InvariantCulture),
             WritesCompleted = ulong.Parse(parts[7], CultureInfo.InvariantCulture),
             WritesMerged = ulong.Parse(parts[8], CultureInfo.InvariantCulture),
             SectorsWritten = ulong.Parse(parts[9], CultureInfo.InvariantCulture),
-            TimeWritingMs = ulong.Parse(parts[10], CultureInfo.InvariantCulture),
-            IoInProgress = ulong.Parse(parts[11], CultureInfo.InvariantCulture),
-            TimeIoMs = ulong.Parse(parts[12], CultureInfo.InvariantCulture),
-            WeightedTimeIoMs = ulong.Parse(parts[13], CultureInfo.InvariantCulture)
+            TimeWritingMs = uint.Parse(parts[10], CultureInfo.InvariantCulture),
+            IoInProgress = uint.Parse(parts[11], CultureInfo.InvariantCulture),
+            TimeIoMs = uint.Parse(parts[12], CultureInfo.InvariantCulture),
+            WeightedTimeIoMs = uint.Parse(parts[13], CultureInfo.InvariantCulture)
         };
 
         // Parse additional fields if present
@@ -97,13 +97,13 @@ internal sealed class DiskStatsReader(IFileSystem fileSystem) : IDiskStatsReader
             diskStats.DiscardsCompleted = ulong.Parse(parts[14], CultureInfo.InvariantCulture);
             diskStats.DiscardsMerged = ulong.Parse(parts[15], CultureInfo.InvariantCulture);
             diskStats.SectorsDiscarded = ulong.Parse(parts[16], CultureInfo.InvariantCulture);
-            diskStats.TimeDiscardingMs = ulong.Parse(parts[17], CultureInfo.InvariantCulture);
+            diskStats.TimeDiscardingMs = uint.Parse(parts[17], CultureInfo.InvariantCulture);
         }
 
         if (parts.Length >= 20)
         {
             diskStats.FlushRequestsCompleted = ulong.Parse(parts[18], CultureInfo.InvariantCulture);
-            diskStats.TimeFlushingMs = ulong.Parse(parts[19], CultureInfo.InvariantCulture);
+            diskStats.TimeFlushingMs = uint.Parse(parts[19], CultureInfo.InvariantCulture);
         }
 
         return diskStats;
