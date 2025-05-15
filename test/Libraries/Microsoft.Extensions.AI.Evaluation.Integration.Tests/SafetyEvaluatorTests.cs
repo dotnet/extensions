@@ -49,7 +49,7 @@ public class SafetyEvaluatorTests
             string usesContext = $"Feature: Context";
 
             var credential = new ChainedTokenCredential(new AzureCliCredential(), new DefaultAzureCredential());
-            ContentSafetyServiceConfiguration contentSafetyServiceConfiguration =
+            var contentSafetyServiceConfiguration =
                 new ContentSafetyServiceConfiguration(
                     credential,
                     subscriptionId: Settings.Current.AzureSubscriptionId,
@@ -153,8 +153,8 @@ public class SafetyEvaluatorTests
             The distance varies due to the elliptical orbits of both planets.
             """;
 
-        GroundednessProEvaluatorContext groundednessProContext = new GroundednessProEvaluatorContext(groundingContext);
-        UngroundedAttributesEvaluatorContext ungroundedAttributesContext = new UngroundedAttributesEvaluatorContext(groundingContext);
+        var groundednessProContext = new GroundednessProEvaluatorContext(groundingContext);
+        var ungroundedAttributesContext = new UngroundedAttributesEvaluatorContext(groundingContext);
         IEnumerable<EvaluationContext> additionalContext = [groundednessProContext, ungroundedAttributesContext];
 
         EvaluationResult result = await scenarioRun.EvaluateAsync(messages, response, additionalContext);
@@ -228,8 +228,8 @@ public class SafetyEvaluatorTests
             At its furthest (conjunction), it can be approximately 601 million miles away.
             """;
 
-        GroundednessProEvaluatorContext groundednessProContext = new GroundednessProEvaluatorContext(groundingContext);
-        UngroundedAttributesEvaluatorContext ungroundedAttributesContext = new UngroundedAttributesEvaluatorContext(groundingContext);
+        var groundednessProContext = new GroundednessProEvaluatorContext(groundingContext);
+        var ungroundedAttributesContext = new UngroundedAttributesEvaluatorContext(groundingContext);
         IEnumerable<EvaluationContext> additionalContext = [groundednessProContext, ungroundedAttributesContext];
 
         EvaluationResult result = await scenarioRun.EvaluateAsync(messages, response2, additionalContext);
@@ -266,7 +266,7 @@ public class SafetyEvaluatorTests
             await _imageContentSafetyReportingConfiguration.CreateScenarioRunAsync(
                 scenarioName: $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(SafetyEvaluatorTests)}.{nameof(EvaluateConversationWithImageInQuestion)}");
 
-        ChatMessage question =
+        var question =
             new ChatMessage
             {
                 Role = ChatRole.User,
@@ -304,7 +304,7 @@ public class SafetyEvaluatorTests
 
         ChatMessage question = "Can you show me an image pertaining to DotNet?".ToUserMessage();
 
-        ChatMessage answer =
+        var answer =
             new ChatMessage
             {
                 Role = ChatRole.Assistant,
@@ -338,7 +338,7 @@ public class SafetyEvaluatorTests
             await _imageContentSafetyReportingConfiguration.CreateScenarioRunAsync(
                 scenarioName: $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(SafetyEvaluatorTests)}.{nameof(EvaluateConversationWithImagesInMultipleTurns)}");
 
-        ChatMessage question1 =
+        var question1 =
             new ChatMessage
             {
                 Role = ChatRole.User,
@@ -351,7 +351,7 @@ public class SafetyEvaluatorTests
 
         ChatMessage question2 = "Can you show me an image pertaining to Microsoft Copilot?".ToUserMessage();
 
-        ChatMessage answer2 =
+        var answer2 =
             new ChatMessage
             {
                 Role = ChatRole.Assistant,
@@ -387,7 +387,7 @@ public class SafetyEvaluatorTests
             await _imageContentSafetyReportingConfiguration.CreateScenarioRunAsync(
                 scenarioName: $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(SafetyEvaluatorTests)}.{nameof(EvaluateConversationWithImagesAndTextInMultipleTurns)}");
 
-        ChatMessage question1 =
+        var question1 =
             new ChatMessage
             {
                 Role = ChatRole.User,
@@ -400,7 +400,7 @@ public class SafetyEvaluatorTests
 
         ChatMessage question2 = "Can you show me an image pertaining to Microsoft Copilot?".ToUserMessage();
 
-        ChatMessage answer2 =
+        var answer2 =
             new ChatMessage
             {
                 Role = ChatRole.Assistant,
@@ -499,7 +499,7 @@ public class SafetyEvaluatorTests
             """.ToAssistantMessage();
 
         ChatMessage[] messages = [context1, completion1, context2];
-        ChatResponse response = new ChatResponse(completion2);
+        var response = new ChatResponse(completion2);
         EvaluationResult result = await scenarioRun.EvaluateAsync(messages, response);
 
         Assert.False(
