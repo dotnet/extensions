@@ -1,0 +1,27 @@
+{
+  "Name": "Microsoft.Extensions.AI.OpenAI, Version=9.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Types": [
+    {
+      "Type": "static class Microsoft.Extensions.AI.OpenAIClientExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.IChatClient Microsoft.Extensions.AI.OpenAIClientExtensions.AsIChatClient(this OpenAI.Chat.ChatClient chatClient);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.IChatClient Microsoft.Extensions.AI.OpenAIClientExtensions.AsIChatClient(this OpenAI.Responses.OpenAIResponseClient responseClient);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.IEmbeddingGenerator<string, Microsoft.Extensions.AI.Embedding<float>> Microsoft.Extensions.AI.OpenAIClientExtensions.AsIEmbeddingGenerator(this OpenAI.Embeddings.EmbeddingClient embeddingClient, int? defaultModelDimensions = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.ISpeechToTextClient Microsoft.Extensions.AI.OpenAIClientExtensions.AsISpeechToTextClient(this OpenAI.Audio.AudioClient audioClient);",
+          "Stage": "Experimental"
+        }
+      ]
+    }
+  ]
+}

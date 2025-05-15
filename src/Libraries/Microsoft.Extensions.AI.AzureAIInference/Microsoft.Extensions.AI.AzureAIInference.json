@@ -1,0 +1,23 @@
+{
+  "Name": "Microsoft.Extensions.AI.AzureAIInference, Version=9.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Types": [
+    {
+      "Type": "static class Microsoft.Extensions.AI.AzureAIInferenceExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.IChatClient Microsoft.Extensions.AI.AzureAIInferenceExtensions.AsIChatClient(this Azure.AI.Inference.ChatCompletionsClient chatCompletionsClient, string? modelId = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.IEmbeddingGenerator<string, Microsoft.Extensions.AI.Embedding<float>> Microsoft.Extensions.AI.AzureAIInferenceExtensions.AsIEmbeddingGenerator(this Azure.AI.Inference.EmbeddingsClient embeddingsClient, string? defaultModelId = null, int? defaultModelDimensions = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.IEmbeddingGenerator<Microsoft.Extensions.AI.DataContent, Microsoft.Extensions.AI.Embedding<float>> Microsoft.Extensions.AI.AzureAIInferenceExtensions.AsIEmbeddingGenerator(this Azure.AI.Inference.ImageEmbeddingsClient imageEmbeddingsClient, string? defaultModelId = null, int? defaultModelDimensions = null);",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}

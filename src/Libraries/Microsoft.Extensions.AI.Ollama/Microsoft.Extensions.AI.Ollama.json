@@ -1,0 +1,59 @@
+{
+  "Name": "Microsoft.Extensions.AI.Ollama, Version=9.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Types": [
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.OllamaChatClient : Microsoft.Extensions.AI.IChatClient, System.IDisposable",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OllamaChatClient.OllamaChatClient(string endpoint, string? modelId = null, System.Net.Http.HttpClient? httpClient = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.OllamaChatClient.OllamaChatClient(System.Uri endpoint, string? modelId = null, System.Net.Http.HttpClient? httpClient = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.AI.OllamaChatClient.Dispose();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse> Microsoft.Extensions.AI.OllamaChatClient.GetResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate> Microsoft.Extensions.AI.OllamaChatClient.GetStreamingResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Text.Json.JsonSerializerOptions Microsoft.Extensions.AI.OllamaChatClient.ToolCallJsonSerializerOptions { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.OllamaEmbeddingGenerator : Microsoft.Extensions.AI.IEmbeddingGenerator<string, Microsoft.Extensions.AI.Embedding<float>>, Microsoft.Extensions.AI.IEmbeddingGenerator, System.IDisposable",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OllamaEmbeddingGenerator.OllamaEmbeddingGenerator(string endpoint, string? modelId = null, System.Net.Http.HttpClient? httpClient = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.OllamaEmbeddingGenerator.OllamaEmbeddingGenerator(System.Uri endpoint, string? modelId = null, System.Net.Http.HttpClient? httpClient = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.AI.OllamaEmbeddingGenerator.Dispose();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task<Microsoft.Extensions.AI.GeneratedEmbeddings<Microsoft.Extensions.AI.Embedding<float>>> Microsoft.Extensions.AI.OllamaEmbeddingGenerator.GenerateAsync(System.Collections.Generic.IEnumerable<string> values, Microsoft.Extensions.AI.EmbeddingGenerationOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}
