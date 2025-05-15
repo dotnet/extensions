@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.AI</RootNamespace>
-    <Description>Abstractions for generative AI.</Description>
+    <Description>Abstractions representing generative AI components.</Description>
     <Workstream>AI</Workstream>
   </PropertyGroup>
 
