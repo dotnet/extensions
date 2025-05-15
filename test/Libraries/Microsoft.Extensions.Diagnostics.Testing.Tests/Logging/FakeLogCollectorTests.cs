@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Extensions.Time.Testing;
 using Xunit;
 using Xunit.Abstractions;
@@ -194,7 +195,7 @@ public class FakeLogCollectorTests
 
     private const int WaitingTscOverallLogCount = 3;
     private const int WaitingTscOneLogTimeInMs = 250;
-    private const string WaitingTscLogAttemptPrefix = "Log attempt";
+    private const string WaitingTscLogAttemptPrefix = "Log";
 
     [Fact]
     public async Task Waiting_ForOneRecord()
@@ -344,77 +345,101 @@ public class FakeLogCollectorTests
 
     private async Task WaitingInternal(WaitingTestCase testCaseData)
     {
-        var collector = FakeLogCollector.Create(new FakeLogCollectorOptions());
+        // Testing infrastructure: keeping track of when the implementation checks the users callback
+        var testExecutionCustomLog = new ConcurrentQueue<string>();
+        int callbackCallCounter = 0;
 
+        // Testing infrastructure: capping the time of the test run
+        bool stoppedByInfrastructure = false;
+        const int TestRunCapMs = 2_000;
+        var testInfrastructureCircuitBreakerTask = Task.Run(() =>
+        {
+            Thread.Sleep(TestRunCapMs);
+            stoppedByInfrastructure = true;
+            return false;
+        }, CancellationToken.None);
+
+        var collector = FakeLogCollector.Create(new FakeLogCollectorOptions());
         var logger = new FakeLogger(collector);
 
-        using var cancellationTokenSource = testCaseData.CancellationWaitInMs is not null
+        var userDefinedCancellation = testCaseData.CancellationWaitInMs is not null
             ? new CancellationTokenSource(TimeSpan.FromMilliseconds(testCaseData.CancellationWaitInMs.Value))
             : new CancellationTokenSource();
 
-        if (testCaseData.StartsWithCancelledToken)
+        using (userDefinedCancellation)
         {
-            cancellationTokenSource.Cancel();
-        }
-
-        var testExecutionCustomLog = new ConcurrentQueue<string>();
-
-        int count = 0;
-
-        bool EndWaiting(FakeLogRecord record)
-        {
-            Interlocked.Increment(ref count);
-            testExecutionCustomLog.Enqueue("Checking if waiting should end #" + count);
-            return count == testCaseData.EndWaitAtAttemptCount;
-        }
-
-        // Act
-
-        testExecutionCustomLog.Enqueue("Started");
-
-        TimeSpan? timeout = testCaseData.TimeoutWaitInMs is null
-            ? null
-            : TimeSpan.FromMilliseconds(testCaseData.TimeoutWaitInMs.Value);
-
-        var awaitingTask = collector.WaitForLogAsync(EndWaiting, timeout, cancellationTokenSource.Token);
-
-        var loggingBackgroundAction = Task.Run(
-            () =>
+            if (testCaseData.StartsWithCancelledToken)
             {
-                for (var logAttempt = 1; logAttempt <= WaitingTscOverallLogCount; logAttempt++)
+                await CancelTokenSource(userDefinedCancellation);
+            }
+
+            bool UsersWaitingConditionCallback(FakeLogRecord record)
+            {
+                Interlocked.Increment(ref callbackCallCounter);
+                testExecutionCustomLog.Enqueue("Checking if waiting should end #" + callbackCallCounter);
+                return callbackCallCounter == testCaseData.EndWaitAtAttemptCount;
+            }
+
+            // Act
+
+            testExecutionCustomLog.Enqueue("Started");
+
+            TimeSpan? timeout = testCaseData.TimeoutWaitInMs is null
+                ? null
+                : TimeSpan.FromMilliseconds(testCaseData.TimeoutWaitInMs.Value);
+
+            var awaitingTask = collector.WaitForLogAsync(UsersWaitingConditionCallback, timeout, userDefinedCancellation.Token);
+            var awaitingTaskWrapped = Task.WhenAny(awaitingTask, testInfrastructureCircuitBreakerTask);
+
+            var loggingBackgroundAction = Task.Run(
+                () =>
                 {
-                    Thread.Sleep(WaitingTscOneLogTimeInMs);
-                    var message = $"{WaitingTscLogAttemptPrefix} #{logAttempt:000}";
-                    testExecutionCustomLog.Enqueue(message);
-                    logger.LogDebug(message);
-                }
-            },
-            CancellationToken.None);
+                    for (var logAttempt = 1; logAttempt <= WaitingTscOverallLogCount; logAttempt++)
+                    {
+                        Thread.Sleep(WaitingTscOneLogTimeInMs);
+                        var message = $"{WaitingTscLogAttemptPrefix} #{logAttempt:000}";
+                        testExecutionCustomLog.Enqueue(message);
+                        logger.LogDebug(message);
+                    }
+                },
+                CancellationToken.None
+            );
+            var loggingBackgroundActionWrapped = Task.WhenAny(loggingBackgroundAction, testInfrastructureCircuitBreakerTask);
 
-        testExecutionCustomLog.Enqueue("Right after starting the background action");
+            testExecutionCustomLog.Enqueue("Right after starting the background action");
 
-        bool? result = null;
-        bool taskCancelled = false;
+            bool? result = null;
+            bool taskCancelled = false;
 
-        try
-        {
-            result = await awaitingTask;
+            try
+            {
+                result = await await awaitingTaskWrapped;
+            }
+            catch (TaskCanceledException)
+            {
+                taskCancelled = true;
+            }
+
+            testExecutionCustomLog.Enqueue("Finished waiting for the log. Waiting for the background action to finish.");
+
+            await await loggingBackgroundActionWrapped;
+
+            testExecutionCustomLog.Enqueue("Background action has finished");
+
+            // Assert
+            Assert.False(stoppedByInfrastructure, "None of the test cases is expected to reach test infrastructure timeout");
+            Assert.Equal(result, testCaseData.ExpectedAwaitedTaskResult);
+            testExecutionCustomLog.Should().Equal(testCaseData.ExpectedOperationSequence);
+            Assert.Equal(testExecutionCustomLog.Count(r => r.StartsWith(WaitingTscLogAttemptPrefix)), logger.Collector.Count);
+            Assert.Equal(taskCancelled, testCaseData.ExpectedTaskCancelled);
         }
-        catch (TaskCanceledException)
-        {
-            taskCancelled = true;
-        }
 
-        testExecutionCustomLog.Enqueue("Finished waiting for the log. Waiting for the background action to finish.");
+        async Task CancelTokenSource(CancellationTokenSource cts) =>
+#if NET8_0_OR_GREATER
+            await cts.CancelAsync();
+#else
+            cts.Cancel();
+#endif
 
-        await loggingBackgroundAction;
-
-        testExecutionCustomLog.Enqueue("Background action has finished");
-
-        // Assert
-        Assert.Equal(result, testCaseData.ExpectedAwaitedTaskResult);
-        Assert.True(testExecutionCustomLog.SequenceEqual(testCaseData.ExpectedOperationSequence));
-        Assert.Equal(testExecutionCustomLog.Count(r => r.StartsWith(WaitingTscLogAttemptPrefix)), logger.Collector.Count);
-        Assert.Equal(taskCancelled, testCaseData.ExpectedTaskCancelled);
     }
 }

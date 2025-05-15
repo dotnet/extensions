@@ -20,6 +20,11 @@ namespace Microsoft.Extensions.Logging.Testing;
 [DebuggerTypeProxy(typeof(FakeLogCollectorDebugView))]
 public class FakeLogCollector
 {
+    /// <summary>
+    /// Arbitrary low number threshold for stack allocation path to avoid stack overflow.
+    /// </summary>
+    private const int StackAllocThreshold = 100;
+
     private readonly List<FakeLogRecord> _records = [];
     private readonly FakeLogCollectorOptions _options;
 
@@ -204,7 +209,7 @@ public class FakeLogCollector
         {
             _records.Add(record);
 
-            Span<bool> waitersToWakeUpOrderedByIndices = stackalloc bool[_waiters.Count];
+            Span<bool> waitersToWakeUpOrderedByIndices = _waiters.Count < StackAllocThreshold ? stackalloc bool[_waiters.Count]: new bool[_waiters.Count];
             CheckWaiting(record, waitersToWakeUpOrderedByIndices, out waitersToWakeUp);
             for (var i = 0; i < waitersToWakeUpOrderedByIndices.Length; i++)
             {
