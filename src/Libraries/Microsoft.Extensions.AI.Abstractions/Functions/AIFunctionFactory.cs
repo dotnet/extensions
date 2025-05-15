@@ -8,7 +8,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+#if !NET
 using System.Linq;
+#endif
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -682,12 +684,6 @@ public static partial class AIFunctionFactory
                 ParameterMarshallers[i] = GetParameterMarshaller(serializerOptions, options, parameters[i]);
             }
 
-            // Get a marshaling delegate for the return value.
-            string? returnTypeDescription = key.Method.ReturnTypeCustomAttributes.GetCustomAttributes(typeof(DescriptionAttribute), inherit: true)
-                    .Cast<DescriptionAttribute>()
-                    .FirstOrDefault()
-                    ?.Description;
-
             ReturnParameterMarshaller = GetReturnParameterMarshaller(key, serializerOptions, out Type? returnType);
             Method = key.Method;
             Name = key.Name ?? GetFunctionName(key.Method);
@@ -695,7 +691,7 @@ public static partial class AIFunctionFactory
             JsonSerializerOptions = serializerOptions;
             ReturnJsonSchema = AIJsonUtilities.CreateJsonSchema(
                 returnType,
-                description: returnTypeDescription,
+                description: key.Method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
                 serializerOptions: serializerOptions,
                 inferenceOptions: schemaOptions);
 
