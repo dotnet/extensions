@@ -1,12 +1,12 @@
 # Microsoft.Extensions.AI
 
-.NET developers need a way to integrate and interact with a growing variety of artificial intelligence (AI) services in their apps. The `Microsoft.Extensions.AI` libraries provide a unified approach for representing generative AI components, and enables seamless integration and interoperability with various AI services.
+.NET developers need to integrate and interact with a growing variety of artificial intelligence (AI) services in their apps. The `Microsoft.Extensions.AI` libraries provide a unified approach for representing generative AI components, and enable seamless integration and interoperability with various AI services.
 
 ## The packages
 
-The [Microsoft.Extensions.AI.Abstractions](https://www.nuget.org/packages/Microsoft.Extensions.AI.Abstractions) package provides the core exchange types: [`IChatClient`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.ai.ichatclient) and [`IEmbeddingGenerator<TInput,TEmbedding>`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.ai.iembeddinggenerator-2). Any .NET library that provides an AI client can implement the `IChatClient` interface to enable seamless integration with consuming code.
+The [Microsoft.Extensions.AI.Abstractions](https://www.nuget.org/packages/Microsoft.Extensions.AI.Abstractions) package provides the core exchange types, including [`IChatClient`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.ai.ichatclient) and [`IEmbeddingGenerator<TInput,TEmbedding>`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.ai.iembeddinggenerator-2). Any .NET library that provides an LLM client can implement the `IChatClient` interface to enable seamless integration with consuming code.
 
-The [Microsoft.Extensions.AI](https://www.nuget.org/packages/Microsoft.Extensions.AI) package has an implicit dependency on the `Microsoft.Extensions.AI.Abstractions` package. This package enables you to easily integrate components such as telemetry and caching into your applications using familiar dependency injection and middleware patterns. For example, it provides the [`UseOpenTelemetry(ChatClientBuilder, ILoggerFactory, String, Action<OpenTelemetryChatClient>)`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.ai.opentelemetrychatclientbuilderextensions.useopentelemetry#microsoft-extensions-ai-opentelemetrychatclientbuilderextensions-useopentelemetry(microsoft-extensions-ai-chatclientbuilder-microsoft-extensions-logging-iloggerfactory-system-string-system-action((microsoft-extensions-ai-opentelemetrychatclient)))) extension method, which adds OpenTelemetry support to the chat client pipeline.
+The [Microsoft.Extensions.AI](https://www.nuget.org/packages/Microsoft.Extensions.AI) package has an implicit dependency on the `Microsoft.Extensions.AI.Abstractions` package. This package enables you to easily integrate components such as automatic function tool invocation, telemetry, and caching into your applications using familiar dependency injection and middleware patterns. For example, it provides the [`UseOpenTelemetry(ChatClientBuilder, ILoggerFactory, String, Action<OpenTelemetryChatClient>)`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.ai.opentelemetrychatclientbuilderextensions.useopentelemetry#microsoft-extensions-ai-opentelemetrychatclientbuilderextensions-useopentelemetry(microsoft-extensions-ai-chatclientbuilder-microsoft-extensions-logging-iloggerfactory-system-string-system-action((microsoft-extensions-ai-opentelemetrychatclient)))) extension method, which adds OpenTelemetry support to the chat client pipeline.
 
 ## Which package to reference
 
@@ -33,13 +33,6 @@ Or directly in the C# project file:
 ## Documentation
 
 Refer to the [Microsoft.Extensions.AI libraries documentation](https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai) for more information and API usage examples.
-
-## Related packages
-
-* [Microsoft.Extensions.AI.Abstractions](https://www.nuget.org/packages/Microsoft.Extensions.AI.Abstractions)
-* [Microsoft.Extensions.AI.OpenAI](https://www.nuget.org/packages/Microsoft.Extensions.AI.OpenAI)
-* [Microsoft.Extensions.AI.AzureAIInference](https://www.nuget.org/packages/Microsoft.Extensions.AI.AzureAIInference)
-* [OllamaSharp](https://www.nuget.org/packages/OllamaSharp)
 
 ## Feedback & Contributing
 
