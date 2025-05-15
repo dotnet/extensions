@@ -58,6 +58,6 @@ internal static partial class Log
         long counterValue);
 
     [LoggerMessage(7, LogLevel.Warning,
-        "Error getting disk stats: Error={errorMessage}")]
+        "Error while getting disk stats: Error={errorMessage}")]
     public static partial void HandleDiskStatsException(ILogger logger, string errorMessage);
 }
