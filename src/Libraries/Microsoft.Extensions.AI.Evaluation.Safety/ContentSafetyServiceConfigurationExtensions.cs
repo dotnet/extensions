@@ -48,4 +48,38 @@ public static class ContentSafetyServiceConfigurationExtensions
 
         return new ChatConfiguration(newChatClient);
     }
+
+    /// <summary>
+    /// Returns a <see cref="ChatConfiguration"/> that can be used to communicate with the Azure AI Foundry Evaluation
+    /// service for performing content safety evaluations.
+    /// </summary>
+    /// <param name="contentSafetyServiceConfiguration">
+    /// An object that specifies configuration parameters such as the Azure AI project that should be used, and the
+    /// credentials that should be used, when communicating with the Azure AI Foundry Evaluation service to perform
+    /// content safety evaluations.
+    /// </param>
+    /// <param name="originalChatClient">
+    /// The original <see cref="IChatClient"/>. The returned <see cref="ChatConfiguration.ChatClient"/> will be a
+    /// wrapper around <paramref name="originalChatClient"/> that can be used both to communicate with the AI model
+    /// that <paramref name="originalChatClient"/> is configured to communicate with, as well as to communicate with
+    /// the Azure AI Foundry Evaluation service.
+    /// </param>
+    /// <returns>
+    /// A <see cref="ChatConfiguration"/> that can be used to communicate with the Azure AI Foundry Evaluation service
+    /// for performing content safety evaluations.
+    /// </returns>
+    public static ChatConfiguration ToChatConfiguration(
+        this ContentSafetyServiceConfiguration contentSafetyServiceConfiguration,
+        IChatClient originalChatClient)
+    {
+        _ = Throw.IfNull(contentSafetyServiceConfiguration);
+
+#pragma warning disable CA2000 // Dispose objects before they go out of scope.
+        // We can't dispose newChatClient here because it is returned to the caller.
+
+        var newChatClient = new ContentSafetyChatClient(contentSafetyServiceConfiguration, originalChatClient);
+#pragma warning restore CA2000
+
+        return new ChatConfiguration(newChatClient);
+    }
 }
