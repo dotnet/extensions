@@ -291,6 +291,15 @@ app.MapPost("/embedding", async (IEmbeddingGenerator<string, Embedding<float>> c
 app.Run();
 ```
 
+## Documentation
+
+Refer to the [Microsoft.Extensions.AI libraries documentation](https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai) for more information and API usage examples.
+
+## Related packages
+
+* [Microsoft.Extensions.AI](https://www.nuget.org/packages/Microsoft.Extensions.AI)
+* [Microsoft.Extensions.AI.Abstractions](https://www.nuget.org/packages/Microsoft.Extensions.AI.Abstractions)
+
 ## Feedback & Contributing
 
 We welcome feedback and contributions in [our GitHub repo](https://github.com/dotnet/extensions).
