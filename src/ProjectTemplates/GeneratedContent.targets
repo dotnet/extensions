@@ -41,6 +41,7 @@
 
         <!-- Repo properties -->
         ArtifactsShippingPackagesDir=$(ArtifactsShippingPackagesDir);
+        AdditionalPackagesDir=$(MSBuildThisFileDirectory)AdditionalPackages\;
 
         <!-- Package version properties -->
         AspireVersion=$(AspireVersion);
@@ -59,6 +60,7 @@
         MicrosoftExtensionsServiceDiscoveryVersion=$(MicrosoftExtensionsServiceDiscoveryVersion);
         MicrosoftSemanticKernelConnectorsAzureAISearchVersion=$(MicrosoftSemanticKernelConnectorsAzureAISearchVersion);
         MicrosoftSemanticKernelConnectorsQdrantVersion=$(MicrosoftSemanticKernelConnectorsQdrantVersion);
+        MicrosoftSemanticKernelConnectorsSqliteVecVersion=$(MicrosoftSemanticKernelConnectorsSqliteVecVersion);
         MicrosoftSemanticKernelCoreVersion=$(MicrosoftSemanticKernelCoreVersion);
         OllamaSharpVersion=$(OllamaSharpVersion);
         OpenTelemetryVersion=$(OpenTelemetryVersion);
@@ -78,6 +80,9 @@
       <GeneratedContent
         Include="$(_ChatWithCustomDataContentRoot)Directory.Build.targets.in"
         OutputPath="$(_ChatWithCustomDataContentRoot)Directory.Build.targets" />
+      <GeneratedContent
+        Include="$(_ChatWithCustomDataContentRoot)Directory.Build.props.in"
+        OutputPath="$(_ChatWithCustomDataContentRoot)Directory.Build.props" />
       <GeneratedContent
         Include="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.Web\ChatWithCustomData-CSharp.Web.csproj.in"
         OutputPath="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.Web\ChatWithCustomData-CSharp.Web.csproj" />

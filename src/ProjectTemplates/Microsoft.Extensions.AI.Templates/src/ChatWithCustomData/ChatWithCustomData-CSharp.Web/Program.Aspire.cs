@@ -1,5 +1,4 @@
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using ChatWithCustomData_CSharp.Web.Components;
 using ChatWithCustomData_CSharp.Web.Services;
 using ChatWithCustomData_CSharp.Web.Services.Ingestion;
@@ -7,11 +6,7 @@ using ChatWithCustomData_CSharp.Web.Services.Ingestion;
 #else // IsAzureOpenAI || IsOpenAI || IsGHModels
 using OpenAI;
 #endif
-#if (UseAzureAISearch)
-using Microsoft.SemanticKernel.Connectors.AzureAISearch;
-#elif (UseQdrant)
-using Microsoft.SemanticKernel.Connectors.Qdrant;
-#endif
+using Microsoft.SemanticKernel;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
@@ -41,15 +36,13 @@ openai.AddEmbeddingGenerator("text-embedding-3-small");
 
 #if (UseAzureAISearch)
 builder.AddAzureSearchClient("azureAISearch");
-
-builder.Services.AddSingleton<IVectorStore, AzureAISearchVectorStore>();
+builder.Services.AddAzureAISearchVectorStore();
 #elif (UseQdrant)
 builder.AddQdrantClient("vectordb");
-
-builder.Services.AddSingleton<IVectorStore, QdrantVectorStore>();
+builder.Services.AddQdrantVectorStore();
 #else // UseLocalVectorStore
-var vectorStore = new JsonVectorStore(Path.Combine(AppContext.BaseDirectory, "vector-store"));
-builder.Services.AddSingleton<IVectorStore>(vectorStore);
+var vectorStorePath = Path.Combine(AppContext.BaseDirectory, "vector-store.db");
+builder.Services.AddSqliteVectorStore($"Data Source={vectorStorePath}");
 #endif
 builder.Services.AddScoped<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();

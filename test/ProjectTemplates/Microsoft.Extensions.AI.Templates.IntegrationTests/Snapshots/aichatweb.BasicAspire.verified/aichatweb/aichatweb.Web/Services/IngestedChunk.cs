@@ -4,18 +4,20 @@ namespace aichatweb.Web.Services;
 
 public class IngestedChunk
 {
-    [VectorStoreRecordKey]
+    private const int VectorDimensions = 1536; // 1536 is the default vector size for the OpenAI text-embedding-3-small model
+
+    [VectorStoreKey]
     public required string Key { get; set; }
 
-    [VectorStoreRecordData(IsIndexed = true)]
+    [VectorStoreData(IsIndexed = true)]
     public required string DocumentId { get; set; }
 
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public int PageNumber { get; set; }
 
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public required string Text { get; set; }
 
-    [VectorStoreRecordVector(1536, DistanceFunction = DistanceFunction.CosineSimilarity)] // 1536 is the default vector size for the OpenAI text-embedding-3-small model
+    [VectorStoreVector(VectorDimensions, DistanceFunction = DistanceFunction.EuclideanDistance)]
     public ReadOnlyMemory<float> Vector { get; set; }
 }

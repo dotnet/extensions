@@ -5,14 +5,14 @@ namespace aichatweb.Services;
 
 public class SemanticSearch(
     IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
-    IVectorStore vectorStore)
+    VectorStore vectorStore)
 {
     public async Task<IReadOnlyList<IngestedChunk>> SearchAsync(string text, string? documentIdFilter, int maxResults)
     {
         var queryEmbedding = await embeddingGenerator.GenerateVectorAsync(text);
         var vectorCollection = vectorStore.GetCollection<string, IngestedChunk>("data-aichatweb-chunks");
 
-        var nearest = vectorCollection.SearchEmbeddingAsync(queryEmbedding, maxResults, new VectorSearchOptions<IngestedChunk>
+        var nearest = vectorCollection.SearchEmbeddingAsync(queryEmbedding, maxResults, new RecordSearchOptions<IngestedChunk>
         {
             Filter = documentIdFilter is { Length: > 0 } ? record => record.DocumentId == documentIdFilter : null,
         });

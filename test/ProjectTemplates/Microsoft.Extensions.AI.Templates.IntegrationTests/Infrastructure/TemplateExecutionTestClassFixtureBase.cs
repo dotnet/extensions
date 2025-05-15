@@ -95,6 +95,7 @@ public abstract class TemplateExecutionTestClassFixtureBase : IAsyncLifetime
         var restoreResult = await new DotNetCommand("restore")
             .WithWorkingDirectory(project.StartupProjectFullPath)
             .WithEnvironmentVariable("LOCAL_SHIPPING_PATH", WellKnownPaths.LocalShippingPackagesPath)
+            .WithEnvironmentVariable("ADDITIONAL_PACKAGES_PATH", WellKnownPaths.AdditionalPackagesPath)
             .WithEnvironmentVariable("NUGET_PACKAGES", WellKnownPaths.NuGetPackagesPath)
             .ExecuteAsync(OutputHelper);
         restoreResult.AssertSucceeded();

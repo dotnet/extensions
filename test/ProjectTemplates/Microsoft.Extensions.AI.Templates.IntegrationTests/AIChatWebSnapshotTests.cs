@@ -31,6 +31,7 @@ public class AIChatWebSnapshotTests
         "**/ingestioncache.*",
         "**/NuGet.config",
         "**/Directory.Build.targets",
+        "**/Directory.Build.props",
     ];
 
     private readonly ILogger _log;

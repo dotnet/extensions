@@ -1,0 +1,3 @@
+# Temporarily directly include packages from Microsoft.SemanticKernel until
+# the sqlite-vec integration ships publicly.
+!*.nupkg
