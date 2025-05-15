@@ -40,7 +40,10 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Reporting.ChatTurnDetails(System.TimeSpan latency, string? model = null, Microsoft.Extensions.AI.UsageDetails? usage = null, string? cacheKey = null, bool? cacheHit = null)",
+      // After generating the baseline, manually edit this file to have 'params' instead of 'scoped'
+      // This is needed until ICSharpCode.Decompiler adds params collection support
+      // See: https://github.com/icsharpcode/ILSpy/issues/829      
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Reporting.ChatTurnDetails",
       "Stage": "Stable",
       "Methods": [
         {
@@ -104,7 +107,10 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Reporting.Storage.DiskBasedResponseCacheProvider(string storageRootPath, System.TimeSpan? timeToLiveForCacheEntries = null) : Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationResponseCacheProvider",
+      // After generating the baseline, manually edit this file to have 'params' instead of 'scoped'
+      // This is needed until ICSharpCode.Decompiler adds params collection support
+      // See: https://github.com/icsharpcode/ILSpy/issues/829      
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Reporting.Storage.DiskBasedResponseCacheProvider : Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationResponseCacheProvider",
       "Stage": "Stable",
       "Methods": [
         {
@@ -160,7 +166,10 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Reporting.Formats.Html.HtmlReportWriter(string reportFilePath) : Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationReportWriter",
+      // After generating the baseline, manually edit this file to have 'params' instead of 'scoped'
+      // This is needed until ICSharpCode.Decompiler adds params collection support
+      // See: https://github.com/icsharpcode/ILSpy/issues/829      
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Reporting.Formats.Html.HtmlReportWriter : Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationReportWriter",
       "Stage": "Stable",
       "Methods": [
         {
@@ -232,7 +241,10 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Reporting.Formats.Json.JsonReportWriter(string reportFilePath) : Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationReportWriter",
+      // After generating the baseline, manually edit this file to have 'params' instead of 'scoped'
+      // This is needed until ICSharpCode.Decompiler adds params collection support
+      // See: https://github.com/icsharpcode/ILSpy/issues/829      
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Reporting.Formats.Json.JsonReportWriter : Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationReportWriter",
       "Stage": "Stable",
       "Methods": [
         {

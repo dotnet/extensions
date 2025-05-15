@@ -50,7 +50,7 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.CompletenessEvaluatorContext(string groundTruth) : Microsoft.Extensions.AI.Evaluation.EvaluationContext",
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.CompletenessEvaluatorContext : Microsoft.Extensions.AI.Evaluation.EvaluationContext",
       "Stage": "Stable",
       "Methods": [
         {
@@ -94,7 +94,7 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.EquivalenceEvaluatorContext(string groundTruth) : Microsoft.Extensions.AI.Evaluation.EvaluationContext",
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.EquivalenceEvaluatorContext : Microsoft.Extensions.AI.Evaluation.EvaluationContext",
       "Stage": "Stable",
       "Methods": [
         {
@@ -162,7 +162,7 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.GroundednessEvaluatorContext(string groundingContext) : Microsoft.Extensions.AI.Evaluation.EvaluationContext",
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.GroundednessEvaluatorContext : Microsoft.Extensions.AI.Evaluation.EvaluationContext",
       "Stage": "Stable",
       "Methods": [
         {
