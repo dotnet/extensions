@@ -40,14 +40,17 @@ public static class ContentSafetyServiceConfigurationExtensions
 #pragma warning disable CA2000 // Dispose objects before they go out of scope.
         // We can't dispose newChatClient here because it is returned to the caller.
 
-        var newChatClient = contentSafetyServiceConfiguration.ToIChatClient(originalChatConfiguration?.ChatClient);
+        var newChatClient =
+            new ContentSafetyChatClient(
+                contentSafetyServiceConfiguration,
+                originalChatClient: originalChatConfiguration?.ChatClient);
 #pragma warning restore CA2000
 
         return new ChatConfiguration(newChatClient);
     }
 
     /// <summary>
-    /// Returns an <see cref="IChatClient"/> that can be used to communicate with the Azure AI Foundry Evaluation
+    /// Returns a <see cref="ChatConfiguration"/> that can be used to communicate with the Azure AI Foundry Evaluation
     /// service for performing content safety evaluations.
     /// </summary>
     /// <param name="contentSafetyServiceConfiguration">
@@ -56,21 +59,27 @@ public static class ContentSafetyServiceConfigurationExtensions
     /// content safety evaluations.
     /// </param>
     /// <param name="originalChatClient">
-    /// The original <see cref="IChatClient"/>, if any. If specified, the returned
-    /// <see cref="IChatClient"/> will be a wrapper around <paramref name="originalChatClient"/> that can be used both
-    /// to communicate with the AI model that <paramref name="originalChatClient"/> is configured to communicate with,
-    /// as well as to communicate with the Azure AI Foundry Evaluation service.
+    /// The original <see cref="IChatClient"/>. The returned <see cref="ChatConfiguration.ChatClient"/> will be a
+    /// wrapper around <paramref name="originalChatClient"/> that can be used both to communicate with the AI model
+    /// that <paramref name="originalChatClient"/> is configured to communicate with, as well as to communicate with
+    /// the Azure AI Foundry Evaluation service.
     /// </param>
     /// <returns>
     /// A <see cref="ChatConfiguration"/> that can be used to communicate with the Azure AI Foundry Evaluation service
     /// for performing content safety evaluations.
     /// </returns>
-    public static IChatClient ToIChatClient(
+    public static ChatConfiguration ToChatConfiguration(
         this ContentSafetyServiceConfiguration contentSafetyServiceConfiguration,
-        IChatClient? originalChatClient = null)
+        IChatClient originalChatClient)
     {
         _ = Throw.IfNull(contentSafetyServiceConfiguration);
 
-        return new ContentSafetyChatClient(contentSafetyServiceConfiguration, originalChatClient);
+#pragma warning disable CA2000 // Dispose objects before they go out of scope.
+        // We can't dispose newChatClient here because it is returned to the caller.
+
+        var newChatClient = new ContentSafetyChatClient(contentSafetyServiceConfiguration, originalChatClient);
+#pragma warning restore CA2000
+
+        return new ChatConfiguration(newChatClient);
     }
 }
