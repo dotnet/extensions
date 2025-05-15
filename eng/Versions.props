@@ -160,19 +160,19 @@
     <AspireAzureAIOpenAIVersion>9.2.1-preview.1.25222.1</AspireAzureAIOpenAIVersion>
     <AzureAIProjectsVersion>1.0.0-beta.6</AzureAIProjectsVersion>
     <AzureAIOpenAIVersion>2.2.0-beta.4</AzureAIOpenAIVersion>
-    <AzureIdentityVersion>1.13.2</AzureIdentityVersion>
+    <AzureIdentityVersion>1.14.0</AzureIdentityVersion>
     <AzureSearchDocumentsVersion>11.6.0</AzureSearchDocumentsVersion>
     <CommunityToolkitAspireHostingOllamaVersion>9.4.1-beta.277</CommunityToolkitAspireHostingOllamaVersion>
     <CommunityToolkitAspireHostingSqliteVersion>9.4.1-beta.277</CommunityToolkitAspireHostingSqliteVersion>
     <CommunityToolkitAspireMicrosoftEntityFrameworkCoreSqliteVersion>9.4.1-beta.277</CommunityToolkitAspireMicrosoftEntityFrameworkCoreSqliteVersion>
     <CommunityToolkitAspireOllamaSharpVersion>9.4.1-beta.277</CommunityToolkitAspireOllamaSharpVersion>
     <MicrosoftExtensionsServiceDiscoveryVersion>9.2.0</MicrosoftExtensionsServiceDiscoveryVersion>
-    <MicrosoftSemanticKernelConnectorsAzureAISearchVersion>1.49.0-preview</MicrosoftSemanticKernelConnectorsAzureAISearchVersion>
-    <MicrosoftSemanticKernelConnectorsQdrantVersion>1.49.0-preview</MicrosoftSemanticKernelConnectorsQdrantVersion>
-    <MicrosoftSemanticKernelCoreVersion>1.49.0</MicrosoftSemanticKernelCoreVersion>
-    <OllamaSharpVersion>5.1.13</OllamaSharpVersion>
+    <MicrosoftSemanticKernelConnectorsAzureAISearchVersion>1.50.0-preview</MicrosoftSemanticKernelConnectorsAzureAISearchVersion>
+    <MicrosoftSemanticKernelConnectorsQdrantVersion>1.50.0-preview</MicrosoftSemanticKernelConnectorsQdrantVersion>
+    <MicrosoftSemanticKernelCoreVersion>1.50.0</MicrosoftSemanticKernelCoreVersion>
+    <OllamaSharpVersion>5.1.16</OllamaSharpVersion>
     <OpenTelemetryVersion>1.9.0</OpenTelemetryVersion>
-    <PdfPigVersion>0.1.9</PdfPigVersion>
+    <PdfPigVersion>0.1.10</PdfPigVersion>
     <SystemLinqAsyncVersion>6.0.1</SystemLinqAsyncVersion>
     <!--
       xUnit version is configured by the Arcade SDK.
