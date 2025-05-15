@@ -10,6 +10,9 @@
           "Stage": "Stable"
         },
         {
+          // After generating the baseline, manually edit this file to have 'params' instead of 'scoped'
+          // This is needed until ICSharpCode.Decompiler adds params collection support
+          // See: https://github.com/icsharpcode/ILSpy/issues/829
           "Member": "abstract string Microsoft.Extensions.AI.CachingChatClient.GetCacheKey(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options, params System.ReadOnlySpan<object?> additionalValues);",
           "Stage": "Stable"
         },
@@ -58,6 +61,9 @@
           "Stage": "Stable"
         },
         {
+          // After generating the baseline, manually edit this file to have 'params' instead of 'scoped'
+          // This is needed until ICSharpCode.Decompiler adds params collection support
+          // See: https://github.com/icsharpcode/ILSpy/issues/829
           "Member": "abstract string Microsoft.Extensions.AI.CachingEmbeddingGenerator<TInput, TEmbedding>.GetCacheKey(params System.ReadOnlySpan<object?> values);",
           "Stage": "Stable"
         },
@@ -276,6 +282,9 @@
           "Stage": "Stable"
         },
         {
+          // After generating the baseline, manually edit this file to have 'params' instead of 'scoped'
+          // This is needed until ICSharpCode.Decompiler adds params collection support
+          // See: https://github.com/icsharpcode/ILSpy/issues/829
           "Member": "override string Microsoft.Extensions.AI.DistributedCachingChatClient.GetCacheKey(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options, params System.ReadOnlySpan<object?> additionalValues);",
           "Stage": "Stable"
         },
@@ -322,6 +331,9 @@
           "Stage": "Stable"
         },
         {
+          // After generating the baseline, manually edit this file to have 'params' instead of 'scoped'
+          // This is needed until ICSharpCode.Decompiler adds params collection support
+          // See: https://github.com/icsharpcode/ILSpy/issues/829
           "Member": "override string Microsoft.Extensions.AI.DistributedCachingEmbeddingGenerator<TInput, TEmbedding>.GetCacheKey(params System.ReadOnlySpan<object?> values);",
           "Stage": "Stable"
         },
