@@ -293,7 +293,7 @@ app.Run();
 
 ## Documentation
 
-Refer to the [Microsoft.Extensions.AI libraries documentation](https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai) for more information and API usage examples.
+Learn how to create a conversational .NET console chat app using an OpenAI or Azure OpenAI model with the [Quickstart - Build an AI chat app with .NET](https://learn.microsoft.com/dotnet/ai/quickstarts/build-chat-app?pivots=openai) documentation.
 
 ## Feedback & Contributing
 

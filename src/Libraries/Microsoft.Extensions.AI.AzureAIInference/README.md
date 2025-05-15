@@ -281,10 +281,6 @@ app.MapPost("/chat", async (IChatClient client, string message) =>
 app.Run();
 ```
 
-## Documentation
-
-Refer to the [Microsoft.Extensions.AI libraries documentation](https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai) for more information and API usage examples.
-
 ## Feedback & Contributing
 
 We welcome feedback and contributions in [our GitHub repo](https://github.com/dotnet/extensions).
