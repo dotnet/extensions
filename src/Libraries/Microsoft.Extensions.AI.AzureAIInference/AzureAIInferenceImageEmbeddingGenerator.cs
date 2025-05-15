@@ -87,7 +87,7 @@ internal sealed class AzureAIInferenceImageEmbeddingGenerator :
     {
         _ = Throw.IfNull(values);
 
-        var azureAIOptions = ToAzureAIOptions(values, options, EmbeddingEncodingFormat.Base64);
+        var azureAIOptions = ToAzureAIOptions(values, options);
 
         var embeddings = (await _imageEmbeddingsClient.EmbedAsync(azureAIOptions, cancellationToken).ConfigureAwait(false)).Value;
 
@@ -117,14 +117,24 @@ internal sealed class AzureAIInferenceImageEmbeddingGenerator :
     }
 
     /// <summary>Converts an extensions options instance to an Azure.AI.Inference options instance.</summary>
-    private ImageEmbeddingsOptions ToAzureAIOptions(IEnumerable<DataContent> inputs, EmbeddingGenerationOptions? options, EmbeddingEncodingFormat format)
+    private ImageEmbeddingsOptions ToAzureAIOptions(IEnumerable<DataContent> inputs, EmbeddingGenerationOptions? options)
     {
-        ImageEmbeddingsOptions result = new(inputs.Select(dc => new ImageEmbeddingInput(dc.Uri)))
+        IEnumerable<ImageEmbeddingInput> imageEmbeddingInputs = inputs.Select(dc => new ImageEmbeddingInput(dc.Uri));
+        if (options?.RawRepresentationFactory?.Invoke(this) is not ImageEmbeddingsOptions result)
         {
-            Dimensions = options?.Dimensions ?? _dimensions,
-            Model = options?.ModelId ?? _metadata.DefaultModelId,
-            EncodingFormat = format,
-        };
+            result = new ImageEmbeddingsOptions(imageEmbeddingInputs);
+        }
+        else
+        {
+            foreach (var input in imageEmbeddingInputs)
+            {
+                result.Input.Add(input);
+            }
+        }
+
+        result.Dimensions ??= options?.Dimensions ?? _dimensions;
+        result.Model ??= options?.ModelId ?? _metadata.DefaultModelId;
+        result.EncodingFormat = EmbeddingEncodingFormat.Base64;
 
         if (options?.AdditionalProperties is { } props)
         {

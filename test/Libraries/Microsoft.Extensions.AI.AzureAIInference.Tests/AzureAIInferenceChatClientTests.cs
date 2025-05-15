@@ -327,22 +327,6 @@ public class AzureAIInferenceChatClientTests
         using IChatClient client = CreateChatClient(httpClient, modelId: null!);
         AIFunction tool = AIFunctionFactory.Create(([Description("The person whose age is being requested")] string personName) => 42, "GetPersonAge", "Gets the age of the specified person.");
 
-        ChatCompletionsOptions azureAIOptions = new()
-        {
-            Model = "gpt-4o-mini",
-            FrequencyPenalty = 0.75f,
-            MaxTokens = 10,
-            NucleusSamplingFactor = 0.5f,
-            PresencePenalty = 0.5f,
-            Temperature = 0.5f,
-            Seed = 42,
-            ToolChoice = ChatCompletionsToolChoice.Auto,
-            ResponseFormat = ChatCompletionsResponseFormat.CreateTextFormat()
-        };
-        azureAIOptions.StopSequences.Add("hello");
-        azureAIOptions.Tools.Add(ToAzureAIChatTool(tool));
-        azureAIOptions.AdditionalProperties["additional_property_from_raw_representation"] = new BinaryData("42");
-
         ChatOptions chatOptions = new ChatOptions
         {
             RawRepresentationFactory = (c) =>

@@ -31,11 +31,6 @@
 <!--#if (UseManagedIdentity) -->
     <PackageReference Include="Azure.Identity" Version="${AzureIdentityVersion}" />
 <!--#endif -->
-<!--#if (IsAspire) -->
-    <PackageReference Include="CommunityToolkit.Aspire.Microsoft.EntityFrameworkCore.Sqlite" Version="${CommunityToolkitAspireMicrosoftEntityFrameworkCoreSqliteVersion}" />
-<!--#else -->
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="${MicrosoftEntityFrameworkCoreSqliteVersion}" />
-<!--#endif -->
     <PackageReference Include="Microsoft.Extensions.AI" Version="${MicrosoftExtensionsAIVersion}" />
     <PackageReference Include="Microsoft.SemanticKernel.Core" Version="${MicrosoftSemanticKernelCoreVersion}" />
     <PackageReference Include="PdfPig" Version="${PdfPigVersion}" />

@@ -20,10 +20,8 @@ var vectorStore = new JsonVectorStore(Path.Combine(AppContext.BaseDirectory, "ve
 builder.Services.AddSingleton<IVectorStore>(vectorStore);
 builder.Services.AddScoped<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();
-builder.AddSqliteDbContext<IngestionCacheDbContext>("ingestionCache");
 
 var app = builder.Build();
-IngestionCacheDbContext.Initialize(app.Services);
 
 app.MapDefaultEndpoints();
 

@@ -39,7 +39,10 @@ public static class PerIncomingRequestLoggingBuilderExtensions
         _ = Throw.IfNull(configuration);
 
         _ = builder.Services
-            .AddSingleton<IConfigureOptions<PerRequestLogBufferingOptions>>(new PerRequestLogBufferingConfigureOptions(configuration))
+            .AddSingleton<IConfigureOptions<PerRequestLogBufferingOptions>>(
+                new PerRequestLogBufferingConfigureOptions(configuration))
+            .AddSingleton<IOptionsChangeTokenSource<PerRequestLogBufferingOptions>>(
+                new ConfigurationChangeTokenSource<PerRequestLogBufferingOptions>(configuration))
             .AddOptionsWithValidateOnStart<PerRequestLogBufferingOptions, PerRequestLogBufferingOptionsValidator>()
             .Services.AddOptionsWithValidateOnStart<PerRequestLogBufferingOptions, PerRequestLogBufferingOptionsCustomValidator>();
 
@@ -64,8 +67,8 @@ public static class PerIncomingRequestLoggingBuilderExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);
 
-        _ = builder.Services
-            .AddOptionsWithValidateOnStart<PerRequestLogBufferingOptions, PerRequestLogBufferingOptionsValidator>()
+        _ = builder
+            .Services.AddOptionsWithValidateOnStart<PerRequestLogBufferingOptions, PerRequestLogBufferingOptionsValidator>()
             .Services.AddOptionsWithValidateOnStart<PerRequestLogBufferingOptions, PerRequestLogBufferingOptionsCustomValidator>()
             .Configure(configure);
 
@@ -92,8 +95,8 @@ public static class PerIncomingRequestLoggingBuilderExtensions
     {
         _ = Throw.IfNull(builder);
 
-        _ = builder.Services
-            .AddOptionsWithValidateOnStart<PerRequestLogBufferingOptions, PerRequestLogBufferingOptionsValidator>()
+        _ = builder
+            .Services.AddOptionsWithValidateOnStart<PerRequestLogBufferingOptions, PerRequestLogBufferingOptionsValidator>()
             .Services.AddOptionsWithValidateOnStart<PerRequestLogBufferingOptions, PerRequestLogBufferingOptionsCustomValidator>()
             .Configure(options =>
             {

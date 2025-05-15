@@ -30,7 +30,8 @@ internal sealed partial class OpenAIChatClient : IChatClient
     {
         RequireAllProperties = true,
         DisallowAdditionalProperties = true,
-        ConvertBooleanSchemas = true
+        ConvertBooleanSchemas = true,
+        MoveDefaultKeywordToDescription = true,
     });
 
     /// <summary>Gets the default OpenAI endpoint.</summary>
