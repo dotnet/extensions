@@ -89,13 +89,9 @@ internal sealed class LinuxDiskMetrics
 
         foreach (DiskStats diskStats in diskStatsSnapshot)
         {
-            if (!_baselineDiskStatsDict.TryGetValue(diskStats.DeviceName, out DiskStats? baselineDiskStats))
-            {
-                continue;
-            }
-
-            long readBytes = (long)(diskStats.SectorsRead - baselineDiskStats.SectorsRead) * LinuxDiskSectorSize;
-            long writeBytes = (long)(diskStats.SectorsWritten - baselineDiskStats.SectorsWritten) * LinuxDiskSectorSize;
+            _ = _baselineDiskStatsDict.TryGetValue(diskStats.DeviceName, out DiskStats? baselineDiskStats);
+            long readBytes = (long)(diskStats.SectorsRead - baselineDiskStats?.SectorsRead ?? 0L) * LinuxDiskSectorSize;
+            long writeBytes = (long)(diskStats.SectorsWritten - baselineDiskStats?.SectorsWritten ?? 0L) * LinuxDiskSectorSize;
             measurements.Add(new Measurement<long>(readBytes, new TagList { _directionReadTag, new(DeviceKey, diskStats.DeviceName) }));
             measurements.Add(new Measurement<long>(writeBytes, new TagList { _directionWriteTag, new(DeviceKey, diskStats.DeviceName) }));
         }
@@ -110,13 +106,9 @@ internal sealed class LinuxDiskMetrics
 
         foreach (DiskStats diskStats in diskStatsSnapshot)
         {
-            if (!_baselineDiskStatsDict.TryGetValue(diskStats.DeviceName, out DiskStats? baselineDiskStats))
-            {
-                continue;
-            }
-
-            long readCount = (long)(diskStats.ReadsCompleted - baselineDiskStats.ReadsCompleted);
-            long writeCount = (long)(diskStats.WritesCompleted - baselineDiskStats.WritesCompleted);
+            _ = _baselineDiskStatsDict.TryGetValue(diskStats.DeviceName, out DiskStats? baselineDiskStats);
+            long readCount = (long)(diskStats.ReadsCompleted - baselineDiskStats?.ReadsCompleted ?? 0L);
+            long writeCount = (long)(diskStats.WritesCompleted - baselineDiskStats?.WritesCompleted ?? 0L);
             measurements.Add(new Measurement<long>(readCount, new TagList { _directionReadTag, new(DeviceKey, diskStats.DeviceName) }));
             measurements.Add(new Measurement<long>(writeCount, new TagList { _directionWriteTag, new(DeviceKey, diskStats.DeviceName) }));
         }
@@ -131,12 +123,8 @@ internal sealed class LinuxDiskMetrics
 
         foreach (DiskStats diskStats in diskStatsSnapshot)
         {
-            if (!_baselineDiskStatsDict.TryGetValue(diskStats.DeviceName, out DiskStats? baselineDiskStats))
-            {
-                continue;
-            }
-
-            double ioTimeSeconds = (diskStats.TimeIoMs - baselineDiskStats.TimeIoMs) / 1000.0; // Convert to seconds
+            _ = _baselineDiskStatsDict.TryGetValue(diskStats.DeviceName, out DiskStats? baselineDiskStats);
+            double ioTimeSeconds = (diskStats.TimeIoMs - baselineDiskStats?.TimeIoMs ?? 0) / 1000.0; // Convert to seconds
             measurements.Add(new Measurement<double>(ioTimeSeconds, new TagList { new(DeviceKey, diskStats.DeviceName) }));
         }
 
