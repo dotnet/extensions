@@ -7,10 +7,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Stage>preview</Stage>
+    <Stage>normal</Stage>
     <EnablePackageValidation>false</EnablePackageValidation>
     <MinCodeCoverage>89</MinCodeCoverage>
-    <MinMutationScore>0</MinMutationScore>
+    <MinMutationScore>85</MinMutationScore>
   </PropertyGroup>
 
   <PropertyGroup>

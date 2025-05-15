@@ -16,7 +16,6 @@
 <!--#if (UseQdrant)
     <PackageReference Include="Aspire.Hosting.Qdrant" Version="${AspireVersion}" />
 #endif -->
-    <PackageReference Include="CommunityToolkit.Aspire.Hosting.Sqlite" Version="${CommunityToolkitAspireHostingSqliteVersion}" />
 <!--#if (IsOllama)
     <PackageReference Include="CommunityToolkit.Aspire.Hosting.Ollama" Version="${CommunityToolkitAspireHostingOllamaVersion}" />
 #endif -->

@@ -2,15 +2,15 @@
 
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.AI</RootNamespace>
-    <Description>Abstractions for generative AI.</Description>
+    <Description>Abstractions representing generative AI components.</Description>
     <Workstream>AI</Workstream>
   </PropertyGroup>
 
   <PropertyGroup>
-    <Stage>preview</Stage>
+    <Stage>normal</Stage>
     <EnablePackageValidation>false</EnablePackageValidation>
     <MinCodeCoverage>82</MinCodeCoverage>
-    <MinMutationScore>0</MinMutationScore>
+    <MinMutationScore>85</MinMutationScore>
   </PropertyGroup>
 
   <PropertyGroup>
