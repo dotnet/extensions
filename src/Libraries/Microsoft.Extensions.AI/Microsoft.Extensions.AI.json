@@ -10,7 +10,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "abstract string Microsoft.Extensions.AI.CachingChatClient.GetCacheKey(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options, scoped System.ReadOnlySpan<object?> additionalValues);",
+          "Member": "abstract string Microsoft.Extensions.AI.CachingChatClient.GetCacheKey(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options, params System.ReadOnlySpan<object?> additionalValues);",
           "Stage": "Stable"
         },
         {
@@ -58,7 +58,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "abstract string Microsoft.Extensions.AI.CachingEmbeddingGenerator<TInput, TEmbedding>.GetCacheKey(scoped System.ReadOnlySpan<object?> values);",
+          "Member": "abstract string Microsoft.Extensions.AI.CachingEmbeddingGenerator<TInput, TEmbedding>.GetCacheKey(params System.ReadOnlySpan<object?> values);",
           "Stage": "Stable"
         },
         {
@@ -276,7 +276,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "override string Microsoft.Extensions.AI.DistributedCachingChatClient.GetCacheKey(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options, scoped System.ReadOnlySpan<object?> additionalValues);",
+          "Member": "override string Microsoft.Extensions.AI.DistributedCachingChatClient.GetCacheKey(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options, params System.ReadOnlySpan<object?> additionalValues);",
           "Stage": "Stable"
         },
         {
@@ -322,7 +322,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "override string Microsoft.Extensions.AI.DistributedCachingEmbeddingGenerator<TInput, TEmbedding>.GetCacheKey(scoped System.ReadOnlySpan<object?> values);",
+          "Member": "override string Microsoft.Extensions.AI.DistributedCachingEmbeddingGenerator<TInput, TEmbedding>.GetCacheKey(params System.ReadOnlySpan<object?> values);",
           "Stage": "Stable"
         },
         {
