@@ -31,7 +31,7 @@
 <!--#if (UseManagedIdentity) -->
     <PackageReference Include="Azure.Identity" Version="${AzureIdentityVersion}" />
 <!--#endif -->
-    <PackageReference Include="Microsoft.Extensions.AI" Version="${MicrosoftExtensionsAIVersion}" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="${MicrosoftExtensionsAIStableVersion}" />
     <PackageReference Include="Microsoft.SemanticKernel.Core" Version="${MicrosoftSemanticKernelCoreVersion}" />
     <PackageReference Include="PdfPig" Version="${PdfPigVersion}" />
     <PackageReference Include="System.Linq.Async" Version="${SystemLinqAsyncVersion}" />
