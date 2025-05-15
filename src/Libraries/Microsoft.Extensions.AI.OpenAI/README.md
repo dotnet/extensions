@@ -291,6 +291,10 @@ app.MapPost("/embedding", async (IEmbeddingGenerator<string, Embedding<float>> c
 app.Run();
 ```
 
+## Documentation
+
+Learn how to create a conversational .NET console chat app using an OpenAI or Azure OpenAI model with the [Quickstart - Build an AI chat app with .NET](https://learn.microsoft.com/dotnet/ai/quickstarts/build-chat-app?pivots=openai) documentation.
+
 ## Feedback & Contributing
 
 We welcome feedback and contributions in [our GitHub repo](https://github.com/dotnet/extensions).
