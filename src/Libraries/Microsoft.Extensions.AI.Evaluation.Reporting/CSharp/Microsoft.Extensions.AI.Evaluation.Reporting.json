@@ -40,9 +40,9 @@
       ]
     },
     {
-      // After generating the baseline, manually edit this file to have 'params' instead of 'scoped'
-      // This is needed until ICSharpCode.Decompiler adds params collection support
-      // See: https://github.com/icsharpcode/ILSpy/issues/829      
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
       "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Reporting.ChatTurnDetails",
       "Stage": "Stable",
       "Methods": [
@@ -107,9 +107,9 @@
       ]
     },
     {
-      // After generating the baseline, manually edit this file to have 'params' instead of 'scoped'
-      // This is needed until ICSharpCode.Decompiler adds params collection support
-      // See: https://github.com/icsharpcode/ILSpy/issues/829      
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
       "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Reporting.Storage.DiskBasedResponseCacheProvider : Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationResponseCacheProvider",
       "Stage": "Stable",
       "Methods": [
@@ -166,9 +166,9 @@
       ]
     },
     {
-      // After generating the baseline, manually edit this file to have 'params' instead of 'scoped'
-      // This is needed until ICSharpCode.Decompiler adds params collection support
-      // See: https://github.com/icsharpcode/ILSpy/issues/829      
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
       "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Reporting.Formats.Html.HtmlReportWriter : Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationReportWriter",
       "Stage": "Stable",
       "Methods": [
@@ -241,9 +241,9 @@
       ]
     },
     {
-      // After generating the baseline, manually edit this file to have 'params' instead of 'scoped'
-      // This is needed until ICSharpCode.Decompiler adds params collection support
-      // See: https://github.com/icsharpcode/ILSpy/issues/829      
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
       "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Reporting.Formats.Json.JsonReportWriter : Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationReportWriter",
       "Stage": "Stable",
       "Methods": [
