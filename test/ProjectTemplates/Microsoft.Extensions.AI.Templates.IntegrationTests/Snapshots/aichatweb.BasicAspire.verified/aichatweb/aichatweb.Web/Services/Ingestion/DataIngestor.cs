@@ -17,8 +17,8 @@ public class DataIngestor(
 
     public async Task IngestDataAsync(IIngestionSource source)
     {
-        var chunksCollection = vectorStore.GetCollection<string, IngestedChunk>("data-aichatweb.Web-chunks");
-        var documentsCollection = vectorStore.GetCollection<string, IngestedDocument>("data-aichatweb.Web-documents");
+        var chunksCollection = vectorStore.GetCollection<string, IngestedChunk>("data-aichatweb-chunks");
+        var documentsCollection = vectorStore.GetCollection<string, IngestedDocument>("data-aichatweb-documents");
         await chunksCollection.CreateCollectionIfNotExistsAsync();
         await documentsCollection.CreateCollectionIfNotExistsAsync();
 
