@@ -50,6 +50,9 @@
       ]
     },
     {
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
       "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.CompletenessEvaluatorContext : Microsoft.Extensions.AI.Evaluation.EvaluationContext",
       "Stage": "Stable",
       "Methods": [
@@ -94,6 +97,9 @@
       ]
     },
     {
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
       "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.EquivalenceEvaluatorContext : Microsoft.Extensions.AI.Evaluation.EvaluationContext",
       "Stage": "Stable",
       "Methods": [
@@ -162,6 +168,9 @@
       ]
     },
     {
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
       "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.GroundednessEvaluatorContext : Microsoft.Extensions.AI.Evaluation.EvaluationContext",
       "Stage": "Stable",
       "Methods": [

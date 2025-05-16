@@ -12,9 +12,9 @@
       ]
     },
     {
-      // After generating the baseline, manually edit this file to have 'params' instead of 'scoped'
-      // This is needed until ICSharpCode.Decompiler adds params collection support
-      // See: https://github.com/icsharpcode/ILSpy/issues/829      
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
       "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Reporting.Storage.AzureStorageResponseCacheProvider : Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationResponseCacheProvider",
       "Stage": "Stable",
       "Methods": [
@@ -37,8 +37,8 @@
       ]
     },
     {
-      // After generating the baseline, manually edit this file to have 'params' instead of 'scoped'
-      // This is needed until ICSharpCode.Decompiler adds params collection support
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
       // See: https://github.com/icsharpcode/ILSpy/issues/829
       "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Reporting.Storage.AzureStorageResultStore : Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationResultStore",
       "Stage": "Stable",
