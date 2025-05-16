@@ -9,42 +9,42 @@
 
   <ItemGroup>
 <!--#if (IsOllama && IsAspire)
-    <PackageReference Include="CommunityToolkit.Aspire.OllamaSharp" Version="${CommunityToolkitAspireOllamaSharpVersion}" />
+    <PackageReference Include="CommunityToolkit.Aspire.OllamaSharp" Version="${TemplatePackageVersion_CommunityToolkitAspire}" />
 #endif -->
 <!--#if (IsOllama)
-    <PackageReference Include="OllamaSharp" Version="${OllamaSharpVersion}" />
+    <PackageReference Include="OllamaSharp" Version="${TemplatePackageVersion_OllamaSharp}" />
 #elif ((IsGHModels || IsOpenAI) && !IsAspire)
-    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${MicrosoftExtensionsAIVersion}" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${TemplatePackageVersion_MicrosoftExtensionsAI_Preview}" />
 #elif (IsAzureAiFoundry)
-    <PackageReference Include="Azure.AI.Projects" Version="${AzureAIProjectsVersion}" />
-    <PackageReference Include="Azure.AI.OpenAI" Version="${AzureAIOpenAIVersion}" />
-    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${MicrosoftExtensionsAIVersion}" />
+    <PackageReference Include="Azure.AI.OpenAI" Version="${TemplatePackageVersion_AzureAIOpenAI}" />
+    <PackageReference Include="Azure.AI.Projects" Version="${TemplatePackageVersion_AzureAIProjects}" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${TemplatePackageVersion_MicrosoftExtensionsAI_Preview}" />
 #endif -->
 <!--#if ((IsAzureOpenAI || IsOpenAI || IsGHModels) && IsAspire) -->
-    <PackageReference Include="Aspire.Azure.AI.OpenAI" Version="${AspireAzureAIOpenAIVersion}" />
-    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${MicrosoftExtensionsAIVersion}" />
+    <PackageReference Include="Aspire.Azure.AI.OpenAI" Version="${TemplatePackageVersion_Aspire_Preview}" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${TemplatePackageVersion_MicrosoftExtensionsAI_Preview}" />
 <!--#endif -->
 <!--#if (IsAzureOpenAI && !IsAspire) -->
-    <PackageReference Include="Azure.AI.OpenAI" Version="${AzureAIOpenAIVersion}" />
-    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${MicrosoftExtensionsAIVersion}" />
+    <PackageReference Include="Azure.AI.OpenAI" Version="${TemplatePackageVersion_AzureAIOpenAI}" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${TemplatePackageVersion_MicrosoftExtensionsAI_Preview}" />
 <!--#endif -->
 <!--#if (UseManagedIdentity) -->
-    <PackageReference Include="Azure.Identity" Version="${AzureIdentityVersion}" />
+    <PackageReference Include="Azure.Identity" Version="${TemplatePackageVersion_AzureIdentity}" />
 <!--#endif -->
-    <PackageReference Include="Microsoft.Extensions.AI" Version="${MicrosoftExtensionsAIVersion}" />
-    <PackageReference Include="Microsoft.SemanticKernel.Core" Version="${MicrosoftSemanticKernelCoreVersion}" />
-    <PackageReference Include="PdfPig" Version="${PdfPigVersion}" />
-    <PackageReference Include="System.Linq.Async" Version="${SystemLinqAsyncVersion}" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="${TemplatePackageVersion_MicrosoftExtensionsAI}" />
+    <PackageReference Include="Microsoft.SemanticKernel.Core" Version="${TemplatePackageVersion_MicrosoftSemanticKernel}" />
+    <PackageReference Include="PdfPig" Version="${TemplatePackageVersion_PdfPig}" />
+    <PackageReference Include="System.Linq.Async" Version="${TemplatePackageVersion_SystemLinqAsync}" />
 <!--#if (UseAzureAISearch && IsAspire)
-    <PackageReference Include="Aspire.Azure.Search.Documents" Version="${AspireVersion}" />
+    <PackageReference Include="Aspire.Azure.Search.Documents" Version="${TemplatePackageVersion_Aspire}" />
 #elif (UseAzureAISearch && !IsAspire)
-    <PackageReference Include="Azure.Search.Documents" Version="${AzureSearchDocumentsVersion}" />
+    <PackageReference Include="Azure.Search.Documents" Version="${TemplatePackageVersion_AzureSearchDocuments}" />
 #endif -->
 <!--#if (UseAzureAISearch)
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureAISearch" Version="${MicrosoftSemanticKernelConnectorsAzureAISearchVersion}" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureAISearch" Version="${TemplatePackageVersion_MicrosoftSemanticKernel_Preview}" />
 #elif (UseQdrant)-->
-    <PackageReference Include="Aspire.Qdrant.Client" Version="${AspireVersion}" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Qdrant" Version="${MicrosoftSemanticKernelConnectorsQdrantVersion}" />
+    <PackageReference Include="Aspire.Qdrant.Client" Version="${TemplatePackageVersion_Aspire}" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Qdrant" Version="${TemplatePackageVersion_MicrosoftSemanticKernel_Preview}" />
 <!--#endif -->
   </ItemGroup>
 <!--#if (IsAspire) -->
