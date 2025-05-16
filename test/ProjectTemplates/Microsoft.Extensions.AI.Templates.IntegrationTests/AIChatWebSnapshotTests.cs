@@ -49,15 +49,27 @@ public class AIChatWebSnapshotTests
     }
 
     [Fact]
-    public async Task BasicAspireTest()
+    public async Task Ollama_Qdrant()
     {
-        await TestTemplateCoreAsync(scenarioName: "BasicAspire", templateArgs: ["--aspire"]);
+        await TestTemplateCoreAsync(scenarioName: "Ollama_Qdrant", templateArgs: ["--provider", "ollama", "--vector-store", "qdrant"]);
     }
 
     [Fact]
     public async Task OpenAI_AzureAISearch()
     {
         await TestTemplateCoreAsync(scenarioName: "OpenAI_AzureAISearch", templateArgs: ["--provider", "openai", "--vector-store", "azureaisearch"]);
+    }
+
+    [Fact]
+    public async Task BasicAspireTest()
+    {
+        await TestTemplateCoreAsync(scenarioName: "BasicAspire", templateArgs: ["--aspire"]);
+    }
+
+    [Fact]
+    public async Task AzureOpenAI_AzureAISearch_Aspire()
+    {
+        await TestTemplateCoreAsync(scenarioName: "AzureOpenAI_Qdrant_Aspire", templateArgs: ["--provider", "azureopenai", "--vector-store", "azureaisearch", "--aspire"]);
     }
 
     private async Task TestTemplateCoreAsync(string scenarioName, IEnumerable<string>? templateArgs = null)
