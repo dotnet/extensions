@@ -117,7 +117,12 @@ public class FakeLogCollector
     /// </summary>
     public int Count => _records.Count;
 
-
+    /// <summary>
+    /// Allows waiting for the point in time in which a newly processed log record fulfilled custom condition supplied by the caller.
+    /// </summary>
+    /// <param name="endWaiting">Custom condition terminating waiting upon fulfillment.</param>
+    /// <param name="cancellationToken">Token based cancellation of the waiting.</param>
+    /// <returns>Awaitable task that completes upon condition fulfillment, timeout expiration or cancellation.</returns>
     public Task WaitForLogAsync(
         Func<FakeLogRecord, bool> endWaiting,
         CancellationToken cancellationToken = default)
@@ -125,13 +130,13 @@ public class FakeLogCollector
         return WaitForLogAsync(endWaiting, null, cancellationToken);
     }
 
-    /// <summary> // TODO TW: add documentation
-    /// TODO TW: Placeholder
+    /// <summary>
+    /// Allows waiting for the point in time in which a newly processed log record fulfilled custom condition supplied by the caller.
     /// </summary>
-    /// <param name="endWaiting">TODO TW placeholder</param>
+    /// <param name="endWaiting">Custom condition terminating waiting upon fulfillment.</param>
     /// <param name="timeout">TODO TW placeholder</param>
-    /// <param name="cancellationToken">TODO TW placeholder</param>
-    /// <returns>Task which is completed when the condition is fulfilled or when the cancellation is invoked</returns>
+    /// <param name="cancellationToken">Token based cancellation of the waiting.</param>
+    /// <returns>Awaitable task that completes upon condition fulfillment, timeout expiration or cancellation.</returns>
     [Experimental(diagnosticId: DiagnosticIds.Experiments.TimeProvider, UrlFormat = DiagnosticIds.UrlFormat)] // TODO TW: << placeholder
     public Task<bool> WaitForLogAsync(
         Func<FakeLogRecord, bool> endWaiting,
@@ -209,7 +214,9 @@ public class FakeLogCollector
         {
             _records.Add(record);
 
-            Span<bool> waitersToWakeUpOrderedByIndices = _waiters.Count < StackAllocThreshold ? stackalloc bool[_waiters.Count]: new bool[_waiters.Count];
+            Span<bool> waitersToWakeUpOrderedByIndices = _waiters.Count < StackAllocThreshold
+                ? stackalloc bool[_waiters.Count]
+                : new bool[_waiters.Count];
             CheckWaiting(record, waitersToWakeUpOrderedByIndices, out waitersToWakeUp);
             for (var i = 0; i < waitersToWakeUpOrderedByIndices.Length; i++)
             {
