@@ -12,7 +12,6 @@
     <Workstream>AIEval</Workstream>
     <Stage>normal</Stage>
     <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
-    <EnablePackageValidation>false</EnablePackageValidation>
     <MinCodeCoverage>n/a</MinCodeCoverage>
     <MinMutationScore>n/a</MinMutationScore>
   </PropertyGroup>
