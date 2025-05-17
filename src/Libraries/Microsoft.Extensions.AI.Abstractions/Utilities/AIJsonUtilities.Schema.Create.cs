@@ -227,7 +227,7 @@ public static partial class AIJsonUtilities
                 (schemaObj ??= [])[DescriptionPropertyName] = description;
             }
 
-            return schemaObj ?? (JsonNode)true;
+            return schemaObj ?? new JsonObject();
         }
 
         if (type == typeof(void))
