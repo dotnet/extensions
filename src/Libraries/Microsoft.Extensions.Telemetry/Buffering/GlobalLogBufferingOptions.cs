@@ -36,7 +36,7 @@ public class GlobalLogBufferingOptions
     /// </summary>
     /// <remarks>
     /// Use this to temporarily suspend buffering after a flush, e.g. in case of an incident you may want all logs to be emitted immediately,
-    /// so the buffering will be suspended for the <paramref name="AutoFlushDuration"/> time.
+    /// so the buffering will be suspended for the <see cref="AutoFlushDuration"/> time.
     /// </remarks>
     [TimeSpan(MinimumAutoFlushDuration, MaximumAutoFlushDuration)]
     public TimeSpan AutoFlushDuration { get; set; } = _defaultAutoFlushDuration;
