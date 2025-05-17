@@ -491,7 +491,7 @@
       "type": "derived",
       "valueSource": "name",
       "valueTransform": "vectorStoreIndexNameTransform",
-      "replaces": "data-ChatWithCustomData-CSharp.Web-ingestion"
+      "replaces": "data-ChatWithCustomData-CSharp.Web-"
     },
     "webProjectNamespaceAdjuster": {
       "type": "generated",
@@ -553,7 +553,7 @@
     "vectorStoreIndexName_PrefixSuffix": {
       "identifier": "replace",
       "pattern": "^(.*)$",
-      "replacement": "data-$1-ingested",
+      "replacement": "data-$1-",
       "description": "Produces a meaningful name parameterized by project name; ensures first, second, and last characters are valid"
     }
   },

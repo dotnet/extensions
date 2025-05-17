@@ -22,7 +22,7 @@ This incompatibility can be addressed by upgrading to Docker Desktop 4.41.1. See
 #### ---#endif
 # Configure the AI Model Provider
 #### ---#if (IsGHModels)
-To use models hosted by GitHub Models, you will need to create a GitHub personal access token. The token should not have any scopes or permissions. See [Managing your personal access tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens).
+To use models hosted by GitHub Models, you will need to create a GitHub personal access token with `models:read` permissions, but no other scopes or permissions. See [Prototyping with AI models](https://docs.github.com/github-models/prototyping-with-ai-models) and [Managing your personal access tokens](https://docs.github.com/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) in the GitHub Docs for more information.
 
 #### ---#if (hostIdentifier == "vs")
 Configure your token for this project using .NET User Secrets:
@@ -168,7 +168,7 @@ To use Azure AI Search, you will need an Azure account and an Azure AI Search re
 ### 1. Create an Azure AI Search Resource
 Follow the instructions in the [Azure portal](https://portal.azure.com/) to create an Azure AI Search resource. Note that there is a free tier for the service but it is not currently the default setting on the portal.
 
-Note that if you previously used the same Azure AI Search resource with different model using this project name, you may need to delete your `data-ChatWithCustomData-CSharp.Web-ingestion` index using the [Azure portal](https://portal.azure.com/) first before continuing; otherwise, data ingestion may fail due to a vector dimension mismatch.
+Note that if you previously used the same Azure AI Search resource with different model using this project name, you may need to delete your `data-ChatWithCustomData-CSharp.Web-chunks` and `data-ChatWithCustomData-CSharp.Web-documents` indexes using the [Azure portal](https://portal.azure.com/) first before continuing; otherwise, data ingestion may fail due to a vector dimension mismatch.
 
 #### ---#if (UseManagedIdentity)
 ### 2. Configure Azure AI Search for Keyless Authentication
