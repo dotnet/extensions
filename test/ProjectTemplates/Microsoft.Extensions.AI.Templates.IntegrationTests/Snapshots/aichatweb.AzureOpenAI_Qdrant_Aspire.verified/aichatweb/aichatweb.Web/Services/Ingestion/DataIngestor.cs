@@ -6,7 +6,8 @@ namespace aichatweb.Web.Services.Ingestion;
 public class DataIngestor(
     ILogger<DataIngestor> logger,
     IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
-    IVectorStore vectorStore)
+    VectorStoreCollection<string, IngestedChunk> chunksCollection,
+    VectorStoreCollection<string, IngestedDocument> documentsCollection)
 {
     public static async Task IngestDataAsync(IServiceProvider services, IIngestionSource source)
     {
@@ -17,10 +18,8 @@ public class DataIngestor(
 
     public async Task IngestDataAsync(IIngestionSource source)
     {
-        var chunksCollection = vectorStore.GetCollection<string, IngestedChunk>("data-aichatweb-chunks");
-        var documentsCollection = vectorStore.GetCollection<string, IngestedDocument>("data-aichatweb-documents");
-        await chunksCollection.CreateCollectionIfNotExistsAsync();
-        await documentsCollection.CreateCollectionIfNotExistsAsync();
+        await chunksCollection.EnsureCollectionExistsAsync();
+        await documentsCollection.EnsureCollectionExistsAsync();
 
         var sourceId = source.SourceId;
         var documentsForSource = await documentsCollection.GetAsync(doc => doc.SourceId == sourceId, top: int.MaxValue).ToListAsync();

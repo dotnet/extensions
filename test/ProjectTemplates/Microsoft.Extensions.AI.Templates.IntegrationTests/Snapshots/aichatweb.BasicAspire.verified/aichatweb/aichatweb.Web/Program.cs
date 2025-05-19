@@ -3,7 +3,6 @@ using aichatweb.Web.Components;
 using aichatweb.Web.Services;
 using aichatweb.Web.Services.Ingestion;
 using OpenAI;
-using Microsoft.SemanticKernel;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
@@ -17,7 +16,9 @@ openai.AddChatClient("gpt-4o-mini")
 openai.AddEmbeddingGenerator("text-embedding-3-small");
 
 var vectorStorePath = Path.Combine(AppContext.BaseDirectory, "vector-store.db");
-builder.Services.AddSqliteVectorStore($"Data Source={vectorStorePath}");
+var vectorStoreConnectionString = $"Data Source={vectorStorePath}";
+builder.Services.AddSqliteCollection<string, IngestedChunk>("data-aichatweb-chunks", vectorStoreConnectionString);
+builder.Services.AddSqliteCollection<string, IngestedDocument>("data-aichatweb-documents", vectorStoreConnectionString);
 builder.Services.AddScoped<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();
 

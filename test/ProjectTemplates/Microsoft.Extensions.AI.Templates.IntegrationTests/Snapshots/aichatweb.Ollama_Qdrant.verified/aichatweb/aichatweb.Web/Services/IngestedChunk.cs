@@ -4,18 +4,20 @@ namespace aichatweb.Web.Services;
 
 public class IngestedChunk
 {
-    [VectorStoreRecordKey]
+    private const int VectorDimensions = 384; // 384 is the default vector size for the all-minilm embedding model
+
+    [VectorStoreKey]
     public required Guid Key { get; set; }
 
-    [VectorStoreRecordData(IsIndexed = true)]
+    [VectorStoreData(IsIndexed = true)]
     public required string DocumentId { get; set; }
 
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public int PageNumber { get; set; }
 
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public required string Text { get; set; }
 
-    [VectorStoreRecordVector(384, DistanceFunction = DistanceFunction.CosineSimilarity)] // 384 is the default vector size for the all-minilm embedding model
+    [VectorStoreVector(VectorDimensions, DistanceFunction = DistanceFunction.EuclideanDistance)]
     public ReadOnlyMemory<float> Vector { get; set; }
 }

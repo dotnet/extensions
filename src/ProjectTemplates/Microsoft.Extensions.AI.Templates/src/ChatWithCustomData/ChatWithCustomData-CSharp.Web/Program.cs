@@ -17,7 +17,6 @@ using System.ClientModel;
 using Azure.AI.OpenAI;
 using System.ClientModel;
 #endif
-using Microsoft.SemanticKernel;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
@@ -79,16 +78,21 @@ var embeddingGenerator = azureOpenAi.GetEmbeddingClient("text-embedding-3-small"
 #if (!UseManagedIdentity)
 //   dotnet user-secrets set AzureAISearch:Key YOUR-API-KEY
 #endif
-builder.Services.AddAzureAISearchVectorStore(
-    new Uri(builder.Configuration["AzureAISearch:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Endpoint. See the README for details.")),
+var azureAISearchEndpoint = new Uri(builder.Configuration["AzureAISearch:Endpoint"]
+    ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Endpoint. See the README for details."));
 #if (UseManagedIdentity)
-    new DefaultAzureCredential());
+var azureAISearchCredential = new DefaultAzureCredential();
 #else
-    new AzureKeyCredential(builder.Configuration["AzureAISearch:Key"] ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Key. See the README for details.")));
+var azureAISearchCredential = new AzureKeyCredential(builder.Configuration["AzureAISearch:Key"]
+    ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Key. See the README for details."));
 #endif
+builder.Services.AddAzureAISearchCollection<IngestedChunk>("data-ChatWithCustomData-CSharp.Web-chunks", azureAISearchEndpoint, azureAISearchCredential);
+builder.Services.AddAzureAISearchCollection<IngestedDocument>("data-ChatWithCustomData-CSharp.Web-documents", azureAISearchEndpoint, azureAISearchCredential);
 #else // UseLocalVectorStore
 var vectorStorePath = Path.Combine(AppContext.BaseDirectory, "vector-store.db");
-builder.Services.AddSqliteVectorStore($"Data Source={vectorStorePath}");
+var vectorStoreConnectionString = $"Data Source={vectorStorePath}";
+builder.Services.AddSqliteCollection<string, IngestedChunk>("data-ChatWithCustomData-CSharp.Web-chunks", vectorStoreConnectionString);
+builder.Services.AddSqliteCollection<string, IngestedDocument>("data-ChatWithCustomData-CSharp.Web-documents", vectorStoreConnectionString);
 #endif
 
 builder.Services.AddScoped<DataIngestor>();

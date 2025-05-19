@@ -6,7 +6,13 @@ namespace ChatWithCustomData_CSharp.Web.Services.Ingestion;
 public class DataIngestor(
     ILogger<DataIngestor> logger,
     IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
-    VectorStore vectorStore)
+#if (UseQdrant)
+    VectorStoreCollection<Guid, IngestedChunk> chunksCollection,
+    VectorStoreCollection<Guid, IngestedDocument> documentsCollection)
+#else
+    VectorStoreCollection<string, IngestedChunk> chunksCollection,
+    VectorStoreCollection<string, IngestedDocument> documentsCollection)
+#endif
 {
     public static async Task IngestDataAsync(IServiceProvider services, IIngestionSource source)
     {
@@ -17,13 +23,6 @@ public class DataIngestor(
 
     public async Task IngestDataAsync(IIngestionSource source)
     {
-#if (UseQdrant)
-        var chunksCollection = vectorStore.GetCollection<Guid, IngestedChunk>("data-ChatWithCustomData-CSharp.Web-chunks");
-        var documentsCollection = vectorStore.GetCollection<Guid, IngestedDocument>("data-ChatWithCustomData-CSharp.Web-documents");
-#else
-        var chunksCollection = vectorStore.GetCollection<string, IngestedChunk>("data-ChatWithCustomData-CSharp.Web-chunks");
-        var documentsCollection = vectorStore.GetCollection<string, IngestedDocument>("data-ChatWithCustomData-CSharp.Web-documents");
-#endif
         await chunksCollection.EnsureCollectionExistsAsync();
         await documentsCollection.EnsureCollectionExistsAsync();
 

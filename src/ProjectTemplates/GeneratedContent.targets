@@ -35,8 +35,8 @@
       <TemplatePackageVersion_AzureSearchDocuments>11.6.0</TemplatePackageVersion_AzureSearchDocuments>
       <TemplatePackageVersion_CommunityToolkitAspire>9.4.1-beta.277</TemplatePackageVersion_CommunityToolkitAspire>
       <TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery>9.2.0</TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery>
-      <TemplatePackageVersion_MicrosoftSemanticKernel>1.50.0</TemplatePackageVersion_MicrosoftSemanticKernel>
-      <TemplatePackageVersion_MicrosoftSemanticKernel_Preview>1.50.0-preview</TemplatePackageVersion_MicrosoftSemanticKernel_Preview>
+      <TemplatePackageVersion_MicrosoftSemanticKernel>1.52.0</TemplatePackageVersion_MicrosoftSemanticKernel>
+      <TemplatePackageVersion_MicrosoftSemanticKernel_Preview>1.52.0-preview</TemplatePackageVersion_MicrosoftSemanticKernel_Preview>
       <TemplatePackageVersion_OllamaSharp>5.1.16</TemplatePackageVersion_OllamaSharp>
       <TemplatePackageVersion_OpenTelemetry>1.9.0</TemplatePackageVersion_OpenTelemetry>
       <TemplatePackageVersion_PdfPig>0.1.10</TemplatePackageVersion_PdfPig>
