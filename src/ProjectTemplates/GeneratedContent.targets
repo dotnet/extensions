@@ -52,7 +52,6 @@
 
         <!-- Repo properties -->
         ArtifactsShippingPackagesDir=$(ArtifactsShippingPackagesDir);
-        AdditionalPackagesDir=$(MSBuildThisFileDirectory)AdditionalPackages\;
 
         <!-- Package version properties -->
         TemplatePackageVersion_MicrosoftExtensionsAI=$(TemplatePackageVersion_MicrosoftExtensionsAI);

@@ -19,7 +19,6 @@ internal static class WellKnownPaths
     public static readonly string TemplateInstallNuGetConfigPath;
     public static readonly string TemplateTestNuGetConfigPath;
     public static readonly string LocalShippingPackagesPath;
-    public static readonly string AdditionalPackagesPath;
     public static readonly string NuGetPackagesPath;
 
     static WellKnownPaths()
@@ -41,7 +40,6 @@ internal static class WellKnownPaths
             "Release";
 #endif
         LocalShippingPackagesPath = Path.Combine(RepoRoot, "artifacts", "packages", BuildConfigurationFolder, "Shipping");
-        AdditionalPackagesPath = Path.Combine(TemplateFeedLocation, "AdditionalPackages");
         NuGetPackagesPath = Path.Combine(TemplateSandboxOutputRoot, "packages");
     }
 

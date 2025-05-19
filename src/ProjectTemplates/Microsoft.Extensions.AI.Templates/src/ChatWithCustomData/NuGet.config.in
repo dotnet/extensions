@@ -12,7 +12,6 @@
     <!-- Clear to avoid inheriting from the repo root NuGet.config -->
     <clear />
     <add key="local-shipping" value="${ArtifactsShippingPackagesDir}" />
-    <add key="additional-packages" value="${AdditionalPackagesDir}" />
     <add key="nuget" value="https://api.nuget.org/v3/index.json" />
   </packageSources>
   <disabledPackageSources>
