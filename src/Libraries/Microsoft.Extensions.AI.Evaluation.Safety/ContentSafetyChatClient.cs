@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -79,16 +80,14 @@ internal sealed class ContentSafetyChatClient : IChatClient
                 ModelId = Moniker
             };
         }
-        else if (_originalChatClient is not null)
+        else
         {
+            ValidateOriginalChatClientNotNull();
+
             return await _originalChatClient.GetResponseAsync(
                 messages,
                 options,
                 cancellationToken).ConfigureAwait(false);
-        }
-        else
-        {
-            throw new NotSupportedException();
         }
     }
 
@@ -114,8 +113,10 @@ internal sealed class ContentSafetyChatClient : IChatClient
                 ModelId = Moniker
             };
         }
-        else if (_originalChatClient is not null)
+        else
         {
+            ValidateOriginalChatClientNotNull();
+
             await foreach (var update in
                 _originalChatClient.GetStreamingResponseAsync(
                     messages,
@@ -124,10 +125,6 @@ internal sealed class ContentSafetyChatClient : IChatClient
             {
                 yield return update;
             }
-        }
-        else
-        {
-            throw new NotSupportedException();
         }
     }
 
@@ -169,6 +166,22 @@ internal sealed class ContentSafetyChatClient : IChatClient
 
             Debug.Fail(ErrorMessage);
             Throw.ArgumentException(nameof(messages), ErrorMessage);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] // Inline if possible.
+    [MemberNotNull(nameof(_originalChatClient))]
+    private void ValidateOriginalChatClientNotNull([CallerMemberName] string? callerMemberName = null)
+    {
+        if (_originalChatClient is null)
+        {
+            string errorMessage =
+                $"""
+                Failed to invoke '{nameof(IChatClient)}.{callerMemberName}()'.
+                Did you forget to specify the argument value for 'originalChatClient' or 'originalChatConfiguration' when calling '{nameof(ContentSafetyServiceConfiguration)}.ToChatConfiguration()'?
+                """;
+
+            Throw.ArgumentNullException(nameof(_originalChatClient), errorMessage);
         }
     }
 }

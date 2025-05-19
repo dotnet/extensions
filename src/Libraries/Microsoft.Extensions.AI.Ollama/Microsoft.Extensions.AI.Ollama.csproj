@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.AI</RootNamespace>
-    <Description>Implementation of generative AI abstractions for Ollama.</Description>
+    <Description>Implementation of generative AI abstractions for Ollama. This package is deprecated, and the OllamaSharp package is recommended.</Description>
     <Workstream>AI</Workstream>
   </PropertyGroup>
 

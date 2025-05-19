@@ -1,0 +1,836 @@
+{
+  "Name": "Microsoft.Extensions.AI, Version=9.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Types": [
+    {
+      "Type": "abstract class Microsoft.Extensions.AI.CachingChatClient : Microsoft.Extensions.AI.DelegatingChatClient",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.CachingChatClient.CachingChatClient(Microsoft.Extensions.AI.IChatClient innerClient);",
+          "Stage": "Stable"
+        },
+        {
+          // After generating the baseline, manually edit this file to have 'params' instead of 'scoped'
+          // This is needed until ICSharpCode.Decompiler adds params collection support
+          // See: https://github.com/icsharpcode/ILSpy/issues/829
+          "Member": "abstract string Microsoft.Extensions.AI.CachingChatClient.GetCacheKey(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options, params System.ReadOnlySpan<object?> additionalValues);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse> Microsoft.Extensions.AI.CachingChatClient.GetResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate> Microsoft.Extensions.AI.CachingChatClient.GetStreamingResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse?> Microsoft.Extensions.AI.CachingChatClient.ReadCacheAsync(string key, System.Threading.CancellationToken cancellationToken);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.ChatResponseUpdate>?> Microsoft.Extensions.AI.CachingChatClient.ReadCacheStreamingAsync(string key, System.Threading.CancellationToken cancellationToken);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract System.Threading.Tasks.Task Microsoft.Extensions.AI.CachingChatClient.WriteCacheAsync(string key, Microsoft.Extensions.AI.ChatResponse value, System.Threading.CancellationToken cancellationToken);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract System.Threading.Tasks.Task Microsoft.Extensions.AI.CachingChatClient.WriteCacheStreamingAsync(string key, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.ChatResponseUpdate> value, System.Threading.CancellationToken cancellationToken);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.AI.CachingChatClient.CoalesceStreamingUpdates { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class Microsoft.Extensions.AI.CachingEmbeddingGenerator<TInput, TEmbedding> : Microsoft.Extensions.AI.DelegatingEmbeddingGenerator<TInput, TEmbedding> where TEmbedding : Microsoft.Extensions.AI.Embedding",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.CachingEmbeddingGenerator<TInput, TEmbedding>.CachingEmbeddingGenerator(Microsoft.Extensions.AI.IEmbeddingGenerator<TInput, TEmbedding> innerGenerator);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.GeneratedEmbeddings<TEmbedding>> Microsoft.Extensions.AI.CachingEmbeddingGenerator<TInput, TEmbedding>.GenerateAsync(System.Collections.Generic.IEnumerable<TInput> values, Microsoft.Extensions.AI.EmbeddingGenerationOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          // After generating the baseline, manually edit this file to have 'params' instead of 'scoped'
+          // This is needed until ICSharpCode.Decompiler adds params collection support
+          // See: https://github.com/icsharpcode/ILSpy/issues/829
+          "Member": "abstract string Microsoft.Extensions.AI.CachingEmbeddingGenerator<TInput, TEmbedding>.GetCacheKey(params System.ReadOnlySpan<object?> values);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract System.Threading.Tasks.Task<TEmbedding?> Microsoft.Extensions.AI.CachingEmbeddingGenerator<TInput, TEmbedding>.ReadCacheAsync(string key, System.Threading.CancellationToken cancellationToken);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract System.Threading.Tasks.Task Microsoft.Extensions.AI.CachingEmbeddingGenerator<TInput, TEmbedding>.WriteCacheAsync(string key, TEmbedding value, System.Threading.CancellationToken cancellationToken);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.ChatClientBuilder",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ChatClientBuilder.ChatClientBuilder(Microsoft.Extensions.AI.IChatClient innerClient);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ChatClientBuilder.ChatClientBuilder(System.Func<System.IServiceProvider, Microsoft.Extensions.AI.IChatClient> innerClientFactory);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.IChatClient Microsoft.Extensions.AI.ChatClientBuilder.Build(System.IServiceProvider? services = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ChatClientBuilder Microsoft.Extensions.AI.ChatClientBuilder.Use(System.Func<Microsoft.Extensions.AI.IChatClient, Microsoft.Extensions.AI.IChatClient> clientFactory);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ChatClientBuilder Microsoft.Extensions.AI.ChatClientBuilder.Use(System.Func<Microsoft.Extensions.AI.IChatClient, System.IServiceProvider, Microsoft.Extensions.AI.IChatClient> clientFactory);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ChatClientBuilder Microsoft.Extensions.AI.ChatClientBuilder.Use(System.Func<System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage>, Microsoft.Extensions.AI.ChatOptions?, System.Func<System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage>, Microsoft.Extensions.AI.ChatOptions?, System.Threading.CancellationToken, System.Threading.Tasks.Task>, System.Threading.CancellationToken, System.Threading.Tasks.Task> sharedFunc);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ChatClientBuilder Microsoft.Extensions.AI.ChatClientBuilder.Use(System.Func<System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage>, Microsoft.Extensions.AI.ChatOptions?, Microsoft.Extensions.AI.IChatClient, System.Threading.CancellationToken, System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse>>? getResponseFunc, System.Func<System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage>, Microsoft.Extensions.AI.ChatOptions?, Microsoft.Extensions.AI.IChatClient, System.Threading.CancellationToken, System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate>>? getStreamingResponseFunc);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.ChatClientBuilderChatClientExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.ChatClientBuilder Microsoft.Extensions.AI.ChatClientBuilderChatClientExtensions.AsBuilder(this Microsoft.Extensions.AI.IChatClient innerClient);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.DependencyInjection.ChatClientBuilderServiceCollectionExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.ChatClientBuilder Microsoft.Extensions.DependencyInjection.ChatClientBuilderServiceCollectionExtensions.AddChatClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, Microsoft.Extensions.AI.IChatClient innerClient, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.ChatClientBuilder Microsoft.Extensions.DependencyInjection.ChatClientBuilderServiceCollectionExtensions.AddChatClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, System.Func<System.IServiceProvider, Microsoft.Extensions.AI.IChatClient> innerClientFactory, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.ChatClientBuilder Microsoft.Extensions.DependencyInjection.ChatClientBuilderServiceCollectionExtensions.AddKeyedChatClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, object? serviceKey, Microsoft.Extensions.AI.IChatClient innerClient, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.ChatClientBuilder Microsoft.Extensions.DependencyInjection.ChatClientBuilderServiceCollectionExtensions.AddKeyedChatClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, object? serviceKey, System.Func<System.IServiceProvider, Microsoft.Extensions.AI.IChatClient> innerClientFactory, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.ChatClientStructuredOutputExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse<T>> Microsoft.Extensions.AI.ChatClientStructuredOutputExtensions.GetResponseAsync<T>(this Microsoft.Extensions.AI.IChatClient chatClient, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options = null, bool? useJsonSchemaResponseFormat = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse<T>> Microsoft.Extensions.AI.ChatClientStructuredOutputExtensions.GetResponseAsync<T>(this Microsoft.Extensions.AI.IChatClient chatClient, string chatMessage, Microsoft.Extensions.AI.ChatOptions? options = null, bool? useJsonSchemaResponseFormat = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse<T>> Microsoft.Extensions.AI.ChatClientStructuredOutputExtensions.GetResponseAsync<T>(this Microsoft.Extensions.AI.IChatClient chatClient, Microsoft.Extensions.AI.ChatMessage chatMessage, Microsoft.Extensions.AI.ChatOptions? options = null, bool? useJsonSchemaResponseFormat = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse<T>> Microsoft.Extensions.AI.ChatClientStructuredOutputExtensions.GetResponseAsync<T>(this Microsoft.Extensions.AI.IChatClient chatClient, string chatMessage, System.Text.Json.JsonSerializerOptions serializerOptions, Microsoft.Extensions.AI.ChatOptions? options = null, bool? useJsonSchemaResponseFormat = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse<T>> Microsoft.Extensions.AI.ChatClientStructuredOutputExtensions.GetResponseAsync<T>(this Microsoft.Extensions.AI.IChatClient chatClient, Microsoft.Extensions.AI.ChatMessage chatMessage, System.Text.Json.JsonSerializerOptions serializerOptions, Microsoft.Extensions.AI.ChatOptions? options = null, bool? useJsonSchemaResponseFormat = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse<T>> Microsoft.Extensions.AI.ChatClientStructuredOutputExtensions.GetResponseAsync<T>(this Microsoft.Extensions.AI.IChatClient chatClient, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, System.Text.Json.JsonSerializerOptions serializerOptions, Microsoft.Extensions.AI.ChatOptions? options = null, bool? useJsonSchemaResponseFormat = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.ChatResponse<T> : Microsoft.Extensions.AI.ChatResponse",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ChatResponse<T>.ChatResponse(Microsoft.Extensions.AI.ChatResponse response, System.Text.Json.JsonSerializerOptions serializerOptions);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.AI.ChatResponse<T>.TryGetResult(out T? result);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "T Microsoft.Extensions.AI.ChatResponse<T>.Result { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.ConfigureOptionsChatClient : Microsoft.Extensions.AI.DelegatingChatClient",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ConfigureOptionsChatClient.ConfigureOptionsChatClient(Microsoft.Extensions.AI.IChatClient innerClient, System.Action<Microsoft.Extensions.AI.ChatOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse> Microsoft.Extensions.AI.ConfigureOptionsChatClient.GetResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate> Microsoft.Extensions.AI.ConfigureOptionsChatClient.GetStreamingResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.ConfigureOptionsChatClientBuilderExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.ChatClientBuilder Microsoft.Extensions.AI.ConfigureOptionsChatClientBuilderExtensions.ConfigureOptions(this Microsoft.Extensions.AI.ChatClientBuilder builder, System.Action<Microsoft.Extensions.AI.ChatOptions> configure);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.ConfigureOptionsEmbeddingGenerator<TInput, TEmbedding> : Microsoft.Extensions.AI.DelegatingEmbeddingGenerator<TInput, TEmbedding> where TEmbedding : Microsoft.Extensions.AI.Embedding",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ConfigureOptionsEmbeddingGenerator<TInput, TEmbedding>.ConfigureOptionsEmbeddingGenerator(Microsoft.Extensions.AI.IEmbeddingGenerator<TInput, TEmbedding> innerGenerator, System.Action<Microsoft.Extensions.AI.EmbeddingGenerationOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.GeneratedEmbeddings<TEmbedding>> Microsoft.Extensions.AI.ConfigureOptionsEmbeddingGenerator<TInput, TEmbedding>.GenerateAsync(System.Collections.Generic.IEnumerable<TInput> values, Microsoft.Extensions.AI.EmbeddingGenerationOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.ConfigureOptionsEmbeddingGeneratorBuilderExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.EmbeddingGeneratorBuilder<TInput, TEmbedding> Microsoft.Extensions.AI.ConfigureOptionsEmbeddingGeneratorBuilderExtensions.ConfigureOptions<TInput, TEmbedding>(this Microsoft.Extensions.AI.EmbeddingGeneratorBuilder<TInput, TEmbedding> builder, System.Action<Microsoft.Extensions.AI.EmbeddingGenerationOptions> configure);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.ConfigureOptionsSpeechToTextClient : Microsoft.Extensions.AI.DelegatingSpeechToTextClient",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ConfigureOptionsSpeechToTextClient.ConfigureOptionsSpeechToTextClient(Microsoft.Extensions.AI.ISpeechToTextClient innerClient, System.Action<Microsoft.Extensions.AI.SpeechToTextOptions> configure);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.SpeechToTextResponseUpdate> Microsoft.Extensions.AI.ConfigureOptionsSpeechToTextClient.GetStreamingTextAsync(System.IO.Stream audioSpeechStream, Microsoft.Extensions.AI.SpeechToTextOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.SpeechToTextResponse> Microsoft.Extensions.AI.ConfigureOptionsSpeechToTextClient.GetTextAsync(System.IO.Stream audioSpeechStream, Microsoft.Extensions.AI.SpeechToTextOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.ConfigureOptionsSpeechToTextClientBuilderExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.SpeechToTextClientBuilder Microsoft.Extensions.AI.ConfigureOptionsSpeechToTextClientBuilderExtensions.ConfigureOptions(this Microsoft.Extensions.AI.SpeechToTextClientBuilder builder, System.Action<Microsoft.Extensions.AI.SpeechToTextOptions> configure);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.DistributedCachingChatClient : Microsoft.Extensions.AI.CachingChatClient",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.DistributedCachingChatClient.DistributedCachingChatClient(Microsoft.Extensions.AI.IChatClient innerClient, Microsoft.Extensions.Caching.Distributed.IDistributedCache storage);",
+          "Stage": "Stable"
+        },
+        {
+          // After generating the baseline, manually edit this file to have 'params' instead of 'scoped'
+          // This is needed until ICSharpCode.Decompiler adds params collection support
+          // See: https://github.com/icsharpcode/ILSpy/issues/829
+          "Member": "override string Microsoft.Extensions.AI.DistributedCachingChatClient.GetCacheKey(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options, params System.ReadOnlySpan<object?> additionalValues);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse?> Microsoft.Extensions.AI.DistributedCachingChatClient.ReadCacheAsync(string key, System.Threading.CancellationToken cancellationToken);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.ChatResponseUpdate>?> Microsoft.Extensions.AI.DistributedCachingChatClient.ReadCacheStreamingAsync(string key, System.Threading.CancellationToken cancellationToken);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task Microsoft.Extensions.AI.DistributedCachingChatClient.WriteCacheAsync(string key, Microsoft.Extensions.AI.ChatResponse value, System.Threading.CancellationToken cancellationToken);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task Microsoft.Extensions.AI.DistributedCachingChatClient.WriteCacheStreamingAsync(string key, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.ChatResponseUpdate> value, System.Threading.CancellationToken cancellationToken);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Text.Json.JsonSerializerOptions Microsoft.Extensions.AI.DistributedCachingChatClient.JsonSerializerOptions { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.DistributedCachingChatClientBuilderExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.ChatClientBuilder Microsoft.Extensions.AI.DistributedCachingChatClientBuilderExtensions.UseDistributedCache(this Microsoft.Extensions.AI.ChatClientBuilder builder, Microsoft.Extensions.Caching.Distributed.IDistributedCache? storage = null, System.Action<Microsoft.Extensions.AI.DistributedCachingChatClient>? configure = null);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.DistributedCachingEmbeddingGenerator<TInput, TEmbedding> : Microsoft.Extensions.AI.CachingEmbeddingGenerator<TInput, TEmbedding> where TEmbedding : Microsoft.Extensions.AI.Embedding",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.DistributedCachingEmbeddingGenerator<TInput, TEmbedding>.DistributedCachingEmbeddingGenerator(Microsoft.Extensions.AI.IEmbeddingGenerator<TInput, TEmbedding> innerGenerator, Microsoft.Extensions.Caching.Distributed.IDistributedCache storage);",
+          "Stage": "Stable"
+        },
+        {
+          // After generating the baseline, manually edit this file to have 'params' instead of 'scoped'
+          // This is needed until ICSharpCode.Decompiler adds params collection support
+          // See: https://github.com/icsharpcode/ILSpy/issues/829
+          "Member": "override string Microsoft.Extensions.AI.DistributedCachingEmbeddingGenerator<TInput, TEmbedding>.GetCacheKey(params System.ReadOnlySpan<object?> values);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<TEmbedding?> Microsoft.Extensions.AI.DistributedCachingEmbeddingGenerator<TInput, TEmbedding>.ReadCacheAsync(string key, System.Threading.CancellationToken cancellationToken);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task Microsoft.Extensions.AI.DistributedCachingEmbeddingGenerator<TInput, TEmbedding>.WriteCacheAsync(string key, TEmbedding value, System.Threading.CancellationToken cancellationToken);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Text.Json.JsonSerializerOptions Microsoft.Extensions.AI.DistributedCachingEmbeddingGenerator<TInput, TEmbedding>.JsonSerializerOptions { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.DistributedCachingEmbeddingGeneratorBuilderExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.EmbeddingGeneratorBuilder<TInput, TEmbedding> Microsoft.Extensions.AI.DistributedCachingEmbeddingGeneratorBuilderExtensions.UseDistributedCache<TInput, TEmbedding>(this Microsoft.Extensions.AI.EmbeddingGeneratorBuilder<TInput, TEmbedding> builder, Microsoft.Extensions.Caching.Distributed.IDistributedCache? storage = null, System.Action<Microsoft.Extensions.AI.DistributedCachingEmbeddingGenerator<TInput, TEmbedding>>? configure = null);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.EmbeddingGeneratorBuilder<TInput, TEmbedding> where TEmbedding : Microsoft.Extensions.AI.Embedding",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.EmbeddingGeneratorBuilder<TInput, TEmbedding>.EmbeddingGeneratorBuilder(Microsoft.Extensions.AI.IEmbeddingGenerator<TInput, TEmbedding> innerGenerator);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.EmbeddingGeneratorBuilder<TInput, TEmbedding>.EmbeddingGeneratorBuilder(System.Func<System.IServiceProvider, Microsoft.Extensions.AI.IEmbeddingGenerator<TInput, TEmbedding>> innerGeneratorFactory);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.IEmbeddingGenerator<TInput, TEmbedding> Microsoft.Extensions.AI.EmbeddingGeneratorBuilder<TInput, TEmbedding>.Build(System.IServiceProvider? services = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.EmbeddingGeneratorBuilder<TInput, TEmbedding> Microsoft.Extensions.AI.EmbeddingGeneratorBuilder<TInput, TEmbedding>.Use(System.Func<Microsoft.Extensions.AI.IEmbeddingGenerator<TInput, TEmbedding>, Microsoft.Extensions.AI.IEmbeddingGenerator<TInput, TEmbedding>> generatorFactory);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.EmbeddingGeneratorBuilder<TInput, TEmbedding> Microsoft.Extensions.AI.EmbeddingGeneratorBuilder<TInput, TEmbedding>.Use(System.Func<Microsoft.Extensions.AI.IEmbeddingGenerator<TInput, TEmbedding>, System.IServiceProvider, Microsoft.Extensions.AI.IEmbeddingGenerator<TInput, TEmbedding>> generatorFactory);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.EmbeddingGeneratorBuilder<TInput, TEmbedding> Microsoft.Extensions.AI.EmbeddingGeneratorBuilder<TInput, TEmbedding>.Use(System.Func<System.Collections.Generic.IEnumerable<TInput>, Microsoft.Extensions.AI.EmbeddingGenerationOptions?, Microsoft.Extensions.AI.IEmbeddingGenerator<TInput, TEmbedding>, System.Threading.CancellationToken, System.Threading.Tasks.Task<Microsoft.Extensions.AI.GeneratedEmbeddings<TEmbedding>>>? generateFunc);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.EmbeddingGeneratorBuilderEmbeddingGeneratorExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.EmbeddingGeneratorBuilder<TInput, TEmbedding> Microsoft.Extensions.AI.EmbeddingGeneratorBuilderEmbeddingGeneratorExtensions.AsBuilder<TInput, TEmbedding>(this Microsoft.Extensions.AI.IEmbeddingGenerator<TInput, TEmbedding> innerGenerator);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.DependencyInjection.EmbeddingGeneratorBuilderServiceCollectionExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.EmbeddingGeneratorBuilder<TInput, TEmbedding> Microsoft.Extensions.DependencyInjection.EmbeddingGeneratorBuilderServiceCollectionExtensions.AddEmbeddingGenerator<TInput, TEmbedding>(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, Microsoft.Extensions.AI.IEmbeddingGenerator<TInput, TEmbedding> innerGenerator, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.EmbeddingGeneratorBuilder<TInput, TEmbedding> Microsoft.Extensions.DependencyInjection.EmbeddingGeneratorBuilderServiceCollectionExtensions.AddEmbeddingGenerator<TInput, TEmbedding>(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, System.Func<System.IServiceProvider, Microsoft.Extensions.AI.IEmbeddingGenerator<TInput, TEmbedding>> innerGeneratorFactory, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.EmbeddingGeneratorBuilder<TInput, TEmbedding> Microsoft.Extensions.DependencyInjection.EmbeddingGeneratorBuilderServiceCollectionExtensions.AddKeyedEmbeddingGenerator<TInput, TEmbedding>(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, object? serviceKey, Microsoft.Extensions.AI.IEmbeddingGenerator<TInput, TEmbedding> innerGenerator, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.EmbeddingGeneratorBuilder<TInput, TEmbedding> Microsoft.Extensions.DependencyInjection.EmbeddingGeneratorBuilderServiceCollectionExtensions.AddKeyedEmbeddingGenerator<TInput, TEmbedding>(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, object? serviceKey, System.Func<System.IServiceProvider, Microsoft.Extensions.AI.IEmbeddingGenerator<TInput, TEmbedding>> innerGeneratorFactory, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.FunctionInvocationContext",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.FunctionInvocationContext.FunctionInvocationContext();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.AIFunctionArguments Microsoft.Extensions.AI.FunctionInvocationContext.Arguments { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.FunctionCallContent Microsoft.Extensions.AI.FunctionInvocationContext.CallContent { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.AIFunction Microsoft.Extensions.AI.FunctionInvocationContext.Function { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int Microsoft.Extensions.AI.FunctionInvocationContext.FunctionCallIndex { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int Microsoft.Extensions.AI.FunctionInvocationContext.FunctionCount { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.AI.FunctionInvocationContext.IsStreaming { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int Microsoft.Extensions.AI.FunctionInvocationContext.Iteration { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.ChatMessage> Microsoft.Extensions.AI.FunctionInvocationContext.Messages { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ChatOptions? Microsoft.Extensions.AI.FunctionInvocationContext.Options { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.AI.FunctionInvocationContext.Terminate { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.FunctionInvokingChatClient : Microsoft.Extensions.AI.DelegatingChatClient",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.FunctionInvokingChatClient.FunctionInvokingChatClient(Microsoft.Extensions.AI.IChatClient innerClient, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, System.IServiceProvider? functionInvocationServices = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Collections.Generic.IList<Microsoft.Extensions.AI.ChatMessage> Microsoft.Extensions.AI.FunctionInvokingChatClient.CreateResponseMessages(System.ReadOnlySpan<Microsoft.Extensions.AI.FunctionInvokingChatClient.FunctionInvocationResult> results);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse> Microsoft.Extensions.AI.FunctionInvokingChatClient.GetResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate> Microsoft.Extensions.AI.FunctionInvokingChatClient.GetStreamingResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.ValueTask<object?> Microsoft.Extensions.AI.FunctionInvokingChatClient.InvokeFunctionAsync(Microsoft.Extensions.AI.FunctionInvocationContext context, System.Threading.CancellationToken cancellationToken);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.AI.FunctionInvokingChatClient.AllowConcurrentInvocation { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.FunctionInvocationContext? Microsoft.Extensions.AI.FunctionInvokingChatClient.CurrentContext { get; protected set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.IServiceProvider? Microsoft.Extensions.AI.FunctionInvokingChatClient.FunctionInvocationServices { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.AI.FunctionInvokingChatClient.IncludeDetailedErrors { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int Microsoft.Extensions.AI.FunctionInvokingChatClient.MaximumConsecutiveErrorsPerRequest { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int Microsoft.Extensions.AI.FunctionInvokingChatClient.MaximumIterationsPerRequest { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.FunctionInvokingChatClient.FunctionInvocationResult",
+      "Stage": "Stable",
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.FunctionCallContent Microsoft.Extensions.AI.FunctionInvokingChatClient.FunctionInvocationResult.CallContent { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Exception? Microsoft.Extensions.AI.FunctionInvokingChatClient.FunctionInvocationResult.Exception { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "object? Microsoft.Extensions.AI.FunctionInvokingChatClient.FunctionInvocationResult.Result { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.FunctionInvokingChatClient.FunctionInvocationStatus Microsoft.Extensions.AI.FunctionInvokingChatClient.FunctionInvocationResult.Status { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.AI.FunctionInvokingChatClient.FunctionInvocationResult.Terminate { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "enum Microsoft.Extensions.AI.FunctionInvokingChatClient.FunctionInvocationStatus",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.FunctionInvokingChatClient.FunctionInvocationStatus.FunctionInvocationStatus();",
+          "Stage": "Stable"
+        }
+      ],
+      "Fields": [
+        {
+          "Member": "const Microsoft.Extensions.AI.FunctionInvokingChatClient.FunctionInvocationStatus Microsoft.Extensions.AI.FunctionInvokingChatClient.FunctionInvocationStatus.Exception",
+          "Stage": "Stable",
+          "Value": "2"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.FunctionInvokingChatClient.FunctionInvocationStatus Microsoft.Extensions.AI.FunctionInvokingChatClient.FunctionInvocationStatus.NotFound",
+          "Stage": "Stable",
+          "Value": "1"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.FunctionInvokingChatClient.FunctionInvocationStatus Microsoft.Extensions.AI.FunctionInvokingChatClient.FunctionInvocationStatus.RanToCompletion",
+          "Stage": "Stable",
+          "Value": "0"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.FunctionInvokingChatClientBuilderExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.ChatClientBuilder Microsoft.Extensions.AI.FunctionInvokingChatClientBuilderExtensions.UseFunctionInvocation(this Microsoft.Extensions.AI.ChatClientBuilder builder, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, System.Action<Microsoft.Extensions.AI.FunctionInvokingChatClient>? configure = null);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.LoggingChatClient : Microsoft.Extensions.AI.DelegatingChatClient",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.LoggingChatClient.LoggingChatClient(Microsoft.Extensions.AI.IChatClient innerClient, Microsoft.Extensions.Logging.ILogger logger);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse> Microsoft.Extensions.AI.LoggingChatClient.GetResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate> Microsoft.Extensions.AI.LoggingChatClient.GetStreamingResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Text.Json.JsonSerializerOptions Microsoft.Extensions.AI.LoggingChatClient.JsonSerializerOptions { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.LoggingChatClientBuilderExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.ChatClientBuilder Microsoft.Extensions.AI.LoggingChatClientBuilderExtensions.UseLogging(this Microsoft.Extensions.AI.ChatClientBuilder builder, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, System.Action<Microsoft.Extensions.AI.LoggingChatClient>? configure = null);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.LoggingEmbeddingGenerator<TInput, TEmbedding> : Microsoft.Extensions.AI.DelegatingEmbeddingGenerator<TInput, TEmbedding> where TEmbedding : Microsoft.Extensions.AI.Embedding",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.LoggingEmbeddingGenerator<TInput, TEmbedding>.LoggingEmbeddingGenerator(Microsoft.Extensions.AI.IEmbeddingGenerator<TInput, TEmbedding> innerGenerator, Microsoft.Extensions.Logging.ILogger logger);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.GeneratedEmbeddings<TEmbedding>> Microsoft.Extensions.AI.LoggingEmbeddingGenerator<TInput, TEmbedding>.GenerateAsync(System.Collections.Generic.IEnumerable<TInput> values, Microsoft.Extensions.AI.EmbeddingGenerationOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Text.Json.JsonSerializerOptions Microsoft.Extensions.AI.LoggingEmbeddingGenerator<TInput, TEmbedding>.JsonSerializerOptions { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.LoggingEmbeddingGeneratorBuilderExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.EmbeddingGeneratorBuilder<TInput, TEmbedding> Microsoft.Extensions.AI.LoggingEmbeddingGeneratorBuilderExtensions.UseLogging<TInput, TEmbedding>(this Microsoft.Extensions.AI.EmbeddingGeneratorBuilder<TInput, TEmbedding> builder, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, System.Action<Microsoft.Extensions.AI.LoggingEmbeddingGenerator<TInput, TEmbedding>>? configure = null);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.LoggingSpeechToTextClient : Microsoft.Extensions.AI.DelegatingSpeechToTextClient",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.LoggingSpeechToTextClient.LoggingSpeechToTextClient(Microsoft.Extensions.AI.ISpeechToTextClient innerClient, Microsoft.Extensions.Logging.ILogger logger);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.SpeechToTextResponseUpdate> Microsoft.Extensions.AI.LoggingSpeechToTextClient.GetStreamingTextAsync(System.IO.Stream audioSpeechStream, Microsoft.Extensions.AI.SpeechToTextOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.SpeechToTextResponse> Microsoft.Extensions.AI.LoggingSpeechToTextClient.GetTextAsync(System.IO.Stream audioSpeechStream, Microsoft.Extensions.AI.SpeechToTextOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Text.Json.JsonSerializerOptions Microsoft.Extensions.AI.LoggingSpeechToTextClient.JsonSerializerOptions { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.LoggingSpeechToTextClientBuilderExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.SpeechToTextClientBuilder Microsoft.Extensions.AI.LoggingSpeechToTextClientBuilderExtensions.UseLogging(this Microsoft.Extensions.AI.SpeechToTextClientBuilder builder, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, System.Action<Microsoft.Extensions.AI.LoggingSpeechToTextClient>? configure = null);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.OpenTelemetryChatClient : Microsoft.Extensions.AI.DelegatingChatClient",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OpenTelemetryChatClient.OpenTelemetryChatClient(Microsoft.Extensions.AI.IChatClient innerClient, Microsoft.Extensions.Logging.ILogger? logger = null, string? sourceName = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override void Microsoft.Extensions.AI.OpenTelemetryChatClient.Dispose(bool disposing);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse> Microsoft.Extensions.AI.OpenTelemetryChatClient.GetResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override object? Microsoft.Extensions.AI.OpenTelemetryChatClient.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate> Microsoft.Extensions.AI.OpenTelemetryChatClient.GetStreamingResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.AI.OpenTelemetryChatClient.EnableSensitiveData { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Text.Json.JsonSerializerOptions Microsoft.Extensions.AI.OpenTelemetryChatClient.JsonSerializerOptions { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.OpenTelemetryChatClientBuilderExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.ChatClientBuilder Microsoft.Extensions.AI.OpenTelemetryChatClientBuilderExtensions.UseOpenTelemetry(this Microsoft.Extensions.AI.ChatClientBuilder builder, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, string? sourceName = null, System.Action<Microsoft.Extensions.AI.OpenTelemetryChatClient>? configure = null);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Microsoft.Extensions.AI.DelegatingEmbeddingGenerator<TInput, TEmbedding> where TEmbedding : Microsoft.Extensions.AI.Embedding",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OpenTelemetryEmbeddingGenerator<TInput, TEmbedding>.OpenTelemetryEmbeddingGenerator(Microsoft.Extensions.AI.IEmbeddingGenerator<TInput, TEmbedding> innerGenerator, Microsoft.Extensions.Logging.ILogger? logger = null, string? sourceName = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override void Microsoft.Extensions.AI.OpenTelemetryEmbeddingGenerator<TInput, TEmbedding>.Dispose(bool disposing);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.GeneratedEmbeddings<TEmbedding>> Microsoft.Extensions.AI.OpenTelemetryEmbeddingGenerator<TInput, TEmbedding>.GenerateAsync(System.Collections.Generic.IEnumerable<TInput> values, Microsoft.Extensions.AI.EmbeddingGenerationOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override object? Microsoft.Extensions.AI.OpenTelemetryEmbeddingGenerator<TInput, TEmbedding>.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.AI.OpenTelemetryEmbeddingGenerator<TInput, TEmbedding>.EnableSensitiveData { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.OpenTelemetryEmbeddingGeneratorBuilderExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.EmbeddingGeneratorBuilder<TInput, TEmbedding> Microsoft.Extensions.AI.OpenTelemetryEmbeddingGeneratorBuilderExtensions.UseOpenTelemetry<TInput, TEmbedding>(this Microsoft.Extensions.AI.EmbeddingGeneratorBuilder<TInput, TEmbedding> builder, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, string? sourceName = null, System.Action<Microsoft.Extensions.AI.OpenTelemetryEmbeddingGenerator<TInput, TEmbedding>>? configure = null);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.SpeechToTextClientBuilder",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.SpeechToTextClientBuilder.SpeechToTextClientBuilder(Microsoft.Extensions.AI.ISpeechToTextClient innerClient);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.SpeechToTextClientBuilder.SpeechToTextClientBuilder(System.Func<System.IServiceProvider, Microsoft.Extensions.AI.ISpeechToTextClient> innerClientFactory);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ISpeechToTextClient Microsoft.Extensions.AI.SpeechToTextClientBuilder.Build(System.IServiceProvider? services = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.SpeechToTextClientBuilder Microsoft.Extensions.AI.SpeechToTextClientBuilder.Use(System.Func<Microsoft.Extensions.AI.ISpeechToTextClient, Microsoft.Extensions.AI.ISpeechToTextClient> clientFactory);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.SpeechToTextClientBuilder Microsoft.Extensions.AI.SpeechToTextClientBuilder.Use(System.Func<Microsoft.Extensions.AI.ISpeechToTextClient, System.IServiceProvider, Microsoft.Extensions.AI.ISpeechToTextClient> clientFactory);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.DependencyInjection.SpeechToTextClientBuilderServiceCollectionExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.SpeechToTextClientBuilder Microsoft.Extensions.DependencyInjection.SpeechToTextClientBuilderServiceCollectionExtensions.AddKeyedSpeechToTextClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, object serviceKey, Microsoft.Extensions.AI.ISpeechToTextClient innerClient, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.SpeechToTextClientBuilder Microsoft.Extensions.DependencyInjection.SpeechToTextClientBuilderServiceCollectionExtensions.AddKeyedSpeechToTextClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, object serviceKey, System.Func<System.IServiceProvider, Microsoft.Extensions.AI.ISpeechToTextClient> innerClientFactory, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.SpeechToTextClientBuilder Microsoft.Extensions.DependencyInjection.SpeechToTextClientBuilderServiceCollectionExtensions.AddSpeechToTextClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, Microsoft.Extensions.AI.ISpeechToTextClient innerClient, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.SpeechToTextClientBuilder Microsoft.Extensions.DependencyInjection.SpeechToTextClientBuilderServiceCollectionExtensions.AddSpeechToTextClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, System.Func<System.IServiceProvider, Microsoft.Extensions.AI.ISpeechToTextClient> innerClientFactory, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.SpeechToTextClientBuilderSpeechToTextClientExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.SpeechToTextClientBuilder Microsoft.Extensions.AI.SpeechToTextClientBuilderSpeechToTextClientExtensions.AsBuilder(this Microsoft.Extensions.AI.ISpeechToTextClient innerClient);",
+          "Stage": "Experimental"
+        }
+      ]
+    }
+  ]
+}
