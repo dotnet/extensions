@@ -692,10 +692,10 @@ public static partial class AIFunctionFactory
             JsonSerializerOptions = serializerOptions;
             JsonSchema = AIJsonUtilities.CreateFunctionJsonSchema(
                 key.Method,
-                Name,
-                Description,
-                serializerOptions,
-                schemaOptions);
+                title: string.Empty, // Forces skipping of the title keyword
+                description: string.Empty, // Forces skipping of the description keyword
+                serializerOptions: serializerOptions,
+                inferenceOptions: schemaOptions);
         }
 
         public string Name { get; }

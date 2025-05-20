@@ -304,7 +304,7 @@ public static partial class AIJsonUtilitiesTests
 
         Assert.NotNull(func.UnderlyingMethod);
 
-        JsonElement resolvedSchema = AIJsonUtilities.CreateFunctionJsonSchema(func.UnderlyingMethod, title: func.Name);
+        JsonElement resolvedSchema = AIJsonUtilities.CreateFunctionJsonSchema(func.UnderlyingMethod, title: string.Empty);
         AssertDeepEquals(resolvedSchema, func.JsonSchema);
     }
 
@@ -333,8 +333,6 @@ public static partial class AIJsonUtilitiesTests
 
         JsonElement expected = JsonDocument.Parse($$"""
             {
-              "title": "get_weather",
-              "description": "Gets the current weather for a current location",
               "type": "object",
               "properties": {
                 "city": {
@@ -369,11 +367,7 @@ public static partial class AIJsonUtilitiesTests
         Assert.NotNull(func.UnderlyingMethod);
         AssertDeepEquals(expected, func.JsonSchema);
 
-        JsonElement resolvedSchema = AIJsonUtilities.CreateFunctionJsonSchema(
-            func.UnderlyingMethod,
-            title: func.Name,
-            description: func.Description,
-            inferenceOptions: inferenceOptions);
+        JsonElement resolvedSchema = AIJsonUtilities.CreateFunctionJsonSchema(func.UnderlyingMethod, title: string.Empty, description: string.Empty, inferenceOptions: inferenceOptions);
         AssertDeepEquals(expected, resolvedSchema);
     }
 
