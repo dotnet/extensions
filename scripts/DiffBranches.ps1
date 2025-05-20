@@ -1,3 +1,28 @@
+<#
+.SYNOPSIS
+    A script to diff the contents of folders matching a specified pattern between two specified branches.
+
+.DESCRIPTION
+    The script uses git to determine the set of files (under folders matching a specified pattern) that are different
+    between the specified branches. It can also optionally display the line diffs for these files.
+
+.PARAMETER baseline
+    The baseline branch against which the specified target branch is to be compared. (Defaults to 'main' if omitted.)
+.PARAMETER target
+    The target branch which is to be compared against the specified baseline branch.
+.PARAMETER folderPattern
+    The pattern that selects the folders that are to be compared. (Defaults to '*.AI.* if omitted.)
+.PARAMETER showDiff
+    Determines whether or not line diffs should be displayed for the differing files. (Defaults to 'false' if omitted.)
+
+.EXAMPLE
+    PS> .\DiffBranches -target "release/9.5" -folderPattern "*.Evaluation.*"
+.EXAMPLE
+    PS> .\DiffBranches -baseline "release/9.4" -target "release/9.5" -folderPattern "*.Evaluation.*"
+.EXAMPLE
+    PS> .\DiffBranches -target "release/9.5" -showDiff
+#>
+
 [CmdletBinding()]
 param(
     [Parameter(Mandatory=$false)]
