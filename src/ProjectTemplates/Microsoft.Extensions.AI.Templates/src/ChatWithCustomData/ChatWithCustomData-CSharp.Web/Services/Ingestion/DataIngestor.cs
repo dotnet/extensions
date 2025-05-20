@@ -5,7 +5,6 @@ namespace ChatWithCustomData_CSharp.Web.Services.Ingestion;
 
 public class DataIngestor(
     ILogger<DataIngestor> logger,
-    IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
 #if (UseQdrant)
     VectorStoreCollection<Guid, IngestedChunk> chunksCollection,
     VectorStoreCollection<Guid, IngestedDocument> documentsCollection)
@@ -45,7 +44,7 @@ public class DataIngestor(
 
             await documentsCollection.UpsertAsync(modifiedDocument);
 
-            var newRecords = await source.CreateChunksForDocumentAsync(embeddingGenerator, modifiedDocument);
+            var newRecords = await source.CreateChunksForDocumentAsync(modifiedDocument);
             await chunksCollection.UpsertAsync(newRecords);
         }
 

@@ -5,7 +5,6 @@ namespace aichatweb.Web.Services.Ingestion;
 
 public class DataIngestor(
     ILogger<DataIngestor> logger,
-    IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
     VectorStoreCollection<string, IngestedChunk> chunksCollection,
     VectorStoreCollection<string, IngestedDocument> documentsCollection)
 {
@@ -40,7 +39,7 @@ public class DataIngestor(
 
             await documentsCollection.UpsertAsync(modifiedDocument);
 
-            var newRecords = await source.CreateChunksForDocumentAsync(embeddingGenerator, modifiedDocument);
+            var newRecords = await source.CreateChunksForDocumentAsync(modifiedDocument);
             await chunksCollection.UpsertAsync(newRecords);
         }
 
