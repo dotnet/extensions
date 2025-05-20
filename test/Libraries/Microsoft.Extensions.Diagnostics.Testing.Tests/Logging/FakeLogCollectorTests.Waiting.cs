@@ -27,7 +27,16 @@ public partial class FakeLogCollectorTests
     private const int WaitingTscOverallLogCount = 3;
     private const int LogAttemptHalfTimePeriod = 250;
     private const int LogAttemptFullTimePeriod = LogAttemptHalfTimePeriod * 2;
-    private const string WaitingTscLogAttemptPrefix = "Log";
+
+    /* Testing infrastructure messages */
+    private const string StartedWaitingMessage = "Started awaiting";
+    private const string AfterStartingBackgroundActionMessage = "Right after starting the background action";
+    private const string CheckingWaitingCallbackMessagePrefix = "Checking if waiting should end";
+    private const string BackgroundActionFinishedMessage = "Background action has finished";
+    private const string FinishedWaitingMessage = "Finished waiting for the log. Waiting for the background action to finish.";
+
+    private const string AwaitedLogMessagePrefix = "Awaited log message";
+    private const string IrrelevantLogMessage = "Irrelevant log message";
 
     [Fact]
     public async Task Waiting_ForOneRecord()
@@ -37,14 +46,20 @@ public partial class FakeLogCollectorTests
         // Arrange
         var testCaseData = new WaitingTestCase(
             1, null, null, false, [
-                "Started",
-                "Right after starting the background action",
-                $"{WaitingTscLogAttemptPrefix} #001",
-                "Checking if waiting should end #1",
-                "Finished waiting for the log. Waiting for the background action to finish.",
-                $"{WaitingTscLogAttemptPrefix} #002",
-                $"{WaitingTscLogAttemptPrefix} #003",
-                "Background action has finished",
+                IrrelevantLogMessage, // log message before start of waiting
+                StartedWaitingMessage,
+                $"{CheckingWaitingCallbackMessagePrefix} #001", // condition is checked at the waiting start if not immediately cancelled
+                AfterStartingBackgroundActionMessage,
+                IrrelevantLogMessage, // different message logged each half period
+                $"{CheckingWaitingCallbackMessagePrefix} #002",
+                $"{AwaitedLogMessagePrefix} #001",
+                $"{CheckingWaitingCallbackMessagePrefix} #003",
+                FinishedWaitingMessage,
+                IrrelevantLogMessage, // different message logged each half period
+                $"{AwaitedLogMessagePrefix} #002",
+                IrrelevantLogMessage, // different message logged each half period
+                $"{AwaitedLogMessagePrefix} #003",
+                BackgroundActionFinishedMessage,
             ],
             false,
             true);
@@ -61,15 +76,22 @@ public partial class FakeLogCollectorTests
         // Arrange
         var waitingTestCase = new WaitingTestCase(
             2, null, null, false, [
-                "Started",
-                "Right after starting the background action",
-                $"{WaitingTscLogAttemptPrefix} #001",
-                "Checking if waiting should end #1",
-                $"{WaitingTscLogAttemptPrefix} #002",
-                "Checking if waiting should end #2",
-                "Finished waiting for the log. Waiting for the background action to finish.",
-                $"{WaitingTscLogAttemptPrefix} #003",
-                "Background action has finished"
+                IrrelevantLogMessage, // log message before start of waiting
+                StartedWaitingMessage,
+                $"{CheckingWaitingCallbackMessagePrefix} #001", // condition is checked at the waiting start if not immediately cancelled
+                AfterStartingBackgroundActionMessage,
+                IrrelevantLogMessage, // different message logged each half period
+                $"{CheckingWaitingCallbackMessagePrefix} #002",
+                $"{AwaitedLogMessagePrefix} #001",
+                $"{CheckingWaitingCallbackMessagePrefix} #003",
+                IrrelevantLogMessage, // different message logged each half period
+                $"{CheckingWaitingCallbackMessagePrefix} #004",
+                $"{AwaitedLogMessagePrefix} #002",
+                $"{CheckingWaitingCallbackMessagePrefix} #005",
+                FinishedWaitingMessage,
+                IrrelevantLogMessage, // different message logged each half period
+                $"{AwaitedLogMessagePrefix} #003",
+                BackgroundActionFinishedMessage,
             ],
             false,
             true);
@@ -86,14 +108,20 @@ public partial class FakeLogCollectorTests
         // Arrange
         var waitingTestCase = new WaitingTestCase(
             WaitingTscOverallLogCount + 1, 1.5, null, false, [
-                "Started",
-                "Right after starting the background action",
-                $"{WaitingTscLogAttemptPrefix} #001",
-                "Checking if waiting should end #1",
-                "Finished waiting for the log. Waiting for the background action to finish.",
-                $"{WaitingTscLogAttemptPrefix} #002",
-                $"{WaitingTscLogAttemptPrefix} #003",
-                "Background action has finished"
+                IrrelevantLogMessage, // log message before start of waiting
+                StartedWaitingMessage,
+                $"{CheckingWaitingCallbackMessagePrefix} #001", // condition is checked at the waiting start if not immediately cancelled
+                AfterStartingBackgroundActionMessage,
+                IrrelevantLogMessage, // different message logged each half period
+                $"{CheckingWaitingCallbackMessagePrefix} #002",
+                $"{AwaitedLogMessagePrefix} #001",
+                $"{CheckingWaitingCallbackMessagePrefix} #003",
+                IrrelevantLogMessage, // different message logged each half period
+                FinishedWaitingMessage,
+                $"{AwaitedLogMessagePrefix} #002",
+                IrrelevantLogMessage, // different message logged each half period
+                $"{AwaitedLogMessagePrefix} #003",
+                BackgroundActionFinishedMessage
             ],
             true,
             null);
@@ -110,13 +138,17 @@ public partial class FakeLogCollectorTests
         // Arrange
         var waitingTestCase = new WaitingTestCase(
             WaitingTscOverallLogCount, null, null, true, [
-                "Started",
-                "Right after starting the background action",
-                "Finished waiting for the log. Waiting for the background action to finish.",
-                $"{WaitingTscLogAttemptPrefix} #001",
-                $"{WaitingTscLogAttemptPrefix} #002",
-                $"{WaitingTscLogAttemptPrefix} #003",
-                "Background action has finished"
+                IrrelevantLogMessage, // log message before start of waiting
+                StartedWaitingMessage,
+                AfterStartingBackgroundActionMessage,
+                FinishedWaitingMessage,
+                IrrelevantLogMessage, // different message logged each half period
+                $"{AwaitedLogMessagePrefix} #001",
+                IrrelevantLogMessage, // different message logged each half period
+                $"{AwaitedLogMessagePrefix} #002",
+                IrrelevantLogMessage, // different message logged each half period
+                $"{AwaitedLogMessagePrefix} #003",
+                BackgroundActionFinishedMessage
             ],
             true,
             null);
@@ -133,14 +165,20 @@ public partial class FakeLogCollectorTests
         // Arrange
         var waitingTestCase = new WaitingTestCase(
             1, 3 * LogAttemptFullTimePeriod, null, false, [
-                "Started",
-                "Right after starting the background action",
-                $"{WaitingTscLogAttemptPrefix} #001",
-                "Checking if waiting should end #1",
-                "Finished waiting for the log. Waiting for the background action to finish.",
-                $"{WaitingTscLogAttemptPrefix} #002",
-                $"{WaitingTscLogAttemptPrefix} #003",
-                "Background action has finished"
+                IrrelevantLogMessage, // log message before start of waiting
+                StartedWaitingMessage,
+                $"{CheckingWaitingCallbackMessagePrefix} #001", // condition is checked at the waiting start if not immediately cancelled
+                AfterStartingBackgroundActionMessage,
+                IrrelevantLogMessage, // different message logged each half period
+                $"{CheckingWaitingCallbackMessagePrefix} #002",
+                $"{AwaitedLogMessagePrefix} #001",
+                $"{CheckingWaitingCallbackMessagePrefix} #003",
+                FinishedWaitingMessage,
+                IrrelevantLogMessage, // different message logged each half period
+                $"{AwaitedLogMessagePrefix} #002",
+                IrrelevantLogMessage, // different message logged each half period
+                $"{AwaitedLogMessagePrefix} #003",
+                BackgroundActionFinishedMessage,
             ],
             false,
             true);
@@ -157,15 +195,22 @@ public partial class FakeLogCollectorTests
         // Arrange
         var waitingTestCase = new WaitingTestCase(
             3, null, 2.5, false, [
-                "Started",
-                "Right after starting the background action",
-                $"{WaitingTscLogAttemptPrefix} #001",
-                "Checking if waiting should end #1",
-                $"{WaitingTscLogAttemptPrefix} #002",
-                "Checking if waiting should end #2",
-                "Finished waiting for the log. Waiting for the background action to finish.",
-                $"{WaitingTscLogAttemptPrefix} #003",
-                "Background action has finished"
+                IrrelevantLogMessage, // log message before start of waiting
+                StartedWaitingMessage,
+                $"{CheckingWaitingCallbackMessagePrefix} #001",
+                AfterStartingBackgroundActionMessage,
+                IrrelevantLogMessage, // different message logged each half period
+                $"{CheckingWaitingCallbackMessagePrefix} #002",
+                $"{AwaitedLogMessagePrefix} #001",
+                $"{CheckingWaitingCallbackMessagePrefix} #003",
+                IrrelevantLogMessage, // different message logged each half period
+                $"{CheckingWaitingCallbackMessagePrefix} #004",
+                $"{AwaitedLogMessagePrefix} #002",
+                $"{CheckingWaitingCallbackMessagePrefix} #005",
+                IrrelevantLogMessage, // different message logged each half period
+                FinishedWaitingMessage,
+                $"{AwaitedLogMessagePrefix} #003",
+                BackgroundActionFinishedMessage
             ],
             false,
             false);
@@ -200,17 +245,24 @@ public partial class FakeLogCollectorTests
         // Testing infrastructure: keeping track of when the implementation checks the users callback
         var testExecutionCustomLog = new ConcurrentQueue<string>();
         int callbackCallCounter = 0;
+        int awaitedLogMessageCount = 0;
         const int AllLogAttemptsInHalfPeriods = WaitingTscOverallLogCount * 2;
         var fakeTimeProvider = new FakeTimeProvider();
 
-        var collector = FakeLogCollector.Create(new FakeLogCollectorOptions {TimeProvider = fakeTimeProvider });
+        var collector = FakeLogCollector.Create(new FakeLogCollectorOptions { TimeProvider = fakeTimeProvider });
         var logger = new FakeLogger(collector);
 
         bool UserDefinedWaitingCondition(FakeLogRecord record)
         {
-            Interlocked.Increment(ref callbackCallCounter);
-            testExecutionCustomLog.Enqueue("Checking if waiting should end #" + callbackCallCounter);
-            return callbackCallCounter == testCaseData.EndWaitAtAttemptCount;
+            callbackCallCounter++;
+            testExecutionCustomLog.Enqueue($"{CheckingWaitingCallbackMessagePrefix} #{callbackCallCounter:000}");
+
+            if (record.Message.StartsWith(AwaitedLogMessagePrefix))
+            {
+                awaitedLogMessageCount++;
+            }
+
+            return awaitedLogMessageCount == testCaseData.EndWaitAtAttemptCount;
         }
 
         TimeSpan? userDefinedTimeout = testCaseData.TimeoutAfterLogAttemptCount is null
@@ -233,8 +285,10 @@ public partial class FakeLogCollectorTests
             }
 
             // Act
+            logger.LogDebug(IrrelevantLogMessage);
+            testExecutionCustomLog.Enqueue(IrrelevantLogMessage);
 
-            testExecutionCustomLog.Enqueue("Started");
+            testExecutionCustomLog.Enqueue("Started awaiting");
 
             var awaitingTask = collector.WaitForLogAsync(UserDefinedWaitingCondition, userDefinedTimeout, userDefinedCancellation.Token);
 
@@ -251,15 +305,20 @@ public partial class FakeLogCollectorTests
                         if (logAttemptPeriodReached)
                         {
                             var logAttemptNumber = logAttemptHalfPeriodCount / 2;
-                            var logMessage = $"{WaitingTscLogAttemptPrefix} #{logAttemptNumber:000}";
+                            var logMessage = $"{AwaitedLogMessagePrefix} #{logAttemptNumber:000}";
                             testExecutionCustomLog.Enqueue(logMessage); // Testing infrastructure log
                             logger.LogDebug(logMessage); // Actual log
+                        }
+                        else
+                        {
+                            testExecutionCustomLog.Enqueue(IrrelevantLogMessage); // Testing infrastructure log
+                            logger.LogDebug(IrrelevantLogMessage);
                         }
                     }
                 },
                 CancellationToken.None);
 
-            testExecutionCustomLog.Enqueue("Right after starting the background action");
+            testExecutionCustomLog.Enqueue(AfterStartingBackgroundActionMessage);
 
             bool? result = null;
             bool taskCancelled = false;
@@ -273,16 +332,19 @@ public partial class FakeLogCollectorTests
                 taskCancelled = true;
             }
 
-            testExecutionCustomLog.Enqueue("Finished waiting for the log. Waiting for the background action to finish.");
+            testExecutionCustomLog.Enqueue(FinishedWaitingMessage);
 
             await loggingBackgroundAction;
 
-            testExecutionCustomLog.Enqueue("Background action has finished");
+            testExecutionCustomLog.Enqueue(BackgroundActionFinishedMessage);
 
             // Assert
             Assert.Equal(testCaseData.ExpectedAwaitedTaskResult, result);
             testExecutionCustomLog.Should().Equal(testCaseData.ExpectedOperationSequence);
-            Assert.Equal(testExecutionCustomLog.Count(r => r.StartsWith(WaitingTscLogAttemptPrefix)), logger.Collector.Count);
+            Assert.Equal(
+                testExecutionCustomLog.Count(r => r.StartsWith(AwaitedLogMessagePrefix)),
+                logger.Collector.GetSnapshot().Count(r => r.Message.StartsWith(AwaitedLogMessagePrefix))
+            );
             Assert.Equal(testCaseData.ExpectedTaskCancelled, taskCancelled);
         }
     }
