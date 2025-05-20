@@ -10,10 +10,10 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.6.0" />
     <PackageReference Include="Microsoft.Extensions.AI" Version="9.6.0" />
-    <PackageReference Include="Microsoft.SemanticKernel.Core" Version="1.52.1" />
+    <PackageReference Include="Microsoft.SemanticKernel.Core" Version="1.53.0" />
     <PackageReference Include="PdfPig" Version="0.1.10" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.SqliteVec" Version="1.52.1-preview" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.SqliteVec" Version="1.53.0-preview" />
   </ItemGroup>
 
 </Project>
