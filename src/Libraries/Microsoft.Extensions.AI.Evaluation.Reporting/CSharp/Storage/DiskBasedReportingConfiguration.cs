@@ -59,6 +59,13 @@ public static class DiskBasedReportingConfiguration
     /// A <see cref="ReportingConfiguration"/> that persists <see cref="ScenarioRunResult"/>s to disk and also uses the
     /// disk to cache AI responses.
     /// </returns>
+    /// <remarks>
+    /// Note that when <paramref name="enableResponseCaching"/> is set to <see langword="true"/>, the cache keys used
+    /// for the cached responses are not guaranteed to be stable across releases of the library. In other words, when
+    /// you update your code to reference a newer version of the library, it is possible that old cached responses
+    /// (persisted to the cache using older versions of the library) will no longer be used - instead new responses
+    /// will be fetched from the LLM and added to the cache for use in subsequent executions.
+    /// </remarks>
 #pragma warning disable S107 // Methods should not have too many parameters
     public static ReportingConfiguration Create(
         string storageRootPath,
