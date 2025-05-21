@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.AI;
-using Microsoft.SemanticKernel.Text;
+﻿using Microsoft.SemanticKernel.Text;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.PageSegmenter;
@@ -42,21 +41,18 @@ public class PDFDirectorySource(string sourceDirectory) : IIngestionSource
         return Task.FromResult(deletedDocuments);
     }
 
-    public async Task<IEnumerable<IngestedChunk>> CreateChunksForDocumentAsync(IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator, IngestedDocument document)
+    public Task<IEnumerable<IngestedChunk>> CreateChunksForDocumentAsync(IngestedDocument document)
     {
         using var pdf = PdfDocument.Open(Path.Combine(sourceDirectory, document.DocumentId));
         var paragraphs = pdf.GetPages().SelectMany(GetPageParagraphs).ToList();
 
-        var embeddings = await embeddingGenerator.GenerateAsync(paragraphs.Select(c => c.Text));
-
-        return paragraphs.Zip(embeddings).Select(pair => new IngestedChunk
+        return Task.FromResult(paragraphs.Select(p => new IngestedChunk
         {
             Key = Guid.CreateVersion7().ToString(),
             DocumentId = document.DocumentId,
-            PageNumber = pair.First.PageNumber,
-            Text = pair.First.Text,
-            Vector = pair.Second.Vector,
-        });
+            PageNumber = p.PageNumber,
+            Text = p.Text,
+        }));
     }
 
     private static IEnumerable<(int PageNumber, int IndexOnPage, string Text)> GetPageParagraphs(Page pdfPage)
