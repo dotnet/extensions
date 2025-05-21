@@ -1,10 +1,8 @@
 ﻿using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using aichatweb.Web.Components;
 using aichatweb.Web.Services;
 using aichatweb.Web.Services.Ingestion;
 using OpenAI;
-using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
@@ -18,8 +16,8 @@ openai.AddChatClient("gpt-4o-mini")
 openai.AddEmbeddingGenerator("text-embedding-3-small");
 
 builder.AddAzureSearchClient("azureAISearch");
-
-builder.Services.AddSingleton<IVectorStore, AzureAISearchVectorStore>();
+builder.Services.AddAzureAISearchCollection<IngestedChunk>("data-aichatweb-chunks");
+builder.Services.AddAzureAISearchCollection<IngestedDocument>("data-aichatweb-documents");
 builder.Services.AddScoped<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();
 

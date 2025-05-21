@@ -27,18 +27,18 @@
 
     <!-- External dependency packages -->
     <PropertyGroup>
-      <TemplatePackageVersion_Aspire>9.2.1</TemplatePackageVersion_Aspire>
-      <TemplatePackageVersion_Aspire_Preview>9.2.1-preview.1.25222.1</TemplatePackageVersion_Aspire_Preview>
+      <TemplatePackageVersion_Aspire>9.3.0</TemplatePackageVersion_Aspire>
+      <TemplatePackageVersion_Aspire_Preview>9.3.0-preview.1.25265.20</TemplatePackageVersion_Aspire_Preview>
       <TemplatePackageVersion_AzureAIOpenAI>2.2.0-beta.4</TemplatePackageVersion_AzureAIOpenAI>
-      <TemplatePackageVersion_AzureAIProjects>1.0.0-beta.6</TemplatePackageVersion_AzureAIProjects>
+      <TemplatePackageVersion_AzureAIProjects>1.0.0-beta.9</TemplatePackageVersion_AzureAIProjects>
       <TemplatePackageVersion_AzureIdentity>1.14.0</TemplatePackageVersion_AzureIdentity>
       <TemplatePackageVersion_AzureSearchDocuments>11.6.0</TemplatePackageVersion_AzureSearchDocuments>
-      <TemplatePackageVersion_CommunityToolkitAspire>9.4.1-beta.277</TemplatePackageVersion_CommunityToolkitAspire>
-      <TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery>9.2.0</TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery>
-      <TemplatePackageVersion_MicrosoftSemanticKernel>1.50.0</TemplatePackageVersion_MicrosoftSemanticKernel>
-      <TemplatePackageVersion_MicrosoftSemanticKernel_Preview>1.50.0-preview</TemplatePackageVersion_MicrosoftSemanticKernel_Preview>
-      <TemplatePackageVersion_OllamaSharp>5.1.16</TemplatePackageVersion_OllamaSharp>
-      <TemplatePackageVersion_OpenTelemetry>1.9.0</TemplatePackageVersion_OpenTelemetry>
+      <TemplatePackageVersion_CommunityToolkitAspire>9.4.1-beta.291</TemplatePackageVersion_CommunityToolkitAspire>
+      <TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery>9.3.0</TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery>
+      <TemplatePackageVersion_MicrosoftSemanticKernel>1.53.0</TemplatePackageVersion_MicrosoftSemanticKernel>
+      <TemplatePackageVersion_MicrosoftSemanticKernel_Preview>1.53.0-preview</TemplatePackageVersion_MicrosoftSemanticKernel_Preview>
+      <TemplatePackageVersion_OllamaSharp>5.1.18</TemplatePackageVersion_OllamaSharp>
+      <TemplatePackageVersion_OpenTelemetry>1.12.0</TemplatePackageVersion_OpenTelemetry>
       <TemplatePackageVersion_PdfPig>0.1.10</TemplatePackageVersion_PdfPig>
       <TemplatePackageVersion_SystemLinqAsync>6.0.1</TemplatePackageVersion_SystemLinqAsync>
     </PropertyGroup>
@@ -85,6 +85,9 @@
       <GeneratedContent
         Include="$(_ChatWithCustomDataContentRoot)Directory.Build.targets.in"
         OutputPath="$(_ChatWithCustomDataContentRoot)Directory.Build.targets" />
+      <GeneratedContent
+        Include="$(_ChatWithCustomDataContentRoot)Directory.Build.props.in"
+        OutputPath="$(_ChatWithCustomDataContentRoot)Directory.Build.props" />
       <GeneratedContent
         Include="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.Web\ChatWithCustomData-CSharp.Web.csproj.in"
         OutputPath="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.Web\ChatWithCustomData-CSharp.Web.csproj" />

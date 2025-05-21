@@ -4,19 +4,22 @@ namespace aichatweb.Web.Services;
 
 public class IngestedDocument
 {
-    [VectorStoreRecordKey]
+    private const int VectorDimensions = 2;
+    private const string VectorDistanceFunction = DistanceFunction.CosineSimilarity;
+
+    [VectorStoreKey]
     public required Guid Key { get; set; }
 
-    [VectorStoreRecordData(IsIndexed = true)]
+    [VectorStoreData(IsIndexed = true)]
     public required string SourceId { get; set; }
 
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public required string DocumentId { get; set; }
 
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public required string DocumentVersion { get; set; }
 
     // The vector is not used but required for some vector databases
-    [VectorStoreRecordVector(2, DistanceFunction = DistanceFunction.CosineSimilarity)]
+    [VectorStoreVector(VectorDimensions, DistanceFunction = VectorDistanceFunction)]
     public ReadOnlyMemory<float> Vector { get; set; } = new ReadOnlyMemory<float>([0, 0]);
 }
