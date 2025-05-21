@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Microsoft.Extensions.Caching.Hybrid;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -65,6 +66,7 @@ public static class HybridCacheBuilderExtensions
     /// Register a default <see cref="JsonSerializerOptions"/> for use with JSON serialization.
     /// </summary>
     /// <returns>The <see cref="IHybridCacheBuilder"/> instance.</returns>
+    [Experimental(DiagnosticIds.Experiments.HybridCache, UrlFormat = DiagnosticIds.UrlFormat)]
     public static IHybridCacheBuilder WithJsonSerializerOptions(this IHybridCacheBuilder builder, JsonSerializerOptions options)
     {
         _ = Throw.IfNull(builder).Services.AddKeyedSingleton<JsonSerializerOptions>(typeof(IHybridCacheSerializer<>), Throw.IfNull(options));
@@ -76,6 +78,7 @@ public static class HybridCacheBuilderExtensions
     /// </summary>
     /// <typeparam name="T">The type being serialized.</typeparam>
     /// <returns>The <see cref="IHybridCacheBuilder"/> instance.</returns>
+    [Experimental(DiagnosticIds.Experiments.HybridCache, UrlFormat = DiagnosticIds.UrlFormat)]
     public static IHybridCacheBuilder WithJsonSerializerOptions<T>(this IHybridCacheBuilder builder, JsonSerializerOptions options)
     {
         _ = Throw.IfNull(builder).Services.AddKeyedSingleton<JsonSerializerOptions>(typeof(IHybridCacheSerializer<T>), Throw.IfNull(options));
