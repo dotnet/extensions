@@ -569,6 +569,19 @@ public static partial class AIJsonUtilitiesTests
     }
 
     [Fact]
+    public static void HashData_IndentationInvariant()
+    {
+        JsonSerializerOptions indentOptions = new(AIJsonUtilities.DefaultOptions) { WriteIndented = true };
+        JsonSerializerOptions noIndentOptions = new(AIJsonUtilities.DefaultOptions) { WriteIndented = false };
+
+        Dictionary<string, object> dict = new() { ["key1"] = 1, ["key2"] = 2 };
+        string key1 = AIJsonUtilities.HashDataToString([dict], indentOptions);
+        string key2 = AIJsonUtilities.HashDataToString([dict], noIndentOptions);
+
+        Assert.Equal(key1, key2);
+    }
+
+    [Fact]
     public static void CreateFunctionJsonSchema_InvokesIncludeParameterCallbackForEveryParameter()
     {
         Delegate method = (int first, string second, bool third, CancellationToken fourth, DateTime fifth) => { };
