@@ -557,11 +557,28 @@ public static partial class AIJsonUtilitiesTests
             string key2 = AIJsonUtilities.HashDataToString(["a", 'b', 42], options);
             string key3 = AIJsonUtilities.HashDataToString([TimeSpan.FromSeconds(1), null, 1.23], options);
             string key4 = AIJsonUtilities.HashDataToString([TimeSpan.FromSeconds(1), null, 1.23], options);
+            string key5 = AIJsonUtilities.HashDataToString([new Dictionary<string, object> { ["key1"] = 1, ["key2"] = 2 }], options);
+            string key6 = AIJsonUtilities.HashDataToString([new Dictionary<string, object> { ["key2"] = 2, ["key1"] = 1 }], options);
 
             Assert.Equal(key1, key2);
             Assert.Equal(key3, key4);
+            Assert.Equal(key5, key6);
             Assert.NotEqual(key1, key3);
+            Assert.NotEqual(key1, key5);
         }
+    }
+
+    [Fact]
+    public static void HashData_IndentationInvariant()
+    {
+        JsonSerializerOptions indentOptions = new(AIJsonUtilities.DefaultOptions) { WriteIndented = true };
+        JsonSerializerOptions noIndentOptions = new(AIJsonUtilities.DefaultOptions) { WriteIndented = false };
+
+        Dictionary<string, object> dict = new() { ["key1"] = 1, ["key2"] = 2 };
+        string key1 = AIJsonUtilities.HashDataToString([dict], indentOptions);
+        string key2 = AIJsonUtilities.HashDataToString([dict], noIndentOptions);
+
+        Assert.Equal(key1, key2);
     }
 
     [Fact]
