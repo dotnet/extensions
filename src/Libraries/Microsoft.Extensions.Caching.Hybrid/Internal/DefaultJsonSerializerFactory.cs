@@ -10,6 +10,10 @@ using System.Reflection;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 
+[assembly: UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Checked at runtime, guidance issued")]
+[assembly: UnconditionalSuppressMessage("AOT", "IL2070", Justification = "Checked at runtime, guidance issued")]
+[assembly: UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Checked at runtime, guidance issued")]
+
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
 internal sealed class DefaultJsonSerializerFactory : IHybridCacheSerializerFactory
@@ -34,7 +38,7 @@ internal sealed class DefaultJsonSerializerFactory : IHybridCacheSerializerFacto
 
         // see if there is a per-type options registered (keyed by the **closed** generic type), otherwise use the default
         JsonSerializerOptions options = _serviceProvider.GetKeyedService<JsonSerializerOptions>(typeof(IHybridCacheSerializer<T>)) ?? Options;
-        if (!options.IncludeFields && ReferenceEquals(options, SystemDefaultJsonOptions) && IsFieldOnlyType(typeof(T)))
+        if (!options.IncludeFields && IsDefaultJsonOptions(options) && IsFieldOnlyType(typeof(T)))
         {
             // value-tuples expose fields, not properties; special-case this as a common scenario
             options = FieldEnabledJsonOptions;
@@ -50,11 +54,42 @@ internal sealed class DefaultJsonSerializerFactory : IHybridCacheSerializerFacto
         return IsFieldOnlyType(type, ref state) == FieldOnlyResult.FieldOnly;
     }
 
+    private static bool IsDefaultJsonOptions(JsonSerializerOptions options)
+    {
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+        if (!System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported)
+        {
+            // can't be, since we don't use default options for AOT
+            return false;
+        }
+#endif
+
 #pragma warning disable IDE0079 // unnecessary suppression: TFM-dependent
 #pragma warning disable IL2026, IL3050 // AOT bits
-    private static JsonSerializerOptions SystemDefaultJsonOptions => JsonSerializerOptions.Default;
+        return ReferenceEquals(options, JsonSerializerOptions.Default);
 #pragma warning restore IL2026, IL3050
 #pragma warning restore IDE0079
+    }
+
+    private static JsonSerializerOptions SystemDefaultJsonOptions
+    {
+        get
+        {
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+            if (!System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported)
+            {
+                throw new NotSupportedException($"When using AOT, {nameof(JsonSerializerOptions)} with {nameof(JsonSerializerOptions.TypeInfoResolver)} specified must be provided via"
+                + $" {nameof(IHybridCacheBuilder)}.{nameof(HybridCacheBuilderExtensions.WithJsonSerializerOptions)}.");
+            }
+#endif
+
+#pragma warning disable IDE0079 // unnecessary suppression: TFM-dependent
+#pragma warning disable IL2026, IL3050 // AOT bits
+            return JsonSerializerOptions.Default;
+#pragma warning restore IL2026, IL3050
+#pragma warning restore IDE0079
+        }
+    }
 
     [SuppressMessage("Trimming", "IL2070:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The parameter of method does not have matching annotations.",
         Justification = "Custom serializers may be needed for AOT with STJ")]
