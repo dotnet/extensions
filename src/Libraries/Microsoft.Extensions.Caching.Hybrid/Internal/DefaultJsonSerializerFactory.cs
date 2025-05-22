@@ -10,12 +10,11 @@ using System.Reflection;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 
-[assembly: UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Checked at runtime, guidance issued")]
-[assembly: UnconditionalSuppressMessage("AOT", "IL2070", Justification = "Checked at runtime, guidance issued")]
-[assembly: UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Checked at runtime, guidance issued")]
-
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
+[UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Checked at runtime, guidance issued")]
+[UnconditionalSuppressMessage("AOT", "IL2070", Justification = "Checked at runtime, guidance issued")]
+[UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Checked at runtime, guidance issued")]
 internal sealed class DefaultJsonSerializerFactory : IHybridCacheSerializerFactory
 {
     private readonly IServiceProvider _serviceProvider;
@@ -56,13 +55,11 @@ internal sealed class DefaultJsonSerializerFactory : IHybridCacheSerializerFacto
 
     private static bool IsDefaultJsonOptions(JsonSerializerOptions options)
     {
-#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
-        if (!System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported)
+        if (!JsonSerializer.IsReflectionEnabledByDefault)
         {
             // can't be, since we don't use default options for AOT
             return false;
         }
-#endif
 
 #pragma warning disable IDE0079 // unnecessary suppression: TFM-dependent
 #pragma warning disable IL2026, IL3050 // AOT bits
@@ -75,13 +72,11 @@ internal sealed class DefaultJsonSerializerFactory : IHybridCacheSerializerFacto
     {
         get
         {
-#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
-            if (!System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported)
+            if (!JsonSerializer.IsReflectionEnabledByDefault)
             {
                 throw new NotSupportedException($"When using AOT, {nameof(JsonSerializerOptions)} with {nameof(JsonSerializerOptions.TypeInfoResolver)} specified must be provided via"
                 + $" {nameof(IHybridCacheBuilder)}.{nameof(HybridCacheBuilderExtensions.WithJsonSerializerOptions)}.");
             }
-#endif
 
 #pragma warning disable IDE0079 // unnecessary suppression: TFM-dependent
 #pragma warning disable IL2026, IL3050 // AOT bits
