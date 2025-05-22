@@ -112,10 +112,7 @@ internal sealed class HttpResponseBodyReader
 
         // if stream is not seekable we need to write the rest of the stream to the pipe
         // and create a new response content with the pipe reader as stream
-        _ = Task.Run(async () =>
-        {
-            await WriteStreamToPipeAsync(streamToReadFrom, pipe.Writer, cancellationToken).ConfigureAwait(false);
-        }, CancellationToken.None);
+        _ = WriteStreamToPipeAsync(streamToReadFrom, pipe.Writer, cancellationToken);
 
         // use the pipe reader as stream for the new content
         var newContent = new StreamContent(pipe.Reader.AsStream());
@@ -130,41 +127,29 @@ internal sealed class HttpResponseBodyReader
     }
 
 #if NET6_0_OR_GREATER
-    private static async Task<string> BufferStreamAndWriteToPipeAsync(Stream stream, PipeWriter writer, int bufferSize, CancellationToken cancellationToken)
+    private static async ValueTask<string> BufferStreamAndWriteToPipeAsync(Stream stream, PipeWriter writer, int bufferSize, CancellationToken cancellationToken)
     {
         Memory<byte> memory = writer.GetMemory(bufferSize)[..bufferSize];
 
-#if NET8_0_OR_GREATER
         int bytesRead = await stream.ReadAtLeastAsync(memory, bufferSize, false, cancellationToken).ConfigureAwait(false);
-#else
-        int bytesRead = 0;
-        while (bytesRead < bufferSize)
-        {
-            int read = await stream.ReadAsync(memory.Slice(bytesRead), cancellationToken).ConfigureAwait(false);
-            if (read == 0)
-            {
-                break;
-            }
-
-            bytesRead += read;
-        }
-#endif
-
         if (bytesRead == 0)
         {
             return string.Empty;
         }
 
+        var res = Encoding.UTF8.GetString(memory.Span[..bytesRead]);
         writer.Advance(bytesRead);
 
-        return Encoding.UTF8.GetString(memory[..bytesRead].Span);
+        return res;
     }
 
     private static async Task WriteStreamToPipeAsync(Stream stream, PipeWriter writer, CancellationToken cancellationToken)
     {
+        await Task.CompletedTask.ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
+
         while (true)
         {
-            Memory<byte> memory = writer.GetMemory(ChunkSize)[..ChunkSize];
+            Memory<byte> memory = writer.GetMemory(ChunkSize);
 
             int bytesRead = await stream.ReadAsync(memory, cancellationToken).ConfigureAwait(false);
             if (bytesRead == 0)
@@ -216,7 +201,10 @@ internal sealed class HttpResponseBodyReader
         return sb.ToString();
     }
 
-    private static async Task WriteStreamToPipeAsync(Stream stream, PipeWriter writer, CancellationToken cancellationToken)
+    private static Task WriteStreamToPipeAsync(Stream stream, PipeWriter writer, CancellationToken cancellationToken)
+        => Task.Run(() => WriteStreamToPipeImplAsync(stream, writer, cancellationToken), CancellationToken.None);
+
+    private static async Task WriteStreamToPipeImplAsync(Stream stream, PipeWriter writer, CancellationToken cancellationToken)
     {
         while (true)
         {
