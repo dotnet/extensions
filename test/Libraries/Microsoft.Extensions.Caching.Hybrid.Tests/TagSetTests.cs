@@ -4,6 +4,7 @@
 using Microsoft.Extensions.Caching.Hybrid.Internal;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
+
 public class TagSetTests
 {
     [Fact]
@@ -164,7 +165,7 @@ public class TagSetTests
         {
             const string Alphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
             var len = rand.Next(3, 8);
-#if NET462
+#if NETFRAMEWORK
             char[] chars = new char[len];
 #else
             Span<char> chars = stackalloc char[len];
