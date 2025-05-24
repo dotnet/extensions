@@ -117,17 +117,24 @@ internal sealed class AzureAIInferenceImageEmbeddingGenerator :
     }
 
     /// <summary>Converts an extensions options instance to an Azure.AI.Inference options instance.</summary>
-    /// <remarks>
-    /// Note: we can't currently use RawRepresentationFactory due to https://github.com/Azure/azure-sdk-for-net/issues/50018.
-    /// </remarks>
     private ImageEmbeddingsOptions ToAzureAIOptions(IEnumerable<DataContent> inputs, EmbeddingGenerationOptions? options)
     {
-        ImageEmbeddingsOptions result = new(inputs.Select(dc => new ImageEmbeddingInput(dc.Uri)))
+        IEnumerable<ImageEmbeddingInput> imageEmbeddingInputs = inputs.Select(dc => new ImageEmbeddingInput(dc.Uri));
+        if (options?.RawRepresentationFactory?.Invoke(this) is not ImageEmbeddingsOptions result)
         {
-            Dimensions = options?.Dimensions ?? _dimensions,
-            Model = options?.ModelId ?? _metadata.DefaultModelId,
-            EncodingFormat = EmbeddingEncodingFormat.Base64,
-        };
+            result = new ImageEmbeddingsOptions(imageEmbeddingInputs);
+        }
+        else
+        {
+            foreach (var input in imageEmbeddingInputs)
+            {
+                result.Input.Add(input);
+            }
+        }
+
+        result.Dimensions ??= options?.Dimensions ?? _dimensions;
+        result.Model ??= options?.ModelId ?? _metadata.DefaultModelId;
+        result.EncodingFormat = EmbeddingEncodingFormat.Base64;
 
         if (options?.AdditionalProperties is { } props)
         {

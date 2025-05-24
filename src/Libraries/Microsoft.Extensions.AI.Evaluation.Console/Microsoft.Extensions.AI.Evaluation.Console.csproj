@@ -13,11 +13,10 @@
 
   <PropertyGroup>
     <Workstream>AIEval</Workstream>
-    <Stage>preview</Stage>
+    <Stage>normal</Stage>
     <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
-    <EnablePackageValidation>false</EnablePackageValidation>
-    <MinCodeCoverage>8</MinCodeCoverage>
-    <MinMutationScore>0</MinMutationScore>
+    <MinCodeCoverage>n/a</MinCodeCoverage>
+    <MinMutationScore>n/a</MinMutationScore>
   </PropertyGroup>
 
   <!--

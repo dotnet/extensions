@@ -1,0 +1,437 @@
+{
+  "Name": "Microsoft.Extensions.AI.Evaluation.Reporting, Version=9.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Types": [
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Reporting.ChatDetails",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Reporting.ChatDetails.ChatDetails(System.Collections.Generic.IList<Microsoft.Extensions.AI.Evaluation.Reporting.ChatTurnDetails> turnDetails);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Reporting.ChatDetails.ChatDetails(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.Reporting.ChatTurnDetails> turnDetails);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Reporting.ChatDetails.ChatDetails(params Microsoft.Extensions.AI.Evaluation.Reporting.ChatTurnDetails[] turnDetails);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.Evaluation.Reporting.ChatTurnDetails> Microsoft.Extensions.AI.Evaluation.Reporting.ChatDetails.TurnDetails { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.Evaluation.Reporting.ChatDetailsExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static void Microsoft.Extensions.AI.Evaluation.Reporting.ChatDetailsExtensions.AddTurnDetails(this Microsoft.Extensions.AI.Evaluation.Reporting.ChatDetails chatDetails, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.Reporting.ChatTurnDetails> turnDetails);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static void Microsoft.Extensions.AI.Evaluation.Reporting.ChatDetailsExtensions.AddTurnDetails(this Microsoft.Extensions.AI.Evaluation.Reporting.ChatDetails chatDetails, params Microsoft.Extensions.AI.Evaluation.Reporting.ChatTurnDetails[] turnDetails);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Reporting.ChatTurnDetails",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Reporting.ChatTurnDetails.ChatTurnDetails(System.TimeSpan latency, string? model = null, Microsoft.Extensions.AI.UsageDetails? usage = null, string? cacheKey = null, bool? cacheHit = null);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool? Microsoft.Extensions.AI.Evaluation.Reporting.ChatTurnDetails.CacheHit { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.Evaluation.Reporting.ChatTurnDetails.CacheKey { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.TimeSpan Microsoft.Extensions.AI.Evaluation.Reporting.ChatTurnDetails.Latency { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.Evaluation.Reporting.ChatTurnDetails.Model { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.UsageDetails? Microsoft.Extensions.AI.Evaluation.Reporting.ChatTurnDetails.Usage { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.Evaluation.Reporting.Defaults",
+      "Stage": "Stable",
+      "Fields": [
+        {
+          "Member": "const string Microsoft.Extensions.AI.Evaluation.Reporting.Defaults.DefaultExecutionName",
+          "Stage": "Stable",
+          "Value": "Default"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.AI.Evaluation.Reporting.Defaults.DefaultIterationName",
+          "Stage": "Stable",
+          "Value": "1"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "static System.TimeSpan Microsoft.Extensions.AI.Evaluation.Reporting.Defaults.DefaultTimeToLiveForCacheEntries { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.Evaluation.Reporting.Storage.DiskBasedReportingConfiguration",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.Evaluation.Reporting.ReportingConfiguration Microsoft.Extensions.AI.Evaluation.Reporting.Storage.DiskBasedReportingConfiguration.Create(string storageRootPath, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.IEvaluator> evaluators, Microsoft.Extensions.AI.Evaluation.ChatConfiguration? chatConfiguration = null, bool enableResponseCaching = true, System.TimeSpan? timeToLiveForCacheEntries = null, System.Collections.Generic.IEnumerable<string>? cachingKeys = null, string executionName = \"Default\", System.Func<Microsoft.Extensions.AI.Evaluation.EvaluationMetric, Microsoft.Extensions.AI.Evaluation.EvaluationMetricInterpretation?>? evaluationMetricInterpreter = null, System.Collections.Generic.IEnumerable<string>? tags = null);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Reporting.Storage.DiskBasedResponseCacheProvider : Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationResponseCacheProvider",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Reporting.Storage.DiskBasedResponseCacheProvider.DiskBasedResponseCacheProvider(string storageRootPath, System.TimeSpan? timeToLiveForCacheEntries = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.ValueTask Microsoft.Extensions.AI.Evaluation.Reporting.Storage.DiskBasedResponseCacheProvider.DeleteExpiredCacheEntriesAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.ValueTask<Microsoft.Extensions.Caching.Distributed.IDistributedCache> Microsoft.Extensions.AI.Evaluation.Reporting.Storage.DiskBasedResponseCacheProvider.GetCacheAsync(string scenarioName, string iterationName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.ValueTask Microsoft.Extensions.AI.Evaluation.Reporting.Storage.DiskBasedResponseCacheProvider.ResetAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Reporting.Storage.DiskBasedResultStore : Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationResultStore",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Reporting.Storage.DiskBasedResultStore.DiskBasedResultStore(string storageRootPath);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.ValueTask Microsoft.Extensions.AI.Evaluation.Reporting.Storage.DiskBasedResultStore.DeleteResultsAsync(string? executionName = null, string? scenarioName = null, string? iterationName = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IAsyncEnumerable<string> Microsoft.Extensions.AI.Evaluation.Reporting.Storage.DiskBasedResultStore.GetIterationNamesAsync(string executionName, string scenarioName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IAsyncEnumerable<string> Microsoft.Extensions.AI.Evaluation.Reporting.Storage.DiskBasedResultStore.GetLatestExecutionNamesAsync(int? count = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IAsyncEnumerable<string> Microsoft.Extensions.AI.Evaluation.Reporting.Storage.DiskBasedResultStore.GetScenarioNamesAsync(string executionName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRunResult> Microsoft.Extensions.AI.Evaluation.Reporting.Storage.DiskBasedResultStore.ReadResultsAsync(string? executionName = null, string? scenarioName = null, string? iterationName = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.ValueTask Microsoft.Extensions.AI.Evaluation.Reporting.Storage.DiskBasedResultStore.WriteResultsAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRunResult> results, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Reporting.Formats.Html.HtmlReportWriter : Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationReportWriter",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Reporting.Formats.Html.HtmlReportWriter.HtmlReportWriter(string reportFilePath);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.ValueTask Microsoft.Extensions.AI.Evaluation.Reporting.Formats.Html.HtmlReportWriter.WriteReportAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRunResult> scenarioRunResults, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "interface Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationReportWriter",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "System.Threading.Tasks.ValueTask Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationReportWriter.WriteReportAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRunResult> scenarioRunResults, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "interface Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationResponseCacheProvider",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "System.Threading.Tasks.ValueTask Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationResponseCacheProvider.DeleteExpiredCacheEntriesAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.ValueTask<Microsoft.Extensions.Caching.Distributed.IDistributedCache> Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationResponseCacheProvider.GetCacheAsync(string scenarioName, string iterationName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.ValueTask Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationResponseCacheProvider.ResetAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "interface Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationResultStore",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "System.Threading.Tasks.ValueTask Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationResultStore.DeleteResultsAsync(string? executionName = null, string? scenarioName = null, string? iterationName = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IAsyncEnumerable<string> Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationResultStore.GetIterationNamesAsync(string executionName, string scenarioName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IAsyncEnumerable<string> Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationResultStore.GetLatestExecutionNamesAsync(int? count = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IAsyncEnumerable<string> Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationResultStore.GetScenarioNamesAsync(string executionName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRunResult> Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationResultStore.ReadResultsAsync(string? executionName = null, string? scenarioName = null, string? iterationName = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.ValueTask Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationResultStore.WriteResultsAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRunResult> results, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Reporting.Formats.Json.JsonReportWriter : Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationReportWriter",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Reporting.Formats.Json.JsonReportWriter.JsonReportWriter(string reportFilePath);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.ValueTask Microsoft.Extensions.AI.Evaluation.Reporting.Formats.Json.JsonReportWriter.WriteReportAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRunResult> scenarioRunResults, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Reporting.ReportingConfiguration",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Reporting.ReportingConfiguration.ReportingConfiguration(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.IEvaluator> evaluators, Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationResultStore resultStore, Microsoft.Extensions.AI.Evaluation.ChatConfiguration? chatConfiguration = null, Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationResponseCacheProvider? responseCacheProvider = null, System.Collections.Generic.IEnumerable<string>? cachingKeys = null, string executionName = \"Default\", System.Func<Microsoft.Extensions.AI.Evaluation.EvaluationMetric, Microsoft.Extensions.AI.Evaluation.EvaluationMetricInterpretation?>? evaluationMetricInterpreter = null, System.Collections.Generic.IEnumerable<string>? tags = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRun> Microsoft.Extensions.AI.Evaluation.Reporting.ReportingConfiguration.CreateScenarioRunAsync(string scenarioName, string iterationName = \"1\", System.Collections.Generic.IEnumerable<string>? additionalCachingKeys = null, System.Collections.Generic.IEnumerable<string>? additionalTags = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.AI.Evaluation.Reporting.ReportingConfiguration.CachingKeys { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.ChatConfiguration? Microsoft.Extensions.AI.Evaluation.Reporting.ReportingConfiguration.ChatConfiguration { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Func<Microsoft.Extensions.AI.Evaluation.EvaluationMetric, Microsoft.Extensions.AI.Evaluation.EvaluationMetricInterpretation?>? Microsoft.Extensions.AI.Evaluation.Reporting.ReportingConfiguration.EvaluationMetricInterpreter { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.Evaluation.IEvaluator> Microsoft.Extensions.AI.Evaluation.Reporting.ReportingConfiguration.Evaluators { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string Microsoft.Extensions.AI.Evaluation.Reporting.ReportingConfiguration.ExecutionName { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationResponseCacheProvider? Microsoft.Extensions.AI.Evaluation.Reporting.ReportingConfiguration.ResponseCacheProvider { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Reporting.IEvaluationResultStore Microsoft.Extensions.AI.Evaluation.Reporting.ReportingConfiguration.ResultStore { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<string>? Microsoft.Extensions.AI.Evaluation.Reporting.ReportingConfiguration.Tags { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRun : System.IAsyncDisposable",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "System.Threading.Tasks.ValueTask Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRun.DisposeAsync();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.Evaluation.EvaluationResult> Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRun.EvaluateAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatResponse modelResponse, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationContext>? additionalContext = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.ChatConfiguration? Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRun.ChatConfiguration { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRun.ExecutionName { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRun.IterationName { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRun.ScenarioName { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRunExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.Evaluation.EvaluationResult> Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRunExtensions.EvaluateAsync(this Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRun scenarioRun, string modelResponse, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationContext>? additionalContext = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.Evaluation.EvaluationResult> Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRunExtensions.EvaluateAsync(this Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRun scenarioRun, string userRequest, string modelResponse, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationContext>? additionalContext = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.Evaluation.EvaluationResult> Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRunExtensions.EvaluateAsync(this Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRun scenarioRun, Microsoft.Extensions.AI.ChatMessage modelResponse, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationContext>? additionalContext = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.Evaluation.EvaluationResult> Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRunExtensions.EvaluateAsync(this Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRun scenarioRun, Microsoft.Extensions.AI.ChatResponse modelResponse, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationContext>? additionalContext = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.Evaluation.EvaluationResult> Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRunExtensions.EvaluateAsync(this Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRun scenarioRun, Microsoft.Extensions.AI.ChatMessage userRequest, Microsoft.Extensions.AI.ChatMessage modelResponse, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationContext>? additionalContext = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.Evaluation.EvaluationResult> Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRunExtensions.EvaluateAsync(this Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRun scenarioRun, Microsoft.Extensions.AI.ChatMessage userRequest, Microsoft.Extensions.AI.ChatResponse modelResponse, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationContext>? additionalContext = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRunResult",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRunResult.ScenarioRunResult(string scenarioName, string iterationName, string executionName, System.DateTime creationTime, System.Collections.Generic.IList<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatResponse modelResponse, Microsoft.Extensions.AI.Evaluation.EvaluationResult evaluationResult, Microsoft.Extensions.AI.Evaluation.Reporting.ChatDetails? chatDetails = null, System.Collections.Generic.IList<string>? tags = null, int? formatVersion = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRunResult.ScenarioRunResult(string scenarioName, string iterationName, string executionName, System.DateTime creationTime, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatResponse modelResponse, Microsoft.Extensions.AI.Evaluation.EvaluationResult evaluationResult, Microsoft.Extensions.AI.Evaluation.Reporting.ChatDetails? chatDetails = null, System.Collections.Generic.IEnumerable<string>? tags = null);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Reporting.ChatDetails? Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRunResult.ChatDetails { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.DateTime Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRunResult.CreationTime { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.EvaluationResult Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRunResult.EvaluationResult { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRunResult.ExecutionName { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRunResult.FormatVersion { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRunResult.IterationName { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.ChatMessage> Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRunResult.Messages { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ChatResponse Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRunResult.ModelResponse { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRunResult.ScenarioName { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IList<string>? Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRunResult.Tags { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRunResultExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static bool Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRunResultExtensions.ContainsDiagnostics(this Microsoft.Extensions.AI.Evaluation.Reporting.ScenarioRunResult result, System.Func<Microsoft.Extensions.AI.Evaluation.EvaluationDiagnostic, bool>? predicate = null);",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}
