@@ -274,12 +274,6 @@ public sealed class ReportingConfiguration
             yield return providerName!;
         }
 
-        Uri? providerUri = metadata?.ProviderUri;
-        if (providerUri is not null)
-        {
-            yield return providerUri.AbsoluteUri;
-        }
-
         string? modelId = metadata?.DefaultModelId;
         if (!string.IsNullOrWhiteSpace(modelId))
         {

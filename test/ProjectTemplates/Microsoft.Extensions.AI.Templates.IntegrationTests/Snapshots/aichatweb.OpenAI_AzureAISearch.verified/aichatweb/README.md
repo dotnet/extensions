@@ -24,7 +24,7 @@ To use Azure AI Search, you will need an Azure account and an Azure AI Search re
 ### 1. Create an Azure AI Search Resource
 Follow the instructions in the [Azure portal](https://portal.azure.com/) to create an Azure AI Search resource. Note that there is a free tier for the service but it is not currently the default setting on the portal.
 
-Note that if you previously used the same Azure AI Search resource with different model using this project name, you may need to delete your `data-aichatweb-ingested` index using the [Azure portal](https://portal.azure.com/) first before continuing; otherwise, data ingestion may fail due to a vector dimension mismatch.
+Note that if you previously used the same Azure AI Search resource with different model using this project name, you may need to delete your `data-aichatweb-chunks` and `data-aichatweb-documents` indexes using the [Azure portal](https://portal.azure.com/) first before continuing; otherwise, data ingestion may fail due to a vector dimension mismatch.
 
 ### 2. Configure Azure AI Search for Keyless Authentication
 This template is configured to use keyless authentication (also known as Managed Identity, with Entra ID). Before continuing, you'll need to configure your Azure AI Search resource to support this. [Learn more](https://learn.microsoft.com/azure/search/keyless-connections).  After creation, ensure that you have selected Role-Based Access Control (RBAC) under Settings > Keys, as this is not the default. Assign yourself the roles called out for local development. [Learn more](https://learn.microsoft.com/azure/search/keyless-connections#roles-for-local-development).
