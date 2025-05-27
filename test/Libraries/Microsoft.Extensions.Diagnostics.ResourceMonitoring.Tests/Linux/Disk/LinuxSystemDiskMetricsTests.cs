@@ -17,18 +17,18 @@ using Xunit;
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Disk.Test;
 
 [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
-public class LinuxDiskMetricsTests
+public class LinuxSystemDiskMetricsTests
 {
-    private readonly FakeLogger<LinuxDiskMetrics> _fakeLogger = new();
+    private readonly FakeLogger<LinuxSystemDiskMetrics> _fakeLogger = new();
 
     [Fact]
     public void Creates_Meter_With_Correct_Name()
     {
         using var meterFactory = new TestMeterFactory();
         var diskStatsReaderMock = new Mock<IDiskStatsReader>();
-        var options = new ResourceMonitoringOptions { EnableDiskIoMetrics = true };
+        var options = new ResourceMonitoringOptions { EnableSystemDiskIoMetrics = true };
 
-        _ = new LinuxDiskMetrics(
+        _ = new LinuxSystemDiskMetrics(
             _fakeLogger,
             meterFactory,
             Options.Options.Create(options),
@@ -44,7 +44,7 @@ public class LinuxDiskMetricsTests
     {
         using var meterFactory = new TestMeterFactory();
         var fakeTimeProvider = new FakeTimeProvider();
-        var options = new ResourceMonitoringOptions { EnableDiskIoMetrics = true };
+        var options = new ResourceMonitoringOptions { EnableSystemDiskIoMetrics = true };
 
         // Set up
         var diskStatsReader = new FakeDiskStatsReader(new Dictionary<string, List<DiskStats>>
@@ -131,7 +131,7 @@ public class LinuxDiskMetricsTests
             },
         });
 
-        _ = new LinuxDiskMetrics(
+        _ = new LinuxSystemDiskMetrics(
             _fakeLogger,
             meterFactory,
             Options.Options.Create(options),

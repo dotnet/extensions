@@ -13,7 +13,7 @@ using Microsoft.Shared.Instruments;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Disk;
 
-internal sealed class LinuxDiskMetrics
+internal sealed class LinuxSystemDiskMetrics
 {
     // The kernel's block layer always reports counts in 512-byte "sectors" regardless of the underlying device's real block size
     // https://docs.kernel.org/block/stat.html#read-sectors-write-sectors-discard-sectors
@@ -24,7 +24,7 @@ internal sealed class LinuxDiskMetrics
 
     private static readonly KeyValuePair<string, object?> _directionReadTag = new(DirectionKey, "read");
     private static readonly KeyValuePair<string, object?> _directionWriteTag = new(DirectionKey, "write");
-    private readonly ILogger<LinuxDiskMetrics> _logger;
+    private readonly ILogger<LinuxSystemDiskMetrics> _logger;
     private readonly TimeProvider _timeProvider;
     private readonly IDiskStatsReader _diskStatsReader;
     private readonly object _lock = new();
@@ -32,17 +32,17 @@ internal sealed class LinuxDiskMetrics
     private List<DiskStats> _diskStatsSnapshot = [];
     private DateTimeOffset _lastRefreshTime = DateTimeOffset.MinValue;
 
-    public LinuxDiskMetrics(
-        ILogger<LinuxDiskMetrics>? logger,
+    public LinuxSystemDiskMetrics(
+        ILogger<LinuxSystemDiskMetrics>? logger,
         IMeterFactory meterFactory,
         IOptions<ResourceMonitoringOptions> options,
         TimeProvider timeProvider,
         IDiskStatsReader diskStatsReader)
     {
-        _logger = logger ?? NullLogger<LinuxDiskMetrics>.Instance;
+        _logger = logger ?? NullLogger<LinuxSystemDiskMetrics>.Instance;
         _timeProvider = timeProvider;
         _diskStatsReader = diskStatsReader;
-        if (!options.Value.EnableDiskIoMetrics)
+        if (!options.Value.EnableSystemDiskIoMetrics)
         {
             return;
         }

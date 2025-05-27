@@ -34,7 +34,7 @@ internal sealed class WindowsDiskMetrics
         IOptions<ResourceMonitoringOptions> options)
     {
         _logger = logger ?? NullLogger<WindowsDiskMetrics>.Instance;
-        if (!options.Value.EnableDiskIoMetrics)
+        if (!options.Value.EnableSystemDiskIoMetrics)
         {
             return;
         }

@@ -140,7 +140,7 @@ public static class ResourceMonitoringServiceCollectionExtensions
             .AddActivatedSingleton<LinuxNetworkMetrics>()
             .AddActivatedSingleton<ITcpStateInfoProvider, LinuxTcpStateInfo>()
             .AddActivatedSingleton<IDiskStatsReader, DiskStatsReader>()
-            .AddActivatedSingleton<LinuxDiskMetrics>();
+            .AddActivatedSingleton<LinuxSystemDiskMetrics>();
 
         return builder;
     }
