@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.AI;
-
-namespace aichatweb.Services.Ingestion;
+﻿namespace aichatweb.Services.Ingestion;
 
 public interface IIngestionSource
 {
@@ -10,5 +8,5 @@ public interface IIngestionSource
 
     Task<IEnumerable<IngestedDocument>> GetDeletedDocumentsAsync(IReadOnlyList<IngestedDocument> existingDocuments);
 
-    Task<IEnumerable<IngestedChunk>> CreateChunksForDocumentAsync(IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator, IngestedDocument document);
+    Task<IEnumerable<IngestedChunk>> CreateChunksForDocumentAsync(IngestedDocument document);
 }

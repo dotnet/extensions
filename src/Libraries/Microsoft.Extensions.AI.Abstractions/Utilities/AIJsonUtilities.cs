@@ -6,8 +6,10 @@ using System;
 using System.Diagnostics;
 #endif
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
 #if NET
 using System.Threading;
@@ -112,7 +114,9 @@ public static partial class AIJsonUtilities
         {
             foreach (object? value in values)
             {
-                JsonSerializer.Serialize(stream, value, jti);
+                JsonNode? jsonNode = JsonSerializer.SerializeToNode(value, jti);
+                NormalizeJsonNode(jsonNode);
+                JsonSerializer.Serialize(stream, jsonNode, JsonContextNoIndentation.Default.JsonNode!);
             }
 
             stream.GetHashAndReset(hashData);
@@ -130,7 +134,9 @@ public static partial class AIJsonUtilities
         MemoryStream stream = new();
         foreach (object? value in values)
         {
-            JsonSerializer.Serialize(stream, value, jti);
+            JsonNode? jsonNode = JsonSerializer.SerializeToNode(value, jti);
+            NormalizeJsonNode(jsonNode);
+            JsonSerializer.Serialize(stream, jsonNode, JsonContextNoIndentation.Default.JsonNode!);
         }
 
         using var hashAlgorithm = SHA384.Create();
@@ -156,6 +162,31 @@ public static partial class AIJsonUtilities
             return new string(chars);
         }
 #endif
+        static void NormalizeJsonNode(JsonNode? node)
+        {
+            switch (node)
+            {
+                case JsonArray array:
+                    foreach (JsonNode? item in array)
+                    {
+                        NormalizeJsonNode(item);
+                    }
+
+                    break;
+
+                case JsonObject obj:
+                    var entries = obj.OrderBy(e => e.Key, StringComparer.Ordinal).ToArray();
+                    obj.Clear();
+
+                    foreach (var entry in entries)
+                    {
+                        obj.Add(entry.Key, entry.Value);
+                        NormalizeJsonNode(entry.Value);
+                    }
+
+                    break;
+            }
+        }
     }
 
     private static void AddAIContentTypeCore(JsonSerializerOptions options, Type contentType, string typeDiscriminatorId)

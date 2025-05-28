@@ -123,7 +123,7 @@ public class DistributedCachingChatClient : CachingChatClient
     protected override string GetCacheKey(IEnumerable<ChatMessage> messages, ChatOptions? options, params ReadOnlySpan<object?> additionalValues)
     {
         // Bump the cache version to invalidate existing caches if the serialization format changes in a breaking way.
-        const int CacheVersion = 1;
+        const int CacheVersion = 2;
 
         return AIJsonUtilities.HashDataToString([CacheVersion, messages, options, .. additionalValues], _jsonSerializerOptions);
     }

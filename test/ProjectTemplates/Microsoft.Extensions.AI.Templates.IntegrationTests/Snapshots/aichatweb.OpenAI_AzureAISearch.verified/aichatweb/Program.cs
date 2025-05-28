@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using aichatweb.Components;
 using aichatweb.Services;
 using aichatweb.Services.Ingestion;
@@ -7,8 +6,6 @@ using Azure;
 using Azure.Identity;
 using OpenAI;
 using System.ClientModel;
-using Azure.Search.Documents.Indexes;
-using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
@@ -26,12 +23,12 @@ var embeddingGenerator = openAIClient.GetEmbeddingClient("text-embedding-3-small
 // You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
 //   cd this-project-directory
 //   dotnet user-secrets set AzureAISearch:Endpoint https://YOUR-DEPLOYMENT-NAME.search.windows.net
-var vectorStore = new AzureAISearchVectorStore(
-    new SearchIndexClient(
-        new Uri(builder.Configuration["AzureAISearch:Endpoint"] ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Endpoint. See the README for details.")),
-        new DefaultAzureCredential()));
+var azureAISearchEndpoint = new Uri(builder.Configuration["AzureAISearch:Endpoint"]
+    ?? throw new InvalidOperationException("Missing configuration: AzureAISearch:Endpoint. See the README for details."));
+var azureAISearchCredential = new DefaultAzureCredential();
+builder.Services.AddAzureAISearchCollection<IngestedChunk>("data-aichatweb-chunks", azureAISearchEndpoint, azureAISearchCredential);
+builder.Services.AddAzureAISearchCollection<IngestedDocument>("data-aichatweb-documents", azureAISearchEndpoint, azureAISearchCredential);
 
-builder.Services.AddSingleton<IVectorStore>(vectorStore);
 builder.Services.AddScoped<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();
 builder.Services.AddChatClient(chatClient).UseFunctionInvocation().UseLogging();
