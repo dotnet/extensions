@@ -38,6 +38,9 @@ public abstract class AIFunction : AITool
     /// </remarks>
     public virtual JsonElement JsonSchema => AIJsonUtilities.DefaultJsonSchema;
 
+    /// <summary>Gets a JSON Schema describing the function's return value.</summary>
+    public virtual JsonElement ReturnJsonSchema => AIJsonUtilities.DefaultJsonSchema;
+
     /// <summary>
     /// Gets the underlying <see cref="MethodInfo"/> that this <see cref="AIFunction"/> might be wrapping.
     /// </summary>
