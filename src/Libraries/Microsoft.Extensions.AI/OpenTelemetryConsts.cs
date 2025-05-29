@@ -54,6 +54,11 @@ internal static class OpenTelemetryConsts
             }
         }
 
+        public static class Conversation
+        {
+            public const string Id = "gen_ai.conversation.id";
+        }
+
         public static class Operation
         {
             public const string Name = "gen_ai.operation.name";
