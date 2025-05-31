@@ -6,8 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
-    <Compile Remove="Linux\*.cs" />
-    <Compile Remove="Linux\*\*.cs" />
+    <Compile Remove="Linux\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

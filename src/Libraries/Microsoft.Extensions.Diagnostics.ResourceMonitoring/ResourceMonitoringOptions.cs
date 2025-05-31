@@ -117,4 +117,11 @@ public partial class ResourceMonitoringOptions
     ///  </summary>
     [Experimental(diagnosticId: DiagnosticIds.Experiments.ResourceMonitoring, UrlFormat = DiagnosticIds.UrlFormat)]
     public bool UseDeltaNrPeriodsForCpuCalculation { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether disk I/O metrics should be enabled.
+    /// </summary>
+    /// <remarks>Previously <c>EnableDiskIoMetrics</c>.</remarks>
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.ResourceMonitoring, UrlFormat = DiagnosticIds.UrlFormat)]
+    public bool EnableSystemDiskIoMetrics { get; set; }
 }

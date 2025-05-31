@@ -30,7 +30,7 @@ public class WindowsDiskMetricsTests
     {
         using var meterFactory = new TestMeterFactory();
         var performanceCounterFactoryMock = new Mock<IPerformanceCounterFactory>();
-        var options = new ResourceMonitoringOptions { EnableDiskIoMetrics = true };
+        var options = new ResourceMonitoringOptions { EnableSystemDiskIoMetrics = true };
 
         _ = new WindowsDiskMetrics(
             _fakeLogger,
@@ -49,7 +49,7 @@ public class WindowsDiskMetricsTests
         using var meterFactory = new TestMeterFactory();
         var performanceCounterFactory = new Mock<IPerformanceCounterFactory>();
         var fakeTimeProvider = new FakeTimeProvider();
-        var options = new ResourceMonitoringOptions { EnableDiskIoMetrics = true };
+        var options = new ResourceMonitoringOptions { EnableSystemDiskIoMetrics = true };
 
         // Set up
         const string ReadCounterName = WindowsDiskPerfCounterNames.DiskReadsCounter;
@@ -123,7 +123,7 @@ public class WindowsDiskMetricsTests
         using var meterFactory = new TestMeterFactory();
         var performanceCounterFactory = new Mock<IPerformanceCounterFactory>();
         var fakeTimeProvider = new FakeTimeProvider();
-        var options = new ResourceMonitoringOptions { EnableDiskIoMetrics = true };
+        var options = new ResourceMonitoringOptions { EnableSystemDiskIoMetrics = true };
 
         // Set up
         const string ReadCounterName = WindowsDiskPerfCounterNames.DiskReadBytesCounter;
