@@ -19,8 +19,18 @@ namespace Microsoft.Extensions.AI;
 /// A delegating chat client that caches the results of response calls, storing them as JSON in an <see cref="IDistributedCache"/>.
 /// </summary>
 /// <remarks>
+/// <para>
+/// The <see cref="DistributedCachingChatClient"/> employs JSON serialization as part of storing cached data. It is not guaranteed that
+/// the object models used by <see cref="ChatMessage"/>, <see cref="ChatOptions"/>, <see cref="ChatResponse"/>, <see cref="ChatResponseUpdate"/>,
+/// or any of the other objects in the chat client pipeline will roundtrip through JSON serialization with full fidelity. For example,
+/// <see cref="ChatMessage.RawRepresentation"/> will be ignored, and <see cref="object"/> values in <see cref="ChatMessage.AdditionalProperties"/>
+/// will deserialize as <see cref="JsonElement"/> rather than as the original type. In general, code using <see cref="DistributedCachingChatClient"/>
+/// should only rely on accessing data that can be preserved well enough through JSON serialization and deserialization.
+/// </para>
+/// <para>
 /// The provided implementation of <see cref="IChatClient"/> is thread-safe for concurrent use so long as the employed
 /// <see cref="IDistributedCache"/> is similarly thread-safe for concurrent use.
+/// </para>
 /// </remarks>
 public class DistributedCachingChatClient : CachingChatClient
 {
@@ -113,7 +123,7 @@ public class DistributedCachingChatClient : CachingChatClient
     protected override string GetCacheKey(IEnumerable<ChatMessage> messages, ChatOptions? options, params ReadOnlySpan<object?> additionalValues)
     {
         // Bump the cache version to invalidate existing caches if the serialization format changes in a breaking way.
-        const int CacheVersion = 1;
+        const int CacheVersion = 2;
 
         return AIJsonUtilities.HashDataToString([CacheVersion, messages, options, .. additionalValues], _jsonSerializerOptions);
     }

@@ -47,7 +47,7 @@ public class AzureResultStoreTests : ResultStoreTester, IAsyncLifetime
 
     public override bool IsConfigured => Settings.Current.Configured;
 
-    public override IResultStore CreateResultStore()
+    public override IEvaluationResultStore CreateResultStore()
         => new AzureStorageResultStore(_dirClient!);
 
 }

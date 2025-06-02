@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>A library that provides additional an additional storage provider based on Azure Storage containers.</Description>
+    <Description>A library that supports the Microsoft.Extensions.AI.Evaluation.Reporting library with an implementation for caching LLM responses and storing the evaluation results in an Azure Storage container.</Description>
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
     <RootNamespace>Microsoft.Extensions.AI.Evaluation.Reporting</RootNamespace>
     <!-- EA0002: Use System.TimeProvider to make the code easier to test. -->
@@ -10,12 +10,17 @@
 
   <PropertyGroup>
     <Workstream>AIEval</Workstream>
-    <Stage>preview</Stage>
+    <Stage>normal</Stage>
     <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
-    <EnablePackageValidation>false</EnablePackageValidation>
-    <MinCodeCoverage>88</MinCodeCoverage>
-    <MinMutationScore>0</MinMutationScore>
+    <MinCodeCoverage>n/a</MinCodeCoverage>
+    <MinMutationScore>n/a</MinMutationScore>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Microsoft.Extensions.AI.Evaluation.Reporting\CSharp\JsonSerialization\CamelCaseEnumConverter.cs" Link="JsonSerialization\CamelCaseEnumConverter.cs" />
+    <Compile Include="..\Microsoft.Extensions.AI.Evaluation.Reporting\CSharp\JsonSerialization\EvaluationContextConverter.cs" Link="JsonSerialization\EvaluationContextConverter.cs" />
+    <Compile Include="..\Microsoft.Extensions.AI.Evaluation.Reporting\CSharp\JsonSerialization\TimeSpanConverter.cs" Link="JsonSerialization\TimeSpanConverter.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Azure.Storage.Files.DataLake" />

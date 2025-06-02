@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable S127 // "for" loop stop conditions should be invariant
+#pragma warning disable SA1202 // Elements should be ordered by access
 
 namespace Microsoft.Extensions.AI;
 
@@ -45,11 +46,19 @@ public abstract class CachingChatClient : DelegatingChatClient
     public bool CoalesceStreamingUpdates { get; set; } = true;
 
     /// <inheritdoc />
-    public override async Task<ChatResponse> GetResponseAsync(
+    public override Task<ChatResponse> GetResponseAsync(
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(messages);
 
+        return UseCaching(options) ?
+            GetCachedResponseAsync(messages, options, cancellationToken) :
+            base.GetResponseAsync(messages, options, cancellationToken);
+    }
+
+    private async Task<ChatResponse> GetCachedResponseAsync(
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    {
         // We're only storing the final result, not the in-flight task, so that we can avoid caching failures
         // or having problems when one of the callers cancels but others don't. This has the drawback that
         // concurrent callers might trigger duplicate requests, but that's acceptable.
@@ -65,11 +74,19 @@ public abstract class CachingChatClient : DelegatingChatClient
     }
 
     /// <inheritdoc />
-    public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-        IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public override IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(messages);
 
+        return UseCaching(options) ?
+            GetCachedStreamingResponseAsync(messages, options, cancellationToken) :
+            base.GetStreamingResponseAsync(messages, options, cancellationToken);
+    }
+
+    private async IAsyncEnumerable<ChatResponseUpdate> GetCachedStreamingResponseAsync(
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
         if (CoalesceStreamingUpdates)
         {
             // When coalescing updates, we cache non-streaming results coalesced from streaming ones. That means
@@ -105,10 +122,10 @@ public abstract class CachingChatClient : DelegatingChatClient
             if (await ReadCacheStreamingAsync(cacheKey, cancellationToken) is { } existingChunks)
             {
                 // Yield all of the cached items.
-                string? chatThreadId = null;
+                string? conversationId = null;
                 foreach (var chunk in existingChunks)
                 {
-                    chatThreadId ??= chunk.ChatThreadId;
+                    conversationId ??= chunk.ConversationId;
                     yield return chunk;
                 }
             }
@@ -178,4 +195,13 @@ public abstract class CachingChatClient : DelegatingChatClient
     /// <exception cref="ArgumentNullException"><paramref name="key"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/>.</exception>
     protected abstract Task WriteCacheStreamingAsync(string key, IReadOnlyList<ChatResponseUpdate> value, CancellationToken cancellationToken);
+
+    /// <summary>Determine whether to use caching with the request.</summary>
+    private static bool UseCaching(ChatOptions? options)
+    {
+        // We want to skip caching if options.ConversationId is set. If it's set, that implies there's
+        // some state that will impact the response and that's not represented in the messages. Since
+        // that state could change even with the same ID, we have to assume caching isn't valid.
+        return options?.ConversationId is null;
+    }
 }

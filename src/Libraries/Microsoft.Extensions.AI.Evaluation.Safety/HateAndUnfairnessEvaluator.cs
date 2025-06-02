@@ -1,11 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
+
 namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
 /// <summary>
-/// An <see cref="IEvaluator"/> that utilizes the Azure AI Content Safety service to evaluate responses produced by an
-/// AI model for the presence of content that is hateful or unfair.
+/// An <see cref="IEvaluator"/> that utilizes the Azure AI Foundry Evaluation service to evaluate responses produced by
+/// an AI model for the presence of content that is hateful or unfair.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -18,17 +20,9 @@ namespace Microsoft.Extensions.AI.Evaluation.Safety;
 /// currently not supported.
 /// </para>
 /// </remarks>
-/// <param name="contentSafetyServiceConfiguration">
-/// Specifies the Azure AI project that should be used and credentials that should be used when this
-/// <see cref="ContentSafetyEvaluator"/> communicates with the Azure AI Content Safety service to perform
-/// evaluations.
-/// </param>
-public sealed class HateAndUnfairnessEvaluator(ContentSafetyServiceConfiguration contentSafetyServiceConfiguration)
+public sealed class HateAndUnfairnessEvaluator()
     : ContentHarmEvaluator(
-        contentSafetyServiceConfiguration,
-        contentSafetyServiceMetricName: "hate_fairness",
-        metricName: HateAndUnfairnessMetricName,
-        evaluatorName: nameof(HateAndUnfairnessEvaluator))
+        metricNames: new Dictionary<string, string> { ["hate_fairness"] = HateAndUnfairnessMetricName })
 {
     /// <summary>
     /// Gets the <see cref="EvaluationMetric.Name"/> of the <see cref="NumericMetric"/> returned by

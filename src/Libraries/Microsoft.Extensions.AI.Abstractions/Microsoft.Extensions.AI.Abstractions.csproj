@@ -2,15 +2,14 @@
 
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.AI</RootNamespace>
-    <Description>Abstractions for generative AI.</Description>
+    <Description>Abstractions representing generative AI components.</Description>
     <Workstream>AI</Workstream>
   </PropertyGroup>
 
   <PropertyGroup>
-    <Stage>preview</Stage>
-    <EnablePackageValidation>false</EnablePackageValidation>
+    <Stage>normal</Stage>
     <MinCodeCoverage>82</MinCodeCoverage>
-    <MinMutationScore>0</MinMutationScore>
+    <MinMutationScore>85</MinMutationScore>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -28,6 +27,7 @@
     <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
     <InjectStringHashOnLegacy>true</InjectStringHashOnLegacy>
     <InjectStringSyntaxAttributeOnLegacy>true</InjectStringSyntaxAttributeOnLegacy>
+    <InjectSystemIndexOnLegacy>true</InjectSystemIndexOnLegacy>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">

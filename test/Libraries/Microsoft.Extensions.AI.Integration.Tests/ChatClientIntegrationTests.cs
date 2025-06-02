@@ -77,7 +77,9 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         var response = await _chatClient.GetResponseAsync(
         [
+            new(ChatRole.System, []),
             new(ChatRole.User, []),
+            new(ChatRole.Assistant, []),
             new(ChatRole.User, "What is 1 + 2? Reply with a single number."),
         ]);
 
@@ -184,6 +186,24 @@ public abstract class ChatClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
+    public virtual async Task MultiModal_DescribePdf()
+    {
+        SkipIfNotEnabled();
+
+        var response = await _chatClient.GetResponseAsync(
+            [
+                new(ChatRole.User,
+                [
+                    new TextContent("What text does this document contain?"),
+                    new DataContent(ImageDataUri.GetPdfDataUri(), "application/pdf"),
+                ])
+            ],
+            new() { ModelId = GetModel_MultiModal_DescribeImage() });
+
+        Assert.True(response.Text.IndexOf("hello", StringComparison.OrdinalIgnoreCase) >= 0, response.Text);
+    }
+
+    [ConditionalFact]
     public virtual async Task FunctionInvocation_AutomaticallyInvokeFunction_Parameterless()
     {
         SkipIfNotEnabled();
@@ -211,16 +231,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         });
 
         Assert.Contains(secretNumber.ToString(), response.Text);
-
-        // If the underlying IChatClient provides usage data, function invocation should aggregate the
-        // usage data across all calls to produce a single Usage value on the final response
-        if (response.Usage is { } finalUsage)
-        {
-            var totalInputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.input_tokens")!);
-            var totalOutputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.output_tokens")!);
-            Assert.Equal(totalInputTokens, finalUsage.InputTokenCount);
-            Assert.Equal(totalOutputTokens, finalUsage.OutputTokenCount);
-        }
+        AssertUsageAgainstActivities(response, activities);
     }
 
     [ConditionalFact]
@@ -288,16 +299,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         });
 
         Assert.Contains(secretNumber.ToString(), response.Text);
-
-        // If the underlying IChatClient provides usage data, function invocation should aggregate the
-        // usage data across all calls to produce a single Usage value on the final response
-        if (response.Usage is { } finalUsage)
-        {
-            var totalInputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.input_tokens")!);
-            var totalOutputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.output_tokens")!);
-            Assert.Equal(totalInputTokens, finalUsage.InputTokenCount);
-            Assert.Equal(totalOutputTokens, finalUsage.OutputTokenCount);
-        }
+        AssertUsageAgainstActivities(response, activities);
     }
 
     [ConditionalFact]
@@ -329,15 +331,21 @@ public abstract class ChatClientIntegrationTests : IDisposable
         });
 
         Assert.Contains((secretNumber + 19).ToString(), response.Text);
+        AssertUsageAgainstActivities(response, activities);
+    }
 
+    private static void AssertUsageAgainstActivities(ChatResponse response, List<Activity> activities)
+    {
         // If the underlying IChatClient provides usage data, function invocation should aggregate the
-        // usage data across all calls to produce a single Usage value on the final response
+        // usage data across all calls to produce a single Usage value on the final response.
+        // The FunctionInvokingChatClient then itself creates a span that will also be tagged with a sum
+        // across all consituent calls, which means our final answer will be double.
         if (response.Usage is { } finalUsage)
         {
             var totalInputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.input_tokens")!);
             var totalOutputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.output_tokens")!);
-            Assert.Equal(totalInputTokens, finalUsage.InputTokenCount);
-            Assert.Equal(totalOutputTokens, finalUsage.OutputTokenCount);
+            Assert.Equal(totalInputTokens, finalUsage.InputTokenCount * 2);
+            Assert.Equal(totalOutputTokens, finalUsage.OutputTokenCount * 2);
         }
     }
 
@@ -612,8 +620,10 @@ public abstract class ChatClientIntegrationTests : IDisposable
         var secondResponse = await chatClient.GetResponseAsync([message]);
         Assert.Equal(response.Text, secondResponse.Text);
         Assert.Equal(2, functionCallCount);
-        Assert.Equal(2, llmCallCount!.CallCount);
+        Assert.Equal(FunctionInvokingChatClientSetsConversationId ? 3 : 2, llmCallCount!.CallCount);
     }
+
+    public virtual bool FunctionInvokingChatClientSetsConversationId => false;
 
     [ConditionalFact]
     public virtual async Task Caching_AfterFunctionInvocation_FunctionOutputChangedAsync()
@@ -924,7 +934,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         var response = await captureOutputChatClient.GetResponseAsync<Person>("""
             Supply an object to represent Jimbo Smith from Cardiff.
-            """, useJsonSchema: false);
+            """, useJsonSchemaResponseFormat: false);
 
         Assert.Equal("Jimbo Smith", response.Result.FullName);
         Assert.Contains("Cardiff", response.Result.HomeTown);

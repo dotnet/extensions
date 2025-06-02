@@ -12,16 +12,18 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.AI.Evaluation.Quality;
 using Microsoft.Extensions.AI.Evaluation.Reporting;
 using Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
+using Microsoft.Extensions.AI.Evaluation.Tests;
 using Microsoft.TestUtilities;
 using Xunit;
 
 namespace Microsoft.Extensions.AI.Evaluation.Integration.Tests;
 
+[Experimental("AIEVAL001")]
 public class QualityEvaluatorTests
 {
     private static readonly ChatOptions? _chatOptions;
     private static readonly ReportingConfiguration? _qualityReportingConfiguration;
-    private static readonly ReportingConfiguration? _equivalenceAndGroundednessReportingConfiguration;
+    private static readonly ReportingConfiguration? _needsContextReportingConfiguration;
 
     static QualityEvaluatorTests()
     {
@@ -47,25 +49,29 @@ public class QualityEvaluatorTests
             string usesContext = $"Feature: Context";
 
             IEvaluator rtcEvaluator = new RelevanceTruthAndCompletenessEvaluator();
+
             IEvaluator coherenceEvaluator = new CoherenceEvaluator();
             IEvaluator fluencyEvaluator = new FluencyEvaluator();
+            IEvaluator relevanceEvaluator = new RelevanceEvaluator();
 
             _qualityReportingConfiguration =
                 DiskBasedReportingConfiguration.Create(
                     storageRootPath: Settings.Current.StorageRootPath,
-                    evaluators: [rtcEvaluator, coherenceEvaluator, fluencyEvaluator],
+                    evaluators: [rtcEvaluator, coherenceEvaluator, fluencyEvaluator, relevanceEvaluator],
                     chatConfiguration: chatConfiguration,
                     executionName: Constants.Version,
                     tags: [version, date, projectName, testClass, provider, model, temperature,]);
 
             IEvaluator groundednessEvaluator = new GroundednessEvaluator();
             IEvaluator equivalenceEvaluator = new EquivalenceEvaluator();
+            IEvaluator completenessEvaluator = new CompletenessEvaluator();
+            IEvaluator retrievalEvaluator = new RetrievalEvaluator();
 
-            _equivalenceAndGroundednessReportingConfiguration =
+            _needsContextReportingConfiguration =
                 DiskBasedReportingConfiguration.Create(
                     storageRootPath: Settings.Current.StorageRootPath,
-                    evaluators: [groundednessEvaluator, equivalenceEvaluator],
-                    chatConfiguration,
+                    evaluators: [groundednessEvaluator, equivalenceEvaluator, completenessEvaluator, retrievalEvaluator],
+                    chatConfiguration: chatConfiguration,
                     executionName: Constants.Version,
                     tags: [version, date, projectName, testClass, provider, model, temperature, usesContext]);
         }
@@ -94,6 +100,14 @@ public class QualityEvaluatorTests
         Assert.False(
             result.ContainsDiagnostics(d => d.Severity >= EvaluationDiagnosticSeverity.Warning),
             string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
+
+        Assert.Equal(6, result.Metrics.Count);
+        Assert.True(result.TryGet(RelevanceTruthAndCompletenessEvaluator.RelevanceMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(RelevanceTruthAndCompletenessEvaluator.TruthMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(RelevanceTruthAndCompletenessEvaluator.CompletenessMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(CoherenceEvaluator.CoherenceMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(FluencyEvaluator.FluencyMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(RelevanceEvaluator.RelevanceMetricName, out NumericMetric? _));
     }
 
     [ConditionalFact]
@@ -125,6 +139,14 @@ public class QualityEvaluatorTests
             Assert.False(
                 result.ContainsDiagnostics(d => d.Severity >= EvaluationDiagnosticSeverity.Warning),
                 string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
+
+            Assert.Equal(6, result.Metrics.Count);
+            Assert.True(result.TryGet(RelevanceTruthAndCompletenessEvaluator.RelevanceMetricName, out NumericMetric? _));
+            Assert.True(result.TryGet(RelevanceTruthAndCompletenessEvaluator.TruthMetricName, out NumericMetric? _));
+            Assert.True(result.TryGet(RelevanceTruthAndCompletenessEvaluator.CompletenessMetricName, out NumericMetric? _));
+            Assert.True(result.TryGet(CoherenceEvaluator.CoherenceMetricName, out NumericMetric? _));
+            Assert.True(result.TryGet(FluencyEvaluator.FluencyMetricName, out NumericMetric? _));
+            Assert.True(result.TryGet(RelevanceEvaluator.RelevanceMetricName, out NumericMetric? _));
 #if NET
         });
 #else
@@ -138,7 +160,7 @@ public class QualityEvaluatorTests
         SkipIfNotConfigured();
 
         await using ScenarioRun scenarioRun =
-            await _equivalenceAndGroundednessReportingConfiguration.CreateScenarioRunAsync(
+            await _needsContextReportingConfiguration.CreateScenarioRunAsync(
                 scenarioName: $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(QualityEvaluatorTests)}.{nameof(AdditionalContextIsNotPassed)}");
 
         IChatClient chatClient = scenarioRun.ChatConfiguration!.ChatClient;
@@ -152,8 +174,19 @@ public class QualityEvaluatorTests
         EvaluationResult result = await scenarioRun.EvaluateAsync(messages, response);
 
         Assert.True(
-            result.ContainsDiagnostics(d => d.Severity is EvaluationDiagnosticSeverity.Error),
+            result.Metrics.Values.All(m => m.ContainsDiagnostics(d => d.Severity is EvaluationDiagnosticSeverity.Error)),
             string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
+
+        Assert.Equal(4, result.Metrics.Count);
+        Assert.True(result.TryGet(GroundednessEvaluator.GroundednessMetricName, out NumericMetric? groundedness));
+        Assert.True(result.TryGet(EquivalenceEvaluator.EquivalenceMetricName, out NumericMetric? equivalence));
+        Assert.True(result.TryGet(CompletenessEvaluator.CompletenessMetricName, out NumericMetric? completeness));
+        Assert.True(result.TryGet(RetrievalEvaluator.RetrievalMetricName, out NumericMetric? retrieval));
+
+        Assert.Null(groundedness.Context);
+        Assert.Null(equivalence.Context);
+        Assert.Null(completeness.Context);
+        Assert.Null(retrieval.Context);
     }
 
     [ConditionalFact]
@@ -162,7 +195,7 @@ public class QualityEvaluatorTests
         SkipIfNotConfigured();
 
         await using ScenarioRun scenarioRun =
-            await _equivalenceAndGroundednessReportingConfiguration.CreateScenarioRunAsync(
+            await _needsContextReportingConfiguration.CreateScenarioRunAsync(
                 scenarioName: $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(QualityEvaluatorTests)}.{nameof(AdditionalContextIsPassed)}");
 
         IChatClient chatClient = scenarioRun.ChatConfiguration!.ChatClient;
@@ -190,15 +223,63 @@ public class QualityEvaluatorTests
                 Distance between Venus and Earth at superior conjunction: About 162 million miles.
                 """);
 
+        var groundTruthForCompletenessEvaluator =
+            new CompletenessEvaluatorContext(
+                """
+                At their closest approach, known as inferior conjunction, Venus can be about 24.8
+                million miles away from Earth. At their furthest point, when Venus is on the opposite side of the Sun
+                from Earth, known as superior conjunction, the distance can be about 162 million miles. These distances
+                can vary slightly due to the specific orbital positions of the planets at any given time.
+                """);
+
+        var retrievedContextChunksForRetrievalEvaluator =
+            new RetrievalEvaluatorContext(
+                "Distance between Venus and Earth at inferior conjunction: About 24.8 million miles.",
+                "Distance between Venus and Earth at superior conjunction: About 162 million miles.",
+                "Venus and earth are planets in our solar system.",
+                "The orbits of most planets in the solar system are elliptical in nature and different planets may have different orbital planes.",
+                "Venus and earth both orbit the Sun.",
+                "Closest approach between planets is known as inferior conjunction. The planets are farthest apart at what is known as the superior conjunction.");
+
         EvaluationResult result =
             await scenarioRun.EvaluateAsync(
                 messages,
                 response,
-                additionalContext: [baselineResponseForEquivalenceEvaluator, groundingContextForGroundednessEvaluator]);
+                additionalContext: [
+                    baselineResponseForEquivalenceEvaluator,
+                    groundingContextForGroundednessEvaluator,
+                    groundTruthForCompletenessEvaluator,
+                    retrievedContextChunksForRetrievalEvaluator]);
+
+        Assert.Equal(4, result.Metrics.Count);
+        Assert.True(result.TryGet(GroundednessEvaluator.GroundednessMetricName, out NumericMetric? groundedness));
+        Assert.True(result.TryGet(EquivalenceEvaluator.EquivalenceMetricName, out NumericMetric? equivalence));
+        Assert.True(result.TryGet(CompletenessEvaluator.CompletenessMetricName, out NumericMetric? completeness));
+        Assert.True(result.TryGet(RetrievalEvaluator.RetrievalMetricName, out NumericMetric? retrieval));
+
+        Assert.True(
+            groundedness.Context?.Count is 1 &&
+            groundedness.Context.TryGetValue(GroundednessEvaluatorContext.GroundingContextName, out EvaluationContext? context1) &&
+            ReferenceEquals(context1, groundingContextForGroundednessEvaluator));
+
+        Assert.True(
+            equivalence.Context?.Count is 1 &&
+            equivalence.Context.TryGetValue(EquivalenceEvaluatorContext.GroundTruthContextName, out EvaluationContext? context2) &&
+            ReferenceEquals(context2, baselineResponseForEquivalenceEvaluator));
+
+        Assert.True(
+            completeness.Context?.Count is 1 &&
+            completeness.Context.TryGetValue(CompletenessEvaluatorContext.GroundTruthContextName, out EvaluationContext? context3) &&
+            ReferenceEquals(context3, groundTruthForCompletenessEvaluator));
+
+        Assert.True(
+            retrieval.Context?.Count is 1 &&
+            retrieval.Context.TryGetValue(RetrievalEvaluatorContext.RetrievedContextChunksContextName, out EvaluationContext? context4) &&
+            ReferenceEquals(context4, retrievedContextChunksForRetrievalEvaluator));
     }
 
     [MemberNotNull(nameof(_qualityReportingConfiguration))]
-    [MemberNotNull(nameof(_equivalenceAndGroundednessReportingConfiguration))]
+    [MemberNotNull(nameof(_needsContextReportingConfiguration))]
     private static void SkipIfNotConfigured()
     {
         if (!Settings.Current.Configured)
@@ -207,6 +288,6 @@ public class QualityEvaluatorTests
         }
 
         Assert.NotNull(_qualityReportingConfiguration);
-        Assert.NotNull(_equivalenceAndGroundednessReportingConfiguration);
+        Assert.NotNull(_needsContextReportingConfiguration);
     }
 }

@@ -54,6 +54,11 @@ internal static class OpenTelemetryConsts
             }
         }
 
+        public static class Conversation
+        {
+            public const string Id = "gen_ai.conversation.id";
+        }
+
         public static class Operation
         {
             public const string Name = "gen_ai.operation.name";
@@ -103,7 +108,14 @@ internal static class OpenTelemetryConsts
 
         public static class Tool
         {
+            public const string Name = "gen_ai.tool.name";
+            public const string Description = "gen_ai.tool.description";
             public const string Message = "gen_ai.tool.message";
+
+            public static class Call
+            {
+                public const string Id = "gen_ai.tool.call.id";
+            }
         }
 
         public static class User

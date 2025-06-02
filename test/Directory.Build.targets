@@ -4,7 +4,7 @@
   <ItemGroup>
     <PackageReference Include="AutoFixture.AutoMoq" />
     <PackageReference Include="autofixture" />
-    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="AwesomeAssertions" />
     <PackageReference Include="Moq.AutoMock" />
     <PackageReference Include="Moq" />
     <PackageReference Include="StrongNamer" Condition="'$(SignArtifacts)' == 'true' " />

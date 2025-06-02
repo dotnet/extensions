@@ -12,8 +12,9 @@ using Azure.Core;
 namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
 /// <summary>
-/// Specifies the Azure AI project that should be used and credentials that should be used when a
-/// <see cref="ContentSafetyEvaluator"/> communicates with the Azure AI Content Safety service to perform evaluations.
+/// Specifies configuration parameters such as the Azure AI project that should be used, and the credentials that
+/// should be used, when a <see cref="ContentSafetyEvaluator"/> communicates with the Azure AI Foundry Evaluation
+/// service to perform evaluations.
 /// </summary>
 /// <param name="credential">
 /// The Azure <see cref="TokenCredential"/> that should be used when authenticating requests.
@@ -28,13 +29,13 @@ namespace Microsoft.Extensions.AI.Evaluation.Safety;
 /// The name of the Azure AI project.
 /// </param>
 /// <param name="httpClient">
-/// The <see cref="System.Net.Http.HttpClient"/> that should be used when communicating with the Azure AI Content
-/// Safety service. While the parameter is optional, it is recommended to supply an
-/// <see cref="System.Net.Http.HttpClient"/> that is configured with robust resilience and retry policies.
+/// The <see cref="HttpClient"/> that should be used when communicating with the Azure AI Foundry Evaluation service.
+/// While the parameter is optional, it is recommended to supply an <see cref="HttpClient"/> that is configured with
+/// robust resilience and retry policies.
 /// </param>
 /// <param name="timeoutInSecondsForRetries">
 /// The timeout (in seconds) after which a <see cref="ContentSafetyEvaluator"/> should stop retrying failed attempts
-/// to communicate with the Azure AI Content Safety service when performing evaluations.
+/// to communicate with the Azure AI Foundry Evaluation service when performing evaluations.
 /// </param>
 public sealed class ContentSafetyServiceConfiguration(
     TokenCredential credential,
@@ -65,18 +66,18 @@ public sealed class ContentSafetyServiceConfiguration(
     public string ProjectName { get; } = projectName;
 
     /// <summary>
-    /// Gets the <see cref="System.Net.Http.HttpClient"/> that should be used when communicating with the Azure AI
-    /// Content Safety service.
+    /// Gets the <see cref="HttpClient"/> that should be used when communicating with the Azure AI Foundry Evaluation
+    /// service.
     /// </summary>
     /// <remarks>
-    /// While supplying an <see cref="System.Net.Http.HttpClient"/> is optional, it is recommended to supply one that
-    /// is configured with robust resilience and retry policies.
+    /// While supplying an <see cref="HttpClient"/> is optional, it is recommended to supply one that is configured
+    /// with robust resilience and retry policies.
     /// </remarks>
     public HttpClient? HttpClient { get; } = httpClient;
 
     /// <summary>
     /// Gets the timeout (in seconds) after which a <see cref="ContentSafetyEvaluator"/> should stop retrying failed
-    /// attempts to communicate with the Azure AI Content Safety service when performing evaluations.
+    /// attempts to communicate with the Azure AI Foundry Evaluation service when performing evaluations.
     /// </summary>
     public int TimeoutInSecondsForRetries { get; } = timeoutInSecondsForRetries;
 }

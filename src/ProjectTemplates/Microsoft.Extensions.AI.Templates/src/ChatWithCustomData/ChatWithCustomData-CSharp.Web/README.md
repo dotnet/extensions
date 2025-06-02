@@ -1,6 +1,6 @@
 # AI Chat with Custom Data
 
-This project is an AI chat application that demonstrates how to chat with custom data using an AI language model. Please note that this template is currently in an early preview stage. If you have feedback, please take a [brief survey](https://aka.ms/dotnet-chat-template-survey).
+This project is an AI chat application that demonstrates how to chat with custom data using an AI language model. Please note that this template is currently in an early preview stage. If you have feedback, please take a [brief survey](https://aka.ms/dotnet-chat-templatePreview2-survey).
 
 >[!NOTE]
 > Before running this project you need to configure the API keys or endpoints for the providers you have chosen. See below for details specific to your choices.
@@ -10,9 +10,19 @@ This project is an AI chat application that demonstrates how to chat with custom
 To use Azure OpenAI or Azure AI Search, you need an Azure account. If you don't already have one, [create an Azure account](https://azure.microsoft.com/free/).
 
 #### ---#endif
+#### ---#if (IsOllama)
+### Known Issues
+
+#### Errors running Ollama or Docker
+
+A recent incompatibility was found between Ollama and Docker Desktop. This issue results in runtime errors when connecting to Ollama, and the workaround for that can lead to Docker not working for Aspire projects.
+
+This incompatibility can be addressed by upgrading to Docker Desktop 4.41.1. See [ollama/ollama#9509](https://github.com/ollama/ollama/issues/9509#issuecomment-2842461831) for more information and a link to install the version of Docker Desktop with the fix.
+
+#### ---#endif
 # Configure the AI Model Provider
 #### ---#if (IsGHModels)
-To use models hosted by GitHub Models, you will need to create a GitHub personal access token. The token should not have any scopes or permissions. See [Managing your personal access tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens).
+To use models hosted by GitHub Models, you will need to create a GitHub personal access token with `models:read` permissions, but no other scopes or permissions. See [Prototyping with AI models](https://docs.github.com/github-models/prototyping-with-ai-models) and [Managing your personal access tokens](https://docs.github.com/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) in the GitHub Docs for more information.
 
 #### ---#if (hostIdentifier == "vs")
 Configure your token for this project using .NET User Secrets:
@@ -96,7 +106,7 @@ Deploy the `gpt-4o-mini` and `text-embedding-3-small` models to your Azure OpenA
 
 #### ---#if (UseManagedIdentity)
 ### 3. Configure Azure OpenAI for Keyless Authentication
-This template is configured to use keyless authentication (also known as Managed Identity, with Entra ID). In the Azure Portal, when viewing the Azure OpenAI resource you just created, view access control settings and assign yourself the `Cognitive Services OpenAI User` role. [Learn more](https://learn.microsoft.com/azure/developer/ai/keyless-connections).
+This template is configured to use keyless authentication (also known as Managed Identity, with Entra ID). In the Azure Portal, when viewing the Azure OpenAI resource you just created, view access control settings and assign yourself the `Azure AI Developer` role. [Learn more about configuring authentication for local development](https://learn.microsoft.com/azure/developer/ai/keyless-connections?tabs=csharp%2Cazure-cli#authenticate-for-local-development).
 
 ### 4. Configure Azure OpenAI Endpoint
 Configure your Azure OpenAI endpoint for this project, using .NET User Secrets:
@@ -158,7 +168,7 @@ To use Azure AI Search, you will need an Azure account and an Azure AI Search re
 ### 1. Create an Azure AI Search Resource
 Follow the instructions in the [Azure portal](https://portal.azure.com/) to create an Azure AI Search resource. Note that there is a free tier for the service but it is not currently the default setting on the portal.
 
-Note that if you previously used the same Azure AI Search resource with different model using this project name, you may need to delete your `$$VectorStoreIndexName$$` index using the [Azure portal](https://portal.azure.com/) first before continuing; otherwise, data ingestion may fail due to a vector dimension mismatch.
+Note that if you previously used the same Azure AI Search resource with different model using this project name, you may need to delete your `data-ChatWithCustomData-CSharp.Web-chunks` and `data-ChatWithCustomData-CSharp.Web-documents` indexes using the [Azure portal](https://portal.azure.com/) first before continuing; otherwise, data ingestion may fail due to a vector dimension mismatch.
 
 #### ---#if (UseManagedIdentity)
 ### 2. Configure Azure AI Search for Keyless Authentication
@@ -229,6 +239,10 @@ Make sure to replace `YOUR-AZURE-AI-SEARCH-KEY` and `YOUR-AZURE-AI-SEARCH-ENDPOI
 2. Install the [C# Dev Kit extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit) for Visual Studio Code.
 3. Once installed, Open the `Program.cs` file.
 4. Run the project by clicking the "Run" button in the Debug view.
+
+# Updating JavaScript dependencies
+
+This template leverages JavaScript libraries to provide essential functionality. These libraries are located in the wwwroot/lib folder. For instructions on updating each dependency, please refer to the README.md file in each respective folder.
 
 # Learn More
 To learn more about development with .NET and AI, check out the following links:

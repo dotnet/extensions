@@ -99,16 +99,16 @@ public static class EmbeddingGeneratorExtensions
     /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/>.</exception>
     /// <exception cref="InvalidOperationException">The generator did not produce exactly one embedding.</exception>
     /// <remarks>
-    /// This operation is equivalent to using <see cref="GenerateEmbeddingAsync"/> and returning the
+    /// This operation is equivalent to using <see cref="GenerateAsync"/> and returning the
     /// resulting <see cref="Embedding{T}"/>'s <see cref="Embedding{T}.Vector"/> property.
     /// </remarks>
-    public static async Task<ReadOnlyMemory<TEmbeddingElement>> GenerateEmbeddingVectorAsync<TInput, TEmbeddingElement>(
+    public static async Task<ReadOnlyMemory<TEmbeddingElement>> GenerateVectorAsync<TInput, TEmbeddingElement>(
         this IEmbeddingGenerator<TInput, Embedding<TEmbeddingElement>> generator,
         TInput value,
         EmbeddingGenerationOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        var embedding = await GenerateEmbeddingAsync(generator, value, options, cancellationToken).ConfigureAwait(false);
+        var embedding = await GenerateAsync(generator, value, options, cancellationToken).ConfigureAwait(false);
         return embedding.Vector;
     }
 
@@ -130,7 +130,7 @@ public static class EmbeddingGeneratorExtensions
     /// collection composed of the single <paramref name="value"/> and then returning the first embedding element from the
     /// resulting <see cref="GeneratedEmbeddings{TEmbedding}"/> collection.
     /// </remarks>
-    public static async Task<TEmbedding> GenerateEmbeddingAsync<TInput, TEmbedding>(
+    public static async Task<TEmbedding> GenerateAsync<TInput, TEmbedding>(
         this IEmbeddingGenerator<TInput, TEmbedding> generator,
         TInput value,
         EmbeddingGenerationOptions? options = null,

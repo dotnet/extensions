@@ -1,32 +1,21 @@
-﻿using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
+﻿using Microsoft.Extensions.VectorData;
 
 namespace ChatWithCustomData_CSharp.Web.Services;
 
 public class SemanticSearch(
-    IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
-    IVectorStore vectorStore)
-{
-    public async Task<IReadOnlyList<SemanticSearchRecord>> SearchAsync(string text, string? filenameFilter, int maxResults)
-    {
-        var queryEmbedding = await embeddingGenerator.GenerateEmbeddingVectorAsync(text);
 #if (UseQdrant)
-        var vectorCollection = vectorStore.GetCollection<Guid, SemanticSearchRecord>("data-ChatWithCustomData-CSharp.Web-ingestion");
+    VectorStoreCollection<Guid, IngestedChunk> vectorCollection)
 #else
-        var vectorCollection = vectorStore.GetCollection<string, SemanticSearchRecord>("data-ChatWithCustomData-CSharp.Web-ingestion");
+    VectorStoreCollection<string, IngestedChunk> vectorCollection)
 #endif
-
-        var nearest = await vectorCollection.VectorizedSearchAsync(queryEmbedding, new VectorSearchOptions<SemanticSearchRecord>
+{
+    public async Task<IReadOnlyList<IngestedChunk>> SearchAsync(string text, string? documentIdFilter, int maxResults)
+    {
+        var nearest = vectorCollection.SearchAsync(text, maxResults, new VectorSearchOptions<IngestedChunk>
         {
-            Top = maxResults,
-            Filter = filenameFilter is { Length: > 0 } ? record => record.FileName == filenameFilter : null,
+            Filter = documentIdFilter is { Length: > 0 } ? record => record.DocumentId == documentIdFilter : null,
         });
-        var results = new List<SemanticSearchRecord>();
-        await foreach (var item in nearest.Results)
-        {
-            results.Add(item.Record);
-        }
 
-        return results;
+        return await nearest.Select(result => result.Record).ToListAsync();
     }
 }

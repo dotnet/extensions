@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { ChevronDown12Regular, ChevronRight12Regular, DismissCircle16Regular } from "@fluentui/react-icons";
 import { useState } from "react";
 import type { MetricType } from "./MetricCard";
@@ -22,7 +25,8 @@ export const MetricDetailsSection = ({ metric }: { metric: MetricType; }) => {
     if (!hasReason && !hasInterpretationReason && !hasDiagnostics && !hasMetadata) return null;
 
     return (
-        <div className={classes.section}>
+        <div className={classes.section} tabIndex={0}
+                onKeyUp={e => e.key === 'Enter' && setIsExpanded(!isExpanded)}>
             <div className={classes.sectionHeader} onClick={() => setIsExpanded(!isExpanded)}>
                 {isExpanded ? <ChevronDown12Regular /> : <ChevronRight12Regular />}
                 <h3 className={classes.sectionHeaderText}>Metric Details: {metric.name}</h3>

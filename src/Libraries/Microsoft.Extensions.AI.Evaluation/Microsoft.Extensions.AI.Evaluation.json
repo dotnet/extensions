@@ -1,0 +1,491 @@
+{
+  "Name": "Microsoft.Extensions.AI.Evaluation, Version=9.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Types": [
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.BooleanMetric : Microsoft.Extensions.AI.Evaluation.EvaluationMetric<bool?>",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.BooleanMetric.BooleanMetric(string name, bool? value = null, string? reason = null);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.ChatConfiguration",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.ChatConfiguration.ChatConfiguration(Microsoft.Extensions.AI.IChatClient chatClient);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.IChatClient Microsoft.Extensions.AI.Evaluation.ChatConfiguration.ChatClient { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.Evaluation.ChatMessageExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static string Microsoft.Extensions.AI.Evaluation.ChatMessageExtensions.RenderText(this Microsoft.Extensions.AI.ChatMessage message);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.AI.Evaluation.ChatMessageExtensions.RenderText(this System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.AI.Evaluation.ChatMessageExtensions.TryGetUserRequest(this System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, out Microsoft.Extensions.AI.ChatMessage? userRequest);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.AI.Evaluation.ChatMessageExtensions.TryGetUserRequest(this System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, out Microsoft.Extensions.AI.ChatMessage? userRequest, out System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.ChatMessage> remainingMessages);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.Evaluation.ChatResponseExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static string Microsoft.Extensions.AI.Evaluation.ChatResponseExtensions.RenderText(this Microsoft.Extensions.AI.ChatResponse response);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.CompositeEvaluator : Microsoft.Extensions.AI.Evaluation.IEvaluator",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.CompositeEvaluator.CompositeEvaluator(params Microsoft.Extensions.AI.Evaluation.IEvaluator[] evaluators);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.CompositeEvaluator.CompositeEvaluator(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.IEvaluator> evaluators);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.Evaluation.EvaluationResult> Microsoft.Extensions.AI.Evaluation.CompositeEvaluator.EvaluateAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatResponse modelResponse, Microsoft.Extensions.AI.Evaluation.ChatConfiguration? chatConfiguration = null, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationContext>? additionalContext = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyCollection<string> Microsoft.Extensions.AI.Evaluation.CompositeEvaluator.EvaluationMetricNames { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class Microsoft.Extensions.AI.Evaluation.EvaluationContext",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.EvaluationContext.EvaluationContext(string name, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.AIContent> contents);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.EvaluationContext.EvaluationContext(string name, params Microsoft.Extensions.AI.AIContent[] contents);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.EvaluationContext.EvaluationContext(string name, string content);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent> Microsoft.Extensions.AI.Evaluation.EvaluationContext.Contents { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string Microsoft.Extensions.AI.Evaluation.EvaluationContext.Name { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.EvaluationDiagnostic",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.EvaluationDiagnostic.EvaluationDiagnostic(Microsoft.Extensions.AI.Evaluation.EvaluationDiagnosticSeverity severity, string message);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.Evaluation.EvaluationDiagnostic Microsoft.Extensions.AI.Evaluation.EvaluationDiagnostic.Error(string message);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.Evaluation.EvaluationDiagnostic Microsoft.Extensions.AI.Evaluation.EvaluationDiagnostic.Informational(string message);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.AI.Evaluation.EvaluationDiagnostic.ToString();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.Evaluation.EvaluationDiagnostic Microsoft.Extensions.AI.Evaluation.EvaluationDiagnostic.Warning(string message);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.AI.Evaluation.EvaluationDiagnostic.Message { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.EvaluationDiagnosticSeverity Microsoft.Extensions.AI.Evaluation.EvaluationDiagnostic.Severity { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "enum Microsoft.Extensions.AI.Evaluation.EvaluationDiagnosticSeverity",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.EvaluationDiagnosticSeverity.EvaluationDiagnosticSeverity();",
+          "Stage": "Stable"
+        }
+      ],
+      "Fields": [
+        {
+          "Member": "const Microsoft.Extensions.AI.Evaluation.EvaluationDiagnosticSeverity Microsoft.Extensions.AI.Evaluation.EvaluationDiagnosticSeverity.Error",
+          "Stage": "Stable",
+          "Value": "2"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.Evaluation.EvaluationDiagnosticSeverity Microsoft.Extensions.AI.Evaluation.EvaluationDiagnosticSeverity.Informational",
+          "Stage": "Stable",
+          "Value": "0"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.Evaluation.EvaluationDiagnosticSeverity Microsoft.Extensions.AI.Evaluation.EvaluationDiagnosticSeverity.Warning",
+          "Stage": "Stable",
+          "Value": "1"
+        }
+      ]
+    },
+    {
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
+      "Type": "class Microsoft.Extensions.AI.Evaluation.EvaluationMetric",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.EvaluationMetric.EvaluationMetric(string name, string? reason = null);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IDictionary<string, Microsoft.Extensions.AI.Evaluation.EvaluationContext>? Microsoft.Extensions.AI.Evaluation.EvaluationMetric.Context { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.Evaluation.EvaluationDiagnostic>? Microsoft.Extensions.AI.Evaluation.EvaluationMetric.Diagnostics { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.EvaluationMetricInterpretation? Microsoft.Extensions.AI.Evaluation.EvaluationMetric.Interpretation { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IDictionary<string, string>? Microsoft.Extensions.AI.Evaluation.EvaluationMetric.Metadata { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string Microsoft.Extensions.AI.Evaluation.EvaluationMetric.Name { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.Evaluation.EvaluationMetric.Reason { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.Evaluation.EvaluationMetric<T> : Microsoft.Extensions.AI.Evaluation.EvaluationMetric",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.EvaluationMetric<T>.EvaluationMetric(string name, T? value, string? reason = null);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "T? Microsoft.Extensions.AI.Evaluation.EvaluationMetric<T>.Value { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.Evaluation.EvaluationMetricExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static void Microsoft.Extensions.AI.Evaluation.EvaluationMetricExtensions.AddDiagnostics(this Microsoft.Extensions.AI.Evaluation.EvaluationMetric metric, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationDiagnostic> diagnostics);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static void Microsoft.Extensions.AI.Evaluation.EvaluationMetricExtensions.AddDiagnostics(this Microsoft.Extensions.AI.Evaluation.EvaluationMetric metric, params Microsoft.Extensions.AI.Evaluation.EvaluationDiagnostic[] diagnostics);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static void Microsoft.Extensions.AI.Evaluation.EvaluationMetricExtensions.AddOrUpdateChatMetadata(this Microsoft.Extensions.AI.Evaluation.EvaluationMetric metric, Microsoft.Extensions.AI.ChatResponse response, System.TimeSpan? duration = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static void Microsoft.Extensions.AI.Evaluation.EvaluationMetricExtensions.AddOrUpdateContext(this Microsoft.Extensions.AI.Evaluation.EvaluationMetric metric, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationContext> context);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static void Microsoft.Extensions.AI.Evaluation.EvaluationMetricExtensions.AddOrUpdateContext(this Microsoft.Extensions.AI.Evaluation.EvaluationMetric metric, params Microsoft.Extensions.AI.Evaluation.EvaluationContext[] context);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static void Microsoft.Extensions.AI.Evaluation.EvaluationMetricExtensions.AddOrUpdateMetadata(this Microsoft.Extensions.AI.Evaluation.EvaluationMetric metric, string name, string value);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static void Microsoft.Extensions.AI.Evaluation.EvaluationMetricExtensions.AddOrUpdateMetadata(this Microsoft.Extensions.AI.Evaluation.EvaluationMetric metric, System.Collections.Generic.IDictionary<string, string> metadata);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.AI.Evaluation.EvaluationMetricExtensions.ContainsDiagnostics(this Microsoft.Extensions.AI.Evaluation.EvaluationMetric metric, System.Func<Microsoft.Extensions.AI.Evaluation.EvaluationDiagnostic, bool>? predicate = null);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.EvaluationMetricInterpretation",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.EvaluationMetricInterpretation.EvaluationMetricInterpretation(Microsoft.Extensions.AI.Evaluation.EvaluationRating rating = Microsoft.Extensions.AI.Evaluation.EvaluationRating.Unknown, bool failed = false, string? reason = null);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.AI.Evaluation.EvaluationMetricInterpretation.Failed { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.EvaluationRating Microsoft.Extensions.AI.Evaluation.EvaluationMetricInterpretation.Rating { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.Evaluation.EvaluationMetricInterpretation.Reason { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "enum Microsoft.Extensions.AI.Evaluation.EvaluationRating",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.EvaluationRating.EvaluationRating();",
+          "Stage": "Stable"
+        }
+      ],
+      "Fields": [
+        {
+          "Member": "const Microsoft.Extensions.AI.Evaluation.EvaluationRating Microsoft.Extensions.AI.Evaluation.EvaluationRating.Average",
+          "Stage": "Stable",
+          "Value": "4"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.Evaluation.EvaluationRating Microsoft.Extensions.AI.Evaluation.EvaluationRating.Exceptional",
+          "Stage": "Stable",
+          "Value": "6"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.Evaluation.EvaluationRating Microsoft.Extensions.AI.Evaluation.EvaluationRating.Good",
+          "Stage": "Stable",
+          "Value": "5"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.Evaluation.EvaluationRating Microsoft.Extensions.AI.Evaluation.EvaluationRating.Inconclusive",
+          "Stage": "Stable",
+          "Value": "1"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.Evaluation.EvaluationRating Microsoft.Extensions.AI.Evaluation.EvaluationRating.Poor",
+          "Stage": "Stable",
+          "Value": "3"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.Evaluation.EvaluationRating Microsoft.Extensions.AI.Evaluation.EvaluationRating.Unacceptable",
+          "Stage": "Stable",
+          "Value": "2"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.Evaluation.EvaluationRating Microsoft.Extensions.AI.Evaluation.EvaluationRating.Unknown",
+          "Stage": "Stable",
+          "Value": "0"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.EvaluationResult",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.EvaluationResult.EvaluationResult(System.Collections.Generic.IDictionary<string, Microsoft.Extensions.AI.Evaluation.EvaluationMetric> metrics);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.EvaluationResult.EvaluationResult(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationMetric> metrics);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.EvaluationResult.EvaluationResult(params Microsoft.Extensions.AI.Evaluation.EvaluationMetric[] metrics);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "T Microsoft.Extensions.AI.Evaluation.EvaluationResult.Get<T>(string metricName);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.AI.Evaluation.EvaluationResult.TryGet<T>(string metricName, out T? value);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IDictionary<string, Microsoft.Extensions.AI.Evaluation.EvaluationMetric> Microsoft.Extensions.AI.Evaluation.EvaluationResult.Metrics { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.Evaluation.EvaluationResultExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static void Microsoft.Extensions.AI.Evaluation.EvaluationResultExtensions.AddDiagnosticsToAllMetrics(this Microsoft.Extensions.AI.Evaluation.EvaluationResult result, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationDiagnostic> diagnostics);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static void Microsoft.Extensions.AI.Evaluation.EvaluationResultExtensions.AddDiagnosticsToAllMetrics(this Microsoft.Extensions.AI.Evaluation.EvaluationResult result, params Microsoft.Extensions.AI.Evaluation.EvaluationDiagnostic[] diagnostics);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static void Microsoft.Extensions.AI.Evaluation.EvaluationResultExtensions.AddOrUpdateChatMetadataInAllMetrics(this Microsoft.Extensions.AI.Evaluation.EvaluationResult result, Microsoft.Extensions.AI.ChatResponse response, System.TimeSpan? duration = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static void Microsoft.Extensions.AI.Evaluation.EvaluationResultExtensions.AddOrUpdateContextInAllMetrics(this Microsoft.Extensions.AI.Evaluation.EvaluationResult result, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationContext> context);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static void Microsoft.Extensions.AI.Evaluation.EvaluationResultExtensions.AddOrUpdateContextInAllMetrics(this Microsoft.Extensions.AI.Evaluation.EvaluationResult result, params Microsoft.Extensions.AI.Evaluation.EvaluationContext[] context);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static void Microsoft.Extensions.AI.Evaluation.EvaluationResultExtensions.AddOrUpdateMetadataInAllMetrics(this Microsoft.Extensions.AI.Evaluation.EvaluationResult result, string name, string value);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static void Microsoft.Extensions.AI.Evaluation.EvaluationResultExtensions.AddOrUpdateMetadataInAllMetrics(this Microsoft.Extensions.AI.Evaluation.EvaluationResult result, System.Collections.Generic.IDictionary<string, string> metadata);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.AI.Evaluation.EvaluationResultExtensions.ContainsDiagnostics(this Microsoft.Extensions.AI.Evaluation.EvaluationResult result, System.Func<Microsoft.Extensions.AI.Evaluation.EvaluationDiagnostic, bool>? predicate = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static void Microsoft.Extensions.AI.Evaluation.EvaluationResultExtensions.Interpret(this Microsoft.Extensions.AI.Evaluation.EvaluationResult result, System.Func<Microsoft.Extensions.AI.Evaluation.EvaluationMetric, Microsoft.Extensions.AI.Evaluation.EvaluationMetricInterpretation?> interpretationProvider);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.Evaluation.EvaluatorExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.Evaluation.EvaluationResult> Microsoft.Extensions.AI.Evaluation.EvaluatorExtensions.EvaluateAsync(this Microsoft.Extensions.AI.Evaluation.IEvaluator evaluator, string modelResponse, Microsoft.Extensions.AI.Evaluation.ChatConfiguration? chatConfiguration = null, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationContext>? additionalContext = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.Evaluation.EvaluationResult> Microsoft.Extensions.AI.Evaluation.EvaluatorExtensions.EvaluateAsync(this Microsoft.Extensions.AI.Evaluation.IEvaluator evaluator, string userRequest, string modelResponse, Microsoft.Extensions.AI.Evaluation.ChatConfiguration? chatConfiguration = null, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationContext>? additionalContext = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.Evaluation.EvaluationResult> Microsoft.Extensions.AI.Evaluation.EvaluatorExtensions.EvaluateAsync(this Microsoft.Extensions.AI.Evaluation.IEvaluator evaluator, Microsoft.Extensions.AI.ChatMessage modelResponse, Microsoft.Extensions.AI.Evaluation.ChatConfiguration? chatConfiguration = null, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationContext>? additionalContext = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.Evaluation.EvaluationResult> Microsoft.Extensions.AI.Evaluation.EvaluatorExtensions.EvaluateAsync(this Microsoft.Extensions.AI.Evaluation.IEvaluator evaluator, Microsoft.Extensions.AI.ChatResponse modelResponse, Microsoft.Extensions.AI.Evaluation.ChatConfiguration? chatConfiguration = null, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationContext>? additionalContext = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.Evaluation.EvaluationResult> Microsoft.Extensions.AI.Evaluation.EvaluatorExtensions.EvaluateAsync(this Microsoft.Extensions.AI.Evaluation.IEvaluator evaluator, Microsoft.Extensions.AI.ChatMessage userRequest, Microsoft.Extensions.AI.ChatMessage modelResponse, Microsoft.Extensions.AI.Evaluation.ChatConfiguration? chatConfiguration = null, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationContext>? additionalContext = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.Evaluation.EvaluationResult> Microsoft.Extensions.AI.Evaluation.EvaluatorExtensions.EvaluateAsync(this Microsoft.Extensions.AI.Evaluation.IEvaluator evaluator, Microsoft.Extensions.AI.ChatMessage userRequest, Microsoft.Extensions.AI.ChatResponse modelResponse, Microsoft.Extensions.AI.Evaluation.ChatConfiguration? chatConfiguration = null, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationContext>? additionalContext = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "interface Microsoft.Extensions.AI.Evaluation.IEvaluator",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.Evaluation.EvaluationResult> Microsoft.Extensions.AI.Evaluation.IEvaluator.EvaluateAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatResponse modelResponse, Microsoft.Extensions.AI.Evaluation.ChatConfiguration? chatConfiguration = null, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationContext>? additionalContext = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyCollection<string> Microsoft.Extensions.AI.Evaluation.IEvaluator.EvaluationMetricNames { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.NumericMetric : Microsoft.Extensions.AI.Evaluation.EvaluationMetric<double?>",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.NumericMetric.NumericMetric(string name, double? value = null, string? reason = null);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.StringMetric : Microsoft.Extensions.AI.Evaluation.EvaluationMetric<string>",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.StringMetric.StringMetric(string name, string? value = null, string? reason = null);",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}

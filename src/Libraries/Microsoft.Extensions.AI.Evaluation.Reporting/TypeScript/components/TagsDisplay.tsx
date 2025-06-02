@@ -29,15 +29,17 @@ const useStyles = makeStyles({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    ':focus': {
+      outline: `2px solid ${tokens.colorNeutralForeground3}`,
+    },
     ':hover': {
       opacity: 0.9,
       boxShadow: tokens.shadow4,
     },
     '&.selected': {
       boxShadow: tokens.shadow8,
-      outline: `2px solid ${tokens.colorNeutralForeground3}`,
-      outlineOffset: '0px',
-      border: 'none'
+      border: `1px solid ${tokens.colorNeutralForeground3}`,
+      backgroundColor: tokens.colorNeutralBackground3Pressed,
     }
   },
   globalTagBubble: {
@@ -136,7 +138,11 @@ export function FilterableTagsDisplay({ filterableTags }: FilterableTagsDisplayP
             className={`${classes.tagBubble} ${isSelected(tag) ? 'selected' : ''}`}
             title={`${tag} (appears on ${count} results) - Click to filter by this tag`}
             onClick={() => handleTagClick(tag)}
-          >
+            onKeyDown={(e) => e.key === 'Enter' && handleTagClick(tag)}
+            tabIndex={0}
+            role="checkbox"
+            aria-checked={isSelected(tag)}
+            >
             {tag}
           </div>
         ))}

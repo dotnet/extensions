@@ -6,12 +6,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
 /// <summary>
-/// An <see cref="IEvaluator"/> that utilizes the Azure AI Content Safety service to evaluate responses produced by an
-/// AI model for presence of content that indicates ungrounded inference of human attributes.
+/// An <see cref="IEvaluator"/> that utilizes the Azure AI Foundry Evaluation service to evaluate responses produced by
+/// an AI model for presence of content that indicates ungrounded inference of human attributes.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -30,29 +31,21 @@ namespace Microsoft.Extensions.AI.Evaluation.Safety;
 /// ignored.
 /// </para>
 /// <para>
-/// The Azure AI Content Safety service uses a finetuned model to perform this evaluation which is expected to
+/// The Azure AI Foundry Evaluation service uses a finetuned model to perform this evaluation which is expected to
 /// produce more accurate results than similar evaluations performed using a regular (non-finetuned) model.
 /// </para>
 /// </remarks>
-/// <param name="contentSafetyServiceConfiguration">
-/// Specifies the Azure AI project that should be used and credentials that should be used when this
-/// <see cref="ContentSafetyEvaluator"/> communicates with the Azure AI Content Safety service to perform
-/// evaluations.
-/// </param>
-public sealed class UngroundedAttributesEvaluator(ContentSafetyServiceConfiguration contentSafetyServiceConfiguration)
+public sealed class UngroundedAttributesEvaluator()
     : ContentSafetyEvaluator(
-        contentSafetyServiceConfiguration,
         contentSafetyServiceAnnotationTask: "inference sensitive attributes",
-        evaluatorName: nameof(UngroundedAttributesEvaluator))
+        metricNames:
+            new Dictionary<string, string> { ["inference_sensitive_attributes"] = UngroundedAttributesMetricName })
 {
     /// <summary>
     /// Gets the <see cref="EvaluationMetric.Name"/> of the <see cref="BooleanMetric"/> returned by
     /// <see cref="UngroundedAttributesEvaluator"/>.
     /// </summary>
     public static string UngroundedAttributesMetricName => "Ungrounded Attributes";
-
-    /// <inheritdoc/>
-    public override IReadOnlyCollection<string> EvaluationMetricNames => [UngroundedAttributesMetricName];
 
     /// <inheritdoc/>
     public override async ValueTask<EvaluationResult> EvaluateAsync(
@@ -62,43 +55,42 @@ public sealed class UngroundedAttributesEvaluator(ContentSafetyServiceConfigurat
         IEnumerable<EvaluationContext>? additionalContext = null,
         CancellationToken cancellationToken = default)
     {
-        IEnumerable<string?> contexts;
-        if (additionalContext?.OfType<UngroundedAttributesEvaluatorContext>().FirstOrDefault()
-                is UngroundedAttributesEvaluatorContext context)
-        {
-            contexts = [context.GroundingContext];
-        }
-        else
-        {
-            throw new InvalidOperationException(
-                $"A value of type '{nameof(UngroundedAttributesEvaluatorContext)}' was not found in the '{nameof(additionalContext)}' collection.");
-        }
-
-        const string UngroundedAttributesContentSafetyServiceMetricName = "inference_sensitive_attributes";
+        _ = Throw.IfNull(chatConfiguration);
+        _ = Throw.IfNull(modelResponse);
 
         EvaluationResult result =
             await EvaluateContentSafetyAsync(
+                chatConfiguration.ChatClient,
                 messages,
                 modelResponse,
-                contexts,
+                additionalContext,
                 contentSafetyServicePayloadFormat: ContentSafetyServicePayloadFormat.QueryResponse.ToString(),
-                contentSafetyServiceMetricName: UngroundedAttributesContentSafetyServiceMetricName,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        IEnumerable<EvaluationMetric> updatedMetrics =
-            result.Metrics.Values.Select(
-                metric =>
-                {
-                    if (metric.Name == UngroundedAttributesContentSafetyServiceMetricName)
-                    {
-                        metric.Name = UngroundedAttributesMetricName;
-                    }
+        UngroundedAttributesEvaluatorContext context = GetRelevantContext(additionalContext);
+        result.AddOrUpdateContextInAllMetrics(context);
 
-                    return metric;
-                });
-
-        result = new EvaluationResult(updatedMetrics);
-        result.Interpret(metric => metric is BooleanMetric booleanMetric ? booleanMetric.InterpretScore() : null);
         return result;
+    }
+
+    /// <inheritdoc/>
+    protected override IReadOnlyList<EvaluationContext>? FilterAdditionalContext(
+        IEnumerable<EvaluationContext>? additionalContext)
+    {
+        UngroundedAttributesEvaluatorContext context = GetRelevantContext(additionalContext);
+        return [context];
+    }
+
+    private static UngroundedAttributesEvaluatorContext GetRelevantContext(
+        IEnumerable<EvaluationContext>? additionalContext)
+    {
+        if (additionalContext?.OfType<UngroundedAttributesEvaluatorContext>().FirstOrDefault()
+                is UngroundedAttributesEvaluatorContext context)
+        {
+            return context;
+        }
+
+        throw new InvalidOperationException(
+            $"A value of type '{nameof(UngroundedAttributesEvaluatorContext)}' was not found in the '{nameof(additionalContext)}' collection.");
     }
 }
