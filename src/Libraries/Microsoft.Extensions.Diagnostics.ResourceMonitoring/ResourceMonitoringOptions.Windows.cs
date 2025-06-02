@@ -11,12 +11,6 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 public partial class ResourceMonitoringOptions
 {
     /// <summary>
-    /// Gets or sets a value indicating whether disk I/O metrics should be enabled.
-    /// </summary>
-    [Experimental(diagnosticId: DiagnosticIds.Experiments.ResourceMonitoring, UrlFormat = DiagnosticIds.UrlFormat)]
-    public bool EnableDiskIoMetrics { get; set; }
-
-    /// <summary>
     /// Gets or sets the list of source IPv4 addresses to track the connections for in telemetry.
     /// </summary>
     /// <remarks>

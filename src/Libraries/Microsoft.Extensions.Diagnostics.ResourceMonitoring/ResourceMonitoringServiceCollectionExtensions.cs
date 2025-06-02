@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 #if !NETFRAMEWORK
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
+using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Disk;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Network;
 
 #endif
@@ -129,6 +130,7 @@ public static class ResourceMonitoringServiceCollectionExtensions
 
         builder.Services.TryAddActivatedSingleton<ISnapshotProvider, LinuxUtilizationProvider>();
 
+        builder.Services.TryAddSingleton(TimeProvider.System);
         builder.Services.TryAddSingleton<IFileSystem, OSFileSystem>();
         builder.Services.TryAddSingleton<IUserHz, UserHz>();
         builder.PickLinuxParser();
@@ -136,7 +138,9 @@ public static class ResourceMonitoringServiceCollectionExtensions
         _ = builder.Services
             .AddActivatedSingleton<LinuxNetworkUtilizationParser>()
             .AddActivatedSingleton<LinuxNetworkMetrics>()
-            .AddActivatedSingleton<ITcpStateInfoProvider, LinuxTcpStateInfo>();
+            .AddActivatedSingleton<ITcpStateInfoProvider, LinuxTcpStateInfo>()
+            .AddActivatedSingleton<IDiskStatsReader, DiskStatsReader>()
+            .AddActivatedSingleton<LinuxSystemDiskMetrics>();
 
         return builder;
     }
