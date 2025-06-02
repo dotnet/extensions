@@ -4,6 +4,7 @@
 #pragma warning disable CA1815 // Override equals and operator equals on value types
 #pragma warning disable IDE1006 // Naming Styles
 
+#if !NET10_0_OR_GREATER
 using System.ComponentModel;
 
 namespace System.Net.ServerSentEvents
@@ -79,3 +80,4 @@ namespace System.Net.ServerSentEvents
         }
     }
 }
+#endif
