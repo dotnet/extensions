@@ -34,7 +34,7 @@ internal sealed class WindowsDiskMetrics
         IOptions<ResourceMonitoringOptions> options)
     {
         _logger = logger ?? NullLogger<WindowsDiskMetrics>.Instance;
-        if (!options.Value.EnableDiskIoMetrics)
+        if (!options.Value.EnableSystemDiskIoMetrics)
         {
             return;
         }
@@ -73,6 +73,7 @@ internal sealed class WindowsDiskMetrics
             description: "Time disk spent activated");
     }
 
+#pragma warning disable CA1031 // Do not catch general exception types
     private void InitializeDiskCounters(IPerformanceCounterFactory performanceCounterFactory, TimeProvider timeProvider)
     {
         const string DiskCategoryName = "LogicalDisk";
@@ -96,9 +97,7 @@ internal sealed class WindowsDiskMetrics
             ioTimePerfCounter.InitializeDiskCounters();
             _diskIoTimePerfCounter = ioTimePerfCounter;
         }
-#pragma warning disable CA1031
         catch (Exception ex)
-#pragma warning restore CA1031
         {
             Log.DiskIoPerfCounterException(_logger, WindowsDiskPerfCounterNames.DiskIdleTimeCounter, ex.Message);
         }
@@ -124,14 +123,13 @@ internal sealed class WindowsDiskMetrics
                 ratePerfCounter.InitializeDiskCounters();
                 _diskIoRateCounters.Add(counterName, ratePerfCounter);
             }
-#pragma warning disable CA1031
             catch (Exception ex)
-#pragma warning restore CA1031
             {
                 Log.DiskIoPerfCounterException(_logger, counterName, ex.Message);
             }
         }
     }
+#pragma warning restore CA1031 // Do not catch general exception types
 
     private IEnumerable<Measurement<long>> GetDiskIoMeasurements()
     {
