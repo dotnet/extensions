@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -29,6 +30,11 @@ internal sealed class LinuxSystemDiskMetrics
     private readonly IDiskStatsReader _diskStatsReader;
     private readonly object _lock = new();
     private readonly Dictionary<string, DiskStats> _baselineDiskStatsDict = [];
+    private readonly TimeSpan _retryInterval = TimeSpan.FromMinutes(5);
+
+    private DateTimeOffset _lastDiskStatsFailure = DateTimeOffset.MinValue;
+    private bool _diskStatsUnavailable;
+
     private List<DiskStats> _diskStatsSnapshot = [];
     private DateTimeOffset _lastRefreshTime = DateTimeOffset.MinValue;
 
@@ -148,6 +154,12 @@ internal sealed class LinuxSystemDiskMetrics
 
     private List<DiskStats> GetAllDiskStats()
     {
+        if (_diskStatsUnavailable &&
+            _timeProvider.GetUtcNow() - _lastDiskStatsFailure < _retryInterval)
+        {
+            return [];
+        }
+
         try
         {
             List<DiskStats> diskStatsList = _diskStatsReader.ReadAll();
@@ -158,7 +170,18 @@ internal sealed class LinuxSystemDiskMetrics
                             && !d.DeviceName.StartsWith("loop", StringComparison.OrdinalIgnoreCase)
                             && !d.DeviceName.StartsWith("dm-", StringComparison.OrdinalIgnoreCase))
                 .ToList();
+
+            _diskStatsUnavailable = false;
             return diskStatsList;
+        }
+        catch (Exception ex) when (
+            ex is FileNotFoundException ||
+            ex is DirectoryNotFoundException ||
+            ex is UnauthorizedAccessException)
+        {
+            Log.HandleDiskStatsException(_logger, ex.Message);
+            _lastDiskStatsFailure = _timeProvider.GetUtcNow();
+            _diskStatsUnavailable = true;
         }
 #pragma warning disable CA1031
         catch (Exception ex)
