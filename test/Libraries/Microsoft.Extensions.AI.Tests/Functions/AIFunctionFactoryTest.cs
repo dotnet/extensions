@@ -109,13 +109,13 @@ public partial class AIFunctionFactoryTest
 
         long result = 0;
         func = AIFunctionFactory.Create(async Task (int a, long b) => { result = a + b; await Task.Yield(); });
-        Assert.Equal("""{}""", func.ReturnJsonSchema.ToString());
+        Assert.Null(func.ReturnJsonSchema);
         AssertExtensions.EqualFunctionCallResults(null, await func.InvokeAsync(new() { ["a"] = 1, ["b"] = 2L }));
         Assert.Equal(3, result);
 
         result = 0;
         func = AIFunctionFactory.Create(async ValueTask (int a, long b) => { result = a + b; await Task.Yield(); });
-        Assert.Equal("""{}""", func.ReturnJsonSchema.ToString());
+        Assert.Null(func.ReturnJsonSchema);
         AssertExtensions.EqualFunctionCallResults(null, await func.InvokeAsync(new() { ["a"] = 1, ["b"] = 2L }));
         Assert.Equal(3, result);
 

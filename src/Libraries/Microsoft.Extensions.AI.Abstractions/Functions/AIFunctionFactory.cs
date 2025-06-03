@@ -540,7 +540,7 @@ public static partial class AIFunctionFactory
         public override string Description => FunctionDescriptor.Description;
         public override MethodInfo UnderlyingMethod => FunctionDescriptor.Method;
         public override JsonElement JsonSchema => FunctionDescriptor.JsonSchema;
-        public override JsonElement ReturnJsonSchema => FunctionDescriptor.ReturnJsonSchema;
+        public override JsonElement? ReturnJsonSchema => FunctionDescriptor.ReturnJsonSchema;
         public override JsonSerializerOptions JsonSerializerOptions => FunctionDescriptor.JsonSerializerOptions;
 
         protected override async ValueTask<object?> InvokeCoreAsync(
@@ -689,7 +689,7 @@ public static partial class AIFunctionFactory
             Name = key.Name ?? GetFunctionName(key.Method);
             Description = key.Description ?? key.Method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? string.Empty;
             JsonSerializerOptions = serializerOptions;
-            ReturnJsonSchema = AIJsonUtilities.CreateJsonSchema(
+            ReturnJsonSchema = returnType is null ? null : AIJsonUtilities.CreateJsonSchema(
                 returnType,
                 description: key.Method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
                 serializerOptions: serializerOptions,
@@ -708,7 +708,7 @@ public static partial class AIFunctionFactory
         public MethodInfo Method { get; }
         public JsonSerializerOptions JsonSerializerOptions { get; }
         public JsonElement JsonSchema { get; }
-        public JsonElement ReturnJsonSchema { get; }
+        public JsonElement? ReturnJsonSchema { get; }
         public Func<AIFunctionArguments, CancellationToken, object?>[] ParameterMarshallers { get; }
         public Func<object?, CancellationToken, ValueTask<object?>> ReturnParameterMarshaller { get; }
         public ReflectionAIFunction? CachedDefaultInstance { get; set; }

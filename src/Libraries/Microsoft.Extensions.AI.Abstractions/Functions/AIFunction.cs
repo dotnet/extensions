@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading;
@@ -39,7 +40,8 @@ public abstract class AIFunction : AITool
     public virtual JsonElement JsonSchema => AIJsonUtilities.DefaultJsonSchema;
 
     /// <summary>Gets a JSON Schema describing the function's return value.</summary>
-    public virtual JsonElement ReturnJsonSchema => AIJsonUtilities.DefaultJsonSchema;
+    [Experimental("MEAI001")]
+    public virtual JsonElement? ReturnJsonSchema => null;
 
     /// <summary>
     /// Gets the underlying <see cref="MethodInfo"/> that this <see cref="AIFunction"/> might be wrapping.
