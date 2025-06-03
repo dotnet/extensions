@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading;
@@ -39,9 +38,14 @@ public abstract class AIFunction : AITool
     /// </remarks>
     public virtual JsonElement JsonSchema => AIJsonUtilities.DefaultJsonSchema;
 
+#pragma warning disable LA0003 // Newly added symbol must be marked as experimental
     /// <summary>Gets a JSON Schema describing the function's return value.</summary>
-    [Experimental("MEAI001")]
+    /// <remarks>
+    /// A <see langword="null"/> typically reflects a function that doesn't specify a return schema
+    /// or a function that returns <see cref="void"/>, <see cref="Task"/>, or <see cref="ValueTask"/>.
+    /// </remarks>
     public virtual JsonElement? ReturnJsonSchema => null;
+#pragma warning restore LA0003 // Newly added symbol must be marked as experimental
 
     /// <summary>
     /// Gets the underlying <see cref="MethodInfo"/> that this <see cref="AIFunction"/> might be wrapping.
