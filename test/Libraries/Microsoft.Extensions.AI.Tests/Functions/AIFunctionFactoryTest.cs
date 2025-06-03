@@ -100,22 +100,27 @@ public partial class AIFunctionFactoryTest
         AIFunction func;
 
         func = AIFunctionFactory.Create(Task<string> (string a) => Task.FromResult(a + " " + a));
+        Assert.Equal("""{"type":"string"}""", func.ReturnJsonSchema.ToString());
         AssertExtensions.EqualFunctionCallResults("test test", await func.InvokeAsync(new() { ["a"] = "test" }));
 
         func = AIFunctionFactory.Create(ValueTask<string> (string a, string b) => new ValueTask<string>(b + " " + a));
+        Assert.Equal("""{"type":"string"}""", func.ReturnJsonSchema.ToString());
         AssertExtensions.EqualFunctionCallResults("hello world", await func.InvokeAsync(new() { ["b"] = "hello", ["a"] = "world" }));
 
         long result = 0;
         func = AIFunctionFactory.Create(async Task (int a, long b) => { result = a + b; await Task.Yield(); });
+        Assert.Null(func.ReturnJsonSchema);
         AssertExtensions.EqualFunctionCallResults(null, await func.InvokeAsync(new() { ["a"] = 1, ["b"] = 2L }));
         Assert.Equal(3, result);
 
         result = 0;
         func = AIFunctionFactory.Create(async ValueTask (int a, long b) => { result = a + b; await Task.Yield(); });
+        Assert.Null(func.ReturnJsonSchema);
         AssertExtensions.EqualFunctionCallResults(null, await func.InvokeAsync(new() { ["a"] = 1, ["b"] = 2L }));
         Assert.Equal(3, result);
 
         func = AIFunctionFactory.Create((int count) => SimpleIAsyncEnumerable(count), serializerOptions: JsonContext.Default.Options);
+        Assert.Equal("""{"type":"array","items":{"type":"integer"}}""", func.ReturnJsonSchema.ToString());
         AssertExtensions.EqualFunctionCallResults(new int[] { 0, 1, 2, 3, 4 }, await func.InvokeAsync(new() { ["count"] = 5 }), JsonContext.Default.Options);
 
         static async IAsyncEnumerable<int> SimpleIAsyncEnumerable(int count)
@@ -220,6 +225,8 @@ public partial class AIFunctionFactoryTest
         Assert.DoesNotContain("firstParameter", func.JsonSchema.ToString());
         Assert.Contains("secondParameter", func.JsonSchema.ToString());
 
+        Assert.Equal("""{"type":"string"}""", func.ReturnJsonSchema.ToString());
+
         var result = (JsonElement?)await func.InvokeAsync(new()
         {
             ["firstParameter"] = "test",
@@ -264,6 +271,8 @@ public partial class AIFunctionFactoryTest
         Assert.Contains("myInteger", func.JsonSchema.ToString());
         Assert.DoesNotContain("services", func.JsonSchema.ToString());
         Assert.DoesNotContain("arguments", func.JsonSchema.ToString());
+
+        Assert.Equal("""{"type":"integer"}""", func.ReturnJsonSchema.ToString());
 
         await Assert.ThrowsAsync<ArgumentNullException>("arguments.Services", () => func.InvokeAsync(arguments).AsTask());
 
@@ -430,6 +439,8 @@ public partial class AIFunctionFactoryTest
         Assert.Contains("myInteger", f.JsonSchema.ToString());
         Assert.DoesNotContain("service", f.JsonSchema.ToString());
 
+        Assert.Equal("""{"type":"integer"}""", f.ReturnJsonSchema.ToString());
+
         Exception e = await Assert.ThrowsAsync<ArgumentException>("arguments.Services", () => f.InvokeAsync(new() { ["myInteger"] = 1 }).AsTask());
 
         var result = await f.InvokeAsync(new() { ["myInteger"] = 1, Services = sp });
@@ -450,6 +461,8 @@ public partial class AIFunctionFactoryTest
 
         Assert.Contains("myInteger", f.JsonSchema.ToString());
         Assert.DoesNotContain("service", f.JsonSchema.ToString());
+
+        Assert.Equal("""{"type":"integer"}""", f.ReturnJsonSchema.ToString());
 
         Exception e = await Assert.ThrowsAsync<ArgumentException>("arguments.Services", () => f.InvokeAsync(new() { ["myInteger"] = 1 }).AsTask());
 
@@ -743,6 +756,7 @@ public partial class AIFunctionFactoryTest
                     Assert.Equal(cts.Token, cancellationToken);
                     return "marshalResultInvoked";
                 },
+                SerializerOptions = JsonContext.Default.Options,
             });
 
         object? result = await f.InvokeAsync(new() { ["i"] = 42 }, cts.Token);
@@ -758,6 +772,17 @@ public partial class AIFunctionFactoryTest
 
         object? result = await f.InvokeAsync();
         Assert.Contains("00000000-0000-0000-0000-000000000000,0", result?.ToString());
+    }
+
+    [Fact]
+    public void AIFunctionFactory_ReturnTypeWithDescriptionAttribute()
+    {
+        AIFunction f = AIFunctionFactory.Create(Add, serializerOptions: JsonContext.Default.Options);
+
+        Assert.Equal("""{"description":"The summed result","type":"integer"}""", f.ReturnJsonSchema.ToString());
+
+        [return: Description("The summed result")]
+        static int Add(int a, int b) => a + b;
     }
 
     private sealed class MyService(int value)
@@ -853,5 +878,6 @@ public partial class AIFunctionFactoryTest
     [JsonSerializable(typeof(string))]
     [JsonSerializable(typeof(Guid))]
     [JsonSerializable(typeof(StructWithDefaultCtor))]
+    [JsonSerializable(typeof(B))]
     private partial class JsonContext : JsonSerializerContext;
 }

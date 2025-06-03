@@ -170,6 +170,10 @@
           "Stage": "Stable"
         },
         {
+          "Member": "virtual System.Text.Json.JsonElement? Microsoft.Extensions.AI.AIFunction.ReturnJsonSchema { get; }",
+          "Stage": "Stable"
+        },
+        {
           "Member": "virtual System.Reflection.MethodInfo? Microsoft.Extensions.AI.AIFunction.UnderlyingMethod { get; }",
           "Stage": "Stable"
         }
