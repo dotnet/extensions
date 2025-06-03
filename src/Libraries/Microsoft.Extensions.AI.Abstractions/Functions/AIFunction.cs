@@ -38,14 +38,12 @@ public abstract class AIFunction : AITool
     /// </remarks>
     public virtual JsonElement JsonSchema => AIJsonUtilities.DefaultJsonSchema;
 
-#pragma warning disable LA0003 // Newly added symbol must be marked as experimental
     /// <summary>Gets a JSON Schema describing the function's return value.</summary>
     /// <remarks>
     /// A <see langword="null"/> typically reflects a function that doesn't specify a return schema
     /// or a function that returns <see cref="void"/>, <see cref="Task"/>, or <see cref="ValueTask"/>.
     /// </remarks>
     public virtual JsonElement? ReturnJsonSchema => null;
-#pragma warning restore LA0003 // Newly added symbol must be marked as experimental
 
     /// <summary>
     /// Gets the underlying <see cref="MethodInfo"/> that this <see cref="AIFunction"/> might be wrapping.
