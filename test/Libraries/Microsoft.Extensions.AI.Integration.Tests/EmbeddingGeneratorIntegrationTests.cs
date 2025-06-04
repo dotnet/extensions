@@ -128,7 +128,7 @@ public abstract class EmbeddingGeneratorIntegrationTests : IDisposable
         Assert.Equal(embeddingGenerator.GetService<EmbeddingGeneratorMetadata>()?.ProviderUri?.Port, (int)activity.GetTagItem("server.port")!);
         Assert.NotNull(activity.Id);
         Assert.NotEmpty(activity.Id);
-        Assert.NotEqual(0, (int)activity.GetTagItem("gen_ai.response.input_tokens")!);
+        Assert.NotEqual(0, (int)activity.GetTagItem("gen_ai.usage.input_tokens")!);
 
         Assert.True(activity.Duration.TotalMilliseconds > 0);
     }
