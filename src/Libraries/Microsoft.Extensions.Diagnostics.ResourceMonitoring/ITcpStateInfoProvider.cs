@@ -12,11 +12,11 @@ internal interface ITcpStateInfoProvider
     /// Gets the last known TCP/IP v4 state of the system.
     /// </summary>
     /// <returns>An instance of <see cref="TcpStateInfo"/>.</returns>
-    TcpStateInfo GetpIpV4TcpStateInfo();
+    TcpStateInfo GetIpV4TcpStateInfo();
 
     /// <summary>
     /// Gets the last known TCP/IP v6 state of the system.
     /// </summary>
     /// <returns>An instance of <see cref="TcpStateInfo"/>.</returns>
-    TcpStateInfo GetpIpV6TcpStateInfo();
+    TcpStateInfo GetIpV6TcpStateInfo();
 }

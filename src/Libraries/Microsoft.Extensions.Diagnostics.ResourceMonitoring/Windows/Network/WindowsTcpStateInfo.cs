@@ -42,13 +42,13 @@ internal sealed class WindowsTcpStateInfo : ITcpStateInfoProvider
         _refreshAfter = default;
     }
 
-    public TcpStateInfo GetpIpV4TcpStateInfo()
+    public TcpStateInfo GetIpV4TcpStateInfo()
     {
         RefreshSnapshotIfNeeded();
         return _iPv4Snapshot;
     }
 
-    public TcpStateInfo GetpIpV6TcpStateInfo()
+    public TcpStateInfo GetIpV6TcpStateInfo()
     {
         RefreshSnapshotIfNeeded();
         return _iPv6Snapshot;

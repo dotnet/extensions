@@ -1,12 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.IO;
 using System.Threading;
 using FluentAssertions;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Network;
+using Microsoft.Extensions.Time.Testing;
 using Microsoft.Shared.Instruments;
 using Moq;
 using Xunit;
@@ -85,7 +87,7 @@ public class LinuxCountersTests
             .Returns(meter);
 
         var tcpStateInfo = new LinuxTcpStateInfo(options, parser);
-        var lnm = new LinuxNetworkMetrics(meterFactoryMock.Object, tcpStateInfo);
+        var lnm = new LinuxNetworkMetrics(meterFactoryMock.Object, tcpStateInfo, new FakeTimeProvider(DateTimeOffset.UtcNow));
 
         using var listener = new MeterListener
         {

@@ -181,7 +181,7 @@ public sealed class TcpTableInfoTests
         tcpTableInfo.SetGetTcpTableDelegate(FakeGetTcpTableWithUnsuccessfulStatusAllTheTime);
         Assert.Throws<InvalidOperationException>(() =>
         {
-            var tcpStateInfo = tcpTableInfo.GetpIpV4TcpStateInfo();
+            var tcpStateInfo = tcpTableInfo.GetIpV4TcpStateInfo();
         });
     }
 
@@ -197,7 +197,7 @@ public sealed class TcpTableInfoTests
         tcpTableInfo.SetGetTcpTableDelegate(FakeGetTcpTableWithInsufficientBufferAndInvalidParameter);
         Assert.Throws<InvalidOperationException>(() =>
         {
-            var tcpStateInfo = tcpTableInfo.GetpIpV4TcpStateInfo();
+            var tcpStateInfo = tcpTableInfo.GetIpV4TcpStateInfo();
         });
     }
 
@@ -213,7 +213,7 @@ public sealed class TcpTableInfoTests
         };
         WindowsTcpStateInfo tcpTableInfo = new WindowsTcpStateInfo(Options.Options.Create(options));
         tcpTableInfo.SetGetTcpTableDelegate(FakeGetTcpTableWithFakeInformation);
-        var tcpStateInfo = tcpTableInfo.GetpIpV4TcpStateInfo();
+        var tcpStateInfo = tcpTableInfo.GetIpV4TcpStateInfo();
         Assert.NotNull(tcpStateInfo);
         Assert.Equal(1, tcpStateInfo.ClosedCount);
         Assert.Equal(1, tcpStateInfo.ListenCount);
@@ -229,7 +229,7 @@ public sealed class TcpTableInfoTests
         Assert.Equal(1, tcpStateInfo.DeleteTcbCount);
 
         // Second calling in a small interval.
-        tcpStateInfo = tcpTableInfo.GetpIpV4TcpStateInfo();
+        tcpStateInfo = tcpTableInfo.GetIpV4TcpStateInfo();
         Assert.NotNull(tcpStateInfo);
         Assert.Equal(1, tcpStateInfo.ClosedCount);
         Assert.Equal(1, tcpStateInfo.ListenCount);
@@ -246,7 +246,7 @@ public sealed class TcpTableInfoTests
 
         // Third calling in a long interval.
         Thread.Sleep(6000);
-        tcpStateInfo = tcpTableInfo.GetpIpV4TcpStateInfo();
+        tcpStateInfo = tcpTableInfo.GetIpV4TcpStateInfo();
         Assert.NotNull(tcpStateInfo);
         Assert.Equal(2, tcpStateInfo.ClosedCount);
         Assert.Equal(2, tcpStateInfo.ListenCount);
