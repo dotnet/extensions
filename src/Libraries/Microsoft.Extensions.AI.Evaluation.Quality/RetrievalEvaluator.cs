@@ -85,7 +85,7 @@ public sealed class RetrievalEvaluator : IEvaluator
         {
             metric.AddDiagnostics(
                 EvaluationDiagnostic.Error(
-                    $"The ${messages} supplied for evaluation did not contain a user request as the last message."));
+                    $"The {nameof(messages)} supplied for evaluation did not contain a user request as the last message."));
 
             return result;
         }
@@ -95,7 +95,7 @@ public sealed class RetrievalEvaluator : IEvaluator
         {
             metric.AddDiagnostics(
                 EvaluationDiagnostic.Error(
-                    $"A value of type '{nameof(RetrievalEvaluatorContext)}' was not found in the '{nameof(additionalContext)}' collection."));
+                    $"A value of type {nameof(RetrievalEvaluatorContext)} was not found in the {nameof(additionalContext)} collection."));
 
             return result;
         }

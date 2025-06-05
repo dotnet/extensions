@@ -97,7 +97,7 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator : IEvaluator
         {
             result.AddDiagnosticsToAllMetrics(
                 EvaluationDiagnostic.Error(
-                    $"The ${messages} supplied for evaluation did not contain a user request as the last message."));
+                    $"The {nameof(messages)} supplied for evaluation did not contain a user request as the last message."));
 
             return result;
         }

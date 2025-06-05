@@ -87,6 +87,6 @@ public sealed class GroundednessProEvaluator()
         }
 
         throw new InvalidOperationException(
-            $"A value of type '{nameof(GroundednessProEvaluatorContext)}' was not found in the '{nameof(additionalContext)}' collection.");
+            $"A value of type {nameof(GroundednessProEvaluatorContext)} was not found in the {nameof(additionalContext)} collection.");
     }
 }
