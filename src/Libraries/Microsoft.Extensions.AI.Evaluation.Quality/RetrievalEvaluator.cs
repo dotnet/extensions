@@ -100,6 +100,15 @@ public sealed class RetrievalEvaluator : IEvaluator
             return result;
         }
 
+        if (context.RetrievedContextChunks.Count is 0)
+        {
+            metric.AddDiagnostics(
+                EvaluationDiagnostic.Error(
+                    $"Supplied {nameof(RetrievalEvaluatorContext)} did not contain any {nameof(RetrievalEvaluatorContext.RetrievedContextChunks)}."));
+
+            return result;
+        }
+
         List<ChatMessage> evaluationInstructions = GetEvaluationInstructions(userRequest, context);
 
         (ChatResponse evaluationResponse, TimeSpan evaluationDuration) =
