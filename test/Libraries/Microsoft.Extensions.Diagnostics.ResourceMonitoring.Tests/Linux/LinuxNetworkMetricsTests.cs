@@ -117,7 +117,7 @@ public class LinuxNetworkMetricsTests
     {
         foreach (var tag in measurement.Tags)
         {
-            if (tag.Key == tagKey && (string)tag.Value == tagValue)
+            if (tag.Key == tagKey && string.Equals(tag.Value as string, tagValue, StringComparison.Ordinal))
             {
                 return measurement.Value == expectedValue;
             }

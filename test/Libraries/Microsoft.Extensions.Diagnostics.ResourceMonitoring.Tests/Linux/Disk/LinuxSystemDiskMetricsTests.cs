@@ -277,6 +277,4 @@ public class LinuxSystemDiskMetricsTests
         Assert.Contains(measurements, m => m.Tags.Any(t => t.Value?.ToString() == "sda"));
         diskStatsReaderMock.Verify(r => r.ReadAll(), Times.Exactly(2));
     }
-
-
 }
