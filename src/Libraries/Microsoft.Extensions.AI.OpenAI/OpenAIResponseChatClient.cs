@@ -27,10 +27,7 @@ namespace Microsoft.Extensions.AI;
 internal sealed partial class OpenAIResponseChatClient : IChatClient
 {
     /// <summary>Gets the default OpenAI endpoint.</summary>
-    private static Uri DefaultOpenAIEndpoint { get; } = new("https://api.openai.com/v1");
-
-    /// <summary>A <see cref="ChatRole"/> for "developer".</summary>
-    private static readonly ChatRole _chatRoleDeveloper = new("developer");
+    internal static Uri DefaultOpenAIEndpoint { get; } = new("https://api.openai.com/v1");
 
     /// <summary>Metadata about the client.</summary>
     private readonly ChatClientMetadata _metadata;
@@ -334,7 +331,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
         role switch
         {
             MessageRole.System => ChatRole.System,
-            MessageRole.Developer => _chatRoleDeveloper,
+            MessageRole.Developer => OpenAIChatClient.ChatRoleDeveloper,
             MessageRole.User => ChatRole.User,
             _ => ChatRole.Assistant,
         };
@@ -452,7 +449,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
         foreach (ChatMessage input in inputs)
         {
             if (input.Role == ChatRole.System ||
-                input.Role == _chatRoleDeveloper)
+                input.Role == ChatRoleDeveloper)
             {
                 string text = input.Text;
                 if (!string.IsNullOrWhiteSpace(text))
