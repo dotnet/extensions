@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.IO;
 using System.Linq;
@@ -39,7 +40,7 @@ public class LinuxNetworkMetricsTests
             _tcpStateInfoProvider.Object,
             _timeProvider);
 
-        var meter = meterFactory.Meters.Single();
+        Meter meter = meterFactory.Meters.Single();
         Assert.Equal(ResourceUtilizationInstruments.MeterName, meter.Name);
     }
 
@@ -51,8 +52,8 @@ public class LinuxNetworkMetricsTests
         _tcpStateInfoProvider.Setup(p => p.GetIpV4TcpStateInfo()).Returns(expectedV4);
         _tcpStateInfoProvider.Setup(p => p.GetIpV6TcpStateInfo()).Returns(expectedV6);
 
-        var metrics = CreateMetrics();
-        var measurements = metrics.GetMeasurements().ToList();
+        LinuxNetworkMetrics metrics = CreateMetrics();
+        List<Measurement<long>> measurements = metrics.GetMeasurements().ToList();
 
         Assert.Contains(measurements, m => HasTagWithValue(m, "network.type", "ipv4", 42));
         Assert.Contains(measurements, m => HasTagWithValue(m, "system.network.state", "close", 42));
@@ -68,8 +69,8 @@ public class LinuxNetworkMetricsTests
     {
         _tcpStateInfoProvider.Setup(p => p.GetIpV4TcpStateInfo()).Throws((Exception)Activator.CreateInstance(exceptionType)!);
 
-        var metrics = CreateMetrics();
-        var measurements = metrics.GetMeasurements().ToList();
+        LinuxNetworkMetrics metrics = CreateMetrics();
+        List<Measurement<long>> measurements = metrics.GetMeasurements().ToList();
 
         Assert.All(measurements.Take(11), m => Assert.Equal(0, m.Value));
     }
@@ -81,11 +82,11 @@ public class LinuxNetworkMetricsTests
             .Throws(new FileNotFoundException())
             .Returns(new TcpStateInfo { ClosedCount = 123 });
 
-        var metrics = CreateMetrics();
-        var first = metrics.GetMeasurements().ToList();
+        LinuxNetworkMetrics metrics = CreateMetrics();
+        List<Measurement<long>> first = metrics.GetMeasurements().ToList();
 
         _timeProvider.Advance(TimeSpan.FromMinutes(2));
-        var second = metrics.GetMeasurements().ToList();
+        List<Measurement<long>> second = metrics.GetMeasurements().ToList();
 
         Assert.All(first.Take(11), m => Assert.Equal(0, m.Value));
         Assert.All(second.Take(11), m => Assert.Equal(0, m.Value));
@@ -99,11 +100,11 @@ public class LinuxNetworkMetricsTests
             .Throws(new FileNotFoundException())
             .Returns(new TcpStateInfo { ClosedCount = 99 });
 
-        var metrics = CreateMetrics();
-        var first = metrics.GetMeasurements().ToList();
+        LinuxNetworkMetrics metrics = CreateMetrics();
+        List<Measurement<long>> first = metrics.GetMeasurements().ToList();
 
         _timeProvider.Advance(TimeSpan.FromMinutes(6));
-        var second = metrics.GetMeasurements().ToList();
+        List<Measurement<long>> second = metrics.GetMeasurements().ToList();
 
         Assert.All(first.Take(11), m => Assert.Equal(0, m.Value));
         Assert.Equal(99, second[0].Value);
@@ -115,7 +116,7 @@ public class LinuxNetworkMetricsTests
 
     private static bool HasTagWithValue(Measurement<long> measurement, string tagKey, string tagValue, long expectedValue)
     {
-        foreach (var tag in measurement.Tags)
+        foreach (KeyValuePair<string, object?> tag in measurement.Tags)
         {
             if (tag.Key == tagKey && string.Equals(tag.Value as string, tagValue, StringComparison.Ordinal))
             {

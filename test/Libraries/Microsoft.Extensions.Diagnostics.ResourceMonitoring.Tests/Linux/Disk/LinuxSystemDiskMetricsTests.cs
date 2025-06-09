@@ -20,6 +20,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Disk.Test;
 [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
 public class LinuxSystemDiskMetricsTests
 {
+    private static readonly string[] _skipDevicePrefixes = new[] { "ram", "loop", "dm-" };
     private readonly FakeLogger<LinuxSystemDiskMetrics> _fakeLogger = new();
 
     [Fact]
@@ -233,7 +234,7 @@ public class LinuxSystemDiskMetricsTests
         };
 
         var diskStatsReaderMock = new Mock<IDiskStatsReader>();
-        diskStatsReaderMock.Setup(r => r.ReadAll()).Throws<FileNotFoundException>();
+        diskStatsReaderMock.Setup(r => r.ReadAll(_skipDevicePrefixes)).Throws<FileNotFoundException>();
 
         var metrics = new LinuxSystemDiskMetrics(
             _fakeLogger,
@@ -246,20 +247,20 @@ public class LinuxSystemDiskMetricsTests
 
         ioCollector.RecordObservableInstruments();
         Assert.Empty(ioCollector.GetMeasurementSnapshot());
-        diskStatsReaderMock.Verify(r => r.ReadAll(), Times.Once);
+        diskStatsReaderMock.Verify(r => r.ReadAll(_skipDevicePrefixes), Times.Once);
 
         ioCollector.RecordObservableInstruments();
         Assert.Empty(ioCollector.GetMeasurementSnapshot());
-        diskStatsReaderMock.Verify(r => r.ReadAll(), Times.Once);
+        diskStatsReaderMock.Verify(r => r.ReadAll(_skipDevicePrefixes), Times.Once);
 
         fakeTimeProvider.Advance(TimeSpan.FromMinutes(5).Add(TimeSpan.FromSeconds(1)));
 
         ioCollector.RecordObservableInstruments();
         Assert.Empty(ioCollector.GetMeasurementSnapshot());
-        diskStatsReaderMock.Verify(r => r.ReadAll(), Times.Exactly(2));
+        diskStatsReaderMock.Verify(r => r.ReadAll(_skipDevicePrefixes), Times.Exactly(2));
 
         diskStatsReaderMock.Reset();
-        diskStatsReaderMock.Setup(r => r.ReadAll()).Returns(new List<DiskStats> { diskStats });
+        diskStatsReaderMock.Setup(r => r.ReadAll(_skipDevicePrefixes)).Returns(new DiskStats[] { diskStats });
 
         fakeTimeProvider.Advance(TimeSpan.FromMinutes(5).Add(TimeSpan.FromSeconds(1)));
 
@@ -267,7 +268,7 @@ public class LinuxSystemDiskMetricsTests
         var measurements = ioCollector.GetMeasurementSnapshot();
         Assert.NotEmpty(measurements);
         Assert.Contains(measurements, m => m.Tags.Any(t => t.Value?.ToString() == "sda"));
-        diskStatsReaderMock.Verify(r => r.ReadAll(), Times.Once);
+        diskStatsReaderMock.Verify(r => r.ReadAll(_skipDevicePrefixes), Times.Once);
 
         fakeTimeProvider.Advance(TimeSpan.FromMinutes(5).Add(TimeSpan.FromSeconds(1)));
 
@@ -275,6 +276,39 @@ public class LinuxSystemDiskMetricsTests
         measurements = ioCollector.GetMeasurementSnapshot();
         Assert.NotEmpty(measurements);
         Assert.Contains(measurements, m => m.Tags.Any(t => t.Value?.ToString() == "sda"));
-        diskStatsReaderMock.Verify(r => r.ReadAll(), Times.Exactly(2));
+        diskStatsReaderMock.Verify(r => r.ReadAll(_skipDevicePrefixes), Times.Exactly(2));
+    }
+
+    [Fact]
+    public void Metrics_Are_Not_Created_When_ReadAll_Throws_FileNotFoundException()
+    {
+        using var meterFactory = new TestMeterFactory();
+        var options = new ResourceMonitoringOptions { EnableSystemDiskIoMetrics = true };
+        var diskStatsReaderMock = new Mock<IDiskStatsReader>();
+        diskStatsReaderMock.Setup(r => r.ReadAll(_skipDevicePrefixes)).Throws<FileNotFoundException>();
+
+        var fakeTimeProvider = new FakeTimeProvider();
+
+        _ = new LinuxSystemDiskMetrics(
+            _fakeLogger,
+            meterFactory,
+            Options.Options.Create(options),
+            fakeTimeProvider,
+            diskStatsReaderMock.Object);
+
+        Meter meter = meterFactory.Meters.Single();
+
+        using var diskIoCollector = new MetricCollector<long>(meter, ResourceUtilizationInstruments.SystemDiskIo);
+        using var operationCollector = new MetricCollector<long>(meter, ResourceUtilizationInstruments.SystemDiskOperations);
+        using var ioTimeCollector = new MetricCollector<double>(meter, ResourceUtilizationInstruments.SystemDiskIoTime);
+
+        diskIoCollector.RecordObservableInstruments();
+        operationCollector.RecordObservableInstruments();
+        ioTimeCollector.RecordObservableInstruments();
+
+        Assert.Empty(diskIoCollector.GetMeasurementSnapshot());
+        Assert.Empty(operationCollector.GetMeasurementSnapshot());
+        Assert.Empty(ioTimeCollector.GetMeasurementSnapshot());
+        diskStatsReaderMock.Verify(r => r.ReadAll(_skipDevicePrefixes), Times.Once);
     }
 }

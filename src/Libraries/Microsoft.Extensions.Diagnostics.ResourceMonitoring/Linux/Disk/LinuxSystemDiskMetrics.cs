@@ -2,11 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.IO;
-using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -23,19 +23,22 @@ internal sealed class LinuxSystemDiskMetrics
     private const string DeviceKey = "system.device";
     private const string DirectionKey = "disk.io.direction";
 
+    // Exclude devices with these prefixes because they represent virtual, loopback, or device-mapper disks
+    // that do not correspond to real physical storage. Including them would distort system disk I/O metrics.
+    private static readonly string[] _skipDevicePrefixes = new[] { "ram", "loop", "dm-" };
     private static readonly KeyValuePair<string, object?> _directionReadTag = new(DirectionKey, "read");
     private static readonly KeyValuePair<string, object?> _directionWriteTag = new(DirectionKey, "write");
     private readonly ILogger<LinuxSystemDiskMetrics> _logger;
     private readonly TimeProvider _timeProvider;
     private readonly IDiskStatsReader _diskStatsReader;
     private readonly object _lock = new();
-    private readonly Dictionary<string, DiskStats> _baselineDiskStatsDict = [];
+    private readonly FrozenDictionary<string, DiskStats> _baselineDiskStatsDict = FrozenDictionary<string, DiskStats>.Empty;
     private readonly TimeSpan _retryInterval = TimeSpan.FromMinutes(5);
 
     private DateTimeOffset _lastDiskStatsFailure = DateTimeOffset.MinValue;
     private bool _diskStatsUnavailable;
 
-    private List<DiskStats> _diskStatsSnapshot = [];
+    private DiskStats[] _diskStatsSnapshot = [];
     private DateTimeOffset _lastRefreshTime = DateTimeOffset.MinValue;
 
     public LinuxSystemDiskMetrics(
@@ -54,7 +57,7 @@ internal sealed class LinuxSystemDiskMetrics
         }
 
         // We need to read the disk stats once to get the baseline values
-        _baselineDiskStatsDict = GetAllDiskStats().ToDictionary(d => d.DeviceName);
+        _baselineDiskStatsDict = GetAllDiskStats().ToFrozenDictionary(d => d.DeviceName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
         // We don't dispose the meter because IMeterFactory handles that
@@ -91,7 +94,7 @@ internal sealed class LinuxSystemDiskMetrics
     private IEnumerable<Measurement<long>> GetDiskIoMeasurements()
     {
         List<Measurement<long>> measurements = [];
-        List<DiskStats> diskStatsSnapshot = GetDiskStatsSnapshot();
+        DiskStats[] diskStatsSnapshot = GetDiskStatsSnapshot();
 
         foreach (DiskStats diskStats in diskStatsSnapshot)
         {
@@ -108,7 +111,7 @@ internal sealed class LinuxSystemDiskMetrics
     private IEnumerable<Measurement<long>> GetDiskOperationMeasurements()
     {
         List<Measurement<long>> measurements = [];
-        List<DiskStats> diskStatsSnapshot = GetDiskStatsSnapshot();
+        DiskStats[] diskStatsSnapshot = GetDiskStatsSnapshot();
 
         foreach (DiskStats diskStats in diskStatsSnapshot)
         {
@@ -125,7 +128,7 @@ internal sealed class LinuxSystemDiskMetrics
     private IEnumerable<Measurement<double>> GetDiskIoTimeMeasurements()
     {
         List<Measurement<double>> measurements = [];
-        List<DiskStats> diskStatsSnapshot = GetDiskStatsSnapshot();
+        DiskStats[] diskStatsSnapshot = GetDiskStatsSnapshot();
 
         foreach (DiskStats diskStats in diskStatsSnapshot)
         {
@@ -137,12 +140,12 @@ internal sealed class LinuxSystemDiskMetrics
         return measurements;
     }
 
-    private List<DiskStats> GetDiskStatsSnapshot()
+    private DiskStats[] GetDiskStatsSnapshot()
     {
         lock (_lock)
         {
             DateTimeOffset now = _timeProvider.GetUtcNow();
-            if (_diskStatsSnapshot.Count == 0 || (now - _lastRefreshTime).TotalSeconds > MinimumDiskStatsRefreshIntervalInSeconds)
+            if (_diskStatsSnapshot.Length == 0 || (now - _lastRefreshTime).TotalSeconds > MinimumDiskStatsRefreshIntervalInSeconds)
             {
                 _diskStatsSnapshot = GetAllDiskStats();
                 _lastRefreshTime = now;
@@ -152,26 +155,19 @@ internal sealed class LinuxSystemDiskMetrics
         return _diskStatsSnapshot;
     }
 
-    private List<DiskStats> GetAllDiskStats()
+    private DiskStats[] GetAllDiskStats()
     {
         if (_diskStatsUnavailable &&
             _timeProvider.GetUtcNow() - _lastDiskStatsFailure < _retryInterval)
         {
-            return [];
+            return Array.Empty<DiskStats>();
         }
 
         try
         {
-            List<DiskStats> diskStatsList = _diskStatsReader.ReadAll();
-
-            // We should not include ram, loop, or dm(device-mapper) devices in the disk stats, should we?
-            diskStatsList = diskStatsList
-                .Where(d => !d.DeviceName.StartsWith("ram", StringComparison.OrdinalIgnoreCase)
-                            && !d.DeviceName.StartsWith("loop", StringComparison.OrdinalIgnoreCase)
-                            && !d.DeviceName.StartsWith("dm-", StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
+            DiskStats[] diskStatsList = _diskStatsReader.ReadAll(_skipDevicePrefixes);
             _diskStatsUnavailable = false;
+
             return diskStatsList;
         }
         catch (Exception ex) when (
@@ -190,6 +186,6 @@ internal sealed class LinuxSystemDiskMetrics
             Log.HandleDiskStatsException(_logger, ex.Message);
         }
 
-        return [];
+        return Array.Empty<DiskStats>();
     }
 }

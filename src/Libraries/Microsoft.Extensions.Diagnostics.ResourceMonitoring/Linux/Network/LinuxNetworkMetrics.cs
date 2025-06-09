@@ -58,11 +58,11 @@ internal sealed class LinuxNetworkMetrics
         List<Measurement<long>> measurements = new(24);
 
         // IPv4:
-        var stateV4 = GetTcpStateInfoWithRetry(_tcpStateInfoProvider.GetIpV4TcpStateInfo, ref _v4Unavailable, ref _lastV4Failure);
+        TcpStateInfo stateV4 = GetTcpStateInfoWithRetry(_tcpStateInfoProvider.GetIpV4TcpStateInfo, ref _v4Unavailable, ref _lastV4Failure);
         CreateMeasurements(tcpVersionFourTag, measurements, stateV4);
 
         // IPv6:
-        var stateV6 = GetTcpStateInfoWithRetry(_tcpStateInfoProvider.GetIpV6TcpStateInfo, ref _v6Unavailable, ref _lastV6Failure);
+        TcpStateInfo stateV6 = GetTcpStateInfoWithRetry(_tcpStateInfoProvider.GetIpV6TcpStateInfo, ref _v6Unavailable, ref _lastV6Failure);
         CreateMeasurements(tcpVersionSixTag, measurements, stateV6);
 
         return measurements;
@@ -94,7 +94,7 @@ internal sealed class LinuxNetworkMetrics
         {
             try
             {
-                var state = getStateInfoFunc();
+                TcpStateInfo state = getStateInfoFunc();
                 _ = Interlocked.Exchange(ref unavailableFlag, 0);
                 return state;
             }
