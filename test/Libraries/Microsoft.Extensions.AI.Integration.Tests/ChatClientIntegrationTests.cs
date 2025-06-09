@@ -618,9 +618,9 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         // Second time, the calls to the LLM don't happen, but the function is called again
         var secondResponse = await chatClient.GetResponseAsync([message]);
-        Assert.Equal(response.Text, secondResponse.Text);
         Assert.Equal(2, functionCallCount);
         Assert.Equal(FunctionInvokingChatClientSetsConversationId ? 3 : 2, llmCallCount!.CallCount);
+        Assert.Equal(response.Text, secondResponse.Text);
     }
 
     public virtual bool FunctionInvokingChatClientSetsConversationId => false;
