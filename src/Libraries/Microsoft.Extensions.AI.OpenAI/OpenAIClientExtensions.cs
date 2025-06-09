@@ -27,7 +27,7 @@ public static class OpenAIClientExtensions
         new OpenAIResponseChatClient(responseClient);
 
     /// <summary>Gets an <see cref="IChatClient"/> for use with this <see cref="AssistantClient"/>.</summary>
-    /// <param name="client">The <see cref="AssistantClient"/> instance to be accessed as an <see cref="IChatClient"/>.</param>
+    /// <param name="assistantClient">The <see cref="AssistantClient"/> instance to be accessed as an <see cref="IChatClient"/>.</param>
     /// <param name="assistantId">The unique identifier of the assistant with which to interact.</param>
     /// <param name="threadId">
     /// An optional existing thread identifier for the chat session. This serves as a default, and may be overridden per call to
@@ -36,8 +36,8 @@ public static class OpenAIClientExtensions
     /// </param>
     /// <returns>An <see cref="IChatClient"/> instance configured to interact with the specified agent and thread.</returns>
     [Experimental("OPENAI001")]
-    public static IChatClient AsIChatClient(this AssistantClient client, string assistantId, string? threadId = null) =>
-        new OpenAIAssistantChatClient(client, assistantId, threadId);
+    public static IChatClient AsIChatClient(this AssistantClient assistantClient, string assistantId, string? threadId = null) =>
+        new OpenAIAssistantChatClient(assistantClient, assistantId, threadId);
 
     /// <summary>Gets an <see cref="ISpeechToTextClient"/> for use with this <see cref="AudioClient"/>.</summary>
     /// <param name="audioClient">The client.</param>

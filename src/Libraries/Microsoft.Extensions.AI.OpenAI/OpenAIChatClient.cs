@@ -110,8 +110,6 @@ internal sealed partial class OpenAIChatClient : IChatClient
         // Nothing to dispose. Implementation required for the IChatClient interface.
     }
 
-    internal static ChatRole ChatRoleDeveloper { get; } = new ChatRole("developer");
-
     /// <summary>Converts an Extensions chat message enumerable to an OpenAI chat message enumerable.</summary>
     private static IEnumerable<OpenAI.Chat.ChatMessage> ToOpenAIChatMessages(IEnumerable<ChatMessage> inputs, JsonSerializerOptions options)
     {
@@ -122,12 +120,12 @@ internal sealed partial class OpenAIChatClient : IChatClient
         {
             if (input.Role == ChatRole.System ||
                 input.Role == ChatRole.User ||
-                input.Role == ChatRoleDeveloper)
+                input.Role == OpenAIResponseChatClient.ChatRoleDeveloper)
             {
                 var parts = ToOpenAIChatContent(input.Contents);
                 yield return
                     input.Role == ChatRole.System ? new SystemChatMessage(parts) { ParticipantName = input.AuthorName } :
-                    input.Role == ChatRoleDeveloper ? new DeveloperChatMessage(parts) { ParticipantName = input.AuthorName } :
+                    input.Role == OpenAIResponseChatClient.ChatRoleDeveloper ? new DeveloperChatMessage(parts) { ParticipantName = input.AuthorName } :
                     new UserChatMessage(parts) { ParticipantName = input.AuthorName };
             }
             else if (input.Role == ChatRole.Tool)
@@ -619,7 +617,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
             ChatMessageRole.User => ChatRole.User,
             ChatMessageRole.Assistant => ChatRole.Assistant,
             ChatMessageRole.Tool => ChatRole.Tool,
-            ChatMessageRole.Developer => ChatRoleDeveloper,
+            ChatMessageRole.Developer => OpenAIResponseChatClient.ChatRoleDeveloper,
             _ => new ChatRole(role.ToString()),
         };
 

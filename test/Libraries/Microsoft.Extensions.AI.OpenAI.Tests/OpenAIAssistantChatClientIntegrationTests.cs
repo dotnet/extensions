@@ -9,6 +9,7 @@
 
 using System;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -45,26 +46,21 @@ public class OpenAIAssistantChatClientIntegrationTests : ChatClientIntegrationTe
     public override Task MultiModal_DescribeImage() => Task.CompletedTask;
     public override Task MultiModal_DescribePdf() => Task.CompletedTask;
 
-    // [Fact]
+    // [Fact] // uncomment and run to clear out _all_ threads in your OpenAI account
     public async Task DeleteAllThreads()
     {
         using HttpClient client = new(new HttpClientHandler
         {
-            AutomaticDecompression = System.Net.DecompressionMethods.GZip,
+            AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
         });
 
-        client.DefaultRequestHeaders.Add("accept", "*/*");
-        client.DefaultRequestHeaders.Add("accept-encoding", "gzip");
-        client.DefaultRequestHeaders.Add("accept-language", "en-US,en;q=0.9");
-        client.DefaultRequestHeaders.Add("openai-beta", "assistants=v2");
-        client.DefaultRequestHeaders.Add("origin", "https://platform.openai.com");
-        client.DefaultRequestHeaders.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36 Edg/137.0.0.0");
-
         // These values need to be filled in. The bearer token needs to be sniffed from a browser
-        // session interacting with the dashboard (e.g. F12 networking tools).
-        client.DefaultRequestHeaders.Add("authorization", $"Bearer TODO-SESSION-TOKEN");
-        client.DefaultRequestHeaders.Add("openai-organization", "TODO");
-        client.DefaultRequestHeaders.Add("openai-project", "TODO");
+        // session interacting with the dashboard (e.g. use F12 networking tools to look at request headers
+        // made to "https://api.openai.com/v1/threads?limit=10" after clicking on Assistants | Threads in the
+        // OpenAI portal dashboard).
+        client.DefaultRequestHeaders.Add("authorization", $"Bearer sess-ENTERYOURSESSIONTOKEN");
+        client.DefaultRequestHeaders.Add("openai-organization", "org-ENTERYOURORGID");
+        client.DefaultRequestHeaders.Add("openai-project", "proj_ENTERYOURPROJECTID");
 
         AssistantClient ac = new AssistantClient(Environment.GetEnvironmentVariable("AI:OpenAI:ApiKey")!);
         while (true)

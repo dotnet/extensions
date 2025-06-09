@@ -42,21 +42,22 @@ internal sealed partial class OpenAIAssistantChatClient : IChatClient
     private readonly string _assistantId;
 
     /// <summary>The thread ID to use if none is supplied in <see cref="ChatOptions.ConversationId"/>.</summary>
-    private readonly string? _threadId;
+    private readonly string? _defaultThreadId;
 
     /// <summary>Initializes a new instance of the <see cref="OpenAIAssistantChatClient"/> class for the specified <see cref="AssistantClient"/>.</summary>
-    public OpenAIAssistantChatClient(AssistantClient client, string assistantId, string? threadId)
+    public OpenAIAssistantChatClient(AssistantClient assistantClient, string assistantId, string? defaultThreadId)
     {
-        _client = Throw.IfNull(client);
+        _client = Throw.IfNull(assistantClient);
         _assistantId = Throw.IfNullOrWhitespace(assistantId);
-        _threadId = threadId;
+
+        _defaultThreadId = defaultThreadId;
 
         // https://github.com/openai/openai-dotnet/issues/215
         // The endpoint isn't currently exposed, so use reflection to get at it, temporarily. Once packages
         // implement the abstractions directly rather than providing adapters on top of the public APIs,
         // the package can provide such implementations separate from what's exposed in the public API.
         Uri providerUrl = typeof(AssistantClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            ?.GetValue(client) as Uri ?? OpenAIResponseChatClient.DefaultOpenAIEndpoint;
+            ?.GetValue(assistantClient) as Uri ?? OpenAIResponseChatClient.DefaultOpenAIEndpoint;
 
         _metadata = new("openai", providerUrl);
     }
@@ -85,7 +86,7 @@ internal sealed partial class OpenAIAssistantChatClient : IChatClient
         (RunCreationOptions runOptions, List<FunctionResultContent>? toolResults) = CreateRunOptions(messages, options);
 
         // Get the thread ID.
-        string? threadId = options?.ConversationId ?? _threadId;
+        string? threadId = options?.ConversationId ?? _defaultThreadId;
         if (threadId is null && toolResults is not null)
         {
             Throw.ArgumentException(nameof(messages), "No thread ID was provided, but chat messages includes tool results.");
@@ -327,17 +328,22 @@ internal sealed partial class OpenAIAssistantChatClient : IChatClient
             }
         }
 
-        // Process ChatMessages. System messages are turned into additional instructions.
-        // All other messages are added 1:1, treating assistant messages as agent messages
-        // and everything else as user messages.
+        // Process ChatMessages.
         StringBuilder? instructions = null;
         List<FunctionResultContent>? functionResults = null;
         foreach (var chatMessage in messages)
         {
             List<MessageContent> messageContents = [];
 
+            // Assistants doesn't support system/developer messages directly. It does support transient per-request instructions,
+            // so we can use the system/developer messages to build up a set of instructions that will be passed to the assistant
+            // as part of this request. However, in doing so, on a subsequent request that information will be lost, as there's no
+            // way to store per-thread instructions in the OpenAI Assistants API. We don't want to convert these to user messages,
+            // however, as that would then expose the system/developer messages in a way that might make the model more likely
+            // to include that information in its responses. System messages should ideally be instead done as instructions to
+            // the assistant when the assistant is created.
             if (chatMessage.Role == ChatRole.System ||
-                chatMessage.Role == OpenAIChatClient.ChatRoleDeveloper)
+                chatMessage.Role == OpenAIResponseChatClient.ChatRoleDeveloper)
             {
                 instructions ??= new();
                 foreach (var textContent in chatMessage.Contents.OfType<TextContent>())

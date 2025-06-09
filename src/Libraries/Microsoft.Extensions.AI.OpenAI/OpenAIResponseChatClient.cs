@@ -29,6 +29,9 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
     /// <summary>Gets the default OpenAI endpoint.</summary>
     internal static Uri DefaultOpenAIEndpoint { get; } = new("https://api.openai.com/v1");
 
+    /// <summary>Gets a <see cref="ChatRole"/> for "developer".</summary>
+    internal static ChatRole ChatRoleDeveloper { get; } = new ChatRole("developer");
+
     /// <summary>Metadata about the client.</summary>
     private readonly ChatClientMetadata _metadata;
 
@@ -85,7 +88,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
         // Convert and return the results.
         ChatResponse response = new()
         {
-            ConversationId = openAIResponse.Id,
+            ConversationId = openAIOptions.StoredOutputEnabled is false ? null : openAIResponse.Id,
             CreatedAt = openAIResponse.CreatedAt,
             FinishReason = ToFinishReason(openAIResponse.IncompleteStatusDetails?.Reason),
             Messages = [new(ChatRole.Assistant, [])],
@@ -164,6 +167,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
         // Make the call to the OpenAIResponseClient and process the streaming results.
         DateTimeOffset? createdAt = null;
         string? responseId = null;
+        string? conversationId = null;
         string? modelId = null;
         string? lastMessageId = null;
         ChatRole? lastRole = null;
@@ -176,18 +180,19 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                 case StreamingResponseCreatedUpdate createdUpdate:
                     createdAt = createdUpdate.Response.CreatedAt;
                     responseId = createdUpdate.Response.Id;
+                    conversationId = openAIOptions.StoredOutputEnabled is false ? null : responseId;
                     modelId = createdUpdate.Response.Model;
                     goto default;
 
                 case StreamingResponseCompletedUpdate completedUpdate:
                     yield return new()
                     {
+                        Contents = ToUsageDetails(completedUpdate.Response) is { } usage ? [new UsageContent(usage)] : [],
+                        ConversationId = conversationId,
+                        CreatedAt = createdAt,
                         FinishReason =
                             ToFinishReason(completedUpdate.Response?.IncompleteStatusDetails?.Reason) ??
                             (functionCallInfos is not null ? ChatFinishReason.ToolCalls : ChatFinishReason.Stop),
-                        Contents = ToUsageDetails(completedUpdate.Response) is { } usage ? [new UsageContent(usage)] : [],
-                        ConversationId = responseId,
-                        CreatedAt = createdAt,
                         MessageId = lastMessageId,
                         ModelId = modelId,
                         RawRepresentation = streamingUpdate,
@@ -220,7 +225,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                     lastRole = ToChatRole(messageItem?.Role);
                     yield return new ChatResponseUpdate(lastRole, outputTextDeltaUpdate.Delta)
                     {
-                        ConversationId = responseId,
+                        ConversationId = conversationId,
                         CreatedAt = createdAt,
                         MessageId = lastMessageId,
                         ModelId = modelId,
@@ -255,7 +260,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                         lastRole = ChatRole.Assistant;
                         yield return new ChatResponseUpdate(lastRole, [fci])
                         {
-                            ConversationId = responseId,
+                            ConversationId = conversationId,
                             CreatedAt = createdAt,
                             MessageId = lastMessageId,
                             ModelId = modelId,
@@ -272,7 +277,6 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                 case StreamingResponseErrorUpdate errorUpdate:
                     yield return new ChatResponseUpdate
                     {
-                        ConversationId = responseId,
                         Contents =
                         [
                             new ErrorContent(errorUpdate.Message)
@@ -281,6 +285,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                                 Details = errorUpdate.Param,
                             }
                         ],
+                        ConversationId = conversationId,
                         CreatedAt = createdAt,
                         MessageId = lastMessageId,
                         ModelId = modelId,
@@ -293,21 +298,21 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                 case StreamingResponseRefusalDoneUpdate refusalDone:
                     yield return new ChatResponseUpdate
                     {
+                        Contents = [new ErrorContent(refusalDone.Refusal) { ErrorCode = nameof(ResponseContentPart.Refusal) }],
+                        ConversationId = conversationId,
                         CreatedAt = createdAt,
                         MessageId = lastMessageId,
                         ModelId = modelId,
                         RawRepresentation = streamingUpdate,
                         ResponseId = responseId,
                         Role = lastRole,
-                        ConversationId = responseId,
-                        Contents = [new ErrorContent(refusalDone.Refusal) { ErrorCode = nameof(ResponseContentPart.Refusal) }],
                     };
                     break;
 
                 default:
                     yield return new ChatResponseUpdate
                     {
-                        ConversationId = responseId,
+                        ConversationId = conversationId,
                         CreatedAt = createdAt,
                         MessageId = lastMessageId,
                         ModelId = modelId,
@@ -331,7 +336,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
         role switch
         {
             MessageRole.System => ChatRole.System,
-            MessageRole.Developer => OpenAIChatClient.ChatRoleDeveloper,
+            MessageRole.Developer => ChatRoleDeveloper,
             MessageRole.User => ChatRole.User,
             _ => ChatRole.Assistant,
         };
