@@ -283,7 +283,7 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
         new(s);
 
     private ChatCompletionsOptions CreateAzureAIOptions(IEnumerable<ChatMessage> chatContents, ChatOptions? options) =>
-        new(ToAzureAIInferenceChatMessages(chatContents))
+        new(ToAzureAIInferenceChatMessages(chatContents, options))
         {
             Model = options?.ModelId ?? _metadata.DefaultModelId ??
                 throw new InvalidOperationException("No model id was provided when either constructing the client or in the chat options.")
@@ -299,7 +299,7 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
 
         if (options.RawRepresentationFactory?.Invoke(this) is ChatCompletionsOptions result)
         {
-            result.Messages = ToAzureAIInferenceChatMessages(chatContents).ToList();
+            result.Messages = ToAzureAIInferenceChatMessages(chatContents, options).ToList();
             result.Model ??= options.ModelId ?? _metadata.DefaultModelId ??
                 throw new InvalidOperationException("No model id was provided when either constructing the client or in the chat options.");
         }
@@ -422,10 +422,15 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
     }
 
     /// <summary>Converts an Extensions chat message enumerable to an AzureAI chat message enumerable.</summary>
-    private static IEnumerable<ChatRequestMessage> ToAzureAIInferenceChatMessages(IEnumerable<ChatMessage> inputs)
+    private static IEnumerable<ChatRequestMessage> ToAzureAIInferenceChatMessages(IEnumerable<ChatMessage> inputs, ChatOptions? options)
     {
         // Maps all of the M.E.AI types to the corresponding AzureAI types.
         // Unrecognized or non-processable content is ignored.
+
+        if (options?.Instructions is { } instructions && !string.IsNullOrWhiteSpace(instructions))
+        {
+            yield return new ChatRequestSystemMessage(instructions);
+        }
 
         foreach (ChatMessage input in inputs)
         {

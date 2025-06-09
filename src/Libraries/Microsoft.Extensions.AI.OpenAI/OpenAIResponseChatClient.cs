@@ -366,6 +366,12 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
         result.TopP ??= options.TopP;
         result.Temperature ??= options.Temperature;
         result.ParallelToolCallsEnabled ??= options.AllowMultipleToolCalls;
+        if (options.Instructions is { } instructions)
+        {
+            result.Instructions = string.IsNullOrEmpty(result.Instructions) ?
+                instructions :
+                $"{result.Instructions}{Environment.NewLine}{instructions}";
+        }
 
         // Populate tools if there are any.
         if (options.Tools is { Count: > 0 } tools)

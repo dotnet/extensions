@@ -15,6 +15,9 @@ public class ChatOptions
     /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#stateless-vs-stateful-clients">Stateless vs. stateful clients.</related>
     public string? ConversationId { get; set; }
 
+    /// <summary>Gets or sets additional per-request instructions to be provided to the <see cref="IChatClient"/>.</summary>
+    public string? Instructions { get; set; }
+
     /// <summary>Gets or sets the temperature for generating chat responses.</summary>
     /// <remarks>
     /// This value controls the randomness of predictions made by the model. Use a lower value to decrease randomness in the response.
@@ -146,20 +149,21 @@ public class ChatOptions
     {
         ChatOptions options = new()
         {
-            ConversationId = ConversationId,
-            Temperature = Temperature,
-            MaxOutputTokens = MaxOutputTokens,
-            TopP = TopP,
-            TopK = TopK,
-            FrequencyPenalty = FrequencyPenalty,
-            PresencePenalty = PresencePenalty,
-            Seed = Seed,
-            ResponseFormat = ResponseFormat,
-            ModelId = ModelId,
-            AllowMultipleToolCalls = AllowMultipleToolCalls,
-            ToolMode = ToolMode,
-            RawRepresentationFactory = RawRepresentationFactory,
             AdditionalProperties = AdditionalProperties?.Clone(),
+            AllowMultipleToolCalls = AllowMultipleToolCalls,
+            ConversationId = ConversationId,
+            FrequencyPenalty = FrequencyPenalty,
+            Instructions = Instructions,
+            MaxOutputTokens = MaxOutputTokens,
+            ModelId = ModelId,
+            PresencePenalty = PresencePenalty,
+            RawRepresentationFactory = RawRepresentationFactory,
+            ResponseFormat = ResponseFormat,
+            Seed = Seed,
+            Temperature = Temperature,
+            ToolMode = ToolMode,
+            TopK = TopK,
+            TopP = TopP,
         };
 
         if (StopSequences is not null)

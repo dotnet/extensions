@@ -328,8 +328,27 @@ internal sealed partial class OpenAIAssistantChatClient : IChatClient
             }
         }
 
-        // Process ChatMessages.
+        // Configure system instructions.
         StringBuilder? instructions = null;
+        void AppendSystemInstructions(string? toAppend)
+        {
+            if (!string.IsNullOrEmpty(toAppend))
+            {
+                if (instructions is null)
+                {
+                    instructions = new(toAppend);
+                }
+                else
+                {
+                    _ = instructions.AppendLine().AppendLine(toAppend);
+                }
+            }
+        }
+
+        AppendSystemInstructions(runOptions.AdditionalInstructions);
+        AppendSystemInstructions(options?.Instructions);
+
+        // Process ChatMessages.
         List<FunctionResultContent>? functionResults = null;
         foreach (var chatMessage in messages)
         {
@@ -345,10 +364,9 @@ internal sealed partial class OpenAIAssistantChatClient : IChatClient
             if (chatMessage.Role == ChatRole.System ||
                 chatMessage.Role == OpenAIResponseChatClient.ChatRoleDeveloper)
             {
-                instructions ??= new();
                 foreach (var textContent in chatMessage.Contents.OfType<TextContent>())
                 {
-                    _ = instructions.Append(textContent);
+                    AppendSystemInstructions(textContent.Text);
                 }
 
                 continue;
@@ -389,10 +407,7 @@ internal sealed partial class OpenAIAssistantChatClient : IChatClient
             }
         }
 
-        if (instructions is not null)
-        {
-            runOptions.AdditionalInstructions = instructions.ToString();
-        }
+        runOptions.AdditionalInstructions = instructions?.ToString();
 
         return (runOptions, functionResults);
     }
