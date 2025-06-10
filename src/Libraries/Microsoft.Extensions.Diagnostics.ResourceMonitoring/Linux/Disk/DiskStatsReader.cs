@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Shared.Pools;
 
@@ -23,7 +24,7 @@ internal sealed class DiskStatsReader(IFileSystem fileSystem) : IDiskStatsReader
     /// Reads and returns all disk statistics entries.
     /// </summary>
     /// <returns>List of <see cref="DiskStats"/>.</returns>
-    public List<DiskStats> ReadAll()
+    public DiskStats[] ReadAll(string[] skipDevicePrefixes)
     {
         var diskStatsList = new List<DiskStats>();
 
@@ -41,7 +42,11 @@ internal sealed class DiskStatsReader(IFileSystem fileSystem) : IDiskStatsReader
             try
             {
                 DiskStats stat = DiskStatsReader.ParseLine(line);
-                diskStatsList.Add(stat);
+                if (!skipDevicePrefixes.Any(prefix =>
+                    stat.DeviceName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+                {
+                    diskStatsList.Add(stat);
+                }
             }
 #pragma warning disable CA1031
             catch (Exception)
@@ -51,7 +56,7 @@ internal sealed class DiskStatsReader(IFileSystem fileSystem) : IDiskStatsReader
             }
         }
 
-        return diskStatsList;
+        return diskStatsList.ToArray();
     }
 
     /// <summary>

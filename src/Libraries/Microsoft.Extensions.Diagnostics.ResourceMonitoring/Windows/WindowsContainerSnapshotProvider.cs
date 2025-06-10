@@ -73,7 +73,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         ResourceMonitoringOptions options)
     {
         _logger = logger ?? NullLogger<WindowsContainerSnapshotProvider>.Instance;
-        Log.RunningInsideJobObject(_logger);
+        _logger.RunningInsideJobObject();
 
         _metricValueMultiplier = options.UseZeroToOneRangeForMetrics ? One : Hundred;
 
@@ -96,7 +96,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         var cpuRequest = _cpuLimit;
         var memoryRequest = memoryLimitLong;
         Resources = new SystemResources(cpuRequest, _cpuLimit, memoryRequest, memoryLimitLong);
-        Log.SystemResourcesInfo(_logger, _cpuLimit, cpuRequest, memoryLimitLong, memoryRequest);
+        _logger.SystemResourcesInfo(_cpuLimit, cpuRequest, memoryLimitLong, memoryRequest);
 
         var basicAccountingInfo = jobHandle.GetBasicAccountingInfo();
         _oldCpuUsageTicks = basicAccountingInfo.TotalKernelTime + basicAccountingInfo.TotalUserTime;
@@ -205,7 +205,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
                 _refreshAfterMemory = now.Add(_memoryRefreshInterval);
             }
 
-            Log.MemoryUsageData(_logger, memoryUsage, _memoryLimit, _memoryPercentage);
+            _logger.MemoryUsageData(memoryUsage, _memoryLimit, _memoryPercentage);
 
             return _memoryPercentage;
         }
@@ -238,8 +238,8 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
                     // Don't change calculation order, otherwise precision is lost:
                     _cpuPercentage = Math.Min(_metricValueMultiplier, usageTickDelta / timeTickDelta * _metricValueMultiplier);
 
-                    Log.CpuContainerUsageData(
-                        _logger, basicAccountingInfo.TotalKernelTime, basicAccountingInfo.TotalUserTime, _oldCpuUsageTicks, timeTickDelta, _cpuLimit, _cpuPercentage);
+                    _logger.CpuContainerUsageData(
+                        basicAccountingInfo.TotalKernelTime, basicAccountingInfo.TotalUserTime, _oldCpuUsageTicks, timeTickDelta, _cpuLimit, _cpuPercentage);
 
                     _oldCpuUsageTicks = currentCpuTicks;
                     _oldCpuTimeTicks = now.Ticks;
