@@ -81,7 +81,7 @@ internal static class EvaluationMetricExtensions
 
         static bool TryParseTag(string text, string tagName, [NotNullWhen(true)] out string? tagValue)
         {
-            const RegexOptions Options = RegexOptions.Multiline;
+            const RegexOptions Options = RegexOptions.Singleline;
             Match match = Regex.Match(text, $@"<{tagName}>(?<value>.*?)</{tagName}>", Options);
 
             if (!match.Success || match.Groups["value"] is not Group valueGroup || !valueGroup.Success)
