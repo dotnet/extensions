@@ -175,7 +175,7 @@ internal sealed class LinuxSystemDiskMetrics
             ex is DirectoryNotFoundException ||
             ex is UnauthorizedAccessException)
         {
-            Log.HandleDiskStatsException(_logger, ex.Message);
+            _logger.HandleDiskStatsException(ex.Message);
             _lastDiskStatsFailure = _timeProvider.GetUtcNow();
             _diskStatsUnavailable = true;
         }
@@ -183,7 +183,7 @@ internal sealed class LinuxSystemDiskMetrics
         catch (Exception ex)
 #pragma warning restore CA1031
         {
-            Log.HandleDiskStatsException(_logger, ex.Message);
+            _logger.HandleDiskStatsException(ex.Message);
         }
 
         return Array.Empty<DiskStats>();

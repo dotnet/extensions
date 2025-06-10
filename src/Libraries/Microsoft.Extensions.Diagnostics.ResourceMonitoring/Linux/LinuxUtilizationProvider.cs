@@ -112,7 +112,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         // _memoryLimit - Resource Memory Limit (in k8s terms)
         // _memoryLimit - To keep the contract, this parameter will get the Host available memory
         Resources = new SystemResources(cpuRequest, cpuLimit, _memoryLimit, _memoryLimit);
-        Log.SystemResourcesInfo(_logger, cpuLimit, cpuRequest, _memoryLimit, _memoryLimit);
+        _logger.SystemResourcesInfo(cpuLimit, cpuRequest, _memoryLimit, _memoryLimit);
     }
 
     public double CpuUtilizationWithoutHostDelta()
@@ -144,7 +144,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
                     {
                         coresUsed = deltaCgroup / (double)deltaCpuPeriodInNanoseconds;
 
-                        Log.CpuUsageDataV2(_logger, cpuUsageTime, _previousCgroupCpuTime, deltaCpuPeriodInNanoseconds, coresUsed);
+                        _logger.CpuUsageDataV2(cpuUsageTime, _previousCgroupCpuTime, deltaCpuPeriodInNanoseconds, coresUsed);
 
                         _lastCpuCoresUsed = coresUsed;
                         _refreshAfterCpu = now.Add(_cpuRefreshInterval);
@@ -158,7 +158,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
                     {
                         coresUsed = deltaCgroup / actualElapsedNanoseconds;
 
-                        Log.CpuUsageDataV2(_logger, cpuUsageTime, _previousCgroupCpuTime, actualElapsedNanoseconds, coresUsed);
+                        _logger.CpuUsageDataV2(cpuUsageTime, _previousCgroupCpuTime, actualElapsedNanoseconds, coresUsed);
 
                         _lastCpuCoresUsed = coresUsed;
                         _refreshAfterCpu = now.Add(_cpuRefreshInterval);
@@ -188,7 +188,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         {
             _cpuUtilizationLimit100PercentExceededCounter?.Add(1);
             _cpuUtilizationLimit100PercentExceeded++;
-            Log.CounterMessage100(_logger, _cpuUtilizationLimit100PercentExceeded);
+            _logger.CounterMessage100(_cpuUtilizationLimit100PercentExceeded);
         }
 
         // Increment counter if utilization exceeds 110%
@@ -196,7 +196,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         {
             _cpuUtilizationLimit110PercentExceededCounter?.Add(1);
             _cpuUtilizationLimit110PercentExceeded++;
-            Log.CounterMessage110(_logger, _cpuUtilizationLimit110PercentExceeded);
+            _logger.CounterMessage110(_cpuUtilizationLimit110PercentExceeded);
         }
 
         return utilization;
@@ -228,7 +228,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
                 {
                     double percentage = Math.Min(One, (double)deltaCgroup / deltaHost);
 
-                    Log.CpuUsageData(_logger, cgroupCpuTime, hostCpuTime, _previousCgroupCpuTime, _previousHostCpuTime, percentage);
+                    _logger.CpuUsageData(cgroupCpuTime, hostCpuTime, _previousCgroupCpuTime, _previousHostCpuTime, percentage);
 
                     _cpuPercentage = percentage;
                     _refreshAfterCpu = now.Add(_cpuRefreshInterval);
@@ -266,7 +266,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
             }
         }
 
-        Log.MemoryUsageData(_logger, memoryUsed, _memoryLimit, _memoryPercentage);
+        _logger.MemoryUsageData(memoryUsed, _memoryLimit, _memoryPercentage);
 
         return _memoryPercentage;
     }
