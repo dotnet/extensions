@@ -264,17 +264,22 @@ public class OpenAIResponseClientTests
         Assert.Equal("Hello! How can I assist you today?", string.Concat(updates.Select(u => u.Text)));
 
         var createdAt = DateTimeOffset.FromUnixTimeSeconds(1_741_892_091);
-        Assert.Equal(10, updates.Count);
+        Assert.Equal(17, updates.Count);
+
         for (int i = 0; i < updates.Count; i++)
         {
             Assert.Equal("resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77", updates[i].ResponseId);
             Assert.Equal("resp_67d329fbc87c81919f8952fe71dafc96029dabe3ee19bb77", updates[i].ConversationId);
             Assert.Equal(createdAt, updates[i].CreatedAt);
             Assert.Equal("gpt-4o-mini-2024-07-18", updates[i].ModelId);
-            Assert.Equal(ChatRole.Assistant, updates[i].Role);
             Assert.Null(updates[i].AdditionalProperties);
-            Assert.Equal(i == 10 ? 0 : 1, updates[i].Contents.Count);
+            Assert.Equal((i >= 4 && i <= 12) || i == 16 ? 1 : 0, updates[i].Contents.Count);
             Assert.Equal(i < updates.Count - 1 ? null : ChatFinishReason.Stop, updates[i].FinishReason);
+        }
+
+        for (int i = 4; i < updates.Count; i++)
+        {
+            Assert.Equal(ChatRole.Assistant, updates[i].Role);
         }
 
         UsageContent usage = updates.SelectMany(u => u.Contents).OfType<UsageContent>().Single();
