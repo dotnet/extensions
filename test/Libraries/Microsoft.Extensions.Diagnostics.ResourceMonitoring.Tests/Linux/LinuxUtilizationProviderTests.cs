@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Helpers;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Time.Testing;
 using Microsoft.Shared.Instruments;
 using Microsoft.TestUtilities;
 using Moq;
@@ -271,5 +272,56 @@ public sealed class LinuxUtilizationProviderTests
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization);
         Assert.Equal(1, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization).value);
+    }
+
+    [Fact]
+    public void Provider_Uses_RetryingLinuxUtilizationParser_CgroupV1()
+    {
+        var logger = new FakeLogger<LinuxUtilizationProvider>();
+        var options = Options.Options.Create(new ResourceMonitoringOptions());
+        using var meter = new Meter(nameof(Provider_Uses_RetryingLinuxUtilizationParser_CgroupV1));
+        var meterFactoryMock = new Mock<IMeterFactory>();
+        meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>())).Returns(meter);
+
+        var innerParserMock = new Mock<ILinuxUtilizationParser>();
+        int callCount = 0;
+        innerParserMock.Setup(p => p.GetAvailableMemoryInBytes()) // TODO: it makes SystemResources in ctor to receive 0f which breaks the behavior
+            .Returns(() =>
+            {
+                if (callCount++ == 0)
+                {
+                    throw new FileNotFoundException();
+                }
+
+                return 1234UL;
+            });
+
+        innerParserMock.Setup(p => p.GetCgroupCpuUsageInNanoseconds()).Returns(0L);
+        innerParserMock.Setup(p => p.GetCgroupCpuUsageInNanosecondsAndCpuPeriodsV2()).Returns((0L, 0L));
+        innerParserMock.Setup(p => p.GetCgroupLimitedCpus()).Returns(1f);
+        innerParserMock.Setup(p => p.GetCgroupLimitV2()).Returns(1f);
+        innerParserMock.Setup(p => p.GetHostAvailableMemory()).Returns(1UL);
+        innerParserMock.Setup(p => p.GetHostCpuCount()).Returns(1f);
+        innerParserMock.Setup(p => p.GetHostCpuUsageInNanoseconds()).Returns(0L);
+        innerParserMock.Setup(p => p.GetMemoryUsageInBytes()).Returns(1UL);
+        innerParserMock.Setup(p => p.GetCgroupRequestCpu()).Returns(1f);
+        innerParserMock.Setup(p => p.GetCgroupRequestCpuV2()).Returns(1f);
+        innerParserMock.Setup(p => p.GetCgroupPeriodsIntervalInMicroSecondsV2()).Returns(1L);
+
+        var timeProvider = new FakeTimeProvider(DateTimeOffset.UtcNow);
+        var retryingParser = new RetryingLinuxUtilizationParser(innerParserMock.Object, timeProvider);
+
+        var provider = new LinuxUtilizationProvider(options, retryingParser, meterFactoryMock.Object, logger, timeProvider);
+
+        var first = retryingParser.GetAvailableMemoryInBytes();
+        timeProvider.Advance(TimeSpan.FromMinutes(1));
+        var second = retryingParser.GetAvailableMemoryInBytes();
+        timeProvider.Advance(TimeSpan.FromMinutes(6));
+        var third = retryingParser.GetAvailableMemoryInBytes();
+
+        Assert.Equal(0UL, first);
+        Assert.Equal(0UL, second);
+        Assert.Equal(1234UL, third);
+        Assert.Equal(3, callCount);
     }
 }

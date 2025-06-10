@@ -149,14 +149,21 @@ public static class ResourceMonitoringServiceCollectionExtensions
     private static void PickLinuxParser(this ResourceMonitorBuilder builder)
     {
         var injectParserV2 = ResourceMonitoringLinuxCgroupVersion.GetCgroupType();
-        if (injectParserV2)
+
+        builder.Services.TryAddSingleton<ILinuxUtilizationParser>(sp =>
         {
-            builder.Services.TryAddSingleton<ILinuxUtilizationParser, LinuxUtilizationParserCgroupV2>();
-        }
-        else
-        {
-            builder.Services.TryAddSingleton<ILinuxUtilizationParser, LinuxUtilizationParserCgroupV1>();
-        }
+            ILinuxUtilizationParser innerParser;
+            if (injectParserV2)
+            {
+                innerParser = new LinuxUtilizationParserCgroupV2(sp.GetRequiredService<IFileSystem>(), sp.GetRequiredService<IUserHz>());
+            }
+            else
+            {
+                innerParser = new LinuxUtilizationParserCgroupV1(sp.GetRequiredService<IFileSystem>(), sp.GetRequiredService<IUserHz>());
+            }
+
+            return new RetryingLinuxUtilizationParser(innerParser, sp.GetRequiredService<TimeProvider>());
+        });
     }
 #endif
 }
