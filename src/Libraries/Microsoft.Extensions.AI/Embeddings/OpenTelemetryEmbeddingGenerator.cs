@@ -249,7 +249,7 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
 
             if (inputTokens.HasValue)
             {
-                _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.InputTokens, inputTokens);
+                _ = activity.AddTag(OpenTelemetryConsts.GenAI.Usage.InputTokens, inputTokens);
             }
 
             if (responseModelId is not null)
