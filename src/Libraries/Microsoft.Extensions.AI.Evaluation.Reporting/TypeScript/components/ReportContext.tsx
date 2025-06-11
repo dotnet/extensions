@@ -11,6 +11,8 @@ export type ReportContextType = {
     selectScenarioLevel: (key: string) => void,
     renderMarkdown: boolean,
     setRenderMarkdown: (renderMarkdown: boolean) => void,
+    prettifyJson: boolean,
+    setPrettifyJson: (prettifyJson: boolean) => void,
     searchValue: string,
     setSearchValue: (searchValue: string) => void,
     selectedTags: string[],
@@ -37,6 +39,10 @@ const defaultReportContext = createContext<ReportContextType>({
     renderMarkdown: true,
     setRenderMarkdown: (_renderMarkdown: boolean) => {
         throw new Error("setRenderMarkdown function not implemented");
+    },
+    prettifyJson: true,
+    setPrettifyJson: (_prettifyJson: boolean) => {
+        throw new Error("setPrettifyJson function not implemented");
     },
     searchValue: '',
     setSearchValue: (_searchValue: string | undefined) => { throw new Error("setSearchValue function not implemented"); },
@@ -65,6 +71,7 @@ export const useReportContext = () => {
 const useProvideReportContext = (dataset: Dataset, scoreSummary: ScoreSummary): ReportContextType => {
     const [selectedScenarioLevel, setSelectedScenarioLevel] = useState<string | undefined>(undefined);
     const [renderMarkdown, setRenderMarkdown] = useState<boolean>(true);
+    const [prettifyJson, setPrettifyJson] = useState<boolean>(true);
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [searchValue, setSearchValue] = useState<string>("");
 
@@ -114,7 +121,7 @@ const useProvideReportContext = (dataset: Dataset, scoreSummary: ScoreSummary): 
             }
 
             return null;
-        };  
+        };
 
         return srch(node);
     }
@@ -126,6 +133,8 @@ const useProvideReportContext = (dataset: Dataset, scoreSummary: ScoreSummary): 
         selectScenarioLevel,
         renderMarkdown,
         setRenderMarkdown,
+        prettifyJson,
+        setPrettifyJson,
         searchValue,
         setSearchValue,
         selectedTags,
