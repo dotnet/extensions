@@ -44,6 +44,9 @@ internal sealed partial class OpenAIAssistantChatClient : IChatClient
     /// <summary>The thread ID to use if none is supplied in <see cref="ChatOptions.ConversationId"/>.</summary>
     private readonly string? _defaultThreadId;
 
+    /// <summary>List of tools associated with the assistant.</summary>
+    private IReadOnlyList<ToolDefinition>? _assistantTools;
+
     /// <summary>Initializes a new instance of the <see cref="OpenAIAssistantChatClient"/> class for the specified <see cref="AssistantClient"/>.</summary>
     public OpenAIAssistantChatClient(AssistantClient assistantClient, string assistantId, string? defaultThreadId)
     {
@@ -83,7 +86,7 @@ internal sealed partial class OpenAIAssistantChatClient : IChatClient
         _ = Throw.IfNull(messages);
 
         // Extract necessary state from messages and options.
-        (RunCreationOptions runOptions, List<FunctionResultContent>? toolResults) = CreateRunOptions(messages, options);
+        (RunCreationOptions runOptions, List<FunctionResultContent>? toolResults) = await CreateRunOptionsAsync(messages, options, cancellationToken).ConfigureAwait(false);
 
         // Get the thread ID.
         string? threadId = options?.ConversationId ?? _defaultThreadId;
@@ -238,8 +241,8 @@ internal sealed partial class OpenAIAssistantChatClient : IChatClient
     /// Creates the <see cref="RunCreationOptions"/> to use for the request and extracts any function result contents 
     /// that need to be submitted as tool results.
     /// </summary>
-    private (RunCreationOptions RunOptions, List<FunctionResultContent>? ToolResults) CreateRunOptions(
-        IEnumerable<ChatMessage> messages, ChatOptions? options)
+    private async ValueTask<(RunCreationOptions RunOptions, List<FunctionResultContent>? ToolResults)> CreateRunOptionsAsync(
+        IEnumerable<ChatMessage> messages, ChatOptions? options, CancellationToken cancellationToken)
     {
         // Create the options instance to populate, either a fresh or using one the caller provides.
         RunCreationOptions runOptions =
@@ -257,6 +260,24 @@ internal sealed partial class OpenAIAssistantChatClient : IChatClient
 
             if (options.Tools is { Count: > 0 } tools)
             {
+                // If the caller has provided any tool overrides, we'll assume they don't want to use the assistant's tools.
+                // But if they haven't, the only way we can provide our tools is via an override, whereas we'd really like to
+                // just add them. To handle that, we'll get all of the assistant's tools and add them to the override list
+                // along with our tools.
+                if (runOptions.ToolsOverride.Count == 0)
+                {
+                    if (_assistantTools is null)
+                    {
+                        var assistant = await _client.GetAssistantAsync(_assistantId, cancellationToken).ConfigureAwait(false);
+                        _assistantTools = assistant.Value.Tools;
+                    }
+
+                    foreach (var tool in _assistantTools)
+                    {
+                        runOptions.ToolsOverride.Add(tool);
+                    }
+                }
+
                 // The caller can provide tools in the supplied ThreadAndRunOptions. Augment it with any supplied via ChatOptions.Tools.
                 foreach (AITool tool in tools)
                 {
@@ -290,7 +311,6 @@ internal sealed partial class OpenAIAssistantChatClient : IChatClient
                         runOptions.ToolConstraint = ToolConstraint.None;
                         break;
 
-                    case null:
                     case AutoChatToolMode:
                         runOptions.ToolConstraint = ToolConstraint.Auto;
                         break;
