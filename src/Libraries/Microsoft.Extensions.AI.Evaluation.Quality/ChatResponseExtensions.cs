@@ -33,12 +33,11 @@ internal static class ChatResponseExtensions
                 Type contentType =
                     content is FunctionCallContent ? typeof(FunctionCallContent) : typeof(FunctionResultContent);
 
-                string toolCallOrResultJsonString =
-                    JsonSerializer.Serialize(
+                JsonNode? toolCallOrResultJsonNode =
+                    JsonSerializer.SerializeToNode(
                         content,
                         AIJsonUtilities.DefaultOptions.GetTypeInfo(contentType));
 
-                JsonNode? toolCallOrResultJsonNode = JsonNode.Parse(toolCallOrResultJsonString);
                 if (toolCallOrResultJsonNode is not null)
                 {
                     toolCallsAndResultsJsonArray.Add(toolCallOrResultJsonNode);

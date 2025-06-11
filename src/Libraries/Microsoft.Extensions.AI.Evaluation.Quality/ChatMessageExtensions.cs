@@ -18,12 +18,11 @@ internal static class ChatMessageExtensions
 
         foreach (ChatMessage message in messages)
         {
-            string messageJsonString =
-                JsonSerializer.Serialize(
+            JsonNode? messageJsonNode =
+                JsonSerializer.SerializeToNode(
                     message,
                     AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(ChatMessage)));
 
-            JsonNode? messageJsonNode = JsonNode.Parse(messageJsonString);
             if (messageJsonNode is not null)
             {
                 messagesJsonArray.Add(messageJsonNode);
