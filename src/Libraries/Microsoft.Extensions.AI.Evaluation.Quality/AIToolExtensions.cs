@@ -21,11 +21,21 @@ internal static class AIToolExtensions
 
         foreach (AIFunction function in toolDefinitions.OfType<AIFunction>())
         {
-            JsonNode? functionJsonNode = JsonNode.Parse(function.JsonSchema.GetRawText());
-            if (functionJsonNode is not null)
+            JsonNode functionJsonNode =
+                new JsonObject
+                {
+                    ["name"] = function.Name,
+                    ["description"] = function.Description,
+                    ["functionSchema"] = JsonNode.Parse(function.JsonSchema.GetRawText()),
+                };
+
+            if (function.ReturnJsonSchema is not null)
             {
-                toolDefinitionsJsonArray.Add(functionJsonNode);
+                functionJsonNode["functionReturnValueSchema"] =
+                    JsonNode.Parse(function.ReturnJsonSchema.Value.GetRawText());
             }
+
+            toolDefinitionsJsonArray.Add(functionJsonNode);
         }
 
         string renderedToolDefinitions = toolDefinitionsJsonArray.ToJsonString(options);
