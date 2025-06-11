@@ -66,7 +66,7 @@ public sealed class ToolCallAccuracyEvaluatorContext : EvaluationContext
 
     /// <summary>
     /// Gets the unique <see cref="EvaluationContext.Name"/> that is used for
-    /// <see cref="CompletenessEvaluatorContext"/>.
+    /// <see cref="ToolCallAccuracyEvaluatorContext"/>.
     /// </summary>
     public static string ToolCallAccuracyContextName => "Tool Definitions (Tool Call Accuracy)";
 

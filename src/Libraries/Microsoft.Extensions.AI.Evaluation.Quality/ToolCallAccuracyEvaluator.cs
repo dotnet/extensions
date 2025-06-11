@@ -86,8 +86,7 @@ public sealed class ToolCallAccuracyEvaluator : IEvaluator
         var metric = new BooleanMetric(ToolCallAccuracyMetricName);
         var result = new EvaluationResult(metric);
 
-        if (!messages.TryGetUserRequest(out ChatMessage? userRequest) ||
-            string.IsNullOrWhiteSpace(userRequest.Text))
+        if (!messages.TryGetUserRequest(out ChatMessage? userRequest) || string.IsNullOrWhiteSpace(userRequest.Text))
         {
             metric.AddDiagnostics(
                 EvaluationDiagnostic.Error(
@@ -123,7 +122,8 @@ public sealed class ToolCallAccuracyEvaluator : IEvaluator
             return result;
         }
 
-        IEnumerable<FunctionCallContent> toolCalls = modelResponse.Messages.SelectMany(m => m.Contents).OfType<FunctionCallContent>();
+        IEnumerable<FunctionCallContent> toolCalls =
+            modelResponse.Messages.SelectMany(m => m.Contents).OfType<FunctionCallContent>();
 
         if (!toolCalls.Any())
         {

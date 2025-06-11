@@ -80,8 +80,7 @@ public sealed class RetrievalEvaluator : IEvaluator
         var metric = new NumericMetric(RetrievalMetricName);
         var result = new EvaluationResult(metric);
 
-        if (!messages.TryGetUserRequest(out ChatMessage? userRequest) ||
-            string.IsNullOrWhiteSpace(userRequest.Text))
+        if (!messages.TryGetUserRequest(out ChatMessage? userRequest) || string.IsNullOrWhiteSpace(userRequest.Text))
         {
             metric.AddDiagnostics(
                 EvaluationDiagnostic.Error(

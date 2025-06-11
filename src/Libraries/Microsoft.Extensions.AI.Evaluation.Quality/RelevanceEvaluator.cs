@@ -75,8 +75,7 @@ public sealed class RelevanceEvaluator : IEvaluator
         var metric = new NumericMetric(RelevanceMetricName);
         var result = new EvaluationResult(metric);
 
-        if (!messages.TryGetUserRequest(out ChatMessage? userRequest) ||
-            string.IsNullOrWhiteSpace(userRequest.Text))
+        if (!messages.TryGetUserRequest(out ChatMessage? userRequest) || string.IsNullOrWhiteSpace(userRequest.Text))
         {
             metric.AddDiagnostics(
                 EvaluationDiagnostic.Error(
