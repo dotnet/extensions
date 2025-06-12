@@ -61,11 +61,12 @@ public class AgentQualityEvaluatorTests
 
             IEvaluator toolCallAccuracyEvaluator = new ToolCallAccuracyEvaluator();
             IEvaluator taskAdherenceEvaluator = new TaskAdherenceEvaluator();
+            IEvaluator intentResolutionEvaluator = new IntentResolutionEvaluator();
 
             _agentQualityReportingConfiguration =
                 DiskBasedReportingConfiguration.Create(
                     storageRootPath: Settings.Current.StorageRootPath,
-                    evaluators: [taskAdherenceEvaluator],
+                    evaluators: [taskAdherenceEvaluator, intentResolutionEvaluator],
                     chatConfiguration: chatConfigurationWithToolCalling,
                     executionName: Constants.Version,
                     tags: [version, date, projectName, testClass, provider, model, temperature]);
@@ -73,7 +74,7 @@ public class AgentQualityEvaluatorTests
             _needsContextReportingConfiguration =
                 DiskBasedReportingConfiguration.Create(
                     storageRootPath: Settings.Current.StorageRootPath,
-                    evaluators: [toolCallAccuracyEvaluator, taskAdherenceEvaluator],
+                    evaluators: [toolCallAccuracyEvaluator, taskAdherenceEvaluator, intentResolutionEvaluator],
                     chatConfiguration: chatConfigurationWithToolCalling,
                     executionName: Constants.Version,
                     tags: [version, date, projectName, testClass, provider, model, temperature, usesContext]);
@@ -98,8 +99,9 @@ public class AgentQualityEvaluatorTests
             result.ContainsDiagnostics(d => d.Severity >= EvaluationDiagnosticSeverity.Warning),
             string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
 
-        Assert.Single(result.Metrics);
+        Assert.Equal(2, result.Metrics.Count);
         Assert.True(result.TryGet(TaskAdherenceEvaluator.TaskAdherenceMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(IntentResolutionEvaluator.IntentResolutionMetricName, out NumericMetric? _));
     }
 
     [ConditionalFact]
@@ -127,8 +129,9 @@ public class AgentQualityEvaluatorTests
             result.ContainsDiagnostics(d => d.Severity >= EvaluationDiagnosticSeverity.Warning),
             string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
 
-        Assert.Single(result.Metrics);
+        Assert.Equal(2, result.Metrics.Count);
         Assert.True(result.TryGet(TaskAdherenceEvaluator.TaskAdherenceMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(IntentResolutionEvaluator.IntentResolutionMetricName, out NumericMetric? _));
     }
 
     [ConditionalFact]
@@ -149,9 +152,10 @@ public class AgentQualityEvaluatorTests
             result.Metrics.Values.All(m => m.ContainsDiagnostics(d => d.Severity is EvaluationDiagnosticSeverity.Error)),
             string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
 
-        Assert.Equal(2, result.Metrics.Count);
+        Assert.Equal(3, result.Metrics.Count);
         Assert.True(result.TryGet(ToolCallAccuracyEvaluator.ToolCallAccuracyMetricName, out BooleanMetric? _));
         Assert.True(result.TryGet(TaskAdherenceEvaluator.TaskAdherenceMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(IntentResolutionEvaluator.IntentResolutionMetricName, out NumericMetric? _));
     }
 
     [ConditionalFact]
@@ -172,21 +176,26 @@ public class AgentQualityEvaluatorTests
         var toolDefinitionsForTaskAdherenceEvaluator =
             new TaskAdherenceEvaluatorContext(toolDefinitions: _chatOptionsWithTools.Tools!);
 
+        var toolDefinitionsForIntentResolutionEvaluator =
+            new IntentResolutionEvaluatorContext(toolDefinitions: _chatOptionsWithTools.Tools!);
+
         EvaluationResult result =
             await scenarioRun.EvaluateAsync(
                 messages,
                 response,
                 additionalContext: [
                     toolDefinitionsForToolCallAccuracyEvaluator,
-                    toolDefinitionsForTaskAdherenceEvaluator]);
+                    toolDefinitionsForTaskAdherenceEvaluator,
+                    toolDefinitionsForIntentResolutionEvaluator]);
 
         Assert.False(
             result.ContainsDiagnostics(d => d.Severity >= EvaluationDiagnosticSeverity.Warning),
             string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
 
-        Assert.Equal(2, result.Metrics.Count);
+        Assert.Equal(3, result.Metrics.Count);
         Assert.True(result.TryGet(ToolCallAccuracyEvaluator.ToolCallAccuracyMetricName, out BooleanMetric? _));
         Assert.True(result.TryGet(TaskAdherenceEvaluator.TaskAdherenceMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(IntentResolutionEvaluator.IntentResolutionMetricName, out NumericMetric? _));
     }
 
     private static async Task<(IEnumerable<ChatMessage> messages, ChatResponse response)>

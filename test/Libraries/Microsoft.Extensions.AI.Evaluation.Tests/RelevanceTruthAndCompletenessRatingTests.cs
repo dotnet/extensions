@@ -5,12 +5,13 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.Extensions.AI.Evaluation.Quality;
+using Microsoft.Extensions.AI.Evaluation.Quality.JsonSerialization;
 using Xunit;
 
 namespace Microsoft.Extensions.AI.Evaluation.Tests;
 
 [Experimental("AIEVAL001")]
-public class RelevanceTruthAndCompletenessEvaluatorRatingTests
+public class RelevanceTruthAndCompletenessRatingTests
 {
     [Fact]
     public void JsonIsValid()
@@ -19,7 +20,7 @@ public class RelevanceTruthAndCompletenessEvaluatorRatingTests
                       {"relevance": 1, "truth": 5, "completeness": 4}
                       """;
 
-        var rating = RelevanceTruthAndCompletenessEvaluator.Rating.FromJson(json);
+        var rating = RelevanceTruthAndCompletenessRating.FromJson(json);
 
         Assert.Equal(1, rating.Relevance);
         Assert.Equal(5, rating.Truth);
@@ -44,7 +45,7 @@ public class RelevanceTruthAndCompletenessEvaluatorRatingTests
 
                       """;
 
-        var rating = RelevanceTruthAndCompletenessEvaluator.Rating.FromJson(json);
+        var rating = RelevanceTruthAndCompletenessRating.FromJson(json);
 
         Assert.Equal(1, rating.Relevance);
         Assert.Equal(5, rating.Truth);
@@ -69,7 +70,7 @@ public class RelevanceTruthAndCompletenessEvaluatorRatingTests
 
                       """;
 
-        var rating = RelevanceTruthAndCompletenessEvaluator.Rating.FromJson(json);
+        var rating = RelevanceTruthAndCompletenessRating.FromJson(json);
 
         Assert.Equal(1, rating.Relevance);
         Assert.Equal(5, rating.Truth);
@@ -86,7 +87,7 @@ public class RelevanceTruthAndCompletenessEvaluatorRatingTests
     [Fact]
     public void JsonCanBeRoundTripped()
     {
-        var rating = new RelevanceTruthAndCompletenessEvaluator.Rating(
+        var rating = new RelevanceTruthAndCompletenessRating(
             relevance: 1,
             relevanceReasoning: "The response is not relevant to the request.",
             relevanceReasons: ["Reason 1", "Reason 2"],
@@ -97,8 +98,8 @@ public class RelevanceTruthAndCompletenessEvaluatorRatingTests
             completenessReasoning: "The response is mostly complete.",
             completenessReasons: ["Reason 1", "Reason 2"]);
 
-        string json = JsonSerializer.Serialize(rating, RelevanceTruthAndCompletenessEvaluator.SerializerContext.Default.Rating);
-        var deserialized = RelevanceTruthAndCompletenessEvaluator.Rating.FromJson(json);
+        string json = JsonSerializer.Serialize(rating, SerializerContext.Default.RelevanceTruthAndCompletenessRating);
+        var deserialized = RelevanceTruthAndCompletenessRating.FromJson(json);
         Assert.Equal(rating.Relevance, deserialized.Relevance);
         Assert.Equal(rating.RelevanceReasoning, deserialized.RelevanceReasoning);
         Assert.True(rating.RelevanceReasons.SequenceEqual(deserialized.RelevanceReasons));
@@ -115,27 +116,27 @@ public class RelevanceTruthAndCompletenessEvaluatorRatingTests
     public void JsonContainsInconclusiveMetrics()
     {
         string json = """{"relevance": -1, "truth": 4, "completeness": 7}""";
-        var rating = RelevanceTruthAndCompletenessEvaluator.Rating.FromJson(json);
+        var rating = RelevanceTruthAndCompletenessRating.FromJson(json);
         Assert.True(rating.IsInconclusive);
 
         json = """{"relevance": 0, "truth": -1, "completeness": 3}""";
-        rating = RelevanceTruthAndCompletenessEvaluator.Rating.FromJson(json);
+        rating = RelevanceTruthAndCompletenessRating.FromJson(json);
         Assert.True(rating.IsInconclusive);
 
         json = """{"relevance": 0, "truth": 4, "completeness": -5}""";
-        rating = RelevanceTruthAndCompletenessEvaluator.Rating.FromJson(json);
+        rating = RelevanceTruthAndCompletenessRating.FromJson(json);
         Assert.True(rating.IsInconclusive);
 
         json = """{"relevance": 10, "truth": 4, "completeness": 3}""";
-        rating = RelevanceTruthAndCompletenessEvaluator.Rating.FromJson(json);
+        rating = RelevanceTruthAndCompletenessRating.FromJson(json);
         Assert.True(rating.IsInconclusive);
 
         json = """{"relevance": 0, "truth": 5, "completeness": 3}""";
-        rating = RelevanceTruthAndCompletenessEvaluator.Rating.FromJson(json);
+        rating = RelevanceTruthAndCompletenessRating.FromJson(json);
         Assert.True(rating.IsInconclusive);
 
         json = """{"relevance": 1, "truth": 4, "completeness": 6}""";
-        rating = RelevanceTruthAndCompletenessEvaluator.Rating.FromJson(json);
+        rating = RelevanceTruthAndCompletenessRating.FromJson(json);
         Assert.True(rating.IsInconclusive);
     }
 
@@ -143,6 +144,6 @@ public class RelevanceTruthAndCompletenessEvaluatorRatingTests
     public void JsonContainsErrors()
     {
         string json = """{"relevance": 0, "truth": 2 ;"completeness": 3}""";
-        Assert.Throws<JsonException>(() => RelevanceTruthAndCompletenessEvaluator.Rating.FromJson(json));
+        Assert.Throws<JsonException>(() => RelevanceTruthAndCompletenessRating.FromJson(json));
     }
 }
