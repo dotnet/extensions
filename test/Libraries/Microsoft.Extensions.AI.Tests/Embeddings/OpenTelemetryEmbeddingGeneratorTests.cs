@@ -89,7 +89,7 @@ public class OpenTelemetryEmbeddingGeneratorTests
         Assert.Equal(enableSensitiveData ? "value1" : null, activity.GetTagItem("gen_ai.testservice.request.service_tier"));
         Assert.Equal(enableSensitiveData ? "value2" : null, activity.GetTagItem("gen_ai.testservice.request.something_else"));
 
-        Assert.Equal(10, activity.GetTagItem("gen_ai.response.input_tokens"));
+        Assert.Equal(10, activity.GetTagItem("gen_ai.usage.input_tokens"));
         Assert.Equal(enableSensitiveData ? "abcdefgh" : null, activity.GetTagItem("gen_ai.testservice.response.system_fingerprint"));
         Assert.Equal(enableSensitiveData ? "value3" : null, activity.GetTagItem("gen_ai.testservice.response.and_something_else"));
 

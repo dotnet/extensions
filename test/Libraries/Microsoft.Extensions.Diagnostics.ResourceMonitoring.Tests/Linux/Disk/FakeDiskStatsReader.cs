@@ -11,15 +11,15 @@ internal class FakeDiskStatsReader(Dictionary<string, List<DiskStats>> stats) : 
 {
     private int _index;
 
-    public List<DiskStats> ReadAll()
+    public DiskStats[] ReadAll(string[] skipDevicePrefixes)
     {
         if (_index >= stats.Values.First().Count)
         {
             throw new InvalidOperationException("No more values available.");
         }
 
-        List<DiskStats> list = stats.Values.Select(x => x[_index]).ToList();
+        DiskStats[] result = stats.Values.Select(x => x[_index]).ToArray();
         _index++;
-        return list;
+        return result;
     }
 }
