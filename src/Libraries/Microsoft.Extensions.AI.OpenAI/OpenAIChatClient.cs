@@ -80,7 +80,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
     {
         _ = Throw.IfNull(messages);
 
-        var openAIChatMessages = ToOpenAIChatMessages(messages, AIJsonUtilities.DefaultOptions);
+        var openAIChatMessages = ToOpenAIChatMessages(messages, options, AIJsonUtilities.DefaultOptions);
         var openAIOptions = ToOpenAIOptions(options);
 
         // Make the call to OpenAI.
@@ -95,7 +95,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
     {
         _ = Throw.IfNull(messages);
 
-        var openAIChatMessages = ToOpenAIChatMessages(messages, AIJsonUtilities.DefaultOptions);
+        var openAIChatMessages = ToOpenAIChatMessages(messages, options, AIJsonUtilities.DefaultOptions);
         var openAIOptions = ToOpenAIOptions(options);
 
         // Make the call to OpenAI.
@@ -111,10 +111,15 @@ internal sealed partial class OpenAIChatClient : IChatClient
     }
 
     /// <summary>Converts an Extensions chat message enumerable to an OpenAI chat message enumerable.</summary>
-    private static IEnumerable<OpenAI.Chat.ChatMessage> ToOpenAIChatMessages(IEnumerable<ChatMessage> inputs, JsonSerializerOptions options)
+    private static IEnumerable<OpenAI.Chat.ChatMessage> ToOpenAIChatMessages(IEnumerable<ChatMessage> inputs, ChatOptions? chatOptions, JsonSerializerOptions jsonOptions)
     {
         // Maps all of the M.E.AI types to the corresponding OpenAI types.
         // Unrecognized or non-processable content is ignored.
+
+        if (chatOptions?.Instructions is { } instructions && !string.IsNullOrWhiteSpace(instructions))
+        {
+            yield return new SystemChatMessage(instructions);
+        }
 
         foreach (ChatMessage input in inputs)
         {
@@ -139,7 +144,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
                         {
                             try
                             {
-                                result = JsonSerializer.Serialize(resultContent.Result, options.GetTypeInfo(typeof(object)));
+                                result = JsonSerializer.Serialize(resultContent.Result, jsonOptions.GetTypeInfo(typeof(object)));
                             }
                             catch (NotSupportedException)
                             {
@@ -167,7 +172,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
                         case FunctionCallContent fc:
                             (toolCalls ??= []).Add(
                                 ChatToolCall.CreateFunctionToolCall(fc.CallId, fc.Name, new(JsonSerializer.SerializeToUtf8Bytes(
-                                    fc.Arguments, options.GetTypeInfo(typeof(IDictionary<string, object?>))))));
+                                    fc.Arguments, jsonOptions.GetTypeInfo(typeof(IDictionary<string, object?>))))));
                             break;
 
                         default:
