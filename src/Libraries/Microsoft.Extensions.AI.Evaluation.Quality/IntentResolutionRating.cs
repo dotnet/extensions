@@ -11,28 +11,43 @@ namespace Microsoft.Extensions.AI.Evaluation.Quality;
 
 internal sealed class IntentResolutionRating
 {
-    public static IntentResolutionRating Inconclusive { get; } = new IntentResolutionRating();
+    public static IntentResolutionRating Inconclusive { get; } =
+        new IntentResolutionRating(
+            resolutionScore: 0,
+            explanation: string.Empty,
+            agentPerceivedIntent: string.Empty,
+            actualUserIntent: string.Empty,
+            conversationHasIntent: false,
+            correctIntentDetected: false,
+            intentResolved: false);
 
+    [JsonRequired]
     [JsonPropertyName("resolution_score")]
-    public int ResolutionScore { get; }
+    public int ResolutionScore { get; set; }
 
+    [JsonRequired]
     [JsonPropertyName("explanation")]
-    public string? Explanation { get; }
+    public string Explanation { get; set; }
 
+    [JsonRequired]
     [JsonPropertyName("agent_perceived_intent")]
-    public string? AgentPerceivedIntent { get; }
+    public string AgentPerceivedIntent { get; set; }
 
+    [JsonRequired]
     [JsonPropertyName("actual_user_intent")]
-    public string? ActualUserIntent { get; }
+    public string ActualUserIntent { get; set; }
 
+    [JsonRequired]
     [JsonPropertyName("conversation_has_intent")]
-    public bool ConversationHasIntent { get; }
+    public bool ConversationHasIntent { get; set; }
 
+    [JsonRequired]
     [JsonPropertyName("correct_intent_detected")]
-    public bool CorrectIntentDetected { get; }
+    public bool CorrectIntentDetected { get; set; }
 
+    [JsonRequired]
     [JsonPropertyName("intent_resolved")]
-    public bool IntentResolved { get; }
+    public bool IntentResolved { get; set; }
 
     private const int MinValue = 1;
     private const int MaxValue = 5;
@@ -42,13 +57,13 @@ internal sealed class IntentResolutionRating
     [JsonConstructor]
 #pragma warning disable S107 // Methods should not have too many parameters
     public IntentResolutionRating(
-        int resolutionScore = -1,
-        string? explanation = null,
-        string? agentPerceivedIntent = null,
-        string? actualUserIntent = null,
-        bool conversationHasIntent = false,
-        bool correctIntentDetected = false,
-        bool intentResolved = false)
+        int resolutionScore,
+        string explanation,
+        string agentPerceivedIntent,
+        string actualUserIntent,
+        bool conversationHasIntent,
+        bool correctIntentDetected,
+        bool intentResolved)
 #pragma warning restore S107
     {
         ResolutionScore = resolutionScore;

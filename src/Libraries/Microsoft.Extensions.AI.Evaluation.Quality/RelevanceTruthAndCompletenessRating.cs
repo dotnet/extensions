@@ -11,20 +11,44 @@ namespace Microsoft.Extensions.AI.Evaluation.Quality;
 
 internal sealed class RelevanceTruthAndCompletenessRating
 {
-    public static RelevanceTruthAndCompletenessRating Inconclusive { get; }
-        = new RelevanceTruthAndCompletenessRating(relevance: -1, truth: -1, completeness: -1);
+    public static RelevanceTruthAndCompletenessRating Inconclusive { get; } =
+        new RelevanceTruthAndCompletenessRating(
+            relevance: 0,
+            relevanceReasoning: string.Empty,
+            relevanceReasons: [],
+            truth: 0,
+            truthReasoning: string.Empty,
+            truthReasons: [],
+            completeness: 0,
+            completenessReasoning: string.Empty,
+            completenessReasons: []);
 
-    public int Relevance { get; }
-    public string? RelevanceReasoning { get; }
-    public string[] RelevanceReasons { get; } = [];
+    [JsonRequired]
+    public int Relevance { get; set; }
 
-    public int Truth { get; }
-    public string? TruthReasoning { get; }
-    public string[] TruthReasons { get; } = [];
+    [JsonRequired]
+    public string RelevanceReasoning { get; set; }
 
-    public int Completeness { get; }
-    public string? CompletenessReasoning { get; }
-    public string[] CompletenessReasons { get; } = [];
+    [JsonRequired]
+    public string[] RelevanceReasons { get; set; }
+
+    [JsonRequired]
+    public int Truth { get; set; }
+
+    [JsonRequired]
+    public string TruthReasoning { get; set; }
+
+    [JsonRequired]
+    public string[] TruthReasons { get; set; }
+
+    [JsonRequired]
+    public int Completeness { get; set; }
+
+    [JsonRequired]
+    public string CompletenessReasoning { get; set; }
+
+    [JsonRequired]
+    public string[] CompletenessReasons { get; set; }
 
     private const int MinValue = 1;
     private const int MaxValue = 5;
@@ -36,17 +60,12 @@ internal sealed class RelevanceTruthAndCompletenessRating
         Completeness < MinValue || Completeness > MaxValue;
 #pragma warning restore S1067
 
-    public RelevanceTruthAndCompletenessRating(int relevance, int truth, int completeness)
-    {
-        (Relevance, Truth, Completeness) = (relevance, truth, completeness);
-    }
-
     [JsonConstructor]
 #pragma warning disable S107 // Methods should not have too many parameters.
     public RelevanceTruthAndCompletenessRating(
-        int relevance, string? relevanceReasoning, string[] relevanceReasons,
-        int truth, string? truthReasoning, string[] truthReasons,
-        int completeness, string? completenessReasoning, string[] completenessReasons)
+        int relevance, string relevanceReasoning, string[] relevanceReasons,
+        int truth, string truthReasoning, string[] truthReasons,
+        int completeness, string completenessReasoning, string[] completenessReasons)
 #pragma warning restore S107
     {
         (Relevance, RelevanceReasoning, RelevanceReasons,
