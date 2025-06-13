@@ -80,12 +80,11 @@ public sealed class RetrievalEvaluator : IEvaluator
         var metric = new NumericMetric(RetrievalMetricName);
         var result = new EvaluationResult(metric);
 
-        if (!messages.TryGetUserRequest(out ChatMessage? userRequest) ||
-            string.IsNullOrWhiteSpace(userRequest.Text))
+        if (!messages.TryGetUserRequest(out ChatMessage? userRequest) || string.IsNullOrWhiteSpace(userRequest.Text))
         {
             metric.AddDiagnostics(
                 EvaluationDiagnostic.Error(
-                    $"The ${messages} supplied for evaluation did not contain a user request as the last message."));
+                    $"The {nameof(messages)} supplied for evaluation did not contain a user request as the last message."));
 
             return result;
         }
@@ -95,7 +94,16 @@ public sealed class RetrievalEvaluator : IEvaluator
         {
             metric.AddDiagnostics(
                 EvaluationDiagnostic.Error(
-                    $"A value of type '{nameof(RetrievalEvaluatorContext)}' was not found in the '{nameof(additionalContext)}' collection."));
+                    $"A value of type {nameof(RetrievalEvaluatorContext)} was not found in the {nameof(additionalContext)} collection."));
+
+            return result;
+        }
+
+        if (context.RetrievedContextChunks.Count is 0)
+        {
+            metric.AddDiagnostics(
+                EvaluationDiagnostic.Error(
+                    $"Supplied {nameof(RetrievalEvaluatorContext)} did not contain any {nameof(RetrievalEvaluatorContext.RetrievedContextChunks)}."));
 
             return result;
         }

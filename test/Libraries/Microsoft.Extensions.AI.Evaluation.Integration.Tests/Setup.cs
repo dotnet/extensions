@@ -15,15 +15,22 @@ internal static class Setup
 
     internal static ChatConfiguration CreateChatConfiguration()
     {
+        AzureOpenAIClient azureOpenAIClient = GetAzureOpenAIClient();
+        IChatClient chatClient = azureOpenAIClient.GetChatClient(Settings.Current.DeploymentName).AsIChatClient();
+        return new ChatConfiguration(chatClient);
+    }
+
+    private static AzureOpenAIClient GetAzureOpenAIClient()
+    {
         var endpoint = new Uri(Settings.Current.Endpoint);
         AzureOpenAIClientOptions options = new();
         var credential = new ChainedTokenCredential(new AzureCliCredential(), new DefaultAzureCredential());
-        AzureOpenAIClient azureClient =
+
+        AzureOpenAIClient azureOpenAIClient =
             OfflineOnly
                 ? new AzureOpenAIClient(endpoint, new ApiKeyCredential("Bogus"), options)
                 : new AzureOpenAIClient(endpoint, credential, options);
 
-        IChatClient chatClient = azureClient.GetChatClient(Settings.Current.DeploymentName).AsIChatClient();
-        return new ChatConfiguration(chatClient);
+        return azureOpenAIClient;
     }
 }

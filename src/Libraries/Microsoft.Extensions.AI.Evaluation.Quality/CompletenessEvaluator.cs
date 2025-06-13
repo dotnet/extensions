@@ -87,7 +87,7 @@ public sealed class CompletenessEvaluator : IEvaluator
         {
             metric.AddDiagnostics(
                 EvaluationDiagnostic.Error(
-                    $"A value of type '{nameof(CompletenessEvaluatorContext)}' was not found in the '{nameof(additionalContext)}' collection."));
+                    $"A value of type {nameof(CompletenessEvaluatorContext)} was not found in the {nameof(additionalContext)} collection."));
 
             return result;
         }
