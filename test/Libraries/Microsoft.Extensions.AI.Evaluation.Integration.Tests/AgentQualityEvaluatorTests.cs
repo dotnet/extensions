@@ -119,11 +119,14 @@ public class AgentQualityEvaluatorTests
         var toolDefinitionsForTaskAdherenceEvaluator =
             new TaskAdherenceEvaluatorContext(toolDefinitions: _chatOptionsWithTools.Tools!);
 
+        var toolDefinitionsForIntentResolution =
+            new IntentResolutionEvaluatorContext(toolDefinitions: _chatOptionsWithTools.Tools!);
+
         EvaluationResult result =
             await scenarioRun.EvaluateAsync(
                 messages,
                 response,
-                additionalContext: [toolDefinitionsForTaskAdherenceEvaluator]);
+                additionalContext: [toolDefinitionsForTaskAdherenceEvaluator, toolDefinitionsForIntentResolution]);
 
         Assert.False(
             result.ContainsDiagnostics(d => d.Severity >= EvaluationDiagnosticSeverity.Warning),
