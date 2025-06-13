@@ -86,19 +86,22 @@ public sealed class ToolCallAccuracyEvaluator : IEvaluator
         var metric = new BooleanMetric(ToolCallAccuracyMetricName);
         var result = new EvaluationResult(metric);
 
-        if (!messages.TryGetUserRequest(out ChatMessage? userRequest) || string.IsNullOrWhiteSpace(userRequest.Text))
+        if (!messages.Any())
         {
             metric.AddDiagnostics(
                 EvaluationDiagnostic.Error(
-                    $"The {nameof(messages)} supplied for evaluation did not contain a user request as the last message."));
+                    "The conversation history supplied for evaluation did not include any messages."));
 
             return result;
         }
 
-        if (string.IsNullOrWhiteSpace(modelResponse.Text))
+        IEnumerable<FunctionCallContent> toolCalls =
+            modelResponse.Messages.SelectMany(m => m.Contents).OfType<FunctionCallContent>();
+
+        if (!toolCalls.Any())
         {
             metric.AddDiagnostics(
-                EvaluationDiagnostic.Error($"The {nameof(modelResponse)} supplied for evaluation was null or empty."));
+                EvaluationDiagnostic.Error($"The {nameof(modelResponse)} supplied for evaluation did not contain any tool calls (i.e., {nameof(FunctionCallContent)}s)."));
 
             return result;
         }
@@ -118,17 +121,6 @@ public sealed class ToolCallAccuracyEvaluator : IEvaluator
             metric.AddDiagnostics(
                 EvaluationDiagnostic.Error(
                     $"Supplied {nameof(ToolCallAccuracyEvaluatorContext)} did not contain any {nameof(ToolCallAccuracyEvaluatorContext.ToolDefinitions)}."));
-
-            return result;
-        }
-
-        IEnumerable<FunctionCallContent> toolCalls =
-            modelResponse.Messages.SelectMany(m => m.Contents).OfType<FunctionCallContent>();
-
-        if (!toolCalls.Any())
-        {
-            metric.AddDiagnostics(
-                EvaluationDiagnostic.Error($"The {nameof(modelResponse)} supplied for evaluation did not contain any tool calls (i.e., {nameof(FunctionCallContent)}s."));
 
             return result;
         }

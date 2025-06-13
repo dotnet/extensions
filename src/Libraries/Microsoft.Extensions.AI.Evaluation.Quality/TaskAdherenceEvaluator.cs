@@ -84,19 +84,20 @@ public sealed class TaskAdherenceEvaluator : IEvaluator
         var metric = new NumericMetric(TaskAdherenceMetricName);
         var result = new EvaluationResult(metric);
 
-        if (!messages.TryGetUserRequest(out ChatMessage? userRequest) || string.IsNullOrWhiteSpace(userRequest.Text))
+        if (!messages.Any())
         {
             metric.AddDiagnostics(
                 EvaluationDiagnostic.Error(
-                    $"The {nameof(messages)} supplied for evaluation did not contain a user request as the last message."));
+                    "The conversation history supplied for evaluation did not include any messages."));
 
             return result;
         }
 
-        if (string.IsNullOrWhiteSpace(modelResponse.Text))
+        if (!modelResponse.Messages.Any())
         {
             metric.AddDiagnostics(
-                EvaluationDiagnostic.Error($"The {nameof(modelResponse)} supplied for evaluation was null or empty."));
+                EvaluationDiagnostic.Error(
+                    $"The {nameof(modelResponse)} supplied for evaluation did not include any messages."));
 
             return result;
         }
