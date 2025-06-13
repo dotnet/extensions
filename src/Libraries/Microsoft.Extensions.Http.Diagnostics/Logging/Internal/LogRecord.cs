@@ -75,6 +75,16 @@ internal sealed class LogRecord : IResettable
     /// </summary>
     public int PathParametersCount { get; set; }
 
+    /// <summary>
+    /// Gets or sets request query string parameters.
+    /// </summary>
+    public KeyValuePair<string, string?>[]? QueryParameters { get; set; }
+
+    /// <summary>
+    /// Gets or sets request query string parameters count.
+    /// </summary>
+    public int QueryParametersCount { get; set; }
+
     public bool TryReset()
     {
         if (PathParameters != null)

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Diagnostics;
@@ -111,6 +112,9 @@ internal sealed class HttpRequestReader : IHttpRequestReader
             logRecord.RequestBody = await _httpRequestBodyReader.ReadAsync(request, cancellationToken)
                 .ConfigureAwait(false);
         }
+
+        logRecord.QueryParameters = ParseQueryParameters(request.RequestUri?.Query, out int paramCount);
+        logRecord.QueryParametersCount = paramCount;
     }
 
     public async Task ReadResponseAsync(LogRecord logRecord, HttpResponseMessage response,
@@ -129,6 +133,49 @@ internal sealed class HttpRequestReader : IHttpRequestReader
         }
 
         logRecord.StatusCode = (int)response.StatusCode;
+    }
+
+    private static KeyValuePair<string, string?>[] ParseQueryParameters(string? query, out int count)
+    {
+#if NET462
+        count = 0;
+        return [];
+#else
+        count = 0;
+        if (string.IsNullOrEmpty(query))
+        {
+            return [];
+        }
+
+        var parsed = HttpUtility.ParseQueryString(query);
+        if (parsed.Count == 0)
+        {
+            return [];
+        }
+
+        var result = new KeyValuePair<string, string?>[parsed.Count];
+        int i = 0;
+        foreach (string? key in parsed.AllKeys)
+        {
+            if (key == null)
+            {
+                continue;
+            }
+
+            result[i++] = new KeyValuePair<string, string?>(key, parsed[key]);
+        }
+
+        count = i;
+        if (i == result.Length)
+        {
+            return result;
+        }
+
+        // In case there were null keys, trim the array
+        var trimmed = new KeyValuePair<string, string?>[i];
+        Array.Copy(result, trimmed, i);
+        return trimmed;
+#endif
     }
 
     private void GetRedactedPathAndParameters(HttpRequestMessage request, LogRecord logRecord)
