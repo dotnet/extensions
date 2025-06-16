@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Xunit;
 
 namespace Microsoft.Extensions.AsyncState.Test;
+
 public class FeaturesPooledPolicyTests
 {
     [Fact]

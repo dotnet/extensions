@@ -8,6 +8,9 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 
   <PropertyGroup>
+    <!-- Even though the product targets .NET 4.6.2, the tests must target .NET 4.8.1 to use the latest tooling -->
+    <ConditionalNet462 Condition="'$(CustomTargetFrameworks)' == '' OR $(CustomTargetFrameworks.Contains('net462'))">;net481</ConditionalNet462>
+
     <TargetFrameworks>$(LatestTargetFramework)</TargetFrameworks>
   </PropertyGroup>
 </Project>
