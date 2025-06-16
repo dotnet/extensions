@@ -908,6 +908,10 @@
         {
           "Member": "virtual Microsoft.Extensions.AI.ChatOptions Microsoft.Extensions.AI.ChatOptions.Clone();",
           "Stage": "Stable"
+        },
+        {
+          "Member": "virtual void Microsoft.Extensions.AI.ChatOptions.Merge(Microsoft.Extensions.AI.ChatOptions? other);",
+          "Stage": "Stable"
         }
       ],
       "Properties": [
@@ -1517,6 +1521,10 @@
         },
         {
           "Member": "virtual Microsoft.Extensions.AI.EmbeddingGenerationOptions Microsoft.Extensions.AI.EmbeddingGenerationOptions.Clone();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual void Microsoft.Extensions.AI.EmbeddingGenerationOptions.Merge(Microsoft.Extensions.AI.EmbeddingGenerationOptions? other);",
           "Stage": "Stable"
         }
       ],

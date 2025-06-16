@@ -61,8 +61,52 @@ public class EmbeddingGenerationOptions
     public virtual EmbeddingGenerationOptions Clone() =>
         new()
         {
-            ModelId = ModelId,
-            Dimensions = Dimensions,
             AdditionalProperties = AdditionalProperties?.Clone(),
+            Dimensions = Dimensions,
+            ModelId = ModelId,
+            RawRepresentationFactory = RawRepresentationFactory,
         };
+
+    /// <summary>Merges the options specified by <paramref name="other"/> into this instance.</summary>
+    /// <param name="other">The other options to be merged into this instance.</param>
+    /// <remarks>
+    /// Merging works by copying the values from <paramref name="other"/> into this instance.
+    /// For properties of primitive types, like <see cref="Dimensions"/> or <see cref="ModelId"/>,
+    /// the value will be copied only if it is <see langword="null"/> on this instance. For properties of
+    /// dictionary types, like <see cref="AdditionalProperties"/>, a shallow copy is performed on the entries from <paramref name="other"/>,
+    /// adding them into the corresponding dictionary on this instance, but only if the key does not already exist in this
+    /// instance's dictionary.
+    /// </remarks>
+    public virtual void Merge(EmbeddingGenerationOptions? other)
+    {
+        if (other is null)
+        {
+            return;
+        }
+
+        Dimensions ??= other.Dimensions;
+        ModelId ??= other.ModelId;
+
+        if (other.AdditionalProperties is { Count: > 0 })
+        {
+            if (AdditionalProperties is null)
+            {
+                AdditionalProperties = other.AdditionalProperties.Clone();
+            }
+            else
+            {
+                foreach (var entry in other.AdditionalProperties)
+                {
+                    _ = AdditionalProperties.TryAdd(entry.Key, entry.Value);
+                }
+            }
+        }
+
+        if (other.RawRepresentationFactory is { } otherRrf)
+        {
+            RawRepresentationFactory = RawRepresentationFactory is { } originalRrf ?
+                generator => originalRrf(generator) ?? otherRrf(generator) :
+                otherRrf;
+        }
+    }
 }

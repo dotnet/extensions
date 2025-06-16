@@ -47,17 +47,59 @@ public class SpeechToTextOptions
 
     /// <summary>Produces a clone of the current <see cref="SpeechToTextOptions"/> instance.</summary>
     /// <returns>A clone of the current <see cref="SpeechToTextOptions"/> instance.</returns>
-    public virtual SpeechToTextOptions Clone()
-    {
-        SpeechToTextOptions options = new()
+    public virtual SpeechToTextOptions Clone() =>
+        new()
         {
-            ModelId = ModelId,
-            SpeechLanguage = SpeechLanguage,
-            TextLanguage = TextLanguage,
-            SpeechSampleRate = SpeechSampleRate,
             AdditionalProperties = AdditionalProperties?.Clone(),
+            ModelId = ModelId,
+            RawRepresentationFactory = RawRepresentationFactory,
+            SpeechLanguage = SpeechLanguage,
+            SpeechSampleRate = SpeechSampleRate,
+            TextLanguage = TextLanguage,
         };
 
-        return options;
+    /// <summary>Merges the options specified by <paramref name="other"/> into this instance.</summary>
+    /// <param name="other">The other options to be merged into this instance.</param>
+    /// <remarks>
+    /// Merging works by copying the values from <paramref name="other"/> into this instance.
+    /// For properties of primitive types, like <see cref="SpeechLanguage"/> or <see cref="ModelId"/>,
+    /// the value will be copied only if it is <see langword="null"/> on this instance. For properties of
+    /// dictionary types, like <see cref="AdditionalProperties"/>, a shallow copy is performed on the entries from <paramref name="other"/>,
+    /// adding them into the corresponding dictionary on this instance, but only if the key does not already exist in this
+    /// instance's dictionary.
+    /// </remarks>
+    public virtual void Merge(SpeechToTextOptions? other)
+    {
+        if (other is null)
+        {
+            return;
+        }
+
+        ModelId ??= other.ModelId;
+        SpeechLanguage ??= other.SpeechLanguage;
+        TextLanguage ??= other.TextLanguage;
+        SpeechSampleRate ??= other.SpeechSampleRate;
+
+        if (other.AdditionalProperties is { Count: > 0 })
+        {
+            if (AdditionalProperties is null)
+            {
+                AdditionalProperties = other.AdditionalProperties.Clone();
+            }
+            else
+            {
+                foreach (var entry in other.AdditionalProperties)
+                {
+                    _ = AdditionalProperties.TryAdd(entry.Key, entry.Value);
+                }
+            }
+        }
+
+        if (other.RawRepresentationFactory is { } otherRrf)
+        {
+            RawRepresentationFactory = RawRepresentationFactory is { } originalRrf ?
+                client => originalRrf(client) ?? otherRrf(client) :
+                otherRrf;
+        }
     }
 }

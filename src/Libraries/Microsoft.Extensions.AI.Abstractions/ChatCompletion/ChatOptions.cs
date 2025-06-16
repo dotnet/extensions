@@ -168,14 +168,108 @@ public class ChatOptions
 
         if (StopSequences is not null)
         {
-            options.StopSequences = new List<string>(StopSequences);
+            options.StopSequences = [.. StopSequences];
         }
 
         if (Tools is not null)
         {
-            options.Tools = new List<AITool>(Tools);
+            options.Tools = [.. Tools];
         }
 
         return options;
+    }
+
+    /// <summary>Merges the options specified by <paramref name="other"/> into this instance.</summary>
+    /// <param name="other">The other options to be merged into this instance.</param>
+    /// <remarks>
+    /// Merging works by copying the values from <paramref name="other"/> into this instance.
+    /// For properties of primitive types, like <see cref="Temperature"/> or <see cref="MaxOutputTokens"/>,
+    /// the value will be copied only if it is <see langword="null"/> on this instance. For properties of
+    /// list types, like <see cref="StopSequences"/> or <see cref="Tools"/>, the elements of <paramref name="other"/>'s
+    /// collection will be added into the corresponding collection on this instance (no deduplication is performed). For properties of
+    /// dictionary types, like <see cref="AdditionalProperties"/>, a shallow copy is performed on the entries from <paramref name="other"/>,
+    /// adding them into the corresponding dictionary on this instance, but only if the key does not already exist in this
+    /// instance's dictionary.
+    /// </remarks>
+    public virtual void Merge(ChatOptions? other)
+    {
+        if (other is null)
+        {
+            return;
+        }
+
+        AllowMultipleToolCalls ??= other.AllowMultipleToolCalls;
+        ConversationId ??= other.ConversationId;
+        FrequencyPenalty ??= other.FrequencyPenalty;
+        Instructions ??= other.Instructions;
+        MaxOutputTokens ??= other.MaxOutputTokens;
+        ModelId ??= other.ModelId;
+        PresencePenalty ??= other.PresencePenalty;
+        ResponseFormat ??= other.ResponseFormat;
+        Seed ??= other.Seed;
+        Temperature ??= other.Temperature;
+        ToolMode ??= other.ToolMode;
+        TopK ??= other.TopK;
+        TopP ??= other.TopP;
+
+        if (other.AdditionalProperties is { Count: > 0 })
+        {
+            if (AdditionalProperties is null)
+            {
+                AdditionalProperties = other.AdditionalProperties.Clone();
+            }
+            else
+            {
+                foreach (var entry in other.AdditionalProperties)
+                {
+                    _ = AdditionalProperties.TryAdd(entry.Key, entry.Value);
+                }
+            }
+        }
+
+        if (other.RawRepresentationFactory is { } otherRrf)
+        {
+            RawRepresentationFactory = RawRepresentationFactory is { } originalRrf ?
+                client => originalRrf(client) ?? otherRrf(client) :
+                otherRrf;
+        }
+
+        if (other.StopSequences is not null)
+        {
+            if (StopSequences is null)
+            {
+                StopSequences = [.. other.StopSequences];
+            }
+            else if (StopSequences is List<string> stopSequences)
+            {
+                stopSequences.AddRange(other.StopSequences);
+            }
+            else
+            {
+                foreach (var sequence in other.StopSequences)
+                {
+                    StopSequences.Add(sequence);
+                }
+            }
+        }
+
+        if (other.Tools is not null)
+        {
+            if (Tools is null)
+            {
+                Tools = [.. other.Tools];
+            }
+            else if (Tools is List<AITool> tools)
+            {
+                tools.AddRange(other.Tools);
+            }
+            else
+            {
+                foreach (var tool in other.Tools)
+                {
+                    Tools.Add(tool);
+                }
+            }
+        }
     }
 }

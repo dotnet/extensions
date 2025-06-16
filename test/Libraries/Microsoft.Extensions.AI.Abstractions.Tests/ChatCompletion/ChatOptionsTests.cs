@@ -14,42 +14,29 @@ public class ChatOptionsTests
     public void Constructor_Parameterless_PropsDefaulted()
     {
         ChatOptions options = new();
-        Assert.Null(options.ConversationId);
-        Assert.Null(options.Instructions);
-        Assert.Null(options.Temperature);
-        Assert.Null(options.MaxOutputTokens);
-        Assert.Null(options.TopP);
-        Assert.Null(options.TopK);
-        Assert.Null(options.FrequencyPenalty);
-        Assert.Null(options.PresencePenalty);
-        Assert.Null(options.Seed);
-        Assert.Null(options.ResponseFormat);
-        Assert.Null(options.ModelId);
-        Assert.Null(options.StopSequences);
+        AssertDefaults(options);
+        AssertDefaults(options.Clone());
+    }
+
+    private static void AssertDefaults(ChatOptions options)
+    {
+        Assert.Null(options.AdditionalProperties);
         Assert.Null(options.AllowMultipleToolCalls);
+        Assert.Null(options.ConversationId);
+        Assert.Null(options.FrequencyPenalty);
+        Assert.Null(options.Instructions);
+        Assert.Null(options.MaxOutputTokens);
+        Assert.Null(options.ModelId);
+        Assert.Null(options.PresencePenalty);
+        Assert.Null(options.ResponseFormat);
+        Assert.Null(options.Temperature);
+        Assert.Null(options.RawRepresentationFactory);
+        Assert.Null(options.Seed);
+        Assert.Null(options.StopSequences);
+        Assert.Null(options.TopK);
+        Assert.Null(options.TopP);
         Assert.Null(options.ToolMode);
         Assert.Null(options.Tools);
-        Assert.Null(options.AdditionalProperties);
-        Assert.Null(options.RawRepresentationFactory);
-
-        ChatOptions clone = options.Clone();
-        Assert.Null(clone.ConversationId);
-        Assert.Null(clone.Instructions);
-        Assert.Null(clone.Temperature);
-        Assert.Null(clone.MaxOutputTokens);
-        Assert.Null(clone.TopP);
-        Assert.Null(clone.TopK);
-        Assert.Null(clone.FrequencyPenalty);
-        Assert.Null(clone.PresencePenalty);
-        Assert.Null(clone.Seed);
-        Assert.Null(clone.ResponseFormat);
-        Assert.Null(clone.ModelId);
-        Assert.Null(clone.StopSequences);
-        Assert.Null(clone.AllowMultipleToolCalls);
-        Assert.Null(clone.ToolMode);
-        Assert.Null(clone.Tools);
-        Assert.Null(clone.AdditionalProperties);
-        Assert.Null(clone.RawRepresentationFactory);
     }
 
     [Fact]
@@ -129,6 +116,90 @@ public class ChatOptionsTests
         Assert.Equal(tools, clone.Tools);
         Assert.Same(rawRepresentationFactory, clone.RawRepresentationFactory);
         Assert.Equal(additionalProps, clone.AdditionalProperties);
+    }
+
+    [Fact]
+    public void Merge_MembersCopiedOver()
+    {
+        using TestChatClient cc1 = new();
+        using TestChatClient cc2 = new();
+        using TestChatClient cc3 = new();
+
+        ChatOptions options = new();
+        AssertDefaults(options);
+
+        options.Merge(null);
+        AssertDefaults(options);
+
+        options.Merge(new ChatOptions());
+        AssertDefaults(options);
+
+        options.Merge(new()
+        {
+            AdditionalProperties = new() { ["key"] = "value" },
+            AllowMultipleToolCalls = true,
+            ConversationId = "12345",
+            FrequencyPenalty = 0.1f,
+            Instructions = "Some instructions",
+            MaxOutputTokens = 10,
+            ModelId = "modelId",
+            PresencePenalty = 0.2f,
+            RawRepresentationFactory = c => c == cc1 ? new FormatException() : null,
+            ResponseFormat = ChatResponseFormat.Json,
+            Seed = 12345,
+            StopSequences = ["stop1", "stop2"],
+            Temperature = 0.3f,
+            ToolMode = ChatToolMode.RequireAny,
+            TopK = 5,
+            TopP = 0.4f,
+            Tools = [AIFunctionFactory.Create(() => 42), AIFunctionFactory.Create(() => 43)],
+        });
+
+        Assert.NotNull(options.AdditionalProperties);
+        Assert.Single(options.AdditionalProperties);
+        Assert.True(options.AdditionalProperties.ContainsKey("key"));
+        Assert.IsType<FormatException>(options.RawRepresentationFactory?.Invoke(cc1));
+        Assert.Null(options.RawRepresentationFactory?.Invoke(cc2));
+        Assert.Null(options.RawRepresentationFactory?.Invoke(cc3));
+
+        Assert.True(options.AllowMultipleToolCalls);
+        Assert.Equal("12345", options.ConversationId);
+        Assert.Equal(0.1f, options.FrequencyPenalty);
+        Assert.Equal("Some instructions", options.Instructions);
+        Assert.Equal(10, options.MaxOutputTokens);
+        Assert.Equal("modelId", options.ModelId);
+        Assert.Equal(0.2f, options.PresencePenalty);
+        Assert.NotNull(options.RawRepresentationFactory);
+        Assert.Same(ChatResponseFormat.Json, options.ResponseFormat);
+        Assert.Equal(12345, options.Seed);
+        Assert.Equal(["stop1", "stop2"], options.StopSequences);
+        Assert.Equal(0.3f, options.Temperature);
+        Assert.Same(ChatToolMode.RequireAny, options.ToolMode);
+        Assert.Equal(5, options.TopK);
+        Assert.Equal(0.4f, options.TopP);
+        Assert.NotNull(options.Tools);
+        Assert.Equal(2, options.Tools.Count);
+
+        options.Merge(new()
+        {
+            AdditionalProperties = new() { ["key2"] = "value2" },
+            Instructions = "Updated instructions",
+            MaxOutputTokens = 42,
+            RawRepresentationFactory = c => c == cc2 ? new ArgumentException() : null,
+            Tools = [AIFunctionFactory.Create(() => 44)],
+        });
+
+        Assert.Equal("Some instructions", options.Instructions);
+        Assert.Equal(10, options.MaxOutputTokens);
+        Assert.NotNull(options.AdditionalProperties);
+        Assert.Equal(2, options.AdditionalProperties.Count);
+        Assert.True(options.AdditionalProperties.ContainsKey("key"));
+        Assert.True(options.AdditionalProperties.ContainsKey("key2"));
+        Assert.NotNull(options.Tools);
+        Assert.Equal(3, options.Tools.Count);
+        Assert.IsType<FormatException>(options.RawRepresentationFactory?.Invoke(cc1));
+        Assert.IsType<ArgumentException>(options.RawRepresentationFactory?.Invoke(cc2));
+        Assert.Null(options.RawRepresentationFactory?.Invoke(cc3));
     }
 
     [Fact]

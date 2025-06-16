@@ -13,14 +13,16 @@ public class EmbeddingGenerationOptionsTests
     public void Constructor_Parameterless_PropsDefaulted()
     {
         EmbeddingGenerationOptions options = new();
-        Assert.Null(options.ModelId);
+        AssertDefaults(options);
+        AssertDefaults(options.Clone());
+    }
+
+    private static void AssertDefaults(EmbeddingGenerationOptions options)
+    {
         Assert.Null(options.AdditionalProperties);
         Assert.Null(options.Dimensions);
-
-        EmbeddingGenerationOptions clone = options.Clone();
-        Assert.Null(clone.ModelId);
-        Assert.Null(clone.AdditionalProperties);
-        Assert.Null(clone.Dimensions);
+        Assert.Null(options.ModelId);
+        Assert.Null(options.RawRepresentationFactory);
     }
 
     [Fact]
@@ -29,6 +31,57 @@ public class EmbeddingGenerationOptionsTests
         EmbeddingGenerationOptions options = new();
         Assert.Throws<ArgumentOutOfRangeException>("value", () => options.Dimensions = 0);
         Assert.Throws<ArgumentOutOfRangeException>("value", () => options.Dimensions = -1);
+    }
+
+    [Fact]
+    public void Merge_MembersCopiedOver()
+    {
+        using TestEmbeddingGenerator g1 = new();
+        using TestEmbeddingGenerator g2 = new();
+        using TestEmbeddingGenerator g3 = new();
+
+        EmbeddingGenerationOptions options = new();
+        AssertDefaults(options);
+
+        options.Merge(null);
+        AssertDefaults(options);
+
+        options.Merge(new EmbeddingGenerationOptions());
+        AssertDefaults(options);
+
+        options.Merge(new()
+        {
+            AdditionalProperties = new() { ["key"] = "value" },
+            Dimensions = 1536,
+            ModelId = "modelId",
+            RawRepresentationFactory = c => c == g1 ? new FormatException() : null,
+        });
+
+        Assert.Equal(1536, options.Dimensions);
+        Assert.Equal("modelId", options.ModelId);
+        Assert.NotNull(options.AdditionalProperties);
+        Assert.Single(options.AdditionalProperties);
+        Assert.True(options.AdditionalProperties.ContainsKey("key"));
+        Assert.IsType<FormatException>(options.RawRepresentationFactory?.Invoke(g1));
+        Assert.Null(options.RawRepresentationFactory?.Invoke(g2));
+        Assert.Null(options.RawRepresentationFactory?.Invoke(g3));
+
+        options.Merge(new()
+        {
+            AdditionalProperties = new() { ["key2"] = "value2" },
+            Dimensions = 386,
+            RawRepresentationFactory = c => c == g2 ? new ArgumentException() : null,
+        });
+
+        Assert.Equal(1536, options.Dimensions);
+        Assert.Equal("modelId", options.ModelId);
+        Assert.NotNull(options.AdditionalProperties);
+        Assert.Equal(2, options.AdditionalProperties.Count);
+        Assert.True(options.AdditionalProperties.ContainsKey("key"));
+        Assert.True(options.AdditionalProperties.ContainsKey("key2"));
+        Assert.IsType<FormatException>(options.RawRepresentationFactory?.Invoke(g1));
+        Assert.IsType<ArgumentException>(options.RawRepresentationFactory?.Invoke(g2));
+        Assert.Null(options.RawRepresentationFactory?.Invoke(g3));
     }
 
     [Fact]
