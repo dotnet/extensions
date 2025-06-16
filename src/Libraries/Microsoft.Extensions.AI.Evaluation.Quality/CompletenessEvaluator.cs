@@ -54,7 +54,6 @@ public sealed class CompletenessEvaluator : IEvaluator
             Temperature = 0.0f,
             MaxOutputTokens = 800,
             TopP = 1.0f,
-            Seed = 123,
             PresencePenalty = 0.0f,
             FrequencyPenalty = 0.0f,
             ResponseFormat = ChatResponseFormat.Text
