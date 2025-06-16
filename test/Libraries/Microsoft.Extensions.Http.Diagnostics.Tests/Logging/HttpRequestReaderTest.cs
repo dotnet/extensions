@@ -54,6 +54,7 @@ public class HttpRequestReaderTest
             ResponseHeaders = [new("Header2", Redacted), new("Header3", Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
+            QueryParameters = []
         };
 
         var options = new LoggingOptions
@@ -120,6 +121,7 @@ public class HttpRequestReaderTest
             StatusCode = 200,
             RequestBody = requestContent,
             ResponseBody = responseContent,
+            QueryParameters = []
         };
 
         var options = new LoggingOptions
@@ -180,6 +182,7 @@ public class HttpRequestReaderTest
             ResponseHeaders = [new("Header2", Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
+            QueryParameters = []
         };
 
         var opts = new LoggingOptions
@@ -251,7 +254,8 @@ public class HttpRequestReaderTest
             ResponseHeaders = [new("Header2", Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
-            PathParametersCount = 1
+            PathParametersCount = 1,
+            QueryParameters = []
         };
 
         var opts = new LoggingOptions
@@ -325,6 +329,7 @@ public class HttpRequestReaderTest
             Path = "/foo/bar/123",
             RequestHeaders = [new("Header1", Redacted)],
             RequestBody = requestContent,
+            QueryParameters = []
         };
 
         var opts = new LoggingOptions
@@ -385,6 +390,7 @@ public class HttpRequestReaderTest
             ResponseHeaders = [new("Header2", Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
+            QueryParameters = []
         };
 
         var opts = new LoggingOptions
@@ -456,6 +462,7 @@ public class HttpRequestReaderTest
             ResponseHeaders = [new("Header2", Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
+            QueryParameters = []
         };
 
         var opts = new LoggingOptions
@@ -523,6 +530,7 @@ public class HttpRequestReaderTest
             ResponseHeaders = [new("Header2", Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
+            QueryParameters = []
         };
 
         var opts = new LoggingOptions
@@ -572,6 +580,63 @@ public class HttpRequestReaderTest
 
         actualRecord.Should().BeEquivalentTo(expectedRecord);
     }
+
+[Fact]
+public async Task ReadAsync_LogsQueryParameters_WhenEnabled()
+{
+    var requestContent = _fixture.Create<string>();
+    var queryParamName = "userId";
+    var queryParamValue = "12345";
+    var redactedValue = "REDACTED";
+
+    var options = new LoggingOptions
+    {
+        LogQueryParameters = true,
+        RequestQueryParametersDataClasses = new Dictionary<string, DataClassification>
+        {
+            { queryParamName, FakeTaxonomy.PrivateData }
+        },
+        BodySizeLimit = 32000,
+        BodyReadTimeout = TimeSpan.FromMinutes(5),
+        LogBody = true
+    };
+
+    var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
+    mockHeadersRedactor
+        .Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
+        .Returns(redactedValue);
+
+    var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), mockHeadersRedactor.Object);
+    await using var serviceProvider = GetServiceProvider(headersReader);
+
+    var reader = new HttpRequestReader(
+        serviceProvider,
+        options.ToOptionsMonitor(),
+        serviceProvider.GetRequiredService<IHttpRouteFormatter>(),
+        serviceProvider.GetRequiredService<IHttpRouteParser>(),
+        RequestMetadataContext);
+
+    var uri = new Uri($"http://{RequestedHost}/api/resource?{queryParamName}={queryParamValue}");
+
+    using var httpRequestMessage = new HttpRequestMessage
+    {
+        Method = HttpMethod.Get,
+        RequestUri = uri,
+        Content = new StringContent(requestContent, Encoding.UTF8, "text/plain")
+    };
+
+    var logRecord = new LogRecord();
+    var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
+    await reader.ReadRequestAsync(logRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
+
+#if NET462
+    logRecord.QueryParameters.Should().BeEmpty();
+#else
+    logRecord.QueryParameters.Should().NotBeNull();
+    logRecord.QueryParameters.Should().ContainSingle(qp =>
+        qp.Key == queryParamName && qp.Value == redactedValue);
+#endif
+}
 
     private static ServiceProvider GetServiceProvider(
         HttpHeadersReader headersReader,

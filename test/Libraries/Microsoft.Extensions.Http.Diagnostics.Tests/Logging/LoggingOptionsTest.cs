@@ -130,4 +130,19 @@ public class LoggingOptionsTest
 
         _sut.RouteParameterDataClasses.Should().BeEquivalentTo(paramsToRedacts);
     }
+
+    [Fact]
+    public void LogQueryParameters_DefaultsToFalse()
+    {
+        var options = new LoggingOptions();
+        Assert.False(options.LogQueryParameters);
+    }
+
+
+    [Fact]
+    public void LogQueryParameters_CanBeSet()
+    {
+        var options = new LoggingOptions { LogQueryParameters = true };
+        Assert.True(options.LogQueryParameters);
+    }
 }

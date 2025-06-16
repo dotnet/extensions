@@ -24,16 +24,18 @@ internal sealed class HttpRequestReader : IHttpRequestReader
     private readonly IHttpRouteParser _httpRouteParser;
     private readonly IHttpHeadersReader _httpHeadersReader;
     private readonly FrozenDictionary<string, DataClassification> _defaultSensitiveParameters;
+    private readonly FrozenDictionary<string, DataClassification> _queryParameterDataClasses;
 
     private readonly bool _logRequestBody;
     private readonly bool _logResponseBody;
+    private readonly bool _logRequestQueryParameters;
 
     private readonly bool _logRequestHeaders;
     private readonly bool _logResponseHeaders;
 
     private readonly HttpRouteParameterRedactionMode _routeParameterRedactionMode;
 
-    // These are not registered in DI as handler today is public and we would need to make all of those types public.
+    // These are not registered in DI as handler today is public, and we would need to make all of those types public.
     // They are not implemented as statics to simplify design and pass less arguments around.
     // Also wanted to encapsulate logic of reading each part of the request to simplify handler logic itself.
     private readonly HttpRequestBodyReader _httpRequestBodyReader;
@@ -78,6 +80,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
         _downstreamDependencyMetadataManager = downstreamDependencyMetadataManager;
 
         _defaultSensitiveParameters = options.RouteParameterDataClasses.ToFrozenDictionary(StringComparer.Ordinal);
+        _queryParameterDataClasses = options.RequestQueryParametersDataClasses.ToFrozenDictionary(StringComparer.Ordinal);
 
         if (options.LogBody)
         {
@@ -87,6 +90,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
 
         _logRequestHeaders = options.RequestHeadersDataClasses.Count > 0;
         _logResponseHeaders = options.ResponseHeadersDataClasses.Count > 0;
+        _logRequestQueryParameters = options.RequestQueryParametersDataClasses.Count > 0;
 
         _httpRequestBodyReader = new HttpRequestBodyReader(options);
         _httpResponseBodyReader = new HttpResponseBodyReader(options);
@@ -95,7 +99,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
     }
 
     public async Task ReadRequestAsync(LogRecord logRecord, HttpRequestMessage request,
-        List<KeyValuePair<string, string>>? requestHeadersBuffer, CancellationToken cancellationToken)
+    List<KeyValuePair<string, string>>? requestHeadersBuffer, CancellationToken cancellationToken)
     {
         logRecord.Host = request.RequestUri?.Host ?? TelemetryConstants.Unknown;
         logRecord.Method = request.Method;
@@ -113,8 +117,31 @@ internal sealed class HttpRequestReader : IHttpRequestReader
                 .ConfigureAwait(false);
         }
 
-        logRecord.QueryParameters = ParseQueryParameters(request.RequestUri?.Query, out int paramCount);
-        logRecord.QueryParametersCount = paramCount;
+#if !NET462
+        if (_logRequestQueryParameters && request.RequestUri is not null)
+        {
+            var parsed = HttpUtility.ParseQueryString(request.RequestUri.Query);
+            var filtered = new List<KeyValuePair<string, string?>>();
+            foreach (var kvp in _queryParameterDataClasses)
+            {
+                var value = parsed[kvp.Key];
+                if (value != null)
+                {
+                    var redacted = _httpHeadersReader is HttpHeadersReader realReader
+                        ? realReader.RedactValue(value, kvp.Value)
+                        : value;
+                    filtered.Add(new KeyValuePair<string, string?>(kvp.Key, redacted));
+                }
+            }
+            logRecord.QueryParameters = filtered.ToArray();
+            logRecord.QueryParametersCount = filtered.Count;
+        }
+        else
+#endif
+        {
+            logRecord.QueryParameters = [];
+            logRecord.QueryParametersCount = 0;
+        }
     }
 
     public async Task ReadResponseAsync(LogRecord logRecord, HttpResponseMessage response,

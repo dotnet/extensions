@@ -37,6 +37,29 @@ public class LoggingOptions
     public bool LogRequestStart { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether HTTP request query string parameters are logged.
+    /// </summary>
+    /// <value>
+    /// The default value is <see langword="false"/>.
+    /// </value>
+    public bool LogQueryParameters { get; set; }
+
+    /// <summary>
+    /// Gets or sets the set of HTTP request query parameters to log and their respective data classifications to use for redaction.
+    /// </summary>
+    /// <value>
+    /// The default value is <see cref="HashSet{T}"/>.
+    /// </value>
+    /// <remarks>
+    /// If empty, no HTTP request query parameters will be logged.
+    /// If the data class is <see cref="DataClassification.None"/>, no redaction will be done.
+    /// </remarks>
+    [SuppressMessage("Usage", "CA2227:Collection properties should be read only",
+        Justification = "Options pattern.")]
+    [Required]
+    public IDictionary<string, DataClassification> RequestQueryParametersDataClasses { get; set; } = new Dictionary<string, DataClassification>();
+
+    /// <summary>
     /// Gets or sets a value indicating whether the HTTP request and response body are logged.
     /// </summary>
     /// <value>
