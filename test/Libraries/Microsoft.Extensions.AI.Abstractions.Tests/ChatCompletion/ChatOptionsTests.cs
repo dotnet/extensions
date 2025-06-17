@@ -119,7 +119,7 @@ public class ChatOptionsTests
     }
 
     [Fact]
-    public void Merge_MembersCopiedOver()
+    public void Merge_MembersCopiedOver_Default()
     {
         using TestChatClient cc1 = new();
         using TestChatClient cc2 = new();
@@ -157,7 +157,7 @@ public class ChatOptionsTests
 
         Assert.NotNull(options.AdditionalProperties);
         Assert.Single(options.AdditionalProperties);
-        Assert.True(options.AdditionalProperties.ContainsKey("key"));
+        Assert.Equal("value", options.AdditionalProperties["key"]);
         Assert.IsType<FormatException>(options.RawRepresentationFactory?.Invoke(cc1));
         Assert.Null(options.RawRepresentationFactory?.Invoke(cc2));
         Assert.Null(options.RawRepresentationFactory?.Invoke(cc3));
@@ -182,7 +182,7 @@ public class ChatOptionsTests
 
         options.Merge(new()
         {
-            AdditionalProperties = new() { ["key2"] = "value2" },
+            AdditionalProperties = new() { ["key"] = "changedvalue", ["key2"] = "value2" },
             Instructions = "Updated instructions",
             MaxOutputTokens = 42,
             RawRepresentationFactory = c => c == cc2 ? new ArgumentException() : null,
@@ -193,11 +193,95 @@ public class ChatOptionsTests
         Assert.Equal(10, options.MaxOutputTokens);
         Assert.NotNull(options.AdditionalProperties);
         Assert.Equal(2, options.AdditionalProperties.Count);
-        Assert.True(options.AdditionalProperties.ContainsKey("key"));
-        Assert.True(options.AdditionalProperties.ContainsKey("key2"));
+        Assert.Equal("value", options.AdditionalProperties["key"]);
+        Assert.Equal("value2", options.AdditionalProperties["key2"]);
         Assert.NotNull(options.Tools);
         Assert.Equal(3, options.Tools.Count);
         Assert.IsType<FormatException>(options.RawRepresentationFactory?.Invoke(cc1));
+        Assert.IsType<ArgumentException>(options.RawRepresentationFactory?.Invoke(cc2));
+        Assert.Null(options.RawRepresentationFactory?.Invoke(cc3));
+    }
+
+    [Fact]
+    public void Merge_MembersCopiedOver_Overwrite()
+    {
+        using TestChatClient cc1 = new();
+        using TestChatClient cc2 = new();
+        using TestChatClient cc3 = new();
+
+        ChatOptions options = new();
+        AssertDefaults(options);
+
+        options.Merge(null, overwrite: true);
+        AssertDefaults(options);
+
+        options.Merge(new ChatOptions(), overwrite: true);
+        AssertDefaults(options);
+
+        options.Merge(new()
+        {
+            AdditionalProperties = new() { ["key"] = "value" },
+            AllowMultipleToolCalls = true,
+            ConversationId = "12345",
+            FrequencyPenalty = 0.1f,
+            Instructions = "Some instructions",
+            MaxOutputTokens = 10,
+            ModelId = "modelId",
+            PresencePenalty = 0.2f,
+            RawRepresentationFactory = c => c == cc1 ? new FormatException() : null,
+            ResponseFormat = ChatResponseFormat.Json,
+            Seed = 12345,
+            StopSequences = ["stop1", "stop2"],
+            Temperature = 0.3f,
+            ToolMode = ChatToolMode.RequireAny,
+            TopK = 5,
+            TopP = 0.4f,
+            Tools = [AIFunctionFactory.Create(() => 42), AIFunctionFactory.Create(() => 43)],
+        }, overwrite: true);
+
+        Assert.NotNull(options.AdditionalProperties);
+        Assert.Single(options.AdditionalProperties);
+        Assert.Equal("value", options.AdditionalProperties["key"]);
+        Assert.IsType<FormatException>(options.RawRepresentationFactory?.Invoke(cc1));
+        Assert.Null(options.RawRepresentationFactory?.Invoke(cc2));
+        Assert.Null(options.RawRepresentationFactory?.Invoke(cc3));
+
+        Assert.True(options.AllowMultipleToolCalls);
+        Assert.Equal("12345", options.ConversationId);
+        Assert.Equal(0.1f, options.FrequencyPenalty);
+        Assert.Equal("Some instructions", options.Instructions);
+        Assert.Equal(10, options.MaxOutputTokens);
+        Assert.Equal("modelId", options.ModelId);
+        Assert.Equal(0.2f, options.PresencePenalty);
+        Assert.NotNull(options.RawRepresentationFactory);
+        Assert.Same(ChatResponseFormat.Json, options.ResponseFormat);
+        Assert.Equal(12345, options.Seed);
+        Assert.Equal(["stop1", "stop2"], options.StopSequences);
+        Assert.Equal(0.3f, options.Temperature);
+        Assert.Same(ChatToolMode.RequireAny, options.ToolMode);
+        Assert.Equal(5, options.TopK);
+        Assert.Equal(0.4f, options.TopP);
+        Assert.NotNull(options.Tools);
+        Assert.Equal(2, options.Tools.Count);
+
+        options.Merge(new()
+        {
+            AdditionalProperties = new() { ["key"] = "changedvalue", ["key2"] = "value2" },
+            Instructions = "Updated instructions",
+            MaxOutputTokens = 42,
+            RawRepresentationFactory = c => c == cc2 ? new ArgumentException() : null,
+            Tools = [AIFunctionFactory.Create(() => 44)],
+        }, overwrite: true);
+
+        Assert.Equal("Updated instructions", options.Instructions);
+        Assert.Equal(42, options.MaxOutputTokens);
+        Assert.NotNull(options.AdditionalProperties);
+        Assert.Equal(2, options.AdditionalProperties.Count);
+        Assert.Equal("changedvalue", options.AdditionalProperties["key"]);
+        Assert.Equal("value2", options.AdditionalProperties["key2"]);
+        Assert.NotNull(options.Tools);
+        Assert.Single(options.Tools);
+        Assert.Null(options.RawRepresentationFactory?.Invoke(cc1));
         Assert.IsType<ArgumentException>(options.RawRepresentationFactory?.Invoke(cc2));
         Assert.Null(options.RawRepresentationFactory?.Invoke(cc3));
     }

@@ -910,7 +910,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "virtual void Microsoft.Extensions.AI.ChatOptions.Merge(Microsoft.Extensions.AI.ChatOptions? other);",
+          "Member": "virtual void Microsoft.Extensions.AI.ChatOptions.Merge(Microsoft.Extensions.AI.ChatOptions? other, bool overwrite = false);",
           "Stage": "Stable"
         }
       ],
@@ -1524,7 +1524,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "virtual void Microsoft.Extensions.AI.EmbeddingGenerationOptions.Merge(Microsoft.Extensions.AI.EmbeddingGenerationOptions? other);",
+          "Member": "virtual void Microsoft.Extensions.AI.EmbeddingGenerationOptions.Merge(Microsoft.Extensions.AI.EmbeddingGenerationOptions? other, bool overwrite = false);",
           "Stage": "Stable"
         }
       ],

@@ -27,7 +27,7 @@ public class SpeechToTextOptionsTests
     }
 
     [Fact]
-    public void Merge_MembersCopiedOver()
+    public void Merge_MembersCopiedOver_Default()
     {
         using TestSpeechToTextClient c1 = new();
         using TestSpeechToTextClient c2 = new();
@@ -82,6 +82,68 @@ public class SpeechToTextOptionsTests
         Assert.True(options.AdditionalProperties.ContainsKey("key"));
         Assert.True(options.AdditionalProperties.ContainsKey("key2"));
         Assert.IsType<FormatException>(options.RawRepresentationFactory?.Invoke(c1));
+        Assert.IsType<ArgumentException>(options.RawRepresentationFactory?.Invoke(c2));
+        Assert.Null(options.RawRepresentationFactory?.Invoke(c3));
+    }
+
+    [Fact]
+    public void Merge_MembersCopiedOver_Overwrite()
+    {
+        using TestSpeechToTextClient c1 = new();
+        using TestSpeechToTextClient c2 = new();
+        using TestSpeechToTextClient c3 = new();
+
+        SpeechToTextOptions options = new();
+        AssertDefaults(options);
+
+        options.Merge(null, overwrite: true);
+        AssertDefaults(options);
+
+        options.Merge(new SpeechToTextOptions(), overwrite: true);
+        AssertDefaults(options);
+
+        options.Merge(new()
+        {
+            AdditionalProperties = new() { ["key"] = "value", ["key2"] = "value2" },
+            SpeechLanguage = "en-US",
+            SpeechSampleRate = 44100,
+            TextLanguage = "fr-FR",
+            ModelId = "modelId",
+            RawRepresentationFactory = c => c == c1 ? new FormatException() : null,
+        }, overwrite: true);
+
+        Assert.Equal("en-US", options.SpeechLanguage);
+        Assert.Equal("fr-FR", options.TextLanguage);
+        Assert.Equal(44100, options.SpeechSampleRate);
+        Assert.Equal("modelId", options.ModelId);
+        Assert.NotNull(options.AdditionalProperties);
+        Assert.Equal(2, options.AdditionalProperties.Count);
+        Assert.Equal("value", options.AdditionalProperties["key"]);
+        Assert.Equal("value2", options.AdditionalProperties["key2"]);
+        Assert.IsType<FormatException>(options.RawRepresentationFactory?.Invoke(c1));
+        Assert.Null(options.RawRepresentationFactory?.Invoke(c2));
+        Assert.Null(options.RawRepresentationFactory?.Invoke(c3));
+
+        options.Merge(new()
+        {
+            AdditionalProperties = new() { ["key"] = "changedvalue", ["key3"] = "value3" },
+            SpeechLanguage = "fr-FR",
+            SpeechSampleRate = 12345,
+            TextLanguage = "de-DE",
+            ModelId = "modelId2",
+            RawRepresentationFactory = c => c == c2 ? new ArgumentException() : null,
+        }, overwrite: true);
+
+        Assert.Equal("fr-FR", options.SpeechLanguage);
+        Assert.Equal("de-DE", options.TextLanguage);
+        Assert.Equal(12345, options.SpeechSampleRate);
+        Assert.Equal("modelId2", options.ModelId);
+        Assert.NotNull(options.AdditionalProperties);
+        Assert.Equal(3, options.AdditionalProperties.Count);
+        Assert.Equal("changedvalue", options.AdditionalProperties["key"]);
+        Assert.Equal("value2", options.AdditionalProperties["key2"]);
+        Assert.Equal("value3", options.AdditionalProperties["key3"]);
+        Assert.Null(options.RawRepresentationFactory?.Invoke(c1));
         Assert.IsType<ArgumentException>(options.RawRepresentationFactory?.Invoke(c2));
         Assert.Null(options.RawRepresentationFactory?.Invoke(c3));
     }

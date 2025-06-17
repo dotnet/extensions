@@ -181,37 +181,70 @@ public class ChatOptions
 
     /// <summary>Merges the options specified by <paramref name="other"/> into this instance.</summary>
     /// <param name="other">The other options to be merged into this instance.</param>
+    /// <param name="overwrite">
+    /// If <see langword="true"/>, properties on this instance will be overwritten by the values from <paramref name="other"/>;
+    /// if <see langword="false"/>, properties on this instance will only be updated if they are <see langword="null"/> on this instance.
+    /// The default is <see langword="false"/>.
+    /// </param>
     /// <remarks>
     /// Merging works by copying the values from <paramref name="other"/> into this instance.
-    /// For properties of primitive types, like <see cref="Temperature"/> or <see cref="MaxOutputTokens"/>,
-    /// the value will be copied only if it is <see langword="null"/> on this instance. For properties of
-    /// list types, like <see cref="StopSequences"/> or <see cref="Tools"/>, the elements of <paramref name="other"/>'s
-    /// collection will be added into the corresponding collection on this instance (no deduplication is performed). For properties of
-    /// dictionary types, like <see cref="AdditionalProperties"/>, a shallow copy is performed on the entries from <paramref name="other"/>,
-    /// adding them into the corresponding dictionary on this instance, but only if the key does not already exist in this
-    /// instance's dictionary.
+    /// <para>
+    /// When <paramref name="overwrite"/> is <see langword="false"/> (the default):
+    /// <list type="bullet">
+    ///   <item>
+    ///     <description>For properties of primitive types (like <see cref="Temperature"/> or <see cref="MaxOutputTokens"/>), 
+    ///     properties on this instance will only be updated if they are <see langword="null"/>.</description>
+    ///   </item>
+    ///   <item>
+    ///     <description>For list types (like <see cref="StopSequences"/> or <see cref="Tools"/>), 
+    ///     the elements of <paramref name="other"/>'s collection will be added into the corresponding collection 
+    ///     on this instance (no deduplication is performed).</description>
+    ///   </item>
+    ///   <item>
+    ///     <description>For dictionary types (like <see cref="AdditionalProperties"/>), a shallow copy is performed 
+    ///     on the entries from <paramref name="other"/>, adding them into the corresponding dictionary on this instance, 
+    ///     but only if the key does not already exist in this instance's dictionary.</description>
+    ///   </item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// When <paramref name="overwrite"/> is <see langword="true"/>, any non-<see langword="null"/> properties on <paramref name="other"/> will
+    /// overwrite the corresponding properties on this instance.
+    /// <list type="bullet">
+    ///   <item>
+    ///     <description>For properties of primitive types (like <see cref="Temperature"/> or <see cref="MaxOutputTokens"/>), 
+    ///     properties on this instance will be updated with values from <paramref name="other"/> if they're non-<see langword="null"/>
+    ///     on <paramref name="other"/>.</description>
+    ///   </item>
+    ///   <item>
+    ///     <description>For list types (like <see cref="StopSequences"/> or <see cref="Tools"/>), 
+    ///     values from <paramref name="other"/> will replace any existing collections on this instance if the collection
+    ///     is non-<see langword="null"/> on <paramref name="other"/></description>
+    ///   </item>
+    ///   <item>
+    ///     <description>For dictionary types (like <see cref="AdditionalProperties"/>), entries from <paramref name="other"/> 
+    ///     will be stored into this instance's dictionary, overwriting any entries with the same key in this instance's dictionary.</description>
+    ///   </item>
+    /// </list>
+    /// </para>
     /// </remarks>
-    public virtual void Merge(ChatOptions? other)
+    public virtual void Merge(ChatOptions? other, bool overwrite = false)
     {
-        if (other is null)
+        if (other is not null)
         {
-            return;
+            if (overwrite)
+            {
+                MergeOverwrite(other);
+            }
+            else
+            {
+                MergeDefault(other);
+            }
         }
+    }
 
-        AllowMultipleToolCalls ??= other.AllowMultipleToolCalls;
-        ConversationId ??= other.ConversationId;
-        FrequencyPenalty ??= other.FrequencyPenalty;
-        Instructions ??= other.Instructions;
-        MaxOutputTokens ??= other.MaxOutputTokens;
-        ModelId ??= other.ModelId;
-        PresencePenalty ??= other.PresencePenalty;
-        ResponseFormat ??= other.ResponseFormat;
-        Seed ??= other.Seed;
-        Temperature ??= other.Temperature;
-        ToolMode ??= other.ToolMode;
-        TopK ??= other.TopK;
-        TopP ??= other.TopP;
-
+    private void MergeDefault(ChatOptions other)
+    {
         if (other.AdditionalProperties is { Count: > 0 })
         {
             if (AdditionalProperties is null)
@@ -227,12 +260,30 @@ public class ChatOptions
             }
         }
 
+        AllowMultipleToolCalls ??= other.AllowMultipleToolCalls;
+
+        ConversationId ??= other.ConversationId;
+
+        FrequencyPenalty ??= other.FrequencyPenalty;
+
+        Instructions ??= other.Instructions;
+
+        MaxOutputTokens ??= other.MaxOutputTokens;
+
+        ModelId ??= other.ModelId;
+
+        PresencePenalty ??= other.PresencePenalty;
+
         if (other.RawRepresentationFactory is { } otherRrf)
         {
             RawRepresentationFactory = RawRepresentationFactory is { } originalRrf ?
                 client => originalRrf(client) ?? otherRrf(client) :
                 otherRrf;
         }
+
+        ResponseFormat ??= other.ResponseFormat;
+
+        Seed ??= other.Seed;
 
         if (other.StopSequences is not null)
         {
@@ -253,6 +304,10 @@ public class ChatOptions
             }
         }
 
+        Temperature ??= other.Temperature;
+
+        ToolMode ??= other.ToolMode;
+
         if (other.Tools is not null)
         {
             if (Tools is null)
@@ -270,6 +325,141 @@ public class ChatOptions
                     Tools.Add(tool);
                 }
             }
+        }
+
+        TopK ??= other.TopK;
+
+        TopP ??= other.TopP;
+    }
+
+    private void MergeOverwrite(ChatOptions other)
+    {
+        if (other.AdditionalProperties is { Count: > 0 })
+        {
+            if (AdditionalProperties is null)
+            {
+                AdditionalProperties = other.AdditionalProperties.Clone();
+            }
+            else
+            {
+                AdditionalProperties.SetAll(other.AdditionalProperties);
+            }
+        }
+
+        if (other.AllowMultipleToolCalls is not null)
+        {
+            AllowMultipleToolCalls = other.AllowMultipleToolCalls;
+        }
+
+        if (other.ConversationId is not null)
+        {
+            ConversationId = other.ConversationId;
+        }
+
+        if (other.FrequencyPenalty is not null)
+        {
+            FrequencyPenalty = other.FrequencyPenalty;
+        }
+
+        if (other.Instructions is not null)
+        {
+            Instructions = other.Instructions;
+        }
+
+        if (other.MaxOutputTokens is not null)
+        {
+            MaxOutputTokens = other.MaxOutputTokens;
+        }
+
+        if (other.ModelId is not null)
+        {
+            ModelId = other.ModelId;
+        }
+
+        if (other.PresencePenalty is not null)
+        {
+            PresencePenalty = other.PresencePenalty;
+        }
+
+        if (other.RawRepresentationFactory is not null)
+        {
+            RawRepresentationFactory = other.RawRepresentationFactory;
+        }
+
+        if (other.ResponseFormat is not null)
+        {
+            ResponseFormat = other.ResponseFormat;
+        }
+
+        if (other.Seed is not null)
+        {
+            Seed = other.Seed;
+        }
+
+        if (other.StopSequences is not null)
+        {
+            if (StopSequences is null)
+            {
+                StopSequences = [.. other.StopSequences];
+            }
+            else
+            {
+                StopSequences.Clear();
+                if (StopSequences is List<string> stopSequences)
+                {
+                    stopSequences.AddRange(other.StopSequences);
+                }
+                else
+                {
+                    foreach (var sequence in other.StopSequences)
+                    {
+                        StopSequences.Add(sequence);
+                    }
+                }
+            }
+        }
+
+        if (other.Temperature is not null)
+        {
+            Temperature = other.Temperature;
+        }
+
+        if (other.ToolMode is not null)
+        {
+            ToolMode = other.ToolMode;
+        }
+
+        if (other.Tools is not null)
+        {
+            if (Tools is null)
+            {
+                Tools = [.. other.Tools];
+            }
+            else
+            {
+                Tools.Clear();
+                if (Tools is List<AITool> tools)
+                {
+                    tools.AddRange(other.Tools);
+                }
+                else
+                {
+                    foreach (var tool in other.Tools)
+                    {
+                        Tools.Add(tool);
+                    }
+                }
+            }
+        }
+
+        if (other.TopK is not null)
+        {
+            TopK = other.TopK;
+        }
+
+        if (other.TopP is not null)
+        {
+            TopP = other.TopP;
         }
     }
 }
