@@ -15,6 +15,7 @@ public class ChatOptionsTests
     {
         ChatOptions options = new();
         Assert.Null(options.ConversationId);
+        Assert.Null(options.Instructions);
         Assert.Null(options.Temperature);
         Assert.Null(options.MaxOutputTokens);
         Assert.Null(options.TopP);
@@ -33,6 +34,7 @@ public class ChatOptionsTests
 
         ChatOptions clone = options.Clone();
         Assert.Null(clone.ConversationId);
+        Assert.Null(clone.Instructions);
         Assert.Null(clone.Temperature);
         Assert.Null(clone.MaxOutputTokens);
         Assert.Null(clone.TopP);
@@ -75,6 +77,7 @@ public class ChatOptionsTests
         Func<IChatClient, object?> rawRepresentationFactory = (c) => null;
 
         options.ConversationId = "12345";
+        options.Instructions = "Some instructions";
         options.Temperature = 0.1f;
         options.MaxOutputTokens = 2;
         options.TopP = 0.3f;
@@ -92,6 +95,7 @@ public class ChatOptionsTests
         options.AdditionalProperties = additionalProps;
 
         Assert.Equal("12345", options.ConversationId);
+        Assert.Equal("Some instructions", options.Instructions);
         Assert.Equal(0.1f, options.Temperature);
         Assert.Equal(2, options.MaxOutputTokens);
         Assert.Equal(0.3f, options.TopP);
@@ -144,6 +148,7 @@ public class ChatOptionsTests
         };
 
         options.ConversationId = "12345";
+        options.Instructions = "Some instructions";
         options.Temperature = 0.1f;
         options.MaxOutputTokens = 2;
         options.TopP = 0.3f;
@@ -170,6 +175,7 @@ public class ChatOptionsTests
         Assert.NotNull(deserialized);
 
         Assert.Equal("12345", deserialized.ConversationId);
+        Assert.Equal("Some instructions", deserialized.Instructions);
         Assert.Equal(0.1f, deserialized.Temperature);
         Assert.Equal(2, deserialized.MaxOutputTokens);
         Assert.Equal(0.3f, deserialized.TopP);

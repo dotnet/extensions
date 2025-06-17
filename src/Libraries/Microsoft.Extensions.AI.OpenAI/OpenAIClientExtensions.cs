@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using OpenAI;
+using OpenAI.Assistants;
 using OpenAI.Audio;
 using OpenAI.Chat;
 using OpenAI.Embeddings;
@@ -24,6 +25,19 @@ public static class OpenAIClientExtensions
     /// <returns>An <see cref="IChatClient"/> that can be used to converse via the <see cref="OpenAIResponseClient"/>.</returns>
     public static IChatClient AsIChatClient(this OpenAIResponseClient responseClient) =>
         new OpenAIResponseChatClient(responseClient);
+
+    /// <summary>Gets an <see cref="IChatClient"/> for use with this <see cref="AssistantClient"/>.</summary>
+    /// <param name="assistantClient">The <see cref="AssistantClient"/> instance to be accessed as an <see cref="IChatClient"/>.</param>
+    /// <param name="assistantId">The unique identifier of the assistant with which to interact.</param>
+    /// <param name="threadId">
+    /// An optional existing thread identifier for the chat session. This serves as a default, and may be overridden per call to
+    /// <see cref="IChatClient.GetResponseAsync"/> or <see cref="IChatClient.GetStreamingResponseAsync"/> via the <see cref="ChatOptions.ConversationId"/>
+    /// property. If no thread ID is provided via either mechanism, a new thread will be created for the request.
+    /// </param>
+    /// <returns>An <see cref="IChatClient"/> instance configured to interact with the specified agent and thread.</returns>
+    [Experimental("OPENAI001")]
+    public static IChatClient AsIChatClient(this AssistantClient assistantClient, string assistantId, string? threadId = null) =>
+        new OpenAIAssistantChatClient(assistantClient, assistantId, threadId);
 
     /// <summary>Gets an <see cref="ISpeechToTextClient"/> for use with this <see cref="AudioClient"/>.</summary>
     /// <param name="audioClient">The client.</param>

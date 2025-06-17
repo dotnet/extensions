@@ -342,8 +342,8 @@ public abstract class ChatClientIntegrationTests : IDisposable
         // across all consituent calls, which means our final answer will be double.
         if (response.Usage is { } finalUsage)
         {
-            var totalInputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.input_tokens")!);
-            var totalOutputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.output_tokens")!);
+            var totalInputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.usage.input_tokens")!);
+            var totalOutputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.usage.output_tokens")!);
             Assert.Equal(totalInputTokens, finalUsage.InputTokenCount * 2);
             Assert.Equal(totalOutputTokens, finalUsage.OutputTokenCount * 2);
         }
@@ -618,9 +618,9 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         // Second time, the calls to the LLM don't happen, but the function is called again
         var secondResponse = await chatClient.GetResponseAsync([message]);
-        Assert.Equal(response.Text, secondResponse.Text);
         Assert.Equal(2, functionCallCount);
         Assert.Equal(FunctionInvokingChatClientSetsConversationId ? 3 : 2, llmCallCount!.CallCount);
+        Assert.Equal(response.Text, secondResponse.Text);
     }
 
     public virtual bool FunctionInvokingChatClientSetsConversationId => false;
@@ -785,8 +785,8 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.Equal(chatClient.GetService<ChatClientMetadata>()?.ProviderUri?.Port, (int)activity.GetTagItem("server.port")!);
         Assert.NotNull(activity.Id);
         Assert.NotEmpty(activity.Id);
-        Assert.NotEqual(0, (int)activity.GetTagItem("gen_ai.response.input_tokens")!);
-        Assert.NotEqual(0, (int)activity.GetTagItem("gen_ai.response.output_tokens")!);
+        Assert.NotEqual(0, (int)activity.GetTagItem("gen_ai.usage.input_tokens")!);
+        Assert.NotEqual(0, (int)activity.GetTagItem("gen_ai.usage.output_tokens")!);
 
         Assert.True(activity.Duration.TotalMilliseconds > 0);
     }

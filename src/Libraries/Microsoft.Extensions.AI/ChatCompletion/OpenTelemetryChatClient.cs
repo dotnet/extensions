@@ -400,12 +400,12 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
                 if (response.Usage?.InputTokenCount is long inputTokens)
                 {
-                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.InputTokens, (int)inputTokens);
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Usage.InputTokens, (int)inputTokens);
                 }
 
                 if (response.Usage?.OutputTokenCount is long outputTokens)
                 {
-                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.OutputTokens, (int)outputTokens);
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Usage.OutputTokens, (int)outputTokens);
                 }
 
                 if (_system is not null)

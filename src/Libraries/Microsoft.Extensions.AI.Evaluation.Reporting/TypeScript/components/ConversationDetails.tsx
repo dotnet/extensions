@@ -18,7 +18,7 @@ export const ConversationDetails = ({ messages, model, usage, selectedMetric }: 
 }) => {
     const classes = useStyles();
     const [isExpanded, setIsExpanded] = useState(true);
-    const { renderMarkdown } = useReportContext();
+    const { renderMarkdown, prettifyJson } = useReportContext();
 
     const isUserSide = (role: string) => role.toLowerCase() === 'user' || role.toLowerCase() === 'system';
 
@@ -29,14 +29,33 @@ export const ConversationDetails = ({ messages, model, usage, selectedMetric }: 
         usage?.totalTokenCount && `Total Tokens: ${usage.totalTokenCount}`,
     ].filter(Boolean).join(' • ');
 
+    const isValidJson = (text: string): { isValid: boolean; parsedJson?: any } => {
+        try {
+            const parsedJson = JSON.parse(text.trim());
+            return { isValid: true, parsedJson };
+        } catch {
+            return { isValid: false };
+        }
+    };
+
     const renderContent = (content: AIContent) => {
         if (isTextContent(content)) {
-            return renderMarkdown ?
-                <ReactMarkdown>{content.text}</ReactMarkdown> :
-                <pre className={classes.preWrap}>{content.text}</pre>;
+            const { isValid, parsedJson } = isValidJson(content.text);
+            if (isValid) {
+                const jsonContent = JSON.stringify(parsedJson, null, prettifyJson ? 2 : 0);
+                return <pre className={classes.preWrap}>{jsonContent}</pre>;
+            } else {
+                return renderMarkdown ?
+                    <ReactMarkdown>{content.text}</ReactMarkdown> :
+                    <pre className={classes.preWrap}>{content.text}</pre>;
+            }
         } else if (isImageContent(content)) {
             const imageUrl = (content as UriContent).uri || (content as DataContent).uri;
             return <img src={imageUrl} alt="Content" className={classes.imageContent} />;
+        } else {
+            // For any other content type, display the serialized JSON
+            const jsonContent = JSON.stringify(content, null, prettifyJson ? 2 : 0);
+            return <pre className={classes.preWrap}>{jsonContent}</pre>;
         }
     };
 

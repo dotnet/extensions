@@ -422,12 +422,12 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         {
             if (usage.InputTokenCount is long inputTokens)
             {
-                _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.InputTokens, (int)inputTokens);
+                _ = activity.AddTag(OpenTelemetryConsts.GenAI.Usage.InputTokens, (int)inputTokens);
             }
 
             if (usage.OutputTokenCount is long outputTokens)
             {
-                _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.OutputTokens, (int)outputTokens);
+                _ = activity.AddTag(OpenTelemetryConsts.GenAI.Usage.OutputTokens, (int)outputTokens);
             }
         }
     }
@@ -795,7 +795,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         _ = Throw.IfNull(context);
 
         using Activity? activity = _activitySource?.StartActivity(
-            $"execute_tool {context.Function.Name}",
+            $"{OpenTelemetryConsts.GenAI.ExecuteTool} {context.Function.Name}",
             ActivityKind.Internal,
             default(ActivityContext),
             [
