@@ -42,6 +42,7 @@ public class LoggingOptions
     /// <value>
     /// The default value is <see langword="false"/>.
     /// </value>
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
     public bool LogQueryParameters { get; set; }
 
     /// <summary>
@@ -57,6 +58,7 @@ public class LoggingOptions
     [SuppressMessage("Usage", "CA2227:Collection properties should be read only",
         Justification = "Options pattern.")]
     [Required]
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
     public IDictionary<string, DataClassification> RequestQueryParametersDataClasses { get; set; } = new Dictionary<string, DataClassification>();
 
     /// <summary>
