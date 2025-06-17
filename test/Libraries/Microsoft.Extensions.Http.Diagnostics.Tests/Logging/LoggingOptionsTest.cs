@@ -138,7 +138,6 @@ public class LoggingOptionsTest
         Assert.False(options.LogQueryParameters);
     }
 
-
     [Fact]
     public void LogQueryParameters_CanBeSet()
     {
