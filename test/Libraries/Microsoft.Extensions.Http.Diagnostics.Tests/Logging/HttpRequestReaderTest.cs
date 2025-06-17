@@ -81,7 +81,7 @@ public class HttpRequestReaderTest
         using var httpRequestMessage = new HttpRequestMessage
         {
             Method = HttpMethod.Post,
-            RequestUri = new Uri("http://default-uri.com/foo"),
+            RequestUri = new Uri("https://default-uri.com/foo"),
             Content = new StringContent(requestContent, Encoding.UTF8)
         };
 
@@ -209,7 +209,7 @@ public class HttpRequestReaderTest
         using var httpRequestMessage = new HttpRequestMessage
         {
             Method = HttpMethod.Post,
-            RequestUri = new Uri("http://default-uri.com/foo/bar/123"),
+            RequestUri = new Uri("https://default-uri.com/foo/bar/123"),
             Content = new StringContent(requestContent, Encoding.UTF8),
         };
 
@@ -285,7 +285,7 @@ public class HttpRequestReaderTest
         using var httpRequestMessage = new HttpRequestMessage
         {
             Method = HttpMethod.Post,
-            RequestUri = new Uri($"http://{RequestedHost}/foo/bar/123"),
+            RequestUri = new Uri($"https://{RequestedHost}/foo/bar/123"),
             Content = new StringContent(requestContent, Encoding.UTF8),
         };
 
@@ -358,7 +358,7 @@ public class HttpRequestReaderTest
         using var httpRequestMessage = new HttpRequestMessage
         {
             Method = HttpMethod.Post,
-            RequestUri = new Uri("http://default-uri.com/foo/bar/123"),
+            RequestUri = new Uri("https://default-uri.com/foo/bar/123"),
             Content = new StringContent(requestContent, Encoding.UTF8),
         };
 
@@ -417,7 +417,7 @@ public class HttpRequestReaderTest
         using var httpRequestMessage = new HttpRequestMessage
         {
             Method = HttpMethod.Post,
-            RequestUri = new Uri("http://default-uri.com/foo/bar/123"),
+            RequestUri = new Uri("https://default-uri.com/foo/bar/123"),
             Content = new StringContent(requestContent, Encoding.UTF8),
         };
 
@@ -489,7 +489,7 @@ public class HttpRequestReaderTest
         using var httpRequestMessage = new HttpRequestMessage
         {
             Method = HttpMethod.Post,
-            RequestUri = new Uri("http://default-uri.com/foo/bar/123"),
+            RequestUri = new Uri("https://default-uri.com/foo/bar/123"),
             Content = new StringContent(requestContent, Encoding.UTF8),
         };
 
@@ -557,7 +557,7 @@ public class HttpRequestReaderTest
         using var httpRequestMessage = new HttpRequestMessage
         {
             Method = HttpMethod.Post,
-            RequestUri = new Uri("http://default-uri.com/foo/bar/123"),
+            RequestUri = new Uri("https://default-uri.com/foo/bar/123"),
             Content = new StringContent(requestContent, Encoding.UTF8),
         };
 
@@ -581,62 +581,239 @@ public class HttpRequestReaderTest
         actualRecord.Should().BeEquivalentTo(expectedRecord);
     }
 
-[Fact]
-public async Task ReadAsync_LogsQueryParameters_WhenEnabled()
-{
-    var requestContent = _fixture.Create<string>();
-    var queryParamName = "userId";
-    var queryParamValue = "12345";
-    var redactedValue = "REDACTED";
-
-    var options = new LoggingOptions
+    [Fact]
+    public async Task ReadAsync_LogsQueryParameters_WhenEnabled()
     {
-        LogQueryParameters = true,
-        RequestQueryParametersDataClasses = new Dictionary<string, DataClassification>
+        var requestContent = _fixture.Create<string>();
+        var queryParamName = "userId";
+        var queryParamValue = "12345";
+        var redactedValue = "REDACTED";
+
+        var options = new LoggingOptions
         {
-            { queryParamName, FakeTaxonomy.PrivateData }
-        },
-        BodySizeLimit = 32000,
-        BodyReadTimeout = TimeSpan.FromMinutes(5),
-        LogBody = true
-    };
+            LogQueryParameters = true,
+            RequestQueryParametersDataClasses = new Dictionary<string, DataClassification>
+            {
+                { queryParamName, FakeTaxonomy.PrivateData }
+            },
+            BodySizeLimit = 32000,
+            BodyReadTimeout = TimeSpan.FromMinutes(5),
+            LogBody = true
+        };
 
-    var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
-    mockHeadersRedactor
-        .Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
-        .Returns(redactedValue);
+        var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
+        mockHeadersRedactor
+            .Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
+            .Returns(redactedValue);
 
-    var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), mockHeadersRedactor.Object);
-    await using var serviceProvider = GetServiceProvider(headersReader);
+        var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), mockHeadersRedactor.Object);
+        await using var serviceProvider = GetServiceProvider(headersReader);
 
-    var reader = new HttpRequestReader(
-        serviceProvider,
-        options.ToOptionsMonitor(),
-        serviceProvider.GetRequiredService<IHttpRouteFormatter>(),
-        serviceProvider.GetRequiredService<IHttpRouteParser>(),
-        RequestMetadataContext);
+        var reader = new HttpRequestReader(
+            serviceProvider,
+            options.ToOptionsMonitor(),
+            serviceProvider.GetRequiredService<IHttpRouteFormatter>(),
+            serviceProvider.GetRequiredService<IHttpRouteParser>(),
+            RequestMetadataContext);
 
-    var uri = new Uri($"http://{RequestedHost}/api/resource?{queryParamName}={queryParamValue}");
+        var uri = new Uri($"https://{RequestedHost}/api/resource?{queryParamName}={queryParamValue}");
 
-    using var httpRequestMessage = new HttpRequestMessage
-    {
-        Method = HttpMethod.Get,
-        RequestUri = uri,
-        Content = new StringContent(requestContent, Encoding.UTF8, "text/plain")
-    };
+        using var httpRequestMessage = new HttpRequestMessage
+        {
+            Method = HttpMethod.Get,
+            RequestUri = uri,
+            Content = new StringContent(requestContent, Encoding.UTF8, "text/plain")
+        };
 
-    var logRecord = new LogRecord();
-    var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
-    await reader.ReadRequestAsync(logRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
+        var logRecord = new LogRecord();
+        var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
+        await reader.ReadRequestAsync(logRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
 
 #if NET462
-    logRecord.QueryParameters.Should().BeEmpty();
+        logRecord.QueryParameters.Should().BeEmpty();
 #else
-    logRecord.QueryParameters.Should().NotBeNull();
-    logRecord.QueryParameters.Should().ContainSingle(qp =>
-        qp.Key == queryParamName && qp.Value == redactedValue);
+        logRecord.QueryParameters.Should().NotBeNull();
+        logRecord.QueryParameters.Should().ContainSingle(qp =>
+            qp.Key == queryParamName && qp.Value == redactedValue);
 #endif
-}
+    }
+
+    [Fact]
+    public async Task ReadAsync_QueryLoggingDisabled_DoesNotLogQueryParameters()
+    {
+        var options = new LoggingOptions
+        {
+            LogQueryParameters = false,
+            RequestQueryParametersDataClasses = new Dictionary<string, DataClassification>
+        {
+            { "userId", FakeTaxonomy.PrivateData }
+        }
+        };
+
+        var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
+        var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), mockHeadersRedactor.Object);
+        using var serviceProvider = GetServiceProvider(headersReader);
+
+        var reader = new HttpRequestReader(
+            serviceProvider,
+            options.ToOptionsMonitor(),
+            serviceProvider.GetRequiredService<IHttpRouteFormatter>(),
+            serviceProvider.GetRequiredService<IHttpRouteParser>(),
+            RequestMetadataContext);
+
+        var uri = new Uri($"https://{RequestedHost}/api/resource?userId=12345");
+        using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
+
+        var logRecord = new LogRecord();
+        await reader.ReadRequestAsync(logRecord, httpRequestMessage, new List<KeyValuePair<string, string>>(), CancellationToken.None);
+
+        logRecord.QueryParameters.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ReadAsync_QueryLoggingEnabled_NoQueryParametersInRequest_DoesNotLog()
+    {
+        var options = new LoggingOptions
+        {
+            LogQueryParameters = true,
+            RequestQueryParametersDataClasses = new Dictionary<string, DataClassification>
+        {
+            { "userId", FakeTaxonomy.PrivateData }
+        }
+        };
+
+        var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
+        var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), mockHeadersRedactor.Object);
+        using var serviceProvider = GetServiceProvider(headersReader);
+
+        var reader = new HttpRequestReader(
+            serviceProvider,
+            options.ToOptionsMonitor(),
+            serviceProvider.GetRequiredService<IHttpRouteFormatter>(),
+            serviceProvider.GetRequiredService<IHttpRouteParser>(),
+            RequestMetadataContext);
+
+        var uri = new Uri($"https://{RequestedHost}/api/resource");
+        using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
+
+        var logRecord = new LogRecord();
+        await reader.ReadRequestAsync(logRecord, httpRequestMessage, new List<KeyValuePair<string, string>>(), CancellationToken.None);
+
+        logRecord.QueryParameters.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ReadAsync_QueryLoggingEnabled_NoMatchingAllowlist_DoesNotLog()
+    {
+        var options = new LoggingOptions
+        {
+            LogQueryParameters = true,
+            RequestQueryParametersDataClasses = new Dictionary<string, DataClassification>
+        {
+            { "otherParam", FakeTaxonomy.PrivateData }
+        }
+        };
+
+        var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
+        var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), mockHeadersRedactor.Object);
+        using var serviceProvider = GetServiceProvider(headersReader);
+
+        var reader = new HttpRequestReader(
+            serviceProvider,
+            options.ToOptionsMonitor(),
+            serviceProvider.GetRequiredService<IHttpRouteFormatter>(),
+            serviceProvider.GetRequiredService<IHttpRouteParser>(),
+            RequestMetadataContext);
+
+        var uri = new Uri($"https://{RequestedHost}/api/resource?userId=12345");
+        using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
+
+        var logRecord = new LogRecord();
+        await reader.ReadRequestAsync(logRecord, httpRequestMessage, new List<KeyValuePair<string, string>>(), CancellationToken.None);
+
+        logRecord.QueryParameters.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ReadAsync_QueryLoggingEnabled_MultipleParams_LoggedAndRedacted()
+    {
+        var options = new LoggingOptions
+        {
+            LogQueryParameters = true,
+            RequestQueryParametersDataClasses = new Dictionary<string, DataClassification>
+        {
+            { "userId", FakeTaxonomy.PrivateData },
+            { "token", FakeTaxonomy.PrivateData }
+        }
+        };
+
+        var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
+        mockHeadersRedactor
+            .Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
+            .Returns(Redacted);
+
+        var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), mockHeadersRedactor.Object);
+        using var serviceProvider = GetServiceProvider(headersReader);
+
+        var reader = new HttpRequestReader(
+            serviceProvider,
+            options.ToOptionsMonitor(),
+            serviceProvider.GetRequiredService<IHttpRouteFormatter>(),
+            serviceProvider.GetRequiredService<IHttpRouteParser>(),
+            RequestMetadataContext);
+
+        var uri = new Uri($"https://{RequestedHost}/api/resource?userId=12345&token=abc&other=not_logged");
+        using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
+
+        var logRecord = new LogRecord();
+        await reader.ReadRequestAsync(logRecord, httpRequestMessage, new List<KeyValuePair<string, string>>(), CancellationToken.None);
+
+#if NET462
+        logRecord.QueryParameters.Should().BeEmpty();
+#else
+        logRecord.QueryParameters.Should().HaveCount(2);
+        logRecord.QueryParameters.Should().Contain(qp => qp.Key == "userId" && qp.Value == Redacted);
+        logRecord.QueryParameters.Should().Contain(qp => qp.Key == "token" && qp.Value == Redacted);
+        logRecord.QueryParameters.Should().NotContain(qp => qp.Key == "other");
+#endif
+    }
+
+    [Fact]
+    public async Task ReadAsync_QueryLoggingEnabled_EmptyValue_NotLogged()
+    {
+        var options = new LoggingOptions
+        {
+            LogQueryParameters = true,
+            RequestQueryParametersDataClasses = new Dictionary<string, DataClassification>
+        {
+            { "userId", FakeTaxonomy.PrivateData }
+        }
+        };
+
+        var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
+        mockHeadersRedactor
+            .Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
+            .Returns(Redacted);
+
+        var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), mockHeadersRedactor.Object);
+        using var serviceProvider = GetServiceProvider(headersReader);
+
+        var reader = new HttpRequestReader(
+            serviceProvider,
+            options.ToOptionsMonitor(),
+            serviceProvider.GetRequiredService<IHttpRouteFormatter>(),
+            serviceProvider.GetRequiredService<IHttpRouteParser>(),
+            RequestMetadataContext);
+
+        var uri = new Uri($"https://{RequestedHost}/api/resource?userId=");
+        using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
+
+        var logRecord = new LogRecord();
+        await reader.ReadRequestAsync(logRecord, httpRequestMessage, new List<KeyValuePair<string, string>>(), CancellationToken.None);
+
+        // Should not log empty values
+        logRecord.QueryParameters.Should().BeEmpty();
+    }
 
     private static ServiceProvider GetServiceProvider(
         HttpHeadersReader headersReader,

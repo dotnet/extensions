@@ -90,7 +90,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
 
         _logRequestHeaders = options.RequestHeadersDataClasses.Count > 0;
         _logResponseHeaders = options.ResponseHeadersDataClasses.Count > 0;
-        _logRequestQueryParameters = options.RequestQueryParametersDataClasses.Count > 0;
+        _logRequestQueryParameters = options.LogQueryParameters;
 
         _httpRequestBodyReader = new HttpRequestBodyReader(options);
         _httpResponseBodyReader = new HttpResponseBodyReader(options);
@@ -170,7 +170,9 @@ internal sealed class HttpRequestReader : IHttpRequestReader
         foreach (var kvp in _queryParameterDataClasses)
         {
             var value = parsed[kvp.Key];
-            if (value != null)
+
+            // Only log if value is not null or empty
+            if (!string.IsNullOrEmpty(value))
             {
                 var redacted = _httpHeadersReader is HttpHeadersReader realReader
                     ? realReader.RedactValue(value, kvp.Value)
