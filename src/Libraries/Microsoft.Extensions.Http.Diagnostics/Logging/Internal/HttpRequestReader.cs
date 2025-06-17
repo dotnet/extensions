@@ -8,7 +8,11 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+#if NET462
+#pragma warning disable S1128
 using System.Web;
+#pragma warning restore S1128
+#endif
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Diagnostics;
@@ -18,6 +22,9 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Http.Logging.Internal;
 
+#if NET462
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "IDE0052:Variable is not used", Justification = "The variable is not used only in .Net 4.6.2")]
+#endif
 internal sealed class HttpRequestReader : IHttpRequestReader
 {
     private readonly IHttpRouteFormatter _routeFormatter;
@@ -140,6 +147,9 @@ internal sealed class HttpRequestReader : IHttpRequestReader
         logRecord.QueryParametersCount = queryParametersCount;
     }
 
+#if NET462
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA1822:Method can be marked as static", Justification = "This method access instance data in all frameworks other than 4.6.2")]
+#endif
     private (KeyValuePair<string, string?>[] queryParameters, int count) GetQueryParameters(HttpRequestMessage request)
     {
 #if NET462
