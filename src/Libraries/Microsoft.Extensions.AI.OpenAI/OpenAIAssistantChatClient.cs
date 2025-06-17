@@ -60,7 +60,7 @@ internal sealed partial class OpenAIAssistantChatClient : IChatClient
         // implement the abstractions directly rather than providing adapters on top of the public APIs,
         // the package can provide such implementations separate from what's exposed in the public API.
         Uri providerUrl = typeof(AssistantClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            ?.GetValue(assistantClient) as Uri ?? OpenAIResponseChatClient.DefaultOpenAIEndpoint;
+            ?.GetValue(assistantClient) as Uri ?? OpenAIClientExtensions.DefaultOpenAIEndpoint;
 
         _metadata = new("openai", providerUrl);
     }
@@ -284,13 +284,18 @@ internal sealed partial class OpenAIAssistantChatClient : IChatClient
                     switch (tool)
                     {
                         case AIFunction aiFunction:
-                            bool? strict = aiFunction.AdditionalProperties.TryGetValue(nameof(strict), out var strictValue) && strictValue is bool strictBool ?
+                            bool? strict = aiFunction.AdditionalProperties.TryGetValue(OpenAIClientExtensions.StrictKey, out var strictValue) && strictValue is bool strictBool ?
                                 strictBool :
                                 null;
+
+                            JsonElement jsonSchema = strict is true ?
+                                OpenAIClientExtensions.StrictSchemaTransformCache.GetOrCreateTransformedSchema(aiFunction) :
+                                OpenAIClientExtensions.NonStrictSchemaTransformCache.GetOrCreateTransformedSchema(aiFunction);
+
                             runOptions.ToolsOverride.Add(new FunctionToolDefinition(aiFunction.Name)
                             {
                                 Description = aiFunction.Description,
-                                Parameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(aiFunction.JsonSchema, AssistantJsonContext.Default.JsonElement)),
+                                Parameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(jsonSchema, AssistantJsonContext.Default.JsonElement)),
                                 StrictParameterSchemaEnabled = strict,
                             });
                             break;
@@ -334,10 +339,10 @@ internal sealed partial class OpenAIAssistantChatClient : IChatClient
                         runOptions.ResponseFormat = AssistantResponseFormat.CreateTextFormat();
                         break;
 
-                    case ChatResponseFormatJson jsonFormat when jsonFormat.Schema is not null:
+                    case ChatResponseFormatJson jsonFormat when OpenAIClientExtensions.StrictSchemaTransformCache.GetOrCreateTransformedSchema(jsonFormat) is { } jsonSchema:
                         runOptions.ResponseFormat = AssistantResponseFormat.CreateJsonSchemaFormat(
                             jsonFormat.SchemaName,
-                            BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(jsonFormat.Schema, AssistantJsonContext.Default.JsonElement)),
+                            BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(jsonSchema, AssistantJsonContext.Default.JsonElement)),
                             jsonFormat.SchemaDescription);
                         break;
 
@@ -382,7 +387,7 @@ internal sealed partial class OpenAIAssistantChatClient : IChatClient
             // to include that information in its responses. System messages should ideally be instead done as instructions to
             // the assistant when the assistant is created.
             if (chatMessage.Role == ChatRole.System ||
-                chatMessage.Role == OpenAIResponseChatClient.ChatRoleDeveloper)
+                chatMessage.Role == OpenAIClientExtensions.ChatRoleDeveloper)
             {
                 foreach (var textContent in chatMessage.Contents.OfType<TextContent>())
                 {

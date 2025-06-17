@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 using OpenAI;
 using OpenAI.Assistants;
@@ -14,6 +15,36 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Provides extension methods for working with <see cref="OpenAIClient"/>s.</summary>
 public static class OpenAIClientExtensions
 {
+    /// <summary>Key into AdditionalProperties used to store a strict option.</summary>
+    internal const string StrictKey = "strictJsonSchema";
+
+    /// <summary>Gets the default OpenAI endpoint.</summary>
+    internal static Uri DefaultOpenAIEndpoint { get; } = new("https://api.openai.com/v1");
+
+    /// <summary>Gets a <see cref="ChatRole"/> for "developer".</summary>
+    internal static ChatRole ChatRoleDeveloper { get; } = new ChatRole("developer");
+
+    /// <summary>
+    /// Gets the JSON schema transformer cache conforming to OpenAI restrictions per https://platform.openai.com/docs/guides/structured-outputs?api-mode=responses#supported-schemas.
+    /// </summary>
+    internal static AIJsonSchemaTransformCache NonStrictSchemaTransformCache { get; } = new(new()
+    {
+        ConvertBooleanSchemas = true,
+        MoveDefaultKeywordToDescription = true,
+    });
+
+    /// <summary>
+    /// Gets the JSON schema transformer cache conforming to OpenAI <b>strict</b> restrictions per https://platform.openai.com/docs/guides/structured-outputs?api-mode=responses#supported-schemas.
+    /// This adds to <see cref="NonStrictSchemaTransformCache"/> by requiring all properties to be present and disallowing additional properties.
+    /// </summary>
+    internal static AIJsonSchemaTransformCache StrictSchemaTransformCache { get; } = new(new()
+    {
+        RequireAllProperties = true,
+        DisallowAdditionalProperties = true,
+        ConvertBooleanSchemas = true,
+        MoveDefaultKeywordToDescription = true,
+    });
+
     /// <summary>Gets an <see cref="IChatClient"/> for use with this <see cref="ChatClient"/>.</summary>
     /// <param name="chatClient">The client.</param>
     /// <returns>An <see cref="IChatClient"/> that can be used to converse via the <see cref="ChatClient"/>.</returns>

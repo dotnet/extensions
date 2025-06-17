@@ -22,6 +22,7 @@ using Xunit;
 #pragma warning disable CA2000 // Dispose objects before losing scope
 #pragma warning disable CA2214 // Do not call overridable methods in constructors
 #pragma warning disable CA2249 // Consider using 'string.Contains' instead of 'string.IndexOf'
+#pragma warning disable S1144 // Unused private types or members should be removed
 
 namespace Microsoft.Extensions.AI;
 
@@ -352,7 +353,14 @@ public abstract class ChatClientIntegrationTests : IDisposable
     public record PersonRecord(string Name, int Age = 42);
 
     [ConditionalFact]
-    public virtual async Task AvailableTools_SchemasAreAccepted()
+    public virtual Task AvailableTools_SchemasAreAccepted_Strict() =>
+        AvailableTools_SchemasAreAccepted(strict: true);
+
+    [ConditionalFact]
+    public virtual Task AvailableTools_SchemasAreAccepted_NonStrict() =>
+        AvailableTools_SchemasAreAccepted(strict: false);
+
+    private async Task AvailableTools_SchemasAreAccepted(bool strict)
     {
         SkipIfNotEnabled();
 
@@ -366,33 +374,58 @@ public abstract class ChatClientIntegrationTests : IDisposable
         using var chatClient = new FunctionInvokingChatClient(
             new OpenTelemetryChatClient(_chatClient, sourceName: sourceName));
 
+        int methodCount = 1;
+        Func<AIFunctionFactoryOptions> createOptions = () =>
+        {
+            AIFunctionFactoryOptions aiFuncOptions = new()
+            {
+                Name = $"Method{methodCount++}",
+            };
+
+            if (strict)
+            {
+                aiFuncOptions.AdditionalProperties = new Dictionary<string, object?> { ["strictJsonSchema"] = true };
+            }
+
+            return aiFuncOptions;
+        };
+
         ChatOptions options = new()
         {
             MaxOutputTokens = 100,
             Tools =
             [
-                AIFunctionFactory.Create((int? i) => i, "Method1"),
-                AIFunctionFactory.Create((string? s) => s, "Method2"),
-                AIFunctionFactory.Create((int? i = null) => i, "Method3"),
-                AIFunctionFactory.Create((bool b) => b, "Method4"),
-                AIFunctionFactory.Create((double d) => d, "Method5"),
-                AIFunctionFactory.Create((decimal d) => d, "Method6"),
-                AIFunctionFactory.Create((float f) => f, "Method7"),
-                AIFunctionFactory.Create((long l) => l, "Method8"),
-                AIFunctionFactory.Create((char c) => c, "Method9"),
-                AIFunctionFactory.Create((DateTime dt) => dt, "Method10"),
-                AIFunctionFactory.Create((DateTime? dt) => dt, "Method11"),
-                AIFunctionFactory.Create((Guid guid) => guid, "Method12"),
-                AIFunctionFactory.Create((List<int> list) => list, "Method13"),
-                AIFunctionFactory.Create((int[] arr) => arr, "Method14"),
-                AIFunctionFactory.Create((string p1 = "str", int p2 = 42, BindingFlags p3 = BindingFlags.IgnoreCase, char p4 = 'x') => p1, "Method15"),
-                AIFunctionFactory.Create((string? p1 = "str", int? p2 = 42, BindingFlags? p3 = BindingFlags.IgnoreCase, char? p4 = 'x') => p1, "Method16"),
+                AIFunctionFactory.Create((int? i) => i, createOptions()),
+                AIFunctionFactory.Create((string? s) => s, createOptions()),
+                AIFunctionFactory.Create((int? i = null) => i, createOptions()),
+                AIFunctionFactory.Create((bool b) => b, createOptions()),
+                AIFunctionFactory.Create((double d) => d, createOptions()),
+                AIFunctionFactory.Create((decimal d) => d, createOptions()),
+                AIFunctionFactory.Create((float f) => f, createOptions()),
+                AIFunctionFactory.Create((long l) => l, createOptions()),
+                AIFunctionFactory.Create((char c) => c, createOptions()),
+                AIFunctionFactory.Create((DateTime dt) => dt, createOptions()),
+                AIFunctionFactory.Create((DateTime? dt) => dt, createOptions()),
+                AIFunctionFactory.Create((Guid guid) => guid, createOptions()),
+                AIFunctionFactory.Create((List<int> list) => list, createOptions()),
+                AIFunctionFactory.Create((int[] arr, ComplexObject? co) => arr, createOptions()),
+                AIFunctionFactory.Create((string p1 = "str", int p2 = 42, BindingFlags p3 = BindingFlags.IgnoreCase, char p4 = 'x') => p1, createOptions()),
+                AIFunctionFactory.Create((string? p1 = "str", int? p2 = 42, BindingFlags? p3 = BindingFlags.IgnoreCase, char? p4 = 'x') => p1, createOptions()),
             ],
         };
 
         // We don't care about the response, only that we get one and that an exception isn't thrown due to unacceptable schema.
         var response = await chatClient.GetResponseAsync("Briefly, what is the most popular tower in Paris?", options);
         Assert.NotNull(response);
+    }
+
+    private class ComplexObject
+    {
+        public string? SomeString { get; set; }
+
+        public string AnotherString { get; set; } = "default";
+
+        public int Value { get; set; }
     }
 
     protected virtual bool SupportsParallelFunctionCalling => true;
