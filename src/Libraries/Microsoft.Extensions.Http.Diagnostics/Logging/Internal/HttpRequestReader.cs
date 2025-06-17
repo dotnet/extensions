@@ -98,6 +98,24 @@ internal sealed class HttpRequestReader : IHttpRequestReader
         _routeParameterRedactionMode = options.RequestPathParameterRedactionMode;
     }
 
+    public async Task ReadResponseAsync(LogRecord logRecord, HttpResponseMessage response,
+        List<KeyValuePair<string, string>>? responseHeadersBuffer,
+        CancellationToken cancellationToken)
+    {
+        if (_logResponseHeaders)
+        {
+            _httpHeadersReader.ReadResponseHeaders(response, responseHeadersBuffer);
+            logRecord.ResponseHeaders = responseHeadersBuffer;
+        }
+
+        if (_logResponseBody)
+        {
+            logRecord.ResponseBody = await _httpResponseBodyReader.ReadAsync(response, cancellationToken).ConfigureAwait(false);
+        }
+
+        logRecord.StatusCode = (int)response.StatusCode;
+    }
+
     public async Task ReadRequestAsync(LogRecord logRecord, HttpRequestMessage request,
     List<KeyValuePair<string, string>>? requestHeadersBuffer, CancellationToken cancellationToken)
     {
@@ -117,94 +135,53 @@ internal sealed class HttpRequestReader : IHttpRequestReader
                 .ConfigureAwait(false);
         }
 
-#if !NET462
-        if (_logRequestQueryParameters && request.RequestUri is not null)
-        {
-            var parsed = HttpUtility.ParseQueryString(request.RequestUri.Query);
-            var filtered = new List<KeyValuePair<string, string?>>();
-            foreach (var kvp in _queryParameterDataClasses)
-            {
-                var value = parsed[kvp.Key];
-                if (value != null)
-                {
-                    var redacted = _httpHeadersReader is HttpHeadersReader realReader
-                        ? realReader.RedactValue(value, kvp.Value)
-                        : value;
-                    filtered.Add(new KeyValuePair<string, string?>(kvp.Key, redacted));
-                }
-            }
-            logRecord.QueryParameters = filtered.ToArray();
-            logRecord.QueryParametersCount = filtered.Count;
-        }
-        else
-#endif
-        {
-            logRecord.QueryParameters = [];
-            logRecord.QueryParametersCount = 0;
-        }
+        var (queryParameters, queryParametersCount) = GetQueryParameters(request);
+        logRecord.QueryParameters = queryParameters;
+        logRecord.QueryParametersCount = queryParametersCount;
     }
 
-    public async Task ReadResponseAsync(LogRecord logRecord, HttpResponseMessage response,
-        List<KeyValuePair<string, string>>? responseHeadersBuffer,
-        CancellationToken cancellationToken)
-    {
-        if (_logResponseHeaders)
-        {
-            _httpHeadersReader.ReadResponseHeaders(response, responseHeadersBuffer);
-            logRecord.ResponseHeaders = responseHeadersBuffer;
-        }
-
-        if (_logResponseBody)
-        {
-            logRecord.ResponseBody = await _httpResponseBodyReader.ReadAsync(response, cancellationToken).ConfigureAwait(false);
-        }
-
-        logRecord.StatusCode = (int)response.StatusCode;
-    }
-
-    private static KeyValuePair<string, string?>[] ParseQueryParameters(string? query, out int count)
+    private (KeyValuePair<string, string?>[] queryParameters, int count) GetQueryParameters(HttpRequestMessage request)
     {
 #if NET462
-        count = 0;
-        return [];
+        return ([], 0);
 #else
-        count = 0;
-        if (string.IsNullOrEmpty(query))
+        if (_logRequestQueryParameters && request.RequestUri is not null)
         {
-            return [];
+            return ExtractAndRedactQueryParameters(request.RequestUri.Query);
+        }
+        else
+        {
+            return ([], 0);
+        }
+#endif
+    }
+
+#if !NET462
+    private (KeyValuePair<string, string?>[] queryParameters, int count) ExtractAndRedactQueryParameters(string query)
+    {
+        if (string.IsNullOrEmpty(query) || _queryParameterDataClasses.Count == 0)
+        {
+            return ([], 0);
         }
 
         var parsed = HttpUtility.ParseQueryString(query);
-        if (parsed.Count == 0)
-        {
-            return [];
-        }
+        var result = new List<KeyValuePair<string, string?>>();
 
-        var result = new KeyValuePair<string, string?>[parsed.Count];
-        int i = 0;
-        foreach (string? key in parsed.AllKeys)
+        foreach (var kvp in _queryParameterDataClasses)
         {
-            if (key == null)
+            var value = parsed[kvp.Key];
+            if (value != null)
             {
-                continue;
+                var redacted = _httpHeadersReader is HttpHeadersReader realReader
+                    ? realReader.RedactValue(value, kvp.Value)
+                    : value;
+                result.Add(new KeyValuePair<string, string?>(kvp.Key, redacted));
             }
-
-            result[i++] = new KeyValuePair<string, string?>(key, parsed[key]);
         }
 
-        count = i;
-        if (i == result.Length)
-        {
-            return result;
-        }
-
-        // In case there were null keys, trim the array
-        var trimmed = new KeyValuePair<string, string?>[i];
-        Array.Copy(result, trimmed, i);
-        return trimmed;
-#endif
+        return (result.ToArray(), result.Count);
     }
-
+#endif
     private void GetRedactedPathAndParameters(HttpRequestMessage request, LogRecord logRecord)
     {
         logRecord.PathParameters = null;
