@@ -10,7 +10,9 @@ using System.Threading;
 using System.Threading.Tasks;
 #if NET462
 #pragma warning disable S1128
+#endif
 using System.Web;
+#if NET462
 #pragma warning restore S1128
 #endif
 using Microsoft.Extensions.Compliance.Classification;
