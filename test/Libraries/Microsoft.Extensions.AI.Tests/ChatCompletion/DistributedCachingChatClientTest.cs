@@ -33,9 +33,11 @@ public class DistributedCachingChatClientTest
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task CachesSuccessResultsAsync(bool conversationIdSet)
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task CachesSuccessResultsAsync(bool conversationIdSet, bool customCaching)
     {
         // Arrange
         ChatOptions options = new() { ConversationId = conversationIdSet ? "123" : null };
@@ -79,10 +81,16 @@ public class DistributedCachingChatClientTest
                 return Task.FromResult(expectedResponse);
             }
         };
-        using var outer = new DistributedCachingChatClient(testClient, _storage)
-        {
-            JsonSerializerOptions = TestJsonSerializerContext.Default.Options
-        };
+
+        int enableCachingInvocations = 0;
+        using var outer = customCaching ?
+            new CustomCachingChatClient(testClient, _storage, (m, o) =>
+            {
+                return ++enableCachingInvocations % 2 == 0;
+            }) :
+            new DistributedCachingChatClient(testClient, _storage);
+
+        outer.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
 
         // Make the initial request and do a quick sanity check
         var result1 = await outer.GetResponseAsync("some input", options);
@@ -93,12 +101,28 @@ public class DistributedCachingChatClientTest
         var result2 = await outer.GetResponseAsync("some input", options);
 
         // Assert
-        Assert.Equal(conversationIdSet ? 2 : 1, innerCallCount);
+        if (customCaching)
+        {
+            Assert.Equal(enableCachingInvocations % 2 == 0 ? 2 : 1, innerCallCount);
+        }
+        else
+        {
+            Assert.Equal(conversationIdSet ? 2 : 1, innerCallCount);
+        }
+
         AssertResponsesEqual(expectedResponse, result2);
 
         // Act/Assert 2: Cache misses do not return cached results
         await outer.GetResponseAsync("some modified input", options);
-        Assert.Equal(conversationIdSet ? 3 : 2, innerCallCount);
+        Assert.Equal(conversationIdSet || customCaching ? 3 : 2, innerCallCount);
+
+        Assert.Equal(customCaching ? 3 : 0, enableCachingInvocations);
+    }
+
+    private sealed class CustomCachingChatClient(IChatClient innerClient, IDistributedCache storage, Func<IEnumerable<ChatMessage>, ChatOptions?, bool> enableCaching) :
+        DistributedCachingChatClient(innerClient, storage)
+    {
+        protected override bool EnableCaching(IEnumerable<ChatMessage> messages, ChatOptions? options) => enableCaching(messages, options);
     }
 
     [Fact]
