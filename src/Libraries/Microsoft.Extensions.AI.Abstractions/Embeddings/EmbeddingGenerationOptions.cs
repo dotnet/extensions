@@ -61,8 +61,122 @@ public class EmbeddingGenerationOptions
     public virtual EmbeddingGenerationOptions Clone() =>
         new()
         {
-            ModelId = ModelId,
-            Dimensions = Dimensions,
             AdditionalProperties = AdditionalProperties?.Clone(),
+            Dimensions = Dimensions,
+            ModelId = ModelId,
+            RawRepresentationFactory = RawRepresentationFactory,
         };
+
+    /// <summary>Merges the options specified by <paramref name="other"/> into this instance.</summary>
+    /// <param name="other">The other options to be merged into this instance.</param>
+    /// <param name="overwrite">
+    /// If <see langword="true"/>, properties on this instance will be overwritten by the values from <paramref name="other"/>;
+    /// if <see langword="false"/>, properties on this instance will only be updated if they are <see langword="null"/> on this instance.
+    /// The default is <see langword="false"/>.
+    /// </param>
+    /// <remarks>
+    /// Merging works by copying the values from <paramref name="other"/> into this instance.
+    /// <para>
+    /// When <paramref name="overwrite"/> is <see langword="false"/> (the default):
+    /// <list type="bullet">
+    ///   <item>
+    ///     <description>For properties of primitive types (like <see cref="Dimensions"/> or <see cref="ModelId"/>), 
+    ///     properties on this instance will only be updated if they are <see langword="null"/>.</description>
+    ///   </item>
+    ///   <item>
+    ///     <description>For dictionary types (like <see cref="AdditionalProperties"/>), a shallow copy is performed 
+    ///     on the entries from <paramref name="other"/>, adding them into the corresponding dictionary on this instance, 
+    ///     but only if the key does not already exist in this instance's dictionary.</description>
+    ///   </item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// When <paramref name="overwrite"/> is <see langword="true"/>, any non-<see langword="null"/> properties on <paramref name="other"/> will
+    /// overwrite the corresponding properties on this instance.
+    /// <list type="bullet">
+    ///   <item>
+    ///     <description>For properties of primitive types (like <see cref="Dimensions"/> or <see cref="ModelId"/>), 
+    ///     properties on this instance will be updated with values from <paramref name="other"/> if they're non-<see langword="null"/>
+    ///     on <paramref name="other"/>.</description>
+    ///   </item>
+    ///   <item>
+    ///     <description>For dictionary types (like <see cref="AdditionalProperties"/>), entries from <paramref name="other"/> 
+    ///     will be stored into this instance's dictionary, overwriting any entries with the same key in this instance's dictionary.</description>
+    ///   </item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    public virtual void Merge(EmbeddingGenerationOptions? other, bool overwrite = false)
+    {
+        if (other is not null)
+        {
+            if (overwrite)
+            {
+                MergeOverwrite(other);
+            }
+            else
+            {
+                MergeDefault(other);
+            }
+        }
+    }
+
+    private void MergeDefault(EmbeddingGenerationOptions other)
+    {
+        if (other.AdditionalProperties is { Count: > 0 })
+        {
+            if (AdditionalProperties is null)
+            {
+                AdditionalProperties = other.AdditionalProperties.Clone();
+            }
+            else
+            {
+                foreach (var entry in other.AdditionalProperties)
+                {
+                    _ = AdditionalProperties.TryAdd(entry.Key, entry.Value);
+                }
+            }
+        }
+
+        Dimensions ??= other.Dimensions;
+
+        ModelId ??= other.ModelId;
+
+        if (other.RawRepresentationFactory is { } otherRrf)
+        {
+            RawRepresentationFactory = RawRepresentationFactory is { } originalRrf ?
+                generator => originalRrf(generator) ?? otherRrf(generator) :
+                otherRrf;
+        }
+    }
+
+    private void MergeOverwrite(EmbeddingGenerationOptions other)
+    {
+        if (other.AdditionalProperties is { Count: > 0 })
+        {
+            if (AdditionalProperties is null)
+            {
+                AdditionalProperties = other.AdditionalProperties.Clone();
+            }
+            else
+            {
+                AdditionalProperties.SetAll(other.AdditionalProperties);
+            }
+        }
+
+        if (other.Dimensions is not null)
+        {
+            Dimensions = other.Dimensions;
+        }
+
+        if (other.ModelId is not null)
+        {
+            ModelId = other.ModelId;
+        }
+
+        if (other.RawRepresentationFactory is not null)
+        {
+            RawRepresentationFactory = other.RawRepresentationFactory;
+        }
+    }
 }
