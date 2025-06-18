@@ -566,9 +566,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
             strictValue : null;
 
         // Perform transformations making the schema legal per OpenAI restrictions
-        JsonElement jsonSchema = strict is true ?
-            OpenAIClientExtensions.StrictSchemaTransformCache.GetOrCreateTransformedSchema(aiFunction) :
-            OpenAIClientExtensions.NonStrictSchemaTransformCache.GetOrCreateTransformedSchema(aiFunction);
+        JsonElement jsonSchema = OpenAIClientExtensions.GetSchema(aiFunction, strict);
 
         // Map to an intermediate model so that redundant properties are skipped.
         var tool = JsonSerializer.Deserialize(jsonSchema, ChatClientJsonContext.Default.ChatToolJson)!;

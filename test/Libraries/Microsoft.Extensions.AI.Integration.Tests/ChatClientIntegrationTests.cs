@@ -9,7 +9,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
@@ -22,7 +24,10 @@ using Xunit;
 #pragma warning disable CA2000 // Dispose objects before losing scope
 #pragma warning disable CA2214 // Do not call overridable methods in constructors
 #pragma warning disable CA2249 // Consider using 'string.Contains' instead of 'string.IndexOf'
+#pragma warning disable S103 // Lines should not be too long
 #pragma warning disable S1144 // Unused private types or members should be removed
+#pragma warning disable S3604 // Member initializer values should not be redundant
+#pragma warning disable SA1515 // Single-line comment should be preceded by blank line
 
 namespace Microsoft.Extensions.AI;
 
@@ -390,11 +395,24 @@ public abstract class ChatClientIntegrationTests : IDisposable
             return aiFuncOptions;
         };
 
+        Func<string, AIFunction> createWithSchema = schema =>
+        {
+            Dictionary<string, object?> additionalProperties = new();
+
+            if (strict)
+            {
+                additionalProperties["strictJsonSchema"] = true;
+            }
+
+            return new CustomAIFunction($"CustomMethod{methodCount++}", schema, additionalProperties);
+        };
+
         ChatOptions options = new()
         {
             MaxOutputTokens = 100,
             Tools =
             [
+                // Using AIFunctionFactory
                 AIFunctionFactory.Create((int? i) => i, createOptions()),
                 AIFunctionFactory.Create((string? s) => s, createOptions()),
                 AIFunctionFactory.Create((int? i = null) => i, createOptions()),
@@ -411,12 +429,48 @@ public abstract class ChatClientIntegrationTests : IDisposable
                 AIFunctionFactory.Create((int[] arr, ComplexObject? co) => arr, createOptions()),
                 AIFunctionFactory.Create((string p1 = "str", int p2 = 42, BindingFlags p3 = BindingFlags.IgnoreCase, char p4 = 'x') => p1, createOptions()),
                 AIFunctionFactory.Create((string? p1 = "str", int? p2 = 42, BindingFlags? p3 = BindingFlags.IgnoreCase, char? p4 = 'x') => p1, createOptions()),
+
+                // Selection from @modelcontextprotocol/server-everything
+                createWithSchema("""
+                    {"type":"object","properties":{},"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}
+                    """),
+                createWithSchema("""
+                    {"type":"object","properties":{"duration":{"type":"number","default":10,"description":"Duration of the operation in seconds"},"steps":{"type":"number","default":5,"description":"Number of steps in the operation"}},"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}
+                    """),
+                createWithSchema("""
+                    {"type":"object","properties":{"prompt":{"type":"string","description":"The prompt to send to the LLM"},"maxTokens":{"type":"number","default":100,"description":"Maximum number of tokens to generate"}},"required":["prompt"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}
+                    """),
+                createWithSchema("""
+                    {"type":"object","properties":{},"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}
+                    """),
+                createWithSchema("""
+                    {"type":"object","properties":{"messageType":{"type":"string","enum":["error","success","debug"],"description":"Type of message to demonstrate different annotation patterns"},"includeImage":{"type":"boolean","default":false,"description":"Whether to include an example image"}},"required":["messageType"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}
+                    """),
+                createWithSchema("""
+                    {"type":"object","properties":{"resourceId":{"type":"number","minimum":1,"maximum":100,"description":"ID of the resource to reference (1-100)"}},"required":["resourceId"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}
+                    """),
+
+                // Selection from GH MCP server
+                createWithSchema("""
+                    {"properties":{"body":{"description":"The text of the review comment","type":"string"},"line":{"description":"The line of the blob in the pull request diff that the comment applies to. For multi-line comments, the last line of the range","type":"number"},"owner":{"description":"Repository owner","type":"string"},"path":{"description":"The relative path to the file that necessitates a comment","type":"string"},"pullNumber":{"description":"Pull request number","type":"number"},"repo":{"description":"Repository name","type":"string"},"side":{"description":"The side of the diff to comment on. LEFT indicates the previous state, RIGHT indicates the new state","enum":["LEFT","RIGHT"],"type":"string"},"startLine":{"description":"For multi-line comments, the first line of the range that the comment applies to","type":"number"},"startSide":{"description":"For multi-line comments, the starting side of the diff that the comment applies to. LEFT indicates the previous state, RIGHT indicates the new state","enum":["LEFT","RIGHT"],"type":"string"},"subjectType":{"description":"The level at which the comment is targeted","enum":["FILE","LINE"],"type":"string"}},"required":["owner","repo","pullNumber","path","body","subjectType"],"type":"object"}
+                    """),
+                createWithSchema("""
+                    {"properties":{"commit_message":{"description":"Extra detail for merge commit","type":"string"},"commit_title":{"description":"Title for merge commit","type":"string"},"merge_method":{"description":"Merge method","enum":["merge","squash","rebase"],"type":"string"},"owner":{"description":"Repository owner","type":"string"},"pullNumber":{"description":"Pull request number","type":"number"},"repo":{"description":"Repository name","type":"string"}},"required":["owner","repo","pullNumber"],"type":"object"}
+                    """),
             ],
         };
 
         // We don't care about the response, only that we get one and that an exception isn't thrown due to unacceptable schema.
         var response = await chatClient.GetResponseAsync("Briefly, what is the most popular tower in Paris?", options);
         Assert.NotNull(response);
+    }
+
+    private sealed class CustomAIFunction(string name, string jsonSchema, IReadOnlyDictionary<string, object?> additionalProperties) : AIFunction
+    {
+        public override string Name => name;
+        public override IReadOnlyDictionary<string, object?> AdditionalProperties => additionalProperties;
+        public override JsonElement JsonSchema { get; } = JsonSerializer.Deserialize<JsonElement>(jsonSchema, AIJsonUtilities.DefaultOptions);
+        protected override ValueTask<object?> InvokeCoreAsync(AIFunctionArguments arguments, CancellationToken cancellationToken) => throw new NotSupportedException();
     }
 
     private class ComplexObject

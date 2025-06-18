@@ -373,19 +373,17 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
             {
                 switch (tool)
                 {
-                    case AIFunction af:
+                    case AIFunction aiFunction:
                         bool strict =
-                            af.AdditionalProperties.TryGetValue(OpenAIClientExtensions.StrictKey, out object? strictObj) &&
+                            aiFunction.AdditionalProperties.TryGetValue(OpenAIClientExtensions.StrictKey, out object? strictObj) &&
                             strictObj is bool strictValue &&
                             strictValue;
 
-                        JsonElement jsonSchema = strict ?
-                            OpenAIClientExtensions.StrictSchemaTransformCache.GetOrCreateTransformedSchema(af) :
-                            OpenAIClientExtensions.NonStrictSchemaTransformCache.GetOrCreateTransformedSchema(af);
+                        JsonElement jsonSchema = OpenAIClientExtensions.GetSchema(aiFunction, strict);
 
                         var oaitool = JsonSerializer.Deserialize(jsonSchema, ResponseClientJsonContext.Default.ResponseToolJson)!;
                         var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(oaitool, ResponseClientJsonContext.Default.ResponseToolJson));
-                        result.Tools.Add(ResponseTool.CreateFunctionTool(af.Name, af.Description, functionParameters, strict));
+                        result.Tools.Add(ResponseTool.CreateFunctionTool(aiFunction.Name, aiFunction.Description, functionParameters, strict));
                         break;
 
                     case HostedWebSearchTool:

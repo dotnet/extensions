@@ -288,9 +288,7 @@ internal sealed partial class OpenAIAssistantChatClient : IChatClient
                                 strictBool :
                                 null;
 
-                            JsonElement jsonSchema = strict is true ?
-                                OpenAIClientExtensions.StrictSchemaTransformCache.GetOrCreateTransformedSchema(aiFunction) :
-                                OpenAIClientExtensions.NonStrictSchemaTransformCache.GetOrCreateTransformedSchema(aiFunction);
+                            JsonElement jsonSchema = OpenAIClientExtensions.GetSchema(aiFunction, strict);
 
                             runOptions.ToolsOverride.Add(new FunctionToolDefinition(aiFunction.Name)
                             {

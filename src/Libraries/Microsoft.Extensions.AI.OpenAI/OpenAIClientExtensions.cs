@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using OpenAI;
 using OpenAI.Assistants;
 using OpenAI.Audio;
@@ -25,24 +26,14 @@ public static class OpenAIClientExtensions
     internal static ChatRole ChatRoleDeveloper { get; } = new ChatRole("developer");
 
     /// <summary>
-    /// Gets the JSON schema transformer cache conforming to OpenAI restrictions per https://platform.openai.com/docs/guides/structured-outputs?api-mode=responses#supported-schemas.
-    /// </summary>
-    internal static AIJsonSchemaTransformCache NonStrictSchemaTransformCache { get; } = new(new()
-    {
-        ConvertBooleanSchemas = true,
-        MoveDefaultKeywordToDescription = true,
-    });
-
-    /// <summary>
     /// Gets the JSON schema transformer cache conforming to OpenAI <b>strict</b> restrictions per https://platform.openai.com/docs/guides/structured-outputs?api-mode=responses#supported-schemas.
-    /// This adds to <see cref="NonStrictSchemaTransformCache"/> by requiring all properties to be present and disallowing additional properties.
     /// </summary>
     internal static AIJsonSchemaTransformCache StrictSchemaTransformCache { get; } = new(new()
     {
-        RequireAllProperties = true,
         DisallowAdditionalProperties = true,
         ConvertBooleanSchemas = true,
         MoveDefaultKeywordToDescription = true,
+        RequireAllProperties = true,
     });
 
     /// <summary>Gets an <see cref="IChatClient"/> for use with this <see cref="ChatClient"/>.</summary>
@@ -83,4 +74,10 @@ public static class OpenAIClientExtensions
     /// <returns>An <see cref="IEmbeddingGenerator{String, Embedding}"/> that can be used to generate embeddings via the <see cref="EmbeddingClient"/>.</returns>
     public static IEmbeddingGenerator<string, Embedding<float>> AsIEmbeddingGenerator(this EmbeddingClient embeddingClient, int? defaultModelDimensions = null) =>
         new OpenAIEmbeddingGenerator(embeddingClient, defaultModelDimensions);
+
+    /// <summary>Gets the JSON schema to use from the function.</summary>
+    internal static JsonElement GetSchema(AIFunction function, bool? strict) =>
+        strict is true ?
+            StrictSchemaTransformCache.GetOrCreateTransformedSchema(function) :
+            function.JsonSchema;
 }
