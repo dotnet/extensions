@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Http.Logging.Internal;
 using Microsoft.Extensions.Logging;
@@ -232,6 +233,17 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
             catch (Exception e)
             {
                 Log.EnrichmentError(_logger, e, enricher.GetType().FullName, request.Method, logRecord.Host, logRecord.Path);
+            }
+        }
+
+        if (logRecord.QueryParameters is { Length: > 0 })
+        {
+            if (loggerMessageState is IEnrichmentTagCollector collector)
+            {
+                foreach (var param in logRecord.QueryParameters)
+                {
+                    collector.Add($"Query_{param.Key}", param.Value ?? string.Empty);
+                }
             }
         }
 
