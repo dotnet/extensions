@@ -149,7 +149,6 @@ public static class ResourceMonitoringServiceCollectionExtensions
     private static void PickLinuxParser(this ResourceMonitorBuilder builder)
     {
         var injectParserV2 = ResourceMonitoringLinuxCgroupVersion.GetCgroupType();
-
         if (injectParserV2)
         {
             builder.Services.TryAddSingleton<ILinuxUtilizationParser, LinuxUtilizationParserCgroupV2>();
