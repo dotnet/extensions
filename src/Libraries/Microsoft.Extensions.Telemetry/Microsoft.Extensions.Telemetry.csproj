@@ -3,6 +3,7 @@
     <RootNamespace>Microsoft.Extensions.Diagnostics</RootNamespace>
     <Description>Provides canonical implementations of telemetry abstractions.</Description>
     <Workstream>Telemetry</Workstream>
+    <NoWarn Condition="'$(TargetFramework)' == 'net462'">$(NoWarn);CS0436</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -17,6 +18,7 @@
     <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>
     <InjectSharedPools>true</InjectSharedPools>
     <InjectSharedRentedSpan>true</InjectSharedRentedSpan>
+    <InjectObsoleteAttributeOnLegacy>true</InjectObsoleteAttributeOnLegacy>
     <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
     <UseLoggingGenerator>true</UseLoggingGenerator>
 </PropertyGroup>

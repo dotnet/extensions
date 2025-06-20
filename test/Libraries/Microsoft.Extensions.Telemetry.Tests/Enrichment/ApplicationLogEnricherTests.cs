@@ -39,12 +39,12 @@ public class ApplicationLogEnricherTests
         var optionsNull = new Mock<IOptions<ApplicationLogEnricherOptions>>();
         optionsNull.Setup(o => o.Value).Returns<IOptions<ApplicationLogEnricherOptions>>(null!);
 
-        var serviceOptionsNull = new Mock<IOptions<ApplicationMetadata>>();
-        serviceOptionsNull.Setup(o => o.Value).Returns<IOptions<ApplicationMetadata>>(null!);
+        var applicationOptionsNull = new Mock<IOptions<ApplicationMetadata>>();
+        applicationOptionsNull.Setup(o => o.Value).Returns<IOptions<ApplicationMetadata>>(null!);
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() => new ApplicationLogEnricher(optionsNull.Object, null!));
-        Assert.Throws<ArgumentException>(() => new ApplicationLogEnricher(options, serviceOptionsNull.Object));
+        Assert.Throws<ArgumentException>(() => new ApplicationLogEnricher(options, applicationOptionsNull.Object));
     }
 
     [Theory]
@@ -52,7 +52,7 @@ public class ApplicationLogEnricherTests
     [InlineData(true, true, true, true, BuildVersion, DeploymentRing)]
     [InlineData(false, false, false, false, null, null)]
     [InlineData(false, false, false, false, BuildVersion, DeploymentRing)]
-    public void ServiceLogEnricher_Options(bool appName, bool envName, bool buildVer, bool depRing, string? buildVersion, string? deploymentRing)
+    public void ApplicationLogEnricher_Options(bool appName, bool envName, bool buildVer, bool depRing, string? buildVersion, string? deploymentRing)
     {
         // Arrange
         var options = new ApplicationLogEnricherOptions
@@ -63,7 +63,7 @@ public class ApplicationLogEnricherTests
             DeploymentRing = depRing,
         };
 
-        var serviceOptions = new ApplicationMetadata
+        var metadata = new ApplicationMetadata
         {
             BuildVersion = buildVersion,
             DeploymentRing = deploymentRing,
@@ -71,7 +71,7 @@ public class ApplicationLogEnricherTests
             EnvironmentName = _hostMock.Object.EnvironmentName
         };
 
-        var enricher = new ApplicationLogEnricher(options.ToOptions(), serviceOptions.ToOptions());
+        var enricher = new ApplicationLogEnricher(options.ToOptions(), metadata.ToOptions());
         var enrichedProperties = new TestLogEnrichmentTagCollector();
 
         // Act
