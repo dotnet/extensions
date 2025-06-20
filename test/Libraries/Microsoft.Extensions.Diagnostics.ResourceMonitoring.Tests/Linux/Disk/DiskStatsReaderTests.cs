@@ -13,6 +13,8 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Disk.Test;
 [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
 public class DiskStatsReaderTests
 {
+    private static readonly string[] _skipDevicePrefixes = new[] { "ram", "loop", "dm-" };
+
     [Fact]
     public void Test_ReadAll_Valid_DiskStats()
     {
@@ -39,8 +41,17 @@ public class DiskStatsReaderTests
         });
 
         var reader = new DiskStatsReader(fileSystem);
-        var dictionary = reader.ReadAll().ToDictionary(x => x.DeviceName);
-        Assert.Equal(15, dictionary.Count);
+        var dictionary = reader.ReadAll(_skipDevicePrefixes).ToDictionary(x => x.DeviceName);
+
+        var expectedDevices = new[]
+        {
+            "nvme1n1", "nvme1n1p1", "nvme0n1", "nvme0n1p1", "nvme0n1p2", "nvme0n1p3", "sda"
+        };
+        Assert.Equal(expectedDevices.Length, dictionary.Count);
+        foreach (var device in expectedDevices)
+        {
+            Assert.True(dictionary.ContainsKey(device), $"Expected device {device} to be present.");
+        }
 
         var disk1 = dictionary["nvme0n1"];
         Assert.Equal(6_090_587u, disk1.ReadsCompleted);
@@ -61,31 +72,18 @@ public class DiskStatsReaderTests
         Assert.Equal(1_659_742u, disk1.FlushRequestsCompleted);
         Assert.Equal(515_787u, disk1.TimeFlushingMs);
 
-        var disk2 = dictionary["dm-8"];
-        Assert.Equal(100_601u, disk2.ReadsCompleted);
+        var disk2 = dictionary["sda"];
+        Assert.Equal(0u, disk2.ReadsCompleted);
         Assert.Equal(0u, disk2.ReadsMerged);
-        Assert.Equal(2_990_980u, disk2.SectorsRead);
-        Assert.Equal(23_940u, disk2.TimeReadingMs);
-        Assert.Equal(3_097_278u, disk2.WritesCompleted);
+        Assert.Equal(0u, disk2.SectorsRead);
+        Assert.Equal(0u, disk2.TimeReadingMs);
+        Assert.Equal(0u, disk2.WritesCompleted);
         Assert.Equal(0u, disk2.WritesMerged);
-        Assert.Equal(32_037_680u, disk2.SectorsWritten);
-        Assert.Equal(1_410_540u, disk2.TimeWritingMs);
+        Assert.Equal(0u, disk2.SectorsWritten);
+        Assert.Equal(0u, disk2.TimeWritingMs);
         Assert.Equal(0u, disk2.IoInProgress);
-        Assert.Equal(5_488_608u, disk2.TimeIoMs);
-        Assert.Equal(1_434_496u, disk2.WeightedTimeIoMs);
-
-        var disk3 = dictionary["sda"];
-        Assert.Equal(0u, disk3.ReadsCompleted);
-        Assert.Equal(0u, disk3.ReadsMerged);
-        Assert.Equal(0u, disk3.SectorsRead);
-        Assert.Equal(0u, disk3.TimeReadingMs);
-        Assert.Equal(0u, disk3.WritesCompleted);
-        Assert.Equal(0u, disk3.WritesMerged);
-        Assert.Equal(0u, disk3.SectorsWritten);
-        Assert.Equal(0u, disk3.TimeWritingMs);
-        Assert.Equal(0u, disk3.IoInProgress);
-        Assert.Equal(0u, disk3.TimeIoMs);
-        Assert.Equal(0u, disk3.WeightedTimeIoMs);
+        Assert.Equal(0u, disk2.TimeIoMs);
+        Assert.Equal(0u, disk2.WeightedTimeIoMs);
     }
 
     [Fact]
@@ -104,7 +102,7 @@ public class DiskStatsReaderTests
         });
 
         var reader = new DiskStatsReader(fileSystem);
-        var dictionary = reader.ReadAll().ToDictionary(x => x.DeviceName);
+        var dictionary = reader.ReadAll(_skipDevicePrefixes).ToDictionary(x => x.DeviceName);
         Assert.Equal(3, dictionary.Count);
 
         var disk1 = dictionary["nvme1n1"];
@@ -131,5 +129,30 @@ public class DiskStatsReaderTests
 
         var disk3 = dictionary["nvme0n1"];
         Assert.NotNull(disk3);
+    }
+
+    [Fact]
+    public void Test_ReadAll_Skips_Prefixes()
+    {
+        string diskStatsFileContent =
+            "   7       0 loop0 100 0 1000 10 1000 0 10000 100 0 1000 100 0 0 0 0 100 100\n" +
+            "   1       0 ram0 200 0 2000 20 2000 0 20000 200 0 2000 200 0 0 0 0 200 200\n" +
+            " 259       0 nvme0n1 300 0 3000 30 3000 0 30000 300 0 3000 300 0 0 0 0 300 300\n" +
+            " 252       0 dm-0 400 0 4000 40 4000 0 40000 400 0 4000 400 0 0 0 0 400 400\n" +
+            "   8       0 sda 500 0 5000 50 5000 0 50000 500 0 5000 500 0 0 0 0 500 500\n";
+
+        var fileSystem = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        {
+            { new FileInfo("/proc/diskstats"), diskStatsFileContent }
+        });
+
+        var reader = new DiskStatsReader(fileSystem);
+        var dictionary = reader.ReadAll(_skipDevicePrefixes).ToDictionary(x => x.DeviceName);
+
+        Assert.DoesNotContain("loop0", dictionary.Keys);
+        Assert.DoesNotContain("ram0", dictionary.Keys);
+        Assert.DoesNotContain("dm-0", dictionary.Keys);
+        Assert.Contains("nvme0n1", dictionary.Keys);
+        Assert.Contains("sda", dictionary.Keys);
     }
 }

@@ -43,7 +43,7 @@ namespace Microsoft.Extensions.AI.Evaluation.Quality;
 /// Tutorial: Evaluate a model's response with response caching and reporting.
 /// </related>
 [Experimental("AIEVAL001")]
-public sealed partial class RelevanceTruthAndCompletenessEvaluator : IEvaluator
+public sealed class RelevanceTruthAndCompletenessEvaluator : IEvaluator
 {
     /// <summary>
     /// Gets the <see cref="EvaluationMetric.Name"/> of the <see cref="NumericMetric"/> returned by
@@ -97,7 +97,7 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator : IEvaluator
         {
             result.AddDiagnosticsToAllMetrics(
                 EvaluationDiagnostic.Error(
-                    $"The ${messages} supplied for evaluation did not contain a user request as the last message."));
+                    $"The {nameof(messages)} supplied for evaluation did not contain a user request as the last message."));
 
             return result;
         }
@@ -271,12 +271,12 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator : IEvaluator
         ChatConfiguration chatConfiguration,
         CancellationToken cancellationToken)
     {
-        Rating rating;
+        RelevanceTruthAndCompletenessRating rating;
 
         string evaluationResponseText = evaluationResponse.Text.Trim();
         if (string.IsNullOrEmpty(evaluationResponseText))
         {
-            rating = Rating.Inconclusive;
+            rating = RelevanceTruthAndCompletenessRating.Inconclusive;
             result.AddDiagnosticsToAllMetrics(
                 EvaluationDiagnostic.Error("The model failed to produce a valid evaluation response."));
         }
@@ -284,7 +284,7 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator : IEvaluator
         {
             try
             {
-                rating = Rating.FromJson(evaluationResponseText);
+                rating = RelevanceTruthAndCompletenessRating.FromJson(evaluationResponseText);
             }
             catch (JsonException)
             {
@@ -298,26 +298,26 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator : IEvaluator
 
                     if (string.IsNullOrWhiteSpace(repairedJson))
                     {
-                        rating = Rating.Inconclusive;
+                        rating = RelevanceTruthAndCompletenessRating.Inconclusive;
                         result.AddDiagnosticsToAllMetrics(
                             EvaluationDiagnostic.Error(
                                 $"""
-                                Failed to repair the following response from the model and parse scores for '{RelevanceMetricName}', '{TruthMetricName}' and '{CompletenessMetricName}'.:
+                                Failed to repair the following response from the model and parse scores for '{RelevanceMetricName}', '{TruthMetricName}' and '{CompletenessMetricName}':
                                 {evaluationResponseText}
                                 """));
                     }
                     else
                     {
-                        rating = Rating.FromJson(repairedJson);
+                        rating = RelevanceTruthAndCompletenessRating.FromJson(repairedJson);
                     }
                 }
                 catch (JsonException ex)
                 {
-                    rating = Rating.Inconclusive;
+                    rating = RelevanceTruthAndCompletenessRating.Inconclusive;
                     result.AddDiagnosticsToAllMetrics(
                         EvaluationDiagnostic.Error(
                             $"""
-                            Failed to repair the following response from the model and parse scores for '{RelevanceMetricName}', '{TruthMetricName}' and '{CompletenessMetricName}'.:
+                            Failed to repair the following response from the model and parse scores for '{RelevanceMetricName}', '{TruthMetricName}' and '{CompletenessMetricName}':
                             {evaluationResponseText}
                             {ex}
                             """));
@@ -336,10 +336,7 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator : IEvaluator
             relevance.AddOrUpdateChatMetadata(evaluationResponse, evaluationDuration);
             relevance.Value = rating.Relevance;
             relevance.Interpretation = relevance.InterpretScore();
-            if (!string.IsNullOrWhiteSpace(rating.RelevanceReasoning))
-            {
-                relevance.Reason = rating.RelevanceReasoning!;
-            }
+            relevance.Reason = rating.RelevanceReasoning;
 
             if (rating.RelevanceReasons.Any())
             {
@@ -351,10 +348,7 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator : IEvaluator
             truth.AddOrUpdateChatMetadata(evaluationResponse, evaluationDuration);
             truth.Value = rating.Truth;
             truth.Interpretation = truth.InterpretScore();
-            if (!string.IsNullOrWhiteSpace(rating.TruthReasoning))
-            {
-                truth.Reason = rating.TruthReasoning!;
-            }
+            truth.Reason = rating.TruthReasoning;
 
             if (rating.TruthReasons.Any())
             {
@@ -366,20 +360,12 @@ public sealed partial class RelevanceTruthAndCompletenessEvaluator : IEvaluator
             completeness.AddOrUpdateChatMetadata(evaluationResponse, evaluationDuration);
             completeness.Value = rating.Completeness;
             completeness.Interpretation = completeness.InterpretScore();
-            if (!string.IsNullOrWhiteSpace(rating.CompletenessReasoning))
-            {
-                completeness.Reason = rating.CompletenessReasoning!;
-            }
+            completeness.Reason = rating.CompletenessReasoning;
 
             if (rating.CompletenessReasons.Any())
             {
                 string value = string.Join(Separator, rating.CompletenessReasons);
                 completeness.AddOrUpdateMetadata(name: Rationales, value);
-            }
-
-            if (!string.IsNullOrWhiteSpace(rating.Error))
-            {
-                result.AddDiagnosticsToAllMetrics(EvaluationDiagnostic.Error(rating.Error!));
             }
         }
     }

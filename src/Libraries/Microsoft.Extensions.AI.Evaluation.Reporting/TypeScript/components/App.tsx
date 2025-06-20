@@ -52,7 +52,7 @@ export const App = () => {
   const classes = useStyles();
   const { dataset, scoreSummary, selectedTags, clearFilters, searchValue, setSearchValue } = useReportContext();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const { renderMarkdown, setRenderMarkdown } = useReportContext();
+  const { renderMarkdown, setRenderMarkdown, prettifyJson, setPrettifyJson } = useReportContext();
   const { globalTags, filterableTags } = categorizeAndSortTags(dataset, scoreSummary.primaryResult.executionName);
 
   const toggleSettings = () => setIsSettingsOpen(!isSettingsOpen);
@@ -126,6 +126,11 @@ export const App = () => {
             checked={renderMarkdown}
             onChange={(_ev, data) => setRenderMarkdown(data.checked)}
             label={<span className={classes.switchLabel}>Render markdown for conversations</span>}
+          />
+          <Switch
+            checked={prettifyJson}
+            onChange={(_ev, data) => setPrettifyJson(data.checked)}
+            label={<span className={classes.switchLabel}>Pretty print JSON content</span>}
           />
         </DrawerBody>
       </Drawer>

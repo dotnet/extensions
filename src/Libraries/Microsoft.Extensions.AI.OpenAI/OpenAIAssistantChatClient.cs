@@ -44,6 +44,9 @@ internal sealed partial class OpenAIAssistantChatClient : IChatClient
     /// <summary>The thread ID to use if none is supplied in <see cref="ChatOptions.ConversationId"/>.</summary>
     private readonly string? _defaultThreadId;
 
+    /// <summary>List of tools associated with the assistant.</summary>
+    private IReadOnlyList<ToolDefinition>? _assistantTools;
+
     /// <summary>Initializes a new instance of the <see cref="OpenAIAssistantChatClient"/> class for the specified <see cref="AssistantClient"/>.</summary>
     public OpenAIAssistantChatClient(AssistantClient assistantClient, string assistantId, string? defaultThreadId)
     {
@@ -57,7 +60,7 @@ internal sealed partial class OpenAIAssistantChatClient : IChatClient
         // implement the abstractions directly rather than providing adapters on top of the public APIs,
         // the package can provide such implementations separate from what's exposed in the public API.
         Uri providerUrl = typeof(AssistantClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            ?.GetValue(assistantClient) as Uri ?? OpenAIResponseChatClient.DefaultOpenAIEndpoint;
+            ?.GetValue(assistantClient) as Uri ?? OpenAIClientExtensions.DefaultOpenAIEndpoint;
 
         _metadata = new("openai", providerUrl);
     }
@@ -83,7 +86,7 @@ internal sealed partial class OpenAIAssistantChatClient : IChatClient
         _ = Throw.IfNull(messages);
 
         // Extract necessary state from messages and options.
-        (RunCreationOptions runOptions, List<FunctionResultContent>? toolResults) = CreateRunOptions(messages, options);
+        (RunCreationOptions runOptions, List<FunctionResultContent>? toolResults) = await CreateRunOptionsAsync(messages, options, cancellationToken).ConfigureAwait(false);
 
         // Get the thread ID.
         string? threadId = options?.ConversationId ?? _defaultThreadId;
@@ -238,8 +241,8 @@ internal sealed partial class OpenAIAssistantChatClient : IChatClient
     /// Creates the <see cref="RunCreationOptions"/> to use for the request and extracts any function result contents 
     /// that need to be submitted as tool results.
     /// </summary>
-    private (RunCreationOptions RunOptions, List<FunctionResultContent>? ToolResults) CreateRunOptions(
-        IEnumerable<ChatMessage> messages, ChatOptions? options)
+    private async ValueTask<(RunCreationOptions RunOptions, List<FunctionResultContent>? ToolResults)> CreateRunOptionsAsync(
+        IEnumerable<ChatMessage> messages, ChatOptions? options, CancellationToken cancellationToken)
     {
         // Create the options instance to populate, either a fresh or using one the caller provides.
         RunCreationOptions runOptions =
@@ -257,19 +260,40 @@ internal sealed partial class OpenAIAssistantChatClient : IChatClient
 
             if (options.Tools is { Count: > 0 } tools)
             {
+                // If the caller has provided any tool overrides, we'll assume they don't want to use the assistant's tools.
+                // But if they haven't, the only way we can provide our tools is via an override, whereas we'd really like to
+                // just add them. To handle that, we'll get all of the assistant's tools and add them to the override list
+                // along with our tools.
+                if (runOptions.ToolsOverride.Count == 0)
+                {
+                    if (_assistantTools is null)
+                    {
+                        var assistant = await _client.GetAssistantAsync(_assistantId, cancellationToken).ConfigureAwait(false);
+                        _assistantTools = assistant.Value.Tools;
+                    }
+
+                    foreach (var tool in _assistantTools)
+                    {
+                        runOptions.ToolsOverride.Add(tool);
+                    }
+                }
+
                 // The caller can provide tools in the supplied ThreadAndRunOptions. Augment it with any supplied via ChatOptions.Tools.
                 foreach (AITool tool in tools)
                 {
                     switch (tool)
                     {
                         case AIFunction aiFunction:
-                            bool? strict = aiFunction.AdditionalProperties.TryGetValue(nameof(strict), out var strictValue) && strictValue is bool strictBool ?
+                            bool? strict = aiFunction.AdditionalProperties.TryGetValue(OpenAIClientExtensions.StrictKey, out var strictValue) && strictValue is bool strictBool ?
                                 strictBool :
                                 null;
+
+                            JsonElement jsonSchema = OpenAIClientExtensions.GetSchema(aiFunction, strict);
+
                             runOptions.ToolsOverride.Add(new FunctionToolDefinition(aiFunction.Name)
                             {
                                 Description = aiFunction.Description,
-                                Parameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(aiFunction.JsonSchema, AssistantJsonContext.Default.JsonElement)),
+                                Parameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(jsonSchema, AssistantJsonContext.Default.JsonElement)),
                                 StrictParameterSchemaEnabled = strict,
                             });
                             break;
@@ -290,7 +314,6 @@ internal sealed partial class OpenAIAssistantChatClient : IChatClient
                         runOptions.ToolConstraint = ToolConstraint.None;
                         break;
 
-                    case null:
                     case AutoChatToolMode:
                         runOptions.ToolConstraint = ToolConstraint.Auto;
                         break;
@@ -314,10 +337,10 @@ internal sealed partial class OpenAIAssistantChatClient : IChatClient
                         runOptions.ResponseFormat = AssistantResponseFormat.CreateTextFormat();
                         break;
 
-                    case ChatResponseFormatJson jsonFormat when jsonFormat.Schema is not null:
+                    case ChatResponseFormatJson jsonFormat when OpenAIClientExtensions.StrictSchemaTransformCache.GetOrCreateTransformedSchema(jsonFormat) is { } jsonSchema:
                         runOptions.ResponseFormat = AssistantResponseFormat.CreateJsonSchemaFormat(
                             jsonFormat.SchemaName,
-                            BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(jsonFormat.Schema, AssistantJsonContext.Default.JsonElement)),
+                            BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(jsonSchema, AssistantJsonContext.Default.JsonElement)),
                             jsonFormat.SchemaDescription);
                         break;
 
@@ -328,8 +351,27 @@ internal sealed partial class OpenAIAssistantChatClient : IChatClient
             }
         }
 
-        // Process ChatMessages.
+        // Configure system instructions.
         StringBuilder? instructions = null;
+        void AppendSystemInstructions(string? toAppend)
+        {
+            if (!string.IsNullOrEmpty(toAppend))
+            {
+                if (instructions is null)
+                {
+                    instructions = new(toAppend);
+                }
+                else
+                {
+                    _ = instructions.AppendLine().AppendLine(toAppend);
+                }
+            }
+        }
+
+        AppendSystemInstructions(runOptions.AdditionalInstructions);
+        AppendSystemInstructions(options?.Instructions);
+
+        // Process ChatMessages.
         List<FunctionResultContent>? functionResults = null;
         foreach (var chatMessage in messages)
         {
@@ -343,12 +385,11 @@ internal sealed partial class OpenAIAssistantChatClient : IChatClient
             // to include that information in its responses. System messages should ideally be instead done as instructions to
             // the assistant when the assistant is created.
             if (chatMessage.Role == ChatRole.System ||
-                chatMessage.Role == OpenAIResponseChatClient.ChatRoleDeveloper)
+                chatMessage.Role == OpenAIClientExtensions.ChatRoleDeveloper)
             {
-                instructions ??= new();
                 foreach (var textContent in chatMessage.Contents.OfType<TextContent>())
                 {
-                    _ = instructions.Append(textContent);
+                    AppendSystemInstructions(textContent.Text);
                 }
 
                 continue;
@@ -389,10 +430,7 @@ internal sealed partial class OpenAIAssistantChatClient : IChatClient
             }
         }
 
-        if (instructions is not null)
-        {
-            runOptions.AdditionalInstructions = instructions.ToString();
-        }
+        runOptions.AdditionalInstructions = instructions?.ToString();
 
         return (runOptions, functionResults);
     }

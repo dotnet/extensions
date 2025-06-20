@@ -25,15 +25,6 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents an <see cref="IChatClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="ChatClient"/>.</summary>
 internal sealed partial class OpenAIChatClient : IChatClient
 {
-    /// <summary>Gets the JSON schema transformer cache conforming to OpenAI restrictions per https://platform.openai.com/docs/guides/structured-outputs?api-mode=responses#supported-schemas.</summary>
-    internal static AIJsonSchemaTransformCache SchemaTransformCache { get; } = new(new()
-    {
-        RequireAllProperties = true,
-        DisallowAdditionalProperties = true,
-        ConvertBooleanSchemas = true,
-        MoveDefaultKeywordToDescription = true,
-    });
-
     /// <summary>Metadata about the client.</summary>
     private readonly ChatClientMetadata _metadata;
 
@@ -54,7 +45,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
         // implement the abstractions directly rather than providing adapters on top of the public APIs,
         // the package can provide such implementations separate from what's exposed in the public API.
         Uri providerUrl = typeof(ChatClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            ?.GetValue(chatClient) as Uri ?? OpenAIResponseChatClient.DefaultOpenAIEndpoint;
+            ?.GetValue(chatClient) as Uri ?? OpenAIClientExtensions.DefaultOpenAIEndpoint;
         string? model = typeof(ChatClient).GetField("_model", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(chatClient) as string;
 
@@ -80,7 +71,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
     {
         _ = Throw.IfNull(messages);
 
-        var openAIChatMessages = ToOpenAIChatMessages(messages, AIJsonUtilities.DefaultOptions);
+        var openAIChatMessages = ToOpenAIChatMessages(messages, options, AIJsonUtilities.DefaultOptions);
         var openAIOptions = ToOpenAIOptions(options);
 
         // Make the call to OpenAI.
@@ -95,7 +86,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
     {
         _ = Throw.IfNull(messages);
 
-        var openAIChatMessages = ToOpenAIChatMessages(messages, AIJsonUtilities.DefaultOptions);
+        var openAIChatMessages = ToOpenAIChatMessages(messages, options, AIJsonUtilities.DefaultOptions);
         var openAIOptions = ToOpenAIOptions(options);
 
         // Make the call to OpenAI.
@@ -111,21 +102,26 @@ internal sealed partial class OpenAIChatClient : IChatClient
     }
 
     /// <summary>Converts an Extensions chat message enumerable to an OpenAI chat message enumerable.</summary>
-    private static IEnumerable<OpenAI.Chat.ChatMessage> ToOpenAIChatMessages(IEnumerable<ChatMessage> inputs, JsonSerializerOptions options)
+    private static IEnumerable<OpenAI.Chat.ChatMessage> ToOpenAIChatMessages(IEnumerable<ChatMessage> inputs, ChatOptions? chatOptions, JsonSerializerOptions jsonOptions)
     {
         // Maps all of the M.E.AI types to the corresponding OpenAI types.
         // Unrecognized or non-processable content is ignored.
+
+        if (chatOptions?.Instructions is { } instructions && !string.IsNullOrWhiteSpace(instructions))
+        {
+            yield return new SystemChatMessage(instructions);
+        }
 
         foreach (ChatMessage input in inputs)
         {
             if (input.Role == ChatRole.System ||
                 input.Role == ChatRole.User ||
-                input.Role == OpenAIResponseChatClient.ChatRoleDeveloper)
+                input.Role == OpenAIClientExtensions.ChatRoleDeveloper)
             {
                 var parts = ToOpenAIChatContent(input.Contents);
                 yield return
                     input.Role == ChatRole.System ? new SystemChatMessage(parts) { ParticipantName = input.AuthorName } :
-                    input.Role == OpenAIResponseChatClient.ChatRoleDeveloper ? new DeveloperChatMessage(parts) { ParticipantName = input.AuthorName } :
+                    input.Role == OpenAIClientExtensions.ChatRoleDeveloper ? new DeveloperChatMessage(parts) { ParticipantName = input.AuthorName } :
                     new UserChatMessage(parts) { ParticipantName = input.AuthorName };
             }
             else if (input.Role == ChatRole.Tool)
@@ -139,7 +135,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
                         {
                             try
                             {
-                                result = JsonSerializer.Serialize(resultContent.Result, options.GetTypeInfo(typeof(object)));
+                                result = JsonSerializer.Serialize(resultContent.Result, jsonOptions.GetTypeInfo(typeof(object)));
                             }
                             catch (NotSupportedException)
                             {
@@ -167,7 +163,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
                         case FunctionCallContent fc:
                             (toolCalls ??= []).Add(
                                 ChatToolCall.CreateFunctionToolCall(fc.CallId, fc.Name, new(JsonSerializer.SerializeToUtf8Bytes(
-                                    fc.Arguments, options.GetTypeInfo(typeof(IDictionary<string, object?>))))));
+                                    fc.Arguments, jsonOptions.GetTypeInfo(typeof(IDictionary<string, object?>))))));
                             break;
 
                         default:
@@ -548,7 +544,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
             }
             else if (options.ResponseFormat is ChatResponseFormatJson jsonFormat)
             {
-                result.ResponseFormat = SchemaTransformCache.GetOrCreateTransformedSchema(jsonFormat) is { } jsonSchema ?
+                result.ResponseFormat = OpenAIClientExtensions.StrictSchemaTransformCache.GetOrCreateTransformedSchema(jsonFormat) is { } jsonSchema ?
                     OpenAI.Chat.ChatResponseFormat.CreateJsonSchemaFormat(
                         jsonFormat.SchemaName ?? "json_schema",
                         BinaryData.FromBytes(
@@ -565,12 +561,12 @@ internal sealed partial class OpenAIChatClient : IChatClient
     private static ChatTool ToOpenAIChatTool(AIFunction aiFunction)
     {
         bool? strict =
-            aiFunction.AdditionalProperties.TryGetValue("strictJsonSchema", out object? strictObj) &&
+            aiFunction.AdditionalProperties.TryGetValue(OpenAIClientExtensions.StrictKey, out object? strictObj) &&
             strictObj is bool strictValue ?
             strictValue : null;
 
         // Perform transformations making the schema legal per OpenAI restrictions
-        JsonElement jsonSchema = SchemaTransformCache.GetOrCreateTransformedSchema(aiFunction);
+        JsonElement jsonSchema = OpenAIClientExtensions.GetSchema(aiFunction, strict);
 
         // Map to an intermediate model so that redundant properties are skipped.
         var tool = JsonSerializer.Deserialize(jsonSchema, ChatClientJsonContext.Default.ChatToolJson)!;
@@ -617,7 +613,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
             ChatMessageRole.User => ChatRole.User,
             ChatMessageRole.Assistant => ChatRole.Assistant,
             ChatMessageRole.Tool => ChatRole.Tool,
-            ChatMessageRole.Developer => OpenAIResponseChatClient.ChatRoleDeveloper,
+            ChatMessageRole.Developer => OpenAIClientExtensions.ChatRoleDeveloper,
             _ => new ChatRole(role.ToString()),
         };
 

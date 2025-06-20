@@ -924,6 +924,10 @@
           "Stage": "Stable"
         },
         {
+          "Member": "string? Microsoft.Extensions.AI.ChatOptions.Instructions { get; set; }",
+          "Stage": "Stable"
+        },
+        {
           "Member": "float? Microsoft.Extensions.AI.ChatOptions.FrequencyPenalty { get; set; }",
           "Stage": "Stable"
         },

@@ -73,7 +73,7 @@ internal static class EvaluationMetricExtensions
             : new EvaluationMetricInterpretation(
                 rating,
                 failed: true,
-                reason: $"{metric.Name} is {passValue}.");
+                reason: $"{metric.Name} is not {passValue}.");
     }
 
     internal static void LogJsonData(this EvaluationMetric metric, string data)

@@ -115,7 +115,7 @@ internal sealed class ResourceMonitorService : BackgroundService, IResourceMonit
             {
                 // By Design: Swallow the exception, as they're non-actionable in this code path.
                 // Prioritize app reliability over error visibility
-                Log.HandlePublishUtilizationException(_logger, e, publisher.GetType().FullName!);
+                _logger.HandlePublishUtilizationException(e, publisher.GetType().FullName!);
             }
         }
     }
@@ -133,13 +133,13 @@ internal sealed class ResourceMonitorService : BackgroundService, IResourceMonit
                 var snapshot = _provider.GetSnapshot();
                 _snapshotsStore.Add(snapshot);
 
-                Log.SnapshotReceived(_logger, snapshot.TotalTimeSinceStart, snapshot.KernelTimeSinceStart, snapshot.UserTimeSinceStart, snapshot.MemoryUsageInBytes);
+                _logger.SnapshotReceived(snapshot.TotalTimeSinceStart, snapshot.KernelTimeSinceStart, snapshot.UserTimeSinceStart, snapshot.MemoryUsageInBytes);
             }
             catch (Exception e)
             {
                 // By Design: Swallow the exception, as they're non-actionable in this code path.
                 // Prioritize app reliability over error visibility
-                Log.HandledGatherStatisticsException(_logger, e);
+                _logger.HandledGatherStatisticsException(e);
             }
 
             await PublishUtilizationAsync(cancellationToken).ConfigureAwait(false);
