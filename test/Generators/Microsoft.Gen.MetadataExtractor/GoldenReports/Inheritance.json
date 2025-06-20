@@ -1,62 +1,67 @@
-{ "Name": "test.dll", "ComplianceReport": 
+
 {
-    "Types": [
+    "Name": "test.dll",
+    "ComplianceReport": 
         {
-            "Name": "Test.Base",
-            "Members": [
+            "Types": [
                 {
-                    "Name": "P0",
-                    "Type": "int",
-                    "File": "src-0.cs",
-                    "Line": "11",
-                    "Classifications": [
+                    "Name": "Test.Base",
+                    "Members": [
                         {
-                            "Name": "C1"
+                            "Name": "P0",
+                            "Type": "int",
+                            "File": "src-0.cs",
+                            "Line": "11",
+                            "Classifications": [
+                                {
+                                    "Name": "C1"
+                                }
+                            ]
+                        },
+                        {
+                            "Name": "P1",
+                            "Type": "int",
+                            "File": "src-0.cs",
+                            "Line": "14",
+                            "Classifications": [
+                                {
+                                    "Name": "C2"
+                                }
+                            ]
                         }
                     ]
                 },
                 {
-                    "Name": "P1",
-                    "Type": "int",
-                    "File": "src-0.cs",
-                    "Line": "14",
-                    "Classifications": [
+                    "Name": "Test.Inherited",
+                    "Members": [
                         {
-                            "Name": "C2"
+                            "Name": "P0",
+                            "Type": "int",
+                            "File": "src-0.cs",
+                            "Line": "11",
+                            "Classifications": [
+                                {
+                                    "Name": "C1"
+                                }
+                            ]
+                        },
+                        {
+                            "Name": "P1",
+                            "Type": "int",
+                            "File": "src-0.cs",
+                            "Line": "14",
+                            "Classifications": [
+                                {
+                                    "Name": "C2"
+                                },
+                                {
+                                    "Name": "C3"
+                                }
+                            ]
                         }
                     ]
                 }
             ]
         },
-        {
-            "Name": "Test.Inherited",
-            "Members": [
-                {
-                    "Name": "P0",
-                    "Type": "int",
-                    "File": "src-0.cs",
-                    "Line": "11",
-                    "Classifications": [
-                        {
-                            "Name": "C1"
-                        }
-                    ]
-                },
-                {
-                    "Name": "P1",
-                    "Type": "int",
-                    "File": "src-0.cs",
-                    "Line": "14",
-                    "Classifications": [
-                        {
-                            "Name": "C2"
-                        },
-                        {
-                            "Name": "C3"
-                        }
-                    ]
-                }
-            ]
-        }
-    ]
-} , "MetricReport": [] }
+    "MetricReport": []
+}
