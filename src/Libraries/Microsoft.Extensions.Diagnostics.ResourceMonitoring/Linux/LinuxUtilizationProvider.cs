@@ -2,7 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.Metrics;
+using System.Linq;
+using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -32,6 +35,10 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     private readonly double _scaleRelativeToCpuLimit;
     private readonly double _scaleRelativeToCpuRequest;
     private readonly double _scaleRelativeToCpuRequestForTrackerApi;
+
+    private readonly TimeSpan _retryInterval = TimeSpan.FromMinutes(5);
+    private DateTimeOffset _lastFailure = DateTimeOffset.MinValue;
+    private int _measurementsUnavailable;
 
     private DateTimeOffset _refreshAfterCpu;
     private DateTimeOffset _refreshAfterMemory;
@@ -94,18 +101,44 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
             // Initialize the counters
             _cpuUtilizationLimit100PercentExceededCounter = meter.CreateCounter<long>("cpu_utilization_limit_100_percent_exceeded");
             _cpuUtilizationLimit110PercentExceededCounter = meter.CreateCounter<long>("cpu_utilization_limit_110_percent_exceeded");
-            _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization, observeValue: () => CpuUtilizationLimit(cpuLimit), unit: "1");
-            _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuRequestUtilization, observeValue: () => CpuUtilizationWithoutHostDelta() / cpuRequest, unit: "1");
+
+            _ = meter.CreateObservableGauge(
+                ResourceUtilizationInstruments.ContainerCpuLimitUtilization,
+                () => GetMeasurementWithRetry(() => CpuUtilizationLimit(cpuLimit)),
+                "1");
+
+            _ = meter.CreateObservableGauge(
+                name: ResourceUtilizationInstruments.ContainerCpuRequestUtilization,
+                observeValues: () => GetMeasurementWithRetry(() => CpuUtilizationWithoutHostDelta() / cpuRequest),
+                unit: "1");
         }
         else
         {
-            _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization, observeValue: () => CpuUtilization() * _scaleRelativeToCpuLimit, unit: "1");
-            _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuRequestUtilization, observeValue: () => CpuUtilization() * _scaleRelativeToCpuRequest, unit: "1");
-            _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessCpuUtilization, observeValue: () => CpuUtilization() * _scaleRelativeToCpuRequest, unit: "1");
+            _ = meter.CreateObservableGauge(
+                name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization,
+                observeValues: () => GetMeasurementWithRetry(() => CpuUtilization() * _scaleRelativeToCpuLimit),
+                unit: "1");
+
+            _ = meter.CreateObservableGauge(
+                name: ResourceUtilizationInstruments.ContainerCpuRequestUtilization,
+                observeValues: () => GetMeasurementWithRetry(() => CpuUtilization() * _scaleRelativeToCpuRequest),
+                unit: "1");
+
+            _ = meter.CreateObservableGauge(
+                name: ResourceUtilizationInstruments.ProcessCpuUtilization,
+                observeValues: () => GetMeasurementWithRetry(() => CpuUtilization() * _scaleRelativeToCpuRequest),
+                unit: "1");
         }
 
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization, observeValue: MemoryUtilization, unit: "1");
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessMemoryUtilization, observeValue: MemoryUtilization, unit: "1");
+        _ = meter.CreateObservableGauge(
+            name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization,
+            observeValues: () => GetMeasurementWithRetry(() => MemoryUtilization()),
+            unit: "1");
+
+        _ = meter.CreateObservableGauge(
+            name: ResourceUtilizationInstruments.ProcessMemoryUtilization,
+            observeValues: () => GetMeasurementWithRetry(() => MemoryUtilization()),
+            unit: "1");
 
         // cpuRequest is a CPU request (aka guaranteed number of CPU units) for pod, for host its 1 core
         // cpuLimit is a CPU limit (aka max CPU units available) for a pod or for a host.
@@ -287,5 +320,35 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
             kernelTimeSinceStart: TimeSpan.Zero,
             userTimeSinceStart: TimeSpan.FromTicks((long)(cgroupTime / Hundred * _scaleRelativeToCpuRequestForTrackerApi)),
             memoryUsageInBytes: memoryUsed);
+    }
+
+    private IEnumerable<Measurement<double>> GetMeasurementWithRetry(Func<double> func)
+    {
+        if (Volatile.Read(ref _measurementsUnavailable) == 1 &&
+            _timeProvider.GetUtcNow() - _lastFailure < _retryInterval)
+        {
+            return Enumerable.Empty<Measurement<double>>();
+        }
+
+        try
+        {
+            var result = func();
+            if (Volatile.Read(ref _measurementsUnavailable) == 1)
+            {
+                _ = Interlocked.Exchange(ref _measurementsUnavailable, 0);
+            }
+
+            return new[] { new Measurement<double>(result) };
+        }
+        catch (Exception ex) when (
+            ex is System.IO.FileNotFoundException ||
+            ex is System.IO.DirectoryNotFoundException ||
+            ex is System.UnauthorizedAccessException)
+        {
+            _lastFailure = _timeProvider.GetUtcNow();
+            _ = Interlocked.Exchange(ref _measurementsUnavailable, 1);
+
+            return Enumerable.Empty<Measurement<double>>();
+        }
     }
 }

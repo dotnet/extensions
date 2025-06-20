@@ -275,53 +275,69 @@ public sealed class LinuxUtilizationProviderTests
     }
 
     [Fact]
-    public void Provider_Uses_RetryingLinuxUtilizationParser_CgroupV1()
+    public void Provider_GetMeasurementWithRetry_HandlesExceptionAndRecovers()
     {
+        var meterName = Guid.NewGuid().ToString();
         var logger = new FakeLogger<LinuxUtilizationProvider>();
         var options = Options.Options.Create(new ResourceMonitoringOptions());
-        using var meter = new Meter(nameof(Provider_Uses_RetryingLinuxUtilizationParser_CgroupV1));
+        using var meter = new Meter(nameof(Provider_GetMeasurementWithRetry_HandlesExceptionAndRecovers));
         var meterFactoryMock = new Mock<IMeterFactory>();
-        meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>())).Returns(meter);
+        meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>()))
+            .Returns(meter);
 
-        var innerParserMock = new Mock<ILinuxUtilizationParser>();
-        int callCount = 0;
-        innerParserMock.Setup(p => p.GetAvailableMemoryInBytes()) // TODO: it makes SystemResources in ctor to receive 0f which breaks the behavior
-            .Returns(() =>
+        // Setup a parser that throws on first two calls, then returns 0.42
+        var callCount = 0;
+        var parserMock = new Mock<ILinuxUtilizationParser>();
+        parserMock.Setup(p => p.GetMemoryUsageInBytes()).Returns(() =>
+        {
+            callCount++;
+            if (callCount <= 1)
             {
-                if (callCount++ == 0)
+                throw new FileNotFoundException("Simulated failure");
+            }
+
+            return 420UL;
+        });
+        parserMock.Setup(p => p.GetAvailableMemoryInBytes()).Returns(1000UL);
+        parserMock.Setup(p => p.GetCgroupRequestCpu()).Returns(10f);
+        parserMock.Setup(p => p.GetCgroupLimitedCpus()).Returns(12f);
+
+        var fakeTime = new FakeTimeProvider(DateTimeOffset.UtcNow);
+        var provider = new LinuxUtilizationProvider(options, parserMock.Object, meterFactoryMock.Object, logger, fakeTime);
+
+        using var listener = new MeterListener
+        {
+            InstrumentPublished = (instrument, listener) =>
+            {
+                if (ReferenceEquals(meter, instrument.Meter))
                 {
-                    throw new FileNotFoundException();
+                    listener.EnableMeasurementEvents(instrument);
                 }
+            }
+        };
 
-                return 1234UL;
-            });
+        var samples = new List<(Instrument instrument, double value)>();
+        listener.SetMeasurementEventCallback<double>((instrument, value, _, _) =>
+        {
+            if (ReferenceEquals(meter, instrument.Meter))
+            {
+                samples.Add((instrument, value));
+            }
+        });
 
-        innerParserMock.Setup(p => p.GetCgroupCpuUsageInNanoseconds()).Returns(0L);
-        innerParserMock.Setup(p => p.GetCgroupCpuUsageInNanosecondsAndCpuPeriodsV2()).Returns((0L, 0L));
-        innerParserMock.Setup(p => p.GetCgroupLimitedCpus()).Returns(1f);
-        innerParserMock.Setup(p => p.GetCgroupLimitV2()).Returns(1f);
-        innerParserMock.Setup(p => p.GetHostAvailableMemory()).Returns(1UL);
-        innerParserMock.Setup(p => p.GetHostCpuCount()).Returns(1f);
-        innerParserMock.Setup(p => p.GetHostCpuUsageInNanoseconds()).Returns(0L);
-        innerParserMock.Setup(p => p.GetMemoryUsageInBytes()).Returns(1UL);
-        innerParserMock.Setup(p => p.GetCgroupRequestCpu()).Returns(1f);
-        innerParserMock.Setup(p => p.GetCgroupRequestCpuV2()).Returns(1f);
-        innerParserMock.Setup(p => p.GetCgroupPeriodsIntervalInMicroSecondsV2()).Returns(1L);
+        listener.Start();
+        listener.RecordObservableInstruments();
+        Assert.DoesNotContain(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization);
 
-        var timeProvider = new FakeTimeProvider(DateTimeOffset.UtcNow);
-        var retryingParser = new RetryingLinuxUtilizationParser(innerParserMock.Object, timeProvider);
+        fakeTime.Advance(TimeSpan.FromMinutes(1));
+        listener.RecordObservableInstruments();
+        Assert.DoesNotContain(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization);
 
-        var provider = new LinuxUtilizationProvider(options, retryingParser, meterFactoryMock.Object, logger, timeProvider);
+        fakeTime.Advance(TimeSpan.FromMinutes(5));
+        listener.RecordObservableInstruments();
+        var metric = samples.SingleOrDefault(x => x.instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization);
+        Assert.Equal(0.42, metric.value);
 
-        var first = retryingParser.GetAvailableMemoryInBytes();
-        timeProvider.Advance(TimeSpan.FromMinutes(1));
-        var second = retryingParser.GetAvailableMemoryInBytes();
-        timeProvider.Advance(TimeSpan.FromMinutes(6));
-        var third = retryingParser.GetAvailableMemoryInBytes();
-
-        Assert.Equal(0UL, first);
-        Assert.Equal(0UL, second);
-        Assert.Equal(1234UL, third);
-        Assert.Equal(3, callCount);
+        parserMock.Verify(p => p.GetMemoryUsageInBytes(), Times.Exactly(2));
     }
 }
