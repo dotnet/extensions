@@ -12,22 +12,23 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.Enrichment.Test;
 
-public class ApplicationEnricherExtensionsTests
+[Obsolete("Testing obsolete API")]
+public class ServiceEnricherExtensionsTests
 {
     [Fact]
     public void ServiceLogEnricher_GivenAnyNullArgument_Throws()
     {
         Assert.Throws<ArgumentNullException>(() =>
-            ((IServiceCollection)null!).AddApplicationLogEnricher());
+            ((IServiceCollection)null!).AddServiceLogEnricher());
 
         Assert.Throws<ArgumentNullException>(() =>
-            ((IServiceCollection)null!).AddApplicationLogEnricher(_ => { }));
+            ((IServiceCollection)null!).AddServiceLogEnricher(_ => { }));
 
         Assert.Throws<ArgumentNullException>(() =>
-            ((IServiceCollection)null!).AddApplicationLogEnricher(Mock.Of<IConfigurationSection>()));
+            ((IServiceCollection)null!).AddServiceLogEnricher(Mock.Of<IConfigurationSection>()));
 
         Assert.Throws<ArgumentNullException>(() =>
-            new ServiceCollection().AddApplicationLogEnricher((IConfigurationSection)null!));
+            new ServiceCollection().AddServiceLogEnricher((IConfigurationSection)null!));
     }
 
     [Fact]
@@ -35,7 +36,7 @@ public class ApplicationEnricherExtensionsTests
     {
         // Arrange & Act
         using var host = FakeHost.CreateBuilder()
-            .ConfigureServices(services => services.AddApplicationLogEnricher())
+            .ConfigureServices(services => services.AddServiceLogEnricher())
             .Build();
 
         // Assert
@@ -43,12 +44,12 @@ public class ApplicationEnricherExtensionsTests
     }
 
     [Fact]
-    public void HostLogEnricher_GivenOptions_RegistersInDI()
+    public void ServiceLogEnricher_GivenOptions_RegistersInDI()
     {
         // Arrange & Act
         using var host = FakeHost.CreateBuilder()
             .ConfigureLogging(builder => builder
-                .Services.AddApplicationLogEnricher(e =>
+                .Services.AddServiceLogEnricher(e =>
                 {
                     e.ApplicationName = false;
                     e.EnvironmentName = false;
@@ -68,17 +69,17 @@ public class ApplicationEnricherExtensionsTests
     }
 
     [Fact]
-    public void ApplicationLogEnricher_GivenConfiguration_RegistersInDI()
+    public void ServiceLogEnricher_GivenConfiguration_RegistersInDI()
     {
         // Arrange & Act
         using var host = FakeHost.CreateBuilder()
             .ConfigureAppConfiguration(
-                ("Applicationenrichersection:ApplicationName", "true"),
-                ("Applicationenrichersection:EnvironmentName", "false"),
-                ("Applicationenrichersection:BuildVersion", "true"),
-                ("Applicationenrichersection:DeploymentRing", "true"))
+                ("Serviceenrichersection:ApplicationName", "true"),
+                ("Serviceenrichersection:EnvironmentName", "false"),
+                ("Serviceenrichersection:BuildVersion", "true"),
+                ("Serviceenrichersection:DeploymentRing", "true"))
             .ConfigureServices((context, services) => services
-                .AddApplicationLogEnricher(context.Configuration.GetSection("Applicationenrichersection")))
+                .AddServiceLogEnricher(context.Configuration.GetSection("Serviceenrichersection")))
             .Build();
 
         // Assert
