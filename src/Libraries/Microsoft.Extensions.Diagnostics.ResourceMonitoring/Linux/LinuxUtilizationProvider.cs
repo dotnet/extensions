@@ -332,7 +332,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
         try
         {
-            var result = func();
+            double result = func();
             if (Volatile.Read(ref _measurementsUnavailable) == 1)
             {
                 _ = Interlocked.Exchange(ref _measurementsUnavailable, 0);
