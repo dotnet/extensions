@@ -20,6 +20,7 @@
   <ItemGroup Label="Shared">
     <Compile Include="..\Shared\ClassDeclarationSyntaxReceiver.cs" LinkBase="Shared" />
     <Compile Include="..\Shared\DiagDescriptorsBase.cs" LinkBase="Shared" />
+    <Compile Include="..\Shared\JsonEmitterBase.cs" LinkBase="Shared" />
     <Compile Include="..\Shared\EmitterBase.cs" LinkBase="Shared" />
     <Compile Include="..\Shared\GeneratorUtilities.cs" LinkBase="Shared" />
     <Compile Include="..\Shared\ParserUtilities.cs" LinkBase="Shared" />
