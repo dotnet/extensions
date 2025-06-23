@@ -20,7 +20,12 @@ namespace Microsoft.Extensions.AI;
 /// </remarks>
 public class ChatResponse<T> : ChatResponse
 {
-    private static readonly JsonReaderOptions _allowMultipleValuesJsonReaderOptions = new() { AllowMultipleValues = true };
+    private static readonly JsonReaderOptions _allowMultipleValuesJsonReaderOptions = new()
+    {
+#if NET9_0_OR_GREATER
+        AllowMultipleValues = true
+#endif
+    };
     private readonly JsonSerializerOptions _serializerOptions;
 
     private T? _deserializedResult;
@@ -34,7 +39,7 @@ public class ChatResponse<T> : ChatResponse
     {
         _serializerOptions = Throw.IfNull(serializerOptions);
         AdditionalProperties = response.AdditionalProperties;
-        ChatThreadId = response.ChatThreadId;
+        ConversationId = response.ConversationId;
         CreatedAt = response.CreatedAt;
         FinishReason = response.FinishReason;
         ModelId = response.ModelId;

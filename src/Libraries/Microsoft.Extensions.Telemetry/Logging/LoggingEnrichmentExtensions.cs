@@ -34,9 +34,10 @@ public static class LoggingEnrichmentExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);
 
-        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerFactory, ExtendedLoggerFactory>());
-        _ = builder.Services.Configure(configure);
-        _ = builder.Services.AddOptionsWithValidateOnStart<LoggerEnrichmentOptions, LoggerEnrichmentOptionsValidator>();
+        _ = builder.Services
+            .AddExtendedLoggerFeactory()
+            .Configure(configure)
+            .AddOptionsWithValidateOnStart<LoggerEnrichmentOptions, LoggerEnrichmentOptionsValidator>();
 
         return builder;
     }
@@ -52,9 +53,24 @@ public static class LoggingEnrichmentExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(section);
 
-        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerFactory, ExtendedLoggerFactory>());
-        _ = builder.Services.AddOptionsWithValidateOnStart<LoggerEnrichmentOptions, LoggerEnrichmentOptionsValidator>().Bind(section);
+        _ = builder.Services
+            .AddExtendedLoggerFeactory()
+            .AddOptionsWithValidateOnStart<LoggerEnrichmentOptions, LoggerEnrichmentOptionsValidator>().Bind(section);
 
         return builder;
+    }
+
+    /// <summary>
+    /// Adds a default implementation of the <see cref="ILoggerFactory"/> to the service collection.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection" />.</param>
+    /// <returns>The value of <paramref name="services"/>.</returns>
+    internal static IServiceCollection AddExtendedLoggerFeactory(this IServiceCollection services)
+    {
+        _ = Throw.IfNull(services);
+
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerFactory, ExtendedLoggerFactory>());
+
+        return services;
     }
 }

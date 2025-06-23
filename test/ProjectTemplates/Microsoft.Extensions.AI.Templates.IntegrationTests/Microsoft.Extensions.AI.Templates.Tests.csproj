@@ -1,7 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Unit tests for Microsoft.Extensions.AI.Templates.</Description>
+    <Description>Tests for Microsoft.Extensions.AI.Templates.</Description>
+    <IsUnitTestProject>false</IsUnitTestProject>
+    <IsIntegrationTestProject>true</IsIntegrationTestProject>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -16,7 +18,11 @@
   <ItemGroup>
     <Compile Remove="Snapshots\**\*.*" />
     <None Include="Snapshots\**\*.*" />
+
+    <Compile Remove="TemplateSandbox\**\*.*" />
+    <None Include="TemplateSandbox\**\*.*" />
+
+    <None Include="README.md" />
   </ItemGroup>
 
 </Project>
-

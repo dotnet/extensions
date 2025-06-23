@@ -4,6 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+#if !NET9_0_OR_GREATER
+using System.Runtime.CompilerServices;
+#endif
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -99,8 +102,8 @@ internal sealed class AnonymousDelegatingChatClient : DelegatingChatClient
                 ChatResponse? response = null;
                 await _sharedFunc(messages, options, async (messages, options, cancellationToken) =>
                 {
-                    response = await InnerClient.GetResponseAsync(messages, options, cancellationToken).ConfigureAwait(false);
-                }, cancellationToken).ConfigureAwait(false);
+                    response = await InnerClient.GetResponseAsync(messages, options, cancellationToken);
+                }, cancellationToken);
 
                 if (response is null)
                 {
@@ -132,20 +135,19 @@ internal sealed class AnonymousDelegatingChatClient : DelegatingChatClient
         {
             var updates = Channel.CreateBounded<ChatResponseUpdate>(1);
 
-#pragma warning disable CA2016 // explicitly not forwarding the cancellation token, as we need to ensure the channel is always completed
-            _ = Task.Run(async () =>
-#pragma warning restore CA2016
+            _ = ProcessAsync();
+            async Task ProcessAsync()
             {
                 Exception? error = null;
                 try
                 {
                     await _sharedFunc(messages, options, async (messages, options, cancellationToken) =>
                     {
-                        await foreach (var update in InnerClient.GetStreamingResponseAsync(messages, options, cancellationToken).ConfigureAwait(false))
+                        await foreach (var update in InnerClient.GetStreamingResponseAsync(messages, options, cancellationToken))
                         {
-                            await updates.Writer.WriteAsync(update, cancellationToken).ConfigureAwait(false);
+                            await updates.Writer.WriteAsync(update, cancellationToken);
                         }
-                    }, cancellationToken).ConfigureAwait(false);
+                    }, cancellationToken);
                 }
                 catch (Exception ex)
                 {
@@ -156,9 +158,24 @@ internal sealed class AnonymousDelegatingChatClient : DelegatingChatClient
                 {
                     _ = updates.Writer.TryComplete(error);
                 }
-            });
+            }
 
+#if NET9_0_OR_GREATER
             return updates.Reader.ReadAllAsync(cancellationToken);
+#else
+            return ReadAllAsync(updates, cancellationToken);
+            static async IAsyncEnumerable<ChatResponseUpdate> ReadAllAsync(
+                ChannelReader<ChatResponseUpdate> channel, [EnumeratorCancellation] CancellationToken cancellationToken)
+            {
+                while (await channel.WaitToReadAsync(cancellationToken))
+                {
+                    while (channel.TryRead(out var update))
+                    {
+                        yield return update;
+                    }
+                }
+            }
+#endif
         }
         else if (_getStreamingResponseFunc is not null)
         {
@@ -171,7 +188,7 @@ internal sealed class AnonymousDelegatingChatClient : DelegatingChatClient
 
             static async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsyncViaGetResponseAsync(Task<ChatResponse> task)
             {
-                ChatResponse response = await task.ConfigureAwait(false);
+                ChatResponse response = await task;
                 foreach (var update in response.ToChatResponseUpdates())
                 {
                     yield return update;

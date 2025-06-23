@@ -6,11 +6,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
@@ -23,6 +24,10 @@ using Xunit;
 #pragma warning disable CA2000 // Dispose objects before losing scope
 #pragma warning disable CA2214 // Do not call overridable methods in constructors
 #pragma warning disable CA2249 // Consider using 'string.Contains' instead of 'string.IndexOf'
+#pragma warning disable S103 // Lines should not be too long
+#pragma warning disable S1144 // Unused private types or members should be removed
+#pragma warning disable S3604 // Member initializer values should not be redundant
+#pragma warning disable SA1515 // Single-line comment should be preceded by blank line
 
 namespace Microsoft.Extensions.AI;
 
@@ -78,7 +83,9 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         var response = await _chatClient.GetResponseAsync(
         [
+            new(ChatRole.System, []),
             new(ChatRole.User, []),
+            new(ChatRole.Assistant, []),
             new(ChatRole.User, "What is 1 + 2? Reply with a single number."),
         ]);
 
@@ -176,12 +183,30 @@ public abstract class ChatClientIntegrationTests : IDisposable
                 new(ChatRole.User,
                 [
                     new TextContent("What does this logo say?"),
-                    new DataContent(GetImageDataUri(), "image/png"),
+                    new DataContent(ImageDataUri.GetImageDataUri(), "image/png"),
                 ])
             ],
             new() { ModelId = GetModel_MultiModal_DescribeImage() });
 
         Assert.True(response.Text.IndexOf("net", StringComparison.OrdinalIgnoreCase) >= 0, response.Text);
+    }
+
+    [ConditionalFact]
+    public virtual async Task MultiModal_DescribePdf()
+    {
+        SkipIfNotEnabled();
+
+        var response = await _chatClient.GetResponseAsync(
+            [
+                new(ChatRole.User,
+                [
+                    new TextContent("What text does this document contain?"),
+                    new DataContent(ImageDataUri.GetPdfDataUri(), "application/pdf"),
+                ])
+            ],
+            new() { ModelId = GetModel_MultiModal_DescribeImage() });
+
+        Assert.True(response.Text.IndexOf("hello", StringComparison.OrdinalIgnoreCase) >= 0, response.Text);
     }
 
     [ConditionalFact]
@@ -212,16 +237,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         });
 
         Assert.Contains(secretNumber.ToString(), response.Text);
-
-        // If the underlying IChatClient provides usage data, function invocation should aggregate the
-        // usage data across all calls to produce a single Usage value on the final response
-        if (response.Usage is { } finalUsage)
-        {
-            var totalInputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.input_tokens")!);
-            var totalOutputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.output_tokens")!);
-            Assert.Equal(totalInputTokens, finalUsage.InputTokenCount);
-            Assert.Equal(totalOutputTokens, finalUsage.OutputTokenCount);
-        }
+        AssertUsageAgainstActivities(response, activities);
     }
 
     [ConditionalFact]
@@ -289,16 +305,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         });
 
         Assert.Contains(secretNumber.ToString(), response.Text);
-
-        // If the underlying IChatClient provides usage data, function invocation should aggregate the
-        // usage data across all calls to produce a single Usage value on the final response
-        if (response.Usage is { } finalUsage)
-        {
-            var totalInputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.input_tokens")!);
-            var totalOutputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.output_tokens")!);
-            Assert.Equal(totalInputTokens, finalUsage.InputTokenCount);
-            Assert.Equal(totalOutputTokens, finalUsage.OutputTokenCount);
-        }
+        AssertUsageAgainstActivities(response, activities);
     }
 
     [ConditionalFact]
@@ -330,22 +337,35 @@ public abstract class ChatClientIntegrationTests : IDisposable
         });
 
         Assert.Contains((secretNumber + 19).ToString(), response.Text);
+        AssertUsageAgainstActivities(response, activities);
+    }
 
+    private static void AssertUsageAgainstActivities(ChatResponse response, List<Activity> activities)
+    {
         // If the underlying IChatClient provides usage data, function invocation should aggregate the
-        // usage data across all calls to produce a single Usage value on the final response
+        // usage data across all calls to produce a single Usage value on the final response.
+        // The FunctionInvokingChatClient then itself creates a span that will also be tagged with a sum
+        // across all consituent calls, which means our final answer will be double.
         if (response.Usage is { } finalUsage)
         {
-            var totalInputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.input_tokens")!);
-            var totalOutputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.output_tokens")!);
-            Assert.Equal(totalInputTokens, finalUsage.InputTokenCount);
-            Assert.Equal(totalOutputTokens, finalUsage.OutputTokenCount);
+            var totalInputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.usage.input_tokens")!);
+            var totalOutputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.usage.output_tokens")!);
+            Assert.Equal(totalInputTokens, finalUsage.InputTokenCount * 2);
+            Assert.Equal(totalOutputTokens, finalUsage.OutputTokenCount * 2);
         }
     }
 
     public record PersonRecord(string Name, int Age = 42);
 
     [ConditionalFact]
-    public virtual async Task AvailableTools_SchemasAreAccepted()
+    public virtual Task AvailableTools_SchemasAreAccepted_Strict() =>
+        AvailableTools_SchemasAreAccepted(strict: true);
+
+    [ConditionalFact]
+    public virtual Task AvailableTools_SchemasAreAccepted_NonStrict() =>
+        AvailableTools_SchemasAreAccepted(strict: false);
+
+    private async Task AvailableTools_SchemasAreAccepted(bool strict)
     {
         SkipIfNotEnabled();
 
@@ -359,33 +379,107 @@ public abstract class ChatClientIntegrationTests : IDisposable
         using var chatClient = new FunctionInvokingChatClient(
             new OpenTelemetryChatClient(_chatClient, sourceName: sourceName));
 
+        int methodCount = 1;
+        Func<AIFunctionFactoryOptions> createOptions = () =>
+        {
+            AIFunctionFactoryOptions aiFuncOptions = new()
+            {
+                Name = $"Method{methodCount++}",
+            };
+
+            if (strict)
+            {
+                aiFuncOptions.AdditionalProperties = new Dictionary<string, object?> { ["strictJsonSchema"] = true };
+            }
+
+            return aiFuncOptions;
+        };
+
+        Func<string, AIFunction> createWithSchema = schema =>
+        {
+            Dictionary<string, object?> additionalProperties = new();
+
+            if (strict)
+            {
+                additionalProperties["strictJsonSchema"] = true;
+            }
+
+            return new CustomAIFunction($"CustomMethod{methodCount++}", schema, additionalProperties);
+        };
+
         ChatOptions options = new()
         {
             MaxOutputTokens = 100,
             Tools =
             [
-                AIFunctionFactory.Create((int? i) => i, "Method1"),
-                AIFunctionFactory.Create((string? s) => s, "Method2"),
-                AIFunctionFactory.Create((int? i = null) => i, "Method3"),
-                AIFunctionFactory.Create((bool b) => b, "Method4"),
-                AIFunctionFactory.Create((double d) => d, "Method5"),
-                AIFunctionFactory.Create((decimal d) => d, "Method6"),
-                AIFunctionFactory.Create((float f) => f, "Method7"),
-                AIFunctionFactory.Create((long l) => l, "Method8"),
-                AIFunctionFactory.Create((char c) => c, "Method9"),
-                AIFunctionFactory.Create((DateTime dt) => dt, "Method10"),
-                AIFunctionFactory.Create((DateTime? dt) => dt, "Method11"),
-                AIFunctionFactory.Create((Guid guid) => guid, "Method12"),
-                AIFunctionFactory.Create((List<int> list) => list, "Method13"),
-                AIFunctionFactory.Create((int[] arr) => arr, "Method14"),
-                AIFunctionFactory.Create((string p1 = "str", int p2 = 42, BindingFlags p3 = BindingFlags.IgnoreCase, char p4 = 'x') => p1, "Method15"),
-                AIFunctionFactory.Create((string? p1 = "str", int? p2 = 42, BindingFlags? p3 = BindingFlags.IgnoreCase, char? p4 = 'x') => p1, "Method16"),
+                // Using AIFunctionFactory
+                AIFunctionFactory.Create((int? i) => i, createOptions()),
+                AIFunctionFactory.Create((string? s) => s, createOptions()),
+                AIFunctionFactory.Create((int? i = null) => i, createOptions()),
+                AIFunctionFactory.Create((bool b) => b, createOptions()),
+                AIFunctionFactory.Create((double d) => d, createOptions()),
+                AIFunctionFactory.Create((decimal d) => d, createOptions()),
+                AIFunctionFactory.Create((float f) => f, createOptions()),
+                AIFunctionFactory.Create((long l) => l, createOptions()),
+                AIFunctionFactory.Create((char c) => c, createOptions()),
+                AIFunctionFactory.Create((DateTime dt) => dt, createOptions()),
+                AIFunctionFactory.Create((DateTime? dt) => dt, createOptions()),
+                AIFunctionFactory.Create((Guid guid) => guid, createOptions()),
+                AIFunctionFactory.Create((List<int> list) => list, createOptions()),
+                AIFunctionFactory.Create((int[] arr, ComplexObject? co) => arr, createOptions()),
+                AIFunctionFactory.Create((string p1 = "str", int p2 = 42, BindingFlags p3 = BindingFlags.IgnoreCase, char p4 = 'x') => p1, createOptions()),
+                AIFunctionFactory.Create((string? p1 = "str", int? p2 = 42, BindingFlags? p3 = BindingFlags.IgnoreCase, char? p4 = 'x') => p1, createOptions()),
+
+                // Selection from @modelcontextprotocol/server-everything
+                createWithSchema("""
+                    {"type":"object","properties":{},"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}
+                    """),
+                createWithSchema("""
+                    {"type":"object","properties":{"duration":{"type":"number","default":10,"description":"Duration of the operation in seconds"},"steps":{"type":"number","default":5,"description":"Number of steps in the operation"}},"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}
+                    """),
+                createWithSchema("""
+                    {"type":"object","properties":{"prompt":{"type":"string","description":"The prompt to send to the LLM"},"maxTokens":{"type":"number","default":100,"description":"Maximum number of tokens to generate"}},"required":["prompt"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}
+                    """),
+                createWithSchema("""
+                    {"type":"object","properties":{},"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}
+                    """),
+                createWithSchema("""
+                    {"type":"object","properties":{"messageType":{"type":"string","enum":["error","success","debug"],"description":"Type of message to demonstrate different annotation patterns"},"includeImage":{"type":"boolean","default":false,"description":"Whether to include an example image"}},"required":["messageType"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}
+                    """),
+                createWithSchema("""
+                    {"type":"object","properties":{"resourceId":{"type":"number","minimum":1,"maximum":100,"description":"ID of the resource to reference (1-100)"}},"required":["resourceId"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}
+                    """),
+
+                // Selection from GH MCP server
+                createWithSchema("""
+                    {"properties":{"body":{"description":"The text of the review comment","type":"string"},"line":{"description":"The line of the blob in the pull request diff that the comment applies to. For multi-line comments, the last line of the range","type":"number"},"owner":{"description":"Repository owner","type":"string"},"path":{"description":"The relative path to the file that necessitates a comment","type":"string"},"pullNumber":{"description":"Pull request number","type":"number"},"repo":{"description":"Repository name","type":"string"},"side":{"description":"The side of the diff to comment on. LEFT indicates the previous state, RIGHT indicates the new state","enum":["LEFT","RIGHT"],"type":"string"},"startLine":{"description":"For multi-line comments, the first line of the range that the comment applies to","type":"number"},"startSide":{"description":"For multi-line comments, the starting side of the diff that the comment applies to. LEFT indicates the previous state, RIGHT indicates the new state","enum":["LEFT","RIGHT"],"type":"string"},"subjectType":{"description":"The level at which the comment is targeted","enum":["FILE","LINE"],"type":"string"}},"required":["owner","repo","pullNumber","path","body","subjectType"],"type":"object"}
+                    """),
+                createWithSchema("""
+                    {"properties":{"commit_message":{"description":"Extra detail for merge commit","type":"string"},"commit_title":{"description":"Title for merge commit","type":"string"},"merge_method":{"description":"Merge method","enum":["merge","squash","rebase"],"type":"string"},"owner":{"description":"Repository owner","type":"string"},"pullNumber":{"description":"Pull request number","type":"number"},"repo":{"description":"Repository name","type":"string"}},"required":["owner","repo","pullNumber"],"type":"object"}
+                    """),
             ],
         };
 
         // We don't care about the response, only that we get one and that an exception isn't thrown due to unacceptable schema.
         var response = await chatClient.GetResponseAsync("Briefly, what is the most popular tower in Paris?", options);
         Assert.NotNull(response);
+    }
+
+    private sealed class CustomAIFunction(string name, string jsonSchema, IReadOnlyDictionary<string, object?> additionalProperties) : AIFunction
+    {
+        public override string Name => name;
+        public override IReadOnlyDictionary<string, object?> AdditionalProperties => additionalProperties;
+        public override JsonElement JsonSchema { get; } = JsonSerializer.Deserialize<JsonElement>(jsonSchema, AIJsonUtilities.DefaultOptions);
+        protected override ValueTask<object?> InvokeCoreAsync(AIFunctionArguments arguments, CancellationToken cancellationToken) => throw new NotSupportedException();
+    }
+
+    private class ComplexObject
+    {
+        public string? SomeString { get; set; }
+
+        public string AnotherString { get; set; } = "default";
+
+        public int Value { get; set; }
     }
 
     protected virtual bool SupportsParallelFunctionCalling => true;
@@ -611,10 +705,12 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         // Second time, the calls to the LLM don't happen, but the function is called again
         var secondResponse = await chatClient.GetResponseAsync([message]);
-        Assert.Equal(response.Text, secondResponse.Text);
         Assert.Equal(2, functionCallCount);
-        Assert.Equal(2, llmCallCount!.CallCount);
+        Assert.Equal(FunctionInvokingChatClientSetsConversationId ? 3 : 2, llmCallCount!.CallCount);
+        Assert.Equal(response.Text, secondResponse.Text);
     }
+
+    public virtual bool FunctionInvokingChatClientSetsConversationId => false;
 
     [ConditionalFact]
     public virtual async Task Caching_AfterFunctionInvocation_FunctionOutputChangedAsync()
@@ -776,8 +872,8 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.Equal(chatClient.GetService<ChatClientMetadata>()?.ProviderUri?.Port, (int)activity.GetTagItem("server.port")!);
         Assert.NotNull(activity.Id);
         Assert.NotEmpty(activity.Id);
-        Assert.NotEqual(0, (int)activity.GetTagItem("gen_ai.response.input_tokens")!);
-        Assert.NotEqual(0, (int)activity.GetTagItem("gen_ai.response.output_tokens")!);
+        Assert.NotEqual(0, (int)activity.GetTagItem("gen_ai.usage.input_tokens")!);
+        Assert.NotEqual(0, (int)activity.GetTagItem("gen_ai.usage.output_tokens")!);
 
         Assert.True(activity.Duration.TotalMilliseconds > 0);
     }
@@ -925,7 +1021,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         var response = await captureOutputChatClient.GetResponseAsync<Person>("""
             Supply an object to represent Jimbo Smith from Cardiff.
-            """, useJsonSchema: false);
+            """, useJsonSchemaResponseFormat: false);
 
         Assert.Equal("Jimbo Smith", response.Result.FullName);
         Assert.Contains("Cardiff", response.Result.HomeTown);
@@ -955,19 +1051,12 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Unknown,
     }
 
-    private static Uri GetImageDataUri()
-    {
-        using Stream? s = typeof(ChatClientIntegrationTests).Assembly.GetManifestResourceStream("Microsoft.Extensions.AI.dotnet.png");
-        Assert.NotNull(s);
-        MemoryStream ms = new();
-        s.CopyTo(ms);
-        return new Uri($"data:image/png;base64,{Convert.ToBase64String(ms.ToArray())}");
-    }
-
     [MemberNotNull(nameof(_chatClient))]
     protected void SkipIfNotEnabled()
     {
-        if (_chatClient is null)
+        string? skipIntegration = TestRunnerConfiguration.Instance["SkipIntegrationTests"];
+
+        if (skipIntegration is not null || _chatClient is null)
         {
             throw new SkipTestException("Client is not enabled.");
         }

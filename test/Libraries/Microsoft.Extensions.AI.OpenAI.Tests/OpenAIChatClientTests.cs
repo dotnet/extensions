@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.Caching.Distributed;
@@ -184,9 +186,6 @@ public class OpenAIChatClientTests
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, response.Usage.AdditionalCounts);
-
-        Assert.NotNull(response.AdditionalProperties);
-        Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(ChatCompletion.SystemFingerprint)]);
     }
 
     [Fact]
@@ -257,8 +256,6 @@ public class OpenAIChatClientTests
             Assert.Equal(createdAt, updates[i].CreatedAt);
             Assert.Equal("gpt-4o-mini-2024-07-18", updates[i].ModelId);
             Assert.Equal(ChatRole.Assistant, updates[i].Role);
-            Assert.NotNull(updates[i].AdditionalProperties);
-            Assert.Equal("fp_f85bea6784", updates[i].AdditionalProperties![nameof(ChatCompletion.SystemFingerprint)]);
             Assert.Equal(i == 10 ? 0 : 1, updates[i].Contents.Count);
             Assert.Equal(i < 10 ? null : ChatFinishReason.Stop, updates[i].FinishReason);
         }
@@ -280,7 +277,361 @@ public class OpenAIChatClientTests
     }
 
     [Fact]
-    public async Task NonStronglyTypedOptions_AllSent()
+    public async Task ChatOptions_DoNotOverwrite_NotNullPropertiesInRawRepresentation_NonStreaming()
+    {
+        const string Input = """
+            {
+              "messages":[{"role":"user","content":"hello"}],
+              "model":"gpt-4o-mini",
+              "frequency_penalty":0.75,
+              "max_completion_tokens":10,
+              "top_p":0.5,
+              "presence_penalty":0.5,
+              "temperature":0.5,
+              "seed":42,
+              "stop":["hello","world"],
+              "response_format":{"type":"text"},
+              "tools":[
+                  {"type":"function","function":{"name":"GetPersonAge","description":"Gets the age of the specified person.","parameters":{"additionalProperties":false,"type":"object","required":["personName"],"properties":{"personName":{"description":"The person whose age is being requested","type":"string"}}}}},
+                  {"type":"function","function":{"name":"GetPersonAge","description":"Gets the age of the specified person.","parameters":{"additionalProperties":false,"type":"object","required":["personName"],"properties":{"personName":{"description":"The person whose age is being requested","type":"string"}}}}}
+                ],
+              "tool_choice":"auto"
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "chatcmpl-123",
+              "object": "chat.completion",
+              "choices": [
+                {
+                  "message": {
+                    "role": "assistant",
+                    "content": "Hello! How can I assist you today?"
+                  }
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, modelId: "gpt-4o-mini");
+        AIFunction tool = AIFunctionFactory.Create(([Description("The person whose age is being requested")] string personName) => 42, "GetPersonAge", "Gets the age of the specified person.");
+
+        ChatOptions chatOptions = new()
+        {
+            RawRepresentationFactory = (c) =>
+            {
+                ChatCompletionOptions openAIOptions = new()
+                {
+                    FrequencyPenalty = 0.75f,
+                    MaxOutputTokenCount = 10,
+                    TopP = 0.5f,
+                    PresencePenalty = 0.5f,
+                    Temperature = 0.5f,
+#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+                    Seed = 42,
+#pragma warning restore OPENAI001
+                    ToolChoice = ChatToolChoice.CreateAutoChoice(),
+                    ResponseFormat = OpenAI.Chat.ChatResponseFormat.CreateTextFormat()
+                };
+                openAIOptions.StopSequences.Add("hello");
+                openAIOptions.Tools.Add(ToOpenAIChatTool(tool));
+                return openAIOptions;
+            },
+            ModelId = null,
+            FrequencyPenalty = 0.125f,
+            MaxOutputTokens = 1,
+            TopP = 0.125f,
+            PresencePenalty = 0.125f,
+            Temperature = 0.125f,
+            Seed = 1,
+            StopSequences = ["world"],
+            Tools = [tool],
+            ToolMode = ChatToolMode.None,
+            ResponseFormat = ChatResponseFormat.Json
+        };
+
+        var response = await client.GetResponseAsync("hello", chatOptions);
+        Assert.NotNull(response);
+        Assert.Equal("Hello! How can I assist you today?", response.Text);
+    }
+
+    [Fact]
+    public async Task ChatOptions_DoNotOverwrite_NotNullPropertiesInRawRepresentation_Streaming()
+    {
+        const string Input = """
+            {
+              "messages":[{"role":"user","content":"hello"}],
+              "model":"gpt-4o-mini",
+              "frequency_penalty":0.75,
+              "max_completion_tokens":10,
+              "top_p":0.5,
+              "presence_penalty":0.5,
+              "temperature":0.5,
+              "seed":42,
+              "stop":["hello","world"],
+              "response_format":{"type":"text"},
+              "tools":[
+                  {"type":"function","function":{"name":"GetPersonAge","description":"Gets the age of the specified person.","parameters":{"type":"object","required":["personName"],"properties":{"personName":{"description":"The person whose age is being requested","type":"string"}},"additionalProperties":false}}},
+                  {"type":"function","function":{"name":"GetPersonAge","description":"Gets the age of the specified person.","parameters":{"type":"object","required":["personName"],"properties":{"personName":{"description":"The person whose age is being requested","type":"string"}},"additionalProperties":false}}}
+                ],
+              "tool_choice":"auto",
+              "stream":true,
+              "stream_options":{"include_usage":true}
+            }
+            """;
+
+        const string Output = """
+            data: {"id":"chatcmpl-123","object":"chat.completion.chunk","choices":[{"delta":{"role":"assistant","content":"Hello! "}}]}
+
+            data: {"id":"chatcmpl-123","object":"chat.completion.chunk","choices":[{"delta":{"content":"How can I assist you today?"}}]}
+
+            data: {"id":"chatcmpl-123","object":"chat.completion.chunk","choices":[{"delta":{},"finish_reason":"stop"}]}
+
+            data: [DONE]
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, modelId: "gpt-4o-mini");
+        AIFunction tool = AIFunctionFactory.Create(([Description("The person whose age is being requested")] string personName) => 42, "GetPersonAge", "Gets the age of the specified person.");
+
+        ChatOptions chatOptions = new()
+        {
+            RawRepresentationFactory = (c) =>
+            {
+                ChatCompletionOptions openAIOptions = new()
+                {
+                    FrequencyPenalty = 0.75f,
+                    MaxOutputTokenCount = 10,
+                    TopP = 0.5f,
+                    PresencePenalty = 0.5f,
+                    Temperature = 0.5f,
+#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+                    Seed = 42,
+#pragma warning restore OPENAI001
+                    ToolChoice = ChatToolChoice.CreateAutoChoice(),
+                    ResponseFormat = OpenAI.Chat.ChatResponseFormat.CreateTextFormat()
+                };
+                openAIOptions.StopSequences.Add("hello");
+                openAIOptions.Tools.Add(ToOpenAIChatTool(tool));
+                return openAIOptions;
+            },
+            ModelId = null, // has no effect, you cannot change the model of an OpenAI's ChatClient.
+            FrequencyPenalty = 0.125f,
+            MaxOutputTokens = 1,
+            TopP = 0.125f,
+            PresencePenalty = 0.125f,
+            Temperature = 0.125f,
+            Seed = 1,
+            StopSequences = ["world"],
+            Tools = [tool],
+            ToolMode = ChatToolMode.None,
+            ResponseFormat = ChatResponseFormat.Json
+        };
+
+        string responseText = string.Empty;
+        await foreach (var update in client.GetStreamingResponseAsync("hello", chatOptions))
+        {
+            responseText += update.Text;
+        }
+
+        Assert.Equal("Hello! How can I assist you today?", responseText);
+    }
+
+    [Fact]
+    public async Task ChatOptions_Overwrite_NullPropertiesInRawRepresentation_NonStreaming()
+    {
+        const string Input = """
+            {
+              "messages":[{"role":"user","content":"hello"}],
+              "model":"gpt-4o-mini",
+              "frequency_penalty":0.125,
+              "max_completion_tokens":1,
+              "top_p":0.125,
+              "presence_penalty":0.125,
+              "temperature":0.125,
+              "seed":1,
+              "stop":["world"],
+              "response_format":{"type":"json_object"},
+              "tools":[
+                  {"type":"function","function":{"name":"GetPersonAge","description":"Gets the age of the specified person.","parameters":{"additionalProperties":false,"type":"object","required":["personName"],"properties":{"personName":{"description":"The person whose age is being requested","type":"string"}}}}}
+                ],
+              "tool_choice":"none"
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "chatcmpl-123",
+              "object": "chat.completion",
+              "choices": [
+                {
+                  "message": {
+                    "role": "assistant",
+                    "content": "Hello! How can I assist you today?"
+                  }
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, modelId: "gpt-4o-mini");
+        AIFunction tool = AIFunctionFactory.Create(([Description("The person whose age is being requested")] string personName) => 42, "GetPersonAge", "Gets the age of the specified person.");
+
+        ChatOptions chatOptions = new()
+        {
+            RawRepresentationFactory = (c) =>
+            {
+                ChatCompletionOptions openAIOptions = new();
+                Assert.Null(openAIOptions.FrequencyPenalty);
+                Assert.Null(openAIOptions.MaxOutputTokenCount);
+                Assert.Null(openAIOptions.TopP);
+                Assert.Null(openAIOptions.PresencePenalty);
+                Assert.Null(openAIOptions.Temperature);
+#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+                Assert.Null(openAIOptions.Seed);
+#pragma warning restore OPENAI001
+                Assert.Empty(openAIOptions.StopSequences);
+                Assert.Empty(openAIOptions.Tools);
+                Assert.Null(openAIOptions.ToolChoice);
+                Assert.Null(openAIOptions.ResponseFormat);
+                return openAIOptions;
+            },
+            ModelId = null, // has no effect, you cannot change the model of an OpenAI's ChatClient.
+            FrequencyPenalty = 0.125f,
+            MaxOutputTokens = 1,
+            TopP = 0.125f,
+            PresencePenalty = 0.125f,
+            Temperature = 0.125f,
+            Seed = 1,
+            StopSequences = ["world"],
+            Tools = [tool],
+            ToolMode = ChatToolMode.None,
+            ResponseFormat = ChatResponseFormat.Json
+        };
+
+        var response = await client.GetResponseAsync("hello", chatOptions);
+        Assert.NotNull(response);
+        Assert.Equal("Hello! How can I assist you today?", response.Text);
+    }
+
+    [Fact]
+    public async Task ChatOptions_Overwrite_NullPropertiesInRawRepresentation_Streaming()
+    {
+        const string Input = """
+            {
+              "messages":[{"role":"user","content":"hello"}],
+              "model":"gpt-4o-mini",
+              "frequency_penalty":0.125,
+              "max_completion_tokens":1,
+              "top_p":0.125,
+              "presence_penalty":0.125,
+              "temperature":0.125,
+              "seed":1,
+              "stop":["world"],
+              "response_format":{"type":"json_object"},
+              "tools":[
+                  {"type":"function","function":{"name":"GetPersonAge","description":"Gets the age of the specified person.","parameters":{"additionalProperties":false,"type":"object","required":["personName"],"properties":{"personName":{"description":"The person whose age is being requested","type":"string"}}}}}
+                ],
+              "tool_choice":"none",
+              "stream":true,
+              "stream_options":{"include_usage":true}
+            }
+            """;
+
+        const string Output = """
+            data: {"id":"chatcmpl-123","object":"chat.completion.chunk","choices":[{"delta":{"role":"assistant","content":"Hello! "}}]}
+
+            data: {"id":"chatcmpl-123","object":"chat.completion.chunk","choices":[{"delta":{"content":"How can I assist you today?"}}]}
+
+            data: {"id":"chatcmpl-123","object":"chat.completion.chunk","choices":[{"delta":{},"finish_reason":"stop"}]}
+
+            data: [DONE]
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, modelId: "gpt-4o-mini");
+        AIFunction tool = AIFunctionFactory.Create(([Description("The person whose age is being requested")] string personName) => 42, "GetPersonAge", "Gets the age of the specified person.");
+
+        ChatOptions chatOptions = new()
+        {
+            RawRepresentationFactory = (c) =>
+            {
+                ChatCompletionOptions openAIOptions = new();
+                Assert.Null(openAIOptions.FrequencyPenalty);
+                Assert.Null(openAIOptions.MaxOutputTokenCount);
+                Assert.Null(openAIOptions.TopP);
+                Assert.Null(openAIOptions.PresencePenalty);
+                Assert.Null(openAIOptions.Temperature);
+#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+                Assert.Null(openAIOptions.Seed);
+#pragma warning restore OPENAI001
+                Assert.Empty(openAIOptions.StopSequences);
+                Assert.Empty(openAIOptions.Tools);
+                Assert.Null(openAIOptions.ToolChoice);
+                Assert.Null(openAIOptions.ResponseFormat);
+                return openAIOptions;
+            },
+            ModelId = null,
+            FrequencyPenalty = 0.125f,
+            MaxOutputTokens = 1,
+            TopP = 0.125f,
+            PresencePenalty = 0.125f,
+            Temperature = 0.125f,
+            Seed = 1,
+            StopSequences = ["world"],
+            Tools = [tool],
+            ToolMode = ChatToolMode.None,
+            ResponseFormat = ChatResponseFormat.Json
+        };
+
+        string responseText = string.Empty;
+        await foreach (var update in client.GetStreamingResponseAsync("hello", chatOptions))
+        {
+            responseText += update.Text;
+        }
+
+        Assert.Equal("Hello! How can I assist you today?", responseText);
+    }
+
+    /// <summary>Converts an Extensions function to an OpenAI chat tool.</summary>
+    private static ChatTool ToOpenAIChatTool(AIFunction aiFunction)
+    {
+        bool? strict =
+            aiFunction.AdditionalProperties.TryGetValue("strictJsonSchema", out object? strictObj) &&
+            strictObj is bool strictValue ?
+            strictValue : null;
+
+        // Map to an intermediate model so that redundant properties are skipped.
+        var tool = JsonSerializer.Deserialize<ChatToolJson>(aiFunction.JsonSchema)!;
+        var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool));
+        return ChatTool.CreateFunctionTool(aiFunction.Name, aiFunction.Description, functionParameters, strict);
+    }
+
+    /// <summary>Used to create the JSON payload for an OpenAI chat tool description.</summary>
+    internal sealed class ChatToolJson
+    {
+        [JsonPropertyName("type")]
+        public string Type { get; set; } = "object";
+
+        [JsonPropertyName("required")]
+        public HashSet<string> Required { get; set; } = [];
+
+        [JsonPropertyName("properties")]
+        public Dictionary<string, JsonElement> Properties { get; set; } = [];
+
+        [JsonPropertyName("additionalProperties")]
+        public bool AdditionalProperties { get; set; }
+    }
+
+    [Fact]
+    public async Task StronglyTypedOptions_AllSent()
     {
         const string Input = """
             {
@@ -319,18 +670,19 @@ public class OpenAIChatClientTests
 
         Assert.NotNull(await client.GetResponseAsync("hello", new()
         {
-            AdditionalProperties = new()
+            AllowMultipleToolCalls = false,
+            RawRepresentationFactory = (c) =>
             {
-                ["StoredOutputEnabled"] = true,
-                ["Metadata"] = new Dictionary<string, string>
+                var openAIOptions = new ChatCompletionOptions
                 {
-                    ["something"] = "else",
-                },
-                ["LogitBiases"] = new Dictionary<int, int> { { 12, 34 } },
-                ["IncludeLogProbabilities"] = true,
-                ["TopLogProbabilityCount"] = 42,
-                ["AllowParallelToolCalls"] = false,
-                ["EndUserId"] = "12345",
+                    StoredOutputEnabled = true,
+                    IncludeLogProbabilities = true,
+                    TopLogProbabilityCount = 42,
+                    EndUserId = "12345",
+                };
+                openAIOptions.Metadata.Add("something", "else");
+                openAIOptions.LogitBiases.Add(12, 34);
+                return openAIOptions;
             },
         }));
     }
@@ -446,9 +798,6 @@ public class OpenAIChatClientTests
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, response.Usage.AdditionalCounts);
-
-        Assert.NotNull(response.AdditionalProperties);
-        Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(ChatCompletion.SystemFingerprint)]);
     }
 
     [Fact]
@@ -546,9 +895,6 @@ public class OpenAIChatClientTests
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, response.Usage.AdditionalCounts);
-
-        Assert.NotNull(response.AdditionalProperties);
-        Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(ChatCompletion.SystemFingerprint)]);
     }
 
     [Fact]
@@ -647,9 +993,6 @@ public class OpenAIChatClientTests
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, response.Usage.AdditionalCounts);
-
-        Assert.NotNull(response.AdditionalProperties);
-        Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(ChatCompletion.SystemFingerprint)]);
     }
 
     [Fact]
@@ -662,7 +1005,6 @@ public class OpenAIChatClientTests
                         "function": {
                             "description": "Gets the age of the specified person.",
                             "name": "GetPersonAge",
-                            "strict":true,
                             "parameters": {
                                 "type": "object",
                                 "required": [
@@ -768,9 +1110,88 @@ public class OpenAIChatClientTests
         FunctionCallContent fcc = Assert.IsType<FunctionCallContent>(response.Messages.Single().Contents[0]);
         Assert.Equal("GetPersonAge", fcc.Name);
         AssertExtensions.EqualFunctionCallParameters(new Dictionary<string, object?> { ["personName"] = "Alice" }, fcc.Arguments);
+    }
 
-        Assert.NotNull(response.AdditionalProperties);
-        Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(ChatCompletion.SystemFingerprint)]);
+    [Fact]
+    public async Task UnavailableBuiltInFunctionCall_NonStreaming()
+    {
+        const string Input = """
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "What day is it?"
+                    }
+                ],
+                "model": "gpt-4o-mini"
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "chatcmpl-ADydKhrSKEBWJ8gy0KCIU74rN3Hmk",
+              "object": "chat.completion",
+              "created": 1727894702,
+              "model": "gpt-4o-mini-2024-07-18",
+              "choices": [
+                {
+                  "index": 0,
+                  "message": {
+                    "role": "assistant",
+                    "content": "December 31, 2023",
+                    "refusal": null
+                  },
+                  "logprobs": null,
+                  "finish_reason": "stop"
+                }
+              ],
+              "usage": {
+                "prompt_tokens": 61,
+                "completion_tokens": 16,
+                "total_tokens": 77,
+                "prompt_tokens_details": {
+                  "cached_tokens": 13
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 90
+                }
+              },
+              "system_fingerprint": "fp_f85bea6784"
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("What day is it?", new()
+        {
+            Tools = [new HostedWebSearchTool()],
+        });
+        Assert.NotNull(response);
+
+        Assert.Equal("December 31, 2023", response.Text);
+        Assert.Equal("gpt-4o-mini-2024-07-18", response.ModelId);
+        Assert.Equal(ChatRole.Assistant, response.Messages.Single().Role);
+        Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_727_894_702), response.CreatedAt);
+        Assert.Equal(ChatFinishReason.Stop, response.FinishReason);
+        Assert.NotNull(response.Usage);
+        Assert.Equal(61, response.Usage.InputTokenCount);
+        Assert.Equal(16, response.Usage.OutputTokenCount);
+        Assert.Equal(77, response.Usage.TotalTokenCount);
+
+        Assert.Equal(new Dictionary<string, long>
+        {
+            { "InputTokenDetails.AudioTokenCount", 0 },
+            { "InputTokenDetails.CachedTokenCount", 13 },
+            { "OutputTokenDetails.ReasoningTokenCount", 90 },
+            { "OutputTokenDetails.AudioTokenCount", 0 },
+            { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
+            { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
+        }, response.Usage.AdditionalCounts);
+
+        Assert.Single(response.Messages.Single().Contents);
+        TextContent fcc = Assert.IsType<TextContent>(response.Messages.Single().Contents[0]);
     }
 
     [Fact]
@@ -783,7 +1204,6 @@ public class OpenAIChatClientTests
                         "function": {
                             "description": "Gets the age of the specified person.",
                             "name": "GetPersonAge",
-                            "strict":true,
                             "parameters": {
                                 "type": "object",
                                 "required": [
@@ -863,8 +1283,6 @@ public class OpenAIChatClientTests
             Assert.Equal(createdAt, updates[i].CreatedAt);
             Assert.Equal("gpt-4o-mini-2024-07-18", updates[i].ModelId);
             Assert.Equal(ChatRole.Assistant, updates[i].Role);
-            Assert.NotNull(updates[i].AdditionalProperties);
-            Assert.Equal("fp_f85bea6784", updates[i].AdditionalProperties![nameof(ChatCompletion.SystemFingerprint)]);
             Assert.Equal(i < 7 ? null : ChatFinishReason.ToolCalls, updates[i].FinishReason);
         }
 
@@ -1028,9 +1446,121 @@ public class OpenAIChatClientTests
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, response.Usage.AdditionalCounts);
+    }
 
-        Assert.NotNull(response.AdditionalProperties);
-        Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(ChatCompletion.SystemFingerprint)]);
+    [Fact]
+    public Task DataContentMessage_Image_AdditionalProperty_ChatImageDetailLevel_NonStreaming()
+        => DataContentMessage_Image_AdditionalPropertyDetail_NonStreaming("high");
+
+    [Fact]
+    public Task DataContentMessage_Image_AdditionalProperty_StringDetail_NonStreaming()
+        => DataContentMessage_Image_AdditionalPropertyDetail_NonStreaming(ChatImageDetailLevel.High);
+
+    private static async Task DataContentMessage_Image_AdditionalPropertyDetail_NonStreaming(object detailValue)
+    {
+        string input = $$"""
+            {
+              "messages": [
+                {
+                  "role": "user",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "What does this logo say?"
+                    },
+                    {
+                      "type": "image_url",
+                      "image_url": {
+                        "detail": "high",
+                        "url": "{{ImageDataUri.GetImageDataUri()}}"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "model": "gpt-4o-mini"
+            }
+            """;
+
+        const string Output = """
+            {
+              "choices": [
+                {
+                  "finish_reason": "stop",
+                  "index": 0,
+                  "logprobs": null,
+                  "message": {
+                    "content": "The logo says \".NET\", which is a software development framework created by Microsoft. It is used for building and running applications on Windows, macOS, and Linux environments. The logo typically also represents the broader .NET ecosystem, which includes various programming languages, libraries, and tools.",
+                    "refusal": null,
+                    "role": "assistant"
+                  }
+                }
+              ],
+              "created": 1743531271,
+              "id": "chatcmpl-BHaQ3nkeSDGhLzLya3mGbB1EXSqve",
+              "model": "gpt-4o-mini-2024-07-18",
+              "object": "chat.completion",
+              "system_fingerprint": "fp_b705f0c291",
+              "usage": {
+                "completion_tokens": 56,
+                "completion_tokens_details": {
+                  "accepted_prediction_tokens": 0,
+                  "audio_tokens": 0,
+                  "reasoning_tokens": 0,
+                  "rejected_prediction_tokens": 0
+                },
+                "prompt_tokens": 8513,
+                "prompt_tokens_details": {
+                  "audio_tokens": 0,
+                  "cached_tokens": 0
+                },
+                "total_tokens": 8569
+              }
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync(
+            [
+            new(ChatRole.User,
+                [
+                    new TextContent("What does this logo say?"),
+                    new DataContent(ImageDataUri.GetImageDataUri(), "image/png")
+                    {
+                        AdditionalProperties = new()
+                        {
+                            { "detail", detailValue }
+                        }
+                    }
+                ])
+            ]);
+        Assert.NotNull(response);
+
+        Assert.Equal("chatcmpl-BHaQ3nkeSDGhLzLya3mGbB1EXSqve", response.ResponseId);
+        Assert.Equal("The logo says \".NET\", which is a software development framework created by Microsoft. It is used for building and running applications on Windows, macOS, and Linux environments. The logo typically also represents the broader .NET ecosystem, which includes various programming languages, libraries, and tools.", response.Text);
+        Assert.Single(response.Messages.Single().Contents);
+        Assert.Equal(ChatRole.Assistant, response.Messages.Single().Role);
+        Assert.Equal("chatcmpl-BHaQ3nkeSDGhLzLya3mGbB1EXSqve", response.Messages.Single().MessageId);
+        Assert.Equal("gpt-4o-mini-2024-07-18", response.ModelId);
+        Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_743_531_271), response.CreatedAt);
+        Assert.Equal(ChatFinishReason.Stop, response.FinishReason);
+
+        Assert.NotNull(response.Usage);
+        Assert.Equal(8513, response.Usage.InputTokenCount);
+        Assert.Equal(56, response.Usage.OutputTokenCount);
+        Assert.Equal(8569, response.Usage.TotalTokenCount);
+        Assert.Equal(new Dictionary<string, long>
+        {
+            { "InputTokenDetails.AudioTokenCount", 0 },
+            { "InputTokenDetails.CachedTokenCount", 0 },
+            { "OutputTokenDetails.ReasoningTokenCount", 0 },
+            { "OutputTokenDetails.AudioTokenCount", 0 },
+            { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
+            { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
+        }, response.Usage.AdditionalCounts);
     }
 
     private static IChatClient CreateChatClient(HttpClient httpClient, string modelId) =>

@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>A library that contains a set of evaluators that are built atop the Azure AI Foundry Evaluation service that can be used to evaluate the content safety of AI responses in your projects including Protected Material, Groundedness Pro, Ungrounded Attributes, Hate and Unfairness, Self Harm, Violence, Sexual, Code Vulnerability and Indirect Attack.</Description>
+    <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
+    <RootNamespace>Microsoft.Extensions.AI.Evaluation.Safety</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Workstream>AIEval</Workstream>
+    <Stage>preview</Stage>
+    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
+    <EnablePackageValidation>false</EnablePackageValidation>
+    <!-- The evaluators in this assembly need Azure and the tests that cover them are not being run in CI at the moment. -->
+    <MinCodeCoverage>0</MinCodeCoverage>
+    <MinMutationScore>0</MinMutationScore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Microsoft.Extensions.AI.Evaluation\Utilities\TimingHelper.cs" Link="Utilities\TimingHelper.cs" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Azure.Core" />
+    <PackageReference Include="Microsoft.Bcl.HashCode" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.AI.Evaluation\Microsoft.Extensions.AI.Evaluation.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleToTest Include="Microsoft.Extensions.AI.Evaluation.Tests" />
+  </ItemGroup>
+
+</Project>

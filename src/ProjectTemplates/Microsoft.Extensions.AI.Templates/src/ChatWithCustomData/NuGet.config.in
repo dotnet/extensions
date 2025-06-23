@@ -4,17 +4,22 @@
   It will not get included in the built project template.
 -->
 <configuration>
+  <fallbackPackageFolders>
+    <!-- Clear to avoid inheriting from the repo root NuGet.config -->
+    <clear />
+  </fallbackPackageFolders>
   <packageSources>
+    <!-- Clear to avoid inheriting from the repo root NuGet.config -->
+    <clear />
     <add key="local-shipping" value="${ArtifactsShippingPackagesDir}" />
     <add key="nuget" value="https://api.nuget.org/v3/index.json" />
   </packageSources>
+  <disabledPackageSources>
+    <!-- Clear to avoid inheriting from the repo root NuGet.config -->
+    <clear />
+  </disabledPackageSources>
   <packageSourceMapping>
-    <packageSource key="nuget">
-      <package pattern="CommunityToolkit.*" />
-      <package pattern="OllamaSharp" />
-    </packageSource>
-    <packageSource key="local-shipping">
-      <package pattern="*" />
-    </packageSource>
+    <!-- Clear to avoid inheriting from the repo root NuGet.config -->
+    <clear />
   </packageSourceMapping>
 </configuration>

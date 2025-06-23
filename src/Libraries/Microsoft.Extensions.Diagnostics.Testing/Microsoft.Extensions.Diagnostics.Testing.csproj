@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Diagnostics.Testing</RootNamespace>
     <TargetFrameworks>$(NetCoreTargetFrameworks);netstandard2.0;</TargetFrameworks>

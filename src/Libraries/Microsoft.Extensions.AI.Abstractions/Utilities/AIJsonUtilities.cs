@@ -6,8 +6,10 @@ using System;
 using System.Diagnostics;
 #endif
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
 #if NET
 using System.Threading;
@@ -90,7 +92,7 @@ public static partial class AIJsonUtilities
 
         // For cases where the hash may be used as a cache key, we rely on collision resistance for security purposes.
         // If a collision occurs, we'd serve a cached LLM response for a potentially unrelated prompt, leading to information
-        // disclosure. Use of SHA256 is an implementation detail and can be easily swapped in the future if needed, albeit
+        // disclosure. Use of SHA384 is an implementation detail and can be easily swapped in the future if needed, albeit
         // invalidating any existing cache entries.
 #if NET
         IncrementalHashStream? stream = IncrementalHashStream.ThreadStaticInstance;
@@ -107,12 +109,14 @@ public static partial class AIJsonUtilities
             stream = new();
         }
 
-        Span<byte> hashData = stackalloc byte[SHA256.HashSizeInBytes];
+        Span<byte> hashData = stackalloc byte[SHA384.HashSizeInBytes];
         try
         {
             foreach (object? value in values)
             {
-                JsonSerializer.Serialize(stream, value, jti);
+                JsonNode? jsonNode = JsonSerializer.SerializeToNode(value, jti);
+                NormalizeJsonNode(jsonNode);
+                JsonSerializer.Serialize(stream, jsonNode, JsonContextNoIndentation.Default.JsonNode!);
             }
 
             stream.GetHashAndReset(hashData);
@@ -130,11 +134,13 @@ public static partial class AIJsonUtilities
         MemoryStream stream = new();
         foreach (object? value in values)
         {
-            JsonSerializer.Serialize(stream, value, jti);
+            JsonNode? jsonNode = JsonSerializer.SerializeToNode(value, jti);
+            NormalizeJsonNode(jsonNode);
+            JsonSerializer.Serialize(stream, jsonNode, JsonContextNoIndentation.Default.JsonNode!);
         }
 
-        using var sha256 = SHA256.Create();
-        var hashData = sha256.ComputeHash(stream.GetBuffer(), 0, (int)stream.Length);
+        using var hashAlgorithm = SHA384.Create();
+        var hashData = hashAlgorithm.ComputeHash(stream.GetBuffer(), 0, (int)stream.Length);
 
         return ConvertToHexString(hashData);
 
@@ -156,6 +162,31 @@ public static partial class AIJsonUtilities
             return new string(chars);
         }
 #endif
+        static void NormalizeJsonNode(JsonNode? node)
+        {
+            switch (node)
+            {
+                case JsonArray array:
+                    foreach (JsonNode? item in array)
+                    {
+                        NormalizeJsonNode(item);
+                    }
+
+                    break;
+
+                case JsonObject obj:
+                    var entries = obj.OrderBy(e => e.Key, StringComparer.Ordinal).ToArray();
+                    obj.Clear();
+
+                    foreach (var entry in entries)
+                    {
+                        obj.Add(entry.Key, entry.Value);
+                        NormalizeJsonNode(entry.Value);
+                    }
+
+                    break;
+            }
+        }
     }
 
     private static void AddAIContentTypeCore(JsonSerializerOptions options, Type contentType, string typeDiscriminatorId)
@@ -185,7 +216,7 @@ public static partial class AIJsonUtilities
         public static IncrementalHashStream? ThreadStaticInstance;
 
         /// <summary>The <see cref="IncrementalHash"/> used by this instance.</summary>
-        private readonly IncrementalHash _hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        private readonly IncrementalHash _hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA384);
 
         /// <summary>Gets the current hash and resets.</summary>
         public void GetHashAndReset(Span<byte> bytes) => _hash.GetHashAndReset(bytes);

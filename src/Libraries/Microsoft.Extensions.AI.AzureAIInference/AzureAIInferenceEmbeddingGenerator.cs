@@ -89,7 +89,9 @@ internal sealed class AzureAIInferenceEmbeddingGenerator :
     public async Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(
         IEnumerable<string> values, EmbeddingGenerationOptions? options = null, CancellationToken cancellationToken = default)
     {
-        var azureAIOptions = ToAzureAIOptions(values, options, EmbeddingEncodingFormat.Base64);
+        _ = Throw.IfNull(values);
+
+        var azureAIOptions = ToAzureAIOptions(values, options);
 
         var embeddings = (await _embeddingsClient.EmbedAsync(azureAIOptions, cancellationToken).ConfigureAwait(false)).Value;
 
@@ -118,7 +120,7 @@ internal sealed class AzureAIInferenceEmbeddingGenerator :
         // Nothing to dispose. Implementation required for the IEmbeddingGenerator interface.
     }
 
-    private static float[] ParseBase64Floats(BinaryData binaryData)
+    internal static float[] ParseBase64Floats(BinaryData binaryData)
     {
         ReadOnlySpan<byte> base64 = binaryData.ToMemory().Span;
 
@@ -161,15 +163,24 @@ internal sealed class AzureAIInferenceEmbeddingGenerator :
             throw new FormatException("The input is not a valid Base64 string of encoded floats.");
     }
 
-    /// <summary>Converts an extensions options instance to an OpenAI options instance.</summary>
-    private EmbeddingsOptions ToAzureAIOptions(IEnumerable<string> inputs, EmbeddingGenerationOptions? options, EmbeddingEncodingFormat format)
+    /// <summary>Converts an extensions options instance to an Azure.AI.Inference options instance.</summary>
+    private EmbeddingsOptions ToAzureAIOptions(IEnumerable<string> inputs, EmbeddingGenerationOptions? options)
     {
-        EmbeddingsOptions result = new(inputs)
+        if (options?.RawRepresentationFactory?.Invoke(this) is not EmbeddingsOptions result)
         {
-            Dimensions = options?.Dimensions ?? _dimensions,
-            Model = options?.ModelId ?? _metadata.DefaultModelId,
-            EncodingFormat = format,
-        };
+            result = new EmbeddingsOptions(inputs);
+        }
+        else
+        {
+            foreach (var input in inputs)
+            {
+                result.Input.Add(input);
+            }
+        }
+
+        result.Dimensions ??= options?.Dimensions ?? _dimensions;
+        result.Model ??= options?.ModelId ?? _metadata.DefaultModelId;
+        result.EncodingFormat = EmbeddingEncodingFormat.Base64;
 
         if (options?.AdditionalProperties is { } props)
         {

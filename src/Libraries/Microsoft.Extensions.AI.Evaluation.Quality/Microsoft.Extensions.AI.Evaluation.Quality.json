@@ -1,0 +1,298 @@
+{
+  "Name": "Microsoft.Extensions.AI.Evaluation.Quality, Version=9.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Types": [
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.CoherenceEvaluator : Microsoft.Extensions.AI.Evaluation.IEvaluator",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Quality.CoherenceEvaluator.CoherenceEvaluator();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.Evaluation.EvaluationResult> Microsoft.Extensions.AI.Evaluation.Quality.CoherenceEvaluator.EvaluateAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatResponse modelResponse, Microsoft.Extensions.AI.Evaluation.ChatConfiguration? chatConfiguration = null, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationContext>? additionalContext = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "static string Microsoft.Extensions.AI.Evaluation.Quality.CoherenceEvaluator.CoherenceMetricName { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyCollection<string> Microsoft.Extensions.AI.Evaluation.Quality.CoherenceEvaluator.EvaluationMetricNames { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.CompletenessEvaluator : Microsoft.Extensions.AI.Evaluation.IEvaluator",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Quality.CompletenessEvaluator.CompletenessEvaluator();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.Evaluation.EvaluationResult> Microsoft.Extensions.AI.Evaluation.Quality.CompletenessEvaluator.EvaluateAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatResponse modelResponse, Microsoft.Extensions.AI.Evaluation.ChatConfiguration? chatConfiguration = null, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationContext>? additionalContext = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "static string Microsoft.Extensions.AI.Evaluation.Quality.CompletenessEvaluator.CompletenessMetricName { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyCollection<string> Microsoft.Extensions.AI.Evaluation.Quality.CompletenessEvaluator.EvaluationMetricNames { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.CompletenessEvaluatorContext : Microsoft.Extensions.AI.Evaluation.EvaluationContext",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Quality.CompletenessEvaluatorContext.CompletenessEvaluatorContext(string groundTruth);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.AI.Evaluation.Quality.CompletenessEvaluatorContext.GroundTruth { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.AI.Evaluation.Quality.CompletenessEvaluatorContext.GroundTruthContextName { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.EquivalenceEvaluator : Microsoft.Extensions.AI.Evaluation.IEvaluator",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Quality.EquivalenceEvaluator.EquivalenceEvaluator();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.Evaluation.EvaluationResult> Microsoft.Extensions.AI.Evaluation.Quality.EquivalenceEvaluator.EvaluateAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatResponse modelResponse, Microsoft.Extensions.AI.Evaluation.ChatConfiguration? chatConfiguration = null, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationContext>? additionalContext = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "static string Microsoft.Extensions.AI.Evaluation.Quality.EquivalenceEvaluator.EquivalenceMetricName { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyCollection<string> Microsoft.Extensions.AI.Evaluation.Quality.EquivalenceEvaluator.EvaluationMetricNames { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.EquivalenceEvaluatorContext : Microsoft.Extensions.AI.Evaluation.EvaluationContext",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Quality.EquivalenceEvaluatorContext.EquivalenceEvaluatorContext(string groundTruth);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.AI.Evaluation.Quality.EquivalenceEvaluatorContext.GroundTruth { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.AI.Evaluation.Quality.EquivalenceEvaluatorContext.GroundTruthContextName { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.FluencyEvaluator : Microsoft.Extensions.AI.Evaluation.IEvaluator",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Quality.FluencyEvaluator.FluencyEvaluator();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.Evaluation.EvaluationResult> Microsoft.Extensions.AI.Evaluation.Quality.FluencyEvaluator.EvaluateAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatResponse modelResponse, Microsoft.Extensions.AI.Evaluation.ChatConfiguration? chatConfiguration = null, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationContext>? additionalContext = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyCollection<string> Microsoft.Extensions.AI.Evaluation.Quality.FluencyEvaluator.EvaluationMetricNames { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.AI.Evaluation.Quality.FluencyEvaluator.FluencyMetricName { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.GroundednessEvaluator : Microsoft.Extensions.AI.Evaluation.IEvaluator",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Quality.GroundednessEvaluator.GroundednessEvaluator();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.Evaluation.EvaluationResult> Microsoft.Extensions.AI.Evaluation.Quality.GroundednessEvaluator.EvaluateAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatResponse modelResponse, Microsoft.Extensions.AI.Evaluation.ChatConfiguration? chatConfiguration = null, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationContext>? additionalContext = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyCollection<string> Microsoft.Extensions.AI.Evaluation.Quality.GroundednessEvaluator.EvaluationMetricNames { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.AI.Evaluation.Quality.GroundednessEvaluator.GroundednessMetricName { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.GroundednessEvaluatorContext : Microsoft.Extensions.AI.Evaluation.EvaluationContext",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Quality.GroundednessEvaluatorContext.GroundednessEvaluatorContext(string groundingContext);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.AI.Evaluation.Quality.GroundednessEvaluatorContext.GroundingContext { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.AI.Evaluation.Quality.GroundednessEvaluatorContext.GroundingContextName { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.RelevanceEvaluator : Microsoft.Extensions.AI.Evaluation.IEvaluator",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Quality.RelevanceEvaluator.RelevanceEvaluator();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.Evaluation.EvaluationResult> Microsoft.Extensions.AI.Evaluation.Quality.RelevanceEvaluator.EvaluateAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatResponse modelResponse, Microsoft.Extensions.AI.Evaluation.ChatConfiguration? chatConfiguration = null, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationContext>? additionalContext = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyCollection<string> Microsoft.Extensions.AI.Evaluation.Quality.RelevanceEvaluator.EvaluationMetricNames { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.AI.Evaluation.Quality.RelevanceEvaluator.RelevanceMetricName { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.RelevanceTruthAndCompletenessEvaluator : Microsoft.Extensions.AI.Evaluation.IEvaluator",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Quality.RelevanceTruthAndCompletenessEvaluator.RelevanceTruthAndCompletenessEvaluator();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.Evaluation.EvaluationResult> Microsoft.Extensions.AI.Evaluation.Quality.RelevanceTruthAndCompletenessEvaluator.EvaluateAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatResponse modelResponse, Microsoft.Extensions.AI.Evaluation.ChatConfiguration? chatConfiguration = null, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationContext>? additionalContext = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "static string Microsoft.Extensions.AI.Evaluation.Quality.RelevanceTruthAndCompletenessEvaluator.CompletenessMetricName { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyCollection<string> Microsoft.Extensions.AI.Evaluation.Quality.RelevanceTruthAndCompletenessEvaluator.EvaluationMetricNames { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.AI.Evaluation.Quality.RelevanceTruthAndCompletenessEvaluator.RelevanceMetricName { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.AI.Evaluation.Quality.RelevanceTruthAndCompletenessEvaluator.TruthMetricName { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.RetrievalEvaluator : Microsoft.Extensions.AI.Evaluation.IEvaluator",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Quality.RetrievalEvaluator.RetrievalEvaluator();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.Evaluation.EvaluationResult> Microsoft.Extensions.AI.Evaluation.Quality.RetrievalEvaluator.EvaluateAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatResponse modelResponse, Microsoft.Extensions.AI.Evaluation.ChatConfiguration? chatConfiguration = null, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.Evaluation.EvaluationContext>? additionalContext = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyCollection<string> Microsoft.Extensions.AI.Evaluation.Quality.RetrievalEvaluator.EvaluationMetricNames { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.AI.Evaluation.Quality.RetrievalEvaluator.RetrievalMetricName { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.Evaluation.Quality.RetrievalEvaluatorContext : Microsoft.Extensions.AI.Evaluation.EvaluationContext",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Quality.RetrievalEvaluatorContext.RetrievalEvaluatorContext(System.Collections.Generic.IEnumerable<string> retrievedContextChunks);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.Evaluation.Quality.RetrievalEvaluatorContext.RetrievalEvaluatorContext(params string[] retrievedContextChunks);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.AI.Evaluation.Quality.RetrievalEvaluatorContext.RetrievedContextChunks { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.AI.Evaluation.Quality.RetrievalEvaluatorContext.RetrievedContextChunksContextName { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}

@@ -43,22 +43,27 @@ public class EvaluationMetric(string name, string? reason = null)
     /// </summary>
     public EvaluationMetricInterpretation? Interpretation { get; set; }
 
-    /// <summary>
-    /// Gets or sets a collection of zero or more <see cref="EvaluationDiagnostic"/>s associated with the current
-    /// <see cref="EvaluationMetric"/>.
-    /// </summary>
 #pragma warning disable CA2227
     // CA2227: Collection properties should be read only.
     // We disable this warning because we want this type to be fully mutable for serialization purposes and for general
     // convenience.
-    public IList<EvaluationDiagnostic> Diagnostics { get; set; } = [];
-#pragma warning restore CA2227
 
     /// <summary>
-    /// Adds a <see cref="EvaluationDiagnostic"/> to the current <see cref="EvaluationMetric"/>'s
-    /// <see cref="Diagnostics"/>.
+    /// Gets or sets any <see cref="EvaluationContext"/>s that were considered by the <see cref="IEvaluator"/> as part
+    /// of the evaluation that produced the current <see cref="EvaluationMetric"/>.
     /// </summary>
-    /// <param name="diagnostic">The <see cref="EvaluationDiagnostic"/> to be added.</param>
-    public void AddDiagnostic(EvaluationDiagnostic diagnostic)
-        => Diagnostics.Add(diagnostic);
+    public IDictionary<string, EvaluationContext>? Context { get; set; }
+
+    /// <summary>
+    /// Gets or sets a collection of zero or more <see cref="EvaluationDiagnostic"/>s associated with the current
+    /// <see cref="EvaluationMetric"/>.
+    /// </summary>
+    public IList<EvaluationDiagnostic>? Diagnostics { get; set; }
+
+    /// <summary>
+    /// Gets or sets a collection of zero or more string metadata associated with the current
+    /// <see cref="EvaluationMetric"/>.
+    /// </summary>
+    public IDictionary<string, string>? Metadata { get; set; }
+#pragma warning restore CA2227
 }
