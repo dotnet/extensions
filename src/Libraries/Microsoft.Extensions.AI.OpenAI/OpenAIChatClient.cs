@@ -18,15 +18,13 @@ using OpenAI.Chat;
 #pragma warning disable EA0011 // Consider removing unnecessary conditional access operator (?)
 #pragma warning disable S1067 // Expressions should not be too complex
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
+#pragma warning disable SA1204 // Static elements should appear before instance elements
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="IChatClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="ChatClient"/>.</summary>
 internal sealed partial class OpenAIChatClient : IChatClient
 {
-    /// <summary>Gets the default OpenAI endpoint.</summary>
-    private static Uri DefaultOpenAIEndpoint { get; } = new("https://api.openai.com/v1");
-
     /// <summary>Metadata about the client.</summary>
     private readonly ChatClientMetadata _metadata;
 
@@ -47,7 +45,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
         // implement the abstractions directly rather than providing adapters on top of the public APIs,
         // the package can provide such implementations separate from what's exposed in the public API.
         Uri providerUrl = typeof(ChatClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            ?.GetValue(chatClient) as Uri ?? DefaultOpenAIEndpoint;
+            ?.GetValue(chatClient) as Uri ?? OpenAIClientExtensions.DefaultOpenAIEndpoint;
         string? model = typeof(ChatClient).GetField("_model", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(chatClient) as string;
 
@@ -73,7 +71,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
     {
         _ = Throw.IfNull(messages);
 
-        var openAIChatMessages = ToOpenAIChatMessages(messages, AIJsonUtilities.DefaultOptions);
+        var openAIChatMessages = ToOpenAIChatMessages(messages, options, AIJsonUtilities.DefaultOptions);
         var openAIOptions = ToOpenAIOptions(options);
 
         // Make the call to OpenAI.
@@ -88,7 +86,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
     {
         _ = Throw.IfNull(messages);
 
-        var openAIChatMessages = ToOpenAIChatMessages(messages, AIJsonUtilities.DefaultOptions);
+        var openAIChatMessages = ToOpenAIChatMessages(messages, options, AIJsonUtilities.DefaultOptions);
         var openAIOptions = ToOpenAIOptions(options);
 
         // Make the call to OpenAI.
@@ -103,24 +101,27 @@ internal sealed partial class OpenAIChatClient : IChatClient
         // Nothing to dispose. Implementation required for the IChatClient interface.
     }
 
-    private static ChatRole ChatRoleDeveloper { get; } = new ChatRole("developer");
-
     /// <summary>Converts an Extensions chat message enumerable to an OpenAI chat message enumerable.</summary>
-    private static IEnumerable<OpenAI.Chat.ChatMessage> ToOpenAIChatMessages(IEnumerable<ChatMessage> inputs, JsonSerializerOptions options)
+    private static IEnumerable<OpenAI.Chat.ChatMessage> ToOpenAIChatMessages(IEnumerable<ChatMessage> inputs, ChatOptions? chatOptions, JsonSerializerOptions jsonOptions)
     {
         // Maps all of the M.E.AI types to the corresponding OpenAI types.
         // Unrecognized or non-processable content is ignored.
+
+        if (chatOptions?.Instructions is { } instructions && !string.IsNullOrWhiteSpace(instructions))
+        {
+            yield return new SystemChatMessage(instructions);
+        }
 
         foreach (ChatMessage input in inputs)
         {
             if (input.Role == ChatRole.System ||
                 input.Role == ChatRole.User ||
-                input.Role == ChatRoleDeveloper)
+                input.Role == OpenAIClientExtensions.ChatRoleDeveloper)
             {
                 var parts = ToOpenAIChatContent(input.Contents);
                 yield return
                     input.Role == ChatRole.System ? new SystemChatMessage(parts) { ParticipantName = input.AuthorName } :
-                    input.Role == ChatRoleDeveloper ? new DeveloperChatMessage(parts) { ParticipantName = input.AuthorName } :
+                    input.Role == OpenAIClientExtensions.ChatRoleDeveloper ? new DeveloperChatMessage(parts) { ParticipantName = input.AuthorName } :
                     new UserChatMessage(parts) { ParticipantName = input.AuthorName };
             }
             else if (input.Role == ChatRole.Tool)
@@ -134,7 +135,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
                         {
                             try
                             {
-                                result = JsonSerializer.Serialize(resultContent.Result, options.GetTypeInfo(typeof(object)));
+                                result = JsonSerializer.Serialize(resultContent.Result, jsonOptions.GetTypeInfo(typeof(object)));
                             }
                             catch (NotSupportedException)
                             {
@@ -148,29 +149,54 @@ internal sealed partial class OpenAIChatClient : IChatClient
             }
             else if (input.Role == ChatRole.Assistant)
             {
-                AssistantChatMessage message = new(ToOpenAIChatContent(input.Contents))
-                {
-                    ParticipantName = input.AuthorName
-                };
-
+                List<ChatMessageContentPart>? contentParts = null;
+                List<ChatToolCall>? toolCalls = null;
+                string? refusal = null;
                 foreach (var content in input.Contents)
                 {
-                    if (content is FunctionCallContent callRequest)
+                    switch (content)
                     {
-                        message.ToolCalls.Add(
-                            ChatToolCall.CreateFunctionToolCall(
-                                callRequest.CallId,
-                                callRequest.Name,
-                                new(JsonSerializer.SerializeToUtf8Bytes(
-                                    callRequest.Arguments,
-                                    options.GetTypeInfo(typeof(IDictionary<string, object?>))))));
+                        case ErrorContent ec when ec.ErrorCode == nameof(AssistantChatMessage.Refusal):
+                            refusal = ec.Message;
+                            break;
+
+                        case FunctionCallContent fc:
+                            (toolCalls ??= []).Add(
+                                ChatToolCall.CreateFunctionToolCall(fc.CallId, fc.Name, new(JsonSerializer.SerializeToUtf8Bytes(
+                                    fc.Arguments, jsonOptions.GetTypeInfo(typeof(IDictionary<string, object?>))))));
+                            break;
+
+                        default:
+                            if (ToChatMessageContentPart(content) is { } part)
+                            {
+                                (contentParts ??= []).Add(part);
+                            }
+
+                            break;
                     }
                 }
 
-                if (input.AdditionalProperties?.TryGetValue(nameof(message.Refusal), out string? refusal) is true)
+                AssistantChatMessage message;
+                if (contentParts is not null)
                 {
-                    message.Refusal = refusal;
+                    message = new(contentParts);
+                    if (toolCalls is not null)
+                    {
+                        foreach (var toolCall in toolCalls)
+                        {
+                            message.ToolCalls.Add(toolCall);
+                        }
+                    }
                 }
+                else
+                {
+                    message = toolCalls is not null ?
+                        new(toolCalls) :
+                        new(ChatMessageContentPart.CreateTextPart(string.Empty));
+                }
+
+                message.ParticipantName = input.AuthorName;
+                message.Refusal = refusal;
 
                 yield return message;
             }
@@ -181,34 +207,12 @@ internal sealed partial class OpenAIChatClient : IChatClient
     private static List<ChatMessageContentPart> ToOpenAIChatContent(IList<AIContent> contents)
     {
         List<ChatMessageContentPart> parts = [];
+
         foreach (var content in contents)
         {
-            switch (content)
+            if (ToChatMessageContentPart(content) is { } part)
             {
-                case TextContent textContent:
-                    parts.Add(ChatMessageContentPart.CreateTextPart(textContent.Text));
-                    break;
-
-                case UriContent uriContent when uriContent.HasTopLevelMediaType("image"):
-                    parts.Add(ChatMessageContentPart.CreateImagePart(uriContent.Uri));
-                    break;
-
-                case DataContent dataContent when dataContent.HasTopLevelMediaType("image"):
-                    parts.Add(ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType));
-                    break;
-
-                case DataContent dataContent when dataContent.HasTopLevelMediaType("audio"):
-                    var audioData = BinaryData.FromBytes(dataContent.Data);
-                    if (dataContent.MediaType.Equals("audio/mpeg", StringComparison.OrdinalIgnoreCase))
-                    {
-                        parts.Add(ChatMessageContentPart.CreateInputAudioPart(audioData, ChatInputAudioFormat.Mp3));
-                    }
-                    else if (dataContent.MediaType.Equals("audio/wav", StringComparison.OrdinalIgnoreCase))
-                    {
-                        parts.Add(ChatMessageContentPart.CreateInputAudioPart(audioData, ChatInputAudioFormat.Wav));
-                    }
-
-                    break;
+                parts.Add(part);
             }
         }
 
@@ -218,6 +222,57 @@ internal sealed partial class OpenAIChatClient : IChatClient
         }
 
         return parts;
+    }
+
+    private static ChatMessageContentPart? ToChatMessageContentPart(AIContent content)
+    {
+        switch (content)
+        {
+            case TextContent textContent:
+                return ChatMessageContentPart.CreateTextPart(textContent.Text);
+
+            case UriContent uriContent when uriContent.HasTopLevelMediaType("image"):
+                return ChatMessageContentPart.CreateImagePart(uriContent.Uri, GetImageDetail(content));
+
+            case DataContent dataContent when dataContent.HasTopLevelMediaType("image"):
+                return ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, GetImageDetail(content));
+
+            case DataContent dataContent when dataContent.HasTopLevelMediaType("audio"):
+                var audioData = BinaryData.FromBytes(dataContent.Data);
+                if (dataContent.MediaType.Equals("audio/mpeg", StringComparison.OrdinalIgnoreCase))
+                {
+                    return ChatMessageContentPart.CreateInputAudioPart(audioData, ChatInputAudioFormat.Mp3);
+                }
+                else if (dataContent.MediaType.Equals("audio/wav", StringComparison.OrdinalIgnoreCase))
+                {
+                    return ChatMessageContentPart.CreateInputAudioPart(audioData, ChatInputAudioFormat.Wav);
+                }
+
+                break;
+
+            case DataContent dataContent when dataContent.MediaType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase):
+                return ChatMessageContentPart.CreateFilePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, $"{Guid.NewGuid():N}.pdf");
+
+            case AIContent when content.RawRepresentation is ChatMessageContentPart rawContentPart:
+                return rawContentPart;
+        }
+
+        return null;
+    }
+
+    private static ChatImageDetailLevel? GetImageDetail(AIContent content)
+    {
+        if (content.AdditionalProperties?.TryGetValue("detail", out object? value) is true)
+        {
+            return value switch
+            {
+                string detailString => new ChatImageDetailLevel(detailString),
+                ChatImageDetailLevel detail => detail,
+                _ => null
+            };
+        }
+
+        return null;
     }
 
     private static async IAsyncEnumerable<ChatResponseUpdate> FromOpenAIStreamingChatCompletionAsync(
@@ -231,7 +286,6 @@ internal sealed partial class OpenAIChatClient : IChatClient
         string? responseId = null;
         DateTimeOffset? createdAt = null;
         string? modelId = null;
-        string? fingerprint = null;
 
         // Process each update as it arrives
         await foreach (StreamingChatCompletionUpdate update in updates.WithCancellation(cancellationToken).ConfigureAwait(false))
@@ -242,7 +296,6 @@ internal sealed partial class OpenAIChatClient : IChatClient
             responseId ??= update.CompletionId;
             createdAt ??= update.CreatedAt;
             modelId ??= update.Model;
-            fingerprint ??= update.SystemFingerprint;
 
             // Create the response content object.
             ChatResponseUpdate responseUpdate = new()
@@ -255,22 +308,6 @@ internal sealed partial class OpenAIChatClient : IChatClient
                 RawRepresentation = update,
                 Role = streamedRole,
             };
-
-            // Populate it with any additional metadata from the OpenAI object.
-            if (update.ContentTokenLogProbabilities is { Count: > 0 } contentTokenLogProbs)
-            {
-                (responseUpdate.AdditionalProperties ??= [])[nameof(update.ContentTokenLogProbabilities)] = contentTokenLogProbs;
-            }
-
-            if (update.RefusalTokenLogProbabilities is { Count: > 0 } refusalTokenLogProbs)
-            {
-                (responseUpdate.AdditionalProperties ??= [])[nameof(update.RefusalTokenLogProbabilities)] = refusalTokenLogProbs;
-            }
-
-            if (fingerprint is not null)
-            {
-                (responseUpdate.AdditionalProperties ??= [])[nameof(update.SystemFingerprint)] = fingerprint;
-            }
 
             // Transfer over content update items.
             if (update.ContentUpdate is { Count: > 0 })
@@ -351,13 +388,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
             // add it to this function calling item.
             if (refusal is not null)
             {
-                (responseUpdate.AdditionalProperties ??= [])[nameof(ChatMessageContentPart.Refusal)] = refusal.ToString();
-            }
-
-            // Propagate additional relevant metadata.
-            if (fingerprint is not null)
-            {
-                (responseUpdate.AdditionalProperties ??= [])[nameof(ChatCompletion.SystemFingerprint)] = fingerprint;
+                responseUpdate.Contents.Add(new ErrorContent(refusal.ToString()) { ErrorCode = "Refusal" });
             }
 
             yield return responseUpdate;
@@ -398,20 +429,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
                 "mp3" or _ => "audio/mpeg",
             };
 
-            var dc = new DataContent(audio.AudioBytes.ToMemory(), mimeType)
-            {
-                AdditionalProperties = new() { [nameof(audio.ExpiresAt)] = audio.ExpiresAt },
-            };
-
-            if (audio.Id is string id)
-            {
-                dc.AdditionalProperties[nameof(audio.Id)] = id;
-            }
-
-            if (audio.Transcript is string transcript)
-            {
-                dc.AdditionalProperties[nameof(audio.Transcript)] = transcript;
-            }
+            var dc = new DataContent(audio.AudioBytes.ToMemory(), mimeType);
 
             returnMessage.Contents.Add(dc);
         }
@@ -431,6 +449,12 @@ internal sealed partial class OpenAIChatClient : IChatClient
             }
         }
 
+        // And add error content for any refusals, which represent errors in generating output that conforms to a provided schema.
+        if (openAICompletion.Refusal is string refusal)
+        {
+            returnMessage.Contents.Add(new ErrorContent(refusal) { ErrorCode = nameof(openAICompletion.Refusal) });
+        }
+
         // Wrap the content in a ChatResponse to return.
         var response = new ChatResponse(returnMessage)
         {
@@ -446,127 +470,52 @@ internal sealed partial class OpenAIChatClient : IChatClient
             response.Usage = FromOpenAIUsage(tokenUsage);
         }
 
-        if (openAICompletion.ContentTokenLogProbabilities is { Count: > 0 } contentTokenLogProbs)
-        {
-            (response.AdditionalProperties ??= [])[nameof(openAICompletion.ContentTokenLogProbabilities)] = contentTokenLogProbs;
-        }
-
-        if (openAICompletion.Refusal is string refusal)
-        {
-            (response.AdditionalProperties ??= [])[nameof(openAICompletion.Refusal)] = refusal;
-        }
-
-        if (openAICompletion.RefusalTokenLogProbabilities is { Count: > 0 } refusalTokenLogProbs)
-        {
-            (response.AdditionalProperties ??= [])[nameof(openAICompletion.RefusalTokenLogProbabilities)] = refusalTokenLogProbs;
-        }
-
-        if (openAICompletion.SystemFingerprint is string systemFingerprint)
-        {
-            (response.AdditionalProperties ??= [])[nameof(openAICompletion.SystemFingerprint)] = systemFingerprint;
-        }
-
         return response;
     }
 
     /// <summary>Converts an extensions options instance to an OpenAI options instance.</summary>
-    private static ChatCompletionOptions ToOpenAIOptions(ChatOptions? options)
+    private ChatCompletionOptions ToOpenAIOptions(ChatOptions? options)
     {
-        ChatCompletionOptions result = new();
-
-        if (options is not null)
+        if (options is null)
         {
-            result.FrequencyPenalty = options.FrequencyPenalty;
-            result.MaxOutputTokenCount = options.MaxOutputTokens;
-            result.TopP = options.TopP;
-            result.PresencePenalty = options.PresencePenalty;
-            result.Temperature = options.Temperature;
+            return new ChatCompletionOptions();
+        }
+
+        if (options.RawRepresentationFactory?.Invoke(this) is not ChatCompletionOptions result)
+        {
+            result = new ChatCompletionOptions();
+        }
+
+        result.FrequencyPenalty ??= options.FrequencyPenalty;
+        result.MaxOutputTokenCount ??= options.MaxOutputTokens;
+        result.TopP ??= options.TopP;
+        result.PresencePenalty ??= options.PresencePenalty;
+        result.Temperature ??= options.Temperature;
+        result.AllowParallelToolCalls ??= options.AllowMultipleToolCalls;
 #pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
-            result.Seed = options.Seed;
+        result.Seed ??= options.Seed;
 #pragma warning restore OPENAI001
 
-            if (options.StopSequences is { Count: > 0 } stopSequences)
+        if (options.StopSequences is { Count: > 0 } stopSequences)
+        {
+            foreach (string stopSequence in stopSequences)
             {
-                foreach (string stopSequence in stopSequences)
+                result.StopSequences.Add(stopSequence);
+            }
+        }
+
+        if (options.Tools is { Count: > 0 } tools)
+        {
+            foreach (AITool tool in tools)
+            {
+                if (tool is AIFunction af)
                 {
-                    result.StopSequences.Add(stopSequence);
+                    result.Tools.Add(ToOpenAIChatTool(af));
                 }
             }
 
-            if (options.AdditionalProperties is { Count: > 0 } additionalProperties)
+            if (result.ToolChoice is null && result.Tools.Count > 0)
             {
-                if (additionalProperties.TryGetValue(nameof(result.AllowParallelToolCalls), out bool allowParallelToolCalls))
-                {
-                    result.AllowParallelToolCalls = allowParallelToolCalls;
-                }
-
-                if (additionalProperties.TryGetValue(nameof(result.AudioOptions), out ChatAudioOptions? audioOptions))
-                {
-                    result.AudioOptions = audioOptions;
-                }
-
-                if (additionalProperties.TryGetValue(nameof(result.EndUserId), out string? endUserId))
-                {
-                    result.EndUserId = endUserId;
-                }
-
-                if (additionalProperties.TryGetValue(nameof(result.IncludeLogProbabilities), out bool includeLogProbabilities))
-                {
-                    result.IncludeLogProbabilities = includeLogProbabilities;
-                }
-
-                if (additionalProperties.TryGetValue(nameof(result.LogitBiases), out IDictionary<int, int>? logitBiases))
-                {
-                    foreach (KeyValuePair<int, int> kvp in logitBiases!)
-                    {
-                        result.LogitBiases[kvp.Key] = kvp.Value;
-                    }
-                }
-
-                if (additionalProperties.TryGetValue(nameof(result.Metadata), out IDictionary<string, string>? metadata))
-                {
-                    foreach (KeyValuePair<string, string> kvp in metadata)
-                    {
-                        result.Metadata[kvp.Key] = kvp.Value;
-                    }
-                }
-
-                if (additionalProperties.TryGetValue(nameof(result.OutputPrediction), out ChatOutputPrediction? outputPrediction))
-                {
-                    result.OutputPrediction = outputPrediction;
-                }
-
-                if (additionalProperties.TryGetValue(nameof(result.ReasoningEffortLevel), out ChatReasoningEffortLevel reasoningEffortLevel))
-                {
-                    result.ReasoningEffortLevel = reasoningEffortLevel;
-                }
-
-                if (additionalProperties.TryGetValue(nameof(result.ResponseModalities), out ChatResponseModalities responseModalities))
-                {
-                    result.ResponseModalities = responseModalities;
-                }
-
-                if (additionalProperties.TryGetValue(nameof(result.StoredOutputEnabled), out bool storeOutputEnabled))
-                {
-                    result.StoredOutputEnabled = storeOutputEnabled;
-                }
-
-                if (additionalProperties.TryGetValue(nameof(result.TopLogProbabilityCount), out int topLogProbabilityCountInt))
-                {
-                    result.TopLogProbabilityCount = topLogProbabilityCountInt;
-                }
-            }
-
-            if (options.Tools is { Count: > 0 } tools)
-            {
-                foreach (AITool tool in tools)
-                {
-                    if (tool is AIFunction af)
-                    {
-                        result.Tools.Add(ToOpenAIChatTool(af));
-                    }
-                }
-
                 switch (options.ToolMode)
                 {
                     case NoneChatToolMode:
@@ -585,20 +534,22 @@ internal sealed partial class OpenAIChatClient : IChatClient
                         break;
                 }
             }
+        }
 
+        if (result.ResponseFormat is null)
+        {
             if (options.ResponseFormat is ChatResponseFormatText)
             {
                 result.ResponseFormat = OpenAI.Chat.ChatResponseFormat.CreateTextFormat();
             }
             else if (options.ResponseFormat is ChatResponseFormatJson jsonFormat)
             {
-                result.ResponseFormat = jsonFormat.Schema is { } jsonSchema ?
+                result.ResponseFormat = OpenAIClientExtensions.StrictSchemaTransformCache.GetOrCreateTransformedSchema(jsonFormat) is { } jsonSchema ?
                     OpenAI.Chat.ChatResponseFormat.CreateJsonSchemaFormat(
                         jsonFormat.SchemaName ?? "json_schema",
                         BinaryData.FromBytes(
                             JsonSerializer.SerializeToUtf8Bytes(jsonSchema, ChatClientJsonContext.Default.JsonElement)),
-                        jsonFormat.SchemaDescription,
-                        jsonSchemaIsStrict: true) :
+                        jsonFormat.SchemaDescription) :
                     OpenAI.Chat.ChatResponseFormat.CreateJsonObjectFormat();
             }
         }
@@ -609,14 +560,16 @@ internal sealed partial class OpenAIChatClient : IChatClient
     /// <summary>Converts an Extensions function to an OpenAI chat tool.</summary>
     private static ChatTool ToOpenAIChatTool(AIFunction aiFunction)
     {
-        // Default strict to true, but allow to be overridden by an additional Strict property.
-        bool strict =
-            !aiFunction.AdditionalProperties.TryGetValue("Strict", out object? strictObj) ||
-            strictObj is not bool strictValue ||
-            strictValue;
+        bool? strict =
+            aiFunction.AdditionalProperties.TryGetValue(OpenAIClientExtensions.StrictKey, out object? strictObj) &&
+            strictObj is bool strictValue ?
+            strictValue : null;
+
+        // Perform transformations making the schema legal per OpenAI restrictions
+        JsonElement jsonSchema = OpenAIClientExtensions.GetSchema(aiFunction, strict);
 
         // Map to an intermediate model so that redundant properties are skipped.
-        var tool = JsonSerializer.Deserialize(aiFunction.JsonSchema, ChatClientJsonContext.Default.ChatToolJson)!;
+        var tool = JsonSerializer.Deserialize(jsonSchema, ChatClientJsonContext.Default.ChatToolJson)!;
         var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool, ChatClientJsonContext.Default.ChatToolJson));
         return ChatTool.CreateFunctionTool(aiFunction.Name, aiFunction.Description, functionParameters, strict);
     }
@@ -660,7 +613,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
             ChatMessageRole.User => ChatRole.User,
             ChatMessageRole.Assistant => ChatRole.Assistant,
             ChatMessageRole.Tool => ChatRole.Tool,
-            ChatMessageRole.Developer => ChatRoleDeveloper,
+            ChatMessageRole.Developer => OpenAIClientExtensions.ChatRoleDeveloper,
             _ => new ChatRole(role.ToString()),
         };
 

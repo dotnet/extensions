@@ -13,23 +13,18 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 using OpenAI.Responses;
-using static Microsoft.Extensions.AI.OpenAIChatClient;
 
+#pragma warning disable S907 // "goto" statement should not be used
 #pragma warning disable S1067 // Expressions should not be too complex
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 #pragma warning disable S3604 // Member initializer values should not be redundant
+#pragma warning disable SA1204 // Static elements should appear before instance elements
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="IChatClient"/> for an <see cref="OpenAIResponseClient"/>.</summary>
 internal sealed partial class OpenAIResponseChatClient : IChatClient
 {
-    /// <summary>Gets the default OpenAI endpoint.</summary>
-    private static Uri DefaultOpenAIEndpoint { get; } = new("https://api.openai.com/v1");
-
-    /// <summary>A <see cref="ChatRole"/> for "developer".</summary>
-    private static readonly ChatRole _chatRoleDeveloper = new("developer");
-
     /// <summary>Metadata about the client.</summary>
     private readonly ChatClientMetadata _metadata;
 
@@ -50,7 +45,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
         // implement the abstractions directly rather than providing adapters on top of the public APIs,
         // the package can provide such implementations separate from what's exposed in the public API.
         Uri providerUrl = typeof(OpenAIResponseClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            ?.GetValue(responseClient) as Uri ?? DefaultOpenAIEndpoint;
+            ?.GetValue(responseClient) as Uri ?? OpenAIClientExtensions.DefaultOpenAIEndpoint;
         string? model = typeof(OpenAIResponseClient).GetField("_model", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(responseClient) as string;
 
@@ -86,11 +81,13 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
         // Convert and return the results.
         ChatResponse response = new()
         {
-            ResponseId = openAIResponse.Id,
+            ConversationId = openAIOptions.StoredOutputEnabled is false ? null : openAIResponse.Id,
             CreatedAt = openAIResponse.CreatedAt,
             FinishReason = ToFinishReason(openAIResponse.IncompleteStatusDetails?.Reason),
             Messages = [new(ChatRole.Assistant, [])],
             ModelId = openAIResponse.Model,
+            RawRepresentation = openAIResponse,
+            ResponseId = openAIResponse.Id,
             Usage = ToUsageDetails(openAIResponse),
         };
 
@@ -123,14 +120,27 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
 
                     case FunctionCallResponseItem functionCall:
                         response.FinishReason ??= ChatFinishReason.ToolCalls;
-                        message.Contents.Add(
-                            FunctionCallContent.CreateFromParsedArguments(
-                                functionCall.FunctionArguments.ToMemory(),
-                                functionCall.CallId,
-                                functionCall.FunctionName,
-                                static json => JsonSerializer.Deserialize(json.Span, ResponseClientJsonContext.Default.IDictionaryStringObject)!));
+                        var fcc = FunctionCallContent.CreateFromParsedArguments(
+                            functionCall.FunctionArguments.ToMemory(),
+                            functionCall.CallId,
+                            functionCall.FunctionName,
+                            static json => JsonSerializer.Deserialize(json.Span, ResponseClientJsonContext.Default.IDictionaryStringObject)!);
+                        fcc.RawRepresentation = outputItem;
+                        message.Contents.Add(fcc);
+                        break;
+
+                    default:
+                        message.Contents.Add(new()
+                        {
+                            RawRepresentation = outputItem,
+                        });
                         break;
                 }
+            }
+
+            if (openAIResponse.Error is { } error)
+            {
+                message.Contents.Add(new ErrorContent(error.Message) { ErrorCode = error.Code });
             }
         }
 
@@ -150,6 +160,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
         // Make the call to the OpenAIResponseClient and process the streaming results.
         DateTimeOffset? createdAt = null;
         string? responseId = null;
+        string? conversationId = null;
         string? modelId = null;
         string? lastMessageId = null;
         ChatRole? lastRole = null;
@@ -162,20 +173,23 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                 case StreamingResponseCreatedUpdate createdUpdate:
                     createdAt = createdUpdate.Response.CreatedAt;
                     responseId = createdUpdate.Response.Id;
+                    conversationId = openAIOptions.StoredOutputEnabled is false ? null : responseId;
                     modelId = createdUpdate.Response.Model;
-                    break;
+                    goto default;
 
                 case StreamingResponseCompletedUpdate completedUpdate:
                     yield return new()
                     {
                         Contents = ToUsageDetails(completedUpdate.Response) is { } usage ? [new UsageContent(usage)] : [],
+                        ConversationId = conversationId,
                         CreatedAt = createdAt,
-                        ResponseId = responseId,
                         FinishReason =
                             ToFinishReason(completedUpdate.Response?.IncompleteStatusDetails?.Reason) ??
                             (functionCallInfos is not null ? ChatFinishReason.ToolCalls : ChatFinishReason.Stop),
                         MessageId = lastMessageId,
                         ModelId = modelId,
+                        RawRepresentation = streamingUpdate,
+                        ResponseId = responseId,
                         Role = lastRole,
                     };
                     break;
@@ -192,11 +206,11 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                             break;
                     }
 
-                    break;
+                    goto default;
 
                 case StreamingResponseOutputItemDoneUpdate outputItemDoneUpdate:
                     _ = outputIndexToMessages.Remove(outputItemDoneUpdate.OutputIndex);
-                    break;
+                    goto default;
 
                 case StreamingResponseOutputTextDeltaUpdate outputTextDeltaUpdate:
                     _ = outputIndexToMessages.TryGetValue(outputTextDeltaUpdate.OutputIndex, out MessageResponseItem? messageItem);
@@ -204,9 +218,11 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                     lastRole = ToChatRole(messageItem?.Role);
                     yield return new ChatResponseUpdate(lastRole, outputTextDeltaUpdate.Delta)
                     {
+                        ConversationId = conversationId,
                         CreatedAt = createdAt,
                         MessageId = lastMessageId,
                         ModelId = modelId,
+                        RawRepresentation = streamingUpdate,
                         ResponseId = responseId,
                     };
                     break;
@@ -218,7 +234,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                         _ = (callInfo.Arguments ??= new()).Append(functionCallArgumentsDeltaUpdate.Delta);
                     }
 
-                    break;
+                    goto default;
                 }
 
                 case StreamingResponseFunctionCallArgumentsDoneUpdate functionCallOutputDoneUpdate:
@@ -237,15 +253,67 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                         lastRole = ChatRole.Assistant;
                         yield return new ChatResponseUpdate(lastRole, [fci])
                         {
+                            ConversationId = conversationId,
                             CreatedAt = createdAt,
                             MessageId = lastMessageId,
                             ModelId = modelId,
+                            RawRepresentation = streamingUpdate,
                             ResponseId = responseId,
                         };
+
+                        break;
                     }
 
-                    break;
+                    goto default;
                 }
+
+                case StreamingResponseErrorUpdate errorUpdate:
+                    yield return new ChatResponseUpdate
+                    {
+                        Contents =
+                        [
+                            new ErrorContent(errorUpdate.Message)
+                            {
+                                ErrorCode = errorUpdate.Code,
+                                Details = errorUpdate.Param,
+                            }
+                        ],
+                        ConversationId = conversationId,
+                        CreatedAt = createdAt,
+                        MessageId = lastMessageId,
+                        ModelId = modelId,
+                        RawRepresentation = streamingUpdate,
+                        ResponseId = responseId,
+                        Role = lastRole,
+                    };
+                    break;
+
+                case StreamingResponseRefusalDoneUpdate refusalDone:
+                    yield return new ChatResponseUpdate
+                    {
+                        Contents = [new ErrorContent(refusalDone.Refusal) { ErrorCode = nameof(ResponseContentPart.Refusal) }],
+                        ConversationId = conversationId,
+                        CreatedAt = createdAt,
+                        MessageId = lastMessageId,
+                        ModelId = modelId,
+                        RawRepresentation = streamingUpdate,
+                        ResponseId = responseId,
+                        Role = lastRole,
+                    };
+                    break;
+
+                default:
+                    yield return new ChatResponseUpdate
+                    {
+                        ConversationId = conversationId,
+                        CreatedAt = createdAt,
+                        MessageId = lastMessageId,
+                        ModelId = modelId,
+                        RawRepresentation = streamingUpdate,
+                        ResponseId = responseId,
+                        Role = lastRole,
+                    };
+                    break;
             }
         }
     }
@@ -261,7 +329,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
         role switch
         {
             MessageRole.System => ChatRole.System,
-            MessageRole.Developer => _chatRoleDeveloper,
+            MessageRole.Developer => OpenAIClientExtensions.ChatRoleDeveloper,
             MessageRole.User => ChatRole.User,
             _ => ChatRole.Assistant,
         };
@@ -273,92 +341,72 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
         null;
 
     /// <summary>Converts a <see cref="ChatOptions"/> to a <see cref="ResponseCreationOptions"/>.</summary>
-    private static ResponseCreationOptions ToOpenAIResponseCreationOptions(ChatOptions? options)
+    private ResponseCreationOptions ToOpenAIResponseCreationOptions(ChatOptions? options)
     {
-        ResponseCreationOptions result = new();
-
-        if (options is not null)
+        if (options is null)
         {
-            // Handle strongly-typed properties.
-            result.MaxOutputTokenCount = options.MaxOutputTokens;
-            result.PreviousResponseId = options.ChatThreadId;
-            result.TopP = options.TopP;
-            result.Temperature = options.Temperature;
+            return new ResponseCreationOptions();
+        }
 
-            // Handle loosely-typed properties from AdditionalProperties.
-            if (options.AdditionalProperties is { Count: > 0 } additionalProperties)
+        if (options.RawRepresentationFactory?.Invoke(this) is not ResponseCreationOptions result)
+        {
+            result = new ResponseCreationOptions();
+        }
+
+        // Handle strongly-typed properties.
+        result.MaxOutputTokenCount ??= options.MaxOutputTokens;
+        result.PreviousResponseId ??= options.ConversationId;
+        result.TopP ??= options.TopP;
+        result.Temperature ??= options.Temperature;
+        result.ParallelToolCallsEnabled ??= options.AllowMultipleToolCalls;
+        if (options.Instructions is { } instructions)
+        {
+            result.Instructions = string.IsNullOrEmpty(result.Instructions) ?
+                instructions :
+                $"{result.Instructions}{Environment.NewLine}{instructions}";
+        }
+
+        // Populate tools if there are any.
+        if (options.Tools is { Count: > 0 } tools)
+        {
+            foreach (AITool tool in tools)
             {
-                if (additionalProperties.TryGetValue(nameof(result.ParallelToolCallsEnabled), out bool allowParallelToolCalls))
+                switch (tool)
                 {
-                    result.ParallelToolCallsEnabled = allowParallelToolCalls;
-                }
+                    case AIFunction aiFunction:
+                        bool strict =
+                            aiFunction.AdditionalProperties.TryGetValue(OpenAIClientExtensions.StrictKey, out object? strictObj) &&
+                            strictObj is bool strictValue &&
+                            strictValue;
 
-                if (additionalProperties.TryGetValue(nameof(result.EndUserId), out string? endUserId))
-                {
-                    result.EndUserId = endUserId;
-                }
+                        JsonElement jsonSchema = OpenAIClientExtensions.GetSchema(aiFunction, strict);
 
-                if (additionalProperties.TryGetValue(nameof(result.Instructions), out string? instructions))
-                {
-                    result.Instructions = instructions;
-                }
+                        var oaitool = JsonSerializer.Deserialize(jsonSchema, ResponseClientJsonContext.Default.ResponseToolJson)!;
+                        var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(oaitool, ResponseClientJsonContext.Default.ResponseToolJson));
+                        result.Tools.Add(ResponseTool.CreateFunctionTool(aiFunction.Name, aiFunction.Description, functionParameters, strict));
+                        break;
 
-                if (additionalProperties.TryGetValue(nameof(result.Metadata), out IDictionary<string, string>? metadata))
-                {
-                    foreach (KeyValuePair<string, string> kvp in metadata)
-                    {
-                        result.Metadata[kvp.Key] = kvp.Value;
-                    }
-                }
+                    case HostedWebSearchTool:
+                        WebSearchToolLocation? location = null;
+                        if (tool.AdditionalProperties.TryGetValue(nameof(WebSearchToolLocation), out object? objLocation))
+                        {
+                            location = objLocation as WebSearchToolLocation;
+                        }
 
-                if (additionalProperties.TryGetValue(nameof(result.ReasoningOptions), out ResponseReasoningOptions? reasoningOptions))
-                {
-                    result.ReasoningOptions = reasoningOptions;
-                }
+                        WebSearchToolContextSize? size = null;
+                        if (tool.AdditionalProperties.TryGetValue(nameof(WebSearchToolContextSize), out object? objSize) &&
+                            objSize is WebSearchToolContextSize)
+                        {
+                            size = (WebSearchToolContextSize)objSize;
+                        }
 
-                if (additionalProperties.TryGetValue(nameof(result.StoredOutputEnabled), out bool storeOutputEnabled))
-                {
-                    result.StoredOutputEnabled = storeOutputEnabled;
-                }
-
-                if (additionalProperties.TryGetValue(nameof(result.TruncationMode), out ResponseTruncationMode truncationMode))
-                {
-                    result.TruncationMode = truncationMode;
+                        result.Tools.Add(ResponseTool.CreateWebSearchTool(location, size));
+                        break;
                 }
             }
 
-            // Populate tools if there are any.
-            if (options.Tools is { Count: > 0 } tools)
+            if (result.ToolChoice is null && result.Tools.Count > 0)
             {
-                foreach (AITool tool in tools)
-                {
-                    switch (tool)
-                    {
-                        case AIFunction af:
-                            var oaitool = JsonSerializer.Deserialize(af.JsonSchema, ResponseClientJsonContext.Default.ResponseToolJson)!;
-                            var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(oaitool, ResponseClientJsonContext.Default.ResponseToolJson));
-                            result.Tools.Add(ResponseTool.CreateFunctionTool(af.Name, af.Description, functionParameters));
-                            break;
-
-                        case HostedWebSearchTool:
-                            WebSearchToolLocation? location = null;
-                            if (tool.AdditionalProperties.TryGetValue(nameof(WebSearchToolLocation), out object? objLocation))
-                            {
-                                location = objLocation as WebSearchToolLocation;
-                            }
-
-                            WebSearchToolContextSize? size = null;
-                            if (tool.AdditionalProperties.TryGetValue(nameof(WebSearchToolContextSize), out object? objSize) &&
-                                objSize is WebSearchToolContextSize)
-                            {
-                                size = (WebSearchToolContextSize)objSize;
-                            }
-
-                            result.Tools.Add(ResponseTool.CreateWebSearchTool(location, size));
-                            break;
-                    }
-                }
-
                 switch (options.ToolMode)
                 {
                     case NoneChatToolMode:
@@ -377,8 +425,10 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                         break;
                 }
             }
+        }
 
-            // Handle response format.
+        if (result.TextOptions is null)
+        {
             if (options.ResponseFormat is ChatResponseFormatText)
             {
                 result.TextOptions = new()
@@ -390,12 +440,11 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
             {
                 result.TextOptions = new()
                 {
-                    TextFormat = jsonFormat.Schema is { } jsonSchema ?
+                    TextFormat = OpenAIClientExtensions.StrictSchemaTransformCache.GetOrCreateTransformedSchema(jsonFormat) is { } jsonSchema ?
                         ResponseTextFormat.CreateJsonSchemaFormat(
                             jsonFormat.SchemaName ?? "json_schema",
                             BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(jsonSchema, ResponseClientJsonContext.Default.JsonElement)),
-                            jsonFormat.SchemaDescription,
-                            jsonSchemaIsStrict: true) :
+                            jsonFormat.SchemaDescription) :
                         ResponseTextFormat.CreateJsonObjectFormat(),
                 };
             }
@@ -411,7 +460,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
         foreach (ChatMessage input in inputs)
         {
             if (input.Role == ChatRole.System ||
-                input.Role == _chatRoleDeveloper)
+                input.Role == OpenAIClientExtensions.ChatRoleDeveloper)
             {
                 string text = input.Text;
                 if (!string.IsNullOrWhiteSpace(text))
@@ -476,6 +525,10 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                                     callContent.Arguments,
                                     AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object?>)))));
                             break;
+
+                        case AIContent when item.RawRepresentation is ResponseItem rawRep:
+                            yield return rawRep;
+                            break;
                     }
                 }
 
@@ -516,9 +569,29 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
 
         foreach (ResponseContentPart part in contents)
         {
-            if (part.Kind == ResponseContentPartKind.OutputText)
+            switch (part.Kind)
             {
-                results.Add(new TextContent(part.Text));
+                case ResponseContentPartKind.OutputText:
+                    results.Add(new TextContent(part.Text)
+                    {
+                        RawRepresentation = part,
+                    });
+                    break;
+
+                case ResponseContentPartKind.Refusal:
+                    results.Add(new ErrorContent(part.Refusal)
+                    {
+                        ErrorCode = nameof(ResponseContentPartKind.Refusal),
+                        RawRepresentation = part,
+                    });
+                    break;
+
+                default:
+                    results.Add(new()
+                    {
+                        RawRepresentation = part,
+                    });
+                    break;
             }
         }
 
@@ -543,6 +616,19 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
 
                 case DataContent dataContent when dataContent.HasTopLevelMediaType("image"):
                     parts.Add(ResponseContentPart.CreateInputImagePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType));
+                    break;
+
+                case DataContent dataContent when dataContent.MediaType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase):
+                    parts.Add(ResponseContentPart.CreateInputFilePart(null, $"{Guid.NewGuid():N}.pdf",
+                        BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(dataContent.Uri, ResponseClientJsonContext.Default.String))));
+                    break;
+
+                case ErrorContent errorContent when errorContent.ErrorCode == nameof(ResponseContentPartKind.Refusal):
+                    parts.Add(ResponseContentPart.CreateRefusalPart(errorContent.Message));
+                    break;
+
+                case AIContent when content.RawRepresentation is ResponseContentPart rawRep:
+                    parts.Add(rawRep);
                     break;
             }
         }

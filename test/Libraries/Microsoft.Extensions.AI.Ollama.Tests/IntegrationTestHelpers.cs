@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.AI;
 #pragma warning disable S125 // Sections of code should not be commented out
 
 /// <summary>Shared utility methods for integration tests.</summary>
-internal static class IntegrationTestHelpers
+public static class IntegrationTestHelpers
 {
     /// <summary>Gets a <see cref="Uri"/> to use for testing, or <see langword="null"/> if the associated tests should be disabled.</summary>
     public static Uri? GetOllamaUri()

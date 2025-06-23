@@ -6,7 +6,12 @@
 
   <PropertyGroup>
     <NoWarn>$(NoWarn);CA1063;CA1861;CA2201;VSTHRD003;S104</NoWarn>
+    <NoWarn>$(NoWarn);MEAI001</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">
+    <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -24,6 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Text.Json" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="System.Memory.Data" />
     <PackageReference Include="JsonSchema.Net" />

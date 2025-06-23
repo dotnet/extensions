@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+import uFuzzy from "@leeoniya/ufuzzy";
+
 export enum ScoreNodeType {
     Group,
     Scenario,
@@ -12,6 +14,7 @@ export type ScoreSummary = {
     includesReportHistory: boolean;
     executionHistory: Map<string, ScoreNode>;
     nodesByKey: Map<string, Map<string, ScoreNode>>;
+    reverseTextIndex: ReverseTextIndex
 };
 
 export class ScoreNode {
@@ -80,7 +83,7 @@ export class ScoreNode {
         return [...flattener(this)];
     }
 
-    aggregate(filteredTags: string[] = []) {
+    aggregate() {
         this.failed = false;
         this.numPassingIterations = 0;
         this.numFailingIterations = 0;
@@ -88,14 +91,11 @@ export class ScoreNode {
         this.numFailingScenarios = 0;
 
         if (this.isLeafNode) {
-            if (filteredTags.length > 0 && !this.scenario?.tags?.some(tag => filteredTags.includes(tag))) {
-                return;
-            }
 
             this.failed = false;
             for (const metric of Object.values(this.scenario?.evaluationResult.metrics ?? [])) {
                 if ((metric.interpretation && metric.interpretation.failed) ||
-                    (metric.diagnostics.some(d => d.severity === "error"))) {
+                    (metric.diagnostics && metric.diagnostics.some(d => d.severity === "error"))) {
                     this.failed = true;
                     break;
                 }
@@ -108,16 +108,22 @@ export class ScoreNode {
             const { messages } = getConversationDisplay(lastMessage ? [lastMessage] : [], this.scenario?.modelResponse);
             let history = "";
             if (messages.length === 1) {
-                history = messages[0].content;
+                const content = messages[0].content;
+                if (isTextContent(content)) {
+                    history = content.text;
+                }
             } else if (messages.length > 1) {
-                history = messages.map(m => `[${m.participantName}] ${m.content}`).join("\n\n");
+                history = messages
+                    .filter(m => isTextContent(m.content))
+                    .map(m => `[${m.participantName}] ${(m.content as TextContent).text}`)
+                    .join("\n\n");
             }
 
             this.shortenedPrompt = shortenPrompt(history);
         } else {
             for (const child of this.childNodes) {
-                child.aggregate(filteredTags);
-                if (filteredTags.length === 0 || child.numPassingIterations + child.numFailingIterations > 0) {
+                child.aggregate();
+                if (child.numPassingIterations + child.numFailingIterations > 0) {
                     this.failed = this.failed || child.failed;
                     this.numPassingIterations += child.numPassingIterations;
                     this.numFailingIterations += child.numFailingIterations;
@@ -152,6 +158,38 @@ export class ScoreNode {
     }
 };
 
+export class ReverseTextIndex {
+
+    private stringsToSearch: string[] = [];
+    private keys: string[] = [];
+
+    addText(key: string, text?: string) {
+        if (!text) {
+            return;
+        }
+        this.stringsToSearch.push(text);
+        this.keys.push(key);
+    }
+
+    search(searchValue: string): Set<string> {
+        const opts = {
+            intraMode: 0,
+            unicode: true,
+        } as uFuzzy.Options;
+        const fz = new uFuzzy(opts);
+        const terms = fz.split(searchValue);
+        const keys = new Set<string>();
+        for (const term of terms) {
+            const searchResult = fz.search(this.stringsToSearch, term) as uFuzzy.FilteredResult;
+            const matches = searchResult[0];
+            for (const match of matches) {
+                keys.add(this.keys[match]);
+            }
+        }
+        return keys;
+    }
+}
+
 export const createScoreSummary = (dataset: Dataset): ScoreSummary => {
 
     const executionHistory = new Map<string, ScoreNode>();
@@ -183,11 +221,34 @@ export const createScoreSummary = (dataset: Dataset): ScoreSummary => {
     const [primaryResult] = executionHistory.values();
     primaryResult.collapseSingleChildNodes();
 
+    const reverseTextIndex = new ReverseTextIndex();
+
+    // build the reverse text index from searchable strings in the data
+    for (const node of primaryResult.flattenedNodes) {
+        reverseTextIndex.addText(node.nodeKey, node.scenario?.scenarioName);
+        reverseTextIndex.addText(node.nodeKey, node.scenario?.iterationName);
+        for (const message of node.scenario?.messages ?? []) {
+            for (const content of message.contents) {
+                if (isTextContent(content)) {
+                    reverseTextIndex.addText(node.nodeKey, content.text);
+                }
+            }
+        }
+        for (const message of node.scenario?.modelResponse?.messages ?? []) {
+            for (const content of message.contents) {
+                if (isTextContent(content)) {
+                    reverseTextIndex.addText(node.nodeKey, content.text);
+                }
+            }
+        }
+    }
+
     return {
         primaryResult,
         includesReportHistory: executionHistory.size > 1,
         executionHistory,
         nodesByKey,
+        reverseTextIndex,
     } as ScoreSummary;
 };
 
@@ -229,8 +290,23 @@ const flattener = function* (node: ScoreNode): Iterable<ScoreNode> {
     }
 };
 
-const isTextContent = (content: AIContent): content is TextContent => {
+export const isTextContent = (content: AIContent): content is TextContent => {
     return (content as TextContent).text !== undefined;
+};
+
+export const isImageContent = (content: AIContent): content is UriContent | DataContent => {
+    if ((content as UriContent).uri !== undefined && (content as UriContent).mediaType) {
+        return (content as UriContent).mediaType.startsWith("image/");
+    }
+    
+    if ((content as DataContent).uri !== undefined) {
+        const dataContent = content as DataContent;
+        if (dataContent.uri.startsWith('data:image/')) {
+            return true;
+        }
+    }
+
+    return false;
 };
 
 export type ConversationDisplay = {
@@ -242,7 +318,7 @@ export type ConversationDisplay = {
 export type ChatMessageDisplay = {
     role: string;
     participantName: string;
-    content: string;
+    content: AIContent;
 };
 
 export const getConversationDisplay = (messages: ChatMessage[], modelResponse?: ChatResponse): ConversationDisplay => {
@@ -250,28 +326,24 @@ export const getConversationDisplay = (messages: ChatMessage[], modelResponse?: 
 
     for (const m of messages) {
         for (const c of m.contents) {
-            if (isTextContent(c)) {
-                const participantName = m.authorName ? `${m.authorName} (${m.role})` : m.role;
-                chatMessages.push({
-                    role: m.role,
-                    participantName: participantName,
-                    content: c.text
-                });
-            }
+            const participantName = m.authorName ? `${m.authorName} (${m.role})` : m.role;
+            chatMessages.push({
+                role: m.role,
+                participantName: participantName,
+                content: c
+            });
         }
     }
 
     if (modelResponse?.messages) {
         for (const m of modelResponse.messages) {
             for (const c of m.contents) {
-                if (isTextContent(c)) {
-                    const participantName = m.authorName ? `${m.authorName} (${m.role})` : m.role || 'Assistant';
-                    chatMessages.push({
-                        role: m.role,
-                        participantName: participantName,
-                        content: c.text
-                    });
-                }
+                const participantName = m.authorName ? `${m.authorName} (${m.role})` : m.role || 'Assistant';
+                chatMessages.push({
+                    role: m.role,
+                    participantName: participantName,
+                    content: c
+                });
             }
         }
     }

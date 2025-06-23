@@ -25,6 +25,11 @@ public sealed class OllamaChatClient : IChatClient
 {
     private static readonly JsonElement _schemalessJsonResponseFormatValue = JsonDocument.Parse("\"json\"").RootElement;
 
+    private static readonly AIJsonSchemaTransformCache _schemaTransformCache = new(new()
+    {
+        ConvertBooleanSchemas = true,
+    });
+
     /// <summary>Metadata about the client.</summary>
     private readonly ChatClientMetadata _metadata;
 
@@ -292,7 +297,7 @@ public sealed class OllamaChatClient : IChatClient
     {
         if (format is ChatResponseFormatJson jsonFormat)
         {
-            return jsonFormat.Schema ?? _schemalessJsonResponseFormatValue;
+            return _schemaTransformCache.GetOrCreateTransformedSchema(jsonFormat) ?? _schemalessJsonResponseFormatValue;
         }
         else
         {
@@ -302,10 +307,20 @@ public sealed class OllamaChatClient : IChatClient
 
     private OllamaChatRequest ToOllamaChatRequest(IEnumerable<ChatMessage> messages, ChatOptions? options, bool stream)
     {
+        var requestMessages = messages.SelectMany(ToOllamaChatRequestMessages).ToList();
+        if (options?.Instructions is string instructions)
+        {
+            requestMessages.Insert(0, new OllamaChatRequestMessage
+            {
+                Role = ChatRole.System.Value,
+                Content = instructions,
+            });
+        }
+
         OllamaChatRequest request = new()
         {
             Format = ToOllamaChatResponseFormat(options?.ResponseFormat),
-            Messages = messages.SelectMany(ToOllamaChatRequestMessages).ToArray(),
+            Messages = requestMessages,
             Model = options?.ModelId ?? _metadata.DefaultModelId ?? string.Empty,
             Stream = stream,
             Tools = options?.ToolMode is not NoneChatToolMode && options?.Tools is { Count: > 0 } tools ? tools.OfType<AIFunction>().Select(ToOllamaTool) : null,
@@ -402,12 +417,7 @@ public sealed class OllamaChatClient : IChatClient
             if (item is DataContent dataContent && dataContent.HasTopLevelMediaType("image"))
             {
                 IList<string> images = currentTextMessage?.Images ?? [];
-                images.Add(Convert.ToBase64String(dataContent.Data
-#if NET
-                    .Span));
-#else
-                    .ToArray()));
-#endif
+                images.Add(dataContent.Base64Data.ToString());
 
                 if (currentTextMessage is not null)
                 {
@@ -488,7 +498,7 @@ public sealed class OllamaChatClient : IChatClient
             {
                 Name = function.Name,
                 Description = function.Description,
-                Parameters = JsonSerializer.Deserialize(function.JsonSchema, JsonContext.Default.OllamaFunctionToolParameters)!,
+                Parameters = JsonSerializer.Deserialize(_schemaTransformCache.GetOrCreateTransformedSchema(function), JsonContext.Default.OllamaFunctionToolParameters)!,
             }
         };
     }

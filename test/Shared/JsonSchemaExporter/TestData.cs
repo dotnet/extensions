@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Text.Json.Schema;
 
 namespace Microsoft.Extensions.AI.JsonSchemaExporter;
 
@@ -14,7 +13,7 @@ internal sealed record TestData<T>(
     T? Value,
     [StringSyntax(StringSyntaxAttribute.Json)] string ExpectedJsonSchema,
     IEnumerable<T?>? AdditionalValues = null,
-    JsonSchemaExporterOptions? ExporterOptions = null,
+    object? ExporterOptions = null,
     JsonSerializerOptions? Options = null,
     bool WritesNumbersAsStrings = false)
     : ITestData
@@ -33,7 +32,9 @@ internal sealed record TestData<T>(
         yield return this;
 
         if (default(T) is null &&
-            ExporterOptions is { TreatNullObliviousAsNonNullable: false } &&
+#if NET9_0_OR_GREATER
+            ExporterOptions is System.Text.Json.Schema.JsonSchemaExporterOptions { TreatNullObliviousAsNonNullable: false } &&
+#endif
             Value is not null)
         {
             yield return this with { Value = default };

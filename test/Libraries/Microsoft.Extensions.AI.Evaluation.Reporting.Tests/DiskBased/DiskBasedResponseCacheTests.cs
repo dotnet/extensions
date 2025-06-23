@@ -45,9 +45,9 @@ public class DiskBasedResponseCacheTests : ResponseCacheTester, IAsyncLifetime
 
     internal override bool IsConfigured => true;
 
-    internal override IResponseCacheProvider CreateResponseCacheProvider()
+    internal override IEvaluationResponseCacheProvider CreateResponseCacheProvider()
         => new DiskBasedResponseCacheProvider(UseTempStoragePath());
 
-    internal override IResponseCacheProvider CreateResponseCacheProvider(Func<DateTime> provideDateTime)
+    internal override IEvaluationResponseCacheProvider CreateResponseCacheProvider(Func<DateTime> provideDateTime)
         => new DiskBasedResponseCacheProvider(UseTempStoragePath(), provideDateTime);
 }

@@ -90,7 +90,7 @@ internal sealed class Program
 
         var formatOpt =
             new Option<ReportCommand.Format>(
-                "--format",
+                ["-f", "--format"],
                 () => ReportCommand.Format.html,
                 "Specify the format for the generated report.");
 
@@ -139,7 +139,7 @@ internal sealed class Program
         // TASK: Support some mechanism to fail a build (i.e. return a failure exit code) based on one or more user
         // specified criteria (e.g., if x% of metrics were deemed 'poor'). Ideally this mechanism would be flexible /
         // extensible enough to allow users to configure multiple different kinds of failure criteria.
-
+        // See https://github.com/dotnet/extensions/issues/6038.
 #if DEBUG
         ParseResult parseResult = rootCmd.Parse(args);
         if (parseResult.HasOption(debugOpt))

@@ -31,6 +31,7 @@ internal static class OpenTelemetryConsts
 
         public const string Chat = "chat";
         public const string Embeddings = "embeddings";
+        public const string ExecuteTool = "execute_tool";
 
         public static class Assistant
         {
@@ -52,6 +53,11 @@ internal static class OpenTelemetryConsts
                 public const string Name = "gen_ai.client.token.usage";
                 public static readonly int[] ExplicitBucketBoundaries = [1, 4, 16, 64, 256, 1_024, 4_096, 16_384, 65_536, 262_144, 1_048_576, 4_194_304, 16_777_216, 67_108_864];
             }
+        }
+
+        public static class Conversation
+        {
+            public const string Id = "gen_ai.conversation.id";
         }
 
         public static class Operation
@@ -84,9 +90,7 @@ internal static class OpenTelemetryConsts
         {
             public const string FinishReasons = "gen_ai.response.finish_reasons";
             public const string Id = "gen_ai.response.id";
-            public const string InputTokens = "gen_ai.response.input_tokens";
             public const string Model = "gen_ai.response.model";
-            public const string OutputTokens = "gen_ai.response.output_tokens";
 
             public static string PerProvider(string providerName, string parameterName) => $"gen_ai.{providerName}.response.{parameterName}";
         }
@@ -103,7 +107,20 @@ internal static class OpenTelemetryConsts
 
         public static class Tool
         {
+            public const string Name = "gen_ai.tool.name";
+            public const string Description = "gen_ai.tool.description";
             public const string Message = "gen_ai.tool.message";
+
+            public static class Call
+            {
+                public const string Id = "gen_ai.tool.call.id";
+            }
+        }
+
+        public static class Usage
+        {
+            public const string InputTokens = "gen_ai.usage.input_tokens";
+            public const string OutputTokens = "gen_ai.usage.output_tokens";
         }
 
         public static class User

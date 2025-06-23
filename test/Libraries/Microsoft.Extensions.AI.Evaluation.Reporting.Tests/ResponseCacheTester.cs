@@ -5,7 +5,6 @@ using System;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.TestUtilities;
 using Xunit;
@@ -19,8 +18,8 @@ public abstract class ResponseCacheTester
     private static readonly string _keyB = "B Key";
     private static readonly byte[] _responseB = Encoding.UTF8.GetBytes("Content B");
 
-    internal abstract IResponseCacheProvider CreateResponseCacheProvider();
-    internal abstract IResponseCacheProvider CreateResponseCacheProvider(Func<DateTime> provideDateTime);
+    internal abstract IEvaluationResponseCacheProvider CreateResponseCacheProvider();
+    internal abstract IEvaluationResponseCacheProvider CreateResponseCacheProvider(Func<DateTime> provideDateTime);
     internal abstract bool IsConfigured { get; }
 
     private void SkipIfNotConfigured()
@@ -38,7 +37,7 @@ public abstract class ResponseCacheTester
 
         string iterationName = "TestIteration";
 
-        IResponseCacheProvider provider = CreateResponseCacheProvider();
+        IEvaluationResponseCacheProvider provider = CreateResponseCacheProvider();
         IDistributedCache cache = await provider.GetCacheAsync(nameof(AddUncachedEntry), iterationName);
         Assert.NotNull(cache);
 
@@ -59,7 +58,7 @@ public abstract class ResponseCacheTester
 
         string iterationName = "TestIteration";
 
-        IResponseCacheProvider provider = CreateResponseCacheProvider();
+        IEvaluationResponseCacheProvider provider = CreateResponseCacheProvider();
         IDistributedCache cache = await provider.GetCacheAsync(nameof(RemoveCachedEntry), iterationName);
         Assert.NotNull(cache);
 
@@ -86,7 +85,7 @@ public abstract class ResponseCacheTester
         DateTime now = DateTime.UtcNow;
         DateTime provideDateTime() => now;
 
-        IResponseCacheProvider provider = CreateResponseCacheProvider(provideDateTime);
+        IEvaluationResponseCacheProvider provider = CreateResponseCacheProvider(provideDateTime);
         IDistributedCache cache = await provider.GetCacheAsync(nameof(RemoveCachedEntry), iterationName);
         Assert.NotNull(cache);
 
@@ -96,7 +95,7 @@ public abstract class ResponseCacheTester
         cache.Set(_keyB, _responseB);
         Assert.True(_responseB.SequenceEqual(cache.Get(_keyB) ?? []));
 
-        now = DateTime.UtcNow + DiskBasedResponseCache.CacheOptions.Default.TimeToLiveForCacheEntries;
+        now = DateTime.UtcNow + Defaults.DefaultTimeToLiveForCacheEntries;
 
         Assert.Null(await cache.GetAsync(_keyA));
         Assert.Null(cache.Get(_keyB));
@@ -107,7 +106,7 @@ public abstract class ResponseCacheTester
     {
         SkipIfNotConfigured();
 
-        IResponseCacheProvider provider = CreateResponseCacheProvider();
+        IEvaluationResponseCacheProvider provider = CreateResponseCacheProvider();
         IDistributedCache cache = await provider.GetCacheAsync(nameof(MultipleCacheInstances), "Async");
         Assert.NotNull(cache);
         IDistributedCache cache2 = await provider.GetCacheAsync(nameof(MultipleCacheInstances), "Async");
@@ -134,7 +133,7 @@ public abstract class ResponseCacheTester
         DateTime now = DateTime.UtcNow;
         DateTime provideDateTime() => now;
 
-        IResponseCacheProvider provider = CreateResponseCacheProvider(provideDateTime);
+        IEvaluationResponseCacheProvider provider = CreateResponseCacheProvider(provideDateTime);
         IDistributedCache cache = await provider.GetCacheAsync(nameof(RemoveCachedEntry), iterationName);
         Assert.NotNull(cache);
 
@@ -144,7 +143,7 @@ public abstract class ResponseCacheTester
         cache.Set(_keyB, _responseB);
         Assert.True(_responseB.SequenceEqual(cache.Get(_keyB) ?? []));
 
-        now = DateTime.UtcNow + DiskBasedResponseCache.CacheOptions.Default.TimeToLiveForCacheEntries;
+        now = DateTime.UtcNow + Defaults.DefaultTimeToLiveForCacheEntries;
 
         await provider.DeleteExpiredCacheEntriesAsync();
 
@@ -164,7 +163,7 @@ public abstract class ResponseCacheTester
 
         string iterationName = "TestIteration";
 
-        IResponseCacheProvider provider = CreateResponseCacheProvider();
+        IEvaluationResponseCacheProvider provider = CreateResponseCacheProvider();
         IDistributedCache cache = await provider.GetCacheAsync(nameof(RemoveCachedEntry), iterationName);
         Assert.NotNull(cache);
 
