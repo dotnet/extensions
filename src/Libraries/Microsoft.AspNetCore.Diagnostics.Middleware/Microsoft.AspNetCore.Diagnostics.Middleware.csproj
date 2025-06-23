@@ -10,7 +10,6 @@
     <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
     <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
     <UseLoggingGenerator>true</UseLoggingGenerator>
-    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectSharedDebugger>true</InjectSharedDebugger>
     <InjectSharedDataValidation>false</InjectSharedDataValidation>
     <InjectSharedPools>false</InjectSharedPools>
