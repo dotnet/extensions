@@ -22,7 +22,7 @@ internal readonly struct RationalNumber : IEquatable<RationalNumber>
     public int Denominator { get; }
 
     public double ToDouble() => (double)Numerator / Denominator;
-    
+
     public override string ToString() => $"{Numerator}/{Denominator}";
 
     public bool Equals(RationalNumber other)

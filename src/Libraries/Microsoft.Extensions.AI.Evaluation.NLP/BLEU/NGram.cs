@@ -79,6 +79,7 @@ internal readonly struct NGram<T> : IEquatable<NGram<T>>, IEnumerable<T>
         {
             hashCode = HashCode.Combine(hashCode, value.GetHashCode());
         }
+
         return hashCode;
     }
 

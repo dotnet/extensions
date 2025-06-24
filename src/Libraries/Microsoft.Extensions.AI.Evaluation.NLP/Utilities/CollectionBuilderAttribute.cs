@@ -17,5 +17,4 @@ internal sealed class CollectionBuilderAttribute : Attribute
     public string MethodName { get; }
 }
 
-
 #endif

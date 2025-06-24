@@ -18,7 +18,8 @@ internal readonly struct MatchCounter<T>
     public readonly int Sum => _counts.Values.Sum();
 
     public MatchCounter()
-    { }
+    {
+    }
 
     public MatchCounter(IEnumerable<T> items)
     {

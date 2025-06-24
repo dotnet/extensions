@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.AI.Evaluation.NLP.BLEU;
 using Xunit;
 using static Microsoft.Extensions.AI.Evaluation.NLP.BLEU.BLEUAlgorithm;
-using Microsoft.Extensions.AI.Evaluation.NLP.BLEU;
 
 namespace Microsoft.Extensions.AI.Evaluation.NLP.Tests;
 
@@ -36,7 +36,6 @@ public class BLEUAlgorithmicTests
         RationalNumber prec = ModifiedPrecision(references, hypothesis, 1);
         Assert.Equal(0.2857, prec.ToDouble(), 4);
 
-
         references = [
             "It is a guide to action that ensures that the military will forever heed Party commands".Split(' '),
             "It is the guiding principle which guarantees the military forces always being under the command of the Party".Split(' '),
@@ -47,7 +46,6 @@ public class BLEUAlgorithmicTests
         Assert.Equal(1.0, prec.ToDouble(), 4);
         prec = ModifiedPrecision(references, hypothesis, 2);
         Assert.Equal(1.0, prec.ToDouble(), 4);
-
 
         references = [
             "It is a guide to action that ensures that the military will forever heed Party commands".Split(' '),

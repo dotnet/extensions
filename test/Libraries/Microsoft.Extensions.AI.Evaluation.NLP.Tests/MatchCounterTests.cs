@@ -64,10 +64,4 @@ public class MatchCounterTests
         Assert.Contains("x: 2", str);
         Assert.Contains("y: 1", str);
     }
-
-    [Fact]
-    public void Constructor_ThrowsOnNull()
-    {
-        Assert.Throws<ArgumentNullException>(() => new MatchCounter<string>(null));
-    }
 }

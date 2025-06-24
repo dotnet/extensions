@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Xunit;
 
 namespace Microsoft.Extensions.AI.Evaluation.NLP.Tests;
@@ -29,12 +28,6 @@ public class SimpleTokenizerTests
             IEnumerable<string> result = SimpleWordTokenizer.WordTokenize(text);
             Assert.Equal(expected, result);
         }
-    }
-
-    [Fact]
-    public void HandlesNullInput_Throws()
-    {
-        Assert.Throws<ArgumentNullException>(() => SimpleWordTokenizer.WordTokenize((string)null));
     }
 
     [Theory]

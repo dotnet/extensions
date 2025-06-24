@@ -2,11 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Buffers;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Text;
-using System.Text.RegularExpressions;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI.Evaluation.NLP;
@@ -81,7 +78,9 @@ public static class SimpleWordTokenizer
                 span.Length > 1 &&
                 span[1] == '\n')
             {
+#pragma warning disable S109 // Magic numbers should not be used
                 text = text.Slice(2);
+#pragma warning restore S109 // Magic numbers should not be used
                 continue;
             }
 

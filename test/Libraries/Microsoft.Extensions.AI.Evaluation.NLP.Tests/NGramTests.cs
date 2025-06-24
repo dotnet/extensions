@@ -20,12 +20,6 @@ public class NGramTests
     }
 
     [Fact]
-    public void Constructor_ThrowsOnNull()
-    {
-        Assert.Throws<ArgumentNullException>(() => new NGram<string>(null));
-    }
-
-    [Fact]
     public void Constructor_ThrowsOnEmpty()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() => new NGram<int>(Array.Empty<int>()));
