@@ -6,11 +6,13 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.Shared.Diagnostics;
 using OpenAI;
 using OpenAI.Assistants;
 using OpenAI.Audio;
 using OpenAI.Chat;
 using OpenAI.Embeddings;
+using OpenAI.RealtimeConversation;
 using OpenAI.Responses;
 
 #pragma warning disable S103 // Lines should not be too long
@@ -141,6 +143,33 @@ public static class OpenAIClientExtensions
     /// <returns>An <see cref="IEmbeddingGenerator{String, Embedding}"/> that can be used to generate embeddings via the <see cref="EmbeddingClient"/>.</returns>
     public static IEmbeddingGenerator<string, Embedding<float>> AsIEmbeddingGenerator(this EmbeddingClient embeddingClient, int? defaultModelDimensions = null) =>
         new OpenAIEmbeddingGenerator(embeddingClient, defaultModelDimensions);
+
+    /// <summary>Converts an Extensions function to an OpenAI chat tool.</summary>
+    /// <param name="aiFunction">function to convert.</param>
+    /// <returns> An OpenAI ChatTool representing the function.</returns>
+    public static ChatTool AsOpenAIChatTool(this AIFunction aiFunction)
+    {
+        _ = Throw.IfNull(aiFunction);
+        return OpenAIChatClient.ToOpenAIChatTool(aiFunction);
+    }
+
+    /// <summary> Converts an Extensions function to an OpenAI response tool.</summary>
+    /// <param name="aiFunction">The function to convert.</param>
+    /// <returns>An OpenAI ResponseTool representing the function.</returns>
+    public static ResponseTool AsOpenAIResponseTool(this AIFunction aiFunction)
+    {
+        _ = Throw.IfNull(aiFunction);
+        return OpenAIResponseChatClient.ToResponseTool(aiFunction);
+    }
+
+    /// <summary>Converts an Extensions function to an OpenAI ConversationFunctionTool.</summary>
+    /// <param name="aiFunction">The function to convert.</param>
+    /// <returns>A ConversationFunctionTool representing the function.</returns>
+    public static ConversationFunctionTool AsOpenAIConversationFunctionTool(this AIFunction aiFunction)
+    {
+        _ = Throw.IfNull(aiFunction);
+        return OpenAIRealtimeConversationClient.ToOpenAIConversationFunctionTool(aiFunction);
+    }
 
     /// <summary>Gets the JSON schema to use from the function.</summary>
     internal static JsonElement GetSchema(AIFunction function, bool? strict) =>

@@ -324,6 +324,21 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
         // Nothing to dispose. Implementation required for the IChatClient interface.
     }
 
+    internal static ResponseTool ToResponseTool(AIFunction aiFunction)
+    {
+        bool strict =
+            aiFunction.AdditionalProperties.TryGetValue(OpenAIClientExtensions.StrictKey, out object? strictObj) &&
+            strictObj is bool strictValue &&
+            strictValue;
+
+        JsonElement jsonSchema = OpenAIClientExtensions.GetSchema(aiFunction, strict);
+
+        var oaitool = JsonSerializer.Deserialize(jsonSchema, ResponseClientJsonContext.Default.ResponseToolJson)!;
+        var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(oaitool, ResponseClientJsonContext.Default.ResponseToolJson));
+        ResponseTool rtool = ResponseTool.CreateFunctionTool(aiFunction.Name, aiFunction.Description, functionParameters, strict);
+        return rtool;
+    }
+
     /// <summary>Creates a <see cref="ChatRole"/> from a <see cref="MessageRole"/>.</summary>
     private static ChatRole ToChatRole(MessageRole? role) =>
         role switch
@@ -374,16 +389,8 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                 switch (tool)
                 {
                     case AIFunction aiFunction:
-                        bool strict =
-                            aiFunction.AdditionalProperties.TryGetValue(OpenAIClientExtensions.StrictKey, out object? strictObj) &&
-                            strictObj is bool strictValue &&
-                            strictValue;
-
-                        JsonElement jsonSchema = OpenAIClientExtensions.GetSchema(aiFunction, strict);
-
-                        var oaitool = JsonSerializer.Deserialize(jsonSchema, ResponseClientJsonContext.Default.ResponseToolJson)!;
-                        var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(oaitool, ResponseClientJsonContext.Default.ResponseToolJson));
-                        result.Tools.Add(ResponseTool.CreateFunctionTool(aiFunction.Name, aiFunction.Description, functionParameters, strict));
+                        ResponseTool rtool = ToResponseTool(aiFunction);
+                        result.Tools.Add(rtool);
                         break;
 
                     case HostedWebSearchTool:

@@ -101,6 +101,23 @@ internal sealed partial class OpenAIChatClient : IChatClient
         // Nothing to dispose. Implementation required for the IChatClient interface.
     }
 
+    /// <summary>Converts an Extensions function to an OpenAI chat tool.</summary>
+    internal static ChatTool ToOpenAIChatTool(AIFunction aiFunction)
+    {
+        bool? strict =
+            aiFunction.AdditionalProperties.TryGetValue(OpenAIClientExtensions.StrictKey, out object? strictObj) &&
+            strictObj is bool strictValue ?
+            strictValue : null;
+
+        // Perform transformations making the schema legal per OpenAI restrictions
+        JsonElement jsonSchema = OpenAIClientExtensions.GetSchema(aiFunction, strict);
+
+        // Map to an intermediate model so that redundant properties are skipped.
+        var tool = JsonSerializer.Deserialize(jsonSchema, ChatClientJsonContext.Default.ChatToolJson)!;
+        var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool, ChatClientJsonContext.Default.ChatToolJson));
+        return ChatTool.CreateFunctionTool(aiFunction.Name, aiFunction.Description, functionParameters, strict);
+    }
+
     /// <summary>Converts an Extensions chat message enumerable to an OpenAI chat message enumerable.</summary>
     private static IEnumerable<OpenAI.Chat.ChatMessage> ToOpenAIChatMessages(IEnumerable<ChatMessage> inputs, ChatOptions? chatOptions, JsonSerializerOptions jsonOptions)
     {
@@ -555,23 +572,6 @@ internal sealed partial class OpenAIChatClient : IChatClient
         }
 
         return result;
-    }
-
-    /// <summary>Converts an Extensions function to an OpenAI chat tool.</summary>
-    private static ChatTool ToOpenAIChatTool(AIFunction aiFunction)
-    {
-        bool? strict =
-            aiFunction.AdditionalProperties.TryGetValue(OpenAIClientExtensions.StrictKey, out object? strictObj) &&
-            strictObj is bool strictValue ?
-            strictValue : null;
-
-        // Perform transformations making the schema legal per OpenAI restrictions
-        JsonElement jsonSchema = OpenAIClientExtensions.GetSchema(aiFunction, strict);
-
-        // Map to an intermediate model so that redundant properties are skipped.
-        var tool = JsonSerializer.Deserialize(jsonSchema, ChatClientJsonContext.Default.ChatToolJson)!;
-        var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool, ChatClientJsonContext.Default.ChatToolJson));
-        return ChatTool.CreateFunctionTool(aiFunction.Name, aiFunction.Description, functionParameters, strict);
     }
 
     private static UsageDetails FromOpenAIUsage(ChatTokenUsage tokenUsage)
