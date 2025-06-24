@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.AI.Evaluation.NLP;
 /// <remarks>
 /// <para>
 /// The <see cref="BLEUEvaluator"/> computes the BLUE score of a response ("hypothesis") compared to a reference
-/// <see cref="BLEUEvaluatorContext.ReferenceText"/>. The score is returned in a <see cref="NumericMetric"/>
+/// <see cref="BLEUEvaluatorContext.References"/>. The score is returned in a <see cref="NumericMetric"/>
 /// with a value between 0.0 and 1.0 where 0.0 represents no match at all and 1.0 indicates a perfect match.
 /// By default, the score is interpreted with a pass/fail cutoff of 0.5. So a score of 0.5 or higher is
 /// passing and a score below 0.5 is failing.
@@ -66,9 +66,9 @@ public sealed class BLEUEvaluator : IEvaluator
             return new ValueTask<EvaluationResult>(result);
         }
 
-        var reference = SimpleWordTokenizer.WordTokenize(context.ReferenceText);
+        var references = context.References.Select(reference => SimpleWordTokenizer.WordTokenize(reference));
         var hypothesis = SimpleWordTokenizer.WordTokenize(modelResponse.Text);
-        metric.Value = BLEUAlgorithm.SentenceBLEU([reference], hypothesis, BLEUAlgorithm.DefaultBLEUWeights, SmoothingFunction.Method4);
+        metric.Value = BLEUAlgorithm.SentenceBLEU(references, hypothesis, BLEUAlgorithm.DefaultBLEUWeights, SmoothingFunction.Method4);
 
         metric.AddOrUpdateContext(context);
         metric.Interpretation = InterpretScore(metric);

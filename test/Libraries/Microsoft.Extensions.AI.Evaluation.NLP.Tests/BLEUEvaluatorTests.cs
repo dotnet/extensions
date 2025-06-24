@@ -75,6 +75,26 @@ public class BLEUEvaluatorTests
     }
 
     [Fact]
+    public async Task EvaluateAsync_MultipleReferences()
+    {
+        string[] references = [
+            "It is a guide to action that ensures that the military will forever heed Party commands",
+            "It is the guiding principle which guarantees the military forces always being under the command of the Party",
+            "It is the practical guide for the army always to heed the directions of the party",
+        ];
+        string hypothesis = "It is a guide to action which ensures that the military always obeys the commands of the party";
+
+        var evaluator = new BLEUEvaluator();
+        var context = new BLEUEvaluatorContext(references);
+        var response = new ChatResponse(new ChatMessage(ChatRole.Assistant, hypothesis));
+        var result = await evaluator.EvaluateAsync([], response, null, [context]);
+        var metric = Assert.Single(result.Metrics.Values) as NumericMetric;
+        Assert.NotNull(metric);
+        Assert.Equal(BLEUEvaluator.BLEUMetricName, metric.Name);
+        Assert.Equal(0.5046, (double)metric!.Value!, 4);
+    }
+
+    [Fact]
     public async Task EvaluateAsync_ReturnsErrorDiagnosticIfEmptyResponse()
     {
         var evaluator = new BLEUEvaluator();

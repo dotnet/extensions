@@ -6,20 +6,19 @@
 // We disable this warning because it is a false positive arising from the analyzer's lack of support for C#'s primary
 // constructor syntax.
 
+using System.Collections.Generic;
+using System.Linq;
+
 namespace Microsoft.Extensions.AI.Evaluation.NLP;
 
 /// <summary>
 /// Contextual information that the <see cref="BLEUEvaluator"/> uses to compute the BLEU score for a response.
 /// </summary>
-/// <param name="reference">
-/// The reference response against which the response that is being evaluated is compared.
-/// </param>
 /// <remarks>
 /// <see cref="BLEUEvaluator"/> measures the BLEU score of a response compared to a reference. BLEU (Bilingual Evaluation Understudy)
 /// is a metric used to evaluate the quality if machine-generated text.
 /// </remarks>
-public sealed class BLEUEvaluatorContext(string reference)
-    : EvaluationContext(name: BLEUContext, content: reference)
+public sealed class BLEUEvaluatorContext : EvaluationContext
 {
     /// <summary>
     /// Gets the unique <see cref="EvaluationContext.Name"/> that is used for
@@ -32,7 +31,32 @@ public sealed class BLEUEvaluatorContext(string reference)
     /// </summary>
     /// <remarks>
     /// The <see cref="BLEUEvaluator"/> measures the degree to which the response being evaluated is similar to
-    /// the response supplied via <see cref="ReferenceText"/>. The metric will be reported as a BLEU score.
+    /// the response supplied via <see cref="References"/>. The metric will be reported as a BLEU score.
     /// </remarks>
-    public string ReferenceText { get; } = reference;
+    public IReadOnlyList<string> References { get; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BLEUEvaluatorContext"/> class.
+    /// </summary>
+    /// <param name="references">
+    /// The reference responses against which the response that is being evaluated is compared.
+    /// </param>
+    public BLEUEvaluatorContext(params string[] references)
+        : this(references as IEnumerable<string>)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BLEUEvaluatorContext"/> class.
+    /// </summary>
+    /// <param name="references">
+    /// The reference responses against which the response that is being evaluated is compared.
+    /// </param>
+    public BLEUEvaluatorContext(IEnumerable<string> references)
+        : base(
+            name: BLEUContext,
+            contents: [.. references.Select(c => new TextContent(c))])
+    {
+        References = [.. references];
+    }
 }
