@@ -53,9 +53,54 @@ public class NGramTests
     }
 
     [Fact]
-    public void NGramBuilder_Create_Works()
+    public void NGram_CollectionCreate()
     {
         NGram<int> ngram = [1, 2];
         Assert.Equal(new NGram<int>(1, 2), ngram);
+    }
+
+    [Fact]
+    public void NGram_CreateNGrams()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => Enumerable.Empty<int>().CreateNGrams(-1).ToList());
+
+        var arr = new[] { 1, 2, 3 };
+        var ngram = arr.CreateNGrams(1);
+        Assert.Equal([[1], [2], [3]], ngram);
+
+        ngram = arr.CreateNGrams(2);
+        Assert.Equal([[1, 2], [2, 3]], ngram);
+
+        ngram = arr.CreateNGrams(3);
+        Assert.Equal([[1, 2, 3]], ngram);
+
+        ngram = arr.CreateNGrams(4);
+        Assert.Equal([], ngram);
+    }
+
+    [Fact]
+    public void NGram_CreateAll()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => Enumerable.Empty<int>().CreateAll(-1).ToList());
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => Enumerable.Empty<int>().CreateAll(0).ToList());
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => Enumerable.Empty<int>().CreateAll(1, 0).ToList());
+
+        var arr = new[] { 1, 2, 3 };
+        var ngram = NGram<int>.CreateAll(arr, 1).ToList();
+        Assert.Equal([[1], [1, 2], [1, 2, 3], [2], [2, 3], [3]], ngram);
+
+        ngram = NGram<int>.CreateAll(arr, 2).ToList();
+        Assert.Equal([[1, 2], [1, 2, 3], [2, 3]], ngram);
+
+        ngram = NGram<int>.CreateAll(arr, 3).ToList();
+        Assert.Equal([[1, 2, 3]], ngram);
+
+        ngram = NGram<int>.CreateAll(arr, 1, 2).ToList();
+        Assert.Equal([[1], [1, 2], [2], [2, 3], [3]], ngram);
+
+        ngram = NGram<int>.CreateAll(arr, 1, 1).ToList();
+        Assert.Equal([[1], [2], [3]], ngram);
     }
 }
