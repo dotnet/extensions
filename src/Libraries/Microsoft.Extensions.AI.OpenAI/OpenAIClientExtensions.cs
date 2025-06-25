@@ -13,7 +13,9 @@ using OpenAI.Chat;
 using OpenAI.Embeddings;
 using OpenAI.Responses;
 
+#pragma warning disable S103 // Lines should not be too long
 #pragma warning disable S1067 // Expressions should not be too complex
+#pragma warning disable SA1515 // Single-line comment should be preceded by blank line
 #pragma warning disable CA1305 // Specify IFormatProvider
 
 namespace Microsoft.Extensions.AI;
@@ -31,7 +33,8 @@ public static class OpenAIClientExtensions
     internal static ChatRole ChatRoleDeveloper { get; } = new ChatRole("developer");
 
     /// <summary>
-    /// Gets the JSON schema transformer cache conforming to OpenAI <b>strict</b> restrictions per https://platform.openai.com/docs/guides/structured-outputs?api-mode=responses#supported-schemas.
+    /// Gets the JSON schema transformer cache conforming to OpenAI <b>strict</b> / structured output restrictions per
+    /// https://platform.openai.com/docs/guides/structured-outputs?api-mode=responses#supported-schemas.
     /// </summary>
     internal static AIJsonSchemaTransformCache StrictSchemaTransformCache { get; } = new(new()
     {
@@ -42,31 +45,35 @@ public static class OpenAIClientExtensions
         TransformSchemaNode = (ctx, node) =>
         {
             // Move content from common but unsupported properties to description. In particular, we focus on properties that
-            // the AIJsonUtilities schema generator might produce.
-            // Based on guidance at:
-            // https://platform.openai.com/docs/guides/structured-outputs#supported-properties
+            // the AIJsonUtilities schema generator might produce and/or that are explicitly mentioned in the OpenAI documentation.
 
             if (node is JsonObject schemaObj)
             {
                 StringBuilder? additionalDescription = null;
 
-                foreach (string propName in (ReadOnlySpan<string>)["contentEncoding", "contentMediaType", "minLength", "maxLength", "not"])
+                ReadOnlySpan<string> unsupportedProperties =
+                [
+                    // Produced by AIJsonUtilities but not in allow list at https://platform.openai.com/docs/guides/structured-outputs#supported-properties:
+                    "contentEncoding", "contentMediaType", "not",
+
+                    // Explicitly mentioned at https://platform.openai.com/docs/guides/structured-outputs?api-mode=responses#key-ordering as being unsupported with some models:
+                    "minLength", "maxLength", "pattern", "format",
+                    "minimum", "maximum", "multipleOf",
+                    "patternProperties",
+                    "minItems", "maxItems",
+
+                    // Explicitly mentioned at https://learn.microsoft.com/azure/ai-services/openai/how-to/structured-outputs?pivots=programming-language-csharp&tabs=python-secure%2Cdotnet-entra-id#unsupported-type-specific-keywords
+                    // as being unsupported with Azure OpenAI:
+                    "unevaluatedProperties", "propertyNames", "minProperties", "maxProperties",
+                    "unevaluatedItems", "contains", "minContains", "maxContains", "uniqueItems",
+                ];
+
+                foreach (string propName in unsupportedProperties)
                 {
                     if (schemaObj[propName] is { } propNode)
                     {
                         _ = schemaObj.Remove(propName);
                         AppendLine(ref additionalDescription, propName, propNode);
-                    }
-                }
-
-                if (schemaObj["format"] is { } formatNode)
-                {
-                    if (formatNode.GetValueKind() != JsonValueKind.String ||
-                        formatNode.GetValue<string>() is not string format ||
-                        format is not ("date-time" or "date" or "time" or "duration" or "email" or "hostname" or "ipv4" or "ipv6" or "uuid"))
-                    {
-                        _ = schemaObj.Remove("format");
-                        AppendLine(ref additionalDescription, "format", formatNode);
                     }
                 }
 

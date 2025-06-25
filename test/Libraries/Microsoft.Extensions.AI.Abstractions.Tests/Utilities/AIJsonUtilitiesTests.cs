@@ -4,11 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-#if NET
 using System.ComponentModel.DataAnnotations;
-#endif
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -16,6 +15,7 @@ using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using Microsoft.Extensions.AI.JsonSchemaExporter;
+using Microsoft.TestUtilities;
 using Xunit;
 
 #pragma warning disable SA1114 // parameter list should follow declaration
@@ -405,6 +405,7 @@ public static partial class AIJsonUtilitiesTests
         JsonElement schema = AIJsonUtilities.CreateJsonSchema(testData.Type, serializerOptions: options, inferenceOptions: createOptions);
         JsonNode? schemaAsNode = JsonSerializer.SerializeToNode(schema, options);
 
+        // NOTE: This is not validating the schemas match, only that they have the same top-level kind.
         Assert.NotNull(schemaAsNode);
         Assert.Equal(testData.ExpectedJsonSchema.GetValueKind(), schemaAsNode.GetValueKind());
 
@@ -447,11 +448,15 @@ public static partial class AIJsonUtilitiesTests
         AssertDeepEquals(expectedSchema, schema);
     }
 
-    [Fact]
-    public static void CreateJsonSchema_IncorporatesTypesAndAnnotations()
+    [ConditionalFact]
+    public static void CreateJsonSchema_IncorporatesTypesAndAnnotations_Net()
     {
+        if (RuntimeInformation.FrameworkDescription.Contains(".NET Framework"))
+        {
+            return;
+        }
+
         AssertDeepEquals(JsonSerializer.Deserialize(
-#if NET
             """
             {
                 "type": "object",
@@ -474,7 +479,7 @@ public static partial class AIJsonUtilitiesTests
                     "TimeSpanProp": {
                         "$comment": "Represents a System.TimeSpan value.",
                         "type": "string",
-                        "format": "duration"
+                        "pattern": "^-?(\\d+\\.)?\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,7})?$"
                     },
                     "GuidProp": {
                         "type": "string",
@@ -579,13 +584,6 @@ public static partial class AIJsonUtilitiesTests
                         ],
                         "format": "time"
                     },
-                    "DataTypeDurationProp": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "format": "duration"
-                    },
                     "DataTypeEmailProp": {
                         "type": [
                             "string",
@@ -680,7 +678,21 @@ public static partial class AIJsonUtilitiesTests
                 }
             }
             """,
-#else
+            JsonContext.Default.JsonElement),
+            AIJsonUtilities.CreateJsonSchema(typeof(CreateJsonSchema_IncorporatesTypesAndAnnotations_Type), serializerOptions: JsonContext.Default.Options));
+    }
+
+    // .NET Framework only has a subset of the available data annotation attributes.
+    // .NET Standard doesn't have any (the M.E.AI.Abstractions library doesn't reference the additional package).
+    [ConditionalFact]
+    public static void CreateJsonSchema_IncorporatesTypesAndAnnotations_NetFx()
+    {
+        if (!RuntimeInformation.FrameworkDescription.Contains(".NET Framework"))
+        {
+            return;
+        }
+
+        AssertDeepEquals(JsonSerializer.Deserialize(
             """
             {
                 "type": "object",
@@ -703,7 +715,7 @@ public static partial class AIJsonUtilitiesTests
                     "TimeSpanProp": {
                         "$comment": "Represents a System.TimeSpan value.",
                         "type": "string",
-                        "format": "duration"
+                        "pattern": "^-?(\\d+\\.)?\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,7})?$"
                     },
                     "GuidProp": {
                         "type": "string",
@@ -715,11 +727,116 @@ public static partial class AIJsonUtilitiesTests
                             "null"
                         ],
                         "format": "uri"
+                    },
+                    "RegexProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "pattern": "[abc]|[def]"
+                    },
+                    "EmailProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "email"
+                    },
+                    "UrlProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "uri"
+                    },
+                    "RangeProp": {
+                        "type": "integer",
+                        "minimum": 12,
+                        "maximum": 34
+                    },
+                    "DataTypeDateTimeProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "DataTypeDateProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "DataTypeTimeProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "DataTypeEmailProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "DataTypeUrlProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "uri"
+                    },
+                    "DataTypeImageUrlProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "uri"
+                    },
+                    "StringLengthProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "minLength": 10,
+                        "maxLength": 100
+                    },
+                    "MinLengthProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "minItems": 5
+                    },
+                    "MaxLengthProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxItems": 50
+                    },
+                    "MinLengthArrayProp": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": "integer"
+                        },
+                        "minItems": 2
+                    },
+                    "MaxLengthArrayProp": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": "integer"
+                        },
+                        "maxItems": 8
                     }
                 }
             }
             """,
-#endif
             JsonContext.Default.JsonElement),
             AIJsonUtilities.CreateJsonSchema(typeof(CreateJsonSchema_IncorporatesTypesAndAnnotations_Type), serializerOptions: JsonContext.Default.Options));
     }
@@ -739,10 +856,6 @@ public static partial class AIJsonUtilitiesTests
 
         public Uri? UriProp { get; set; }
 
-#if NET
-        [Base64String]
-        public string? Base64Prop { get; set; }
-
         [RegularExpression("[abc]|[def]")]
         public string? RegexProp { get; set; }
 
@@ -754,6 +867,43 @@ public static partial class AIJsonUtilitiesTests
 
         [Range(12, 34)]
         public int RangeProp { get; set; }
+
+        [DataType(DataType.DateTime)]
+        public string? DataTypeDateTimeProp { get; set; }
+
+        [DataType(DataType.Date)]
+        public string? DataTypeDateProp { get; set; }
+
+        [DataType(DataType.Time)]
+        public string? DataTypeTimeProp { get; set; }
+
+        [DataType(DataType.EmailAddress)]
+        public string? DataTypeEmailProp { get; set; }
+
+        [DataType(DataType.Url)]
+        public Uri? DataTypeUrlProp { get; set; }
+
+        [DataType(DataType.ImageUrl)]
+        public Uri? DataTypeImageUrlProp { get; set; }
+
+        [StringLength(100, MinimumLength = 10)]
+        public string? StringLengthProp { get; set; }
+
+        [MinLength(5)]
+        public string? MinLengthProp { get; set; }
+
+        [MaxLength(50)]
+        public string? MaxLengthProp { get; set; }
+
+        [MinLength(2)]
+        public int[]? MinLengthArrayProp { get; set; }
+
+        [MaxLength(8)]
+        public int[]? MaxLengthArrayProp { get; set; }
+
+#if NET
+        [Base64String]
+        public string? Base64Prop { get; set; }
 
         [AllowedValues("abc", "def", "ghi")]
         public string? AllowedStringValuesProp { get; set; }
@@ -767,47 +917,12 @@ public static partial class AIJsonUtilitiesTests
         [DeniedValues("jkl", "mnop")]
         public string? DeniedValuesProp { get; set; }
 
-        [DataType(DataType.DateTime)]
-        public string? DataTypeDateTimeProp { get; set; }
-
-        [DataType(DataType.Date)]
-        public string? DataTypeDateProp { get; set; }
-
-        [DataType(DataType.Time)]
-        public string? DataTypeTimeProp { get; set; }
-
-        [DataType(DataType.Duration)]
-        public string? DataTypeDurationProp { get; set; }
-
-        [DataType(DataType.EmailAddress)]
-        public string? DataTypeEmailProp { get; set; }
-
-        [DataType(DataType.Url)]
-        public Uri? DataTypeUrlProp { get; set; }
-
-        [DataType(DataType.ImageUrl)]
-        public Uri? DataTypeImageUrlProp { get; set; }
-
         public DateOnly DateOnlyProp { get; set; }
+
         public TimeOnly TimeOnlyProp { get; set; }
-
-        [StringLength(100, MinimumLength = 10)]
-        public string? StringLengthProp { get; set; }
-
-        [MinLength(5)]
-        public string? MinLengthProp { get; set; }
-
-        [MaxLength(50)]
-        public string? MaxLengthProp { get; set; }
 
         [Length(3, 10)]
         public string? LengthProp { get; set; }
-
-        [MinLength(2)]
-        public int[]? MinLengthArrayProp { get; set; }
-
-        [MaxLength(8)]
-        public int[]? MaxLengthArrayProp { get; set; }
 
         [Length(1, 4)]
         public int[]? LengthArrayProp { get; set; }
