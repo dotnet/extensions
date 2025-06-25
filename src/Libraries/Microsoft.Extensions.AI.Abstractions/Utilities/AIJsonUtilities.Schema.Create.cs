@@ -3,6 +3,9 @@
 
 using System;
 using System.ComponentModel;
+#if NET
+using System.ComponentModel.DataAnnotations;
+#endif
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -14,11 +17,11 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable S1121 // Assignments should not be made from within sub-expressions
 #pragma warning disable S107 // Methods should not have too many parameters
-#pragma warning disable S1075 // URIs should not be hardcoded
-#pragma warning disable SA1118 // Parameter should not span multiple lines
 #pragma warning disable S109 // Magic numbers should not be used
+#pragma warning disable S1075 // URIs should not be hardcoded
+#pragma warning disable S1121 // Assignments should not be made from within sub-expressions
+#pragma warning disable SA1118 // Parameter should not span multiple lines
 
 namespace Microsoft.Extensions.AI;
 
@@ -38,6 +41,19 @@ public static partial class AIJsonUtilities
     private const string AdditionalPropertiesPropertyName = "additionalProperties";
     private const string DefaultPropertyName = "default";
     private const string RefPropertyName = "$ref";
+    private const string FormatPropertyName = "format";
+#if NET
+    private const string ContentEncodingPropertyName = "contentEncoding";
+    private const string ContentMediaTypePropertyName = "contentMediaType";
+    private const string MinLengthStringPropertyName = "minLength";
+    private const string MaxLengthStringPropertyName = "maxLength";
+    private const string MinLengthCollectionPropertyName = "minItems";
+    private const string MaxLengthCollectionPropertyName = "maxItems";
+    private const string MinRangePropertyName = "minimum";
+    private const string MaxRangePropertyName = "maximum";
+    private const string MinExclusiveRangePropertyName = "exclusiveMinimum";
+    private const string MaxExclusiveRangePropertyName = "exclusiveMaximum";
+#endif
 
     /// <summary>The uri used when populating the $schema keyword in created schemas.</summary>
     private const string SchemaKeywordUri = "https://json-schema.org/draft/2020-12/schema";
@@ -318,6 +334,9 @@ public static partial class AIJsonUtilities
                 ConvertSchemaToObject(ref schema).InsertAtStart(SchemaPropertyName, (JsonNode)SchemaKeywordUri);
             }
 
+            ApplyDataTypeFormats(parameterName, ref schema, ctx);
+            ApplyDataAnnotations(parameterName, ref schema, ctx);
+
             // Finally, apply any user-defined transformations if specified.
             if (inferenceOptions.TransformSchemaNode is { } transformer)
             {
@@ -344,6 +363,275 @@ public static partial class AIJsonUtilities
                         schema = obj = [];
                         return obj;
                 }
+            }
+
+            static void ApplyDataTypeFormats(string? parameterName, ref JsonNode schema, AIJsonSchemaCreateContext ctx)
+            {
+                Type t = ctx.TypeInfo.Type;
+
+                if (Nullable.GetUnderlyingType(t) is { } underlyingType)
+                {
+                    t = underlyingType;
+                }
+
+                if (t == typeof(DateTime) || t == typeof(DateTimeOffset))
+                {
+                    ConvertSchemaToObject(ref schema)[FormatPropertyName] = "date-time";
+                }
+#if NET
+                else if (t == typeof(DateOnly))
+                {
+                    ConvertSchemaToObject(ref schema)[FormatPropertyName] = "date";
+                }
+                else if (t == typeof(TimeOnly))
+                {
+                    ConvertSchemaToObject(ref schema)[FormatPropertyName] = "time";
+                }
+#endif
+                else if (t == typeof(TimeSpan))
+                {
+                    ConvertSchemaToObject(ref schema)[FormatPropertyName] = "duration";
+                }
+                else if (t == typeof(Guid))
+                {
+                    ConvertSchemaToObject(ref schema)[FormatPropertyName] = "uuid";
+                }
+                else if (t == typeof(Uri))
+                {
+                    ConvertSchemaToObject(ref schema)[FormatPropertyName] = "uri";
+                }
+            }
+
+            void ApplyDataAnnotations(string? parameterName, ref JsonNode schema, AIJsonSchemaCreateContext ctx)
+            {
+                if (ctx.GetCustomAttribute<DisplayNameAttribute>() is { } displayNameAttribute)
+                {
+                    ConvertSchemaToObject(ref schema)[TitlePropertyName] ??= displayNameAttribute.DisplayName;
+                }
+
+#if NET
+                if (ctx.GetCustomAttribute<Base64StringAttribute>() is { } base64Attribute)
+                {
+                    ConvertSchemaToObject(ref schema)[ContentEncodingPropertyName] ??= "base64";
+                }
+
+                if (ctx.GetCustomAttribute<EmailAddressAttribute>() is { } emailAttribute)
+                {
+                    ConvertSchemaToObject(ref schema)[FormatPropertyName] ??= "email";
+                }
+
+                if (ctx.GetCustomAttribute<UrlAttribute>() is { } urlAttribute)
+                {
+                    ConvertSchemaToObject(ref schema)[FormatPropertyName] ??= "uri";
+                }
+
+                if (ctx.GetCustomAttribute<RegularExpressionAttribute>() is { } regexAttribute)
+                {
+                    ConvertSchemaToObject(ref schema)[PatternPropertyName] ??= regexAttribute.Pattern;
+                }
+
+                if (ctx.GetCustomAttribute<StringLengthAttribute>() is { } stringLengthAttribute)
+                {
+                    JsonObject obj = ConvertSchemaToObject(ref schema);
+
+                    if (stringLengthAttribute.MinimumLength > 0)
+                    {
+                        obj[MinLengthStringPropertyName] ??= stringLengthAttribute.MinimumLength;
+                    }
+
+                    obj[MaxLengthStringPropertyName] ??= stringLengthAttribute.MaximumLength;
+                }
+
+                if (ctx.GetCustomAttribute<LengthAttribute>() is { } lengthAttribute)
+                {
+                    JsonObject obj = ConvertSchemaToObject(ref schema);
+
+                    if (obj[TypePropertyName] is JsonNode typeNode && typeNode.GetValueKind() is JsonValueKind.String && typeNode.GetValue<string>() is "string")
+                    {
+                        if (lengthAttribute.MinimumLength > 0)
+                        {
+                            obj[MinLengthStringPropertyName] ??= lengthAttribute.MinimumLength;
+                        }
+
+                        obj[MaxLengthStringPropertyName] ??= lengthAttribute.MaximumLength;
+                    }
+                    else
+                    {
+                        if (lengthAttribute.MinimumLength > 0)
+                        {
+                            obj[MinLengthCollectionPropertyName] ??= lengthAttribute.MinimumLength;
+                        }
+
+                        obj[MaxLengthCollectionPropertyName] ??= lengthAttribute.MaximumLength;
+                    }
+                }
+
+                if (ctx.GetCustomAttribute<MinLengthAttribute>() is { } minLengthAttribute)
+                {
+                    JsonObject obj = ConvertSchemaToObject(ref schema);
+                    if (obj[TypePropertyName] is JsonNode typeNode && typeNode.GetValueKind() is JsonValueKind.String && typeNode.GetValue<string>() is "string")
+                    {
+                        obj[MinLengthStringPropertyName] ??= minLengthAttribute.Length;
+                    }
+                    else
+                    {
+                        obj[MinLengthCollectionPropertyName] ??= minLengthAttribute.Length;
+                    }
+                }
+
+                if (ctx.GetCustomAttribute<MaxLengthAttribute>() is { } maxLengthAttribute)
+                {
+                    JsonObject obj = ConvertSchemaToObject(ref schema);
+                    if (obj[TypePropertyName] is JsonNode typeNode && typeNode.GetValueKind() is JsonValueKind.String && typeNode.GetValue<string>() is "string")
+                    {
+                        obj[MaxLengthStringPropertyName] ??= maxLengthAttribute.Length;
+                    }
+                    else
+                    {
+                        obj[MaxLengthCollectionPropertyName] ??= maxLengthAttribute.Length;
+                    }
+                }
+
+                if (ctx.GetCustomAttribute<RangeAttribute>() is { } rangeAttribute)
+                {
+                    JsonObject obj = ConvertSchemaToObject(ref schema);
+
+                    JsonNode? minNode = null;
+                    JsonNode? maxNode = null;
+                    switch (rangeAttribute.Minimum)
+                    {
+                        case int minInt32 when rangeAttribute.Maximum is int maxInt32:
+                            maxNode = maxInt32;
+                            if (!rangeAttribute.MinimumIsExclusive || minInt32 > 0)
+                            {
+                                minNode = minInt32;
+                            }
+
+                            break;
+
+                        case double minDouble when rangeAttribute.Maximum is double maxDouble:
+                            maxNode = maxDouble;
+                            if (!rangeAttribute.MinimumIsExclusive || minDouble > 0)
+                            {
+                                minNode = minDouble;
+                            }
+
+                            break;
+
+                        case string minString when rangeAttribute.Maximum is string maxString:
+                            maxNode = maxString;
+                            minNode = minString;
+                            break;
+                    }
+
+                    if (minNode is not null)
+                    {
+                        if (rangeAttribute.MinimumIsExclusive)
+                        {
+                            obj[MinExclusiveRangePropertyName] ??= minNode;
+                        }
+                        else
+                        {
+                            obj[MinRangePropertyName] ??= minNode;
+                        }
+                    }
+
+                    if (maxNode is not null)
+                    {
+                        if (rangeAttribute.MaximumIsExclusive)
+                        {
+                            obj[MaxExclusiveRangePropertyName] ??= maxNode;
+                        }
+                        else
+                        {
+                            obj[MaxRangePropertyName] ??= maxNode;
+                        }
+                    }
+                }
+
+                if (ctx.GetCustomAttribute<AllowedValuesAttribute>() is { } allowedValuesAttribute)
+                {
+                    JsonObject obj = ConvertSchemaToObject(ref schema);
+                    if (!obj.ContainsKey(EnumPropertyName))
+                    {
+                        if (CreateJsonArray(allowedValuesAttribute.Values, serializerOptions) is { Count: > 0 } enumArray)
+                        {
+                            obj[EnumPropertyName] = enumArray;
+                        }
+                    }
+                }
+
+                if (ctx.GetCustomAttribute<DeniedValuesAttribute>() is { } deniedValuesAttribute)
+                {
+                    JsonObject obj = ConvertSchemaToObject(ref schema);
+
+                    JsonNode? notNode = obj[NotPropertyName];
+                    if (notNode is null or JsonObject)
+                    {
+                        JsonObject notObj =
+                            notNode as JsonObject ??
+                            (JsonObject)(obj[NotPropertyName] = new JsonObject());
+
+                        if (notObj[EnumPropertyName] is null)
+                        {
+                            if (CreateJsonArray(deniedValuesAttribute.Values, serializerOptions) is { Count: > 0 } enumArray)
+                            {
+                                notObj[EnumPropertyName] = enumArray;
+                            }
+                        }
+                    }
+                }
+
+                static JsonArray CreateJsonArray(object?[] values, JsonSerializerOptions serializerOptions)
+                {
+                    JsonArray enumArray = new();
+                    foreach (object? allowedValue in values)
+                    {
+                        if (allowedValue is not null && JsonSerializer.SerializeToNode(allowedValue, serializerOptions.GetTypeInfo(allowedValue.GetType())) is { } valueNode)
+                        {
+                            enumArray.Add(valueNode);
+                        }
+                    }
+
+                    return enumArray;
+                }
+
+                if (ctx.GetCustomAttribute<DataTypeAttribute>() is { } dataTypeAttribute)
+                {
+                    JsonObject obj = ConvertSchemaToObject(ref schema);
+                    switch (dataTypeAttribute.DataType)
+                    {
+                        case DataType.DateTime:
+                            obj[FormatPropertyName] ??= "date-time";
+                            break;
+
+                        case DataType.Date:
+                            obj[FormatPropertyName] ??= "date";
+                            break;
+
+                        case DataType.Time:
+                            obj[FormatPropertyName] ??= "time";
+                            break;
+
+                        case DataType.Duration:
+                            obj[FormatPropertyName] ??= "duration";
+                            break;
+
+                        case DataType.EmailAddress:
+                            obj[FormatPropertyName] ??= "email";
+                            break;
+
+                        case DataType.Url:
+                            obj[FormatPropertyName] ??= "uri";
+                            break;
+
+                        case DataType.ImageUrl:
+                            obj[FormatPropertyName] ??= "uri";
+                            obj[ContentMediaTypePropertyName] ??= "image/*";
+                            break;
+                    }
+                }
+#endif
             }
         }
     }

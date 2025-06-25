@@ -3,13 +3,18 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using OpenAI;
 using OpenAI.Assistants;
 using OpenAI.Audio;
 using OpenAI.Chat;
 using OpenAI.Embeddings;
 using OpenAI.Responses;
+
+#pragma warning disable S1067 // Expressions should not be too complex
+#pragma warning disable CA1305 // Specify IFormatProvider
 
 namespace Microsoft.Extensions.AI;
 
@@ -34,6 +39,61 @@ public static class OpenAIClientExtensions
         ConvertBooleanSchemas = true,
         MoveDefaultKeywordToDescription = true,
         RequireAllProperties = true,
+        TransformSchemaNode = (ctx, node) =>
+        {
+            // Move content from common but unsupported properties to description. In particular, we focus on properties that
+            // the AIJsonUtilities schema generator might produce.
+            // Based on guidance at:
+            // https://platform.openai.com/docs/guides/structured-outputs#supported-properties
+
+            if (node is JsonObject schemaObj)
+            {
+                StringBuilder? additionalDescription = null;
+
+                foreach (string propName in (ReadOnlySpan<string>)["contentEncoding", "contentMediaType", "minLength", "maxLength", "not"])
+                {
+                    if (schemaObj[propName] is { } propNode)
+                    {
+                        _ = schemaObj.Remove(propName);
+                        AppendLine(ref additionalDescription, propName, propNode);
+                    }
+                }
+
+                if (schemaObj["format"] is { } formatNode)
+                {
+                    if (formatNode.GetValueKind() != JsonValueKind.String ||
+                        formatNode.GetValue<string>() is not string format ||
+                        format is not ("date-time" or "date" or "time" or "duration" or "email" or "hostname" or "ipv4" or "ipv6" or "uuid"))
+                    {
+                        _ = schemaObj.Remove("format");
+                        AppendLine(ref additionalDescription, "format", formatNode);
+                    }
+                }
+
+                if (additionalDescription is not null)
+                {
+                    schemaObj["description"] = schemaObj["description"] is { } descriptionNode && descriptionNode.GetValueKind() == JsonValueKind.String ?
+                        $"{descriptionNode.GetValue<string>()}{Environment.NewLine}{additionalDescription}" :
+                        additionalDescription.ToString();
+                }
+
+                return node;
+
+                static void AppendLine(ref StringBuilder? sb, string propName, JsonNode propNode)
+                {
+                    sb ??= new();
+
+                    if (sb.Length > 0)
+                    {
+                        _ = sb.AppendLine();
+                    }
+
+                    _ = sb.Append(propName).Append(": ").Append(propNode);
+                }
+            }
+
+            return node;
+        },
     });
 
     /// <summary>Gets an <see cref="IChatClient"/> for use with this <see cref="ChatClient"/>.</summary>

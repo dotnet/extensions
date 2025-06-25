@@ -4,6 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+#if NET
+using System.ComponentModel.DataAnnotations;
+#endif
 using System.Linq;
 using System.Reflection;
 using System.Text.Encodings.Web;
@@ -14,6 +17,8 @@ using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using Microsoft.Extensions.AI.JsonSchemaExporter;
 using Xunit;
+
+#pragma warning disable SA1114 // parameter list should follow declaration
 
 namespace Microsoft.Extensions.AI;
 
@@ -259,44 +264,6 @@ public static partial class AIJsonUtilitiesTests
     }
 
     [Fact]
-    public static void CreateJsonSchema_FiltersDisallowedKeywords()
-    {
-        JsonElement expected = JsonDocument.Parse("""
-            {
-                "type": "object",
-                "properties": {
-                    "Date": {
-                        "type": "string"
-                    },
-                    "TimeSpan": {
-                        "$comment": "Represents a System.TimeSpan value.",
-                        "type": "string"
-                    },
-                    "Char" : {
-                        "type": "string"
-                    }
-                }
-            }
-            """).RootElement;
-
-        JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(PocoWithTypesWithOpenAIUnsupportedKeywords), serializerOptions: JsonContext.Default.Options);
-
-        AssertDeepEquals(expected, actual);
-    }
-
-    public class PocoWithTypesWithOpenAIUnsupportedKeywords
-    {
-        // Uses the unsupported "format" keyword
-        public DateTimeOffset Date { get; init; }
-
-        // Uses the unsupported "pattern" keyword
-        public TimeSpan TimeSpan { get; init; }
-
-        // Uses the unsupported "minLength" and "maxLength" keywords
-        public char Char { get; init; }
-    }
-
-    [Fact]
     public static void CreateFunctionJsonSchema_ReturnsExpectedValue()
     {
         JsonSerializerOptions options = new(AIJsonUtilities.DefaultOptions);
@@ -478,6 +445,373 @@ public static partial class AIJsonUtilitiesTests
 
         JsonElement schema = AIJsonUtilities.CreateJsonSchema(typeof(MyEnumValue?), serializerOptions: JsonContext.Default.Options);
         AssertDeepEquals(expectedSchema, schema);
+    }
+
+    [Fact]
+    public static void CreateJsonSchema_IncorporatesTypesAndAnnotations()
+    {
+        AssertDeepEquals(JsonSerializer.Deserialize(
+#if NET
+            """
+            {
+                "type": "object",
+                "properties": {
+                    "DisplayNameProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "title": "Display Name Title"
+                    },
+                    "DateTimeProp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "DateTimeOffsetProp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "TimeSpanProp": {
+                        "$comment": "Represents a System.TimeSpan value.",
+                        "type": "string",
+                        "format": "duration"
+                    },
+                    "GuidProp": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "UriProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "uri"
+                    },
+                    "Base64Prop": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "contentEncoding": "base64"
+                    },
+                    "RegexProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "pattern": "[abc]|[def]"
+                    },
+                    "EmailProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "email"
+                    },
+                    "UrlProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "uri"
+                    },
+                    "RangeProp": {
+                        "type": "integer",
+                        "minimum": 12,
+                        "maximum": 34
+                    },
+                    "AllowedStringValuesProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "abc",
+                            "def",
+                            "ghi"
+                        ]
+                    },
+                    "AllowedInt32ValuesProp": {
+                        "type": "integer",
+                        "enum": [
+                            1,
+                            3,
+                            5
+                        ]
+                    },
+                    "AllowedDoubleValuesProp": {
+                        "type": "number",
+                        "enum": [
+                            1.2,
+                            3.4
+                        ]
+                    },
+                    "DeniedValuesProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "not": {
+                            "enum": [
+                                "jkl",
+                                "mnop"
+                            ]
+                        }
+                    },
+                    "DataTypeDateTimeProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "DataTypeDateProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date"
+                    },
+                    "DataTypeTimeProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "time"
+                    },
+                    "DataTypeDurationProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "duration"
+                    },
+                    "DataTypeEmailProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "email"
+                    },
+                    "DataTypeUrlProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "uri"
+                    },
+                    "DataTypeImageUrlProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "uri",
+                        "contentMediaType": "image/*"
+                    },
+                    "DateOnlyProp": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "TimeOnlyProp": {
+                        "type": "string",
+                        "format": "time"
+                    },
+                    "StringLengthProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "minLength": 10,
+                        "maxLength": 100
+                    },
+                    "MinLengthProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "minItems": 5
+                    },
+                    "MaxLengthProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxItems": 50
+                    },
+                    "LengthProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "minItems": 3,
+                        "maxItems": 10
+                    },
+                    "MinLengthArrayProp": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": "integer"
+                        },
+                        "minItems": 2
+                    },
+                    "MaxLengthArrayProp": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": "integer"
+                        },
+                        "maxItems": 8
+                    },
+                    "LengthArrayProp": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": "integer"
+                        },
+                        "minItems": 1,
+                        "maxItems": 4
+                    }
+                }
+            }
+            """,
+#else
+            """
+            {
+                "type": "object",
+                "properties": {
+                    "DisplayNameProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "title": "Display Name Title"
+                    },
+                    "DateTimeProp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "DateTimeOffsetProp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "TimeSpanProp": {
+                        "$comment": "Represents a System.TimeSpan value.",
+                        "type": "string",
+                        "format": "duration"
+                    },
+                    "GuidProp": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "UriProp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "uri"
+                    }
+                }
+            }
+            """,
+#endif
+            JsonContext.Default.JsonElement),
+            AIJsonUtilities.CreateJsonSchema(typeof(CreateJsonSchema_IncorporatesTypesAndAnnotations_Type), serializerOptions: JsonContext.Default.Options));
+    }
+
+    private sealed class CreateJsonSchema_IncorporatesTypesAndAnnotations_Type
+    {
+        [DisplayName("Display Name Title")]
+        public string? DisplayNameProp { get; set; }
+
+        public DateTime DateTimeProp { get; set; }
+
+        public DateTimeOffset DateTimeOffsetProp { get; set; }
+
+        public TimeSpan TimeSpanProp { get; set; }
+
+        public Guid GuidProp { get; set; }
+
+        public Uri? UriProp { get; set; }
+
+#if NET
+        [Base64String]
+        public string? Base64Prop { get; set; }
+
+        [RegularExpression("[abc]|[def]")]
+        public string? RegexProp { get; set; }
+
+        [EmailAddress]
+        public string? EmailProp { get; set; }
+
+        [Url]
+        public Uri? UrlProp { get; set; }
+
+        [Range(12, 34)]
+        public int RangeProp { get; set; }
+
+        [AllowedValues("abc", "def", "ghi")]
+        public string? AllowedStringValuesProp { get; set; }
+
+        [AllowedValues(1, 3, 5)]
+        public int AllowedInt32ValuesProp { get; set; }
+
+        [AllowedValues(1.2, 3.4)]
+        public double AllowedDoubleValuesProp { get; set; }
+
+        [DeniedValues("jkl", "mnop")]
+        public string? DeniedValuesProp { get; set; }
+
+        [DataType(DataType.DateTime)]
+        public string? DataTypeDateTimeProp { get; set; }
+
+        [DataType(DataType.Date)]
+        public string? DataTypeDateProp { get; set; }
+
+        [DataType(DataType.Time)]
+        public string? DataTypeTimeProp { get; set; }
+
+        [DataType(DataType.Duration)]
+        public string? DataTypeDurationProp { get; set; }
+
+        [DataType(DataType.EmailAddress)]
+        public string? DataTypeEmailProp { get; set; }
+
+        [DataType(DataType.Url)]
+        public Uri? DataTypeUrlProp { get; set; }
+
+        [DataType(DataType.ImageUrl)]
+        public Uri? DataTypeImageUrlProp { get; set; }
+
+        public DateOnly DateOnlyProp { get; set; }
+        public TimeOnly TimeOnlyProp { get; set; }
+
+        [StringLength(100, MinimumLength = 10)]
+        public string? StringLengthProp { get; set; }
+
+        [MinLength(5)]
+        public string? MinLengthProp { get; set; }
+
+        [MaxLength(50)]
+        public string? MaxLengthProp { get; set; }
+
+        [Length(3, 10)]
+        public string? LengthProp { get; set; }
+
+        [MinLength(2)]
+        public int[]? MinLengthArrayProp { get; set; }
+
+        [MaxLength(8)]
+        public int[]? MaxLengthArrayProp { get; set; }
+
+        [Length(1, 4)]
+        public int[]? LengthArrayProp { get; set; }
+#endif
     }
 
     [Fact]
@@ -863,9 +1197,10 @@ public static partial class AIJsonUtilitiesTests
         public int DerivedValue { get; set; }
     }
 
+    [JsonSerializable(typeof(JsonElement))]
+    [JsonSerializable(typeof(CreateJsonSchema_IncorporatesTypesAndAnnotations_Type))]
     [JsonSerializable(typeof(DerivedAIContent))]
     [JsonSerializable(typeof(MyPoco))]
-    [JsonSerializable(typeof(PocoWithTypesWithOpenAIUnsupportedKeywords))]
     [JsonSerializable(typeof(MyEnumValue?))]
     private partial class JsonContext : JsonSerializerContext;
 
