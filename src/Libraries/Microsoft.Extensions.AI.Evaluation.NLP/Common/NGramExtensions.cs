@@ -38,4 +38,40 @@ internal static class NGramExtensions
         }
     }
 
+    /// <summary>
+    /// Create a sequence of all n-grams from the input sequence from minN to maxN.
+    /// </summary>
+    /// <param name="input">The input sequence of items.</param>
+    /// <param name="minN">The minimum size of n-gram.</param>
+    /// <param name="maxN">The maximum size of n-gram. If not specified, the default is to include up to length of the input.</param>
+    internal static IEnumerable<NGram<T>> CreateAllNGrams<T>(this IEnumerable<T> input, int minN, int maxN = -1)
+        where T : IEquatable<T>
+    {
+        _ = Throw.IfNull(input, nameof(input));
+
+        if (minN <= 0)
+        {
+            Throw.ArgumentOutOfRangeException(nameof(input), "minN must be greater than zero.");
+        }
+
+        if (maxN < 0)
+        {
+            maxN = input.Count();
+        }
+        else if (maxN < minN)
+        {
+            Throw.ArgumentOutOfRangeException(nameof(maxN), "maxN must be greater than or equal to minN.");
+        }
+
+        // Capture input
+        T[] tokens = input.ToArray();
+
+        for (int i = 0; i <= tokens.Length - minN; i++)
+        {
+            for (int s = minN; s <= maxN && s <= tokens.Length - i; s++)
+            {
+                yield return new NGram<T>(tokens.AsSpan().Slice(i, s));
+            }
+        }
+    }
 }
