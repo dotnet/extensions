@@ -8,7 +8,7 @@ var builder = Host.CreateApplicationBuilder(args);
 
 if (args.Length == 0 || args[0] != "start-mcp")
 {
-    Console.Error.WriteLine("Error: invalid command. Use the 'start-mcp' command like argument to start the MCP server.");
+    Console.Error.WriteLine("Error: invalid command. Use the 'start-mcp' command-line argument to start the MCP server.");
     return 1;
 }
 
