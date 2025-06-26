@@ -16,7 +16,7 @@ internal readonly struct MatchCounter<T> : IEnumerable<KeyValuePair<T, int>>
 {
     private readonly Dictionary<T, int> _counts = [];
 
-    public readonly int Sum => _counts.Values.Sum();
+    public readonly int Sum() => _counts.Values.Sum();
 
     public MatchCounter()
     {

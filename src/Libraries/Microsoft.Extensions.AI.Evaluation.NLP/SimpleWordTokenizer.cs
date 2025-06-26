@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Microsoft.Shared.Diagnostics;
 
@@ -12,7 +11,6 @@ namespace Microsoft.Extensions.AI.Evaluation.NLP;
 /// <summary>
 /// Tokenizes a string into segments using the common rules established by the NLTK word tokenizer.
 /// </summary>
-[Experimental("AIEVAL001")]
 internal static class SimpleWordTokenizer
 {
     /// <summary>

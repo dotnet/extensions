@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -45,6 +47,8 @@ public sealed class BLEUEvaluator : IEvaluator
         IEnumerable<EvaluationContext>? additionalContext = null,
         CancellationToken cancellationToken = default)
     {
+        Stopwatch stopwatch = Stopwatch.StartNew();
+
         _ = Throw.IfNull(modelResponse);
 
         var metric = new NumericMetric(BLEUMetricName);
@@ -72,7 +76,11 @@ public sealed class BLEUEvaluator : IEvaluator
         var hypothesis = SimpleWordTokenizer.WordTokenize(modelResponse.Text);
         metric.Value = BLEUAlgorithm.SentenceBLEU(references, hypothesis, BLEUAlgorithm.DefaultBLEUWeights, SmoothingFunction.Method4);
 
+        stopwatch.Stop();
+        string durationText = $"{stopwatch.Elapsed.TotalSeconds.ToString("F2", CultureInfo.InvariantCulture)} s";
+
         metric.AddOrUpdateContext(context);
+        metric.AddOrUpdateMetadata(name: "evaluation-duration", value: durationText);
         metric.Interpretation = InterpretScore(metric);
 
         return new ValueTask<EvaluationResult>(result);

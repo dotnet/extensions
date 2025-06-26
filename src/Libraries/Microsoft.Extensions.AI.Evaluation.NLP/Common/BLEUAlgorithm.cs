@@ -24,15 +24,15 @@ internal static class BLEUAlgorithm
         }
 
         int closestRefLength = 0;
-        int closest = int.MaxValue;
+        int smallestDiff = int.MaxValue;
         foreach (var reference in references)
         {
             int refLength = reference.Count();
             int diff = Math.Abs(refLength - hypLength);
-            if (diff < closest ||
-               (diff == closest && refLength < closestRefLength))
+            if (diff < smallestDiff ||
+               (diff == smallestDiff && refLength < closestRefLength))
             {
-                closest = diff;
+                smallestDiff = diff;
                 closestRefLength = refLength;
             }
         }
@@ -67,7 +67,7 @@ internal static class BLEUAlgorithm
             return new RationalNumber(0, 0);
         }
 
-        var hyp = hypothesis.CreateNGrams(n).ToArray();
+        var hyp = hypothesis.CreateNGrams(n);
         var hypCounts = new MatchCounter<NGram<string>>(hyp);
 
         Dictionary<NGram<string>, int> maxCounts = [];
@@ -105,7 +105,7 @@ internal static class BLEUAlgorithm
         }
 
         int numerator = clippedCounts.Values.Sum();
-        int denominator = Math.Max(1, hypCounts.Sum);
+        int denominator = Math.Max(1, hypCounts.Sum());
 
         return new RationalNumber(numerator, denominator);
     }

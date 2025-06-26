@@ -14,7 +14,7 @@ public class MatchCounterTests
     {
         var counter = new MatchCounter<int>();
         Assert.Empty(counter);
-        Assert.Equal(0, counter.Sum);
+        Assert.Equal(0, counter.Sum());
     }
 
     [Fact]
@@ -25,7 +25,7 @@ public class MatchCounterTests
         Assert.Equal(3, dict["a"]);
         Assert.Equal(2, dict["b"]);
         Assert.Equal(1, dict["c"]);
-        Assert.Equal(6, counter.Sum);
+        Assert.Equal(6, counter.Sum());
     }
 
     [Fact]
@@ -38,7 +38,7 @@ public class MatchCounterTests
         var dict = counter.ToDictionary(kv => kv.Key, kv => kv.Value);
         Assert.Equal(2, dict[5]);
         Assert.Equal(1, dict[3]);
-        Assert.Equal(3, counter.Sum);
+        Assert.Equal(3, counter.Sum());
     }
 
     [Fact]
@@ -51,7 +51,7 @@ public class MatchCounterTests
         Assert.Equal(1, dict['e']);
         Assert.Equal(2, dict['l']);
         Assert.Equal(1, dict['o']);
-        Assert.Equal(5, counter.Sum);
+        Assert.Equal(5, counter.Sum());
     }
 
     [Fact]

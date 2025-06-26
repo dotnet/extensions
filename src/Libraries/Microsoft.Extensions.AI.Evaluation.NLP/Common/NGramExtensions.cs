@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.AI.Evaluation.NLP.Common;
 internal static class NGramExtensions
 {
     // Collection builder method.
-    public static NGram<T> CreateNGram<T>(ReadOnlySpan<T> values)
+    public static NGram<T> CreateNGram<T>(this ReadOnlySpan<T> values)
         where T : IEquatable<T> => new(values);
 
     /// <summary>
