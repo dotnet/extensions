@@ -11,8 +11,8 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI.Evaluation.NLP.Common;
 
-[DebuggerDisplay("{ToString(),nq}")]
-[CollectionBuilder(typeof(NGramBuilder), nameof(NGramBuilder.Create))]
+[DebuggerDisplay("{ToDebugString(),nq}")]
+[CollectionBuilder(typeof(NGramExtensions), nameof(NGramExtensions.CreateNGram))]
 internal readonly struct NGram<T> : IEquatable<NGram<T>>, IEnumerable<T>
     where T : IEquatable<T>
 {
@@ -51,12 +51,5 @@ internal readonly struct NGram<T> : IEquatable<NGram<T>>, IEnumerable<T>
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    public override string ToString() => $"[{string.Join(",", Values.Select(v => v.ToString()))}]";
-
-}
-
-internal static class NGramBuilder
-{
-    public static NGram<T> Create<T>(ReadOnlySpan<T> values)
-        where T : IEquatable<T> => new(values);
+    public string ToDebugString() => $"[{string.Join(",", Values.Select(v => v.ToString()))}]";
 }

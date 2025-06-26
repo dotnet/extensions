@@ -2,9 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics;
 
 namespace Microsoft.Extensions.AI.Evaluation.NLP.Common;
 
+[DebuggerDisplay("{ToDebugString(),nq}")]
 internal readonly struct RationalNumber : IEquatable<RationalNumber>
 {
     public RationalNumber(int numerator, int denominator)
@@ -23,7 +25,7 @@ internal readonly struct RationalNumber : IEquatable<RationalNumber>
 
     public double ToDouble() => (double)Numerator / Denominator;
 
-    public override string ToString() => $"{Numerator}/{Denominator}";
+    public string ToDebugString() => $"{Numerator}/{Denominator}";
 
     public bool Equals(RationalNumber other)
         => other.Numerator == Numerator && other.Denominator == Denominator;

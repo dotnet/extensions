@@ -11,6 +11,12 @@ namespace Microsoft.Extensions.AI.Evaluation.NLP.Common;
 internal static class NGramExtensions
 {
     /// <summary>
+    /// Collection builder method
+    /// </summary>
+    public static NGram<T> CreateNGram<T>(ReadOnlySpan<T> values)
+        where T : IEquatable<T> => new(values);
+
+    /// <summary>
     /// Create a sequence of n-grams from the input sequence.
     /// </summary>
     /// <param name="input">The input sequence of items.</param>

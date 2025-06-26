@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+
 namespace Microsoft.Extensions.AI.Evaluation.NLP.Common;
 
 /// <summary>
@@ -57,7 +59,7 @@ internal static class SmoothingFunction
             RationalNumber p = precisions[i];
             if (precisions[i].Numerator == 0 && hypLen > 1)
             {
-                double numerator = 1 / (System.Math.Pow(2.0, incvnt) * DefaultK / System.Math.Log(hypLen));
+                double numerator = 1 / (Math.Pow(2.0, incvnt) * DefaultK / Math.Log(hypLen));
                 incvnt++;
             }
             else
