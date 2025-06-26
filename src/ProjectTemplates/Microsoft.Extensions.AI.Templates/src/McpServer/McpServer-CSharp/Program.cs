@@ -30,7 +30,7 @@ builder.Logging.AddConsole(consoleLogOptions =>
 builder.Services
     .AddMcpServer()
     .WithStdioServerTransport()
-    .WithToolsFromAssembly();
+    .WithTool<RandomNumberTool>();
 
 // add dependencies for the MCP server tools
 builder.Services.AddTransient(_ => new RandomNumberService(maxNumber));
