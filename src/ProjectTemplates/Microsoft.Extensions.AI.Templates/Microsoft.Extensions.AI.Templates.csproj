@@ -46,7 +46,7 @@
   <ItemGroup>
     <!-- Keep the exclude patterns below in sync with those in AIChatWebSnapshotTests.cs -->
     <Content
-      Include="src\ChatWithCustomData\**\*"
+      Include="src\*\**\*"
       Exclude="
         **\bin\**;
         **\obj\**;
