@@ -1,53 +1,68 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
 using System;
-using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
+using OpenAI.Assistants;
 using OpenAI.Chat;
 using OpenAI.RealtimeConversation;
 using OpenAI.Responses;
 using Xunit;
 
-#pragma warning disable S103 // Lines should not be too long
+#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
 namespace Microsoft.Extensions.AI;
 
 public class OpenAIAIFunctionConversionTests
 {
-    // Test implementation of AIFunction
-    private class TestAIFunction : AIFunction
-    {
-        public TestAIFunction(string name, string description, Dictionary<string, object> jsonSchema)
-        {
-            Name = name;
-            Description = description;
-            JsonSchema = System.Text.Json.JsonSerializer.SerializeToElement(jsonSchema);
-        }
+    private static readonly AIFunction _testFunction = AIFunctionFactory.Create(
+        ([Description("The name parameter")] string name) => name,
+        "test_function",
+        "A test function for conversion");
 
-        public override string Name { get; }
-        public override string Description { get; }
-        public override JsonElement JsonSchema { get; }
-        protected override async ValueTask<object?> InvokeCoreAsync(AIFunctionArguments arguments, CancellationToken cancellationToken) => await Task.FromResult<object?>(null);
+    [Fact]
+    public void AsOpenAIChatTool_ProducesValidInstance()
+    {
+        ChatTool tool = _testFunction.AsOpenAIChatTool();
+
+        Assert.NotNull(tool);
+        Assert.Equal("test_function", tool.FunctionName);
+        Assert.Equal("A test function for conversion", tool.FunctionDescription);
+        ValidateSchemaParameters(tool.FunctionParameters);
     }
 
-    // Shared schema for all tests
-    private static readonly Dictionary<string, object> _testFunctionSchema = new()
+    [Fact]
+    public void AsOpenAIResponseTool_ProducesValidInstance()
     {
-        ["type"] = "object",
-        ["properties"] = new Dictionary<string, object>
-        {
-            ["name"] = new Dictionary<string, object>
-            {
-                ["type"] = "string",
-                ["description"] = "The name parameter"
-            }
-        },
-        ["required"] = new[] { "name" }
-    };
+        ResponseTool tool = _testFunction.AsOpenAIResponseTool();
 
-    // Helper method to validate function parameters match our schema
+        Assert.NotNull(tool);
+    }
+
+    [Fact]
+    public void AsOpenAIConversationFunctionTool_ProducesValidInstance()
+    {
+        ConversationFunctionTool tool = _testFunction.AsOpenAIConversationFunctionTool();
+
+        Assert.NotNull(tool);
+        Assert.Equal("test_function", tool.Name);
+        Assert.Equal("A test function for conversion", tool.Description);
+        ValidateSchemaParameters(tool.Parameters);
+    }
+
+    [Fact]
+    public void AsOpenAIAssistantsFunctionToolDefinition_ProducesValidInstance()
+    {
+        FunctionToolDefinition tool = _testFunction.AsOpenAIAssistantsFunctionToolDefinition();
+
+        Assert.NotNull(tool);
+        Assert.Equal("test_function", tool.FunctionName);
+        Assert.Equal("A test function for conversion", tool.Description);
+        ValidateSchemaParameters(tool.Parameters);
+    }
+
+    /// <summary>Helper method to validate function parameters match our schema</summary>
     private static void ValidateSchemaParameters(BinaryData parameters)
     {
         Assert.NotNull(parameters);
@@ -60,50 +75,5 @@ public class OpenAIAIFunctionConversionTests
         Assert.True(properties.TryGetProperty("name", out var nameProperty));
         Assert.Equal("string", nameProperty.GetProperty("type").GetString());
         Assert.Equal("The name parameter", nameProperty.GetProperty("description").GetString());
-    }
-
-    [Fact]
-    public void AIFunctionToChatToolConversionWorks()
-    {
-        AIFunction aiFunction = new TestAIFunction(
-            "test_function",
-            "A test function for conversion",
-            _testFunctionSchema);
-
-        ChatTool chatTool = aiFunction.AsOpenAIChatTool();
-
-        Assert.NotNull(chatTool);
-        Assert.Equal("test_function", chatTool.FunctionName);
-        Assert.Equal("A test function for conversion", chatTool.FunctionDescription);
-        ValidateSchemaParameters(chatTool.FunctionParameters);
-    }
-
-    [Fact]
-    public void AIFunctionToResponseToolConversionWorks()
-    {
-        AIFunction aiFunction = new TestAIFunction(
-            "test_function",
-            "A test function for conversion",
-            _testFunctionSchema);
-
-        ResponseTool responseTool = aiFunction.AsOpenAIResponseTool();
-
-        Assert.NotNull(responseTool);
-    }
-
-    [Fact]
-    public void AIFunctionToConversationFunctionToolConversionWorks()
-    {
-        AIFunction aiFunction = new TestAIFunction(
-            "test_function",
-            "A test function for conversion",
-            _testFunctionSchema);
-
-        ConversationFunctionTool conversationTool = aiFunction.AsOpenAIConversationFunctionTool();
-
-        Assert.NotNull(conversationTool);
-        Assert.Equal("test_function", conversationTool.Name);
-        Assert.Equal("A test function for conversion", conversationTool.Description);
-        ValidateSchemaParameters(conversationTool.Parameters);
     }
 }
