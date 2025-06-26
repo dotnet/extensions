@@ -29,7 +29,7 @@ builder.Logging.AddConsole(consoleLogOptions =>
 builder.Services
     .AddMcpServer()
     .WithStdioServerTransport()
-    .WithTool<RandomNumberTool>();
+    .WithTools<RandomNumberTool>();
 
 // add dependencies for the MCP server tools
 builder.Services.AddSingleton(_ => new RandomNumberService(maxNumber));
