@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.AI.Evaluation.NLP;
 /// Tokenizes a string into segments using the common rules established by the NLTK word tokenizer.
 /// </summary>
 [Experimental("AIEVAL001")]
-public static class SimpleWordTokenizer
+internal static class SimpleWordTokenizer
 {
     /// <summary>
     /// Tokenizes the input text into individual words based on specific rules for text normalization and segmentation.
