@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Extensions.AI.Evaluation.NLP.BLEU;
+using Microsoft.Extensions.AI.Evaluation.NLP.Common;
 using Xunit;
 
 namespace Microsoft.Extensions.AI.Evaluation.NLP.Tests;
@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.AI.Evaluation.NLP.Tests;
 public class NGramTests
 {
     [Fact]
-    public void Constructor_StoresValuesAndLength()
+    public void Constructor_ValuesAndLength()
     {
         var ngram = new NGram<int>(1, 2, 3);
         Assert.Equal(new[] { 1, 2, 3 }, ngram.Values);
@@ -55,8 +55,7 @@ public class NGramTests
     [Fact]
     public void NGramBuilder_Create_Works()
     {
-        var arr = new[] { 1, 2 };
-        var ngram = NGramBuilder.Create<int>(arr);
+        NGram<int> ngram = [1, 2];
         Assert.Equal(new NGram<int>(1, 2), ngram);
     }
 }

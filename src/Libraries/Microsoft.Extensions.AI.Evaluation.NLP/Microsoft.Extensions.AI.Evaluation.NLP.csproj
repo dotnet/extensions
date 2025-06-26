@@ -15,6 +15,10 @@
     <MinMutationScore>0</MinMutationScore>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <InjectCollectionBuilderAttributesOnLegacy>true</InjectCollectionBuilderAttributesOnLegacy>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="System.Memory" />
     <PackageReference Include="Microsoft.Bcl.HashCode" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))" />

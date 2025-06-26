@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using Microsoft.Extensions.AI.Evaluation.NLP.BLEU;
+using Microsoft.Extensions.AI.Evaluation.NLP.Common;
 using Xunit;
 
 namespace Microsoft.Extensions.AI.Evaluation.NLP.Tests;

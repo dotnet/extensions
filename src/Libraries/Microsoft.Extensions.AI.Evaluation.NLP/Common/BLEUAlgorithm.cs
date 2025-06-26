@@ -6,29 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.AI.Evaluation.NLP.BLEU;
+namespace Microsoft.Extensions.AI.Evaluation.NLP.Common;
 
 internal static class BLEUAlgorithm
 {
-    internal static IEnumerable<NGram<T>> NGrams<T>(IEnumerable<T> input, int n)
-        where T : IEquatable<T>
-    {
-        if (n <= 0)
-        {
-            Throw.ArgumentOutOfRangeException(nameof(n), "N must be greater than zero.");
-        }
-
-        var output = input.Take(n).ToArray();
-
-        while (output.Length == n)
-        {
-            yield return new NGram<T>(output);
-
-            input = input.Skip(1);
-            output = input.Take(n).ToArray();
-        }
-    }
-
     internal static int ClosestRefLength(IEnumerable<IEnumerable<string>> references, int hypLength)
     {
         if (!references.Any())
@@ -80,7 +61,7 @@ internal static class BLEUAlgorithm
             return new RationalNumber(0, 0);
         }
 
-        var hyp = NGrams(hypothesis, n).ToArray();
+        var hyp = hypothesis.CreateNGrams(n).ToArray();
         var hypCounts = new MatchCounter<NGram<string>>(hyp);
 
         Dictionary<NGram<string>, int> maxCounts = [];
@@ -89,7 +70,7 @@ internal static class BLEUAlgorithm
 
         foreach (var rf in references)
         {
-            var refGrams = NGrams(rf, n).ToArray();
+            IEnumerable<NGram<string>> refGrams = rf.CreateNGrams(n);
             var refCounts = new MatchCounter<NGram<string>>(refGrams);
 
             foreach (var ct in refCounts.Values)

@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Extensions.AI.Evaluation.NLP.BLEU;
+using Microsoft.Extensions.AI.Evaluation.NLP.Common;
 using Xunit;
 
 namespace Microsoft.Extensions.AI.Evaluation.NLP.Tests;

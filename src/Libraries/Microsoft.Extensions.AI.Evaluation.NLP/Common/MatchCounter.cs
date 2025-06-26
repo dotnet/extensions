@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.AI.Evaluation.NLP.BLEU;
+namespace Microsoft.Extensions.AI.Evaluation.NLP.Common;
 
 internal readonly struct MatchCounter<T>
     where T : IEquatable<T>

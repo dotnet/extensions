@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Extensions.AI.Evaluation.NLP.BLEU;
+namespace Microsoft.Extensions.AI.Evaluation.NLP.Common;
 
 internal readonly struct RationalNumber : IEquatable<RationalNumber>
 {
