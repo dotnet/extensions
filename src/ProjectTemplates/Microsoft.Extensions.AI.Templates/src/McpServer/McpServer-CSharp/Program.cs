@@ -51,7 +51,7 @@ public class RandomNumberTool(RandomNumberService service)
         return service.Max;
     }
 
-    [McpServerTool, Description("Returns a random number between 1 and the maximum number set by the tool.")]
+    [McpServerTool, Description("Returns a random number between 1 and the maximum number allowed by the tool.")]
     public int GetRandomNumber()
     {
         return service.GetRandomNumber();
