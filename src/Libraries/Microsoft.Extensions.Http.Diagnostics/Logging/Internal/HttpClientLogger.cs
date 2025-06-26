@@ -242,7 +242,7 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
             {
                 foreach (var param in logRecord.QueryParameters)
                 {
-                    collector.Add($"Query_{param.Key}", param.Value ?? string.Empty);
+                    collector.Add(param.Key, param.Value ?? string.Empty);
                 }
             }
         }

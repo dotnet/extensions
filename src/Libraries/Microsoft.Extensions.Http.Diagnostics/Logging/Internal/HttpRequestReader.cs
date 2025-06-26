@@ -8,12 +8,8 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-#if NET462
-#pragma warning disable S1128
-#endif
+#if !NET462
 using System.Web;
-#if NET462
-#pragma warning restore S1128
 #endif
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.DependencyInjection;
@@ -99,7 +95,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
 
         _logRequestHeaders = options.RequestHeadersDataClasses.Count > 0;
         _logResponseHeaders = options.ResponseHeadersDataClasses.Count > 0;
-        _logRequestQueryParameters = options.LogQueryParameters;
+        _logRequestQueryParameters = options.LogQueryParameters && options.RequestQueryParametersDataClasses.Count > 0;
 
         _httpRequestBodyReader = new HttpRequestBodyReader(options);
         _httpResponseBodyReader = new HttpResponseBodyReader(options);
