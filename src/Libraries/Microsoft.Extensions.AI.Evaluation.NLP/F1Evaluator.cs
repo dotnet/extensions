@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -48,6 +50,7 @@ public sealed class F1Evaluator : IEvaluator
     {
         _ = Throw.IfNull(modelResponse);
 
+        Stopwatch stopwatch = Stopwatch.StartNew();
         var metric = new NumericMetric(F1MetricName);
         var result = new EvaluationResult(metric);
 
@@ -73,7 +76,11 @@ public sealed class F1Evaluator : IEvaluator
         var hypothesis = SimpleWordTokenizer.WordTokenize(modelResponse.Text);
         metric.Value = F1Algorithm.CalculateF1Score(reference, hypothesis);
 
+        stopwatch.Stop();
+        string durationText = $"{stopwatch.Elapsed.TotalSeconds.ToString("F2", CultureInfo.InvariantCulture)} s";
+
         metric.AddOrUpdateContext(context);
+        metric.AddOrUpdateMetadata(name: "evaluation-duration", value: durationText);
         metric.Interpretation = InterpretScore(metric);
 
         return new ValueTask<EvaluationResult>(result);

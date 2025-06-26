@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -46,6 +48,8 @@ public sealed class GLEUEvaluator : IEvaluator
         IEnumerable<EvaluationContext>? additionalContext = null,
         CancellationToken cancellationToken = default)
     {
+        Stopwatch stopwatch = Stopwatch.StartNew();
+
         _ = Throw.IfNull(modelResponse);
 
         var metric = new NumericMetric(GLEUMetricName);
@@ -73,7 +77,11 @@ public sealed class GLEUEvaluator : IEvaluator
         var hypothesis = SimpleWordTokenizer.WordTokenize(modelResponse.Text);
         metric.Value = GLEUAlgorithm.SentenceGLEU(references, hypothesis);
 
+        stopwatch.Stop();
+        string durationText = $"{stopwatch.Elapsed.TotalSeconds.ToString("F2", CultureInfo.InvariantCulture)} s";
+
         metric.AddOrUpdateContext(context);
+        metric.AddOrUpdateMetadata(name: "evaluation-duration", value: durationText);
         metric.Interpretation = InterpretScore(metric);
 
         return new ValueTask<EvaluationResult>(result);
