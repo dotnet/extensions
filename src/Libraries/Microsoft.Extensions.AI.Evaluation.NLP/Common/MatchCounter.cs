@@ -53,6 +53,21 @@ internal readonly struct MatchCounter<T> : IEnumerable<KeyValuePair<T, int>>
         }
     }
 
+    public MatchCounter<T> Intersect(MatchCounter<T> other)
+    {
+        _ = Throw.IfNull(other, nameof(other));
+        var intersection = new MatchCounter<T>();
+        foreach (var kvp in _counts)
+        {
+            if (other._counts.TryGetValue(kvp.Key, out int otherCount))
+            {
+                intersection._counts[kvp.Key] = Math.Min(kvp.Value, otherCount);
+            }
+        }
+
+        return intersection;
+    }
+
     public string ToDebugString() => string.Concat(_counts.Select(v => $"{v.Key}: {v.Value}, "));
 
     public IEnumerator<KeyValuePair<T, int>> GetEnumerator() => _counts.GetEnumerator();

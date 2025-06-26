@@ -12,49 +12,49 @@ using System.Linq;
 namespace Microsoft.Extensions.AI.Evaluation.NLP;
 
 /// <summary>
-/// Contextual information that the <see cref="BLEUEvaluator"/> uses to compute the BLEU score for a response.
+/// Contextual information that the <see cref="GLEUEvaluator"/> uses to compute the GLEU score for a response.
 /// </summary>
 /// <remarks>
-/// <see cref="BLEUEvaluator"/> measures the BLEU score of a response compared to a reference. BLEU (Bilingual Evaluation Understudy)
+/// <see cref="GLEUEvaluator"/> measures the GLEU score of a response compared to a reference. GLEU (Google-BLEU)
 /// is a metric used to evaluate the quality of machine-generated text.
 /// </remarks>
-public sealed class BLEUEvaluatorContext : EvaluationContext
+public sealed class GLEUEvaluatorContext : EvaluationContext
 {
     /// <summary>
     /// Gets the unique <see cref="EvaluationContext.Name"/> that is used for
-    /// <see cref="BLEUEvaluatorContext"/>.
+    /// <see cref="GLEUEvaluatorContext"/>.
     /// </summary>
-    public static string BLEUContext => "BLEU Context";
+    public static string GLEUContext => "GLEU Context";
 
     /// <summary>
     /// Gets the reference response against which the provided chat response will be scored.
     /// </summary>
     /// <remarks>
-    /// The <see cref="BLEUEvaluator"/> measures the degree to which the response being evaluated is similar to
-    /// the response supplied via <see cref="References"/>. The metric will be reported as a BLEU score.
+    /// The <see cref="GLEUEvaluator"/> measures the degree to which the response being evaluated is similar to
+    /// the response supplied via <see cref="References"/>. The metric will be reported as a GLEU score.
     /// </remarks>
     public IReadOnlyList<string> References { get; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="BLEUEvaluatorContext"/> class.
+    /// Initializes a new instance of the <see cref="GLEUEvaluatorContext"/> class.
     /// </summary>
     /// <param name="references">
     /// The reference responses against which the response that is being evaluated is compared.
     /// </param>
-    public BLEUEvaluatorContext(params string[] references)
+    public GLEUEvaluatorContext(params string[] references)
         : this(references as IEnumerable<string>)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="BLEUEvaluatorContext"/> class.
+    /// Initializes a new instance of the <see cref="GLEUEvaluatorContext"/> class.
     /// </summary>
     /// <param name="references">
     /// The reference responses against which the response that is being evaluated is compared.
     /// </param>
-    public BLEUEvaluatorContext(IEnumerable<string> references)
+    public GLEUEvaluatorContext(IEnumerable<string> references)
         : base(
-            name: BLEUContext,
+            name: GLEUContext,
             contents: [.. references.Select(c => new TextContent(c))])
     {
         References = [.. references];

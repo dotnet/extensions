@@ -48,11 +48,7 @@ internal static class NGramExtensions
         where T : IEquatable<T>
     {
         _ = Throw.IfNull(input, nameof(input));
-
-        if (minN <= 0)
-        {
-            Throw.ArgumentOutOfRangeException(nameof(input), "minN must be greater than zero.");
-        }
+        _ = Throw.IfLessThanOrEqual(minN, 0, nameof(minN));
 
         if (maxN < 0)
         {
@@ -60,7 +56,7 @@ internal static class NGramExtensions
         }
         else if (maxN < minN)
         {
-            Throw.ArgumentOutOfRangeException(nameof(maxN), "maxN must be greater than or equal to minN.");
+            Throw.ArgumentOutOfRangeException(nameof(maxN), $"'{nameof(maxN)}' must be greater than or equal to '{nameof(minN)}'.");
         }
 
         // Capture input
@@ -70,7 +66,7 @@ internal static class NGramExtensions
         {
             for (int s = minN; s <= maxN && s <= tokens.Length - i; s++)
             {
-                yield return new NGram<T>(tokens.AsSpan().Slice(i, s));
+                yield return [.. tokens.AsSpan().Slice(i, s)];
             }
         }
     }
