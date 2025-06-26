@@ -15,7 +15,7 @@
     <PackageId>SampleMcpServer</PackageId>
     <PackageVersion>0.1.0-beta</PackageVersion>
     <PackageTags>AI; MCP; server; stdio</PackageTags>
-    <Description>An MCP server using the .NET MCP SDK.</Description>
+    <Description>An MCP server using the MCP C# SDK.</Description>
   </PropertyGroup>
   
   
