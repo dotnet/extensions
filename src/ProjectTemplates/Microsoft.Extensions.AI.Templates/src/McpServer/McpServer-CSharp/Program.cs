@@ -33,8 +33,7 @@ builder.Services
     .WithToolsFromAssembly();
 
 // add dependencies for the MCP server tools
-builder.Services
-    .AddSingleton<RandomNumberService>(_ => new RandomNumberService(maxNumber));
+builder.Services.AddTransient(_ => new RandomNumberService(maxNumber));
 
 await builder.Build().RunAsync();
 return 0;

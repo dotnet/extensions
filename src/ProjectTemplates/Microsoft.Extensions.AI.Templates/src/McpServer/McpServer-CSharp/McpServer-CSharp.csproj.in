@@ -6,19 +6,18 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     
-    <!-- Pack the project an MCP server package -->
+    <!-- Set up the NuGet package to be an MCP server -->
     <PackAsTool>true</PackAsTool>
     <PackageType>McpServer</PackageType>
 
-    <!-- Set package metadata -->
+    <!-- Set recommended package metadata -->
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageId>SampleMcpServer</PackageId>
     <PackageVersion>0.1.0-beta</PackageVersion>
     <PackageTags>AI; MCP; server; stdio</PackageTags>
     <Description>An MCP server using the .NET MCP SDK.</Description>
   </PropertyGroup>
   
-  <PropertyGroup>
-  </PropertyGroup>
   
   <!-- Include additional files for browing the MCP server. -->
   <ItemGroup>
