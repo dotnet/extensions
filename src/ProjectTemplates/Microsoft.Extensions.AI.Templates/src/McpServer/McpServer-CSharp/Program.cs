@@ -21,8 +21,7 @@ if (!int.TryParse(maxNumberEnv, out var maxNumber) || maxNumber <= 0)
 
 builder.Logging.AddConsole(consoleLogOptions =>
 {
-    // configure all logs to go to stderr
-    // stdout is used for the MCP protocol messages
+    // Configure all logs to go to stderr (stdout is used for the MCP protocol messages).
     consoleLogOptions.LogToStandardErrorThreshold = LogLevel.Trace;
 });
 
