@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,6 +25,7 @@ namespace Microsoft.Extensions.AI.Evaluation.NLP;
 /// passing and a score below 0.5 is failing.
 /// </para>
 /// </remarks>
+[Experimental("AIEVAL001")]
 public sealed class BLEUEvaluator : IEvaluator
 {
     /// <summary>

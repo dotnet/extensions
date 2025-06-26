@@ -8,6 +8,8 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI.Evaluation.NLP.Tests;
 
+#pragma warning disable AIEVAL001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
 public class BLEUEvaluatorTests
 {
     [Fact]
@@ -36,7 +38,7 @@ public class BLEUEvaluatorTests
         var metric = Assert.Single(result.Metrics.Values) as NumericMetric;
         Assert.NotNull(metric);
         Assert.Equal(BLEUEvaluator.BLEUMetricName, metric.Name);
-        Assert.Equal(0.1578, (double)metric!.Value!, 4);
+        Assert.Equal(0.0136, (double)metric!.Value!, 4);
         Assert.NotNull(metric.Interpretation);
         Assert.Equal(EvaluationRating.Unacceptable, metric.Interpretation.Rating);
         Assert.True(metric.Interpretation.Failed);
@@ -57,11 +59,11 @@ public class BLEUEvaluatorTests
 
     [Theory]
     [InlineData("the cat is on the mat",
-        "the the the the the the the", 0.7311)]
+        "the the the the the the the", 0.0385)]
     [InlineData("It is a guide to action that ensures that the military will forever heed Party commands",
         "It is a guide to action which ensures that the military always obeys the commands of the party", 0.4209)]
     [InlineData("It is the practical guide for the army always to heed the directions of the party",
-        "It is to insure the troops forever hearing the activity guidebook that party direct", 0.3694)]
+        "It is to insure the troops forever hearing the activity guidebook that party direct", 0.0471)]
     public async Task EvaluateAsync_SampleCases(string reference, string hypothesis, double score)
     {
         var evaluator = new BLEUEvaluator();

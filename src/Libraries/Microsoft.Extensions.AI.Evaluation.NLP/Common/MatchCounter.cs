@@ -2,18 +2,19 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI.Evaluation.NLP.Common;
 
-internal readonly struct MatchCounter<T>
+[DebuggerDisplay("{ToDebugString(),nq}")]
+internal readonly struct MatchCounter<T> : IEnumerable<KeyValuePair<T, int>>
     where T : IEquatable<T>
 {
     private readonly Dictionary<T, int> _counts = [];
-
-    public readonly IEnumerable<KeyValuePair<T, int>> Values => _counts;
 
     public readonly int Sum => _counts.Values.Sum();
 
@@ -41,11 +42,20 @@ internal readonly struct MatchCounter<T>
 
     public void AddRange(IEnumerable<T> items)
     {
+        if (items == null)
+        {
+            return;
+        }
+
         foreach (var item in items)
         {
             Add(item);
         }
     }
 
-    public override string ToString() => string.Concat(Values.Select(v => $"{v.Key}: {v.Value}, "));
+    public string ToDebugString() => string.Concat(_counts.Select(v => $"{v.Key}: {v.Value}, "));
+
+    public IEnumerator<KeyValuePair<T, int>> GetEnumerator() => _counts.GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)_counts).GetEnumerator();
 }

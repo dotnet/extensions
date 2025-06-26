@@ -49,7 +49,7 @@ public class NGramTests
     public void ToString_FormatsCorrectly()
     {
         var ngram = new NGram<string>("x", "y");
-        Assert.Equal("[x,y]", ngram.ToString());
+        Assert.Equal("[x,y]", ngram.ToDebugString());
     }
 
     [Fact]

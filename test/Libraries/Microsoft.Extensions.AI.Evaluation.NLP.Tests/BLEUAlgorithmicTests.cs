@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.AI.Evaluation.NLP.Common;
 using Xunit;
@@ -10,6 +11,7 @@ using static Microsoft.Extensions.AI.Evaluation.NLP.Common.BLEUAlgorithm;
 
 namespace Microsoft.Extensions.AI.Evaluation.NLP.Tests;
 
+[Experimental("AIEVAL001")]
 public class BLEUAlgorithmicTests
 {
     [Fact]
@@ -64,6 +66,31 @@ public class BLEUAlgorithmicTests
         Assert.Equal(0.5882, prec.ToDouble(), 4);
         prec = ModifiedPrecision(references, hypothesis2, 2);
         Assert.Equal(0.07692, prec.ToDouble(), 4);
+    }
+
+    [Theory]
+    [InlineData(new int[] { 0, 1, 0, 2 }, 10, new[] { 0.2303, 0.0576 })]
+    [InlineData(new int[] { 4, 5, 2, 4 }, 10, new[] { 0.8000, 0.5 })]
+    [InlineData(new int[] { 10, 14, 7, 13, 5, 12, 4, 11 }, 20, new[] { 0.7143, 0.5385, 0.4167, 0.3636 })]
+    [InlineData(new int[] { 10, 14, 7, 13, 0, 12, 0, 11 }, 20, new[] { 0.7143, 0.5385, 0.02496, 0.01362 })]
+    public void SmoothingMethod4Tests(int[] num_denom, int hypLen, double[] vals)
+    {
+        Assert.Equal(num_denom.Length, vals.Length * 2);
+
+        RationalNumber[] prec = new RationalNumber[vals.Length];
+        for (int i = 0; i < num_denom.Length - 1; i += 2)
+        {
+            prec[i / 2] = new RationalNumber(num_denom[i], num_denom[i + 1]);
+        }
+
+        double[] smoothed = SmoothingFunction.Method4(prec, hypLen);
+
+        Assert.Equal(vals.Length, smoothed.Length);
+
+        for (int i = 0; i < vals.Length; i++)
+        {
+            Assert.Equal(vals[i], smoothed[i], 4);
+        }
     }
 
     [Fact]

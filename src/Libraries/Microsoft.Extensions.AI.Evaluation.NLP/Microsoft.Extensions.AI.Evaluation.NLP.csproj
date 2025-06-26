@@ -16,6 +16,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectCollectionBuilderAttributesOnLegacy>true</InjectCollectionBuilderAttributesOnLegacy>
   </PropertyGroup>
 

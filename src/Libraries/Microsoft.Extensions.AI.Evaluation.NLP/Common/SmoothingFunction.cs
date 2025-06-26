@@ -53,14 +53,15 @@ internal static class SmoothingFunction
 
         double[] smoothed = new double[precisions.Length];
 
-        int incvnt = 0;
+        int inc = 1;
         for (int i = 0; i < precisions.Length; i++)
         {
             RationalNumber p = precisions[i];
-            if (precisions[i].Numerator == 0 && hypLen > 1)
+            if (p.Numerator == 0 && hypLen > 1)
             {
-                double numerator = 1 / (Math.Pow(2.0, incvnt) * DefaultK / Math.Log(hypLen));
-                incvnt++;
+                double numerator = 1 / (Math.Pow(2.0, inc) * DefaultK / Math.Log(hypLen));
+                smoothed[i] = numerator / p.Denominator;
+                inc++;
             }
             else
             {

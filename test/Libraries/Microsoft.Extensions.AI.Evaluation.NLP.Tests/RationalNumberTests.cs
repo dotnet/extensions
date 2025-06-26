@@ -37,7 +37,7 @@ public class RationalNumberTests
     public void ToString_FormatsCorrectly()
     {
         var r = new RationalNumber(7, 9);
-        Assert.Equal("7/9", r.ToString());
+        Assert.Equal("7/9", r.ToDebugString());
     }
 
     [Fact]
