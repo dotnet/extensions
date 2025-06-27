@@ -2,11 +2,13 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Telemetry</RootNamespace>
     <Description>Unit tests for Microsoft.Extensions.Telemetry.</Description>
+   <NoWarn Condition="'$(TargetFramework)' == 'net462'">$(NoWarn);CS0436</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
     <InjectCallerAttributesOnLegacy>false</InjectCallerAttributesOnLegacy>
     <InjectDiagnosticAttributesOnLegacy>false</InjectDiagnosticAttributesOnLegacy>
+    <InjectObsoleteAttributeOnLegacy>true</InjectObsoleteAttributeOnLegacy>
     <InjectSharedThrow>false</InjectSharedThrow>
   </PropertyGroup>
 
