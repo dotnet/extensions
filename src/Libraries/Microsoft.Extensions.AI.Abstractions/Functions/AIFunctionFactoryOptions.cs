@@ -107,7 +107,7 @@ public sealed class AIFunctionFactoryOptions
     public Func<object?, Type?, CancellationToken, ValueTask<object?>>? MarshalResult { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the result of the function should be excluded from the generated schema.
+    /// Gets or sets a value indicating whether a schema should be created for the function's result type, if possible, and included as <see cref="AIFunction.ReturnJsonSchema" />.
     /// </summary>
     /// <remarks>
     /// <para>
