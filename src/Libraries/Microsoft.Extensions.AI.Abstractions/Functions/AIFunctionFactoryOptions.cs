@@ -106,6 +106,19 @@ public sealed class AIFunctionFactoryOptions
     /// </remarks>
     public Func<object?, Type?, CancellationToken, ValueTask<object?>>? MarshalResult { get; set; }
 
+    /// <summary>
+    /// Gets or sets a value indicating whether the result of the function should be excluded from the generated schema.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The default value is <see langword="false"/>.
+    /// </para>
+    /// <para>
+    /// When set to <see langword="true"/>, results in the produced <see cref="AIFunction.ReturnJsonSchema"/> to always be <see langword="null"/>.
+    /// </para>
+    /// </remarks>
+    public bool ExcludeResultFromSchema { get; set; }
+
     /// <summary>Provides configuration options produced by the <see cref="ConfigureParameterBinding"/> delegate.</summary>
     public readonly record struct ParameterBindingOptions
     {
