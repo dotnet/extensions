@@ -55,7 +55,7 @@ public class MatchCounterTests
     }
 
     [Fact]
-    public void ToString_FormatsCorrectly()
+    public void ToDebugString_FormatsCorrectly()
     {
         var counter = new MatchCounter<string>(new[] { "x", "y", "x" });
         var str = counter.ToDebugString();

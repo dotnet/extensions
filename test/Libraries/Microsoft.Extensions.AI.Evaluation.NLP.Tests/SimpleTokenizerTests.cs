@@ -1,8 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
+using Microsoft.Extensions.AI.Evaluation.NLP.Common;
 using Xunit;
 
 namespace Microsoft.Extensions.AI.Evaluation.NLP.Tests;
@@ -11,27 +10,6 @@ namespace Microsoft.Extensions.AI.Evaluation.NLP.Tests;
 
 public class SimpleTokenizerTests
 {
-    [Fact]
-    public void TokenizeText()
-    {
-        (string, IEnumerable<string>)[] cases = [
-            ("It is a guide to action that ensures that the military will forever heed Party commands.",
-             ["IT", "IS", "A", "GUIDE", "TO", "ACTION", "THAT", "ENSURES", "THAT", "THE", "MILITARY", "WILL", "FOREVER", "HEED", "PARTY", "COMMANDS", "."]),
-            ("Good muffins cost $3.88 (roughly 3,36 euros)\nin New York.  Please buy me\ntwo of them.\nThanks.",
-             ["GOOD", "MUFFINS", "COST", "$", "3.88", "(", "ROUGHLY", "3,36",  "EUROS", ")", "IN", "NEW", "YORK", ".", "PLEASE", "BUY", "ME", "TWO", "OF", "THEM", ".", "THANKS", "."]),
-            ("", []),
-            ("Hello, world! How's it going?", ["HELLO", ",", "WORLD", "!", "HOW", "'", "S", "IT", "GOING", "?"]),
-            ("&quot;Quotes&quot; and &amp; symbols &lt; &gt; &apos;", ["\"", "QUOTES", "\"", "AND", "&", "SYMBOLS", "<", ">", "'"]),
-            ("-\nThis is a test.", ["THIS", "IS", "A", "TEST", "."]),
-        ];
-
-        foreach (var (text, expected) in cases)
-        {
-            IEnumerable<string> result = SimpleWordTokenizer.WordTokenize(text);
-            Assert.Equal(expected, result);
-        }
-    }
-
     [Theory]
     [InlineData(" $41.23 ", new[] { "$", "41.23" })]
     [InlineData("word", new[] { "WORD" })]
@@ -40,7 +18,15 @@ public class SimpleTokenizerTests
     [InlineData("word1.word2", new[] { "WORD1", ".", "WORD2" })]
     [InlineData("word1!word2?", new[] { "WORD1", "!", "WORD2", "?" })]
     [InlineData("word1-word2", new[] { "WORD1", "-", "WORD2" })]
+    [InlineData("word1 - word2", new[] { "WORD1", "-", "WORD2" })]
+    [InlineData("word1-\n word2", new[] { "WORD1", "WORD2" })]
+    [InlineData("word1-\r\n word2", new[] { "WORD1", "WORD2" })]
+    [InlineData("word1-\r\nword2", new[] { "WORD1WORD2" })]
+    [InlineData("word1-\nword2", new[] { "WORD1WORD2" })]
     [InlineData("word1\nword2", new[] { "WORD1", "WORD2" })]
+    [InlineData("word1 \n word2", new[] { "WORD1", "WORD2" })]
+    [InlineData("word1\r\nword2", new[] { "WORD1", "WORD2" })]
+    [InlineData("word1 \r\n word2", new[] { "WORD1", "WORD2" })]
     [InlineData("word1\tword2", new[] { "WORD1", "WORD2" })]
     [InlineData("It is a guide to action that ensures that the military will forever heed Party commands.",
         new[] { "IT", "IS", "A", "GUIDE", "TO", "ACTION", "THAT", "ENSURES", "THAT", "THE", "MILITARY", "WILL", "FOREVER", "HEED", "PARTY", "COMMANDS", "." })]

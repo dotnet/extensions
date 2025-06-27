@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.AI.Evaluation.NLP.Common;
 using Xunit;
@@ -11,27 +10,8 @@ using static Microsoft.Extensions.AI.Evaluation.NLP.Common.BLEUAlgorithm;
 
 namespace Microsoft.Extensions.AI.Evaluation.NLP.Tests;
 
-[Experimental("AIEVAL001")]
-public class BLEUAlgorithmicTests
+public class BLEUAlgorithmTests
 {
-    [Fact]
-    public void NGramGenerationNoPadding()
-    {
-        int[] input = [1, 2, 3, 4, 5];
-
-        IEnumerable<NGram<int>> result = input.CreateNGrams(1);
-        List<NGram<int>> expected = [[1], [2], [3], [4], [5]];
-        Assert.True(result.SequenceEqual(expected));
-
-        result = input.CreateNGrams(2);
-        expected = [[1, 2], [2, 3], [3, 4], [4, 5]];
-        Assert.True(result.SequenceEqual(expected));
-
-        result = input.CreateNGrams(3);
-        expected = [[1, 2, 3], [2, 3, 4], [3, 4, 5]];
-        Assert.True(result.SequenceEqual(expected));
-    }
-
     [Fact]
     public void ModifiedPrecisionTests()
     {

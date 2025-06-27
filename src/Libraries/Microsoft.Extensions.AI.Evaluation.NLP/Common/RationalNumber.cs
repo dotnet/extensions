@@ -9,6 +9,8 @@ namespace Microsoft.Extensions.AI.Evaluation.NLP.Common;
 [DebuggerDisplay("{ToDebugString(),nq}")]
 internal readonly struct RationalNumber : IEquatable<RationalNumber>
 {
+    public static readonly RationalNumber Zero = new(0, 1);
+
     public RationalNumber(int numerator, int denominator)
     {
         if (denominator == 0)

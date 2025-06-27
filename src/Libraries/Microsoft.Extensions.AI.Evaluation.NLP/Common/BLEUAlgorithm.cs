@@ -64,7 +64,7 @@ internal static class BLEUAlgorithm
 
         if (!references.Any() || !hypothesis.Any())
         {
-            return new RationalNumber(0, 0);
+            return RationalNumber.Zero;
         }
 
         var hyp = hypothesis.CreateNGrams(n);

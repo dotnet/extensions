@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.AI.Evaluation.NLP;
+#pragma warning disable S109 // Magic numbers should not be used
+
+namespace Microsoft.Extensions.AI.Evaluation.NLP.Common;
 
 /// <summary>
 /// Tokenizes a string into segments using the common rules established by the NLTK word tokenizer.
@@ -78,9 +80,16 @@ internal static class SimpleWordTokenizer
                 span.Length > 1 &&
                 span[1] == '\n')
             {
-#pragma warning disable S109 // Magic numbers should not be used
                 text = text.Slice(2);
-#pragma warning restore S109 // Magic numbers should not be used
+                continue;
+            }
+
+            if (span[0] == '-' &&
+                span.Length > 2 &&
+                span[1] == '\r' &&
+                span[2] == '\n')
+            {
+                text = text.Slice(3);
                 continue;
             }
 

@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.AI.Evaluation.NLP;
 /// </summary>
 /// <remarks>
 /// <see cref="BLEUEvaluator"/> measures the BLEU score of a response compared to a reference. BLEU (Bilingual Evaluation Understudy)
-/// is a metric used to evaluate the quality if machine-generated text.
+/// is a metric used to evaluate the quality of machine-generated text.
 /// </remarks>
 public sealed class BLEUEvaluatorContext : EvaluationContext
 {
@@ -24,10 +24,10 @@ public sealed class BLEUEvaluatorContext : EvaluationContext
     /// Gets the unique <see cref="EvaluationContext.Name"/> that is used for
     /// <see cref="BLEUEvaluatorContext"/>.
     /// </summary>
-    public static string BLEUContext => "BLEU Context";
+    public static string BLEUContextName => "BLEU Context";
 
     /// <summary>
-    /// Gets the reference response against which the provided chat response will be scored.
+    /// Gets the reference responses against which the provided model response will be scored.
     /// </summary>
     /// <remarks>
     /// The <see cref="BLEUEvaluator"/> measures the degree to which the response being evaluated is similar to
@@ -54,7 +54,7 @@ public sealed class BLEUEvaluatorContext : EvaluationContext
     /// </param>
     public BLEUEvaluatorContext(IEnumerable<string> references)
         : base(
-            name: BLEUContext,
+            name: BLEUContextName,
             contents: [.. references.Select(c => new TextContent(c))])
     {
         References = [.. references];

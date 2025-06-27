@@ -46,7 +46,7 @@ public class NGramTests
     }
 
     [Fact]
-    public void ToString_FormatsCorrectly()
+    public void ToDebugString_FormatsCorrectly()
     {
         var ngram = new NGram<string>("x", "y");
         Assert.Equal("[x,y]", ngram.ToDebugString());
@@ -58,4 +58,23 @@ public class NGramTests
         NGram<int> ngram = [1, 2];
         Assert.Equal(new NGram<int>(1, 2), ngram);
     }
+
+    [Fact]
+    public void NGramGenerationNoPadding()
+    {
+        int[] input = [1, 2, 3, 4, 5];
+
+        IEnumerable<NGram<int>> result = input.CreateNGrams(1);
+        List<NGram<int>> expected = [[1], [2], [3], [4], [5]];
+        Assert.True(result.SequenceEqual(expected));
+
+        result = input.CreateNGrams(2);
+        expected = [[1, 2], [2, 3], [3, 4], [4, 5]];
+        Assert.True(result.SequenceEqual(expected));
+
+        result = input.CreateNGrams(3);
+        expected = [[1, 2, 3], [2, 3, 4], [3, 4, 5]];
+        Assert.True(result.SequenceEqual(expected));
+    }
+
 }
