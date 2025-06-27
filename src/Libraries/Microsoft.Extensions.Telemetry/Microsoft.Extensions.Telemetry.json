@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.Telemetry, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.Telemetry, Version=9.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "static class Microsoft.Extensions.DependencyInjection.ApplicationEnricherServiceCollectionExtensions",
@@ -80,6 +80,52 @@
       ]
     },
     {
+      "Type": "static class Microsoft.Extensions.Logging.GlobalBufferLoggingBuilderExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.GlobalBufferLoggingBuilderExtensions.AddGlobalBuffer(this Microsoft.Extensions.Logging.ILoggingBuilder builder, Microsoft.Extensions.Configuration.IConfiguration configuration);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.GlobalBufferLoggingBuilderExtensions.AddGlobalBuffer(this Microsoft.Extensions.Logging.ILoggingBuilder builder, System.Action<Microsoft.Extensions.Diagnostics.Buffering.GlobalLogBufferingOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.GlobalBufferLoggingBuilderExtensions.AddGlobalBuffer(this Microsoft.Extensions.Logging.ILoggingBuilder builder, Microsoft.Extensions.Logging.LogLevel? logLevel = null);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Diagnostics.Buffering.GlobalLogBufferingOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Diagnostics.Buffering.GlobalLogBufferingOptions.GlobalLogBufferingOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.TimeSpan Microsoft.Extensions.Diagnostics.Buffering.GlobalLogBufferingOptions.AutoFlushDuration { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int Microsoft.Extensions.Diagnostics.Buffering.GlobalLogBufferingOptions.MaxBufferSizeInBytes { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int Microsoft.Extensions.Diagnostics.Buffering.GlobalLogBufferingOptions.MaxLogRecordSizeInBytes { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.Diagnostics.Buffering.LogBufferingFilterRule> Microsoft.Extensions.Diagnostics.Buffering.GlobalLogBufferingOptions.Rules { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
       "Type": "static class Microsoft.Extensions.DependencyInjection.LatencyConsoleExtensions",
       "Stage": "Stable",
       "Methods": [
@@ -151,6 +197,38 @@
       "Properties": [
         {
           "Member": "bool Microsoft.Extensions.Diagnostics.Latency.LatencyContextOptions.ThrowOnUnregisteredNames { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Diagnostics.Buffering.LogBufferingFilterRule",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Diagnostics.Buffering.LogBufferingFilterRule.LogBufferingFilterRule(string? categoryName = null, Microsoft.Extensions.Logging.LogLevel? logLevel = null, int? eventId = null, string? eventName = null, System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<string, object?>>? attributes = null);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<string, object?>>? Microsoft.Extensions.Diagnostics.Buffering.LogBufferingFilterRule.Attributes { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.Diagnostics.Buffering.LogBufferingFilterRule.CategoryName { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.Diagnostics.Buffering.LogBufferingFilterRule.EventId { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.Diagnostics.Buffering.LogBufferingFilterRule.EventName { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Logging.LogLevel? Microsoft.Extensions.Diagnostics.Buffering.LogBufferingFilterRule.LogLevel { get; }",
           "Stage": "Stable"
         }
       ]
@@ -291,6 +369,84 @@
         },
         {
           "Member": "bool Microsoft.Extensions.Diagnostics.Enrichment.ProcessLogEnricherOptions.ThreadId { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Diagnostics.Sampling.RandomProbabilisticSamplerFilterRule : Microsoft.Extensions.Diagnostics.Sampling.ILogSamplingFilterRule",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Diagnostics.Sampling.RandomProbabilisticSamplerFilterRule.RandomProbabilisticSamplerFilterRule(double probability, string? categoryName = null, Microsoft.Extensions.Logging.LogLevel? logLevel = null, int? eventId = null, string? eventName = null);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string? Microsoft.Extensions.Diagnostics.Sampling.RandomProbabilisticSamplerFilterRule.CategoryName { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.Diagnostics.Sampling.RandomProbabilisticSamplerFilterRule.EventId { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.Diagnostics.Sampling.RandomProbabilisticSamplerFilterRule.EventName { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Logging.LogLevel? Microsoft.Extensions.Diagnostics.Sampling.RandomProbabilisticSamplerFilterRule.LogLevel { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "double Microsoft.Extensions.Diagnostics.Sampling.RandomProbabilisticSamplerFilterRule.Probability { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Diagnostics.Sampling.RandomProbabilisticSamplerOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Diagnostics.Sampling.RandomProbabilisticSamplerOptions.RandomProbabilisticSamplerOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.Diagnostics.Sampling.RandomProbabilisticSamplerFilterRule> Microsoft.Extensions.Diagnostics.Sampling.RandomProbabilisticSamplerOptions.Rules { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Logging.SamplingLoggerBuilderExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.SamplingLoggerBuilderExtensions.AddRandomProbabilisticSampler(this Microsoft.Extensions.Logging.ILoggingBuilder builder, Microsoft.Extensions.Configuration.IConfiguration configuration);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.SamplingLoggerBuilderExtensions.AddRandomProbabilisticSampler(this Microsoft.Extensions.Logging.ILoggingBuilder builder, System.Action<Microsoft.Extensions.Diagnostics.Sampling.RandomProbabilisticSamplerOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.SamplingLoggerBuilderExtensions.AddRandomProbabilisticSampler(this Microsoft.Extensions.Logging.ILoggingBuilder builder, double probability, Microsoft.Extensions.Logging.LogLevel? level = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.SamplingLoggerBuilderExtensions.AddSampler<T>(this Microsoft.Extensions.Logging.ILoggingBuilder builder);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.SamplingLoggerBuilderExtensions.AddSampler(this Microsoft.Extensions.Logging.ILoggingBuilder builder, Microsoft.Extensions.Logging.LoggingSampler sampler);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.SamplingLoggerBuilderExtensions.AddTraceBasedSampler(this Microsoft.Extensions.Logging.ILoggingBuilder builder);",
           "Stage": "Stable"
         }
       ]

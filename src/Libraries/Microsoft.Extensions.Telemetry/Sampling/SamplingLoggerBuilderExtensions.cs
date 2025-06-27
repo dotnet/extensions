@@ -8,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.Sampling;
 using Microsoft.Extensions.Options;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Logging;
@@ -16,7 +15,6 @@ namespace Microsoft.Extensions.Logging;
 /// <summary>
 /// Extensions for configuring logging sampling.
 /// </summary>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class SamplingLoggerBuilderExtensions
 {
     /// <summary>

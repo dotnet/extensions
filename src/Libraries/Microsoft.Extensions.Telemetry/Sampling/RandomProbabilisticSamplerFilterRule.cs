@@ -2,16 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
-using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Diagnostics.Sampling;
 
 /// <summary>
 /// Defines a rule used to filter log messages for purposes of sampling.
 /// </summary>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
 public class RandomProbabilisticSamplerFilterRule : ILogSamplingFilterRule
 {
     /// <summary>

@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.AspNetCore.Diagnostics.Middleware, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.AspNetCore.Diagnostics.Middleware, Version=9.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "static class Microsoft.Extensions.DependencyInjection.HttpLoggingServiceCollectionExtensions",
@@ -123,6 +123,10 @@
           "Stage": "Experimental"
         },
         {
+          "Member": "bool Microsoft.AspNetCore.Diagnostics.Logging.LoggingRedactionOptions.IncludeUnmatchedRoutes { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Compliance.Classification.DataClassification> Microsoft.AspNetCore.Diagnostics.Logging.LoggingRedactionOptions.RequestHeadersDataClasses { get; set; }",
           "Stage": "Experimental"
         },
@@ -141,6 +145,52 @@
         {
           "Member": "System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Compliance.Classification.DataClassification> Microsoft.AspNetCore.Diagnostics.Logging.LoggingRedactionOptions.RouteParameterDataClasses { get; set; }",
           "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Logging.PerIncomingRequestLoggingBuilderExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.PerIncomingRequestLoggingBuilderExtensions.AddPerIncomingRequestBuffer(this Microsoft.Extensions.Logging.ILoggingBuilder builder, Microsoft.Extensions.Configuration.IConfiguration configuration);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.PerIncomingRequestLoggingBuilderExtensions.AddPerIncomingRequestBuffer(this Microsoft.Extensions.Logging.ILoggingBuilder builder, System.Action<Microsoft.AspNetCore.Diagnostics.Buffering.PerRequestLogBufferingOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.PerIncomingRequestLoggingBuilderExtensions.AddPerIncomingRequestBuffer(this Microsoft.Extensions.Logging.ILoggingBuilder builder, Microsoft.Extensions.Logging.LogLevel? logLevel = null);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.AspNetCore.Diagnostics.Buffering.PerRequestLogBufferingOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.AspNetCore.Diagnostics.Buffering.PerRequestLogBufferingOptions.PerRequestLogBufferingOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.TimeSpan Microsoft.AspNetCore.Diagnostics.Buffering.PerRequestLogBufferingOptions.AutoFlushDuration { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int Microsoft.AspNetCore.Diagnostics.Buffering.PerRequestLogBufferingOptions.MaxLogRecordSizeInBytes { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int Microsoft.AspNetCore.Diagnostics.Buffering.PerRequestLogBufferingOptions.MaxPerRequestBufferSizeInBytes { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.Diagnostics.Buffering.LogBufferingFilterRule> Microsoft.AspNetCore.Diagnostics.Buffering.PerRequestLogBufferingOptions.Rules { get; set; }",
+          "Stage": "Stable"
         }
       ]
     },

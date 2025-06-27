@@ -3,9 +3,7 @@
 #if NET9_0_OR_GREATER
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
-using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Diagnostics.Buffering;
 
@@ -17,7 +15,6 @@ namespace Microsoft.Extensions.Diagnostics.Buffering;
 /// If a log entry does not match any rule, it will be emitted normally.
 /// If the buffer size limit is reached, the oldest buffered log entries will be dropped (not emitted!) to make room for new ones.
 /// </remarks>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
 public class LogBufferingFilterRule
 {
     /// <summary>
