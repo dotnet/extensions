@@ -614,7 +614,7 @@ public static partial class AIFunctionFactory
             serializerOptions.MakeReadOnly();
             ConcurrentDictionary<DescriptorKey, ReflectionAIFunctionDescriptor> innerCache = _descriptorCache.GetOrCreateValue(serializerOptions);
 
-            DescriptorKey key = new(method, options.Name, options.Description, options.ConfigureParameterBinding, options.MarshalResult, schemaOptions);
+            DescriptorKey key = new(method, options.Name, options.Description, options.ConfigureParameterBinding, options.MarshalResult, options.ExcludeResultFromSchema, schemaOptions);
             if (innerCache.TryGetValue(key, out ReflectionAIFunctionDescriptor? descriptor))
             {
                 return descriptor;
@@ -689,7 +689,7 @@ public static partial class AIFunctionFactory
             Name = key.Name ?? GetFunctionName(key.Method);
             Description = key.Description ?? key.Method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? string.Empty;
             JsonSerializerOptions = serializerOptions;
-            ReturnJsonSchema = returnType is null ? null : AIJsonUtilities.CreateJsonSchema(
+            ReturnJsonSchema = returnType is null || key.ExcludeResultFromSchema ? null : AIJsonUtilities.CreateJsonSchema(
                 returnType,
                 description: key.Method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
                 serializerOptions: serializerOptions,
@@ -1018,6 +1018,7 @@ public static partial class AIFunctionFactory
             string? Description,
             Func<ParameterInfo, AIFunctionFactoryOptions.ParameterBindingOptions>? GetBindParameterOptions,
             Func<object?, Type?, CancellationToken, ValueTask<object?>>? MarshalResult,
+            bool ExcludeResultFromSchema,
             AIJsonSchemaCreateOptions SchemaOptions);
     }
 

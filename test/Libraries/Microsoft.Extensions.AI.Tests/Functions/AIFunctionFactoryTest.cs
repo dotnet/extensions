@@ -210,6 +210,7 @@ public partial class AIFunctionFactoryTest
         Assert.Null(options.SerializerOptions);
         Assert.Null(options.JsonSchemaCreateOptions);
         Assert.Null(options.ConfigureParameterBinding);
+        Assert.False(options.ExcludeResultFromSchema);
     }
 
     [Fact]
@@ -234,6 +235,21 @@ public partial class AIFunctionFactoryTest
         });
         Assert.NotNull(result);
         Assert.Contains("test42", result.ToString());
+    }
+
+    [Fact]
+    public void AIFunctionFactoryOptions_SupportsSkippingReturnSchema()
+    {
+        AIFunction func = AIFunctionFactory.Create(
+            (string firstParameter, int secondParameter) => firstParameter + secondParameter,
+            new()
+            {
+                ExcludeResultFromSchema = true,
+            });
+
+        Assert.Contains("firstParameter", func.JsonSchema.ToString());
+        Assert.Contains("secondParameter", func.JsonSchema.ToString());
+        Assert.Null(func.ReturnJsonSchema);
     }
 
     [Fact]
