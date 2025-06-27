@@ -57,8 +57,6 @@ public static class ResourceMonitoringServiceCollectionExtensions
         return services.AddResourceMonitoringInternal(configure);
     }
 
-    // can't easily test the exception throwing case
-    [ExcludeFromCodeCoverage]
     private static IServiceCollection AddResourceMonitoringInternal(
         this IServiceCollection services,
         Action<IResourceMonitorBuilder> configure)
