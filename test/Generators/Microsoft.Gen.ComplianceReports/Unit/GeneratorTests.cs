@@ -59,21 +59,21 @@ public class GeneratorTests
 
         foreach (var inputFile in Directory.GetFiles("TestClasses"))
         {
-            var stem = Path.GetFileNameWithoutExtension(inputFile);
-            var goldenReportFile = $"GoldenReports/{stem}.json";
+            string stem = Path.GetFileNameWithoutExtension(inputFile);
+            string goldenReportFile = $"GoldenReports/{stem}.json";
 
             if (File.Exists(goldenReportFile))
             {
-                var tmp = Path.GetTempFileName();
-                var d = await RunGenerator(File.ReadAllText(inputFile), tmp, options);
-                Assert.Empty(d);
+                string temporaryReportFile = Path.GetTempFileName();
+                var diagnostic = await RunGenerator(File.ReadAllText(inputFile), temporaryReportFile, options);
+                Assert.Empty(diagnostic);
 
-                var golden = File.ReadAllText(goldenReportFile);
-                var generated = File.ReadAllText(tmp);
+                string golden = File.ReadAllText(goldenReportFile);
+                string generated = File.ReadAllText(temporaryReportFile);
 
                 if (golden != generated)
                 {
-                    _output.WriteLine($"MISMATCH: golden report {goldenReportFile}, generated {tmp}");
+                    _output.WriteLine($"MISMATCH: golden report {goldenReportFile}, generated {temporaryReportFile}");
                     _output.WriteLine("----");
                     _output.WriteLine("golden:");
                     _output.WriteLine(golden);
@@ -83,7 +83,7 @@ public class GeneratorTests
                     _output.WriteLine("----");
                 }
 
-                File.Delete(tmp);
+                File.Delete(temporaryReportFile);
                 Assert.Equal(golden, generated);
             }
             else
