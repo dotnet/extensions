@@ -236,20 +236,20 @@ public class SerializerTests
     private static T RoundTrip<T>(T value, ReadOnlySpan<byte> expectedBytes, JsonSerializer expectedJsonOptions, JsonSerializer addSerializers = JsonSerializer.None, bool binary = false)
     {
         var services = new ServiceCollection();
-        services.AddHybridCache();
+        var hc = services.AddHybridCache();
         JsonSerializerOptions? globalOptions = null;
         JsonSerializerOptions? perTypeOptions = null;
 
         if ((addSerializers & JsonSerializer.CustomGlobal) != JsonSerializer.None)
         {
             globalOptions = new() { IncludeFields = true }; // assume any custom options will serialize the whole type
-            services.AddKeyedSingleton<JsonSerializerOptions>(typeof(IHybridCacheSerializer<>), globalOptions);
+            hc.WithJsonSerializerOptions(globalOptions);
         }
 
         if ((addSerializers & JsonSerializer.CustomPerType) != JsonSerializer.None)
         {
             perTypeOptions = new() { IncludeFields = true }; // assume any custom options will serialize the whole type
-            services.AddKeyedSingleton<JsonSerializerOptions>(typeof(IHybridCacheSerializer<T>), perTypeOptions);
+            hc.WithJsonSerializerOptions<T>(perTypeOptions);
         }
 
         JsonSerializerOptions? expectedOptionsObj = expectedJsonOptions switch
