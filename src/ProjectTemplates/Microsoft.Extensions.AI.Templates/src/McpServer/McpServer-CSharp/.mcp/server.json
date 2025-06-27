@@ -1,0 +1,35 @@
+{
+  "description": "<your description here>",
+  "name": "io.github.<your GitHub username here>/<your repo name>",
+  "packages": [
+    {
+      "registry_name": "nuget",
+      "name": "<your package ID here>",
+      "version": "0.1.0-beta",
+      "package_arguments": [
+        {
+          "description": "Start the MCP server tool in server mode",
+          "is_required": true,
+          "format": "string",
+          "value": "start-mcp",
+          "default": "start-mcp",
+          "type": "positional",
+          "value_hint": "start-mcp"
+        }
+      ],
+      "environment_variables": [
+        {
+          "description": "The maximum number to return from the random number generator",
+          "name": "MAX_RANDOM_NUMBER"
+        }
+      ]
+    }
+  ],
+  "repository": {
+    "url": "https://github.com/<your GitHub username here>/<your repo name>",
+    "source": "github"
+  },
+  "version_detail": {
+    "version": "0.1.0-beta"
+  }
+}

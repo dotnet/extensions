@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [ "Common", "AI", "MCP" ],
+  "identity": "Microsoft.Extensions.AI.Templates.McpServer.CSharp",
+  "name": "Local MCP Server Console App",
+  "description": "A project template for creating a local MCP server using the .NET MCP SDK.",
+  "shortName": "mcpserver",
+  "defaultName": "McpServer",
+  "sourceName": "McpServer-CSharp",
+  "preferNameDirectory": true,
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "primaryOutputs": [
+    {
+      "path": "./McpServer-CSharp.csproj"
+    }
+  ]
+}
