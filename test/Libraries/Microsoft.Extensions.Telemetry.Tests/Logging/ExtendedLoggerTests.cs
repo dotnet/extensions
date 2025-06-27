@@ -12,6 +12,10 @@ using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
+#if NET9_0_OR_GREATER
+using System.Threading.Tasks;
+using Microsoft.Extensions.Diagnostics.Buffering;
+#endif
 
 namespace Microsoft.Extensions.Logging.Test;
 
@@ -791,6 +795,236 @@ public static class ExtendedLoggerTests
         }
     }
 
+    [Theory]
+    [CombinatorialData]
+    public static void ModernLogging_OriginalFormatMustBeLastInTheListOfStateProperties(
+        bool enableRedaction, bool enableEnrichment, bool logException)
+    {
+        using var provider = new Provider();
+
+        var enricher = new ForcedEnricher(new[]
+        {
+            new KeyValuePair<string, object?>("K1", "V1"),
+        });
+        var staticEnricher = new ForcedEnricher(new[]
+        {
+            new KeyValuePair<string, object?>("K2", "V2"),
+        });
+        var redactorProvider = new FakeRedactorProvider(new FakeRedactorOptions
+        {
+            RedactionFormat = "REDACTED<{0}>",
+        });
+
+        var enrichmentOptions = enableEnrichment ? new StaticOptionsMonitor<LoggerEnrichmentOptions>(new()) : null;
+        var redactionOptions = enableRedaction ? new StaticOptionsMonitor<LoggerRedactionOptions>(new() { ApplyDiscriminator = false }) : null;
+
+        using var factory = new ExtendedLoggerFactory(
+            providers: new[] { provider },
+            enrichmentOptions: enrichmentOptions,
+            redactionOptions: redactionOptions,
+            enrichers: new[] { enricher },
+            staticEnrichers: new[] { staticEnricher },
+            redactorProvider: redactorProvider,
+            filterOptions: new StaticOptionsMonitor<LoggerFilterOptions>(new()));
+
+        var logger = factory.CreateLogger("logger");
+
+        var state = LoggerMessageHelper.ThreadLocalState;
+        var index = state.ReserveTagSpace(2);
+        state.TagArray[index] = new("K3", "V3");
+        state.TagArray[index + 1] = new("{OriginalFormat}", "V4");
+
+        index = state.ReserveClassifiedTagSpace(1);
+        state.ClassifiedTagArray[index] = new("K5", "V5", FakeTaxonomy.PrivateData);
+
+        var exception = logException ? new InvalidOperationException() : null;
+
+        logger.Log(LogLevel.Warning, new EventId(1, "ID1"), state, exception, (_, _) => "MSG");
+
+        var sink = provider.Logger!;
+        var collector = sink.Collector;
+        Assert.Equal(1, collector.Count);
+
+        var record = collector.GetSnapshot().Single();
+        var property = record.StructuredState!.Last();
+        Assert.Equal("{OriginalFormat}", property.Key);
+        Assert.Equal("V4", property.Value);
+    }
+
+    [Theory]
+    [CombinatorialData]
+    public static void LegacyLogging_OriginalFormatMustBeLastInTheListOfStateProperties(
+        bool enableEnrichment, bool logException, LegacyStateType stateType)
+    {
+        using var provider = new Provider();
+
+        var enricher = new ForcedEnricher(new[]
+        {
+            new KeyValuePair<string, object?>("K1", "V1"),
+        });
+        var staticEnricher = new ForcedEnricher(new[]
+        {
+            new KeyValuePair<string, object?>("K2", "V2"),
+        });
+
+        var enrichmentOptions = enableEnrichment ? new StaticOptionsMonitor<LoggerEnrichmentOptions>(new()) : null;
+
+        using var factory = new ExtendedLoggerFactory(
+            providers: new[] { provider },
+            enrichmentOptions: enrichmentOptions,
+            enrichers: new[] { enricher },
+            staticEnrichers: new[] { staticEnricher },
+            filterOptions: new StaticOptionsMonitor<LoggerFilterOptions>(new()));
+
+        var logger = factory.CreateLogger("logger");
+        var exception = logException ? new InvalidOperationException() : null;
+
+        switch (stateType)
+        {
+            case LegacyStateType.ReadOnlyList:
+                List<KeyValuePair<string, object?>> list =
+                [
+                    new("K3", "V3"),
+                    new("{OriginalFormat}", "V4")
+                ];
+                logger.Log(LogLevel.Warning, new EventId(1, "ID1"), list, exception, (_, _) => "MSG");
+                break;
+
+            case LegacyStateType.Enumerable:
+                IEnumerable<KeyValuePair<string, object?>> enumerable =
+                    new List<KeyValuePair<string, object?>>
+                    {
+                        new("K3", "V3"),
+                        new("{OriginalFormat}", "V4")
+                    }
+                    .Select(x => x);
+                logger.Log(LogLevel.Warning, new EventId(1, "ID1"), enumerable, exception, (_, _) => "MSG");
+                break;
+
+            case LegacyStateType.String:
+                logger.Log(LogLevel.Warning, new EventId(1, "ID1"), "V4", exception, (_, _) => "MSG");
+                break;
+
+            default:
+                throw new InvalidOperationException($"Uknown state type: {stateType}");
+        }
+
+        var sink = provider.Logger!;
+        var collector = sink.Collector;
+        Assert.Equal(1, collector.Count);
+
+        var record = collector.GetSnapshot().Single();
+        var property = record.StructuredState!.Last();
+        Assert.Equal("{OriginalFormat}", property.Key);
+        Assert.Equal("V4", property.Value);
+    }
+
+#if NET9_0_OR_GREATER
+    [Fact]
+    public static void GlobalBuffering_CanonicalUsecase()
+    {
+        using var provider = new Provider();
+        using ILoggerFactory factory = Utils.CreateLoggerFactory(
+             builder =>
+             {
+                 builder.AddProvider(provider);
+                 builder.AddGlobalBuffer(LogLevel.Warning);
+             });
+
+        ILogger logger = factory.CreateLogger("my category");
+        logger.LogWarning("MSG0");
+        logger.Log(LogLevel.Warning, new EventId(2, "ID2"), "some state", null, (_, _) => "MSG2");
+
+        // nothing is logged because the buffer not flushed yet
+        Assert.Equal(0, provider.Logger!.Collector.Count);
+
+        // instead of this, users would get LogBuffer from DI and call Flush on it
+        Utils.DisposingLoggerFactory dlf = (Utils.DisposingLoggerFactory)factory;
+        GlobalLogBuffer buffer = dlf.ServiceProvider.GetRequiredService<GlobalLogBuffer>();
+
+        buffer.Flush();
+
+        // 2 log records emitted because the buffer has been flushed
+        Assert.Equal(2, provider.Logger!.Collector.Count);
+    }
+
+    [Fact]
+    public static void GlobalBuffering_ParallelLogging()
+    {
+        using var provider = new Provider();
+        using ILoggerFactory factory = Utils.CreateLoggerFactory(
+             builder =>
+             {
+                 builder.AddProvider(provider);
+                 builder.AddGlobalBuffer(LogLevel.Warning);
+             });
+
+        ILogger logger = factory.CreateLogger("my category");
+
+        // 1000 threads logging at the same time
+        Parallel.For(0, 1000, _ =>
+        {
+            logger.LogWarning("MSG0");
+            logger.Log(LogLevel.Warning, new EventId(2, "ID2"), "some state", null, (_, _) => "MSG2");
+        });
+
+        // nothing is logged because the buffer not flushed yet
+        Assert.Equal(0, provider.Logger!.Collector.Count);
+
+        Utils.DisposingLoggerFactory dlf = (Utils.DisposingLoggerFactory)factory;
+        GlobalLogBuffer buffer = dlf.ServiceProvider.GetRequiredService<GlobalLogBuffer>();
+
+        buffer.Flush();
+
+        // 2000 log records emitted because the buffer has been flushed
+        Assert.Equal(2000, provider.Logger!.Collector.Count);
+    }
+
+    [Fact]
+    public static async Task GlobalBuffering_ParallelLoggingAndFlushing()
+    {
+        // Arrange
+        using var provider = new Provider();
+        using ILoggerFactory factory = Utils.CreateLoggerFactory(
+             builder =>
+             {
+                 builder.AddProvider(provider);
+                 builder.AddGlobalBuffer(options =>
+                 {
+                     options.AutoFlushDuration = TimeSpan.Zero;
+                     options.Rules.Add(new LogBufferingFilterRule(logLevel: LogLevel.Warning));
+                 });
+             });
+
+        ILogger logger = factory.CreateLogger("my category");
+        Utils.DisposingLoggerFactory dlf = (Utils.DisposingLoggerFactory)factory;
+        GlobalLogBuffer buffer = dlf.ServiceProvider.GetRequiredService<GlobalLogBuffer>();
+
+        // Act - Run logging and flushing operations in parallel
+        await Task.Run(() =>
+        {
+            Parallel.For(0, 100, i =>
+            {
+                logger.LogWarning("MSG0");
+                logger.LogWarning("MSG1");
+                logger.LogWarning("MSG2");
+                logger.LogWarning("MSG3");
+                logger.LogWarning("MSG4");
+                logger.LogWarning("MSG5");
+                logger.LogWarning("MSG6");
+                logger.LogWarning("MSG7");
+                logger.LogWarning("MSG8");
+                logger.LogWarning("MSG9");
+                buffer.Flush();
+            });
+        });
+
+        buffer.Flush();
+        Assert.Equal(1000, provider.Logger!.Collector.Count);
+    }
+
+#endif
+
     private sealed class CustomLoggerProvider : ILoggerProvider
     {
         private readonly string _providerName;
@@ -880,7 +1114,7 @@ public static class ExtendedLoggerTests
         IsEnabled
     }
 
-    private sealed class Provider : ILoggerProvider
+    internal sealed class Provider : ILoggerProvider
     {
         public FakeLogger? Logger { get; private set; }
 
@@ -989,5 +1223,12 @@ public static class ExtendedLoggerTests
         public IDisposable? OnChange(Action<T, string> listener) => null;
         public T Get(string? name) => CurrentValue;
         public T CurrentValue { get; }
+    }
+
+    public enum LegacyStateType
+    {
+        ReadOnlyList,
+        Enumerable,
+        String
     }
 }

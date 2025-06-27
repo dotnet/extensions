@@ -44,7 +44,7 @@ public class OllamaEmbeddingGeneratorTests
     }
 
     [Fact]
-    public void AsEmbeddingGenerator_ProducesExpectedMetadata()
+    public void AsIEmbeddingGenerator_ProducesExpectedMetadata()
     {
         Uri endpoint = new("http://localhost/some/endpoint");
         string model = "amazingModel";
@@ -53,7 +53,7 @@ public class OllamaEmbeddingGeneratorTests
         var metadata = generator.GetService<EmbeddingGeneratorMetadata>();
         Assert.Equal("ollama", metadata?.ProviderName);
         Assert.Equal(endpoint, metadata?.ProviderUri);
-        Assert.Equal(model, metadata?.ModelId);
+        Assert.Equal(model, metadata?.DefaultModelId);
     }
 
     [Fact]

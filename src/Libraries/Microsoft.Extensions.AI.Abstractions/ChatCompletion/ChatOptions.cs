@@ -1,16 +1,22 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents the options for a chat request.</summary>
+/// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#provide-options">Provide options.</related>
 public class ChatOptions
 {
-    /// <summary>Gets or sets an optional identifier used to associate a request with an existing chat thread.</summary>
-    public string? ChatThreadId { get; set; }
+    /// <summary>Gets or sets an optional identifier used to associate a request with an existing conversation.</summary>
+    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#stateless-vs-stateful-clients">Stateless vs. stateful clients.</related>
+    public string? ConversationId { get; set; }
+
+    /// <summary>Gets or sets additional per-request instructions to be provided to the <see cref="IChatClient"/>.</summary>
+    public string? Instructions { get; set; }
 
     /// <summary>Gets or sets the temperature for generating chat responses.</summary>
     /// <remarks>
@@ -62,7 +68,7 @@ public class ChatOptions
     /// Gets or sets the response format for the chat request.
     /// </summary>
     /// <remarks>
-    /// If null, no response format is specified and the client will use its default.
+    /// If <see langword="null"/>, no response format is specified and the client will use its default.
     /// This property can be set to <see cref="ChatResponseFormat.Text"/> to specify that the response should be unstructured text,
     /// to <see cref="ChatResponseFormat.Json"/> to specify that the response should be structured JSON data, or
     /// an instance of <see cref="ChatResponseFormatJson"/> constructed with a specific JSON schema to request that the
@@ -83,13 +89,51 @@ public class ChatOptions
     /// </remarks>
     public IList<string>? StopSequences { get; set; }
 
+    /// <summary>
+    /// Gets or sets a flag to indicate whether a single response is allowed to include multiple tool calls.
+    /// If <see langword="false"/>, the <see cref="IChatClient"/> is asked to return a maximum of one tool call per request.
+    /// If <see langword="true"/>, there is no limit.
+    /// If <see langword="null"/>, the provider may select its own default.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// When used with function calling middleware, this does not affect the ability to perform multiple function calls in sequence.
+    /// It only affects the number of function calls within a single iteration of the function calling loop.
+    /// </para>
+    /// <para>
+    /// The underlying provider is not guaranteed to support or honor this flag. For example it may choose to ignore it and return multiple tool calls regardless.
+    /// </para>
+    /// </remarks>
+    public bool? AllowMultipleToolCalls { get; set; }
+
     /// <summary>Gets or sets the tool mode for the chat request.</summary>
     /// <remarks>The default value is <see langword="null"/>, which is treated the same as <see cref="ChatToolMode.Auto"/>.</remarks>
     public ChatToolMode? ToolMode { get; set; }
 
     /// <summary>Gets or sets the list of tools to include with a chat request.</summary>
+    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai#tool-calling">Tool calling.</related>
     [JsonIgnore]
     public IList<AITool>? Tools { get; set; }
+
+    /// <summary>
+    /// Gets or sets a callback responsible for creating the raw representation of the chat options from an underlying implementation.
+    /// </summary>
+    /// <remarks>
+    /// The underlying <see cref="IChatClient" /> implementation may have its own representation of options.
+    /// When <see cref="IChatClient.GetResponseAsync" /> or <see cref="IChatClient.GetStreamingResponseAsync" />
+    /// is invoked with a <see cref="ChatOptions" />, that implementation may convert the provided options into
+    /// its own representation in order to use it while performing the operation. For situations where a consumer knows
+    /// which concrete <see cref="IChatClient" /> is being used and how it represents options, a new instance of that
+    /// implementation-specific options type may be returned by this callback, for the <see cref="IChatClient" />
+    /// implementation to use instead of creating a new instance. Such implementations may mutate the supplied options
+    /// instance further based on other settings supplied on this <see cref="ChatOptions" /> instance or from other inputs,
+    /// like the enumerable of <see cref="ChatMessage"/>s, therefore, it is <b>strongly recommended</b> to not return shared instances
+    /// and instead make the callback return a new instance on each call.
+    /// This is typically used to set an implementation-specific setting that isn't otherwise exposed from the strongly-typed
+    /// properties on <see cref="ChatOptions" />.
+    /// </remarks>
+    [JsonIgnore]
+    public Func<IChatClient, object?>? RawRepresentationFactory { get; set; }
 
     /// <summary>Gets or sets any additional properties associated with the options.</summary>
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
@@ -105,18 +149,21 @@ public class ChatOptions
     {
         ChatOptions options = new()
         {
-            ChatThreadId = ChatThreadId,
-            Temperature = Temperature,
-            MaxOutputTokens = MaxOutputTokens,
-            TopP = TopP,
-            TopK = TopK,
-            FrequencyPenalty = FrequencyPenalty,
-            PresencePenalty = PresencePenalty,
-            Seed = Seed,
-            ResponseFormat = ResponseFormat,
-            ModelId = ModelId,
-            ToolMode = ToolMode,
             AdditionalProperties = AdditionalProperties?.Clone(),
+            AllowMultipleToolCalls = AllowMultipleToolCalls,
+            ConversationId = ConversationId,
+            FrequencyPenalty = FrequencyPenalty,
+            Instructions = Instructions,
+            MaxOutputTokens = MaxOutputTokens,
+            ModelId = ModelId,
+            PresencePenalty = PresencePenalty,
+            RawRepresentationFactory = RawRepresentationFactory,
+            ResponseFormat = ResponseFormat,
+            Seed = Seed,
+            Temperature = Temperature,
+            ToolMode = ToolMode,
+            TopK = TopK,
+            TopP = TopP,
         };
 
         if (StopSequences is not null)

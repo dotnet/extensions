@@ -30,8 +30,8 @@ public static class EvaluatorExtensions
     /// <param name="evaluator">The <see cref="IEvaluator"/> that should perform the evaluation.</param>
     /// <param name="modelResponse">The response that is to be evaluated.</param>
     /// <param name="chatConfiguration">
-    /// A <see cref="ChatConfiguration"/> that specifies the <see cref="IChatClient"/> and the
-    /// <see cref="IEvaluationTokenCounter"/> that should be used if the evaluation is performed using an AI model.
+    /// A <see cref="ChatConfiguration"/> that specifies the <see cref="IChatClient"/> that should be used if one or
+    /// more composed <see cref="IEvaluator"/>s use an AI model to perform evaluation.
     /// </param>
     /// <param name="additionalContext">
     /// Additional contextual information that the <paramref name="evaluator"/> may need to accurately evaluate the
@@ -73,8 +73,8 @@ public static class EvaluatorExtensions
     /// </param>
     /// <param name="modelResponse">The response that is to be evaluated.</param>
     /// <param name="chatConfiguration">
-    /// A <see cref="ChatConfiguration"/> that specifies the <see cref="IChatClient"/> and the
-    /// <see cref="IEvaluationTokenCounter"/> that should be used if the evaluation is performed using an AI model.
+    /// A <see cref="ChatConfiguration"/> that specifies the <see cref="IChatClient"/> that should be used if one or
+    /// more composed <see cref="IEvaluator"/>s use an AI model to perform evaluation.
     /// </param>
     /// <param name="additionalContext">
     /// Additional contextual information (beyond that which is available in <paramref name="userRequest"/>) that the
@@ -115,8 +115,8 @@ public static class EvaluatorExtensions
     /// <param name="evaluator">The <see cref="IEvaluator"/> that should perform the evaluation.</param>
     /// <param name="modelResponse">The response that is to be evaluated.</param>
     /// <param name="chatConfiguration">
-    /// A <see cref="ChatConfiguration"/> that specifies the <see cref="IChatClient"/> and the
-    /// <see cref="IEvaluationTokenCounter"/> that should be used if the evaluation is performed using an AI model.
+    /// A <see cref="ChatConfiguration"/> that specifies the <see cref="IChatClient"/> that should be used if one or
+    /// more composed <see cref="IEvaluator"/>s use an AI model to perform evaluation.
     /// </param>
     /// <param name="additionalContext">
     /// Additional contextual information that the <paramref name="evaluator"/> may need to accurately evaluate the
@@ -131,17 +131,12 @@ public static class EvaluatorExtensions
         ChatMessage modelResponse,
         ChatConfiguration? chatConfiguration = null,
         IEnumerable<EvaluationContext>? additionalContext = null,
-        CancellationToken cancellationToken = default)
-    {
-        _ = Throw.IfNull(evaluator);
-
-        return evaluator.EvaluateAsync(
-                messages: [],
+        CancellationToken cancellationToken = default) =>
+            evaluator.EvaluateAsync(
                 new ChatResponse(modelResponse),
                 chatConfiguration,
                 additionalContext,
                 cancellationToken);
-    }
 
     /// <summary>
     /// Evaluates the supplied <paramref name="modelResponse"/> and returns an <see cref="EvaluationResult"/>
@@ -160,8 +155,8 @@ public static class EvaluatorExtensions
     /// <param name="evaluator">The <see cref="IEvaluator"/> that should perform the evaluation.</param>
     /// <param name="modelResponse">The response that is to be evaluated.</param>
     /// <param name="chatConfiguration">
-    /// A <see cref="ChatConfiguration"/> that specifies the <see cref="IChatClient"/> and the
-    /// <see cref="IEvaluationTokenCounter"/> that should be used if the evaluation is performed using an AI model.
+    /// A <see cref="ChatConfiguration"/> that specifies the <see cref="IChatClient"/> that should be used if one or
+    /// more composed <see cref="IEvaluator"/>s use an AI model to perform evaluation.
     /// </param>
     /// <param name="additionalContext">
     /// Additional contextual information that the <paramref name="evaluator"/> may need to accurately evaluate the
@@ -208,8 +203,8 @@ public static class EvaluatorExtensions
     /// </param>
     /// <param name="modelResponse">The response that is to be evaluated.</param>
     /// <param name="chatConfiguration">
-    /// A <see cref="ChatConfiguration"/> that specifies the <see cref="IChatClient"/> and the
-    /// <see cref="IEvaluationTokenCounter"/> that should be used if the evaluation is performed using an AI model.
+    /// A <see cref="ChatConfiguration"/> that specifies the <see cref="IChatClient"/> that should be used if one or
+    /// more composed <see cref="IEvaluator"/>s use an AI model to perform evaluation.
     /// </param>
     /// <param name="additionalContext">
     /// Additional contextual information (beyond that which is available in <paramref name="userRequest"/>) that the
@@ -225,17 +220,13 @@ public static class EvaluatorExtensions
         ChatMessage modelResponse,
         ChatConfiguration? chatConfiguration = null,
         IEnumerable<EvaluationContext>? additionalContext = null,
-        CancellationToken cancellationToken = default)
-    {
-        _ = Throw.IfNull(evaluator);
-
-        return evaluator.EvaluateAsync(
-                messages: [userRequest],
+        CancellationToken cancellationToken = default) =>
+            evaluator.EvaluateAsync(
+                userRequest,
                 new ChatResponse(modelResponse),
                 chatConfiguration,
                 additionalContext,
                 cancellationToken);
-    }
 
     /// <summary>
     /// Evaluates the supplied <paramref name="modelResponse"/> and returns an <see cref="EvaluationResult"/>
@@ -257,8 +248,8 @@ public static class EvaluatorExtensions
     /// </param>
     /// <param name="modelResponse">The response that is to be evaluated.</param>
     /// <param name="chatConfiguration">
-    /// A <see cref="ChatConfiguration"/> that specifies the <see cref="IChatClient"/> and the
-    /// <see cref="IEvaluationTokenCounter"/> that should be used if the evaluation is performed using an AI model.
+    /// A <see cref="ChatConfiguration"/> that specifies the <see cref="IChatClient"/> that should be used if one or
+    /// more composed <see cref="IEvaluator"/>s use an AI model to perform evaluation.
     /// </param>
     /// <param name="additionalContext">
     /// Additional contextual information (beyond that which is available in <paramref name="userRequest"/>) that the

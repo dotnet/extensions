@@ -61,7 +61,7 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator<string, Embed
     }
 
     /// <inheritdoc />
-    object? IEmbeddingGenerator<string, Embedding<float>>.GetService(Type serviceType, object? serviceKey)
+    object? IEmbeddingGenerator.GetService(Type serviceType, object? serviceKey)
     {
         _ = Throw.IfNull(serviceType);
 
@@ -89,7 +89,7 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator<string, Embed
 
         // Create request.
         string[] inputs = values.ToArray();
-        string? requestModel = options?.ModelId ?? _metadata.ModelId;
+        string? requestModel = options?.ModelId ?? _metadata.DefaultModelId;
         var request = new OllamaEmbeddingRequest
         {
             Model = requestModel ?? string.Empty,

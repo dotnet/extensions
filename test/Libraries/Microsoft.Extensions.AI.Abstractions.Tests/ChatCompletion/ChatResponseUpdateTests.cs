@@ -21,6 +21,7 @@ public class ChatResponseUpdateTests
         Assert.Null(update.RawRepresentation);
         Assert.Null(update.AdditionalProperties);
         Assert.Null(update.ResponseId);
+        Assert.Null(update.MessageId);
         Assert.Null(update.CreatedAt);
         Assert.Null(update.FinishReason);
         Assert.Equal(string.Empty, update.ToString());
@@ -67,6 +68,10 @@ public class ChatResponseUpdateTests
         update.ResponseId = "id";
         Assert.Equal("id", update.ResponseId);
 
+        Assert.Null(update.MessageId);
+        update.MessageId = "messageid";
+        Assert.Equal("messageid", update.MessageId);
+
         Assert.Null(update.CreatedAt);
         update.CreatedAt = new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero);
         Assert.Equal(new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero), update.CreatedAt);
@@ -84,8 +89,8 @@ public class ChatResponseUpdateTests
             Role = ChatRole.User,
             Contents =
             [
-                new DataContent("http://localhost/audio"),
-                new DataContent("http://localhost/image"),
+                new DataContent("data:image/audio;base64,aGVsbG8="),
+                new DataContent("data:image/image;base64,aGVsbG8="),
                 new FunctionCallContent("callId1", "fc1"),
                 new TextContent("text-1"),
                 new TextContent("text-2"),
@@ -114,13 +119,14 @@ public class ChatResponseUpdateTests
             Contents =
             [
                 new TextContent("text-1"),
-                new DataContent("http://localhost/image"),
+                new DataContent("data:image/png;base64,aGVsbG8="),
                 new FunctionCallContent("callId1", "fc1"),
-                new DataContent("data"u8.ToArray()),
+                new DataContent("data"u8.ToArray(), "text/plain"),
                 new TextContent("text-2"),
             ],
             RawRepresentation = new object(),
             ResponseId = "id",
+            MessageId = "messageid",
             CreatedAt = new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero),
             FinishReason = ChatFinishReason.ContentFilter,
             AdditionalProperties = new() { ["key"] = "value" },
@@ -137,13 +143,13 @@ public class ChatResponseUpdateTests
         Assert.Equal("text-1", ((TextContent)result.Contents[0]).Text);
 
         Assert.IsType<DataContent>(result.Contents[1]);
-        Assert.Equal("http://localhost/image", ((DataContent)result.Contents[1]).Uri);
+        Assert.Equal("data:image/png;base64,aGVsbG8=", ((DataContent)result.Contents[1]).Uri);
 
         Assert.IsType<FunctionCallContent>(result.Contents[2]);
         Assert.Equal("fc1", ((FunctionCallContent)result.Contents[2]).Name);
 
         Assert.IsType<DataContent>(result.Contents[3]);
-        Assert.Equal("data"u8.ToArray(), ((DataContent)result.Contents[3]).Data?.ToArray());
+        Assert.Equal("data"u8.ToArray(), ((DataContent)result.Contents[3]).Data.ToArray());
 
         Assert.IsType<TextContent>(result.Contents[4]);
         Assert.Equal("text-2", ((TextContent)result.Contents[4]).Text);
@@ -151,6 +157,7 @@ public class ChatResponseUpdateTests
         Assert.Equal("author", result.AuthorName);
         Assert.Equal(ChatRole.Assistant, result.Role);
         Assert.Equal("id", result.ResponseId);
+        Assert.Equal("messageid", result.MessageId);
         Assert.Equal(new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero), result.CreatedAt);
         Assert.Equal(ChatFinishReason.ContentFilter, result.FinishReason);
 

@@ -13,11 +13,14 @@ public class Settings
     public string ModelName { get; }
     public string Endpoint { get; }
     public string StorageRootPath { get; }
+    public string AzureSubscriptionId { get; }
+    public string AzureResourceGroupName { get; }
+    public string AzureAIProjectName { get; }
 
     public Settings(IConfiguration config)
     {
 #pragma warning disable CA2208 // Pass correct parameter name for ArgumentNullException.
-        Configured = config.GetValue<bool>("Configured", false);
+        Configured = config.GetValue("Configured", false);
 
         DeploymentName =
             config.GetValue<string>("DeploymentName") ??
@@ -34,6 +37,18 @@ public class Settings
         StorageRootPath =
             config.GetValue<string>("StorageRootPath") ??
             throw new ArgumentNullException(nameof(StorageRootPath));
+
+        AzureSubscriptionId =
+            config.GetValue<string>("AzureSubscriptionId")
+            ?? throw new ArgumentNullException(nameof(AzureSubscriptionId));
+
+        AzureResourceGroupName =
+            config.GetValue<string>("AzureResourceGroupName")
+            ?? throw new ArgumentNullException(nameof(AzureResourceGroupName));
+
+        AzureAIProjectName =
+            config.GetValue<string>("AzureAIProjectName")
+            ?? throw new ArgumentNullException(nameof(AzureAIProjectName));
 #pragma warning restore CA2208
     }
 

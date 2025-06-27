@@ -2,18 +2,32 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { makeStyles, mergeClasses, tokens, Tooltip } from "@fluentui/react-components";
-import { DismissCircle16Regular, ErrorCircleRegular, Info16Regular, InfoRegular, Warning16Regular, WarningRegular } from "@fluentui/react-icons";
+import { DismissCircle16Regular, Info16Regular, Warning16Regular, RadioButtonFilled, RadioButtonRegular } from "@fluentui/react-icons";
 
 const useCardListStyles = makeStyles({
-    metricCardList: { display: 'flex', gap: '1rem', flexWrap: 'wrap' },
+    metricCardList: {
+        display: 'flex',
+        gap: '1rem',
+        flexWrap: 'wrap',
+        maxWidth: '75rem',
+    },
 });
 
-export const MetricCardList = ({ scenario }: { scenario: ScenarioRunResult }) => {
+export const MetricCardList = ({ scenario, onMetricSelect, selectedMetric }: {
+    scenario: ScenarioRunResult,
+    onMetricSelect: (metric: MetricType | null) => void,
+    selectedMetric: MetricType | null
+}) => {
     const classes = useCardListStyles();
     return (
         <div className={classes.metricCardList}>
             {Object.values(scenario.evaluationResult.metrics).map((metric, index) => (
-                <MetricCard metric={metric} key={index} />
+                <MetricCard
+                    metric={metric}
+                    key={index}
+                    onClick={() => onMetricSelect(selectedMetric === metric ? null : metric)}
+                    isSelected={selectedMetric === metric}
+                />
             ))}
         </div>
     );
@@ -21,12 +35,65 @@ export const MetricCardList = ({ scenario }: { scenario: ScenarioRunResult }) =>
 
 const useCardStyles = makeStyles({
     card: {
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem',
-        padding: '.75rem', border: '1px solid #e0e0e0', borderRadius: '4px',
-        minWidth: '8rem'
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '0.5rem',
+        padding: '.75rem',
+        border: `1px solid ${tokens.colorNeutralStroke2}`,
+        borderRadius: '4px',
+        width: '12.5rem',
+        cursor: 'pointer',
+        transition: 'box-shadow 0.2s ease-in-out, outline 0.2s ease-in-out',
+        position: 'relative',
+        '&:hover': {
+            opacity: 0.9,
+            boxShadow: tokens.shadow4,
+        }
     },
-    metricText: { fontSize: '1rem', fontWeight: 'normal' },
-    valueText: { fontSize: '1.5rem', fontWeight: 'bold' },
+    selectedCard: {
+        zIndex: 1,
+        boxShadow: tokens.shadow8,
+    },
+    metricNameText: {
+        fontSize: '1rem',
+        fontWeight: 'normal',
+        width: '75%',
+        textAlign: 'center',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        lineHeight: '1.2',
+        height: '1.2em',
+        display: "block",
+        whiteSpace: 'nowrap',
+        marginTop: '-0.5rem',
+    },
+    iconPlaceholder: {
+        height: '4px',
+        width: '100%',
+        position: 'relative',
+    },
+    selectionIcon: {
+        position: 'absolute',
+        top: '-0.25rem',
+        left: '-0.25rem',
+        fontSize: '16px',
+    },
+    metricIcon: {
+        position: 'absolute',
+        top: '-0.25rem',
+        right: '-0.25rem',
+    },
+    metricValueText: {
+        fontSize: '1rem',
+        fontWeight: 'bold',
+        width: '75%',
+        textAlign: 'center',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+        maxHeight: '1.2em',
+    },
     scoreFgDefault: { color: tokens.colorNeutralStrokeAccessible },
     scoreFg0: { color: tokens.colorStatusDangerForeground1 },
     scoreFg1: { color: tokens.colorStatusDangerForeground2 },
@@ -41,6 +108,16 @@ const useCardStyles = makeStyles({
     scoreBg3: { backgroundColor: tokens.colorStatusWarningBackground2 },
     scoreBg4: { backgroundColor: tokens.colorStatusSuccessBackground2 },
     scoreBg5: { backgroundColor: tokens.colorStatusSuccessBackground2 },
+    metricPill: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: tokens.fontSizeBase200,
+        fontWeight: '500',
+        padding: '0.25rem 0.5rem',
+        borderRadius: '4px',
+        border: '1px solid ' + tokens.colorNeutralStroke2,
+    }
 });
 
 const useCardColors = (interpretation?: EvaluationMetricInterpretation) => {
@@ -79,91 +156,95 @@ const useCardColors = (interpretation?: EvaluationMetricInterpretation) => {
     return { fg, bg };
 };
 
-type MetricType = StringMetric | NumericMetric | BooleanMetric | MetricWithNoValue;
+export type MetricType = StringMetric | NumericMetric | BooleanMetric | MetricWithNoValue;
 
-export const MetricCard = ({ metric }: { metric: MetricType }) => {
-
-    let renderValue: (metric: MetricType) => React.ReactNode;
+const getMetricDisplayValue = (metric: MetricType): string => {
     switch (metric.$type) {
         case "string":
-            renderValue = (metric: MetricType) => <>{metric?.value ?? "??"}</>;
-            break;
+            return metric?.value ?? "??";
         case "boolean":
-            renderValue = (metric: MetricType) => <>{
-                !metric || metric.value === undefined || metric.value === null ? 
+            return !metric || metric.value === undefined || metric.value === null ?
                 '??' :
-                metric.value ? 'Pass' : 'Fail'}</>;
-            break;
+                metric.value ? 'Yes' : 'No';
         case "numeric":
-            renderValue = (metric: MetricType) => <>{metric?.value ?? "??"}</>;
-            break;
+            return metric?.value?.toString() ?? "??";
         case "none":
-            renderValue = () => <>None</>;
-            break;
+            return "None";
         default:
             throw new Error(`Unknown metric type: ${metric["$type"]}`);
     }
-
-    const classes = useCardStyles();
-    const { fg, bg } = useCardColors(metric.interpretation);
-    const hasReason = metric.interpretation?.reason != null;
-    const hasInformationalMessages = metric.diagnostics.some((d: EvaluationDiagnostic) => d.severity == "informational");
-    const hasWarningMessages = metric.diagnostics.some((d: EvaluationDiagnostic) => d.severity == "warning");
-    const hasErrorMessages = metric.diagnostics.some((d: EvaluationDiagnostic) => d.severity == "error");
-    const supportsHover = hasReason || hasInformationalMessages || hasWarningMessages || hasErrorMessages;
-    const card =
-        (<div className={mergeClasses(bg, classes.card)}>
-            <div className={classes.metricText}>{metric.name} { (hasErrorMessages && <DismissCircle16Regular />) || 
-                (hasWarningMessages && <Warning16Regular />) || 
-                ((hasInformationalMessages || hasReason) && <Info16Regular />)}</div>
-            <div className={mergeClasses(fg, classes.valueText)}>{renderValue(metric)}</div>
-        </div>);
-    if (supportsHover) {
-        return (<Tooltip
-            content={{ children: <MetricDetails metric={metric} /> }}
-            relationship="description">
-            {card}
-        </Tooltip>);
-    } else {
-        return card;
-    }
 };
 
-const useDetailStyles = makeStyles({
-    diagError: { fontStyle: tokens.fontFamilyMonospace, color: tokens.colorStatusDangerForeground2 },
-    diagWarn: { fontStyle: tokens.fontFamilyMonospace, color: tokens.colorStatusWarningForeground2 },
-    diagInfo: { fontStyle: tokens.fontFamilyMonospace },
-});
+export const MetricCard = ({
+    metric,
+    onClick,
+    isSelected
+}: {
+    metric: MetricType,
+    onClick: () => void,
+    isSelected: boolean
+}) => {
 
-export const MetricDetails = ({ metric }: { metric: MetricWithNoValue | NumericMetric | BooleanMetric | StringMetric }) => {
-    const classes = useDetailStyles();
-    const reason = metric.interpretation?.reason;
-    const failed = metric.interpretation?.failed ?? false;
-    const informationalMessages = metric.diagnostics.filter((d: EvaluationDiagnostic) => d.severity == "informational").map((d: EvaluationDiagnostic) => d.message);
-    const hasInformationalMessages = informationalMessages.length > 0;
-    const warningMessages = metric.diagnostics.filter((d: EvaluationDiagnostic) => d.severity == "warning").map((d: EvaluationDiagnostic) => d.message);
-    const hasWarningMessages = warningMessages.length > 0;
-    const errorMessages = metric.diagnostics.filter((d: EvaluationDiagnostic) => d.severity == "error").map((d: EvaluationDiagnostic) => d.message);
-    const hasErrorMessages = errorMessages.length > 0;
+    const metricValue = getMetricDisplayValue(metric);
+    const classes = useCardStyles();
+    const { fg, bg } = useCardColors(metric.interpretation);
+
+    const hasReasons = metric.reason != null || metric.interpretation?.reason != null;
+    const hasInformationalMessages = metric.diagnostics && metric.diagnostics.some((d: EvaluationDiagnostic) => d.severity == "informational");
+    const hasWarningMessages = metric.diagnostics && metric.diagnostics.some((d: EvaluationDiagnostic) => d.severity == "warning");
+    const hasErrorMessages = metric.diagnostics && metric.diagnostics.some((d: EvaluationDiagnostic) => d.severity == "error");
+
+    const cardClass = mergeClasses(
+        bg,
+        classes.card,
+        isSelected ? classes.selectedCard : undefined
+    );
+
+    let statusIcon = null;
+    let statusTooltip = '';
+
+    if (hasErrorMessages) {
+        statusIcon = <DismissCircle16Regular className={classes.metricIcon} />;
+        statusTooltip = 'This metric has errors. Click the card to view more details.';
+    } else if (hasWarningMessages) {
+        statusIcon = <Warning16Regular className={classes.metricIcon} />;
+        statusTooltip = 'This metric has warnings. Click the card to view more details.';
+    } else if (hasInformationalMessages || hasReasons) {
+        statusIcon = <Info16Regular className={classes.metricIcon} />;
+        statusTooltip = 'This metric has additional information. Click the card to view more details.';
+    }
+
     return (
-        <div>
-            {reason && <div>
-                {failed ? 
-                    <p className={classes.diagError}><ErrorCircleRegular /> {reason}</p> :
-                    <p className={classes.diagInfo}><InfoRegular /> {reason}</p>
-                }
-            </div>}
-            {hasErrorMessages && <div>
-                {errorMessages.map((message: string, index: number) =>
-                    <p key={index} className={classes.diagError}><ErrorCircleRegular /> {message}</p>)}
-            </div>}
-            {hasWarningMessages && <div>
-                {warningMessages.map((message: string, index: number) =>
-                    <p key={index} className={classes.diagWarn}><WarningRegular /> {message}</p>)}
-            </div>}
-            {hasInformationalMessages && <div>
-                {informationalMessages.map((message: string, index: number) =>
-                    <p key={index} className={classes.diagInfo}><InfoRegular /> {message}</p>)}
-            </div>}
-        </div>);
+        <Tooltip content={`${metric.name}: ${metricValue}`} relationship="description">
+            <div className={cardClass} onClick={onClick} tabIndex={0}
+                    onKeyUp={e => e.key === 'Enter' && onClick()} >
+                <div className={classes.iconPlaceholder}>
+                    {isSelected ? <RadioButtonFilled className={classes.selectionIcon} /> : <RadioButtonRegular className={classes.selectionIcon} />}
+                    {statusIcon && (
+                        <Tooltip content={statusTooltip} relationship="description">
+                            <span>{statusIcon}</span>
+                        </Tooltip>
+                    )}
+                </div>
+                <div className={classes.metricNameText}>
+                    {metric.name}
+                </div>
+                <div className={mergeClasses(fg, classes.metricValueText)}>
+                    {metricValue}
+                </div>
+            </div>
+        </Tooltip>
+    );
+};
+
+export const MetricDisplay = ({ metric }: { metric: MetricWithNoValue | NumericMetric | BooleanMetric | StringMetric }) => {
+    const metricValue = getMetricDisplayValue(metric);
+    const classes = useCardStyles();
+    const { fg, bg } = useCardColors(metric.interpretation);
+
+    const pillClass = mergeClasses(
+        bg,
+        classes.metricPill,
+    );
+    return (<div className={pillClass}><span className={fg}>{metricValue}</span></div>);
 };

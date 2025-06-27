@@ -16,6 +16,9 @@ namespace Microsoft.Extensions.AI.Evaluation.Reporting;
 /// used by these <see cref="IEvaluator"/>s, how the resulting <see cref="ScenarioRunResult"/>s should be persisted,
 /// and how AI responses should be cached.
 /// </summary>
+/// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/tutorials/evaluate-with-reporting">
+/// Tutorial: Evaluate a model's response with response caching and reporting.
+/// </related>
 public sealed class ReportingConfiguration
 {
     /// <summary>
@@ -24,21 +27,21 @@ public sealed class ReportingConfiguration
     public IReadOnlyList<IEvaluator> Evaluators { get; }
 
     /// <summary>
-    /// Gets the <see cref="IResultStore"/> that should be used to persist the <see cref="ScenarioRunResult"/>s.
+    /// Gets the <see cref="IEvaluationResultStore"/> that should be used to persist the
+    /// <see cref="ScenarioRunResult"/>s.
     /// </summary>
-    public IResultStore ResultStore { get; }
+    public IEvaluationResultStore ResultStore { get; }
 
     /// <summary>
-    /// Gets a <see cref="Evaluation.ChatConfiguration"/> that specifies the <see cref="IChatClient"/> and the
-    /// <see cref="IEvaluationTokenCounter"/> that are used by AI-based <see cref="Evaluators"/> included in this
-    /// <see cref="ReportingConfiguration"/>.
+    /// Gets a <see cref="Evaluation.ChatConfiguration"/> that specifies the <see cref="IChatClient"/> that is used by
+    /// AI-based <see cref="Evaluators"/> included in this <see cref="ReportingConfiguration"/>.
     /// </summary>
     public ChatConfiguration? ChatConfiguration { get; }
 
     /// <summary>
-    /// Gets the <see cref="IResponseCacheProvider"/> that should be used to cache AI responses.
+    /// Gets the <see cref="IEvaluationResponseCacheProvider"/> that should be used to cache AI responses.
     /// </summary>
-    public IResponseCacheProvider? ResponseCacheProvider { get; }
+    public IEvaluationResponseCacheProvider? ResponseCacheProvider { get; }
 
     /// <summary>
     /// Gets the collection of unique strings that should be hashed when generating the cache keys for cached AI
@@ -87,23 +90,28 @@ public sealed class ReportingConfiguration
     public Func<EvaluationMetric, EvaluationMetricInterpretation?>? EvaluationMetricInterpreter { get; }
 
     /// <summary>
+    /// Gets an optional set of text tags applicable to all <see cref="ScenarioRun"/>s created using this
+    /// <see cref="ReportingConfiguration"/>.
+    /// </summary>
+    public IReadOnlyList<string>? Tags { get; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="ReportingConfiguration"/> class.
     /// </summary>
     /// <param name="evaluators">
     /// The set of <see cref="IEvaluator"/>s that should be invoked to evaluate AI responses.
     /// </param>
     /// <param name="resultStore">
-    /// The <see cref="IResultStore"/> that should be used to persist the <see cref="ScenarioRunResult"/>s.
+    /// The <see cref="IEvaluationResultStore"/> that should be used to persist the <see cref="ScenarioRunResult"/>s.
     /// </param>
     /// <param name="chatConfiguration">
-    /// A <see cref="Evaluation.ChatConfiguration"/> that specifies the <see cref="IChatClient"/> and the
-    /// <see cref="IEvaluationTokenCounter"/> that are used by AI-based <paramref name="evaluators"/> included in this
-    /// <see cref="ReportingConfiguration"/>. Can be omitted if none of the included <paramref name="evaluators"/> are
-    /// AI-based.
+    /// A <see cref="Evaluation.ChatConfiguration"/> that specifies the <see cref="IChatClient"/> that is used by
+    /// AI-based <paramref name="evaluators"/> included in this <see cref="ReportingConfiguration"/>. Can be omitted if
+    /// none of the included <paramref name="evaluators"/> are AI-based.
     /// </param>
     /// <param name="responseCacheProvider">
-    /// The <see cref="IResponseCacheProvider"/> that should be used to cache AI responses. If omitted, AI responses
-    /// will not be cached.
+    /// The <see cref="IEvaluationResponseCacheProvider"/> that should be used to cache AI responses. If omitted, AI
+    /// responses will not be cached.
     /// </param>
     /// <param name="cachingKeys">
     /// An optional collection of unique strings that should be hashed when generating the cache keys for cached AI
@@ -120,14 +128,21 @@ public sealed class ReportingConfiguration
     /// <see cref="EvaluationMetric"/> that is supplied to it, or return <see langword="null"/> if the
     /// <see cref="EvaluationMetric.Interpretation"/> should be left unchanged.
     /// </param>
+    /// <param name="tags">
+    /// A optional set of text tags applicable to all <see cref="ScenarioRun"/>s created using this
+    /// <see cref="ReportingConfiguration"/>.
+    /// </param>
+#pragma warning disable S107 // Methods should not have too many parameters
     public ReportingConfiguration(
         IEnumerable<IEvaluator> evaluators,
-        IResultStore resultStore,
+        IEvaluationResultStore resultStore,
         ChatConfiguration? chatConfiguration = null,
-        IResponseCacheProvider? responseCacheProvider = null,
+        IEvaluationResponseCacheProvider? responseCacheProvider = null,
         IEnumerable<string>? cachingKeys = null,
         string executionName = Defaults.DefaultExecutionName,
-        Func<EvaluationMetric, EvaluationMetricInterpretation?>? evaluationMetricInterpreter = null)
+        Func<EvaluationMetric, EvaluationMetricInterpretation?>? evaluationMetricInterpreter = null,
+        IEnumerable<string>? tags = null)
+#pragma warning restore S107
     {
         Evaluators = [.. evaluators];
         ResultStore = resultStore;
@@ -143,6 +158,8 @@ public sealed class ReportingConfiguration
         CachingKeys = [.. cachingKeys];
         ExecutionName = executionName;
         EvaluationMetricInterpreter = evaluationMetricInterpreter;
+
+        Tags = tags is null ? null : [.. tags];
     }
 
     /// <summary>
@@ -157,50 +174,82 @@ public sealed class ReportingConfiguration
     /// An optional collection of unique strings that should be hashed when generating the cache keys for cached AI
     /// responses. See <see cref="CachingKeys"/> for more information about this concept.
     /// </param>
+    /// <param name="additionalTags">
+    /// A optional set of text tags applicable to this <see cref="ScenarioRun"/>.
+    /// </param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can cancel the operation.</param>
     /// <returns>
     /// A new <see cref="ScenarioRun"/> with the specified <paramref name="scenarioName"/> and
     /// <paramref name="iterationName"/>.
     /// </returns>
+    /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/tutorials/evaluate-with-reporting">
+    /// Tutorial: Evaluate a model's response with response caching and reporting.
+    /// </related>
     public async ValueTask<ScenarioRun> CreateScenarioRunAsync(
         string scenarioName,
         string iterationName = Defaults.DefaultIterationName,
         IEnumerable<string>? additionalCachingKeys = null,
+        IEnumerable<string>? additionalTags = null,
         CancellationToken cancellationToken = default)
     {
         ChatConfiguration? chatConfiguration = ChatConfiguration;
+        ChatDetails? chatDetails = null;
 
-        if (chatConfiguration is not null && ResponseCacheProvider is not null)
+        IEnumerable<string>? tags;
+        if (additionalTags is null)
+        {
+            tags = Tags;
+        }
+        else if (Tags is null)
+        {
+            tags = additionalTags;
+        }
+        else
+        {
+            tags = [.. Tags, .. additionalTags];
+        }
+
+        if (chatConfiguration is not null)
         {
             IChatClient originalChatClient = chatConfiguration.ChatClient;
+            chatDetails = new ChatDetails();
 
             IEnumerable<string> cachingKeys =
                 additionalCachingKeys is null
                     ? [scenarioName, iterationName, .. CachingKeys]
                     : [scenarioName, iterationName, .. CachingKeys, .. additionalCachingKeys];
 
-            IDistributedCache cache =
-                await ResponseCacheProvider.GetCacheAsync(
-                    scenarioName,
-                    iterationName,
-                    cancellationToken).ConfigureAwait(false);
-
 #pragma warning disable CA2000
             // CA2000: Dispose objects before they go out of scope.
-            // ResponseCachingChatClient is a wrapper around the IChatClient supplied by the caller. Disposing
-            // ResponseCachingChatClient would also dispose the IChatClient supplied by the caller. Disposing this
-            // within the evaluation library is problematic because the caller would then lose control over the
-            // lifetime of the supplied IChatClient. We disable this warning because we want to give the caller
-            // complete control over the lifetime of the supplied IChatClient.
+            // ResponseCachingChatClient and SimpleChatClient are wrappers around the IChatClient supplied by the
+            // caller. Disposing them would also dispose the IChatClient supplied by the caller. Disposing this
+            // caller-supplied IChatClient within the evaluation library is problematic because the caller would then
+            // lose control over its lifetime. We disable this warning because we want to give the caller complete
+            // control over the lifetime of the supplied IChatClient.
 
-            var cachingChatClient =
-                new ResponseCachingChatClient(
-                    originalChatClient,
-                    cache,
-                    cachingKeys);
+            IChatClient chatClient;
+            if (ResponseCacheProvider is not null)
+            {
+                IDistributedCache cache =
+                    await ResponseCacheProvider.GetCacheAsync(
+                        scenarioName,
+                        iterationName,
+                        cancellationToken).ConfigureAwait(false);
+
+                chatClient =
+                    new ResponseCachingChatClient(
+                        originalChatClient,
+                        cache,
+                        cachingKeys,
+                        chatDetails);
+            }
+            else
+            {
+                chatClient = new SimpleChatClient(originalChatClient, chatDetails);
+            }
 #pragma warning restore CA2000
 
-            chatConfiguration = new ChatConfiguration(cachingChatClient, chatConfiguration.TokenCounter);
+            chatConfiguration = new ChatConfiguration(chatClient);
         }
 
         return new ScenarioRun(
@@ -210,12 +259,14 @@ public sealed class ReportingConfiguration
             Evaluators,
             ResultStore,
             chatConfiguration,
-            EvaluationMetricInterpreter);
+            EvaluationMetricInterpreter,
+            chatDetails,
+            tags);
     }
 
     private static IEnumerable<string> GetCachingKeysForChatClient(IChatClient chatClient)
     {
-        var metadata = chatClient.GetService<ChatClientMetadata>();
+        ChatClientMetadata? metadata = chatClient.GetService<ChatClientMetadata>();
 
         string? providerName = metadata?.ProviderName;
         if (!string.IsNullOrWhiteSpace(providerName))
@@ -223,13 +274,7 @@ public sealed class ReportingConfiguration
             yield return providerName!;
         }
 
-        Uri? providerUri = metadata?.ProviderUri;
-        if (providerUri is not null)
-        {
-            yield return providerUri.AbsoluteUri;
-        }
-
-        string? modelId = metadata?.ModelId;
+        string? modelId = metadata?.DefaultModelId;
         if (!string.IsNullOrWhiteSpace(modelId))
         {
             yield return modelId!;

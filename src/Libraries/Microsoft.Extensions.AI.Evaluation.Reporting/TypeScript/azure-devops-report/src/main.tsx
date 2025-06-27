@@ -1,16 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-/* eslint-disable @typescript-eslint/no-require-imports */
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import App from '../../components/App.tsx';
+import { App } from '../../components/App.tsx';
 import './index.css'
-import * as SDK from "azure-devops-extension-sdk";
-import { getClient } from "azure-devops-extension-api";
-import { Build, Attachment, BuildRestClient } from "azure-devops-extension-api/Build";
+import { init, ready, getAccessToken, getConfiguration } from "azure-devops-extension-sdk";
+import { getClient } from "./azure-devops-extension-api";
+import { Build, Attachment, BuildRestClient } from "./azure-devops-extension-api/Build";
 import { FluentProvider, webLightTheme } from '@fluentui/react-components';
-import { createScoreTree } from '../../components/Summary.ts';
+import { createScoreSummary as createScoreSummary } from '../../components/Summary.ts';
+import { ReportContextProvider } from '../../components/ReportContext.tsx';
 
 const ErrorHtml = ({ message }: { message: string }) =>
   <html>
@@ -34,7 +34,7 @@ const findReportAttachment = async (client: BuildRestClient, project: string, bu
 const getReportData = async (client: BuildRestClient, project: string, buildId: number) => {
   const att = await findReportAttachment(client, project, buildId);
   if (att) {
-    const accessToken = await SDK.getAccessToken();
+    const accessToken = await getAccessToken();
     const encodedToken = btoa(":" + accessToken);
     const headers = { headers: { Authorization: `Basic ${encodedToken}` } };
     const response = await fetch(att, headers);
@@ -48,16 +48,15 @@ const getReportData = async (client: BuildRestClient, project: string, buildId: 
     }
     return dataset;
   }
-  
-};
 
+};
 
 const run = async () => {
 
-  await SDK.init();
-  await SDK.ready();
+  await init();
+  await ready();
 
-  const config = SDK.getConfiguration();
+  const config = getConfiguration();
   config.onBuildChanged(async (build: Build) => {
 
     try {
@@ -67,24 +66,26 @@ const run = async () => {
         throw new Error('No data was available to load.');
       }
 
-      const scoreTree = createScoreTree(dataset);
+      const scoreSummary = createScoreSummary(dataset);
 
       createRoot(document.getElementById('root')!).render(
         <FluentProvider theme={webLightTheme}>
           <StrictMode>
-            <App tree={scoreTree} dataset={dataset} />
+            <ReportContextProvider dataset={dataset} scoreSummary={scoreSummary}>
+              <App />
+            </ReportContextProvider>
           </StrictMode>
         </FluentProvider>
       );
 
     } catch (e) {
-      
+
       if (e instanceof Error) {
         const err = e as Error;
         createRoot(document.getElementById('root')!).render(
           <FluentProvider theme={webLightTheme}>
             <StrictMode>
-            <ErrorHtml message={err.message} />
+              <ErrorHtml message={err.message} />
             </StrictMode>
           </FluentProvider>
         );

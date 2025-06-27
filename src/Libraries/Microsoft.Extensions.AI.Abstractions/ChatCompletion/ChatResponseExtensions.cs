@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -47,8 +48,8 @@ public static class ChatResponseExtensions
     /// <exception cref="ArgumentNullException"><paramref name="list"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="updates"/> is <see langword="null"/>.</exception>
     /// <remarks>
-    /// As part of combining <paramref name="updates"/> into a series of <see cref="ChatMessage"/> instances, tne
-    /// method may use <see cref="ChatResponseUpdate.ResponseId"/> to determine message boundaries, as well as coalesce
+    /// As part of combining <paramref name="updates"/> into a series of <see cref="ChatMessage"/> instances, the
+    /// method may use <see cref="ChatResponseUpdate.MessageId"/> to determine message boundaries, as well as coalesce
     /// contiguous <see cref="AIContent"/> items where applicable, e.g. multiple
     /// <see cref="TextContent"/> instances in a row may be combined into a single <see cref="TextContent"/>.
     /// </remarks>
@@ -65,6 +66,33 @@ public static class ChatResponseExtensions
         list.AddMessages(updates.ToChatResponse());
     }
 
+    /// <summary>Converts the <paramref name="update"/> into a <see cref="ChatMessage"/> instance and adds it to <paramref name="list"/>.</summary>
+    /// <param name="list">The destination list to which the newly constructed message should be added.</param>
+    /// <param name="update">The <see cref="ChatResponseUpdate"/> instance to convert to a message and add to the list.</param>
+    /// <param name="filter">A predicate to filter which <see cref="AIContent"/> gets included in the message.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="list"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="update"/> is <see langword="null"/>.</exception>
+    /// <remarks>
+    /// If the <see cref="ChatResponseUpdate"/> has no content, or all its content gets excluded by <paramref name="filter"/>, then
+    /// no <see cref="ChatMessage"/> will be added to the <paramref name="list"/>.
+    /// </remarks>
+    public static void AddMessages(this IList<ChatMessage> list, ChatResponseUpdate update, Func<AIContent, bool>? filter = null)
+    {
+        _ = Throw.IfNull(list);
+        _ = Throw.IfNull(update);
+
+        var contentsList = filter is null ? update.Contents : update.Contents.Where(filter).ToList();
+        if (contentsList.Count > 0)
+        {
+            list.Add(new ChatMessage(update.Role ?? ChatRole.Assistant, contentsList)
+            {
+                AuthorName = update.AuthorName,
+                RawRepresentation = update.RawRepresentation,
+                AdditionalProperties = update.AdditionalProperties,
+            });
+        }
+    }
+
     /// <summary>Converts the <paramref name="updates"/> into <see cref="ChatMessage"/> instances and adds them to <paramref name="list"/>.</summary>
     /// <param name="list">The list to which the newly constructed messages should be added.</param>
     /// <param name="updates">The <see cref="ChatResponseUpdate"/> instances to convert to messages and add to the list.</param>
@@ -74,7 +102,7 @@ public static class ChatResponseExtensions
     /// <exception cref="ArgumentNullException"><paramref name="updates"/> is <see langword="null"/>.</exception>
     /// <remarks>
     /// As part of combining <paramref name="updates"/> into a series of <see cref="ChatMessage"/> instances, tne
-    /// method may use <see cref="ChatResponseUpdate.ResponseId"/> to determine message boundaries, as well as coalesce
+    /// method may use <see cref="ChatResponseUpdate.MessageId"/> to determine message boundaries, as well as coalesce
     /// contiguous <see cref="AIContent"/> items where applicable, e.g. multiple
     /// <see cref="TextContent"/> instances in a row may be combined into a single <see cref="TextContent"/>.
     /// </remarks>
@@ -97,7 +125,7 @@ public static class ChatResponseExtensions
     /// <exception cref="ArgumentNullException"><paramref name="updates"/> is <see langword="null"/>.</exception>
     /// <remarks>
     /// As part of combining <paramref name="updates"/> into a single <see cref="ChatResponse"/>, the method will attempt to reconstruct
-    /// <see cref="ChatMessage"/> instances. This includes using <see cref="ChatResponseUpdate.ResponseId"/> to determine
+    /// <see cref="ChatMessage"/> instances. This includes using <see cref="ChatResponseUpdate.MessageId"/> to determine
     /// message boundaries, as well as coalescing contiguous <see cref="AIContent"/> items where applicable, e.g. multiple
     /// <see cref="TextContent"/> instances in a row may be combined into a single <see cref="TextContent"/>.
     /// </remarks>
@@ -125,7 +153,7 @@ public static class ChatResponseExtensions
     /// <exception cref="ArgumentNullException"><paramref name="updates"/> is <see langword="null"/>.</exception>
     /// <remarks>
     /// As part of combining <paramref name="updates"/> into a single <see cref="ChatResponse"/>, the method will attempt to reconstruct
-    /// <see cref="ChatMessage"/> instances. This includes using <see cref="ChatResponseUpdate.ResponseId"/> to determine
+    /// <see cref="ChatMessage"/> instances. This includes using <see cref="ChatResponseUpdate.MessageId"/> to determine
     /// message boundaries, as well as coalescing contiguous <see cref="AIContent"/> items where applicable, e.g. multiple
     /// <see cref="TextContent"/> instances in a row may be combined into a single <see cref="TextContent"/>.
     /// </remarks>
@@ -152,6 +180,62 @@ public static class ChatResponseExtensions
         }
     }
 
+    /// <summary>Coalesces sequential <see cref="AIContent"/> content elements.</summary>
+    internal static void CoalesceTextContent(List<AIContent> contents)
+    {
+        Coalesce<TextContent>(contents, static text => new(text));
+        Coalesce<TextReasoningContent>(contents, static text => new(text));
+
+        // This implementation relies on TContent's ToString returning its exact text.
+        static void Coalesce<TContent>(List<AIContent> contents, Func<string, TContent> fromText)
+            where TContent : AIContent
+        {
+            StringBuilder? coalescedText = null;
+
+            // Iterate through all of the items in the list looking for contiguous items that can be coalesced.
+            int start = 0;
+            while (start < contents.Count - 1)
+            {
+                // We need at least two TextContents in a row to be able to coalesce.
+                if (contents[start] is not TContent firstText)
+                {
+                    start++;
+                    continue;
+                }
+
+                if (contents[start + 1] is not TContent secondText)
+                {
+                    start += 2;
+                    continue;
+                }
+
+                // Append the text from those nodes and continue appending subsequent TextContents until we run out.
+                // We null out nodes as their text is appended so that we can later remove them all in one O(N) operation.
+                coalescedText ??= new();
+                _ = coalescedText.Clear().Append(firstText).Append(secondText);
+                contents[start + 1] = null!;
+                int i = start + 2;
+                for (; i < contents.Count && contents[i] is TContent next; i++)
+                {
+                    _ = coalescedText.Append(next);
+                    contents[i] = null!;
+                }
+
+                // Store the replacement node. We inherit the properties of the first text node. We don't
+                // currently propagate additional properties from the subsequent nodes. If we ever need to,
+                // we can add that here.
+                var newContent = fromText(coalescedText.ToString());
+                contents[start] = newContent;
+                newContent.AdditionalProperties = firstText.AdditionalProperties?.Clone();
+
+                start = i;
+            }
+
+            // Remove all of the null slots left over from the coalescing process.
+            _ = contents.RemoveAll(u => u is null);
+        }
+    }
+
     /// <summary>Finalizes the <paramref name="response"/> object.</summary>
     private static void FinalizeResponse(ChatResponse response)
     {
@@ -168,10 +252,21 @@ public static class ChatResponseExtensions
     private static void ProcessUpdate(ChatResponseUpdate update, ChatResponse response)
     {
         // If there is no message created yet, or if the last update we saw had a different
-        // response ID than the newest update, create a new message.
+        // message ID than the newest update, create a new message.
         ChatMessage message;
-        if (response.Messages.Count == 0 ||
-            (update.ResponseId is string updateId && response.ResponseId is string responseId && updateId != responseId))
+        var isNewMessage = false;
+        if (response.Messages.Count == 0)
+        {
+            isNewMessage = true;
+        }
+        else if (update.MessageId is { Length: > 0 } updateMessageId
+            && response.Messages[response.Messages.Count - 1].MessageId is string lastMessageId
+            && updateMessageId != lastMessageId)
+        {
+            isNewMessage = true;
+        }
+
+        if (isNewMessage)
         {
             message = new ChatMessage(ChatRole.Assistant, []);
             response.Messages.Add(message);
@@ -195,6 +290,13 @@ public static class ChatResponseExtensions
             message.Role = role;
         }
 
+        if (update.MessageId is { Length: > 0 })
+        {
+            // Note that this must come after the message checks earlier, as they depend
+            // on this value for change detection.
+            message.MessageId = update.MessageId;
+        }
+
         foreach (var content in update.Contents)
         {
             switch (content)
@@ -213,16 +315,14 @@ public static class ChatResponseExtensions
         // Other members on a ChatResponseUpdate map to members of the ChatResponse.
         // Update the response object with those, preferring the values from later updates.
 
-        if (update.ResponseId is not null)
+        if (update.ResponseId is { Length: > 0 })
         {
-            // Note that this must come after the message checks earlier, as they depend
-            // on this value for change detection.
             response.ResponseId = update.ResponseId;
         }
 
-        if (update.ChatThreadId is not null)
+        if (update.ConversationId is not null)
         {
-            response.ChatThreadId = update.ChatThreadId;
+            response.ConversationId = update.ConversationId;
         }
 
         if (update.CreatedAt is not null)
@@ -251,54 +351,5 @@ public static class ChatResponseExtensions
                 response.AdditionalProperties.SetAll(update.AdditionalProperties);
             }
         }
-    }
-
-    /// <summary>Coalesces sequential <see cref="TextContent"/> content elements.</summary>
-    private static void CoalesceTextContent(List<AIContent> contents)
-    {
-        StringBuilder? coalescedText = null;
-
-        // Iterate through all of the items in the list looking for contiguous items that can be coalesced.
-        int start = 0;
-        while (start < contents.Count - 1)
-        {
-            // We need at least two TextContents in a row to be able to coalesce.
-            if (contents[start] is not TextContent firstText)
-            {
-                start++;
-                continue;
-            }
-
-            if (contents[start + 1] is not TextContent secondText)
-            {
-                start += 2;
-                continue;
-            }
-
-            // Append the text from those nodes and continue appending subsequent TextContents until we run out.
-            // We null out nodes as their text is appended so that we can later remove them all in one O(N) operation.
-            coalescedText ??= new();
-            _ = coalescedText.Clear().Append(firstText.Text).Append(secondText.Text);
-            contents[start + 1] = null!;
-            int i = start + 2;
-            for (; i < contents.Count && contents[i] is TextContent next; i++)
-            {
-                _ = coalescedText.Append(next.Text);
-                contents[i] = null!;
-            }
-
-            // Store the replacement node.
-            contents[start] = new TextContent(coalescedText.ToString())
-            {
-                // We inherit the properties of the first text node. We don't currently propagate additional
-                // properties from the subsequent nodes. If we ever need to, we can add that here.
-                AdditionalProperties = firstText.AdditionalProperties?.Clone(),
-            };
-
-            start = i;
-        }
-
-        // Remove all of the null slots left over from the coalescing process.
-        _ = contents.RemoveAll(u => u is null);
     }
 }

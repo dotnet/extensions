@@ -19,11 +19,12 @@ public class AzureResponseCacheTests : ResponseCacheTester, IAsyncLifetime
     {
         if (Settings.Current.Configured)
         {
+            var credential = new ChainedTokenCredential(new AzureCliCredential(), new DefaultAzureCredential());
             _fsClient = new(
                 new Uri(
                     baseUri: new Uri(Settings.Current.StorageAccountEndpoint),
                     relativeUri: Settings.Current.StorageContainerName),
-                new DefaultAzureCredential());
+                credential);
         }
     }
 
@@ -46,9 +47,9 @@ public class AzureResponseCacheTests : ResponseCacheTester, IAsyncLifetime
 
     internal override bool IsConfigured => Settings.Current.Configured;
 
-    internal override IResponseCacheProvider CreateResponseCacheProvider()
+    internal override IEvaluationResponseCacheProvider CreateResponseCacheProvider()
         => new AzureStorageResponseCacheProvider(_dirClient!);
 
-    internal override IResponseCacheProvider CreateResponseCacheProvider(Func<DateTime> provideDateTime)
-        => new AzureStorageResponseCacheProvider(_dirClient!, timeToLiveForCacheEntries: null, provideDateTime);
+    internal override IEvaluationResponseCacheProvider CreateResponseCacheProvider(Func<DateTime> provideDateTime)
+        => new AzureStorageResponseCacheProvider(_dirClient!, provideDateTime);
 }

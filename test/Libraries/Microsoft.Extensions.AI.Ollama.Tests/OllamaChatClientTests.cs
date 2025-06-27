@@ -65,16 +65,17 @@ public class OllamaChatClientTests
     }
 
     [Fact]
-    public void AsChatClient_ProducesExpectedMetadata()
+    public void Ctor_ProducesExpectedMetadata()
     {
         Uri endpoint = new("http://localhost/some/endpoint");
         string model = "amazingModel";
 
         using IChatClient chatClient = new OllamaChatClient(endpoint, model);
         var metadata = chatClient.GetService<ChatClientMetadata>();
-        Assert.Equal("ollama", metadata?.ProviderName);
-        Assert.Equal(endpoint, metadata?.ProviderUri);
-        Assert.Equal(model, metadata?.ModelId);
+        Assert.NotNull(metadata);
+        Assert.Equal("ollama", metadata.ProviderName);
+        Assert.Equal(endpoint, metadata.ProviderUri);
+        Assert.Equal(model, metadata.DefaultModelId);
     }
 
     [Fact]
@@ -171,11 +172,12 @@ public class OllamaChatClientTests
         using IChatClient client = new OllamaChatClient("http://localhost:11434", "llama3.1", httpClient);
 
         List<ChatResponseUpdate> updates = [];
-        await foreach (var update in client.GetStreamingResponseAsync("hello", new()
+        var streamingResponse = client.GetStreamingResponseAsync("hello", new()
         {
             MaxOutputTokens = 20,
             Temperature = 0.5f,
-        }))
+        });
+        await foreach (var update in streamingResponse)
         {
             updates.Add(update);
         }
@@ -187,6 +189,7 @@ public class OllamaChatClientTests
         for (int i = 0; i < updates.Count; i++)
         {
             Assert.NotNull(updates[i].ResponseId);
+            Assert.NotNull(updates[i].MessageId);
             Assert.Equal(i < updates.Count - 1 ? 1 : 2, updates[i].Contents.Count);
             Assert.Equal(ChatRole.Assistant, updates[i].Role);
             Assert.Equal("llama3.1", updates[i].ModelId);
@@ -201,6 +204,10 @@ public class OllamaChatClientTests
         Assert.Equal(11, usage.Details.InputTokenCount);
         Assert.Equal(20, usage.Details.OutputTokenCount);
         Assert.Equal(31, usage.Details.TotalTokenCount);
+
+        var chatResponse = await streamingResponse.ToChatResponseAsync();
+        Assert.Single(Assert.Single(chatResponse.Messages).Contents);
+        Assert.Equal("Hello! How are you today? Is there something I can help you with or would you like to", chatResponse.Text);
     }
 
     [Fact]

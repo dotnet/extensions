@@ -38,18 +38,30 @@ public class ExtendedLoggerBench
     public enum LoggerFactoryVersions
     {
         Original,
+        OriginalWithSampling,
         New,
-        NewWithEnrichers
+        NewWithSampling,
+        NewWithEnrichers,
+        NewWithEnrichersAndSampling
     }
 
     private readonly ILogger[] _loggers = new[]
     {
         GetLogger(LoggerFactoryVersions.Original),
+        GetLogger(LoggerFactoryVersions.OriginalWithSampling),
         GetLogger(LoggerFactoryVersions.New),
+        GetLogger(LoggerFactoryVersions.NewWithSampling),
         GetLogger(LoggerFactoryVersions.NewWithEnrichers),
+        GetLogger(LoggerFactoryVersions.NewWithEnrichersAndSampling)
     };
 
-    [Params(LoggerFactoryVersions.Original, LoggerFactoryVersions.New, LoggerFactoryVersions.NewWithEnrichers)]
+    [Params(
+        LoggerFactoryVersions.Original,
+        LoggerFactoryVersions.OriginalWithSampling,
+        LoggerFactoryVersions.New,
+        LoggerFactoryVersions.NewWithSampling,
+        LoggerFactoryVersions.NewWithEnrichers,
+        LoggerFactoryVersions.NewWithEnrichersAndSampling)]
     public LoggerFactoryVersions Factory;
 
     private static ILogger GetLogger(LoggerFactoryVersions config)
@@ -60,14 +72,26 @@ public class ExtendedLoggerBench
         {
             builder.AddProvider(new BenchLoggerProvider());
 
-            if (config == LoggerFactoryVersions.New || config == LoggerFactoryVersions.NewWithEnrichers)
+            switch (config)
             {
-                builder.EnableEnrichment();
-                builder.EnableRedaction();
+                case LoggerFactoryVersions.OriginalWithSampling:
+                    builder.AddRandomProbabilisticSampler(1.0);
+                    break;
+                case LoggerFactoryVersions.New:
+                case LoggerFactoryVersions.NewWithEnrichers:
+                    builder.EnableEnrichment();
+                    builder.EnableRedaction();
+                    break;
+                case LoggerFactoryVersions.NewWithSampling:
+                case LoggerFactoryVersions.NewWithEnrichersAndSampling:
+                    builder.EnableEnrichment();
+                    builder.EnableRedaction();
+                    builder.AddRandomProbabilisticSampler(1.0);
+                    break;
             }
         });
 
-        if (config == LoggerFactoryVersions.NewWithEnrichers)
+        if (config is LoggerFactoryVersions.NewWithEnrichers or LoggerFactoryVersions.NewWithEnrichersAndSampling)
         {
             serviceCollection.AddProcessLogEnricher();
             serviceCollection.AddRedaction(builder => builder.SetFallbackRedactor<ErasingRedactor>());
@@ -76,11 +100,24 @@ public class ExtendedLoggerBench
         return serviceCollection.BuildServiceProvider().GetRequiredService<ILoggerFactory>().CreateLogger("Benchmark");
     }
 
+    [GlobalSetup]
+    public void GlobalSetup()
+    {
+        Classic_RefTypes();
+        Classic_ValueTypes();
+        LoggerMessageDefine_RefTypes();
+        LoggerMessageDefine_ValueTypes();
+        ClassicCodeGen_RefTypes();
+        ClassicCodeGen_ValueTypes();
+        ModernCodeGen_RefTypes();
+        ModernCodeGen_ValueTypes();
+    }
+
     [Benchmark]
     [SuppressMessage("Performance", "EA0000:Use source generated logging methods for improved performance", Justification = "Benchmark")]
     public void Classic_RefTypes()
     {
-        var logger = _loggers[(int)Factory];
+        ILogger logger = _loggers[(int)Factory];
 
         logger.LogError(
             @"Connection id '{connectionId}' received {type} frame for stream ID {streamId} with length {length} and flags {flags} and {other}",
@@ -96,7 +133,7 @@ public class ExtendedLoggerBench
     [SuppressMessage("Performance", "EA0000:Use source generated logging methods for improved performance", Justification = "Benchmark")]
     public void Classic_ValueTypes()
     {
-        var logger = _loggers[(int)Factory];
+        ILogger logger = _loggers[(int)Factory];
 
         logger.LogError(@"Range [{start}..{end}], options {options}, guid {guid}",
             Start,
@@ -108,42 +145,42 @@ public class ExtendedLoggerBench
     [Benchmark]
     public void LoggerMessageDefine_RefTypes()
     {
-        var logger = _loggers[(int)Factory];
+        ILogger logger = _loggers[(int)Factory];
         _loggerMessage_refTypes(logger, ConnectionId, Type, StreamId, Length, Flags, Other, null);
     }
 
     [Benchmark]
     public void LoggerMessageDefine_ValueTypes()
     {
-        var logger = _loggers[(int)Factory];
+        ILogger logger = _loggers[(int)Factory];
         _loggerMessage_valueTypes(logger, Start, End, Options, _guid, null);
     }
 
     [Benchmark]
     public void ClassicCodeGen_RefTypes()
     {
-        var logger = _loggers[(int)Factory];
+        ILogger logger = _loggers[(int)Factory];
         ClassicCodeGen.RefTypes(logger, ConnectionId, Type, StreamId, Length, Flags, Other);
     }
 
     [Benchmark]
     public void ClassicCodeGen_ValueTypes()
     {
-        var logger = _loggers[(int)Factory];
+        ILogger logger = _loggers[(int)Factory];
         ClassicCodeGen.ValueTypes(logger, Start, End, Options, _guid);
     }
 
     [Benchmark]
     public void ModernCodeGen_RefTypes()
     {
-        var logger = _loggers[(int)Factory];
+        ILogger logger = _loggers[(int)Factory];
         ModernCodeGen.RefTypes(logger, ConnectionId, Type, StreamId, Length, Flags, Other);
     }
 
     [Benchmark]
     public void ModernCodeGen_ValueTypes()
     {
-        var logger = _loggers[(int)Factory];
+        ILogger logger = _loggers[(int)Factory];
         ModernCodeGen.ValueTypes(logger, Start, End, Options, _guid);
     }
 }

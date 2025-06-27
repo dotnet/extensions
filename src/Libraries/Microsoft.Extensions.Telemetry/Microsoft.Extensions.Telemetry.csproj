@@ -10,15 +10,16 @@
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectSharedText>true</InjectSharedText>
+    <InjectGetOrAddOnLegacy>true</InjectGetOrAddOnLegacy>
     <InjectSharedDataValidation>true</InjectSharedDataValidation>
+    <InjectSharedLogBuffering>true</InjectSharedLogBuffering>
+    <InjectSharedMemoization>true</InjectSharedMemoization>
     <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>
     <InjectSharedPools>true</InjectSharedPools>
     <InjectSharedRentedSpan>true</InjectSharedRentedSpan>
-    <InjectSharedMemoization>true</InjectSharedMemoization>
-    <InjectGetOrAddOnLegacy>true</InjectGetOrAddOnLegacy>
     <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
     <UseLoggingGenerator>true</UseLoggingGenerator>
-  </PropertyGroup>
+</PropertyGroup>
 
   <PropertyGroup>
     <Stage>normal</Stage>

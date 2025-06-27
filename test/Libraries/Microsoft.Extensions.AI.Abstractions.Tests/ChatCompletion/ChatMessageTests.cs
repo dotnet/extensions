@@ -141,8 +141,8 @@ public class ChatMessageTests
     {
         ChatMessage message = new(ChatRole.User,
         [
-            new DataContent("http://localhost/audio"),
-            new DataContent("http://localhost/image"),
+            new DataContent("data:text/image;base64,aGVsbG8="),
+            new DataContent("data:text/plain;base64,aGVsbG8="),
             new FunctionCallContent("callId1", "fc1"),
             new TextContent("text-1"),
             new TextContent("text-2"),
@@ -240,7 +240,7 @@ public class ChatMessageTests
             {
                 AdditionalProperties = new() { ["metadata-key-1"] = "metadata-value-1" }
             },
-            new DataContent(new Uri("https://fake-random-test-host:123"), "mime-type/2")
+            new DataContent(new Uri("data:text/plain;base64,aGVsbG8="), "mime-type/2")
             {
                 AdditionalProperties = new() { ["metadata-key-2"] = "metadata-value-2" }
             },
@@ -286,7 +286,7 @@ public class ChatMessageTests
 
         var dataContent = deserializedMessage.Contents[1] as DataContent;
         Assert.NotNull(dataContent);
-        Assert.Equal("https://fake-random-test-host:123/", dataContent.Uri);
+        Assert.Equal("data:mime-type/2;base64,aGVsbG8=", dataContent.Uri);
         Assert.Equal("mime-type/2", dataContent.MediaType);
         Assert.NotNull(dataContent.AdditionalProperties);
         Assert.Single(dataContent.AdditionalProperties);
@@ -294,7 +294,7 @@ public class ChatMessageTests
 
         dataContent = deserializedMessage.Contents[2] as DataContent;
         Assert.NotNull(dataContent);
-        Assert.True(dataContent.Data!.Value.Span.SequenceEqual(new BinaryData(new[] { 1, 2, 3 }, TestJsonSerializerContext.Default.Options)));
+        Assert.True(dataContent.Data.Span.SequenceEqual(new BinaryData(new[] { 1, 2, 3 }, TestJsonSerializerContext.Default.Options)));
         Assert.Equal("mime-type/3", dataContent.MediaType);
         Assert.NotNull(dataContent.AdditionalProperties);
         Assert.Single(dataContent.AdditionalProperties);

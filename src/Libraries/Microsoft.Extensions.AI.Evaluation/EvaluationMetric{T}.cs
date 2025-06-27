@@ -25,8 +25,12 @@ public class EvaluationMetric<T> : EvaluationMetric
     /// </summary>
     /// <param name="name">The name of the <see cref="EvaluationMetric{T}"/>.</param>
     /// <param name="value">The value  of the <see cref="EvaluationMetric{T}"/>.</param>
-    protected EvaluationMetric(string name, T? value)
-        : base(name)
+    /// <param name="reason">
+    /// An optional string that can be used to provide some commentary around the result represented by this
+    /// <see cref="EvaluationMetric{T}"/>.
+    /// </param>
+    protected EvaluationMetric(string name, T? value, string? reason = null)
+        : base(name, reason)
     {
         Value = value;
     }

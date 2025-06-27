@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,10 +14,18 @@ namespace Microsoft.Extensions.AI;
 /// <summary>A delegating embedding generator that logs embedding generation operations to an <see cref="ILogger"/>.</summary>
 /// <typeparam name="TInput">Specifies the type of the input passed to the generator.</typeparam>
 /// <typeparam name="TEmbedding">Specifies the type of the embedding instance produced by the generator.</typeparam>
+/// <remarks>
 /// <para>
 /// The provided implementation of <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> is thread-safe for concurrent use
 /// so long as the <see cref="ILogger"/> employed is also thread-safe for concurrent use.
 /// </para>
+/// <para>
+/// When the employed <see cref="ILogger"/> enables <see cref="Logging.LogLevel.Trace"/>, the contents of
+/// values and options are logged. These values and options may contain sensitive application data.
+/// <see cref="Logging.LogLevel.Trace"/> is disabled by default and should never be enabled in a production environment.
+/// Messages and options are not logged at other logging levels.
+/// </para>
+/// </remarks>
 public partial class LoggingEmbeddingGenerator<TInput, TEmbedding> : DelegatingEmbeddingGenerator<TInput, TEmbedding>
     where TEmbedding : Embedding
 {
@@ -52,7 +59,7 @@ public partial class LoggingEmbeddingGenerator<TInput, TEmbedding> : DelegatingE
         {
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokedSensitive(AsJson(values), AsJson(options), AsJson(this.GetService<TInput, TEmbedding, EmbeddingGeneratorMetadata>()));
+                LogInvokedSensitive(AsJson(values), AsJson(options), AsJson(this.GetService<EmbeddingGeneratorMetadata>()));
             }
             else
             {
@@ -62,7 +69,7 @@ public partial class LoggingEmbeddingGenerator<TInput, TEmbedding> : DelegatingE
 
         try
         {
-            var embeddings = await base.GenerateAsync(values, options, cancellationToken).ConfigureAwait(false);
+            var embeddings = await base.GenerateAsync(values, options, cancellationToken);
 
             LogCompleted(embeddings.Count);
 

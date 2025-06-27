@@ -1,13 +1,17 @@
 <Project Sdk="Microsoft.Build.Traversal">
   <ItemGroup>
+    <_SnapshotsToExclude Include="$(MSBuildThisFileDirectory)..\test\**\Snapshots\**\*.*proj" />
+    <_GeneratedContentToExclude Include="$(MSBuildThisFileDirectory)..\test\**\TemplateSandbox\**\*.*proj" />
+
     <!-- We recursively add all of the projects inside the src directory, except for the exclusions above -->
-    <_ProjectsToBuild Include="$(MSBuildThisFileDirectory)..\src\**\*.csproj" Exclude="@(_ProjectsToExclude)" />
+    <_ProjectsToBuild Include="$(MSBuildThisFileDirectory)..\src\**\*.csproj" />
     <!-- We recursively add all of the test projects -->
     <_ProjectsToBuild Include="$(MSBuildThisFileDirectory)..\test\**\*.csproj" />
     <_ProjectsToBuild Include="$(MSBuildThisFileDirectory)..\bench\**\*.csproj" />
     <!-- Additionally, include the transport project that is not defined as a csproj -->
     <_ProjectsToBuild Include="$(MSBuildThisFileDirectory)..\src\Packages\Microsoft.Internal.Extensions.DotNetApiDocs.Transport\Microsoft.Internal.Extensions.DotNetApiDocs.Transport.proj" />
+
     <!-- Add all the projects we want to build as project references, so the traversal SDK can build them -->
-    <ProjectReference Include="@(_ProjectsToBuild)" />
+    <ProjectReference Include="@(_ProjectsToBuild)" Exclude="@(_ProjectsToExclude);@(_SnapshotsToExclude);@(_GeneratedContentToExclude)" />
   </ItemGroup>
 </Project>
