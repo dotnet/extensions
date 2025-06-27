@@ -33,6 +33,25 @@ internal static class EvaluationMetricExtensions
             : new EvaluationMetricInterpretation(rating);
     }
 
+    internal static EvaluationMetricInterpretation InterpretScore(
+        this BooleanMetric metric,
+        bool passValue = true)
+    {
+        EvaluationRating rating = metric.Value switch
+        {
+            null => EvaluationRating.Inconclusive,
+            true => passValue ? EvaluationRating.Exceptional : EvaluationRating.Unacceptable,
+            false => passValue ? EvaluationRating.Unacceptable : EvaluationRating.Exceptional,
+        };
+
+        return metric.Value is bool value && value == passValue
+            ? new EvaluationMetricInterpretation(rating)
+            : new EvaluationMetricInterpretation(
+                rating,
+                failed: true,
+                reason: $"{metric.Name} is not {passValue}.");
+    }
+
     internal static bool TryParseEvaluationResponseWithValue<T>(
         this EvaluationMetric<T> metric,
         ChatResponse evaluationResponse,
@@ -81,7 +100,7 @@ internal static class EvaluationMetricExtensions
 
         static bool TryParseTag(string text, string tagName, [NotNullWhen(true)] out string? tagValue)
         {
-            const RegexOptions Options = RegexOptions.Multiline;
+            const RegexOptions Options = RegexOptions.Singleline;
             Match match = Regex.Match(text, $@"<{tagName}>(?<value>.*?)</{tagName}>", Options);
 
             if (!match.Success || match.Groups["value"] is not Group valueGroup || !valueGroup.Success)
@@ -129,6 +148,11 @@ internal static class EvaluationMetricExtensions
                 if (bool.TryParse(valueText, out bool booleanValue))
                 {
                     booleanMetric.Value = booleanValue;
+                    return true;
+                }
+                else if (int.TryParse(valueText, out int intValue) && (intValue is 0 or 1))
+                {
+                    booleanMetric.Value = intValue is 1;
                     return true;
                 }
                 else

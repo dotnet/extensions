@@ -171,8 +171,8 @@ public class OpenTelemetryChatClientTests
 
         Assert.Equal("id123", activity.GetTagItem("gen_ai.response.id"));
         Assert.Equal("""["stop"]""", activity.GetTagItem("gen_ai.response.finish_reasons"));
-        Assert.Equal(10, activity.GetTagItem("gen_ai.response.input_tokens"));
-        Assert.Equal(20, activity.GetTagItem("gen_ai.response.output_tokens"));
+        Assert.Equal(10, activity.GetTagItem("gen_ai.usage.input_tokens"));
+        Assert.Equal(20, activity.GetTagItem("gen_ai.usage.output_tokens"));
         Assert.Equal(enableSensitiveData ? "abcdefgh" : null, activity.GetTagItem("gen_ai.testservice.response.system_fingerprint"));
         Assert.Equal(enableSensitiveData ? "value2" : null, activity.GetTagItem("gen_ai.testservice.response.and_something_else"));
 

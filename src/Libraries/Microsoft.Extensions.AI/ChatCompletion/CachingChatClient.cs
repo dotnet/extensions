@@ -51,7 +51,7 @@ public abstract class CachingChatClient : DelegatingChatClient
     {
         _ = Throw.IfNull(messages);
 
-        return UseCaching(options) ?
+        return EnableCaching(messages, options) ?
             GetCachedResponseAsync(messages, options, cancellationToken) :
             base.GetResponseAsync(messages, options, cancellationToken);
     }
@@ -79,7 +79,7 @@ public abstract class CachingChatClient : DelegatingChatClient
     {
         _ = Throw.IfNull(messages);
 
-        return UseCaching(options) ?
+        return EnableCaching(messages, options) ?
             GetCachedStreamingResponseAsync(messages, options, cancellationToken) :
             base.GetStreamingResponseAsync(messages, options, cancellationToken);
     }
@@ -196,12 +196,25 @@ public abstract class CachingChatClient : DelegatingChatClient
     /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/>.</exception>
     protected abstract Task WriteCacheStreamingAsync(string key, IReadOnlyList<ChatResponseUpdate> value, CancellationToken cancellationToken);
 
-    /// <summary>Determine whether to use caching with the request.</summary>
-    private static bool UseCaching(ChatOptions? options)
+    /// <summary>Determines whether caching should be used with the specified request.</summary>
+    /// <param name="messages">The sequence of chat messages included in the request.</param>
+    /// <param name="options">The chat options included in the request.</param>
+    /// <returns>
+    /// <see langword="true"/> if caching should be used for the request, such that the <see cref="CachingChatClient"/>
+    /// will try to satisfy the request from the cache, or if it can't, will try to cache the fetched response.
+    /// <see langword="false"/> if caching should not be used for the request, such that the request will
+    /// be passed through to the inner <see cref="IChatClient"/> without attempting to read from or write to the cache.
+    /// </returns>
+    /// <remarks>
+    /// The default implementation returns <see langword="true"/> as long as the <paramref name="options"/>
+    /// does not have a <see cref="ChatOptions.ConversationId"/> set.
+    /// </remarks>
+    protected virtual bool EnableCaching(IEnumerable<ChatMessage> messages, ChatOptions? options)
     {
         // We want to skip caching if options.ConversationId is set. If it's set, that implies there's
         // some state that will impact the response and that's not represented in the messages. Since
-        // that state could change even with the same ID, we have to assume caching isn't valid.
+        // that state could change even with the same ID (e.g. if it's a thread ID representing the
+        // mutable state of a conversation), we have to assume caching isn't valid.
         return options?.ConversationId is null;
     }
 }

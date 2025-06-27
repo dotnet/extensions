@@ -31,6 +31,7 @@ public class SpeechToTextResponseTests
         Assert.Null(response.StartTime);
         Assert.Null(response.EndTime);
         Assert.Equal(string.Empty, response.ToString());
+        Assert.Null(response.Usage);
     }
 
     [Theory]
@@ -132,6 +133,11 @@ public class SpeechToTextResponseTests
         List<AIContent> newContents = [new TextContent("text1"), new TextContent("text2")];
         response.Contents = newContents;
         Assert.Same(newContents, response.Contents);
+
+        Assert.Null(response.Usage);
+        UsageDetails usageDetails = new();
+        response.Usage = usageDetails;
+        Assert.Same(usageDetails, response.Usage);
     }
 
     [Fact]
@@ -152,6 +158,7 @@ public class SpeechToTextResponseTests
             EndTime = TimeSpan.FromSeconds(2),
             RawRepresentation = new(),
             AdditionalProperties = new() { ["key"] = "value" },
+            Usage = new() { InputTokenCount = 42, OutputTokenCount = 84, TotalTokenCount = 126 },
         };
 
         string json = JsonSerializer.Serialize(original, TestJsonSerializerContext.Default.SpeechToTextResponse);
@@ -176,6 +183,11 @@ public class SpeechToTextResponseTests
         Assert.True(result.AdditionalProperties.TryGetValue("key", out object? value));
         Assert.IsType<JsonElement>(value);
         Assert.Equal("value", ((JsonElement)value!).GetString());
+
+        Assert.NotNull(result.Usage);
+        Assert.Equal(42, result.Usage.InputTokenCount);
+        Assert.Equal(84, result.Usage.OutputTokenCount);
+        Assert.Equal(126, result.Usage.TotalTokenCount);
     }
 
     [Fact]
@@ -185,8 +197,10 @@ public class SpeechToTextResponseTests
         Assert.Equal("This is a test." + Environment.NewLine + "It's multiple lines.", response.ToString());
     }
 
-    [Fact]
-    public void ToSpeechToTextResponseUpdates_ReturnsExpectedUpdate()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ToSpeechToTextResponseUpdates_ReturnsExpectedUpdate(bool withUsage)
     {
         // Arrange: create a response with contents
         SpeechToTextResponse response = new()
@@ -202,6 +216,7 @@ public class SpeechToTextResponseTests
             ResponseId = "12345",
             ModelId = "someModel",
             AdditionalProperties = new() { ["key1"] = "value1", ["key2"] = 42 },
+            Usage = withUsage ? new UsageDetails { InputTokenCount = 100, OutputTokenCount = 200, TotalTokenCount = 300 } : null
         };
 
         // Act: convert to streaming updates
@@ -217,7 +232,7 @@ public class SpeechToTextResponseTests
         Assert.Equal(TimeSpan.FromSeconds(1), update.StartTime);
         Assert.Equal(TimeSpan.FromSeconds(2), update.EndTime);
 
-        Assert.Equal(3, update.Contents.Count);
+        Assert.Equal(withUsage ? 4 : 3, update.Contents.Count);
         Assert.Equal("Hello, ", Assert.IsType<TextContent>(update.Contents[0]).Text);
         Assert.Equal("image/png", Assert.IsType<DataContent>(update.Contents[1]).MediaType);
         Assert.Equal("world!", Assert.IsType<TextContent>(update.Contents[2]).Text);
@@ -225,5 +240,13 @@ public class SpeechToTextResponseTests
         Assert.NotNull(update.AdditionalProperties);
         Assert.Equal("value1", update.AdditionalProperties["key1"]);
         Assert.Equal(42, update.AdditionalProperties["key2"]);
+
+        if (withUsage)
+        {
+            var usage = Assert.IsType<UsageContent>(update.Contents[3]);
+            Assert.Equal(100, usage.Details.InputTokenCount);
+            Assert.Equal(200, usage.Details.OutputTokenCount);
+            Assert.Equal(300, usage.Details.TotalTokenCount);
+        }
     }
 }

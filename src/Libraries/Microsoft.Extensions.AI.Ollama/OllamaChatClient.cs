@@ -307,10 +307,20 @@ public sealed class OllamaChatClient : IChatClient
 
     private OllamaChatRequest ToOllamaChatRequest(IEnumerable<ChatMessage> messages, ChatOptions? options, bool stream)
     {
+        var requestMessages = messages.SelectMany(ToOllamaChatRequestMessages).ToList();
+        if (options?.Instructions is string instructions)
+        {
+            requestMessages.Insert(0, new OllamaChatRequestMessage
+            {
+                Role = ChatRole.System.Value,
+                Content = instructions,
+            });
+        }
+
         OllamaChatRequest request = new()
         {
             Format = ToOllamaChatResponseFormat(options?.ResponseFormat),
-            Messages = messages.SelectMany(ToOllamaChatRequestMessages).ToArray(),
+            Messages = requestMessages,
             Model = options?.ModelId ?? _metadata.DefaultModelId ?? string.Empty,
             Stream = stream,
             Tools = options?.ToolMode is not NoneChatToolMode && options?.Tools is { Count: > 0 } tools ? tools.OfType<AIFunction>().Select(ToOllamaTool) : null,

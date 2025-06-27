@@ -86,7 +86,7 @@ public sealed class EquivalenceEvaluator : IEvaluator
         {
             metric.AddDiagnostics(
                 EvaluationDiagnostic.Error(
-                    $"A value of type '{nameof(EquivalenceEvaluatorContext)}' was not found in the '{nameof(additionalContext)}' collection."));
+                    $"A value of type {nameof(EquivalenceEvaluatorContext)} was not found in the {nameof(additionalContext)} collection."));
 
             return result;
         }

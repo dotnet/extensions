@@ -52,7 +52,7 @@ internal sealed class QuantizationEmbeddingGenerator :
         {
             if (vector[i] > 0)
             {
-                result[i / 8] = true;
+                result[i] = true;
             }
         }
 

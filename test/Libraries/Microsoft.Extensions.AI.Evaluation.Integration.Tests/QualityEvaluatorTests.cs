@@ -278,6 +278,7 @@ public class QualityEvaluatorTests
             ReferenceEquals(context4, retrievedContextChunksForRetrievalEvaluator));
     }
 
+    [MemberNotNull(nameof(_chatOptions))]
     [MemberNotNull(nameof(_qualityReportingConfiguration))]
     [MemberNotNull(nameof(_needsContextReportingConfiguration))]
     private static void SkipIfNotConfigured()
@@ -287,6 +288,7 @@ public class QualityEvaluatorTests
             throw new SkipTestException("Test is not configured");
         }
 
+        Assert.NotNull(_chatOptions);
         Assert.NotNull(_qualityReportingConfiguration);
         Assert.NotNull(_needsContextReportingConfiguration);
     }

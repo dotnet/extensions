@@ -548,6 +548,7 @@ public class SafetyEvaluatorTests
         Assert.True(result.TryGet(ViolenceEvaluator.ViolenceMetricName, out NumericMetric? _));
     }
 
+    [MemberNotNull(nameof(_chatOptions))]
     [MemberNotNull(nameof(_contentSafetyReportingConfiguration))]
     [MemberNotNull(nameof(_imageContentSafetyReportingConfiguration))]
     [MemberNotNull(nameof(_codeVulnerabilityReportingConfiguration))]
@@ -559,6 +560,7 @@ public class SafetyEvaluatorTests
             throw new SkipTestException("Test is not configured");
         }
 
+        Assert.NotNull(_chatOptions);
         Assert.NotNull(_contentSafetyReportingConfiguration);
         Assert.NotNull(_codeVulnerabilityReportingConfiguration);
         Assert.NotNull(_imageContentSafetyReportingConfiguration);

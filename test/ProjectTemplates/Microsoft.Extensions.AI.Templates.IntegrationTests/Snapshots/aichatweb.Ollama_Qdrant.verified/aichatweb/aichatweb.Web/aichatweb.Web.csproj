@@ -10,7 +10,7 @@
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Aspire.OllamaSharp" Version="9.4.1-beta.291" />
     <PackageReference Include="OllamaSharp" Version="5.1.18" />
-    <PackageReference Include="Microsoft.Extensions.AI" Version="9.6.0" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="9.7.0" />
     <PackageReference Include="Microsoft.SemanticKernel.Core" Version="1.53.0" />
     <PackageReference Include="PdfPig" Version="0.1.10" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
