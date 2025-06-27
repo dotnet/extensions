@@ -237,14 +237,16 @@ internal sealed class OpenAIAssistantChatClient : IChatClient
     }
 
     /// <summary>Converts an Extensions function to an OpenAI assistants function tool.</summary>
-    internal static FunctionToolDefinition ToOpenAIAssistantsFunctionToolDefinition(AIFunction aiFunction)
+    internal static FunctionToolDefinition ToOpenAIAssistantsFunctionToolDefinition(AIFunction aiFunction, ChatOptions? options = null)
     {
-        (BinaryData parameters, bool? strict) = OpenAIClientExtensions.ToOpenAIFunctionParameters(aiFunction);
+        bool? strict =
+            OpenAIClientExtensions.HasStrict(aiFunction.AdditionalProperties) ??
+            OpenAIClientExtensions.HasStrict(options?.AdditionalProperties);
 
         return new FunctionToolDefinition(aiFunction.Name)
         {
             Description = aiFunction.Description,
-            Parameters = parameters,
+            Parameters = OpenAIClientExtensions.ToOpenAIFunctionParameters(aiFunction, strict),
             StrictParameterSchemaEnabled = strict,
         };
     }
@@ -296,7 +298,7 @@ internal sealed class OpenAIAssistantChatClient : IChatClient
                     switch (tool)
                     {
                         case AIFunction aiFunction:
-                            runOptions.ToolsOverride.Add(ToOpenAIAssistantsFunctionToolDefinition(aiFunction));
+                            runOptions.ToolsOverride.Add(ToOpenAIAssistantsFunctionToolDefinition(aiFunction, options));
                             break;
 
                         case HostedCodeInterpreterTool:
@@ -342,7 +344,8 @@ internal sealed class OpenAIAssistantChatClient : IChatClient
                         runOptions.ResponseFormat = AssistantResponseFormat.CreateJsonSchemaFormat(
                             jsonFormat.SchemaName,
                             BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(jsonSchema, OpenAIJsonContext.Default.JsonElement)),
-                            jsonFormat.SchemaDescription);
+                            jsonFormat.SchemaDescription,
+                            OpenAIClientExtensions.HasStrict(options.AdditionalProperties));
                         break;
 
                     case ChatResponseFormatJson jsonFormat:

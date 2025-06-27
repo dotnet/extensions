@@ -101,11 +101,17 @@ internal sealed class OpenAIChatClient : IChatClient
     }
 
     /// <summary>Converts an Extensions function to an OpenAI chat tool.</summary>
-    internal static ChatTool ToOpenAIChatTool(AIFunction aiFunction)
+    internal static ChatTool ToOpenAIChatTool(AIFunction aiFunction, ChatOptions? options = null)
     {
-        (BinaryData parameters, bool? strict) = OpenAIClientExtensions.ToOpenAIFunctionParameters(aiFunction);
+        bool? strict =
+            OpenAIClientExtensions.HasStrict(aiFunction.AdditionalProperties) ??
+            OpenAIClientExtensions.HasStrict(options?.AdditionalProperties);
 
-        return ChatTool.CreateFunctionTool(aiFunction.Name, aiFunction.Description, parameters, strict);
+        return ChatTool.CreateFunctionTool(
+            aiFunction.Name,
+            aiFunction.Description,
+            OpenAIClientExtensions.ToOpenAIFunctionParameters(aiFunction, strict),
+            strict);
     }
 
     /// <summary>Converts an Extensions chat message enumerable to an OpenAI chat message enumerable.</summary>
@@ -517,7 +523,7 @@ internal sealed class OpenAIChatClient : IChatClient
             {
                 if (tool is AIFunction af)
                 {
-                    result.Tools.Add(ToOpenAIChatTool(af));
+                    result.Tools.Add(ToOpenAIChatTool(af, options));
                 }
             }
 
@@ -555,7 +561,8 @@ internal sealed class OpenAIChatClient : IChatClient
                     OpenAI.Chat.ChatResponseFormat.CreateJsonSchemaFormat(
                         jsonFormat.SchemaName ?? "json_schema",
                         BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(jsonSchema, OpenAIJsonContext.Default.JsonElement)),
-                        jsonFormat.SchemaDescription) :
+                        jsonFormat.SchemaDescription,
+                        OpenAIClientExtensions.HasStrict(options.AdditionalProperties)) :
                     OpenAI.Chat.ChatResponseFormat.CreateJsonObjectFormat();
             }
         }
