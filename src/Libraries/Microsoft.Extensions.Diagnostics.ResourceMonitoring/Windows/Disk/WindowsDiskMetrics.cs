@@ -99,7 +99,7 @@ internal sealed class WindowsDiskMetrics
         }
         catch (Exception ex)
         {
-            Log.DiskIoPerfCounterException(_logger, WindowsDiskPerfCounterNames.DiskIdleTimeCounter, ex.Message);
+            _logger.DiskIoPerfCounterException(WindowsDiskPerfCounterNames.DiskIdleTimeCounter, ex.Message);
         }
 
         // Initialize disk performance counters for "system.disk.io" and "system.disk.operations" metrics
@@ -125,7 +125,7 @@ internal sealed class WindowsDiskMetrics
             }
             catch (Exception ex)
             {
-                Log.DiskIoPerfCounterException(_logger, counterName, ex.Message);
+                _logger.DiskIoPerfCounterException(counterName, ex.Message);
             }
         }
     }

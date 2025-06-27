@@ -48,7 +48,7 @@ internal sealed class WindowsNetworkMetrics
         List<Measurement<long>> measurements = new(24);
 
         // IPv4:
-        TcpStateInfo stateV4 = _tcpStateInfoProvider.GetpIpV4TcpStateInfo();
+        TcpStateInfo stateV4 = _tcpStateInfoProvider.GetIpV4TcpStateInfo();
         measurements.Add(new Measurement<long>(stateV4.ClosedCount, new TagList { tcpVersionFourTag, new(NetworkStateKey, "close") }));
         measurements.Add(new Measurement<long>(stateV4.ListenCount, new TagList { tcpVersionFourTag, new(NetworkStateKey, "listen") }));
         measurements.Add(new Measurement<long>(stateV4.SynSentCount, new TagList { tcpVersionFourTag, new(NetworkStateKey, "syn_sent") }));
@@ -63,7 +63,7 @@ internal sealed class WindowsNetworkMetrics
         measurements.Add(new Measurement<long>(stateV4.DeleteTcbCount, new TagList { tcpVersionFourTag, new(NetworkStateKey, "delete") }));
 
         // IPv6:
-        TcpStateInfo stateV6 = _tcpStateInfoProvider.GetpIpV6TcpStateInfo();
+        TcpStateInfo stateV6 = _tcpStateInfoProvider.GetIpV6TcpStateInfo();
         measurements.Add(new Measurement<long>(stateV6.ClosedCount, new TagList { tcpVersionSixTag, new(NetworkStateKey, "close") }));
         measurements.Add(new Measurement<long>(stateV6.ListenCount, new TagList { tcpVersionSixTag, new(NetworkStateKey, "listen") }));
         measurements.Add(new Measurement<long>(stateV6.SynSentCount, new TagList { tcpVersionSixTag, new(NetworkStateKey, "syn_sent") }));
