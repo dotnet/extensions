@@ -203,7 +203,7 @@ public class AdditionalPropertiesDictionary<TValue> : IDictionary<string, TValue
 
     /// <summary>Copies all of the entries from <paramref name="items"/> into the dictionary, overwriting any existing items in the dictionary with the same key.</summary>
     /// <param name="items">The items to add.</param>
-    internal void SetAll(IEnumerable<KeyValuePair<string, TValue>> items)
+    internal void SetAll(AdditionalPropertiesDictionary<TValue> items)
     {
         _ = Throw.IfNull(items);
 
