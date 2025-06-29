@@ -240,7 +240,6 @@ public sealed class ResourceMonitoringExtensionsTests
         Assert.Contains(services, s => s.ServiceType == typeof(ISnapshotProvider));
     }
 
-
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Not supported on MacOs.")]
     [ConditionalFact]
     public void AddResourceMonitoringInternal_CallsConfigureDelegate()
