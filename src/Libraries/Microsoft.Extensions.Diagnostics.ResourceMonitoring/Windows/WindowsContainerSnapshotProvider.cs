@@ -87,16 +87,16 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 
         _timeProvider = timeProvider;
 
-        using var jobHandle = _createJobHandleObject();
+        using IJobHandle jobHandle = _createJobHandleObject();
 
-        var memoryLimitLong = GetMemoryLimit(jobHandle);
+        ulong memoryLimitLong = GetMemoryLimit(jobHandle);
         _memoryLimit = memoryLimitLong;
         _cpuLimit = GetCpuLimit(jobHandle, systemInfo);
 
         // CPU request (aka guaranteed CPU units) is not supported on Windows, so we set it to the same value as CPU limit (aka maximum CPU units).
         // Memory request (aka guaranteed memory) is not supported on Windows, so we set it to the same value as memory limit (aka maximum memory).
-        var cpuRequest = _cpuLimit;
-        var memoryRequest = memoryLimitLong;
+        double cpuRequest = _cpuLimit;
+        ulong memoryRequest = memoryLimitLong;
         Resources = new SystemResources(cpuRequest, _cpuLimit, memoryRequest, memoryLimitLong);
         _logger.SystemResourcesInfo(_cpuLimit, cpuRequest, memoryLimitLong, memoryRequest);
 
@@ -112,7 +112,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         // We don't dispose the meter because IMeterFactory handles that
         // An issue on analyzer side: https://github.com/dotnet/roslyn-analyzers/issues/6912
         // Related documentation: https://github.com/dotnet/docs/pull/37170
-        var meter = meterFactory.Create(ResourceUtilizationInstruments.MeterName);
+        Meter meter = meterFactory.Create(ResourceUtilizationInstruments.MeterName);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
         // Container based metrics:
@@ -158,7 +158,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
             cpuRatio = cpuLimit.CpuRate / CpuCycles;
         }
 
-        var systemInfoValue = systemInfo.GetSystemInfo();
+        SYSTEM_INFO systemInfoValue = systemInfo.GetSystemInfo();
 
         // Multiply the cpu ratio by the number of processors to get you the portion
         // of processors used from the system.
@@ -175,7 +175,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 
         if (memoryLimitInBytes <= 0)
         {
-            var memoryStatus = _memoryStatus.Value;
+            MEMORYSTATUSEX memoryStatus = _memoryStatus.Value;
 
             // Technically, the unconstrained limit is memoryStatus.TotalPageFile.
             // Leaving this at physical as it is more understandable to consumers.
@@ -187,7 +187,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 
     private double MemoryPercentage(Func<ulong> getMemoryUsage)
     {
-        var now = _timeProvider.GetUtcNow();
+        DateTimeOffset now = _timeProvider.GetUtcNow();
 
         lock (_memoryLocker)
         {
@@ -197,7 +197,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
             }
         }
 
-        var memoryUsage = getMemoryUsage();
+        ulong memoryUsage = getMemoryUsage();
 
         lock (_memoryLocker)
         {
@@ -216,11 +216,13 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 
     private IEnumerable<Measurement<double>> GetCpuTime()
     {
-        using var jobHandle = _createJobHandleObject();
+        using IJobHandle jobHandle = _createJobHandleObject();
         var basicAccountingInfo = jobHandle.GetBasicAccountingInfo();
 
-        yield return new(basicAccountingInfo.TotalUserTime / TicksPerSecondDouble, [new KeyValuePair<string, object?>("cpu.mode", "user")]);
-        yield return new(basicAccountingInfo.TotalKernelTime / TicksPerSecondDouble, [new KeyValuePair<string, object?>("cpu.mode", "system")]);
+        yield return new Measurement<double>(basicAccountingInfo.TotalUserTime / TicksPerSecondDouble,
+            [new KeyValuePair<string, object?>("cpu.mode", "user")]);
+        yield return new Measurement<double>(basicAccountingInfo.TotalKernelTime / TicksPerSecondDouble,
+            [new KeyValuePair<string, object?>("cpu.mode", "system")]);
     }
 
     private double CpuPercentage()

@@ -375,8 +375,6 @@ public sealed class AcceptanceTest
     [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
     public Task ResourceUtilizationTracker_And_Metrics_Report_Same_Values_With_Cgroupsv2_v2()
     {
-        var cpuRefresh = TimeSpan.FromMinutes(13);
-        var memoryRefresh = TimeSpan.FromMinutes(14);
         var fileSystem = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
             { new FileInfo("/proc/self/cgroup"), "0::/fakeslice"},
@@ -392,6 +390,8 @@ public sealed class AcceptanceTest
         using var listener = new MeterListener();
         var clock = new FakeTimeProvider(DateTimeOffset.UtcNow);
         var cpuFromGauge = 0.0d;
+        var cpuUserTime = 0.0d;
+        var cpuKernelTime = 0.0d;
         var cpuLimitFromGauge = 0.0d;
         var cpuRequestFromGauge = 0.0d;
         var memoryFromGauge = 0.0d;
@@ -401,8 +401,8 @@ public sealed class AcceptanceTest
         object? meterScope = null;
         listener.InstrumentPublished = (Instrument instrument, MeterListener meterListener)
             => OnInstrumentPublished(instrument, meterListener, meterScope);
-        listener.SetMeasurementEventCallback<double>((m, f, _, _)
-            => OnMeasurementReceived(m, f, ref cpuFromGauge, ref cpuLimitFromGauge, ref cpuRequestFromGauge, ref memoryFromGauge, ref memoryLimitFromGauge));
+        listener.SetMeasurementEventCallback<double>((m, f, tags, _)
+            => OnMeasurementReceived(m, f, tags, ref cpuUserTime, ref cpuKernelTime, ref cpuFromGauge, ref cpuLimitFromGauge, ref cpuRequestFromGauge, ref memoryFromGauge, ref memoryLimitFromGauge));
         listener.Start();
 
         using var host = FakeHost.CreateBuilder()
@@ -451,8 +451,6 @@ public sealed class AcceptanceTest
     [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
     public Task ResourceUtilizationTracker_And_Metrics_Report_Same_Values_With_Cgroupsv2_v2_Using_NrPeriods()
     {
-        var cpuRefresh = TimeSpan.FromMinutes(13);
-        var memoryRefresh = TimeSpan.FromMinutes(14);
         var fileSystem = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
             { new FileInfo("/proc/self/cgroup"), "0::/fakeslice"},
@@ -469,6 +467,8 @@ public sealed class AcceptanceTest
         var clock = new FakeTimeProvider(DateTimeOffset.UtcNow);
         var cpuFromGauge = 0.0d;
         var cpuLimitFromGauge = 0.0d;
+        var cpuUserTime = 0.0d;
+        var cpuKernelTime = 0.0d;
         var cpuRequestFromGauge = 0.0d;
         var memoryFromGauge = 0.0d;
         var memoryLimitFromGauge = 0.0d;
@@ -477,8 +477,8 @@ public sealed class AcceptanceTest
         object? meterScope = null;
         listener.InstrumentPublished = (Instrument instrument, MeterListener meterListener)
             => OnInstrumentPublished(instrument, meterListener, meterScope);
-        listener.SetMeasurementEventCallback<double>((m, f, _, _)
-            => OnMeasurementReceived(m, f, ref cpuFromGauge, ref cpuLimitFromGauge, ref cpuRequestFromGauge, ref memoryFromGauge, ref memoryLimitFromGauge));
+        listener.SetMeasurementEventCallback<double>((m, f, tags, _)
+            => OnMeasurementReceived(m, f, tags, ref cpuUserTime, ref cpuKernelTime, ref cpuFromGauge, ref cpuLimitFromGauge, ref cpuRequestFromGauge, ref memoryFromGauge, ref memoryLimitFromGauge));
         listener.Start();
 
         using var host = FakeHost.CreateBuilder()

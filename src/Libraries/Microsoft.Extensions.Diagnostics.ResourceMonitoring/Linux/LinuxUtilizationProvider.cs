@@ -105,7 +105,6 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
             _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization, observeValue: () => CpuUtilization() * _scaleRelativeToCpuLimit, unit: "1");
             _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuRequestUtilization, observeValue: () => CpuUtilization() * _scaleRelativeToCpuRequest, unit: "1");
             _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessCpuUtilization, observeValue: () => CpuUtilization() * _scaleRelativeToCpuRequest, unit: "1");
-            _ = meter.CreateObservableCounter(name: ResourceUtilizationInstruments.ContainerCpuTime, observeValues: GetCpuTime, unit: "s", description: "CPU time used by the container.");
         }
 
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization, observeValue: MemoryUtilization, unit: "1");
@@ -296,9 +295,9 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     private IEnumerable<Measurement<double>> GetCpuTime()
     {
         long hostCpuTime = _parser.GetHostCpuUsageInNanoseconds();
-        long cgroupCpuTime = _parser.GetCgroupCpuUsageInNanoseconds();
+        double cgroupCpuTime = CpuUtilizationWithoutHostDelta();
 
-        yield return new(cgroupCpuTime / NanosecondsInSecond, [new KeyValuePair<string, object?>("cpu.mode", "user")]);
-        yield return new(hostCpuTime / NanosecondsInSecond, [new KeyValuePair<string, object?>("cpu.mode", "system")]);
+        yield return new Measurement<double>(cgroupCpuTime / NanosecondsInSecond, [new KeyValuePair<string, object?>("cpu.mode", "user")]);
+        yield return new Measurement<double>(hostCpuTime / NanosecondsInSecond, [new KeyValuePair<string, object?>("cpu.mode", "system")]);
     }
 }

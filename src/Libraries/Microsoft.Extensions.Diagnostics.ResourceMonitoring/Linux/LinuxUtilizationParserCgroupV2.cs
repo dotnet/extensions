@@ -131,7 +131,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         }
 
         // Extract the part after the last colon and cache it for future use
-        ReadOnlySpan<char> trimmedPath = fileContent.Slice(colonIndex + 1);
+        ReadOnlySpan<char> trimmedPath = fileContent[(colonIndex + 1)..];
         _cachedCgroupPath = "/sys/fs/cgroup" + trimmedPath.ToString().TrimEnd('/') + "/";
 
         return $"{_cachedCgroupPath}{filename}";
