@@ -62,7 +62,7 @@ public class NGramTests
     [Fact]
     public void NGramGenerationNoPadding()
     {
-        int[] input = [1, 2, 3, 4, 5];
+        ReadOnlySpan<int> input = [1, 2, 3, 4, 5];
 
         IEnumerable<NGram<int>> result = input.CreateNGrams(1);
         List<NGram<int>> expected = [[1], [2], [3], [4], [5]];

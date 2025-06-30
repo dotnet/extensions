@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -79,8 +80,8 @@ public sealed class BLEUEvaluator : IEvaluator
 
         var (score, duration) = TimingHelper.ExecuteWithTiming(() =>
         {
-            var references = context.References.Select(reference => SimpleWordTokenizer.WordTokenize(reference));
-            var hypothesis = SimpleWordTokenizer.WordTokenize(modelResponse.Text);
+            var references = context.References.Select(reference => SimpleWordTokenizer.WordTokenize(reference).ToArray()).ToArray();
+            var hypothesis = SimpleWordTokenizer.WordTokenize(modelResponse.Text).ToArray();
             return BLEUAlgorithm.SentenceBLEU(references, hypothesis, BLEUAlgorithm.DefaultBLEUWeights, SmoothingFunction.Method4);
         });
 

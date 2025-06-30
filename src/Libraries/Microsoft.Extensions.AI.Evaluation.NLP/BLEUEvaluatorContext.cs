@@ -41,8 +41,8 @@ public sealed class BLEUEvaluatorContext : EvaluationContext
     /// <param name="references">
     /// The reference responses against which the response that is being evaluated is compared.
     /// </param>
-    public BLEUEvaluatorContext(params string[] references)
-        : this(references as IEnumerable<string>)
+    public BLEUEvaluatorContext(IEnumerable<string> references)
+        : this(references.ToArray())
     {
     }
 
@@ -52,11 +52,12 @@ public sealed class BLEUEvaluatorContext : EvaluationContext
     /// <param name="references">
     /// The reference responses against which the response that is being evaluated is compared.
     /// </param>
-    public BLEUEvaluatorContext(IEnumerable<string> references)
+    public BLEUEvaluatorContext(params string[] references)
         : base(
             name: BLEUContextName,
             contents: [.. references.Select(c => new TextContent(c))])
     {
         References = [.. references];
     }
+
 }

@@ -17,6 +17,7 @@
 
   <PropertyGroup>
     <InjectCollectionBuilderAttributesOnLegacy>true</InjectCollectionBuilderAttributesOnLegacy>
+    <InjectSystemIndexOnLegacy>true</InjectSystemIndexOnLegacy>
   </PropertyGroup>
 
   <ItemGroup>
