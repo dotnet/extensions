@@ -3,16 +3,13 @@
 
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Options;
-using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Diagnostics.Sampling;
 
 /// <summary>
 /// The options for the Random Probabilistic sampler.
 /// </summary>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
 public class RandomProbabilisticSamplerOptions
 {
     /// <summary>

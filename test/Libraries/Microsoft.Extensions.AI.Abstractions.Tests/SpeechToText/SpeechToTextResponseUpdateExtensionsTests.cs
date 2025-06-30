@@ -70,6 +70,8 @@ public class SpeechToTextResponseUpdateExtensionsTests
         Assert.Equal("d", response.AdditionalProperties["c"]);
 
         Assert.Equal("Hello human, How are You?", response.Text);
+
+        Assert.Null(response.Usage);
     }
 
     [Theory]
@@ -127,6 +129,28 @@ public class SpeechToTextResponseUpdateExtensionsTests
         {
             Assert.Equal(expected[i], contents[i].Text);
         }
+    }
+
+    [Fact]
+    public async Task ToSpeechToTextResponse_UsageContentExtractedFromContents()
+    {
+        SpeechToTextResponseUpdate[] updates =
+        {
+            new() { Contents = [new TextContent("Hello, ")] },
+            new() { Contents = [new UsageContent(new() { TotalTokenCount = 42 })] },
+            new() { Contents = [new TextContent("world!")] },
+            new() { Contents = [new UsageContent(new() { InputTokenCount = 12, TotalTokenCount = 24 })] },
+        };
+
+        SpeechToTextResponse response = await YieldAsync(updates).ToSpeechToTextResponseAsync();
+
+        Assert.NotNull(response);
+
+        Assert.NotNull(response.Usage);
+        Assert.Equal(12, response.Usage.InputTokenCount);
+        Assert.Equal(66, response.Usage.TotalTokenCount);
+
+        Assert.Equal("Hello, world!", Assert.IsType<TextContent>(Assert.Single(response.Contents)).Text);
     }
 
     private static async IAsyncEnumerable<SpeechToTextResponseUpdate> YieldAsync(IEnumerable<SpeechToTextResponseUpdate> updates)
