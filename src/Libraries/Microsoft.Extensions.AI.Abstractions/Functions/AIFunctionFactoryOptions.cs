@@ -117,7 +117,7 @@ public sealed class AIFunctionFactoryOptions
     /// When set to <see langword="true"/>, results in the produced <see cref="AIFunction.ReturnJsonSchema"/> to always be <see langword="null"/>.
     /// </para>
     /// </remarks>
-    public bool ExcludeResultFromSchema { get; set; }
+    public bool ExcludeResultSchema { get; set; }
 
     /// <summary>Provides configuration options produced by the <see cref="ConfigureParameterBinding"/> delegate.</summary>
     public readonly record struct ParameterBindingOptions

@@ -210,7 +210,7 @@ public partial class AIFunctionFactoryTest
         Assert.Null(options.SerializerOptions);
         Assert.Null(options.JsonSchemaCreateOptions);
         Assert.Null(options.ConfigureParameterBinding);
-        Assert.False(options.ExcludeResultFromSchema);
+        Assert.False(options.ExcludeResultSchema);
     }
 
     [Fact]
@@ -244,7 +244,7 @@ public partial class AIFunctionFactoryTest
             (string firstParameter, int secondParameter) => firstParameter + secondParameter,
             new()
             {
-                ExcludeResultFromSchema = true,
+                ExcludeResultSchema = true,
             });
 
         Assert.Contains("firstParameter", func.JsonSchema.ToString());

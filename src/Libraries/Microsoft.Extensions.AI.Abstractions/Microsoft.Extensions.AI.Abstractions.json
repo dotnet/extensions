@@ -304,7 +304,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "bool Microsoft.Extensions.AI.AIFunctionFactoryOptions.ExcludeResultFromSchema { get; set; }",
+          "Member": "bool Microsoft.Extensions.AI.AIFunctionFactoryOptions.ExcludeResultSchema { get; set; }",
           "Stage": "Stable"
         },
         {
