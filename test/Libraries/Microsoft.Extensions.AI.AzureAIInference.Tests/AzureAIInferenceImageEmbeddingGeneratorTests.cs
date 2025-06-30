@@ -38,7 +38,7 @@ public class AzureAIInferenceImageEmbeddingGeneratorTests
 
         IEmbeddingGenerator<DataContent, Embedding<float>> embeddingGenerator = client.AsIEmbeddingGenerator(model);
         var metadata = embeddingGenerator.GetService<EmbeddingGeneratorMetadata>();
-        Assert.Equal("az.ai.inference", metadata?.ProviderName);
+        Assert.Equal("azure.ai.inference", metadata?.ProviderName);
         Assert.Equal(endpoint, metadata?.ProviderUri);
         Assert.Equal(model, metadata?.DefaultModelId);
     }
