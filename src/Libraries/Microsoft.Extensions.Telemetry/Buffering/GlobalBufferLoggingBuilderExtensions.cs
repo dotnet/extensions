@@ -3,13 +3,11 @@
 #if NET9_0_OR_GREATER
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.Buffering;
 using Microsoft.Extensions.Options;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Logging;
@@ -17,7 +15,6 @@ namespace Microsoft.Extensions.Logging;
 /// <summary>
 /// Lets you register log buffering in a dependency injection container.
 /// </summary>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class GlobalBufferLoggingBuilderExtensions
 {
     /// <summary>
