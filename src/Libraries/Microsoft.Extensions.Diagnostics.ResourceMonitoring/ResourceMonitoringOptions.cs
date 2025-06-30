@@ -100,23 +100,17 @@ public partial class ResourceMonitoringOptions
     public TimeSpan MemoryConsumptionRefreshInterval { get; set; } = DefaultRefreshInterval;
 
     /// <summary>
-    /// Gets or sets a value indicating whether CPU metrics are calculated via cgroup CPU limits instead of Host CPU delta.
+    /// Gets or sets a value indicating whether CPU metrics are calculated using V2 method - via cgroup CPU limits instead of Host CPU delta.
     /// </summary>
     /// <value>
     /// The default value is <see langword="false"/>.
     /// </value>
+    /// <remarks>
+    /// This is a more accurate way to calculate CPU utilization on Linux systems, please enable if possible.
+    /// It will be the default in the future.
+    /// </remarks>
     [Experimental(diagnosticId: DiagnosticIds.Experiments.ResourceMonitoring, UrlFormat = DiagnosticIds.UrlFormat)]
-    public bool CalculateCpuUsageWithoutHostDelta { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether to use the number of periods in cpu.stat for cgroup CPU usage.
-    /// We use delta time for CPU usage calculation when this flag is not set.
-    /// <value>
-    /// The default value is <see langword="false"/>.
-    /// </value>
-    ///  </summary>
-    [Experimental(diagnosticId: DiagnosticIds.Experiments.ResourceMonitoring, UrlFormat = DiagnosticIds.UrlFormat)]
-    public bool UseDeltaNrPeriodsForCpuCalculation { get; set; }
+    public bool UseLinuxCpuUsageV2 { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether disk I/O metrics should be enabled.

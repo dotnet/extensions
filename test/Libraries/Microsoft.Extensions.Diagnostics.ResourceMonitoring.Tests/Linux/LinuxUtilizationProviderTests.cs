@@ -212,7 +212,7 @@ public sealed class LinuxUtilizationProviderTests
     {
         var meterName = Guid.NewGuid().ToString();
         var logger = new FakeLogger<LinuxUtilizationProvider>();
-        var options = Options.Options.Create(new ResourceMonitoringOptions { CalculateCpuUsageWithoutHostDelta = true });
+        var options = Options.Options.Create(new ResourceMonitoringOptions { UseLinuxCpuUsageV2 = true });
         using var meter = new Meter(nameof(Provider_Registers_Instruments_CgroupV2_WithoutHostCpu));
         var meterFactoryMock = new Mock<IMeterFactory>();
         meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>()))

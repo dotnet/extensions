@@ -19,7 +19,7 @@ public sealed class ResourceMonitoringOptionsTests
         };
 
         Assert.NotNull(options);
-        Assert.False(options.CalculateCpuUsageWithoutHostDelta);
+        Assert.False(options.UseLinuxCpuUsageV2);
     }
 
     [Fact]
@@ -27,9 +27,9 @@ public sealed class ResourceMonitoringOptionsTests
     {
         var options = new ResourceMonitoringOptions
         {
-            CalculateCpuUsageWithoutHostDelta = true
+            UseLinuxCpuUsageV2 = true
         };
 
-        Assert.True(options.CalculateCpuUsageWithoutHostDelta);
+        Assert.True(options.UseLinuxCpuUsageV2);
     }
 }
