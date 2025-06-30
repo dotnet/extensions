@@ -3,32 +3,31 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI.Evaluation.NLP.Common;
 
 internal static class GLEUAlgorithm
 {
-    internal static double SentenceGLEU(IEnumerable<IEnumerable<string>> references, IEnumerable<string> hypothesis, int minN = 1, int maxN = 4)
+    internal static double SentenceGLEU(string[][] references, string[] hypothesis, int minN = 1, int maxN = 4)
     {
-        if (references == null || !references.Any())
+        if (references == null || references.Length == 0)
         {
             Throw.ArgumentNullException(nameof(references), $"'{nameof(references)}' cannot be null or empty.");
         }
 
-        if (hypothesis == null || !hypothesis.Any())
+        if (hypothesis == null || hypothesis.Length == 0)
         {
             Throw.ArgumentNullException(nameof(hypothesis), $"'{nameof(hypothesis)}' cannot be null or empty.");
         }
 
-        MatchCounter<NGram<string>> hypNGrams = new(hypothesis.CreateAllNGrams(minN, maxN));
+        MatchCounter<NGram<string>> hypNGrams = new(hypothesis.AsSpan().CreateAllNGrams(minN, maxN));
         int truePosFalsePos = hypNGrams.Sum();
 
         List<(int, int)> hypCounts = [];
         foreach (var reference in references)
         {
-            MatchCounter<NGram<string>> refNGrams = new(reference.CreateAllNGrams(minN, maxN));
+            MatchCounter<NGram<string>> refNGrams = new(reference.AsSpan().CreateAllNGrams(minN, maxN));
             int truePosFalseNeg = refNGrams.Sum();
 
             MatchCounter<NGram<string>> overlapNGrams = hypNGrams.Intersect(refNGrams);

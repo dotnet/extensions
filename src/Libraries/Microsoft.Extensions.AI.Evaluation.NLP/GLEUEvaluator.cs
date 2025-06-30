@@ -73,8 +73,8 @@ public sealed class GLEUEvaluator : IEvaluator
 
         var (score, duration) = TimingHelper.ExecuteWithTiming(() =>
         {
-            var references = context.References.Select(reference => SimpleWordTokenizer.WordTokenize(reference));
-            var hypothesis = SimpleWordTokenizer.WordTokenize(modelResponse.Text);
+            var references = context.References.Select(reference => SimpleWordTokenizer.WordTokenize(reference).ToArray()).ToArray();
+            var hypothesis = SimpleWordTokenizer.WordTokenize(modelResponse.Text).ToArray();
             return GLEUAlgorithm.SentenceGLEU(references, hypothesis);
         });
 

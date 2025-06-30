@@ -68,7 +68,7 @@ internal readonly struct MatchCounter<T> : IEnumerable<KeyValuePair<T, int>>
         return intersection;
     }
 
-    public string ToDebugString() => string.Concat(_counts.Select(v => $"{v.Key}: {v.Value}, "));
+    public string ToDebugString() => string.Join(",", _counts.Select(v => $"{v.Key}: {v.Value}"));
 
     public IEnumerator<KeyValuePair<T, int>> GetEnumerator() => _counts.GetEnumerator();
 
