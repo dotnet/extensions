@@ -20,6 +20,15 @@ public static class LoggingChatClientBuilderExtensions
     /// </param>
     /// <param name="configure">An optional callback that can be used to configure the <see cref="LoggingChatClient"/> instance.</param>
     /// <returns>The <paramref name="builder"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
+    /// <remarks>
+    /// <para>
+    /// When the employed <see cref="ILogger"/> enables <see cref="Logging.LogLevel.Trace"/>, the contents of
+    /// chat messages and options are logged. These messages and options may contain sensitive application data.
+    /// <see cref="Logging.LogLevel.Trace"/> is disabled by default and should never be enabled in a production environment.
+    /// Messages and options are not logged at other logging levels.
+    /// </para>
+    /// </remarks>
     public static ChatClientBuilder UseLogging(
         this ChatClientBuilder builder,
         ILoggerFactory? loggerFactory = null,

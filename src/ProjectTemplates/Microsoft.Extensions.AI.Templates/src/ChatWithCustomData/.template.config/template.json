@@ -1,36 +1,90 @@
 {
   "$schema": "http://json.schemastore.org/template",
   "author": "Microsoft",
-  "classifications": [ "Common", "AI", "Web" ],
-  "identity": "Microsoft.Extensions.AI.Templates.Chat.CSharp",
-  "name": "AI Chat with Custom Data",
-  "description": "A project template for creating an AI chat application. It can perform retrieval-augmented generation (RAG) using your own data.",
-  "shortName": "chat",
+  "classifications": [ "Common", "AI", "Web", "Blazor", ".NET Aspire" ],
+  "identity": "Microsoft.Extensions.AI.Templates.WebChat.CSharp",
+  "name": "AI Chat Web App",
+  "description": "A project template for creating an AI chat application, which uses retrieval-augmented generation (RAG) to chat with your own data.",
+  "shortName": "aichatweb",
   "defaultName": "ChatApp",
-  "sourceName": "ChatWithCustomData.Web", // TODO: When we support multi-project output, this needs to change to ChatWithCustomData, then we need some other technique to make it avoid emitting a .Web suffix in the single-project case
+  "sourceName": "ChatWithCustomData-CSharp",
+  "preferNameDirectory": true,
   "tags": {
     "language": "C#",
     "type": "project"
   },
   "guids": [
-    "d5681fae-b21b-4114-b781-48180f08c0c4"
+    "d5681fae-b21b-4114-b781-48180f08c0c4",
+    "b2f4f5e9-1083-472c-8c3b-f055ac67ba54",
+    "FAE04EC0-301F-11D3-BF4B-00C04F79EFBC",
+    "4DF52F58-4890-4A0A-BC25-5C3D167B3490",
+    "2222CF31-6E3A-42E7-AD3A-A56B14EAD9D0",
+    "A7D19173-F0AD-4A8D-B8EA-E12DE203E409"
+  ],
+  "primaryOutputs": [
+    {
+      "path": "./README.md"
+    },
+    {
+      "condition": "(!IsAspire)",
+      "path": "./ChatWithCustomData-CSharp.csproj"
+    },
+    {
+      "condition": "(IsAspire && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\"))",
+      "path": "./ChatWithCustomData-CSharp.sln"
+    },
+    {
+      "condition": "(IsAspire)",
+      "path": "./ChatWithCustomData-CSharp.AppHost/ChatWithCustomData-CSharp.AppHost.csproj"
+    },
+    {
+      "condition": "(IsAspire)",
+      "path": "./ChatWithCustomData-CSharp.ServiceDefaults/ChatWithCustomData-CSharp.ServiceDefaults.csproj"
+    },
+    {
+      "condition": "(IsAspire)",
+      "path": "./ChatWithCustomData-CSharp.Web/ChatWithCustomData-CSharp.Web.csproj"
+    }
   ],
   "sources": [{
     "source": "./",
     "target": "./",
     "modifiers": [
       {
-        // For now, we only produce single-project output.
-        // Later when we support multi-project output with Qdrant on Docker, we'll also emit
-        // a second project ChatWithCustomData.AppHost and hence will suppress this renaming.
+        "condition": "(!IsAspire)",
         "rename": {
-          "ChatWithCustomData.Web/": "./"
+          "ChatWithCustomData-CSharp.Web/ChatWithCustomData-CSharp.Web.csproj": "ChatWithCustomData-CSharp.csproj",
+          "ChatWithCustomData-CSharp.Web/": "./"
+        },
+        "exclude": [
+          "ChatWithCustomData-CSharp.AppHost/**",
+          "ChatWithCustomData-CSharp.ServiceDefaults/**",
+          "ChatWithCustomData-CSharp.Web/Program.Aspire.cs",
+          "README.Aspire.md",
+          "*.sln"
+        ]
+      },
+      {
+        "condition": "(IsAspire)",
+        "exclude": [
+          "ChatWithCustomData-CSharp.Web/Program.cs",
+          "ChatWithCustomData-CSharp.Web/README.md"
+        ],
+        "rename": {
+          "Program.Aspire.cs": "Program.cs",
+          "README.Aspire.md": "README.md"
         }
+      },
+      {
+        "condition": "(!UseLocalVectorStore)",
+        "exclude": [
+          "ChatWithCustomData-CSharp.Web/Services/JsonVectorStore.cs"
+        ]
       }
     ]
   }],
   "symbols": {
-    "framework": {
+    "Framework": {
       "type": "parameter",
       "description": "The target framework for the project.",
       "datatype": "choice",
@@ -41,7 +95,8 @@
         }
       ],
       "replaces": "net9.0",
-      "defaultValue": "net9.0"
+      "defaultValue": "net9.0",
+      "displayName": "Framework"
     },
     "hostIdentifier": {
       "type": "bind",
@@ -51,27 +106,27 @@
       "type": "parameter",
       "displayName": "_AI service provider",
       "datatype": "choice",
-      "defaultValue": "azureopenai",
+      "defaultValue": "githubmodels",
       "choices": [
-        // {
-        //   "choice": "githubmodels",
-        //   "displayName": "GitHub Models",
-        //   "description": "Uses GitHub Models"
-        // },
         {
           "choice": "azureopenai",
           "displayName": "Azure OpenAI",
           "description": "Uses Azure OpenAI service"
         },
         {
-          "choice": "openai",
-          "displayName": "OpenAI Platform",
-          "description": "Uses the OpenAI Platform"
+          "choice": "githubmodels",
+          "displayName": "GitHub Models",
+          "description": "Uses GitHub Models"
         },
         {
           "choice": "ollama",
           "displayName": "Ollama (for local development)",
-          "description": "Uses Ollama with the llama3.2 model for local development"
+          "description": "Uses Ollama with the llama3.2 and all-minilm models"
+        },
+        {
+          "choice": "openai",
+          "displayName": "OpenAI Platform",
+          "description": "Uses the OpenAI Platform"
         }
         // {
         //   "choice": "azureaifoundry",
@@ -79,14 +134,6 @@
         //   "description": "Uses Azure AI Foundry (Preview)"
         // }
       ]
-    },
-    "UseManagedIdentity": {
-      "type": "parameter",
-      "displayName": "Use managed identity",
-      "datatype": "bool",
-      "defaultValue": "true",
-      "isEnabled": "(AiServiceProvider == \"azureopenai\")",
-      "description": "Use managed identity to access Azure services"
     },
     "VectorStore": {
       "type": "parameter",
@@ -103,14 +150,38 @@
           "choice": "azureaisearch",
           "displayName": "Azure AI Search",
           "description": "Uses Azure AI Search. This also avoids the need to define a data ingestion pipeline, since it's managed by Azure AI Search."
+        },
+        {
+          "choice": "qdrant",
+          "displayName": "Qdrant",
+          "description": "Uses Qdrant in a Docker container, orchestrated using Aspire."
         }
       ]
     },
-    "IsAzureOpenAi": {
+    "UseManagedIdentity": {
+      "type": "parameter",
+      "displayName": "Use keyless authentication for Azure services",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "isEnabled": "(!UseAspire && VectorStore != \"qdrant\" && (AiServiceProvider == \"azureopenai\" || AiServiceProvider == \"azureaifoundry\" || VectorStore == \"azureaisearch\"))",
+      "description": "Use managed identity to access Azure services"
+    },
+    "UseAspire": {
+      "type": "parameter",
+      "displayName": "Use Aspire orchestration",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Create the project as a distributed application using .NET Aspire."
+    },
+    "IsAspire": {
+      "type": "computed",
+      "value": "(UseAspire || VectorStore == \"qdrant\")"
+    },
+    "IsAzureOpenAI": {
       "type": "computed",
       "value": "(AiServiceProvider == \"azureopenai\")"
     },
-    "IsOpenAi": {
+    "IsOpenAI": {
       "type": "computed",
       "value": "(AiServiceProvider == \"openai\")"
     },
@@ -122,7 +193,7 @@
       "type": "computed",
       "value": "(AiServiceProvider == \"ollama\")"
     },
-    "IsAzureAiFoundry": {
+    "IsAzureAIFoundry": {
       "type": "computed",
       "value": "(AiServiceProvider == \"azureaifoundry\")"
     },
@@ -133,6 +204,14 @@
     "UseLocalVectorStore": {
       "type": "computed",
       "value": "(VectorStore == \"local\")"
+    },
+    "UseQdrant": {
+      "type": "computed",
+      "value": "(VectorStore == \"qdrant\")"
+    },
+    "UseAzure": {
+      "type": "computed",
+      "value": "(IsAzureOpenAI || IsAzureAiFoundry || UseAzureAISearch)"
     },
     "ChatModel": {
       "type": "parameter",
@@ -180,7 +259,7 @@
       "type": "generated",
       "generator": "constant",
       "parameters": {
-        "value": "llama3.1"
+        "value": "llama3.2"
       }
     },
     "OllamaEmbeddingModelDefault": {
@@ -208,12 +287,12 @@
       },
       "replaces": "all-minilm"
     },
-    "kestrelHttpPort": {
+    "webHttpPort": {
       "type": "parameter",
       "datatype": "integer",
-      "description": "Port number to use for the HTTP endpoint in launchSettings.json."
+      "description": "Port number to use for the HTTP endpoint in the launchSettings.json of the Web project."
     },
-    "kestrelHttpPortGenerated": {
+    "webHttpPortGenerated": {
       "type": "generated",
       "generator": "port",
       "parameters": {
@@ -221,24 +300,24 @@
         "high": 5300
       }
     },
-    "kestrelHttpPortReplacer": {
+    "webHttpPortReplacer": {
       "type": "generated",
       "generator": "coalesce",
       "parameters": {
-        "sourceVariableName": "kestrelHttpPort",
-        "fallbackVariableName": "kestrelHttpPortGenerated"
+        "sourceVariableName": "webHttpPort",
+        "fallbackVariableName": "webHttpPortGenerated"
       },
       "replaces": "5000",
       "onlyIf": [{
         "after": "localhost:"
       }]
     },
-    "kestrelHttpsPort": {
+    "webHttpsPort": {
       "type": "parameter",
       "datatype": "integer",
-      "description": "Port number to use for the HTTPS endpoint in launchSettings.json."
+      "description": "Port number to use for the HTTPS endpoint in the launchSettings.json of the Web project."
     },
-    "kestrelHttpsPortGenerated": {
+    "webHttpsPortGenerated": {
       "type": "generated",
       "generator": "port",
       "parameters": {
@@ -246,17 +325,264 @@
         "high": 7300
       }
     },
-    "kestrelHttpsPortReplacer": {
+    "webHttpsPortReplacer": {
       "type": "generated",
       "generator": "coalesce",
       "parameters": {
-        "sourceVariableName": "kestrelHttpsPort",
-        "fallbackVariableName": "kestrelHttpsPortGenerated"
+        "sourceVariableName": "webHttpsPort",
+        "fallbackVariableName": "webHttpsPortGenerated"
       },
       "replaces": "5001",
       "onlyIf": [{
         "after": "localhost:"
       }]
+    },
+    "appHostHttpPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the HTTP endpoint in the launchSettings.json of the AppHost project."
+    },
+    "appHostHttpPortGenerated": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 15000,
+        "high": 15300
+      }
+    },
+    "appHostHttpPortReplacer": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "appHostHttpPort",
+        "fallbackVariableName": "appHostHttpPortGenerated"
+      },
+      "replaces": "15000",
+      "onlyIf": [{
+        "after": "localhost:"
+      }]
+    },
+    "appHostOtlpHttpPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the OTLP HTTP endpoint in launchSettings.json of the AppHost project."
+    },
+    "appHostOtlpHttpPortGenerated": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 19000,
+        "high": 19300
+      }
+    },
+    "appHostOtlpHttpPortReplacer": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "appHostOtlpHttpPort",
+        "fallbackVariableName": "appHostOtlpHttpPortGenerated"
+      },
+      "replaces": "19000",
+      "onlyIf": [{
+        "after": "localhost:"
+      }]
+    },
+    "appHostResourceHttpPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the resource service HTTP endpoint in launchSettings.json of the AppHost project."
+    },
+    "appHostResourceHttpPortGenerated": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 20000,
+        "high": 20300
+      }
+    },
+    "appHostResourceHttpPortReplacer": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "appHostResourceHttpPort",
+        "fallbackVariableName": "appHostResourceHttpPortGenerated"
+      },
+      "replaces": "20000",
+      "onlyIf": [{
+        "after": "localhost:"
+      }]
+    },
+    "appHostHttpsPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the HTTPS endpoint in launchSettings.json of the AppHost project."
+    },
+    "appHostHttpsPortGenerated": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 17000,
+        "high": 17300
+      }
+    },
+    "appHostHttpsPortReplacer": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "appHostHttpsPort",
+        "fallbackVariableName": "appHostHttpsPortGenerated"
+      },
+      "replaces": "17000",
+      "onlyIf": [{
+        "after": "localhost:"
+      }]
+    },
+    "appHostOtlpHttpsPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the OTLP HTTPS endpoint in launchSettings.json of the AppHost project."
+    },
+    "appHostOtlpHttpsPortGenerated": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 21000,
+        "high": 21300
+      }
+    },
+    "appHostOtlpHttpsPortReplacer": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "appHostOtlpHttpsPort",
+        "fallbackVariableName": "appHostOtlpHttpsPortGenerated"
+      },
+      "replaces": "21000",
+      "onlyIf": [{
+        "after": "localhost:"
+      }]
+    },
+    "appHostResourceHttpsPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the resource service HTTPS endpoint in launchSettings.json of the AppHost project."
+    },
+    "appHostResourceHttpsPortGenerated": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 22000,
+        "high": 22300
+      }
+    },
+    "appHostResourceHttpsPortReplacer": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "appHostResourceHttpsPort",
+        "fallbackVariableName": "appHostResourceHttpsPortGenerated"
+      },
+      "replaces": "22000",
+      "onlyIf": [{
+        "after": "localhost:"
+      }]
+    },
+    "vectorStoreIndexNameReplacer": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "vectorStoreIndexNameTransform",
+      "replaces": "data-ChatWithCustomData-CSharp.Web-"
+    },
+    "webProjectNamespaceAdjuster": {
+      "type": "generated",
+      "generator": "switch",
+      "replaces": ".Web",
+      "onlyIf": [{
+        "after": "ChatWithCustomData_CSharp"
+      }, {
+        "after": "ChatWithCustomData-CSharp"
+      }],
+      "parameters": {
+        "evaluator": "C++",
+        "cases": [
+          {
+            "condition": "(IsAspire)",
+            "value": ".Web"
+          },
+          {
+            "condition": "(!IsAspire)",
+            "value": ""
+          }
+        ]
+      }
+    }
+  },
+  "forms": {
+    "vectorStoreIndexNameTransform": {
+      "identifier": "chain",
+      "steps": [
+        "lowerCaseForm",
+        "vectorStoreIndexName_ReplaceIllegalCharacters",
+        "vectoreStoreIndexName_CollapseConsecutiveDashesUnderscores",
+        "vectorStoreIndexName_LengthLimit",
+        "vectorStoreIndexName_PrefixSuffix"
+      ],
+      "description": "See https://learn.microsoft.com/rest/api/searchservice/naming-rules"
+    },
+    "lowerCaseForm": {
+      "identifier": "lowerCase"
+    },
+    "vectorStoreIndexName_ReplaceIllegalCharacters": {
+      "identifier": "replace",
+      "pattern": "[^a-z0-9-_]",
+      "replacement": "_",
+      "description": "Only letters, numbers, dashes, and underscores are allowed"
+    },
+    "vectoreStoreIndexName_CollapseConsecutiveDashesUnderscores": {
+      "identifier": "replace",
+      "pattern": "([-_])\\1+",
+      "replacement": "$1",
+      "description": "No consecutive dashes are underscores are allowed"
+    },
+    "vectorStoreIndexName_LengthLimit": {
+      "identifier": "replace",
+      "pattern": "^(.{0,114}).*",
+      "replacement": "$1",
+      "description": "Length is limited to 128 characters, including the 14 characters of prefix and suffix to be added."
+    },
+    "vectorStoreIndexName_PrefixSuffix": {
+      "identifier": "replace",
+      "pattern": "^(.*)$",
+      "replacement": "data-$1-",
+      "description": "Produces a meaningful name parameterized by project name; ensures first, second, and last characters are valid"
+    }
+  },
+  "postActions": [{
+    "condition": "(hostIdentifier != \"dotnetcli\")",
+    "description": "Opens README file in the editor",
+    "manualInstructions": [ ],
+    "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+    "args": {
+      "files": "0"
+    },
+    "continueOnError": true
+  }],
+  "SpecialCustomOperations": {
+    "**/*.md": {
+      "operations": [
+        {
+          "type": "conditional",
+          "configuration": {
+            "if": ["#### ---#if"],
+            "else": ["#### ---#else"],
+            "elseif": ["#### ---#elseif", "#### ---#elif"],
+            "endif": ["#### ---#endif"],
+            "trim" : "true",
+            "wholeLine": "true",
+            "evaluator": "C++"
+          }
+        }
+      ]
     }
   }
 }

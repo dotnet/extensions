@@ -60,7 +60,7 @@ public class OSSkipConditionAttribute : Attribute, ITestCondition
 
         throw new PlatformNotSupportedException();
 #else
-        // RuntimeInformation API is only avaialble in .NET Framework 4.7.1+
+        // RuntimeInformation API is only available in .NET Framework 4.7.1+
         // .NET Framework 4.7 and below can only run on Windows.
         return OperatingSystems.Windows;
 #endif

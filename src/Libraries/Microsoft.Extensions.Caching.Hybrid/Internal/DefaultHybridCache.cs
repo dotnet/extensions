@@ -26,9 +26,6 @@ internal sealed partial class DefaultHybridCache : HybridCache
 {
     internal const int DefaultExpirationMinutes = 5;
 
-    // reserve non-printable characters from keys, to prevent potential L2 abuse
-    private static readonly char[] _keyReservedCharacters = Enumerable.Range(0, 32).Select(i => (char)i).ToArray();
-
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0032:Use auto property", Justification = "Keep usage explicit")]
     private readonly IDistributedCache? _backendCache;
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0032:Use auto property", Justification = "Keep usage explicit")]
@@ -96,14 +93,14 @@ internal sealed partial class DefaultHybridCache : HybridCache
         // When resolving serializers via the factory API, we will want the *last* instance,
         // i.e. "last added wins"; we can optimize by reversing the array ahead of time, and
         // taking the first match
-        var factories = services.GetServices<IHybridCacheSerializerFactory>().ToArray();
+        IHybridCacheSerializerFactory[] factories = services.GetServices<IHybridCacheSerializerFactory>().ToArray();
         Array.Reverse(factories);
         _serializerFactories = factories;
 
         MaximumPayloadBytes = checked((int)_options.MaximumPayloadBytes); // for now hard-limit to 2GiB
         _maximumKeyLength = _options.MaximumKeyLength;
 
-        var defaultEntryOptions = _options.DefaultEntryOptions;
+        HybridCacheEntryOptions? defaultEntryOptions = _options.DefaultEntryOptions;
 
         if (_backendCache is null)
         {
@@ -131,13 +128,13 @@ internal sealed partial class DefaultHybridCache : HybridCache
     public override ValueTask<T> GetOrCreateAsync<TState, T>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> underlyingDataCallback,
         HybridCacheEntryOptions? options = null, IEnumerable<string>? tags = null, CancellationToken cancellationToken = default)
     {
-        var canBeCanceled = cancellationToken.CanBeCanceled;
+        bool canBeCanceled = cancellationToken.CanBeCanceled;
         if (canBeCanceled)
         {
             cancellationToken.ThrowIfCancellationRequested();
         }
 
-        var flags = GetEffectiveFlags(options);
+        HybridCacheEntryFlags flags = GetEffectiveFlags(options);
         if (!ValidateKey(key))
         {
             // we can't use cache, but we can still provide the data
@@ -148,8 +145,8 @@ internal sealed partial class DefaultHybridCache : HybridCache
 
         if ((flags & HybridCacheEntryFlags.DisableLocalCacheRead) == 0)
         {
-            if (TryGetExisting<T>(key, out var typed)
-                && typed.TryGetValue(_logger, out var value))
+            if (TryGetExisting<T>(key, out CacheItem<T>? typed)
+                && typed.TryGetValue(_logger, out T? value))
             {
                 // short-circuit
                 if (eventSourceEnabled)
@@ -168,7 +165,7 @@ internal sealed partial class DefaultHybridCache : HybridCache
             }
         }
 
-        if (GetOrCreateStampedeState<TState, T>(key, flags, out var stampede, canBeCanceled, tags))
+        if (GetOrCreateStampedeState<TState, T>(key, flags, out StampedeState<TState, T>? stampede, canBeCanceled, tags))
         {
             // new query; we're responsible for making it happen
             if (canBeCanceled)
@@ -206,13 +203,14 @@ internal sealed partial class DefaultHybridCache : HybridCache
     {
         // since we're forcing a write: disable L1+L2 read; we'll use a direct pass-thru of the value as the callback, to reuse all the code
         // note also that stampede token is not shared with anyone else
-        var flags = GetEffectiveFlags(options) | (HybridCacheEntryFlags.DisableLocalCacheRead | HybridCacheEntryFlags.DisableDistributedCacheRead);
+        HybridCacheEntryFlags flags = GetEffectiveFlags(options) | (HybridCacheEntryFlags.DisableLocalCacheRead | HybridCacheEntryFlags.DisableDistributedCacheRead);
         var state = new StampedeState<T, T>(this, new StampedeKey(key, flags), TagSet.Create(tags), token);
         return new(state.ExecuteDirectAsync(value, static (state, _) => new(state), options)); // note this spans L2 write etc
     }
 
     // exposed as internal for testability
-    internal TimeSpan GetL1AbsoluteExpirationRelativeToNow(HybridCacheEntryOptions? options) => GetEffectiveLocalCacheExpiration(options) ?? _defaultLocalCacheExpiration;
+    internal TimeSpan GetL1AbsoluteExpirationRelativeToNow(HybridCacheEntryOptions? options)
+        => GetEffectiveLocalCacheExpiration(options) ?? _defaultLocalCacheExpiration;
 
     internal TimeSpan GetL2AbsoluteExpirationRelativeToNow(HybridCacheEntryOptions? options) => options?.Expiration ?? _defaultExpiration;
 
@@ -235,7 +233,43 @@ internal sealed partial class DefaultHybridCache : HybridCache
         // precedence between the inheritance between per-entry options and global options, and if a caller
         // provides a per-entry option with *just* the Expiration specified, then that is assumed to also
         // specify the LocalCacheExpiration.
-        return options is not null ? options.LocalCacheExpiration ?? options.Expiration : null;
+        if (options is not null)
+        {
+            if (options.LocalCacheExpiration is { } local)
+            {
+                if (options.Expiration is { } overall)
+                {
+                    // enforce "not exceeding the remaining overall cache lifetime"
+                    return local < overall ? local : overall;
+                }
+
+                return local;
+            }
+
+            return options.Expiration;
+        }
+
+        return null;
+    }
+
+    // reserve non-printable characters from keys, to prevent potential L2 abuse
+    private static bool ContainsReservedCharacters(ReadOnlySpan<char> key)
+    {
+        const char MaxControlChar = (char)31;
+
+#if NET8_0_OR_GREATER
+        return key.IndexOfAnyInRange((char)0, MaxControlChar) >= 0;
+#else
+        foreach (char c in key)
+        {
+            if (c <= MaxControlChar)
+            {
+                return true;
+            }
+        }
+
+        return false;
+#endif
     }
 
     private bool ValidateKey(string key)
@@ -252,7 +286,7 @@ internal sealed partial class DefaultHybridCache : HybridCache
             return false;
         }
 
-        if (key.IndexOfAny(_keyReservedCharacters) >= 0)
+        if (ContainsReservedCharacters(key.AsSpan()))
         {
             _logger.KeyInvalidContent();
             return false;
@@ -264,7 +298,7 @@ internal sealed partial class DefaultHybridCache : HybridCache
 
     private bool TryGetExisting<T>(string key, [NotNullWhen(true)] out CacheItem<T>? value)
     {
-        if (_localCache.TryGetValue(key, out var untyped) && untyped is CacheItem<T> typed)
+        if (_localCache.TryGetValue(key, out object? untyped) && untyped is CacheItem<T> typed)
         {
             // check tag-based and global invalidation
             if (IsValid(typed))

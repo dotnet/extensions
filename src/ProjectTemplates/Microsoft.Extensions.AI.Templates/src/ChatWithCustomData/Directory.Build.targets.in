@@ -1,0 +1,20 @@
+<!--
+  This file exists to detach the chat template from other Directory.Build.targets files in this repo
+  and provide functionality for running the template locally.
+  It will not get included in the built project template.
+-->
+<Project>
+  <PropertyGroup>
+    <_UsingJustBuiltPackages>${UsingJustBuiltPackages}</_UsingJustBuiltPackages>
+  </PropertyGroup>
+
+  <Target
+    Name="_EnsurePackagesBuiltLocally"
+    Condition="'$(_UsingJustBuiltPackages)' == 'true'"
+    BeforeTargets="Restore">
+
+    <Error
+      Condition="!Exists('${ArtifactsShippingPackagesDir}')"
+      Text="Repo packages must be built locally before running this project. See src/ProjectTemplates/README.md for more info." />
+  </Target>
+</Project>

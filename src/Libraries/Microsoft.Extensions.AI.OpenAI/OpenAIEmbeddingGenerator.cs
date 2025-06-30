@@ -17,13 +17,13 @@ using OpenAI.Embeddings;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>An <see cref="IEmbeddingGenerator{String, Embedding}"/> for an OpenAI <see cref="EmbeddingClient"/>.</summary>
-public sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>
+internal sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>
 {
     /// <summary>Default OpenAI endpoint.</summary>
     private const string DefaultOpenAIEndpoint = "https://api.openai.com/v1";
 
-    /// <summary>The underlying <see cref="OpenAIClient" />.</summary>
-    private readonly OpenAIClient? _openAIClient;
+    /// <summary>Metadata about the embedding generator.</summary>
+    private readonly EmbeddingGeneratorMetadata _metadata;
 
     /// <summary>The underlying <see cref="OpenAI.Chat.ChatClient" />.</summary>
     private readonly EmbeddingClient _embeddingClient;
@@ -32,47 +32,20 @@ public sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Embed
     private readonly int? _dimensions;
 
     /// <summary>Initializes a new instance of the <see cref="OpenAIEmbeddingGenerator"/> class.</summary>
-    /// <param name="openAIClient">The underlying client.</param>
-    /// <param name="modelId">The model to use.</param>
-    /// <param name="dimensions">The number of dimensions to generate in each embedding.</param>
-    public OpenAIEmbeddingGenerator(
-        OpenAIClient openAIClient, string modelId, int? dimensions = null)
-    {
-        _ = Throw.IfNull(openAIClient);
-        _ = Throw.IfNullOrWhitespace(modelId);
-        if (dimensions is < 1)
-        {
-            Throw.ArgumentOutOfRangeException(nameof(dimensions), "Value must be greater than 0.");
-        }
-
-        _openAIClient = openAIClient;
-        _embeddingClient = openAIClient.GetEmbeddingClient(modelId);
-        _dimensions = dimensions;
-
-        // https://github.com/openai/openai-dotnet/issues/215
-        // The endpoint isn't currently exposed, so use reflection to get at it, temporarily. Once packages
-        // implement the abstractions directly rather than providing adapters on top of the public APIs,
-        // the package can provide such implementations separate from what's exposed in the public API.
-        string providerUrl = (typeof(OpenAIClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            ?.GetValue(openAIClient) as Uri)?.ToString() ??
-            DefaultOpenAIEndpoint;
-
-        Metadata = CreateMetadata("openai", providerUrl, modelId, dimensions);
-    }
-
-    /// <summary>Initializes a new instance of the <see cref="OpenAIEmbeddingGenerator"/> class.</summary>
     /// <param name="embeddingClient">The underlying client.</param>
-    /// <param name="dimensions">The number of dimensions to generate in each embedding.</param>
-    public OpenAIEmbeddingGenerator(EmbeddingClient embeddingClient, int? dimensions = null)
+    /// <param name="defaultModelDimensions">The number of dimensions to generate in each embedding.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="embeddingClient"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="defaultModelDimensions"/> is not positive.</exception>
+    public OpenAIEmbeddingGenerator(EmbeddingClient embeddingClient, int? defaultModelDimensions = null)
     {
         _ = Throw.IfNull(embeddingClient);
-        if (dimensions < 1)
+        if (defaultModelDimensions < 1)
         {
-            Throw.ArgumentOutOfRangeException(nameof(dimensions), "Value must be greater than 0.");
+            Throw.ArgumentOutOfRangeException(nameof(defaultModelDimensions), "Value must be greater than 0.");
         }
 
         _embeddingClient = embeddingClient;
-        _dimensions = dimensions;
+        _dimensions = defaultModelDimensions;
 
         // https://github.com/openai/openai-dotnet/issues/215
         // The endpoint and model aren't currently exposed, so use reflection to get at them, temporarily. Once packages
@@ -83,29 +56,9 @@ public sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Embed
             DefaultOpenAIEndpoint;
 
         FieldInfo? modelField = typeof(EmbeddingClient).GetField("_model", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-        string? model = modelField?.GetValue(embeddingClient) as string;
+        string? modelId = modelField?.GetValue(embeddingClient) as string;
 
-        Metadata = CreateMetadata("openai", providerUrl, model, dimensions);
-    }
-
-    /// <summary>Creates the <see cref="EmbeddingGeneratorMetadata"/> for this instance.</summary>
-    private static EmbeddingGeneratorMetadata CreateMetadata(string providerName, string providerUrl, string? model, int? dimensions) =>
-        new(providerName, Uri.TryCreate(providerUrl, UriKind.Absolute, out Uri? providerUri) ? providerUri : null, model, dimensions);
-
-    /// <inheritdoc />
-    public EmbeddingGeneratorMetadata Metadata { get; }
-
-    /// <inheritdoc />
-    public object? GetService(Type serviceType, object? serviceKey = null)
-    {
-        _ = Throw.IfNull(serviceType);
-
-        return
-            serviceKey is not null ? null :
-            serviceType == typeof(OpenAIClient) ? _openAIClient :
-            serviceType == typeof(EmbeddingClient) ? _embeddingClient :
-            serviceType.IsInstanceOfType(this) ? this :
-            null;
+        _metadata = CreateMetadata("openai", providerUrl, modelId, defaultModelDimensions);
     }
 
     /// <inheritdoc />
@@ -136,22 +89,32 @@ public sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Embed
         // Nothing to dispose. Implementation required for the IEmbeddingGenerator interface.
     }
 
-    /// <summary>Converts an extensions options instance to an OpenAI options instance.</summary>
-    private OpenAI.Embeddings.EmbeddingGenerationOptions? ToOpenAIOptions(EmbeddingGenerationOptions? options)
+    /// <inheritdoc />
+    object? IEmbeddingGenerator.GetService(Type serviceType, object? serviceKey)
     {
-        OpenAI.Embeddings.EmbeddingGenerationOptions openAIOptions = new()
-        {
-            Dimensions = options?.Dimensions ?? _dimensions,
-        };
+        _ = Throw.IfNull(serviceType);
 
-        if (options?.AdditionalProperties is { Count: > 0 } additionalProperties)
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(EmbeddingGeneratorMetadata) ? _metadata :
+            serviceType == typeof(EmbeddingClient) ? _embeddingClient :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
+    }
+
+    /// <summary>Creates the <see cref="EmbeddingGeneratorMetadata"/> for this instance.</summary>
+    private static EmbeddingGeneratorMetadata CreateMetadata(string providerName, string providerUrl, string? defaultModelId, int? defaultModelDimensions) =>
+        new(providerName, Uri.TryCreate(providerUrl, UriKind.Absolute, out Uri? providerUri) ? providerUri : null, defaultModelId, defaultModelDimensions);
+
+    /// <summary>Converts an extensions options instance to an OpenAI options instance.</summary>
+    private OpenAI.Embeddings.EmbeddingGenerationOptions ToOpenAIOptions(EmbeddingGenerationOptions? options)
+    {
+        if (options?.RawRepresentationFactory?.Invoke(this) is not OpenAI.Embeddings.EmbeddingGenerationOptions result)
         {
-            if (additionalProperties.TryGetValue(nameof(openAIOptions.EndUserId), out string? endUserId))
-            {
-                openAIOptions.EndUserId = endUserId;
-            }
+            result = new OpenAI.Embeddings.EmbeddingGenerationOptions();
         }
 
-        return openAIOptions;
+        result.Dimensions ??= options?.Dimensions ?? _dimensions;
+        return result;
     }
 }

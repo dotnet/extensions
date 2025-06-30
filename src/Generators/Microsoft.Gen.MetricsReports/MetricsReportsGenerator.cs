@@ -81,6 +81,8 @@ public class MetricsReportsGenerator : ISourceGenerator
         // Suppressing until this issue is addressed in https://github.com/dotnet/extensions/issues/5390
 
 #pragma warning disable RS1035 // Do not use APIs banned for analyzers
+        _ = Directory.CreateDirectory(path);
+
         File.WriteAllText(Path.Combine(path, _fileName), report, Encoding.UTF8);
 #pragma warning restore RS1035 // Do not use APIs banned for analyzers
     }

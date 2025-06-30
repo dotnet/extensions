@@ -18,15 +18,6 @@ public class DelegatingEmbeddingGeneratorTests
     }
 
     [Fact]
-    public void MetadataDefaultsToInnerService()
-    {
-        using var inner = new TestEmbeddingGenerator();
-        using var delegating = new NoOpDelegatingEmbeddingGenerator(inner);
-
-        Assert.Same(inner.Metadata, delegating.Metadata);
-    }
-
-    [Fact]
     public async Task GenerateEmbeddingsDefaultsToInnerServiceAsync()
     {
         // Arrange

@@ -32,15 +32,20 @@ public class DistributedCachingChatClientTest
         Assert.True(cachingClient.CoalesceStreamingUpdates);
     }
 
-    [Fact]
-    public async Task CachesSuccessResultsAsync()
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task CachesSuccessResultsAsync(bool conversationIdSet, bool customCaching)
     {
         // Arrange
+        ChatOptions options = new() { ConversationId = conversationIdSet ? "123" : null };
 
         // Verify that all the expected properties will round-trip through the cache,
         // even if this involves serialization
-        var expectedCompletion = new ChatCompletion([
-            new(new ChatRole("fakeRole"), "This is some content")
+        var expectedResponse = new ChatResponse(
+            new ChatMessage(new ChatRole("fakeRole"), "This is some content")
             {
                 AdditionalProperties = new() { ["a"] = "b" },
                 Contents = [new FunctionCallContent("someCallId", "functionName", new Dictionary<string, object?>
@@ -52,10 +57,9 @@ public class DistributedCachingChatClientTest
                     ["arg5"] = false,
                     ["arg6"] = null
                 })]
-            }
-        ])
+            })
         {
-            CompletionId = "someId",
+            ResponseId = "someId",
             Usage = new()
             {
                 InputTokenCount = 123,
@@ -71,32 +75,54 @@ public class DistributedCachingChatClientTest
         var innerCallCount = 0;
         using var testClient = new TestChatClient
         {
-            CompleteAsyncCallback = delegate
+            GetResponseAsyncCallback = delegate
             {
                 innerCallCount++;
-                return Task.FromResult(expectedCompletion);
+                return Task.FromResult(expectedResponse);
             }
         };
-        using var outer = new DistributedCachingChatClient(testClient, _storage)
-        {
-            JsonSerializerOptions = TestJsonSerializerContext.Default.Options
-        };
+
+        int enableCachingInvocations = 0;
+        using var outer = customCaching ?
+            new CustomCachingChatClient(testClient, _storage, (m, o) =>
+            {
+                return ++enableCachingInvocations % 2 == 0;
+            }) :
+            new DistributedCachingChatClient(testClient, _storage);
+
+        outer.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
 
         // Make the initial request and do a quick sanity check
-        var result1 = await outer.CompleteAsync([new ChatMessage(ChatRole.User, "some input")]);
-        Assert.Same(expectedCompletion, result1);
+        var result1 = await outer.GetResponseAsync("some input", options);
+        Assert.Same(expectedResponse, result1);
         Assert.Equal(1, innerCallCount);
 
         // Act
-        var result2 = await outer.CompleteAsync([new ChatMessage(ChatRole.User, "some input")]);
+        var result2 = await outer.GetResponseAsync("some input", options);
 
         // Assert
-        Assert.Equal(1, innerCallCount);
-        AssertCompletionsEqual(expectedCompletion, result2);
+        if (customCaching)
+        {
+            Assert.Equal(enableCachingInvocations % 2 == 0 ? 2 : 1, innerCallCount);
+        }
+        else
+        {
+            Assert.Equal(conversationIdSet ? 2 : 1, innerCallCount);
+        }
+
+        AssertResponsesEqual(expectedResponse, result2);
 
         // Act/Assert 2: Cache misses do not return cached results
-        await outer.CompleteAsync([new ChatMessage(ChatRole.User, "some modified input")]);
-        Assert.Equal(2, innerCallCount);
+        await outer.GetResponseAsync("some modified input", options);
+        Assert.Equal(conversationIdSet || customCaching ? 3 : 2, innerCallCount);
+
+        Assert.Equal(customCaching ? 3 : 0, enableCachingInvocations);
+    }
+
+    private sealed class CustomCachingChatClient(IChatClient innerClient, IDistributedCache storage, Func<IEnumerable<ChatMessage>, ChatOptions?, bool> enableCaching) :
+        DistributedCachingChatClient(innerClient, storage)
+    {
+        protected override bool EnableCaching(IEnumerable<ChatMessage> messages, ChatOptions? options) => enableCaching(messages, options);
     }
 
     [Fact]
@@ -107,11 +133,11 @@ public class DistributedCachingChatClientTest
         var completionTcs = new TaskCompletionSource<bool>();
         using var testClient = new TestChatClient
         {
-            CompleteAsyncCallback = async delegate
+            GetResponseAsyncCallback = async delegate
             {
                 innerCallCount++;
                 await completionTcs.Task;
-                return new ChatCompletion([new(ChatRole.Assistant, "Hello")]);
+                return new ChatResponse(new ChatMessage(ChatRole.Assistant, "Hello"));
             }
         };
         using var outer = new DistributedCachingChatClient(testClient, _storage)
@@ -120,21 +146,21 @@ public class DistributedCachingChatClientTest
         };
 
         // Act 1: Concurrent calls before resolution are passed into the inner client
-        var result1 = outer.CompleteAsync([new ChatMessage(ChatRole.User, "some input")]);
-        var result2 = outer.CompleteAsync([new ChatMessage(ChatRole.User, "some input")]);
+        var result1 = outer.GetResponseAsync("some input");
+        var result2 = outer.GetResponseAsync("some input");
 
         // Assert 1
         Assert.Equal(2, innerCallCount);
         Assert.False(result1.IsCompleted);
         Assert.False(result2.IsCompleted);
         completionTcs.SetResult(true);
-        Assert.Equal("Hello", (await result1).Message.Text);
-        Assert.Equal("Hello", (await result2).Message.Text);
+        Assert.Equal("Hello", (await result1).Text);
+        Assert.Equal("Hello", (await result2).Text);
 
         // Act 2: Subsequent calls after completion are resolved from the cache
-        var result3 = outer.CompleteAsync([new ChatMessage(ChatRole.User, "some input")]);
+        var result3 = outer.GetResponseAsync("some input");
         Assert.Equal(2, innerCallCount);
-        Assert.Equal("Hello", (await result3).Message.Text);
+        Assert.Equal("Hello", (await result3).Text);
     }
 
     [Fact]
@@ -144,7 +170,7 @@ public class DistributedCachingChatClientTest
         var innerCallCount = 0;
         using var testClient = new TestChatClient
         {
-            CompleteAsyncCallback = delegate
+            GetResponseAsyncCallback = delegate
             {
                 innerCallCount++;
                 throw new InvalidTimeZoneException("some failure");
@@ -156,12 +182,12 @@ public class DistributedCachingChatClientTest
         };
 
         var input = new ChatMessage(ChatRole.User, "abc");
-        var ex1 = await Assert.ThrowsAsync<InvalidTimeZoneException>(() => outer.CompleteAsync([input]));
+        var ex1 = await Assert.ThrowsAsync<InvalidTimeZoneException>(() => outer.GetResponseAsync([input]));
         Assert.Equal("some failure", ex1.Message);
         Assert.Equal(1, innerCallCount);
 
         // Act
-        var ex2 = await Assert.ThrowsAsync<InvalidTimeZoneException>(() => outer.CompleteAsync([input]));
+        var ex2 = await Assert.ThrowsAsync<InvalidTimeZoneException>(() => outer.GetResponseAsync([input]));
 
         // Assert
         Assert.NotSame(ex1, ex2);
@@ -177,7 +203,7 @@ public class DistributedCachingChatClientTest
         var resolutionTcs = new TaskCompletionSource<bool>();
         using var testClient = new TestChatClient
         {
-            CompleteAsyncCallback = async delegate
+            GetResponseAsyncCallback = async delegate
             {
                 innerCallCount++;
                 if (innerCallCount == 1)
@@ -185,7 +211,7 @@ public class DistributedCachingChatClientTest
                     await resolutionTcs.Task;
                 }
 
-                return new ChatCompletion([new(ChatRole.Assistant, "A good result")]);
+                return new ChatResponse(new ChatMessage(ChatRole.Assistant, "A good result"));
             }
         };
         using var outer = new DistributedCachingChatClient(testClient, _storage)
@@ -195,7 +221,7 @@ public class DistributedCachingChatClientTest
 
         // First call gets cancelled
         var input = new ChatMessage(ChatRole.User, "abc");
-        var result1 = outer.CompleteAsync([input]);
+        var result1 = outer.GetResponseAsync([input]);
         Assert.False(result1.IsCompleted);
         Assert.Equal(1, innerCallCount);
         resolutionTcs.SetCanceled();
@@ -203,27 +229,23 @@ public class DistributedCachingChatClientTest
         Assert.True(result1.IsCanceled);
 
         // Act/Assert: Second call can succeed
-        var result2 = await outer.CompleteAsync([input]);
+        var result2 = await outer.GetResponseAsync([input]);
         Assert.Equal(2, innerCallCount);
-        Assert.Equal("A good result", result2.Message.Text);
+        Assert.Equal("A good result", result2.Text);
     }
 
-    [Fact]
-    public async Task StreamingCachesSuccessResultsAsync()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task StreamingCachesSuccessResultsAsync(bool conversationIdSet)
     {
         // Arrange
+        ChatOptions options = new() { ConversationId = conversationIdSet ? "123" : null };
 
         // Verify that all the expected properties will round-trip through the cache,
         // even if this involves serialization
-        List<StreamingChatCompletionUpdate> actualCompletion =
+        List<ChatResponseUpdate> actualUpdate =
         [
-            new()
-            {
-                Role = new ChatRole("fakeRole1"),
-                ChoiceIndex = 1,
-                AdditionalProperties = new() { ["a"] = "b" },
-                Contents = [new TextContent("Chunk1")]
-            },
             new()
             {
                 Role = new ChatRole("fakeRole2"),
@@ -235,19 +257,12 @@ public class DistributedCachingChatClientTest
             }
         ];
 
-        List<StreamingChatCompletionUpdate> expectedCachedCompletion =
+        List<ChatResponseUpdate> expectedCachedResponse =
         [
             new()
             {
                 Role = new ChatRole("fakeRole2"),
                 Contents = [new FunctionCallContent("someCallId", "someFn", new Dictionary<string, object?> { ["arg1"] = "value1" })],
-            },
-            new()
-            {
-                Role = new ChatRole("fakeRole1"),
-                ChoiceIndex = 1,
-                AdditionalProperties = new() { ["a"] = "b" },
-                Contents = [new TextContent("Chunk1")]
             },
             new()
             {
@@ -258,10 +273,10 @@ public class DistributedCachingChatClientTest
         var innerCallCount = 0;
         using var testClient = new TestChatClient
         {
-            CompleteStreamingAsyncCallback = delegate
+            GetStreamingResponseAsyncCallback = delegate
             {
                 innerCallCount++;
-                return ToAsyncEnumerableAsync(actualCompletion);
+                return ToAsyncEnumerableAsync(actualUpdate);
             }
         };
         using var outer = new DistributedCachingChatClient(testClient, _storage)
@@ -270,20 +285,20 @@ public class DistributedCachingChatClientTest
         };
 
         // Make the initial request and do a quick sanity check
-        var result1 = outer.CompleteStreamingAsync([new ChatMessage(ChatRole.User, "some input")]);
-        await AssertCompletionsEqualAsync(actualCompletion, result1);
+        var result1 = outer.GetStreamingResponseAsync("some input", options);
+        await AssertResponsesEqualAsync(actualUpdate, result1);
         Assert.Equal(1, innerCallCount);
 
         // Act
-        var result2 = outer.CompleteStreamingAsync([new ChatMessage(ChatRole.User, "some input")]);
+        var result2 = outer.GetStreamingResponseAsync("some input", options);
 
         // Assert
-        Assert.Equal(1, innerCallCount);
-        await AssertCompletionsEqualAsync(expectedCachedCompletion, result2);
+        Assert.Equal(conversationIdSet ? 2 : 1, innerCallCount);
+        await AssertResponsesEqualAsync(conversationIdSet ? actualUpdate : expectedCachedResponse, result2);
 
         // Act/Assert 2: Cache misses do not return cached results
-        await ToListAsync(outer.CompleteStreamingAsync([new ChatMessage(ChatRole.User, "some modified input")]));
-        Assert.Equal(2, innerCallCount);
+        await ToListAsync(outer.GetStreamingResponseAsync("some modified input", options));
+        Assert.Equal(conversationIdSet ? 3 : 2, innerCallCount);
     }
 
     [Theory]
@@ -293,19 +308,19 @@ public class DistributedCachingChatClientTest
     public async Task StreamingCoalescesConsecutiveTextChunksAsync(bool? coalesce)
     {
         // Arrange
-        List<StreamingChatCompletionUpdate> expectedCompletion =
+        List<ChatResponseUpdate> expectedResponse =
         [
-            new() { Role = ChatRole.Assistant, Text = "This" },
-            new() { Role = ChatRole.Assistant, Text = " becomes one chunk" },
+            new(ChatRole.Assistant, "This"),
+            new(ChatRole.Assistant, " becomes one chunk"),
             new() { Role = ChatRole.Assistant, Contents = [new FunctionCallContent("callId1", "separator")] },
-            new() { Role = ChatRole.Assistant, Text = "... and this" },
-            new() { Role = ChatRole.Assistant, Text = " becomes another" },
-            new() { Role = ChatRole.Assistant, Text = " one." },
+            new(ChatRole.Assistant, "... and this"),
+            new(ChatRole.Assistant, " becomes another"),
+            new(ChatRole.Assistant, " one."),
         ];
 
         using var testClient = new TestChatClient
         {
-            CompleteStreamingAsyncCallback = delegate { return ToAsyncEnumerableAsync(expectedCompletion); }
+            GetStreamingResponseAsyncCallback = delegate { return ToAsyncEnumerableAsync(expectedResponse); }
         };
         using var outer = new DistributedCachingChatClient(testClient, _storage)
         {
@@ -317,16 +332,16 @@ public class DistributedCachingChatClientTest
             outer.CoalesceStreamingUpdates = coalesce.Value;
         }
 
-        var result1 = outer.CompleteStreamingAsync([new ChatMessage(ChatRole.User, "some input")]);
+        var result1 = outer.GetStreamingResponseAsync("some input");
         await ToListAsync(result1);
 
         // Act
-        var result2 = outer.CompleteStreamingAsync([new ChatMessage(ChatRole.User, "some input")]);
+        var result2 = outer.GetStreamingResponseAsync("some input");
 
         // Assert
         if (coalesce is null or true)
         {
-            StreamingChatCompletionUpdate update = Assert.Single(await ToListAsync(result2));
+            ChatResponseUpdate update = Assert.Single(await ToListAsync(result2));
             Assert.Collection(update.Contents,
                 c => Assert.Equal("This becomes one chunk", Assert.IsType<TextContent>(c).Text),
                 c => Assert.IsType<FunctionCallContent>(c),
@@ -348,7 +363,7 @@ public class DistributedCachingChatClientTest
     public async Task StreamingCoalescingPropagatesMetadataAsync()
     {
         // Arrange
-        List<StreamingChatCompletionUpdate> expectedCompletion =
+        List<ChatResponseUpdate> expectedResponse =
         [
             new() { Role = ChatRole.Assistant, Contents = [new TextContent("Hello")] },
             new() { Role = ChatRole.Assistant, Contents = [new TextContent(" world, ")] },
@@ -374,7 +389,8 @@ public class DistributedCachingChatClientTest
                     }
                 ],
                 CreatedAt = DateTime.Parse("2024-10-11T19:23:36.0152137Z"),
-                CompletionId = "12345",
+                ResponseId = "12345",
+                MessageId = "someMessageId123",
                 AuthorName = "Someone",
                 FinishReason = ChatFinishReason.Length,
             },
@@ -382,24 +398,25 @@ public class DistributedCachingChatClientTest
 
         using var testClient = new TestChatClient
         {
-            CompleteStreamingAsyncCallback = delegate { return ToAsyncEnumerableAsync(expectedCompletion); }
+            GetStreamingResponseAsyncCallback = delegate { return ToAsyncEnumerableAsync(expectedResponse); }
         };
         using var outer = new DistributedCachingChatClient(testClient, _storage)
         {
             JsonSerializerOptions = TestJsonSerializerContext.Default.Options
         };
 
-        var result1 = outer.CompleteStreamingAsync([new ChatMessage(ChatRole.User, "some input")]);
+        var result1 = outer.GetStreamingResponseAsync("some input");
         await ToListAsync(result1);
 
         // Act
-        var result2 = outer.CompleteStreamingAsync([new ChatMessage(ChatRole.User, "some input")]);
+        var result2 = outer.GetStreamingResponseAsync("some input");
 
         // Assert
         var items = await ToListAsync(result2);
         var item = Assert.Single(items);
         Assert.Equal("Hello world, how are you?", item.Text);
-        Assert.Equal("12345", item.CompletionId);
+        Assert.Equal("12345", item.ResponseId);
+        Assert.Equal("someMessageId123", item.MessageId);
         Assert.Equal("Someone", item.AuthorName);
         Assert.Equal(ChatFinishReason.Length, item.FinishReason);
         Assert.Equal(DateTime.Parse("2024-10-11T19:23:36.0152137Z"), item.CreatedAt);
@@ -414,16 +431,16 @@ public class DistributedCachingChatClientTest
         // Arrange
         var innerCallCount = 0;
         var completionTcs = new TaskCompletionSource<bool>();
-        List<StreamingChatCompletionUpdate> expectedCompletion =
+        List<ChatResponseUpdate> expectedResponse =
         [
-            new() { Role = ChatRole.Assistant, Text = "Chunk 1" },
+            new(ChatRole.Assistant, "Chunk 1"),
         ];
         using var testClient = new TestChatClient
         {
-            CompleteStreamingAsyncCallback = delegate
+            GetStreamingResponseAsyncCallback = delegate
             {
                 innerCallCount++;
-                return ToAsyncEnumerableAsync(completionTcs.Task, expectedCompletion);
+                return ToAsyncEnumerableAsync(completionTcs.Task, expectedResponse);
             }
         };
         using var outer = new DistributedCachingChatClient(testClient, _storage)
@@ -432,13 +449,13 @@ public class DistributedCachingChatClientTest
         };
 
         // Act 1: Concurrent calls before resolution are passed into the inner client
-        var result1 = outer.CompleteStreamingAsync([new ChatMessage(ChatRole.User, "some input")]);
-        var result2 = outer.CompleteStreamingAsync([new ChatMessage(ChatRole.User, "some input")]);
+        var result1 = outer.GetStreamingResponseAsync("some input");
+        var result2 = outer.GetStreamingResponseAsync("some input");
 
         // Assert 1
         Assert.NotSame(result1, result2);
-        var result1Assertion = AssertCompletionsEqualAsync(expectedCompletion, result1);
-        var result2Assertion = AssertCompletionsEqualAsync(expectedCompletion, result2);
+        var result1Assertion = AssertResponsesEqualAsync(expectedResponse, result1);
+        var result2Assertion = AssertResponsesEqualAsync(expectedResponse, result2);
         Assert.False(result1Assertion.IsCompleted);
         Assert.False(result2Assertion.IsCompleted);
         completionTcs.SetResult(true);
@@ -447,8 +464,8 @@ public class DistributedCachingChatClientTest
         Assert.Equal(2, innerCallCount);
 
         // Act 2: Subsequent calls after completion are resolved from the cache
-        var result3 = outer.CompleteStreamingAsync([new ChatMessage(ChatRole.User, "some input")]);
-        await AssertCompletionsEqualAsync(expectedCompletion, result3);
+        var result3 = outer.GetStreamingResponseAsync("some input");
+        await AssertResponsesEqualAsync(expectedResponse, result3);
         Assert.Equal(2, innerCallCount);
     }
 
@@ -459,12 +476,12 @@ public class DistributedCachingChatClientTest
         var innerCallCount = 0;
         using var testClient = new TestChatClient
         {
-            CompleteStreamingAsyncCallback = delegate
+            GetStreamingResponseAsyncCallback = delegate
             {
                 innerCallCount++;
-                return ToAsyncEnumerableAsync<StreamingChatCompletionUpdate>(Task.CompletedTask,
+                return ToAsyncEnumerableAsync<ChatResponseUpdate>(Task.CompletedTask,
                 [
-                    () => new() { Role = ChatRole.Assistant, Text = "Chunk 1" },
+                    () => new(ChatRole.Assistant, "Chunk 1"),
                     () => throw new InvalidTimeZoneException("some failure"),
                 ]);
             }
@@ -475,13 +492,13 @@ public class DistributedCachingChatClientTest
         };
 
         var input = new ChatMessage(ChatRole.User, "abc");
-        var result1 = outer.CompleteStreamingAsync([input]);
+        var result1 = outer.GetStreamingResponseAsync([input]);
         var ex1 = await Assert.ThrowsAsync<InvalidTimeZoneException>(() => ToListAsync(result1));
         Assert.Equal("some failure", ex1.Message);
         Assert.Equal(1, innerCallCount);
 
         // Act
-        var result2 = outer.CompleteStreamingAsync([input]);
+        var result2 = outer.GetStreamingResponseAsync([input]);
         var ex2 = await Assert.ThrowsAsync<InvalidTimeZoneException>(() => ToListAsync(result2));
 
         // Assert
@@ -498,12 +515,12 @@ public class DistributedCachingChatClientTest
         var completionTcs = new TaskCompletionSource<bool>();
         using var testClient = new TestChatClient
         {
-            CompleteStreamingAsyncCallback = delegate
+            GetStreamingResponseAsyncCallback = delegate
             {
                 innerCallCount++;
-                return ToAsyncEnumerableAsync<StreamingChatCompletionUpdate>(
+                return ToAsyncEnumerableAsync<ChatResponseUpdate>(
                     innerCallCount == 1 ? completionTcs.Task : Task.CompletedTask,
-                    [() => new() { Role = ChatRole.Assistant, Text = "A good result" }]);
+                    [() => new(ChatRole.Assistant, "A good result")]);
             }
         };
         using var outer = new DistributedCachingChatClient(testClient, _storage)
@@ -513,7 +530,7 @@ public class DistributedCachingChatClientTest
 
         // First call gets cancelled
         var input = new ChatMessage(ChatRole.User, "abc");
-        var result1 = outer.CompleteStreamingAsync([input]);
+        var result1 = outer.GetStreamingResponseAsync([input]);
         var result1Assertion = ToListAsync(result1);
         Assert.False(result1Assertion.IsCompleted);
         completionTcs.SetCanceled();
@@ -522,7 +539,7 @@ public class DistributedCachingChatClientTest
         Assert.Equal(1, innerCallCount);
 
         // Act/Assert: Second call can succeed
-        var result2 = await ToListAsync(outer.CompleteStreamingAsync([input]));
+        var result2 = await ToListAsync(outer.GetStreamingResponseAsync([input]));
         Assert.Equal("A good result", result2[0].Text);
         Assert.Equal(2, innerCallCount);
     }
@@ -535,11 +552,11 @@ public class DistributedCachingChatClientTest
         var completionTcs = new TaskCompletionSource<bool>();
         using var testClient = new TestChatClient
         {
-            CompleteAsyncCallback = async (_, options, _) =>
+            GetResponseAsyncCallback = async (_, options, _) =>
             {
                 innerCallCount++;
                 await Task.Yield();
-                return new([new(ChatRole.Assistant, options!.AdditionalProperties!["someKey"]!.ToString())]);
+                return new(new ChatMessage(ChatRole.Assistant, options!.AdditionalProperties!["someKey"]!.ToString()));
             }
         };
         using var outer = new DistributedCachingChatClient(testClient, _storage)
@@ -548,34 +565,34 @@ public class DistributedCachingChatClientTest
         };
 
         // Act: Call with two different ChatOptions that have the same values
-        var result1 = await outer.CompleteAsync([], new ChatOptions
+        var result1 = await outer.GetResponseAsync([], new ChatOptions
         {
             AdditionalProperties = new() { { "someKey", "value 1" } }
         });
-        var result2 = await outer.CompleteAsync([], new ChatOptions
+        var result2 = await outer.GetResponseAsync([], new ChatOptions
         {
             AdditionalProperties = new() { { "someKey", "value 1" } }
         });
 
         // Assert: Same result
         Assert.Equal(1, innerCallCount);
-        Assert.Equal("value 1", result1.Message.Text);
-        Assert.Equal("value 1", result2.Message.Text);
+        Assert.Equal("value 1", result1.Text);
+        Assert.Equal("value 1", result2.Text);
 
         // Act: Call with two different ChatOptions that have different values
-        var result3 = await outer.CompleteAsync([], new ChatOptions
+        var result3 = await outer.GetResponseAsync([], new ChatOptions
         {
             AdditionalProperties = new() { { "someKey", "value 1" } }
         });
-        var result4 = await outer.CompleteAsync([], new ChatOptions
+        var result4 = await outer.GetResponseAsync([], new ChatOptions
         {
             AdditionalProperties = new() { { "someKey", "value 2" } }
         });
 
         // Assert: Different results
         Assert.Equal(2, innerCallCount);
-        Assert.Equal("value 1", result3.Message.Text);
-        Assert.Equal("value 2", result4.Message.Text);
+        Assert.Equal("value 1", result3.Text);
+        Assert.Equal("value 2", result4.Text);
     }
 
     [Fact]
@@ -586,11 +603,11 @@ public class DistributedCachingChatClientTest
         var completionTcs = new TaskCompletionSource<bool>();
         using var testClient = new TestChatClient
         {
-            CompleteAsyncCallback = async (_, options, _) =>
+            GetResponseAsyncCallback = async (_, options, _) =>
             {
                 innerCallCount++;
                 await Task.Yield();
-                return new([new(ChatRole.Assistant, options!.AdditionalProperties!["someKey"]!.ToString())]);
+                return new(new ChatMessage(ChatRole.Assistant, options!.AdditionalProperties!["someKey"]!.ToString()));
             }
         };
         using var outer = new CachingChatClientWithCustomKey(testClient, _storage)
@@ -599,32 +616,31 @@ public class DistributedCachingChatClientTest
         };
 
         // Act: Call with two different ChatOptions
-        var result1 = await outer.CompleteAsync([], new ChatOptions
+        var result1 = await outer.GetResponseAsync([], new ChatOptions
         {
             AdditionalProperties = new() { { "someKey", "value 1" } }
         });
-        var result2 = await outer.CompleteAsync([], new ChatOptions
+        var result2 = await outer.GetResponseAsync([], new ChatOptions
         {
             AdditionalProperties = new() { { "someKey", "value 2" } }
         });
 
         // Assert: Different results
         Assert.Equal(2, innerCallCount);
-        Assert.Equal("value 1", result1.Message.Text);
-        Assert.Equal("value 2", result2.Message.Text);
+        Assert.Equal("value 1", result1.Text);
+        Assert.Equal("value 2", result2.Text);
     }
 
     [Fact]
     public async Task CanCacheCustomContentTypesAsync()
     {
         // Arrange
-        var expectedCompletion = new ChatCompletion([
-            new(new ChatRole("fakeRole"),
+        var expectedResponse = new ChatResponse(
+            new ChatMessage(new ChatRole("fakeRole"),
             [
                 new CustomAIContent1("Hello", DateTime.Now),
                 new CustomAIContent2("Goodbye", 42),
-            ])
-        ]);
+            ]));
 
         var serializerOptions = new JsonSerializerOptions(TestJsonSerializerContext.Default.Options);
         serializerOptions.TypeInfoResolver = serializerOptions.TypeInfoResolver!.WithAddedModifier(typeInfo =>
@@ -642,10 +658,10 @@ public class DistributedCachingChatClientTest
         var innerCallCount = 0;
         using var testClient = new TestChatClient
         {
-            CompleteAsyncCallback = delegate
+            GetResponseAsyncCallback = delegate
             {
                 innerCallCount++;
-                return Task.FromResult(expectedCompletion);
+                return Task.FromResult(expectedResponse);
             }
         };
         using var outer = new DistributedCachingChatClient(testClient, _storage)
@@ -654,17 +670,17 @@ public class DistributedCachingChatClientTest
         };
 
         // Make the initial request and do a quick sanity check
-        var result1 = await outer.CompleteAsync([new ChatMessage(ChatRole.User, "some input")]);
-        AssertCompletionsEqual(expectedCompletion, result1);
+        var result1 = await outer.GetResponseAsync("some input");
+        AssertResponsesEqual(expectedResponse, result1);
 
         // Act
-        var result2 = await outer.CompleteAsync([new ChatMessage(ChatRole.User, "some input")]);
+        var result2 = await outer.GetResponseAsync("some input");
 
         // Assert
         Assert.Equal(1, innerCallCount);
-        AssertCompletionsEqual(expectedCompletion, result2);
-        Assert.NotSame(result2.Message.Contents[0], expectedCompletion.Message.Contents[0]);
-        Assert.NotSame(result2.Message.Contents[1], expectedCompletion.Message.Contents[1]);
+        AssertResponsesEqual(expectedResponse, result2);
+        Assert.NotSame(result2.Messages.Last().Contents[0], expectedResponse.Messages.Last().Contents[0]);
+        Assert.NotSame(result2.Messages.Last().Contents[1], expectedResponse.Messages.Last().Contents[1]);
     }
 
     [Fact]
@@ -676,10 +692,10 @@ public class DistributedCachingChatClientTest
             .BuildServiceProvider();
         using var testClient = new TestChatClient
         {
-            CompleteAsyncCallback = delegate
+            GetResponseAsyncCallback = delegate
             {
-                return Task.FromResult(new ChatCompletion([
-                    new(ChatRole.Assistant, [new TextContent("Hey")])]));
+                return Task.FromResult(new ChatResponse(
+                    new ChatMessage(ChatRole.Assistant, [new TextContent("Hey")])));
             }
         };
         using var outer = testClient
@@ -692,7 +708,7 @@ public class DistributedCachingChatClientTest
 
         // Act: Make a request that should populate the cache
         Assert.Empty(_storage.Keys);
-        var result = await outer.CompleteAsync([new ChatMessage(ChatRole.User, "some input")]);
+        var result = await outer.GetResponseAsync("some input");
 
         // Assert
         Assert.NotNull(result);
@@ -727,9 +743,9 @@ public class DistributedCachingChatClientTest
         }
     }
 
-    private static void AssertCompletionsEqual(ChatCompletion expected, ChatCompletion actual)
+    private static void AssertResponsesEqual(ChatResponse expected, ChatResponse actual)
     {
-        Assert.Equal(expected.CompletionId, actual.CompletionId);
+        Assert.Equal(expected.ResponseId, actual.ResponseId);
         Assert.Equal(expected.Usage?.InputTokenCount, actual.Usage?.InputTokenCount);
         Assert.Equal(expected.Usage?.OutputTokenCount, actual.Usage?.OutputTokenCount);
         Assert.Equal(expected.Usage?.TotalTokenCount, actual.Usage?.TotalTokenCount);
@@ -739,38 +755,36 @@ public class DistributedCachingChatClientTest
         Assert.Equal(
             JsonSerializer.Serialize(expected.AdditionalProperties, TestJsonSerializerContext.Default.Options),
             JsonSerializer.Serialize(actual.AdditionalProperties, TestJsonSerializerContext.Default.Options));
-        Assert.Equal(expected.Choices.Count, actual.Choices.Count);
 
-        for (var i = 0; i < expected.Choices.Count; i++)
+        ChatMessage expectedMessage = expected.Messages.Last();
+        ChatMessage actualMessage = actual.Messages.Last();
+        Assert.IsType(expectedMessage.GetType(), actualMessage);
+        Assert.Equal(expectedMessage.Role, actualMessage.Role);
+        Assert.Equal(expectedMessage.Text, actualMessage.Text);
+        Assert.Equal(expectedMessage.Contents.Count, actualMessage.Contents.Count);
+
+        for (var itemIndex = 0; itemIndex < expectedMessage.Contents.Count; itemIndex++)
         {
-            Assert.IsType(expected.Choices[i].GetType(), actual.Choices[i]);
-            Assert.Equal(expected.Choices[i].Role, actual.Choices[i].Role);
-            Assert.Equal(expected.Choices[i].Text, actual.Choices[i].Text);
-            Assert.Equal(expected.Choices[i].Contents.Count, actual.Choices[i].Contents.Count);
+            var expectedItem = expectedMessage.Contents[itemIndex];
+            var actualItem = actualMessage.Contents[itemIndex];
+            Assert.IsType(expectedItem.GetType(), actualItem);
 
-            for (var itemIndex = 0; itemIndex < expected.Choices[i].Contents.Count; itemIndex++)
+            if (expectedItem is FunctionCallContent expectedFcc)
             {
-                var expectedItem = expected.Choices[i].Contents[itemIndex];
-                var actualItem = actual.Choices[i].Contents[itemIndex];
-                Assert.IsType(expectedItem.GetType(), actualItem);
+                var actualFcc = (FunctionCallContent)actualItem;
+                Assert.Equal(expectedFcc.Name, actualFcc.Name);
+                Assert.Equal(expectedFcc.CallId, actualFcc.CallId);
 
-                if (expectedItem is FunctionCallContent expectedFcc)
-                {
-                    var actualFcc = (FunctionCallContent)actualItem;
-                    Assert.Equal(expectedFcc.Name, actualFcc.Name);
-                    Assert.Equal(expectedFcc.CallId, actualFcc.CallId);
-
-                    // The correct JSON-round-tripping of AIContent/AIContent is not
-                    // the responsibility of CachingChatClient, so not testing that here.
-                    Assert.Equal(
-                        JsonSerializer.Serialize(expectedFcc.Arguments, TestJsonSerializerContext.Default.Options),
-                        JsonSerializer.Serialize(actualFcc.Arguments, TestJsonSerializerContext.Default.Options));
-                }
+                // The correct JSON-round-tripping of AIContent/AIContent is not
+                // the responsibility of CachingChatClient, so not testing that here.
+                Assert.Equal(
+                    JsonSerializer.Serialize(expectedFcc.Arguments, TestJsonSerializerContext.Default.Options),
+                    JsonSerializer.Serialize(actualFcc.Arguments, TestJsonSerializerContext.Default.Options));
             }
         }
     }
 
-    private static async Task AssertCompletionsEqualAsync(IReadOnlyList<StreamingChatCompletionUpdate> expected, IAsyncEnumerable<StreamingChatCompletionUpdate> actual)
+    private static async Task AssertResponsesEqualAsync(IReadOnlyList<ChatResponseUpdate> expected, IAsyncEnumerable<ChatResponseUpdate> actual)
     {
         var actualEnumerator = actual.GetAsyncEnumerator();
 
@@ -780,7 +794,6 @@ public class DistributedCachingChatClientTest
 
             var actualItem = actualEnumerator.Current;
             Assert.Equal(expectedItem.Text, actualItem.Text);
-            Assert.Equal(expectedItem.ChoiceIndex, actualItem.ChoiceIndex);
             Assert.Equal(expectedItem.Role, actualItem.Role);
             Assert.Equal(expectedItem.Contents.Count, actualItem.Contents.Count);
 
@@ -818,18 +831,10 @@ public class DistributedCachingChatClientTest
     private sealed class CachingChatClientWithCustomKey(IChatClient innerClient, IDistributedCache storage)
         : DistributedCachingChatClient(innerClient, storage)
     {
-        protected override string GetCacheKey(params ReadOnlySpan<object?> values)
+        protected override string GetCacheKey(IEnumerable<ChatMessage> messages, ChatOptions? options, params ReadOnlySpan<object?> additionalValues)
         {
-            var baseKey = base.GetCacheKey(values);
-            foreach (var value in values)
-            {
-                if (value is ChatOptions options)
-                {
-                    return baseKey + options.AdditionalProperties?["someKey"]?.ToString();
-                }
-            }
-
-            return baseKey;
+            var baseKey = base.GetCacheKey(messages, options, additionalValues);
+            return baseKey + options?.AdditionalProperties?["someKey"]?.ToString();
         }
     }
 

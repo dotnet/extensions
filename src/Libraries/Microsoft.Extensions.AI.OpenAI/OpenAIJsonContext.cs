@@ -7,12 +7,13 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Source-generated JSON type information.</summary>
+/// <summary>Source-generated JSON type information for use by all OpenAI implementations.</summary>
 [JsonSourceGenerationOptions(JsonSerializerDefaults.Web,
     UseStringEnumConverter = true,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     WriteIndented = true)]
-[JsonSerializable(typeof(OpenAIRealtimeExtensions.ConversationFunctionToolParametersSchema))]
-[JsonSerializable(typeof(OpenAIModelMappers.OpenAIChatToolJson))]
+[JsonSerializable(typeof(OpenAIClientExtensions.ToolJson))]
 [JsonSerializable(typeof(IDictionary<string, object?>))]
+[JsonSerializable(typeof(string[]))]
+[JsonSerializable(typeof(JsonElement))]
 internal sealed partial class OpenAIJsonContext : JsonSerializerContext;

@@ -21,7 +21,6 @@ using Xunit;
 
 namespace Microsoft.Gen.Logging.Test;
 
-[UsesVerify]
 public partial class ParserTests
 {
     private const int TotalSensitiveCases = 21;

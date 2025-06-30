@@ -4,12 +4,15 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
@@ -21,6 +24,11 @@ using Xunit;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
 #pragma warning disable CA2214 // Do not call overridable methods in constructors
+#pragma warning disable CA2249 // Consider using 'string.Contains' instead of 'string.IndexOf'
+#pragma warning disable S103 // Lines should not be too long
+#pragma warning disable S1144 // Unused private types or members should be removed
+#pragma warning disable S3604 // Member initializer values should not be redundant
+#pragma warning disable SA1515 // Single-line comment should be preceded by blank line
 
 namespace Microsoft.Extensions.AI;
 
@@ -42,21 +50,21 @@ public abstract class ChatClientIntegrationTests : IDisposable
     protected abstract IChatClient? CreateChatClient();
 
     [ConditionalFact]
-    public virtual async Task CompleteAsync_SingleRequestMessage()
+    public virtual async Task GetResponseAsync_SingleRequestMessage()
     {
         SkipIfNotEnabled();
 
-        var response = await _chatClient.CompleteAsync("What's the biggest animal?");
+        var response = await _chatClient.GetResponseAsync("What's the biggest animal?");
 
-        Assert.Contains("whale", response.Message.Text, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("whale", response.Text, StringComparison.OrdinalIgnoreCase);
     }
 
     [ConditionalFact]
-    public virtual async Task CompleteAsync_MultipleRequestMessages()
+    public virtual async Task GetResponseAsync_MultipleRequestMessages()
     {
         SkipIfNotEnabled();
 
-        var response = await _chatClient.CompleteAsync(
+        var response = await _chatClient.GetResponseAsync(
         [
             new(ChatRole.User, "Pick a city, any city"),
             new(ChatRole.Assistant, "Seattle"),
@@ -65,13 +73,28 @@ public abstract class ChatClientIntegrationTests : IDisposable
             new(ChatRole.User, "What continent are they each in?"),
         ]);
 
-        Assert.Single(response.Choices);
-        Assert.Contains("America", response.Message.Text);
-        Assert.Contains("Asia", response.Message.Text);
+        Assert.Contains("America", response.Text);
+        Assert.Contains("Asia", response.Text);
     }
 
     [ConditionalFact]
-    public virtual async Task CompleteStreamingAsync_SingleStreamingResponseChoice()
+    public virtual async Task GetResponseAsync_WithEmptyMessage()
+    {
+        SkipIfNotEnabled();
+
+        var response = await _chatClient.GetResponseAsync(
+        [
+            new(ChatRole.System, []),
+            new(ChatRole.User, []),
+            new(ChatRole.Assistant, []),
+            new(ChatRole.User, "What is 1 + 2? Reply with a single number."),
+        ]);
+
+        Assert.Contains("3", response.Text);
+    }
+
+    [ConditionalFact]
+    public virtual async Task GetStreamingResponseAsync()
     {
         SkipIfNotEnabled();
 
@@ -81,7 +104,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         ];
 
         StringBuilder sb = new();
-        await foreach (var chunk in _chatClient.CompleteStreamingAsync(chatHistory))
+        await foreach (var chunk in _chatClient.GetStreamingResponseAsync(chatHistory))
         {
             sb.Append(chunk.Text);
         }
@@ -89,30 +112,26 @@ public abstract class ChatClientIntegrationTests : IDisposable
         string responseText = sb.ToString();
         Assert.Contains("one small step", responseText, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("one giant leap", responseText, StringComparison.OrdinalIgnoreCase);
-
-        // The input list is left unaugmented.
-        Assert.Single(chatHistory);
     }
 
     [ConditionalFact]
-    public virtual async Task CompleteAsync_UsageDataAvailable()
+    public virtual async Task GetResponseAsync_UsageDataAvailable()
     {
         SkipIfNotEnabled();
 
-        var response = await _chatClient.CompleteAsync("Explain in 10 words how AI works");
+        var response = await _chatClient.GetResponseAsync("Explain in 10 words how AI works");
 
-        Assert.Single(response.Choices);
         Assert.True(response.Usage?.InputTokenCount > 1);
         Assert.True(response.Usage?.OutputTokenCount > 1);
         Assert.Equal(response.Usage?.InputTokenCount + response.Usage?.OutputTokenCount, response.Usage?.TotalTokenCount);
     }
 
     [ConditionalFact]
-    public virtual async Task CompleteStreamingAsync_UsageDataAvailable()
+    public virtual async Task GetStreamingResponseAsync_UsageDataAvailable()
     {
         SkipIfNotEnabled();
 
-        var response = _chatClient.CompleteStreamingAsync("Explain in 10 words how AI works", new()
+        var response = _chatClient.GetStreamingResponseAsync("Explain in 10 words how AI works", new()
         {
             AdditionalProperties = new()
             {
@@ -120,7 +139,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
             },
         });
 
-        List<StreamingChatCompletionUpdate> chunks = [];
+        List<ChatResponseUpdate> chunks = [];
         await foreach (var chunk in response)
         {
             chunks.Add(chunk);
@@ -134,6 +153,25 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.Equal(usage.Details.InputTokenCount + usage.Details.OutputTokenCount, usage.Details.TotalTokenCount);
     }
 
+    [ConditionalFact]
+    public virtual async Task GetStreamingResponseAsync_AppendToHistory()
+    {
+        SkipIfNotEnabled();
+
+        List<ChatMessage> history = [new(ChatRole.User, "Explain in 100 words how AI works")];
+
+        var streamingResponse = _chatClient.GetStreamingResponseAsync(history);
+
+        Assert.Single(history);
+        await history.AddMessagesAsync(streamingResponse);
+        Assert.Equal(2, history.Count);
+        Assert.Equal(ChatRole.Assistant, history[1].Role);
+
+        var singleTextContent = (TextContent)history[1].Contents.Single();
+        Assert.NotEmpty(singleTextContent.Text);
+        Assert.Equal(history[1].Text, singleTextContent.Text);
+    }
+
     protected virtual string? GetModel_MultiModal_DescribeImage() => null;
 
     [ConditionalFact]
@@ -141,18 +179,35 @@ public abstract class ChatClientIntegrationTests : IDisposable
     {
         SkipIfNotEnabled();
 
-        var response = await _chatClient.CompleteAsync(
+        var response = await _chatClient.GetResponseAsync(
             [
                 new(ChatRole.User,
                 [
                     new TextContent("What does this logo say?"),
-                    new DataContent(GetImageDataUri(), "image/png"),
+                    new DataContent(ImageDataUri.GetImageDataUri(), "image/png"),
                 ])
             ],
             new() { ModelId = GetModel_MultiModal_DescribeImage() });
 
-        Assert.Single(response.Choices);
-        Assert.True(response.Message.Text?.IndexOf("net", StringComparison.OrdinalIgnoreCase) >= 0, response.Message.Text);
+        Assert.True(response.Text.IndexOf("net", StringComparison.OrdinalIgnoreCase) >= 0, response.Text);
+    }
+
+    [ConditionalFact]
+    public virtual async Task MultiModal_DescribePdf()
+    {
+        SkipIfNotEnabled();
+
+        var response = await _chatClient.GetResponseAsync(
+            [
+                new(ChatRole.User,
+                [
+                    new TextContent("What text does this document contain?"),
+                    new DataContent(ImageDataUri.GetPdfDataUri(), "application/pdf"),
+                ])
+            ],
+            new() { ModelId = GetModel_MultiModal_DescribeImage() });
+
+        Assert.True(response.Text.IndexOf("hello", StringComparison.OrdinalIgnoreCase) >= 0, response.Text);
     }
 
     [ConditionalFact]
@@ -177,23 +232,13 @@ public abstract class ChatClientIntegrationTests : IDisposable
             new(ChatRole.User, "What is the current secret number?")
         ];
 
-        var response = await chatClient.CompleteAsync(messages, new()
+        var response = await chatClient.GetResponseAsync(messages, new()
         {
             Tools = [AIFunctionFactory.Create(() => secretNumber, "GetSecretNumber")]
         });
 
-        Assert.Single(response.Choices);
-        Assert.Contains(secretNumber.ToString(), response.Message.Text);
-
-        // If the underlying IChatClient provides usage data, function invocation should aggregate the
-        // usage data across all calls to produce a single Usage value on the final response
-        if (response.Usage is { } finalUsage)
-        {
-            var totalInputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.input_tokens")!);
-            var totalOutputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.response.output_tokens")!);
-            Assert.Equal(totalInputTokens, finalUsage.InputTokenCount);
-            Assert.Equal(totalOutputTokens, finalUsage.OutputTokenCount);
-        }
+        Assert.Contains(secretNumber.ToString(), response.Text);
+        AssertUsageAgainstActivities(response, activities);
     }
 
     [ConditionalFact]
@@ -203,13 +248,12 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         using var chatClient = new FunctionInvokingChatClient(_chatClient);
 
-        var response = await chatClient.CompleteAsync("What is the result of SecretComputation on 42 and 84?", new()
+        var response = await chatClient.GetResponseAsync("What is the result of SecretComputation on 42 and 84?", new()
         {
             Tools = [AIFunctionFactory.Create((int a, int b) => a * b, "SecretComputation")]
         });
 
-        Assert.Single(response.Choices);
-        Assert.Contains("3528", response.Message.Text);
+        Assert.Contains("3528", response.Text);
     }
 
     [ConditionalFact]
@@ -219,7 +263,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         using var chatClient = new FunctionInvokingChatClient(_chatClient);
 
-        var response = chatClient.CompleteStreamingAsync("What is the result of SecretComputation on 42 and 84?", new()
+        var response = chatClient.GetStreamingResponseAsync("What is the result of SecretComputation on 42 and 84?", new()
         {
             Tools = [AIFunctionFactory.Create((int a, int b) => a * b, "SecretComputation")]
         });
@@ -231,6 +275,252 @@ public abstract class ChatClientIntegrationTests : IDisposable
         }
 
         Assert.Contains("3528", sb.ToString());
+    }
+
+    [ConditionalFact]
+    public virtual async Task FunctionInvocation_OptionalParameter()
+    {
+        SkipIfNotEnabled();
+
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using var chatClient = new FunctionInvokingChatClient(
+            new OpenTelemetryChatClient(_chatClient, sourceName: sourceName));
+
+        int secretNumber = 42;
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.User, "What is the secret number for id foo?")
+        ];
+
+        AIFunction func = AIFunctionFactory.Create((string id = "defaultId") => id is "foo" ? secretNumber : -1, "GetSecretNumberById");
+        var response = await chatClient.GetResponseAsync(messages, new()
+        {
+            Tools = [func]
+        });
+
+        Assert.Contains(secretNumber.ToString(), response.Text);
+        AssertUsageAgainstActivities(response, activities);
+    }
+
+    [ConditionalFact]
+    public virtual async Task FunctionInvocation_NestedParameters()
+    {
+        SkipIfNotEnabled();
+
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using var chatClient = new FunctionInvokingChatClient(
+            new OpenTelemetryChatClient(_chatClient, sourceName: sourceName));
+
+        int secretNumber = 42;
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.User, "What is the secret number for John aged 19?")
+        ];
+
+        AIFunction func = AIFunctionFactory.Create((PersonRecord person) => person.Name is "John" ? secretNumber + person.Age : -1, "GetSecretNumberByPerson");
+        var response = await chatClient.GetResponseAsync(messages, new()
+        {
+            Tools = [func]
+        });
+
+        Assert.Contains((secretNumber + 19).ToString(), response.Text);
+        AssertUsageAgainstActivities(response, activities);
+    }
+
+    private static void AssertUsageAgainstActivities(ChatResponse response, List<Activity> activities)
+    {
+        // If the underlying IChatClient provides usage data, function invocation should aggregate the
+        // usage data across all calls to produce a single Usage value on the final response.
+        // The FunctionInvokingChatClient then itself creates a span that will also be tagged with a sum
+        // across all consituent calls, which means our final answer will be double.
+        if (response.Usage is { } finalUsage)
+        {
+            var totalInputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.usage.input_tokens")!);
+            var totalOutputTokens = activities.Sum(a => (int?)a.GetTagItem("gen_ai.usage.output_tokens")!);
+            Assert.Equal(totalInputTokens, finalUsage.InputTokenCount * 2);
+            Assert.Equal(totalOutputTokens, finalUsage.OutputTokenCount * 2);
+        }
+    }
+
+    public record PersonRecord(string Name, int Age = 42);
+
+    [ConditionalFact]
+    public virtual Task AvailableTools_SchemasAreAccepted_Strict() =>
+        AvailableTools_SchemasAreAccepted(strict: true);
+
+    [ConditionalFact]
+    public virtual Task AvailableTools_SchemasAreAccepted_NonStrict() =>
+        AvailableTools_SchemasAreAccepted(strict: false);
+
+    private async Task AvailableTools_SchemasAreAccepted(bool strict)
+    {
+        SkipIfNotEnabled();
+
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using var chatClient = new FunctionInvokingChatClient(
+            new OpenTelemetryChatClient(_chatClient, sourceName: sourceName));
+
+        int methodCount = 1;
+        Func<AIFunctionFactoryOptions> createOptions = () =>
+        {
+            AIFunctionFactoryOptions aiFuncOptions = new()
+            {
+                Name = $"Method{methodCount++}",
+            };
+
+            if (strict)
+            {
+                aiFuncOptions.AdditionalProperties = new Dictionary<string, object?> { ["strictJsonSchema"] = true };
+            }
+
+            return aiFuncOptions;
+        };
+
+        Func<string, AIFunction> createWithSchema = schema =>
+        {
+            Dictionary<string, object?> additionalProperties = new();
+
+            if (strict)
+            {
+                additionalProperties["strictJsonSchema"] = true;
+            }
+
+            return new CustomAIFunction($"CustomMethod{methodCount++}", schema, additionalProperties);
+        };
+
+        ChatOptions options = new()
+        {
+            MaxOutputTokens = 100,
+            Tools =
+            [
+                // Using AIFunctionFactory
+                AIFunctionFactory.Create((int? i) => i, createOptions()),
+                AIFunctionFactory.Create((string? s) => s, createOptions()),
+                AIFunctionFactory.Create((int? i = null) => i, createOptions()),
+                AIFunctionFactory.Create((bool b) => b, createOptions()),
+                AIFunctionFactory.Create((double d) => d, createOptions()),
+                AIFunctionFactory.Create((decimal d) => d, createOptions()),
+                AIFunctionFactory.Create((float f) => f, createOptions()),
+                AIFunctionFactory.Create((long l) => l, createOptions()),
+                AIFunctionFactory.Create((char c) => c, createOptions()),
+                AIFunctionFactory.Create((DateTime dt) => dt, createOptions()),
+                AIFunctionFactory.Create((DateTimeOffset? dt) => dt, createOptions()),
+                AIFunctionFactory.Create((TimeSpan ts) => ts, createOptions()),
+#if NET
+                AIFunctionFactory.Create((DateOnly d) => d, createOptions()),
+                AIFunctionFactory.Create((TimeOnly t) => t, createOptions()),
+#endif
+                AIFunctionFactory.Create((Uri uri) => uri, createOptions()),
+                AIFunctionFactory.Create((Guid guid) => guid, createOptions()),
+                AIFunctionFactory.Create((List<int> list) => list, createOptions()),
+                AIFunctionFactory.Create((int[] arr, ComplexObject? co) => arr, createOptions()),
+                AIFunctionFactory.Create((string p1 = "str", int p2 = 42, BindingFlags p3 = BindingFlags.IgnoreCase, char p4 = 'x') => p1, createOptions()),
+                AIFunctionFactory.Create((string? p1 = "str", int? p2 = 42, BindingFlags? p3 = BindingFlags.IgnoreCase, char? p4 = 'x') => p1, createOptions()),
+
+                // Selection from @modelcontextprotocol/server-everything
+                createWithSchema("""
+                    {"type":"object","properties":{},"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}
+                    """),
+                createWithSchema("""
+                    {"type":"object","properties":{"duration":{"type":"number","default":10,"description":"Duration of the operation in seconds"},"steps":{"type":"number","default":5,"description":"Number of steps in the operation"}},"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}
+                    """),
+                createWithSchema("""
+                    {"type":"object","properties":{"prompt":{"type":"string","description":"The prompt to send to the LLM"},"maxTokens":{"type":"number","default":100,"description":"Maximum number of tokens to generate"}},"required":["prompt"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}
+                    """),
+                createWithSchema("""
+                    {"type":"object","properties":{},"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}
+                    """),
+                createWithSchema("""
+                    {"type":"object","properties":{"messageType":{"type":"string","enum":["error","success","debug"],"description":"Type of message to demonstrate different annotation patterns"},"includeImage":{"type":"boolean","default":false,"description":"Whether to include an example image"}},"required":["messageType"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}
+                    """),
+                createWithSchema("""
+                    {"type":"object","properties":{"resourceId":{"type":"number","minimum":1,"maximum":100,"description":"ID of the resource to reference (1-100)"}},"required":["resourceId"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}
+                    """),
+
+                // Selection from GH MCP server
+                createWithSchema("""
+                    {"properties":{"body":{"description":"The text of the review comment","type":"string"},"line":{"description":"The line of the blob in the pull request diff that the comment applies to. For multi-line comments, the last line of the range","type":"number"},"owner":{"description":"Repository owner","type":"string"},"path":{"description":"The relative path to the file that necessitates a comment","type":"string"},"pullNumber":{"description":"Pull request number","type":"number"},"repo":{"description":"Repository name","type":"string"},"side":{"description":"The side of the diff to comment on. LEFT indicates the previous state, RIGHT indicates the new state","enum":["LEFT","RIGHT"],"type":"string"},"startLine":{"description":"For multi-line comments, the first line of the range that the comment applies to","type":"number"},"startSide":{"description":"For multi-line comments, the starting side of the diff that the comment applies to. LEFT indicates the previous state, RIGHT indicates the new state","enum":["LEFT","RIGHT"],"type":"string"},"subjectType":{"description":"The level at which the comment is targeted","enum":["FILE","LINE"],"type":"string"}},"required":["owner","repo","pullNumber","path","body","subjectType"],"type":"object"}
+                    """),
+                createWithSchema("""
+                    {"properties":{"commit_message":{"description":"Extra detail for merge commit","type":"string"},"commit_title":{"description":"Title for merge commit","type":"string"},"merge_method":{"description":"Merge method","enum":["merge","squash","rebase"],"type":"string"},"owner":{"description":"Repository owner","type":"string"},"pullNumber":{"description":"Pull request number","type":"number"},"repo":{"description":"Repository name","type":"string"}},"required":["owner","repo","pullNumber"],"type":"object"}
+                    """),
+            ],
+        };
+
+        // We don't care about the response, only that we get one and that an exception isn't thrown due to unacceptable schema.
+        var response = await chatClient.GetResponseAsync("Briefly, what is the most popular tower in Paris?", options);
+        Assert.NotNull(response);
+    }
+
+    private sealed class CustomAIFunction(string name, string jsonSchema, IReadOnlyDictionary<string, object?> additionalProperties) : AIFunction
+    {
+        public override string Name => name;
+        public override IReadOnlyDictionary<string, object?> AdditionalProperties => additionalProperties;
+        public override JsonElement JsonSchema { get; } = JsonSerializer.Deserialize<JsonElement>(jsonSchema, AIJsonUtilities.DefaultOptions);
+        protected override ValueTask<object?> InvokeCoreAsync(AIFunctionArguments arguments, CancellationToken cancellationToken) => throw new NotSupportedException();
+    }
+
+    private class ComplexObject
+    {
+        [DisplayName("Something cool")]
+#if NET
+        [DeniedValues("abc", "def", "default")]
+#endif
+        public string? SomeString { get; set; }
+
+#if NET
+        [AllowedValues("abc", "def", "default")]
+#endif
+        public string AnotherString { get; set; } = "default";
+
+#if NET
+        [Range(25, 75)]
+#endif
+        public int Value { get; set; }
+
+        [EmailAddress]
+        public string? Email { get; set; }
+
+        [RegularExpression("[abc]")]
+        public string? RegexString { get; set; }
+
+        [StringLength(42)]
+        public string MeasuredString { get; set; } = "default";
+
+#if NET
+        [Length(1, 2)]
+#endif
+        public int[]? MeasuredArray1 { get; set; }
+
+#if NET
+        [MinLength(1)]
+#endif
+        public int[]? MeasuredArray2 { get; set; }
+
+#if NET
+        [MaxLength(10)]
+#endif
+        public int[]? MeasuredArray3 { get; set; }
     }
 
     protected virtual bool SupportsParallelFunctionCalling => true;
@@ -247,7 +537,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         using var chatClient = new FunctionInvokingChatClient(_chatClient);
 
         // The service/model isn't guaranteed to request two calls to GetPersonAge in the same turn, but it's common that it will.
-        var response = await chatClient.CompleteAsync("How much older is Elsa than Anna? Return the age difference as a single number.", new()
+        var response = await chatClient.GetResponseAsync("How much older is Elsa than Anna? Return the age difference as a single number.", new()
         {
             Tools = [AIFunctionFactory.Create((string personName) =>
             {
@@ -261,8 +551,8 @@ public abstract class ChatClientIntegrationTests : IDisposable
         });
 
         Assert.True(
-            Regex.IsMatch(response.Message.Text ?? "", @"\b(3|three)\b", RegexOptions.IgnoreCase),
-            $"Doesn't contain three: {response.Message.Text}");
+            Regex.IsMatch(response.Text ?? "", @"\b(3|three)\b", RegexOptions.IgnoreCase),
+            $"Doesn't contain three: {response.Text}");
     }
 
     [ConditionalFact]
@@ -279,13 +569,12 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         using var chatClient = new FunctionInvokingChatClient(_chatClient);
 
-        var response = await chatClient.CompleteAsync("Are birds real?", new()
+        var response = await chatClient.GetResponseAsync("Are birds real?", new()
         {
             Tools = [tool],
             ToolMode = ChatToolMode.RequireAny,
         });
 
-        Assert.Single(response.Choices);
         Assert.True(callCount >= 1);
     }
 
@@ -301,10 +590,10 @@ public abstract class ChatClientIntegrationTests : IDisposable
         using var chatClient = new FunctionInvokingChatClient(_chatClient);
 
         // Even though the user doesn't ask for the shields to be activated, verify that the tool is invoked
-        var response = await chatClient.CompleteAsync("What's the current secret number?", new()
+        var response = await chatClient.GetResponseAsync("What's the current secret number?", new()
         {
             Tools = [getSecretNumberTool, shieldsUpTool],
-            ToolMode = ChatToolMode.RequireSpecific(shieldsUpTool.Metadata.Name),
+            ToolMode = ChatToolMode.RequireSpecific(shieldsUpTool.Name),
         });
 
         Assert.True(shieldsUp);
@@ -316,11 +605,10 @@ public abstract class ChatClientIntegrationTests : IDisposable
         SkipIfNotEnabled();
 
         var message = new ChatMessage(ChatRole.User, "Pick a random number, uniformly distributed between 1 and 1000000");
-        var firstResponse = await _chatClient.CompleteAsync([message]);
-        Assert.Single(firstResponse.Choices);
+        var firstResponse = await _chatClient.GetResponseAsync([message]);
 
-        var secondResponse = await _chatClient.CompleteAsync([message]);
-        Assert.NotEqual(firstResponse.Message.Text, secondResponse.Message.Text);
+        var secondResponse = await _chatClient.GetResponseAsync([message]);
+        Assert.NotEqual(firstResponse.Text, secondResponse.Text);
     }
 
     [ConditionalFact]
@@ -333,20 +621,19 @@ public abstract class ChatClientIntegrationTests : IDisposable
             new MemoryDistributedCache(Options.Options.Create(new MemoryDistributedCacheOptions())));
 
         var message = new ChatMessage(ChatRole.User, "Pick a random number, uniformly distributed between 1 and 1000000");
-        var firstResponse = await chatClient.CompleteAsync([message]);
-        Assert.Single(firstResponse.Choices);
+        var firstResponse = await chatClient.GetResponseAsync([message]);
 
         // No matter what it said before, we should see identical output due to caching
         for (int i = 0; i < 3; i++)
         {
-            var secondResponse = await chatClient.CompleteAsync([message]);
-            Assert.Equal(firstResponse.Message.Text, secondResponse.Message.Text);
+            var secondResponse = await chatClient.GetResponseAsync([message]);
+            Assert.Equal(firstResponse.Messages.Select(m => m.Text), secondResponse.Messages.Select(m => m.Text));
         }
 
         // ... but if the conversation differs, we should see different output
-        message.Text += "!";
-        var thirdResponse = await chatClient.CompleteAsync([message]);
-        Assert.NotEqual(firstResponse.Message.Text, thirdResponse.Message.Text);
+        ((TextContent)message.Contents[0]).Text += "!";
+        var thirdResponse = await chatClient.GetResponseAsync([message]);
+        Assert.NotEqual(firstResponse.Messages, thirdResponse.Messages);
     }
 
     [ConditionalFact]
@@ -360,7 +647,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         var message = new ChatMessage(ChatRole.User, "Pick a random number, uniformly distributed between 1 and 1000000");
         StringBuilder orig = new();
-        await foreach (var update in chatClient.CompleteStreamingAsync([message]))
+        await foreach (var update in chatClient.GetStreamingResponseAsync([message]))
         {
             orig.Append(update.Text);
         }
@@ -369,7 +656,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         for (int i = 0; i < 3; i++)
         {
             StringBuilder second = new();
-            await foreach (var update in chatClient.CompleteStreamingAsync([message]))
+            await foreach (var update in chatClient.GetStreamingResponseAsync([message]))
             {
                 second.Append(update.Text);
             }
@@ -378,9 +665,9 @@ public abstract class ChatClientIntegrationTests : IDisposable
         }
 
         // ... but if the conversation differs, we should see different output
-        message.Text += "!";
+        ((TextContent)message.Contents[0]).Text += "!";
         StringBuilder third = new();
-        await foreach (var update in chatClient.CompleteStreamingAsync([message]))
+        await foreach (var update in chatClient.GetStreamingResponseAsync([message]))
         {
             third.Append(update.Text);
         }
@@ -411,15 +698,15 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         var llmCallCount = chatClient.GetService<CallCountingChatClient>();
         var message = new ChatMessage(ChatRole.User, "What is the temperature?");
-        var response = await chatClient.CompleteAsync([message]);
-        Assert.Contains("101", response.Message.Text);
+        var response = await chatClient.GetResponseAsync([message]);
+        Assert.Contains("101", response.Text);
 
         // First LLM call tells us to call the function, second deals with the result
         Assert.Equal(2, llmCallCount!.CallCount);
 
         // Second call doesn't execute the function or call the LLM, but rather just returns the cached result
-        var secondResponse = await chatClient.CompleteAsync([message]);
-        Assert.Equal(response.Message.Text, secondResponse.Message.Text);
+        var secondResponse = await chatClient.GetResponseAsync([message]);
+        Assert.Equal(response.Text, secondResponse.Text);
         Assert.Equal(1, functionCallCount);
         Assert.Equal(2, llmCallCount!.CallCount);
     }
@@ -450,19 +737,21 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         var llmCallCount = chatClient.GetService<CallCountingChatClient>();
         var message = new ChatMessage(ChatRole.User, "What is the temperature?");
-        var response = await chatClient.CompleteAsync([message]);
-        Assert.Contains("58", response.Message.Text);
+        var response = await chatClient.GetResponseAsync([message]);
+        Assert.Contains("58", response.Text);
 
         // First LLM call tells us to call the function, second deals with the result
         Assert.Equal(1, functionCallCount);
         Assert.Equal(2, llmCallCount!.CallCount);
 
         // Second time, the calls to the LLM don't happen, but the function is called again
-        var secondResponse = await chatClient.CompleteAsync([message]);
-        Assert.Equal(response.Message.Text, secondResponse.Message.Text);
+        var secondResponse = await chatClient.GetResponseAsync([message]);
         Assert.Equal(2, functionCallCount);
-        Assert.Equal(2, llmCallCount!.CallCount);
+        Assert.Equal(FunctionInvokingChatClientSetsConversationId ? 3 : 2, llmCallCount!.CallCount);
+        Assert.Equal(response.Text, secondResponse.Text);
     }
+
+    public virtual bool FunctionInvokingChatClientSetsConversationId => false;
 
     [ConditionalFact]
     public virtual async Task Caching_AfterFunctionInvocation_FunctionOutputChangedAsync()
@@ -490,8 +779,8 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         var llmCallCount = chatClient.GetService<CallCountingChatClient>();
         var message = new ChatMessage(ChatRole.User, "What is the temperature?");
-        var response = await chatClient.CompleteAsync([message]);
-        Assert.Contains("81", response.Message.Text);
+        var response = await chatClient.GetResponseAsync([message]);
+        Assert.Contains("81", response.Text);
 
         // First LLM call tells us to call the function, second deals with the result
         Assert.Equal(1, functionCallCount);
@@ -499,8 +788,8 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         // Second time, the first call to the LLM don't happen, but the function is called again,
         // and since its output now differs, we no longer hit the cache so the second LLM call does happen
-        var secondResponse = await chatClient.CompleteAsync([message]);
-        Assert.Contains("82", secondResponse.Message.Text);
+        var secondResponse = await chatClient.GetResponseAsync([message]);
+        Assert.Contains("82", secondResponse.Text);
         Assert.Equal(2, functionCallCount);
         Assert.Equal(3, llmCallCount!.CallCount);
     }
@@ -517,10 +806,10 @@ public abstract class ChatClientIntegrationTests : IDisposable
             .UseLogging(loggerFactory)
             .Build();
 
-        await chatClient.CompleteAsync([new(ChatRole.User, "What's the biggest animal?")]);
+        await chatClient.GetResponseAsync([new(ChatRole.User, "What's the biggest animal?")]);
 
         Assert.Collection(collector.GetSnapshot(),
-            entry => Assert.Contains("What\\u0027s the biggest animal?", entry.Message),
+            entry => Assert.Contains("What's the biggest animal?", entry.Message),
             entry => Assert.Contains("whale", entry.Message));
     }
 
@@ -536,13 +825,13 @@ public abstract class ChatClientIntegrationTests : IDisposable
             .UseLogging(loggerFactory)
             .Build();
 
-        await foreach (var update in chatClient.CompleteStreamingAsync("What's the biggest animal?"))
+        await foreach (var update in chatClient.GetStreamingResponseAsync("What's the biggest animal?"))
         {
             // Do nothing with the updates
         }
 
         var logs = collector.GetSnapshot();
-        Assert.Contains(logs, e => e.Message.Contains("What\\u0027s the biggest animal?"));
+        Assert.Contains(logs, e => e.Message.Contains("What's the biggest animal?"));
         Assert.Contains(logs, e => e.Message.Contains("whale"));
     }
 
@@ -561,7 +850,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
             .Build();
 
         int secretNumber = 42;
-        await chatClient.CompleteAsync(
+        await chatClient.GetResponseAsync(
             "What is the current secret number?",
             new ChatOptions { Tools = [AIFunctionFactory.Create(() => secretNumber, "GetSecretNumber")] });
 
@@ -587,7 +876,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
             .Build();
 
         int secretNumber = 42;
-        await foreach (var update in chatClient.CompleteStreamingAsync(
+        await foreach (var update in chatClient.GetStreamingResponseAsync(
             "What is the current secret number?",
             new ChatOptions { Tools = [AIFunctionFactory.Create(() => secretNumber, "GetSecretNumber")] }))
         {
@@ -616,26 +905,26 @@ public abstract class ChatClientIntegrationTests : IDisposable
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
 
-        var response = await chatClient.CompleteAsync([new(ChatRole.User, "What's the biggest animal?")]);
+        var response = await chatClient.GetResponseAsync([new(ChatRole.User, "What's the biggest animal?")]);
 
         var activity = Assert.Single(activities);
         Assert.StartsWith("chat", activity.DisplayName);
         Assert.StartsWith("http", (string)activity.GetTagItem("server.address")!);
-        Assert.Equal(chatClient.Metadata.ProviderUri?.Port, (int)activity.GetTagItem("server.port")!);
+        Assert.Equal(chatClient.GetService<ChatClientMetadata>()?.ProviderUri?.Port, (int)activity.GetTagItem("server.port")!);
         Assert.NotNull(activity.Id);
         Assert.NotEmpty(activity.Id);
-        Assert.NotEqual(0, (int)activity.GetTagItem("gen_ai.response.input_tokens")!);
-        Assert.NotEqual(0, (int)activity.GetTagItem("gen_ai.response.output_tokens")!);
+        Assert.NotEqual(0, (int)activity.GetTagItem("gen_ai.usage.input_tokens")!);
+        Assert.NotEqual(0, (int)activity.GetTagItem("gen_ai.usage.output_tokens")!);
 
         Assert.True(activity.Duration.TotalMilliseconds > 0);
     }
 
     [ConditionalFact]
-    public virtual async Task CompleteAsync_StructuredOutput()
+    public virtual async Task GetResponseAsync_StructuredOutput()
     {
         SkipIfNotEnabled();
 
-        var response = await _chatClient.CompleteAsync<Person>("""
+        var response = await _chatClient.GetResponseAsync<Person>("""
             Who is described in the following sentence?
             Jimbo Smith is a 35-year-old programmer from Cardiff, Wales.
             """);
@@ -647,11 +936,11 @@ public abstract class ChatClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
-    public virtual async Task CompleteAsync_StructuredOutputArray()
+    public virtual async Task GetResponseAsync_StructuredOutputArray()
     {
         SkipIfNotEnabled();
 
-        var response = await _chatClient.CompleteAsync<Person[]>("""
+        var response = await _chatClient.GetResponseAsync<Person[]>("""
             Who are described in the following sentence?
             Jimbo Smith is a 35-year-old software developer from Cardiff, Wales.
             Josh Simpson is a 25-year-old software developer from Newport, Wales.
@@ -663,11 +952,11 @@ public abstract class ChatClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
-    public virtual async Task CompleteAsync_StructuredOutputInteger()
+    public virtual async Task GetResponseAsync_StructuredOutputInteger()
     {
         SkipIfNotEnabled();
 
-        var response = await _chatClient.CompleteAsync<int>("""
+        var response = await _chatClient.GetResponseAsync<int>("""
             There were 14 abstractions for AI programming, which was too many.
             To fix this we added another one. How many are there now?
             """);
@@ -676,11 +965,11 @@ public abstract class ChatClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
-    public virtual async Task CompleteAsync_StructuredOutputString()
+    public virtual async Task GetResponseAsync_StructuredOutputString()
     {
         SkipIfNotEnabled();
 
-        var response = await _chatClient.CompleteAsync<string>("""
+        var response = await _chatClient.GetResponseAsync<string>("""
             The software developer, Jimbo Smith, is a 35-year-old from Cardiff, Wales.
             What's his full name?
             """);
@@ -689,11 +978,11 @@ public abstract class ChatClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
-    public virtual async Task CompleteAsync_StructuredOutputBool_True()
+    public virtual async Task GetResponseAsync_StructuredOutputBool_True()
     {
         SkipIfNotEnabled();
 
-        var response = await _chatClient.CompleteAsync<bool>("""
+        var response = await _chatClient.GetResponseAsync<bool>("""
             Jimbo Smith is a 35-year-old software developer from Cardiff, Wales.
             Is there at least one software developer from Cardiff?
             """);
@@ -702,24 +991,24 @@ public abstract class ChatClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
-    public virtual async Task CompleteAsync_StructuredOutputBool_False()
+    public virtual async Task GetResponseAsync_StructuredOutputBool_False()
     {
         SkipIfNotEnabled();
 
-        var response = await _chatClient.CompleteAsync<bool>("""
+        var response = await _chatClient.GetResponseAsync<bool>("""
             Jimbo Smith is a 35-year-old software developer from Cardiff, Wales.
-            Can we be sure that he is a medical doctor?
+            Reply true if the previous statement indicates that he is a medical doctor, otherwise false.
             """);
 
         Assert.False(response.Result);
     }
 
     [ConditionalFact]
-    public virtual async Task CompleteAsync_StructuredOutputEnum()
+    public virtual async Task GetResponseAsync_StructuredOutputEnum()
     {
         SkipIfNotEnabled();
 
-        var response = await _chatClient.CompleteAsync<JobType>("""
+        var response = await _chatClient.GetResponseAsync<JobType>("""
             Taylor Swift is a famous singer and songwriter. What is her job?
             """);
 
@@ -727,7 +1016,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
-    public virtual async Task CompleteAsync_StructuredOutput_WithFunctions()
+    public virtual async Task GetResponseAsync_StructuredOutput_WithFunctions()
     {
         SkipIfNotEnabled();
 
@@ -740,7 +1029,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         };
 
         using var chatClient = new FunctionInvokingChatClient(_chatClient);
-        var response = await chatClient.CompleteAsync<Person>(
+        var response = await chatClient.GetResponseAsync<Person>(
             "Who is person with ID 123?", new ChatOptions
             {
                 Tools = [AIFunctionFactory.Create((int personId) =>
@@ -758,30 +1047,31 @@ public abstract class ChatClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
-    public virtual async Task CompleteAsync_StructuredOutput_Native()
+    public virtual async Task GetResponseAsync_StructuredOutput_NonNative()
     {
         SkipIfNotEnabled();
 
-        var capturedCalls = new List<IList<ChatMessage>>();
+        var capturedOptions = new List<ChatOptions?>();
         var captureOutputChatClient = _chatClient.AsBuilder()
             .Use((messages, options, nextAsync, cancellationToken) =>
             {
-                capturedCalls.Add([.. messages]);
+                capturedOptions.Add(options);
                 return nextAsync(messages, options, cancellationToken);
             })
             .Build();
 
-        var response = await captureOutputChatClient.CompleteAsync<Person>("""
-            Supply a JSON object to represent Jimbo Smith from Cardiff.
-            """, useNativeJsonSchema: true);
+        var response = await captureOutputChatClient.GetResponseAsync<Person>("""
+            Supply an object to represent Jimbo Smith from Cardiff.
+            """, useJsonSchemaResponseFormat: false);
 
         Assert.Equal("Jimbo Smith", response.Result.FullName);
         Assert.Contains("Cardiff", response.Result.HomeTown);
 
-        // Verify it used *native* structured output, i.e., no prompt augmentation
-        Assert.All(
-            Assert.Single(capturedCalls),
-            message => Assert.DoesNotContain("schema", message.Text));
+        // Verify it used *non-native* structured output, i.e., response format Json with no schema
+        var responseFormat = Assert.IsType<ChatResponseFormatJson>(Assert.Single(capturedOptions)!.ResponseFormat);
+        Assert.Null(responseFormat.Schema);
+        Assert.Null(responseFormat.SchemaName);
+        Assert.Null(responseFormat.SchemaDescription);
     }
 
     private class Person
@@ -796,25 +1086,18 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
     private enum JobType
     {
-        Surgeon,
+        Wombat,
         PopStar,
         Programmer,
         Unknown,
     }
 
-    private static Uri GetImageDataUri()
-    {
-        using Stream? s = typeof(ChatClientIntegrationTests).Assembly.GetManifestResourceStream("Microsoft.Extensions.AI.dotnet.png");
-        Assert.NotNull(s);
-        MemoryStream ms = new();
-        s.CopyTo(ms);
-        return new Uri($"data:image/png;base64,{Convert.ToBase64String(ms.ToArray())}");
-    }
-
     [MemberNotNull(nameof(_chatClient))]
     protected void SkipIfNotEnabled()
     {
-        if (_chatClient is null)
+        string? skipIntegration = TestRunnerConfiguration.Instance["SkipIntegrationTests"];
+
+        if (skipIntegration is not null || _chatClient is null)
         {
             throw new SkipTestException("Client is not enabled.");
         }

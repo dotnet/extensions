@@ -258,14 +258,14 @@ public class L2Tests(ITestOutputHelper log) : IClassFixture<TestEventListener>
         void IDistributedCache.Set(string key, byte[] value, DistributedCacheEntryOptions options)
         {
             Interlocked.Increment(ref ProtectedOpCount);
-            Log.WriteLine($"Set (byte[]): {key}");
+            Log.WriteLine($"Set (byte[]): {key} (expiry: {options.AbsoluteExpirationRelativeToNow})");
             Tail.Set(key, value, options);
         }
 
         Task IDistributedCache.SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token)
         {
             Interlocked.Increment(ref ProtectedOpCount);
-            Log.WriteLine($"SetAsync (byte[]): {key}");
+            Log.WriteLine($"SetAsync (byte[]): {key} (expiry: {options.AbsoluteExpirationRelativeToNow})");
             return Tail.SetAsync(key, value, options, token);
         }
     }

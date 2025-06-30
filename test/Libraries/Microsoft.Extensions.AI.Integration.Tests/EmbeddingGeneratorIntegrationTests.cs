@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+#if NET
+using System.Collections;
+#endif
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -50,7 +53,7 @@ public abstract class EmbeddingGeneratorIntegrationTests : IDisposable
         Assert.NotNull(embeddings.Usage.InputTokenCount);
         Assert.NotNull(embeddings.Usage.TotalTokenCount);
         Assert.Single(embeddings);
-        Assert.Equal(_embeddingGenerator.Metadata.ModelId, embeddings[0].ModelId);
+        Assert.Equal(_embeddingGenerator.GetService<EmbeddingGeneratorMetadata>()?.DefaultModelId, embeddings[0].ModelId);
         Assert.NotEmpty(embeddings[0].Vector.ToArray());
     }
 
@@ -71,7 +74,7 @@ public abstract class EmbeddingGeneratorIntegrationTests : IDisposable
         Assert.NotNull(embeddings.Usage.TotalTokenCount);
         Assert.All(embeddings, embedding =>
         {
-            Assert.Equal(_embeddingGenerator.Metadata.ModelId, embedding.ModelId);
+            Assert.Equal(_embeddingGenerator.GetService<EmbeddingGeneratorMetadata>()?.DefaultModelId, embedding.ModelId);
             Assert.NotEmpty(embedding.Vector.ToArray());
         });
     }
@@ -88,10 +91,10 @@ public abstract class EmbeddingGeneratorIntegrationTests : IDisposable
             .Build();
 
         string input = "Red, White, and Blue";
-        var embedding1 = await generator.GenerateEmbeddingAsync(input);
-        var embedding2 = await generator.GenerateEmbeddingAsync(input);
-        var embedding3 = await generator.GenerateEmbeddingAsync(input + "... and Green");
-        var embedding4 = await generator.GenerateEmbeddingAsync(input);
+        var embedding1 = await generator.GenerateAsync(input);
+        var embedding2 = await generator.GenerateAsync(input);
+        var embedding3 = await generator.GenerateAsync(input + "... and Green");
+        var embedding4 = await generator.GenerateAsync(input);
 
         var callCounter = generator.GetService<CallCountingEmbeddingGenerator>();
         Assert.NotNull(callCounter);
@@ -116,16 +119,16 @@ public abstract class EmbeddingGeneratorIntegrationTests : IDisposable
             .UseOpenTelemetry(sourceName: sourceName)
             .Build();
 
-        _ = await embeddingGenerator.GenerateEmbeddingAsync("Hello, world!");
+        _ = await embeddingGenerator.GenerateAsync("Hello, world!");
 
         Assert.Single(activities);
         var activity = activities.Single();
         Assert.StartsWith("embed", activity.DisplayName);
         Assert.StartsWith("http", (string)activity.GetTagItem("server.address")!);
-        Assert.Equal(embeddingGenerator.Metadata.ProviderUri?.Port, (int)activity.GetTagItem("server.port")!);
+        Assert.Equal(embeddingGenerator.GetService<EmbeddingGeneratorMetadata>()?.ProviderUri?.Port, (int)activity.GetTagItem("server.port")!);
         Assert.NotNull(activity.Id);
         Assert.NotEmpty(activity.Id);
-        Assert.NotEqual(0, (int)activity.GetTagItem("gen_ai.response.input_tokens")!);
+        Assert.NotEqual(0, (int)activity.GetTagItem("gen_ai.usage.input_tokens")!);
 
         Assert.True(activity.Duration.TotalMilliseconds > 0);
     }
@@ -148,7 +151,14 @@ public abstract class EmbeddingGeneratorIntegrationTests : IDisposable
         {
             for (int j = 0; j < embeddings.Count; j++)
             {
-                distances[i, j] = TensorPrimitives.HammingBitDistance(embeddings[i].Bits.Span, embeddings[j].Bits.Span);
+                distances[i, j] = TensorPrimitives.HammingBitDistance<byte>(ToArray(embeddings[i].Vector), ToArray(embeddings[j].Vector));
+
+                static byte[] ToArray(BitArray array)
+                {
+                    byte[] result = new byte[(array.Length + 7) / 8];
+                    array.CopyTo(result, 0);
+                    return result;
+                }
             }
         }
 

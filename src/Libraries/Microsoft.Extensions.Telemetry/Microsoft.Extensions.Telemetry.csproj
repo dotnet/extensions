@@ -3,20 +3,25 @@
     <RootNamespace>Microsoft.Extensions.Diagnostics</RootNamespace>
     <Description>Provides canonical implementations of telemetry abstractions.</Description>
     <Workstream>Telemetry</Workstream>
+    <!-- disable "Published symbols cannot be deleted to maintain compatibility" because we have different APIs for different TFMs -->
+    <NoWarn Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net9.0'))">$(NoWarn);LA0006</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectSharedText>true</InjectSharedText>
+    <InjectGetOrAddOnLegacy>true</InjectGetOrAddOnLegacy>
     <InjectSharedDataValidation>true</InjectSharedDataValidation>
+    <InjectSharedLogBuffering>true</InjectSharedLogBuffering>
+    <InjectSharedMemoization>true</InjectSharedMemoization>
     <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>
     <InjectSharedPools>true</InjectSharedPools>
     <InjectSharedRentedSpan>true</InjectSharedRentedSpan>
-    <InjectSharedMemoization>true</InjectSharedMemoization>
-    <InjectGetOrAddOnLegacy>true</InjectGetOrAddOnLegacy>
     <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
     <UseLoggingGenerator>true</UseLoggingGenerator>
-  </PropertyGroup>
+</PropertyGroup>
 
   <PropertyGroup>
     <Stage>normal</Stage>

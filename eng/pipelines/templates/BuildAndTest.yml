@@ -23,6 +23,12 @@ parameters:
     default: false
 
 steps:
+  - task: NodeTool@0
+    displayName: Add NodeJS/npm
+    inputs:
+      versionSpec: "20.x"
+      checkLatest: true
+
   - script: ${{ parameters.buildScript }}
             -restore
             /bl:${{ parameters.repoLogPath }}/restore.binlog
@@ -50,7 +56,67 @@ steps:
               --settings $(Build.SourcesDirectory)/eng/CodeCoverage.config
               --output ${{ parameters.repoTestResultsPath }}/$(Agent.JobName)_CodeCoverageResults/$(Agent.JobName)_cobertura.xml
               "${{ parameters.buildScript }} -test -configuration ${{ parameters.buildConfig }} /bl:${{ parameters.repoLogPath }}/tests.binlog $(_OfficialBuildIdArgs)"
-      displayName: Run tests
+      displayName: Run unit tests
+
+  - script: ${{ parameters.buildScript }}
+            -pack
+            -configuration ${{ parameters.buildConfig }}
+            -warnAsError 1
+            /bl:${{ parameters.repoLogPath }}/pack.binlog
+            /p:Restore=false /p:Build=false
+            $(_OfficialBuildIdArgs)
+    displayName: Pack
+    
+  - ${{ if ne(parameters.skipTests, 'true') }}:
+    - script: ${{ parameters.buildScript }}
+              -integrationTest
+              -configuration ${{ parameters.buildConfig }}
+              -warnAsError 1
+              /bl:${{ parameters.repoLogPath }}/integration_tests.binlog
+              $(_OfficialBuildIdArgs)
+      displayName: Run integration tests
+
+    - pwsh: |
+        $SourcesDirectory = '$(Build.SourcesDirectory)';
+
+        $destinationPath = "${{ parameters.repoLogPath }}/FailedAssertions"
+        if (-not (Test-Path -Path $destinationPath)) {
+            New-Item -Path $destinationPath -ItemType Directory -Force | Out-Null
+        }
+
+        Get-ChildItem $SourcesDirectory -Filter "*.received.*" -Recurse | `
+            ForEach-Object {
+                # Exclude files that are already in the test results path
+                if ($_.FullName -like "*FailedAssertions*") {
+                    return
+                }
+
+                if ($_.PSIsContainer) {
+                    # Delete the folder if it exists
+                    $dest = Join-Path -Path $destinationPath -ChildPath $_.Name
+                    if (Test-Path -Path $dest) {
+                        Remove-Item -Path $dest -Recurse -Force
+                    }
+                    # Copy folder to logs
+                    Copy-Item -Path $_.FullName -Destination $destinationPath -Recurse -Force
+                }
+                else {
+                    # Calculates the relative path of the file with respect to `$SourcesDirectory`.
+                    $relativePath = [System.IO.Path]::GetRelativePath($SourcesDirectory, $_.FullName)
+                    # Constructs the full destination path for the file, preserving the relative directory structure.
+                    $destinationFile = Join-Path -Path $destinationPath -ChildPath $relativePath
+                    $destinationDirectory = [System.IO.Path]::GetDirectoryName($destinationFile)
+                    # Ensures the destination directory exists (creates it if necessary).
+                    if (-not (Test-Path -Path $destinationDirectory)) {
+                        New-Item -Path $destinationDirectory -ItemType Directory -Force | Out-Null
+                    }
+                    # Copies the file to the destination path.
+                    Copy-Item -Path $_.FullName -Destination $destinationFile -Force
+                }
+            }
+      displayName: Copy failed assertions results to logs
+      condition: always()
+      continueOnError: true
 
     - pwsh: |
         Get-ChildItem ${{ parameters.repoTestResultsPath }} -Include "*_hangdump.dmp","Sequence_*.xml" -Recurse | `
@@ -89,23 +155,25 @@ steps:
             artifactName: "$(Agent.JobName)_CodeCoverageResults"
 
   - ${{ if eq(parameters.isWindows, 'true') }}:
+    # Publishing will happen in a subsequent step
     - script: ${{ parameters.buildScript }}
               -projects $(Build.SourcesDirectory)/src/Packages/Microsoft.Internal.Extensions.DotNetApiDocs.Transport/Microsoft.Internal.Extensions.DotNetApiDocs.Transport.proj
-              -restore -build
               -pack
-              -publish $(_PublishArgs)
               -configuration ${{ parameters.buildConfig }}
               /bl:${{ parameters.repoLogPath }}/transport.binlog
               $(_OfficialBuildIdArgs)
-      displayName: Build and publish docs transport package
+      displayName: Pack docs transport package
+
+    - pwsh: |
+          $(Build.SourcesDirectory)/src/Libraries/Microsoft.Extensions.AI.Evaluation.Reporting/TypeScript/azure-devops-report/build.ps1 -OutputPath $(Build.Arcade.VSIXOutputPath)
+      displayName: Build Azure DevOps plugin
 
     - script: ${{ parameters.buildScript }}
-              -pack
               -sign $(_SignArgs)
               -publish $(_PublishArgs)
               -configuration ${{ parameters.buildConfig }}
               -warnAsError 1
-              /bl:${{ parameters.repoLogPath }}/pack.binlog
+              /bl:${{ parameters.repoLogPath }}/publish.binlog
               /p:Restore=false /p:Build=false
               $(_OfficialBuildIdArgs)
-      displayName: Pack, sign, and publish
+      displayName: Sign and publish

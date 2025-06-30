@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 #if NET
@@ -25,8 +26,6 @@ internal sealed class QuantizationEmbeddingGenerator :
         _floatService = floatService;
     }
 
-    public EmbeddingGeneratorMetadata Metadata => _floatService.Metadata;
-
     void IDisposable.Dispose() => _floatService.Dispose();
 
     public object? GetService(Type serviceType, object? serviceKey = null) =>
@@ -48,12 +47,12 @@ internal sealed class QuantizationEmbeddingGenerator :
     {
         ReadOnlySpan<float> vector = embedding.Vector.Span;
 
-        var result = new byte[(int)Math.Ceiling(vector.Length / 8.0)];
+        var result = new BitArray(vector.Length);
         for (int i = 0; i < vector.Length; i++)
         {
             if (vector[i] > 0)
             {
-                result[i / 8] |= (byte)(1 << (i % 8));
+                result[i] = true;
             }
         }
 

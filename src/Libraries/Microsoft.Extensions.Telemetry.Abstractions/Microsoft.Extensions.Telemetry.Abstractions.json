@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.Telemetry.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.Telemetry.Abstractions, Version=9.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "readonly struct Microsoft.Extensions.Diagnostics.Latency.Checkpoint : System.IEquatable<Microsoft.Extensions.Diagnostics.Latency.Checkpoint>",
@@ -175,6 +175,16 @@
         },
         {
           "Member": "System.Type? Microsoft.Extensions.Diagnostics.Metrics.GaugeAttribute.Type { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class Microsoft.Extensions.Diagnostics.Buffering.GlobalLogBuffer : Microsoft.Extensions.Diagnostics.Buffering.LogBuffer",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Diagnostics.Buffering.GlobalLogBuffer.GlobalLogBuffer();",
           "Stage": "Stable"
         }
       ]
@@ -489,6 +499,24 @@
       ]
     },
     {
+      "Type": "abstract class Microsoft.Extensions.Diagnostics.Buffering.LogBuffer",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Diagnostics.Buffering.LogBuffer.LogBuffer();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract void Microsoft.Extensions.Diagnostics.Buffering.LogBuffer.Flush();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract bool Microsoft.Extensions.Diagnostics.Buffering.LogBuffer.TryEnqueue<TState>(Microsoft.Extensions.Logging.Abstractions.IBufferedLogger bufferedLogger, in Microsoft.Extensions.Logging.Abstractions.LogEntry<TState> logEntry);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
       "Type": "static class Microsoft.Extensions.Logging.LoggerMessageHelper",
       "Stage": "Stable",
       "Methods": [
@@ -601,6 +629,20 @@
       ]
     },
     {
+      "Type": "abstract class Microsoft.Extensions.Logging.LoggingSampler",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Logging.LoggingSampler.LoggingSampler();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract bool Microsoft.Extensions.Logging.LoggingSampler.ShouldSample<TState>(in Microsoft.Extensions.Logging.Abstractions.LogEntry<TState> logEntry);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
       "Type": "sealed class Microsoft.Extensions.Logging.LogPropertiesAttribute : System.Attribute",
       "Stage": "Stable",
       "Methods": [
@@ -617,6 +659,10 @@
         {
           "Member": "bool Microsoft.Extensions.Logging.LogPropertiesAttribute.SkipNullProperties { get; set; }",
           "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Logging.LogPropertiesAttribute.Transitive { get; set; }",
+          "Stage": "Experimental"
         }
       ]
     },
@@ -709,6 +755,16 @@
       ]
     },
     {
+      "Type": "abstract class Microsoft.Extensions.Diagnostics.Buffering.PerRequestLogBuffer : Microsoft.Extensions.Diagnostics.Buffering.LogBuffer",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Diagnostics.Buffering.PerRequestLogBuffer.PerRequestLogBuffer();",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
       "Type": "class Microsoft.Extensions.Http.Diagnostics.RequestMetadata",
       "Stage": "Stable",
       "Methods": [
@@ -760,6 +816,22 @@
         },
         {
           "Member": "string Microsoft.Extensions.Diagnostics.Latency.Tag.Value { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.Logging.TagNameAttribute : System.Attribute",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Logging.TagNameAttribute.TagNameAttribute(string name);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.Logging.TagNameAttribute.Name { get; }",
           "Stage": "Stable"
         }
       ]

@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <PackageType>Template</PackageType>
-    <TargetFrameworks>$(NetCoreTargetFrameworks);netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
     <Description>Project templates for Microsoft.Extensions.AI.</Description>
     <PackageTags>dotnet-new;templates;ai</PackageTags>
 
     <Stage>preview</Stage>
-    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
+    <PreReleaseVersionIteration>2</PreReleaseVersionIteration>
     <Workstream>AI</Workstream>
     <MinCodeCoverage>0</MinCodeCoverage>
     <MinMutationScore>0</MinMutationScore>
@@ -24,17 +24,45 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="src\ChatWithCustomData\**\*" Exclude="**\bin\**;**\obj\**;**\node_modules\**;**\*.user;**\*.csproj.in;**\*.out.js;**\*.generated.css;**\package-lock.json" />
-    <Compile Remove="**\*" />
+    <!--
+      Reference the GenerateTemplateContent project so that template content gets generated prior
+      to building this project.
+    -->
+    <ProjectReference
+      Include="..\GenerateTemplateContent\GenerateTemplateContent.csproj"
+      ReferenceOutputAssembly="false"
+      PrivateAssets="all" />
+
+    <!--
+      Internal packages referenced by the templates that aren't in the AI workstream.
+      We include these references here so that local NuGet packages get generated for use by the templates.
+    -->
+    <ProjectReference
+      Include="..\..\Libraries\Microsoft.Extensions.Http.Resilience\Microsoft.Extensions.Http.Resilience.csproj"
+      ReferenceOutputAssembly="false"
+      PrivateAssets="all" />
   </ItemGroup>
 
-  <!-- Copy the .csproj.in files to corresponding .csproj files -->
-  <!-- The reason they are initially .csproj.in is that there's no other way to exclude them from the main build -->
-  <Target Name="PrepareCsprojFiles" BeforeTargets="PrepareForBuild">
-    <ItemGroup>
-      <_CsprojFiles Include="src\**\*.csproj.in" />
-    </ItemGroup>
-    <Copy SourceFiles="@(_CsprojFiles)" DestinationFiles="@(_CsprojFiles->'$([System.String]::Copy('%(Identity)').Replace('.csproj.in', '.csproj'))')" SkipUnchangedFiles="true" />
-  </Target>
+  <ItemGroup>
+    <!-- Keep the exclude patterns below in sync with those in AIChatWebSnapshotTests.cs -->
+    <Content
+      Include="src\ChatWithCustomData\**\*"
+      Exclude="
+        **\bin\**;
+        **\obj\**;
+        **\.vs\**;
+        **\node_modules\**;
+        **\*.user;
+        **\*.in;
+        **\*.out.js;
+        **\*.generated.css;
+        **\package-lock.json;
+        **\ingestioncache.*;
+        **\NuGet.config;
+        **\Directory.Build.targets;
+        **\Directory.Build.props;" />
+    <None Include="THIRD-PARTY-NOTICES.TXT" Pack="true" PackagePath="." />
+    <Compile Remove="**\*" />
+  </ItemGroup>
 
 </Project>

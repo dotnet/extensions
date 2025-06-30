@@ -1,0 +1,6 @@
+override.json
+package-lock.json
+VSIXPackageVersion.json
+LICENSE
+
+!Build

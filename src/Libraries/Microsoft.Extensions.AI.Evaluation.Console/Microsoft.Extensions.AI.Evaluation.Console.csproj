@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>A command line dotnet tool for generating reports and managing evaluation data.</Description>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
+    <RootNamespace>Microsoft.Extensions.AI.Evaluation.Console</RootNamespace>
+    <!-- EA0000: Use source generated logging methods for improved performance. -->
+    <NoWarn>$(NoWarn);EA0000</NoWarn>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>aieval</ToolCommandName>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Workstream>AIEval</Workstream>
+    <Stage>normal</Stage>
+    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
+    <MinCodeCoverage>n/a</MinCodeCoverage>
+    <MinMutationScore>n/a</MinMutationScore>
+  </PropertyGroup>
+
+  <!--
+  Disable parallel build to work around https://github.com/dotnet/sdk/issues/47696. The problem has been fixed in
+  https://github.com/dotnet/sdk/pull/47788, however the fix has not yet been back ported to the dotnet 9 SDK. We can
+  remove this workaround once the fix is available in the dotnet 9 SDK.
+  -->
+  <PropertyGroup>
+    <BuildInParallel>false</BuildInParallel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Identity" />
+    <PackageReference Include="Azure.Storage.Files.DataLake" />
+    <PackageReference Include="System.CommandLine" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.AI.Evaluation\Microsoft.Extensions.AI.Evaluation.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.AI.Evaluation.Reporting\CSharp\Microsoft.Extensions.AI.Evaluation.Reporting.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.AI.Evaluation.Reporting.Azure\Microsoft.Extensions.AI.Evaluation.Reporting.Azure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleToTest Include="Microsoft.Extensions.AI.Evaluation.Console.Tests" />
+  </ItemGroup>
+</Project>
