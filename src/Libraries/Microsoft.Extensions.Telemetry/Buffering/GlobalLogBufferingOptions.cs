@@ -5,16 +5,13 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.Data.Validation;
-using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Diagnostics.Buffering;
 
 /// <summary>
 /// The options for global log buffering.
 /// </summary>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
 public class GlobalLogBufferingOptions
 {
     private const int DefaultMaxBufferSizeInBytes = 500 * 1024 * 1024; // 500 MB.
