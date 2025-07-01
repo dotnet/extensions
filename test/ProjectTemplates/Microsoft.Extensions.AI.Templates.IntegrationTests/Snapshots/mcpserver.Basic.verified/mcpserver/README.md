@@ -52,7 +52,9 @@ To test this MCP server from source code (locally) without using a built MCP ser
       "type": "stdio",
       "command": "dotnet",
       "args": [
-        "run"
+        "run",
+        "--project",
+        "<RELATIVE PATH TO PROJECT DIRECTORY>"
       ]
     }
   }
@@ -71,7 +73,7 @@ Alternatively, you can configure your VS Code user settings to use your local pr
         "args": [
           "run",
           "--project",
-          "<PATH TO PROJECT DIRECTORY>"
+          "<FULL PATH TO PROJECT DIRECTORY>"
         ]
       }
     }
