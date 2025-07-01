@@ -227,6 +227,8 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
             memoryUsageInBytes: memoryUsed);
     }
 
+    // Math.Min() is used below to mitigate margin errors and various kinds of precisions losses
+    // due to the fact that the calculation itself is not an atomic operation:
     private double CpuUtilizationRequest(double cpuRequest) => Math.Min(One, CpuUtilizationV2() / cpuRequest);
     private double CpuUtilizationLimit(double cpuLimit) => Math.Min(One, CpuUtilizationV2() / cpuLimit);
 }
