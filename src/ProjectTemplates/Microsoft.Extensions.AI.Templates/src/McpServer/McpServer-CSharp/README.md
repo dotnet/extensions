@@ -7,8 +7,9 @@ See [aka.ms/nuget/mcp/guide](https://aka.ms/nuget/mcp/guide) for the full guide.
 ## Checklist before publishing to NuGet.org
 
 - Test the MCP server locally using the steps below.
-- Update the package metadata in the .csproj file.
+- Update the package metadata in the .csproj file, in particular the `<PackageId>`.
 - Update `.mcp/server.json` to declare your MCP server's inputs.
+  - See [configuring inputs](https://aka.ms/nuget/mcp/guide/configuring-inputs) for more details.
 - Pack the project using `dotnet pack`.
 
 The `bin/Release` directory will contain the package file (.nupkg), which can be [published to NuGet.org](https://learn.microsoft.com/nuget/nuget-org/publish-a-package).
@@ -31,10 +32,7 @@ Once the MCP server package is published to NuGet.org, you can use the following
           "--version",
           "<your package version here>",
           "--yes"
-        ],
-        "env": {
-          "MAX_RANDOM_NUMBER": 100
-        }
+        ]
       }
     }
   }
@@ -55,10 +53,7 @@ To test this MCP server from source code (locally) without using a built MCP ser
       "command": "dotnet",
       "args": [
         "run"
-      ],
-      "env": {
-        "MAX_RANDOM_NUMBER": 100
-      }
+      ]
     }
   }
 }
@@ -77,10 +72,7 @@ Alternatively, you can configure your VS Code user settings to use your local pr
           "run",
           "--project",
           "<PATH TO PROJECT DIRECTORY>"
-        ],
-        "env": {
-          "MAX_RANDOM_NUMBER": 100
-        }
+        ]
       }
     }
   }

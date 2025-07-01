@@ -7,12 +7,7 @@
       "name": "<your package ID here>",
       "version": "0.1.0-beta",
       "package_arguments": [],
-      "environment_variables": [
-        {
-          "description": "The maximum number to return from the random number generator",
-          "name": "MAX_RANDOM_NUMBER"
-        }
-      ]
+      "environment_variables": []
     }
   ],
   "repository": {
