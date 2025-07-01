@@ -20,7 +20,7 @@
 
   <!-- Include additional files for browing the MCP server. -->
   <ItemGroup>
-    <None Include=".mcp\server.json" Pack="true" PackagePath="/.mcp/server.json" />
+    <None Include=".mcp\server.json" Pack="true" PackagePath="/.mcp/" />
     <None Include="README.md" Pack="true" PackagePath="/" />
   </ItemGroup>
 
