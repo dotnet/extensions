@@ -32,11 +32,11 @@ public class DistributedCachingEmbeddingGeneratorTest
         generator.JsonSerializerOptions = jso;
         Assert.Same(jso, generator.JsonSerializerOptions);
 
-        Assert.Null(generator.AdditionalCacheKeyValues);
+        Assert.Null(generator.CacheKeyAdditionalValues);
         var additionalValues = new[] { "value1", "value2" };
-        generator.AdditionalCacheKeyValues = additionalValues;
-        Assert.NotSame(additionalValues, generator.AdditionalCacheKeyValues);
-        Assert.Equal(additionalValues, generator.AdditionalCacheKeyValues);
+        generator.CacheKeyAdditionalValues = additionalValues;
+        Assert.NotSame(additionalValues, generator.CacheKeyAdditionalValues);
+        Assert.Equal(additionalValues, generator.CacheKeyAdditionalValues);
     }
 
     [Fact]
@@ -317,7 +317,7 @@ public class DistributedCachingEmbeddingGeneratorTest
         AssertEmbeddingsEqual(result1, result3);
 
         // Change key
-        outer.AdditionalCacheKeyValues = ["extraKey"];
+        outer.CacheKeyAdditionalValues = ["extraKey"];
 
         var result4 = await outer.GenerateAsync("abc");
         Assert.NotEqual(result1.Vector.ToArray(), result4.Vector.ToArray());
@@ -326,7 +326,7 @@ public class DistributedCachingEmbeddingGeneratorTest
         AssertEmbeddingsEqual(result4, result5);
 
         // Remove key
-        outer.AdditionalCacheKeyValues = [];
+        outer.CacheKeyAdditionalValues = [];
 
         var result6 = await outer.GenerateAsync("abc");
         AssertEmbeddingsEqual(result1, result6);

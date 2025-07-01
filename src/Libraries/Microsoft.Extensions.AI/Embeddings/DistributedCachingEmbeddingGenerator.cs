@@ -34,8 +34,8 @@ public class DistributedCachingEmbeddingGenerator<TInput, TEmbedding> : CachingE
     /// <summary>The <see cref="IDistributedCache"/> instance that will be used as the backing store for the cache.</summary>
     private readonly IDistributedCache _storage;
 
-    /// <summary>Additional cache key values used to inform the key employed for storing state.</summary>
-    private object[]? _additionalCacheKeyValues;
+    /// <summary>Additional values used to inform the cache key employed for storing state.</summary>
+    private object[]? _cacheKeyAdditionalValues;
 
     /// <summary>Additional cache key values used to inform the key employed for storing state.</summary>
     private JsonSerializerOptions _jsonSerializerOptions;
@@ -64,11 +64,12 @@ public class DistributedCachingEmbeddingGenerator<TInput, TEmbedding> : CachingE
         }
     }
 
-    /// <summary>Gets or sets additional cache key values used to inform the key employed for storing state.</summary>
-    public IReadOnlyList<object>? AdditionalCacheKeyValues
+    /// <summary>Gets or sets additional values used to inform the cache key employed for storing state.</summary>
+    /// <remarks>Any values set in this list will augment the other values used to inform the cache key.</remarks>
+    public IReadOnlyList<object>? CacheKeyAdditionalValues
     {
-        get => _additionalCacheKeyValues;
-        set => _additionalCacheKeyValues = value?.ToArray();
+        get => _cacheKeyAdditionalValues;
+        set => _cacheKeyAdditionalValues = value?.ToArray();
     }
 
     /// <inheritdoc />
@@ -111,7 +112,7 @@ public class DistributedCachingEmbeddingGenerator<TInput, TEmbedding> : CachingE
     {
         const int FixedValuesCount = 1;
 
-        object[] clientValues = _additionalCacheKeyValues ?? Array.Empty<object>();
+        object[] clientValues = _cacheKeyAdditionalValues ?? Array.Empty<object>();
         int length = FixedValuesCount + clientValues.Length + values.Length;
 
         object?[] arr = ArrayPool<object?>.Shared.Rent(length);

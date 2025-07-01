@@ -22,7 +22,7 @@ internal sealed class ResponseCachingChatClient : DistributedCachingChatClient
         ChatDetails chatDetails)
             : base(originalChatClient, cache)
     {
-        AdditionalCacheKeyValues = [.. cachingKeys];
+        CacheKeyAdditionalValues = [.. cachingKeys];
         _chatDetails = chatDetails;
         _stopWatches = new ConcurrentDictionary<string, Stopwatch>();
     }

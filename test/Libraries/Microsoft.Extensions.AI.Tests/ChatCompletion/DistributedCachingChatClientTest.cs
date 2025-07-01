@@ -623,7 +623,7 @@ public class DistributedCachingChatClientTest
         Assert.Equal("1", result2.Text);
 
         // Change key
-        outer.AdditionalCacheKeyValues = ["extraKey"];
+        outer.CacheKeyAdditionalValues = ["extraKey"];
 
         var result3 = await outer.GetResponseAsync([]);
         var result4 = await outer.GetResponseAsync([]);
@@ -633,7 +633,7 @@ public class DistributedCachingChatClientTest
         Assert.Equal("2", result4.Text);
 
         // Remove key
-        outer.AdditionalCacheKeyValues = [];
+        outer.CacheKeyAdditionalValues = [];
 
         var result5 = await outer.GetResponseAsync([]);
 

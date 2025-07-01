@@ -43,8 +43,8 @@ public class DistributedCachingChatClient : CachingChatClient
     /// <summary>The <see cref="IDistributedCache"/> instance that will be used as the backing store for the cache.</summary>
     private readonly IDistributedCache _storage;
 
-    /// <summary>Additional cache key values used to inform the key employed for storing state.</summary>
-    private object[]? _additionalCacheKeyValues;
+    /// <summary>Additional values used to inform the cache key employed for storing state.</summary>
+    private object[]? _cacheKeyAdditionalValues;
 
     /// <summary>The <see cref="JsonSerializerOptions"/> to use when serializing cache data.</summary>
     private JsonSerializerOptions _jsonSerializerOptions = AIJsonUtilities.DefaultOptions;
@@ -65,11 +65,12 @@ public class DistributedCachingChatClient : CachingChatClient
         set => _jsonSerializerOptions = Throw.IfNull(value);
     }
 
-    /// <summary>Gets or sets additional cache key values used to inform the key employed for storing state.</summary>
-    public IReadOnlyList<object>? AdditionalCacheKeyValues
+    /// <summary>Gets or sets additional values used to inform the cache key employed for storing state.</summary>
+    /// <remarks>Any values set in this list will augment the other values used to inform the cache key.</remarks>
+    public IReadOnlyList<object>? CacheKeyAdditionalValues
     {
-        get => _additionalCacheKeyValues;
-        set => _additionalCacheKeyValues = value?.ToArray();
+        get => _cacheKeyAdditionalValues;
+        set => _cacheKeyAdditionalValues = value?.ToArray();
     }
 
     /// <inheritdoc />
@@ -140,7 +141,7 @@ public class DistributedCachingChatClient : CachingChatClient
     {
         const int FixedValuesCount = 3;
 
-        object[] clientValues = _additionalCacheKeyValues ?? Array.Empty<object>();
+        object[] clientValues = _cacheKeyAdditionalValues ?? Array.Empty<object>();
         int length = FixedValuesCount + additionalValues.Length + clientValues.Length;
 
         object?[] arr = ArrayPool<object?>.Shared.Rent(length);

@@ -311,7 +311,7 @@
       ],
       "Properties": [
         {
-          "Member": "System.Collections.Generic.IReadOnlyList<object>? Microsoft.Extensions.AI.DistributedCachingChatClient.AdditionalCacheKeyValues { get; set; }",
+          "Member": "System.Collections.Generic.IReadOnlyList<object>? Microsoft.Extensions.AI.DistributedCachingChatClient.CacheKeyAdditionalValues { get; set; }",
           "Stage": "Stable"
         },
         {
@@ -356,7 +356,7 @@
       ],
       "Properties": [
         {
-          "Member": "System.Collections.Generic.IReadOnlyList<object>? Microsoft.Extensions.AI.DistributedCachingEmbeddingGenerator<TInput, TEmbedding>.AdditionalCacheKeyValues { get; set; }",
+          "Member": "System.Collections.Generic.IReadOnlyList<object>? Microsoft.Extensions.AI.DistributedCachingEmbeddingGenerator<TInput, TEmbedding>.CacheKeyAdditionalValues { get; set; }",
           "Stage": "Stable"
         },
         {
