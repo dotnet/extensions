@@ -65,7 +65,7 @@ internal sealed class AzureAIInferenceChatClient : IChatClient
         var providerUrl = typeof(ChatCompletionsClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(chatCompletionsClient) as Uri;
 
-        _metadata = new ChatClientMetadata("az.ai.inference", providerUrl, defaultModelId);
+        _metadata = new ChatClientMetadata("azure.ai.inference", providerUrl, defaultModelId);
     }
 
     /// <inheritdoc />
