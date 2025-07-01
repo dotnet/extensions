@@ -57,9 +57,13 @@ internal readonly struct MatchCounter<T> : IEnumerable<KeyValuePair<T, int>>
     {
         _ = Throw.IfNull(other, nameof(other));
         var intersection = new MatchCounter<T>();
-        foreach (var kvp in _counts)
+
+        (Dictionary<T, int> smaller, Dictionary<T, int> larger) =
+            _counts.Count < other._counts.Count ? (_counts, other._counts) : (other._counts, _counts);
+
+        foreach (var kvp in smaller)
         {
-            if (other._counts.TryGetValue(kvp.Key, out int otherCount))
+            if (larger.TryGetValue(kvp.Key, out int otherCount))
             {
                 intersection._counts[kvp.Key] = Math.Min(kvp.Value, otherCount);
             }

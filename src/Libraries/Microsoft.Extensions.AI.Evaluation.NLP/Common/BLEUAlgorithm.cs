@@ -67,15 +67,15 @@ internal static class BLEUAlgorithm
             return RationalNumber.Zero;
         }
 
-        var hypGrams = hypothesis.AsSpan().CreateNGrams(n);
-        var hypCounts = new MatchCounter<NGram<string>>(hypGrams);
+        List<NGram<string>> hypGrams = hypothesis.CreateNGrams(n);
+        MatchCounter<NGram<string>> hypCounts = new(hypGrams);
 
         Dictionary<NGram<string>, int> maxCounts = [];
 
         foreach (var rf in references)
         {
-            IEnumerable<NGram<string>> refGrams = rf.AsSpan().CreateNGrams(n);
-            var refCounts = new MatchCounter<NGram<string>>(refGrams);
+            List<NGram<string>> refGrams = rf.CreateNGrams(n);
+            MatchCounter<NGram<string>> refCounts = new(refGrams);
 
             foreach (var ct in refCounts)
             {

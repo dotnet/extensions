@@ -15,8 +15,8 @@ namespace Microsoft.Extensions.AI.Evaluation.NLP;
 /// Contextual information that the <see cref="GLEUEvaluator"/> uses to compute the GLEU score for a response.
 /// </summary>
 /// <remarks>
-/// <see cref="GLEUEvaluator"/> measures the GLEU score of a response compared to a reference. GLEU (Google-BLEU)
-/// is a metric used to evaluate the quality of machine-generated text.
+/// <see cref="GLEUEvaluator"/> measures the GLEU score of a response compared to one or more reference responses
+/// supplied via <see cref="References"/>. GLEU (Google-BLEU) is a metric used to evaluate the quality of machine-generated text.
 /// </remarks>
 public sealed class GLEUEvaluatorContext : EvaluationContext
 {
@@ -24,10 +24,10 @@ public sealed class GLEUEvaluatorContext : EvaluationContext
     /// Gets the unique <see cref="EvaluationContext.Name"/> that is used for
     /// <see cref="GLEUEvaluatorContext"/>.
     /// </summary>
-    public static string GLEUContextName => "GLEU Context";
+    public static string ReferencesContextName => "References (GLEU)";
 
     /// <summary>
-    /// Gets the reference response against which the provided chat response will be scored.
+    /// Gets the reference against which the provided response will be scored.
     /// </summary>
     /// <remarks>
     /// The <see cref="GLEUEvaluator"/> measures the degree to which the response being evaluated is similar to
@@ -41,8 +41,8 @@ public sealed class GLEUEvaluatorContext : EvaluationContext
     /// <param name="references">
     /// The reference responses against which the response that is being evaluated is compared.
     /// </param>
-    public GLEUEvaluatorContext(params string[] references)
-        : this(references as IEnumerable<string>)
+    public GLEUEvaluatorContext(IEnumerable<string> references)
+        : this(references.ToArray())
     {
     }
 
@@ -52,11 +52,11 @@ public sealed class GLEUEvaluatorContext : EvaluationContext
     /// <param name="references">
     /// The reference responses against which the response that is being evaluated is compared.
     /// </param>
-    public GLEUEvaluatorContext(IEnumerable<string> references)
+    public GLEUEvaluatorContext(params string[] references)
         : base(
-            name: GLEUContextName,
+            name: ReferencesContextName,
             contents: [.. references.Select(c => new TextContent(c))])
     {
-        References = [.. references];
+        References = references;
     }
 }

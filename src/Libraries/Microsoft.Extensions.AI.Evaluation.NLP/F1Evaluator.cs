@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -20,7 +21,7 @@ namespace Microsoft.Extensions.AI.Evaluation.NLP;
 /// <remarks>
 /// <para>
 /// The <see cref="F1Evaluator"/> computes the F1 score of a response ("hypothesis") in relation to a ground-truth reference
-/// <see cref="F1EvaluatorContext.GroundTruth"/>. The score is returned in a <see cref="NumericMetric"/>
+/// supplied by <see cref="F1EvaluatorContext.GroundTruth"/>. The score is returned in a <see cref="NumericMetric"/>
 /// with a value between 0.0 and 1.0 where 0.0 represents no match at all and 1.0 indicates a perfect match.
 /// By default, the score is interpreted with a pass/fail cutoff of 0.5. So a score of 0.5 or higher is
 /// passing and a score below 0.5 is failing.
@@ -68,10 +69,10 @@ public sealed class F1Evaluator : IEvaluator
             return new ValueTask<EvaluationResult>(result);
         }
 
-        var (score, duration) = TimingHelper.ExecuteWithTiming(() =>
+        (double score, TimeSpan duration) = TimingHelper.ExecuteWithTiming(() =>
         {
-            var reference = SimpleWordTokenizer.WordTokenize(context.GroundTruth);
-            var hypothesis = SimpleWordTokenizer.WordTokenize(modelResponse.Text);
+            string[] reference = SimpleWordTokenizer.WordTokenize(context.GroundTruth).ToArray();
+            string[] hypothesis = SimpleWordTokenizer.WordTokenize(modelResponse.Text).ToArray();
             return F1Algorithm.CalculateF1Score(reference, hypothesis);
         });
 
@@ -79,7 +80,7 @@ public sealed class F1Evaluator : IEvaluator
         string durationText = $"{duration.TotalSeconds.ToString("F2", CultureInfo.InvariantCulture)} s";
         metric.AddOrUpdateMetadata(name: "evaluation-duration", value: durationText);
         metric.AddOrUpdateContext(context);
-        metric.Interpretation = NLPScoreInterpretation.Interpret(metric);
+        metric.Interpretation = metric.Interpret();
 
         return new ValueTask<EvaluationResult>(result);
     }

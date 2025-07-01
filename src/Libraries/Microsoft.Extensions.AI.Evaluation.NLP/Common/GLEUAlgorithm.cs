@@ -7,6 +7,10 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI.Evaluation.NLP.Common;
 
+/// <summary>
+/// Google-BLEU (GLEU) algorithm implementation for evaluating the quality of a response.
+/// Python implementation reference: https://www.nltk.org/api/nltk.translate.gleu_score.html.
+/// </summary>
 internal static class GLEUAlgorithm
 {
     internal static double SentenceGLEU(string[][] references, string[] hypothesis, int minN = 1, int maxN = 4)
@@ -21,13 +25,13 @@ internal static class GLEUAlgorithm
             Throw.ArgumentNullException(nameof(hypothesis), $"'{nameof(hypothesis)}' cannot be null or empty.");
         }
 
-        MatchCounter<NGram<string>> hypNGrams = new(hypothesis.AsSpan().CreateAllNGrams(minN, maxN));
+        MatchCounter<NGram<string>> hypNGrams = new(hypothesis.CreateAllNGrams(minN, maxN));
         int truePosFalsePos = hypNGrams.Sum();
 
         List<(int, int)> hypCounts = [];
         foreach (var reference in references)
         {
-            MatchCounter<NGram<string>> refNGrams = new(reference.AsSpan().CreateAllNGrams(minN, maxN));
+            MatchCounter<NGram<string>> refNGrams = new(reference.CreateAllNGrams(minN, maxN));
             int truePosFalseNeg = refNGrams.Sum();
 
             MatchCounter<NGram<string>> overlapNGrams = hypNGrams.Intersect(refNGrams);

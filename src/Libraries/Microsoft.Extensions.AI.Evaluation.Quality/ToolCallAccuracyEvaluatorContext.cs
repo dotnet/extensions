@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Microsoft.Extensions.AI.Evaluation.Quality;
 
@@ -40,7 +41,7 @@ public sealed class ToolCallAccuracyEvaluatorContext : EvaluationContext
     /// are defined as <see cref="AIFunction"/>s. Any other <see cref="AITool"/> definitions will be ignored.
     /// </para>
     /// </param>
-    public ToolCallAccuracyEvaluatorContext(IEnumerable<AITool> toolDefinitions)
+    public ToolCallAccuracyEvaluatorContext(params AITool[] toolDefinitions)
         : base(name: ToolCallAccuracyContextName, contents: [new TextContent(toolDefinitions.RenderAsJson())])
     {
         ToolDefinitions = [.. toolDefinitions];
@@ -59,8 +60,8 @@ public sealed class ToolCallAccuracyEvaluatorContext : EvaluationContext
     /// are defined as <see cref="AIFunction"/>s. Any other <see cref="AITool"/> definitions will be ignored.
     /// </para>
     /// </param>
-    public ToolCallAccuracyEvaluatorContext(params AITool[] toolDefinitions)
-        : this(toolDefinitions as IEnumerable<AITool>)
+    public ToolCallAccuracyEvaluatorContext(IEnumerable<AITool> toolDefinitions)
+        : this(toolDefinitions.ToArray())
     {
     }
 

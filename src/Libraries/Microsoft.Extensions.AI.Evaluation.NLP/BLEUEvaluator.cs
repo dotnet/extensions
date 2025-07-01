@@ -78,10 +78,10 @@ public sealed class BLEUEvaluator : IEvaluator
             return new ValueTask<EvaluationResult>(result);
         }
 
-        var (score, duration) = TimingHelper.ExecuteWithTiming(() =>
+        (double score, TimeSpan duration) = TimingHelper.ExecuteWithTiming(() =>
         {
-            var references = context.References.Select(reference => SimpleWordTokenizer.WordTokenize(reference).ToArray()).ToArray();
-            var hypothesis = SimpleWordTokenizer.WordTokenize(modelResponse.Text).ToArray();
+            string[][] references = context.References.Select(reference => SimpleWordTokenizer.WordTokenize(reference).ToArray()).ToArray();
+            string[] hypothesis = SimpleWordTokenizer.WordTokenize(modelResponse.Text).ToArray();
             return BLEUAlgorithm.SentenceBLEU(references, hypothesis, BLEUAlgorithm.DefaultBLEUWeights, SmoothingFunction.Method4);
         });
 
@@ -89,7 +89,7 @@ public sealed class BLEUEvaluator : IEvaluator
         string durationText = $"{duration.TotalSeconds.ToString("F2", CultureInfo.InvariantCulture)} s";
         metric.AddOrUpdateMetadata(name: "evaluation-duration", value: durationText);
         metric.AddOrUpdateContext(context);
-        metric.Interpretation = NLPScoreInterpretation.Interpret(metric);
+        metric.Interpretation = metric.Interpret();
 
         return new ValueTask<EvaluationResult>(result);
     }

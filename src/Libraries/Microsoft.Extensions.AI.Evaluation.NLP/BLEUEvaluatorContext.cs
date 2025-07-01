@@ -24,10 +24,10 @@ public sealed class BLEUEvaluatorContext : EvaluationContext
     /// Gets the unique <see cref="EvaluationContext.Name"/> that is used for
     /// <see cref="BLEUEvaluatorContext"/>.
     /// </summary>
-    public static string BLEUContextName => "BLEU Context";
+    public static string ReferencesContextName => "References (BLEU)";
 
     /// <summary>
-    /// Gets the reference responses against which the provided model response will be scored.
+    /// Gets the references against which the provided response will be scored.
     /// </summary>
     /// <remarks>
     /// The <see cref="BLEUEvaluator"/> measures the degree to which the response being evaluated is similar to
@@ -54,10 +54,9 @@ public sealed class BLEUEvaluatorContext : EvaluationContext
     /// </param>
     public BLEUEvaluatorContext(params string[] references)
         : base(
-            name: BLEUContextName,
+            name: ReferencesContextName,
             contents: [.. references.Select(c => new TextContent(c))])
     {
-        References = [.. references];
+        References = references;
     }
-
 }

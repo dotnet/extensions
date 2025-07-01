@@ -13,12 +13,12 @@ namespace Microsoft.Extensions.AI.Evaluation.NLP.Tests;
 public class F1EvaluatorTests
 {
     [Fact]
-    public async Task EvaluateAsync_ReturnsPerfectScoreForIdenticalText()
+    public async Task ReturnsPerfectScoreForIdenticalText()
     {
         var evaluator = new F1Evaluator();
         var context = new F1EvaluatorContext("The quick brown fox jumps over the lazy dog.");
         var response = new ChatResponse(new ChatMessage(ChatRole.Assistant, "The quick brown fox jumps over the lazy dog."));
-        var result = await evaluator.EvaluateAsync([], response, null, [context]);
+        var result = await evaluator.EvaluateAsync(response, null, [context]);
         var metric = Assert.Single(result.Metrics.Values) as NumericMetric;
         Assert.NotNull(metric);
         Assert.Equal(F1Evaluator.F1MetricName, metric.Name);
@@ -29,12 +29,12 @@ public class F1EvaluatorTests
     }
 
     [Fact]
-    public async Task EvaluateAsync_ReturnsLowScoreForCompletelyDifferentText()
+    public async Task ReturnsLowScoreForCompletelyDifferentText()
     {
         var evaluator = new F1Evaluator();
         var context = new F1EvaluatorContext("The quick brown fox jumps over the lazy dog.");
         var response = new ChatResponse(new ChatMessage(ChatRole.Assistant, "Completely unrelated sentence."));
-        var result = await evaluator.EvaluateAsync([], response, null, [context]);
+        var result = await evaluator.EvaluateAsync(response, null, [context]);
         var metric = Assert.Single(result.Metrics.Values) as NumericMetric;
         Assert.NotNull(metric);
         Assert.Equal(F1Evaluator.F1MetricName, metric.Name);
@@ -45,11 +45,11 @@ public class F1EvaluatorTests
     }
 
     [Fact]
-    public async Task EvaluateAsync_ReturnsErrorDiagnosticIfNoContext()
+    public async Task ReturnsErrorDiagnosticIfNoContext()
     {
         var evaluator = new F1Evaluator();
         var response = new ChatResponse(new ChatMessage(ChatRole.Assistant, "Some text."));
-        var result = await evaluator.EvaluateAsync([], response, null, null);
+        var result = await evaluator.EvaluateAsync(response, null, null);
         var metric = Assert.Single(result.Metrics.Values) as NumericMetric;
         Assert.NotNull(metric);
         Assert.Equal(F1Evaluator.F1MetricName, metric.Name);
@@ -64,12 +64,12 @@ public class F1EvaluatorTests
         "It is a guide to action which ensures that the military always obeys the commands of the party", 0.70589)]
     [InlineData("It is the practical guide for the army always to heed the directions of the party",
         "It is to insure the troops forever hearing the activity guidebook that party direct", 0.4000)]
-    public async Task EvaluateAsync_SampleCases(string reference, string hypothesis, double score)
+    public async Task SampleCases(string reference, string hypothesis, double score)
     {
         var evaluator = new F1Evaluator();
         var context = new F1EvaluatorContext(reference);
         var response = new ChatResponse(new ChatMessage(ChatRole.Assistant, hypothesis));
-        var result = await evaluator.EvaluateAsync([], response, null, [context]);
+        var result = await evaluator.EvaluateAsync(response, null, [context]);
         var metric = Assert.Single(result.Metrics.Values) as NumericMetric;
         Assert.NotNull(metric);
         Assert.Equal(F1Evaluator.F1MetricName, metric.Name);
@@ -77,12 +77,12 @@ public class F1EvaluatorTests
     }
 
     [Fact]
-    public async Task EvaluateAsync_ReturnsErrorDiagnosticIfEmptyResponse()
+    public async Task ReturnsErrorDiagnosticIfEmptyResponse()
     {
         var evaluator = new F1Evaluator();
         var context = new F1EvaluatorContext("Reference text.");
         var response = new ChatResponse(new ChatMessage(ChatRole.Assistant, ""));
-        var result = await evaluator.EvaluateAsync([], response, null, [context]);
+        var result = await evaluator.EvaluateAsync(response, null, [context]);
         var metric = Assert.Single(result.Metrics.Values) as NumericMetric;
         Assert.NotNull(metric);
         Assert.Equal(F1Evaluator.F1MetricName, metric.Name);

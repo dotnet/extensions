@@ -12,8 +12,9 @@ namespace Microsoft.Extensions.AI.Evaluation.NLP;
 /// Contextual information that the <see cref="F1Evaluator"/> uses to compute the F1 score for a response.
 /// </summary>
 /// <remarks>
-/// <see cref="F1Evaluator"/> measures the F1 score of a response compared to a reference. F1 (Google-BLEU)
-/// is a metric used to evaluate the quality of machine-generated text.
+/// <see cref="F1Evaluator"/> measures the F1 score of a response compared to a reference response that is supplied via
+/// <see cref="GroundTruth" />. F1 is a metric used to valuate the quality of machine-generated text. It is the ratio
+/// of the number of shared words between the generated response and the reference response.
 /// </remarks>
 public sealed class F1EvaluatorContext : EvaluationContext
 {
@@ -21,14 +22,14 @@ public sealed class F1EvaluatorContext : EvaluationContext
     /// Gets the unique <see cref="EvaluationContext.Name"/> that is used for
     /// <see cref="F1EvaluatorContext"/>.
     /// </summary>
-    public static string F1ContextName => "F1 Context";
+    public static string GroundTruthContextName => "Ground Truth (F1)";
 
     /// <summary>
-    /// Gets the reference response against which the provided chat response will be scored.
+    /// Gets the reference response against which the provided response will be scored.
     /// </summary>
     /// <remarks>
     /// The <see cref="F1Evaluator"/> measures the degree to which the response being evaluated is similar to
-    /// the response supplied via <see cref="GroundTruth"/>. The metric will be reported as a F1 score.
+    /// the response supplied via <see cref="GroundTruth"/>. The metric will be reported as an F1 score.
     /// </remarks>
     public string GroundTruth { get; }
 
@@ -36,12 +37,12 @@ public sealed class F1EvaluatorContext : EvaluationContext
     /// Initializes a new instance of the <see cref="F1EvaluatorContext"/> class.
     /// </summary>
     /// <param name="groundTruth">
-    /// The reference response against which the response that is being evaluated is compared.
+    /// The reference response against which the provided response will be scored.
     /// </param>
     public F1EvaluatorContext(string groundTruth)
         : base(
-            name: F1ContextName,
-            contents: [new TextContent(groundTruth)])
+            name: GroundTruthContextName,
+            content: groundTruth)
     {
         GroundTruth = groundTruth;
     }

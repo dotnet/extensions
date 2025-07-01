@@ -13,7 +13,7 @@ internal static class NGramExtensions
     public static NGram<T> CreateNGram<T>(this ReadOnlySpan<T> values)
         where T : IEquatable<T> => new(values);
 
-    internal static List<NGram<T>> CreateNGrams<T>(this Span<T> input, int n)
+    internal static List<NGram<T>> CreateNGrams<T>(this T[] input, int n)
         where T : IEquatable<T>
         => CreateNGrams((ReadOnlySpan<T>)input, n);
 
@@ -32,20 +32,20 @@ internal static class NGramExtensions
 
         List<NGram<T>> nGrams = [];
 
-        ReadOnlySpan<T> output = input.Slice(0, Math.Min(n, input.Length));
+        ReadOnlySpan<T> next = input.Slice(0, Math.Min(n, input.Length));
 
-        while (output.Length == n)
+        while (next.Length == n)
         {
-            nGrams.Add(new NGram<T>(output));
+            nGrams.Add(new NGram<T>(next));
 
             input = input.Slice(1);
-            output = input.Slice(0, Math.Min(n, input.Length));
+            next = input.Slice(0, Math.Min(n, input.Length));
         }
 
         return nGrams;
     }
 
-    internal static List<NGram<T>> CreateAllNGrams<T>(this Span<T> input, int minN, int maxN = -1)
+    internal static List<NGram<T>> CreateAllNGrams<T>(this T[] input, int minN, int maxN = -1)
         where T : IEquatable<T>
         => CreateAllNGrams((ReadOnlySpan<T>)input, minN, maxN);
 
