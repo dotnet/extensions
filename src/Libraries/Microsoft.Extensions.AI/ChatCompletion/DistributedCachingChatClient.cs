@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,8 +36,15 @@ namespace Microsoft.Extensions.AI;
 /// </remarks>
 public class DistributedCachingChatClient : CachingChatClient
 {
+    /// <summary>Boxed cache version.</summary>
+    /// <remarks>Bump the cache version to invalidate existing caches if the serialization format changes in a breaking way.</remarks>
+    private static readonly object _cacheVersion = 2;
+
     /// <summary>The <see cref="IDistributedCache"/> instance that will be used as the backing store for the cache.</summary>
     private readonly IDistributedCache _storage;
+
+    /// <summary>Additional cache key values used to inform the key employed for storing state.</summary>
+    private object[]? _additionalCacheKeyValues;
 
     /// <summary>The <see cref="JsonSerializerOptions"/> to use when serializing cache data.</summary>
     private JsonSerializerOptions _jsonSerializerOptions = AIJsonUtilities.DefaultOptions;
@@ -54,6 +63,13 @@ public class DistributedCachingChatClient : CachingChatClient
     {
         get => _jsonSerializerOptions;
         set => _jsonSerializerOptions = Throw.IfNull(value);
+    }
+
+    /// <summary>Gets or sets additional cache key values used to inform the key employed for storing state.</summary>
+    public IReadOnlyList<object>? AdditionalCacheKeyValues
+    {
+        get => _additionalCacheKeyValues;
+        set => _additionalCacheKeyValues = value?.ToArray();
     }
 
     /// <inheritdoc />
@@ -122,9 +138,26 @@ public class DistributedCachingChatClient : CachingChatClient
     /// </remarks>
     protected override string GetCacheKey(IEnumerable<ChatMessage> messages, ChatOptions? options, params ReadOnlySpan<object?> additionalValues)
     {
-        // Bump the cache version to invalidate existing caches if the serialization format changes in a breaking way.
-        const int CacheVersion = 2;
+        const int FixedValuesCount = 3;
 
-        return AIJsonUtilities.HashDataToString([CacheVersion, messages, options, .. additionalValues], _jsonSerializerOptions);
+        object[] clientValues = _additionalCacheKeyValues ?? Array.Empty<object>();
+        int length = FixedValuesCount + additionalValues.Length + clientValues.Length;
+
+        object?[] arr = ArrayPool<object?>.Shared.Rent(length);
+        try
+        {
+            arr[0] = _cacheVersion;
+            arr[1] = messages;
+            arr[2] = options;
+            additionalValues.CopyTo(arr.AsSpan(FixedValuesCount));
+            clientValues.CopyTo(arr, FixedValuesCount + additionalValues.Length);
+
+            return AIJsonUtilities.HashDataToString(arr.AsSpan(0, length), _jsonSerializerOptions);
+        }
+        finally
+        {
+            Array.Clear(arr, 0, length);
+            ArrayPool<object?>.Shared.Return(arr);
+        }
     }
 }

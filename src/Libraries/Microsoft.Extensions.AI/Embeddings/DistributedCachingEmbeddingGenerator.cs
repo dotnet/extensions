@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading;
@@ -24,7 +27,17 @@ namespace Microsoft.Extensions.AI;
 public class DistributedCachingEmbeddingGenerator<TInput, TEmbedding> : CachingEmbeddingGenerator<TInput, TEmbedding>
     where TEmbedding : Embedding
 {
+    /// <summary>Boxed cache version.</summary>
+    /// <remarks>Bump the cache version to invalidate existing caches if the serialization format changes in a breaking way.</remarks>
+    private static readonly object _cacheVersion = 2;
+
+    /// <summary>The <see cref="IDistributedCache"/> instance that will be used as the backing store for the cache.</summary>
     private readonly IDistributedCache _storage;
+
+    /// <summary>Additional cache key values used to inform the key employed for storing state.</summary>
+    private object[]? _additionalCacheKeyValues;
+
+    /// <summary>Additional cache key values used to inform the key employed for storing state.</summary>
     private JsonSerializerOptions _jsonSerializerOptions;
 
     /// <summary>Initializes a new instance of the <see cref="DistributedCachingEmbeddingGenerator{TInput, TEmbedding}"/> class.</summary>
@@ -49,6 +62,13 @@ public class DistributedCachingEmbeddingGenerator<TInput, TEmbedding> : CachingE
             _ = Throw.IfNull(value);
             _jsonSerializerOptions = value;
         }
+    }
+
+    /// <summary>Gets or sets additional cache key values used to inform the key employed for storing state.</summary>
+    public IReadOnlyList<object>? AdditionalCacheKeyValues
+    {
+        get => _additionalCacheKeyValues;
+        set => _additionalCacheKeyValues = value?.ToArray();
     }
 
     /// <inheritdoc />
@@ -87,6 +107,26 @@ public class DistributedCachingEmbeddingGenerator<TInput, TEmbedding> : CachingE
     /// The generated cache key is not guaranteed to be stable across releases of the library.
     /// </para>
     /// </remarks>
-    protected override string GetCacheKey(params ReadOnlySpan<object?> values) =>
-        AIJsonUtilities.HashDataToString(values, _jsonSerializerOptions);
+    protected override string GetCacheKey(params ReadOnlySpan<object?> values)
+    {
+        const int FixedValuesCount = 1;
+
+        object[] clientValues = _additionalCacheKeyValues ?? Array.Empty<object>();
+        int length = FixedValuesCount + clientValues.Length + values.Length;
+
+        object?[] arr = ArrayPool<object?>.Shared.Rent(length);
+        try
+        {
+            arr[0] = _cacheVersion;
+            values.CopyTo(arr.AsSpan(FixedValuesCount));
+            clientValues.CopyTo(arr, FixedValuesCount + values.Length);
+
+            return AIJsonUtilities.HashDataToString(arr.AsSpan(0, length), _jsonSerializerOptions);
+        }
+        finally
+        {
+            Array.Clear(arr, 0, length);
+            ArrayPool<object?>.Shared.Return(arr);
+        }
+    }
 }

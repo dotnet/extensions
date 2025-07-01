@@ -22,6 +22,24 @@ public class DistributedCachingEmbeddingGeneratorTest
     };
 
     [Fact]
+    public void Properties_Roundtrip()
+    {
+        using var innerGenerator = new TestEmbeddingGenerator();
+        using DistributedCachingEmbeddingGenerator<string, Embedding<float>> generator = new(innerGenerator, _storage);
+
+        Assert.Same(AIJsonUtilities.DefaultOptions, generator.JsonSerializerOptions);
+        var jso = new JsonSerializerOptions();
+        generator.JsonSerializerOptions = jso;
+        Assert.Same(jso, generator.JsonSerializerOptions);
+
+        Assert.Null(generator.AdditionalCacheKeyValues);
+        var additionalValues = new[] { "value1", "value2" };
+        generator.AdditionalCacheKeyValues = additionalValues;
+        Assert.NotSame(additionalValues, generator.AdditionalCacheKeyValues);
+        Assert.Equal(additionalValues, generator.AdditionalCacheKeyValues);
+    }
+
+    [Fact]
     public async Task CachesSuccessResultsAsync()
     {
         // Arrange
@@ -269,6 +287,49 @@ public class DistributedCachingEmbeddingGeneratorTest
         Assert.Equal(2, innerCallCount);
         AssertEmbeddingsEqual(new("value 1".Select(c => (float)c).ToArray()), result3);
         AssertEmbeddingsEqual(new("value 2".Select(c => (float)c).ToArray()), result4);
+    }
+
+    [Fact]
+    public async Task CacheKeyVariesByAdditionalKeyValuesAsync()
+    {
+        // Arrange
+        var innerCallCount = 0;
+        var completionTcs = new TaskCompletionSource<bool>();
+        using var innerGenerator = new TestEmbeddingGenerator
+        {
+            GenerateAsyncCallback = async (value, options, cancellationToken) =>
+            {
+                innerCallCount++;
+                await Task.Yield();
+                return new(new Embedding<float>[] { new Embedding<float>(new float[] { innerCallCount }) });
+            }
+        };
+        using var outer = new DistributedCachingEmbeddingGenerator<string, Embedding<float>>(innerGenerator, _storage)
+        {
+            JsonSerializerOptions = TestJsonSerializerContext.Default.Options,
+        };
+
+        var result1 = await outer.GenerateAsync("abc");
+        var result2 = await outer.GenerateAsync("abc");
+        AssertEmbeddingsEqual(result1, result2);
+
+        var result3 = await outer.GenerateAsync("abc");
+        AssertEmbeddingsEqual(result1, result3);
+
+        // Change key
+        outer.AdditionalCacheKeyValues = ["extraKey"];
+
+        var result4 = await outer.GenerateAsync("abc");
+        Assert.NotEqual(result1.Vector.ToArray(), result4.Vector.ToArray());
+
+        var result5 = await outer.GenerateAsync("abc");
+        AssertEmbeddingsEqual(result4, result5);
+
+        // Remove key
+        outer.AdditionalCacheKeyValues = [];
+
+        var result6 = await outer.GenerateAsync("abc");
+        AssertEmbeddingsEqual(result1, result6);
     }
 
     [Fact]
