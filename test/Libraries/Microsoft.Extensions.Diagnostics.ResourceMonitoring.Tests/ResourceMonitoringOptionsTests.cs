@@ -19,7 +19,7 @@ public sealed class ResourceMonitoringOptionsTests
         };
 
         Assert.NotNull(options);
-        Assert.False(options.UseLinuxCpuUsageV2);
+        Assert.False(options.UseLinuxCalculationV2);
     }
 
     [Fact]
@@ -27,9 +27,9 @@ public sealed class ResourceMonitoringOptionsTests
     {
         var options = new ResourceMonitoringOptions
         {
-            UseLinuxCpuUsageV2 = true
+            UseLinuxCalculationV2 = true
         };
 
-        Assert.True(options.UseLinuxCpuUsageV2);
+        Assert.True(options.UseLinuxCalculationV2);
     }
 }

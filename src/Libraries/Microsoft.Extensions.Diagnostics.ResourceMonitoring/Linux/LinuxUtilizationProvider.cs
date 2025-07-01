@@ -65,7 +65,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         var meter = meterFactory.Create(ResourceUtilizationInstruments.MeterName);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-        if (options.Value.UseLinuxCpuUsageV2)
+        if (options.Value.UseLinuxCalculationV2)
         {
             cpuLimit = _parser.GetCgroupLimitV2();
             cpuRequest = _parser.GetCgroupRequestCpuV2();

@@ -403,7 +403,7 @@ public sealed class AcceptanceTest
                 .AddSingleton<IResourceUtilizationPublisher>(new GenericPublisher(_ => e.Set()))
                 .AddResourceMonitoring(x => x.ConfigureMonitor(options =>
                     {
-                        options.UseLinuxCpuUsageV2 = true;
+                        options.UseLinuxCalculationV2 = true;
                     }))
                 .Replace(ServiceDescriptor.Singleton<ILinuxUtilizationParser, LinuxUtilizationParserCgroupV2>()))
             .Build();
