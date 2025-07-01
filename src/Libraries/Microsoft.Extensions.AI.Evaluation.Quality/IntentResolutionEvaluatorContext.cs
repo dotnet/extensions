@@ -40,7 +40,7 @@ public sealed class IntentResolutionEvaluatorContext : EvaluationContext
     /// </para>
     /// </param>
     public IntentResolutionEvaluatorContext(params AITool[] toolDefinitions)
-        : base(name: IntentResolutionContextName, contents: [new TextContent(toolDefinitions.RenderAsJson())])
+        : base(name: ToolDefinitionsContextName, contents: [new TextContent(toolDefinitions.RenderAsJson())])
     {
         ToolDefinitions = [.. toolDefinitions];
     }
@@ -67,7 +67,7 @@ public sealed class IntentResolutionEvaluatorContext : EvaluationContext
     /// Gets the unique <see cref="EvaluationContext.Name"/> that is used for
     /// <see cref="IntentResolutionEvaluatorContext"/>.
     /// </summary>
-    public static string IntentResolutionContextName => "Tool Definitions (Intent Resolution)";
+    public static string ToolDefinitionsContextName => "Tool Definitions (Intent Resolution)";
 
     /// <summary>
     /// Gets set of tool definitions (see <see cref="ChatOptions.Tools"/>) that were used when generating the model

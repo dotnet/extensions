@@ -42,7 +42,7 @@ public sealed class ToolCallAccuracyEvaluatorContext : EvaluationContext
     /// </para>
     /// </param>
     public ToolCallAccuracyEvaluatorContext(params AITool[] toolDefinitions)
-        : base(name: ToolCallAccuracyContextName, contents: [new TextContent(toolDefinitions.RenderAsJson())])
+        : base(name: ToolDefinitionsContextName, contents: [new TextContent(toolDefinitions.RenderAsJson())])
     {
         ToolDefinitions = [.. toolDefinitions];
     }
@@ -69,7 +69,7 @@ public sealed class ToolCallAccuracyEvaluatorContext : EvaluationContext
     /// Gets the unique <see cref="EvaluationContext.Name"/> that is used for
     /// <see cref="ToolCallAccuracyEvaluatorContext"/>.
     /// </summary>
-    public static string ToolCallAccuracyContextName => "Tool Definitions (Tool Call Accuracy)";
+    public static string ToolDefinitionsContextName => "Tool Definitions (Tool Call Accuracy)";
 
     /// <summary>
     /// Gets set of tool definitions (see <see cref="ChatOptions.Tools"/>) that were used when generating the model
