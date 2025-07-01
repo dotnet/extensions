@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Microsoft.Extensions.AI.Evaluation.Quality;
 
@@ -38,7 +39,7 @@ public sealed class IntentResolutionEvaluatorContext : EvaluationContext
     /// are defined as <see cref="AIFunction"/>s. Any other <see cref="AITool"/> definitions will be ignored.
     /// </para>
     /// </param>
-    public IntentResolutionEvaluatorContext(IEnumerable<AITool> toolDefinitions)
+    public IntentResolutionEvaluatorContext(params AITool[] toolDefinitions)
         : base(name: IntentResolutionContextName, contents: [new TextContent(toolDefinitions.RenderAsJson())])
     {
         ToolDefinitions = [.. toolDefinitions];
@@ -57,8 +58,8 @@ public sealed class IntentResolutionEvaluatorContext : EvaluationContext
     /// are defined as <see cref="AIFunction"/>s. Any other <see cref="AITool"/> definitions will be ignored.
     /// </para>
     /// </param>
-    public IntentResolutionEvaluatorContext(params AITool[] toolDefinitions)
-        : this(toolDefinitions as IEnumerable<AITool>)
+    public IntentResolutionEvaluatorContext(IEnumerable<AITool> toolDefinitions)
+        : this(toolDefinitions.ToArray())
     {
     }
 

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.AI.Evaluation.NLP.Common;
 using Xunit;
@@ -61,5 +62,22 @@ public class MatchCounterTests
         var str = counter.ToDebugString();
         Assert.Contains("x: 2", str);
         Assert.Contains("y: 1", str);
+    }
+
+    [Fact]
+    public void Intersect_ReturnsCorrectIntersection()
+    {
+        MatchCounter<int> counter1 = new(new[] { 1, 2, 2, 3 });
+        MatchCounter<int> counter2 = new(new[] { 2, 2, 4 });
+
+        MatchCounter<int> intersection = counter1.Intersect(counter2);
+        Dictionary<int, int> dict = intersection.ToDictionary(kv => kv.Key, kv => kv.Value);
+        Assert.Equal(2, dict[2]);
+        Assert.Equal(2, intersection.Sum());
+
+        intersection = counter2.Intersect(counter1);
+        dict = intersection.ToDictionary(kv => kv.Key, kv => kv.Value);
+        Assert.Equal(2, dict[2]);
+        Assert.Equal(2, intersection.Sum());
     }
 }

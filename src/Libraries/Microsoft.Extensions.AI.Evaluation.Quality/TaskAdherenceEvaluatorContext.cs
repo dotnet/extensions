@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Microsoft.Extensions.AI.Evaluation.Quality;
 
@@ -39,7 +40,7 @@ public sealed class TaskAdherenceEvaluatorContext : EvaluationContext
     /// are defined as <see cref="AIFunction"/>s. Any other <see cref="AITool"/> definitions will be ignored.
     /// </para>
     /// </param>
-    public TaskAdherenceEvaluatorContext(IEnumerable<AITool> toolDefinitions)
+    public TaskAdherenceEvaluatorContext(params AITool[] toolDefinitions)
         : base(name: TaskAdherenceContextName, contents: [new TextContent(toolDefinitions.RenderAsJson())])
     {
         ToolDefinitions = [.. toolDefinitions];
@@ -58,8 +59,8 @@ public sealed class TaskAdherenceEvaluatorContext : EvaluationContext
     /// are defined as <see cref="AIFunction"/>s. Any other <see cref="AITool"/> definitions will be ignored.
     /// </para>
     /// </param>
-    public TaskAdherenceEvaluatorContext(params AITool[] toolDefinitions)
-        : this(toolDefinitions as IEnumerable<AITool>)
+    public TaskAdherenceEvaluatorContext(IEnumerable<AITool> toolDefinitions)
+        : this(toolDefinitions.ToArray())
     {
     }
 
