@@ -7,10 +7,6 @@ using ModelContextProtocol.Server;
 /// </summary>
 internal class RandomNumberTools
 {
-    /// <summary>
-    /// Returns a random number between 1 and the maximum number allowed by the tool (inclusive).
-    /// </summary>
-    /// <returns>A random number.</returns>
     [McpServerTool(Name = "get_random_number")]
     [Description("Generates a random number between the specified minimum and maximum values.")]
     public int GetRandomNumber(
