@@ -41,7 +41,7 @@ public sealed class TaskAdherenceEvaluatorContext : EvaluationContext
     /// </para>
     /// </param>
     public TaskAdherenceEvaluatorContext(params AITool[] toolDefinitions)
-        : base(name: TaskAdherenceContextName, contents: [new TextContent(toolDefinitions.RenderAsJson())])
+        : base(name: ToolDefinitionsContextName, contents: [new TextContent(toolDefinitions.RenderAsJson())])
     {
         ToolDefinitions = [.. toolDefinitions];
     }
@@ -68,7 +68,7 @@ public sealed class TaskAdherenceEvaluatorContext : EvaluationContext
     /// Gets the unique <see cref="EvaluationContext.Name"/> that is used for
     /// <see cref="TaskAdherenceEvaluatorContext"/>.
     /// </summary>
-    public static string TaskAdherenceContextName => "Tool Definitions (Task Adherence)";
+    public static string ToolDefinitionsContextName => "Tool Definitions (Task Adherence)";
 
     /// <summary>
     /// Gets set of tool definitions (see <see cref="ChatOptions.Tools"/>) that were used when generating the model

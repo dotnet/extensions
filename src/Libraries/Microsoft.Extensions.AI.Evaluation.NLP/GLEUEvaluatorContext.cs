@@ -16,7 +16,8 @@ namespace Microsoft.Extensions.AI.Evaluation.NLP;
 /// </summary>
 /// <remarks>
 /// <see cref="GLEUEvaluator"/> measures the GLEU score of a response compared to one or more reference responses
-/// supplied via <see cref="References"/>. GLEU (Google-BLEU) is a metric used to evaluate the quality of machine-generated text.
+/// supplied via <see cref="References"/>. GLEU (Google-BLEU) is a metric used to evaluate the quality of
+/// machine-generated text.
 /// </remarks>
 public sealed class GLEUEvaluatorContext : EvaluationContext
 {
@@ -27,11 +28,11 @@ public sealed class GLEUEvaluatorContext : EvaluationContext
     public static string ReferencesContextName => "References (GLEU)";
 
     /// <summary>
-    /// Gets the reference against which the provided response will be scored.
+    /// Gets the references against which the provided response will be scored.
     /// </summary>
     /// <remarks>
     /// The <see cref="GLEUEvaluator"/> measures the degree to which the response being evaluated is similar to
-    /// the response supplied via <see cref="References"/>. The metric will be reported as a GLEU score.
+    /// the responses supplied via <see cref="References"/>. The metric will be reported as a GLEU score.
     /// </remarks>
     public IReadOnlyList<string> References { get; }
 
