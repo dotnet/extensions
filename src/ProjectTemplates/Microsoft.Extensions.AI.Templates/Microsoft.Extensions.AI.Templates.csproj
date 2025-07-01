@@ -61,6 +61,8 @@
         **\NuGet.config;
         **\Directory.Build.targets;
         **\Directory.Build.props;" />
+
+    <!-- Keep the exclude patterns below in sync with those in McpServerSnapshotTests.cs -->
     <Content
       Include="src\McpServer\**\*"
       Exclude="
