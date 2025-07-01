@@ -56,7 +56,7 @@ public class AzureAIInferenceChatClientTests
 
         IChatClient chatClient = client.AsIChatClient(model);
         var metadata = chatClient.GetService<ChatClientMetadata>();
-        Assert.Equal("az.ai.inference", metadata?.ProviderName);
+        Assert.Equal("azure.ai.inference", metadata?.ProviderName);
         Assert.Equal(endpoint, metadata?.ProviderUri);
         Assert.Equal(model, metadata?.DefaultModelId);
     }
