@@ -76,18 +76,13 @@ internal static class SimpleWordTokenizer
             }
 
             // Join hyphenated words
-            if (span[0] == '-' &&
-                span.Length > 1 &&
-                span[1] == '\n')
+            if (span is ['-', '\n', ..])
             {
                 text = text.Slice(2);
                 continue;
             }
 
-            if (span[0] == '-' &&
-                span.Length > 2 &&
-                span[1] == '\r' &&
-                span[2] == '\n')
+            if (span is ['-', '\r', '\n', ..])
             {
                 text = text.Slice(3);
                 continue;
