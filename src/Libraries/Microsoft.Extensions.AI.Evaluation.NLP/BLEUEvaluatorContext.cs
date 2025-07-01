@@ -15,8 +15,9 @@ namespace Microsoft.Extensions.AI.Evaluation.NLP;
 /// Contextual information that the <see cref="BLEUEvaluator"/> uses to compute the BLEU score for a response.
 /// </summary>
 /// <remarks>
-/// <see cref="BLEUEvaluator"/> measures the BLEU score of a response compared to a reference. BLEU (Bilingual Evaluation Understudy)
-/// is a metric used to evaluate the quality of machine-generated text.
+/// <see cref="BLEUEvaluator"/> measures the BLEU score of a response compared to one or more reference responses
+/// supplied via <see cref="References"/>. BLEU (Bilingual Evaluation Understudy) is a metric used to evaluate the
+/// quality of machine-generated text.
 /// </remarks>
 public sealed class BLEUEvaluatorContext : EvaluationContext
 {
@@ -31,7 +32,7 @@ public sealed class BLEUEvaluatorContext : EvaluationContext
     /// </summary>
     /// <remarks>
     /// The <see cref="BLEUEvaluator"/> measures the degree to which the response being evaluated is similar to
-    /// the response supplied via <see cref="References"/>. The metric will be reported as a BLEU score.
+    /// the responses supplied via <see cref="References"/>. The metric will be reported as a BLEU score.
     /// </remarks>
     public IReadOnlyList<string> References { get; }
 
