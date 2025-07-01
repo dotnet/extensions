@@ -1,4 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/ide.host",
+  "order": 0,
+  "icon": "ide/icon.ico",
   "symbolInfo": []
 }
