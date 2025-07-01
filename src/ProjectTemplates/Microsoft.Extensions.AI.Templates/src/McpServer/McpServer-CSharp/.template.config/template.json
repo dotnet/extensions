@@ -1,10 +1,14 @@
 {
   "$schema": "http://json.schemastore.org/template",
   "author": "Microsoft",
-  "classifications": [ "Common", "AI", "MCP" ],
+  "classifications": [
+    "Common",
+    "AI",
+    "MCP"
+  ],
   "identity": "Microsoft.Extensions.AI.Templates.McpServer.CSharp",
   "name": "Local MCP Server Console App",
-  "description": "A project template for creating a local MCP server using the .NET MCP SDK.",
+  "description": "A project template for creating a Model Context Protocol (MCP) server using C# and the ModelContextProtocol package.",
   "shortName": "mcpserver",
   "defaultName": "McpServer",
   "sourceName": "McpServer-CSharp",
@@ -13,9 +17,30 @@
     "language": "C#",
     "type": "project"
   },
+  "symbols": {
+    "hostIdentifier": {
+      "type": "bind",
+      "binding": "HostIdentifier"
+    }
+  },
   "primaryOutputs": [
     {
+      "path": "./README.md"
+    },
+    {
       "path": "./McpServer-CSharp.csproj"
+    }
+  ],
+  "postActions": [
+    {
+      "condition": "(hostIdentifier != \"dotnetcli\" && hostIdentifier != \"dotnetcli-preview\")",
+      "description": "Opens README file in the editor",
+      "manualInstructions": [],
+      "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+      "args": {
+        "files": "0"
+      },
+      "continueOnError": true
     }
   ]
 }

@@ -46,7 +46,7 @@
   <ItemGroup>
     <!-- Keep the exclude patterns below in sync with those in AIChatWebSnapshotTests.cs -->
     <Content
-      Include="src\*\**\*"
+      Include="src\ChatWithCustomData\**\*"
       Exclude="
         **\bin\**;
         **\obj\**;
@@ -61,6 +61,14 @@
         **\NuGet.config;
         **\Directory.Build.targets;
         **\Directory.Build.props;" />
+    <Content
+      Include="src\McpServer\**\*"
+      Exclude="
+        **\bin\**;
+        **\obj\**;
+        **\.vs\**;
+        **\*.sln;
+        **\*.in;" />
     <None Include="THIRD-PARTY-NOTICES.TXT" Pack="true" PackagePath="." />
     <Compile Remove="**\*" />
   </ItemGroup>
