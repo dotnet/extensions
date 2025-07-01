@@ -29,4 +29,3 @@ builder.Services
     .WithTools<RandomNumberTools>();
 
 await builder.Build().RunAsync();
-return 0;
