@@ -3,9 +3,9 @@
 
 namespace Microsoft.Extensions.AI.Evaluation.NLP.Common;
 
-internal static class NLPScoreInterpretation
+internal static class ScoreInterpretationExtensions
 {
-    internal static EvaluationMetricInterpretation Interpret(NumericMetric metric)
+    internal static EvaluationMetricInterpretation Interpret(this NumericMetric metric)
     {
         // Many NLP scores range from 0.0 to 1.0, where:
         // - 0.0 means no match at all,

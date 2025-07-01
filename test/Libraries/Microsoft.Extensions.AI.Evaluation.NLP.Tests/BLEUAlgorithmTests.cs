@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.AI.Evaluation.NLP.Common;
 using Xunit;
@@ -15,8 +14,8 @@ public class BLEUAlgorithmTests
     [Fact]
     public void ModifiedPrecisionTests()
     {
-        IEnumerable<IEnumerable<string>> references = ["the cat is on the mat".Split(' '), "there is a cat on the mat".Split(' ')];
-        IEnumerable<string> hypothesis = "the the the the the the the".Split(' ');
+        string[][] references = ["the cat is on the mat".Split(' '), "there is a cat on the mat".Split(' ')];
+        string[] hypothesis = "the the the the the the the".Split(' ');
         RationalNumber prec = ModifiedPrecision(references, hypothesis, 1);
         Assert.Equal(0.2857, prec.ToDouble(), 4);
 
@@ -36,8 +35,8 @@ public class BLEUAlgorithmTests
             "It is the guiding principle which guarantees the military forces always being under the command of the Party".Split(' '),
             "It is the practical guide for the army always to heed the directions of the party".Split(' '),
         ];
-        IEnumerable<string> hypothesis1 = "It is a guide to action which ensures that the military always obeys the commands of the party".Split(' ');
-        IEnumerable<string> hypothesis2 = "It is to insure the troops forever hearing the activity guidebook that party direct".Split(' ');
+        string[] hypothesis1 = "It is a guide to action which ensures that the military always obeys the commands of the party".Split(' ');
+        string[] hypothesis2 = "It is to insure the troops forever hearing the activity guidebook that party direct".Split(' ');
         prec = ModifiedPrecision(references, hypothesis1, 1);
         Assert.Equal(0.9444, prec.ToDouble(), 4);
         prec = ModifiedPrecision(references, hypothesis2, 1);
@@ -76,63 +75,63 @@ public class BLEUAlgorithmTests
     [Fact]
     public void TestBrevityPenalty()
     {
-        IEnumerable<IEnumerable<string>> references = [
-            Enumerable.Repeat("a", 11),
-            Enumerable.Repeat("a", 8),
+        string[][] references = [
+            [.. Enumerable.Repeat("a", 11)],
+            [.. Enumerable.Repeat("a", 8)],
         ];
-        IEnumerable<string> hypothesis = Enumerable.Repeat("a", 7);
+        string[] hypothesis = [.. Enumerable.Repeat("a", 7)];
         int hypLength = hypothesis.Count();
         int closestRefLength = ClosestRefLength(references, hypLength);
         double brevityPenalty = BrevityPenalty(closestRefLength, hypLength);
         Assert.Equal(0.8669, brevityPenalty, 4);
 
         references = [
-            Enumerable.Repeat("a", 11),
-            Enumerable.Repeat("a", 8),
-            Enumerable.Repeat("a", 6),
-            Enumerable.Repeat("a", 7),
+            [.. Enumerable.Repeat("a", 11)],
+            [.. Enumerable.Repeat("a", 8)],
+            [.. Enumerable.Repeat("a", 6)],
+            [.. Enumerable.Repeat("a", 7)],
         ];
-        hypothesis = Enumerable.Repeat("a", 7);
+        hypothesis = [.. Enumerable.Repeat("a", 7)];
         hypLength = hypothesis.Count();
         closestRefLength = ClosestRefLength(references, hypLength);
         brevityPenalty = BrevityPenalty(closestRefLength, hypLength);
         Assert.Equal(1.0, brevityPenalty, 4);
 
         references = [
-            Enumerable.Repeat("a", 28),
-            Enumerable.Repeat("a", 28),
+            [.. Enumerable.Repeat("a", 28)],
+            [.. Enumerable.Repeat("a", 28)],
         ];
-        hypothesis = Enumerable.Repeat("a", 12);
+        hypothesis = [.. Enumerable.Repeat("a", 12)];
         hypLength = hypothesis.Count();
         closestRefLength = ClosestRefLength(references, hypLength);
         brevityPenalty = BrevityPenalty(closestRefLength, hypLength);
         Assert.Equal(0.26359, brevityPenalty, 4);
 
         references = [
-            Enumerable.Repeat("a", 13),
-            Enumerable.Repeat("a", 2),
+            [.. Enumerable.Repeat("a", 13)],
+            [.. Enumerable.Repeat("a", 2)],
         ];
-        hypothesis = Enumerable.Repeat("a", 12);
+        hypothesis = [.. Enumerable.Repeat("a", 12)];
         hypLength = hypothesis.Count();
         closestRefLength = ClosestRefLength(references, hypLength);
         brevityPenalty = BrevityPenalty(closestRefLength, hypLength);
         Assert.Equal(0.9200, brevityPenalty, 4);
 
         references = [
-            Enumerable.Repeat("a", 13),
-            Enumerable.Repeat("a", 11),
+            [.. Enumerable.Repeat("a", 13)],
+            [.. Enumerable.Repeat("a", 11)],
         ];
-        hypothesis = Enumerable.Repeat("a", 12);
+        hypothesis = [.. Enumerable.Repeat("a", 12)];
         hypLength = hypothesis.Count();
         closestRefLength = ClosestRefLength(references, hypLength);
         brevityPenalty = BrevityPenalty(closestRefLength, hypLength);
         Assert.Equal(1.0, brevityPenalty, 4);
 
         references = [
-            Enumerable.Repeat("a", 11),
-            Enumerable.Repeat("a", 13),
+            [.. Enumerable.Repeat("a", 11)],
+            [.. Enumerable.Repeat("a", 13)],
         ];
-        hypothesis = Enumerable.Repeat("a", 12);
+        hypothesis = [.. Enumerable.Repeat("a", 12)];
         hypLength = hypothesis.Count();
         closestRefLength = ClosestRefLength(references, hypLength);
         brevityPenalty = BrevityPenalty(closestRefLength, hypLength);
@@ -143,8 +142,8 @@ public class BLEUAlgorithmTests
     [Fact]
     public void TestZeroMatches()
     {
-        IEnumerable<IEnumerable<string>> references = ["The candidate has no alignment to any of the references".Split(' '),];
-        IEnumerable<string> hypothesis = "John loves Mary".Split(' ');
+        string[][] references = ["The candidate has no alignment to any of the references".Split(' '),];
+        string[] hypothesis = "John loves Mary".Split(' ');
 
         double score = SentenceBLEU(references, hypothesis, EqualWeights(hypothesis.Count()));
         Assert.Equal(0.0, score, 4);
@@ -153,8 +152,8 @@ public class BLEUAlgorithmTests
     [Fact]
     public void TestFullMatches()
     {
-        IEnumerable<IEnumerable<string>> references = ["John loves Mary".Split(' '),];
-        IEnumerable<string> hypothesis = "John loves Mary".Split(' ');
+        string[][] references = ["John loves Mary".Split(' '),];
+        string[] hypothesis = "John loves Mary".Split(' ');
 
         double score = SentenceBLEU(references, hypothesis, EqualWeights(hypothesis.Count()));
         Assert.Equal(1.0, score, 4);
@@ -163,8 +162,8 @@ public class BLEUAlgorithmTests
     [Fact]
     public void TestPartialMatchesHypothesisLongerThanReference()
     {
-        IEnumerable<IEnumerable<string>> references = ["John loves Mary".Split(' '),];
-        IEnumerable<string> hypothesis = "John loves Mary who loves Mike".Split(' ');
+        string[][] references = ["John loves Mary".Split(' '),];
+        string[] hypothesis = "John loves Mary who loves Mike".Split(' ');
 
         double score = SentenceBLEU(references, hypothesis);
         Assert.Equal(0, score, 4);
@@ -173,12 +172,12 @@ public class BLEUAlgorithmTests
     [Fact]
     public void TestSentenceBLEUExampleA()
     {
-        IEnumerable<IEnumerable<string>> references = [
+        string[][] references = [
             "It is a guide to action that ensures that the military will forever heed Party commands".Split(' '),
             "It is the guiding principle which guarantees the military forces always being under the command of the Party".Split(' '),
             "It is the practical guide for the army always to heed the directions of the party".Split(' ')
         ];
-        IEnumerable<string> hypothesis = "It is a guide to action which ensures that the military always obeys the commands of the party".Split(' ');
+        string[] hypothesis = "It is a guide to action which ensures that the military always obeys the commands of the party".Split(' ');
 
         double score = SentenceBLEU(references, hypothesis);
         Assert.Equal(0.5046, score, 4);
@@ -188,10 +187,10 @@ public class BLEUAlgorithmTests
     [Fact]
     public void TestSentenceBLEUExampleB()
     {
-        IEnumerable<IEnumerable<string>> references = [
+        string[][] references = [
             "he was interested in world history because he read the book".Split(' '),
         ];
-        IEnumerable<string> hypothesis = "he read the book because he was interested in world history".Split(' ');
+        string[] hypothesis = "he read the book because he was interested in world history".Split(' ');
 
         double score = SentenceBLEU(references, hypothesis);
         Assert.Equal(0.74009, score, 4);
@@ -200,12 +199,12 @@ public class BLEUAlgorithmTests
     [Fact]
     public void TestSentenceBLEUExampleAWithWordTokenizer()
     {
-        IEnumerable<IEnumerable<string>> references = [
-            SimpleWordTokenizer.WordTokenize("It is a guide to action that ensures that the military will forever heed Party commands"),
-            SimpleWordTokenizer.WordTokenize("It is the guiding principle which guarantees the military forces always being under the command of the Party"),
-            SimpleWordTokenizer.WordTokenize("It is the practical guide for the army always to heed the directions of the party")
+        string[][] references = [
+            SimpleWordTokenizer.WordTokenize("It is a guide to action that ensures that the military will forever heed Party commands").ToArray(),
+            SimpleWordTokenizer.WordTokenize("It is the guiding principle which guarantees the military forces always being under the command of the Party").ToArray(),
+            SimpleWordTokenizer.WordTokenize("It is the practical guide for the army always to heed the directions of the party").ToArray(),
         ];
-        IEnumerable<string> hypothesis = SimpleWordTokenizer.WordTokenize("It is a guide to action which ensures that the military always obeys the commands of the party");
+        string[] hypothesis = SimpleWordTokenizer.WordTokenize("It is a guide to action which ensures that the military always obeys the commands of the party").ToArray();
 
         double score = SentenceBLEU(references, hypothesis);
         Assert.Equal(0.5046, score, 4);
@@ -215,10 +214,10 @@ public class BLEUAlgorithmTests
     [Fact]
     public void TestSentenceBLEUExampleBWithWordTokenizer()
     {
-        IEnumerable<IEnumerable<string>> references = [
-            SimpleWordTokenizer.WordTokenize("he was interested in world history because he read the book"),
+        string[][] references = [
+            SimpleWordTokenizer.WordTokenize("he was interested in world history because he read the book").ToArray(),
         ];
-        IEnumerable<string> hypothesis = SimpleWordTokenizer.WordTokenize("he read the book because he was interested in world history");
+        string[] hypothesis = SimpleWordTokenizer.WordTokenize("he read the book because he was interested in world history").ToArray();
 
         double score = SentenceBLEU(references, hypothesis);
         Assert.Equal(0.74009, score, 4);
