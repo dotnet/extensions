@@ -29,6 +29,7 @@ public class NLPEvaluatorTests
             string date = $"Date: {DateTime.UtcNow:dddd, dd MMMM yyyy}";
             string projectName = $"Project: Integration Tests";
             string testClass = $"Test Class: {nameof(NLPEvaluatorTests)}";
+            string usesContext = $"Feature: Context";
 
             IEvaluator bleuEvaluator = new BLEUEvaluator();
             IEvaluator gleuEvaluator = new GLEUEvaluator();
@@ -39,7 +40,7 @@ public class NLPEvaluatorTests
                     storageRootPath: Settings.Current.StorageRootPath,
                     evaluators: [bleuEvaluator, gleuEvaluator, f1Evaluator],
                     executionName: Constants.Version,
-                    tags: [version, date, projectName, testClass]);
+                    tags: [version, date, projectName, testClass, usesContext]);
         }
     }
 
