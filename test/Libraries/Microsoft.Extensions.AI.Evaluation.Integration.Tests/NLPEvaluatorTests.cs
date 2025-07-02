@@ -1,0 +1,138 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+#pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods that take it.
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
+
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Extensions.AI.Evaluation.NLP;
+using Microsoft.Extensions.AI.Evaluation.Reporting;
+using Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
+using Microsoft.Extensions.AI.Evaluation.Tests;
+using Microsoft.TestUtilities;
+using Xunit;
+
+namespace Microsoft.Extensions.AI.Evaluation.Integration.Tests;
+
+[Experimental("AIEVAL001")]
+public class NLPEvaluatorTests
+{
+    private static readonly ChatOptions? _chatOptions;
+    private static readonly ReportingConfiguration? _nlpReportingConfiguration;
+
+    static NLPEvaluatorTests()
+    {
+        if (Settings.Current.Configured)
+        {
+            IEvaluator bleuEvaluator = new BLEUEvaluator();
+            IEvaluator gleuEvaluator = new GLEUEvaluator();
+            IEvaluator f1Evaluator = new F1Evaluator();
+
+            _nlpReportingConfiguration =
+                DiskBasedReportingConfiguration.Create(
+                    storageRootPath: Settings.Current.StorageRootPath,
+                    evaluators: [bleuEvaluator, gleuEvaluator, f1Evaluator],
+                    executionName: Constants.Version,
+                    tags: []);
+        }
+    }
+
+    [ConditionalFact]
+    public async Task ExactMatch()
+    {
+        SkipIfNotConfigured();
+
+        await using ScenarioRun scenarioRun =
+            await _nlpReportingConfiguration.CreateScenarioRunAsync(
+                scenarioName: $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(NLPEvaluatorTests)}.{nameof(ExactMatch)}");
+
+        var referenceText = "The quick brown fox jumps over the lazy dog.";
+        var bleuContext = new BLEUEvaluatorContext(referenceText);
+        var gleuContext = new GLEUEvaluatorContext(referenceText);
+        var f1Context = new F1EvaluatorContext(referenceText);
+
+        var response = new ChatResponse(new ChatMessage(ChatRole.Assistant, "The quick brown fox jumps over the lazy dog."));
+
+        EvaluationResult result = await scenarioRun.EvaluateAsync(response, [bleuContext, gleuContext, f1Context]);
+
+        Assert.False(
+            result.ContainsDiagnostics(d => d.Severity >= EvaluationDiagnosticSeverity.Warning),
+            string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
+
+        Assert.Equal(3, result.Metrics.Count);
+        Assert.True(result.TryGet(BLEUEvaluator.BLEUMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(GLEUEvaluator.GLEUMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(F1Evaluator.F1MetricName, out NumericMetric? _));
+    }
+
+    [ConditionalFact]
+    public async Task Unmatched()
+    {
+        SkipIfNotConfigured();
+
+        await using ScenarioRun scenarioRun =
+            await _nlpReportingConfiguration.CreateScenarioRunAsync(
+                scenarioName: $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(NLPEvaluatorTests)}.{nameof(Unmatched)}");
+
+        var referenceText = "The quick brown fox jumps over the lazy dog.";
+        var bleuContext = new BLEUEvaluatorContext(referenceText);
+        var gleuContext = new GLEUEvaluatorContext(referenceText);
+        var f1Context = new F1EvaluatorContext(referenceText);
+
+        var response = new ChatResponse(new ChatMessage(ChatRole.Assistant, "What is the meaning of life?"));
+
+        EvaluationResult result = await scenarioRun.EvaluateAsync(response, [bleuContext, gleuContext, f1Context]);
+
+        Assert.False(
+            result.ContainsDiagnostics(d => d.Severity >= EvaluationDiagnosticSeverity.Warning),
+            string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
+
+        Assert.Equal(3, result.Metrics.Count);
+        Assert.True(result.TryGet(BLEUEvaluator.BLEUMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(GLEUEvaluator.GLEUMetricName, out NumericMetric? _));
+        Assert.True(result.TryGet(F1Evaluator.F1MetricName, out NumericMetric? _));
+    }
+
+    [ConditionalFact]
+    public async Task AdditionalContextIsNotPassed()
+    {
+        SkipIfNotConfigured();
+
+        await using ScenarioRun scenarioRun =
+            await _nlpReportingConfiguration.CreateScenarioRunAsync(
+                scenarioName: $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(NLPEvaluatorTests)}.{nameof(AdditionalContextIsNotPassed)}");
+
+        var response = new ChatResponse(new ChatMessage(ChatRole.Assistant, "What is the meaning of life?"));
+
+        EvaluationResult result = await scenarioRun.EvaluateAsync(response);
+
+        Assert.True(
+            result.Metrics.Values.All(m => m.ContainsDiagnostics(d => d.Severity is EvaluationDiagnosticSeverity.Error)),
+            string.Join("\r\n\r\n", result.Metrics.Values.SelectMany(m => m.Diagnostics ?? []).Select(d => d.ToString())));
+
+        Assert.Equal(3, result.Metrics.Count);
+        Assert.True(result.TryGet(BLEUEvaluator.BLEUMetricName, out NumericMetric? bleu));
+        Assert.True(result.TryGet(GLEUEvaluator.GLEUMetricName, out NumericMetric? gleu));
+        Assert.True(result.TryGet(F1Evaluator.F1MetricName, out NumericMetric? f1));
+
+        Assert.Null(bleu.Context);
+        Assert.Null(gleu.Context);
+        Assert.Null(f1.Context);
+
+    }
+
+    [MemberNotNull(nameof(_nlpReportingConfiguration))]
+    private static void SkipIfNotConfigured()
+    {
+        if (!Settings.Current.Configured)
+        {
+            throw new SkipTestException("Test is not configured");
+        }
+
+        Assert.NotNull(_nlpReportingConfiguration);
+    }
+}
