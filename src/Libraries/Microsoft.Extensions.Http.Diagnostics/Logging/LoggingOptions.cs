@@ -37,15 +37,6 @@ public class LoggingOptions
     public bool LogRequestStart { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether HTTP request query string parameters are logged.
-    /// </summary>
-    /// <value>
-    /// The default value is <see langword="false"/>.
-    /// </value>
-    [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
-    public bool LogQueryParameters { get; set; }
-
-    /// <summary>
     /// Gets or sets the set of HTTP request query parameters to log and their respective data classifications to use for redaction.
     /// </summary>
     /// <value>

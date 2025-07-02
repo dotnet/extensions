@@ -89,7 +89,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
 
         _logRequestHeaders = options.RequestHeadersDataClasses.Count > 0;
         _logResponseHeaders = options.ResponseHeadersDataClasses.Count > 0;
-        _logRequestQueryParameters = options.LogQueryParameters && options.RequestQueryParametersDataClasses.Count > 0;
+        _logRequestQueryParameters = options.RequestQueryParametersDataClasses.Count > 0;
 
         _httpRequestBodyReader = new HttpRequestBodyReader(options);
         _httpResponseBodyReader = new HttpResponseBodyReader(options);

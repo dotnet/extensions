@@ -591,7 +591,6 @@ public class HttpRequestReaderTest
 
         var options = new LoggingOptions
         {
-            LogQueryParameters = true,
             RequestQueryParametersDataClasses = new Dictionary<string, DataClassification>
             {
                 { queryParamName, FakeTaxonomy.PrivateData }
@@ -634,15 +633,11 @@ public class HttpRequestReaderTest
     }
 
     [Fact]
-    public async Task ReadAsync_QueryLoggingDisabled_DoesNotLogQueryParameters()
+    public async Task ReadAsync_NoQueryParameterNoClassification_DoesNotLogQueryParameters()
     {
         var options = new LoggingOptions
         {
-            LogQueryParameters = false,
-            RequestQueryParametersDataClasses = new Dictionary<string, DataClassification>
-        {
-            { "userId", FakeTaxonomy.PrivateData }
-        }
+            RequestQueryParametersDataClasses = new Dictionary<string, DataClassification>() // No data classification
         };
 
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
@@ -666,18 +661,21 @@ public class HttpRequestReaderTest
     }
 
     [Fact]
-    public async Task ReadAsync_QueryLoggingEnabled_NoQueryParametersInRequest_DoesNotLog()
+    public async Task ReadAsync_QueryParameterClassificationPresent_LogsQueryParameters()
     {
         var options = new LoggingOptions
         {
-            LogQueryParameters = true,
             RequestQueryParametersDataClasses = new Dictionary<string, DataClassification>
-        {
-            { "userId", FakeTaxonomy.PrivateData }
-        }
+            {
+                { "userId", FakeTaxonomy.PrivateData }
+            }
         };
 
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
+        mockHeadersRedactor
+            .Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
+            .Returns(Redacted);
+
         var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), mockHeadersRedactor.Object);
         using var serviceProvider = GetServiceProvider(headersReader);
 
@@ -688,21 +686,20 @@ public class HttpRequestReaderTest
             serviceProvider.GetRequiredService<IHttpRouteParser>(),
             RequestMetadataContext);
 
-        var uri = new Uri($"https://{RequestedHost}/api/resource");
+        var uri = new Uri($"https://{RequestedHost}/api/resource?userId=12345");
         using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
 
         var logRecord = new LogRecord();
         await reader.ReadRequestAsync(logRecord, httpRequestMessage, new List<KeyValuePair<string, string>>(), CancellationToken.None);
 
-        logRecord.QueryParameters.Should().BeEmpty();
+        logRecord.QueryParameters.Should().ContainSingle(qp => qp.Key == "userId" && qp.Value == Redacted);
     }
 
     [Fact]
-    public async Task ReadAsync_QueryLoggingEnabled_NoMatchingAllowlist_DoesNotLog()
+    public async Task ReadAsync_NoMatchingClassification_DoesNotLog()
     {
         var options = new LoggingOptions
         {
-            LogQueryParameters = true,
             RequestQueryParametersDataClasses = new Dictionary<string, DataClassification>
         {
             { "otherParam", FakeTaxonomy.PrivateData }
@@ -730,11 +727,10 @@ public class HttpRequestReaderTest
     }
 
     [Fact]
-    public async Task ReadAsync_QueryLoggingEnabled_MultipleParams_LoggedAndRedacted()
+    public async Task ReadAsync_MultipleParams_LoggedAndRedacted()
     {
         var options = new LoggingOptions
         {
-            LogQueryParameters = true,
             RequestQueryParametersDataClasses = new Dictionary<string, DataClassification>
         {
             { "userId", FakeTaxonomy.PrivateData },
@@ -770,11 +766,10 @@ public class HttpRequestReaderTest
     }
 
     [Fact]
-    public async Task ReadAsync_QueryLoggingEnabled_EmptyValue_NotLogged()
+    public async Task ReadAsync_EmptyValue_NotLogged()
     {
         var options = new LoggingOptions
         {
-            LogQueryParameters = true,
             RequestQueryParametersDataClasses = new Dictionary<string, DataClassification>
         {
             { "userId", FakeTaxonomy.PrivateData }
