@@ -28,6 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Evaluation.NLP\Microsoft.Extensions.AI.Evaluation.NLP.csproj" />
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.OpenAI\Microsoft.Extensions.AI.OpenAI.csproj" />
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Evaluation\Microsoft.Extensions.AI.Evaluation.csproj" />
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Evaluation.Quality\Microsoft.Extensions.AI.Evaluation.Quality.csproj" />
