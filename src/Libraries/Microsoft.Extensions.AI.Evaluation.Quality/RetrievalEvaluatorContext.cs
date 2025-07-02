@@ -41,12 +41,12 @@ public sealed class RetrievalEvaluatorContext : EvaluationContext
     /// <param name="retrievedContextChunks">
     /// The context chunks that were retrieved in response to the user request being evaluated.
     /// </param>
-    public RetrievalEvaluatorContext(IEnumerable<string> retrievedContextChunks)
+    public RetrievalEvaluatorContext(params string[] retrievedContextChunks)
         : base(
             name: RetrievedContextChunksContextName,
             contents: [.. retrievedContextChunks.Select(c => new TextContent(c))])
     {
-        RetrievedContextChunks = [.. retrievedContextChunks];
+        RetrievedContextChunks = retrievedContextChunks;
     }
 
     /// <summary>
@@ -55,8 +55,8 @@ public sealed class RetrievalEvaluatorContext : EvaluationContext
     /// <param name="retrievedContextChunks">
     /// The context chunks that were retrieved in response to the user request being evaluated.
     /// </param>
-    public RetrievalEvaluatorContext(params string[] retrievedContextChunks)
-        : this(retrievedContextChunks as IEnumerable<string>)
+    public RetrievalEvaluatorContext(IEnumerable<string> retrievedContextChunks)
+        : this(retrievedContextChunks.ToArray())
     {
     }
 }

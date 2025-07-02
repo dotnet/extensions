@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -15,28 +15,28 @@ namespace Microsoft.Extensions.AI.Evaluation.NLP;
 
 /// <summary>
 /// An <see cref="IEvaluator"/> that evaluates the quality of a response produced by an AI model by comparing
-/// it to a reference response using the BLEU (Bilingual Evaluation Understudy) algorithm. It is often used
-/// to evaluate the quality of machine translation or text generation tasks.
+/// it to a reference response using the F1 scoring algorithm. F1 score is the ratio of the number of shared
+/// words between the generated response and the reference response. 
 /// </summary>
 /// <remarks>
 /// <para>
-/// The <see cref="BLEUEvaluator"/> computes the BLEU score of a response ("hypothesis") compared to one or more
-/// reference responses supplied via <see cref="BLEUEvaluatorContext.References"/>. The score is returned in a
-/// <see cref="NumericMetric"/> with a value between 0.0 and 1.0 where 0.0 represents no match at all and 1.0 indicates
-/// a perfect match. By default, the score is interpreted with a pass/fail cutoff of 0.5. So a score of 0.5 or higher
-/// is passing and a score below 0.5 is failing.
+/// The <see cref="F1Evaluator"/> computes the F1 score of a response ("hypothesis") in relation to a ground-truth reference
+/// supplied by <see cref="F1EvaluatorContext.GroundTruth"/>. The score is returned in a <see cref="NumericMetric"/>
+/// with a value between 0.0 and 1.0 where 0.0 represents no match at all and 1.0 indicates a perfect match.
+/// By default, the score is interpreted with a pass/fail cutoff of 0.5. So a score of 0.5 or higher is
+/// passing and a score below 0.5 is failing.
 /// </para>
 /// </remarks>
-public sealed class BLEUEvaluator : IEvaluator
+public sealed class F1Evaluator : IEvaluator
 {
     /// <summary>
     /// Gets the <see cref="EvaluationMetric.Name"/> of the <see cref="NumericMetric"/> returned by
-    /// <see cref="BLEUEvaluator"/>.
+    /// <see cref="F1Evaluator"/>.
     /// </summary>
-    public static string BLEUMetricName => "BLEU";
+    public static string F1MetricName => "F1";
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<string> EvaluationMetricNames { get; } = [BLEUMetricName];
+    public IReadOnlyCollection<string> EvaluationMetricNames { get; } = [F1MetricName];
 
     /// <inheritdoc/>
     public ValueTask<EvaluationResult> EvaluateAsync(
@@ -48,7 +48,7 @@ public sealed class BLEUEvaluator : IEvaluator
     {
         _ = Throw.IfNull(modelResponse);
 
-        var metric = new NumericMetric(BLEUMetricName);
+        var metric = new NumericMetric(F1MetricName);
         var result = new EvaluationResult(metric);
 
         if (string.IsNullOrWhiteSpace(modelResponse.Text))
@@ -59,30 +59,21 @@ public sealed class BLEUEvaluator : IEvaluator
             return new ValueTask<EvaluationResult>(result);
         }
 
-        if (additionalContext?.OfType<BLEUEvaluatorContext>().FirstOrDefault()
-                is not BLEUEvaluatorContext context)
+        if (additionalContext?.OfType<F1EvaluatorContext>().FirstOrDefault()
+                is not F1EvaluatorContext context)
         {
             metric.AddDiagnostics(
                 EvaluationDiagnostic.Error(
-                    $"A value of type '{nameof(BLEUEvaluatorContext)}' was not found in the '{nameof(additionalContext)}' collection."));
-
-            return new ValueTask<EvaluationResult>(result);
-        }
-
-        if (context.References.Count is 0)
-        {
-            metric.AddDiagnostics(
-                EvaluationDiagnostic.Error(
-                    $"Supplied '{nameof(BLEUEvaluatorContext)}' did not contain any '{nameof(BLEUEvaluatorContext.References)}'."));
+                    $"A value of type '{nameof(F1EvaluatorContext)}' was not found in the '{nameof(additionalContext)}' collection."));
 
             return new ValueTask<EvaluationResult>(result);
         }
 
         (double score, TimeSpan duration) = TimingHelper.ExecuteWithTiming(() =>
         {
-            string[][] references = context.References.Select(reference => SimpleWordTokenizer.WordTokenize(reference).ToArray()).ToArray();
+            string[] reference = SimpleWordTokenizer.WordTokenize(context.GroundTruth).ToArray();
             string[] hypothesis = SimpleWordTokenizer.WordTokenize(modelResponse.Text).ToArray();
-            return BLEUAlgorithm.SentenceBLEU(references, hypothesis, BLEUAlgorithm.DefaultBLEUWeights, SmoothingFunction.Method4);
+            return F1Algorithm.CalculateF1Score(reference, hypothesis);
         });
 
         metric.Value = score;

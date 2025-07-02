@@ -20,6 +20,8 @@ public class SimpleTokenizerTests
     [InlineData("word1-word2", new[] { "WORD1", "-", "WORD2" })]
     [InlineData("word1 - word2", new[] { "WORD1", "-", "WORD2" })]
     [InlineData("word1-\n word2", new[] { "WORD1", "WORD2" })]
+    [InlineData("word1-", new[] { "WORD1", "-" })]
+    [InlineData("word1&", new[] { "WORD1", "&" })]
     [InlineData("word1-\r\n word2", new[] { "WORD1", "WORD2" })]
     [InlineData("word1-\r\nword2", new[] { "WORD1WORD2" })]
     [InlineData("word1-\nword2", new[] { "WORD1WORD2" })]
