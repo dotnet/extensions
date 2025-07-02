@@ -4,15 +4,12 @@
 #pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods that take it.
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI.Evaluation.NLP;
 using Microsoft.Extensions.AI.Evaluation.Reporting;
 using Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
-using Microsoft.Extensions.AI.Evaluation.Tests;
 using Microsoft.TestUtilities;
 using Xunit;
 
@@ -21,7 +18,6 @@ namespace Microsoft.Extensions.AI.Evaluation.Integration.Tests;
 [Experimental("AIEVAL001")]
 public class NLPEvaluatorTests
 {
-    private static readonly ChatOptions? _chatOptions;
     private static readonly ReportingConfiguration? _nlpReportingConfiguration;
 
     static NLPEvaluatorTests()
