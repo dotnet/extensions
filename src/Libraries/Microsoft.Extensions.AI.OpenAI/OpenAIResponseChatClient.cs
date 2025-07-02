@@ -8,12 +8,10 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 using OpenAI.Responses;
-using static Microsoft.Extensions.AI.OpenAIChatClient;
 
 #pragma warning disable S907 // "goto" statement should not be used
 #pragma warning disable S1067 // Expressions should not be too complex
@@ -24,14 +22,8 @@ using static Microsoft.Extensions.AI.OpenAIChatClient;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="IChatClient"/> for an <see cref="OpenAIResponseClient"/>.</summary>
-internal sealed partial class OpenAIResponseChatClient : IChatClient
+internal sealed class OpenAIResponseChatClient : IChatClient
 {
-    /// <summary>Gets the default OpenAI endpoint.</summary>
-    internal static Uri DefaultOpenAIEndpoint { get; } = new("https://api.openai.com/v1");
-
-    /// <summary>Gets a <see cref="ChatRole"/> for "developer".</summary>
-    internal static ChatRole ChatRoleDeveloper { get; } = new ChatRole("developer");
-
     /// <summary>Metadata about the client.</summary>
     private readonly ChatClientMetadata _metadata;
 
@@ -52,7 +44,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
         // implement the abstractions directly rather than providing adapters on top of the public APIs,
         // the package can provide such implementations separate from what's exposed in the public API.
         Uri providerUrl = typeof(OpenAIResponseClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            ?.GetValue(responseClient) as Uri ?? DefaultOpenAIEndpoint;
+            ?.GetValue(responseClient) as Uri ?? OpenAIClientExtensions.DefaultOpenAIEndpoint;
         string? model = typeof(OpenAIResponseClient).GetField("_model", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(responseClient) as string;
 
@@ -131,7 +123,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                             functionCall.FunctionArguments.ToMemory(),
                             functionCall.CallId,
                             functionCall.FunctionName,
-                            static json => JsonSerializer.Deserialize(json.Span, ResponseClientJsonContext.Default.IDictionaryStringObject)!);
+                            static json => JsonSerializer.Deserialize(json.Span, OpenAIJsonContext.Default.IDictionaryStringObject)!);
                         fcc.RawRepresentation = outputItem;
                         message.Contents.Add(fcc);
                         break;
@@ -254,7 +246,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
                             callInfo.Arguments?.ToString() ?? string.Empty,
                             callInfo.ResponseItem.CallId,
                             callInfo.ResponseItem.FunctionName,
-                            static json => JsonSerializer.Deserialize(json, ResponseClientJsonContext.Default.IDictionaryStringObject)!);
+                            static json => JsonSerializer.Deserialize(json, OpenAIJsonContext.Default.IDictionaryStringObject)!);
 
                         lastMessageId = callInfo.ResponseItem.Id;
                         lastRole = ChatRole.Assistant;
@@ -331,12 +323,19 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
         // Nothing to dispose. Implementation required for the IChatClient interface.
     }
 
+    internal static ResponseTool ToResponseTool(AIFunction aiFunction)
+    {
+        (BinaryData parameters, bool? strict) = OpenAIClientExtensions.ToOpenAIFunctionParameters(aiFunction);
+
+        return ResponseTool.CreateFunctionTool(aiFunction.Name, aiFunction.Description, parameters, strict ?? false);
+    }
+
     /// <summary>Creates a <see cref="ChatRole"/> from a <see cref="MessageRole"/>.</summary>
     private static ChatRole ToChatRole(MessageRole? role) =>
         role switch
         {
             MessageRole.System => ChatRole.System,
-            MessageRole.Developer => ChatRoleDeveloper,
+            MessageRole.Developer => OpenAIClientExtensions.ChatRoleDeveloper,
             MessageRole.User => ChatRole.User,
             _ => ChatRole.Assistant,
         };
@@ -380,10 +379,9 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
             {
                 switch (tool)
                 {
-                    case AIFunction af:
-                        var oaitool = JsonSerializer.Deserialize(SchemaTransformCache.GetOrCreateTransformedSchema(af), ResponseClientJsonContext.Default.ResponseToolJson)!;
-                        var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(oaitool, ResponseClientJsonContext.Default.ResponseToolJson));
-                        result.Tools.Add(ResponseTool.CreateFunctionTool(af.Name, af.Description, functionParameters));
+                    case AIFunction aiFunction:
+                        ResponseTool rtool = ToResponseTool(aiFunction);
+                        result.Tools.Add(rtool);
                         break;
 
                     case HostedWebSearchTool:
@@ -440,10 +438,10 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
             {
                 result.TextOptions = new()
                 {
-                    TextFormat = SchemaTransformCache.GetOrCreateTransformedSchema(jsonFormat) is { } jsonSchema ?
+                    TextFormat = OpenAIClientExtensions.StrictSchemaTransformCache.GetOrCreateTransformedSchema(jsonFormat) is { } jsonSchema ?
                         ResponseTextFormat.CreateJsonSchemaFormat(
                             jsonFormat.SchemaName ?? "json_schema",
-                            BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(jsonSchema, ResponseClientJsonContext.Default.JsonElement)),
+                            BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(jsonSchema, OpenAIJsonContext.Default.JsonElement)),
                             jsonFormat.SchemaDescription) :
                         ResponseTextFormat.CreateJsonObjectFormat(),
                 };
@@ -460,7 +458,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
         foreach (ChatMessage input in inputs)
         {
             if (input.Role == ChatRole.System ||
-                input.Role == ChatRoleDeveloper)
+                input.Role == OpenAIClientExtensions.ChatRoleDeveloper)
             {
                 string text = input.Text;
                 if (!string.IsNullOrWhiteSpace(text))
@@ -620,7 +618,7 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
 
                 case DataContent dataContent when dataContent.MediaType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase):
                     parts.Add(ResponseContentPart.CreateInputFilePart(null, $"{Guid.NewGuid():N}.pdf",
-                        BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(dataContent.Uri, ResponseClientJsonContext.Default.String))));
+                        BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(dataContent.Uri, OpenAIJsonContext.Default.String))));
                     break;
 
                 case ErrorContent errorContent when errorContent.ErrorCode == nameof(ResponseContentPartKind.Refusal):
@@ -641,22 +639,6 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
         return parts;
     }
 
-    /// <summary>Used to create the JSON payload for an OpenAI chat tool description.</summary>
-    private sealed class ResponseToolJson
-    {
-        [JsonPropertyName("type")]
-        public string Type { get; set; } = "object";
-
-        [JsonPropertyName("required")]
-        public HashSet<string> Required { get; set; } = [];
-
-        [JsonPropertyName("properties")]
-        public Dictionary<string, JsonElement> Properties { get; set; } = [];
-
-        [JsonPropertyName("additionalProperties")]
-        public bool AdditionalProperties { get; set; }
-    }
-
     /// <summary>POCO representing function calling info.</summary>
     /// <remarks>Used to concatenation information for a single function call from across multiple streaming updates.</remarks>
     private sealed class FunctionCallInfo(FunctionCallResponseItem item)
@@ -664,15 +646,4 @@ internal sealed partial class OpenAIResponseChatClient : IChatClient
         public readonly FunctionCallResponseItem ResponseItem = item;
         public StringBuilder? Arguments;
     }
-
-    /// <summary>Source-generated JSON type information.</summary>
-    [JsonSourceGenerationOptions(JsonSerializerDefaults.Web,
-        UseStringEnumConverter = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        WriteIndented = true)]
-    [JsonSerializable(typeof(ResponseToolJson))]
-    [JsonSerializable(typeof(JsonElement))]
-    [JsonSerializable(typeof(IDictionary<string, object?>))]
-    [JsonSerializable(typeof(string[]))]
-    private sealed partial class ResponseClientJsonContext : JsonSerializerContext;
 }
