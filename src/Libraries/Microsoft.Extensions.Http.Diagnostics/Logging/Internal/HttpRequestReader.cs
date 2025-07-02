@@ -8,9 +8,6 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-#if !NET462
-using System.Web;
-#endif
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Diagnostics;
@@ -20,9 +17,6 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Http.Logging.Internal;
 
-#if NET462
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "IDE0052:Variable is not used", Justification = "The variable is not used only in .Net 4.6.2")]
-#endif
 internal sealed class HttpRequestReader : IHttpRequestReader
 {
     private readonly IHttpRouteFormatter _routeFormatter;
@@ -145,26 +139,16 @@ internal sealed class HttpRequestReader : IHttpRequestReader
         logRecord.QueryParametersCount = queryParametersCount;
     }
 
-#if NET462
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA1822:Method can be marked as static", Justification = "This method access instance data in all frameworks other than 4.6.2")]
-#endif
     private (KeyValuePair<string, string?>[] queryParameters, int count) GetQueryParameters(HttpRequestMessage request)
     {
-#if NET462
-        return ([], 0);
-#else
         if (_logRequestQueryParameters && request.RequestUri is not null)
         {
             return ExtractAndRedactQueryParameters(request.RequestUri.Query);
         }
-        else
-        {
-            return ([], 0);
-        }
-#endif
+
+        return ([], 0);
     }
 
-#if !NET462
     private (KeyValuePair<string, string?>[] queryParameters, int count) ExtractAndRedactQueryParameters(string query)
     {
         if (string.IsNullOrEmpty(query) || _queryParameterDataClasses.Count == 0)
@@ -172,26 +156,78 @@ internal sealed class HttpRequestReader : IHttpRequestReader
             return ([], 0);
         }
 
-        var parsed = HttpUtility.ParseQueryString(query);
+        var dict = new Dictionary<string, string?>(StringComparer.Ordinal);
+        ReadOnlySpan<char> querySpan = query.AsSpan();
+        int length = querySpan.Length;
+        int start = 0;
+
+        // Remove leading '?'
+        if (length > 0 && querySpan[0] == '?')
+        {
+            start = 1;
+        }
+
+        while (start < length)
+        {
+            int amp = querySpan.Slice(start).IndexOf('&');
+            int end = amp == -1 ? length : start + amp;
+
+            int eq = querySpan.Slice(start, end - start).IndexOf('=');
+            string key;
+            string? value;
+            if (eq >= 0)
+            {
+                var keySpan = querySpan.Slice(start, eq);
+                var valueSpan = querySpan.Slice(start + eq + 1, end - (start + eq + 1));
+                key = Uri.UnescapeDataString(keySpan.ToString());
+                value = Uri.UnescapeDataString(valueSpan.ToString());
+            }
+            else
+            {
+                var keySpan = querySpan.Slice(start, end - start);
+                key = Uri.UnescapeDataString(keySpan.ToString());
+                value = null;
+            }
+
+            // Only add the first occurrence of a key
+            if (!dict.ContainsKey(key))
+            {
+                dict[key] = value;
+            }
+
+            if (amp == -1)
+            {
+                break;
+            }
+
+            start = end + 1;
+        }
+
         var result = new List<KeyValuePair<string, string?>>();
 
         foreach (var kvp in _queryParameterDataClasses)
         {
-            var value = parsed[kvp.Key];
-
-            // Only log if value is not null or empty
-            if (!string.IsNullOrEmpty(value))
+            if (dict.TryGetValue(kvp.Key, out var value) && !string.IsNullOrEmpty(value))
             {
-                var redacted = _httpHeadersReader is HttpHeadersReader realReader
-                    ? realReader.RedactValue(value, kvp.Value)
-                    : value;
+                string redacted;
+                if (_httpHeadersReader is HttpHeadersReader realReader)
+                {
+                    // Value was checked for the null in the condition above
+                    // Use null-forgiving operator to assure the compiler value is not null here
+                    redacted = realReader.RedactValue(value!, kvp.Value);
+                }
+                else
+                {
+                    redacted = value!;
+                }
+
                 result.Add(new KeyValuePair<string, string?>(kvp.Key, redacted));
             }
         }
 
         return (result.ToArray(), result.Count);
     }
-#endif
+
     private void GetRedactedPathAndParameters(HttpRequestMessage request, LogRecord logRecord)
     {
         logRecord.PathParameters = null;

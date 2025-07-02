@@ -628,14 +628,9 @@ public class HttpRequestReaderTest
         var logRecord = new LogRecord();
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
         await reader.ReadRequestAsync(logRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
-
-#if NET462
-        logRecord.QueryParameters.Should().BeEmpty();
-#else
         logRecord.QueryParameters.Should().NotBeNull();
         logRecord.QueryParameters.Should().ContainSingle(qp =>
             qp.Key == queryParamName && qp.Value == redactedValue);
-#endif
     }
 
     [Fact]
@@ -768,14 +763,10 @@ public class HttpRequestReaderTest
         var logRecord = new LogRecord();
         await reader.ReadRequestAsync(logRecord, httpRequestMessage, new List<KeyValuePair<string, string>>(), CancellationToken.None);
 
-#if NET462
-        logRecord.QueryParameters.Should().BeEmpty();
-#else
         logRecord.QueryParameters.Should().HaveCount(2);
         logRecord.QueryParameters.Should().Contain(qp => qp.Key == "userId" && qp.Value == Redacted);
         logRecord.QueryParameters.Should().Contain(qp => qp.Key == "token" && qp.Value == Redacted);
         logRecord.QueryParameters.Should().NotContain(qp => qp.Key == "other");
-#endif
     }
 
     [Fact]
