@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -73,6 +74,23 @@ public partial class AIFunctionFactoryTest
             Exception e = await Assert.ThrowsAsync<ArgumentException>(() => f.InvokeAsync().AsTask());
             Assert.Contains("'theParam'", e.Message);
         }
+    }
+
+    [Fact]
+    public async Task Parameters_ToleratesJsonEncodedParameters()
+    {
+        AIFunction func = AIFunctionFactory.Create((int x, int y, int z, int w, int u) => x + y + z + w + u);
+
+        var result = await func.InvokeAsync(new()
+        {
+            ["x"] = "1",
+            ["y"] = JsonNode.Parse("2"),
+            ["z"] = JsonDocument.Parse("3"),
+            ["w"] = JsonDocument.Parse("4").RootElement,
+            ["u"] = 5M, // boxed decimal cannot be cast to int, requires conversion
+        });
+
+        AssertExtensions.EqualFunctionCallResults(15, result);
     }
 
     [Fact]

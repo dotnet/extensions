@@ -825,6 +825,21 @@ public static partial class AIFunctionFactory
                     {
                         try
                         {
+                            if (value is string potentiallyJsonString)
+                            {
+                                // Account for the parameter potentially being a JSON string.
+                                // This is needed for compatibility with Semantic Kernel,
+                                // which may pass parameters as JSON strings.
+                                try
+                                {
+                                    return JsonSerializer.Deserialize(potentiallyJsonString, typeInfo);
+                                }
+                                catch (JsonException)
+                                {
+                                    // If the string is not valid JSON, fall through to the round-trip.
+                                }
+                            }
+
                             string json = JsonSerializer.Serialize(value, serializerOptions.GetTypeInfo(value.GetType()));
                             return JsonSerializer.Deserialize(json, typeInfo);
                         }
