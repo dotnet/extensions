@@ -4,6 +4,7 @@
 #pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods that take it.
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,6 +25,11 @@ public class NLPEvaluatorTests
     {
         if (Settings.Current.Configured)
         {
+            string version = $"Product Version: {Constants.Version}";
+            string date = $"Date: {DateTime.UtcNow:dddd, dd MMMM yyyy}";
+            string projectName = $"Project: Integration Tests";
+            string testClass = $"Test Class: {nameof(NLPEvaluatorTests)}";
+
             IEvaluator bleuEvaluator = new BLEUEvaluator();
             IEvaluator gleuEvaluator = new GLEUEvaluator();
             IEvaluator f1Evaluator = new F1Evaluator();
@@ -33,7 +39,7 @@ public class NLPEvaluatorTests
                     storageRootPath: Settings.Current.StorageRootPath,
                     evaluators: [bleuEvaluator, gleuEvaluator, f1Evaluator],
                     executionName: Constants.Version,
-                    tags: []);
+                    tags: [version, date, projectName, testClass]);
         }
     }
 
@@ -51,9 +57,7 @@ public class NLPEvaluatorTests
         var gleuContext = new GLEUEvaluatorContext(referenceText);
         var f1Context = new F1EvaluatorContext(referenceText);
 
-        var response = new ChatResponse(new ChatMessage(ChatRole.Assistant, "The quick brown fox jumps over the lazy dog."));
-
-        EvaluationResult result = await scenarioRun.EvaluateAsync(response, [bleuContext, gleuContext, f1Context]);
+        EvaluationResult result = await scenarioRun.EvaluateAsync(referenceText, [bleuContext, gleuContext, f1Context]);
 
         Assert.False(
             result.ContainsDiagnostics(d => d.Severity >= EvaluationDiagnosticSeverity.Warning),
@@ -79,9 +83,7 @@ public class NLPEvaluatorTests
         var gleuContext = new GLEUEvaluatorContext(referenceText);
         var f1Context = new F1EvaluatorContext(referenceText);
 
-        var response = new ChatResponse(new ChatMessage(ChatRole.Assistant, "What is the meaning of life?"));
-
-        EvaluationResult result = await scenarioRun.EvaluateAsync(response, [bleuContext, gleuContext, f1Context]);
+        EvaluationResult result = await scenarioRun.EvaluateAsync("What is the meaning of life?", [bleuContext, gleuContext, f1Context]);
 
         Assert.False(
             result.ContainsDiagnostics(d => d.Severity >= EvaluationDiagnosticSeverity.Warning),
@@ -102,9 +104,7 @@ public class NLPEvaluatorTests
             await _nlpReportingConfiguration.CreateScenarioRunAsync(
                 scenarioName: $"Microsoft.Extensions.AI.Evaluation.Integration.Tests.{nameof(NLPEvaluatorTests)}.{nameof(AdditionalContextIsNotPassed)}");
 
-        var response = new ChatResponse(new ChatMessage(ChatRole.Assistant, "What is the meaning of life?"));
-
-        EvaluationResult result = await scenarioRun.EvaluateAsync(response);
+        EvaluationResult result = await scenarioRun.EvaluateAsync("What is the meaning of life?");
 
         Assert.True(
             result.Metrics.Values.All(m => m.ContainsDiagnostics(d => d.Severity is EvaluationDiagnosticSeverity.Error)),
