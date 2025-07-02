@@ -81,9 +81,6 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
             _cpuPeriodsInterval = _parser.GetCgroupPeriodsIntervalInMicroSecondsV2();
             (_previousCgroupCpuTime, _previousCgroupCpuPeriodCounter) = _parser.GetCgroupCpuUsageInNanosecondsAndCpuPeriodsV2();
 
-            _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization, observeValue: () => CpuUtilizationLimit(cpuLimit), unit: "1");
-            _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuRequestUtilization, observeValue: () => CpuUtilizationRequest(cpuRequest), unit: "1");
-
             _ = meter.CreateObservableGauge(
                 ResourceUtilizationInstruments.ContainerCpuLimitUtilization,
                 () => GetMeasurementWithRetry(() => CpuUtilizationLimit(cpuLimit)),
