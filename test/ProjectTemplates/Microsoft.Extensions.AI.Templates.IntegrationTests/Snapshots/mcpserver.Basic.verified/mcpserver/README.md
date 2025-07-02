@@ -24,10 +24,8 @@ Once the MCP server package is published to NuGet.org, you can use the following
     "servers": {
       "mcpserver": {
         "type": "stdio",
-        "command": "dotnet",
+        "command": "dnx",
         "args": [
-          "tool",
-          "exec",
           "<your package ID here>",
           "--version",
           "<your package version here>",
