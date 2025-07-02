@@ -1374,6 +1374,10 @@
       ],
       "Properties": [
         {
+          "Member": "Microsoft.Extensions.AI.AIFunction Microsoft.Extensions.AI.DelegatingAIFunction.InnerFunction { get; }",
+          "Stage": "Stable"
+        },
+        {
           "Member": "override System.Collections.Generic.IReadOnlyDictionary<string, object?> Microsoft.Extensions.AI.DelegatingAIFunction.AdditionalProperties { get; }",
           "Stage": "Stable"
         },

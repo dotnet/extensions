@@ -9,6 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 
+#pragma warning disable SA1202 // Elements should be ordered by access
+
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
@@ -16,8 +18,6 @@ namespace Microsoft.Extensions.AI;
 /// </summary>
 public class DelegatingAIFunction : AIFunction
 {
-    private readonly AIFunction _innerFunction;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="DelegatingAIFunction"/> class as a wrapper around <paramref name="innerFunction"/>.
     /// </summary>
@@ -25,34 +25,37 @@ public class DelegatingAIFunction : AIFunction
     /// <exception cref="ArgumentNullException"><paramref name="innerFunction"/> is <see langword="null"/>.</exception>
     protected DelegatingAIFunction(AIFunction innerFunction)
     {
-        _innerFunction = Throw.IfNull(innerFunction);
+        InnerFunction = Throw.IfNull(innerFunction);
     }
 
-    /// <inheritdoc />
-    public override string Name => _innerFunction.Name;
+    /// <summary>Gets the inner <see cref="AIFunction" />.</summary>
+    protected AIFunction InnerFunction { get; }
 
     /// <inheritdoc />
-    public override string Description => _innerFunction.Description;
+    public override string Name => InnerFunction.Name;
 
     /// <inheritdoc />
-    public override JsonElement JsonSchema => _innerFunction.JsonSchema;
+    public override string Description => InnerFunction.Description;
 
     /// <inheritdoc />
-    public override JsonElement? ReturnJsonSchema => _innerFunction.ReturnJsonSchema;
+    public override JsonElement JsonSchema => InnerFunction.JsonSchema;
 
     /// <inheritdoc />
-    public override JsonSerializerOptions JsonSerializerOptions => _innerFunction.JsonSerializerOptions;
+    public override JsonElement? ReturnJsonSchema => InnerFunction.ReturnJsonSchema;
 
     /// <inheritdoc />
-    public override MethodInfo? UnderlyingMethod => _innerFunction.UnderlyingMethod;
+    public override JsonSerializerOptions JsonSerializerOptions => InnerFunction.JsonSerializerOptions;
 
     /// <inheritdoc />
-    public override IReadOnlyDictionary<string, object?> AdditionalProperties => _innerFunction.AdditionalProperties;
+    public override MethodInfo? UnderlyingMethod => InnerFunction.UnderlyingMethod;
 
     /// <inheritdoc />
-    public override string ToString() => _innerFunction.ToString();
+    public override IReadOnlyDictionary<string, object?> AdditionalProperties => InnerFunction.AdditionalProperties;
+
+    /// <inheritdoc />
+    public override string ToString() => InnerFunction.ToString();
 
     /// <inheritdoc />
     protected override ValueTask<object?> InvokeCoreAsync(AIFunctionArguments arguments, CancellationToken cancellationToken) =>
-        _innerFunction.InvokeAsync(arguments, cancellationToken);
+        InnerFunction.InvokeAsync(arguments, cancellationToken);
 }
