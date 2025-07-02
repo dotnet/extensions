@@ -830,8 +830,8 @@ public static partial class AIFunctionFactory
                                 Debug.Assert(typeInfo.Type != typeof(string), "string parameters should not enter this branch.");
 
                                 // Account for the parameter potentially being a JSON string.
-                                // This is needed for compatibility with Semantic Kernel,
-                                // which may pass parameters as JSON strings.
+                                // The value is a string but the type is not. Try to deserialize it under the assumption that it's JSON.
+                                // If it's not, we'll fall through to the default path that makes it valid JSON and then tries to deserialize.
                                 try
                                 {
                                     return JsonSerializer.Deserialize(potentiallyJsonString, typeInfo);
