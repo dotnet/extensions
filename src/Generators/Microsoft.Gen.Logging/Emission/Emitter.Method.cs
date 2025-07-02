@@ -91,7 +91,7 @@ internal sealed partial class Emitter : EmitterBase
         }
         else
         {
-            var eventNameToCalcId = string.IsNullOrWhiteSpace(lm.EventName) ? lm.Name : lm.EventName;
+            var eventNameToCalcId = string.IsNullOrWhiteSpace(lm.EventName) ? lm.Name : lm.EventName!;
             var calculatedEventId = GetNonRandomizedHashCode(eventNameToCalcId);
             OutLn($"new({calculatedEventId}, {eventName}),");
         }
