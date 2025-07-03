@@ -21,6 +21,7 @@ using OpenAI.Responses;
 #pragma warning disable S1067 // Expressions should not be too complex
 #pragma warning disable SA1515 // Single-line comment should be preceded by blank line
 #pragma warning disable CA1305 // Specify IFormatProvider
+#pragma warning disable S1135 // Track uses of "TODO" tags
 
 namespace Microsoft.Extensions.AI;
 
@@ -182,15 +183,17 @@ public static class OpenAIClientExtensions
     public static ConversationFunctionTool AsOpenAIConversationFunctionTool(this AIFunction function) =>
         OpenAIRealtimeConversationClient.ToOpenAIConversationFunctionTool(Throw.IfNull(function));
 
-    /// <summary>Extracts from an <see cref="AIFunction"/> the parameters and strictness setting for use with OpenAI's APIs.</summary>
-    internal static (BinaryData Parameters, bool? Strict) ToOpenAIFunctionParameters(AIFunction aiFunction)
-    {
-        // Extract any strict setting from AdditionalProperties.
-        bool? strict =
-            aiFunction.AdditionalProperties.TryGetValue(OpenAIClientExtensions.StrictKey, out object? strictObj) &&
-            strictObj is bool strictValue ?
-            strictValue : null;
+    // TODO: Once we're ready to rely on C# 14 features, add an extension property ChatOptions.Strict.
 
+    /// <summary>Gets whether the properties specify that strict schema handling is desired.</summary>
+    internal static bool? HasStrict(IReadOnlyDictionary<string, object?>? additionalProperties) =>
+        additionalProperties?.TryGetValue(StrictKey, out object? strictObj) is true &&
+        strictObj is bool strictValue ?
+        strictValue : null;
+
+    /// <summary>Extracts from an <see cref="AIFunction"/> the parameters and strictness setting for use with OpenAI's APIs.</summary>
+    internal static BinaryData ToOpenAIFunctionParameters(AIFunction aiFunction, bool? strict)
+    {
         // Perform any desirable transformations on the function's JSON schema, if it'll be used in a strict setting.
         JsonElement jsonSchema = strict is true ?
             StrictSchemaTransformCache.GetOrCreateTransformedSchema(aiFunction) :
@@ -201,7 +204,7 @@ public static class OpenAIClientExtensions
         var tool = JsonSerializer.Deserialize(jsonSchema, OpenAIJsonContext.Default.ToolJson)!;
         var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool, OpenAIJsonContext.Default.ToolJson));
 
-        return (functionParameters, strict);
+        return functionParameters;
     }
 
     /// <summary>Used to create the JSON payload for an OpenAI tool description.</summary>

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.AI.Evaluation.NLP.Common;
 using Xunit;
@@ -60,21 +59,55 @@ public class NGramTests
     }
 
     [Fact]
-    public void NGramGenerationNoPadding()
+    public void CreateNGrams()
     {
-        int[] input = [1, 2, 3, 4, 5];
+        Assert.Throws<ArgumentOutOfRangeException>(() => new int[0].CreateNGrams(-1).ToList());
 
-        IEnumerable<NGram<int>> result = input.CreateNGrams(1);
-        List<NGram<int>> expected = [[1], [2], [3], [4], [5]];
-        Assert.True(result.SequenceEqual(expected));
+        ReadOnlySpan<int> data = [1, 2, 3];
 
-        result = input.CreateNGrams(2);
-        expected = [[1, 2], [2, 3], [3, 4], [4, 5]];
-        Assert.True(result.SequenceEqual(expected));
+        var nGram = data.CreateNGrams(1);
+        Assert.Equal([[1], [2], [3]], nGram);
 
-        result = input.CreateNGrams(3);
-        expected = [[1, 2, 3], [2, 3, 4], [3, 4, 5]];
-        Assert.True(result.SequenceEqual(expected));
+        nGram = data.CreateNGrams(2);
+        Assert.Equal([[1, 2], [2, 3]], nGram);
+
+        nGram = data.CreateNGrams(3);
+        Assert.Equal([[1, 2, 3]], nGram);
+
+        nGram = data.CreateNGrams(4);
+        Assert.Equal([], nGram);
     }
 
+    [Fact]
+    public void CreateAllNGrams()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => new int[0].CreateAllNGrams(-1).ToList());
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => new int[0].CreateAllNGrams(0).ToList());
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => new int[0].CreateAllNGrams(1, 0).ToList());
+
+        ReadOnlySpan<int> arr = [1, 2, 3];
+
+        var nGram = arr.CreateAllNGrams(1).ToList();
+        Assert.Equal([[1], [1, 2], [1, 2, 3], [2], [2, 3], [3]], nGram);
+
+        nGram = arr.CreateAllNGrams(2).ToList();
+        Assert.Equal([[1, 2], [1, 2, 3], [2, 3]], nGram);
+
+        nGram = arr.CreateAllNGrams(3).ToList();
+        Assert.Equal([[1, 2, 3]], nGram);
+
+        nGram = arr.CreateAllNGrams(3, 5).ToList();
+        Assert.Equal([[1, 2, 3]], nGram);
+
+        nGram = arr.CreateAllNGrams(1, 2).ToList();
+        Assert.Equal([[1], [1, 2], [2], [2, 3], [3]], nGram);
+
+        nGram = arr.CreateAllNGrams(1, 1).ToList();
+        Assert.Equal([[1], [2], [3]], nGram);
+
+        nGram = arr.CreateAllNGrams(4).ToList();
+        Assert.Equal([], nGram);
+    }
 }

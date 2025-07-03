@@ -12,5 +12,13 @@ namespace TestClasses
 
         [LoggerMessage(EventName = "M1_Event")]
         public static partial void M1(LogLevel level, ILogger logger, string p0);
+
+        // This one should have the same generated EventId as the method above
+        [LoggerMessage(LogLevel.Debug)]
+        public static partial void M1_Event(ILogger logger, string p0);
+
+        // This one should have different generated EventId as the methods above
+        [LoggerMessage(LogLevel.Error)]
+        public static partial void M2(ILogger logger, string p0);
     }
 }
