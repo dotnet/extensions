@@ -249,8 +249,6 @@ public sealed class AcceptanceTest
         Assert.Equal(0, utilization.CpuUsedPercentage);
         Assert.Equal(100, utilization.MemoryUsedPercentage);
         Assert.True(double.IsNaN(cpuFromGauge));
-        Assert.Equal(0.000102312, cpuUserTime);
-        Assert.Equal(0.8, cpuKernelTime);
 
         // gauge multiplied by 100 because gauges are in range [0, 1], and utilization is in range [0, 100]
         Assert.Equal(utilization.MemoryUsedPercentage, memoryFromGauge * 100);
@@ -269,8 +267,6 @@ public sealed class AcceptanceTest
         Assert.Equal(1, utilization.CpuUsedPercentage);
         Assert.Equal(50, utilization.MemoryUsedPercentage);
         Assert.Equal(0.5, cpuLimitFromGauge * 100);
-        Assert.Equal(0.000112312, cpuUserTime);
-        Assert.Equal(0.81, cpuKernelTime);
         Assert.Equal(utilization.CpuUsedPercentage, cpuRequestFromGauge * 100);
         Assert.Equal(utilization.MemoryUsedPercentage, memoryLimitFromGauge * 100);
         Assert.Equal(utilization.CpuUsedPercentage, cpuFromGauge * 100);
@@ -360,8 +356,6 @@ public sealed class AcceptanceTest
         Assert.Equal(1, roundedCpuUsedPercentage);
         Assert.Equal(50, utilization.MemoryUsedPercentage);
         Assert.Equal(0.5, cpuLimitFromGauge * 100);
-        Assert.Equal(0.000112, cpuUserTime);
-        Assert.Equal(0.81, cpuKernelTime);
         Assert.Equal(roundedCpuUsedPercentage, Math.Round(cpuRequestFromGauge * 100));
         Assert.Equal(utilization.MemoryUsedPercentage, memoryLimitFromGauge * 100);
         Assert.Equal(roundedCpuUsedPercentage, Math.Round(cpuFromGauge * 100));
@@ -373,7 +367,7 @@ public sealed class AcceptanceTest
     [ConditionalFact]
     [CombinatorialData]
     [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
-    public Task ResourceUtilizationTracker_And_Metrics_Report_Same_Values_With_Cgroupsv2_v2_Using_NrPeriods()
+    public Task ResourceUtilizationTracker_And_Metrics_Report_Same_Values_With_Cgroupsv2_Using_LinuxCalculationV2()
     {
         var fileSystem = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
@@ -396,7 +390,6 @@ public sealed class AcceptanceTest
         var cpuRequestFromGauge = 0.0d;
         var memoryFromGauge = 0.0d;
         var memoryLimitFromGauge = 0.0d;
-        using var e = new ManualResetEventSlim();
 
         object? meterScope = null;
         listener.InstrumentPublished = (Instrument instrument, MeterListener meterListener)
@@ -405,13 +398,12 @@ public sealed class AcceptanceTest
             => OnMeasurementReceived(m, f, tags, ref cpuUserTime, ref cpuKernelTime, ref cpuFromGauge, ref cpuLimitFromGauge, ref cpuRequestFromGauge, ref memoryFromGauge, ref memoryLimitFromGauge));
         listener.Start();
 
-        using var host = FakeHost.CreateBuilder()
+        using IHost host = FakeHost.CreateBuilder()
             .ConfigureServices(x =>
                 x.AddLogging()
                 .AddSingleton<TimeProvider>(clock)
                 .AddSingleton<IUserHz>(new FakeUserHz(100))
                 .AddSingleton<IFileSystem>(fileSystem)
-                .AddSingleton<IResourceUtilizationPublisher>(new GenericPublisher(_ => e.Set()))
                 .AddResourceMonitoring(x => x.ConfigureMonitor(options =>
                     {
                         options.UseLinuxCalculationV2 = true;
@@ -420,14 +412,10 @@ public sealed class AcceptanceTest
             .Build();
 
         meterScope = host.Services.GetRequiredService<IMeterFactory>();
-        var tracker = host.Services.GetService<IResourceMonitor>();
-        Assert.NotNull(tracker);
 
         _ = host.RunAsync();
 
         listener.RecordObservableInstruments();
-
-        var utilization = tracker.GetUtilization(TimeSpan.FromSeconds(5));
 
         fileSystem.ReplaceFileContent(new FileInfo("/proc/stat"), "cpu  11 10 10 10 10 10 10 10 10 10");
         fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat"), "usage_usec 1120000\nnr_periods 56");
@@ -437,14 +425,10 @@ public sealed class AcceptanceTest
         clock.Advance(TimeSpan.FromSeconds(6));
         listener.RecordObservableInstruments();
 
-        e.Wait();
-
-        utilization = tracker.GetUtilization(TimeSpan.FromSeconds(5));
-
-        var roundedCpuUsedPercentage = Math.Round(utilization.CpuUsedPercentage, 1);
-
         Assert.Equal(42, Math.Round(cpuLimitFromGauge * 100));
         Assert.Equal(83, Math.Round(cpuRequestFromGauge * 100));
+        Assert.Equal(167, Math.Round(cpuUserTime * 100));
+        Assert.Equal(81, Math.Round(cpuKernelTime * 100));
 
         return Task.CompletedTask;
     }
