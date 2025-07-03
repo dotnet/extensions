@@ -1,32 +1,33 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.AI</RootNamespace>
-    <Description>Abstractions for generative AI.</Description>
+    <Description>Abstractions representing generative AI components.</Description>
     <Workstream>AI</Workstream>
   </PropertyGroup>
 
   <PropertyGroup>
-    <Stage>preview</Stage>
-    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
-    <EnablePackageValidation>false</EnablePackageValidation>
+    <Stage>normal</Stage>
     <MinCodeCoverage>82</MinCodeCoverage>
-    <MinMutationScore>0</MinMutationScore>
+    <MinMutationScore>85</MinMutationScore>
   </PropertyGroup>
 
   <PropertyGroup>
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
     <NoWarn>$(NoWarn);CA2227;CA1034;SA1316;S3253</NoWarn>
+    <NoWarn>$(NoWarn);MEAI001</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DisableNETStandardCompatErrors>true</DisableNETStandardCompatErrors>
   </PropertyGroup>
 
   <PropertyGroup>
+    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectJsonSchemaExporterOnLegacy>true</InjectJsonSchemaExporterOnLegacy>
+    <InjectRequiredMemberOnLegacy>true</InjectRequiredMemberOnLegacy>
     <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
     <InjectStringHashOnLegacy>true</InjectStringHashOnLegacy>
     <InjectStringSyntaxAttributeOnLegacy>true</InjectStringSyntaxAttributeOnLegacy>
-    <InjectRequiredMemberOnLegacy>true</InjectRequiredMemberOnLegacy>
+    <InjectSystemIndexOnLegacy>true</InjectSystemIndexOnLegacy>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
@@ -35,6 +36,7 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
     <Reference Include="System.Net.Http" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
   </ItemGroup>
   
 </Project>

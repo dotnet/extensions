@@ -3,9 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Identity;
+using Azure.Storage.Files.DataLake;
 using Microsoft.Extensions.AI.Evaluation.Reporting;
 using Microsoft.Extensions.AI.Evaluation.Reporting.Formats.Html;
 using Microsoft.Extensions.AI.Evaluation.Reporting.Formats.Json;
@@ -17,27 +20,59 @@ namespace Microsoft.Extensions.AI.Evaluation.Console.Commands;
 internal sealed partial class ReportCommand(ILogger logger)
 {
     internal async Task<int> InvokeAsync(
-        DirectoryInfo storageRootDir,
+        DirectoryInfo? storageRootDir,
+        Uri? endpointUri,
         FileInfo outputFile,
+        bool openReport,
         int lastN,
         Format format,
         CancellationToken cancellationToken = default)
     {
-        string storageRootPath = storageRootDir.FullName;
-        logger.LogInformation("Storage root path: {storageRootPath}", storageRootPath);
+        IEvaluationResultStore resultStore;
 
-        var results = new List<ScenarioRunResult>();
-        var resultStore = new DiskBasedResultStore(storageRootPath);
+        if (storageRootDir is not null)
+        {
+            string storageRootPath = storageRootDir.FullName;
+            logger.LogInformation("Storage root path: {storageRootPath}", storageRootPath);
+
+            resultStore = new DiskBasedResultStore(storageRootPath);
+        }
+        else if (endpointUri is not null)
+        {
+            logger.LogInformation("Azure Storage endpoint: {endpointUri}", endpointUri);
+
+            var fsClient = new DataLakeDirectoryClient(endpointUri, new DefaultAzureCredential());
+            resultStore = new AzureStorageResultStore(fsClient);
+        }
+        else
+        {
+            throw new InvalidOperationException("Either --path or --endpoint must be specified");
+        }
+
+        List<ScenarioRunResult> results = [];
+
+        string? latestExecutionName = null;
 
         await foreach (string executionName in
             resultStore.GetLatestExecutionNamesAsync(lastN, cancellationToken).ConfigureAwait(false))
         {
+            latestExecutionName ??= executionName;
+
             await foreach (ScenarioRunResult result in
                 resultStore.ReadResultsAsync(
                     executionName,
                     cancellationToken: cancellationToken).ConfigureAwait(false))
             {
+                if (result.ExecutionName != latestExecutionName)
+                {
+                    // Clear the chat data for following executions
+                    result.Messages = [];
+                    result.ModelResponse = new ChatResponse();
+                }
+
                 results.Add(result);
+
+                logger.LogInformation("Execution: {executionName} Scenario: {scenarioName} Iteration: {iterationName}", result.ExecutionName, result.ScenarioName, result.IterationName);
             }
         }
 
@@ -57,6 +92,24 @@ internal sealed partial class ReportCommand(ILogger logger)
 
         await reportWriter.WriteReportAsync(results, cancellationToken).ConfigureAwait(false);
         logger.LogInformation("Report: {outputFilePath} [{format}]", outputFilePath, format);
+
+        // See the following issues for reasoning behind this check. We want to avoid opening the report
+        // if this process is running as a service or in a CI pipeline.
+        // https://github.com/dotnet/runtime/issues/770#issuecomment-564700467
+        // https://github.com/dotnet/runtime/issues/66530#issuecomment-1065854289
+        bool isRedirected = System.Console.IsInputRedirected && System.Console.IsOutputRedirected && System.Console.IsErrorRedirected;
+        bool isInteractive = Environment.UserInteractive && (OperatingSystem.IsWindows() || !(isRedirected));
+
+        if (openReport && isInteractive)
+        {
+            // Open the generated report in the default browser.
+            _ = Process.Start(
+                new ProcessStartInfo
+                {
+                    FileName = outputFilePath,
+                    UseShellExecute = true
+                });
+        }
 
         return 0;
     }

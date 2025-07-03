@@ -18,12 +18,14 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable S3358 // Ternary operators should not be nested
+#pragma warning disable SA1111 // Closing parenthesis should be on line of last parameter
+#pragma warning disable SA1113 // Comma should be on the same line as previous parameter
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a delegating chat client that implements the OpenTelemetry Semantic Conventions for Generative AI systems.</summary>
 /// <remarks>
-/// This class provides an implementation of the Semantic Conventions for Generative AI systems v1.31, defined at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
+/// This class provides an implementation of the Semantic Conventions for Generative AI systems v1.35, defined at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
 /// The specification is still experimental and subject to change; as such, the telemetry output by this client is also subject to change.
 /// </remarks>
 public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
@@ -37,7 +39,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     private readonly Histogram<int> _tokenUsageHistogram;
     private readonly Histogram<double> _operationDurationHistogram;
 
-    private readonly string? _modelId;
+    private readonly string? _defaultModelId;
     private readonly string? _system;
     private readonly string? _serverAddress;
     private readonly int _serverPort;
@@ -57,7 +59,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
         if (innerClient!.GetService<ChatClientMetadata>() is ChatClientMetadata metadata)
         {
-            _modelId = metadata.ModelId;
+            _defaultModelId = metadata.DefaultModelId;
             _system = metadata.ProviderName;
             _serverAddress = metadata.ProviderUri?.GetLeftPart(UriPartial.Path);
             _serverPort = metadata.ProviderUri?.Port ?? 0;
@@ -70,14 +72,20 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         _tokenUsageHistogram = _meter.CreateHistogram<int>(
             OpenTelemetryConsts.GenAI.Client.TokenUsage.Name,
             OpenTelemetryConsts.TokensUnit,
-            OpenTelemetryConsts.GenAI.Client.TokenUsage.Description,
-            advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.TokenUsage.ExplicitBucketBoundaries });
+            OpenTelemetryConsts.GenAI.Client.TokenUsage.Description
+#if NET9_0_OR_GREATER
+            , advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.TokenUsage.ExplicitBucketBoundaries }
+#endif
+            );
 
         _operationDurationHistogram = _meter.CreateHistogram<double>(
             OpenTelemetryConsts.GenAI.Client.OperationDuration.Name,
             OpenTelemetryConsts.SecondsUnit,
-            OpenTelemetryConsts.GenAI.Client.OperationDuration.Description,
-            advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.OperationDuration.ExplicitBucketBoundaries });
+            OpenTelemetryConsts.GenAI.Client.OperationDuration.Description
+#if NET9_0_OR_GREATER
+            , advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.OperationDuration.ExplicitBucketBoundaries }
+#endif
+            );
 
         _jsonSerializerOptions = AIJsonUtilities.DefaultOptions;
     }
@@ -129,7 +137,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
         using Activity? activity = CreateAndConfigureActivity(options);
         Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
-        string? requestModelId = options?.ModelId ?? _modelId;
+        string? requestModelId = options?.ModelId ?? _defaultModelId;
 
         LogChatMessages(messages);
 
@@ -137,7 +145,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         Exception? error = null;
         try
         {
-            response = await base.GetResponseAsync(messages, options, cancellationToken).ConfigureAwait(false);
+            response = await base.GetResponseAsync(messages, options, cancellationToken);
             return response;
         }
         catch (Exception ex)
@@ -160,7 +168,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
         using Activity? activity = CreateAndConfigureActivity(options);
         Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
-        string? requestModelId = options?.ModelId ?? _modelId;
+        string? requestModelId = options?.ModelId ?? _defaultModelId;
 
         LogChatMessages(messages);
 
@@ -175,7 +183,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
             throw;
         }
 
-        var responseEnumerator = updates.ConfigureAwait(false).GetAsyncEnumerator();
+        var responseEnumerator = updates.GetAsyncEnumerator(cancellationToken);
         List<ChatResponseUpdate> trackedUpdates = [];
         Exception? error = null;
         try
@@ -217,7 +225,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         Activity? activity = null;
         if (_activitySource.HasListeners())
         {
-            string? modelId = options?.ModelId ?? _modelId;
+            string? modelId = options?.ModelId ?? _defaultModelId;
 
             activity = _activitySource.StartActivity(
                 string.IsNullOrWhiteSpace(modelId) ? OpenTelemetryConsts.GenAI.Chat : $"{OpenTelemetryConsts.GenAI.Chat} {modelId}",
@@ -239,6 +247,11 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
                 if (options is not null)
                 {
+                    if (options.ConversationId is string conversationId)
+                    {
+                        _ = activity.AddTag(OpenTelemetryConsts.GenAI.Conversation.Id, conversationId);
+                    }
+
                     if (options.FrequencyPenalty is float frequencyPenalty)
                     {
                         _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.FrequencyPenalty, frequencyPenalty);
@@ -294,7 +307,8 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
                     if (_system is not null)
                     {
-                        if (options.AdditionalProperties is { } props)
+                        // Since AdditionalProperties has undefined meaning, we treat it as potentially sensitive data
+                        if (EnableSensitiveData && options.AdditionalProperties is { } props)
                         {
                             // Log all additional request options as per-provider tags. This is non-normative, but it covers cases where
                             // there's a per-provider specification in a best-effort manner (e.g. gen_ai.openai.request.service_tier),
@@ -386,21 +400,22 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
                 if (response.Usage?.InputTokenCount is long inputTokens)
                 {
-                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.InputTokens, (int)inputTokens);
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Usage.InputTokens, (int)inputTokens);
                 }
 
                 if (response.Usage?.OutputTokenCount is long outputTokens)
                 {
-                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.OutputTokens, (int)outputTokens);
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Usage.OutputTokens, (int)outputTokens);
                 }
 
                 if (_system is not null)
                 {
-                    // Log all additional response properties as per-provider tags. This is non-normative, but it covers cases where
-                    // there's a per-provider specification in a best-effort manner (e.g. gen_ai.openai.response.system_fingerprint),
-                    // and more generally cases where there's additional useful information to be logged.
-                    if (response.AdditionalProperties is { } props)
+                    // Since AdditionalProperties has undefined meaning, we treat it as potentially sensitive data
+                    if (EnableSensitiveData && response.AdditionalProperties is { } props)
                     {
+                        // Log all additional response properties as per-provider tags. This is non-normative, but it covers cases where
+                        // there's a per-provider specification in a best-effort manner (e.g. gen_ai.openai.response.system_fingerprint),
+                        // and more generally cases where there's additional useful information to be logged.
                         foreach (KeyValuePair<string, object?> prop in props)
                         {
                             _ = activity.AddTag(

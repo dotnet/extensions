@@ -24,5 +24,8 @@ namespace Microsoft.Extensions.AI.Evaluation;
 /// An optional string that can be used to provide some commentary around the result represented by this
 /// <see cref="NumericMetric"/>.
 /// </param>
+/// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/quickstarts/evaluate-ai-response">
+/// Evaluate a model's response.
+/// </related>
 public sealed class NumericMetric(string name, double? value = null, string? reason = null)
     : EvaluationMetric<double?>(name, value, reason);

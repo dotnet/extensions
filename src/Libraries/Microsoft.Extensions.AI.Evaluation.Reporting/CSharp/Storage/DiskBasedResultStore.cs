@@ -16,9 +16,9 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
 
 /// <summary>
-/// An <see cref="IResultStore"/> implementation that stores <see cref="ScenarioRunResult"/>s on disk.
+/// An <see cref="IEvaluationResultStore"/> implementation that stores <see cref="ScenarioRunResult"/>s on disk.
 /// </summary>
-public sealed class DiskBasedResultStore : IResultStore
+public sealed class DiskBasedResultStore : IEvaluationResultStore
 {
     private const string DeserializationFailedMessage = "Unable to deserialize the scenario run result file at {0}.";
 
@@ -66,7 +66,7 @@ public sealed class DiskBasedResultStore : IResultStore
             using FileStream stream = resultFile.OpenRead();
 
             ScenarioRunResult? result =
-                await JsonSerializer.DeserializeAsync<ScenarioRunResult>(
+                await JsonSerializer.DeserializeAsync(
                     stream,
                     JsonUtilities.Default.ScenarioRunResultTypeInfo,
                     cancellationToken).ConfigureAwait(false);

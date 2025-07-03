@@ -1,24 +1,18 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>A library containing core abstractions for evaluating responses received from an LLM.</Description>
+    <Description>A library that defines core abstractions and types for supporting evaluation.</Description>
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
     <RootNamespace>Microsoft.Extensions.AI.Evaluation</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup>
     <Workstream>AIEval</Workstream>
-    <Stage>preview</Stage>
-    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
+    <Stage>normal</Stage>
     <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
-    <EnablePackageValidation>false</EnablePackageValidation>
-    <MinCodeCoverage>56</MinCodeCoverage>
-    <MinMutationScore>0</MinMutationScore>
+    <MinCodeCoverage>n/a</MinCodeCoverage>
+    <MinMutationScore>n/a</MinMutationScore>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.ML.Tokenizers" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Extensions.AI.Abstractions\Microsoft.Extensions.AI.Abstractions.csproj" />

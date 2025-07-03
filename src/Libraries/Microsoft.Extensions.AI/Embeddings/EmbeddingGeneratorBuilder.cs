@@ -41,7 +41,7 @@ public sealed class EmbeddingGeneratorBuilder<TInput, TEmbedding>
     /// </summary>
     /// <param name="services">
     /// The <see cref="IServiceProvider"/> that should provide services to the <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> instances.
-    /// If null, an empty <see cref="IServiceProvider"/> will be used.
+    /// If <see langword="null"/>, an empty <see cref="IServiceProvider"/> will be used.
     /// </param>
     /// <returns>An instance of <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> that represents the entire pipeline.</returns>
     public IEmbeddingGenerator<TInput, TEmbedding> Build(IServiceProvider? services = null)

@@ -11,30 +11,64 @@ type ScenarioRunResult = {
     scenarioName: string;
     iterationName: string;
     executionName: string;
-    creationTime?: string;
+    creationTime: string;
     messages: ChatMessage[];
     modelResponse: ChatResponse;
     evaluationResult: EvaluationResult;
+    chatDetails?: ChatDetails;
+    tags?: string[];
+    formatVersion: int;
 };
 
 type ChatResponse = {
     messages: ChatMessage[];
+    modelId?: string;
+    usage?: UsageDetails;
 }
 
 type ChatMessage = {
     authorName?: string;
     role: string;
-    contents: AIContent[]
+    contents: AIContent[];
+};
+
+type ChatDetails = {
+    turnDetails: ChatTurnDetails[];
+}
+
+type ChatTurnDetails = {
+    latency: number;
+    model?: string;
+    usage?: UsageDetails;
+    cacheKey?: string;
+    cacheHit?: boolean;
+}
+
+type UsageDetails = {
+    inputTokenCount?: number;
+    outputTokenCount?: number;
+    totalTokenCount?: number;
 };
 
 type AIContent = {
     $type: string;
 };
 
-// TODO: Model other types of AIContent such as function calls, function call results, images, audio etc.
+// TODO: Model other types of AIContent such as function calls, function call results, audio etc.
 type TextContent = AIContent & {
     $type: "text";
     text: string;
+};
+
+type UriContent = AIContent & {
+    $type: "uri";
+    uri: string;
+    mediaType: string;
+};
+
+type DataContent = AIContent & {
+    $type: "data";
+    uri: string;
 };
 
 type EvaluationResult = {
@@ -42,6 +76,11 @@ type EvaluationResult = {
         [K: string]: MetricWithNoValue | NumericMetric | BooleanMetric | StringMetric;
     };
 };
+
+type EvaluationContext = {
+    name: string;
+    contents: AIContent[];
+}
 
 type EvaluationDiagnostic = {
     severity: "informational" | "warning" | "error";
@@ -60,7 +99,13 @@ type BaseEvaluationMetric = {
     $type: string;
     name: string;
     interpretation?: EvaluationMetricInterpretation;
-    diagnostics: EvaluationDiagnostic[];
+    context?: {
+        [K: string]: EvaluationContext;
+    };
+    diagnostics?: EvaluationDiagnostic[];
+    metadata: { 
+        [K: string]: string 
+    };
 };
 
 type MetricWithNoValue = BaseEvaluationMetric & {

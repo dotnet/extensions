@@ -22,7 +22,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="IEmbeddingGenerator{String, Embedding}"/> for an Azure.AI.Inference <see cref="EmbeddingsClient"/>.</summary>
-public sealed class AzureAIInferenceEmbeddingGenerator :
+internal sealed class AzureAIInferenceEmbeddingGenerator :
     IEmbeddingGenerator<string, Embedding<float>>
 {
     /// <summary>Metadata about the embedding generator.</summary>
@@ -36,31 +36,31 @@ public sealed class AzureAIInferenceEmbeddingGenerator :
 
     /// <summary>Initializes a new instance of the <see cref="AzureAIInferenceEmbeddingGenerator"/> class.</summary>
     /// <param name="embeddingsClient">The underlying client.</param>
-    /// <param name="modelId">
+    /// <param name="defaultModelId">
     /// The ID of the model to use. This can also be overridden per request via <see cref="EmbeddingGenerationOptions.ModelId"/>.
     /// Either this parameter or <see cref="EmbeddingGenerationOptions.ModelId"/> must provide a valid model ID.
     /// </param>
-    /// <param name="dimensions">The number of dimensions to generate in each embedding.</param>
+    /// <param name="defaultModelDimensions">The number of dimensions to generate in each embedding.</param>
     /// <exception cref="ArgumentNullException"><paramref name="embeddingsClient"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException"><paramref name="modelId"/> is empty or composed entirely of whitespace.</exception>
-    /// <exception cref="ArgumentOutOfRangeException"><paramref name="dimensions"/> is not positive.</exception>
+    /// <exception cref="ArgumentException"><paramref name="defaultModelId"/> is empty or composed entirely of whitespace.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="defaultModelDimensions"/> is not positive.</exception>
     public AzureAIInferenceEmbeddingGenerator(
-        EmbeddingsClient embeddingsClient, string? modelId = null, int? dimensions = null)
+        EmbeddingsClient embeddingsClient, string? defaultModelId = null, int? defaultModelDimensions = null)
     {
         _ = Throw.IfNull(embeddingsClient);
 
-        if (modelId is not null)
+        if (defaultModelId is not null)
         {
-            _ = Throw.IfNullOrWhitespace(modelId);
+            _ = Throw.IfNullOrWhitespace(defaultModelId);
         }
 
-        if (dimensions is < 1)
+        if (defaultModelDimensions is < 1)
         {
-            Throw.ArgumentOutOfRangeException(nameof(dimensions), "Value must be greater than 0.");
+            Throw.ArgumentOutOfRangeException(nameof(defaultModelDimensions), "Value must be greater than 0.");
         }
 
         _embeddingsClient = embeddingsClient;
-        _dimensions = dimensions;
+        _dimensions = defaultModelDimensions;
 
         // https://github.com/Azure/azure-sdk-for-net/issues/46278
         // The endpoint isn't currently exposed, so use reflection to get at it, temporarily. Once packages
@@ -69,7 +69,7 @@ public sealed class AzureAIInferenceEmbeddingGenerator :
         var providerUrl = typeof(EmbeddingsClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(embeddingsClient) as Uri;
 
-        _metadata = new("az.ai.inference", providerUrl, modelId, dimensions);
+        _metadata = new EmbeddingGeneratorMetadata("azure.ai.inference", providerUrl, defaultModelId, defaultModelDimensions);
     }
 
     /// <inheritdoc />
@@ -89,7 +89,9 @@ public sealed class AzureAIInferenceEmbeddingGenerator :
     public async Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(
         IEnumerable<string> values, EmbeddingGenerationOptions? options = null, CancellationToken cancellationToken = default)
     {
-        var azureAIOptions = ToAzureAIOptions(values, options, EmbeddingEncodingFormat.Base64);
+        _ = Throw.IfNull(values);
+
+        var azureAIOptions = ToAzureAIOptions(values, options);
 
         var embeddings = (await _embeddingsClient.EmbedAsync(azureAIOptions, cancellationToken).ConfigureAwait(false)).Value;
 
@@ -118,7 +120,7 @@ public sealed class AzureAIInferenceEmbeddingGenerator :
         // Nothing to dispose. Implementation required for the IEmbeddingGenerator interface.
     }
 
-    private static float[] ParseBase64Floats(BinaryData binaryData)
+    internal static float[] ParseBase64Floats(BinaryData binaryData)
     {
         ReadOnlySpan<byte> base64 = binaryData.ToMemory().Span;
 
@@ -161,15 +163,24 @@ public sealed class AzureAIInferenceEmbeddingGenerator :
             throw new FormatException("The input is not a valid Base64 string of encoded floats.");
     }
 
-    /// <summary>Converts an extensions options instance to an OpenAI options instance.</summary>
-    private EmbeddingsOptions ToAzureAIOptions(IEnumerable<string> inputs, EmbeddingGenerationOptions? options, EmbeddingEncodingFormat format)
+    /// <summary>Converts an extensions options instance to an Azure.AI.Inference options instance.</summary>
+    private EmbeddingsOptions ToAzureAIOptions(IEnumerable<string> inputs, EmbeddingGenerationOptions? options)
     {
-        EmbeddingsOptions result = new(inputs)
+        if (options?.RawRepresentationFactory?.Invoke(this) is not EmbeddingsOptions result)
         {
-            Dimensions = options?.Dimensions ?? _dimensions,
-            Model = options?.ModelId ?? _metadata.ModelId,
-            EncodingFormat = format,
-        };
+            result = new EmbeddingsOptions(inputs);
+        }
+        else
+        {
+            foreach (var input in inputs)
+            {
+                result.Input.Add(input);
+            }
+        }
+
+        result.Dimensions ??= options?.Dimensions ?? _dimensions;
+        result.Model ??= options?.ModelId ?? _metadata.DefaultModelId;
+        result.EncodingFormat = EmbeddingEncodingFormat.Base64;
 
         if (options?.AdditionalProperties is { } props)
         {

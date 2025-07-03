@@ -7,9 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.Sampling;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Logging;
@@ -17,7 +15,6 @@ namespace Microsoft.Extensions.Logging;
 /// <summary>
 /// Extensions for configuring logging sampling.
 /// </summary>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class SamplingLoggerBuilderExtensions
 {
     /// <summary>
@@ -51,11 +48,17 @@ public static class SamplingLoggerBuilderExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configuration);
 
-        _ = builder.Services.AddOptionsWithValidateOnStart<RandomProbabilisticSamplerOptions, RandomProbabilisticSamplerOptionsValidator>();
-        _ = builder.Services.AddSingleton<IConfigureOptions<RandomProbabilisticSamplerOptions>>(
+        _ = builder.Services
+            .AddOptionsWithValidateOnStart<RandomProbabilisticSamplerOptions, RandomProbabilisticSamplerOptionsValidator>();
+        _ = builder.Services
+            .AddSingleton<IConfigureOptions<RandomProbabilisticSamplerOptions>>(
                 new RandomProbabilisticSamplerConfigureOptions(configuration));
+        _ = builder.Services
+            .AddSingleton<IOptionsChangeTokenSource<RandomProbabilisticSamplerOptions>>(
+                new ConfigurationChangeTokenSource<RandomProbabilisticSamplerOptions>(configuration));
 
-        _ = builder.Services.AddSingleton(typeof(LogSamplingRuleSelector<>));
+        _ = builder.Services
+            .AddSingleton(typeof(LogSamplingRuleSelector<>));
 
         return builder.AddSampler<RandomProbabilisticSampler>();
     }

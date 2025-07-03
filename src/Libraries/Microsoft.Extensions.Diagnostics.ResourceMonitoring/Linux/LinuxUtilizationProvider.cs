@@ -2,7 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.Metrics;
+using System.Linq;
+using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -14,7 +17,13 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 {
     private const double One = 1.0;
     private const long Hundred = 100L;
+    private const double CpuLimitThreshold110Percent = 1.1;
 
+    // Meters to track CPU utilization threshold exceedances
+    private readonly Counter<long>? _cpuUtilizationLimit100PercentExceededCounter;
+    private readonly Counter<long>? _cpuUtilizationLimit110PercentExceededCounter;
+
+    private readonly bool _useDeltaNrPeriods;
     private readonly object _cpuLocker = new();
     private readonly object _memoryLocker = new();
     private readonly ILogger<LinuxUtilizationProvider> _logger;
@@ -27,14 +36,25 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     private readonly double _scaleRelativeToCpuRequest;
     private readonly double _scaleRelativeToCpuRequestForTrackerApi;
 
+    private readonly TimeSpan _retryInterval = TimeSpan.FromMinutes(5);
+    private DateTimeOffset _lastFailure = DateTimeOffset.MinValue;
+    private int _measurementsUnavailable;
+
     private DateTimeOffset _refreshAfterCpu;
     private DateTimeOffset _refreshAfterMemory;
 
+    // Track the actual timestamp when we read CPU values
+    private DateTimeOffset _lastCpuMeasurementTime;
+
     private double _cpuPercentage = double.NaN;
+    private double _lastCpuCoresUsed = double.NaN;
     private double _memoryPercentage;
     private long _previousCgroupCpuTime;
     private long _previousHostCpuTime;
-
+    private long _cpuUtilizationLimit100PercentExceeded;
+    private long _cpuUtilizationLimit110PercentExceeded;
+    private long _cpuPeriodsInterval;
+    private long _previousCgroupCpuPeriodCounter;
     public SystemResources Resources { get; }
 
     public LinuxUtilizationProvider(IOptions<ResourceMonitoringOptions> options, ILinuxUtilizationParser parser,
@@ -46,6 +66,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         DateTimeOffset now = _timeProvider.GetUtcNow();
         _cpuRefreshInterval = options.Value.CpuConsumptionRefreshInterval;
         _memoryRefreshInterval = options.Value.MemoryConsumptionRefreshInterval;
+        _useDeltaNrPeriods = options.Value.UseDeltaNrPeriodsForCpuCalculation;
         _refreshAfterCpu = now;
         _refreshAfterMemory = now;
         _memoryLimit = _parser.GetAvailableMemoryInBytes();
@@ -66,19 +87,152 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         var meter = meterFactory.Create(ResourceUtilizationInstruments.MeterName);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization, observeValue: () => CpuUtilization() * _scaleRelativeToCpuLimit, unit: "1");
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization, observeValue: MemoryUtilization, unit: "1");
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuRequestUtilization, observeValue: () => CpuUtilization() * _scaleRelativeToCpuRequest, unit: "1");
+        if (options.Value.CalculateCpuUsageWithoutHostDelta)
+        {
+            cpuLimit = _parser.GetCgroupLimitV2();
 
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessCpuUtilization, observeValue: () => CpuUtilization() * _scaleRelativeToCpuRequest, unit: "1");
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessMemoryUtilization, observeValue: MemoryUtilization, unit: "1");
+            // Try to get the CPU request from cgroup
+            cpuRequest = _parser.GetCgroupRequestCpuV2();
+
+            // Get Cpu periods interval from cgroup
+            _cpuPeriodsInterval = _parser.GetCgroupPeriodsIntervalInMicroSecondsV2();
+            (_previousCgroupCpuTime, _previousCgroupCpuPeriodCounter) = _parser.GetCgroupCpuUsageInNanosecondsAndCpuPeriodsV2();
+
+            // Initialize the counters
+            _cpuUtilizationLimit100PercentExceededCounter = meter.CreateCounter<long>("cpu_utilization_limit_100_percent_exceeded");
+            _cpuUtilizationLimit110PercentExceededCounter = meter.CreateCounter<long>("cpu_utilization_limit_110_percent_exceeded");
+
+            _ = meter.CreateObservableGauge(
+                ResourceUtilizationInstruments.ContainerCpuLimitUtilization,
+                () => GetMeasurementWithRetry(() => CpuUtilizationLimit(cpuLimit)),
+                "1");
+
+            _ = meter.CreateObservableGauge(
+                name: ResourceUtilizationInstruments.ContainerCpuRequestUtilization,
+                observeValues: () => GetMeasurementWithRetry(() => CpuUtilizationWithoutHostDelta() / cpuRequest),
+                unit: "1");
+        }
+        else
+        {
+            _ = meter.CreateObservableGauge(
+                name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization,
+                observeValues: () => GetMeasurementWithRetry(() => CpuUtilization() * _scaleRelativeToCpuLimit),
+                unit: "1");
+
+            _ = meter.CreateObservableGauge(
+                name: ResourceUtilizationInstruments.ContainerCpuRequestUtilization,
+                observeValues: () => GetMeasurementWithRetry(() => CpuUtilization() * _scaleRelativeToCpuRequest),
+                unit: "1");
+
+            _ = meter.CreateObservableGauge(
+                name: ResourceUtilizationInstruments.ProcessCpuUtilization,
+                observeValues: () => GetMeasurementWithRetry(() => CpuUtilization() * _scaleRelativeToCpuRequest),
+                unit: "1");
+        }
+
+        _ = meter.CreateObservableGauge(
+            name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization,
+            observeValues: () => GetMeasurementWithRetry(() => MemoryUtilization()),
+            unit: "1");
+
+        _ = meter.CreateObservableGauge(
+            name: ResourceUtilizationInstruments.ProcessMemoryUtilization,
+            observeValues: () => GetMeasurementWithRetry(() => MemoryUtilization()),
+            unit: "1");
 
         // cpuRequest is a CPU request (aka guaranteed number of CPU units) for pod, for host its 1 core
         // cpuLimit is a CPU limit (aka max CPU units available) for a pod or for a host.
         // _memoryLimit - Resource Memory Limit (in k8s terms)
         // _memoryLimit - To keep the contract, this parameter will get the Host available memory
         Resources = new SystemResources(cpuRequest, cpuLimit, _memoryLimit, _memoryLimit);
-        Log.SystemResourcesInfo(_logger, cpuLimit, cpuRequest, _memoryLimit, _memoryLimit);
+        _logger.SystemResourcesInfo(cpuLimit, cpuRequest, _memoryLimit, _memoryLimit);
+    }
+
+    public double CpuUtilizationWithoutHostDelta()
+    {
+        DateTimeOffset now = _timeProvider.GetUtcNow();
+        double actualElapsedNanoseconds = (now - _lastCpuMeasurementTime).TotalNanoseconds;
+        lock (_cpuLocker)
+        {
+            if (now < _refreshAfterCpu)
+            {
+                return _lastCpuCoresUsed;
+            }
+        }
+
+        var (cpuUsageTime, cpuPeriodCounter) = _parser.GetCgroupCpuUsageInNanosecondsAndCpuPeriodsV2();
+        lock (_cpuLocker)
+        {
+            if (now >= _refreshAfterCpu)
+            {
+                long deltaCgroup = cpuUsageTime - _previousCgroupCpuTime;
+                double coresUsed;
+
+                if (_useDeltaNrPeriods)
+                {
+                    long deltaPeriodCount = cpuPeriodCounter - _previousCgroupCpuPeriodCounter;
+                    long deltaCpuPeriodInNanoseconds = deltaPeriodCount * _cpuPeriodsInterval * 1000;
+
+                    if (deltaCgroup > 0 && deltaPeriodCount > 0)
+                    {
+                        coresUsed = deltaCgroup / (double)deltaCpuPeriodInNanoseconds;
+
+                        _logger.CpuUsageDataV2(cpuUsageTime, _previousCgroupCpuTime, deltaCpuPeriodInNanoseconds, coresUsed);
+
+                        _lastCpuCoresUsed = coresUsed;
+                        _refreshAfterCpu = now.Add(_cpuRefreshInterval);
+                        _previousCgroupCpuTime = cpuUsageTime;
+                        _previousCgroupCpuPeriodCounter = cpuPeriodCounter;
+                    }
+                }
+                else
+                {
+                    if (deltaCgroup > 0)
+                    {
+                        coresUsed = deltaCgroup / actualElapsedNanoseconds;
+
+                        _logger.CpuUsageDataV2(cpuUsageTime, _previousCgroupCpuTime, actualElapsedNanoseconds, coresUsed);
+
+                        _lastCpuCoresUsed = coresUsed;
+                        _refreshAfterCpu = now.Add(_cpuRefreshInterval);
+                        _previousCgroupCpuTime = cpuUsageTime;
+
+                        // Update the timestamp for next calculation
+                        _lastCpuMeasurementTime = now;
+                    }
+                }
+            }
+        }
+
+        return _lastCpuCoresUsed;
+    }
+
+    /// <summary>
+    /// Calculates CPU utilization relative to the CPU limit.
+    /// </summary>
+    /// <param name="cpuLimit">The CPU limit to use for the calculation.</param>
+    /// <returns>CPU usage as a ratio of the limit.</returns>
+    public double CpuUtilizationLimit(float cpuLimit)
+    {
+        double utilization = CpuUtilizationWithoutHostDelta() / cpuLimit;
+
+        // Increment counter if utilization exceeds 1 (100%)
+        if (utilization > 1.0)
+        {
+            _cpuUtilizationLimit100PercentExceededCounter?.Add(1);
+            _cpuUtilizationLimit100PercentExceeded++;
+            _logger.CounterMessage100(_cpuUtilizationLimit100PercentExceeded);
+        }
+
+        // Increment counter if utilization exceeds 110%
+        if (utilization > CpuLimitThreshold110Percent)
+        {
+            _cpuUtilizationLimit110PercentExceededCounter?.Add(1);
+            _cpuUtilizationLimit110PercentExceeded++;
+            _logger.CounterMessage110(_cpuUtilizationLimit110PercentExceeded);
+        }
+
+        return utilization;
     }
 
     public double CpuUtilization()
@@ -107,7 +261,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
                 {
                     double percentage = Math.Min(One, (double)deltaCgroup / deltaHost);
 
-                    Log.CpuUsageData(_logger, cgroupCpuTime, hostCpuTime, _previousCgroupCpuTime, _previousHostCpuTime, percentage);
+                    _logger.CpuUsageData(cgroupCpuTime, hostCpuTime, _previousCgroupCpuTime, _previousHostCpuTime, percentage);
 
                     _cpuPercentage = percentage;
                     _refreshAfterCpu = now.Add(_cpuRefreshInterval);
@@ -145,7 +299,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
             }
         }
 
-        Log.MemoryUsageData(_logger, memoryUsed, _memoryLimit, _memoryPercentage);
+        _logger.MemoryUsageData(memoryUsed, _memoryLimit, _memoryPercentage);
 
         return _memoryPercentage;
     }
@@ -166,5 +320,35 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
             kernelTimeSinceStart: TimeSpan.Zero,
             userTimeSinceStart: TimeSpan.FromTicks((long)(cgroupTime / Hundred * _scaleRelativeToCpuRequestForTrackerApi)),
             memoryUsageInBytes: memoryUsed);
+    }
+
+    private IEnumerable<Measurement<double>> GetMeasurementWithRetry(Func<double> func)
+    {
+        if (Volatile.Read(ref _measurementsUnavailable) == 1 &&
+            _timeProvider.GetUtcNow() - _lastFailure < _retryInterval)
+        {
+            return Enumerable.Empty<Measurement<double>>();
+        }
+
+        try
+        {
+            double result = func();
+            if (Volatile.Read(ref _measurementsUnavailable) == 1)
+            {
+                _ = Interlocked.Exchange(ref _measurementsUnavailable, 0);
+            }
+
+            return new[] { new Measurement<double>(result) };
+        }
+        catch (Exception ex) when (
+            ex is System.IO.FileNotFoundException ||
+            ex is System.IO.DirectoryNotFoundException ||
+            ex is System.UnauthorizedAccessException)
+        {
+            _lastFailure = _timeProvider.GetUtcNow();
+            _ = Interlocked.Exchange(ref _measurementsUnavailable, 1);
+
+            return Enumerable.Empty<Measurement<double>>();
+        }
     }
 }

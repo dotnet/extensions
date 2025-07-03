@@ -26,9 +26,6 @@ internal sealed partial class DefaultHybridCache : HybridCache
 {
     internal const int DefaultExpirationMinutes = 5;
 
-    // reserve non-printable characters from keys, to prevent potential L2 abuse
-    private static readonly char[] _keyReservedCharacters = Enumerable.Range(0, 32).Select(i => (char)i).ToArray();
-
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0032:Use auto property", Justification = "Keep usage explicit")]
     private readonly IDistributedCache? _backendCache;
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0032:Use auto property", Justification = "Keep usage explicit")]
@@ -255,6 +252,26 @@ internal sealed partial class DefaultHybridCache : HybridCache
         return null;
     }
 
+    // reserve non-printable characters from keys, to prevent potential L2 abuse
+    private static bool ContainsReservedCharacters(ReadOnlySpan<char> key)
+    {
+        const char MaxControlChar = (char)31;
+
+#if NET8_0_OR_GREATER
+        return key.IndexOfAnyInRange((char)0, MaxControlChar) >= 0;
+#else
+        foreach (char c in key)
+        {
+            if (c <= MaxControlChar)
+            {
+                return true;
+            }
+        }
+
+        return false;
+#endif
+    }
+
     private bool ValidateKey(string key)
     {
         if (string.IsNullOrWhiteSpace(key))
@@ -269,7 +286,7 @@ internal sealed partial class DefaultHybridCache : HybridCache
             return false;
         }
 
-        if (key.IndexOfAny(_keyReservedCharacters) >= 0)
+        if (ContainsReservedCharacters(key.AsSpan()))
         {
             _logger.KeyInvalidContent();
             return false;

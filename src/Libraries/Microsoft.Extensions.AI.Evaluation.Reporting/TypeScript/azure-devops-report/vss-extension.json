@@ -7,7 +7,7 @@
     "description": "Display an AI Evaluation report tab in Azure DevOps build results",
     "public": false,
     "categories": ["Azure Pipelines"],
-    "tags": ["Preview"],
+    "tags": [],
     "targets": [
         {
             "id": "Microsoft.VisualStudio.Services"
@@ -25,7 +25,25 @@
     "content": {
         "details": {
             "path": "overview.md"
+        },
+        "license": {
+            "path": "LICENSE"
         }
+    },
+    "links": {
+        "getstarted": {
+            "uri": "https://learn.microsoft.com/en-us/dotnet/ai/quickstarts/evaluate-ai-response"
+        },
+        "learn": {
+            "uri": "https://learn.microsoft.com/en-us/dotnet/ai/conceptual/evaluation-libraries"
+        },
+        "privacypolicy": {
+            "uri": "https://privacy.microsoft.com/en-us/privacystatement"
+        }
+    },
+    "repository": {
+        "type": "git",
+        "uri": "https://github.com/dotnet/extensions"
     },
     "contributions": [
         {

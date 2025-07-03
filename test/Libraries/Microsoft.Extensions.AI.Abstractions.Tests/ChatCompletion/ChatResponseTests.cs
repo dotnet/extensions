@@ -127,7 +127,7 @@ public class ChatResponseTests
     [Fact]
     public void ToChatResponseUpdates()
     {
-        ChatResponse response = new(new ChatMessage(new ChatRole("customRole"), "Text"))
+        ChatResponse response = new(new ChatMessage(new ChatRole("customRole"), "Text") { MessageId = "someMessage" })
         {
             ResponseId = "12345",
             ModelId = "someModel",
@@ -142,6 +142,7 @@ public class ChatResponseTests
 
         ChatResponseUpdate update0 = updates[0];
         Assert.Equal("12345", update0.ResponseId);
+        Assert.Equal("someMessage", update0.MessageId);
         Assert.Equal("someModel", update0.ModelId);
         Assert.Equal(ChatFinishReason.ContentFilter, update0.FinishReason);
         Assert.Equal(new DateTimeOffset(2024, 11, 10, 9, 20, 0, TimeSpan.Zero), update0.CreatedAt);

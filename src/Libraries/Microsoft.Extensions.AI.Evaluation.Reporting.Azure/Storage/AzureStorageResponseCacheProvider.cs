@@ -15,7 +15,8 @@ using Microsoft.Extensions.Caching.Distributed;
 namespace Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
 
 /// <summary>
-/// An <see cref="IResponseCacheProvider"/> that returns a <see cref="AzureStorageResponseCache"/>.
+/// An <see cref="IEvaluationResponseCacheProvider"/> that returns an <see cref="IDistributedCache"/> that can cache AI
+/// responses for a particular <see cref="ScenarioRun"/> under an Azure Storage container.
 /// </summary>
 /// <param name="client">
 /// A <see cref="DataLakeDirectoryClient"/> with access to an Azure Storage container under which the cached AI
@@ -27,7 +28,7 @@ namespace Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
 /// </param>
 public sealed class AzureStorageResponseCacheProvider(
     DataLakeDirectoryClient client,
-    TimeSpan? timeToLiveForCacheEntries = null) : IResponseCacheProvider
+    TimeSpan? timeToLiveForCacheEntries = null) : IEvaluationResponseCacheProvider
 {
     private readonly Func<DateTime> _provideDateTime = () => DateTime.Now;
 
@@ -36,8 +37,8 @@ public sealed class AzureStorageResponseCacheProvider(
     /// </remarks>
     internal AzureStorageResponseCacheProvider(
         DataLakeDirectoryClient client,
-        TimeSpan? timeToLiveForCacheEntries,
-        Func<DateTime> provideDateTime)
+        Func<DateTime> provideDateTime,
+        TimeSpan? timeToLiveForCacheEntries = null)
             : this(client, timeToLiveForCacheEntries)
     {
         _provideDateTime = provideDateTime;
@@ -54,8 +55,8 @@ public sealed class AzureStorageResponseCacheProvider(
                 client,
                 scenarioName,
                 iterationName,
-                timeToLiveForCacheEntries,
-                _provideDateTime);
+                _provideDateTime,
+                timeToLiveForCacheEntries);
 
         return new ValueTask<IDistributedCache>(cache);
     }

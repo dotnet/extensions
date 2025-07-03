@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  This file only exists to allow locally-built packages to be used when running the template locally.
+  It will not get included in the built project template.
+-->
+<configuration>
+  <fallbackPackageFolders>
+    <!-- Clear to avoid inheriting from the repo root NuGet.config -->
+    <clear />
+  </fallbackPackageFolders>
+  <packageSources>
+    <!-- Clear to avoid inheriting from the repo root NuGet.config -->
+    <clear />
+    <add key="local-shipping" value="${ArtifactsShippingPackagesDir}" />
+    <add key="nuget" value="https://api.nuget.org/v3/index.json" />
+  </packageSources>
+  <disabledPackageSources>
+    <!-- Clear to avoid inheriting from the repo root NuGet.config -->
+    <clear />
+  </disabledPackageSources>
+  <packageSourceMapping>
+    <!-- Clear to avoid inheriting from the repo root NuGet.config -->
+    <clear />
+  </packageSourceMapping>
+</configuration>

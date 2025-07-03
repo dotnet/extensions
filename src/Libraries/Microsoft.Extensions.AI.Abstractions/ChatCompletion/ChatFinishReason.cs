@@ -14,12 +14,12 @@ namespace Microsoft.Extensions.AI;
 [JsonConverter(typeof(Converter))]
 public readonly struct ChatFinishReason : IEquatable<ChatFinishReason>
 {
-    /// <summary>The finish reason value. If null because `default(ChatFinishReason)` was used, the instance will behave like <see cref="Stop"/>.</summary>
+    /// <summary>The finish reason value. If <see langword="null"/> because `default(ChatFinishReason)` was used, the instance will behave like <see cref="Stop"/>.</summary>
     private readonly string? _value;
 
     /// <summary>Initializes a new instance of the <see cref="ChatFinishReason"/> struct with a string that describes the reason.</summary>
     /// <param name="value">The reason value.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="value"/> is null.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="value"/> is empty or composed entirely of whitespace.</exception>
     [JsonConstructor]
     public ChatFinishReason(string value)

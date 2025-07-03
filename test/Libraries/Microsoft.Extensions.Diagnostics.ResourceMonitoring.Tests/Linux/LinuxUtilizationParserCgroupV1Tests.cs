@@ -35,6 +35,9 @@ public sealed class LinuxUtilizationParserCgroupV1Tests
         Assert.Throws<InvalidOperationException>(() => parser.GetHostCpuCount());
         Assert.Throws<InvalidOperationException>(() => parser.GetCgroupCpuUsageInNanoseconds());
         Assert.Throws<InvalidOperationException>(() => parser.GetCgroupRequestCpu());
+        Assert.Throws<NotSupportedException>(() => parser.GetCgroupCpuUsageInNanosecondsV2());
+        Assert.Throws<NotSupportedException>(() => parser.GetCgroupLimitV2());
+        Assert.Throws<NotSupportedException>(() => parser.GetCgroupRequestCpuV2());
     }
 
     [ConditionalFact]

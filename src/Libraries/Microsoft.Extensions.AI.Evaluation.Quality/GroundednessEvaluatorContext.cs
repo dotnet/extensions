@@ -9,17 +9,25 @@
 namespace Microsoft.Extensions.AI.Evaluation.Quality;
 
 /// <summary>
-/// Contextual information required to evaluate the 'Groundedness' of a response.
+/// Contextual information that the <see cref="GroundednessEvaluator"/> uses to evaluate the 'Groundedness' of a
+/// response.
 /// </summary>
 /// <param name="groundingContext">
 /// Contextual information against which the 'Groundedness' of a response is evaluated.
 /// </param>
 /// <remarks>
-/// The <see cref="GroundednessEvaluator"/> measures the degree to which the response being evaluated is grounded in
-/// the information present in the supplied <paramref name="groundingContext"/>.
+/// <see cref="GroundednessEvaluator"/> measures the degree to which the response being evaluated is grounded in the
+/// information present in the supplied <paramref name="groundingContext"/>.
 /// </remarks>
-public sealed class GroundednessEvaluatorContext(string groundingContext) : EvaluationContext
+public sealed class GroundednessEvaluatorContext(string groundingContext)
+    : EvaluationContext(name: GroundingContextName, content: groundingContext)
 {
+    /// <summary>
+    /// Gets the unique <see cref="EvaluationContext.Name"/> that is used for
+    /// <see cref="GroundednessEvaluatorContext"/>.
+    /// </summary>
+    public static string GroundingContextName => "Grounding Context (Groundedness)";
+
     /// <summary>
     /// Gets the contextual information against which the 'Groundedness' of a response is evaluated.
     /// </summary>

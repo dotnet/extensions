@@ -113,6 +113,8 @@ public sealed class OSFileSystemTests
             Assert.Equal(expectedLines[i], line.ToString());
             i++;
         }
+
+        Assert.Equal(expectedLines.Length, i);
     }
 
     [Fact]
@@ -161,6 +163,8 @@ public sealed class OSFileSystemTests
             Assert.Equal(expectedLines[i], line.ToString());
             i++;
         }
+
+        Assert.Equal(expectedLines.Length, i);
     }
 
     [Fact]

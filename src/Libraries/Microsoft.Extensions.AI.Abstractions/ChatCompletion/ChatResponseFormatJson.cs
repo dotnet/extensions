@@ -32,7 +32,7 @@ public sealed class ChatResponseFormatJson : ChatResponseFormat
         SchemaDescription = schemaDescription;
     }
 
-    /// <summary>Gets the JSON schema associated with the response, or null if there is none.</summary>
+    /// <summary>Gets the JSON schema associated with the response, or <see langword="null"/> if there is none.</summary>
     public JsonElement? Schema { get; }
 
     /// <summary>Gets a name for the schema.</summary>

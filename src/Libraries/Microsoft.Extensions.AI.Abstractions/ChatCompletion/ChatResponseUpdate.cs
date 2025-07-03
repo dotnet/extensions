@@ -99,23 +99,33 @@ public class ChatResponseUpdate
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
 
     /// <summary>Gets or sets the ID of the response of which this update is a part.</summary>
+    public string? ResponseId { get; set; }
+
+    /// <summary>Gets or sets the ID of the message of which this update is a part.</summary>
     /// <remarks>
+    /// A single streaming response may be composed of multiple messages, each of which may be represented
+    /// by multiple updates. This property is used to group those updates together into messages.
+    ///
+    /// Some providers may consider streaming responses to be a single message, and in that case
+    /// the value of this property may be the same as the response ID.
+    /// 
     /// This value is used when <see cref="ChatResponseExtensions.ToChatResponseAsync(IAsyncEnumerable{ChatResponseUpdate}, System.Threading.CancellationToken)"/>
     /// groups <see cref="ChatResponseUpdate"/> instances into <see cref="ChatMessage"/> instances.
     /// The value must be unique to each call to the underlying provider, and must be shared by
-    /// all updates that are part of the same response.
+    /// all updates that are part of the same logical message within a streaming response.
     /// </remarks>
-    public string? ResponseId { get; set; }
+    public string? MessageId { get; set; }
 
-    /// <summary>Gets or sets the chat thread ID associated with the chat response of which this update is a part.</summary>
+    /// <summary>Gets or sets an identifier for the state of the conversation of which this update is a part.</summary>
     /// <remarks>
-    /// Some <see cref="IChatClient"/> implementations are capable of storing the state for a chat thread, such that
+    /// Some <see cref="IChatClient"/> implementations are capable of storing the state for a conversation, such that
     /// the input messages supplied to <see cref="IChatClient.GetStreamingResponseAsync"/> need only be the additional messages beyond
     /// what's already stored. If this property is non-<see langword="null"/>, it represents an identifier for that state,
-    /// and it should be used in a subsequent <see cref="ChatOptions.ChatThreadId"/> instead of supplying the same messages
-    /// (and this streaming message) as part of the <c>messages</c> parameter.
+    /// and it should be used in a subsequent <see cref="ChatOptions.ConversationId"/> instead of supplying the same messages
+    /// (and this streaming message) as part of the <c>messages</c> parameter. Note that the value may or may not differ on every
+    /// response, depending on whether the underlying provider uses a fixed ID for each conversation or updates it for each message.
     /// </remarks>
-    public string? ChatThreadId { get; set; }
+    public string? ConversationId { get; set; }
 
     /// <summary>Gets or sets a timestamp for the response update.</summary>
     public DateTimeOffset? CreatedAt { get; set; }

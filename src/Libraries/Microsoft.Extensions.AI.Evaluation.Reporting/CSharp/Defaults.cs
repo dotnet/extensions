@@ -21,19 +21,17 @@ public static class Defaults
     /// <summary>
     /// The default iteration name that should be used if one was not specified when creating a
     /// <see cref="ScenarioRun"/> via
-    /// <see cref="ReportingConfiguration.CreateScenarioRunAsync(string, string, IEnumerable{string}?, CancellationToken)"/>.
+    /// <see cref="ReportingConfiguration.CreateScenarioRunAsync(string, string, IEnumerable{string}?, IEnumerable{string}?, CancellationToken)"/>.
     /// </summary>
     public const string DefaultIterationName = "1";
 
     /// <summary>
     /// Gets a <see cref="TimeSpan"/> that specifies the default amount of time that cached AI responses should survive
-    /// in the <see cref="IResponseCacheProvider"/>'s cache before they are considered expired and evicted.
+    /// in the <see cref="IEvaluationResponseCacheProvider"/>'s cache before they are considered expired and evicted.
     /// </summary>
     public static TimeSpan DefaultTimeToLiveForCacheEntries { get; } = TimeSpan.FromDays(14);
 
-    /// <summary>
-    /// Defines the version number for the reporting format. If and when the serialized format undergoes
-    /// breaking changes, this number will be incremented.
-    /// </summary>
+    // Defines the version number for the reporting format. If and when the serialized format undergoes
+    // breaking changes, this number should be incremented.
     internal const int ReportingFormatVersion = 1;
 }

@@ -1,0 +1,2 @@
+# Don't apply the repo's editorconfig settings to generated templates.
+root = true
