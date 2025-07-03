@@ -390,7 +390,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
             if (strict)
             {
-                aiFuncOptions.AdditionalProperties = new Dictionary<string, object?> { ["strict"] = true };
+                aiFuncOptions.AdditionalProperties = new Dictionary<string, object?> { ["strictJsonSchema"] = true };
             }
 
             return aiFuncOptions;
@@ -402,7 +402,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
             if (strict)
             {
-                additionalProperties["strict"] = true;
+                additionalProperties["strictJsonSchema"] = true;
             }
 
             return new CustomAIFunction($"CustomMethod{methodCount++}", schema, additionalProperties);

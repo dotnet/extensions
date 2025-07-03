@@ -338,7 +338,7 @@ public class OpenAIChatClientTests
             Tools = [AIFunctionFactory.Create(() => 42, "GetPersonAge", "Gets the age of the specified person.")],
             AdditionalProperties = new()
             {
-                ["strict"] = true,
+                ["strictJsonSchema"] = true,
             },
         });
         Assert.NotNull(response);

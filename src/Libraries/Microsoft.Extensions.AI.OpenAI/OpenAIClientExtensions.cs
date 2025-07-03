@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.AI;
 public static class OpenAIClientExtensions
 {
     /// <summary>Key into AdditionalProperties used to store a strict option.</summary>
-    private const string StrictKey = "strict";
+    private const string StrictKey = "strictJsonSchema";
 
     /// <summary>Gets the default OpenAI endpoint.</summary>
     internal static Uri DefaultOpenAIEndpoint { get; } = new("https://api.openai.com/v1");
