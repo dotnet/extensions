@@ -323,11 +323,17 @@ internal sealed class OpenAIResponseChatClient : IChatClient
         // Nothing to dispose. Implementation required for the IChatClient interface.
     }
 
-    internal static ResponseTool ToResponseTool(AIFunction aiFunction)
+    internal static ResponseTool ToResponseTool(AIFunction aiFunction, ChatOptions? options = null)
     {
-        (BinaryData parameters, bool? strict) = OpenAIClientExtensions.ToOpenAIFunctionParameters(aiFunction);
+        bool? strict =
+            OpenAIClientExtensions.HasStrict(aiFunction.AdditionalProperties) ??
+            OpenAIClientExtensions.HasStrict(options?.AdditionalProperties);
 
-        return ResponseTool.CreateFunctionTool(aiFunction.Name, aiFunction.Description, parameters, strict ?? false);
+        return ResponseTool.CreateFunctionTool(
+            aiFunction.Name,
+            aiFunction.Description,
+            OpenAIClientExtensions.ToOpenAIFunctionParameters(aiFunction, strict),
+            strict ?? false);
     }
 
     /// <summary>Creates a <see cref="ChatRole"/> from a <see cref="MessageRole"/>.</summary>
@@ -380,7 +386,7 @@ internal sealed class OpenAIResponseChatClient : IChatClient
                 switch (tool)
                 {
                     case AIFunction aiFunction:
-                        ResponseTool rtool = ToResponseTool(aiFunction);
+                        ResponseTool rtool = ToResponseTool(aiFunction, options);
                         result.Tools.Add(rtool);
                         break;
 
@@ -442,7 +448,8 @@ internal sealed class OpenAIResponseChatClient : IChatClient
                         ResponseTextFormat.CreateJsonSchemaFormat(
                             jsonFormat.SchemaName ?? "json_schema",
                             BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(jsonSchema, OpenAIJsonContext.Default.JsonElement)),
-                            jsonFormat.SchemaDescription) :
+                            jsonFormat.SchemaDescription,
+                            OpenAIClientExtensions.HasStrict(options.AdditionalProperties)) :
                         ResponseTextFormat.CreateJsonObjectFormat(),
                 };
             }
