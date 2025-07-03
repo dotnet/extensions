@@ -24,7 +24,7 @@ public class SpeechToTextResponseUpdateExtensionsTests
                     {
                         foreach (bool gapBeginningEnd in new[] { false, true })
                         {
-                            yield return new object[] { useAsync, numSequences, sequenceLength, gapLength, false };
+                            yield return new object[] { useAsync, numSequences, sequenceLength, gapLength, gapBeginningEnd };
                         }
                     }
                 }
