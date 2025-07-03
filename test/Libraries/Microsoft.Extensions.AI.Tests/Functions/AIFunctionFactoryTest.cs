@@ -103,10 +103,13 @@ public partial class AIFunctionFactoryTest
     [InlineData("  \"I am a string!\" ")]
     [InlineData("  {}")]
     [InlineData("[]")]
+    [InlineData("// single-line comment\r\nnull")]
+    [InlineData("/* multi-line\r\ncomment */\r\nnull")]
     public async Task Parameters_ToleratesJsonStringParameters(string jsonStringParam)
     {
-        AIFunction func = AIFunctionFactory.Create((JsonElement param) => param);
-        JsonElement expectedResult = JsonDocument.Parse(jsonStringParam).RootElement;
+        JsonSerializerOptions options = new(AIJsonUtilities.DefaultOptions) { ReadCommentHandling = JsonCommentHandling.Skip };
+        AIFunction func = AIFunctionFactory.Create((JsonElement param) => param, serializerOptions: options);
+        JsonElement expectedResult = JsonDocument.Parse(jsonStringParam, new() { CommentHandling = JsonCommentHandling.Skip }).RootElement;
 
         var result = await func.InvokeAsync(new()
         {
