@@ -596,6 +596,52 @@ public class DistributedCachingChatClientTest
     }
 
     [Fact]
+    public async Task CacheKeyVariesByAdditionalKeyValuesAsync()
+    {
+        // Arrange
+        var innerCallCount = 0;
+        var completionTcs = new TaskCompletionSource<bool>();
+        using var testClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (_, options, _) =>
+            {
+                innerCallCount++;
+                await Task.Yield();
+                return new(new ChatMessage(ChatRole.Assistant, innerCallCount.ToString()));
+            }
+        };
+        using var outer = new DistributedCachingChatClient(testClient, _storage)
+        {
+            JsonSerializerOptions = TestJsonSerializerContext.Default.Options
+        };
+
+        var result1 = await outer.GetResponseAsync([]);
+        var result2 = await outer.GetResponseAsync([]);
+
+        Assert.Equal(1, innerCallCount);
+        Assert.Equal("1", result1.Text);
+        Assert.Equal("1", result2.Text);
+
+        // Change key
+        outer.CacheKeyAdditionalValues = ["extraKey"];
+
+        var result3 = await outer.GetResponseAsync([]);
+        var result4 = await outer.GetResponseAsync([]);
+
+        Assert.Equal(2, innerCallCount);
+        Assert.Equal("2", result3.Text);
+        Assert.Equal("2", result4.Text);
+
+        // Remove key
+        outer.CacheKeyAdditionalValues = [];
+
+        var result5 = await outer.GetResponseAsync([]);
+
+        Assert.Equal(2, innerCallCount);
+        Assert.Equal("1", result5.Text);
+    }
+
+    [Fact]
     public async Task SubclassCanOverrideCacheKeyToVaryByChatOptionsAsync()
     {
         // Arrange

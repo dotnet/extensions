@@ -54,6 +54,11 @@ public abstract class CachingEmbeddingGenerator<TInput, TEmbedding> : Delegating
                             Throw.InvalidOperationException($"Expected exactly one embedding to be generated, but received {generated.Count}.");
                         }
 
+                        if (generated[0] is null)
+                        {
+                            Throw.InvalidOperationException("Generator produced null embedding.");
+                        }
+
                         await WriteCacheAsync(cacheKey, generated[0], cancellationToken);
                         return generated;
                     }
