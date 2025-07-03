@@ -1058,7 +1058,7 @@ public static partial class AIFunctionFactory
            ( null   # null literal
            | false  # false literal
            | true   # true literal
-           | -?\d   # number
+           | -?[0-9]# number
            | "      # string
            | \[     # start array
            | {      # start object
