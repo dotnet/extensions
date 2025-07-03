@@ -2,21 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Collections.Frozen;
 using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-#if NETCOREAPP3_1_OR_GREATER
-using Microsoft.Extensions.ObjectPool;
-#endif
 using Microsoft.Shared.Diagnostics;
-#if NETCOREAPP3_1_OR_GREATER
-using Microsoft.Shared.Pools;
-#else
-using System.Buffers;
-#endif
 
 namespace Microsoft.Extensions.Http.Logging.Internal;
 
@@ -27,9 +20,6 @@ internal sealed class HttpRequestBodyReader
     /// </summary>
     internal readonly TimeSpan RequestReadTimeout;
 
-#if NETCOREAPP3_1_OR_GREATER
-    private static readonly ObjectPool<BufferWriter<byte>> _bufferWriterPool = BufferWriterPool.SharedBufferWriterPool;
-#endif
     private readonly FrozenSet<string> _readableRequestContentTypes;
     private readonly int _requestReadLimit;
 
@@ -93,33 +83,20 @@ internal sealed class HttpRequestBodyReader
 #endif
 
         var readLimit = Math.Min(readSizeLimit, (int)streamToReadFrom.Length);
-#if NETCOREAPP3_1_OR_GREATER
-        var bufferWriter = _bufferWriterPool.Get();
-        try
-        {
-            var memory = bufferWriter.GetMemory(readLimit).Slice(0, readLimit);
-            var charsWritten = await streamToReadFrom.ReadAsync(memory, cancellationToken).ConfigureAwait(false);
-
-            return Encoding.UTF8.GetString(memory[..charsWritten].Span);
-        }
-        finally
-        {
-            _bufferWriterPool.Return(bufferWriter);
-            streamToReadFrom.Seek(0, SeekOrigin.Begin);
-        }
-
-#else
         var buffer = ArrayPool<byte>.Shared.Rent(readLimit);
         try
         {
-            _ = await streamToReadFrom.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false);
-            return Encoding.UTF8.GetString(buffer.AsSpan(0, readLimit).ToArray());
+#if NET
+            var read = await streamToReadFrom.ReadAsync(buffer.AsMemory(0, readLimit), cancellationToken).ConfigureAwait(false);
+#else
+            var read = await streamToReadFrom.ReadAsync(buffer, 0, readLimit, cancellationToken).ConfigureAwait(false);
+#endif
+            return Encoding.UTF8.GetString(buffer, 0, read);
         }
         finally
         {
             ArrayPool<byte>.Shared.Return(buffer);
             streamToReadFrom.Seek(0, SeekOrigin.Begin);
         }
-#endif
     }
 }
