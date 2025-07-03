@@ -341,6 +341,39 @@ public abstract class ChatClientIntegrationTests : IDisposable
         AssertUsageAgainstActivities(response, activities);
     }
 
+    [ConditionalFact]
+    public virtual async Task FunctionInvocation_ArrayParameter()
+    {
+        SkipIfNotEnabled();
+
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using var chatClient = new FunctionInvokingChatClient(
+            new OpenTelemetryChatClient(_chatClient, sourceName: sourceName));
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.User, "Can you add bacon, lettuce, and tomatoes to Peter's shopping cart?")
+        ];
+
+        string? shopperName = null;
+        List<string> shoppingCart = [];
+        AIFunction func = AIFunctionFactory.Create((string[] items, string shopperId) => { shoppingCart.AddRange(items); shopperName = shopperId; }, "AddItemsToShoppingCart");
+        var response = await chatClient.GetResponseAsync(messages, new()
+        {
+            Tools = [func]
+        });
+
+        Assert.Equal("Peter", shopperName);
+        Assert.Equal(["bacon", "lettuce", "tomatoes"], shoppingCart);
+        AssertUsageAgainstActivities(response, activities);
+    }
+
     private static void AssertUsageAgainstActivities(ChatResponse response, List<Activity> activities)
     {
         // If the underlying IChatClient provides usage data, function invocation should aggregate the
