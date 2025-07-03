@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -423,7 +424,13 @@ public abstract class ChatClientIntegrationTests : IDisposable
                 AIFunctionFactory.Create((long l) => l, createOptions()),
                 AIFunctionFactory.Create((char c) => c, createOptions()),
                 AIFunctionFactory.Create((DateTime dt) => dt, createOptions()),
-                AIFunctionFactory.Create((DateTime? dt) => dt, createOptions()),
+                AIFunctionFactory.Create((DateTimeOffset? dt) => dt, createOptions()),
+                AIFunctionFactory.Create((TimeSpan ts) => ts, createOptions()),
+#if NET
+                AIFunctionFactory.Create((DateOnly d) => d, createOptions()),
+                AIFunctionFactory.Create((TimeOnly t) => t, createOptions()),
+#endif
+                AIFunctionFactory.Create((Uri uri) => uri, createOptions()),
                 AIFunctionFactory.Create((Guid guid) => guid, createOptions()),
                 AIFunctionFactory.Create((List<int> list) => list, createOptions()),
                 AIFunctionFactory.Create((int[] arr, ComplexObject? co) => arr, createOptions()),
@@ -475,11 +482,45 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
     private class ComplexObject
     {
+        [DisplayName("Something cool")]
+#if NET
+        [DeniedValues("abc", "def", "default")]
+#endif
         public string? SomeString { get; set; }
 
+#if NET
+        [AllowedValues("abc", "def", "default")]
+#endif
         public string AnotherString { get; set; } = "default";
 
+#if NET
+        [Range(25, 75)]
+#endif
         public int Value { get; set; }
+
+        [EmailAddress]
+        public string? Email { get; set; }
+
+        [RegularExpression("[abc]")]
+        public string? RegexString { get; set; }
+
+        [StringLength(42)]
+        public string MeasuredString { get; set; } = "default";
+
+#if NET
+        [Length(1, 2)]
+#endif
+        public int[]? MeasuredArray1 { get; set; }
+
+#if NET
+        [MinLength(1)]
+#endif
+        public int[]? MeasuredArray2 { get; set; }
+
+#if NET
+        [MaxLength(10)]
+#endif
+        public int[]? MeasuredArray3 { get; set; }
     }
 
     protected virtual bool SupportsParallelFunctionCalling => true;

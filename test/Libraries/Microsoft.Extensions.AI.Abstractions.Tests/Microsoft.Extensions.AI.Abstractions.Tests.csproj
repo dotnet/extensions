@@ -38,5 +38,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Abstractions\Microsoft.Extensions.AI.Abstractions.csproj" ProjectUnderTest="true" />
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI\Microsoft.Extensions.AI.csproj" />
+    <ProjectReference Include="..\..\TestUtilities\TestUtilities.csproj" />
   </ItemGroup>
 </Project>
