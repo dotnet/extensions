@@ -4,6 +4,8 @@
     <TargetFrameworks>$(NetCoreTargetFrameworks);netstandard2.0;</TargetFrameworks>
     <Description>Provides canonical implementations of telemetry abstractions.</Description>
     <Workstream>Telemetry</Workstream>
+    <!-- disable "Published symbols cannot be deleted to maintain compatibility" because we have different APIs for different TFMs -->
+    <NoWarn Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net9.0'))">$(NoWarn);LA0006</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
