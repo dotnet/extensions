@@ -3,6 +3,49 @@
 <Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringOptions.get_UseDeltaNrPeriodsForCpuCalculation</Target>
+    <Left>lib/net462/Microsoft.Extensions.Diagnostics.ResourceMonitoring.dll</Left>
+    <Right>lib/net462/Microsoft.Extensions.Diagnostics.ResourceMonitoring.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringOptions.set_UseDeltaNrPeriodsForCpuCalculation(System.Boolean)</Target>
+    <Left>lib/net462/Microsoft.Extensions.Diagnostics.ResourceMonitoring.dll</Left>
+    <Right>lib/net462/Microsoft.Extensions.Diagnostics.ResourceMonitoring.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringOptions.get_UseDeltaNrPeriodsForCpuCalculation</Target>
+    <Left>lib/net8.0/Microsoft.Extensions.Diagnostics.ResourceMonitoring.dll</Left>
+    <Right>lib/net8.0/Microsoft.Extensions.Diagnostics.ResourceMonitoring.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringOptions.set_UseDeltaNrPeriodsForCpuCalculation(System.Boolean)</Target>
+    <Left>lib/net8.0/Microsoft.Extensions.Diagnostics.ResourceMonitoring.dll</Left>
+    <Right>lib/net8.0/Microsoft.Extensions.Diagnostics.ResourceMonitoring.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringOptions.get_UseDeltaNrPeriodsForCpuCalculation</Target>
+    <Left>lib/net9.0/Microsoft.Extensions.Diagnostics.ResourceMonitoring.dll</Left>
+    <Right>lib/net9.0/Microsoft.Extensions.Diagnostics.ResourceMonitoring.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringOptions.set_UseDeltaNrPeriodsForCpuCalculation(System.Boolean)</Target>
+    <Left>lib/net9.0/Microsoft.Extensions.Diagnostics.ResourceMonitoring.dll</Left>
+    <Right>lib/net9.0/Microsoft.Extensions.Diagnostics.ResourceMonitoring.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringOptions.get_CalculateCpuUsageWithoutHostDelta</Target>
     <Left>lib/net462/Microsoft.Extensions.Diagnostics.ResourceMonitoring.dll</Left>
     <Right>lib/net462/Microsoft.Extensions.Diagnostics.ResourceMonitoring.dll</Right>
