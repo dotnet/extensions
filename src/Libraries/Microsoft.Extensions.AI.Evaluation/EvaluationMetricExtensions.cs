@@ -177,7 +177,7 @@ public static class EvaluationMetricExtensions
 
         if (duration is not null)
         {
-            string durationText = $"{duration.Value.TotalSeconds.ToString("F2", CultureInfo.InvariantCulture)} s";
+            string durationText = $"{duration.Value.TotalSeconds.ToString("F4", CultureInfo.InvariantCulture)} s";
             metric.AddOrUpdateMetadata(name: "evaluation-duration", value: durationText);
         }
     }

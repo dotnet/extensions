@@ -77,7 +77,7 @@ public sealed class F1Evaluator : IEvaluator
         });
 
         metric.Value = score;
-        string durationText = $"{duration.TotalSeconds.ToString("F2", CultureInfo.InvariantCulture)} s";
+        string durationText = $"{duration.TotalSeconds.ToString("F4", CultureInfo.InvariantCulture)} s";
         metric.AddOrUpdateMetadata(name: "evaluation-duration", value: durationText);
         metric.AddOrUpdateContext(context);
         metric.Interpretation = metric.Interpret();
