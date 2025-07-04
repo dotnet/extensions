@@ -26,6 +26,7 @@ using Microsoft.Shared.Diagnostics;
 #pragma warning disable S2333 // Redundant modifiers should not be used
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 #pragma warning disable SA1202 // Public members should come before private members
+#pragma warning disable SA1203 // Constants should appear before fields
 
 namespace Microsoft.Extensions.AI;
 
@@ -825,6 +826,23 @@ public static partial class AIFunctionFactory
                     {
                         try
                         {
+                            if (value is string text && IsPotentiallyJson(text))
+                            {
+                                Debug.Assert(typeInfo.Type != typeof(string), "string parameters should not enter this branch.");
+
+                                // Account for the parameter potentially being a JSON string.
+                                // The value is a string but the type is not. Try to deserialize it under the assumption that it's JSON.
+                                // If it's not, we'll fall through to the default path that makes it valid JSON and then tries to deserialize.
+                                try
+                                {
+                                    return JsonSerializer.Deserialize(text, typeInfo);
+                                }
+                                catch (JsonException)
+                                {
+                                    // If the string is not valid JSON, fall through to the round-trip.
+                                }
+                            }
+
                             string json = JsonSerializer.Serialize(value, serializerOptions.GetTypeInfo(value.GetType()));
                             return JsonSerializer.Deserialize(json, typeInfo);
                         }
@@ -1020,6 +1038,34 @@ public static partial class AIFunctionFactory
             Func<object?, Type?, CancellationToken, ValueTask<object?>>? MarshalResult,
             AIJsonSchemaCreateOptions SchemaOptions);
     }
+
+    /// <summary>
+    /// Quickly checks if the specified string is potentially JSON
+    /// by checking if the first non-whitespace characters are valid JSON start tokens.
+    /// </summary>
+    /// <param name="value">The string to check.</param>
+    /// <returns>If <see langword="false"/> then the string is definitely not valid JSON.</returns>
+    private static bool IsPotentiallyJson(string value) => PotentiallyJsonRegex().IsMatch(value);
+#if NET
+    [GeneratedRegex(PotentiallyJsonRegexString, RegexOptions.IgnorePatternWhitespace)]
+    private static partial Regex PotentiallyJsonRegex();
+#else
+    private static Regex PotentiallyJsonRegex() => _potentiallyJsonRegex;
+    private static readonly Regex _potentiallyJsonRegex = new(PotentiallyJsonRegexString, RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+#endif
+    private const string PotentiallyJsonRegexString = """
+        ^\s*        # Optional whitespace at the start of the string
+           ( null   # null literal
+           | false  # false literal
+           | true   # true literal
+           | -?[0-9]# number
+           | "      # string
+           | \[     # start array
+           | {      # start object
+           | //     # Start of single-line comment
+           | /\*    # Start of multi-line comment
+           )
+        """;
 
     /// <summary>
     /// Removes characters from a .NET member name that shouldn't be used in an AI function name.
