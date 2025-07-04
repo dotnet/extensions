@@ -23,16 +23,18 @@ internal sealed class HttpRequestReader : IHttpRequestReader
     private readonly IHttpRouteParser _httpRouteParser;
     private readonly IHttpHeadersReader _httpHeadersReader;
     private readonly FrozenDictionary<string, DataClassification> _defaultSensitiveParameters;
+    private readonly FrozenDictionary<string, DataClassification> _queryParameterDataClasses;
 
     private readonly bool _logRequestBody;
     private readonly bool _logResponseBody;
+    private readonly bool _logRequestQueryParameters;
 
     private readonly bool _logRequestHeaders;
     private readonly bool _logResponseHeaders;
 
     private readonly HttpRouteParameterRedactionMode _routeParameterRedactionMode;
 
-    // These are not registered in DI as handler today is public and we would need to make all of those types public.
+    // These are not registered in DI as handler today is public, and we would need to make all of those types public.
     // They are not implemented as statics to simplify design and pass less arguments around.
     // Also wanted to encapsulate logic of reading each part of the request to simplify handler logic itself.
     private readonly HttpRequestBodyReader _httpRequestBodyReader;
@@ -77,6 +79,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
         _downstreamDependencyMetadataManager = downstreamDependencyMetadataManager;
 
         _defaultSensitiveParameters = options.RouteParameterDataClasses.ToFrozenDictionary(StringComparer.Ordinal);
+        _queryParameterDataClasses = options.RequestQueryParametersDataClasses.ToFrozenDictionary(StringComparer.Ordinal);
 
         if (options.LogBody)
         {
@@ -86,31 +89,12 @@ internal sealed class HttpRequestReader : IHttpRequestReader
 
         _logRequestHeaders = options.RequestHeadersDataClasses.Count > 0;
         _logResponseHeaders = options.ResponseHeadersDataClasses.Count > 0;
+        _logRequestQueryParameters = options.RequestQueryParametersDataClasses.Count > 0;
 
         _httpRequestBodyReader = new HttpRequestBodyReader(options);
         _httpResponseBodyReader = new HttpResponseBodyReader(options);
 
         _routeParameterRedactionMode = options.RequestPathParameterRedactionMode;
-    }
-
-    public async Task ReadRequestAsync(LogRecord logRecord, HttpRequestMessage request,
-        List<KeyValuePair<string, string>>? requestHeadersBuffer, CancellationToken cancellationToken)
-    {
-        logRecord.Host = request.RequestUri?.Host ?? TelemetryConstants.Unknown;
-        logRecord.Method = request.Method;
-        GetRedactedPathAndParameters(request, logRecord);
-
-        if (_logRequestHeaders)
-        {
-            _httpHeadersReader.ReadRequestHeaders(request, requestHeadersBuffer);
-            logRecord.RequestHeaders = requestHeadersBuffer;
-        }
-
-        if (_logRequestBody)
-        {
-            logRecord.RequestBody = await _httpRequestBodyReader.ReadAsync(request, cancellationToken)
-                .ConfigureAwait(false);
-        }
     }
 
     public async Task ReadResponseAsync(LogRecord logRecord, HttpResponseMessage response,
@@ -129,6 +113,119 @@ internal sealed class HttpRequestReader : IHttpRequestReader
         }
 
         logRecord.StatusCode = (int)response.StatusCode;
+    }
+
+    public async Task ReadRequestAsync(LogRecord logRecord, HttpRequestMessage request,
+    List<KeyValuePair<string, string>>? requestHeadersBuffer, CancellationToken cancellationToken)
+    {
+        logRecord.Host = request.RequestUri?.Host ?? TelemetryConstants.Unknown;
+        logRecord.Method = request.Method;
+        GetRedactedPathAndParameters(request, logRecord);
+
+        if (_logRequestHeaders)
+        {
+            _httpHeadersReader.ReadRequestHeaders(request, requestHeadersBuffer);
+            logRecord.RequestHeaders = requestHeadersBuffer;
+        }
+
+        if (_logRequestBody)
+        {
+            logRecord.RequestBody = await _httpRequestBodyReader.ReadAsync(request, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        var (queryParameters, queryParametersCount) = GetQueryParameters(request);
+        logRecord.QueryParameters = queryParameters;
+        logRecord.QueryParametersCount = queryParametersCount;
+    }
+
+    private (KeyValuePair<string, string?>[] queryParameters, int count) GetQueryParameters(HttpRequestMessage request)
+    {
+        if (_logRequestQueryParameters && request.RequestUri is not null)
+        {
+            return ExtractAndRedactQueryParameters(request.RequestUri.Query);
+        }
+
+        return ([], 0);
+    }
+
+    private (KeyValuePair<string, string?>[] queryParameters, int count) ExtractAndRedactQueryParameters(string query)
+    {
+        if (string.IsNullOrEmpty(query) || _queryParameterDataClasses.Count == 0)
+        {
+            return ([], 0);
+        }
+
+        var dict = new Dictionary<string, string?>(StringComparer.Ordinal);
+        ReadOnlySpan<char> querySpan = query.AsSpan();
+        int length = querySpan.Length;
+        int start = 0;
+
+        // Remove leading '?'
+        if (length > 0 && querySpan[0] == '?')
+        {
+            start = 1;
+        }
+
+        while (start < length)
+        {
+            int amp = querySpan.Slice(start).IndexOf('&');
+            int end = amp == -1 ? length : start + amp;
+
+            int eq = querySpan.Slice(start, end - start).IndexOf('=');
+            string key;
+            string? value;
+            if (eq >= 0)
+            {
+                var keySpan = querySpan.Slice(start, eq);
+                var valueSpan = querySpan.Slice(start + eq + 1, end - (start + eq + 1));
+                key = Uri.UnescapeDataString(keySpan.ToString());
+                value = Uri.UnescapeDataString(valueSpan.ToString());
+            }
+            else
+            {
+                var keySpan = querySpan.Slice(start, end - start);
+                key = Uri.UnescapeDataString(keySpan.ToString());
+                value = null;
+            }
+
+            // Only add the first occurrence of a key
+            if (!dict.ContainsKey(key))
+            {
+                dict[key] = value;
+            }
+
+            if (amp == -1)
+            {
+                break;
+            }
+
+            start = end + 1;
+        }
+
+        var result = new List<KeyValuePair<string, string?>>();
+
+        foreach (var kvp in _queryParameterDataClasses)
+        {
+            if (dict.TryGetValue(kvp.Key, out var value) && !string.IsNullOrEmpty(value))
+            {
+                string redacted;
+                if (_httpHeadersReader is HttpHeadersReader realReader)
+                {
+                    // Value was checked for the null in the condition above
+                    // Use null-forgiving operator to assure the compiler value is not null here
+                    redacted = realReader.RedactValue(value!, kvp.Value);
+                }
+                else
+                {
+                    redacted = value!;
+                }
+
+                result.Add(new KeyValuePair<string, string?>(kvp.Key, redacted));
+            }
+        }
+
+        return (result.ToArray(), result.Count);
     }
 
     private void GetRedactedPathAndParameters(HttpRequestMessage request, LogRecord logRecord)
