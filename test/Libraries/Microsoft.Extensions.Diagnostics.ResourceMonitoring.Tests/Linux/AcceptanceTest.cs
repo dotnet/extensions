@@ -395,7 +395,16 @@ public sealed class AcceptanceTest
         listener.InstrumentPublished = (Instrument instrument, MeterListener meterListener)
             => OnInstrumentPublished(instrument, meterListener, meterScope);
         listener.SetMeasurementEventCallback<double>((m, f, tags, _)
-            => OnMeasurementReceived(m, f, tags, ref cpuUserTime, ref cpuKernelTime, ref cpuFromGauge, ref cpuLimitFromGauge, ref cpuRequestFromGauge, ref memoryFromGauge, ref memoryLimitFromGauge));
+            => OnMeasurementReceived(m,
+                f,
+                tags,
+                ref cpuUserTime,
+                ref cpuKernelTime,
+                ref cpuFromGauge,
+                ref cpuLimitFromGauge,
+                ref cpuRequestFromGauge,
+                ref memoryFromGauge,
+                ref memoryLimitFromGauge));
         listener.Start();
 
         using IHost host = FakeHost.CreateBuilder()
@@ -454,10 +463,16 @@ public sealed class AcceptanceTest
     }
 
 #pragma warning disable S107 // Methods should not have too many parameters
-    private static void OnMeasurementReceived(
-        Instrument instrument, double value, ReadOnlySpan<KeyValuePair<string, object?>> tags,
-        ref double cpuUserTime, ref double cpuKernelTime, ref double cpuFromGauge, ref double cpuLimitFromGauge,
-        ref double cpuRequestFromGauge, ref double memoryFromGauge, ref double memoryLimitFromGauge)
+    private static void OnMeasurementReceived(Instrument instrument,
+        double value,
+        ReadOnlySpan<KeyValuePair<string, object?>> tags,
+        ref double cpuUserTime,
+        ref double cpuKernelTime,
+        ref double cpuFromGauge,
+        ref double cpuLimitFromGauge,
+        ref double cpuRequestFromGauge,
+        ref double memoryFromGauge,
+        ref double memoryLimitFromGauge)
 #pragma warning restore S107 // Methods should not have too many parameters
     {
         if (instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization)
