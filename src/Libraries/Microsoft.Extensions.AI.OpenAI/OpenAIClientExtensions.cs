@@ -14,7 +14,7 @@ using OpenAI.Assistants;
 using OpenAI.Audio;
 using OpenAI.Chat;
 using OpenAI.Embeddings;
-using OpenAI.RealtimeConversation;
+using OpenAI.Realtime;
 using OpenAI.Responses;
 
 #pragma warning disable S103 // Lines should not be too long
@@ -134,7 +134,6 @@ public static class OpenAIClientExtensions
     /// <exception cref="ArgumentNullException"><paramref name="assistantClient"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="assistantId"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="assistantId"/> is empty or composed entirely of whitespace.</exception>
-    [Experimental("OPENAI001")] // AssistantClient itself is experimental with this ID
     public static IChatClient AsIChatClient(this AssistantClient assistantClient, string assistantId, string? threadId = null) =>
         new OpenAIAssistantChatClient(assistantClient, assistantId, threadId);
 
@@ -165,7 +164,6 @@ public static class OpenAIClientExtensions
     /// <param name="function">The function to convert.</param>
     /// <returns>An OpenAI <see cref="FunctionToolDefinition"/> representing <paramref name="function"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="function"/> is <see langword="null"/>.</exception>
-    [Experimental("OPENAI001")] // AssistantClient itself is experimental with this ID
     public static FunctionToolDefinition AsOpenAIAssistantsFunctionToolDefinition(this AIFunction function) =>
         OpenAIAssistantChatClient.ToOpenAIAssistantsFunctionToolDefinition(Throw.IfNull(function));
 
