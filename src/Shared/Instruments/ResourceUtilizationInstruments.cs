@@ -19,6 +19,14 @@ internal static class ResourceUtilizationInstruments
     public const string MeterName = "Microsoft.Extensions.Diagnostics.ResourceMonitoring";
 
     /// <summary>
+    /// The name of an instrument to retrieve CPU time consumed by the specific container on all available CPU cores, measured in seconds.
+    /// </summary>
+    /// <remarks>
+    /// The type of an instrument is <see cref="System.Diagnostics.Metrics.ObservableCounter{T}"/>.
+    /// </remarks>
+    public const string ContainerCpuTime = "container.cpu.time";
+
+    /// <summary>
     /// The name of an instrument to retrieve CPU limit consumption of all processes running inside a container or control group in range <c>[0, 1]</c>.
     /// </summary>
     /// <remarks>

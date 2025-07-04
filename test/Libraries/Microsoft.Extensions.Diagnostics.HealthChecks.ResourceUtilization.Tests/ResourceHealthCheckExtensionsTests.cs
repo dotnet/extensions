@@ -500,6 +500,7 @@ public class ResourceHealthCheckExtensionsTests
         accountingInfoAfter1Ms.TotalUserTime = (long)(utilization * 100);
         jobHandleMock.SetupSequence(j => j.GetBasicAccountingInfo())
             .Returns(() => initialAccountingInfo) // this is called from the WindowsContainerSnapshotProvider's constructor
+            .Returns(() => initialAccountingInfo) // this is called from the WindowsContainerSnapshotProvider's GetCpuTime method
             .Returns(() => accountingInfoAfter1Ms); // this is called from the WindowsContainerSnapshotProvider's CpuPercentage method
 
         using var meter = new Meter("Microsoft.Extensions.Diagnostics.ResourceMonitoring");

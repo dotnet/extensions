@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -209,6 +210,8 @@ public sealed class AcceptanceTest
 
         using var listener = new MeterListener();
         var clock = new FakeTimeProvider(DateTimeOffset.UtcNow);
+        var cpuUserTime = 0.0d;
+        var cpuKernelTime = 0.0d;
         var cpuFromGauge = 0.0d;
         var cpuLimitFromGauge = 0.0d;
         var cpuRequestFromGauge = 0.0d;
@@ -219,8 +222,8 @@ public sealed class AcceptanceTest
         object? meterScope = null;
         listener.InstrumentPublished = (Instrument instrument, MeterListener meterListener)
             => OnInstrumentPublished(instrument, meterListener, meterScope);
-        listener.SetMeasurementEventCallback<double>((m, f, _, _)
-            => OnMeasurementReceived(m, f, ref cpuFromGauge, ref cpuLimitFromGauge, ref cpuRequestFromGauge, ref memoryFromGauge, ref memoryLimitFromGauge));
+        listener.SetMeasurementEventCallback<double>((m, f, tags, _)
+            => OnMeasurementReceived(m, f, tags, ref cpuUserTime, ref cpuKernelTime, ref cpuFromGauge, ref cpuLimitFromGauge, ref cpuRequestFromGauge, ref memoryFromGauge, ref memoryLimitFromGauge));
         listener.Start();
 
         using var host = FakeHost.CreateBuilder()
@@ -292,6 +295,8 @@ public sealed class AcceptanceTest
 
         using var listener = new MeterListener();
         var clock = new FakeTimeProvider(DateTimeOffset.UtcNow);
+        var cpuUserTime = 0.0d;
+        var cpuKernelTime = 0.0d;
         var cpuFromGauge = 0.0d;
         var cpuLimitFromGauge = 0.0d;
         var cpuRequestFromGauge = 0.0d;
@@ -302,8 +307,8 @@ public sealed class AcceptanceTest
         object? meterScope = null;
         listener.InstrumentPublished = (Instrument instrument, MeterListener meterListener)
             => OnInstrumentPublished(instrument, meterListener, meterScope);
-        listener.SetMeasurementEventCallback<double>((m, f, _, _)
-            => OnMeasurementReceived(m, f, ref cpuFromGauge, ref cpuLimitFromGauge, ref cpuRequestFromGauge, ref memoryFromGauge, ref memoryLimitFromGauge));
+        listener.SetMeasurementEventCallback<double>((m, f, tags, _)
+            => OnMeasurementReceived(m, f, tags, ref cpuUserTime, ref cpuKernelTime, ref cpuFromGauge, ref cpuLimitFromGauge, ref cpuRequestFromGauge, ref memoryFromGauge, ref memoryLimitFromGauge));
         listener.Start();
 
         using var host = FakeHost.CreateBuilder()
@@ -362,10 +367,8 @@ public sealed class AcceptanceTest
     [ConditionalFact]
     [CombinatorialData]
     [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
-    public Task ResourceUtilizationTracker_And_Metrics_Report_Same_Values_With_Cgroupsv2_v2_Using_NrPeriods()
+    public Task ResourceUtilizationTracker_And_Metrics_Report_Same_Values_With_Cgroupsv2_Using_LinuxCalculationV2()
     {
-        var cpuRefresh = TimeSpan.FromMinutes(13);
-        var memoryRefresh = TimeSpan.FromMinutes(14);
         var fileSystem = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
             { new FileInfo("/proc/self/cgroup"), "0::/fakeslice"},
@@ -382,25 +385,34 @@ public sealed class AcceptanceTest
         var clock = new FakeTimeProvider(DateTimeOffset.UtcNow);
         var cpuFromGauge = 0.0d;
         var cpuLimitFromGauge = 0.0d;
+        var cpuUserTime = 0.0d;
+        var cpuKernelTime = 0.0d;
         var cpuRequestFromGauge = 0.0d;
         var memoryFromGauge = 0.0d;
         var memoryLimitFromGauge = 0.0d;
-        using var e = new ManualResetEventSlim();
 
         object? meterScope = null;
         listener.InstrumentPublished = (Instrument instrument, MeterListener meterListener)
             => OnInstrumentPublished(instrument, meterListener, meterScope);
-        listener.SetMeasurementEventCallback<double>((m, f, _, _)
-            => OnMeasurementReceived(m, f, ref cpuFromGauge, ref cpuLimitFromGauge, ref cpuRequestFromGauge, ref memoryFromGauge, ref memoryLimitFromGauge));
+        listener.SetMeasurementEventCallback<double>((m, f, tags, _)
+            => OnMeasurementReceived(m,
+                f,
+                tags,
+                ref cpuUserTime,
+                ref cpuKernelTime,
+                ref cpuFromGauge,
+                ref cpuLimitFromGauge,
+                ref cpuRequestFromGauge,
+                ref memoryFromGauge,
+                ref memoryLimitFromGauge));
         listener.Start();
 
-        using var host = FakeHost.CreateBuilder()
+        using IHost host = FakeHost.CreateBuilder()
             .ConfigureServices(x =>
                 x.AddLogging()
                 .AddSingleton<TimeProvider>(clock)
                 .AddSingleton<IUserHz>(new FakeUserHz(100))
                 .AddSingleton<IFileSystem>(fileSystem)
-                .AddSingleton<IResourceUtilizationPublisher>(new GenericPublisher(_ => e.Set()))
                 .AddResourceMonitoring(x => x.ConfigureMonitor(options =>
                     {
                         options.UseLinuxCalculationV2 = true;
@@ -409,14 +421,10 @@ public sealed class AcceptanceTest
             .Build();
 
         meterScope = host.Services.GetRequiredService<IMeterFactory>();
-        var tracker = host.Services.GetService<IResourceMonitor>();
-        Assert.NotNull(tracker);
 
         _ = host.RunAsync();
 
         listener.RecordObservableInstruments();
-
-        var utilization = tracker.GetUtilization(TimeSpan.FromSeconds(5));
 
         fileSystem.ReplaceFileContent(new FileInfo("/proc/stat"), "cpu  11 10 10 10 10 10 10 10 10 10");
         fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat"), "usage_usec 1120000\nnr_periods 56");
@@ -426,14 +434,10 @@ public sealed class AcceptanceTest
         clock.Advance(TimeSpan.FromSeconds(6));
         listener.RecordObservableInstruments();
 
-        e.Wait();
-
-        utilization = tracker.GetUtilization(TimeSpan.FromSeconds(5));
-
-        var roundedCpuUsedPercentage = Math.Round(utilization.CpuUsedPercentage, 1);
-
         Assert.Equal(42, Math.Round(cpuLimitFromGauge * 100));
         Assert.Equal(83, Math.Round(cpuRequestFromGauge * 100));
+        Assert.Equal(167, Math.Round(cpuUserTime * 100));
+        Assert.Equal(81, Math.Round(cpuKernelTime * 100));
 
         return Task.CompletedTask;
     }
@@ -448,6 +452,7 @@ public sealed class AcceptanceTest
 #pragma warning disable S1067 // Expressions should not be too complex
         if (instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization ||
             instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization ||
+            instrument.Name == ResourceUtilizationInstruments.ContainerCpuTime ||
             instrument.Name == ResourceUtilizationInstruments.ContainerCpuRequestUtilization ||
             instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization ||
             instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization)
@@ -457,10 +462,18 @@ public sealed class AcceptanceTest
 #pragma warning restore S1067 // Expressions should not be too complex
     }
 
-    private static void OnMeasurementReceived(
-        Instrument instrument, double value,
-        ref double cpuFromGauge, ref double cpuLimitFromGauge, ref double cpuRequestFromGauge,
-        ref double memoryFromGauge, ref double memoryLimitFromGauge)
+#pragma warning disable S107 // Methods should not have too many parameters
+    private static void OnMeasurementReceived(Instrument instrument,
+        double value,
+        ReadOnlySpan<KeyValuePair<string, object?>> tags,
+        ref double cpuUserTime,
+        ref double cpuKernelTime,
+        ref double cpuFromGauge,
+        ref double cpuLimitFromGauge,
+        ref double cpuRequestFromGauge,
+        ref double memoryFromGauge,
+        ref double memoryLimitFromGauge)
+#pragma warning restore S107 // Methods should not have too many parameters
     {
         if (instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization)
         {
@@ -469,6 +482,18 @@ public sealed class AcceptanceTest
         else if (instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization)
         {
             memoryFromGauge = value;
+        }
+        else if (instrument.Name == ResourceUtilizationInstruments.ContainerCpuTime)
+        {
+            var tagsArray = tags.ToArray();
+            if (tagsArray.Contains(new KeyValuePair<string, object?>("cpu.mode", "user")))
+            {
+                cpuUserTime = value;
+            }
+            else if (tagsArray.Contains(new KeyValuePair<string, object?>("cpu.mode", "system")))
+            {
+                cpuKernelTime = value;
+            }
         }
         else if (instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization)
         {
