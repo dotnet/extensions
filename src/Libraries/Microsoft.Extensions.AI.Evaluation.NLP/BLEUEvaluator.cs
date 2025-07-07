@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -19,11 +20,11 @@ namespace Microsoft.Extensions.AI.Evaluation.NLP;
 /// </summary>
 /// <remarks>
 /// <para>
-/// The <see cref="BLEUEvaluator"/> computes the BLEU score of a response ("hypothesis") compared to a reference
-/// supplied via <see cref="BLEUEvaluatorContext.References"/>. The score is returned in a <see cref="NumericMetric"/>
-/// with a value between 0.0 and 1.0 where 0.0 represents no match at all and 1.0 indicates a perfect match.
-/// By default, the score is interpreted with a pass/fail cutoff of 0.5. So a score of 0.5 or higher is
-/// passing and a score below 0.5 is failing.
+/// The <see cref="BLEUEvaluator"/> computes the BLEU score of a response ("hypothesis") compared to one or more
+/// reference responses supplied via <see cref="BLEUEvaluatorContext.References"/>. The score is returned in a
+/// <see cref="NumericMetric"/> with a value between 0.0 and 1.0 where 0.0 represents no match at all and 1.0 indicates
+/// a perfect match. By default, the score is interpreted with a pass/fail cutoff of 0.5. So a score of 0.5 or higher
+/// is passing and a score below 0.5 is failing.
 /// </para>
 /// </remarks>
 public sealed class BLEUEvaluator : IEvaluator
@@ -77,18 +78,18 @@ public sealed class BLEUEvaluator : IEvaluator
             return new ValueTask<EvaluationResult>(result);
         }
 
-        var (score, duration) = TimingHelper.ExecuteWithTiming(() =>
+        (double score, TimeSpan duration) = TimingHelper.ExecuteWithTiming(() =>
         {
-            var references = context.References.Select(reference => SimpleWordTokenizer.WordTokenize(reference));
-            var hypothesis = SimpleWordTokenizer.WordTokenize(modelResponse.Text);
+            string[][] references = context.References.Select(reference => SimpleWordTokenizer.WordTokenize(reference).ToArray()).ToArray();
+            string[] hypothesis = SimpleWordTokenizer.WordTokenize(modelResponse.Text).ToArray();
             return BLEUAlgorithm.SentenceBLEU(references, hypothesis, BLEUAlgorithm.DefaultBLEUWeights, SmoothingFunction.Method4);
         });
 
         metric.Value = score;
-        string durationText = $"{duration.TotalSeconds.ToString("F2", CultureInfo.InvariantCulture)} s";
+        string durationText = $"{duration.TotalSeconds.ToString("F4", CultureInfo.InvariantCulture)} s";
         metric.AddOrUpdateMetadata(name: "evaluation-duration", value: durationText);
         metric.AddOrUpdateContext(context);
-        metric.Interpretation = NLPScoreInterpretation.Interpret(metric);
+        metric.Interpretation = metric.Interpret();
 
         return new ValueTask<EvaluationResult>(result);
     }

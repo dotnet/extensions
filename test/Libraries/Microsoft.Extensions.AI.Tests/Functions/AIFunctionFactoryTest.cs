@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -73,6 +74,69 @@ public partial class AIFunctionFactoryTest
             Exception e = await Assert.ThrowsAsync<ArgumentException>(() => f.InvokeAsync().AsTask());
             Assert.Contains("'theParam'", e.Message);
         }
+    }
+
+    [Fact]
+    public async Task Parameters_ToleratesJsonEncodedParameters()
+    {
+        AIFunction func = AIFunctionFactory.Create((int x, int y, int z, int w, int u) => x + y + z + w + u);
+
+        var result = await func.InvokeAsync(new()
+        {
+            ["x"] = "1",
+            ["y"] = JsonNode.Parse("2"),
+            ["z"] = JsonDocument.Parse("3"),
+            ["w"] = JsonDocument.Parse("4").RootElement,
+            ["u"] = 5M, // boxed decimal cannot be cast to int, requires conversion
+        });
+
+        AssertExtensions.EqualFunctionCallResults(15, result);
+    }
+
+    [Theory]
+    [InlineData("   null")]
+    [InlineData("   false   ")]
+    [InlineData("true   ")]
+    [InlineData("42")]
+    [InlineData("0.0")]
+    [InlineData("-1e15")]
+    [InlineData("  \"I am a string!\" ")]
+    [InlineData("  {}")]
+    [InlineData("[]")]
+    [InlineData("// single-line comment\r\nnull")]
+    [InlineData("/* multi-line\r\ncomment */\r\nnull")]
+    public async Task Parameters_ToleratesJsonStringParameters(string jsonStringParam)
+    {
+        JsonSerializerOptions options = new(AIJsonUtilities.DefaultOptions) { ReadCommentHandling = JsonCommentHandling.Skip };
+        AIFunction func = AIFunctionFactory.Create((JsonElement param) => param, serializerOptions: options);
+        JsonElement expectedResult = JsonDocument.Parse(jsonStringParam, new() { CommentHandling = JsonCommentHandling.Skip }).RootElement;
+
+        var result = await func.InvokeAsync(new()
+        {
+            ["param"] = jsonStringParam
+        });
+
+        AssertExtensions.EqualFunctionCallResults(expectedResult, result);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("                 \r\n")]
+    [InlineData("I am a string!")]
+    [InlineData("/* Code snippet */ int main(void) { return 0; }")]
+    [InlineData("let rec Y F x = F (Y F) x")]
+    [InlineData("+3")]
+    public async Task Parameters_ToleratesInvalidJsonStringParameters(string invalidJsonParam)
+    {
+        AIFunction func = AIFunctionFactory.Create((JsonElement param) => param);
+        JsonElement expectedResult = JsonDocument.Parse(JsonSerializer.Serialize(invalidJsonParam, JsonContext.Default.String)).RootElement;
+
+        var result = await func.InvokeAsync(new()
+        {
+            ["param"] = invalidJsonParam
+        });
+
+        AssertExtensions.EqualFunctionCallResults(expectedResult, result);
     }
 
     [Fact]

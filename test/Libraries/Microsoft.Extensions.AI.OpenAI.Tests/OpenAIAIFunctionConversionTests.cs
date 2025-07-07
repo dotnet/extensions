@@ -6,11 +6,9 @@ using System.ComponentModel;
 using System.Text.Json;
 using OpenAI.Assistants;
 using OpenAI.Chat;
-using OpenAI.RealtimeConversation;
+using OpenAI.Realtime;
 using OpenAI.Responses;
 using Xunit;
-
-#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
 namespace Microsoft.Extensions.AI;
 
@@ -24,7 +22,7 @@ public class OpenAIAIFunctionConversionTests
     [Fact]
     public void AsOpenAIChatTool_ProducesValidInstance()
     {
-        ChatTool tool = _testFunction.AsOpenAIChatTool();
+        var tool = _testFunction.AsOpenAIChatTool();
 
         Assert.NotNull(tool);
         Assert.Equal("test_function", tool.FunctionName);
@@ -35,7 +33,7 @@ public class OpenAIAIFunctionConversionTests
     [Fact]
     public void AsOpenAIResponseTool_ProducesValidInstance()
     {
-        ResponseTool tool = _testFunction.AsOpenAIResponseTool();
+        var tool = _testFunction.AsOpenAIResponseTool();
 
         Assert.NotNull(tool);
     }
@@ -43,7 +41,7 @@ public class OpenAIAIFunctionConversionTests
     [Fact]
     public void AsOpenAIConversationFunctionTool_ProducesValidInstance()
     {
-        ConversationFunctionTool tool = _testFunction.AsOpenAIConversationFunctionTool();
+        var tool = _testFunction.AsOpenAIConversationFunctionTool();
 
         Assert.NotNull(tool);
         Assert.Equal("test_function", tool.Name);
@@ -54,7 +52,7 @@ public class OpenAIAIFunctionConversionTests
     [Fact]
     public void AsOpenAIAssistantsFunctionToolDefinition_ProducesValidInstance()
     {
-        FunctionToolDefinition tool = _testFunction.AsOpenAIAssistantsFunctionToolDefinition();
+        var tool = _testFunction.AsOpenAIAssistantsFunctionToolDefinition();
 
         Assert.NotNull(tool);
         Assert.Equal("test_function", tool.FunctionName);
@@ -62,7 +60,7 @@ public class OpenAIAIFunctionConversionTests
         ValidateSchemaParameters(tool.Parameters);
     }
 
-    /// <summary>Helper method to validate function parameters match our schema</summary>
+    /// <summary>Helper method to validate function parameters match our schema.</summary>
     private static void ValidateSchemaParameters(BinaryData parameters)
     {
         Assert.NotNull(parameters);

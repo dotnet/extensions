@@ -15,8 +15,9 @@ namespace Microsoft.Extensions.AI.Evaluation.NLP;
 /// Contextual information that the <see cref="BLEUEvaluator"/> uses to compute the BLEU score for a response.
 /// </summary>
 /// <remarks>
-/// <see cref="BLEUEvaluator"/> measures the BLEU score of a response compared to a reference. BLEU (Bilingual Evaluation Understudy)
-/// is a metric used to evaluate the quality of machine-generated text.
+/// <see cref="BLEUEvaluator"/> measures the BLEU score of a response compared to one or more reference responses
+/// supplied via <see cref="References"/>. BLEU (Bilingual Evaluation Understudy) is a metric used to evaluate the
+/// quality of machine-generated text.
 /// </remarks>
 public sealed class BLEUEvaluatorContext : EvaluationContext
 {
@@ -24,14 +25,14 @@ public sealed class BLEUEvaluatorContext : EvaluationContext
     /// Gets the unique <see cref="EvaluationContext.Name"/> that is used for
     /// <see cref="BLEUEvaluatorContext"/>.
     /// </summary>
-    public static string BLEUContextName => "BLEU Context";
+    public static string ReferencesContextName => "References (BLEU)";
 
     /// <summary>
-    /// Gets the reference responses against which the provided model response will be scored.
+    /// Gets the references against which the provided response will be scored.
     /// </summary>
     /// <remarks>
     /// The <see cref="BLEUEvaluator"/> measures the degree to which the response being evaluated is similar to
-    /// the response supplied via <see cref="References"/>. The metric will be reported as a BLEU score.
+    /// the responses supplied via <see cref="References"/>. The metric will be reported as a BLEU score.
     /// </remarks>
     public IReadOnlyList<string> References { get; }
 
@@ -41,8 +42,8 @@ public sealed class BLEUEvaluatorContext : EvaluationContext
     /// <param name="references">
     /// The reference responses against which the response that is being evaluated is compared.
     /// </param>
-    public BLEUEvaluatorContext(params string[] references)
-        : this(references as IEnumerable<string>)
+    public BLEUEvaluatorContext(IEnumerable<string> references)
+        : this(references.ToArray())
     {
     }
 
@@ -52,11 +53,11 @@ public sealed class BLEUEvaluatorContext : EvaluationContext
     /// <param name="references">
     /// The reference responses against which the response that is being evaluated is compared.
     /// </param>
-    public BLEUEvaluatorContext(IEnumerable<string> references)
+    public BLEUEvaluatorContext(params string[] references)
         : base(
-            name: BLEUContextName,
+            name: ReferencesContextName,
             contents: [.. references.Select(c => new TextContent(c))])
     {
-        References = [.. references];
+        References = references;
     }
 }

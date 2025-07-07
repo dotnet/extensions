@@ -61,6 +61,16 @@
         **\NuGet.config;
         **\Directory.Build.targets;
         **\Directory.Build.props;" />
+
+    <!-- Keep the exclude patterns below in sync with those in McpServerSnapshotTests.cs -->
+    <Content
+      Include="src\McpServer\**\*"
+      Exclude="
+        **\bin\**;
+        **\obj\**;
+        **\.vs\**;
+        **\*.sln;
+        **\*.in;" />
     <None Include="THIRD-PARTY-NOTICES.TXT" Pack="true" PackagePath="." />
     <Compile Remove="**\*" />
   </ItemGroup>

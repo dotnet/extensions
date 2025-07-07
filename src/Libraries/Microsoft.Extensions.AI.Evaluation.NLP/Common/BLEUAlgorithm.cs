@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.AI.Evaluation.NLP.Common;
 /// </summary>
 internal static class BLEUAlgorithm
 {
-    internal static int ClosestRefLength(IEnumerable<IEnumerable<string>> references, int hypLength)
+    internal static int ClosestRefLength(string[][] references, int hypLength)
     {
         if (!references.Any())
         {
@@ -27,7 +27,7 @@ internal static class BLEUAlgorithm
         int smallestDiff = int.MaxValue;
         foreach (var reference in references)
         {
-            int refLength = reference.Count();
+            int refLength = reference.Length;
             int diff = Math.Abs(refLength - hypLength);
             if (diff < smallestDiff ||
                (diff == smallestDiff && refLength < closestRefLength))
@@ -55,27 +55,27 @@ internal static class BLEUAlgorithm
         return Math.Exp(1 - ((double)closestRefLength / hypLength));
     }
 
-    internal static RationalNumber ModifiedPrecision(IEnumerable<IEnumerable<string>> references, IEnumerable<string> hypothesis, int n = 1)
+    internal static RationalNumber ModifiedPrecision(string[][] references, string[] hypothesis, int n = 1)
     {
         if (n <= 0)
         {
             Throw.ArgumentOutOfRangeException(nameof(n), $"`{nameof(n)}` must be greater than zero.");
         }
 
-        if (!references.Any() || !hypothesis.Any())
+        if (references.Length == 0 || hypothesis.Length == 0)
         {
             return RationalNumber.Zero;
         }
 
-        var hyp = hypothesis.CreateNGrams(n);
-        var hypCounts = new MatchCounter<NGram<string>>(hyp);
+        List<NGram<string>> hypGrams = hypothesis.CreateNGrams(n);
+        MatchCounter<NGram<string>> hypCounts = new(hypGrams);
 
         Dictionary<NGram<string>, int> maxCounts = [];
 
         foreach (var rf in references)
         {
-            IEnumerable<NGram<string>> refGrams = rf.CreateNGrams(n);
-            var refCounts = new MatchCounter<NGram<string>>(refGrams);
+            List<NGram<string>> refGrams = rf.CreateNGrams(n);
+            MatchCounter<NGram<string>> refCounts = new(refGrams);
 
             foreach (var ct in refCounts)
             {
@@ -123,25 +123,28 @@ internal static class BLEUAlgorithm
         }
 
         double[] weights = new double[n];
+#if NET8_0_OR_GREATER
+        Array.Fill(weights, 1.0 / n);
+#else
         for (int i = 0; i < n; i++)
         {
             weights[i] = 1.0 / n;
         }
-
+#endif
         return weights;
     }
 
     internal static readonly double[] DefaultBLEUWeights = EqualWeights(4);
 
-    internal static double SentenceBLEU(IEnumerable<IEnumerable<string>> references, IEnumerable<string> hypothesis,
+    internal static double SentenceBLEU(string[][] references, string[] hypothesis,
         double[]? weights = null, Func<RationalNumber[], int, double[]>? smoothingFunction = null)
     {
-        if (references == null || !references.Any())
+        if (references == null || references.Length == 0)
         {
             Throw.ArgumentNullException(nameof(references), $"'{nameof(references)}' cannot be null or empty.");
         }
 
-        if (hypothesis == null || !hypothesis.Any())
+        if (hypothesis == null || hypothesis.Length == 0)
         {
             Throw.ArgumentNullException(nameof(hypothesis), $"'{nameof(hypothesis)}' cannot be null or empty.");
         }
@@ -171,7 +174,7 @@ internal static class BLEUAlgorithm
             precisionValues[i] = prec;
         }
 
-        int hypLen = hypothesis.Count();
+        int hypLen = hypothesis.Length;
         int closestRefLength = ClosestRefLength(references, hypLen);
         double brevityPenalty = BrevityPenalty(closestRefLength, hypLen);
 
