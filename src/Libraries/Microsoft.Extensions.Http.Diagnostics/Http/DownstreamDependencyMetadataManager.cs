@@ -103,18 +103,28 @@ internal sealed class DownstreamDependencyMetadataManager : IDownstreamDependenc
         var route = routeMetadata.RequestRoute;
         if (!string.IsNullOrEmpty(route))
         {
-            if (route[0] != '/')
+            var routeSpan = route.AsSpan();
+            if (routeSpan.StartsWith("//".AsSpan()))
             {
-                route = $"/{routeMetadata.RequestRoute}";
-            }
-            else if (route.StartsWith("//", StringComparison.Ordinal))
-            {
-                route = route.Substring(1);
+                routeSpan = routeSpan.Slice(1);
             }
 
-            if (route.Length > 1 && route[route.Length - 1] == '/')
+            if (routeSpan.Length > 1 && routeSpan[routeSpan.Length - 1] == '/')
             {
-                route = route.Substring(0, route.Length - 1);
+                routeSpan = routeSpan.Slice(0, routeSpan.Length - 1);
+            }
+
+            if (routeSpan[0] != '/')
+            {
+#if NET
+                route = $"/{routeSpan}";
+#else
+                route = $"/{routeSpan.ToString()}";
+#endif
+            }
+            else if (routeSpan.Length != route.Length)
+            {
+                route = routeSpan.ToString();
             }
 
             route = _routeRegex.Replace(route, "*").ToUpperInvariant();
