@@ -134,26 +134,24 @@ internal sealed class HttpRequestReader : IHttpRequestReader
                 .ConfigureAwait(false);
         }
 
-        var (queryParameters, queryParametersCount) = GetQueryParameters(request);
-        logRecord.QueryParameters = queryParameters;
-        logRecord.QueryParametersCount = queryParametersCount;
+        logRecord.QueryParameters = GetQueryParameters(request);
     }
 
-    private (KeyValuePair<string, string?>[] queryParameters, int count) GetQueryParameters(HttpRequestMessage request)
+    private KeyValuePair<string, string?>[] GetQueryParameters(HttpRequestMessage request)
     {
         if (_logRequestQueryParameters && request.RequestUri is not null)
         {
             return ExtractAndRedactQueryParameters(request.RequestUri.Query);
         }
 
-        return ([], 0);
+        return [];
     }
 
-    private (KeyValuePair<string, string?>[] queryParameters, int count) ExtractAndRedactQueryParameters(string query)
+    private KeyValuePair<string, string?>[] ExtractAndRedactQueryParameters(string query)
     {
         if (string.IsNullOrEmpty(query) || _queryParameterDataClasses.Count == 0)
         {
-            return ([], 0);
+            return [];
         }
 
         var dict = new Dictionary<string, string?>(StringComparer.Ordinal);
@@ -225,7 +223,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
             }
         }
 
-        return (result.ToArray(), result.Count);
+        return result.ToArray();
     }
 
     private void GetRedactedPathAndParameters(HttpRequestMessage request, LogRecord logRecord)
