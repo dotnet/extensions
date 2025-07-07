@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 #pragma warning disable CA1822 // Mark members as static
 #pragma warning disable CA2000 // Dispose objects before losing scope
 #pragma warning disable S1135 // Track uses of "TODO" tags
@@ -62,7 +61,7 @@ public class OpenAIAssistantChatClientIntegrationTests : ChatClientIntegrationTe
         client.DefaultRequestHeaders.Add("openai-organization", "org-ENTERYOURORGID");
         client.DefaultRequestHeaders.Add("openai-project", "proj_ENTERYOURPROJECTID");
 
-        AssistantClient ac = new AssistantClient(Environment.GetEnvironmentVariable("AI:OpenAI:ApiKey")!);
+        AssistantClient ac = new(Environment.GetEnvironmentVariable("AI:OpenAI:ApiKey")!);
         while (true)
         {
             string listing = await client.GetStringAsync("https://api.openai.com/v1/threads?limit=100");

@@ -117,6 +117,13 @@ internal sealed class OpenAIResponseChatClient : IChatClient
                         ((List<AIContent>)message.Contents).AddRange(ToAIContents(messageItem.Content));
                         break;
 
+                    case ReasoningResponseItem reasoningItem when reasoningItem.GetSummaryText() is string summary && !string.IsNullOrWhiteSpace(summary):
+                        message.Contents.Add(new TextReasoningContent(summary)
+                        {
+                            RawRepresentation = reasoningItem
+                        });
+                        break;
+
                     case FunctionCallResponseItem functionCall:
                         response.FinishReason ??= ChatFinishReason.ToolCalls;
                         var fcc = FunctionCallContent.CreateFromParsedArguments(
@@ -139,7 +146,7 @@ internal sealed class OpenAIResponseChatClient : IChatClient
 
             if (openAIResponse.Error is { } error)
             {
-                message.Contents.Add(new ErrorContent(error.Message) { ErrorCode = error.Code });
+                message.Contents.Add(new ErrorContent(error.Message) { ErrorCode = error.Code.ToString() });
             }
         }
 
@@ -367,10 +374,11 @@ internal sealed class OpenAIResponseChatClient : IChatClient
 
         // Handle strongly-typed properties.
         result.MaxOutputTokenCount ??= options.MaxOutputTokens;
-        result.PreviousResponseId ??= options.ConversationId;
-        result.TopP ??= options.TopP;
-        result.Temperature ??= options.Temperature;
         result.ParallelToolCallsEnabled ??= options.AllowMultipleToolCalls;
+        result.PreviousResponseId ??= options.ConversationId;
+        result.Temperature ??= options.Temperature;
+        result.TopP ??= options.TopP;
+
         if (options.Instructions is { } instructions)
         {
             result.Instructions = string.IsNullOrEmpty(result.Instructions) ?
@@ -386,22 +394,21 @@ internal sealed class OpenAIResponseChatClient : IChatClient
                 switch (tool)
                 {
                     case AIFunction aiFunction:
-                        ResponseTool rtool = ToResponseTool(aiFunction, options);
-                        result.Tools.Add(rtool);
+                        result.Tools.Add(ToResponseTool(aiFunction, options));
                         break;
 
                     case HostedWebSearchTool:
-                        WebSearchToolLocation? location = null;
-                        if (tool.AdditionalProperties.TryGetValue(nameof(WebSearchToolLocation), out object? objLocation))
+                        WebSearchUserLocation? location = null;
+                        if (tool.AdditionalProperties.TryGetValue(nameof(WebSearchUserLocation), out object? objLocation))
                         {
-                            location = objLocation as WebSearchToolLocation;
+                            location = objLocation as WebSearchUserLocation;
                         }
 
-                        WebSearchToolContextSize? size = null;
-                        if (tool.AdditionalProperties.TryGetValue(nameof(WebSearchToolContextSize), out object? objSize) &&
-                            objSize is WebSearchToolContextSize)
+                        WebSearchContextSize? size = null;
+                        if (tool.AdditionalProperties.TryGetValue(nameof(WebSearchContextSize), out object? objSize) &&
+                            objSize is WebSearchContextSize)
                         {
-                            size = (WebSearchToolContextSize)objSize;
+                            size = (WebSearchContextSize)objSize;
                         }
 
                         result.Tools.Add(ResponseTool.CreateWebSearchTool(location, size));
@@ -522,6 +529,10 @@ internal sealed class OpenAIResponseChatClient : IChatClient
                             yield return ResponseItem.CreateAssistantMessageItem(textContent.Text);
                             break;
 
+                        case TextReasoningContent reasoningContent:
+                            yield return ResponseItem.CreateReasoningItem(reasoningContent.Text);
+                            break;
+
                         case FunctionCallContent callContent:
                             yield return ResponseItem.CreateFunctionCallItem(
                                 callContent.CallId,
@@ -555,12 +566,16 @@ internal sealed class OpenAIResponseChatClient : IChatClient
                 TotalTokenCount = usage.TotalTokenCount,
             };
 
+            if (usage.InputTokenDetails is { } inputDetails)
+            {
+                ud.AdditionalCounts ??= [];
+                ud.AdditionalCounts.Add($"{nameof(usage.InputTokenDetails)}.{nameof(inputDetails.CachedTokenCount)}", inputDetails.CachedTokenCount);
+            }
+
             if (usage.OutputTokenDetails is { } outputDetails)
             {
                 ud.AdditionalCounts ??= [];
-
-                const string OutputDetails = nameof(usage.OutputTokenDetails);
-                ud.AdditionalCounts.Add($"{OutputDetails}.{nameof(outputDetails.ReasoningTokenCount)}", outputDetails.ReasoningTokenCount);
+                ud.AdditionalCounts.Add($"{nameof(usage.OutputTokenDetails)}.{nameof(outputDetails.ReasoningTokenCount)}", outputDetails.ReasoningTokenCount);
             }
         }
 
@@ -624,8 +639,7 @@ internal sealed class OpenAIResponseChatClient : IChatClient
                     break;
 
                 case DataContent dataContent when dataContent.MediaType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase):
-                    parts.Add(ResponseContentPart.CreateInputFilePart(null, $"{Guid.NewGuid():N}.pdf",
-                        BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(dataContent.Uri, OpenAIJsonContext.Default.String))));
+                    parts.Add(ResponseContentPart.CreateInputFilePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, $"{Guid.NewGuid():N}.pdf"));
                     break;
 
                 case ErrorContent errorContent when errorContent.ErrorCode == nameof(ResponseContentPartKind.Refusal):
