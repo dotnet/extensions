@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.DependencyInjection</RootNamespace>
-    <TargetFrameworks>$(NetCoreTargetFrameworks);netstandard2.0;</TargetFrameworks>
+    <TargetFrameworks>$(NetCoreTargetFrameworks);netstandard2.0;net462</TargetFrameworks>
     <Description>Extensions to auto-activate registered singletons in the dependency injection system.</Description>
     <Workstream>Fundamentals</Workstream>
   </PropertyGroup>
