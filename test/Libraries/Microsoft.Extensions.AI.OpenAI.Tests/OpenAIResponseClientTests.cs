@@ -10,7 +10,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Azure.AI.OpenAI;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using OpenAI;
@@ -29,17 +28,13 @@ public class OpenAIResponseClientTests
         Assert.Throws<ArgumentNullException>("responseClient", () => ((OpenAIResponseClient)null!).AsIChatClient());
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void AsIChatClient_ProducesExpectedMetadata(bool useAzureOpenAI)
+    [Fact]
+    public void AsIChatClient_ProducesExpectedMetadata()
     {
         Uri endpoint = new("http://localhost/some/endpoint");
         string model = "amazingModel";
 
-        var client = useAzureOpenAI ?
-            new AzureOpenAIClient(endpoint, new ApiKeyCredential("key")) :
-            new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
+        var client = new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
 
         IChatClient chatClient = client.GetOpenAIResponseClient(model).AsIChatClient();
         var metadata = chatClient.GetService<ChatClientMetadata>();

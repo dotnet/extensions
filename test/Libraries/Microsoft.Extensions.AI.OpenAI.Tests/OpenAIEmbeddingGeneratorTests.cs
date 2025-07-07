@@ -6,7 +6,6 @@ using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Azure.AI.OpenAI;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using OpenAI;
@@ -25,17 +24,13 @@ public class OpenAIEmbeddingGeneratorTests
         Assert.Throws<ArgumentNullException>("embeddingClient", () => ((EmbeddingClient)null!).AsIEmbeddingGenerator());
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void AsIEmbeddingGenerator_OpenAIClient_ProducesExpectedMetadata(bool useAzureOpenAI)
+    [Fact]
+    public void AsIEmbeddingGenerator_OpenAIClient_ProducesExpectedMetadata()
     {
         Uri endpoint = new("http://localhost/some/endpoint");
         string model = "amazingModel";
 
-        var client = useAzureOpenAI ?
-            new AzureOpenAIClient(endpoint, new ApiKeyCredential("key")) :
-            new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
+        var client = new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
 
         IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator = client.GetEmbeddingClient(model).AsIEmbeddingGenerator();
         var metadata = embeddingGenerator.GetService<EmbeddingGeneratorMetadata>();

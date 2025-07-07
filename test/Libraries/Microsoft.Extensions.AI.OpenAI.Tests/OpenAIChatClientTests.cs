@@ -11,7 +11,6 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using Azure.AI.OpenAI;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using OpenAI;
@@ -30,17 +29,13 @@ public class OpenAIChatClientTests
         Assert.Throws<ArgumentNullException>("chatClient", () => ((ChatClient)null!).AsIChatClient());
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void AsIChatClient_OpenAIClient_ProducesExpectedMetadata(bool useAzureOpenAI)
+    [Fact]
+    public void AsIChatClient_OpenAIClient_ProducesExpectedMetadata()
     {
         Uri endpoint = new("http://localhost/some/endpoint");
         string model = "amazingModel";
 
-        var client = useAzureOpenAI ?
-            new AzureOpenAIClient(endpoint, new ApiKeyCredential("key")) :
-            new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
+        var client = new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
 
         IChatClient chatClient = client.GetChatClient(model).AsIChatClient();
         var metadata = chatClient.GetService<ChatClientMetadata>();
@@ -398,9 +393,7 @@ public class OpenAIChatClientTests
                     TopP = 0.5f,
                     PresencePenalty = 0.5f,
                     Temperature = 0.5f,
-#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
                     Seed = 42,
-#pragma warning restore OPENAI001
                     ToolChoice = ChatToolChoice.CreateAutoChoice(),
                     ResponseFormat = OpenAI.Chat.ChatResponseFormat.CreateTextFormat()
                 };
@@ -477,9 +470,7 @@ public class OpenAIChatClientTests
                     TopP = 0.5f,
                     PresencePenalty = 0.5f,
                     Temperature = 0.5f,
-#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
                     Seed = 42,
-#pragma warning restore OPENAI001
                     ToolChoice = ChatToolChoice.CreateAutoChoice(),
                     ResponseFormat = OpenAI.Chat.ChatResponseFormat.CreateTextFormat()
                 };
@@ -561,9 +552,7 @@ public class OpenAIChatClientTests
                 Assert.Null(openAIOptions.TopP);
                 Assert.Null(openAIOptions.PresencePenalty);
                 Assert.Null(openAIOptions.Temperature);
-#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
                 Assert.Null(openAIOptions.Seed);
-#pragma warning restore OPENAI001
                 Assert.Empty(openAIOptions.StopSequences);
                 Assert.Empty(openAIOptions.Tools);
                 Assert.Null(openAIOptions.ToolChoice);
@@ -637,9 +626,7 @@ public class OpenAIChatClientTests
                 Assert.Null(openAIOptions.TopP);
                 Assert.Null(openAIOptions.PresencePenalty);
                 Assert.Null(openAIOptions.Temperature);
-#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
                 Assert.Null(openAIOptions.Seed);
-#pragma warning restore OPENAI001
                 Assert.Empty(openAIOptions.StopSequences);
                 Assert.Empty(openAIOptions.Tools);
                 Assert.Null(openAIOptions.ToolChoice);

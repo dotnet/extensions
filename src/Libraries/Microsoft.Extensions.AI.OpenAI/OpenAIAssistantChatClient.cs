@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -28,7 +27,6 @@ using OpenAI.Assistants;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="IChatClient"/> for an Azure.AI.Agents.Persistent <see cref="AssistantClient"/>.</summary>
-[Experimental("OPENAI001")]
 internal sealed class OpenAIAssistantChatClient : IChatClient
 {
     /// <summary>The underlying <see cref="AssistantClient" />.</summary>
