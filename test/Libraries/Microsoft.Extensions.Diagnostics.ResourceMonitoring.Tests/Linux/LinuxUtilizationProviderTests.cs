@@ -213,7 +213,7 @@ public sealed class LinuxUtilizationProviderTests
     {
         var meterName = Guid.NewGuid().ToString();
         var logger = new FakeLogger<LinuxUtilizationProvider>();
-        var options = Options.Options.Create(new ResourceMonitoringOptions { CalculateCpuUsageWithoutHostDelta = true });
+        var options = Options.Options.Create(new ResourceMonitoringOptions { UseLinuxCalculationV2 = true });
         using var meter = new Meter(nameof(Provider_Registers_Instruments_CgroupV2_WithoutHostCpu));
         var meterFactoryMock = new Mock<IMeterFactory>();
         meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>()))
@@ -259,13 +259,16 @@ public sealed class LinuxUtilizationProviderTests
         listener.Start();
         listener.RecordObservableInstruments();
 
-        Assert.Equal(4, samples.Count);
+        Assert.Equal(6, samples.Count);
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization);
         Assert.True(double.IsNaN(samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization).value));
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerCpuRequestUtilization);
         Assert.True(double.IsNaN(samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerCpuRequestUtilization).value));
+
+        Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerCpuTime);
+        Assert.All(samples.Where(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerCpuTime), item => double.IsNaN(item.value));
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization);
         Assert.Equal(1, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization).value);
