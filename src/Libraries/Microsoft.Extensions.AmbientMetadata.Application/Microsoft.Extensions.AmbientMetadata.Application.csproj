@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.AmbientMetadata</RootNamespace>
+    <TargetFrameworks>$(NetCoreTargetFrameworks);netstandard2.0;net462</TargetFrameworks>
     <Description>Runtime information provider for application-level ambient metadata.</Description>
     <Workstream>Telemetry</Workstream>
   </PropertyGroup>
