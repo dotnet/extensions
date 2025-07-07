@@ -2,7 +2,7 @@
 
  <!-- The items in this ItemGroup are packages coming from aspnetcore and runtime repos. When an asset is not targeting net9.0 version
   of the framework, we should use the following LTS versions instead -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0' Or '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net462' Or '$(ForceLatestDotnetVersions)' == 'true'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0' Or '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net462' Or '$(TargetFramework)' == 'net481' Or '$(ForceLatestDotnetVersions)' == 'true'">
     <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="$(MicrosoftBclTimeProviderVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="$(MicrosoftExtensionsCachingAbstractionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftExtensionsCachingMemoryVersion)" />
