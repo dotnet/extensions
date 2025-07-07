@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -340,6 +341,39 @@ public abstract class ChatClientIntegrationTests : IDisposable
         AssertUsageAgainstActivities(response, activities);
     }
 
+    [ConditionalFact]
+    public virtual async Task FunctionInvocation_ArrayParameter()
+    {
+        SkipIfNotEnabled();
+
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using var chatClient = new FunctionInvokingChatClient(
+            new OpenTelemetryChatClient(_chatClient, sourceName: sourceName));
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.User, "Can you add bacon, lettuce, and tomatoes to Peter's shopping cart?")
+        ];
+
+        string? shopperName = null;
+        List<string> shoppingCart = [];
+        AIFunction func = AIFunctionFactory.Create((string[] items, string shopperId) => { shoppingCart.AddRange(items); shopperName = shopperId; }, "AddItemsToShoppingCart");
+        var response = await chatClient.GetResponseAsync(messages, new()
+        {
+            Tools = [func]
+        });
+
+        Assert.Equal("Peter", shopperName);
+        Assert.Equal(["bacon", "lettuce", "tomatoes"], shoppingCart);
+        AssertUsageAgainstActivities(response, activities);
+    }
+
     private static void AssertUsageAgainstActivities(ChatResponse response, List<Activity> activities)
     {
         // If the underlying IChatClient provides usage data, function invocation should aggregate the
@@ -423,7 +457,13 @@ public abstract class ChatClientIntegrationTests : IDisposable
                 AIFunctionFactory.Create((long l) => l, createOptions()),
                 AIFunctionFactory.Create((char c) => c, createOptions()),
                 AIFunctionFactory.Create((DateTime dt) => dt, createOptions()),
-                AIFunctionFactory.Create((DateTime? dt) => dt, createOptions()),
+                AIFunctionFactory.Create((DateTimeOffset? dt) => dt, createOptions()),
+                AIFunctionFactory.Create((TimeSpan ts) => ts, createOptions()),
+#if NET
+                AIFunctionFactory.Create((DateOnly d) => d, createOptions()),
+                AIFunctionFactory.Create((TimeOnly t) => t, createOptions()),
+#endif
+                AIFunctionFactory.Create((Uri uri) => uri, createOptions()),
                 AIFunctionFactory.Create((Guid guid) => guid, createOptions()),
                 AIFunctionFactory.Create((List<int> list) => list, createOptions()),
                 AIFunctionFactory.Create((int[] arr, ComplexObject? co) => arr, createOptions()),
@@ -475,11 +515,45 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
     private class ComplexObject
     {
+        [DisplayName("Something cool")]
+#if NET
+        [DeniedValues("abc", "def", "default")]
+#endif
         public string? SomeString { get; set; }
 
+#if NET
+        [AllowedValues("abc", "def", "default")]
+#endif
         public string AnotherString { get; set; } = "default";
 
+#if NET
+        [Range(25, 75)]
+#endif
         public int Value { get; set; }
+
+        [EmailAddress]
+        public string? Email { get; set; }
+
+        [RegularExpression("[abc]")]
+        public string? RegexString { get; set; }
+
+        [StringLength(42)]
+        public string MeasuredString { get; set; } = "default";
+
+#if NET
+        [Length(1, 2)]
+#endif
+        public int[]? MeasuredArray1 { get; set; }
+
+#if NET
+        [MinLength(1)]
+#endif
+        public int[]? MeasuredArray2 { get; set; }
+
+#if NET
+        [MaxLength(10)]
+#endif
+        public int[]? MeasuredArray3 { get; set; }
     }
 
     protected virtual bool SupportsParallelFunctionCalling => true;

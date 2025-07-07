@@ -19,6 +19,14 @@ internal static class ResourceUtilizationInstruments
     public const string MeterName = "Microsoft.Extensions.Diagnostics.ResourceMonitoring";
 
     /// <summary>
+    /// The name of an instrument to retrieve CPU time consumed by the specific container on all available CPU cores, measured in seconds.
+    /// </summary>
+    /// <remarks>
+    /// The type of an instrument is <see cref="System.Diagnostics.Metrics.ObservableCounter{T}"/>.
+    /// </remarks>
+    public const string ContainerCpuTime = "container.cpu.time";
+
+    /// <summary>
     /// The name of an instrument to retrieve CPU limit consumption of all processes running inside a container or control group in range <c>[0, 1]</c>.
     /// </summary>
     /// <remarks>
@@ -89,22 +97,6 @@ internal static class ResourceUtilizationInstruments
     /// The type of an instrument is <see cref="System.Diagnostics.Metrics.ObservableUpDownCounter{T}"/>.
     /// </remarks>
     public const string SystemNetworkConnections = "system.network.connections";
-
-    /// <summary>
-    /// The name of an instrument to count occurrences when CPU utilization exceeds 100% of the limit.
-    /// </summary>
-    /// <remarks>
-    /// The type of an instrument is <see cref="System.Diagnostics.Metrics.Counter{T}"/>.
-    /// </remarks>
-    public const string CpuUtilizationLimit100PercentExceeded = "cpu.utilization.limit.100percent.exceeded";
-
-    /// <summary>
-    /// The name of an instrument to count occurrences when CPU utilization exceeds 110% of the limit.
-    /// </summary>
-    /// <remarks>
-    /// The type of an instrument is <see cref="System.Diagnostics.Metrics.Counter{T}"/>.
-    /// </remarks>
-    public const string CpuUtilizationLimit110PercentExceeded = "cpu.utilization.limit.110percent.exceeded";
 }
 
 #pragma warning disable CS1574

@@ -11,7 +11,6 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using Azure.AI.OpenAI;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using OpenAI;
@@ -30,17 +29,13 @@ public class OpenAIChatClientTests
         Assert.Throws<ArgumentNullException>("chatClient", () => ((ChatClient)null!).AsIChatClient());
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void AsIChatClient_OpenAIClient_ProducesExpectedMetadata(bool useAzureOpenAI)
+    [Fact]
+    public void AsIChatClient_OpenAIClient_ProducesExpectedMetadata()
     {
         Uri endpoint = new("http://localhost/some/endpoint");
         string model = "amazingModel";
 
-        var client = useAzureOpenAI ?
-            new AzureOpenAIClient(endpoint, new ApiKeyCredential("key")) :
-            new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
+        var client = new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
 
         IChatClient chatClient = client.GetChatClient(model).AsIChatClient();
         var metadata = chatClient.GetService<ChatClientMetadata>();
@@ -277,6 +272,74 @@ public class OpenAIChatClientTests
     }
 
     [Fact]
+    public async Task ChatOptions_StrictRespected()
+    {
+        const string Input = """
+            {
+                "tools": [
+                    {
+                        "function": {
+                            "description": "Gets the age of the specified person.",
+                            "name": "GetPersonAge",
+                            "strict": true,
+                            "parameters": {
+                                "type": "object",
+                                "required": [],
+                                "properties": {},
+                                "additionalProperties": false
+                            }
+                        },
+                        "type": "function"
+                    }
+                ],
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "hello"
+                    }
+                ],
+                "model": "gpt-4o-mini",
+                "tool_choice": "auto"
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI",
+              "object": "chat.completion",
+              "created": 1727888631,
+              "model": "gpt-4o-mini-2024-07-18",
+              "choices": [
+                {
+                  "index": 0,
+                  "message": {
+                    "role": "assistant",
+                    "content": "Hello! How can I assist you today?",
+                    "refusal": null
+                  },
+                  "logprobs": null,
+                  "finish_reason": "stop"
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("hello", new()
+        {
+            Tools = [AIFunctionFactory.Create(() => 42, "GetPersonAge", "Gets the age of the specified person.")],
+            AdditionalProperties = new()
+            {
+                ["strictJsonSchema"] = true,
+            },
+        });
+        Assert.NotNull(response);
+    }
+
+    [Fact]
     public async Task ChatOptions_DoNotOverwrite_NotNullPropertiesInRawRepresentation_NonStreaming()
     {
         const string Input = """
@@ -330,14 +393,12 @@ public class OpenAIChatClientTests
                     TopP = 0.5f,
                     PresencePenalty = 0.5f,
                     Temperature = 0.5f,
-#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
                     Seed = 42,
-#pragma warning restore OPENAI001
                     ToolChoice = ChatToolChoice.CreateAutoChoice(),
                     ResponseFormat = OpenAI.Chat.ChatResponseFormat.CreateTextFormat()
                 };
                 openAIOptions.StopSequences.Add("hello");
-                openAIOptions.Tools.Add(ToOpenAIChatTool(tool));
+                openAIOptions.Tools.Add(OpenAIClientExtensions.AsOpenAIChatTool(tool));
                 return openAIOptions;
             },
             ModelId = null,
@@ -409,14 +470,12 @@ public class OpenAIChatClientTests
                     TopP = 0.5f,
                     PresencePenalty = 0.5f,
                     Temperature = 0.5f,
-#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
                     Seed = 42,
-#pragma warning restore OPENAI001
                     ToolChoice = ChatToolChoice.CreateAutoChoice(),
                     ResponseFormat = OpenAI.Chat.ChatResponseFormat.CreateTextFormat()
                 };
                 openAIOptions.StopSequences.Add("hello");
-                openAIOptions.Tools.Add(ToOpenAIChatTool(tool));
+                openAIOptions.Tools.Add(OpenAIClientExtensions.AsOpenAIChatTool(tool));
                 return openAIOptions;
             },
             ModelId = null, // has no effect, you cannot change the model of an OpenAI's ChatClient.
@@ -493,9 +552,7 @@ public class OpenAIChatClientTests
                 Assert.Null(openAIOptions.TopP);
                 Assert.Null(openAIOptions.PresencePenalty);
                 Assert.Null(openAIOptions.Temperature);
-#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
                 Assert.Null(openAIOptions.Seed);
-#pragma warning restore OPENAI001
                 Assert.Empty(openAIOptions.StopSequences);
                 Assert.Empty(openAIOptions.Tools);
                 Assert.Null(openAIOptions.ToolChoice);
@@ -569,9 +626,7 @@ public class OpenAIChatClientTests
                 Assert.Null(openAIOptions.TopP);
                 Assert.Null(openAIOptions.PresencePenalty);
                 Assert.Null(openAIOptions.Temperature);
-#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
                 Assert.Null(openAIOptions.Seed);
-#pragma warning restore OPENAI001
                 Assert.Empty(openAIOptions.StopSequences);
                 Assert.Empty(openAIOptions.Tools);
                 Assert.Null(openAIOptions.ToolChoice);
@@ -598,20 +653,6 @@ public class OpenAIChatClientTests
         }
 
         Assert.Equal("Hello! How can I assist you today?", responseText);
-    }
-
-    /// <summary>Converts an Extensions function to an OpenAI chat tool.</summary>
-    private static ChatTool ToOpenAIChatTool(AIFunction aiFunction)
-    {
-        bool? strict =
-            aiFunction.AdditionalProperties.TryGetValue("strictJsonSchema", out object? strictObj) &&
-            strictObj is bool strictValue ?
-            strictValue : null;
-
-        // Map to an intermediate model so that redundant properties are skipped.
-        var tool = JsonSerializer.Deserialize<ChatToolJson>(aiFunction.JsonSchema)!;
-        var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool));
-        return ChatTool.CreateFunctionTool(aiFunction.Name, aiFunction.Description, functionParameters, strict);
     }
 
     /// <summary>Used to create the JSON payload for an OpenAI chat tool description.</summary>

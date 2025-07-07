@@ -1356,6 +1356,58 @@
       ]
     },
     {
+      "Type": "class Microsoft.Extensions.AI.DelegatingAIFunction : Microsoft.Extensions.AI.AIFunction",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.DelegatingAIFunction.DelegatingAIFunction(Microsoft.Extensions.AI.AIFunction innerFunction);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Threading.Tasks.ValueTask<object?> Microsoft.Extensions.AI.DelegatingAIFunction.InvokeCoreAsync(Microsoft.Extensions.AI.AIFunctionArguments arguments, System.Threading.CancellationToken cancellationToken);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.AI.DelegatingAIFunction.ToString();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.AIFunction Microsoft.Extensions.AI.DelegatingAIFunction.InnerFunction { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Collections.Generic.IReadOnlyDictionary<string, object?> Microsoft.Extensions.AI.DelegatingAIFunction.AdditionalProperties { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.AI.DelegatingAIFunction.Description { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Text.Json.JsonElement Microsoft.Extensions.AI.DelegatingAIFunction.JsonSchema { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Text.Json.JsonSerializerOptions Microsoft.Extensions.AI.DelegatingAIFunction.JsonSerializerOptions { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.AI.DelegatingAIFunction.Name { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Text.Json.JsonElement? Microsoft.Extensions.AI.DelegatingAIFunction.ReturnJsonSchema { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Reflection.MethodInfo? Microsoft.Extensions.AI.DelegatingAIFunction.UnderlyingMethod { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
       "Type": "class Microsoft.Extensions.AI.DelegatingChatClient : Microsoft.Extensions.AI.IChatClient, System.IDisposable",
       "Stage": "Stable",
       "Methods": [
