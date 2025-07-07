@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Net.Http;
+using Microsoft.Extensions.Compliance.Classification;
 
 namespace Microsoft.Extensions.Http.Logging.Internal;
 
@@ -24,4 +25,12 @@ internal interface IHttpHeadersReader
     /// <param name="response">An instance of <see cref="HttpResponseMessage"/> to read headers from.</param>
     /// <param name="destination">Destination to save read headers to.</param>
     void ReadResponseHeaders(HttpResponseMessage response, List<KeyValuePair<string, string>>? destination);
+
+    /// <summary>
+    /// Redact values by using a <see cref="DataClassification"/>.
+    /// </summary>
+    /// <param name="value">A value that needs to be redacted.</param>
+    /// <param name="classification">An instance of <see cref="DataClassification"/> to redact a value.</param>
+    /// <returns>Redacted value</returns>
+    string RedactValue(string value, DataClassification classification);
 }

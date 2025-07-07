@@ -139,7 +139,9 @@ internal sealed class HttpRequestReader : IHttpRequestReader
 
     private KeyValuePair<string, string?>[] GetQueryParameters(HttpRequestMessage request)
     {
-        if (_logRequestQueryParameters && request.RequestUri is not null)
+        if (_logRequestQueryParameters &&
+            request.RequestUri is not null &&
+            !string.IsNullOrEmpty(request.RequestUri.Query))
         {
             return ExtractAndRedactQueryParameters(request.RequestUri.Query);
         }
@@ -149,11 +151,6 @@ internal sealed class HttpRequestReader : IHttpRequestReader
 
     private KeyValuePair<string, string?>[] ExtractAndRedactQueryParameters(string query)
     {
-        if (string.IsNullOrEmpty(query) || _queryParameterDataClasses.Count == 0)
-        {
-            return [];
-        }
-
         var dict = new Dictionary<string, string?>(StringComparer.Ordinal);
         ReadOnlySpan<char> querySpan = query.AsSpan();
         int length = querySpan.Length;
@@ -207,18 +204,9 @@ internal sealed class HttpRequestReader : IHttpRequestReader
         {
             if (dict.TryGetValue(kvp.Key, out var value) && !string.IsNullOrEmpty(value))
             {
-                string redacted;
-                if (_httpHeadersReader is HttpHeadersReader realReader)
-                {
-                    // Value was checked for the null in the condition above
-                    // Use null-forgiving operator to assure the compiler value is not null here
-                    redacted = realReader.RedactValue(value!, kvp.Value);
-                }
-                else
-                {
-                    redacted = value!;
-                }
-
+                string redacted = _httpHeadersReader != null
+                    ? _httpHeadersReader.RedactValue(value!, kvp.Value)
+                    : value!;
                 result.Add(new KeyValuePair<string, string?>(kvp.Key, redacted));
             }
         }
