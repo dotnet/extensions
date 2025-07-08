@@ -72,10 +72,18 @@ public sealed class LinuxUtilizationProviderTests
             }
         });
 
+        listener.SetMeasurementEventCallback<long>((instrument, value, _, _) =>
+        {
+            if (ReferenceEquals(meter, instrument.Meter))
+            {
+                samples.Add((instrument, value));
+            }
+        });
+
         listener.Start();
         listener.RecordObservableInstruments();
 
-        Assert.Equal(5, samples.Count);
+        Assert.Equal(6, samples.Count);
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization);
         Assert.True(double.IsNaN(samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization).value));
@@ -85,6 +93,9 @@ public sealed class LinuxUtilizationProviderTests
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization);
         Assert.Equal(0.5, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization).value);
+
+        Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryUtilization);
+        Assert.Equal(524288, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryUtilization).value);
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization);
         Assert.True(double.IsNaN(samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization).value));
@@ -359,7 +370,7 @@ public sealed class LinuxUtilizationProviderTests
         parserMock.Setup(p => p.GetMemoryUsageInBytes()).Returns(() =>
         {
             callCount++;
-            if (callCount <= 2)
+            if (callCount <= 3)
             {
                 throw new InvalidOperationException("Simulated unhandled exception");
             }
@@ -403,6 +414,6 @@ public sealed class LinuxUtilizationProviderTests
         var metric = samples.SingleOrDefault(x => x.instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization);
         Assert.Equal(1234f / 2000f, metric.value, 0.01f);
 
-        parserMock.Verify(p => p.GetMemoryUsageInBytes(), Times.Exactly(3));
+        parserMock.Verify(p => p.GetMemoryUsageInBytes(), Times.Exactly(4));
     }
 }

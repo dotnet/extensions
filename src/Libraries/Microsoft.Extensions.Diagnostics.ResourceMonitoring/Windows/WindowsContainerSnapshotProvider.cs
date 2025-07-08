@@ -43,7 +43,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
     private DateTimeOffset _refreshAfterCpu;
     private DateTimeOffset _refreshAfterMemory;
     private double _cpuPercentage = double.NaN;
-    private double _memoryPercentage;
+    private ulong _memoryUsage;
 
     public SystemResources Resources { get; }
 
@@ -116,13 +116,34 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
         // Container based metrics:
-        _ = meter.CreateObservableCounter(name: ResourceUtilizationInstruments.ContainerCpuTime, observeValues: GetCpuTime, unit: "s", description: "CPU time used by the container.");
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization, observeValue: CpuPercentage);
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization, observeValue: () => MemoryPercentage(() => _processInfo.GetMemoryUsage()));
+        _ = meter.CreateObservableCounter(
+            name: ResourceUtilizationInstruments.ContainerCpuTime,
+            observeValues: GetCpuTime,
+            unit: "s",
+            description: "CPU time used by the container.");
+
+        _ = meter.CreateObservableGauge(
+            name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization,
+            observeValue: CpuPercentage);
+
+        _ = meter.CreateObservableGauge(
+            name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization,
+            observeValue: () => MemoryPercentage(() => _processInfo.GetMemoryUsage()));
+
+        _ = meter.CreateObservableUpDownCounter(
+            name: ResourceUtilizationInstruments.ContainerMemoryUtilization,
+            observeValue: () => (long)MemoryUsage(() => _processInfo.GetMemoryUsage()),
+            unit: "By",
+            description: "Memory usage of the container.");
 
         // Process based metrics:
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessCpuUtilization, observeValue: CpuPercentage);
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessMemoryUtilization, observeValue: () => MemoryPercentage(() => _processInfo.GetCurrentProcessMemoryUsage()));
+        _ = meter.CreateObservableGauge(
+            name: ResourceUtilizationInstruments.ProcessCpuUtilization,
+            observeValue: CpuPercentage);
+
+        _ = meter.CreateObservableGauge(
+            name: ResourceUtilizationInstruments.ProcessMemoryUtilization,
+            observeValue: () => MemoryPercentage(() => _processInfo.GetCurrentProcessMemoryUsage()));
     }
 
     public Snapshot GetSnapshot()
@@ -187,13 +208,22 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 
     private double MemoryPercentage(Func<ulong> getMemoryUsage)
     {
+        ulong memoryUsage = MemoryUsage(getMemoryUsage);
+        double memoryPercentage = Math.Min(_metricValueMultiplier, memoryUsage / _memoryLimit * _metricValueMultiplier);
+
+        _logger.MemoryPercentageData(memoryUsage, _memoryLimit, memoryPercentage);
+        return memoryPercentage;
+    }
+
+    private ulong MemoryUsage(Func<ulong> getMemoryUsage)
+    {
         DateTimeOffset now = _timeProvider.GetUtcNow();
 
         lock (_memoryLocker)
         {
             if (now < _refreshAfterMemory)
             {
-                return _memoryPercentage;
+                return _memoryUsage;
             }
         }
 
@@ -203,14 +233,12 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         {
             if (now >= _refreshAfterMemory)
             {
-                // Don't change calculation order, otherwise we loose some precision:
-                _memoryPercentage = Math.Min(_metricValueMultiplier, memoryUsage / _memoryLimit * _metricValueMultiplier);
+                _memoryUsage = memoryUsage;
                 _refreshAfterMemory = now.Add(_memoryRefreshInterval);
             }
 
-            _logger.MemoryUsageData(memoryUsage, _memoryLimit, _memoryPercentage);
-
-            return _memoryPercentage;
+            _logger.MemoryUsageData(_memoryUsage);
+            return _memoryUsage;
         }
     }
 

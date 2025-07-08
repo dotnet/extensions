@@ -23,8 +23,8 @@ internal static partial class Log
         double cpuPercentage);
 
     [LoggerMessage(2, LogLevel.Debug,
-        "Computed memory usage with MemoryUsedInBytes = {memoryUsed}, MemoryLimit = {memoryLimit}, MemoryPercentage = {memoryPercentage}.")]
-    public static partial void MemoryUsageData(
+        "Computed memory percentage with MemoryUsedInBytes = {memoryUsed}, MemoryLimit = {memoryLimit}, MemoryPercentage = {memoryPercentage}.")]
+    public static partial void MemoryPercentageData(
         this ILogger logger,
         ulong memoryUsed,
         double memoryLimit,
@@ -55,4 +55,10 @@ internal static partial class Log
     public static partial void HandleDiskStatsException(
         this ILogger logger,
         string errorMessage);
+
+    [LoggerMessage(6, LogLevel.Debug,
+        "Computed memory usage with MemoryUsedInBytes = {memoryUsed}.")]
+    public static partial void MemoryUsageData(
+        this ILogger logger,
+        ulong memoryUsed);
 }

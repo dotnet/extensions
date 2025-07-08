@@ -27,7 +27,7 @@ internal static partial class Log
 
     [LoggerMessage(4, LogLevel.Debug,
         "Computed memory usage with CurrentMemoryUsage = {currentMemoryUsage}, TotalMemory = {totalMemory}, MemoryPercentage = {memoryPercentage}.")]
-    public static partial void MemoryUsageData(
+    public static partial void MemoryPercentageData(
         this ILogger logger,
         ulong currentMemoryUsage,
         double totalMemory,
@@ -60,4 +60,10 @@ internal static partial class Log
         this ILogger logger,
         string counterName,
         string errorMessage);
+
+    [LoggerMessage(8, LogLevel.Debug,
+        "Computed memory usage = {currentMemoryUsage}.")]
+    public static partial void MemoryUsageData(
+        this ILogger logger,
+        ulong currentMemoryUsage);
 }
