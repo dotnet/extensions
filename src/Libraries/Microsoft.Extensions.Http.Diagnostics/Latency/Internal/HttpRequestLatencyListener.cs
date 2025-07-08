@@ -33,8 +33,16 @@ internal sealed class HttpRequestLatencyListener : EventListener
     {
         if (Interlocked.CompareExchange(ref _enabled, 1, 0) == 0)
         {
+#if NETSTANDARD
+            foreach (var eventSource in EventSource.GetSources())
+            {
+                OnEventSourceCreated(eventSource.Name, eventSource);
+            }
+#else
             // process already existing listeners once again
             EventSourceCreated += (_, args) => OnEventSourceCreated(args.EventSource!);
+#endif
+
         }
     }
 
