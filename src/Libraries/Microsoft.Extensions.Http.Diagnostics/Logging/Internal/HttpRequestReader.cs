@@ -188,7 +188,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
                 // Only add if value is not null or empty
                 if (!string.IsNullOrEmpty(value))
                 {
-#if !NETFRAMEWORK
+#if NET8_0_OR_GREATER
                     dict.TryAdd(key, value);
 #else
                     if (!dict.ContainsKey(key))
