@@ -205,6 +205,15 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         set => _maximumConsecutiveErrorsPerRequest = Throw.IfLessThan(value, 0);
     }
 
+    /// <summary>Gets or sets a delegate used to invoke <see cref="AIFunction"/> instances.</summary>
+    /// <remarks>
+    /// By default, the protected <see cref="InvokeFunctionAsync"/> method is called for each <see cref="AIFunction"/> to be invoked,
+    /// invoking the instance and returning its result. If this delegate is set to a non-<see langword="null"/> value,
+    /// <see cref="InvokeFunctionAsync"/> will replace its normal invocation with a call to this delegate, enabling
+    /// this delegate to assume all invocation handling of the function.
+    /// </remarks>
+    public Func<FunctionInvocationContext, CancellationToken, ValueTask<object?>>? FunctionInvoker { get; set; }
+
     /// <inheritdoc/>
     public override async Task<ChatResponse> GetResponseAsync(
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
@@ -872,7 +881,9 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     {
         _ = Throw.IfNull(context);
 
-        return context.Function.InvokeAsync(context.Arguments, cancellationToken);
+        return FunctionInvoker is { } invoker ?
+            invoker(context, cancellationToken) :
+            context.Function.InvokeAsync(context.Arguments, cancellationToken);
     }
 
     private static TimeSpan GetElapsedTime(long startingTimestamp) =>

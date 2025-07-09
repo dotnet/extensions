@@ -8,7 +8,6 @@ using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
 using OpenAI;
 using OpenAI.Audio;
@@ -26,17 +25,13 @@ public class OpenAISpeechToTextClientTests
         Assert.Throws<ArgumentNullException>("audioClient", () => ((AudioClient)null!).AsISpeechToTextClient());
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void AsISpeechToTextClient_AudioClient_ProducesExpectedMetadata(bool useAzureOpenAI)
+    [Fact]
+    public void AsISpeechToTextClient_AudioClient_ProducesExpectedMetadata()
     {
         Uri endpoint = new("http://localhost/some/endpoint");
         string model = "amazingModel";
 
-        var client = useAzureOpenAI ?
-            new AzureOpenAIClient(endpoint, new ApiKeyCredential("key")) :
-            new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
+        var client = new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
 
         ISpeechToTextClient speechToTextClient = client.GetAudioClient(model).AsISpeechToTextClient();
         var metadata = speechToTextClient.GetService<SpeechToTextClientMetadata>();
@@ -148,7 +143,8 @@ public class OpenAISpeechToTextClientTests
         string input = $$"""
                 {
                     "model": "whisper-1",
-                    "language": "{{speechLanguage}}"
+                    "language": "{{speechLanguage}}",
+                    "stream":true
                 }
                 """;
 
