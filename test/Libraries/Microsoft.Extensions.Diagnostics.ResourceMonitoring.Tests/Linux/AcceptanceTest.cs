@@ -223,7 +223,13 @@ public sealed class AcceptanceTest
         listener.InstrumentPublished = (Instrument instrument, MeterListener meterListener)
             => OnInstrumentPublished(instrument, meterListener, meterScope);
         listener.SetMeasurementEventCallback<double>((m, f, tags, _)
-            => OnMeasurementReceived(m, f, tags, ref cpuUserTime, ref cpuKernelTime, ref cpuFromGauge, ref cpuLimitFromGauge,
+            => OnMeasurementReceived(m,
+                f,
+                tags,
+                ref cpuUserTime,
+                ref cpuKernelTime,
+                ref cpuFromGauge,
+                ref cpuLimitFromGauge,
             ref cpuRequestFromGauge, ref memoryFromGauge, ref memoryLimitFromGauge));
         listener.Start();
 
@@ -310,13 +316,20 @@ public sealed class AcceptanceTest
         listener.InstrumentPublished = (Instrument instrument, MeterListener meterListener)
             => OnInstrumentPublished(instrument, meterListener, meterScope);
         listener.SetMeasurementEventCallback<double>((m, f, tags, _)
-            => OnMeasurementReceived(
-                m, f, tags, ref cpuUserTime, ref cpuKernelTime, ref cpuFromGauge, ref cpuLimitFromGauge,
-                ref cpuRequestFromGauge, ref memoryFromGauge, ref memoryLimitFromGauge));
+            => OnMeasurementReceived(m,
+                f,
+                tags,
+                ref cpuUserTime,
+                ref cpuKernelTime,
+                ref cpuFromGauge,
+                ref cpuLimitFromGauge,
+                ref cpuRequestFromGauge,
+                ref memoryFromGauge,
+                ref memoryLimitFromGauge));
         listener.SetMeasurementEventCallback<long>((instrument, value, tags, _)
             =>
         {
-            if (instrument.Name == ResourceUtilizationInstruments.ContainerMemoryUtilization)
+            if (instrument.Name == ResourceUtilizationInstruments.ContainerMemoryUsage)
             {
                 memoryUsageFromGauge = value;
             }
@@ -469,7 +482,7 @@ public sealed class AcceptanceTest
             instrument.Name == ResourceUtilizationInstruments.ContainerCpuRequestUtilization ||
             instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization ||
             instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization ||
-            instrument.Name == ResourceUtilizationInstruments.ContainerMemoryUtilization)
+            instrument.Name == ResourceUtilizationInstruments.ContainerMemoryUsage)
         {
             meterListener.EnableMeasurementEvents(instrument);
         }

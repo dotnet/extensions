@@ -51,12 +51,12 @@ internal static class ResourceUtilizationInstruments
     public const string ContainerMemoryLimitUtilization = "container.memory.limit.utilization";
 
     /// <summary>
-    /// The name of an instrument to retrieve memory consumption of all processes running inside a container or control group in range <c>[0, 1]</c>.
+    /// The name of an instrument to retrieve memory usage measured in bytes of all processes running inside a container or control group.
     /// </summary>
     /// <remarks>
-    /// The type of an instrument is <see cref="System.Diagnostics.Metrics.ObservableGauge{T}"/>.
+    /// The type of an instrument is <see cref="System.Diagnostics.Metrics.ObservableUpDownCounter{T}"/>.
     /// </remarks>
-    public const string ContainerMemoryUtilization = "container.memory.utilization";
+    public const string ContainerMemoryUsage = "container.memory.usage";
 
     /// <summary>
     /// The name of an instrument to retrieve CPU consumption share of the running process in range <c>[0, 1]</c>.

@@ -120,8 +120,8 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
             unit: "1");
 
         _ = meter.CreateObservableUpDownCounter(
-            name: ResourceUtilizationInstruments.ContainerMemoryUtilization,
-            observeValues: () => GetMeasurementWithRetry(() => (long)MemoryUtilization()),
+            name: ResourceUtilizationInstruments.ContainerMemoryUsage,
+            observeValues: () => GetMeasurementWithRetry(() => (long)MemoryUsage()),
             unit: "By",
             description: "Memory usage of the container.");
 
@@ -222,7 +222,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         return _cpuPercentage;
     }
 
-    public ulong MemoryUtilization()
+    public ulong MemoryUsage()
     {
         DateTimeOffset now = _timeProvider.GetUtcNow();
 
@@ -270,7 +270,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
     private double MemoryPercentage()
     {
-        ulong memoryUsage = MemoryUtilization();
+        ulong memoryUsage = MemoryUsage();
         double memoryPercentage = Math.Min(One, (double)memoryUsage / _memoryLimit);
 
         _logger.MemoryPercentageData(memoryUsage, _memoryLimit, memoryPercentage);

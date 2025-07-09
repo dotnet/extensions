@@ -403,7 +403,7 @@ public sealed class WindowsContainerSnapshotProviderTests
         var meterFactoryMock = new Mock<IMeterFactory>();
         meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>()))
             .Returns(meter);
-        using var metricCollector = new MetricCollector<long>(meter, ResourceUtilizationInstruments.ContainerMemoryUtilization, fakeClock);
+        using var metricCollector = new MetricCollector<long>(meter, ResourceUtilizationInstruments.ContainerMemoryUsage, fakeClock);
 
         var options = new ResourceMonitoringOptions
         {
@@ -422,22 +422,22 @@ public sealed class WindowsContainerSnapshotProviderTests
         // Step #0 - state in the beginning:
         metricCollector.RecordObservableInstruments();
         Assert.NotNull(metricCollector.LastMeasurement?.Value);
-        Assert.Equal(200, metricCollector.LastMeasurement.Value); // Consuming 200MB initially.
+        Assert.Equal(200, metricCollector.LastMeasurement.Value); // Consuming 200 bytes initially.
 
         // Step #1 - simulate 1 millisecond passing and collect metrics again:
         fakeClock.Advance(options.MemoryConsumptionRefreshInterval - TimeSpan.FromMilliseconds(1));
         metricCollector.RecordObservableInstruments();
-        Assert.Equal(200, metricCollector.LastMeasurement.Value); // Still consuming 200MB as gauge wasn't updated.
+        Assert.Equal(200, metricCollector.LastMeasurement.Value); // Still consuming 200 bytes as metric wasn't updated.
 
         // Step #2 - simulate 2 milliseconds passing and collect metrics again:
         fakeClock.Advance(TimeSpan.FromMilliseconds(2));
         metricCollector.RecordObservableInstruments();
-        Assert.Equal(600, metricCollector.LastMeasurement.Value); // Consuming 600MB of the memory afterward.
+        Assert.Equal(600, metricCollector.LastMeasurement.Value); // Consuming 600 bytes.
 
         // Step #3 - simulate 2 milliseconds passing and collect metrics again:
         fakeClock.Advance(TimeSpan.FromMilliseconds(2));
         metricCollector.RecordObservableInstruments();
-        Assert.Equal(300, metricCollector.LastMeasurement.Value); // Consuming 300MB of the memory afterward.
+        Assert.Equal(300, metricCollector.LastMeasurement.Value); // Consuming 300 bytes.
     }
 
     [Fact]

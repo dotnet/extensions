@@ -131,7 +131,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
             observeValue: () => MemoryPercentage(() => _processInfo.GetMemoryUsage()));
 
         _ = meter.CreateObservableUpDownCounter(
-            name: ResourceUtilizationInstruments.ContainerMemoryUtilization,
+            name: ResourceUtilizationInstruments.ContainerMemoryUsage,
             observeValue: () => (long)MemoryUsage(() => _processInfo.GetMemoryUsage()),
             unit: "By",
             description: "Memory usage of the container.");
