@@ -137,6 +137,15 @@ internal sealed class HttpRequestReader : IHttpRequestReader
         logRecord.QueryParameters = GetQueryParameters(request);
     }
 
+    private static string UnescapeDataString(ReadOnlySpan<char> value)
+    {
+#if NET9_0_OR_GREATER
+        return Uri.UnescapeDataString(value);
+#else
+        return Uri.UnescapeDataString(value.ToString());
+#endif
+    }
+
     private KeyValuePair<string, string?>[] GetQueryParameters(HttpRequestMessage request)
     {
         if (_logRequestQueryParameters &&
@@ -168,26 +177,26 @@ internal sealed class HttpRequestReader : IHttpRequestReader
             int end = amp == -1 ? length : start + amp;
 
             int eq = querySpan.Slice(start, end - start).IndexOf('=');
-            string key;
-            string? value;
             if (eq >= 0)
             {
                 var keySpan = querySpan.Slice(start, eq);
                 var valueSpan = querySpan.Slice(start + eq + 1, end - (start + eq + 1));
-                key = Uri.UnescapeDataString(keySpan.ToString());
-                value = Uri.UnescapeDataString(valueSpan.ToString());
-            }
-            else
-            {
-                var keySpan = querySpan.Slice(start, end - start);
-                key = Uri.UnescapeDataString(keySpan.ToString());
-                value = null;
-            }
 
-            // Only add the first occurrence of a key
-            if (!dict.ContainsKey(key))
-            {
-                dict[key] = value;
+                string key = UnescapeDataString(keySpan);
+                string value = UnescapeDataString(valueSpan);
+
+                // Only add if value is not null or empty
+                if (!string.IsNullOrEmpty(value))
+                {
+#if !NETFRAMEWORK
+                    dict.TryAdd(key, value);
+#else
+                    if (!dict.ContainsKey(key))
+                    {
+                        dict[key] = value;
+                    }
+#endif
+                }
             }
 
             if (amp == -1)
@@ -202,7 +211,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
 
         foreach (var kvp in _queryParameterDataClasses)
         {
-            if (dict.TryGetValue(kvp.Key, out var value) && !string.IsNullOrEmpty(value))
+            if (dict.TryGetValue(kvp.Key, out var value))
             {
                 string redacted = _httpHeadersReader != null
                     ? _httpHeadersReader.RedactValue(value!, kvp.Value)

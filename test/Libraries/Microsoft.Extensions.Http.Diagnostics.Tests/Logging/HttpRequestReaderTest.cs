@@ -582,7 +582,7 @@ public class HttpRequestReaderTest
     }
 
     [Fact]
-    public async Task ReadAsync_LogsQueryParameters_WhenEnabled()
+    public async Task ReadAsync_SetsQueryParameters_WhenClassificationPresent()
     {
         var requestContent = _fixture.Create<string>();
         var queryParamName = "userId";
@@ -633,7 +633,7 @@ public class HttpRequestReaderTest
     }
 
     [Fact]
-    public async Task ReadAsync_NoQueryParameterNoClassification_DoesNotLogQueryParameters()
+    public async Task ReadAsync_SetsEmptyQueryParameters_WhenClassificationEmpty()
     {
         var options = new LoggingOptions
         {
@@ -661,42 +661,7 @@ public class HttpRequestReaderTest
     }
 
     [Fact]
-    public async Task ReadAsync_QueryParameterClassificationPresent_LogsQueryParameters()
-    {
-        var options = new LoggingOptions
-        {
-            RequestQueryParametersDataClasses = new Dictionary<string, DataClassification>
-            {
-                { "userId", FakeTaxonomy.PrivateData }
-            }
-        };
-
-        var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
-        mockHeadersRedactor
-            .Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
-            .Returns(Redacted);
-
-        var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), mockHeadersRedactor.Object);
-        using var serviceProvider = GetServiceProvider(headersReader);
-
-        var reader = new HttpRequestReader(
-            serviceProvider,
-            options.ToOptionsMonitor(),
-            serviceProvider.GetRequiredService<IHttpRouteFormatter>(),
-            serviceProvider.GetRequiredService<IHttpRouteParser>(),
-            RequestMetadataContext);
-
-        var uri = new Uri($"https://{RequestedHost}/api/resource?userId=12345");
-        using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
-
-        var logRecord = new LogRecord();
-        await reader.ReadRequestAsync(logRecord, httpRequestMessage, new List<KeyValuePair<string, string>>(), CancellationToken.None);
-
-        logRecord.QueryParameters.Should().ContainSingle(qp => qp.Key == "userId" && qp.Value == Redacted);
-    }
-
-    [Fact]
-    public async Task ReadAsync_NoMatchingClassification_DoesNotLog()
+    public async Task ReadAsync_SetsEmptyQueryParameters_WhenNoMatchingClassification()
     {
         var options = new LoggingOptions
         {
@@ -727,7 +692,7 @@ public class HttpRequestReaderTest
     }
 
     [Fact]
-    public async Task ReadAsync_MultipleParams_LoggedAndRedacted()
+    public async Task ReadAsync_SetsMultipleQueryParameters_WhenMultipleClassifications()
     {
         var options = new LoggingOptions
         {
@@ -766,7 +731,7 @@ public class HttpRequestReaderTest
     }
 
     [Fact]
-    public async Task ReadAsync_EmptyValue_NotLogged()
+    public async Task ReadAsync_SetsEmptyQueryParameters_WhenValueEmpty()
     {
         var options = new LoggingOptions
         {

@@ -31,6 +31,6 @@ internal interface IHttpHeadersReader
     /// </summary>
     /// <param name="value">A value that needs to be redacted.</param>
     /// <param name="classification">An instance of <see cref="DataClassification"/> to redact a value.</param>
-    /// <returns>Redacted value</returns>
+    /// <returns>Redacted value.</returns>
     string RedactValue(string value, DataClassification classification);
 }
