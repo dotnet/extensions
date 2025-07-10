@@ -297,7 +297,7 @@ public static partial class AIJsonUtilities
                         typeKeyWord?.GetValueKind() is JsonValueKind.String)
                     {
                         string typeValue = typeKeyWord.GetValue<string>()!;
-                        if (typeValue is not null)
+                        if (typeValue is not "null")
                         {
                             objSchema[TypePropertyName] = new JsonArray { (JsonNode)typeValue, (JsonNode)"null" };
                         }
