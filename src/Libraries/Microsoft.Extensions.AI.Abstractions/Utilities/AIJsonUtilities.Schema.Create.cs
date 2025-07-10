@@ -289,10 +289,25 @@ public static partial class AIJsonUtilities
                     objSchema.InsertAtStart(TypePropertyName, "string");
                 }
 
-                // Include the type keyword in nullable enum types
-                if (Nullable.GetUnderlyingType(ctx.TypeInfo.Type)?.IsEnum is true && objSchema.ContainsKey(EnumPropertyName) && !objSchema.ContainsKey(TypePropertyName))
+                if (Nullable.GetUnderlyingType(ctx.TypeInfo.Type) is Type nullableElement)
                 {
-                    objSchema.InsertAtStart(TypePropertyName, new JsonArray { (JsonNode)"string", (JsonNode)"null" });
+                    // Account for bug https://github.com/dotnet/runtime/issues/117493
+                    // null not inserted in the type keyword for root-level Nullable<T> types.
+                    if (objSchema.TryGetPropertyValue(TypePropertyName, out JsonNode? typeKeyWord) &&
+                        typeKeyWord?.GetValueKind() is JsonValueKind.String)
+                    {
+                        string typeValue = typeKeyWord.GetValue<string>()!;
+                        if (typeValue is not null)
+                        {
+                            objSchema[TypePropertyName] = new JsonArray { (JsonNode)typeValue, (JsonNode)"null" };
+                        }
+                    }
+
+                    // Include the type keyword in nullable enum types
+                    if (nullableElement.IsEnum is true && objSchema.ContainsKey(EnumPropertyName) && !objSchema.ContainsKey(TypePropertyName))
+                    {
+                        objSchema.InsertAtStart(TypePropertyName, new JsonArray { (JsonNode)"string", (JsonNode)"null" });
+                    }
                 }
 
                 // Some consumers of the JSON schema, including Ollama as of v0.3.13, don't understand
@@ -665,7 +680,7 @@ public static partial class AIJsonUtilities
 
         if (defaultValue is null || (defaultValue == DBNull.Value && parameterType != typeof(DBNull)))
         {
-            return parameterType.IsValueType
+            return parameterType.IsValueType && Nullable.GetUnderlyingType(parameterType) is null
 #if NET
                 ? RuntimeHelpers.GetUninitializedObject(parameterType)
 #else
