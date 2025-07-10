@@ -304,7 +304,7 @@ public static partial class AIJsonUtilities
                     }
 
                     // Include the type keyword in nullable enum types
-                    if (nullableElement.IsEnum is true && objSchema.ContainsKey(EnumPropertyName) && !objSchema.ContainsKey(TypePropertyName))
+                    if (nullableElement.IsEnum && objSchema.ContainsKey(EnumPropertyName) && !objSchema.ContainsKey(TypePropertyName))
                     {
                         objSchema.InsertAtStart(TypePropertyName, new JsonArray { (JsonNode)"string", (JsonNode)"null" });
                     }
