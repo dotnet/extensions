@@ -45,18 +45,16 @@ Once the MCP server package is published to NuGet.org, you can use the following
 
 ```json
 {
-  "mcp": {
-    "servers": {
-      "McpServer-CSharp": {
-        "type": "stdio",
-        "command": "dnx",
-        "args": [
-          "<your package ID here>",
-          "--version",
-          "<your package version here>",
-          "--yes"
-        ]
-      }
+  "servers": {
+    "McpServer-CSharp": {
+      "type": "stdio",
+      "command": "dnx",
+      "args": [
+        "<your package ID here>",
+        "--version",
+        "<your package version here>",
+        "--yes"
+      ]
     }
   }
 }
@@ -130,17 +128,15 @@ Alternatively, you can use the full path to your project:
 
 ```json
 {
-  "mcp": {
-    "servers": {
-      "McpServer-CSharp": {
-        "type": "stdio",
-        "command": "dotnet",
-        "args": [
-          "run",
-          "--project",
-          "<FULL PATH TO PROJECT DIRECTORY>"
-        ]
-      }
+  "servers": {
+    "McpServer-CSharp": {
+      "type": "stdio",
+      "command": "dotnet",
+      "args": [
+        "run",
+        "--project",
+        "<FULL PATH TO PROJECT DIRECTORY>"
+      ]
     }
   }
 }
