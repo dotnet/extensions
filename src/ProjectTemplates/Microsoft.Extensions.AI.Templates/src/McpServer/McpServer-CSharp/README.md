@@ -41,7 +41,7 @@ Now you can ask Copilot Chat for a random number, for example, `Give me 3 random
 
 ## Using the MCP Server in Visual Studio
 
-Once the MCP server package is published to NuGet.org, you can use the following Visual Studio configuration to download and install the MCP server package. See [Use MCP servers in Visual Studio (Preview)](https://learn.microsoft.com/visualstudio/ide/copilot/chat/mcp-servers) for more information about using MCP servers in Visual Studio.
+Once the MCP server package is published to NuGet.org, you can use the following Visual Studio configuration to download and install the MCP server package. See [Use MCP servers in Visual Studio (Preview)](https://learn.microsoft.com/visualstudio/ide/mcp-servers) for more information about using MCP servers in Visual Studio.
 
 ```json
 {
