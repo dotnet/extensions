@@ -14,9 +14,13 @@ See [aka.ms/nuget/mcp/guide](https://aka.ms/nuget/mcp/guide) for the full guide.
 
 The `bin/Release` directory will contain the package file (.nupkg), which can be [published to NuGet.org](https://learn.microsoft.com/nuget/nuget-org/publish-a-package).
 
-## Using the MCP Server in VS Code
+## Using the MCP Server
 
-Once the MCP server package is published to NuGet.org, you can use the following VS Code user configuration to download and install the MCP server package. See [Use MCP servers in VS Code (Preview)](https://code.visualstudio.com/docs/copilot/chat/mcp-servers) for more information about using MCP servers in VS Code.
+Once the MCP server package is published to NuGet.org, you can configure it in your preferred IDE. Both VS Code and Visual Studio use similar configurations with the `dnx` command to download and install the MCP server package from NuGet.org.
+
+### VS Code Configuration
+
+Add the following to your VS Code user settings. See [Use MCP servers in VS Code (Preview)](https://code.visualstudio.com/docs/copilot/chat/mcp-servers) for more information.
 
 ```json
 {
@@ -37,11 +41,9 @@ Once the MCP server package is published to NuGet.org, you can use the following
 }
 ```
 
-Now you can ask Copilot Chat for a random number, for example, `Give me 3 random numbers`. It should prompt you to use the `get_random_number` tool on the `McpServer-CSharp` MCP server and show you the results.
+### Visual Studio Configuration
 
-## Using the MCP Server in Visual Studio
-
-Once the MCP server package is published to NuGet.org, you can use the following Visual Studio configuration to download and install the MCP server package. See [Use MCP servers in Visual Studio (Preview)](https://learn.microsoft.com/visualstudio/ide/mcp-servers) for more information about using MCP servers in Visual Studio.
+Add the following to your Visual Studio MCP settings. See [Use MCP servers in Visual Studio (Preview)](https://learn.microsoft.com/visualstudio/ide/mcp-servers) for more information.
 
 ```json
 {
@@ -60,11 +62,17 @@ Once the MCP server package is published to NuGet.org, you can use the following
 }
 ```
 
-Now you can ask GitHub Copilot Chat for a random number, for example, `Give me 3 random numbers`. It should prompt you to use the `get_random_number` tool on the `McpServer-CSharp` MCP server and show you the results.
+### Testing the MCP Server
 
-## Developing locally in VS Code
+Once configured, you can ask Copilot Chat for a random number, for example, `Give me 3 random numbers`. It should prompt you to use the `get_random_number` tool on the `McpServer-CSharp` MCP server and show you the results.
 
-To test this MCP server from source code (locally) without using a built MCP server package, create a `.vscode/mcp.json` file (a VS Code workspace settings file) in your project directory and add the following configuration:
+## Developing locally
+
+To test this MCP server from source code (locally) without using a built MCP server package, you can configure your IDE to run the project directly using `dotnet run`.
+
+### VS Code Configuration
+
+Create a `.vscode/mcp.json` file (workspace settings) in your project directory:
 
 ```json
 {
@@ -82,7 +90,7 @@ To test this MCP server from source code (locally) without using a built MCP ser
 }
 ```
 
-Alternatively, you can configure your VS Code user settings to use your local project:
+Alternatively, configure your VS Code user settings with the full path:
 
 ```json
 {
@@ -102,9 +110,7 @@ Alternatively, you can configure your VS Code user settings to use your local pr
 }
 ```
 
-## Developing locally in Visual Studio
-
-To test this MCP server from source code (locally) without using a built MCP server package, you can configure Visual Studio to use your local project.
+### Visual Studio Configuration
 
 In Visual Studio, open the MCP settings and add the following configuration:
 
@@ -117,25 +123,7 @@ In Visual Studio, open the MCP settings and add the following configuration:
       "args": [
         "run",
         "--project",
-        "<RELATIVE PATH TO PROJECT DIRECTORY>"
-      ]
-    }
-  }
-}
-```
-
-Alternatively, you can use the full path to your project:
-
-```json
-{
-  "servers": {
-    "McpServer-CSharp": {
-      "type": "stdio",
-      "command": "dotnet",
-      "args": [
-        "run",
-        "--project",
-        "<FULL PATH TO PROJECT DIRECTORY>"
+        "<RELATIVE OR FULL PATH TO PROJECT DIRECTORY>"
       ]
     }
   }
