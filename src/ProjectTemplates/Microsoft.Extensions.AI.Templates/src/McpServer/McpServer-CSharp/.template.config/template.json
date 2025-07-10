@@ -23,27 +23,6 @@
       "binding": "HostIdentifier"
     }
   },
-  "sources": [{
-    "source": "./",
-    "target": "./",
-    "modifiers": [
-      {
-        "condition": "(hostIdentifier == \"dotnetcli\" || hostIdentifier == \"dotnetcli-preview\")",
-        "exclude": [
-          "README.VisualStudio.md"
-        ]
-      },
-      {
-        "condition": "(hostIdentifier != \"dotnetcli\" && hostIdentifier != \"dotnetcli-preview\")",
-        "exclude": [
-          "README.md"
-        ],
-        "rename": {
-          "README.VisualStudio.md": "README.md"
-        }
-      }
-    ]
-  }],
   "primaryOutputs": [
     {
       "path": "./README.md"
