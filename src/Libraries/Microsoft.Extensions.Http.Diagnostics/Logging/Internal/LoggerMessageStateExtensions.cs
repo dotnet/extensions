@@ -53,6 +53,25 @@ internal static class LoggerMessageStateExtensions
     }
 
     /// <summary>
+    /// Adds request query parameters to <see cref="LoggerMessageState"/>.
+    /// </summary>
+    /// <param name="state">A <see cref="LoggerMessageState"/> to be filled.</param>
+    /// <param name="items">A list with query parameters.</param>
+    /// <param name="index">Represents an index to be used when writing tags into <paramref name="state"/>.</param>
+    /// <remarks><paramref name="index"/> will be mutated to point to the next <paramref name="state"/> item.</remarks>
+    public static void AddQueryParameters(this LoggerMessageState state, List<KeyValuePair<string, string>> items, ref int index)
+    {
+        foreach (var t in items)
+        {
+            var key = _responsePrefixedNamesCache.GetOrAdd(
+                t.Key,
+                static x => HttpClientLoggingTagNames.QueryParametersPrefix + Normalize(x));
+
+            state.TagArray[index++] = new(key, t.Value);
+        }
+    }
+
+    /// <summary>
     /// Adds path parameters to <see cref="LoggerMessageState"/>.
     /// </summary>
     /// <param name="state">A <see cref="LoggerMessageState"/> to be filled.</param>

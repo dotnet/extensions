@@ -18,6 +18,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Http.Logging.Internal;
 using Microsoft.Extensions.Http.Logging.Test.Internal;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Telemetry.Internal;
 using Moq;
 using Xunit;
@@ -728,6 +730,62 @@ public class HttpRequestReaderTest
         logRecord.QueryParameters.Should().Contain(qp => qp.Key == "userId" && qp.Value == Redacted);
         logRecord.QueryParameters.Should().Contain(qp => qp.Key == "token" && qp.Value == Redacted);
         logRecord.QueryParameters.Should().NotContain(qp => qp.Key == "other");
+    }
+
+    [Fact]
+    public async Task LogRequestStartAsync_LogsQueryParameters_TagArray()
+    {
+        // Arrange
+        var options = new LoggingOptions
+        {
+            RequestQueryParametersDataClasses = new Dictionary<string, DataClassification>
+            {
+                { "userId", FakeTaxonomy.PrivateData }
+            },
+            LogRequestStart = true
+        };
+
+        var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
+        mockHeadersRedactor
+            .Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
+            .Returns(Redacted);
+
+        var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), mockHeadersRedactor.Object);
+
+        var fakeLogger = new FakeLogger<HttpClientLogger>(
+            new FakeLogCollector(
+                Options.Options.Create(
+                    new FakeLogCollectorOptions())));
+        using var serviceProvider = GetServiceProvider(headersReader);
+        var enrichers = Enumerable.Empty<IHttpClientLogEnricher>();
+        var httpRequestReader = new HttpRequestReader(
+            serviceProvider,
+            options.ToOptionsMonitor(),
+            serviceProvider.GetRequiredService<IHttpRouteFormatter>(),
+            serviceProvider.GetRequiredService<IHttpRouteParser>(),
+            RequestMetadataContext);
+
+        var clientLogger = new HttpClientLogger(
+            fakeLogger,
+            httpRequestReader,
+            enrichers,
+            options);
+
+        var uri = new Uri($"https://{RequestedHost}/api/resource?userId=12345");
+        using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
+
+        // Act
+        await clientLogger.LogRequestStartAsync(httpRequestMessage);
+
+        // Assert
+        var logRecord = fakeLogger.Collector.GetSnapshot().First();
+        var state = (((IEnumerable<KeyValuePair<string, string>>)logRecord.State!)!)
+            .Select(kvp => new KeyValuePair<string, object>(kvp.Key, kvp.Value));
+
+        Assert.Contains(
+            state,
+            tag => tag.Key == "http.query.userid" && (string?)tag.Value == "REDACTED"
+        );
     }
 
     [Fact]

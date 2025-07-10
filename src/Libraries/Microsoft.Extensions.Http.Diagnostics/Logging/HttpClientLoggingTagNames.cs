@@ -52,6 +52,11 @@ public static class HttpClientLoggingTagNames
     public const string ResponseHeaderPrefix = "http.response.header.";
 
     /// <summary>
+    /// HTTP query parameters prefix.
+    /// </summary>
+    public const string QueryParametersPrefix = "http.query.";
+
+    /// <summary>
     /// HTTP Status Code.
     /// </summary>
     public const string StatusCode = "http.response.status_code";
@@ -61,8 +66,7 @@ public static class HttpClientLoggingTagNames
     /// </summary>
     /// <returns>A read-only <see cref="IReadOnlyList{String}"/> of all tag names.</returns>
     public static IReadOnlyList<string> TagNames { get; } =
-        Array.AsReadOnly(new[]
-        {
+        Array.AsReadOnly([
             Duration,
             Host,
             Method,
@@ -71,6 +75,7 @@ public static class HttpClientLoggingTagNames
             RequestHeaderPrefix,
             ResponseBody,
             ResponseHeaderPrefix,
-            StatusCode
-        });
+            StatusCode,
+            QueryParametersPrefix
+        ]);
 }

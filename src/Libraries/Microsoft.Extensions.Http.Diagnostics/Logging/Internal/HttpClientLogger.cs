@@ -238,7 +238,7 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
             }
         }
 
-        if (logRecord.QueryParameters is { Length: > 0 })
+        if (logRecord.QueryParameters is { Count: > 0 })
         {
             if (loggerMessageState is ITagCollector collector)
             {

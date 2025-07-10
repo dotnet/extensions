@@ -146,7 +146,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
 #endif
     }
 
-    private KeyValuePair<string, string?>[] GetQueryParameters(HttpRequestMessage request)
+    private List<KeyValuePair<string, string>> GetQueryParameters(HttpRequestMessage request)
     {
         if (_logRequestQueryParameters &&
             request.RequestUri is not null &&
@@ -155,10 +155,10 @@ internal sealed class HttpRequestReader : IHttpRequestReader
             return ExtractAndRedactQueryParameters(request.RequestUri.Query);
         }
 
-        return [];
+        return new List<KeyValuePair<string, string>>();
     }
 
-    private KeyValuePair<string, string?>[] ExtractAndRedactQueryParameters(string query)
+    private List<KeyValuePair<string, string>> ExtractAndRedactQueryParameters(string query)
     {
         var dict = new Dictionary<string, string?>(StringComparer.Ordinal);
         ReadOnlySpan<char> querySpan = query.AsSpan();
@@ -191,10 +191,10 @@ internal sealed class HttpRequestReader : IHttpRequestReader
 #if NET8_0_OR_GREATER
                     dict.TryAdd(key, value);
 #else
-                    if (!dict.ContainsKey(key))
-                    {
-                        dict[key] = value;
-                    }
+                if (!dict.ContainsKey(key))
+                {
+                    dict[key] = value;
+                }
 #endif
                 }
             }
@@ -207,7 +207,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
             start = end + 1;
         }
 
-        var result = new List<KeyValuePair<string, string?>>();
+        var result = new List<KeyValuePair<string, string>>();
 
         foreach (var kvp in _queryParameterDataClasses)
         {
@@ -216,11 +216,11 @@ internal sealed class HttpRequestReader : IHttpRequestReader
                 string redacted = _httpHeadersReader != null
                     ? _httpHeadersReader.RedactValue(value!, kvp.Value)
                     : value!;
-                result.Add(new KeyValuePair<string, string?>(kvp.Key, redacted));
+                result.Add(new KeyValuePair<string, string>(kvp.Key, redacted));
             }
         }
 
-        return result.ToArray();
+        return result;
     }
 
     private void GetRedactedPathAndParameters(HttpRequestMessage request, LogRecord logRecord)
