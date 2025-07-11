@@ -144,7 +144,7 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
                 _refreshAfterMemory = now.Add(_memoryRefreshInterval);
             }
 
-            _logger.MemoryPercentageData((ulong)currentMemoryUsage, _totalMemory, _memoryPercentage);
+            _logger.ProcessMemoryPercentageData((ulong)currentMemoryUsage, _totalMemory, _memoryPercentage);
 
             return _memoryPercentage;
         }

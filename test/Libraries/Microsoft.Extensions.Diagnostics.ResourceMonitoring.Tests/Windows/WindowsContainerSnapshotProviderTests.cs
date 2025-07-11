@@ -380,6 +380,85 @@ public sealed class WindowsContainerSnapshotProviderTests
     }
 
     [Fact]
+    public void SnapshotProvider_TestMemoryMetricsTogether()
+    {
+        _appMemoryUsage = 200UL;
+        ulong containerMemoryUsage = 400UL;
+        ulong updatedAppMemoryUsage = 600UL;
+        ulong updatedContainerMemoryUsage = 1200UL;
+
+        _processInfoMock.SetupSequence(p => p.GetCurrentProcessMemoryUsage())
+            .Returns(() => _appMemoryUsage)
+            .Returns(updatedAppMemoryUsage)
+            .Throws(new InvalidOperationException("We shouldn't hit here..."));
+
+        _processInfoMock.SetupSequence(p => p.GetMemoryUsage())
+            .Returns(() => containerMemoryUsage)
+            .Returns(updatedContainerMemoryUsage)
+            .Throws(new InvalidOperationException("We shouldn't hit here..."));
+
+        var fakeClock = new FakeTimeProvider();
+        using var meter = new Meter(nameof(SnapshotProvider_TestMemoryMetricsTogether));
+        var meterFactoryMock = new Mock<IMeterFactory>();
+        meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>()))
+            .Returns(meter);
+        using var processMetricCollector = new MetricCollector<double>(meter, ResourceUtilizationInstruments.ProcessMemoryUtilization, fakeClock);
+        using var containerLimitMetricCollector = new MetricCollector<double>(meter, ResourceUtilizationInstruments.ContainerMemoryLimitUtilization, fakeClock);
+        using var containerUsageMetricCollector = new MetricCollector<long>(meter, ResourceUtilizationInstruments.ContainerMemoryUsage, fakeClock);
+
+        var options = new ResourceMonitoringOptions
+        {
+            MemoryConsumptionRefreshInterval = TimeSpan.FromMilliseconds(2)
+        };
+        var snapshotProvider = new WindowsContainerSnapshotProvider(
+            _memoryInfoMock.Object,
+            _systemInfoMock.Object,
+            _processInfoMock.Object,
+            _logger,
+            meterFactoryMock.Object,
+            () => _jobHandleMock.Object,
+            fakeClock,
+            options);
+
+        // Step #0 - state in the beginning:
+        processMetricCollector.RecordObservableInstruments();
+        containerLimitMetricCollector.RecordObservableInstruments();
+        containerUsageMetricCollector.RecordObservableInstruments();
+
+        Assert.NotNull(processMetricCollector.LastMeasurement?.Value);
+        Assert.NotNull(containerLimitMetricCollector.LastMeasurement?.Value);
+        Assert.NotNull(containerUsageMetricCollector.LastMeasurement?.Value);
+
+        Assert.Equal(10, processMetricCollector.LastMeasurement.Value); // Process is consuming 10% of memory limit initially.
+        Assert.Equal(20, containerLimitMetricCollector.LastMeasurement.Value); // The whole container is consuming 20% of the memory limit initially.
+        Assert.Equal((long)containerMemoryUsage, containerUsageMetricCollector.LastMeasurement.Value); // 400 bytes of memory usage initially.
+
+        // Step #1 - simulate 1 millisecond passing and collect metrics again:
+        fakeClock.Advance(options.MemoryConsumptionRefreshInterval - TimeSpan.FromMilliseconds(1));
+
+        processMetricCollector.RecordObservableInstruments();
+        containerUsageMetricCollector.RecordObservableInstruments();
+        containerLimitMetricCollector.RecordObservableInstruments();
+
+        // Still consuming 10% and 20% as values weren't updated yet - not enough time passed.
+        Assert.Equal(10, processMetricCollector.LastMeasurement.Value);
+        Assert.Equal(20, containerLimitMetricCollector.LastMeasurement.Value);
+        Assert.Equal((long)containerMemoryUsage, containerUsageMetricCollector.LastMeasurement.Value);
+
+        // Step #2 - simulate 2 milliseconds passing and collect metrics again:
+        fakeClock.Advance(TimeSpan.FromMilliseconds(1));
+
+        processMetricCollector.RecordObservableInstruments();
+        containerLimitMetricCollector.RecordObservableInstruments();
+        containerUsageMetricCollector.RecordObservableInstruments();
+
+        // App is consuming 30%, and container is consuming 60% of the limit:
+        Assert.Equal(30, processMetricCollector.LastMeasurement.Value);
+        Assert.Equal(60, containerLimitMetricCollector.LastMeasurement.Value);
+        Assert.Equal((long)updatedContainerMemoryUsage, containerUsageMetricCollector.LastMeasurement.Value);
+    }
+
+    [Fact]
     public void SnapshotProvider_EmitsMemoryUsageMetric()
     {
         _appMemoryUsage = 200UL;

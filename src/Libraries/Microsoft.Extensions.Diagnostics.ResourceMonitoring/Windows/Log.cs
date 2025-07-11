@@ -26,12 +26,11 @@ internal static partial class Log
         double cpuPercentage);
 
     [LoggerMessage(4, LogLevel.Debug,
-        "Computed memory usage with CurrentMemoryUsage = {currentMemoryUsage}, TotalMemory = {totalMemory}, MemoryPercentage = {memoryPercentage}")]
-    public static partial void MemoryPercentageData(
+        "Computed memory usage for container: CurrentMemoryUsage = {currentMemoryUsage}, TotalMemory = {totalMemory}")]
+    public static partial void ContainerMemoryUsageData(
         this ILogger logger,
         ulong currentMemoryUsage,
-        double totalMemory,
-        double memoryPercentage);
+        double totalMemory);
 
 #pragma warning disable S103 // Lines should not be too long
     [LoggerMessage(5, LogLevel.Debug, "Computed CPU usage with CpuUsageKernelTicks = {cpuUsageKernelTicks}, CpuUsageUserTicks = {cpuUsageUserTicks}, OldCpuUsageTicks = {oldCpuUsageTicks}, TimeTickDelta = {timeTickDelta}, CpuUnits = {cpuUnits}, CpuPercentage = {cpuPercentage}.")]
@@ -62,8 +61,10 @@ internal static partial class Log
         string errorMessage);
 
     [LoggerMessage(8, LogLevel.Debug,
-        "Computed memory usage = {currentMemoryUsage}.")]
-    public static partial void MemoryUsageData(
+        "Computed memory usage for current process: ProcessMemoryUsage = {processMemoryUsage}, TotalMemory = {totalMemory}, MemoryPercentage = {memoryPercentage}")]
+    public static partial void ProcessMemoryPercentageData(
         this ILogger logger,
-        ulong currentMemoryUsage);
+        ulong processMemoryUsage,
+        double totalMemory,
+        double memoryPercentage);
 }

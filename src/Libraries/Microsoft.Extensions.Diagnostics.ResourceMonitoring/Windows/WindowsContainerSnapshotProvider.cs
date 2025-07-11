@@ -29,6 +29,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 
     private readonly object _cpuLocker = new();
     private readonly object _memoryLocker = new();
+    private readonly object _processMemoryLocker = new();
     private readonly TimeProvider _timeProvider;
     private readonly IProcessInfo _processInfo;
     private readonly ILogger<WindowsContainerSnapshotProvider> _logger;
@@ -42,8 +43,10 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
     private long _oldCpuTimeTicks;
     private DateTimeOffset _refreshAfterCpu;
     private DateTimeOffset _refreshAfterMemory;
+    private DateTimeOffset _refreshAfterProcessMemory;
     private double _cpuPercentage = double.NaN;
     private ulong _memoryUsage;
+    private double _processMemoryPercentage;
 
     public SystemResources Resources { get; }
 
@@ -107,6 +110,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         _memoryRefreshInterval = options.MemoryConsumptionRefreshInterval;
         _refreshAfterCpu = _timeProvider.GetUtcNow();
         _refreshAfterMemory = _timeProvider.GetUtcNow();
+        _refreshAfterProcessMemory = _timeProvider.GetUtcNow();
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
         // We don't dispose the meter because IMeterFactory handles that
@@ -128,11 +132,11 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 
         _ = meter.CreateObservableGauge(
             name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization,
-            observeValue: () => MemoryPercentage(() => _processInfo.GetMemoryUsage()));
+            observeValue: () => Math.Min(_metricValueMultiplier, MemoryUsage() / _memoryLimit * _metricValueMultiplier));
 
         _ = meter.CreateObservableUpDownCounter(
             name: ResourceUtilizationInstruments.ContainerMemoryUsage,
-            observeValue: () => (long)MemoryUsage(() => _processInfo.GetMemoryUsage()),
+            observeValue: () => (long)MemoryUsage(),
             unit: "By",
             description: "Memory usage of the container.");
 
@@ -143,7 +147,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 
         _ = meter.CreateObservableGauge(
             name: ResourceUtilizationInstruments.ProcessMemoryUtilization,
-            observeValue: () => MemoryPercentage(() => _processInfo.GetCurrentProcessMemoryUsage()));
+            observeValue: ProcessMemoryPercentage);
     }
 
     public Snapshot GetSnapshot()
@@ -206,16 +210,35 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         return memoryLimitInBytes;
     }
 
-    private double MemoryPercentage(Func<ulong> getMemoryUsage)
+    private double ProcessMemoryPercentage()
     {
-        ulong memoryUsage = MemoryUsage(getMemoryUsage);
-        double memoryPercentage = Math.Min(_metricValueMultiplier, memoryUsage / _memoryLimit * _metricValueMultiplier);
+        DateTimeOffset now = _timeProvider.GetUtcNow();
 
-        _logger.MemoryPercentageData(memoryUsage, _memoryLimit, memoryPercentage);
-        return memoryPercentage;
+        lock (_processMemoryLocker)
+        {
+            if (now < _refreshAfterProcessMemory)
+            {
+                return _processMemoryPercentage;
+            }
+        }
+
+        ulong processMemoryUsage = _processInfo.GetCurrentProcessMemoryUsage();
+
+        lock (_processMemoryLocker)
+        {
+            if (now >= _refreshAfterProcessMemory)
+            {
+                _processMemoryPercentage = Math.Min(_metricValueMultiplier, processMemoryUsage / _memoryLimit * _metricValueMultiplier);
+                _refreshAfterProcessMemory = now.Add(_memoryRefreshInterval);
+
+                _logger.ProcessMemoryPercentageData(processMemoryUsage, _memoryLimit, _processMemoryPercentage);
+            }
+
+            return _processMemoryPercentage;
+        }
     }
 
-    private ulong MemoryUsage(Func<ulong> getMemoryUsage)
+    private ulong MemoryUsage()
     {
         DateTimeOffset now = _timeProvider.GetUtcNow();
 
@@ -227,7 +250,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
             }
         }
 
-        ulong memoryUsage = getMemoryUsage();
+        ulong memoryUsage = _processInfo.GetMemoryUsage();
 
         lock (_memoryLocker)
         {
@@ -235,9 +258,9 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
             {
                 _memoryUsage = memoryUsage;
                 _refreshAfterMemory = now.Add(_memoryRefreshInterval);
+                _logger.ContainerMemoryUsageData(_memoryUsage, _memoryLimit);
             }
 
-            _logger.MemoryUsageData(_memoryUsage);
             return _memoryUsage;
         }
     }
