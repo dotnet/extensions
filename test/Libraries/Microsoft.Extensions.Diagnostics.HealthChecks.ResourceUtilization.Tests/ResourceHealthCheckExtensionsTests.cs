@@ -490,6 +490,7 @@ public class ResourceHealthCheckExtensionsTests
         Mock<IProcessInfo> processInfoMock = new();
         var appMemoryUsage = memoryUsed;
         processInfoMock.Setup(p => p.GetMemoryUsage()).Returns(() => appMemoryUsage);
+        processInfoMock.Setup(p => p.GetCurrentProcessMemoryUsage()).Returns(() => appMemoryUsage);
 
         JOBOBJECT_EXTENDED_LIMIT_INFORMATION limitInfo = default;
         limitInfo.JobMemoryLimit = new UIntPtr(totalMemory);
