@@ -181,6 +181,18 @@ public static class OpenAIClientExtensions
     public static ConversationFunctionTool AsOpenAIConversationFunctionTool(this AIFunction function) =>
         OpenAIRealtimeConversationClient.ToOpenAIConversationFunctionTool(Throw.IfNull(function));
 
+    /// <summary>Creates a sequence of OpenAI <see cref="OpenAI.Chat.ChatMessage"/> instances from the specified input messages.</summary>
+    /// <param name="messages">The input messages to convert.</param>
+    /// <returns>A sequence of OpenAI chat messages.</returns>
+    public static IEnumerable<OpenAI.Chat.ChatMessage> AsOpenAIChatMessages(this IEnumerable<ChatMessage> messages) =>
+        OpenAIChatClient.ToOpenAIChatMessages(Throw.IfNull(messages), chatOptions: null);
+
+    /// <summary>Creates a sequence of OpenAI <see cref="OpenAI.Responses.ResponseItem"/> instances from the specified input messages.</summary>
+    /// <param name="messages">The input messages to convert.</param>
+    /// <returns>A sequence of OpenAI response items.</returns>
+    public static IEnumerable<OpenAI.Responses.ResponseItem> AsOpenAIResponseItems(this IEnumerable<ChatMessage> messages) =>
+        OpenAIResponseChatClient.ToOpenAIResponseItems(Throw.IfNull(messages));
+
     // TODO: Once we're ready to rely on C# 14 features, add an extension property ChatOptions.Strict.
 
     /// <summary>Gets whether the properties specify that strict schema handling is desired.</summary>
