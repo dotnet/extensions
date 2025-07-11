@@ -620,7 +620,7 @@ public static partial class AIJsonUtilities
     {
         numericType = null;
 
-        if (ctx.TypeInfo.NumberHandling is not JsonNumberHandling.Strict && schema["type"] is JsonArray { Count: 2 } typeArray)
+        if (ctx.TypeInfo.NumberHandling is not JsonNumberHandling.Strict && schema["type"] is JsonArray typeArray)
         {
             bool allowString = false;
 
@@ -632,11 +632,23 @@ public static partial class AIJsonUtilities
                     switch (type)
                     {
                         case "integer" or "number":
+                            if (numericType is not null)
+                            {
+                                // Conflicting numeric type
+                                return false;
+                            }
+
                             numericType = type;
                             break;
                         case "string":
                             allowString = true;
                             break;
+                        case "null":
+                            // Nullable integer.
+                            break;
+                        default:
+                            // keyword is not valid in the context of numeric types.
+                            return false;
                     }
                 }
             }
