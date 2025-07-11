@@ -191,10 +191,10 @@ internal sealed class HttpRequestReader : IHttpRequestReader
 #if NET8_0_OR_GREATER
                     dict.TryAdd(key, value);
 #else
-                if (!dict.ContainsKey(key))
-                {
-                    dict[key] = value;
-                }
+                    if (!dict.ContainsKey(key))
+                    {
+                        dict[key] = value;
+                    }
 #endif
                 }
             }

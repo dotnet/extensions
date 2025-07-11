@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Http.Logging;
 
@@ -49,6 +51,7 @@ public static class HttpClientLoggingTagNames
     /// <summary>
     /// HTTP Response Headers prefix.
     /// </summary>
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
     public const string ResponseHeaderPrefix = "http.response.header.";
 
     /// <summary>
