@@ -61,7 +61,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     private readonly ActivitySource? _activitySource;
 
     /// <summary>Maximum number of roundtrips allowed to the inner client.</summary>
-    private int _maximumIterationsPerRequest = 10;
+    private int _maximumIterationsPerRequest = 40; // arbitrary default to prevent runaway execution
 
     /// <summary>Maximum number of consecutive iterations that are allowed contain at least one exception result. If the limit is exceeded, we rethrow the exception instead of continuing.</summary>
     private int _maximumConsecutiveErrorsPerRequest = 3;
@@ -142,7 +142,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// </summary>
     /// <value>
     /// The maximum number of iterations per request.
-    /// The default value is 10.
+    /// The default value is 40.
     /// </value>
     /// <remarks>
     /// <para>
