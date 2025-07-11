@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Gen.Logging.Test;
 
 namespace TestClasses
 {
@@ -244,5 +245,8 @@ namespace TestClasses
 
         [LoggerMessage(6, LogLevel.Information, "Testing interface-typed argument here...")]
         public static partial void LogMethodInterfaceArg(ILogger logger, [LogProperties] IMyInterface complexParam);
+
+        [LoggerMessage(7, LogLevel.Information, "Testing logging a complex object residing in another assembly...")]
+        public static partial void LogObjectFromAnotherAssembly(ILogger logger, [LogProperties] ObjectToLog logObject);
     }
 }
