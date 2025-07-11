@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Http.Logging;
 
@@ -49,7 +51,13 @@ public static class HttpClientLoggingTagNames
     /// <summary>
     /// HTTP Response Headers prefix.
     /// </summary>
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
     public const string ResponseHeaderPrefix = "http.response.header.";
+
+    /// <summary>
+    /// HTTP query parameters prefix.
+    /// </summary>
+    public const string QueryParametersPrefix = "http.query.";
 
     /// <summary>
     /// HTTP Status Code.
@@ -61,8 +69,7 @@ public static class HttpClientLoggingTagNames
     /// </summary>
     /// <returns>A read-only <see cref="IReadOnlyList{String}"/> of all tag names.</returns>
     public static IReadOnlyList<string> TagNames { get; } =
-        Array.AsReadOnly(new[]
-        {
+        Array.AsReadOnly([
             Duration,
             Host,
             Method,
@@ -71,6 +78,7 @@ public static class HttpClientLoggingTagNames
             RequestHeaderPrefix,
             ResponseBody,
             ResponseHeaderPrefix,
-            StatusCode
-        });
+            StatusCode,
+            QueryParametersPrefix
+        ]);
 }
