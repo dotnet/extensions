@@ -220,17 +220,20 @@ public sealed class AcceptanceTest
         using var e = new ManualResetEventSlim();
 
         object? meterScope = null;
-        listener.InstrumentPublished = (Instrument instrument, MeterListener meterListener)
-            => OnInstrumentPublished(instrument, meterListener, meterScope);
-        listener.SetMeasurementEventCallback<double>((m, f, tags, _)
-            => OnMeasurementReceived(m,
+        listener.InstrumentPublished = (Instrument instrument, MeterListener meterListener) =>
+            OnInstrumentPublished(instrument, meterListener, meterScope);
+        listener.SetMeasurementEventCallback<double>((m, f, tags, _) =>
+            OnMeasurementReceived(
+                m,
                 f,
                 tags,
                 ref cpuUserTime,
                 ref cpuKernelTime,
                 ref cpuFromGauge,
                 ref cpuLimitFromGauge,
-            ref cpuRequestFromGauge, ref memoryFromGauge, ref memoryLimitFromGauge));
+                ref cpuRequestFromGauge,
+                ref memoryFromGauge,
+                ref memoryLimitFromGauge));
         listener.Start();
 
         using var host = FakeHost.CreateBuilder()
@@ -313,10 +316,11 @@ public sealed class AcceptanceTest
         using var e = new ManualResetEventSlim();
 
         object? meterScope = null;
-        listener.InstrumentPublished = (Instrument instrument, MeterListener meterListener)
-            => OnInstrumentPublished(instrument, meterListener, meterScope);
-        listener.SetMeasurementEventCallback<double>((m, f, tags, _)
-            => OnMeasurementReceived(m,
+        listener.InstrumentPublished = (Instrument instrument, MeterListener meterListener) =>
+            OnInstrumentPublished(instrument, meterListener, meterScope);
+        listener.SetMeasurementEventCallback<double>((m, f, tags, _) =>
+            OnMeasurementReceived(
+                m,
                 f,
                 tags,
                 ref cpuUserTime,
@@ -326,8 +330,7 @@ public sealed class AcceptanceTest
                 ref cpuRequestFromGauge,
                 ref memoryFromGauge,
                 ref memoryLimitFromGauge));
-        listener.SetMeasurementEventCallback<long>((instrument, value, tags, _)
-            =>
+        listener.SetMeasurementEventCallback<long>((instrument, value, tags, _) =>
         {
             if (instrument.Name == ResourceUtilizationInstruments.ContainerMemoryUsage)
             {
@@ -418,10 +421,11 @@ public sealed class AcceptanceTest
         var memoryLimitFromGauge = 0.0d;
 
         object? meterScope = null;
-        listener.InstrumentPublished = (Instrument instrument, MeterListener meterListener)
-            => OnInstrumentPublished(instrument, meterListener, meterScope);
-        listener.SetMeasurementEventCallback<double>((m, f, tags, _)
-            => OnMeasurementReceived(m,
+        listener.InstrumentPublished = (Instrument instrument, MeterListener meterListener) =>
+            OnInstrumentPublished(instrument, meterListener, meterScope);
+        listener.SetMeasurementEventCallback<double>((m, f, tags, _) =>
+            OnMeasurementReceived(
+                m,
                 f,
                 tags,
                 ref cpuUserTime,
