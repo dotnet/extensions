@@ -452,20 +452,24 @@ internal static partial class JsonSchemaExporter
 
                 bool IsNullableSchema(ref GenerationState state)
                 {
-                    // A schema is marked as nullable if either
+                    // A schema is marked as nullable if either:
                     // 1. We have a schema for a property where either the getter or setter are marked as nullable.
-                    // 2. We have a schema for a reference type, unless we're explicitly treating null-oblivious types as non-nullable
+                    // 2. We have a schema for a Nullable<T> type.
+                    // 3. We have a schema for a reference type, unless we're explicitly treating null-oblivious types as non-nullable.
 
                     if (propertyInfo != null || parameterInfo != null)
                     {
                         return !isNonNullableType;
                     }
-                    else
+
+                    if (Nullable.GetUnderlyingType(typeInfo.Type) is not null)
                     {
-                        return ReflectionHelpers.CanBeNull(typeInfo.Type) &&
-                            !parentPolymorphicTypeIsNonNullable &&
-                            !state.ExporterOptions.TreatNullObliviousAsNonNullable;
+                        return true;
                     }
+
+                    return !typeInfo.Type.IsValueType &&
+                        !parentPolymorphicTypeIsNonNullable &&
+                        !state.ExporterOptions.TreatNullObliviousAsNonNullable;
                 }
             }
 

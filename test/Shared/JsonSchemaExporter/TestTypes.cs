@@ -9,12 +9,9 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-#if NET9_0_OR_GREATER
-using System.Reflection;
-#endif
 using System.Text.Json;
 using System.Text.Json.Nodes;
-#if NET9_0_OR_GREATER
+#if TESTS_JSON_SCHEMA_EXPORTER_POLYFILL
 using System.Text.Json.Schema;
 #endif
 using System.Text.Json.Serialization;
@@ -135,6 +132,21 @@ public static partial class TestTypes
             }
             """);
 
+#if !NET9_0 && TESTS_JSON_SCHEMA_EXPORTER_POLYFILL
+        // Regression test for https://github.com/dotnet/runtime/issues/117493
+        yield return new TestData<int?>(
+            Value: 42,
+            AdditionalValues: [null],
+            ExpectedJsonSchema: """{"type":["integer","null"]}""",
+            ExporterOptions: new() { TreatNullObliviousAsNonNullable = true });
+
+        yield return new TestData<DateTimeOffset?>(
+            Value: DateTimeOffset.MinValue,
+            AdditionalValues: [null],
+            ExpectedJsonSchema: """{"type":["string","null"],"format":"date-time"}""",
+            ExporterOptions: new() { TreatNullObliviousAsNonNullable = true });
+#endif
+
         // User-defined POCOs
         yield return new TestData<SimplePoco>(
             Value: new() { String = "string", StringNullable = "string", Int = 42, Double = 3.14, Boolean = true },
@@ -152,7 +164,7 @@ public static partial class TestTypes
             }
             """);
 
-#if NET9_0_OR_GREATER
+#if TESTS_JSON_SCHEMA_EXPORTER_POLYFILL
         // Same as above but with nullable types set to non-nullable
         yield return new TestData<SimplePoco>(
             Value: new() { String = "string", StringNullable = "string", Int = 42, Double = 3.14, Boolean = true },
@@ -311,7 +323,7 @@ public static partial class TestTypes
             }
             """);
 
-#if NET9_0_OR_GREATER
+#if TESTS_JSON_SCHEMA_EXPORTER_POLYFILL
         // Same as above but with non-nullable reference types by default.
         yield return new TestData<PocoWithRecursiveMembers>(
             Value: new() { Value = 1, Next = new() { Value = 2, Next = new() { Value = 3 } } },
@@ -761,7 +773,7 @@ public static partial class TestTypes
             }
             """);
 
-#if NET9_0_OR_GREATER
+#if TEST
         yield return new TestData<ClassWithComponentModelAttributes>(
             Value: new("string", -1),
             ExpectedJsonSchema: """
@@ -1164,7 +1176,7 @@ public static partial class TestTypes
         public int Count => _dictionary.Count;
         public bool ContainsKey(TKey key) => _dictionary.ContainsKey(key);
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() => _dictionary.GetEnumerator();
-#if NETCOREAPP
+#if NET
         public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value) => _dictionary.TryGetValue(key, out value);
 #else
         public bool TryGetValue(TKey key, out TValue value) => _dictionary.TryGetValue(key, out value);
@@ -1249,6 +1261,7 @@ public static partial class TestTypes
     [JsonSerializable(typeof(IntEnum?))]
     [JsonSerializable(typeof(StringEnum?))]
     [JsonSerializable(typeof(SimpleRecordStruct?))]
+    [JsonSerializable(typeof(DateTimeOffset?))]
     // User-defined POCOs
     [JsonSerializable(typeof(SimplePoco))]
     [JsonSerializable(typeof(SimpleRecord))]
@@ -1299,22 +1312,4 @@ public static partial class TestTypes
     [JsonSerializable(typeof(StructDictionary<string, int>))]
     [JsonSerializable(typeof(XElement))]
     public partial class TestTypesContext : JsonSerializerContext;
-
-#if NET9_0_OR_GREATER
-    private static TAttribute? ResolveAttribute<TAttribute>(this JsonSchemaExporterContext ctx)
-        where TAttribute : Attribute
-    {
-        // Resolve attributes from locations in the following order:
-        // 1. Property-level attributes
-        // 2. Parameter-level attributes and
-        // 3. Type-level attributes.
-        return
-            GetAttrs(ctx.PropertyInfo?.AttributeProvider) ??
-            GetAttrs(ctx.PropertyInfo?.AssociatedParameter?.AttributeProvider) ??
-            GetAttrs(ctx.TypeInfo.Type);
-
-        static TAttribute? GetAttrs(ICustomAttributeProvider? provider) =>
-            (TAttribute?)provider?.GetCustomAttributes(typeof(TAttribute), inherit: false).FirstOrDefault();
-    }
-#endif
 }

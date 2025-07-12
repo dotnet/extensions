@@ -53,21 +53,29 @@ internal static class AssertExtensions
     public static void EqualFunctionCallResults(object? expected, object? actual, JsonSerializerOptions? options = null)
         => AreJsonEquivalentValues(expected, actual, options);
 
+    /// <summary>
+    /// Asserts that the two JSON values are equal.
+    /// </summary>
+    public static void EqualJsonValues(JsonElement expectedJson, JsonElement actualJson, string? propertyName = null)
+    {
+        if (!JsonNode.DeepEquals(
+            JsonSerializer.SerializeToNode(expectedJson, AIJsonUtilities.DefaultOptions),
+            JsonSerializer.SerializeToNode(actualJson, AIJsonUtilities.DefaultOptions)))
+        {
+            string message = propertyName is null
+                ? $"JSON result does not match expected JSON.\r\nExpected: {expectedJson.GetRawText()}\r\nActual:   {actualJson.GetRawText()}"
+                : $"Parameter '{propertyName}' does not match expected JSON.\r\nExpected: {expectedJson.GetRawText()}\r\nActual:   {actualJson.GetRawText()}";
+
+            throw new XunitException(message);
+        }
+    }
+
     private static void AreJsonEquivalentValues(object? expected, object? actual, JsonSerializerOptions? options, string? propertyName = null)
     {
         options ??= AIJsonUtilities.DefaultOptions;
         JsonElement expectedElement = NormalizeToElement(expected, options);
         JsonElement actualElement = NormalizeToElement(actual, options);
-        if (!JsonNode.DeepEquals(
-            JsonSerializer.SerializeToNode(expectedElement, AIJsonUtilities.DefaultOptions),
-            JsonSerializer.SerializeToNode(actualElement, AIJsonUtilities.DefaultOptions)))
-        {
-            string message = propertyName is null
-                ? $"Function result does not match expected JSON.\r\nExpected: {expectedElement.GetRawText()}\r\nActual:   {actualElement.GetRawText()}"
-                : $"Parameter '{propertyName}' does not match expected JSON.\r\nExpected: {expectedElement.GetRawText()}\r\nActual:   {actualElement.GetRawText()}";
-
-            throw new XunitException(message);
-        }
+        EqualJsonValues(expectedElement, actualElement, propertyName);
 
         static JsonElement NormalizeToElement(object? value, JsonSerializerOptions options)
             => value is JsonElement e ? e : JsonSerializer.SerializeToElement(value, options);
