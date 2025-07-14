@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Microsoft.Extensions.AI.Evaluation.Quality;
 
@@ -40,8 +41,8 @@ public sealed class ToolCallAccuracyEvaluatorContext : EvaluationContext
     /// are defined as <see cref="AIFunction"/>s. Any other <see cref="AITool"/> definitions will be ignored.
     /// </para>
     /// </param>
-    public ToolCallAccuracyEvaluatorContext(IEnumerable<AITool> toolDefinitions)
-        : base(name: ToolCallAccuracyContextName, contents: [new TextContent(toolDefinitions.RenderAsJson())])
+    public ToolCallAccuracyEvaluatorContext(params AITool[] toolDefinitions)
+        : base(name: ToolDefinitionsContextName, contents: [new TextContent(toolDefinitions.RenderAsJson())])
     {
         ToolDefinitions = [.. toolDefinitions];
     }
@@ -59,8 +60,8 @@ public sealed class ToolCallAccuracyEvaluatorContext : EvaluationContext
     /// are defined as <see cref="AIFunction"/>s. Any other <see cref="AITool"/> definitions will be ignored.
     /// </para>
     /// </param>
-    public ToolCallAccuracyEvaluatorContext(params AITool[] toolDefinitions)
-        : this(toolDefinitions as IEnumerable<AITool>)
+    public ToolCallAccuracyEvaluatorContext(IEnumerable<AITool> toolDefinitions)
+        : this(toolDefinitions.ToArray())
     {
     }
 
@@ -68,7 +69,7 @@ public sealed class ToolCallAccuracyEvaluatorContext : EvaluationContext
     /// Gets the unique <see cref="EvaluationContext.Name"/> that is used for
     /// <see cref="ToolCallAccuracyEvaluatorContext"/>.
     /// </summary>
-    public static string ToolCallAccuracyContextName => "Tool Definitions (Tool Call Accuracy)";
+    public static string ToolDefinitionsContextName => "Tool Definitions (Tool Call Accuracy)";
 
     /// <summary>
     /// Gets set of tool definitions (see <see cref="ChatOptions.Tools"/>) that were used when generating the model

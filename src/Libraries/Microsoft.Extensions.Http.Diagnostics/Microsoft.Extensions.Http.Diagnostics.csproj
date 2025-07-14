@@ -3,6 +3,7 @@
     <RootNamespace>Microsoft.Extensions.Http.Diagnostics</RootNamespace>
     <Description>Telemetry support for HTTP Client.</Description>
     <Workstream>Telemetry</Workstream>
+    <TargetFrameworks>$(NetCoreTargetFrameworks);netstandard2.0;net462</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -31,13 +32,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Extensions.DependencyInjection.AutoActivation\Microsoft.Extensions.DependencyInjection.AutoActivation.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.Telemetry\Microsoft.Extensions.Telemetry.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.IO.Pipelines" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+    <PackageReference Include="System.IO.Pipelines" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net9.0'))" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))" />
     <PackageReference Include="Microsoft.Extensions.Http" />
   </ItemGroup>
 

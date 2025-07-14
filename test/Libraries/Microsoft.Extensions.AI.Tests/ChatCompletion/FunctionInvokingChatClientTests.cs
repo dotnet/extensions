@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,8 +36,37 @@ public class FunctionInvokingChatClientTests
 
         Assert.False(client.AllowConcurrentInvocation);
         Assert.False(client.IncludeDetailedErrors);
-        Assert.Equal(10, client.MaximumIterationsPerRequest);
+        Assert.Equal(40, client.MaximumIterationsPerRequest);
         Assert.Equal(3, client.MaximumConsecutiveErrorsPerRequest);
+        Assert.Null(client.FunctionInvoker);
+    }
+
+    [Fact]
+    public void Properties_Roundtrip()
+    {
+        using TestChatClient innerClient = new();
+        using FunctionInvokingChatClient client = new(innerClient);
+
+        Assert.False(client.AllowConcurrentInvocation);
+        client.AllowConcurrentInvocation = true;
+        Assert.True(client.AllowConcurrentInvocation);
+
+        Assert.False(client.IncludeDetailedErrors);
+        client.IncludeDetailedErrors = true;
+        Assert.True(client.IncludeDetailedErrors);
+
+        Assert.Equal(40, client.MaximumIterationsPerRequest);
+        client.MaximumIterationsPerRequest = 5;
+        Assert.Equal(5, client.MaximumIterationsPerRequest);
+
+        Assert.Equal(3, client.MaximumConsecutiveErrorsPerRequest);
+        client.MaximumConsecutiveErrorsPerRequest = 1;
+        Assert.Equal(1, client.MaximumConsecutiveErrorsPerRequest);
+
+        Assert.Null(client.FunctionInvoker);
+        Func<FunctionInvocationContext, CancellationToken, ValueTask<object?>> invoker = (ctx, ct) => new ValueTask<object?>("test");
+        client.FunctionInvoker = invoker;
+        Assert.Same(invoker, client.FunctionInvoker);
     }
 
     [Fact]
@@ -206,6 +236,49 @@ public class FunctionInvokingChatClientTests
         await InvokeAndAssertAsync(options, plan);
 
         await InvokeAndAssertStreamingAsync(options, plan);
+    }
+
+    [Fact]
+    public async Task FunctionInvokerDelegateOverridesHandlingAsync()
+    {
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                AIFunctionFactory.Create(() => "Result 1", "Func1"),
+                AIFunctionFactory.Create((int i) => $"Result 2: {i}", "Func2"),
+                AIFunctionFactory.Create((int i) => { }, "VoidReturn"),
+            ]
+        };
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1 from delegate")]),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", result: "Result 2: 42 from delegate")]),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId3", "VoidReturn", arguments: new Dictionary<string, object?> { { "i", 43 } })]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId3", result: "Success: Function completed.")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(
+            s => new FunctionInvokingChatClient(s)
+            {
+                FunctionInvoker = async (ctx, cancellationToken) =>
+                {
+                    Assert.NotNull(ctx);
+                    var result = await ctx.Function.InvokeAsync(ctx.Arguments, cancellationToken);
+                    return result is JsonElement e ?
+                        JsonSerializer.SerializeToElement($"{e.GetString()} from delegate", AIJsonUtilities.DefaultOptions) :
+                        result;
+                }
+            });
+
+        await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
+
+        await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configure);
     }
 
     [Fact]

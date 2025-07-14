@@ -490,6 +490,7 @@ public class ResourceHealthCheckExtensionsTests
         Mock<IProcessInfo> processInfoMock = new();
         var appMemoryUsage = memoryUsed;
         processInfoMock.Setup(p => p.GetMemoryUsage()).Returns(() => appMemoryUsage);
+        processInfoMock.Setup(p => p.GetCurrentProcessMemoryUsage()).Returns(() => appMemoryUsage);
 
         JOBOBJECT_EXTENDED_LIMIT_INFORMATION limitInfo = default;
         limitInfo.JobMemoryLimit = new UIntPtr(totalMemory);
@@ -500,6 +501,7 @@ public class ResourceHealthCheckExtensionsTests
         accountingInfoAfter1Ms.TotalUserTime = (long)(utilization * 100);
         jobHandleMock.SetupSequence(j => j.GetBasicAccountingInfo())
             .Returns(() => initialAccountingInfo) // this is called from the WindowsContainerSnapshotProvider's constructor
+            .Returns(() => initialAccountingInfo) // this is called from the WindowsContainerSnapshotProvider's GetCpuTime method
             .Returns(() => accountingInfoAfter1Ms); // this is called from the WindowsContainerSnapshotProvider's CpuPercentage method
 
         using var meter = new Meter("Microsoft.Extensions.Diagnostics.ResourceMonitoring");

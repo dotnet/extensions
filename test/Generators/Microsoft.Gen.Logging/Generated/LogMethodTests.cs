@@ -581,6 +581,37 @@ public class LogMethodTests
     }
 
     [Fact]
+    public void EventIdTests()
+    {
+        using var logger = Utils.GetLogger();
+        var collector = logger.FakeLogCollector;
+
+        collector.Clear();
+        EventNameTestExtensions.M1(LogLevel.Warning, logger, "Eight");
+        Assert.Equal(1, collector.Count);
+
+        var firstEventId = collector.LatestRecord.Id;
+        Assert.NotEqual(0, firstEventId.Id);
+        Assert.Equal("M1_Event", firstEventId.Name);
+
+        collector.Clear();
+        EventNameTestExtensions.M1_Event(logger, "Nine");
+        Assert.Equal(1, collector.Count);
+
+        var secondEventId = collector.LatestRecord.Id;
+        Assert.Equal(firstEventId.Id, secondEventId.Id); // Same EventName means same generated EventId
+        Assert.Equal(nameof(EventNameTestExtensions.M1_Event), secondEventId.Name);
+
+        collector.Clear();
+        EventNameTestExtensions.M2(logger, "Ten");
+        Assert.Equal(1, collector.Count);
+
+        var thirdEventId = collector.LatestRecord.Id;
+        Assert.NotEqual(thirdEventId.Id, secondEventId.Id); // Different EventName means different generated EventId
+        Assert.Equal(nameof(EventNameTestExtensions.M2), thirdEventId.Name);
+    }
+
+    [Fact]
     public void NestedClassTests()
     {
         using var logger = Utils.GetLogger();

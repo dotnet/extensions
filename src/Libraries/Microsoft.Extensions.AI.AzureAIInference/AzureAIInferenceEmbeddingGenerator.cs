@@ -69,7 +69,7 @@ internal sealed class AzureAIInferenceEmbeddingGenerator :
         var providerUrl = typeof(EmbeddingsClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(embeddingsClient) as Uri;
 
-        _metadata = new EmbeddingGeneratorMetadata("az.ai.inference", providerUrl, defaultModelId, defaultModelDimensions);
+        _metadata = new EmbeddingGeneratorMetadata("azure.ai.inference", providerUrl, defaultModelId, defaultModelDimensions);
     }
 
     /// <inheritdoc />

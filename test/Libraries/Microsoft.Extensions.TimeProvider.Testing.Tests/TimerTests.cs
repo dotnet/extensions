@@ -178,7 +178,7 @@ public class TimerTests
         Assert.False(t.Change(TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1)));
     }
 
-    [Fact]
+    [Fact(Skip = "Flaky, https://github.com/dotnet/extensions/issues/6567")]
     public void CreateTimer_WhenDisposed_RemovesWaiterFromQueue()
     {
         var timer1Counter = 0;

@@ -11,20 +11,20 @@ namespace Microsoft.Extensions.AI;
 [Experimental("MEAI001")]
 public class SpeechToTextOptions
 {
+    /// <summary>Gets or sets any additional properties associated with the options.</summary>
+    public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
+
     /// <summary>Gets or sets the model ID for the speech to text.</summary>
     public string? ModelId { get; set; }
 
     /// <summary>Gets or sets the language of source speech.</summary>
     public string? SpeechLanguage { get; set; }
 
-    /// <summary>Gets or sets the language for the target generated text.</summary>
-    public string? TextLanguage { get; set; }
-
     /// <summary>Gets or sets the sample rate of the speech input audio.</summary>
     public int? SpeechSampleRate { get; set; }
 
-    /// <summary>Gets or sets any additional properties associated with the options.</summary>
-    public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
+    /// <summary>Gets or sets the language for the target generated text.</summary>
+    public string? TextLanguage { get; set; }
 
     /// <summary>
     /// Gets or sets a callback responsible for creating the raw representation of the embedding generation options from an underlying implementation.
@@ -71,12 +71,12 @@ public class SpeechToTextOptions
     /// When <paramref name="overwrite"/> is <see langword="false"/> (the default):
     /// <list type="bullet">
     ///   <item>
-    ///     <description>For properties of primitive types (like <see cref="SpeechLanguage"/> or <see cref="ModelId"/>), 
+    ///     <description>For properties of primitive types (like <see cref="SpeechLanguage"/> or <see cref="ModelId"/>),
     ///     properties on this instance will only be updated if they are <see langword="null"/>.</description>
     ///   </item>
     ///   <item>
-    ///     <description>For dictionary types (like <see cref="AdditionalProperties"/>), a shallow copy is performed 
-    ///     on the entries from <paramref name="other"/>, adding them into the corresponding dictionary on this instance, 
+    ///     <description>For dictionary types (like <see cref="AdditionalProperties"/>), a shallow copy is performed
+    ///     on the entries from <paramref name="other"/>, adding them into the corresponding dictionary on this instance,
     ///     but only if the key does not already exist in this instance's dictionary.</description>
     ///   </item>
     /// </list>
@@ -86,12 +86,12 @@ public class SpeechToTextOptions
     /// overwrite the corresponding properties on this instance.
     /// <list type="bullet">
     ///   <item>
-    ///     <description>For properties of primitive types (like <see cref="SpeechLanguage"/> or <see cref="ModelId"/>), 
+    ///     <description>For properties of primitive types (like <see cref="SpeechLanguage"/> or <see cref="ModelId"/>),
     ///     properties on this instance will be updated with values from <paramref name="other"/> if they're non-<see langword="null"/>
     ///     on <paramref name="other"/>.</description>
     ///   </item>
     ///   <item>
-    ///     <description>For dictionary types (like <see cref="AdditionalProperties"/>), entries from <paramref name="other"/> 
+    ///     <description>For dictionary types (like <see cref="AdditionalProperties"/>), entries from <paramref name="other"/>
     ///     will be stored into this instance's dictionary, overwriting any entries with the same key in this instance's dictionary.</description>
     ///   </item>
     /// </list>

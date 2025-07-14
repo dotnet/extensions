@@ -16,10 +16,9 @@ public class HttpRequestLatencyListenerTest
     {
         var lc = HttpMockProvider.GetLatencyContext();
         var context = new HttpClientLatencyContext();
+        Assert.Null(context.Get());
         context.Set(lc.Object);
         Assert.Equal(context.Get(), lc.Object);
-        context.Unset();
-        Assert.Null(context.Get());
     }
 
     [Fact]
@@ -116,28 +115,6 @@ public class HttpRequestLatencyListenerTest
     }
 
     [Fact]
-    public void HttpRequestLatencyListener_OnEventSourceCreated_Twice()
-    {
-        var lcti = HttpMockProvider.GetTokenIssuer();
-        var lc = HttpMockProvider.GetLatencyContext();
-        var context = new HttpClientLatencyContext();
-        context.Set(lc.Object);
-
-        using var listener = HttpMockProvider.GetListener(context, lcti.Object);
-        Assert.NotNull(listener);
-        listener.Enable();
-
-        using var esSockets = new HttpMockProvider.SockeyMockEventSource();
-        listener.OnEventSourceCreated("System.Net.Sockets", esSockets);
-        Assert.Equal(1, esSockets.OnEventInvoked);
-        Assert.True(esSockets.IsEnabled());
-
-        listener.OnEventSourceCreated("System.Net.Sockets", esSockets);
-        Assert.Equal(1, esSockets.OnEventInvoked);
-        Assert.True(esSockets.IsEnabled());
-    }
-
-    [Fact]
     public void HttpRequestLatencyListener_OnEventWritten_DoesNotAddCheckpoints_NonHttp()
     {
         var lcti = HttpMockProvider.GetTokenIssuer();
@@ -146,15 +123,18 @@ public class HttpRequestLatencyListenerTest
         context.Set(lc.Object);
 
         using var listener = HttpMockProvider.GetListener(context, lcti.Object);
+        listener.Enable();
 
         var events = new[]
         {
             "ConnectionEstablished", "RequestLeftQueue", "ResolutionStop", "ConnectStart", "New"
         };
 
+        using var es = new HttpMockProvider.MockEventSource();
+        listener.OnEventSourceCreated("System.Net", es);
         for (int i = 0; i < events.Length; i++)
         {
-            listener.OnEventWritten("System.Net", events[i]);
+            es.Write(events[i]);
         }
 
         lc.Verify(a => a.AddCheckpoint(It.IsAny<CheckpointToken>()), Times.Never);

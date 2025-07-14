@@ -60,19 +60,21 @@ public static class ResourceMonitoringServiceCollectionExtensions
         return services.AddResourceMonitoringInternal(configure);
     }
 
-    // can't easily test the exception throwing case
-    [ExcludeFromCodeCoverage]
     private static IServiceCollection AddResourceMonitoringInternal(
         this IServiceCollection services,
         Action<IResourceMonitorBuilder> configure)
     {
-        var builder = new ResourceMonitorBuilder(services);
-
         _ = services.AddMetrics();
-
+        var builder = new ResourceMonitorBuilder(services);
 #if NETFRAMEWORK
         _ = builder.AddWindowsProvider();
 #else
+        bool isSupportedOs = OperatingSystem.IsWindows() || OperatingSystem.IsLinux();
+        if (!isSupportedOs)
+        {
+            return services;
+        }
+
         if (OperatingSystem.IsWindows())
         {
             _ = builder.AddWindowsProvider();
@@ -80,10 +82,6 @@ public static class ResourceMonitoringServiceCollectionExtensions
         else if (OperatingSystem.IsLinux())
         {
             _ = builder.AddLinuxProvider();
-        }
-        else
-        {
-            throw new PlatformNotSupportedException();
         }
 #endif
 
