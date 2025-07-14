@@ -17,6 +17,7 @@ using OpenAI.Responses;
 #pragma warning disable S1067 // Expressions should not be too complex
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 #pragma warning disable S3604 // Member initializer values should not be redundant
+#pragma warning disable SA1202 // Elements should be ordered by access
 #pragma warning disable SA1204 // Static elements should appear before instance elements
 
 namespace Microsoft.Extensions.AI;
@@ -466,8 +467,7 @@ internal sealed class OpenAIResponseChatClient : IChatClient
     }
 
     /// <summary>Convert a sequence of <see cref="ChatMessage"/>s to <see cref="ResponseItem"/>s.</summary>
-    private static IEnumerable<ResponseItem> ToOpenAIResponseItems(
-        IEnumerable<ChatMessage> inputs)
+    internal static IEnumerable<ResponseItem> ToOpenAIResponseItems(IEnumerable<ChatMessage> inputs)
     {
         foreach (ChatMessage input in inputs)
         {
