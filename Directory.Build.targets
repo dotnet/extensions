@@ -36,8 +36,11 @@
     <!-- Conflicts with SA1405: Debug.Assert should provide message text -->
     <NoWarn>$(NoWarn);S3236</NoWarn>
 
+    <!-- warning CA2025: Ensure tasks using 'IDisposable' instances complete before the instances are disposed (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2025) -->
+    <NoWarn>$(NoWarn);CA2025</NoWarn>
+
     <!-- Legacy targets do not support attributes for a nullable context thus suppressing null check warnings -->
-    <NoWarn Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0'">$(NoWarn);CA1062</NoWarn>
+    <NoWarn Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">$(NoWarn);CA1062</NoWarn>
 
     <!-- Workaround https://github.com/dotnet/sdk/issues/36122 -->
     <!-- Set the namespaces emitted by the ConfigurationBindingGenerator for interception when applicable. -->
