@@ -292,6 +292,7 @@ public static partial class AIJsonUtilities
                 if (Nullable.GetUnderlyingType(ctx.TypeInfo.Type) is Type nullableElement)
                 {
                     // Account for bug https://github.com/dotnet/runtime/issues/117493
+                    // To be removed once System.Text.Json v10 becomes the lowest supported version.
                     // null not inserted in the type keyword for root-level Nullable<T> types.
                     if (objSchema.TryGetPropertyValue(TypePropertyName, out JsonNode? typeKeyWord) &&
                         typeKeyWord?.GetValueKind() is JsonValueKind.String)
