@@ -1,4 +1,4 @@
-# MCP Server
+﻿# MCP Server
 
 This README was created using the C# MCP server project template. It demonstrates how you can easily create an MCP server using C# and publish it as a NuGet package.
 
@@ -21,7 +21,7 @@ To test this MCP server from source code (locally) without using a built MCP ser
 ```json
 {
   "servers": {
-    "McpServer-CSharp": {
+    "mcpserver": {
       "type": "stdio",
       "command": "dotnet",
       "args": [
@@ -36,7 +36,7 @@ To test this MCP server from source code (locally) without using a built MCP ser
 
 ## Testing the MCP Server
 
-Once configured, you can ask Copilot Chat for a random number, for example, `Give me 3 random numbers`. It should prompt you to use the `get_random_number` tool on the `McpServer-CSharp` MCP server and show you the results.
+Once configured, you can ask Copilot Chat for a random number, for example, `Give me 3 random numbers`. It should prompt you to use the `get_random_number` tool on the `mcpserver` MCP server and show you the results.
 
 ## Publishing to NuGet.org
 
@@ -55,7 +55,7 @@ For both VS Code and Visual Studio, the configuration file uses the following se
 ```json
 {
   "servers": {
-    "McpServer-CSharp": {
+    "mcpserver": {
       "type": "stdio",
       "command": "dnx",
       "args": [
