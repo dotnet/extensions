@@ -47,8 +47,8 @@ Once configured, you can ask Copilot Chat for a random number, for example, `Giv
 
 Once the MCP server package is published to NuGet.org, you can configure it in your preferred IDE. Both VS Code and Visual Studio use the `dnx` command to download and install the MCP server package from NuGet.org.
 
-- **VS Code**: Create a `.vscode/mcp.json` file
-- **Visual Studio**: Create a `<SOLUTIONDIR>\.mcp.json` file
+- **VS Code**: Create a `<WORKSPACE DIRECTORY>/.vscode/mcp.json` file
+- **Visual Studio**: Create a `<SOLUTION DIRECTORY>\.mcp.json` file
 
 For both VS Code and Visual Studio, the configuration file uses the following server definition:
 

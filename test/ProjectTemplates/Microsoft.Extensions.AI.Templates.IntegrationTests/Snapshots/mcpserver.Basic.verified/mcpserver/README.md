@@ -1,6 +1,6 @@
-﻿# MCP Server
+# MCP Server
 
-This README was created using the C# MCP server template project. It demonstrates how you can easily create an MCP server using C# and then package it in a NuGet package.
+This README was created using the C# MCP server project template. It demonstrates how you can easily create an MCP server using C# and publish it as a NuGet package.
 
 See [aka.ms/nuget/mcp/guide](https://aka.ms/nuget/mcp/guide) for the full guide.
 
@@ -14,67 +14,70 @@ See [aka.ms/nuget/mcp/guide](https://aka.ms/nuget/mcp/guide) for the full guide.
 
 The `bin/Release` directory will contain the package file (.nupkg), which can be [published to NuGet.org](https://learn.microsoft.com/nuget/nuget-org/publish-a-package).
 
-## Using the MCP Server in VS Code
+## Developing locally
 
-Once the MCP server package is published to NuGet.org, you can use the following VS Code user configuration to download and install the MCP server package. See [Use MCP servers in VS Code (Preview)](https://code.visualstudio.com/docs/copilot/chat/mcp-servers) for more information about using MCP servers in VS Code.
-
-```json
-{
-  "mcp": {
-    "servers": {
-      "mcpserver": {
-        "type": "stdio",
-        "command": "dnx",
-        "args": [
-          "<your package ID here>",
-          "--version",
-          "<your package version here>",
-          "--yes"
-        ]
-      }
-    }
-  }
-}
-```
-
-Now you can ask Copilot Chat for a random number, for example, `Give me 3 random numbers`. It should prompt you to use the `get_random_number` tool on the `mcpserver` MCP server and show you the results.
-
-## Developing locally in VS Code
-
-To test this MCP server from source code (locally) without using a built MCP server package, create a `.vscode/mcp.json` file (a VS Code workspace settings file) in your project directory and add the following configuration:
+To test this MCP server from source code (locally) without using a built MCP server package, you can configure your IDE to run the project directly using `dotnet run`.
 
 ```json
 {
   "servers": {
-    "mcpserver": {
+    "McpServer-CSharp": {
       "type": "stdio",
       "command": "dotnet",
       "args": [
         "run",
         "--project",
-        "<RELATIVE PATH TO PROJECT DIRECTORY>"
+        "<PATH TO PROJECT DIRECTORY>"
       ]
     }
   }
 }
 ```
 
-Alternatively, you can configure your VS Code user settings to use your local project:
+## Testing the MCP Server
+
+Once configured, you can ask Copilot Chat for a random number, for example, `Give me 3 random numbers`. It should prompt you to use the `get_random_number` tool on the `McpServer-CSharp` MCP server and show you the results.
+
+## Publishing to NuGet.org
+
+1. Run `dotnet pack -c Release` to create the NuGet package
+2. Publish to NuGet.org with `dotnet nuget push bin/Release/*.nupkg --api-key <your-api-key> --source https://api.nuget.org/v3/index.json`
+
+## Using the MCP Server from NuGet.org
+
+Once the MCP server package is published to NuGet.org, you can configure it in your preferred IDE. Both VS Code and Visual Studio use the `dnx` command to download and install the MCP server package from NuGet.org.
+
+- **VS Code**: Create a `<WORKSPACE DIRECTORY>/.vscode/mcp.json` file
+- **Visual Studio**: Create a `<SOLUTION DIRECTORY>\.mcp.json` file
+
+For both VS Code and Visual Studio, the configuration file uses the following server definition:
 
 ```json
 {
-  "mcp": {
-    "servers": {
-      "mcpserver": {
-        "type": "stdio",
-        "command": "dotnet",
-        "args": [
-          "run",
-          "--project",
-          "<FULL PATH TO PROJECT DIRECTORY>"
-        ]
-      }
+  "servers": {
+    "McpServer-CSharp": {
+      "type": "stdio",
+      "command": "dnx",
+      "args": [
+        "<your package ID here>",
+        "--version",
+        "<your package version here>",
+        "--yes"
+      ]
     }
   }
 }
 ```
+
+## More information
+
+.NET MCP servers use the [ModelContextProtocol](https://www.nuget.org/packages/ModelContextProtocol) C# SDK. For more information about MCP:
+
+- [Official Documentation](https://modelcontextprotocol.io/)
+- [Protocol Specification](https://spec.modelcontextprotocol.io/)
+- [GitHub Organization](https://github.com/modelcontextprotocol)
+
+Refer to the VS Code or Visual Studio documentation for more information on configuring and using MCP servers:
+
+- [Use MCP servers in VS Code (Preview)](https://code.visualstudio.com/docs/copilot/chat/mcp-servers)
+- [Use MCP servers in Visual Studio (Preview)](https://learn.microsoft.com/visualstudio/ide/mcp-servers)
