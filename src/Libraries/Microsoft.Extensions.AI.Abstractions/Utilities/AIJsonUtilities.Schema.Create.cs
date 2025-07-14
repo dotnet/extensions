@@ -289,6 +289,28 @@ public static partial class AIJsonUtilities
                     objSchema.InsertAtStart(TypePropertyName, "string");
                 }
 
+                // Some consumers of the JSON schema, including Ollama as of v0.3.13, don't understand
+                // schemas with "type": [...], and only understand "type" being a single value.
+                // In certain configurations STJ represents .NET numeric types as ["string", "number"], which will then lead to an error.
+                if (TypeIsIntegerWithStringNumberHandling(ctx, objSchema, out string? numericType, out bool isNullable))
+                {
+                    // We don't want to emit any array for "type". In this case we know it contains "integer" or "number",
+                    // so reduce the type to that alone, assuming it's the most specific type.
+                    // This makes schemas for Int32 (etc) work with Ollama.
+                    JsonObject obj = ConvertSchemaToObject(ref schema);
+                    if (isNullable)
+                    {
+                        // If the type is nullable, we still need use a type array
+                        obj[TypePropertyName] = new JsonArray { (JsonNode)numericType, (JsonNode)"null" };
+                    }
+                    else
+                    {
+                        obj[TypePropertyName] = (JsonNode)numericType;
+                    }
+
+                    _ = obj.Remove(PatternPropertyName);
+                }
+
                 if (Nullable.GetUnderlyingType(ctx.TypeInfo.Type) is Type nullableElement)
                 {
                     // Account for bug https://github.com/dotnet/runtime/issues/117493
@@ -309,19 +331,6 @@ public static partial class AIJsonUtilities
                     {
                         objSchema.InsertAtStart(TypePropertyName, new JsonArray { (JsonNode)"string", (JsonNode)"null" });
                     }
-                }
-
-                // Some consumers of the JSON schema, including Ollama as of v0.3.13, don't understand
-                // schemas with "type": [...], and only understand "type" being a single value.
-                // In certain configurations STJ represents .NET numeric types as ["string", "number"], which will then lead to an error.
-                if (TypeIsIntegerWithStringNumberHandling(ctx, objSchema, out string? numericType))
-                {
-                    // We don't want to emit any array for "type". In this case we know it contains "integer" or "number",
-                    // so reduce the type to that alone, assuming it's the most specific type.
-                    // This makes schemas for Int32 (etc) work with Ollama.
-                    JsonObject obj = ConvertSchemaToObject(ref schema);
-                    obj[TypePropertyName] = numericType;
-                    _ = obj.Remove(PatternPropertyName);
                 }
             }
 
@@ -617,9 +626,10 @@ public static partial class AIJsonUtilities
         }
     }
 
-    private static bool TypeIsIntegerWithStringNumberHandling(AIJsonSchemaCreateContext ctx, JsonObject schema, [NotNullWhen(true)] out string? numericType)
+    private static bool TypeIsIntegerWithStringNumberHandling(AIJsonSchemaCreateContext ctx, JsonObject schema, [NotNullWhen(true)] out string? numericType, out bool isNullable)
     {
         numericType = null;
+        isNullable = false;
 
         if (ctx.TypeInfo.NumberHandling is not JsonNumberHandling.Strict && schema["type"] is JsonArray typeArray)
         {
@@ -645,7 +655,7 @@ public static partial class AIJsonUtilities
                             allowString = true;
                             break;
                         case "null":
-                            // Nullable integer.
+                            isNullable = true;
                             break;
                         default:
                             // keyword is not valid in the context of numeric types.

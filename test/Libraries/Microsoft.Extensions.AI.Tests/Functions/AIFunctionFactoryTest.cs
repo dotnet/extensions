@@ -888,6 +888,39 @@ public partial class AIFunctionFactoryTest
     }
 
     [Fact]
+    public async Task AIFunctionFactory_NullableParameters_AllowReadingFromString()
+    {
+        JsonSerializerOptions options = new(JsonContext.Default.Options) { NumberHandling = JsonNumberHandling.AllowReadingFromString };
+        Assert.NotEqual(new StructWithDefaultCtor().Value, default(StructWithDefaultCtor).Value);
+
+        AIFunction f = AIFunctionFactory.Create(
+            (int? limit = null, DateTime? from = null) => Enumerable.Repeat(from ?? default, limit ?? 4).Select(d => d.Year).ToArray(),
+            serializerOptions: options);
+
+        JsonElement expectedSchema = JsonDocument.Parse("""
+        {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": ["integer", "null"],
+                    "default": null
+                },
+                "from": {
+                    "type": ["string", "null"],
+                    "format": "date-time",
+                    "default": null
+                }
+            }
+        }
+        """).RootElement;
+
+        AssertExtensions.EqualJsonValues(expectedSchema, f.JsonSchema);
+
+        object? result = await f.InvokeAsync();
+        Assert.Contains("[1,1,1,1]", result?.ToString());
+    }
+
+    [Fact]
     public void AIFunctionFactory_ReturnTypeWithDescriptionAttribute()
     {
         AIFunction f = AIFunctionFactory.Create(Add, serializerOptions: JsonContext.Default.Options);
