@@ -1,0 +1,107 @@
+{
+  "Name": "Microsoft.Extensions.AmbientMetadata.AzureVm, Version=9.8.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Types": [
+    {
+      "Type": "class Microsoft.Extensions.AmbientMetadata.AzureVmMetadata",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AmbientMetadata.AzureVmMetadata.AzureVmMetadata();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string? Microsoft.Extensions.AmbientMetadata.AzureVmMetadata.Location { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AmbientMetadata.AzureVmMetadata.Name { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AmbientMetadata.AzureVmMetadata.Offer { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AmbientMetadata.AzureVmMetadata.OsType { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AmbientMetadata.AzureVmMetadata.PlatformFaultDomain { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AmbientMetadata.AzureVmMetadata.PlatformUpdateDomain { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AmbientMetadata.AzureVmMetadata.Publisher { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AmbientMetadata.AzureVmMetadata.Sku { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AmbientMetadata.AzureVmMetadata.SubscriptionId { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AmbientMetadata.AzureVmMetadata.Version { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AmbientMetadata.AzureVmMetadata.VmId { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AmbientMetadata.AzureVmMetadata.VmScaleSetName { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AmbientMetadata.AzureVmMetadata.VmSize { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Configuration.AzureVmMetadataConfigurationBuilderExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.Configuration.IConfigurationBuilder Microsoft.Extensions.Configuration.AzureVmMetadataConfigurationBuilderExtensions.AddAzureVmMetadata(this Microsoft.Extensions.Configuration.IConfigurationBuilder builder, string sectionName = \"ambientmetadata:azurevm\");",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Hosting.AzureVmMetadataHostBuilderExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.Hosting.IHostBuilder Microsoft.Extensions.Hosting.AzureVmMetadataHostBuilderExtensions.UseAzureVmMetadata(this Microsoft.Extensions.Hosting.IHostBuilder builder, string sectionName = \"ambientmetadata:azurevm\");",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static TBuilder Microsoft.Extensions.Hosting.AzureVmMetadataHostBuilderExtensions.UseAzureVmMetadata<TBuilder>(this TBuilder builder, string sectionName = \"ambientmetadata:azurevm\");",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.DependencyInjection.AzureVmMetadataServiceCollectionExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.AzureVmMetadataServiceCollectionExtensions.AddAzureVmMetadata(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.AzureVmMetadataServiceCollectionExtensions.AddAzureVmMetadata(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.AmbientMetadata.AzureVmMetadata> configure);",
+          "Stage": "Experimental"
+        }
+      ]
+    }
+  ]
+}

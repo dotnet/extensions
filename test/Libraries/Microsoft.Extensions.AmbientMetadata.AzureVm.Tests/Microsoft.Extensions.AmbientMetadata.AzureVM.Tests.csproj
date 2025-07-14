@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.AmbientMetadata.Test</RootNamespace>
+    <Description>Unit tests for Microsoft.Extensions.AmbientMetadata.AzureVm.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AmbientMetadata.AzureVm\Microsoft.Extensions.AmbientMetadata.AzureVm.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Hosting.Testing\Microsoft.Extensions.Hosting.Testing.csproj" />
+  </ItemGroup>
+</Project>
