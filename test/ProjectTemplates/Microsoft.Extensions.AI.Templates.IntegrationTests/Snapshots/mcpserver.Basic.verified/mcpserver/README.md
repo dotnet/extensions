@@ -4,6 +4,8 @@ This README was created using the C# MCP server project template. It demonstrate
 
 See [aka.ms/nuget/mcp/guide](https://aka.ms/nuget/mcp/guide) for the full guide.
 
+Please note that this template is currently in an early preview stage. If you have feedback, please take a [brief survey](http://aka.ms/dotnet-mcp-template-survey).
+
 ## Checklist before publishing to NuGet.org
 
 - Test the MCP server locally using the steps below.
