@@ -282,8 +282,10 @@ public class FakeLoggerTests
         Assert.Equal("Hello World", (string)logger.LatestRecord.Scopes[1]!);
     }
 
-    [Fact]
-    public void FilterByCustomFilter()
+    [Theory]
+    [InlineData(false, 2)]
+    [InlineData(true, 1)]
+    public void FilterByCustomFilter(bool useErrorLevelFilter, int expectedRecordCount)
     {
         const string NotIgnoredMessage1 = "Not ignored message 1";
         const string NotIgnoredMessage2 = "Not ignored message 2";
@@ -292,9 +294,8 @@ public class FakeLoggerTests
         // Given
         var options = new FakeLogCollectorOptions
         {
-            CustomFilters = [
-                r => !r.Message.Equals(IgnoredMessage, StringComparison.Ordinal),
-            ],
+            CustomFilter = r => !r.Message.Equals(IgnoredMessage, StringComparison.Ordinal),
+            FilteredLevels = useErrorLevelFilter ? [LogLevel.Error] : new HashSet<LogLevel>(),
         };
 
         var collector = FakeLogCollector.Create(options);
@@ -304,36 +305,37 @@ public class FakeLoggerTests
         logger.LogInformation(NotIgnoredMessage1);
         logger.LogInformation(IgnoredMessage);
         logger.LogError(IgnoredMessage);
-        logger.LogCritical(IgnoredMessage);
         logger.LogError(NotIgnoredMessage2);
+        logger.LogCritical(IgnoredMessage);
 
         var records = logger.Collector.GetSnapshot();
 
         // Then
-        Assert.Equal(2, records.Count);
-        Assert.Equal(2, logger.Collector.Count);
+        Assert.Equal(expectedRecordCount, records.Count);
+        Assert.Equal(expectedRecordCount, logger.Collector.Count);
 
-        var firstLogRecordFromSnapshot = records[0];
+        IList<(string message, LogLevel level, string prefix)> expectationsInOrder = useErrorLevelFilter
+            ? [(NotIgnoredMessage2, LogLevel.Error, "error] ")]
+            : [(NotIgnoredMessage1, LogLevel.Information, "info] "), (NotIgnoredMessage2, LogLevel.Error, "error] ")];
 
-        Assert.Equal(NotIgnoredMessage1, firstLogRecordFromSnapshot.Message);
-        Assert.Equal(LogLevel.Information, firstLogRecordFromSnapshot.Level);
-        Assert.Null(firstLogRecordFromSnapshot.Exception);
-        Assert.Null(firstLogRecordFromSnapshot.Category);
-        Assert.True(firstLogRecordFromSnapshot.LevelEnabled);
-        Assert.Empty(firstLogRecordFromSnapshot.Scopes);
-        Assert.Equal(0, firstLogRecordFromSnapshot.Id.Id);
-        Assert.EndsWith($"info] {NotIgnoredMessage1}", firstLogRecordFromSnapshot.ToString());
+        for (var i = 0; i < expectedRecordCount; i++)
+        {
+            var (expectedMessage, expectedLevel, expectedPrefix) = expectationsInOrder[i];
+            var record = records[i];
 
-        var secondLogRecordFromSnapshot = records[1];
-        Assert.Equal(NotIgnoredMessage2, secondLogRecordFromSnapshot.Message);
-        Assert.Equal(LogLevel.Error, secondLogRecordFromSnapshot.Level);
-        Assert.Null(secondLogRecordFromSnapshot.Exception);
-        Assert.Null(secondLogRecordFromSnapshot.Category);
-        Assert.Empty(secondLogRecordFromSnapshot.Scopes);
-        Assert.True(secondLogRecordFromSnapshot.LevelEnabled);
-        Assert.Equal(0, secondLogRecordFromSnapshot.Id.Id);
-        Assert.EndsWith($"error] {NotIgnoredMessage2}", secondLogRecordFromSnapshot.ToString());
+            Assert.Equal(expectedMessage, record.Message);
+            Assert.Equal(expectedLevel, record.Level);
+            Assert.Null(record.Exception);
+            Assert.Null(record.Category);
+            Assert.True(record.LevelEnabled);
+            Assert.Empty(record.Scopes);
+            Assert.Equal(0, record.Id.Id);
+            Assert.EndsWith($"{expectedPrefix}{expectedMessage}", record.ToString());
 
-        Assert.Equivalent(secondLogRecordFromSnapshot, logger.LatestRecord);
+            if (i == expectedRecordCount - 1)
+            {
+                Assert.Equivalent(record, logger.LatestRecord);
+            }
+        }
     }
 }

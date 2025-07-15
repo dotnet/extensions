@@ -129,13 +129,11 @@ public class FakeLogCollector
             return;
         }
 
-        foreach (var condition in _options.CustomFilters)
+        var customFilter = _options.CustomFilter;
+        if (customFilter is not null && !customFilter(record))
         {
-            if (!condition(record))
-            {
-                // record was filtered out by a custom filter
-                return;
-            }
+            // record was filtered out by a custom filter
+            return;
         }
 
         lock (_records)

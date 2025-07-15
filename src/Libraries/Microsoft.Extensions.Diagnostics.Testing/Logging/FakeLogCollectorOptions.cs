@@ -36,15 +36,15 @@ public class FakeLogCollectorOptions
     public ISet<LogLevel> FilteredLevels { get; set; } = new HashSet<LogLevel>();
 
     /// <summary>
-    /// Gets or sets custom filters used to filter out records to be collected.
+    /// Gets or sets custom filter for which records are collected.
     /// </summary>
-    /// <value>Default is an empty array.</value>
+    /// <value>The default is <see langword="null" />.</value>
     /// <remarks>
-    /// Defaults to an empty array, which doesn't filter any records.
+    /// Defaults to <see langword="null" /> which doesn't apply any additional filter to the records.
     /// If not empty, only records for which the filter function returns <see langword="true" /> will be collected by the fake logger.
     /// </remarks>
     [Experimental(DiagnosticIds.Experiments.Telemetry)]
-    public IEnumerable<Func<FakeLogRecord, bool>> CustomFilters { get; set; } = Array.Empty<Func<FakeLogRecord, bool>>();
+    public Func<FakeLogRecord, bool>? CustomFilter { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether to collect records that are logged when the associated log level is currently disabled.
