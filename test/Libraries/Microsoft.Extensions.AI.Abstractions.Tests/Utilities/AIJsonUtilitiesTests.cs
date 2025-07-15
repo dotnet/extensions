@@ -354,13 +354,21 @@ public static partial class AIJsonUtilitiesTests
         int i = 0;
         foreach (JsonProperty property in schemaParameters.EnumerateObject())
         {
-            string numericType = Type.GetTypeCode(parameters[i].ParameterType) is TypeCode.Double or TypeCode.Single or TypeCode.Decimal
-                ? "number"
-                : "integer";
+            bool isNullable = false;
+            Type type = parameters[i].ParameterType;
+            if (Nullable.GetUnderlyingType(type) is { } elementType)
+            {
+                type = elementType;
+                isNullable = true;
+            }
+
+            string numericType = Type.GetTypeCode(type) is TypeCode.Double or TypeCode.Single or TypeCode.Decimal
+                ? "\"number\""
+                : "\"integer\"";
 
             JsonElement expected = JsonDocument.Parse($$"""
                 {
-                  "type": "{{numericType}}"
+                  "type": {{(isNullable ? $"[{numericType}, \"null\"]" : numericType)}}
                 }
                 """).RootElement;
 

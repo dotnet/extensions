@@ -289,23 +289,48 @@ public static partial class AIJsonUtilities
                     objSchema.InsertAtStart(TypePropertyName, "string");
                 }
 
-                // Include the type keyword in nullable enum types
-                if (Nullable.GetUnderlyingType(ctx.TypeInfo.Type)?.IsEnum is true && objSchema.ContainsKey(EnumPropertyName) && !objSchema.ContainsKey(TypePropertyName))
-                {
-                    objSchema.InsertAtStart(TypePropertyName, new JsonArray { (JsonNode)"string", (JsonNode)"null" });
-                }
-
                 // Some consumers of the JSON schema, including Ollama as of v0.3.13, don't understand
                 // schemas with "type": [...], and only understand "type" being a single value.
                 // In certain configurations STJ represents .NET numeric types as ["string", "number"], which will then lead to an error.
-                if (TypeIsIntegerWithStringNumberHandling(ctx, objSchema, out string? numericType))
+                if (TypeIsIntegerWithStringNumberHandling(ctx, objSchema, out string? numericType, out bool isNullable))
                 {
                     // We don't want to emit any array for "type". In this case we know it contains "integer" or "number",
                     // so reduce the type to that alone, assuming it's the most specific type.
                     // This makes schemas for Int32 (etc) work with Ollama.
                     JsonObject obj = ConvertSchemaToObject(ref schema);
-                    obj[TypePropertyName] = numericType;
+                    if (isNullable)
+                    {
+                        // If the type is nullable, we still need use a type array
+                        obj[TypePropertyName] = new JsonArray { (JsonNode)numericType, (JsonNode)"null" };
+                    }
+                    else
+                    {
+                        obj[TypePropertyName] = (JsonNode)numericType;
+                    }
+
                     _ = obj.Remove(PatternPropertyName);
+                }
+
+                if (Nullable.GetUnderlyingType(ctx.TypeInfo.Type) is Type nullableElement)
+                {
+                    // Account for bug https://github.com/dotnet/runtime/issues/117493
+                    // To be removed once System.Text.Json v10 becomes the lowest supported version.
+                    // null not inserted in the type keyword for root-level Nullable<T> types.
+                    if (objSchema.TryGetPropertyValue(TypePropertyName, out JsonNode? typeKeyWord) &&
+                        typeKeyWord?.GetValueKind() is JsonValueKind.String)
+                    {
+                        string typeValue = typeKeyWord.GetValue<string>()!;
+                        if (typeValue is not "null")
+                        {
+                            objSchema[TypePropertyName] = new JsonArray { (JsonNode)typeValue, (JsonNode)"null" };
+                        }
+                    }
+
+                    // Include the type keyword in nullable enum types
+                    if (nullableElement.IsEnum && objSchema.ContainsKey(EnumPropertyName) && !objSchema.ContainsKey(TypePropertyName))
+                    {
+                        objSchema.InsertAtStart(TypePropertyName, new JsonArray { (JsonNode)"string", (JsonNode)"null" });
+                    }
                 }
             }
 
@@ -601,11 +626,12 @@ public static partial class AIJsonUtilities
         }
     }
 
-    private static bool TypeIsIntegerWithStringNumberHandling(AIJsonSchemaCreateContext ctx, JsonObject schema, [NotNullWhen(true)] out string? numericType)
+    private static bool TypeIsIntegerWithStringNumberHandling(AIJsonSchemaCreateContext ctx, JsonObject schema, [NotNullWhen(true)] out string? numericType, out bool isNullable)
     {
         numericType = null;
+        isNullable = false;
 
-        if (ctx.TypeInfo.NumberHandling is not JsonNumberHandling.Strict && schema["type"] is JsonArray { Count: 2 } typeArray)
+        if (ctx.TypeInfo.NumberHandling is not JsonNumberHandling.Strict && schema["type"] is JsonArray typeArray)
         {
             bool allowString = false;
 
@@ -617,11 +643,23 @@ public static partial class AIJsonUtilities
                     switch (type)
                     {
                         case "integer" or "number":
+                            if (numericType is not null)
+                            {
+                                // Conflicting numeric type
+                                return false;
+                            }
+
                             numericType = type;
                             break;
                         case "string":
                             allowString = true;
                             break;
+                        case "null":
+                            isNullable = true;
+                            break;
+                        default:
+                            // keyword is not valid in the context of numeric types.
+                            return false;
                     }
                 }
             }
@@ -665,7 +703,7 @@ public static partial class AIJsonUtilities
 
         if (defaultValue is null || (defaultValue == DBNull.Value && parameterType != typeof(DBNull)))
         {
-            return parameterType.IsValueType
+            return parameterType.IsValueType && Nullable.GetUnderlyingType(parameterType) is null
 #if NET
                 ? RuntimeHelpers.GetUninitializedObject(parameterType)
 #else
