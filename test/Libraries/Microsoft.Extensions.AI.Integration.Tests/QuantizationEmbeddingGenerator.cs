@@ -25,8 +25,6 @@ internal sealed class QuantizationEmbeddingGenerator :
         _floatService = floatService;
     }
 
-    public EmbeddingGeneratorMetadata Metadata => _floatService.Metadata;
-
     void IDisposable.Dispose() => _floatService.Dispose();
 
     public object? GetService(Type serviceType, object? serviceKey = null) =>

@@ -8,7 +8,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// Represents usage information associated with a chat response.
+/// Represents usage information associated with a chat request and response.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public class UsageContent : AIContent
@@ -39,5 +39,5 @@ public class UsageContent : AIContent
 
     /// <summary>Gets a string representing this instance to display in the debugger.</summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private string DebuggerDisplay => _details.DebuggerDisplay;
+    private string DebuggerDisplay => $"Usage = {_details.DebuggerDisplay}";
 }

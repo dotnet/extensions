@@ -10,7 +10,6 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
-[UsesVerify]
 public sealed class LinuxNetworkUtilizationParserTests
 {
     private const string VerifiedDataDirectory = "Verified";

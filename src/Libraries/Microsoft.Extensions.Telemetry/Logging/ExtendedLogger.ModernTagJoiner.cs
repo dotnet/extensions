@@ -56,21 +56,27 @@ internal sealed partial class ExtendedLogger
         {
             get
             {
-                if (index < _incomingTagsCount)
+                int staticTagsCount = StaticTags!.Length;
+                int extraTagsCount = _extraTags.Count;
+
+                if (index < _redactedTagsCount)
                 {
-                    return _incomingTags![index];
+                    return _redactedTags![index];
                 }
-                else if (index < _incomingTagsCount + _redactedTagsCount)
+                else if (index < _redactedTagsCount + extraTagsCount)
                 {
-                    return _redactedTags![index - _incomingTagsCount];
+                    return _extraTags[index - _redactedTagsCount];
                 }
-                else if (index < _incomingTagsCount + _redactedTagsCount + _extraTags.Count)
+                else if (index < _redactedTagsCount + extraTagsCount + staticTagsCount)
                 {
-                    return _extraTags[index - _incomingTagsCount - _redactedTagsCount];
+                    return StaticTags[index - _redactedTagsCount - extraTagsCount];
                 }
+
+                // Iterating over "_incomingTags" at the end, because it may contain the
+                // "{OriginalFormat}" property which needs to be the last tag in the list.
                 else
                 {
-                    return StaticTags![index - _incomingTagsCount - _redactedTagsCount - _extraTags.Count];
+                    return _incomingTags![index - _redactedTagsCount - extraTagsCount - staticTagsCount];
                 }
             }
         }

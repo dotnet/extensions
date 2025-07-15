@@ -1,4 +1,0 @@
-*.db
-*.db-*
-wwwroot/lib.out.js
-wwwroot/*.generated.css

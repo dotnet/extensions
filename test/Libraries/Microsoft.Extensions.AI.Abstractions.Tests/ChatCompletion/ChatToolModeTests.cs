@@ -12,6 +12,7 @@ public class ChatToolModeTests
     public void Singletons_Idempotent()
     {
         Assert.Same(ChatToolMode.Auto, ChatToolMode.Auto);
+        Assert.Same(ChatToolMode.None, ChatToolMode.None);
         Assert.Same(ChatToolMode.RequireAny, ChatToolMode.RequireAny);
     }
 
@@ -24,6 +25,13 @@ public class ChatToolModeTests
         Assert.False(ChatToolMode.Auto.Equals(new RequiredChatToolMode(null)));
         Assert.False(ChatToolMode.Auto.Equals(new RequiredChatToolMode("func")));
         Assert.Equal(ChatToolMode.Auto.GetHashCode(), ChatToolMode.Auto.GetHashCode());
+
+        Assert.True(ChatToolMode.None == ChatToolMode.None);
+        Assert.True(ChatToolMode.None.Equals(ChatToolMode.None));
+        Assert.False(ChatToolMode.None.Equals(ChatToolMode.RequireAny));
+        Assert.False(ChatToolMode.None.Equals(new RequiredChatToolMode(null)));
+        Assert.False(ChatToolMode.None.Equals(new RequiredChatToolMode("func")));
+        Assert.Equal(ChatToolMode.None.GetHashCode(), ChatToolMode.None.GetHashCode());
 
         Assert.True(ChatToolMode.RequireAny == ChatToolMode.RequireAny);
         Assert.True(ChatToolMode.RequireAny.Equals(ChatToolMode.RequireAny));
@@ -52,6 +60,16 @@ public class ChatToolModeTests
 
         ChatToolMode? result = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.ChatToolMode);
         Assert.Equal(ChatToolMode.Auto, result);
+    }
+
+    [Fact]
+    public void Serialization_NoneRoundtrips()
+    {
+        string json = JsonSerializer.Serialize(ChatToolMode.None, TestJsonSerializerContext.Default.ChatToolMode);
+        Assert.Equal("""{"$type":"none"}""", json);
+
+        ChatToolMode? result = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.ChatToolMode);
+        Assert.Equal(ChatToolMode.None, result);
     }
 
     [Fact]

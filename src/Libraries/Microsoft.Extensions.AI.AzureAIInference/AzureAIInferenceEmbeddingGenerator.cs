@@ -22,9 +22,12 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="IEmbeddingGenerator{String, Embedding}"/> for an Azure.AI.Inference <see cref="EmbeddingsClient"/>.</summary>
-public sealed class AzureAIInferenceEmbeddingGenerator :
+internal sealed class AzureAIInferenceEmbeddingGenerator :
     IEmbeddingGenerator<string, Embedding<float>>
 {
+    /// <summary>Metadata about the embedding generator.</summary>
+    private readonly EmbeddingGeneratorMetadata _metadata;
+
     /// <summary>The underlying <see cref="EmbeddingsClient" />.</summary>
     private readonly EmbeddingsClient _embeddingsClient;
 
@@ -33,28 +36,31 @@ public sealed class AzureAIInferenceEmbeddingGenerator :
 
     /// <summary>Initializes a new instance of the <see cref="AzureAIInferenceEmbeddingGenerator"/> class.</summary>
     /// <param name="embeddingsClient">The underlying client.</param>
-    /// <param name="modelId">
+    /// <param name="defaultModelId">
     /// The ID of the model to use. This can also be overridden per request via <see cref="EmbeddingGenerationOptions.ModelId"/>.
     /// Either this parameter or <see cref="EmbeddingGenerationOptions.ModelId"/> must provide a valid model ID.
     /// </param>
-    /// <param name="dimensions">The number of dimensions to generate in each embedding.</param>
+    /// <param name="defaultModelDimensions">The number of dimensions to generate in each embedding.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="embeddingsClient"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="defaultModelId"/> is empty or composed entirely of whitespace.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="defaultModelDimensions"/> is not positive.</exception>
     public AzureAIInferenceEmbeddingGenerator(
-        EmbeddingsClient embeddingsClient, string? modelId = null, int? dimensions = null)
+        EmbeddingsClient embeddingsClient, string? defaultModelId = null, int? defaultModelDimensions = null)
     {
         _ = Throw.IfNull(embeddingsClient);
 
-        if (modelId is not null)
+        if (defaultModelId is not null)
         {
-            _ = Throw.IfNullOrWhitespace(modelId);
+            _ = Throw.IfNullOrWhitespace(defaultModelId);
         }
 
-        if (dimensions is < 1)
+        if (defaultModelDimensions is < 1)
         {
-            Throw.ArgumentOutOfRangeException(nameof(dimensions), "Value must be greater than 0.");
+            Throw.ArgumentOutOfRangeException(nameof(defaultModelDimensions), "Value must be greater than 0.");
         }
 
         _embeddingsClient = embeddingsClient;
-        _dimensions = dimensions;
+        _dimensions = defaultModelDimensions;
 
         // https://github.com/Azure/azure-sdk-for-net/issues/46278
         // The endpoint isn't currently exposed, so use reflection to get at it, temporarily. Once packages
@@ -63,20 +69,18 @@ public sealed class AzureAIInferenceEmbeddingGenerator :
         var providerUrl = typeof(EmbeddingsClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(embeddingsClient) as Uri;
 
-        Metadata = new("az.ai.inference", providerUrl, modelId, dimensions);
+        _metadata = new EmbeddingGeneratorMetadata("az.ai.inference", providerUrl, defaultModelId, defaultModelDimensions);
     }
 
     /// <inheritdoc />
-    public EmbeddingGeneratorMetadata Metadata { get; }
-
-    /// <inheritdoc />
-    public object? GetService(Type serviceType, object? serviceKey = null)
+    object? IEmbeddingGenerator.GetService(Type serviceType, object? serviceKey)
     {
         _ = Throw.IfNull(serviceType);
 
         return
             serviceKey is not null ? null :
             serviceType == typeof(EmbeddingsClient) ? _embeddingsClient :
+            serviceType == typeof(EmbeddingGeneratorMetadata) ? _metadata :
             serviceType.IsInstanceOfType(this) ? this :
             null;
     }
@@ -163,7 +167,7 @@ public sealed class AzureAIInferenceEmbeddingGenerator :
         EmbeddingsOptions result = new(inputs)
         {
             Dimensions = options?.Dimensions ?? _dimensions,
-            Model = options?.ModelId ?? Metadata.ModelId,
+            Model = options?.ModelId ?? _metadata.DefaultModelId,
             EncodingFormat = format,
         };
 

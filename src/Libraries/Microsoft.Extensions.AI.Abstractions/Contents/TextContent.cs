@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.AI;
@@ -8,6 +9,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Represents text content in a chat.
 /// </summary>
+[DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class TextContent : AIContent
 {
     private string? _text;
@@ -33,4 +35,7 @@ public sealed class TextContent : AIContent
 
     /// <inheritdoc/>
     public override string ToString() => Text;
+
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private string DebuggerDisplay => $"Text = \"{Text}\"";
 }

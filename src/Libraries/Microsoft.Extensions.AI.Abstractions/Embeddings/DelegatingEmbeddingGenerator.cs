@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.AI;
 /// <typeparam name="TInput">The type of the input passed to the generator.</typeparam>
 /// <typeparam name="TEmbedding">The type of the embedding instance produced by the generator.</typeparam>
 /// <remarks>
-/// This type is recommended as a base type when building generators that can be chained in any order around an underlying <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/>.
+/// This type is recommended as a base type when building generators that can be chained around an underlying <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/>.
 /// The default implementation simply passes each call to the inner generator instance.
 /// </remarks>
 public class DelegatingEmbeddingGenerator<TInput, TEmbedding> : IEmbeddingGenerator<TInput, TEmbedding>
@@ -40,20 +40,6 @@ public class DelegatingEmbeddingGenerator<TInput, TEmbedding> : IEmbeddingGenera
         GC.SuppressFinalize(this);
     }
 
-    /// <summary>Provides a mechanism for releasing unmanaged resources.</summary>
-    /// <param name="disposing"><see langword="true"/> if being called from <see cref="Dispose()"/>; otherwise, <see langword="false"/>.</param>
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            InnerGenerator.Dispose();
-        }
-    }
-
-    /// <inheritdoc />
-    public virtual EmbeddingGeneratorMetadata Metadata =>
-        InnerGenerator.Metadata;
-
     /// <inheritdoc />
     public virtual Task<GeneratedEmbeddings<TEmbedding>> GenerateAsync(IEnumerable<TInput> values, EmbeddingGenerationOptions? options = null, CancellationToken cancellationToken = default) =>
         InnerGenerator.GenerateAsync(values, options, cancellationToken);
@@ -67,5 +53,15 @@ public class DelegatingEmbeddingGenerator<TInput, TEmbedding> : IEmbeddingGenera
         return
             serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
             InnerGenerator.GetService(serviceType, serviceKey);
+    }
+
+    /// <summary>Provides a mechanism for releasing unmanaged resources.</summary>
+    /// <param name="disposing"><see langword="true"/> if being called from <see cref="Dispose()"/>; otherwise, <see langword="false"/>.</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            InnerGenerator.Dispose();
+        }
     }
 }

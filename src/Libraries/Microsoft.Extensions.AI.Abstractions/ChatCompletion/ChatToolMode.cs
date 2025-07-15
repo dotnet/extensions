@@ -9,10 +9,11 @@ namespace Microsoft.Extensions.AI;
 /// Describes how tools should be selected by a <see cref="IChatClient"/>.
 /// </summary>
 /// <remarks>
-/// The predefined values <see cref="Auto" /> and <see cref="RequireAny"/> are provided.
+/// The predefined values <see cref="Auto" />, <see cref="None"/>, and <see cref="RequireAny"/> are provided.
 /// To nominate a specific function, use <see cref="RequireSpecific(string)"/>.
 /// </remarks>
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
+[JsonDerivedType(typeof(NoneChatToolMode), typeDiscriminator: "none")]
 [JsonDerivedType(typeof(AutoChatToolMode), typeDiscriminator: "auto")]
 [JsonDerivedType(typeof(RequiredChatToolMode), typeDiscriminator: "required")]
 #pragma warning disable CA1052 // Static holder types should be Static or NotInheritable
@@ -32,7 +33,19 @@ public class ChatToolMode
     /// <see cref="ChatOptions.Tools"/> can contain zero or more <see cref="AITool"/>
     /// instances, and the <see cref="IChatClient"/> is free to invoke zero or more of them.
     /// </remarks>
-    public static AutoChatToolMode Auto { get; } = new AutoChatToolMode();
+    public static AutoChatToolMode Auto { get; } = new();
+
+    /// <summary>
+    /// Gets a predefined <see cref="ChatToolMode"/> indicating that tool usage is unsupported.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="ChatOptions.Tools"/> can contain zero or more <see cref="AITool"/>
+    /// instances, but the <see cref="IChatClient"/> should not request the invocation of
+    /// any of them. This can be used when the <see cref="IChatClient"/> should know about
+    /// tools in order to provide information about them or plan out their usage, but should
+    /// not request the invocation of any of them.
+    /// </remarks>
+    public static NoneChatToolMode None { get; } = new();
 
     /// <summary>
     /// Gets a predefined <see cref="ChatToolMode"/> indicating that tool usage is required,

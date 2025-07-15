@@ -33,7 +33,16 @@ public class ResourceHealthCheckTests
         };
 
         var options = Microsoft.Extensions.Options.Options.Create(checkOptions);
-        using var healthCheck = new ResourceUtilizationHealthCheck(options, dataTracker.Object);
+#if !NETFRAMEWORK
+        using var healthCheck = new ResourceUtilizationHealthCheck(
+            options,
+            dataTracker.Object,
+            Microsoft.Extensions.Options.Options.Create(new ResourceMonitoringOptions()));
+#else
+        using var healthCheck = new ResourceUtilizationHealthCheck(
+            options,
+            dataTracker.Object);
+#endif
         var healthCheckResult = await healthCheck.CheckHealthAsync(checkContext);
         Assert.Equal(expected, healthCheckResult.Status);
         Assert.NotEmpty(healthCheckResult.Data);
@@ -43,9 +52,22 @@ public class ResourceHealthCheckTests
         }
     }
 
+#if !NETFRAMEWORK
     [Fact]
     public void TestNullChecks()
     {
-        Assert.Throws<ArgumentException>(() => new ResourceUtilizationHealthCheck(Mock.Of<IOptions<ResourceUtilizationHealthCheckOptions>>(), null!));
+        Assert.Throws<ArgumentException>(() => new ResourceUtilizationHealthCheck(
+            Mock.Of<IOptions<ResourceUtilizationHealthCheckOptions>>(),
+            null!,
+            Mock.Of<IOptions<ResourceMonitoringOptions>>()));
     }
+#else
+    [Fact]
+    public void TestNullChecks()
+    {
+        Assert.Throws<ArgumentException>(() => new ResourceUtilizationHealthCheck(
+            Mock.Of<IOptions<ResourceUtilizationHealthCheckOptions>>(),
+            null!));
+    }
+#endif
 }
