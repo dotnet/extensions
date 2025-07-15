@@ -21,9 +21,9 @@
         - Use specific version numbers to pin to already-released packages
       -->
     <PropertyGroup>
-      <TemplatePackageVersion_MicrosoftExtensionsAI>9.7.0</TemplatePackageVersion_MicrosoftExtensionsAI>
-      <TemplatePackageVersion_MicrosoftExtensionsAI_Preview>9.7.0-preview.1.25356.2</TemplatePackageVersion_MicrosoftExtensionsAI_Preview>
-      <TemplatePackageVersion_MicrosoftExtensionsHttpResilience>9.7.0</TemplatePackageVersion_MicrosoftExtensionsHttpResilience>
+      <TemplatePackageVersion_MicrosoftExtensionsAI>9.7.1</TemplatePackageVersion_MicrosoftExtensionsAI>
+      <TemplatePackageVersion_MicrosoftExtensionsAI_Preview>$(PackageVersion)</TemplatePackageVersion_MicrosoftExtensionsAI_Preview>
+      <TemplatePackageVersion_MicrosoftExtensionsHttpResilience>9.7.1</TemplatePackageVersion_MicrosoftExtensionsHttpResilience>
     </PropertyGroup>
 
     <!-- External dependency packages -->
