@@ -25,7 +25,6 @@ public class LogRecordPoolingTest
             .Concat([new KeyValuePair<string, string>("key4", "value4")])
             .ToArray();
 
-
         var logRecord1 = pool.Get();
         logRecord1.Host = testObject.Host;
         logRecord1.Method = testObject.Method;

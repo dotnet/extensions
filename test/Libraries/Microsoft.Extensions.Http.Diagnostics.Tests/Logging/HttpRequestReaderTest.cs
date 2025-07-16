@@ -18,7 +18,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Http.Logging.Internal;
 using Microsoft.Extensions.Http.Logging.Test.Internal;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Telemetry.Internal;
 using Moq;
@@ -784,8 +783,7 @@ public class HttpRequestReaderTest
 
         Assert.Contains(
             state,
-            tag => tag.Key == "http.query.userid" && (string?)tag.Value == "REDACTED"
-        );
+            tag => tag.Key == "http.query.userid" && (string?)tag.Value == "REDACTED");
     }
 
     [Fact]
