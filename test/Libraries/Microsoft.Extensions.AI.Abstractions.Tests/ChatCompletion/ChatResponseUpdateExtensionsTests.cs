@@ -183,6 +183,48 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal("OP", Assert.IsType<TextReasoningContent>(message.Contents[7]).Text);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ToChatResponse_DoesNotCoalesceAnnotatedContent(bool useAsync)
+    {
+        ChatResponseUpdate[] updates =
+        {
+            new(null, "A"),
+            new(null, "B"),
+            new(null, "C"),
+            new() { Contents = [new TextContent("D") { Annotations = [new()] }] },
+            new() { Contents = [new TextContent("E") { Annotations = [new()] }] },
+            new() { Contents = [new TextContent("F") { Annotations = [new()] }] },
+            new() { Contents = [new TextContent("G") { Annotations = [] }] },
+            new() { Contents = [new TextContent("H") { Annotations = [] }] },
+            new() { Contents = [new TextContent("I") { Annotations = [new()] }] },
+            new() { Contents = [new TextContent("J") { Annotations = [new()] }] },
+            new(null, "K"),
+            new() { Contents = [new TextContent("L") { Annotations = [new()] }] },
+            new(null, "M"),
+            new(null, "N"),
+            new() { Contents = [new TextContent("O") { Annotations = [new()] }] },
+            new() { Contents = [new TextContent("P") { Annotations = [new()] }] },
+        };
+
+        ChatResponse response = useAsync ? await YieldAsync(updates).ToChatResponseAsync() : updates.ToChatResponse();
+        ChatMessage message = Assert.Single(response.Messages);
+        Assert.Equal(12, message.Contents.Count);
+        Assert.Equal("ABC", Assert.IsType<TextContent>(message.Contents[0]).Text);
+        Assert.Equal("D", Assert.IsType<TextContent>(message.Contents[1]).Text);
+        Assert.Equal("E", Assert.IsType<TextContent>(message.Contents[2]).Text);
+        Assert.Equal("F", Assert.IsType<TextContent>(message.Contents[3]).Text);
+        Assert.Equal("GH", Assert.IsType<TextContent>(message.Contents[4]).Text);
+        Assert.Equal("I", Assert.IsType<TextContent>(message.Contents[5]).Text);
+        Assert.Equal("J", Assert.IsType<TextContent>(message.Contents[6]).Text);
+        Assert.Equal("K", Assert.IsType<TextContent>(message.Contents[7]).Text);
+        Assert.Equal("L", Assert.IsType<TextContent>(message.Contents[8]).Text);
+        Assert.Equal("MN", Assert.IsType<TextContent>(message.Contents[9]).Text);
+        Assert.Equal("O", Assert.IsType<TextContent>(message.Contents[10]).Text);
+        Assert.Equal("P", Assert.IsType<TextContent>(message.Contents[11]).Text);
+    }
+
     [Fact]
     public async Task ToChatResponse_UsageContentExtractedFromContents()
     {
