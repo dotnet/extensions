@@ -116,7 +116,8 @@ internal sealed class HttpRequestReader : IHttpRequestReader
     }
 
     public async Task ReadRequestAsync(LogRecord logRecord, HttpRequestMessage request,
-        List<KeyValuePair<string, string>>? requestHeadersBuffer, CancellationToken cancellationToken)
+            List<KeyValuePair<string, string>>? requestHeadersBuffer, CancellationToken
+            cancellationToken)
     {
         logRecord.Host = request.RequestUri?.Host ?? TelemetryConstants.Unknown;
         logRecord.Method = request.Method;
