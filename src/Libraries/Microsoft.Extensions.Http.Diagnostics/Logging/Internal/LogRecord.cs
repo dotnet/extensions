@@ -78,7 +78,7 @@ internal sealed class LogRecord : IResettable
     /// <summary>
     /// Gets or sets request query string parameters.
     /// </summary>
-    public List<KeyValuePair<string, string>>? QueryParameters { get; set; }
+    public KeyValuePair<string, string>[]? QueryParameters { get; set; }
 
     public bool TryReset()
     {

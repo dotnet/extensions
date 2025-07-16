@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using System.Linq;
 using AutoFixture;
 using FluentAssertions;
 using Microsoft.Extensions.Http.Logging.Internal;
@@ -20,7 +21,9 @@ public class LogRecordPoolingTest
         testObject.RequestHeaders!.Add(new KeyValuePair<string, string>("key1", "value1"));
         testObject.ResponseHeaders!.Add(new KeyValuePair<string, string>("key2", "value2"));
         testObject.EnrichmentTags!.AddTag("key3", "value3");
-        testObject.QueryParameters!.Add(new KeyValuePair<string, string>("key4", "value4"));
+        testObject.QueryParameters = (testObject.QueryParameters ?? [])
+            .Concat([new KeyValuePair<string, string>("key4", "value4")])
+            .ToArray();
 
 
         var logRecord1 = pool.Get();

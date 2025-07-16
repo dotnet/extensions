@@ -96,7 +96,7 @@ internal static partial class Log
         var statusCodePropertyCount = record.StatusCode.HasValue ? 1 : 0;
         var requestHeadersCount = record.RequestHeaders?.Count ?? 0;
         var responseHeadersCount = record.ResponseHeaders?.Count ?? 0;
-        var queryParametersCount = record.QueryParameters?.Count ?? 0;
+        var queryParametersCount = record.QueryParameters?.Length ?? 0;
 
         var spaceToReserve = MinimalPropertyCount + statusCodePropertyCount + requestHeadersCount + responseHeadersCount +
             record.PathParametersCount + (record.RequestBody is null ? 0 : 1) + (record.ResponseBody is null ? 0 : 1) + queryParametersCount;

@@ -59,7 +59,7 @@ internal static class LoggerMessageStateExtensions
     /// <param name="items">A list with query parameters.</param>
     /// <param name="index">Represents an index to be used when writing tags into <paramref name="state"/>.</param>
     /// <remarks><paramref name="index"/> will be mutated to point to the next <paramref name="state"/> item.</remarks>
-    public static void AddQueryParameters(this LoggerMessageState state, List<KeyValuePair<string, string>> items, ref int index)
+    public static void AddQueryParameters(this LoggerMessageState state, KeyValuePair<string, string>[] items, ref int index)
     {
         foreach (var t in items)
         {

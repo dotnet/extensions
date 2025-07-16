@@ -147,17 +147,17 @@ internal sealed class HttpRequestReader : IHttpRequestReader
 #endif
     }
 
-    private List<KeyValuePair<string, string>> GetQueryParameters(HttpRequestMessage request)
+    private KeyValuePair<string, string>[] GetQueryParameters(HttpRequestMessage request)
     {
-        if (_logRequestQueryParameters && !string.IsNullOrEmpty(request.RequestUri.Query))
+        if (_logRequestQueryParameters && !string.IsNullOrEmpty(request.RequestUri?.Query))
         {
-            return ExtractAndRedactQueryParameters(request.RequestUri.Query);
+            return ExtractAndRedactQueryParameters(request.RequestUri!.Query);
         }
 
-        return new List<KeyValuePair<string, string>>();
+        return [];
     }
 
-    private List<KeyValuePair<string, string>> ExtractAndRedactQueryParameters(string query)
+    private KeyValuePair<string, string>[] ExtractAndRedactQueryParameters(string query)
     {
         var dict = new Dictionary<string, string?>(StringComparer.Ordinal);
         ReadOnlySpan<char> querySpan = query.AsSpan();
@@ -219,7 +219,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
             }
         }
 
-        return result;
+        return result.ToArray();
     }
 
     private void GetRedactedPathAndParameters(HttpRequestMessage request, LogRecord logRecord)
