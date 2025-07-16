@@ -51,12 +51,12 @@ public static class HttpClientLoggingTagNames
     /// <summary>
     /// HTTP Response Headers prefix.
     /// </summary>
-    [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
     public const string ResponseHeaderPrefix = "http.response.header.";
 
     /// <summary>
     /// HTTP query parameters prefix.
     /// </summary>
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
     public const string QueryParametersPrefix = "http.query.";
 
     /// <summary>

@@ -246,11 +246,7 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
                 {
                     if (_options.RequestQueryParametersDataClasses.TryGetValue(param.Key, out var classification))
                     {
-                        collector.Add(param.Key, param.Value ?? string.Empty, new DataClassificationSet(classification));
-                    }
-                    else
-                    {
-                        collector.Add(param.Key, param.Value ?? string.Empty);
+                        collector.Add(param.Key, param.Value, new DataClassificationSet(classification));
                     }
                 }
             }

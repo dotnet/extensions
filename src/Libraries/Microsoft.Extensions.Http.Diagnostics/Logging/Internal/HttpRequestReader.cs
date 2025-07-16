@@ -116,7 +116,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
     }
 
     public async Task ReadRequestAsync(LogRecord logRecord, HttpRequestMessage request,
-    List<KeyValuePair<string, string>>? requestHeadersBuffer, CancellationToken cancellationToken)
+        List<KeyValuePair<string, string>>? requestHeadersBuffer, CancellationToken cancellationToken)
     {
         logRecord.Host = request.RequestUri?.Host ?? TelemetryConstants.Unknown;
         logRecord.Method = request.Method;
@@ -148,9 +148,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
 
     private List<KeyValuePair<string, string>> GetQueryParameters(HttpRequestMessage request)
     {
-        if (_logRequestQueryParameters &&
-            request.RequestUri is not null &&
-            !string.IsNullOrEmpty(request.RequestUri.Query))
+        if (_logRequestQueryParameters && !string.IsNullOrEmpty(request.RequestUri.Query))
         {
             return ExtractAndRedactQueryParameters(request.RequestUri.Query);
         }
