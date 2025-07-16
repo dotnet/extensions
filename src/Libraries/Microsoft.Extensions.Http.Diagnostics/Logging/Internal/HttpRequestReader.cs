@@ -11,14 +11,20 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Diagnostics;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Telemetry.Internal;
 using Microsoft.Shared.Diagnostics;
+using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Http.Logging.Internal;
 
 internal sealed class HttpRequestReader : IHttpRequestReader
 {
+    private const int MaxQueryParams = 32;
+    private static readonly ObjectPool<List<KeyValuePair<string, string>>> _queryParamListPool =
+        PoolFactory.CreateListPoolWithCapacity<KeyValuePair<string, string>>(MaxQueryParams);
+
     private readonly IHttpRouteFormatter _routeFormatter;
     private readonly IHttpRouteParser _httpRouteParser;
     private readonly IHttpHeadersReader _httpHeadersReader;
@@ -159,67 +165,58 @@ internal sealed class HttpRequestReader : IHttpRequestReader
 
     private KeyValuePair<string, string>[] ExtractAndRedactQueryParameters(string query)
     {
-        var dict = new Dictionary<string, string?>(StringComparer.Ordinal);
-        ReadOnlySpan<char> querySpan = query.AsSpan();
-        int length = querySpan.Length;
-        int start = 0;
-
-        // Remove leading '?'
-        if (length > 0 && querySpan[0] == '?')
+        var result = _queryParamListPool.Get();
+        try
         {
-            start = 1;
-        }
+            ReadOnlySpan<char> querySpan = query.AsSpan();
+            int length = querySpan.Length;
+            int start = 0;
 
-        while (start < length)
-        {
-            int amp = querySpan.Slice(start).IndexOf('&');
-            int end = amp == -1 ? length : start + amp;
-
-            int eq = querySpan.Slice(start, end - start).IndexOf('=');
-            if (eq >= 0)
+            // Remove leading '?'
+            if (length > 0 && querySpan[0] == '?')
             {
-                var keySpan = querySpan.Slice(start, eq);
-                var valueSpan = querySpan.Slice(start + eq + 1, end - (start + eq + 1));
+                start = 1;
+            }
 
-                string key = UnescapeDataString(keySpan);
-                string value = UnescapeDataString(valueSpan);
+            while (start < length)
+            {
+                int amp = querySpan.Slice(start).IndexOf('&');
+                int end = amp == -1 ? length : start + amp;
 
-                // Only add if value is not null or empty
-                if (!string.IsNullOrEmpty(value))
+                int eq = querySpan.Slice(start, end - start).IndexOf('=');
+                if (eq >= 0)
                 {
-#if NET8_0_OR_GREATER
-                    dict.TryAdd(key, value);
-#else
-                    if (!dict.ContainsKey(key))
+                    var keySpan = querySpan.Slice(start, eq);
+                    var valueSpan = querySpan.Slice(start + eq + 1, end - (start + eq + 1));
+
+                    string key = UnescapeDataString(keySpan);
+                    string value = UnescapeDataString(valueSpan);
+
+                    // Only process if the key is in the classification dictionary and value is not empty
+                    if (!string.IsNullOrEmpty(value) && _queryParameterDataClasses.TryGetValue(key, out var classification))
                     {
-                        dict[key] = value;
+                        string redacted = _httpHeadersReader != null
+                            ? _httpHeadersReader.RedactValue(value, classification)
+                            : value;
+                        result.Add(new KeyValuePair<string, string>(key, redacted));
                     }
-#endif
                 }
+
+                if (amp == -1)
+                {
+                    break;
+                }
+
+                start = end + 1;
             }
 
-            if (amp == -1)
-            {
-                break;
-            }
-
-            start = end + 1;
+            return result.ToArray();
         }
-
-        var result = new List<KeyValuePair<string, string>>();
-
-        foreach (var kvp in _queryParameterDataClasses)
+        finally
         {
-            if (dict.TryGetValue(kvp.Key, out var value))
-            {
-                string redacted = _httpHeadersReader != null
-                    ? _httpHeadersReader.RedactValue(value!, kvp.Value)
-                    : value!;
-                result.Add(new KeyValuePair<string, string>(kvp.Key, redacted));
-            }
+            result.Clear();
+            _queryParamListPool.Return(result);
         }
-
-        return result.ToArray();
     }
 
     private void GetRedactedPathAndParameters(HttpRequestMessage request, LogRecord logRecord)
@@ -276,3 +273,4 @@ internal sealed class HttpRequestReader : IHttpRequestReader
         }
     }
 }
+
