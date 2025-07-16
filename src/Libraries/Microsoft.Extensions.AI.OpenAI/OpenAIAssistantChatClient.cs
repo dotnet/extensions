@@ -300,7 +300,7 @@ internal sealed class OpenAIAssistantChatClient : IChatClient
                             break;
 
                         case HostedCodeInterpreterTool:
-                            runOptions.ToolsOverride.Add(new CodeInterpreterToolDefinition());
+                            runOptions.ToolsOverride.Add(ToolDefinition.CreateCodeInterpreter());
                             break;
                     }
                 }
