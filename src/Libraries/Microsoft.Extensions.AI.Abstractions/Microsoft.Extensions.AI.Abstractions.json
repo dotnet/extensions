@@ -124,6 +124,38 @@
       ]
     },
     {
+      "Type": "class Microsoft.Extensions.AI.AIAnnotation",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.AIAnnotation.AIAnnotation();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.AdditionalPropertiesDictionary? Microsoft.Extensions.AI.AIAnnotation.AdditionalProperties { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "object? Microsoft.Extensions.AI.AIAnnotation.RawRepresentation { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.AIAnnotation.Placeholder { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.AI.AIAnnotation.StartIndex { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.AI.AIAnnotation.EndIndex { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
       "Type": "class Microsoft.Extensions.AI.AIContent",
       "Stage": "Stable",
       "Methods": [
@@ -1320,6 +1352,82 @@
       ]
     },
     {
+      "Type": "class Microsoft.Extensions.AI.CitationAnnotation : Microsoft.Extensions.AI.AIAnnotation",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.CitationAnnotation.CitationAnnotation();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string? Microsoft.Extensions.AI.CitationAnnotation.Title { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.CitationAnnotation.ToolName { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.CitationAnnotation.ToolCallId { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Uri? Microsoft.Extensions.AI.CitationAnnotation.Url { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.CitationAnnotation.FileId { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.CitationSourceLocation? Microsoft.Extensions.AI.CitationAnnotation.Location { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.CitationAnnotation.Snippet { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.CitationSourceLocation",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.CitationSourceLocation.CitationSourceLocation();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int? Microsoft.Extensions.AI.CitationSourceLocation.PageStart { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.AI.CitationSourceLocation.PageEnd { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.AI.CitationSourceLocation.BlockStart { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.AI.CitationSourceLocation.BlockEnd { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.AI.CitationSourceLocation.CharacterStart { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.AI.CitationSourceLocation.CharacterEnd { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
       "Type": "class Microsoft.Extensions.AI.DataContent : Microsoft.Extensions.AI.AIContent",
       "Stage": "Stable",
       "Methods": [
@@ -2239,6 +2347,10 @@
         }
       ],
       "Properties": [
+        {
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIAnnotation>? Microsoft.Extensions.AI.TextContent.Annotations { get; set; }",
+          "Stage": "Stable"
+        },
         {
           "Member": "string Microsoft.Extensions.AI.TextContent.Text { get; set; }",
           "Stage": "Stable"
