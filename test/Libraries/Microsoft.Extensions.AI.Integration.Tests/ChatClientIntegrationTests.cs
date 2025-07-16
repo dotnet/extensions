@@ -202,7 +202,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
                 new(ChatRole.User,
                 [
                     new TextContent("What text does this document contain?"),
-                    new DataContent(ImageDataUri.GetPdfDataUri(), "application/pdf"),
+                    new DataContent(ImageDataUri.GetPdfDataUri(), "application/pdf") { FileName = "sample.pdf" },
                 ])
             ],
             new() { ModelId = GetModel_MultiModal_DescribeImage() });

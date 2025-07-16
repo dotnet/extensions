@@ -111,13 +111,20 @@ public sealed class DataContentTests
     {
         Assert.Equal(
             """{"uri":"data:application/octet-stream;base64,AQIDBA=="}""",
-            JsonSerializer.Serialize(new DataContent(
-                uri: "data:application/octet-stream;base64,AQIDBA=="), TestJsonSerializerContext.Default.Options));
+            JsonSerializer.Serialize(
+                new DataContent(uri: "data:application/octet-stream;base64,AQIDBA=="),
+                TestJsonSerializerContext.Default.Options));
 
         Assert.Equal(
             """{"uri":"data:application/octet-stream;base64,AQIDBA=="}""",
-            JsonSerializer.Serialize(new DataContent(
-                new ReadOnlyMemory<byte>([0x01, 0x02, 0x03, 0x04]), "application/octet-stream"),
+            JsonSerializer.Serialize(
+                new DataContent(new ReadOnlyMemory<byte>([0x01, 0x02, 0x03, 0x04]), "application/octet-stream"),
+                TestJsonSerializerContext.Default.Options));
+
+        Assert.Equal(
+            """{"uri":"data:application/octet-stream;base64,AQIDBA==","fileName":"test.bin"}""",
+            JsonSerializer.Serialize(
+                new DataContent(new ReadOnlyMemory<byte>([0x01, 0x02, 0x03, 0x04]), "application/octet-stream") { FileName = "test.bin" },
                 TestJsonSerializerContext.Default.Options));
     }
 
@@ -259,5 +266,14 @@ public sealed class DataContentTests
         Assert.Equal("data:text/plain;base64,aGVsbG8gd29ybGQ=", content.Uri);
         Assert.Equal("aGVsbG8gd29ybGQ=", content.Base64Data.ToString());
         Assert.Equal("hello world", Encoding.ASCII.GetString(content.Data.ToArray()));
+    }
+
+    [Fact]
+    public void FileName_Roundtrips()
+    {
+        DataContent content = new(new byte[] { 1, 2, 3 }, "application/octet-stream");
+        Assert.Null(content.FileName);
+        content.FileName = "test.bin";
+        Assert.Equal("test.bin", content.FileName);
     }
 }
