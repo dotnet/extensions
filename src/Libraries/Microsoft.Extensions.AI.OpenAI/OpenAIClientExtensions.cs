@@ -191,7 +191,7 @@ public static class OpenAIClientExtensions
     /// <param name="messages">The input messages to convert.</param>
     /// <returns>A sequence of OpenAI response items.</returns>
     public static IEnumerable<OpenAI.Responses.ResponseItem> AsOpenAIResponseItems(this IEnumerable<ChatMessage> messages) =>
-        OpenAIResponseChatClient.ToOpenAIResponseItems(Throw.IfNull(messages));
+        OpenAIResponseChatClient.ToInputResponseItems(Throw.IfNull(messages));
 
     // TODO: Once we're ready to rely on C# 14 features, add an extension property ChatOptions.Strict.
 

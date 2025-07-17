@@ -11,6 +11,7 @@ namespace Microsoft.Extensions.AI;
 [JsonDerivedType(typeof(ErrorContent), typeDiscriminator: "error")]
 [JsonDerivedType(typeof(FunctionCallContent), typeDiscriminator: "functionCall")]
 [JsonDerivedType(typeof(FunctionResultContent), typeDiscriminator: "functionResult")]
+[JsonDerivedType(typeof(HostedFileContent), typeDiscriminator: "file")]
 [JsonDerivedType(typeof(TextContent), typeDiscriminator: "text")]
 [JsonDerivedType(typeof(TextReasoningContent), typeDiscriminator: "reasoning")]
 [JsonDerivedType(typeof(UriContent), typeDiscriminator: "uri")]

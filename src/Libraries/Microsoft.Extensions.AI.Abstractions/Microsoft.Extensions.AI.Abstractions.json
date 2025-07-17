@@ -1817,6 +1817,12 @@
           "Member": "Microsoft.Extensions.AI.HostedCodeInterpreterTool.HostedCodeInterpreterTool();",
           "Stage": "Stable"
         }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? Microsoft.Extensions.AI.HostedCodeInterpreterTool.Inputs { get; set; }",
+          "Stage": "Stable"
+        }
       ]
     },
     {
@@ -1825,6 +1831,22 @@
       "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.HostedWebSearchTool.HostedWebSearchTool();",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.HostedFileContent : Microsoft.Extensions.AI.AIContent",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.HostedFileContent.HostedFileContent(string fileId);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.AI.HostedFileContent.FileId { get; set; }",
           "Stage": "Stable"
         }
       ]

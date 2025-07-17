@@ -72,7 +72,7 @@ internal sealed class OpenAIResponseChatClient : IChatClient
         _ = Throw.IfNull(messages);
 
         // Convert the inputs into what OpenAIResponseClient expects.
-        var openAIResponseItems = ToOpenAIResponseItems(messages);
+        var openAIResponseItems = ToInputResponseItems(messages);
         var openAIOptions = ToOpenAIResponseCreationOptions(options);
 
         // Make the call to the OpenAIResponseClient.
@@ -115,7 +115,7 @@ internal sealed class OpenAIResponseChatClient : IChatClient
                         message.RawRepresentation = messageItem;
                         message.Role = ToChatRole(messageItem.Role);
                         (message.AdditionalProperties ??= []).Add(nameof(messageItem.Id), messageItem.Id);
-                        ((List<AIContent>)message.Contents).AddRange(ToAIContents(messageItem.Content));
+                        ((List<AIContent>)message.Contents).AddRange(ToOutputAIContents(messageItem.Content));
                         break;
 
                     case ReasoningResponseItem reasoningItem when reasoningItem.GetSummaryText() is string summary && !string.IsNullOrWhiteSpace(summary):
@@ -161,7 +161,7 @@ internal sealed class OpenAIResponseChatClient : IChatClient
         _ = Throw.IfNull(messages);
 
         // Convert the inputs into what OpenAIResponseClient expects.
-        var openAIResponseItems = ToOpenAIResponseItems(messages);
+        var openAIResponseItems = ToInputResponseItems(messages);
         var openAIOptions = ToOpenAIResponseCreationOptions(options);
 
         // Make the call to the OpenAIResponseClient and process the streaming results.
@@ -467,7 +467,7 @@ internal sealed class OpenAIResponseChatClient : IChatClient
     }
 
     /// <summary>Convert a sequence of <see cref="ChatMessage"/>s to <see cref="ResponseItem"/>s.</summary>
-    internal static IEnumerable<ResponseItem> ToOpenAIResponseItems(IEnumerable<ChatMessage> inputs)
+    internal static IEnumerable<ResponseItem> ToInputResponseItems(IEnumerable<ChatMessage> inputs)
     {
         foreach (ChatMessage input in inputs)
         {
@@ -487,7 +487,7 @@ internal sealed class OpenAIResponseChatClient : IChatClient
 
             if (input.Role == ChatRole.User)
             {
-                yield return ResponseItem.CreateUserMessageItem(ToOpenAIResponsesContent(input.Contents));
+                yield return ResponseItem.CreateUserMessageItem(ToInputResponseContentParts(input.Contents));
                 continue;
             }
 
@@ -583,7 +583,7 @@ internal sealed class OpenAIResponseChatClient : IChatClient
     }
 
     /// <summary>Convert a sequence of <see cref="ResponseContentPart"/>s to a list of <see cref="AIContent"/>.</summary>
-    private static List<AIContent> ToAIContents(IEnumerable<ResponseContentPart> contents)
+    private static List<AIContent> ToOutputAIContents(IEnumerable<ResponseContentPart> contents)
     {
         List<AIContent> results = [];
 
@@ -619,7 +619,7 @@ internal sealed class OpenAIResponseChatClient : IChatClient
     }
 
     /// <summary>Convert a list of <see cref="AIContent"/>s to a list of <see cref="ResponseContentPart"/>.</summary>
-    private static List<ResponseContentPart> ToOpenAIResponsesContent(IList<AIContent> contents)
+    private static List<ResponseContentPart> ToInputResponseContentParts(IList<AIContent> contents)
     {
         List<ResponseContentPart> parts = [];
         foreach (var content in contents)
@@ -640,6 +640,10 @@ internal sealed class OpenAIResponseChatClient : IChatClient
 
                 case DataContent dataContent when dataContent.MediaType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase):
                     parts.Add(ResponseContentPart.CreateInputFilePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, $"{Guid.NewGuid():N}.pdf"));
+                    break;
+
+                case HostedFileContent fileContent:
+                    parts.Add(ResponseContentPart.CreateInputFilePart(fileContent.FileId));
                     break;
 
                 case ErrorContent errorContent when errorContent.ErrorCode == nameof(ResponseContentPartKind.Refusal):
