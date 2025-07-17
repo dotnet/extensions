@@ -10,7 +10,8 @@
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
-    <NoWarn>$(NoWarn);EA0002</NoWarn>
+    <!-- CA1852 is for the internal shared type DiagDescriptiorsBase. It can't be sealed because there are child classes in other components-->
+    <NoWarn>$(NoWarn);EA0002;CA1852</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>

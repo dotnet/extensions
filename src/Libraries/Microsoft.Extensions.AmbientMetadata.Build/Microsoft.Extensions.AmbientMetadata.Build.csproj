@@ -35,8 +35,4 @@
     <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.BuildMetadata\Microsoft.Gen.BuildMetadata.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="buildTransitive\*" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="buildTransitive\" />
-  </ItemGroup>
-
 </Project>
