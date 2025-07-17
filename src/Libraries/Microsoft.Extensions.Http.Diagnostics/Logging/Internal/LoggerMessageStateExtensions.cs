@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -53,21 +54,19 @@ internal static class LoggerMessageStateExtensions
     }
 
     /// <summary>
-    /// Adds request query parameters to <see cref="LoggerMessageState"/>.
+    /// Adds the full request URL (including the redacted query string) as the <c>url.full</c> tag to the <see cref="LoggerMessageState"/>.
     /// </summary>
-    /// <param name="state">A <see cref="LoggerMessageState"/> to be filled.</param>
-    /// <param name="items">A list with query parameters.</param>
-    /// <param name="index">Represents an index to be used when writing tags into <paramref name="state"/>.</param>
-    /// <remarks><paramref name="index"/> will be mutated to point to the next <paramref name="state"/> item.</remarks>
-    public static void AddQueryParameters(this LoggerMessageState state, KeyValuePair<string, string>[] items, ref int index)
+    /// <param name="state">The <see cref="LoggerMessageState"/> to be filled.</param>
+    /// <param name="fullUri">The full URI to log with redacted query parameters.</param>
+    /// <param name="index">
+    /// Represents an index to be used when writing tags into <paramref name="state"/>.
+    /// <para>This parameter will be mutated to point to the next <paramref name="state"/> item.</para>
+    /// </param>
+    public static void AddFullUrl(this LoggerMessageState state, Uri? fullUri, ref int index)
     {
-        foreach (var t in items)
+        if (fullUri is not null)
         {
-            var key = _responsePrefixedNamesCache.GetOrAdd(
-                t.Key,
-                static x => HttpClientLoggingTagNames.QueryParametersPrefix + Normalize(x));
-
-            state.TagArray[index++] = new(key, t.Value);
+            state.TagArray[index++] = new("url.full", fullUri.ToString());
         }
     }
 

@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -142,6 +143,24 @@ internal sealed class HttpRequestReader : IHttpRequestReader
         }
 
         logRecord.QueryParameters = GetQueryParameters(request);
+
+        // Build redacted query string
+        var redactedQueryString = string.Join("&", logRecord.QueryParameters.Select(kvp => $"{kvp.Key}={kvp.Value}"));
+
+        // Build full URI with redacted query string
+        if (request.RequestUri != null && logRecord.QueryParameters.Length > 0)
+        {
+            var uriBuilder = new UriBuilder(request.RequestUri)
+            {
+                Path = logRecord.Path,
+                Query = redactedQueryString
+            };
+            logRecord.FullUri = uriBuilder.Uri;
+        }
+        else
+        {
+            logRecord.FullUri = null;
+        }
     }
 
     private static string UnescapeDataString(ReadOnlySpan<char> value)

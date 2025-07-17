@@ -628,9 +628,8 @@ public class HttpRequestReaderTest
         var logRecord = new LogRecord();
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
         await reader.ReadRequestAsync(logRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
-        logRecord.QueryParameters.Should().NotBeNull();
-        logRecord.QueryParameters.Should().ContainSingle(qp =>
-            qp.Key == queryParamName && qp.Value == redactedValue);
+        logRecord.FullUri.Should().NotBeNull();
+        logRecord.FullUri!.ToString().Should().Contain("userId=REDACTED");
     }
 
     [Fact]
@@ -658,7 +657,7 @@ public class HttpRequestReaderTest
         var logRecord = new LogRecord();
         await reader.ReadRequestAsync(logRecord, httpRequestMessage, new List<KeyValuePair<string, string>>(), CancellationToken.None);
 
-        logRecord.QueryParameters.Should().BeEmpty();
+        logRecord.FullUri.Should().BeNull();
     }
 
     [Fact]
@@ -725,10 +724,11 @@ public class HttpRequestReaderTest
         var logRecord = new LogRecord();
         await reader.ReadRequestAsync(logRecord, httpRequestMessage, new List<KeyValuePair<string, string>>(), CancellationToken.None);
 
-        logRecord.QueryParameters.Should().HaveCount(2);
-        logRecord.QueryParameters.Should().Contain(qp => qp.Key == "userId" && qp.Value == Redacted);
-        logRecord.QueryParameters.Should().Contain(qp => qp.Key == "token" && qp.Value == Redacted);
-        logRecord.QueryParameters.Should().NotContain(qp => qp.Key == "other");
+        // Assert the full URI contains only the redacted query parameters
+        logRecord.FullUri.Should().NotBeNull();
+        logRecord.FullUri!.ToString().Should().Contain("userId=REDACTED");
+        logRecord.FullUri!.ToString().Should().Contain("token=REDACTED");
+        logRecord.FullUri!.ToString().Should().NotContain("other=not_logged");
     }
 
     [Fact]
@@ -783,7 +783,7 @@ public class HttpRequestReaderTest
 
         Assert.Contains(
             state,
-            tag => tag.Key == "http.query.userid" && (string?)tag.Value == "REDACTED");
+            tag => tag.Key == "url.full" && ((string)tag.Value).Contains("userId=REDACTED"));
     }
 
     [Fact]
@@ -819,7 +819,7 @@ public class HttpRequestReaderTest
         await reader.ReadRequestAsync(logRecord, httpRequestMessage, new List<KeyValuePair<string, string>>(), CancellationToken.None);
 
         // Should not log empty values
-        logRecord.QueryParameters.Should().BeEmpty();
+        logRecord.FullUri.Should().BeNull();
     }
 
     private static ServiceProvider GetServiceProvider(
