@@ -183,6 +183,13 @@ public class DataContent : AIContent
     [JsonIgnore]
     public string MediaType { get; }
 
+    /// <summary>Gets or sets an optional name associated with the data.</summary>
+    /// <remarks>
+    /// A service might use this name as part of citations or to help infer the type of data
+    /// being represented based on a file extension.
+    /// </remarks>
+    public string? Name { get; set; }
+
     /// <summary>Gets the data represented by this instance.</summary>
     /// <remarks>
     /// If the instance was constructed from a <see cref="ReadOnlyMemory{Byte}"/>, this property returns that data.

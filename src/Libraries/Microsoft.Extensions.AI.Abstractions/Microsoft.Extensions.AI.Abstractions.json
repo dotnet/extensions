@@ -1350,6 +1350,10 @@
           "Stage": "Stable"
         },
         {
+          "Member": "string? Microsoft.Extensions.AI.DataContent.Name { get; set; }",
+          "Stage": "Stable"
+        },
+        {
           "Member": "string Microsoft.Extensions.AI.DataContent.MediaType { get; }",
           "Stage": "Stable"
         },
