@@ -35,16 +35,27 @@ internal sealed class ContentSafetyChatClient : IChatClient
 
         ChatClientMetadata? originalMetadata = _originalChatClient?.GetService<ChatClientMetadata>();
 
-        string providerName =
-            $"{Moniker} (" +
-            $"Subscription: {contentSafetyServiceConfiguration.SubscriptionId}, " +
-            $"Resource Group: {contentSafetyServiceConfiguration.ResourceGroupName}, " +
-            $"Project: {contentSafetyServiceConfiguration.ProjectName})";
+        string providerName;
+        Uri? providerUri = originalMetadata?.ProviderUri;
+
+        if (contentSafetyServiceConfiguration.IsHubBasedProject)
+        {
+            providerName =
+                $"{Moniker} (" +
+                $"Subscription: {contentSafetyServiceConfiguration.SubscriptionId}, " +
+                $"Resource Group: {contentSafetyServiceConfiguration.ResourceGroupName}, " +
+                $"Project: {contentSafetyServiceConfiguration.ProjectName})";
+        }
+        else
+        {
+            providerName = $"{Moniker} (Endpoint: {contentSafetyServiceConfiguration.Endpoint})";
+            providerUri = contentSafetyServiceConfiguration.Endpoint;
+        }
 
         if (originalMetadata?.ProviderName is string originalProviderName &&
             !string.IsNullOrWhiteSpace(originalProviderName))
         {
-            providerName = $"{originalProviderName}; {providerName}";
+            providerName = $"{providerName}; {originalProviderName}";
         }
 
         string modelId = Moniker;
@@ -52,10 +63,10 @@ internal sealed class ContentSafetyChatClient : IChatClient
         if (originalMetadata?.DefaultModelId is string originalModelId &&
             !string.IsNullOrWhiteSpace(originalModelId))
         {
-            modelId = $"{originalModelId}; {modelId}";
+            modelId = $"{modelId}; {originalModelId}";
         }
 
-        _metadata = new ChatClientMetadata(providerName, originalMetadata?.ProviderUri, modelId);
+        _metadata = new ChatClientMetadata(providerName, providerUri, modelId);
     }
 
     public async Task<ChatResponse> GetResponseAsync(

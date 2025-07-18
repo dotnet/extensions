@@ -16,6 +16,7 @@ public class Settings
     public string AzureSubscriptionId { get; }
     public string AzureResourceGroupName { get; }
     public string AzureAIProjectName { get; }
+    public string AzureAIProjectEndpoint { get; }
 
     public Settings(IConfiguration config)
     {
@@ -49,6 +50,10 @@ public class Settings
         AzureAIProjectName =
             config.GetValue<string>("AzureAIProjectName")
             ?? throw new ArgumentNullException(nameof(AzureAIProjectName));
+
+        AzureAIProjectEndpoint =
+            config.GetValue<string>("AzureAIProjectEndpoint")
+            ?? throw new ArgumentNullException(nameof(AzureAIProjectEndpoint));
 #pragma warning restore CA2208
     }
 
