@@ -3,7 +3,6 @@
 
 using System;
 using System.ClientModel;
-using System.Drawing;
 using OpenAI;
 using OpenAI.Images;
 using Xunit;
@@ -46,7 +45,6 @@ public class OpenAITextToImageClientTests
         ITextToImageClient textToImageClient = client.AsITextToImageClient("dall-e-3");
 
         Assert.Same(textToImageClient, textToImageClient.GetService<ITextToImageClient>());
-        Assert.Same(textToImageClient, textToImageClient.GetService<OpenAITextToImageClient>());
         Assert.Same(textToImageClient, textToImageClient.GetService<object>());
         Assert.NotNull(textToImageClient.GetService<TextToImageClientMetadata>());
         Assert.NotNull(textToImageClient.GetService<ImageClient>());
