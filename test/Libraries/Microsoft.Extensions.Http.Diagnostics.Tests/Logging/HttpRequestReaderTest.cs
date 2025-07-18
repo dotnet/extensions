@@ -822,6 +822,74 @@ public class HttpRequestReaderTest
         logRecord.FullUri.Should().BeNull();
     }
 
+    [Fact]
+    public async Task ReadAsync_RedactsPathAndQueryParameters()
+    {
+        // Arrange
+        var requestContent = _fixture.Create<string>();
+        var queryParamName = "userId";
+        var queryParamValue = "12345";
+        var pathParamName = "orderId";
+        var pathParamValue = "789";
+        var redactedValue = Redacted;
+
+        var options = new LoggingOptions
+        {
+            RequestQueryParametersDataClasses = new Dictionary<string, DataClassification>
+        {
+            { queryParamName, FakeTaxonomy.PrivateData }
+        },
+            LogBody = true,
+            RequestPathLoggingMode = OutgoingPathLoggingMode.Formatted
+        };
+        options.RouteParameterDataClasses.Add("routeId", FakeTaxonomy.PrivateData);
+
+        var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
+        mockHeadersRedactor
+            .Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
+            .Returns(redactedValue);
+
+        var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), mockHeadersRedactor.Object);
+        using var serviceProvider = GetServiceProvider(headersReader);
+
+        var reader = new HttpRequestReader(
+            serviceProvider,
+            options.ToOptionsMonitor(),
+            serviceProvider.GetRequiredService<IHttpRouteFormatter>(),
+            serviceProvider.GetRequiredService<IHttpRouteParser>(),
+            RequestMetadataContext);
+
+        // The route template includes a path parameter
+        var routeTemplate = $"/api/orders/{{{pathParamName}}}/details";
+        var uri = new Uri($"https://{RequestedHost}/api/orders/{pathParamValue}/details?{queryParamName}={queryParamValue}");
+
+        using var httpRequestMessage = new HttpRequestMessage();
+        httpRequestMessage.Method = HttpMethod.Get;
+        httpRequestMessage.RequestUri = uri;
+        httpRequestMessage.Content = new StringContent(requestContent, Encoding.UTF8, "text/plain");
+
+        // Attach request metadata for the route template
+        httpRequestMessage.SetRequestMetadata(new RequestMetadata
+        {
+            RequestRoute = routeTemplate
+        });
+
+        var logRecord = new LogRecord();
+        var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
+        await reader.ReadRequestAsync(logRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
+
+        // Assert: path parameter is redacted in the path
+        logRecord.Path.Should().NotContain(pathParamValue);
+        logRecord.Path.Should().Contain(redactedValue);
+
+        // Assert: query parameter is redacted in the full URI
+        logRecord.FullUri.Should().NotBeNull();
+        logRecord.FullUri!.ToString().Should().Contain($"{queryParamName}={redactedValue}");
+        logRecord.FullUri!.ToString().Should().NotContain($"{queryParamName}={queryParamValue}");
+        logRecord.FullUri!.ToString().Should().Contain($"/api/orders/{redactedValue}/details");
+        logRecord.FullUri!.ToString().Should().NotContain($"/api/orders/{pathParamValue}/details");
+    }
+
     private static ServiceProvider GetServiceProvider(
         HttpHeadersReader headersReader,
         string? serviceKey = null,
