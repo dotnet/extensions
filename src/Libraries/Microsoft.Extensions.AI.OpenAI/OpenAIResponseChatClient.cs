@@ -111,10 +111,15 @@ internal sealed class OpenAIResponseChatClient : IChatClient
                 switch (outputItem)
                 {
                     case MessageResponseItem messageItem:
+                        if (message.MessageId is not null && message.MessageId != messageItem.Id)
+                        {
+                            message = new ChatMessage();
+                            response.Messages.Add(message);
+                        }
+
                         message.MessageId = messageItem.Id;
                         message.RawRepresentation = messageItem;
                         message.Role = ToChatRole(messageItem.Role);
-                        (message.AdditionalProperties ??= []).Add(nameof(messageItem.Id), messageItem.Id);
                         ((List<AIContent>)message.Contents).AddRange(ToAIContents(messageItem.Content));
                         break;
 
