@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Extensions for Build metadata.
 /// </summary>
-public static class BuildMetadataExtensions
+public static class BuildMetadataServiceCollectionExtensions
 {
     /// <summary>
     /// Adds an instance of <see cref="BuildMetadata"/> to the <see cref="IServiceCollection"/>.
