@@ -14,6 +14,7 @@ using OpenAI.Assistants;
 using OpenAI.Audio;
 using OpenAI.Chat;
 using OpenAI.Embeddings;
+using OpenAI.Images;
 using OpenAI.Realtime;
 using OpenAI.Responses;
 
@@ -144,6 +145,24 @@ public static class OpenAIClientExtensions
     [Experimental("MEAI001")]
     public static ISpeechToTextClient AsISpeechToTextClient(this AudioClient audioClient) =>
         new OpenAISpeechToTextClient(audioClient);
+
+    /// <summary>Gets an <see cref="ITextToImageClient"/> for use with this <see cref="ImageClient"/>.</summary>
+    /// <param name="imageClient">The client.</param>
+    /// <returns>An <see cref="ITextToImageClient"/> that can be used to generate images via the <see cref="ImageClient"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="imageClient"/> is <see langword="null"/>.</exception>
+    [Experimental("MEAI001")]
+    public static ITextToImageClient AsITextToImageClient(this ImageClient imageClient) =>
+        new OpenAITextToImageClient(imageClient);
+
+    /// <summary>Gets an <see cref="ITextToImageClient"/> for use with this <see cref="OpenAIClient"/>.</summary>
+    /// <param name="openAIClient">The OpenAI client.</param>
+    /// <param name="model">The model to use for image generation.</param>
+    /// <returns>An <see cref="ITextToImageClient"/> that can be used to generate images via the <see cref="OpenAIClient"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="openAIClient"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="model"/> is <see langword="null"/>.</exception>
+    [Experimental("MEAI001")]
+    public static ITextToImageClient AsITextToImageClient(this OpenAIClient openAIClient, string model) =>
+        new OpenAITextToImageClient(openAIClient, model);
 
     /// <summary>Gets an <see cref="IEmbeddingGenerator{String, Single}"/> for use with this <see cref="EmbeddingClient"/>.</summary>
     /// <param name="embeddingClient">The client.</param>
