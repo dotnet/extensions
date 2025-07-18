@@ -34,6 +34,7 @@ public static class TextToImageClientExtensions
     /// <summary>Generates text from speech providing a single audio speech <see cref="DataContent"/>.</summary>
     /// <param name="client">The client.</param>
     /// <param name="originalImage">The single image to base edits on.</param>
+    /// <param name="originalImageFileName">The file name of the original image.</param>
     /// <param name="prompt">The prompt to guide the image generation.</param>
     /// <param name="options">The text to image options to configure the request.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -41,6 +42,7 @@ public static class TextToImageClientExtensions
     public static Task<TextToImageResponse> GenerateEditImageAsync(
         this ITextToImageClient client,
         DataContent originalImage,
+        string originalImageFileName,
         string prompt,
         TextToImageOptions? options = null,
         CancellationToken cancellationToken = default)
@@ -52,6 +54,6 @@ public static class TextToImageClientExtensions
             new MemoryStream(array.Array!, array.Offset, array.Count) :
             new MemoryStream(originalImage.Data.ToArray());
 
-        return client.GenerateEditImageAsync(imageStream, prompt, options, cancellationToken);
+        return client.GenerateEditImageAsync(imageStream, originalImageFileName, prompt, options, cancellationToken);
     }
 }
