@@ -5,6 +5,7 @@ using System;
 #if NET
 using System.Buffers;
 using System.Buffers.Text;
+using System.ComponentModel;
 #endif
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -142,6 +143,9 @@ public class DataContent : AIContent
     /// or from a <see cref="System.Uri"/>.
     /// </remarks>
     [StringSyntax(StringSyntaxAttribute.Uri)]
+#if NET
+    [Description("A data URI representing the content.")]
+#endif
     public string Uri
     {
         get
