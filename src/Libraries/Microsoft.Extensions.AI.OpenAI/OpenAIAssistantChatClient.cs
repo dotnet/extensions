@@ -237,7 +237,6 @@ internal sealed class OpenAIAssistantChatClient : IChatClient
                                 RawRepresentation = tau,
                                 StartIndex = tau.StartIndex,
                                 EndIndex = tau.EndIndex,
-                                Placeholder = tau.TextToReplace,
 
                                 FileId = fileId,
                                 ToolName = toolName,

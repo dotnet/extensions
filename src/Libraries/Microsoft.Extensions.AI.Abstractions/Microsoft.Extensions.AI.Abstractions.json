@@ -142,10 +142,6 @@
           "Stage": "Stable"
         },
         {
-          "Member": "string? Microsoft.Extensions.AI.AIAnnotation.Placeholder { get; set; }",
-          "Stage": "Stable"
-        },
-        {
           "Member": "int? Microsoft.Extensions.AI.AIAnnotation.StartIndex { get; set; }",
           "Stage": "Stable"
         },
@@ -1370,10 +1366,6 @@
           "Stage": "Stable"
         },
         {
-          "Member": "string? Microsoft.Extensions.AI.CitationAnnotation.ToolCallId { get; set; }",
-          "Stage": "Stable"
-        },
-        {
           "Member": "System.Uri? Microsoft.Extensions.AI.CitationAnnotation.Url { get; set; }",
           "Stage": "Stable"
         },
@@ -1382,47 +1374,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.AI.CitationSourceLocation? Microsoft.Extensions.AI.CitationAnnotation.Location { get; set; }",
-          "Stage": "Stable"
-        },
-        {
           "Member": "string? Microsoft.Extensions.AI.CitationAnnotation.Snippet { get; set; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "class Microsoft.Extensions.AI.CitationSourceLocation",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.AI.CitationSourceLocation.CitationSourceLocation();",
-          "Stage": "Stable"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "int? Microsoft.Extensions.AI.CitationSourceLocation.PageStart { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "int? Microsoft.Extensions.AI.CitationSourceLocation.PageEnd { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "int? Microsoft.Extensions.AI.CitationSourceLocation.BlockStart { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "int? Microsoft.Extensions.AI.CitationSourceLocation.BlockEnd { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "int? Microsoft.Extensions.AI.CitationSourceLocation.CharacterStart { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "int? Microsoft.Extensions.AI.CitationSourceLocation.CharacterEnd { get; set; }",
           "Stage": "Stable"
         }
       ]

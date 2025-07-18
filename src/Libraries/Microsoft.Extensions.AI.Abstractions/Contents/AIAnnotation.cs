@@ -29,16 +29,6 @@ public class AIAnnotation
     /// </summary>
     public int? EndIndex { get; set; }
 
-    /// <summary>
-    /// Gets or sets an optional placeholder or marker text that was present in the original content
-    /// to indicate the citation (e.g., "〖4:0+source.json〗" or "[1]").
-    /// </summary>
-    /// <remarks>
-    /// This is useful for UI rendering or when the original content contained inline citation markers
-    /// that need to be preserved or reconstructed.
-    /// </remarks>
-    public string? Placeholder { get; set; }
-
     /// <summary>Gets or sets the raw representation of the annotation from an underlying implementation.</summary>
     /// <remarks>
     /// If an <see cref="AIAnnotation"/> is created to represent some underlying object from another object

@@ -15,7 +15,6 @@ public class AIAnnotationTests
         AIAnnotation a = new();
         Assert.Null(a.AdditionalProperties);
         Assert.Null(a.EndIndex);
-        Assert.Null(a.Placeholder);
         Assert.Null(a.RawRepresentation);
         Assert.Null(a.StartIndex);
     }
@@ -34,10 +33,6 @@ public class AIAnnotationTests
         a.EndIndex = 42;
         Assert.Equal(42, a.EndIndex);
 
-        Assert.Null(a.Placeholder);
-        a.Placeholder = "placeholder";
-        Assert.Equal("placeholder", a.Placeholder);
-
         Assert.Null(a.RawRepresentation);
         object raw = new();
         a.RawRepresentation = raw;
@@ -55,7 +50,6 @@ public class AIAnnotationTests
         {
             AdditionalProperties = new AdditionalPropertiesDictionary { { "key", "value" } },
             EndIndex = 42,
-            Placeholder = "placeholder",
             RawRepresentation = new object(),
             StartIndex = 10,
         };
@@ -71,7 +65,6 @@ public class AIAnnotationTests
         Assert.Equal(JsonSerializer.Deserialize<JsonElement>("\"value\"", AIJsonUtilities.DefaultOptions).ToString(), deserialized.AdditionalProperties["key"]!.ToString());
 
         Assert.Equal(42, deserialized.EndIndex);
-        Assert.Equal("placeholder", deserialized.Placeholder);
         Assert.Null(deserialized.RawRepresentation);
         Assert.Equal(10, deserialized.StartIndex);
     }

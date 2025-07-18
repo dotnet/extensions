@@ -19,11 +19,6 @@ public class CitationAnnotation : AIAnnotation
     }
 
     /// <summary>
-    /// Gets or sets the location within the source that contains the cited content.
-    /// </summary>
-    public CitationSourceLocation? Location { get; set; }
-
-    /// <summary>
     /// Gets or sets the title or name of the source.
     /// </summary>
     /// <remarks>
@@ -50,9 +45,6 @@ public class CitationAnnotation : AIAnnotation
     /// from the provider, such as "code_interpreter" or "file_search".
     /// </remarks>
     public string? ToolName { get; set; }
-
-    /// <summary>Gets or sets an associated ID of a tool call that produced the cited content.</summary>
-    public string? ToolCallId { get; set; }
 
     /// <summary>
     /// Gets or sets a snippet or excerpt from the source that was cited.
