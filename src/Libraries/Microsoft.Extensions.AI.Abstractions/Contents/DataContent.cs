@@ -183,12 +183,12 @@ public class DataContent : AIContent
     [JsonIgnore]
     public string MediaType { get; }
 
-    /// <summary>Gets or sets an optional file name associated with the data.</summary>
+    /// <summary>Gets or sets an optional name associated with the data.</summary>
     /// <remarks>
     /// A service might use this name as part of citations or to help infer the type of data
-    /// being represented based on the file extension.
+    /// being represented based on a file extension.
     /// </remarks>
-    public string? FileName { get; set; }
+    public string? Name { get; set; }
 
     /// <summary>Gets the data represented by this instance.</summary>
     /// <remarks>

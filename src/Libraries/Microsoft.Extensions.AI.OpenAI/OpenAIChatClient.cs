@@ -264,7 +264,7 @@ internal sealed class OpenAIChatClient : IChatClient
                 break;
 
             case DataContent dataContent when dataContent.MediaType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase):
-                return ChatMessageContentPart.CreateFilePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, dataContent.FileName ?? $"{Guid.NewGuid():N}.pdf");
+                return ChatMessageContentPart.CreateFilePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, dataContent.Name ?? $"{Guid.NewGuid():N}.pdf");
 
             case AIContent when content.RawRepresentation is ChatMessageContentPart rawContentPart:
                 return rawContentPart;

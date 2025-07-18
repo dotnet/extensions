@@ -122,9 +122,9 @@ public sealed class DataContentTests
                 TestJsonSerializerContext.Default.Options));
 
         Assert.Equal(
-            """{"uri":"data:application/octet-stream;base64,AQIDBA==","fileName":"test.bin"}""",
+            """{"uri":"data:application/octet-stream;base64,AQIDBA==","name":"test.bin"}""",
             JsonSerializer.Serialize(
-                new DataContent(new ReadOnlyMemory<byte>([0x01, 0x02, 0x03, 0x04]), "application/octet-stream") { FileName = "test.bin" },
+                new DataContent(new ReadOnlyMemory<byte>([0x01, 0x02, 0x03, 0x04]), "application/octet-stream") { Name = "test.bin" },
                 TestJsonSerializerContext.Default.Options));
     }
 
@@ -272,8 +272,8 @@ public sealed class DataContentTests
     public void FileName_Roundtrips()
     {
         DataContent content = new(new byte[] { 1, 2, 3 }, "application/octet-stream");
-        Assert.Null(content.FileName);
-        content.FileName = "test.bin";
-        Assert.Equal("test.bin", content.FileName);
+        Assert.Null(content.Name);
+        content.Name = "test.bin";
+        Assert.Equal("test.bin", content.Name);
     }
 }

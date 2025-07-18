@@ -1350,7 +1350,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "string? Microsoft.Extensions.AI.DataContent.FileName { get; set; }",
+          "Member": "string? Microsoft.Extensions.AI.DataContent.Name { get; set; }",
           "Stage": "Stable"
         },
         {
