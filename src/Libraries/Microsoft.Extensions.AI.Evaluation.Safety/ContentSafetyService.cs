@@ -22,6 +22,9 @@ namespace Microsoft.Extensions.AI.Evaluation.Safety;
 
 internal sealed partial class ContentSafetyService(ContentSafetyServiceConfiguration serviceConfiguration)
 {
+    private const string APIVersionForServiceDiscoveryInHubBasedProjects = "?api-version=2023-08-01-preview";
+    private const string APIVersionForNonHubBasedProjects = "?api-version=2025-05-15-preview";
+
     private static HttpClient? _sharedHttpClient;
     private static HttpClient SharedHttpClient
     {
@@ -168,20 +171,27 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
             return _serviceUrl;
         }
 
-        string discoveryUrl =
-            await GetServiceDiscoveryUrlAsync(evaluatorName, cancellationToken).ConfigureAwait(false);
+        if (serviceConfiguration.IsHubBasedProject)
+        {
+            string discoveryUrl =
+                await GetServiceDiscoveryUrlAsync(evaluatorName, cancellationToken).ConfigureAwait(false);
 
-        serviceUrl =
-            $"{discoveryUrl}/raisvc/v1.0" +
-            $"/subscriptions/{serviceConfiguration.SubscriptionId}" +
-            $"/resourceGroups/{serviceConfiguration.ResourceGroupName}" +
-            $"/providers/Microsoft.MachineLearningServices/workspaces/{serviceConfiguration.ProjectName}";
+            serviceUrl =
+                $"{discoveryUrl}/raisvc/v1.0" +
+                $"/subscriptions/{serviceConfiguration.SubscriptionId}" +
+                $"/resourceGroups/{serviceConfiguration.ResourceGroupName}" +
+                $"/providers/Microsoft.MachineLearningServices/workspaces/{serviceConfiguration.ProjectName}";
+        }
+        else
+        {
+            serviceUrl = $"{serviceConfiguration.Endpoint.AbsoluteUri}/evaluations";
+        }
 
         await EnsureServiceAvailabilityAsync(
-            serviceUrl,
-            capability: annotationTask,
-            evaluatorName,
-            cancellationToken).ConfigureAwait(false);
+                serviceUrl,
+                capability: annotationTask,
+                evaluatorName,
+                cancellationToken).ConfigureAwait(false);
 
         _ = _serviceUrlCache.TryAdd(key, serviceUrl);
         _serviceUrl = serviceUrl;
@@ -196,7 +206,7 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
             $"https://management.azure.com/subscriptions/{serviceConfiguration.SubscriptionId}" +
             $"/resourceGroups/{serviceConfiguration.ResourceGroupName}" +
             $"/providers/Microsoft.MachineLearningServices/workspaces/{serviceConfiguration.ProjectName}" +
-            $"?api-version=2023-08-01-preview";
+            $"{APIVersionForServiceDiscoveryInHubBasedProjects}";
 
         HttpResponseMessage response =
             await GetResponseAsync(
@@ -244,7 +254,10 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
         string evaluatorName,
         CancellationToken cancellationToken)
     {
-        string serviceAvailabilityUrl = $"{serviceUrl}/checkannotation";
+        string serviceAvailabilityUrl =
+            serviceConfiguration.IsHubBasedProject
+                ? $"{serviceUrl}/checkannotation"
+                : $"{serviceUrl}/checkannotation{APIVersionForNonHubBasedProjects}";
 
         HttpResponseMessage response =
             await GetResponseAsync(
@@ -297,7 +310,10 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
         string evaluatorName,
         CancellationToken cancellationToken)
     {
-        string annotationUrl = $"{serviceUrl}/submitannotation";
+        string annotationUrl =
+            serviceConfiguration.IsHubBasedProject
+                ? $"{serviceUrl}/submitannotation"
+                : $"{serviceUrl}/submitannotation{APIVersionForNonHubBasedProjects}";
 
         HttpResponseMessage response =
             await GetResponseAsync(
@@ -426,10 +442,13 @@ internal sealed partial class ContentSafetyService(ContentSafetyServiceConfigura
 
         httpRequestMessage.Headers.Add("User-Agent", userAgent);
 
+        TokenRequestContext context =
+            serviceConfiguration.IsHubBasedProject
+                ? new TokenRequestContext(scopes: ["https://management.azure.com/.default"])
+                : new TokenRequestContext(scopes: ["https://ai.azure.com/.default"]);
+
         AccessToken token =
-            await serviceConfiguration.Credential.GetTokenAsync(
-                new TokenRequestContext(scopes: ["https://management.azure.com/.default"]),
-                cancellationToken).ConfigureAwait(false);
+            await serviceConfiguration.Credential.GetTokenAsync(context, cancellationToken).ConfigureAwait(false);
 
         httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token.Token);
 

@@ -26,11 +26,14 @@ internal sealed partial class ContentSafetyService
             }
             else
             {
+#pragma warning disable S1067 // Expressions should not be too complex
                 return
                     other.Configuration.SubscriptionId == Configuration.SubscriptionId &&
                     other.Configuration.ResourceGroupName == Configuration.ResourceGroupName &&
                     other.Configuration.ProjectName == Configuration.ProjectName &&
+                    other.Configuration.Endpoint == Configuration.Endpoint &&
                     other.AnnotationTask == AnnotationTask;
+#pragma warning restore S1067
             }
         }
 
@@ -42,6 +45,7 @@ internal sealed partial class ContentSafetyService
                 Configuration.SubscriptionId,
                 Configuration.ResourceGroupName,
                 Configuration.ProjectName,
+                Configuration.Endpoint,
                 AnnotationTask);
     }
 }
