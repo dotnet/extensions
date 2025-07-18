@@ -96,27 +96,16 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
     }
 
     /// <inheritdoc />
-    public object? GetService(Type serviceType, object? serviceKey = null)
-    {
-        _ = Throw.IfNull(serviceType);
-
-        if (serviceType.IsInstanceOfType(this))
-        {
-            return this;
-        }
-
-        if (serviceType == typeof(TextToImageClientMetadata))
-        {
-            return _metadata;
-        }
-
-        if (serviceType.IsInstanceOfType(_imageClient))
-        {
-            return _imageClient;
-        }
-
-        return null;
-    }
+#pragma warning disable S1067 // Expressions should not be too complex
+    public object? GetService(Type serviceType, object? serviceKey = null) =>
+        serviceType is null ? throw new ArgumentNullException(nameof(serviceType)) :
+        serviceKey is not null ? null :
+        serviceType == typeof(TextToImageClientMetadata) ? _metadata :
+        serviceType == typeof(ImageClient) ? _imageClient :
+        serviceType == typeof(OpenAIClient) ? _openAIClient :
+        serviceType.IsInstanceOfType(this) ? this :
+        null;
+#pragma warning restore S1067 // Expressions should not be too complex
 
     /// <inheritdoc />
     void IDisposable.Dispose()
