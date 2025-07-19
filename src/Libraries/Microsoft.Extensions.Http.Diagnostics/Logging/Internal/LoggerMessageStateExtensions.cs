@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -49,6 +50,23 @@ internal static class LoggerMessageStateExtensions
                 static x => HttpClientLoggingTagNames.ResponseHeaderPrefix + Normalize(x));
 
             state.TagArray[index++] = new(key, items[i].Value);
+        }
+    }
+
+    /// <summary>
+    /// Adds the full request URL (including the redacted query string) as the <c>url.full</c> tag to the <see cref="LoggerMessageState"/>.
+    /// </summary>
+    /// <param name="state">The <see cref="LoggerMessageState"/> to be filled.</param>
+    /// <param name="fullUri">The full URI to log with redacted query parameters.</param>
+    /// <param name="index">
+    /// Represents an index to be used when writing tags into <paramref name="state"/>.
+    /// <para>This parameter will be mutated to point to the next <paramref name="state"/> item.</para>
+    /// </param>
+    public static void AddFullUrl(this LoggerMessageState state, Uri? fullUri, ref int index)
+    {
+        if (fullUri is not null)
+        {
+            state.TagArray[index++] = new("url.full", fullUri.ToString());
         }
     }
 
