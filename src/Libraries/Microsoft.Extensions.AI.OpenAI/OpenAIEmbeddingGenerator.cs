@@ -8,7 +8,6 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
-using OpenAI;
 using OpenAI.Embeddings;
 
 #pragma warning disable S1067 // Expressions should not be too complex

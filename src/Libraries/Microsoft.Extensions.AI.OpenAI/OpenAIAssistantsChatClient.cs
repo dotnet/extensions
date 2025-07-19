@@ -26,8 +26,8 @@ using OpenAI.Assistants;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Represents an <see cref="IChatClient"/> for an Azure.AI.Agents.Persistent <see cref="AssistantClient"/>.</summary>
-internal sealed class OpenAIAssistantChatClient : IChatClient
+/// <summary>Represents an <see cref="IChatClient"/> for an OpenAI <see cref="AssistantClient"/>.</summary>
+internal sealed class OpenAIAssistantsChatClient : IChatClient
 {
     /// <summary>The underlying <see cref="AssistantClient" />.</summary>
     private readonly AssistantClient _client;
@@ -44,8 +44,8 @@ internal sealed class OpenAIAssistantChatClient : IChatClient
     /// <summary>List of tools associated with the assistant.</summary>
     private IReadOnlyList<ToolDefinition>? _assistantTools;
 
-    /// <summary>Initializes a new instance of the <see cref="OpenAIAssistantChatClient"/> class for the specified <see cref="AssistantClient"/>.</summary>
-    public OpenAIAssistantChatClient(AssistantClient assistantClient, string assistantId, string? defaultThreadId)
+    /// <summary>Initializes a new instance of the <see cref="OpenAIAssistantsChatClient"/> class for the specified <see cref="AssistantClient"/>.</summary>
+    public OpenAIAssistantsChatClient(AssistantClient assistantClient, string assistantId, string? defaultThreadId)
     {
         _client = Throw.IfNull(assistantClient);
         _assistantId = Throw.IfNullOrWhitespace(assistantId);
@@ -60,6 +60,13 @@ internal sealed class OpenAIAssistantChatClient : IChatClient
             ?.GetValue(assistantClient) as Uri ?? OpenAIClientExtensions.DefaultOpenAIEndpoint;
 
         _metadata = new("openai", providerUrl);
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="OpenAIAssistantsChatClient"/> class for the specified <see cref="AssistantClient"/>.</summary>
+    public OpenAIAssistantsChatClient(AssistantClient assistantClient, Assistant assistant, string? defaultThreadId)
+        : this(assistantClient, Throw.IfNull(assistant).Id, defaultThreadId)
+    {
+        _assistantTools = assistant.Tools;
     }
 
     /// <inheritdoc />

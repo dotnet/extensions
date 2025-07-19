@@ -17,6 +17,7 @@ using OpenAI.Chat;
 #pragma warning disable EA0011 // Consider removing unnecessary conditional access operator (?)
 #pragma warning disable S1067 // Expressions should not be too complex
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
+#pragma warning disable SA1202 // Elements should be ordered by access
 #pragma warning disable SA1204 // Static elements should appear before instance elements
 
 namespace Microsoft.Extensions.AI;
@@ -76,7 +77,7 @@ internal sealed class OpenAIChatClient : IChatClient
         // Make the call to OpenAI.
         var response = await _chatClient.CompleteChatAsync(openAIChatMessages, openAIOptions, cancellationToken).ConfigureAwait(false);
 
-        return FromOpenAIChatCompletion(response.Value, options, openAIOptions);
+        return FromOpenAIChatCompletion(response.Value, openAIOptions);
     }
 
     /// <inheritdoc />
@@ -430,7 +431,7 @@ internal sealed class OpenAIChatClient : IChatClient
             "mp3" or _ => "audio/mpeg",
         };
 
-    private static ChatResponse FromOpenAIChatCompletion(ChatCompletion openAICompletion, ChatOptions? options, ChatCompletionOptions chatCompletionOptions)
+    internal static ChatResponse FromOpenAIChatCompletion(ChatCompletion openAICompletion, ChatCompletionOptions? chatCompletionOptions)
     {
         _ = Throw.IfNull(openAICompletion);
 
@@ -461,17 +462,14 @@ internal sealed class OpenAIChatClient : IChatClient
         }
 
         // Also manufacture function calling content items from any tool calls in the response.
-        if (options?.Tools is { Count: > 0 })
+        foreach (ChatToolCall toolCall in openAICompletion.ToolCalls)
         {
-            foreach (ChatToolCall toolCall in openAICompletion.ToolCalls)
+            if (!string.IsNullOrWhiteSpace(toolCall.FunctionName))
             {
-                if (!string.IsNullOrWhiteSpace(toolCall.FunctionName))
-                {
-                    var callContent = ParseCallContentFromBinaryData(toolCall.FunctionArguments, toolCall.Id, toolCall.FunctionName);
-                    callContent.RawRepresentation = toolCall;
+                var callContent = ParseCallContentFromBinaryData(toolCall.FunctionArguments, toolCall.Id, toolCall.FunctionName);
+                callContent.RawRepresentation = toolCall;
 
-                    returnMessage.Contents.Add(callContent);
-                }
+                returnMessage.Contents.Add(callContent);
             }
         }
 
