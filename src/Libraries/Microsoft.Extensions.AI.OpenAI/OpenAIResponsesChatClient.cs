@@ -17,12 +17,13 @@ using OpenAI.Responses;
 #pragma warning disable S1067 // Expressions should not be too complex
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 #pragma warning disable S3604 // Member initializer values should not be redundant
+#pragma warning disable SA1202 // Elements should be ordered by access
 #pragma warning disable SA1204 // Static elements should appear before instance elements
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents an <see cref="IChatClient"/> for an <see cref="OpenAIResponseClient"/>.</summary>
-internal sealed class OpenAIResponseChatClient : IChatClient
+internal sealed class OpenAIResponsesChatClient : IChatClient
 {
     /// <summary>Metadata about the client.</summary>
     private readonly ChatClientMetadata _metadata;
@@ -30,10 +31,10 @@ internal sealed class OpenAIResponseChatClient : IChatClient
     /// <summary>The underlying <see cref="OpenAIResponseClient" />.</summary>
     private readonly OpenAIResponseClient _responseClient;
 
-    /// <summary>Initializes a new instance of the <see cref="OpenAIResponseChatClient"/> class for the specified <see cref="OpenAIResponseClient"/>.</summary>
+    /// <summary>Initializes a new instance of the <see cref="OpenAIResponsesChatClient"/> class for the specified <see cref="OpenAIResponseClient"/>.</summary>
     /// <param name="responseClient">The underlying client.</param>
     /// <exception cref="ArgumentNullException"><paramref name="responseClient"/> is <see langword="null"/>.</exception>
-    public OpenAIResponseChatClient(OpenAIResponseClient responseClient)
+    public OpenAIResponsesChatClient(OpenAIResponseClient responseClient)
     {
         _ = Throw.IfNull(responseClient);
 
@@ -77,10 +78,16 @@ internal sealed class OpenAIResponseChatClient : IChatClient
         // Make the call to the OpenAIResponseClient.
         var openAIResponse = (await _responseClient.CreateResponseAsync(openAIResponseItems, openAIOptions, cancellationToken).ConfigureAwait(false)).Value;
 
+        // Convert the response to a ChatResponse.
+        return FromOpenAIResponse(openAIResponse, openAIOptions);
+    }
+
+    internal static ChatResponse FromOpenAIResponse(OpenAIResponse openAIResponse, ResponseCreationOptions? openAIOptions)
+    {
         // Convert and return the results.
         ChatResponse response = new()
         {
-            ConversationId = openAIOptions.StoredOutputEnabled is false ? null : openAIResponse.Id,
+            ConversationId = openAIOptions?.StoredOutputEnabled is false ? null : openAIResponse.Id,
             CreatedAt = openAIResponse.CreatedAt,
             FinishReason = ToFinishReason(openAIResponse.IncompleteStatusDetails?.Reason),
             Messages = [new(ChatRole.Assistant, [])],
@@ -110,11 +117,23 @@ internal sealed class OpenAIResponseChatClient : IChatClient
                 switch (outputItem)
                 {
                     case MessageResponseItem messageItem:
+                        if (message.MessageId is not null && message.MessageId != messageItem.Id)
+                        {
+                            message = new ChatMessage();
+                            response.Messages.Add(message);
+                        }
+
                         message.MessageId = messageItem.Id;
                         message.RawRepresentation = messageItem;
                         message.Role = ToChatRole(messageItem.Role);
-                        (message.AdditionalProperties ??= []).Add(nameof(messageItem.Id), messageItem.Id);
                         ((List<AIContent>)message.Contents).AddRange(ToAIContents(messageItem.Content));
+                        break;
+
+                    case ReasoningResponseItem reasoningItem when reasoningItem.GetSummaryText() is string summary && !string.IsNullOrWhiteSpace(summary):
+                        message.Contents.Add(new TextReasoningContent(summary)
+                        {
+                            RawRepresentation = reasoningItem
+                        });
                         break;
 
                     case FunctionCallResponseItem functionCall:
@@ -139,7 +158,7 @@ internal sealed class OpenAIResponseChatClient : IChatClient
 
             if (openAIResponse.Error is { } error)
             {
-                message.Contents.Add(new ErrorContent(error.Message) { ErrorCode = error.Code });
+                message.Contents.Add(new ErrorContent(error.Message) { ErrorCode = error.Code.ToString() });
             }
         }
 
@@ -323,11 +342,17 @@ internal sealed class OpenAIResponseChatClient : IChatClient
         // Nothing to dispose. Implementation required for the IChatClient interface.
     }
 
-    internal static ResponseTool ToResponseTool(AIFunction aiFunction)
+    internal static ResponseTool ToResponseTool(AIFunction aiFunction, ChatOptions? options = null)
     {
-        (BinaryData parameters, bool? strict) = OpenAIClientExtensions.ToOpenAIFunctionParameters(aiFunction);
+        bool? strict =
+            OpenAIClientExtensions.HasStrict(aiFunction.AdditionalProperties) ??
+            OpenAIClientExtensions.HasStrict(options?.AdditionalProperties);
 
-        return ResponseTool.CreateFunctionTool(aiFunction.Name, aiFunction.Description, parameters, strict ?? false);
+        return ResponseTool.CreateFunctionTool(
+            aiFunction.Name,
+            aiFunction.Description,
+            OpenAIClientExtensions.ToOpenAIFunctionParameters(aiFunction, strict),
+            strict ?? false);
     }
 
     /// <summary>Creates a <see cref="ChatRole"/> from a <see cref="MessageRole"/>.</summary>
@@ -361,10 +386,11 @@ internal sealed class OpenAIResponseChatClient : IChatClient
 
         // Handle strongly-typed properties.
         result.MaxOutputTokenCount ??= options.MaxOutputTokens;
-        result.PreviousResponseId ??= options.ConversationId;
-        result.TopP ??= options.TopP;
-        result.Temperature ??= options.Temperature;
         result.ParallelToolCallsEnabled ??= options.AllowMultipleToolCalls;
+        result.PreviousResponseId ??= options.ConversationId;
+        result.Temperature ??= options.Temperature;
+        result.TopP ??= options.TopP;
+
         if (options.Instructions is { } instructions)
         {
             result.Instructions = string.IsNullOrEmpty(result.Instructions) ?
@@ -380,22 +406,21 @@ internal sealed class OpenAIResponseChatClient : IChatClient
                 switch (tool)
                 {
                     case AIFunction aiFunction:
-                        ResponseTool rtool = ToResponseTool(aiFunction);
-                        result.Tools.Add(rtool);
+                        result.Tools.Add(ToResponseTool(aiFunction, options));
                         break;
 
                     case HostedWebSearchTool:
-                        WebSearchToolLocation? location = null;
-                        if (tool.AdditionalProperties.TryGetValue(nameof(WebSearchToolLocation), out object? objLocation))
+                        WebSearchUserLocation? location = null;
+                        if (tool.AdditionalProperties.TryGetValue(nameof(WebSearchUserLocation), out object? objLocation))
                         {
-                            location = objLocation as WebSearchToolLocation;
+                            location = objLocation as WebSearchUserLocation;
                         }
 
-                        WebSearchToolContextSize? size = null;
-                        if (tool.AdditionalProperties.TryGetValue(nameof(WebSearchToolContextSize), out object? objSize) &&
-                            objSize is WebSearchToolContextSize)
+                        WebSearchContextSize? size = null;
+                        if (tool.AdditionalProperties.TryGetValue(nameof(WebSearchContextSize), out object? objSize) &&
+                            objSize is WebSearchContextSize)
                         {
-                            size = (WebSearchToolContextSize)objSize;
+                            size = (WebSearchContextSize)objSize;
                         }
 
                         result.Tools.Add(ResponseTool.CreateWebSearchTool(location, size));
@@ -442,7 +467,8 @@ internal sealed class OpenAIResponseChatClient : IChatClient
                         ResponseTextFormat.CreateJsonSchemaFormat(
                             jsonFormat.SchemaName ?? "json_schema",
                             BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(jsonSchema, OpenAIJsonContext.Default.JsonElement)),
-                            jsonFormat.SchemaDescription) :
+                            jsonFormat.SchemaDescription,
+                            OpenAIClientExtensions.HasStrict(options.AdditionalProperties)) :
                         ResponseTextFormat.CreateJsonObjectFormat(),
                 };
             }
@@ -452,8 +478,7 @@ internal sealed class OpenAIResponseChatClient : IChatClient
     }
 
     /// <summary>Convert a sequence of <see cref="ChatMessage"/>s to <see cref="ResponseItem"/>s.</summary>
-    private static IEnumerable<ResponseItem> ToOpenAIResponseItems(
-        IEnumerable<ChatMessage> inputs)
+    internal static IEnumerable<ResponseItem> ToOpenAIResponseItems(IEnumerable<ChatMessage> inputs)
     {
         foreach (ChatMessage input in inputs)
         {
@@ -515,6 +540,10 @@ internal sealed class OpenAIResponseChatClient : IChatClient
                             yield return ResponseItem.CreateAssistantMessageItem(textContent.Text);
                             break;
 
+                        case TextReasoningContent reasoningContent:
+                            yield return ResponseItem.CreateReasoningItem(reasoningContent.Text);
+                            break;
+
                         case FunctionCallContent callContent:
                             yield return ResponseItem.CreateFunctionCallItem(
                                 callContent.CallId,
@@ -548,12 +577,16 @@ internal sealed class OpenAIResponseChatClient : IChatClient
                 TotalTokenCount = usage.TotalTokenCount,
             };
 
+            if (usage.InputTokenDetails is { } inputDetails)
+            {
+                ud.AdditionalCounts ??= [];
+                ud.AdditionalCounts.Add($"{nameof(usage.InputTokenDetails)}.{nameof(inputDetails.CachedTokenCount)}", inputDetails.CachedTokenCount);
+            }
+
             if (usage.OutputTokenDetails is { } outputDetails)
             {
                 ud.AdditionalCounts ??= [];
-
-                const string OutputDetails = nameof(usage.OutputTokenDetails);
-                ud.AdditionalCounts.Add($"{OutputDetails}.{nameof(outputDetails.ReasoningTokenCount)}", outputDetails.ReasoningTokenCount);
+                ud.AdditionalCounts.Add($"{nameof(usage.OutputTokenDetails)}.{nameof(outputDetails.ReasoningTokenCount)}", outputDetails.ReasoningTokenCount);
             }
         }
 
@@ -617,8 +650,7 @@ internal sealed class OpenAIResponseChatClient : IChatClient
                     break;
 
                 case DataContent dataContent when dataContent.MediaType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase):
-                    parts.Add(ResponseContentPart.CreateInputFilePart(null, $"{Guid.NewGuid():N}.pdf",
-                        BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(dataContent.Uri, OpenAIJsonContext.Default.String))));
+                    parts.Add(ResponseContentPart.CreateInputFilePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, dataContent.Name ?? $"{Guid.NewGuid():N}.pdf"));
                     break;
 
                 case ErrorContent errorContent when errorContent.ErrorCode == nameof(ResponseContentPartKind.Refusal):

@@ -8,19 +8,15 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using Microsoft.Shared.Diagnostics;
 using OpenAI;
 using OpenAI.Assistants;
 using OpenAI.Audio;
 using OpenAI.Chat;
 using OpenAI.Embeddings;
-using OpenAI.RealtimeConversation;
 using OpenAI.Responses;
 
 #pragma warning disable S103 // Lines should not be too long
-#pragma warning disable S1067 // Expressions should not be too complex
 #pragma warning disable SA1515 // Single-line comment should be preceded by blank line
-#pragma warning disable CA1305 // Specify IFormatProvider
 
 namespace Microsoft.Extensions.AI;
 
@@ -119,7 +115,7 @@ public static class OpenAIClientExtensions
     /// <returns>An <see cref="IChatClient"/> that can be used to converse via the <see cref="OpenAIResponseClient"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="responseClient"/> is <see langword="null"/>.</exception>
     public static IChatClient AsIChatClient(this OpenAIResponseClient responseClient) =>
-        new OpenAIResponseChatClient(responseClient);
+        new OpenAIResponsesChatClient(responseClient);
 
     /// <summary>Gets an <see cref="IChatClient"/> for use with this <see cref="AssistantClient"/>.</summary>
     /// <param name="assistantClient">The <see cref="AssistantClient"/> instance to be accessed as an <see cref="IChatClient"/>.</param>
@@ -133,9 +129,22 @@ public static class OpenAIClientExtensions
     /// <exception cref="ArgumentNullException"><paramref name="assistantClient"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="assistantId"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="assistantId"/> is empty or composed entirely of whitespace.</exception>
-    [Experimental("OPENAI001")] // AssistantClient itself is experimental with this ID
     public static IChatClient AsIChatClient(this AssistantClient assistantClient, string assistantId, string? threadId = null) =>
-        new OpenAIAssistantChatClient(assistantClient, assistantId, threadId);
+        new OpenAIAssistantsChatClient(assistantClient, assistantId, threadId);
+
+    /// <summary>Gets an <see cref="IChatClient"/> for use with this <see cref="AssistantClient"/>.</summary>
+    /// <param name="assistantClient">The <see cref="AssistantClient"/> instance to be accessed as an <see cref="IChatClient"/>.</param>
+    /// <param name="assistant">The <see cref="Assistant"/> with which to interact.</param>
+    /// <param name="threadId">
+    /// An optional existing thread identifier for the chat session. This serves as a default, and may be overridden per call to
+    /// <see cref="IChatClient.GetResponseAsync"/> or <see cref="IChatClient.GetStreamingResponseAsync"/> via the <see cref="ChatOptions.ConversationId"/>
+    /// property. If no thread ID is provided via either mechanism, a new thread will be created for the request.
+    /// </param>
+    /// <returns>An <see cref="IChatClient"/> instance configured to interact with the specified agent and thread.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="assistantClient"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="assistant"/> is <see langword="null"/>.</exception>
+    public static IChatClient AsIChatClient(this AssistantClient assistantClient, Assistant assistant, string? threadId = null) =>
+        new OpenAIAssistantsChatClient(assistantClient, assistant, threadId);
 
     /// <summary>Gets an <see cref="ISpeechToTextClient"/> for use with this <see cref="AudioClient"/>.</summary>
     /// <param name="audioClient">The client.</param>
@@ -153,44 +162,15 @@ public static class OpenAIClientExtensions
     public static IEmbeddingGenerator<string, Embedding<float>> AsIEmbeddingGenerator(this EmbeddingClient embeddingClient, int? defaultModelDimensions = null) =>
         new OpenAIEmbeddingGenerator(embeddingClient, defaultModelDimensions);
 
-    /// <summary>Creates an OpenAI <see cref="ChatTool"/> from an <see cref="AIFunction"/>.</summary>
-    /// <param name="function">The function to convert.</param>
-    /// <returns>An OpenAI <see cref="ChatTool"/> representing <paramref name="function"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="function"/> is <see langword="null"/>.</exception>
-    public static ChatTool AsOpenAIChatTool(this AIFunction function) =>
-        OpenAIChatClient.ToOpenAIChatTool(Throw.IfNull(function));
-
-    /// <summary>Creates an OpenAI <see cref="FunctionToolDefinition"/> from an <see cref="AIFunction"/>.</summary>
-    /// <param name="function">The function to convert.</param>
-    /// <returns>An OpenAI <see cref="FunctionToolDefinition"/> representing <paramref name="function"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="function"/> is <see langword="null"/>.</exception>
-    [Experimental("OPENAI001")] // AssistantClient itself is experimental with this ID
-    public static FunctionToolDefinition AsOpenAIAssistantsFunctionToolDefinition(this AIFunction function) =>
-        OpenAIAssistantChatClient.ToOpenAIAssistantsFunctionToolDefinition(Throw.IfNull(function));
-
-    /// <summary>Creates an OpenAI <see cref="ResponseTool"/> from an <see cref="AIFunction"/>.</summary>
-    /// <param name="function">The function to convert.</param>
-    /// <returns>An OpenAI <see cref="ResponseTool"/> representing <paramref name="function"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="function"/> is <see langword="null"/>.</exception>
-    public static ResponseTool AsOpenAIResponseTool(this AIFunction function) =>
-        OpenAIResponseChatClient.ToResponseTool(Throw.IfNull(function));
-
-    /// <summary>Creates an OpenAI <see cref="ConversationFunctionTool"/> from an <see cref="AIFunction"/>.</summary>
-    /// <param name="function">The function to convert.</param>
-    /// <returns>An OpenAI <see cref="ConversationFunctionTool"/> representing <paramref name="function"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="function"/> is <see langword="null"/>.</exception>
-    public static ConversationFunctionTool AsOpenAIConversationFunctionTool(this AIFunction function) =>
-        OpenAIRealtimeConversationClient.ToOpenAIConversationFunctionTool(Throw.IfNull(function));
+    /// <summary>Gets whether the properties specify that strict schema handling is desired.</summary>
+    internal static bool? HasStrict(IReadOnlyDictionary<string, object?>? additionalProperties) =>
+        additionalProperties?.TryGetValue(StrictKey, out object? strictObj) is true &&
+        strictObj is bool strictValue ?
+        strictValue : null;
 
     /// <summary>Extracts from an <see cref="AIFunction"/> the parameters and strictness setting for use with OpenAI's APIs.</summary>
-    internal static (BinaryData Parameters, bool? Strict) ToOpenAIFunctionParameters(AIFunction aiFunction)
+    internal static BinaryData ToOpenAIFunctionParameters(AIFunction aiFunction, bool? strict)
     {
-        // Extract any strict setting from AdditionalProperties.
-        bool? strict =
-            aiFunction.AdditionalProperties.TryGetValue(OpenAIClientExtensions.StrictKey, out object? strictObj) &&
-            strictObj is bool strictValue ?
-            strictValue : null;
-
         // Perform any desirable transformations on the function's JSON schema, if it'll be used in a strict setting.
         JsonElement jsonSchema = strict is true ?
             StrictSchemaTransformCache.GetOrCreateTransformedSchema(aiFunction) :
@@ -201,7 +181,7 @@ public static class OpenAIClientExtensions
         var tool = JsonSerializer.Deserialize(jsonSchema, OpenAIJsonContext.Default.ToolJson)!;
         var functionParameters = BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(tool, OpenAIJsonContext.Default.ToolJson));
 
-        return (functionParameters, strict);
+        return functionParameters;
     }
 
     /// <summary>Used to create the JSON payload for an OpenAI tool description.</summary>

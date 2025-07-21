@@ -72,10 +72,18 @@ public sealed class LinuxUtilizationProviderTests
             }
         });
 
+        listener.SetMeasurementEventCallback<long>((instrument, value, _, _) =>
+        {
+            if (ReferenceEquals(meter, instrument.Meter))
+            {
+                samples.Add((instrument, value));
+            }
+        });
+
         listener.Start();
         listener.RecordObservableInstruments();
 
-        Assert.Equal(5, samples.Count);
+        Assert.Equal(6, samples.Count);
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization);
         Assert.True(double.IsNaN(samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization).value));
@@ -85,6 +93,9 @@ public sealed class LinuxUtilizationProviderTests
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization);
         Assert.Equal(0.5, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization).value);
+
+        Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryUsage);
+        Assert.Equal(524288, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryUsage).value);
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization);
         Assert.True(double.IsNaN(samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization).value));
@@ -213,7 +224,7 @@ public sealed class LinuxUtilizationProviderTests
     {
         var meterName = Guid.NewGuid().ToString();
         var logger = new FakeLogger<LinuxUtilizationProvider>();
-        var options = Options.Options.Create(new ResourceMonitoringOptions { CalculateCpuUsageWithoutHostDelta = true });
+        var options = Options.Options.Create(new ResourceMonitoringOptions { UseLinuxCalculationV2 = true });
         using var meter = new Meter(nameof(Provider_Registers_Instruments_CgroupV2_WithoutHostCpu));
         var meterFactoryMock = new Mock<IMeterFactory>();
         meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>()))
@@ -259,13 +270,16 @@ public sealed class LinuxUtilizationProviderTests
         listener.Start();
         listener.RecordObservableInstruments();
 
-        Assert.Equal(4, samples.Count);
+        Assert.Equal(6, samples.Count);
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization);
         Assert.True(double.IsNaN(samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization).value));
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerCpuRequestUtilization);
         Assert.True(double.IsNaN(samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerCpuRequestUtilization).value));
+
+        Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerCpuTime);
+        Assert.All(samples.Where(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerCpuTime), item => double.IsNaN(item.value));
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization);
         Assert.Equal(1, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization).value);
@@ -356,7 +370,7 @@ public sealed class LinuxUtilizationProviderTests
         parserMock.Setup(p => p.GetMemoryUsageInBytes()).Returns(() =>
         {
             callCount++;
-            if (callCount <= 2)
+            if (callCount <= 3)
             {
                 throw new InvalidOperationException("Simulated unhandled exception");
             }
@@ -400,6 +414,6 @@ public sealed class LinuxUtilizationProviderTests
         var metric = samples.SingleOrDefault(x => x.instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization);
         Assert.Equal(1234f / 2000f, metric.value, 0.01f);
 
-        parserMock.Verify(p => p.GetMemoryUsageInBytes(), Times.Exactly(3));
+        parserMock.Verify(p => p.GetMemoryUsageInBytes(), Times.Exactly(4));
     }
 }

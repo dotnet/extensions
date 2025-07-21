@@ -202,7 +202,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
                 new(ChatRole.User,
                 [
                     new TextContent("What text does this document contain?"),
-                    new DataContent(ImageDataUri.GetPdfDataUri(), "application/pdf"),
+                    new DataContent(ImageDataUri.GetPdfDataUri(), "application/pdf") { Name = "sample.pdf" },
                 ])
             ],
             new() { ModelId = GetModel_MultiModal_DescribeImage() });
@@ -338,6 +338,39 @@ public abstract class ChatClientIntegrationTests : IDisposable
         });
 
         Assert.Contains((secretNumber + 19).ToString(), response.Text);
+        AssertUsageAgainstActivities(response, activities);
+    }
+
+    [ConditionalFact]
+    public virtual async Task FunctionInvocation_ArrayParameter()
+    {
+        SkipIfNotEnabled();
+
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using var chatClient = new FunctionInvokingChatClient(
+            new OpenTelemetryChatClient(_chatClient, sourceName: sourceName));
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.User, "Can you add bacon, lettuce, and tomatoes to Peter's shopping cart?")
+        ];
+
+        string? shopperName = null;
+        List<string> shoppingCart = [];
+        AIFunction func = AIFunctionFactory.Create((string[] items, string shopperId) => { shoppingCart.AddRange(items); shopperName = shopperId; }, "AddItemsToShoppingCart");
+        var response = await chatClient.GetResponseAsync(messages, new()
+        {
+            Tools = [func]
+        });
+
+        Assert.Equal("Peter", shopperName);
+        Assert.Equal(["bacon", "lettuce", "tomatoes"], shoppingCart);
         AssertUsageAgainstActivities(response, activities);
     }
 

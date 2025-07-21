@@ -10,6 +10,7 @@
     <_LocalChatTemplateVariant>aspire</_LocalChatTemplateVariant>
 
     <_ChatWithCustomDataContentRoot>$(MSBuildThisFileDirectory)Microsoft.Extensions.AI.Templates\src\ChatWithCustomData\</_ChatWithCustomDataContentRoot>
+    <_McpServerContentRoot>$(MSBuildThisFileDirectory)Microsoft.Extensions.AI.Templates\src\McpServer\</_McpServerContentRoot>
   </PropertyGroup>
 
   <Target Name="ComputeGeneratedContentProperties">
@@ -34,9 +35,11 @@
       <TemplatePackageVersion_AzureIdentity>1.14.0</TemplatePackageVersion_AzureIdentity>
       <TemplatePackageVersion_AzureSearchDocuments>11.6.0</TemplatePackageVersion_AzureSearchDocuments>
       <TemplatePackageVersion_CommunityToolkitAspire>9.4.1-beta.291</TemplatePackageVersion_CommunityToolkitAspire>
+      <TemplatePackageVersion_MicrosoftExtensionsHosting>10.0.0-preview.6.25358.103</TemplatePackageVersion_MicrosoftExtensionsHosting>
       <TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery>9.3.0</TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery>
       <TemplatePackageVersion_MicrosoftSemanticKernel>1.53.0</TemplatePackageVersion_MicrosoftSemanticKernel>
       <TemplatePackageVersion_MicrosoftSemanticKernel_Preview>1.53.0-preview</TemplatePackageVersion_MicrosoftSemanticKernel_Preview>
+      <TemplatePackageVersion_ModelContextProtocol>0.3.0-preview.2</TemplatePackageVersion_ModelContextProtocol>
       <TemplatePackageVersion_OllamaSharp>5.1.18</TemplatePackageVersion_OllamaSharp>
       <TemplatePackageVersion_OpenTelemetry>1.12.0</TemplatePackageVersion_OpenTelemetry>
       <TemplatePackageVersion_PdfPig>0.1.10</TemplatePackageVersion_PdfPig>
@@ -64,9 +67,11 @@
         TemplatePackageVersion_AzureIdentity=$(TemplatePackageVersion_AzureIdentity);
         TemplatePackageVersion_AzureSearchDocuments=$(TemplatePackageVersion_AzureSearchDocuments);
         TemplatePackageVersion_CommunityToolkitAspire=$(TemplatePackageVersion_CommunityToolkitAspire);
+        TemplatePackageVersion_MicrosoftExtensionsHosting=$(TemplatePackageVersion_MicrosoftExtensionsHosting);
         TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery=$(TemplatePackageVersion_MicrosoftExtensionsServiceDiscovery);
         TemplatePackageVersion_MicrosoftSemanticKernel=$(TemplatePackageVersion_MicrosoftSemanticKernel);
         TemplatePackageVersion_MicrosoftSemanticKernel_Preview=$(TemplatePackageVersion_MicrosoftSemanticKernel_Preview);
+        TemplatePackageVersion_ModelContextProtocol=$(TemplatePackageVersion_ModelContextProtocol);
         TemplatePackageVersion_OllamaSharp=$(TemplatePackageVersion_OllamaSharp);
         TemplatePackageVersion_OpenTelemetry=$(TemplatePackageVersion_OpenTelemetry);
         TemplatePackageVersion_PdfPig=$(TemplatePackageVersion_PdfPig);
@@ -100,6 +105,9 @@
       <GeneratedContent
         Include="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.ServiceDefaults\ChatWithCustomData-CSharp.ServiceDefaults.csproj.in"
         OutputPath="$(_ChatWithCustomDataContentRoot)ChatWithCustomData-CSharp.ServiceDefaults\ChatWithCustomData-CSharp.ServiceDefaults.csproj" />
+      <GeneratedContent
+        Include="$(_McpServerContentRoot)McpServer-CSharp\McpServer-CSharp.csproj.in"
+        OutputPath="$(_McpServerContentRoot)McpServer-CSharp\McpServer-CSharp.csproj" />
 
       <!-- The following content only gets generated when using just-built packages -->
       <_GeneratedContentEnablingJustBuiltPackages

@@ -24,7 +24,7 @@ internal static partial class Log
 
     [LoggerMessage(2, LogLevel.Debug,
         "Computed memory usage with MemoryUsedInBytes = {memoryUsed}, MemoryLimit = {memoryLimit}, MemoryPercentage = {memoryPercentage}.")]
-    public static partial void MemoryUsageData(
+    public static partial void MemoryPercentageData(
         this ILogger logger,
         ulong memoryUsed,
         double memoryLimit,
@@ -50,21 +50,15 @@ internal static partial class Log
         double actualElapsedNanoseconds,
         double cpuCores);
 
-    [LoggerMessage(5, LogLevel.Debug,
-        "CPU utilization exceeded 100%: Counter = {counterValue}")]
-    public static partial void CounterMessage100(
-        this ILogger logger,
-        long counterValue);
-
-    [LoggerMessage(6, LogLevel.Debug,
-        "CPU utilization exceeded 110%: Counter = {counterValue}")]
-    public static partial void CounterMessage110(
-        this ILogger logger,
-        long counterValue);
-
-    [LoggerMessage(7, LogLevel.Warning,
+    [LoggerMessage(5, LogLevel.Warning,
         "Error while getting disk stats: Error={errorMessage}")]
     public static partial void HandleDiskStatsException(
         this ILogger logger,
         string errorMessage);
+
+    [LoggerMessage(6, LogLevel.Debug,
+        "Computed memory usage = {memoryUsed}.")]
+    public static partial void MemoryUsageData(
+        this ILogger logger,
+        ulong memoryUsed);
 }

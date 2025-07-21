@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Logging;
@@ -12,7 +11,6 @@ namespace Microsoft.Extensions.Logging;
 /// </summary>
 /// <seealso cref="LoggerMessageAttribute"/>.
 [AttributeUsage(AttributeTargets.Property)]
-[Conditional("CODE_GENERATION_ATTRIBUTES")]
 public sealed class LogPropertyIgnoreAttribute : Attribute
 {
 }

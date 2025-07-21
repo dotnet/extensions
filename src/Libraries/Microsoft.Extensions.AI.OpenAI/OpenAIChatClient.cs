@@ -17,6 +17,7 @@ using OpenAI.Chat;
 #pragma warning disable EA0011 // Consider removing unnecessary conditional access operator (?)
 #pragma warning disable S1067 // Expressions should not be too complex
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
+#pragma warning disable SA1202 // Elements should be ordered by access
 #pragma warning disable SA1204 // Static elements should appear before instance elements
 
 namespace Microsoft.Extensions.AI;
@@ -70,13 +71,13 @@ internal sealed class OpenAIChatClient : IChatClient
     {
         _ = Throw.IfNull(messages);
 
-        var openAIChatMessages = ToOpenAIChatMessages(messages, options, AIJsonUtilities.DefaultOptions);
+        var openAIChatMessages = ToOpenAIChatMessages(messages, options);
         var openAIOptions = ToOpenAIOptions(options);
 
         // Make the call to OpenAI.
         var response = await _chatClient.CompleteChatAsync(openAIChatMessages, openAIOptions, cancellationToken).ConfigureAwait(false);
 
-        return FromOpenAIChatCompletion(response.Value, options, openAIOptions);
+        return FromOpenAIChatCompletion(response.Value, openAIOptions);
     }
 
     /// <inheritdoc />
@@ -85,13 +86,13 @@ internal sealed class OpenAIChatClient : IChatClient
     {
         _ = Throw.IfNull(messages);
 
-        var openAIChatMessages = ToOpenAIChatMessages(messages, options, AIJsonUtilities.DefaultOptions);
+        var openAIChatMessages = ToOpenAIChatMessages(messages, options);
         var openAIOptions = ToOpenAIOptions(options);
 
         // Make the call to OpenAI.
         var chatCompletionUpdates = _chatClient.CompleteChatStreamingAsync(openAIChatMessages, openAIOptions, cancellationToken);
 
-        return FromOpenAIStreamingChatCompletionAsync(chatCompletionUpdates, cancellationToken);
+        return FromOpenAIStreamingChatCompletionAsync(chatCompletionUpdates, openAIOptions, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -101,15 +102,21 @@ internal sealed class OpenAIChatClient : IChatClient
     }
 
     /// <summary>Converts an Extensions function to an OpenAI chat tool.</summary>
-    internal static ChatTool ToOpenAIChatTool(AIFunction aiFunction)
+    internal static ChatTool ToOpenAIChatTool(AIFunction aiFunction, ChatOptions? options = null)
     {
-        (BinaryData parameters, bool? strict) = OpenAIClientExtensions.ToOpenAIFunctionParameters(aiFunction);
+        bool? strict =
+            OpenAIClientExtensions.HasStrict(aiFunction.AdditionalProperties) ??
+            OpenAIClientExtensions.HasStrict(options?.AdditionalProperties);
 
-        return ChatTool.CreateFunctionTool(aiFunction.Name, aiFunction.Description, parameters, strict);
+        return ChatTool.CreateFunctionTool(
+            aiFunction.Name,
+            aiFunction.Description,
+            OpenAIClientExtensions.ToOpenAIFunctionParameters(aiFunction, strict),
+            strict);
     }
 
     /// <summary>Converts an Extensions chat message enumerable to an OpenAI chat message enumerable.</summary>
-    private static IEnumerable<OpenAI.Chat.ChatMessage> ToOpenAIChatMessages(IEnumerable<ChatMessage> inputs, ChatOptions? chatOptions, JsonSerializerOptions jsonOptions)
+    internal static IEnumerable<OpenAI.Chat.ChatMessage> ToOpenAIChatMessages(IEnumerable<ChatMessage> inputs, ChatOptions? chatOptions)
     {
         // Maps all of the M.E.AI types to the corresponding OpenAI types.
         // Unrecognized or non-processable content is ignored.
@@ -142,7 +149,7 @@ internal sealed class OpenAIChatClient : IChatClient
                         {
                             try
                             {
-                                result = JsonSerializer.Serialize(resultContent.Result, jsonOptions.GetTypeInfo(typeof(object)));
+                                result = JsonSerializer.Serialize(resultContent.Result, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(object)));
                             }
                             catch (NotSupportedException)
                             {
@@ -170,7 +177,7 @@ internal sealed class OpenAIChatClient : IChatClient
                         case FunctionCallContent fc:
                             (toolCalls ??= []).Add(
                                 ChatToolCall.CreateFunctionToolCall(fc.CallId, fc.Name, new(JsonSerializer.SerializeToUtf8Bytes(
-                                    fc.Arguments, jsonOptions.GetTypeInfo(typeof(IDictionary<string, object?>))))));
+                                    fc.Arguments, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object?>))))));
                             break;
 
                         default:
@@ -258,7 +265,7 @@ internal sealed class OpenAIChatClient : IChatClient
                 break;
 
             case DataContent dataContent when dataContent.MediaType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase):
-                return ChatMessageContentPart.CreateFilePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, $"{Guid.NewGuid():N}.pdf");
+                return ChatMessageContentPart.CreateFilePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, dataContent.Name ?? $"{Guid.NewGuid():N}.pdf");
 
             case AIContent when content.RawRepresentation is ChatMessageContentPart rawContentPart:
                 return rawContentPart;
@@ -284,7 +291,8 @@ internal sealed class OpenAIChatClient : IChatClient
 
     private static async IAsyncEnumerable<ChatResponseUpdate> FromOpenAIStreamingChatCompletionAsync(
         IAsyncEnumerable<StreamingChatCompletionUpdate> updates,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        ChatCompletionOptions? options,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         Dictionary<int, FunctionCallInfo>? functionCallInfos = null;
         ChatRole? streamedRole = null;
@@ -328,6 +336,14 @@ internal sealed class OpenAIChatClient : IChatClient
                 }
             }
 
+            if (update.OutputAudioUpdate is { } audioUpdate)
+            {
+                responseUpdate.Contents.Add(new DataContent(audioUpdate.AudioBytesUpdate.ToMemory(), GetOutputAudioMimeType(options))
+                {
+                    RawRepresentation = audioUpdate,
+                });
+            }
+
             // Transfer over refusal updates.
             if (update.RefusalUpdate is not null)
             {
@@ -357,8 +373,10 @@ internal sealed class OpenAIChatClient : IChatClient
             // Transfer over usage updates.
             if (update.Usage is ChatTokenUsage tokenUsage)
             {
-                var usageDetails = FromOpenAIUsage(tokenUsage);
-                responseUpdate.Contents.Add(new UsageContent(usageDetails));
+                responseUpdate.Contents.Add(new UsageContent(FromOpenAIUsage(tokenUsage))
+                {
+                    RawRepresentation = tokenUsage,
+                });
             }
 
             // Now yield the item.
@@ -402,7 +420,18 @@ internal sealed class OpenAIChatClient : IChatClient
         }
     }
 
-    private static ChatResponse FromOpenAIChatCompletion(ChatCompletion openAICompletion, ChatOptions? options, ChatCompletionOptions chatCompletionOptions)
+    private static string GetOutputAudioMimeType(ChatCompletionOptions? options) =>
+        options?.AudioOptions?.OutputAudioFormat.ToString()?.ToLowerInvariant() switch
+        {
+            "opus" => "audio/opus",
+            "aac" => "audio/aac",
+            "flac" => "audio/flac",
+            "wav" => "audio/wav",
+            "pcm" => "audio/pcm",
+            "mp3" or _ => "audio/mpeg",
+        };
+
+    internal static ChatResponse FromOpenAIChatCompletion(ChatCompletion openAICompletion, ChatCompletionOptions? chatCompletionOptions)
     {
         _ = Throw.IfNull(openAICompletion);
 
@@ -426,33 +455,21 @@ internal sealed class OpenAIChatClient : IChatClient
         // Output audio is handled separately from message content parts.
         if (openAICompletion.OutputAudio is ChatOutputAudio audio)
         {
-            string mimeType = chatCompletionOptions?.AudioOptions?.OutputAudioFormat.ToString()?.ToLowerInvariant() switch
+            returnMessage.Contents.Add(new DataContent(audio.AudioBytes.ToMemory(), GetOutputAudioMimeType(chatCompletionOptions))
             {
-                "opus" => "audio/opus",
-                "aac" => "audio/aac",
-                "flac" => "audio/flac",
-                "wav" => "audio/wav",
-                "pcm" => "audio/pcm",
-                "mp3" or _ => "audio/mpeg",
-            };
-
-            var dc = new DataContent(audio.AudioBytes.ToMemory(), mimeType);
-
-            returnMessage.Contents.Add(dc);
+                RawRepresentation = audio,
+            });
         }
 
         // Also manufacture function calling content items from any tool calls in the response.
-        if (options?.Tools is { Count: > 0 })
+        foreach (ChatToolCall toolCall in openAICompletion.ToolCalls)
         {
-            foreach (ChatToolCall toolCall in openAICompletion.ToolCalls)
+            if (!string.IsNullOrWhiteSpace(toolCall.FunctionName))
             {
-                if (!string.IsNullOrWhiteSpace(toolCall.FunctionName))
-                {
-                    var callContent = ParseCallContentFromBinaryData(toolCall.FunctionArguments, toolCall.Id, toolCall.FunctionName);
-                    callContent.RawRepresentation = toolCall;
+                var callContent = ParseCallContentFromBinaryData(toolCall.FunctionArguments, toolCall.Id, toolCall.FunctionName);
+                callContent.RawRepresentation = toolCall;
 
-                    returnMessage.Contents.Add(callContent);
-                }
+                returnMessage.Contents.Add(callContent);
             }
         }
 
@@ -499,9 +516,7 @@ internal sealed class OpenAIChatClient : IChatClient
         result.PresencePenalty ??= options.PresencePenalty;
         result.Temperature ??= options.Temperature;
         result.AllowParallelToolCalls ??= options.AllowMultipleToolCalls;
-#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
         result.Seed ??= options.Seed;
-#pragma warning restore OPENAI001
 
         if (options.StopSequences is { Count: > 0 } stopSequences)
         {
@@ -517,7 +532,7 @@ internal sealed class OpenAIChatClient : IChatClient
             {
                 if (tool is AIFunction af)
                 {
-                    result.Tools.Add(ToOpenAIChatTool(af));
+                    result.Tools.Add(ToOpenAIChatTool(af, options));
                 }
             }
 
@@ -555,7 +570,8 @@ internal sealed class OpenAIChatClient : IChatClient
                     OpenAI.Chat.ChatResponseFormat.CreateJsonSchemaFormat(
                         jsonFormat.SchemaName ?? "json_schema",
                         BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(jsonSchema, OpenAIJsonContext.Default.JsonElement)),
-                        jsonFormat.SchemaDescription) :
+                        jsonFormat.SchemaDescription,
+                        OpenAIClientExtensions.HasStrict(options.AdditionalProperties)) :
                     OpenAI.Chat.ChatResponseFormat.CreateJsonObjectFormat();
             }
         }

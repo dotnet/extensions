@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -73,6 +75,69 @@ public partial class AIFunctionFactoryTest
             Exception e = await Assert.ThrowsAsync<ArgumentException>(() => f.InvokeAsync().AsTask());
             Assert.Contains("'theParam'", e.Message);
         }
+    }
+
+    [Fact]
+    public async Task Parameters_ToleratesJsonEncodedParameters()
+    {
+        AIFunction func = AIFunctionFactory.Create((int x, int y, int z, int w, int u) => x + y + z + w + u);
+
+        var result = await func.InvokeAsync(new()
+        {
+            ["x"] = "1",
+            ["y"] = JsonNode.Parse("2"),
+            ["z"] = JsonDocument.Parse("3"),
+            ["w"] = JsonDocument.Parse("4").RootElement,
+            ["u"] = 5M, // boxed decimal cannot be cast to int, requires conversion
+        });
+
+        AssertExtensions.EqualFunctionCallResults(15, result);
+    }
+
+    [Theory]
+    [InlineData("   null")]
+    [InlineData("   false   ")]
+    [InlineData("true   ")]
+    [InlineData("42")]
+    [InlineData("0.0")]
+    [InlineData("-1e15")]
+    [InlineData("  \"I am a string!\" ")]
+    [InlineData("  {}")]
+    [InlineData("[]")]
+    [InlineData("// single-line comment\r\nnull")]
+    [InlineData("/* multi-line\r\ncomment */\r\nnull")]
+    public async Task Parameters_ToleratesJsonStringParameters(string jsonStringParam)
+    {
+        JsonSerializerOptions options = new(AIJsonUtilities.DefaultOptions) { ReadCommentHandling = JsonCommentHandling.Skip };
+        AIFunction func = AIFunctionFactory.Create((JsonElement param) => param, serializerOptions: options);
+        JsonElement expectedResult = JsonDocument.Parse(jsonStringParam, new() { CommentHandling = JsonCommentHandling.Skip }).RootElement;
+
+        var result = await func.InvokeAsync(new()
+        {
+            ["param"] = jsonStringParam
+        });
+
+        AssertExtensions.EqualFunctionCallResults(expectedResult, result);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("                 \r\n")]
+    [InlineData("I am a string!")]
+    [InlineData("/* Code snippet */ int main(void) { return 0; }")]
+    [InlineData("let rec Y F x = F (Y F) x")]
+    [InlineData("+3")]
+    public async Task Parameters_ToleratesInvalidJsonStringParameters(string invalidJsonParam)
+    {
+        AIFunction func = AIFunctionFactory.Create((JsonElement param) => param);
+        JsonElement expectedResult = JsonDocument.Parse(JsonSerializer.Serialize(invalidJsonParam, JsonContext.Default.String)).RootElement;
+
+        var result = await func.InvokeAsync(new()
+        {
+            ["param"] = invalidJsonParam
+        });
+
+        AssertExtensions.EqualFunctionCallResults(expectedResult, result);
     }
 
     [Fact]
@@ -210,6 +275,7 @@ public partial class AIFunctionFactoryTest
         Assert.Null(options.SerializerOptions);
         Assert.Null(options.JsonSchemaCreateOptions);
         Assert.Null(options.ConfigureParameterBinding);
+        Assert.False(options.ExcludeResultSchema);
     }
 
     [Fact]
@@ -234,6 +300,21 @@ public partial class AIFunctionFactoryTest
         });
         Assert.NotNull(result);
         Assert.Contains("test42", result.ToString());
+    }
+
+    [Fact]
+    public void AIFunctionFactoryOptions_SupportsSkippingReturnSchema()
+    {
+        AIFunction func = AIFunctionFactory.Create(
+            (string firstParameter, int secondParameter) => firstParameter + secondParameter,
+            new()
+            {
+                ExcludeResultSchema = true,
+            });
+
+        Assert.Contains("firstParameter", func.JsonSchema.ToString());
+        Assert.Contains("secondParameter", func.JsonSchema.ToString());
+        Assert.Null(func.ReturnJsonSchema);
     }
 
     [Fact]
@@ -775,6 +856,71 @@ public partial class AIFunctionFactoryTest
     }
 
     [Fact]
+    public async Task AIFunctionFactory_NullableParameters()
+    {
+        Assert.NotEqual(new StructWithDefaultCtor().Value, default(StructWithDefaultCtor).Value);
+
+        AIFunction f = AIFunctionFactory.Create(
+            (int? limit = null, DateTime? from = null) => Enumerable.Repeat(from ?? default, limit ?? 4).Select(d => d.Year).ToArray(),
+            serializerOptions: JsonContext.Default.Options);
+
+        JsonElement expectedSchema = JsonDocument.Parse("""
+        {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": ["integer", "null"],
+                    "default": null
+                },
+                "from": {
+                    "type": ["string", "null"],
+                    "format": "date-time",
+                    "default": null
+                }
+            }
+        }
+        """).RootElement;
+
+        AssertExtensions.EqualJsonValues(expectedSchema, f.JsonSchema);
+
+        object? result = await f.InvokeAsync();
+        Assert.Contains("[1,1,1,1]", result?.ToString());
+    }
+
+    [Fact]
+    public async Task AIFunctionFactory_NullableParameters_AllowReadingFromString()
+    {
+        JsonSerializerOptions options = new(JsonContext.Default.Options) { NumberHandling = JsonNumberHandling.AllowReadingFromString };
+        Assert.NotEqual(new StructWithDefaultCtor().Value, default(StructWithDefaultCtor).Value);
+
+        AIFunction f = AIFunctionFactory.Create(
+            (int? limit = null, DateTime? from = null) => Enumerable.Repeat(from ?? default, limit ?? 4).Select(d => d.Year).ToArray(),
+            serializerOptions: options);
+
+        JsonElement expectedSchema = JsonDocument.Parse("""
+        {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": ["integer", "null"],
+                    "default": null
+                },
+                "from": {
+                    "type": ["string", "null"],
+                    "format": "date-time",
+                    "default": null
+                }
+            }
+        }
+        """).RootElement;
+
+        AssertExtensions.EqualJsonValues(expectedSchema, f.JsonSchema);
+
+        object? result = await f.InvokeAsync();
+        Assert.Contains("[1,1,1,1]", result?.ToString());
+    }
+
+    [Fact]
     public void AIFunctionFactory_ReturnTypeWithDescriptionAttribute()
     {
         AIFunction f = AIFunctionFactory.Create(Add, serializerOptions: JsonContext.Default.Options);
@@ -879,5 +1025,7 @@ public partial class AIFunctionFactoryTest
     [JsonSerializable(typeof(Guid))]
     [JsonSerializable(typeof(StructWithDefaultCtor))]
     [JsonSerializable(typeof(B))]
+    [JsonSerializable(typeof(int?))]
+    [JsonSerializable(typeof(DateTime?))]
     private partial class JsonContext : JsonSerializerContext;
 }

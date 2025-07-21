@@ -112,22 +112,22 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
         }
     }
 
-    public async ValueTask LogRequestStopAsync(
+    public ValueTask LogRequestStopAsync(
         object? context,
         HttpRequestMessage request,
         HttpResponseMessage response,
         TimeSpan elapsed,
         CancellationToken cancellationToken = default)
-            => await LogResponseAsync(context, request, response, null, elapsed, cancellationToken).ConfigureAwait(false);
+            => LogResponseAsync(context, request, response, null, elapsed, cancellationToken);
 
-    public async ValueTask LogRequestFailedAsync(
+    public ValueTask LogRequestFailedAsync(
         object? context,
         HttpRequestMessage request,
         HttpResponseMessage? response,
         Exception exception,
         TimeSpan elapsed,
         CancellationToken cancellationToken = default)
-            => await LogResponseAsync(context, request, response, exception, elapsed, cancellationToken).ConfigureAwait(false);
+            => LogResponseAsync(context, request, response, exception, elapsed, cancellationToken);
 
     public object? LogRequestStart(HttpRequestMessage request)
         => throw new NotSupportedException(SyncLoggingExceptionMessage);

@@ -7,6 +7,6 @@ public class OpenAISpeechToTextClientIntegrationTests : SpeechToTextClientIntegr
 {
     protected override ISpeechToTextClient? CreateClient()
         => IntegrationTestHelpers.GetOpenAIClient()?
-            .GetAudioClient(TestRunnerConfiguration.Instance["OpenAI:AudioTranscriptionModel"] ?? "whisper-1")
+            .GetAudioClient(TestRunnerConfiguration.Instance["OpenAI:AudioTranscriptionModel"] ?? "gpt-4o-mini-transcribe")
             .AsISpeechToTextClient();
 }

@@ -528,6 +528,10 @@
           "Stage": "Stable"
         },
         {
+          "Member": "System.Func<Microsoft.Extensions.AI.FunctionInvocationContext, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<object?>>? Microsoft.Extensions.AI.FunctionInvokingChatClient.FunctionInvoker { get; set; }",
+          "Stage": "Stable"
+        },
+        {
           "Member": "bool Microsoft.Extensions.AI.FunctionInvokingChatClient.IncludeDetailedErrors { get; set; }",
           "Stage": "Stable"
         },

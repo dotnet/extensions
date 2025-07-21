@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -27,9 +26,8 @@ using OpenAI.Assistants;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Represents an <see cref="IChatClient"/> for an Azure.AI.Agents.Persistent <see cref="AssistantClient"/>.</summary>
-[Experimental("OPENAI001")]
-internal sealed class OpenAIAssistantChatClient : IChatClient
+/// <summary>Represents an <see cref="IChatClient"/> for an OpenAI <see cref="AssistantClient"/>.</summary>
+internal sealed class OpenAIAssistantsChatClient : IChatClient
 {
     /// <summary>The underlying <see cref="AssistantClient" />.</summary>
     private readonly AssistantClient _client;
@@ -46,8 +44,8 @@ internal sealed class OpenAIAssistantChatClient : IChatClient
     /// <summary>List of tools associated with the assistant.</summary>
     private IReadOnlyList<ToolDefinition>? _assistantTools;
 
-    /// <summary>Initializes a new instance of the <see cref="OpenAIAssistantChatClient"/> class for the specified <see cref="AssistantClient"/>.</summary>
-    public OpenAIAssistantChatClient(AssistantClient assistantClient, string assistantId, string? defaultThreadId)
+    /// <summary>Initializes a new instance of the <see cref="OpenAIAssistantsChatClient"/> class for the specified <see cref="AssistantClient"/>.</summary>
+    public OpenAIAssistantsChatClient(AssistantClient assistantClient, string assistantId, string? defaultThreadId)
     {
         _client = Throw.IfNull(assistantClient);
         _assistantId = Throw.IfNullOrWhitespace(assistantId);
@@ -62,6 +60,13 @@ internal sealed class OpenAIAssistantChatClient : IChatClient
             ?.GetValue(assistantClient) as Uri ?? OpenAIClientExtensions.DefaultOpenAIEndpoint;
 
         _metadata = new("openai", providerUrl);
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="OpenAIAssistantsChatClient"/> class for the specified <see cref="AssistantClient"/>.</summary>
+    public OpenAIAssistantsChatClient(AssistantClient assistantClient, Assistant assistant, string? defaultThreadId)
+        : this(assistantClient, Throw.IfNull(assistant).Id, defaultThreadId)
+    {
+        _assistantTools = assistant.Tools;
     }
 
     /// <inheritdoc />
@@ -237,14 +242,16 @@ internal sealed class OpenAIAssistantChatClient : IChatClient
     }
 
     /// <summary>Converts an Extensions function to an OpenAI assistants function tool.</summary>
-    internal static FunctionToolDefinition ToOpenAIAssistantsFunctionToolDefinition(AIFunction aiFunction)
+    internal static FunctionToolDefinition ToOpenAIAssistantsFunctionToolDefinition(AIFunction aiFunction, ChatOptions? options = null)
     {
-        (BinaryData parameters, bool? strict) = OpenAIClientExtensions.ToOpenAIFunctionParameters(aiFunction);
+        bool? strict =
+            OpenAIClientExtensions.HasStrict(aiFunction.AdditionalProperties) ??
+            OpenAIClientExtensions.HasStrict(options?.AdditionalProperties);
 
         return new FunctionToolDefinition(aiFunction.Name)
         {
             Description = aiFunction.Description,
-            Parameters = parameters,
+            Parameters = OpenAIClientExtensions.ToOpenAIFunctionParameters(aiFunction, strict),
             StrictParameterSchemaEnabled = strict,
         };
     }
@@ -296,7 +303,7 @@ internal sealed class OpenAIAssistantChatClient : IChatClient
                     switch (tool)
                     {
                         case AIFunction aiFunction:
-                            runOptions.ToolsOverride.Add(ToOpenAIAssistantsFunctionToolDefinition(aiFunction));
+                            runOptions.ToolsOverride.Add(ToOpenAIAssistantsFunctionToolDefinition(aiFunction, options));
                             break;
 
                         case HostedCodeInterpreterTool:
@@ -342,7 +349,8 @@ internal sealed class OpenAIAssistantChatClient : IChatClient
                         runOptions.ResponseFormat = AssistantResponseFormat.CreateJsonSchemaFormat(
                             jsonFormat.SchemaName,
                             BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(jsonSchema, OpenAIJsonContext.Default.JsonElement)),
-                            jsonFormat.SchemaDescription);
+                            jsonFormat.SchemaDescription,
+                            OpenAIClientExtensions.HasStrict(options.AdditionalProperties));
                         break;
 
                     case ChatResponseFormatJson jsonFormat:
