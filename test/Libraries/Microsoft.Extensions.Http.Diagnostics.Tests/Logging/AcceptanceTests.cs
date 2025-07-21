@@ -702,4 +702,40 @@ public class AcceptanceTests
         state.Should().ContainValue("Request Value");
         state.Should().ContainValue("Request Value 2,Request Value 3");
     }
+
+    [Fact]
+    public async Task AddHttpClientLogging_WithLatencyTelemetry_PopulatesLatencyInfo()
+    {
+        await using var provider = new ServiceCollection()
+             .AddFakeLogging()
+             .AddFakeRedaction()
+             .AddLatencyContext()
+             .AddHttpClient("test")
+             .AddExtendedHttpClientLogging()
+             .Services
+             .AddHttpClientLatencyTelemetry()
+             .BlockRemoteCall()
+             .BuildServiceProvider();
+
+        var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient("test");
+        using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, _unreachableRequestUri);
+
+        _ = await client.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead);
+        var collector = provider.GetFakeLogCollector();
+        var logRecord = collector.GetSnapshot().Single(l => l.Category == LoggingCategory);
+
+        var state = logRecord.StructuredState;
+        state.Should().NotBeNull();
+        
+        // Verify that LatencyInfo is present and not just empty commas
+        var latencyInfo = state.Should().ContainSingle(kvp => kvp.Key == "LatencyInfo").Subject.Value as string;
+        latencyInfo.Should().NotBeNull();
+        latencyInfo.Should().NotBe(",");
+        latencyInfo.Should().NotBe(",,");
+        
+        // LatencyInfo should contain checkpoint names and timing data
+        // The format is: serverName,checkpointNames,checkpointTimings
+        // Since we don't have a server name, it should start with comma but contain checkpoint data
+        latencyInfo.Should().MatchRegex(@"^[^,]*,[^,/]+(\/[^,/]*)*,[0-9.]+(\/[0-9.]*)*$");
+    }
 }

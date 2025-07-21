@@ -97,6 +97,6 @@ public static class HttpClientLoggingHttpClientBuilderExtensions
             .RemoveAllLoggers()
             .AddLogger(
                 serviceProvider => serviceProvider.GetRequiredKeyedService<HttpClientLogger>(builder.Name),
-                wrapHandlersPipeline: true);
+                wrapHandlersPipeline: false);
     }
 }
