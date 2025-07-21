@@ -36,8 +36,10 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         Assert.All(tc.Annotations, a =>
         {
             CitationAnnotation ca = Assert.IsType<CitationAnnotation>(a);
-            Assert.NotNull(ca.StartIndex);
-            Assert.NotNull(ca.EndIndex);
+            TextSpanAnnotatedRegion region = Assert.IsType<TextSpanAnnotatedRegion>(ca.AnnotatedRegion);
+            Assert.NotNull(region);
+            Assert.NotNull(region.StartIndex);
+            Assert.NotNull(region.EndIndex);
             Assert.NotNull(ca.Url);
             Assert.NotNull(ca.Title);
         });

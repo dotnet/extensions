@@ -134,19 +134,15 @@
       ],
       "Properties": [
         {
+          "Member": "Microsoft.Extensions.AI.AnnotatedRegion? Microsoft.Extensions.AI.AIAnnotation.AnnotatedRegion { get; set; }",
+          "Stage": "Stable"
+        },
+        {
           "Member": "Microsoft.Extensions.AI.AdditionalPropertiesDictionary? Microsoft.Extensions.AI.AIAnnotation.AdditionalProperties { get; set; }",
           "Stage": "Stable"
         },
         {
           "Member": "object? Microsoft.Extensions.AI.AIAnnotation.RawRepresentation { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "int? Microsoft.Extensions.AI.AIAnnotation.StartIndex { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "int? Microsoft.Extensions.AI.AIAnnotation.EndIndex { get; set; }",
           "Stage": "Stable"
         }
       ]
@@ -163,6 +159,10 @@
       "Properties": [
         {
           "Member": "Microsoft.Extensions.AI.AdditionalPropertiesDictionary? Microsoft.Extensions.AI.AIContent.AdditionalProperties { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIAnnotation>? Microsoft.Extensions.AI.AIContent.Annotations { get; set; }",
           "Stage": "Stable"
         },
         {
@@ -677,6 +677,16 @@
         },
         {
           "Member": "virtual string Microsoft.Extensions.AI.AITool.Name { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.AnnotatedRegion",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.AnnotatedRegion.AnnotatedRegion();",
           "Stage": "Stable"
         }
       ]
@@ -2304,10 +2314,6 @@
       ],
       "Properties": [
         {
-          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIAnnotation>? Microsoft.Extensions.AI.TextContent.Annotations { get; set; }",
-          "Stage": "Stable"
-        },
-        {
           "Member": "string Microsoft.Extensions.AI.TextContent.Text { get; set; }",
           "Stage": "Stable"
         }
@@ -2329,6 +2335,26 @@
       "Properties": [
         {
           "Member": "string Microsoft.Extensions.AI.TextReasoningContent.Text { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.TextSpanAnnotatedRegion : Microsoft.Extensions.AI.AnnotatedRegion",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.TextSpanAnnotatedRegion.TextSpanAnnotatedRegion();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int? Microsoft.Extensions.AI.TextSpanAnnotatedRegion.StartIndex { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.AI.TextSpanAnnotatedRegion.EndIndex { get; set; }",
           "Stage": "Stable"
         }
       ]

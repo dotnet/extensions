@@ -497,8 +497,11 @@ internal sealed class OpenAIChatClient : IChatClient
                 (annotationContent.Annotations ??= []).Add(new CitationAnnotation
                 {
                     RawRepresentation = annotation,
-                    StartIndex = annotation.StartIndex,
-                    EndIndex = annotation.EndIndex,
+                    AnnotatedRegion = new TextSpanAnnotatedRegion
+                    {
+                        StartIndex = annotation.StartIndex,
+                        EndIndex = annotation.EndIndex,
+                    },
 
                     Title = annotation.WebResourceTitle,
                     Url = annotation.WebResourceUri,

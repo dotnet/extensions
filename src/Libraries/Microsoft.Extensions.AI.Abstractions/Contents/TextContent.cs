@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
@@ -36,11 +35,6 @@ public sealed class TextContent : AIContent
 
     /// <inheritdoc/>
     public override string ToString() => Text;
-
-    /// <summary>
-    /// Gets or sets a list of annotations on this text content.
-    /// </summary>
-    public IList<AIAnnotation>? Annotations { get; set; }
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => $"Text = \"{Text}\"";

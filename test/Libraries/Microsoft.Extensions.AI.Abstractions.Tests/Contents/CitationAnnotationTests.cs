@@ -14,10 +14,9 @@ public class CitationAnnotationTests
     {
         CitationAnnotation a = new();
         Assert.Null(a.AdditionalProperties);
-        Assert.Null(a.EndIndex);
+        Assert.Null(a.AnnotatedRegion);
         Assert.Null(a.RawRepresentation);
         Assert.Null(a.Snippet);
-        Assert.Null(a.StartIndex);
         Assert.Null(a.Title);
         Assert.Null(a.ToolName);
         Assert.Null(a.Url);
@@ -33,22 +32,19 @@ public class CitationAnnotationTests
         a.AdditionalProperties = props;
         Assert.Same(props, a.AdditionalProperties);
 
-        Assert.Null(a.EndIndex);
-        a.EndIndex = 42;
-        Assert.Equal(42, a.EndIndex);
-
         Assert.Null(a.RawRepresentation);
         object raw = new();
         a.RawRepresentation = raw;
         Assert.Same(raw, a.RawRepresentation);
 
+        Assert.Null(a.AnnotatedRegion);
+        TextSpanAnnotatedRegion region = new() { StartIndex = 10, EndIndex = 42 };
+        a.AnnotatedRegion = region;
+        Assert.Same(region, a.AnnotatedRegion);
+
         Assert.Null(a.Snippet);
         a.Snippet = "snippet";
         Assert.Equal("snippet", a.Snippet);
-
-        Assert.Null(a.StartIndex);
-        a.StartIndex = 10;
-        Assert.Equal(10, a.StartIndex);
 
         Assert.Null(a.Title);
         a.Title = "title";
@@ -70,10 +66,13 @@ public class CitationAnnotationTests
         CitationAnnotation original = new()
         {
             AdditionalProperties = new AdditionalPropertiesDictionary { { "key", "value" } },
-            EndIndex = 42,
             RawRepresentation = new object(),
+            AnnotatedRegion = new TextSpanAnnotatedRegion
+            {
+                StartIndex = 10,
+                EndIndex = 42,
+            },
             Snippet = "snippet",
-            StartIndex = 10,
             Title = "title",
             ToolName = "toolName",
             Url = new("https://example.com"),
@@ -89,12 +88,13 @@ public class CitationAnnotationTests
         Assert.Single(deserialized.AdditionalProperties);
         Assert.Equal(JsonSerializer.Deserialize<JsonElement>("\"value\"", AIJsonUtilities.DefaultOptions).ToString(), deserialized.AdditionalProperties["key"]!.ToString());
 
-        Assert.Equal(42, deserialized.EndIndex);
         Assert.Null(deserialized.RawRepresentation);
         Assert.Equal("snippet", deserialized.Snippet);
-        Assert.Equal(10, deserialized.StartIndex);
         Assert.Equal("title", deserialized.Title);
         Assert.Equal("toolName", deserialized.ToolName);
+        TextSpanAnnotatedRegion region = Assert.IsType<TextSpanAnnotatedRegion>(deserialized.AnnotatedRegion);
+        Assert.Equal(10, region.StartIndex);
+        Assert.Equal(42, region.EndIndex);
 
         Assert.NotNull(deserialized.Url);
         Assert.Equal(original.Url, deserialized.Url);

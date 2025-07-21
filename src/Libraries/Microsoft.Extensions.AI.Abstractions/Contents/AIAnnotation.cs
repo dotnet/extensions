@@ -6,10 +6,10 @@ using System.Text.Json.Serialization;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// Represents an annotation on a span of content.
+/// Represents an annotation on content.
 /// </summary>
-[JsonDerivedType(typeof(CitationAnnotation), typeDiscriminator: "citation")]
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
+[JsonDerivedType(typeof(CitationAnnotation), typeDiscriminator: "citation")]
 public class AIAnnotation
 {
     /// <summary>
@@ -19,15 +19,12 @@ public class AIAnnotation
     {
     }
 
-    /// <summary>
-    /// Gets or sets the start character index (inclusive) of the annotated span in the <see cref="AIContent"/>.
-    /// </summary>
-    public int? StartIndex { get; set; }
-
-    /// <summary>
-    /// Gets or sets the end character index (exclusive) of the annotated span in the <see cref="AIContent"/>.
-    /// </summary>
-    public int? EndIndex { get; set; }
+    /// <summary>Gets or sets the target region for the annotation, pointing to where in the associated <see cref="AIContent"/> this annotation applies.</summary>
+    /// <remarks>
+    /// The most common form of <see cref="AnnotatedRegion"/> is <see cref="TextSpanAnnotatedRegion"/>, which provides starting and ending character indices
+    /// for <see cref="TextContent"/>.
+    /// </remarks>
+    public AnnotatedRegion? AnnotatedRegion { get; set; }
 
     /// <summary>Gets or sets the raw representation of the annotation from an underlying implementation.</summary>
     /// <remarks>
