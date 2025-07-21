@@ -22,7 +22,7 @@ public static class MicrosoftExtensionsAIResponsesExtensions
     /// <param name="messages">The input messages to convert.</param>
     /// <returns>A sequence of OpenAI response items.</returns>
     public static IEnumerable<ResponseItem> AsOpenAIResponseItems(this IEnumerable<ChatMessage> messages) =>
-        OpenAIResponsesChatClient.ToOpenAIResponseItems(Throw.IfNull(messages));
+        OpenAIResponsesChatClient.ToInputResponseItems(Throw.IfNull(messages));
 
     /// <summary>Creates a Microsoft.Extensions.AI <see cref="ChatResponse"/> from an <see cref="OpenAIResponse"/>.</summary>
     /// <param name="response">The <see cref="OpenAIResponse"/> to convert to a <see cref="ChatResponse"/>.</param>
