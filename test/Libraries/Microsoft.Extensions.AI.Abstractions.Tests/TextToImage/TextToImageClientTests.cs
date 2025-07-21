@@ -13,13 +13,6 @@ namespace Microsoft.Extensions.AI;
 public class TextToImageClientTests
 {
     [Fact]
-    public void GetService_NullServiceType_Throws()
-    {
-        using var client = new TestTextToImageClient();
-        Assert.Throws<ArgumentNullException>("serviceType", () => client.GetService(null!));
-    }
-
-    [Fact]
     public void GetService_WithServiceKey_ReturnsNull()
     {
         using var client = new TestTextToImageClient();

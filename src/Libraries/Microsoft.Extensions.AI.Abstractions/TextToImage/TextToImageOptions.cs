@@ -26,9 +26,11 @@ public class TextToImageOptions
     public float? GuidanceScale { get; set; }
 
     /// <summary>
-    /// Gets or sets the size of the generated image.  If a provider only supports fixed sizes the closest supported size will be used.
+    /// Gets or sets the size of the generated image.
+    /// If a provider only supports fixed sizes the closest supported size will be used.
+    /// A value of default(Size) indicates the default for the provider should be used.
     /// </summary>
-    public Size ImageSize { get; set; } = new Size(512, 512);
+    public Size ImageSize { get; set; }
 
     /// <summary>
     /// Gets or sets the model ID to use for image generation.  Not supported by all providers.

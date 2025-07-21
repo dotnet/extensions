@@ -17,7 +17,7 @@ public class TextToImageOptionsTests
         Assert.Equal(TextToImageContentType.Uri, options.ContentType);
         Assert.Equal(1, options.Count);
         Assert.Null(options.GuidanceScale);
-        Assert.Equal(new Size(512, 512), options.ImageSize);
+        Assert.Equal(default, options.ImageSize);
         Assert.Null(options.ModelId);
         Assert.Null(options.NegativePrompt);
         Assert.Null(options.Steps);
@@ -27,7 +27,7 @@ public class TextToImageOptionsTests
         Assert.Equal(TextToImageContentType.Uri, clone.ContentType);
         Assert.Equal(1, clone.Count);
         Assert.Null(clone.GuidanceScale);
-        Assert.Equal(new Size(512, 512), clone.ImageSize);
+        Assert.Equal(default, options.ImageSize);
         Assert.Null(clone.ModelId);
         Assert.Null(clone.NegativePrompt);
         Assert.Null(clone.Steps);

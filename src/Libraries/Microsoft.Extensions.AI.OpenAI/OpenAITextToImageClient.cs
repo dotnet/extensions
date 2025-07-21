@@ -53,10 +53,10 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
         _metadata = new("openai", providerUrl, _defaultModelId);
     }
 
-    /// <summary>Initializes a new instance of the <see cref="OpenAITextToImageClient"/> class for the specified <see cref="OpenAIClient"/> and model.  
+    /// <summary>Initializes a new instance of the <see cref="OpenAITextToImageClient"/> class for the specified <see cref="OpenAIClient"/> and model.
     /// Use this constructor if you wish you support changing the model with <see cref="TextToImageOptions.ModelId"/>.</summary>
     /// <param name="openAIClient">The underlying OpenAI client.</param>
-    /// <param name="model">The default model to use for image generation.</param>  
+    /// <param name="model">The default model to use for image generation.</param>
     public OpenAITextToImageClient(OpenAIClient openAIClient, string model)
         : this(Throw.IfNull(openAIClient).GetImageClient(model))
     {
@@ -113,12 +113,6 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
         // Nothing to dispose. Implementation required for the ITextToImageClient interface.
     }
 
-    /// <summary>Converts a <see cref="Size"/> to a <see cref="GeneratedImageSize"/>.</summary>
-    private static GeneratedImageSize? ToOpenAIImageSize(Size size)
-    {
-        return new GeneratedImageSize(size.Width, size.Height);
-    }
-
     /// <summary>Converts a <see cref="GeneratedImageCollection"/> to a <see cref="TextToImageResponse"/>.</summary>
     private static TextToImageResponse ToTextToImageResponse(GeneratedImageCollection generatedImages, TextToImageOptions options)
     {
@@ -165,7 +159,7 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
 
         result = new ImageGenerationOptions
         {
-            Size = ToOpenAIImageSize(options.ImageSize),
+            Size = ToOpenAIImageSize(options.ImageSize, options.ModelId),
             ResponseFormat = options.ContentType == TextToImageContentType.Uri ? GeneratedImageFormat.Uri : GeneratedImageFormat.Bytes,
             Quality = GeneratedImageQuality.Standard // Default quality
         };
@@ -183,10 +177,76 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
 
         result = new ImageEditOptions
         {
-            Size = ToOpenAIImageSize(options.ImageSize),
+            Size = ToOpenAIImageSize(options.ImageSize, options.ModelId),
             ResponseFormat = options.ContentType == TextToImageContentType.Uri ? GeneratedImageFormat.Uri : GeneratedImageFormat.Bytes
         };
 
         return result;
+    }
+
+    /// <summary>
+    /// Converts a <see cref="Size"/> to an OpenAI <see cref="GeneratedImageSize"/>.
+    /// </summary>
+    /// <param name="requestedSize">User's requested size.</param>
+    /// <param name="modelId">Model to consider for supported sizes.</param>
+    /// <returns>Closest supported size.</returns>
+    private GeneratedImageSize? ToOpenAIImageSize(Size requestedSize, string? modelId = null)
+    {
+        modelId ??= _defaultModelId;
+
+        // from https://platform.openai.com/docs/api-reference/images
+        // The size of the generated images.
+        // Must be one of 1024x1024, 1536x1024 (landscape), 1024x1536 (portrait), or auto (default value) for gpt-image-1,
+        // one of 256x256, 512x512, or 1024x1024 for dall-e-2,
+        // and one of 1024x1024, 1792x1024, or 1024x1792 for dall-e-3.
+#pragma warning disable S109 // Magic numbers should not be used
+        return modelId switch
+        {
+            "gpt-image-1" => GetClosestImageSize(
+            [
+                (GeneratedImageSize.W1024xH1024, 1024 * 1024),
+                (GeneratedImageSize.W1536xH1024, 1536 * 1024),
+                (GeneratedImageSize.W1024xH1536, 1024 * 1536)
+            ]),
+            "dall-e-2" => GetClosestImageSize(
+            [
+                (GeneratedImageSize.W256xH256, 256 * 256),
+                (GeneratedImageSize.W512xH512, 512 * 512),
+                (GeneratedImageSize.W1024xH1024, 1024 * 1024)
+            ]),
+            "dall-e-3" => GetClosestImageSize(
+            [
+                (GeneratedImageSize.W1024xH1024, 1024 * 1024),
+                (GeneratedImageSize.W1792xH1024, 1792 * 1024),
+                (GeneratedImageSize.W1024xH1792, 1024 * 1792)
+            ]),
+            _ => null // No default size for other models
+        };
+#pragma warning restore S109 // Magic numbers should not be used
+
+        GeneratedImageSize? GetClosestImageSize(ReadOnlySpan<(GeneratedImageSize size, double area)> supportedSizes)
+        {
+            if (requestedSize == default)
+            {
+                return null;
+            }
+
+            double requestedArea = requestedSize.Width * requestedSize.Height;
+
+            GeneratedImageSize? closestSize = null;
+            double closestArea = double.MaxValue;
+
+            foreach (var supportedSize in supportedSizes)
+            {
+                double area = Math.Abs(supportedSize.area - requestedArea);
+                if (area < closestArea)
+                {
+                    closestArea = area;
+                    closestSize = supportedSize.size;
+                }
+            }
+
+            return closestSize;
+        }
     }
 }
