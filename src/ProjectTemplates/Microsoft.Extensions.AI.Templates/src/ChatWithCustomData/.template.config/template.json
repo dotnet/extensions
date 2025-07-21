@@ -30,7 +30,7 @@
       "path": "./ChatWithCustomData-CSharp.csproj"
     },
     {
-      "condition": "(IsAspire && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\"))",
+      "condition": "(IsAspire && HostIdentifier != \"vs\")",
       "path": "./ChatWithCustomData-CSharp.sln"
     },
     {
