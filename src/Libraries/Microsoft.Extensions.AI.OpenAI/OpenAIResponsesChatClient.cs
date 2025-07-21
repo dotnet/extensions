@@ -72,7 +72,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         _ = Throw.IfNull(messages);
 
         // Convert the inputs into what OpenAIResponseClient expects.
-        var openAIResponseItems = ToOpenAIResponseItems(messages);
+        var openAIResponseItems = ToOpenAIResponseItems(messages, options);
         var openAIOptions = ToOpenAIResponseCreationOptions(options);
 
         // Make the call to the OpenAIResponseClient.
@@ -174,16 +174,22 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-        IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(messages);
 
-        // Convert the inputs into what OpenAIResponseClient expects.
-        var openAIResponseItems = ToOpenAIResponseItems(messages);
+        var openAIResponseItems = ToOpenAIResponseItems(messages, options);
         var openAIOptions = ToOpenAIResponseCreationOptions(options);
 
-        // Make the call to the OpenAIResponseClient and process the streaming results.
+        var streamingUpdates = _responseClient.CreateResponseStreamingAsync(openAIResponseItems, openAIOptions, cancellationToken);
+
+        return FromOpenAIStreamingResponseUpdatesAsync(streamingUpdates, openAIOptions, cancellationToken);
+    }
+
+    internal static async IAsyncEnumerable<ChatResponseUpdate> FromOpenAIStreamingResponseUpdatesAsync(
+        IAsyncEnumerable<StreamingResponseUpdate> streamingResponseUpdates, ResponseCreationOptions? options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
         DateTimeOffset? createdAt = null;
         string? responseId = null;
         string? conversationId = null;
@@ -192,14 +198,15 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         ChatRole? lastRole = null;
         Dictionary<int, MessageResponseItem> outputIndexToMessages = [];
         Dictionary<int, FunctionCallInfo>? functionCallInfos = null;
-        await foreach (var streamingUpdate in _responseClient.CreateResponseStreamingAsync(openAIResponseItems, openAIOptions, cancellationToken).ConfigureAwait(false))
+
+        await foreach (var streamingUpdate in streamingResponseUpdates.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
             switch (streamingUpdate)
             {
                 case StreamingResponseCreatedUpdate createdUpdate:
                     createdAt = createdUpdate.Response.CreatedAt;
                     responseId = createdUpdate.Response.Id;
-                    conversationId = openAIOptions.StoredOutputEnabled is false ? null : responseId;
+                    conversationId = options?.StoredOutputEnabled is false ? null : responseId;
                     modelId = createdUpdate.Response.Model;
                     goto default;
 
@@ -485,8 +492,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     }
 
     /// <summary>Convert a sequence of <see cref="ChatMessage"/>s to <see cref="ResponseItem"/>s.</summary>
-    internal static IEnumerable<ResponseItem> ToOpenAIResponseItems(IEnumerable<ChatMessage> inputs)
+    internal static IEnumerable<ResponseItem> ToOpenAIResponseItems(IEnumerable<ChatMessage> inputs, ChatOptions? options)
     {
+        _ = options; // currently unused
+
         foreach (ChatMessage input in inputs)
         {
             if (input.Role == ChatRole.System ||

@@ -6,12 +6,13 @@ using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Shared.Diagnostics;
-
-#pragma warning disable S103 // Lines should not be too long
 
 namespace OpenAI.Chat;
 
@@ -27,10 +28,10 @@ public static class MicrosoftExtensionsAIChatExtensions
 
     /// <summary>Creates a sequence of OpenAI <see cref="ChatMessage"/> instances from the specified input messages.</summary>
     /// <param name="messages">The input messages to convert.</param>
+    /// <param name="options">The options employed while processing <paramref name="messages"/>.</param>
     /// <returns>A sequence of OpenAI chat messages.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="messages"/> is <see langword="null"/>.</exception>
-    public static IEnumerable<ChatMessage> AsOpenAIChatMessages(this IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages) =>
-        OpenAIChatClient.ToOpenAIChatMessages(Throw.IfNull(messages), chatOptions: null);
+    public static IEnumerable<ChatMessage> AsOpenAIChatMessages(this IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, ChatOptions? options = null) =>
+        OpenAIChatClient.ToOpenAIChatMessages(Throw.IfNull(messages), options);
 
     /// <summary>Creates an OpenAI <see cref="ChatCompletion"/> from a <see cref="ChatResponse"/>.</summary>
     /// <param name="response">The <see cref="ChatResponse"/> to convert to a <see cref="ChatCompletion"/>.</param>
@@ -47,24 +48,9 @@ public static class MicrosoftExtensionsAIChatExtensions
 
         var lastMessage = response.Messages.LastOrDefault();
 
-        ChatMessageRole role = lastMessage?.Role.Value switch
-        {
-            "user" => ChatMessageRole.User,
-            "function" => ChatMessageRole.Function,
-            "tool" => ChatMessageRole.Tool,
-            "developer" => ChatMessageRole.Developer,
-            "system" => ChatMessageRole.System,
-            _ => ChatMessageRole.Assistant,
-        };
+        ChatMessageRole role = ToChatMessageRole(lastMessage?.Role);
 
-        ChatFinishReason finishReason = response.FinishReason?.Value switch
-        {
-            "length" => ChatFinishReason.Length,
-            "content_filter" => ChatFinishReason.ContentFilter,
-            "tool_calls" => ChatFinishReason.ToolCalls,
-            "function_call" => ChatFinishReason.FunctionCall,
-            _ => ChatFinishReason.Stop,
-        };
+        ChatFinishReason finishReason = ToChatFinishReason(response.FinishReason);
 
         ChatTokenUsage usage = OpenAIChatModelFactory.ChatTokenUsage(
             (int?)response.Usage?.OutputTokenCount ?? 0,
@@ -121,6 +107,52 @@ public static class MicrosoftExtensionsAIChatExtensions
                     }
                 }
             }
+        }
+    }
+
+    /// <summary>
+    /// Creates a sequence of OpenAI <see cref="StreamingChatCompletionUpdate"/> instances from the specified
+    /// sequence of <see cref="ChatResponseUpdate"/> instances.
+    /// </summary>
+    /// <param name="responseUpdates">The update instances.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A sequence of converted <see cref="ChatResponseUpdate"/> instances.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="responseUpdates"/> is <see langword="null"/>.</exception>
+    public static async IAsyncEnumerable<StreamingChatCompletionUpdate> AsOpenAIStreamingChatCompletionUpdatesAsync(
+        this IAsyncEnumerable<ChatResponseUpdate> responseUpdates, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        _ = Throw.IfNull(responseUpdates);
+
+        await foreach (var update in responseUpdates.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            if (update.RawRepresentation is StreamingChatCompletionUpdate streamingUpdate)
+            {
+                yield return streamingUpdate;
+                continue;
+            }
+
+            var usage = update.Contents.FirstOrDefault(c => c is UsageContent) is UsageContent usageContent ?
+                OpenAIChatModelFactory.ChatTokenUsage(
+                    (int?)usageContent.Details.OutputTokenCount ?? 0,
+                    (int?)usageContent.Details.InputTokenCount ?? 0,
+                    (int?)usageContent.Details.TotalTokenCount ?? 0) :
+                null;
+
+            var toolCallUpdates = update.Contents.OfType<FunctionCallContent>().Select((fcc, index) =>
+                OpenAIChatModelFactory.StreamingChatToolCallUpdate(
+                    index, fcc.CallId, ChatToolCallKind.Function, fcc.Name,
+                    new(JsonSerializer.SerializeToUtf8Bytes(fcc.Arguments, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object?>))))))
+                .ToList();
+
+            yield return OpenAIChatModelFactory.StreamingChatCompletionUpdate(
+                update.ResponseId,
+                new(OpenAIChatClient.ToOpenAIChatContent(update.Contents)),
+                toolCallUpdates: toolCallUpdates,
+                role: ToChatMessageRole(update.Role),
+                finishReason: ToChatFinishReason(update.FinishReason),
+                createdAt: update.CreatedAt ?? default,
+                model: update.ModelId,
+                usage: usage);
         }
     }
 
@@ -205,4 +237,40 @@ public static class MicrosoftExtensionsAIChatExtensions
     /// <exception cref="ArgumentNullException"><paramref name="chatCompletion"/> is <see langword="null"/>.</exception>
     public static ChatResponse AsChatResponse(this ChatCompletion chatCompletion, ChatCompletionOptions? options = null) =>
         OpenAIChatClient.FromOpenAIChatCompletion(Throw.IfNull(chatCompletion), options);
+
+    /// <summary>
+    /// Creates a sequence of Microsoft.Extensions.AI <see cref="ChatResponseUpdate"/> instances from the specified
+    /// sequence of OpenAI <see cref="StreamingChatCompletionUpdate"/> instances.
+    /// </summary>
+    /// <param name="chatCompletionUpdates">The update instances.</param>
+    /// <param name="options">The options employed in the creation of the response.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A sequence of converted <see cref="ChatResponseUpdate"/> instances.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="chatCompletionUpdates"/> is <see langword="null"/>.</exception>
+    public static IAsyncEnumerable<ChatResponseUpdate> AsChatResponseUpdatesAsync(
+        this IAsyncEnumerable<StreamingChatCompletionUpdate> chatCompletionUpdates, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default) =>
+        OpenAIChatClient.FromOpenAIStreamingChatCompletionAsync(Throw.IfNull(chatCompletionUpdates), options, cancellationToken);
+
+    /// <summary>Converts the <see cref="ChatRole"/> to a <see cref="ChatMessageRole"/>.</summary>
+    private static ChatMessageRole ToChatMessageRole(ChatRole? role) =>
+        role?.Value switch
+        {
+            "user" => ChatMessageRole.User,
+            "function" => ChatMessageRole.Function,
+            "tool" => ChatMessageRole.Tool,
+            "developer" => ChatMessageRole.Developer,
+            "system" => ChatMessageRole.System,
+            _ => ChatMessageRole.Assistant,
+        };
+
+    /// <summary>Converts the <see cref="Microsoft.Extensions.AI.ChatFinishReason"/> to a <see cref="ChatFinishReason"/>.</summary>
+    private static ChatFinishReason ToChatFinishReason(Microsoft.Extensions.AI.ChatFinishReason? finishReason) =>
+        finishReason?.Value switch
+        {
+            "length" => ChatFinishReason.Length,
+            "content_filter" => ChatFinishReason.ContentFilter,
+            "tool_calls" => ChatFinishReason.ToolCalls,
+            "function_call" => ChatFinishReason.FunctionCall,
+            _ => ChatFinishReason.Stop,
+        };
 }
