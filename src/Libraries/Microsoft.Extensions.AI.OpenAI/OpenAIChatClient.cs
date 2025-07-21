@@ -289,7 +289,7 @@ internal sealed class OpenAIChatClient : IChatClient
         return null;
     }
 
-    private static async IAsyncEnumerable<ChatResponseUpdate> FromOpenAIStreamingChatCompletionAsync(
+    internal static async IAsyncEnumerable<ChatResponseUpdate> FromOpenAIStreamingChatCompletionAsync(
         IAsyncEnumerable<StreamingChatCompletionUpdate> updates,
         ChatCompletionOptions? options,
         [EnumeratorCancellation] CancellationToken cancellationToken)
