@@ -45,7 +45,7 @@ public static class HttpClientLoggingServiceCollectionExtensions
             static httpClientBuilder =>
                 httpClientBuilder
                     .RemoveAllLoggers()
-                    .AddLogger<HttpClientLogger>(wrapHandlersPipeline: true));
+                    .AddLogger<HttpClientLogger>(wrapHandlersPipeline: false));
     }
 
     /// <summary>
