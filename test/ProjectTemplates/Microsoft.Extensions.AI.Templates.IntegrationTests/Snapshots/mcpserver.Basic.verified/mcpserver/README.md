@@ -16,7 +16,7 @@ Please note that this template is currently in an early preview stage. If you ha
 
 The `bin/Release` directory will contain the package files (*.nupkg), which can be [published to NuGet.org](https://learn.microsoft.com/nuget/nuget-org/publish-a-package).
 
-One .nupkg will be produced for each runtime identifer you selected in the `<RuntimeIdentifiers>` property in the .csproj, plus a "root" .nupkg containing pointers to the others. For more information about runtime identifiers in .NET, see the [.NET RID catalog](https://learn.microsoft.com/dotnet/core/rid-catalog).
+One .nupkg will be produced for each runtime identifier you selected in the `<RuntimeIdentifiers>` property in the .csproj, plus a "root" .nupkg containing pointers to the others. For more information about runtime identifiers in .NET, see the [.NET RID catalog](https://learn.microsoft.com/dotnet/core/rid-catalog).
 
 ## Developing locally
 
