@@ -37,7 +37,7 @@
     <!-- https://learn.microsoft.com/dotnet/fundamentals/package-validation/overview -->
     <EnablePackageValidation>true</EnablePackageValidation>
 
-    <PackageValidationBaselineVersion Condition=" '$(Stage)' == 'normal' ">$(ApiCompatBaselineVersion)</PackageValidationBaselineVersion> 
+    <PackageValidationBaselineVersion Condition=" '$(Stage)' == 'normal' ">9.7.0</PackageValidationBaselineVersion> 
   </PropertyGroup>
 
   <!-- Verify that the minimum supported TFM is actually used. -->
