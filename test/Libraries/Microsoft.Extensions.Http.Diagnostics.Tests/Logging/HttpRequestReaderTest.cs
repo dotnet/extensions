@@ -884,10 +884,10 @@ public class HttpRequestReaderTest
 
         // Assert: query parameter is redacted in the full URI
         logRecord.FullUri.Should().NotBeNull();
-        logRecord.FullUri!.ToString().Should().Contain($"{queryParamName}={redactedValue}");
-        logRecord.FullUri!.ToString().Should().NotContain($"{queryParamName}={queryParamValue}");
-        logRecord.FullUri!.ToString().Should().Contain($"/api/orders/{redactedValue}/details");
-        logRecord.FullUri!.ToString().Should().NotContain($"/api/orders/{pathParamValue}/details");
+        logRecord.FullUri!.Should().Contain($"{queryParamName}={redactedValue}");
+        logRecord.FullUri!.Should().NotContain($"{queryParamName}={queryParamValue}");
+        logRecord.FullUri!.Should().Contain($"/api/orders/{redactedValue}/details");
+        logRecord.FullUri!.Should().NotContain($"/api/orders/{pathParamValue}/details");
     }
 
     private static ServiceProvider GetServiceProvider(

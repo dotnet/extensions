@@ -62,11 +62,11 @@ internal static class LoggerMessageStateExtensions
     /// Represents an index to be used when writing tags into <paramref name="state"/>.
     /// <para>This parameter will be mutated to point to the next <paramref name="state"/> item.</para>
     /// </param>
-    public static void AddFullUrl(this LoggerMessageState state, Uri? fullUri, ref int index)
+    public static void AddFullUrl(this LoggerMessageState state, string? fullUri, ref int index)
     {
         if (fullUri is not null)
         {
-            state.TagArray[index++] = new("url.full", fullUri.ToString());
+            state.TagArray[index++] = new("url.full", fullUri);
         }
     }
 

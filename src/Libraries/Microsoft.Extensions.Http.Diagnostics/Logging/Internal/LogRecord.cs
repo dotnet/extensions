@@ -84,7 +84,7 @@ internal sealed class LogRecord : IResettable
     /// <summary>
     /// Gets or sets full request URI.
     /// </summary>
-    public Uri? FullUri { get; set; }
+    public string? FullUri { get; set; }
 
     public bool TryReset()
     {

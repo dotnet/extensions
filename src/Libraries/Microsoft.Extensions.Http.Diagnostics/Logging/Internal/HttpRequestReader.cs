@@ -5,8 +5,8 @@ using System;
 using System.Buffers;
 using System.Collections.Frozen;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Compliance.Classification;
@@ -144,23 +144,22 @@ internal sealed class HttpRequestReader : IHttpRequestReader
 
         logRecord.QueryParameters = GetQueryParameters(request);
 
-        // Build redacted query string
-        var redactedQueryString = string.Join("&", logRecord.QueryParameters.Select(kvp => $"{kvp.Key}={kvp.Value}"));
-
-        // Build full URI with redacted query string
-        if (request.RequestUri != null && logRecord.QueryParameters.Length > 0)
+        var sb = new StringBuilder();
+        foreach (var kvp in logRecord.QueryParameters)
         {
-            var uriBuilder = new UriBuilder(request.RequestUri)
+            if (sb.Length > 0)
             {
-                Path = logRecord.Path,
-                Query = redactedQueryString
-            };
-            logRecord.FullUri = uriBuilder.Uri;
+                _ = sb.Append('&');
+            }
+
+            _ = sb.Append(kvp.Key).Append('=').Append(kvp.Value);
         }
-        else
-        {
-            logRecord.FullUri = null;
-        }
+
+        var queryString = sb.ToString();
+
+        logRecord.FullUri = string.IsNullOrEmpty(queryString)
+            ? null
+            : $"{logRecord.Host}/{logRecord.Path}?{queryString}";
     }
 
     private static string UnescapeDataString(ReadOnlySpan<char> value)
