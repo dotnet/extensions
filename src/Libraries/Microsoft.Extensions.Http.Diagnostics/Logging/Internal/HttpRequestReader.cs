@@ -183,7 +183,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
 
     private KeyValuePair<string, string>[] ExtractAndRedactQueryParameters(string query)
     {
-        var result = _queryParamListPool.Get();
+        List<KeyValuePair<string, string>> result = _queryParamListPool.Get();
         try
         {
             ReadOnlySpan<char> querySpan = query.AsSpan();
@@ -213,9 +213,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
                     // Only process if the key is in the classification dictionary and value is not empty
                     if (!string.IsNullOrEmpty(value) && _queryParameterDataClasses.TryGetValue(key, out var classification))
                     {
-                        string redacted = _httpHeadersReader != null
-                            ? _httpHeadersReader.RedactValue(value, classification)
-                            : value;
+                        string redacted = _httpHeadersReader.RedactValue(value, classification);
                         result.Add(new KeyValuePair<string, string>(key, redacted));
                     }
                 }
