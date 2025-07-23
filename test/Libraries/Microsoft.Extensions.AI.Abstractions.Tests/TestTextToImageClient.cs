@@ -8,15 +8,25 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.AI;
 
-internal sealed class TestTextToImageClient : ITextToImageClient
+public sealed class TestTextToImageClient : ITextToImageClient
 {
+    public TestTextToImageClient()
+    {
+        GetServiceCallback = DefaultGetServiceCallback;
+    }
+
+    public IServiceProvider? Services { get; set; }
+
     public Func<string, TextToImageOptions?, CancellationToken, Task<TextToImageResponse>>? GenerateImagesAsyncCallback { get; set; }
 
     public Func<Stream, string, string, TextToImageOptions?, CancellationToken, Task<TextToImageResponse>>? GenerateEditImageAsyncCallback { get; set; }
 
-    public Func<Type, object?, object?>? GetServiceCallback { get; set; }
+    public Func<Type, object?, object?> GetServiceCallback { get; set; }
 
     public bool DisposeInvoked { get; private set; }
+
+    private object? DefaultGetServiceCallback(Type serviceType, object? serviceKey)
+        => serviceType is not null && serviceKey is null && serviceType.IsInstanceOfType(this) ? this : null;
 
     public Task<TextToImageResponse> GenerateImagesAsync(string prompt, TextToImageOptions? options, CancellationToken cancellationToken = default)
     {
@@ -33,7 +43,7 @@ internal sealed class TestTextToImageClient : ITextToImageClient
 
     public object? GetService(Type serviceType, object? serviceKey = null)
     {
-        return GetServiceCallback?.Invoke(serviceType, serviceKey);
+        return GetServiceCallback.Invoke(serviceType, serviceKey);
     }
 
     public void Dispose()
