@@ -84,7 +84,9 @@ internal sealed class LogRecord : IResettable
     /// <summary>
     /// Gets or sets full request URI.
     /// </summary>
+#pragma warning disable S3996
     public string? FullUri { get; set; }
+#pragma warning restore S3996
 
     public bool TryReset()
     {

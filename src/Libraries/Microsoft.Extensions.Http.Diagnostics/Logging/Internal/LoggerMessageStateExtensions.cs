@@ -66,7 +66,7 @@ internal static class LoggerMessageStateExtensions
     {
         if (fullUri is not null)
         {
-            state.TagArray[index++] = new("url.full", fullUri);
+            state.TagArray[index++] = new(HttpClientLoggingTagNames.FullUriPrefix, fullUri);
         }
     }
 
