@@ -19,12 +19,40 @@
   </ItemGroup>
 
   <!--
+    Computes package version variables for projects defined in this repo that get
+    referenced in generated template content.
+    Instead of manually reproducing version values, it extracts the package version
+    directly from each project.
+  -->
+  <Target Name="_GetPackageVersionVariables"
+          DependsOnTargets="ComputePackageVersionVariableReferences">
+    <MSBuild Projects="@(PackageVersionVariableReference)"
+             BuildInParallel="true"
+             Targets="_GetPackageVersionInfo">
+      <Output TaskParameter="TargetOutputs" ItemName="_ResolvedPackageVersionInfo" />
+    </MSBuild>
+
+    <ItemGroup>
+      <_ResolvedPackageVersionVariableReference Include="@(_ResolvedPackageVersionInfo)">
+        <VersionVariableName>TemplatePackageVersion_$([System.String]::Copy('%(PackageId)').Replace('.', ''))</VersionVariableName>
+      </_ResolvedPackageVersionVariableReference>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <GeneratedContentProperties>
+        $(GeneratedContentProperties);
+        @(_ResolvedPackageVersionVariableReference->'%(VersionVariableName)=%(PackageVersion)')
+      </GeneratedContentProperties>
+    </PropertyGroup>
+  </Target>
+
+  <!--
     Computes a hash from the properties passed through to the GenerateFileFromTemplate task
     in the _GenerateContent target.
     This hash is used to determine if the generated content needs to be re-generated.
   -->
   <Target Name="_ComputeGeneratedContentPropertiesHash"
-          DependsOnTargets="ComputeGeneratedContentProperties">
+          DependsOnTargets="ComputeGeneratedContentProperties;_GetPackageVersionVariables">
     <Hash ItemsToHash="$(GeneratedContentProperties)">
       <Output TaskParameter="HashResult" PropertyName="_GeneratedContentPropertiesHash" />
     </Hash>
