@@ -41,6 +41,7 @@
     <PropertyGroup>
       <GeneratedContentProperties>
         $(GeneratedContentProperties);
+        <!-- Converts each package reference into a property assignment in the format 'TemplatePackageVersion_PackageName=Version'. -->
         @(_ResolvedPackageVersionVariableReference->'%(VersionVariableName)=%(PackageVersion)')
       </GeneratedContentProperties>
     </PropertyGroup>
