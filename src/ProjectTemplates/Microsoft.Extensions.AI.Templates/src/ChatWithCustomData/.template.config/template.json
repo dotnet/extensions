@@ -76,6 +76,12 @@
         }
       },
       {
+        "condition": "(IsAspire && HostIdentifier != \"dotnetcli\" || HostIdentifier != \"dotnetcli-preview\")",
+        "exclude": [
+          "*.sln"
+        ]
+      },
+      {
         "condition": "(!UseLocalVectorStore)",
         "exclude": [
           "ChatWithCustomData-CSharp.Web/Services/JsonVectorStore.cs"
