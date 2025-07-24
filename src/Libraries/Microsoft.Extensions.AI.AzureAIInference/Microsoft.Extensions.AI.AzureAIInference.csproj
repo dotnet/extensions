@@ -29,6 +29,9 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.AI.Inference" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
     <PackageReference Include="System.Memory.Data" />
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
