@@ -57,7 +57,7 @@ public static class HttpClientLoggingTagNames
     /// HTTP full URI prefix.
     /// </summary>
     [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
-    public const string FullUriPrefix = "url.full";
+    public const string FullUri = "url.full";
 
     /// <summary>
     /// HTTP Status Code.
@@ -79,6 +79,6 @@ public static class HttpClientLoggingTagNames
             ResponseBody,
             ResponseHeaderPrefix,
             StatusCode,
-            FullUriPrefix
+            FullUri
         ]);
 }

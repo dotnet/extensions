@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -66,7 +65,7 @@ internal static class LoggerMessageStateExtensions
     {
         if (fullUri is not null)
         {
-            state.TagArray[index++] = new(HttpClientLoggingTagNames.FullUriPrefix, fullUri);
+            state.TagArray[index++] = new(HttpClientLoggingTagNames.FullUri, fullUri);
         }
     }
 
