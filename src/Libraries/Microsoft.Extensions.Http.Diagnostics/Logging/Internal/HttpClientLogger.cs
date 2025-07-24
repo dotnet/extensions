@@ -8,8 +8,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Http.Logging.Internal;
 using Microsoft.Extensions.Logging;
@@ -240,14 +240,11 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
 
         if (logRecord.QueryParameters is { Length: > 0 })
         {
-            if (loggerMessageState is ITagCollector collector)
+            if (loggerMessageState is IEnrichmentTagCollector collector)
             {
                 foreach (var param in logRecord.QueryParameters)
                 {
-                    if (_options.RequestQueryParametersDataClasses.TryGetValue(param.Key, out var classification))
-                    {
-                        collector.Add(param.Key, param.Value, new DataClassificationSet(classification));
-                    }
+                    collector.Add(param.Key, param.Value);
                 }
             }
         }
