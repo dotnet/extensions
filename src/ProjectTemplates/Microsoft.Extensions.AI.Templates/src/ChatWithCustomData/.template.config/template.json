@@ -76,7 +76,7 @@
         }
       },
       {
-        "condition": "(IsAspire && HostIdentifier != \"dotnetcli\" || HostIdentifier != \"dotnetcli-preview\")",
+        "condition": "(IsAspire && (HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\"))",
         "exclude": [
           "*.sln"
         ]
