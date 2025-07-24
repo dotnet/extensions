@@ -84,9 +84,10 @@ public static class ChatResponseExtensions
         var contentsList = filter is null ? update.Contents : update.Contents.Where(filter).ToList();
         if (contentsList.Count > 0)
         {
-            list.Add(new ChatMessage(update.Role ?? ChatRole.Assistant, contentsList)
+            list.Add(new(update.Role ?? ChatRole.Assistant, contentsList)
             {
                 AuthorName = update.AuthorName,
+                CreatedAt = update.CreatedAt,
                 RawRepresentation = update.RawRepresentation,
                 AdditionalProperties = update.AdditionalProperties,
             });
@@ -268,7 +269,7 @@ public static class ChatResponseExtensions
 
         if (isNewMessage)
         {
-            message = new ChatMessage(ChatRole.Assistant, []);
+            message = new(ChatRole.Assistant, []);
             response.Messages.Add(message);
         }
         else
@@ -280,9 +281,15 @@ public static class ChatResponseExtensions
         // Incorporate those into the latest message; in cases where the message
         // stores a single value, prefer the latest update's value over anything
         // stored in the message.
+
         if (update.AuthorName is not null)
         {
             message.AuthorName = update.AuthorName;
+        }
+
+        if (update.CreatedAt is not null)
+        {
+            message.CreatedAt = update.CreatedAt;
         }
 
         if (update.Role is ChatRole role)

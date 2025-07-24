@@ -884,6 +884,10 @@
           "Stage": "Stable"
         },
         {
+          "Member": "System.DateTimeOffset? Microsoft.Extensions.AI.ChatMessage.CreatedAt { get; set; }",
+          "Stage": "Stable"
+        },
+        {
           "Member": "string? Microsoft.Extensions.AI.ChatMessage.MessageId { get; set; }",
           "Stage": "Stable"
         },
