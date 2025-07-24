@@ -30,7 +30,7 @@
       "path": "./ChatWithCustomData-CSharp.csproj"
     },
     {
-      "condition": "(IsAspire && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\"))",
+      "condition": "(IsAspire && (hostIdentifier == \"dotnetcli\" || hostIdentifier == \"dotnetcli-preview\"))",
       "path": "./ChatWithCustomData-CSharp.sln"
     },
     {
@@ -76,7 +76,7 @@
         }
       },
       {
-        "condition": "(IsAspire && (HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\"))",
+        "condition": "(IsAspire && hostIdentifier != \"dotnetcli\" && hostIdentifier != \"dotnetcli-preview\")",
         "exclude": [
           "*.sln"
         ]
