@@ -629,7 +629,7 @@ public class HttpRequestReaderTest
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
         await reader.ReadRequestAsync(logRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
         logRecord.FullUri.Should().NotBeNull();
-        logRecord.FullUri!.ToString().Should().Contain("userId=REDACTED");
+        logRecord.FullUri.Should().Contain("userId=REDACTED");
     }
 
     [Fact]
@@ -726,9 +726,9 @@ public class HttpRequestReaderTest
 
         // Assert the full URI contains only the redacted query parameters
         logRecord.FullUri.Should().NotBeNull();
-        logRecord.FullUri!.ToString().Should().Contain("userId=REDACTED");
-        logRecord.FullUri!.ToString().Should().Contain("token=REDACTED");
-        logRecord.FullUri!.ToString().Should().NotContain("other=not_logged");
+        logRecord.FullUri!.Should().Contain("userId=REDACTED");
+        logRecord.FullUri!.Should().Contain("token=REDACTED");
+        logRecord.FullUri!.Should().NotContain("other=not_logged");
     }
 
     [Fact]
