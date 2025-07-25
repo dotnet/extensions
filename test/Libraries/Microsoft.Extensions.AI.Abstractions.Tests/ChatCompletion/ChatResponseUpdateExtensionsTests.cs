@@ -242,6 +242,67 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal("OP", Assert.IsType<TextReasoningContent>(message.Contents[7]).Text);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ToChatResponse_CoalescesCodeExecutionResultContent(bool useAsync)
+    {
+        ChatResponseUpdate[] updates =
+        {
+            new(null, "A"),
+            new(null, "B"),
+            new(null, "C"),
+            new()
+            {
+                Contents =
+                [
+                    new CodeExecutionResultContent
+                    {
+                        Inputs = [new TextContent("D"), new TextContent("E")],
+                        Outputs = [new TextContent("F"), new TextContent("G")],
+                    }
+                ]
+            },
+            new() { Contents = [new TextReasoningContent("H")] },
+            new() { Contents = [new TextReasoningContent("I")] },
+            new()
+            {
+                Contents =
+                [
+                    new CodeExecutionResultContent
+                    {
+                        Inputs = [new TextContent("J"), new TextContent("K")],
+                        Outputs = [new TextContent("L"), new TextContent("M"), new UriContent("http://localhost", "image/png"), new TextContent("N"), new TextContent("O")],
+                    }
+                ]
+            },
+        };
+
+        ChatResponse response = useAsync ? await YieldAsync(updates).ToChatResponseAsync() : updates.ToChatResponse();
+        ChatMessage message = Assert.Single(response.Messages);
+        Assert.Equal(4, message.Contents.Count);
+
+        Assert.Equal("ABC", Assert.IsType<TextContent>(message.Contents[0]).Text);
+
+        var cerc1 = Assert.IsType<CodeExecutionResultContent>(message.Contents[1]);
+        Assert.NotNull(cerc1.Inputs);
+        Assert.Equal("DE", Assert.IsType<TextContent>(Assert.Single(cerc1.Inputs)).Text);
+        Assert.NotNull(cerc1.Outputs);
+        Assert.Equal("FG", Assert.IsType<TextContent>(Assert.Single(cerc1.Outputs)).Text);
+
+        Assert.Equal("HI", Assert.IsType<TextReasoningContent>(message.Contents[2]).Text);
+
+        var cerc2 = Assert.IsType<CodeExecutionResultContent>(message.Contents[3]);
+        Assert.NotNull(cerc2.Inputs);
+        Assert.Equal("JK", Assert.IsType<TextContent>(Assert.Single(cerc2.Inputs)).Text);
+        Assert.NotNull(cerc2.Outputs);
+        Assert.Equal(3, cerc2.Outputs.Count);
+
+        Assert.Equal("LM", Assert.IsType<TextContent>(cerc2.Outputs[0]).Text);
+        Assert.IsType<UriContent>(cerc2.Outputs[1]);
+        Assert.Equal("NO", Assert.IsType<TextContent>(cerc2.Outputs[2]).Text);
+    }
+
     [Fact]
     public async Task ToChatResponse_UsageContentExtractedFromContents()
     {

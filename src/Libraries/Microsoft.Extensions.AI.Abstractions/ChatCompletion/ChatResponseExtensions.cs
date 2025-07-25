@@ -182,58 +182,134 @@ public static class ChatResponseExtensions
     }
 
     /// <summary>Coalesces sequential <see cref="AIContent"/> content elements.</summary>
-    internal static void CoalesceTextContent(List<AIContent> contents)
+    internal static void CoalesceTextContent(IList<AIContent> contents)
     {
-        Coalesce<TextContent>(contents, static text => new(text));
-        Coalesce<TextReasoningContent>(contents, static text => new(text));
+        Coalesce<TextContent>(contents, mergeSingle: false, static (contents, start, end) =>
+            new(MergeText(contents, start, end))
+            {
+                AdditionalProperties = contents[start].AdditionalProperties?.Clone()
+            });
 
-        // This implementation relies on TContent's ToString returning its exact text.
-        static void Coalesce<TContent>(List<AIContent> contents, Func<string, TContent> fromText)
+        Coalesce<TextReasoningContent>(contents, mergeSingle: false, static (contents, start, end) =>
+            new(MergeText(contents, start, end))
+            {
+                AdditionalProperties = contents[start].AdditionalProperties?.Clone()
+            });
+
+        Coalesce<CodeExecutionResultContent>(contents, mergeSingle: true, static (contents, start, end) =>
+        {
+            CodeExecutionResultContent firstContent = (CodeExecutionResultContent)contents[start];
+
+            if (start == end - 1)
+            {
+                if (firstContent.Inputs is not null)
+                {
+                    CoalesceTextContent(firstContent.Inputs);
+                }
+
+                if (firstContent.Outputs is not null)
+                {
+                    CoalesceTextContent(firstContent.Outputs);
+                }
+
+                return firstContent;
+            }
+
+            List<AIContent>? inputs = null;
+            List<AIContent>? outputs = null;
+
+            for (int i = start; i < end; i++)
+            {
+                CodeExecutionResultContent codeContent = (CodeExecutionResultContent)contents[i];
+                (inputs ??= []).AddRange(codeContent.Inputs ?? []);
+                (outputs ??= []).AddRange(codeContent.Outputs ?? []);
+            }
+
+            if (inputs is not null)
+            {
+                CoalesceTextContent(inputs);
+            }
+
+            if (outputs is not null)
+            {
+                CoalesceTextContent(outputs);
+            }
+
+            return new()
+            {
+                Inputs = inputs,
+                Outputs = outputs,
+                AdditionalProperties = firstContent.AdditionalProperties?.Clone()
+            };
+        });
+
+        static string MergeText(IList<AIContent> contents, int start, int end)
+        {
+            StringBuilder sb = new();
+            for (int i = start; i < end; i++)
+            {
+                _ = sb.Append(contents[i]);
+            }
+
+            return sb.ToString();
+        }
+
+        static void Coalesce<TContent>(IList<AIContent> contents, bool mergeSingle, Func<IList<AIContent>, int, int, TContent> merge)
             where TContent : AIContent
         {
-            StringBuilder? coalescedText = null;
-
             // Iterate through all of the items in the list looking for contiguous items that can be coalesced.
             int start = 0;
-            while (start < contents.Count - 1)
+            while (start < contents.Count)
             {
-                // We need at least two TextContents in a row to be able to coalesce.
-                if (contents[start] is not TContent firstText)
+                if (contents[start] is not TContent firstContent)
                 {
                     start++;
                     continue;
                 }
 
-                if (contents[start + 1] is not TContent secondText)
+                // Iterate until we find a non-coalescable item.
+                int i = start + 1;
+                while (i < contents.Count && contents[i] is TContent next)
                 {
-                    start += 2;
+                    i++;
+                }
+
+                // If there's only one item in the run, and we don't want to merge single items, skip it.
+                if (start == i - 1 && !mergeSingle)
+                {
+                    start++;
                     continue;
                 }
 
-                // Append the text from those nodes and continue appending subsequent TextContents until we run out.
-                // We null out nodes as their text is appended so that we can later remove them all in one O(N) operation.
-                coalescedText ??= new();
-                _ = coalescedText.Clear().Append(firstText).Append(secondText);
-                contents[start + 1] = null!;
-                int i = start + 2;
-                for (; i < contents.Count && contents[i] is TContent next; i++)
+                // Store the replacement node and null out all of the nodes that we coalesced.
+                // We can then remove all coalesced nodes in one O(N) operation via RemoveAll.
+                // Leave start positioned at the start of the next run.
+                contents[start] = merge(contents, start, i);
+
+                start++;
+                while (start < i)
                 {
-                    _ = coalescedText.Append(next);
-                    contents[i] = null!;
+                    contents[start++] = null!;
                 }
-
-                // Store the replacement node. We inherit the properties of the first text node. We don't
-                // currently propagate additional properties from the subsequent nodes. If we ever need to,
-                // we can add that here.
-                var newContent = fromText(coalescedText.ToString());
-                contents[start] = newContent;
-                newContent.AdditionalProperties = firstText.AdditionalProperties?.Clone();
-
-                start = i;
             }
 
             // Remove all of the null slots left over from the coalescing process.
-            _ = contents.RemoveAll(u => u is null);
+            if (contents is List<AIContent> contentsList)
+            {
+                _ = contentsList.RemoveAll(u => u is null);
+            }
+            else
+            {
+                int nextSlot = 0;
+                int contentsCount = contents.Count;
+                for (int i = 0; i < contentsCount; i++)
+                {
+                    if (contents[i] is { } content)
+                    {
+                        contents[nextSlot++] = content;
+                    }
+                }
+            }
         }
     }
 
