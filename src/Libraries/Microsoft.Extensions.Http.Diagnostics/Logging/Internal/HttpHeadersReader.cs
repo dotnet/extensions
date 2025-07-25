@@ -71,7 +71,7 @@ internal sealed class HttpHeadersReader : IHttpHeadersReader
     }
 
     public string RedactValue(string value, DataClassification classification)
-        => _redactor.Redact([value], classification);
+        => _redactor.Redact(value, classification);
 
     private void ReadHeaders(HttpHeaders headers, FrozenDictionary<string, DataClassification> headersToLog, List<KeyValuePair<string, string>> destination)
     {

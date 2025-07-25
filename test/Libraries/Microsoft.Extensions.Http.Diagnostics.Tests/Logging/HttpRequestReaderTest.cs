@@ -603,8 +603,8 @@ public class HttpRequestReaderTest
 
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
         mockHeadersRedactor
-            .Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
-            .Returns(redactedValue);
+            .Setup(r => r.Redact(It.IsAny<string>(), It.IsAny<DataClassification>()))
+            .Returns(Redacted);
 
         var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), mockHeadersRedactor.Object);
         await using var serviceProvider = GetServiceProvider(headersReader);
@@ -705,7 +705,7 @@ public class HttpRequestReaderTest
 
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
         mockHeadersRedactor
-            .Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
+            .Setup(r => r.Redact(It.IsAny<string>(), It.IsAny<DataClassification>()))
             .Returns(Redacted);
 
         var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), mockHeadersRedactor.Object);
@@ -746,7 +746,7 @@ public class HttpRequestReaderTest
 
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
         mockHeadersRedactor
-            .Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
+            .Setup(r => r.Redact(It.IsAny<string>(), It.IsAny<DataClassification>()))
             .Returns(Redacted);
 
         var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), mockHeadersRedactor.Object);
@@ -831,7 +831,6 @@ public class HttpRequestReaderTest
         var queryParamValue = "12345";
         var pathParamName = "orderId";
         var pathParamValue = "789";
-        var redactedValue = Redacted;
 
         var options = new LoggingOptions
         {
@@ -846,8 +845,8 @@ public class HttpRequestReaderTest
 
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
         mockHeadersRedactor
-            .Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
-            .Returns(redactedValue);
+            .Setup(r => r.Redact(It.IsAny<string>(), It.IsAny<DataClassification>()))
+            .Returns(Redacted);
 
         var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), mockHeadersRedactor.Object);
         using var serviceProvider = GetServiceProvider(headersReader);
@@ -880,13 +879,13 @@ public class HttpRequestReaderTest
 
         // Assert: path parameter is redacted in the path
         logRecord.Path.Should().NotContain(pathParamValue);
-        logRecord.Path.Should().Contain(redactedValue);
+        logRecord.Path.Should().Contain(Redacted);
 
         // Assert: query parameter is redacted in the full URI
         logRecord.FullUri.Should().NotBeNull();
-        logRecord.FullUri!.Should().Contain($"{queryParamName}={redactedValue}");
+        logRecord.FullUri!.Should().Contain($"{queryParamName}={Redacted}");
         logRecord.FullUri!.Should().NotContain($"{queryParamName}={queryParamValue}");
-        logRecord.FullUri!.Should().Contain($"/api/orders/{redactedValue}/details");
+        logRecord.FullUri!.Should().Contain($"/api/orders/{Redacted}/details");
         logRecord.FullUri!.Should().NotContain($"/api/orders/{pathParamValue}/details");
     }
 
