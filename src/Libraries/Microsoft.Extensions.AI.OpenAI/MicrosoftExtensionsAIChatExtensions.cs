@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Microsoft.Extensions.AI;
 using Microsoft.Shared.Diagnostics;
 
@@ -20,9 +21,10 @@ public static class MicrosoftExtensionsAIChatExtensions
 
     /// <summary>Creates a sequence of OpenAI <see cref="ChatMessage"/> instances from the specified input messages.</summary>
     /// <param name="messages">The input messages to convert.</param>
+    /// <param name="options">The options employed while processing <paramref name="messages"/>.</param>
     /// <returns>A sequence of OpenAI chat messages.</returns>
-    public static IEnumerable<ChatMessage> AsOpenAIChatMessages(this IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages) =>
-        OpenAIChatClient.ToOpenAIChatMessages(Throw.IfNull(messages), chatOptions: null);
+    public static IEnumerable<ChatMessage> AsOpenAIChatMessages(this IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, ChatOptions? options = null) =>
+        OpenAIChatClient.ToOpenAIChatMessages(Throw.IfNull(messages), options);
 
     /// <summary>Creates a Microsoft.Extensions.AI <see cref="ChatResponse"/> from a <see cref="ChatCompletion"/>.</summary>
     /// <param name="chatCompletion">The <see cref="ChatCompletion"/> to convert to a <see cref="ChatResponse"/>.</param>
@@ -30,4 +32,17 @@ public static class MicrosoftExtensionsAIChatExtensions
     /// <returns>A converted <see cref="ChatResponse"/>.</returns>
     public static ChatResponse AsChatResponse(this ChatCompletion chatCompletion, ChatCompletionOptions? options = null) =>
         OpenAIChatClient.FromOpenAIChatCompletion(Throw.IfNull(chatCompletion), options);
+
+    /// <summary>
+    /// Creates a sequence of Microsoft.Extensions.AI <see cref="ChatResponseUpdate"/> instances from the specified
+    /// sequence of OpenAI <see cref="StreamingChatCompletionUpdate"/> instances.
+    /// </summary>
+    /// <param name="chatCompletionUpdates">The update instances.</param>
+    /// <param name="options">The options employed in the creation of the response.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A sequence of converted <see cref="ChatResponseUpdate"/> instances.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="chatCompletionUpdates"/> is <see langword="null"/>.</exception>
+    public static IAsyncEnumerable<ChatResponseUpdate> AsChatResponseUpdatesAsync(
+        this IAsyncEnumerable<StreamingChatCompletionUpdate> chatCompletionUpdates, ChatCompletionOptions? options = null, CancellationToken cancellationToken = default) =>
+        OpenAIChatClient.FromOpenAIStreamingChatCompletionAsync(Throw.IfNull(chatCompletionUpdates), options, cancellationToken);
 }
