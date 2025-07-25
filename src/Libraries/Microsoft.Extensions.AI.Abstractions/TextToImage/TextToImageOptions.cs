@@ -13,12 +13,12 @@ namespace Microsoft.Extensions.AI;
 public class TextToImageOptions
 {
     /// <summary>Gets or sets the content type of the image.</summary>
-    public TextToImageContentType ContentType { get; set; } = TextToImageContentType.Uri;
+    public TextToImageContentType? ContentType { get; set; }
 
     /// <summary>
     /// Gets or sets the number of images to generate.
     /// </summary>
-    public int Count { get; set; } = 1;
+    public int? Count { get; set; }
 
     /// <summary>
     /// Gets or sets the guidance scale to use for image generation.  Not supported by all providers.
@@ -30,7 +30,7 @@ public class TextToImageOptions
     /// If a provider only supports fixed sizes the closest supported size will be used.
     /// A value of default(Size) indicates the default for the provider should be used.
     /// </summary>
-    public Size ImageSize { get; set; }
+    public Size? ImageSize { get; set; }
 
     /// <summary>
     /// Gets or sets the model ID to use for image generation.  Not supported by all providers.

@@ -72,7 +72,7 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
         ImageGenerationOptions openAIOptions = ToOpenAIImageGenerationOptions(options);
         ImageClient imageClient = GetImageClient(options);
 
-        GeneratedImageCollection result = await imageClient.GenerateImagesAsync(prompt, options.Count, openAIOptions, cancellationToken).ConfigureAwait(false);
+        GeneratedImageCollection result = await imageClient.GenerateImagesAsync(prompt, options.Count ?? 1, openAIOptions, cancellationToken).ConfigureAwait(false);
 
         return ToTextToImageResponse(result, options);
     }
@@ -90,7 +90,7 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
         ImageClient imageClient = GetImageClient(options);
 
         GeneratedImageCollection result = await imageClient.GenerateImageEditsAsync(
-            originalImage, originalImageFileName, prompt, options.Count, openAIOptions, cancellationToken).ConfigureAwait(false);
+            originalImage, originalImageFileName, prompt, options.Count ?? 1, openAIOptions, cancellationToken).ConfigureAwait(false);
 
         return ToTextToImageResponse(result, options);
     }
@@ -120,13 +120,17 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
 
         foreach (GeneratedImage image in generatedImages)
         {
-            if (options.ContentType == TextToImageContentType.Uri && image.ImageUri is not null)
+            if (image.ImageBytes is not null)
+            {
+                contents.Add(new DataContent(image.ImageBytes.ToArray(), "image/png"));
+            }
+            else if (image.ImageUri is not null) 
             {
                 contents.Add(new UriContent(image.ImageUri, "image/png"));
             }
-            else if (options.ContentType == TextToImageContentType.Data && image.ImageBytes is not null)
+            else
             {
-                contents.Add(new DataContent(image.ImageBytes.ToArray(), "image/png"));
+                throw new InvalidOperationException("Generated image does not contain a valid URI or byte array.");
             }
         }
 
@@ -159,10 +163,15 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
 
         result = new ImageGenerationOptions
         {
-            Size = ToOpenAIImageSize(options.ImageSize, options.ModelId),
-            ResponseFormat = options.ContentType == TextToImageContentType.Uri ? GeneratedImageFormat.Uri : GeneratedImageFormat.Bytes,
-            Quality = GeneratedImageQuality.Standard // Default quality
+            Size = ToOpenAIImageSize(options.ImageSize, options.ModelId)
         };
+
+        if (options.ContentType is not null)
+        {
+            result.ResponseFormat = options.ContentType == TextToImageContentType.Uri
+                ? GeneratedImageFormat.Uri
+                : GeneratedImageFormat.Bytes;
+        }
 
         return result;
     }
@@ -178,8 +187,14 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
         result = new ImageEditOptions
         {
             Size = ToOpenAIImageSize(options.ImageSize, options.ModelId),
-            ResponseFormat = options.ContentType == TextToImageContentType.Uri ? GeneratedImageFormat.Uri : GeneratedImageFormat.Bytes
         };
+
+        if (options.ContentType is not null)
+        {
+            result.ResponseFormat = options.ContentType == TextToImageContentType.Uri
+                ? GeneratedImageFormat.Uri
+                : GeneratedImageFormat.Bytes;
+        }
 
         return result;
     }
@@ -190,7 +205,7 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
     /// <param name="requestedSize">User's requested size.</param>
     /// <param name="modelId">Model to consider for supported sizes.</param>
     /// <returns>Closest supported size.</returns>
-    private GeneratedImageSize? ToOpenAIImageSize(Size requestedSize, string? modelId = null)
+    private GeneratedImageSize? ToOpenAIImageSize(Size? requestedSize, string? modelId = null)
     {
         modelId ??= _defaultModelId;
 
@@ -226,12 +241,13 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
 
         GeneratedImageSize? GetClosestImageSize(ReadOnlySpan<(GeneratedImageSize size, double area)> supportedSizes)
         {
-            if (requestedSize == default)
+            if (requestedSize is null || requestedSize.Value.IsEmpty)
             {
+                // If no size is requested, return null to use the default size for the model.
                 return null;
             }
 
-            double requestedArea = requestedSize.Width * requestedSize.Height;
+            double requestedArea = requestedSize.Value.Width * requestedSize.Value.Height;
 
             GeneratedImageSize? closestSize = null;
             double closestArea = double.MaxValue;
