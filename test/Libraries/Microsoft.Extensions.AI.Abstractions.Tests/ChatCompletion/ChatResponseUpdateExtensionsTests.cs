@@ -65,6 +65,65 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal("Hello, world!", response.Text);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ToChatResponse_UpdatesProduceMultipleResponseMessages(bool useAsync)
+    {
+        ChatResponseUpdate[] updates =
+        [
+            
+            // First message - ID "msg1"
+            new(null, "Hi! ") { CreatedAt = new DateTimeOffset(2023, 1, 1, 10, 0, 0, TimeSpan.Zero), AuthorName = "Assistant" },
+            new(ChatRole.Assistant, "Hello") { MessageId = "msg1", CreatedAt = new DateTimeOffset(2024, 1, 1, 10, 0, 0, TimeSpan.Zero), AuthorName = "Assistant" },
+            new(null, " from") { MessageId = "msg1", CreatedAt = new DateTimeOffset(2024, 1, 1, 10, 1, 0, TimeSpan.Zero) }, // Later CreatedAt should win
+            new(null, " AI") { MessageId = "msg1", AuthorName = "AI Assistant" }, // Later AuthorName should win
+
+            // Second message - ID "msg2" 
+            new(ChatRole.User, "How") { MessageId = "msg2", CreatedAt = new DateTimeOffset(2024, 1, 1, 11, 0, 0, TimeSpan.Zero), AuthorName = "User" },
+            new(null, " are") { MessageId = "msg2", CreatedAt = new DateTimeOffset(2024, 1, 1, 11, 1, 0, TimeSpan.Zero) },
+            new(null, " you?") { MessageId = "msg2", AuthorName = "Human User" }, // Later AuthorName should win
+
+            // Third message - ID "msg3"
+            new(ChatRole.Assistant, "I'm doing well,") { MessageId = "msg3", CreatedAt = new DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero) },
+            new(null, " thank you!") { MessageId = "msg3", CreatedAt = new DateTimeOffset(2024, 1, 1, 12, 2, 0, TimeSpan.Zero) }, // Later CreatedAt should win
+
+            // Updates without MessageId should continue the last message (msg3)
+            new(null, " How can I help?"),
+        ];
+
+        ChatResponse response = useAsync ?
+            await YieldAsync(updates).ToChatResponseAsync() :
+            updates.ToChatResponse();
+
+        Assert.NotNull(response);
+        Assert.Equal(3, response.Messages.Count);
+
+        // Verify first message
+        ChatMessage message1 = response.Messages[0];
+        Assert.Equal("msg1", message1.MessageId);
+        Assert.Equal(ChatRole.Assistant, message1.Role);
+        Assert.Equal("AI Assistant", message1.AuthorName); // Last value should win
+        Assert.Equal(new DateTimeOffset(2024, 1, 1, 10, 1, 0, TimeSpan.Zero), message1.CreatedAt); // Last value should win
+        Assert.Equal("Hi! Hello from AI", message1.Text);
+
+        // Verify second message  
+        ChatMessage message2 = response.Messages[1];
+        Assert.Equal("msg2", message2.MessageId);
+        Assert.Equal(ChatRole.User, message2.Role);
+        Assert.Equal("Human User", message2.AuthorName); // Last value should win
+        Assert.Equal(new DateTimeOffset(2024, 1, 1, 11, 1, 0, TimeSpan.Zero), message2.CreatedAt); // Last value should win
+        Assert.Equal("How are you?", message2.Text);
+
+        // Verify third message
+        ChatMessage message3 = response.Messages[2];
+        Assert.Equal("msg3", message3.MessageId);
+        Assert.Equal(ChatRole.Assistant, message3.Role);
+        Assert.Null(message3.AuthorName); // No AuthorName set in later updates
+        Assert.Equal(new DateTimeOffset(2024, 1, 1, 12, 2, 0, TimeSpan.Zero), message3.CreatedAt); // Last value should win
+        Assert.Equal("I'm doing well, thank you! How can I help?", message3.Text);
+    }
+
     public static IEnumerable<object[]> ToChatResponse_Coalescing_VariousSequenceAndGapLengths_MemberData()
     {
         foreach (bool useAsync in new[] { false, true })
