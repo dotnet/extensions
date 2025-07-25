@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Http.Logging.Internal;
 using Microsoft.Extensions.Logging;
@@ -32,6 +33,7 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
     private readonly bool _logResponseHeaders;
     private readonly bool _logRequestHeaders;
     private readonly bool _pathParametersRedactionSkipped;
+    private readonly LoggingOptions _options;
     private ILogger<HttpClientLogger> _logger;
     private IHttpRequestReader _httpRequestReader;
     private IHttpClientLogEnricher[] _enrichers;
@@ -63,6 +65,7 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
         _logResponseHeaders = options.ResponseHeadersDataClasses.Count > 0;
         _logRequestHeaders = options.RequestHeadersDataClasses.Count > 0;
         _pathParametersRedactionSkipped = options.RequestPathParameterRedactionMode == HttpRouteParameterRedactionMode.None;
+        _options = options;
     }
 
     [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "The logger shouldn't throw")]
@@ -232,6 +235,17 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
             catch (Exception e)
             {
                 Log.EnrichmentError(_logger, e, enricher.GetType().FullName, request.Method, logRecord.Host, logRecord.Path);
+            }
+        }
+
+        if (logRecord.QueryParameters is { Length: > 0 })
+        {
+            if (loggerMessageState is IEnrichmentTagCollector collector)
+            {
+                foreach (var param in logRecord.QueryParameters)
+                {
+                    collector.Add(param.Key, param.Value);
+                }
             }
         }
 
