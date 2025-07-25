@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -50,11 +49,10 @@ public class DelegatingTextToImageClientTests
     }
 
     [Fact]
-    public async Task GenerateEditImageAsyncDefaultsToInnerClientAsync()
+    public async Task EditImageAsyncDefaultsToInnerClientAsync()
     {
         // Arrange
-        using var expectedImageStream = new MemoryStream();
-        var expectedFileName = "test.png";
+        var expectedImage = new DataContent(Array.Empty<byte>(), "image/png");
         var expectedPrompt = "edit prompt";
         var expectedOptions = new TextToImageOptions();
         var expectedCancellationToken = CancellationToken.None;
@@ -62,10 +60,9 @@ public class DelegatingTextToImageClientTests
         var expectedResponse = new TextToImageResponse();
         using var inner = new TestTextToImageClient
         {
-            GenerateEditImageAsyncCallback = (originalImage, originalImageFileName, prompt, options, cancellationToken) =>
+            EditImageAsyncCallback = (originalImage, prompt, options, cancellationToken) =>
             {
-                Assert.Same(expectedImageStream, originalImage);
-                Assert.Same(expectedFileName, originalImageFileName);
+                Assert.Same(expectedImage, originalImage);
                 Assert.Same(expectedPrompt, prompt);
                 Assert.Same(expectedOptions, options);
                 Assert.Equal(expectedCancellationToken, cancellationToken);
@@ -76,7 +73,7 @@ public class DelegatingTextToImageClientTests
         using var delegating = new NoOpDelegatingTextToImageClient(inner);
 
         // Act
-        var resultTask = delegating.GenerateEditImageAsync(expectedImageStream, expectedFileName, expectedPrompt, expectedOptions, expectedCancellationToken);
+        var resultTask = delegating.EditImageAsync(expectedImage, expectedPrompt, expectedOptions, expectedCancellationToken);
 
         // Assert
         Assert.False(resultTask.IsCompleted);

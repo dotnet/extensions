@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -53,7 +52,7 @@ public partial class LoggingTextToImageClient : DelegatingTextToImageClient
 
     /// <inheritdoc/>
     public override async Task<TextToImageResponse> GenerateImagesAsync(
-        string prompt, TextToImageOptions? options, CancellationToken cancellationToken = default)
+        string prompt, TextToImageOptions? options = null, CancellationToken cancellationToken = default)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
         {
@@ -98,34 +97,34 @@ public partial class LoggingTextToImageClient : DelegatingTextToImageClient
     }
 
     /// <inheritdoc/>
-    public override async Task<TextToImageResponse> GenerateEditImageAsync(
-        Stream originalImage, string originalImageFileName, string prompt, TextToImageOptions? options, CancellationToken cancellationToken = default)
+    public override async Task<TextToImageResponse> EditImageAsync(
+        AIContent originalImage, string prompt, TextToImageOptions? options = null, CancellationToken cancellationToken = default)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
         {
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokedSensitive(nameof(GenerateEditImageAsync), prompt, AsJson(options), AsJson(this.GetService<TextToImageClientMetadata>()));
+                LogInvokedSensitive(nameof(EditImageAsync), prompt, AsJson(options), AsJson(this.GetService<TextToImageClientMetadata>()));
             }
             else
             {
-                LogInvoked(nameof(GenerateEditImageAsync));
+                LogInvoked(nameof(EditImageAsync));
             }
         }
 
         try
         {
-            var response = await base.GenerateEditImageAsync(originalImage, originalImageFileName, prompt, options, cancellationToken);
+            var response = await base.EditImageAsync(originalImage, prompt, options, cancellationToken);
 
             if (_logger.IsEnabled(LogLevel.Debug))
             {
                 if (_logger.IsEnabled(LogLevel.Trace))
                 {
-                    LogCompletedSensitive(nameof(GenerateEditImageAsync), AsJson(response));
+                    LogCompletedSensitive(nameof(EditImageAsync), AsJson(response));
                 }
                 else
                 {
-                    LogCompleted(nameof(GenerateEditImageAsync));
+                    LogCompleted(nameof(EditImageAsync));
                 }
             }
 
@@ -133,12 +132,12 @@ public partial class LoggingTextToImageClient : DelegatingTextToImageClient
         }
         catch (OperationCanceledException)
         {
-            LogInvocationCanceled(nameof(GenerateEditImageAsync));
+            LogInvocationCanceled(nameof(EditImageAsync));
             throw;
         }
         catch (Exception ex)
         {
-            LogInvocationFailed(nameof(GenerateEditImageAsync), ex);
+            LogInvocationFailed(nameof(EditImageAsync), ex);
             throw;
         }
     }

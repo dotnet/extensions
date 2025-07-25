@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -25,12 +26,6 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
     /// <summary>The underlying <see cref="ImageClient" />.</summary>
     private readonly ImageClient _imageClient;
 
-    /// <summary>The underlying <see cref="OpenAIClient" />.</summary>
-    private readonly OpenAIClient? _openAIClient;
-
-    /// <summary>The default model to use for image generation.</summary>
-    private readonly string? _defaultModelId;
-
     /// <summary>Initializes a new instance of the <see cref="OpenAITextToImageClient"/> class for the specified <see cref="ImageClient"/>.</summary>
     /// <param name="imageClient">The underlying client.</param>
     /// <exception cref="ArgumentNullException"><paramref name="imageClient"/> is <see langword="null"/>.</exception>
@@ -47,52 +42,57 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
         Uri providerUrl = typeof(ImageClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(imageClient) as Uri ?? OpenAIClientExtensions.DefaultOpenAIEndpoint;
 
-        _defaultModelId = typeof(ImageClient).GetField("_model", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+        string? modelId = typeof(ImageClient).GetField("_model", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(imageClient) as string;
 
-        _metadata = new("openai", providerUrl, _defaultModelId);
-    }
-
-    /// <summary>Initializes a new instance of the <see cref="OpenAITextToImageClient"/> class for the specified <see cref="OpenAIClient"/> and model.
-    /// Use this constructor if you wish you support changing the model with <see cref="TextToImageOptions.ModelId"/>.</summary>
-    /// <param name="openAIClient">The underlying OpenAI client.</param>
-    /// <param name="model">The default model to use for image generation.</param>
-    public OpenAITextToImageClient(OpenAIClient openAIClient, string model)
-        : this(Throw.IfNull(openAIClient).GetImageClient(model))
-    {
-        _openAIClient = openAIClient;
+        _metadata = new("openai", providerUrl, modelId);
     }
 
     /// <inheritdoc />
-    public async Task<TextToImageResponse> GenerateImagesAsync(string prompt, TextToImageOptions? options, CancellationToken cancellationToken = default)
+    public async Task<TextToImageResponse> GenerateImagesAsync(string prompt, TextToImageOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(prompt);
         _ = Throw.IfNull(options);
 
         ImageGenerationOptions openAIOptions = ToOpenAIImageGenerationOptions(options);
-        ImageClient imageClient = GetImageClient(options);
 
-        GeneratedImageCollection result = await imageClient.GenerateImagesAsync(prompt, options.Count ?? 1, openAIOptions, cancellationToken).ConfigureAwait(false);
+        GeneratedImageCollection result = await _imageClient.GenerateImagesAsync(prompt, options.Count ?? 1, openAIOptions, cancellationToken).ConfigureAwait(false);
 
-        return ToTextToImageResponse(result, options);
+        return ToTextToImageResponse(result);
     }
 
     /// <inheritdoc />
-    public async Task<TextToImageResponse> GenerateEditImageAsync(
-        Stream originalImage, string originalImageFileName, string prompt, TextToImageOptions? options, CancellationToken cancellationToken = default)
+    public async Task<TextToImageResponse> EditImageAsync(
+        AIContent originalImage, string prompt, TextToImageOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(originalImage);
-        _ = Throw.IfNull(originalImageFileName);
         _ = Throw.IfNull(prompt);
         _ = Throw.IfNull(options);
 
         ImageEditOptions openAIOptions = ToOpenAIImageEditOptions(options);
-        ImageClient imageClient = GetImageClient(options);
+        string? fileName = null;
+        Stream? imageStream = null;
 
-        GeneratedImageCollection result = await imageClient.GenerateImageEditsAsync(
-            originalImage, originalImageFileName, prompt, options.Count ?? 1, openAIOptions, cancellationToken).ConfigureAwait(false);
+        if (originalImage is DataContent dataContent)
+        {
+            imageStream = MemoryMarshal.TryGetArray(dataContent.Data, out var array) ?
+                new MemoryStream(array.Array!, array.Offset, array.Count) :
+                new MemoryStream(dataContent.Data.ToArray());
+            fileName = "image.png"; // Default file name for image data
+        }
+        else
+        {
+            // We might be able to handle UriContent by downloading the image, but need to plumb an HttpClient for that.
+            // For now, we only support DataContent for image editing as OpenAI's API expects image data in a stream.
+            Throw.ArgumentException(
+                "The original image must be a DataContent instance containing image data.",
+                nameof(originalImage));
+        }
 
-        return ToTextToImageResponse(result, options);
+        GeneratedImageCollection result = await _imageClient.GenerateImageEditsAsync(
+            imageStream, fileName, prompt, options.Count ?? 1, openAIOptions, cancellationToken).ConfigureAwait(false);
+
+        return ToTextToImageResponse(result);
     }
 
     /// <inheritdoc />
@@ -102,7 +102,6 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
         serviceKey is not null ? null :
         serviceType == typeof(TextToImageClientMetadata) ? _metadata :
         serviceType == typeof(ImageClient) ? _imageClient :
-        serviceType == typeof(OpenAIClient) ? _openAIClient :
         serviceType.IsInstanceOfType(this) ? this :
         null;
 #pragma warning restore S1067 // Expressions should not be too complex
@@ -113,20 +112,43 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
         // Nothing to dispose. Implementation required for the ITextToImageClient interface.
     }
 
+    /// <summary>
+    /// Converts a <see cref="Size"/> to an OpenAI <see cref="GeneratedImageSize"/>.
+    /// </summary>
+    /// <param name="requestedSize">User's requested size.</param>
+    /// <returns>Closest supported size.</returns>
+    private static GeneratedImageSize? ToOpenAIImageSize(Size? requestedSize) =>
+        requestedSize is null ? null : new GeneratedImageSize(requestedSize.Value.Width, requestedSize.Value.Height);
+
     /// <summary>Converts a <see cref="GeneratedImageCollection"/> to a <see cref="TextToImageResponse"/>.</summary>
-    private static TextToImageResponse ToTextToImageResponse(GeneratedImageCollection generatedImages, TextToImageOptions options)
+    private static TextToImageResponse ToTextToImageResponse(GeneratedImageCollection generatedImages)
     {
+        string contentType = "image/png"; // Default content type for images
+
+        // OpenAI doesn't expose the content type, so we need to read from the internal JSON representation.
+        // https://github.com/openai/openai-dotnet/issues/561
+        IDictionary<string, BinaryData>? additionalRawData = typeof(GeneratedImageCollection)
+            .GetProperty("SerializedAdditionalRawData", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+            ?.GetValue(generatedImages) as IDictionary<string, BinaryData>;
+
+        if (additionalRawData?.TryGetValue("output_format", out var outputFormat) ?? false)
+        {
+#pragma warning disable IL2026, IL3050 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+            contentType = $"image/{outputFormat.ToObjectFromJson<string>()}";
+#pragma warning restore IL2026, IL3050 
+        }
+
         List<AIContent> contents = new();
 
         foreach (GeneratedImage image in generatedImages)
         {
             if (image.ImageBytes is not null)
             {
-                contents.Add(new DataContent(image.ImageBytes.ToArray(), "image/png"));
+                contents.Add(new DataContent(image.ImageBytes.ToArray(), contentType));
             }
-            else if (image.ImageUri is not null) 
+            else if (image.ImageUri is not null)
             {
-                contents.Add(new UriContent(image.ImageUri, "image/png"));
+                contents.Add(new UriContent(image.ImageUri, contentType));
             }
             else
             {
@@ -140,31 +162,12 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
         };
     }
 
-    private ImageClient GetImageClient(TextToImageOptions options)
-    {
-        if (options.ModelId is null || options.ModelId == _defaultModelId)
-        {
-            // If default model is requested
-            return _imageClient;
-        }
-
-        // If a specific model is requested, get the image client for that model
-        return _openAIClient?.GetImageClient(options.ModelId) ??
-            throw new InvalidOperationException($"Cannot create an ImageClient for {options.ModelId}.  Please ensure {nameof(OpenAITextToImageClient)} is initialized with an {nameof(OpenAIClient)}.");
-    }
-
     /// <summary>Converts a <see cref="TextToImageOptions"/> to a <see cref="ImageGenerationOptions"/>.</summary>
     private ImageGenerationOptions ToOpenAIImageGenerationOptions(TextToImageOptions options)
     {
-        if (options.RawRepresentationFactory?.Invoke(this) is ImageGenerationOptions result)
-        {
-            return result;
-        }
+        ImageGenerationOptions result = options.RawRepresentationFactory?.Invoke(this) as ImageGenerationOptions ?? new();
 
-        result = new ImageGenerationOptions
-        {
-            Size = ToOpenAIImageSize(options.ImageSize, options.ModelId)
-        };
+        result.Size = ToOpenAIImageSize(options.ImageSize);
 
         if (options.ContentType is not null)
         {
@@ -179,15 +182,9 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
     /// <summary>Converts a <see cref="TextToImageOptions"/> to a <see cref="ImageEditOptions"/>.</summary>
     private ImageEditOptions ToOpenAIImageEditOptions(TextToImageOptions options)
     {
-        if (options.RawRepresentationFactory?.Invoke(this) is ImageEditOptions result)
-        {
-            return result;
-        }
+        ImageEditOptions result = options.RawRepresentationFactory?.Invoke(this) as ImageEditOptions ?? new();
 
-        result = new ImageEditOptions
-        {
-            Size = ToOpenAIImageSize(options.ImageSize, options.ModelId),
-        };
+        result.Size = ToOpenAIImageSize(options.ImageSize);
 
         if (options.ContentType is not null)
         {
@@ -197,72 +194,5 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
         }
 
         return result;
-    }
-
-    /// <summary>
-    /// Converts a <see cref="Size"/> to an OpenAI <see cref="GeneratedImageSize"/>.
-    /// </summary>
-    /// <param name="requestedSize">User's requested size.</param>
-    /// <param name="modelId">Model to consider for supported sizes.</param>
-    /// <returns>Closest supported size.</returns>
-    private GeneratedImageSize? ToOpenAIImageSize(Size? requestedSize, string? modelId = null)
-    {
-        modelId ??= _defaultModelId;
-
-        // from https://platform.openai.com/docs/api-reference/images
-        // The size of the generated images.
-        // Must be one of 1024x1024, 1536x1024 (landscape), 1024x1536 (portrait), or auto (default value) for gpt-image-1,
-        // one of 256x256, 512x512, or 1024x1024 for dall-e-2,
-        // and one of 1024x1024, 1792x1024, or 1024x1792 for dall-e-3.
-#pragma warning disable S109 // Magic numbers should not be used
-        return modelId switch
-        {
-            "gpt-image-1" => GetClosestImageSize(
-            [
-                (GeneratedImageSize.W1024xH1024, 1024 * 1024),
-                (GeneratedImageSize.W1536xH1024, 1536 * 1024),
-                (GeneratedImageSize.W1024xH1536, 1024 * 1536)
-            ]),
-            "dall-e-2" => GetClosestImageSize(
-            [
-                (GeneratedImageSize.W256xH256, 256 * 256),
-                (GeneratedImageSize.W512xH512, 512 * 512),
-                (GeneratedImageSize.W1024xH1024, 1024 * 1024)
-            ]),
-            "dall-e-3" => GetClosestImageSize(
-            [
-                (GeneratedImageSize.W1024xH1024, 1024 * 1024),
-                (GeneratedImageSize.W1792xH1024, 1792 * 1024),
-                (GeneratedImageSize.W1024xH1792, 1024 * 1792)
-            ]),
-            _ => null // No default size for other models
-        };
-#pragma warning restore S109 // Magic numbers should not be used
-
-        GeneratedImageSize? GetClosestImageSize(ReadOnlySpan<(GeneratedImageSize size, double area)> supportedSizes)
-        {
-            if (requestedSize is null || requestedSize.Value.IsEmpty)
-            {
-                // If no size is requested, return null to use the default size for the model.
-                return null;
-            }
-
-            double requestedArea = requestedSize.Value.Width * requestedSize.Value.Height;
-
-            GeneratedImageSize? closestSize = null;
-            double closestArea = double.MaxValue;
-
-            foreach (var supportedSize in supportedSizes)
-            {
-                double area = Math.Abs(supportedSize.area - requestedArea);
-                if (area < closestArea)
-                {
-                    closestArea = area;
-                    closestSize = supportedSize.size;
-                }
-            }
-
-            return closestSize;
-        }
     }
 }

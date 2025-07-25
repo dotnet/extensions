@@ -3,7 +3,6 @@
 
 using System;
 using System.Drawing;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -75,19 +74,18 @@ public class TextToImageClientTests
     }
 
     [Fact]
-    public async Task GenerateEditImageAsync_CallsCallback()
+    public async Task EditImageAsync_CallsCallback()
     {
         var expectedResponse = new TextToImageResponse();
         var expectedOptions = new TextToImageOptions();
         using var cts = new CancellationTokenSource();
-        using var imageStream = new MemoryStream([1, 2, 3, 4]);
+        var dataContent = new DataContent((byte[])[1, 2, 3, 4], "image/png");
 
         using var client = new TestTextToImageClient
         {
-            GenerateEditImageAsyncCallback = (originalImage, originalImageFileName, prompt, options, cancellationToken) =>
+            EditImageAsyncCallback = (originalImage, prompt, options, cancellationToken) =>
             {
-                Assert.Same(imageStream, originalImage);
-                Assert.Equal("test.png", originalImageFileName);
+                Assert.Same(dataContent, originalImage);
                 Assert.Equal("edit prompt", prompt);
                 Assert.Same(expectedOptions, options);
                 Assert.Equal(cts.Token, cancellationToken);
@@ -95,17 +93,17 @@ public class TextToImageClientTests
             }
         };
 
-        var result = await client.GenerateEditImageAsync(imageStream, "test.png", "edit prompt", expectedOptions, cts.Token);
+        var result = await client.EditImageAsync(dataContent, "edit prompt", expectedOptions, cts.Token);
         Assert.Same(expectedResponse, result);
     }
 
     [Fact]
-    public async Task GenerateEditImageAsync_NoCallback_ReturnsEmptyResponse()
+    public async Task EditImageAsync_NoCallback_ReturnsEmptyResponse()
     {
         using var client = new TestTextToImageClient();
-        using var imageStream = new MemoryStream([1, 2, 3, 4]);
+        var dataContent = new DataContent((byte[])[1, 2, 3, 4], "image/png");
 
-        var result = await client.GenerateEditImageAsync(imageStream, "test.png", "edit prompt", null);
+        var result = await client.EditImageAsync(dataContent, "edit prompt", null);
         Assert.NotNull(result);
         Assert.Empty(result.Contents);
     }
@@ -162,7 +160,7 @@ public class TextToImageClientTests
     }
 
     [Fact]
-    public async Task GenerateEditImageAsync_WithOptions_PassesThroughCorrectly()
+    public async Task EditImageAsync_WithOptions_PassesThroughCorrectly()
     {
         var options = new TextToImageOptions
         {
@@ -171,17 +169,17 @@ public class TextToImageClientTests
             ModelId = "edit-model"
         };
 
-        using var imageStream = new MemoryStream([1, 2, 3, 4]);
+        var dataContent = new DataContent((byte[])[1, 2, 3, 4], "image/png");
 
         using var client = new TestTextToImageClient
         {
-            GenerateEditImageAsyncCallback = (originalImage, fileName, prompt, receivedOptions, cancellationToken) =>
+            EditImageAsyncCallback = (dataContent, prompt, receivedOptions, cancellationToken) =>
             {
                 Assert.Same(options, receivedOptions);
                 return Task.FromResult(new TextToImageResponse());
             }
         };
 
-        await client.GenerateEditImageAsync(imageStream, "test.png", "edit prompt", options);
+        await client.EditImageAsync(dataContent, "edit prompt", options);
     }
 }

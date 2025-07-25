@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -36,16 +35,16 @@ public sealed class ConfigureOptionsTextToImageClient : DelegatingTextToImageCli
 
     /// <inheritdoc/>
     public override async Task<TextToImageResponse> GenerateImagesAsync(
-        string prompt, TextToImageOptions? options, CancellationToken cancellationToken = default)
+        string prompt, TextToImageOptions? options = null, CancellationToken cancellationToken = default)
     {
         return await base.GenerateImagesAsync(prompt, Configure(options), cancellationToken);
     }
 
     /// <inheritdoc/>
-    public override async Task<TextToImageResponse> GenerateEditImageAsync(
-        Stream originalImage, string originalImageFileName, string prompt, TextToImageOptions? options, CancellationToken cancellationToken = default)
+    public override async Task<TextToImageResponse> EditImageAsync(
+        AIContent originalImage, string prompt, TextToImageOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await base.GenerateEditImageAsync(originalImage, originalImageFileName, prompt, Configure(options), cancellationToken);
+        return await base.EditImageAsync(originalImage, prompt, Configure(options), cancellationToken);
     }
 
     /// <summary>Creates and configures the <see cref="TextToImageOptions"/> to pass along to the inner client.</summary>

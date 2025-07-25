@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -45,7 +44,7 @@ public class ConfigureOptionsTextToImageClientTests
                 return Task.FromResult(expectedResponse);
             },
 
-            GenerateEditImageAsyncCallback = (originalImage, originalImageFileName, prompt, options, cancellationToken) =>
+            EditImageAsyncCallback = (originalImage, prompt, options, cancellationToken) =>
             {
                 Assert.Same(returnedOptions, options);
                 Assert.Equal(cts.Token, cancellationToken);
@@ -74,8 +73,8 @@ public class ConfigureOptionsTextToImageClientTests
         var response1 = await client.GenerateImagesAsync("test prompt", providedOptions, cts.Token);
         Assert.Same(expectedResponse, response1);
 
-        using var imageStream = new MemoryStream(new byte[] { 1, 2, 3, 4 });
-        var response2 = await client.GenerateEditImageAsync(imageStream, "test.png", "edit prompt", providedOptions, cts.Token);
+        var dataContent = new DataContent((byte[])[1, 2, 3, 4], "image/png");
+        var response2 = await client.EditImageAsync(dataContent, "edit prompt", providedOptions, cts.Token);
         Assert.Same(expectedResponse, response2);
     }
 }

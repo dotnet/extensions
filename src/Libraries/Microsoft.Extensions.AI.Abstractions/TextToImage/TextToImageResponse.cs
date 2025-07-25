@@ -39,7 +39,10 @@ public class TextToImageResponse
     [JsonIgnore]
     public object? RawRepresentation { get; set; }
 
-    /// <summary>Gets or sets the generated content items.</summary>
+    /// <summary>
+    /// Gets or sets the generated content items.  Content will typically be DataContent for
+    /// images streamed from the client or UriContent for remotely hosted images.
+    /// </summary>
     [AllowNull]
     public IList<AIContent> Contents
     {

@@ -104,32 +104,7 @@ public abstract class TextToImageClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
-    public virtual async Task GenerateEditImageAsync_EditExistingImage()
-    {
-        SkipIfNotEnabled();
-
-        using var imageStream = GetImageStream("dotnet.png");
-        var options = new TextToImageOptions
-        {
-            Count = 1,
-            ContentType = TextToImageContentType.Uri
-        };
-
-        var response = await _client.GenerateEditImageAsync(imageStream, "dotnet.png", "Make the background blue", options);
-
-        Assert.NotNull(response);
-        Assert.NotEmpty(response.Contents);
-        Assert.Single(response.Contents);
-
-        var content = response.Contents[0];
-        Assert.IsType<UriContent>(content);
-        var uriContent = (UriContent)content;
-        Assert.NotNull(uriContent.Uri);
-        Assert.StartsWith("http", uriContent.Uri.ToString(), StringComparison.OrdinalIgnoreCase);
-    }
-
-    [ConditionalFact]
-    public virtual async Task GenerateEditImageAsync_WithDataContent()
+    public virtual async Task EditImageAsync_WithDataContent()
     {
         SkipIfNotEnabled();
 
@@ -142,7 +117,7 @@ public abstract class TextToImageClientIntegrationTests : IDisposable
             ContentType = TextToImageContentType.Data
         };
 
-        var response = await _client.GenerateEditImageAsync(dataContent, "dotnet.png", "Add a red border", options);
+        var response = await _client.EditImageAsync(dataContent, "Add a red border", options);
 
         Assert.NotNull(response);
         Assert.NotEmpty(response.Contents);
@@ -153,17 +128,6 @@ public abstract class TextToImageClientIntegrationTests : IDisposable
         var resultDataContent = (DataContent)content;
         Assert.True(resultDataContent.Data.Length > 0);
         Assert.Equal("image/png", resultDataContent.MediaType);
-    }
-
-    private static Stream GetImageStream(string fileName)
-    {
-        using Stream? s = typeof(TextToImageClientIntegrationTests).Assembly.GetManifestResourceStream($"Microsoft.Extensions.AI.Resources.{fileName}");
-        Assert.NotNull(s);
-        MemoryStream ms = new();
-        s.CopyTo(ms);
-
-        ms.Position = 0;
-        return ms;
     }
 
     private static byte[] GetImageData(string fileName)

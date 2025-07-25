@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -41,16 +40,16 @@ public class DelegatingTextToImageClient : ITextToImageClient
 
     /// <inheritdoc />
     public virtual Task<TextToImageResponse> GenerateImagesAsync(
-        string prompt, TextToImageOptions? options, CancellationToken cancellationToken = default)
+        string prompt, TextToImageOptions? options = null, CancellationToken cancellationToken = default)
     {
         return InnerClient.GenerateImagesAsync(prompt, options, cancellationToken);
     }
 
     /// <inheritdoc />
-    public virtual Task<TextToImageResponse> GenerateEditImageAsync(
-        Stream originalImage, string originalImageFileName, string prompt, TextToImageOptions? options, CancellationToken cancellationToken = default)
+    public virtual Task<TextToImageResponse> EditImageAsync(
+        AIContent originalImage, string prompt, TextToImageOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return InnerClient.GenerateEditImageAsync(originalImage, originalImageFileName, prompt, options, cancellationToken);
+        return InnerClient.EditImageAsync(originalImage, prompt, options, cancellationToken);
     }
 
     /// <inheritdoc />

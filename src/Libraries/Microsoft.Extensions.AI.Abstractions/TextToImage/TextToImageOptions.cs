@@ -21,7 +21,7 @@ public class TextToImageOptions
     public int? Count { get; set; }
 
     /// <summary>
-    /// Gets or sets the guidance scale to use for image generation.  Not supported by all providers.
+    /// Gets or sets the guidance scale to use for image generation.
     /// </summary>
     public float? GuidanceScale { get; set; }
 
@@ -33,17 +33,17 @@ public class TextToImageOptions
     public Size? ImageSize { get; set; }
 
     /// <summary>
-    /// Gets or sets the model ID to use for image generation.  Not supported by all providers.
+    /// Gets or sets the model ID to use for image generation.
     /// </summary>
     public string? ModelId { get; set; }
 
     /// <summary>
-    /// Gets or sets the negative prompt to use for image generation.  Not supported by all providers.
+    /// Gets or sets the negative prompt to use for image generation.
     /// </summary>
     public string? NegativePrompt { get; set; }
 
     /// <summary>
-    /// Gets or sets the diffusion step count to use for image generation.  Not supported by all providers.
+    /// Gets or sets the diffusion step count to use for image generation.
     /// </summary>
     public int? Steps { get; set; }
 

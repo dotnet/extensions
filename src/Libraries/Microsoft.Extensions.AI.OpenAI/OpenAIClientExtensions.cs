@@ -162,7 +162,7 @@ public static class OpenAIClientExtensions
     /// <exception cref="ArgumentNullException"><paramref name="model"/> is <see langword="null"/>.</exception>
     [Experimental("MEAI001")]
     public static ITextToImageClient AsITextToImageClient(this OpenAIClient openAIClient, string model) =>
-        new OpenAITextToImageClient(openAIClient, model);
+        new OpenAITextToImageClient(Throw.IfNull(openAIClient).GetImageClient(model));
 
     /// <summary>Gets an <see cref="IEmbeddingGenerator{String, Single}"/> for use with this <see cref="EmbeddingClient"/>.</summary>
     /// <param name="embeddingClient">The client.</param>
