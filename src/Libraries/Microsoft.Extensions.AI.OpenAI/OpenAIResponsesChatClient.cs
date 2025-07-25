@@ -429,7 +429,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
                     case HostedFileSearchTool fileSearchTool:
                         result.Tools.Add(ResponseTool.CreateFileSearchTool(
-                            fileSearchTool.Inputs?.OfType<HostedFileStoreContent>().Select(c => c.FileStoreId) ?? [],
+                            fileSearchTool.Inputs?.OfType<HostedVectorStoreContent>().Select(c => c.VectorStoreId) ?? [],
                             fileSearchTool.MaximumResultCount));
                         break;
                 }

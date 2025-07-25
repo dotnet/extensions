@@ -20,7 +20,7 @@ public class HostedFileSearchTool : AITool
     /// <summary>Gets or sets a collection of <see cref="AIContent"/> to be used as input to the file search tool.</summary>
     /// <remarks>
     /// Services support different varied kinds of inputs. Most support the IDs of file stores that are hosted by the service,
-    /// represented via <see cref="HostedFileStoreContent"/>.
+    /// represented via <see cref="HostedVectorStoreContent"/>.
     /// </remarks>
     public IList<AIContent>? Inputs { get; set; }
 

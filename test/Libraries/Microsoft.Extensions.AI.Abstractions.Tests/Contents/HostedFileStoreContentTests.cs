@@ -11,34 +11,34 @@ public class HostedFileStoreContentTests
     [Fact]
     public void Constructor_InvalidInput_Throws()
     {
-        Assert.Throws<ArgumentNullException>(() => new HostedFileStoreContent(null!));
-        Assert.Throws<ArgumentException>(() => new HostedFileStoreContent(string.Empty));
-        Assert.Throws<ArgumentException>(() => new HostedFileStoreContent(" "));
+        Assert.Throws<ArgumentNullException>(() => new HostedVectorStoreContent(null!));
+        Assert.Throws<ArgumentException>(() => new HostedVectorStoreContent(string.Empty));
+        Assert.Throws<ArgumentException>(() => new HostedVectorStoreContent(" "));
     }
 
     [Fact]
     public void Constructor_String_PropsDefault()
     {
         string fileId = "id123";
-        HostedFileStoreContent c = new(fileId);
+        HostedVectorStoreContent c = new(fileId);
         Assert.Null(c.RawRepresentation);
         Assert.Null(c.AdditionalProperties);
-        Assert.Equal(fileId, c.FileStoreId);
+        Assert.Equal(fileId, c.VectorStoreId);
     }
 
     [Fact]
     public void Constructor_PropsRoundtrip()
     {
-        HostedFileStoreContent c = new("id123");
+        HostedVectorStoreContent c = new("id123");
 
-        Assert.Equal("id123", c.FileStoreId);
-        c.FileStoreId = "id456";
-        Assert.Equal("id456", c.FileStoreId);
+        Assert.Equal("id123", c.VectorStoreId);
+        c.VectorStoreId = "id456";
+        Assert.Equal("id456", c.VectorStoreId);
 
-        Assert.Throws<ArgumentNullException>(() => c.FileStoreId = null!);
-        Assert.Throws<ArgumentException>(() => c.FileStoreId = string.Empty);
-        Assert.Throws<ArgumentException>(() => c.FileStoreId = " ");
-        Assert.Equal("id456", c.FileStoreId);
+        Assert.Throws<ArgumentNullException>(() => c.VectorStoreId = null!);
+        Assert.Throws<ArgumentException>(() => c.VectorStoreId = string.Empty);
+        Assert.Throws<ArgumentException>(() => c.VectorStoreId = " ");
+        Assert.Equal("id456", c.VectorStoreId);
 
         Assert.Null(c.RawRepresentation);
         object raw = new();

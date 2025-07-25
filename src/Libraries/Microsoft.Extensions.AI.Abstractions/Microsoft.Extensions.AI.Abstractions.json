@@ -1900,17 +1900,17 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.HostedFileStoreContent : Microsoft.Extensions.AI.AIContent",
+      "Type": "sealed class Microsoft.Extensions.AI.HostedVectorStoreContent : Microsoft.Extensions.AI.AIContent",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.HostedFileStoreContent.HostedFileStoreContent(string fileStoreId);",
+          "Member": "Microsoft.Extensions.AI.HostedVectorStoreContent.HostedVectorStoreContent(string vectorStoreId);",
           "Stage": "Stable"
         }
       ],
       "Properties": [
         {
-          "Member": "string Microsoft.Extensions.AI.HostedFileStoreContent.FileStoreId { get; set; }",
+          "Member": "string Microsoft.Extensions.AI.HostedVectorStoreContent.VectorStoreId { get; set; }",
           "Stage": "Stable"
         }
       ]

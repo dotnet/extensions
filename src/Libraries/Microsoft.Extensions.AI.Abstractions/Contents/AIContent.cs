@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.AI;
 [JsonDerivedType(typeof(FunctionCallContent), typeDiscriminator: "functionCall")]
 [JsonDerivedType(typeof(FunctionResultContent), typeDiscriminator: "functionResult")]
 [JsonDerivedType(typeof(HostedFileContent), typeDiscriminator: "file")]
-[JsonDerivedType(typeof(HostedFileStoreContent), typeDiscriminator: "fileStore")]
+[JsonDerivedType(typeof(HostedVectorStoreContent), typeDiscriminator: "vectorStore")]
 [JsonDerivedType(typeof(TextContent), typeDiscriminator: "text")]
 [JsonDerivedType(typeof(TextReasoningContent), typeDiscriminator: "reasoning")]
 [JsonDerivedType(typeof(UriContent), typeDiscriminator: "uri")]

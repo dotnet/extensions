@@ -26,7 +26,7 @@ public class HostedFileSearchToolTests
         {
             Inputs =
             [
-                new HostedFileStoreContent("id123"),
+                new HostedVectorStoreContent("id123"),
                 new HostedFileContent("id456"),
             ],
             MaximumResultCount = 10,
@@ -35,7 +35,7 @@ public class HostedFileSearchToolTests
         Assert.NotNull(tool.Inputs);
         Assert.Equal(2, tool.Inputs.Count);
         Assert.Equal(10, tool.MaximumResultCount);
-        Assert.IsType<HostedFileStoreContent>(tool.Inputs[0]);
+        Assert.IsType<HostedVectorStoreContent>(tool.Inputs[0]);
         Assert.IsType<HostedFileContent>(tool.Inputs[1]);
     }
 }

@@ -381,10 +381,10 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
                             {
                                 foreach (var input in fileSearchInputs)
                                 {
-                                    if (input is HostedFileStoreContent file)
+                                    if (input is HostedVectorStoreContent file)
                                     {
                                         (resources ??= new()).FileSearch ??= new();
-                                        resources.FileSearch.VectorStoreIds.Add(file.FileStoreId);
+                                        resources.FileSearch.VectorStoreIds.Add(file.VectorStoreId);
                                     }
                                 }
                             }
