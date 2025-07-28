@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -197,14 +198,16 @@ public static class ChatResponseExtensions
             int start = 0;
             while (start < contents.Count - 1)
             {
-                // We need at least two TextContents in a row to be able to coalesce.
-                if (contents[start] is not TContent firstText)
+                // We need at least two TextContents in a row to be able to coalesce. We also avoid touching contents
+                // that have annotations, as we want to ensure the annotations (and in particular any start/end indices
+                // into the text content) remain accurate.
+                if (!TryAsCoalescable(contents[start], out var firstText))
                 {
                     start++;
                     continue;
                 }
 
-                if (contents[start + 1] is not TContent secondText)
+                if (!TryAsCoalescable(contents[start + 1], out var secondText))
                 {
                     start += 2;
                     continue;
@@ -216,7 +219,7 @@ public static class ChatResponseExtensions
                 _ = coalescedText.Clear().Append(firstText).Append(secondText);
                 contents[start + 1] = null!;
                 int i = start + 2;
-                for (; i < contents.Count && contents[i] is TContent next; i++)
+                for (; i < contents.Count && TryAsCoalescable(contents[i], out TContent? next); i++)
                 {
                     _ = coalescedText.Append(next);
                     contents[i] = null!;
@@ -230,6 +233,18 @@ public static class ChatResponseExtensions
                 newContent.AdditionalProperties = firstText.AdditionalProperties?.Clone();
 
                 start = i;
+
+                static bool TryAsCoalescable(AIContent content, [NotNullWhen(true)] out TContent? coalescable)
+                {
+                    if (content is TContent && (content is not TextContent tc || tc.Annotations is not { Count: > 0 }))
+                    {
+                        coalescable = (TContent)content;
+                        return true;
+                    }
+
+                    coalescable = null!;
+                    return false;
+                }
             }
 
             // Remove all of the null slots left over from the coalescing process.

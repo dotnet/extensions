@@ -608,10 +608,27 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             switch (part.Kind)
             {
                 case ResponseContentPartKind.OutputText:
-                    results.Add(new TextContent(part.Text)
+                    TextContent text = new(part.Text)
                     {
                         RawRepresentation = part,
-                    });
+                    };
+
+                    if (part.OutputTextAnnotations is { Count: > 0 })
+                    {
+                        foreach (var ota in part.OutputTextAnnotations)
+                        {
+                            (text.Annotations ??= []).Add(new CitationAnnotation
+                            {
+                                RawRepresentation = ota,
+                                AnnotatedRegions = [new TextSpanAnnotatedRegion { StartIndex = ota.UriCitationStartIndex, EndIndex = ota.UriCitationEndIndex }],
+                                Title = ota.UriCitationTitle,
+                                Url = ota.UriCitationUri,
+                                FileId = ota.FileCitationFileId ?? ota.FilePathFileId,
+                            });
+                        }
+                    }
+
+                    results.Add(text);
                     break;
 
                 case ResponseContentPartKind.Refusal:
