@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Extensions.AI;
@@ -19,12 +20,12 @@ public class AIAnnotation
     {
     }
 
-    /// <summary>Gets or sets the target region for the annotation, pointing to where in the associated <see cref="AIContent"/> this annotation applies.</summary>
+    /// <summary>Gets or sets any target regions for the annotation, pointing to where in the associated <see cref="AIContent"/> this annotation applies.</summary>
     /// <remarks>
     /// The most common form of <see cref="AnnotatedRegion"/> is <see cref="TextSpanAnnotatedRegion"/>, which provides starting and ending character indices
     /// for <see cref="TextContent"/>.
     /// </remarks>
-    public AnnotatedRegion? AnnotatedRegion { get; set; }
+    public IList<AnnotatedRegion>? AnnotatedRegions { get; set; }
 
     /// <summary>Gets or sets the raw representation of the annotation from an underlying implementation.</summary>
     /// <remarks>

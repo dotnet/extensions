@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.TestUtilities;
@@ -36,12 +37,16 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         Assert.All(tc.Annotations, a =>
         {
             CitationAnnotation ca = Assert.IsType<CitationAnnotation>(a);
-            TextSpanAnnotatedRegion region = Assert.IsType<TextSpanAnnotatedRegion>(ca.AnnotatedRegion);
+            var regions = Assert.IsType<List<AnnotatedRegion>>(ca.AnnotatedRegions);
+            Assert.NotNull(regions);
+            Assert.Single(regions);
+            var region = Assert.IsType<TextSpanAnnotatedRegion>(regions[0]);
             Assert.NotNull(region);
             Assert.NotNull(region.StartIndex);
             Assert.NotNull(region.EndIndex);
             Assert.NotNull(ca.Url);
             Assert.NotNull(ca.Title);
+            Assert.NotEmpty(ca.Title);
         });
     }
 }

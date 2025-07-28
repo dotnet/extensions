@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using Xunit;
 
@@ -15,7 +16,7 @@ public class AIAnnotationTests
         AIAnnotation a = new();
         Assert.Null(a.AdditionalProperties);
         Assert.Null(a.RawRepresentation);
-        Assert.Null(a.AnnotatedRegion);
+        Assert.Null(a.AnnotatedRegions);
     }
 
     [Fact]
@@ -28,10 +29,10 @@ public class AIAnnotationTests
         a.AdditionalProperties = props;
         Assert.Same(props, a.AdditionalProperties);
 
-        Assert.Null(a.AnnotatedRegion);
-        TextSpanAnnotatedRegion region = new() { StartIndex = 10, EndIndex = 42 };
-        a.AnnotatedRegion = region;
-        Assert.Same(region, a.AnnotatedRegion);
+        Assert.Null(a.AnnotatedRegions);
+        List<AnnotatedRegion> regions = [new TextSpanAnnotatedRegion { StartIndex = 10, EndIndex = 42 }];
+        a.AnnotatedRegions = regions;
+        Assert.Same(regions, a.AnnotatedRegions);
 
         Assert.Null(a.RawRepresentation);
         object raw = new();
@@ -45,11 +46,7 @@ public class AIAnnotationTests
         AIAnnotation original = new()
         {
             AdditionalProperties = new AdditionalPropertiesDictionary { { "key", "value" } },
-            AnnotatedRegion = new TextSpanAnnotatedRegion
-            {
-                StartIndex = 10,
-                EndIndex = 42,
-            },
+            AnnotatedRegions = [new TextSpanAnnotatedRegion { StartIndex = 10, EndIndex = 42 }],
             RawRepresentation = new object(),
         };
 
@@ -65,7 +62,8 @@ public class AIAnnotationTests
 
         Assert.Null(deserialized.RawRepresentation);
 
-        TextSpanAnnotatedRegion? region = Assert.IsType<TextSpanAnnotatedRegion>(deserialized.AnnotatedRegion);
+        Assert.NotNull(deserialized.AnnotatedRegions);
+        TextSpanAnnotatedRegion? region = Assert.IsType<TextSpanAnnotatedRegion>(Assert.Single(deserialized.AnnotatedRegions));
         Assert.NotNull(region);
         Assert.Equal(10, region.StartIndex);
         Assert.Equal(42, region.EndIndex);

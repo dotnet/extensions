@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using Xunit;
 
@@ -14,7 +15,7 @@ public class CitationAnnotationTests
     {
         CitationAnnotation a = new();
         Assert.Null(a.AdditionalProperties);
-        Assert.Null(a.AnnotatedRegion);
+        Assert.Null(a.AnnotatedRegions);
         Assert.Null(a.RawRepresentation);
         Assert.Null(a.Snippet);
         Assert.Null(a.Title);
@@ -37,10 +38,10 @@ public class CitationAnnotationTests
         a.RawRepresentation = raw;
         Assert.Same(raw, a.RawRepresentation);
 
-        Assert.Null(a.AnnotatedRegion);
-        TextSpanAnnotatedRegion region = new() { StartIndex = 10, EndIndex = 42 };
-        a.AnnotatedRegion = region;
-        Assert.Same(region, a.AnnotatedRegion);
+        Assert.Null(a.AnnotatedRegions);
+        List<AnnotatedRegion> regions = [new TextSpanAnnotatedRegion { StartIndex = 10, EndIndex = 42 }];
+        a.AnnotatedRegions = regions;
+        Assert.Same(regions, a.AnnotatedRegions);
 
         Assert.Null(a.Snippet);
         a.Snippet = "snippet";
@@ -67,15 +68,11 @@ public class CitationAnnotationTests
         {
             AdditionalProperties = new AdditionalPropertiesDictionary { { "key", "value" } },
             RawRepresentation = new object(),
-            AnnotatedRegion = new TextSpanAnnotatedRegion
-            {
-                StartIndex = 10,
-                EndIndex = 42,
-            },
             Snippet = "snippet",
             Title = "title",
             ToolName = "toolName",
             Url = new("https://example.com"),
+            AnnotatedRegions = [new TextSpanAnnotatedRegion { StartIndex = 10, EndIndex = 42 }],
         };
 
         string json = JsonSerializer.Serialize(original, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(CitationAnnotation)));
@@ -92,7 +89,8 @@ public class CitationAnnotationTests
         Assert.Equal("snippet", deserialized.Snippet);
         Assert.Equal("title", deserialized.Title);
         Assert.Equal("toolName", deserialized.ToolName);
-        TextSpanAnnotatedRegion region = Assert.IsType<TextSpanAnnotatedRegion>(deserialized.AnnotatedRegion);
+        Assert.NotNull(deserialized.AnnotatedRegions);
+        TextSpanAnnotatedRegion region = Assert.IsType<TextSpanAnnotatedRegion>(Assert.Single(deserialized.AnnotatedRegions));
         Assert.Equal(10, region.StartIndex);
         Assert.Equal(42, region.EndIndex);
 

@@ -242,11 +242,7 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
                             (((TextContent)textUpdate.Contents[0]).Annotations ??= []).Add(new CitationAnnotation
                             {
                                 RawRepresentation = tau,
-                                AnnotatedRegion = new TextSpanAnnotatedRegion
-                                {
-                                    StartIndex = tau.StartIndex,
-                                    EndIndex = tau.EndIndex,
-                                },
+                                AnnotatedRegions = [new TextSpanAnnotatedRegion { StartIndex = tau.StartIndex, EndIndex = tau.EndIndex }],
                                 FileId = fileId,
                                 ToolName = toolName,
                             });

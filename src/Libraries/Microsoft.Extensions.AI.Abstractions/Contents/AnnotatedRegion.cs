@@ -7,7 +7,8 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>Describes the portion of an associated <see cref="AIContent"/> to which an annotation applies.</summary>
 /// <remarks>
-/// Details about the region is provided by derived types, such as <see cref="TextSpanAnnotatedRegion"/>.
+/// Details about the region is provided by derived types based on how the region is described. For example, starting
+/// and ending indices into text content are provided by <see cref="TextSpanAnnotatedRegion"/>.
 /// </remarks>
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
 [JsonDerivedType(typeof(TextSpanAnnotatedRegion), typeDiscriminator: "textSpan")]

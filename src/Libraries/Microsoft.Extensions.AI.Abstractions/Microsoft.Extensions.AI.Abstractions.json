@@ -134,7 +134,7 @@
       ],
       "Properties": [
         {
-          "Member": "Microsoft.Extensions.AI.AnnotatedRegion? Microsoft.Extensions.AI.AIAnnotation.AnnotatedRegion { get; set; }",
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AnnotatedRegion>? Microsoft.Extensions.AI.AIAnnotation.AnnotatedRegions { get; set; }",
           "Stage": "Stable"
         },
         {

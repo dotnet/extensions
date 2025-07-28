@@ -620,12 +620,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             (text.Annotations ??= []).Add(new CitationAnnotation
                             {
                                 RawRepresentation = ota,
-                                AnnotatedRegion = new TextSpanAnnotatedRegion
-                                {
-                                    StartIndex = ota.UriCitationStartIndex,
-                                    EndIndex = ota.UriCitationEndIndex,
-                                },
-
+                                AnnotatedRegions = [new TextSpanAnnotatedRegion { StartIndex = ota.UriCitationStartIndex, EndIndex = ota.UriCitationEndIndex }],
                                 Title = ota.UriCitationTitle,
                                 Url = ota.UriCitationUri,
                                 FileId = ota.FileCitationFileId ?? ota.FilePathFileId,
