@@ -23,6 +23,7 @@ public class DelegatingTextToImageClient : ITextToImageClient
     /// Initializes a new instance of the <see cref="DelegatingTextToImageClient"/> class.
     /// </summary>
     /// <param name="innerClient">The wrapped client instance.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="innerClient"/> is <see langword="null"/>.</exception>
     protected DelegatingTextToImageClient(ITextToImageClient innerClient)
     {
         InnerClient = Throw.IfNull(innerClient);

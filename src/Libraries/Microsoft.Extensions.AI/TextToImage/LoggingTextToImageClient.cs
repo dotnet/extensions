@@ -36,6 +36,7 @@ public partial class LoggingTextToImageClient : DelegatingTextToImageClient
     /// <summary>Initializes a new instance of the <see cref="LoggingTextToImageClient"/> class.</summary>
     /// <param name="innerClient">The underlying <see cref="ITextToImageClient"/>.</param>
     /// <param name="logger">An <see cref="ILogger"/> instance that will be used for all logging.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="innerClient"/> or <paramref name="logger"/> is <see langword="null"/>.</exception>
     public LoggingTextToImageClient(ITextToImageClient innerClient, ILogger logger)
         : base(innerClient)
     {
@@ -44,6 +45,7 @@ public partial class LoggingTextToImageClient : DelegatingTextToImageClient
     }
 
     /// <summary>Gets or sets JSON serialization options to use when serializing logging data.</summary>
+    /// <exception cref="ArgumentNullException">The value being set is <see langword="null"/>.</exception>
     public JsonSerializerOptions JsonSerializerOptions
     {
         get => _jsonSerializerOptions;

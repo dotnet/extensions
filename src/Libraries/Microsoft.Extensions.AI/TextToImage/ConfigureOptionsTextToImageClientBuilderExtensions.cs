@@ -21,6 +21,7 @@ public static class ConfigureOptionsTextToImageClientBuilderExtensions
     /// The delegate to invoke to configure the <see cref="TextToImageOptions"/> instance.
     /// It is passed a clone of the caller-supplied <see cref="TextToImageOptions"/> instance (or a newly constructed instance if the caller-supplied instance is <see langword="null"/>).
     /// </param>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> or <paramref name="configure"/> is <see langword="null"/>.</exception>
     /// <remarks>
     /// This method can be used to set default options. The <paramref name="configure"/> delegate is passed either a new instance of
     /// <see cref="TextToImageOptions"/> if the caller didn't supply a <see cref="TextToImageOptions"/> instance, or a clone (via <see cref="TextToImageOptions.Clone"/>)

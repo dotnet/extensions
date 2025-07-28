@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -19,6 +21,7 @@ public sealed class TextToImageClientBuilder
 
     /// <summary>Initializes a new instance of the <see cref="TextToImageClientBuilder"/> class.</summary>
     /// <param name="innerClient">The inner <see cref="ITextToImageClient"/> that represents the underlying backend.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="innerClient"/> is <see langword="null"/>.</exception>
     public TextToImageClientBuilder(ITextToImageClient innerClient)
     {
         _ = Throw.IfNull(innerClient);
@@ -27,6 +30,7 @@ public sealed class TextToImageClientBuilder
 
     /// <summary>Initializes a new instance of the <see cref="TextToImageClientBuilder"/> class.</summary>
     /// <param name="innerClientFactory">A callback that produces the inner <see cref="ITextToImageClient"/> that represents the underlying backend.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="innerClientFactory"/> is <see langword="null"/>.</exception>
     public TextToImageClientBuilder(Func<IServiceProvider, ITextToImageClient> innerClientFactory)
     {
         _innerClientFactory = Throw.IfNull(innerClientFactory);
@@ -61,6 +65,7 @@ public sealed class TextToImageClientBuilder
     /// <summary>Adds a factory for an intermediate text to image client to the text to image client pipeline.</summary>
     /// <param name="clientFactory">The client factory function.</param>
     /// <returns>The updated <see cref="TextToImageClientBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="clientFactory"/> is <see langword="null"/>.</exception>
     public TextToImageClientBuilder Use(Func<ITextToImageClient, ITextToImageClient> clientFactory)
     {
         _ = Throw.IfNull(clientFactory);
@@ -71,6 +76,7 @@ public sealed class TextToImageClientBuilder
     /// <summary>Adds a factory for an intermediate text to image client to the text to image client pipeline.</summary>
     /// <param name="clientFactory">The client factory function.</param>
     /// <returns>The updated <see cref="TextToImageClientBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="clientFactory"/> is <see langword="null"/>.</exception>
     public TextToImageClientBuilder Use(Func<ITextToImageClient, IServiceProvider, ITextToImageClient> clientFactory)
     {
         _ = Throw.IfNull(clientFactory);

@@ -22,6 +22,7 @@ public static class LoggingTextToImageClientBuilderExtensions
     /// </param>
     /// <param name="configure">An optional callback that can be used to configure the <see cref="LoggingTextToImageClient"/> instance.</param>
     /// <returns>The <paramref name="builder"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
     /// <remarks>
     /// <para>
     /// When the employed <see cref="ILogger"/> enables <see cref="Logging.LogLevel.Trace"/>, the contents of

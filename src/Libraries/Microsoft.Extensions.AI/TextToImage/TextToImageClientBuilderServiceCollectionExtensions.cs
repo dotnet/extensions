@@ -17,6 +17,7 @@ public static class TextToImageClientBuilderServiceCollectionExtensions
     /// <param name="innerClient">The inner <see cref="ITextToImageClient"/> that represents the underlying backend.</param>
     /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>A <see cref="TextToImageClientBuilder"/> that can be used to build a pipeline around the inner client.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceCollection"/> or <paramref name="innerClient"/> is <see langword="null"/>.</exception>
     /// <remarks>The client is registered as a singleton service.</remarks>
     public static TextToImageClientBuilder AddTextToImageClient(
         this IServiceCollection serviceCollection,
@@ -29,6 +30,7 @@ public static class TextToImageClientBuilderServiceCollectionExtensions
     /// <param name="innerClientFactory">A callback that produces the inner <see cref="ITextToImageClient"/> that represents the underlying backend.</param>
     /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>A <see cref="TextToImageClientBuilder"/> that can be used to build a pipeline around the inner client.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceCollection"/> or <paramref name="innerClientFactory"/> is <see langword="null"/>.</exception>
     /// <remarks>The client is registered as a singleton service.</remarks>
     public static TextToImageClientBuilder AddTextToImageClient(
         this IServiceCollection serviceCollection,
@@ -49,6 +51,7 @@ public static class TextToImageClientBuilderServiceCollectionExtensions
     /// <param name="innerClient">The inner <see cref="ITextToImageClient"/> that represents the underlying backend.</param>
     /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>A <see cref="TextToImageClientBuilder"/> that can be used to build a pipeline around the inner client.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceCollection"/>, <paramref name="serviceKey"/>, or <paramref name="innerClient"/> is <see langword="null"/>.</exception>
     /// <remarks>The client is registered as a scoped service.</remarks>
     public static TextToImageClientBuilder AddKeyedTextToImageClient(
         this IServiceCollection serviceCollection,
@@ -63,6 +66,7 @@ public static class TextToImageClientBuilderServiceCollectionExtensions
     /// <param name="innerClientFactory">A callback that produces the inner <see cref="ITextToImageClient"/> that represents the underlying backend.</param>
     /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>A <see cref="TextToImageClientBuilder"/> that can be used to build a pipeline around the inner client.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceCollection"/>, <paramref name="serviceKey"/>, or <paramref name="innerClientFactory"/> is <see langword="null"/>.</exception>
     /// <remarks>The client is registered as a scoped service.</remarks>
     public static TextToImageClientBuilder AddKeyedTextToImageClient(
         this IServiceCollection serviceCollection,
