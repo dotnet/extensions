@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -120,7 +121,7 @@ public partial class LoggingTextToImageClient : DelegatingTextToImageClient
 
             if (_logger.IsEnabled(LogLevel.Debug))
             {
-                if (_logger.IsEnabled(LogLevel.Trace))
+                if (_logger.IsEnabled(LogLevel.Trace) && response.Contents.All(c => c is not DataContent))
                 {
                     LogCompletedSensitive(nameof(EditImageAsync), AsJson(response));
                 }
