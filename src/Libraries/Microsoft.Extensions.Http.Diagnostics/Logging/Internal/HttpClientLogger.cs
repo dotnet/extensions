@@ -33,7 +33,6 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
     private readonly bool _logResponseHeaders;
     private readonly bool _logRequestHeaders;
     private readonly bool _pathParametersRedactionSkipped;
-    private readonly LoggingOptions _options;
     private ILogger<HttpClientLogger> _logger;
     private IHttpRequestReader _httpRequestReader;
     private IHttpClientLogEnricher[] _enrichers;
@@ -65,7 +64,6 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
         _logResponseHeaders = options.ResponseHeadersDataClasses.Count > 0;
         _logRequestHeaders = options.RequestHeadersDataClasses.Count > 0;
         _pathParametersRedactionSkipped = options.RequestPathParameterRedactionMode == HttpRouteParameterRedactionMode.None;
-        _options = options;
     }
 
     [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "The logger shouldn't throw")]
