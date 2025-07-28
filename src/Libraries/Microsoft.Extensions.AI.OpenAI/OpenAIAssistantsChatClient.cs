@@ -210,7 +210,7 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
                     break;
 
                 case MessageContentUpdate mcu:
-                    yield return new(mcu.Role == MessageRole.User ? ChatRole.User : ChatRole.Assistant, mcu.Text)
+                    ChatResponseUpdate textUpdate = new(mcu.Role == MessageRole.User ? ChatRole.User : ChatRole.Assistant, mcu.Text)
                     {
                         AuthorName = _assistantId,
                         ConversationId = threadId,
@@ -218,10 +218,42 @@ internal sealed class OpenAIAssistantsChatClient : IChatClient
                         RawRepresentation = mcu,
                         ResponseId = responseId,
                     };
+
+                    // Add any annotations from the text update. The OpenAI Assistants API does not support passing these back
+                    // into the model (MessageContent.FromXx does not support providing annotations), so they end up being one way and are dropped
+                    // on subsequent requests.
+                    if (mcu.TextAnnotation is { } tau)
+                    {
+                        string? fileId = null;
+                        string? toolName = null;
+                        if (!string.IsNullOrWhiteSpace(tau.InputFileId))
+                        {
+                            fileId = tau.InputFileId;
+                            toolName = "file_search";
+                        }
+                        else if (!string.IsNullOrWhiteSpace(tau.OutputFileId))
+                        {
+                            fileId = tau.OutputFileId;
+                            toolName = "code_interpreter";
+                        }
+
+                        if (fileId is not null)
+                        {
+                            (((TextContent)textUpdate.Contents[0]).Annotations ??= []).Add(new CitationAnnotation
+                            {
+                                RawRepresentation = tau,
+                                AnnotatedRegions = [new TextSpanAnnotatedRegion { StartIndex = tau.StartIndex, EndIndex = tau.EndIndex }],
+                                FileId = fileId,
+                                ToolName = toolName,
+                            });
+                        }
+                    }
+
+                    yield return textUpdate;
                     break;
 
                 default:
-                    yield return new ChatResponseUpdate
+                    yield return new()
                     {
                         AuthorName = _assistantId,
                         ConversationId = threadId,
