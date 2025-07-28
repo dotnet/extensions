@@ -588,7 +588,6 @@ public class HttpRequestReaderTest
         var requestContent = _fixture.Create<string>();
         var queryParamName = "userId";
         var queryParamValue = "12345";
-        var redactedValue = "REDACTED";
 
         var options = new LoggingOptions
         {
