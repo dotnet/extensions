@@ -125,7 +125,7 @@ public class ChatResponseTests
     }
 
     [Fact]
-    public void ToChatResponseUpdates()
+    public void ToChatResponseUpdates_SingleMessage()
     {
         ChatResponse response = new(new ChatMessage(new ChatRole("customRole"), "Text") { MessageId = "someMessage" })
         {
@@ -152,5 +152,56 @@ public class ChatResponseTests
         ChatResponseUpdate update1 = updates[1];
         Assert.Equal("value1", update1.AdditionalProperties?["key1"]);
         Assert.Equal(42, update1.AdditionalProperties?["key2"]);
+    }
+
+    [Fact]
+    public void ToChatResponseUpdates_MultipleMessages()
+    {
+        ChatResponse response = new(
+            [
+                new ChatMessage(new ChatRole("customRole"), "Text")
+                {
+                    CreatedAt = new DateTimeOffset(2024, 11, 10, 9, 20, 0, TimeSpan.Zero),
+                    MessageId = "someMessage"
+                },
+                new ChatMessage(new ChatRole("secondRole"), "Another message")
+                {
+                    CreatedAt = new DateTimeOffset(2025, 1, 1, 10, 30, 0, TimeSpan.Zero),
+                    MessageId = "anotherMessage"
+                }
+            ])
+        {
+            ResponseId = "12345",
+            ModelId = "someModel",
+            FinishReason = ChatFinishReason.ContentFilter,
+            CreatedAt = new DateTimeOffset(2024, 11, 10, 9, 20, 0, TimeSpan.Zero),
+            AdditionalProperties = new() { ["key1"] = "value1", ["key2"] = 42 },
+        };
+
+        ChatResponseUpdate[] updates = response.ToChatResponseUpdates();
+        Assert.NotNull(updates);
+        Assert.Equal(3, updates.Length);
+
+        ChatResponseUpdate update0 = updates[0];
+        Assert.Equal("12345", update0.ResponseId);
+        Assert.Equal("someMessage", update0.MessageId);
+        Assert.Equal("someModel", update0.ModelId);
+        Assert.Equal(ChatFinishReason.ContentFilter, update0.FinishReason);
+        Assert.Equal(new DateTimeOffset(2024, 11, 10, 9, 20, 0, TimeSpan.Zero), update0.CreatedAt);
+        Assert.Equal("customRole", update0.Role?.Value);
+        Assert.Equal("Text", update0.Text);
+
+        ChatResponseUpdate update1 = updates[1];
+        Assert.Equal("12345", update1.ResponseId);
+        Assert.Equal("anotherMessage", update1.MessageId);
+        Assert.Equal("someModel", update1.ModelId);
+        Assert.Equal(ChatFinishReason.ContentFilter, update1.FinishReason);
+        Assert.Equal(new DateTimeOffset(2025, 1, 1, 10, 30, 0, TimeSpan.Zero), update1.CreatedAt);
+        Assert.Equal("secondRole", update1.Role?.Value);
+        Assert.Equal("Another message", update1.Text);
+
+        ChatResponseUpdate update2 = updates[2];
+        Assert.Equal("value1", update2.AdditionalProperties?["key1"]);
+        Assert.Equal(42, update2.AdditionalProperties?["key2"]);
     }
 }

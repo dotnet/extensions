@@ -439,6 +439,7 @@ internal sealed class OpenAIChatClient : IChatClient
         // Create the return message.
         ChatMessage returnMessage = new()
         {
+            CreatedAt = openAICompletion.CreatedAt,
             MessageId = openAICompletion.Id, // There's no per-message ID, so we use the same value as the response ID
             RawRepresentation = openAICompletion,
             Role = FromOpenAIChatRole(openAICompletion.Role),

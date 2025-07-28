@@ -162,6 +162,11 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             }
         }
 
+        foreach (var message in response.Messages)
+        {
+            message.CreatedAt = openAIResponse.CreatedAt;
+        }
+
         return response;
     }
 
