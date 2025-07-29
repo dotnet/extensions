@@ -129,6 +129,12 @@ internal sealed class OpenAIChatClient : IChatClient
 
         foreach (ChatMessage input in inputs)
         {
+            if (input.RawRepresentation is OpenAI.Chat.ChatMessage raw)
+            {
+                yield return raw;
+                continue;
+            }
+
             if (input.Role == ChatRole.System ||
                 input.Role == ChatRole.User ||
                 input.Role == OpenAIClientExtensions.ChatRoleDeveloper)
@@ -219,15 +225,22 @@ internal sealed class OpenAIChatClient : IChatClient
     }
 
     /// <summary>Converts a list of <see cref="AIContent"/> to a list of <see cref="ChatMessageContentPart"/>.</summary>
-    private static List<ChatMessageContentPart> ToOpenAIChatContent(IList<AIContent> contents)
+    internal static List<ChatMessageContentPart> ToOpenAIChatContent(IEnumerable<AIContent> contents)
     {
         List<ChatMessageContentPart> parts = [];
 
         foreach (var content in contents)
         {
-            if (ToChatMessageContentPart(content) is { } part)
+            if (content.RawRepresentation is ChatMessageContentPart raw)
             {
-                parts.Add(part);
+                parts.Add(raw);
+            }
+            else
+            {
+                if (ToChatMessageContentPart(content) is { } part)
+                {
+                    parts.Add(part);
+                }
             }
         }
 
@@ -243,6 +256,9 @@ internal sealed class OpenAIChatClient : IChatClient
     {
         switch (content)
         {
+            case AIContent when content.RawRepresentation is ChatMessageContentPart rawContentPart:
+                return rawContentPart;
+
             case TextContent textContent:
                 return ChatMessageContentPart.CreateTextPart(textContent.Text);
 
@@ -267,9 +283,6 @@ internal sealed class OpenAIChatClient : IChatClient
 
             case DataContent dataContent when dataContent.MediaType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase):
                 return ChatMessageContentPart.CreateFilePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, dataContent.Name ?? $"{Guid.NewGuid():N}.pdf");
-
-            case AIContent when content.RawRepresentation is ChatMessageContentPart rawContentPart:
-                return rawContentPart;
         }
 
         return null;
@@ -328,13 +341,7 @@ internal sealed class OpenAIChatClient : IChatClient
             // Transfer over content update items.
             if (update.ContentUpdate is { Count: > 0 })
             {
-                foreach (ChatMessageContentPart contentPart in update.ContentUpdate)
-                {
-                    if (ToAIContent(contentPart) is AIContent aiContent)
-                    {
-                        responseUpdate.Contents.Add(aiContent);
-                    }
-                }
+                ConvertContentParts(update.ContentUpdate, responseUpdate.Contents);
             }
 
             if (update.OutputAudioUpdate is { } audioUpdate)
@@ -402,7 +409,7 @@ internal sealed class OpenAIChatClient : IChatClient
                 FunctionCallInfo fci = entry.Value;
                 if (!string.IsNullOrWhiteSpace(fci.Name))
                 {
-                    var callContent = ParseCallContentFromJsonString(
+                    var callContent = OpenAIClientExtensions.ParseCallContent(
                         fci.Arguments?.ToString() ?? string.Empty,
                         fci.CallId!,
                         fci.Name!);
@@ -468,7 +475,7 @@ internal sealed class OpenAIChatClient : IChatClient
         {
             if (!string.IsNullOrWhiteSpace(toolCall.FunctionName))
             {
-                var callContent = ParseCallContentFromBinaryData(toolCall.FunctionArguments, toolCall.Id, toolCall.FunctionName);
+                var callContent = OpenAIClientExtensions.ParseCallContent(toolCall.FunctionArguments, toolCall.Id, toolCall.FunctionName);
                 callContent.RawRepresentation = toolCall;
 
                 returnMessage.Contents.Add(callContent);
@@ -648,6 +655,20 @@ internal sealed class OpenAIChatClient : IChatClient
             _ => new ChatRole(role.ToString()),
         };
 
+    /// <summary>Creates <see cref="AIContent"/>s from <see cref="ChatMessageContent"/>.</summary>
+    /// <param name="content">The content parts to convert into a content.</param>
+    /// <param name="results">The result collection into which to write the resulting content.</param>
+    internal static void ConvertContentParts(ChatMessageContent content, IList<AIContent> results)
+    {
+        foreach (ChatMessageContentPart contentPart in content)
+        {
+            if (ToAIContent(contentPart) is { } aiContent)
+            {
+                results.Add(aiContent);
+            }
+        }
+    }
+
     /// <summary>Creates an <see cref="AIContent"/> from a <see cref="ChatMessageContentPart"/>.</summary>
     /// <param name="contentPart">The content part to convert into a content.</param>
     /// <returns>The constructed <see cref="AIContent"/>, or <see langword="null"/> if the content part could not be converted.</returns>
@@ -696,14 +717,6 @@ internal sealed class OpenAIChatClient : IChatClient
             OpenAI.Chat.ChatFinishReason.ToolCalls or OpenAI.Chat.ChatFinishReason.FunctionCall => ChatFinishReason.ToolCalls,
             _ => new ChatFinishReason(s),
         };
-
-    private static FunctionCallContent ParseCallContentFromJsonString(string json, string callId, string name) =>
-        FunctionCallContent.CreateFromParsedArguments(json, callId, name,
-            argumentParser: static json => JsonSerializer.Deserialize(json, OpenAIJsonContext.Default.IDictionaryStringObject)!);
-
-    private static FunctionCallContent ParseCallContentFromBinaryData(BinaryData ut8Json, string callId, string name) =>
-        FunctionCallContent.CreateFromParsedArguments(ut8Json, callId, name,
-            argumentParser: static json => JsonSerializer.Deserialize(json, OpenAIJsonContext.Default.IDictionaryStringObject)!);
 
     /// <summary>POCO representing function calling info. Used to concatenation information for a single function call from across multiple streaming updates.</summary>
     private sealed class FunctionCallInfo

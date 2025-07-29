@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -90,7 +90,6 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             ConversationId = openAIOptions?.StoredOutputEnabled is false ? null : openAIResponse.Id,
             CreatedAt = openAIResponse.CreatedAt,
             FinishReason = ToFinishReason(openAIResponse.IncompleteStatusDetails?.Reason),
-            Messages = [new(ChatRole.Assistant, [])],
             ModelId = openAIResponse.Model,
             RawRepresentation = openAIResponse,
             ResponseId = openAIResponse.Id,
@@ -109,65 +108,69 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
         if (openAIResponse.OutputItems is not null)
         {
-            ChatMessage message = response.Messages[0];
-            Debug.Assert(message.Contents is List<AIContent>, "Expected a List<AIContent> for message contents.");
+            response.Messages = [.. ToChatMessages(openAIResponse.OutputItems)];
 
-            foreach (ResponseItem outputItem in openAIResponse.OutputItems)
+            if (response.Messages.LastOrDefault() is { } lastMessage && openAIResponse.Error is { } error)
             {
-                switch (outputItem)
-                {
-                    case MessageResponseItem messageItem:
-                        if (message.MessageId is not null && message.MessageId != messageItem.Id)
-                        {
-                            message = new ChatMessage();
-                            response.Messages.Add(message);
-                        }
-
-                        message.MessageId = messageItem.Id;
-                        message.RawRepresentation = messageItem;
-                        message.Role = ToChatRole(messageItem.Role);
-                        ((List<AIContent>)message.Contents).AddRange(ToAIContents(messageItem.Content));
-                        break;
-
-                    case ReasoningResponseItem reasoningItem when reasoningItem.GetSummaryText() is string summary && !string.IsNullOrWhiteSpace(summary):
-                        message.Contents.Add(new TextReasoningContent(summary)
-                        {
-                            RawRepresentation = reasoningItem
-                        });
-                        break;
-
-                    case FunctionCallResponseItem functionCall:
-                        response.FinishReason ??= ChatFinishReason.ToolCalls;
-                        var fcc = FunctionCallContent.CreateFromParsedArguments(
-                            functionCall.FunctionArguments.ToMemory(),
-                            functionCall.CallId,
-                            functionCall.FunctionName,
-                            static json => JsonSerializer.Deserialize(json.Span, OpenAIJsonContext.Default.IDictionaryStringObject)!);
-                        fcc.RawRepresentation = outputItem;
-                        message.Contents.Add(fcc);
-                        break;
-
-                    default:
-                        message.Contents.Add(new()
-                        {
-                            RawRepresentation = outputItem,
-                        });
-                        break;
-                }
+                lastMessage.Contents.Add(new ErrorContent(error.Message) { ErrorCode = error.Code.ToString() });
             }
 
-            if (openAIResponse.Error is { } error)
+            foreach (var message in response.Messages)
             {
-                message.Contents.Add(new ErrorContent(error.Message) { ErrorCode = error.Code.ToString() });
+                message.CreatedAt ??= openAIResponse.CreatedAt;
             }
-        }
-
-        foreach (var message in response.Messages)
-        {
-            message.CreatedAt = openAIResponse.CreatedAt;
         }
 
         return response;
+    }
+
+    internal static IEnumerable<ChatMessage> ToChatMessages(IEnumerable<ResponseItem> items)
+    {
+        ChatMessage? message = null;
+
+        foreach (ResponseItem outputItem in items)
+        {
+            message ??= new(ChatRole.Assistant, (string?)null);
+
+            switch (outputItem)
+            {
+                case MessageResponseItem messageItem:
+                    if (message.MessageId is not null && message.MessageId != messageItem.Id)
+                    {
+                        yield return message;
+                        message = new ChatMessage();
+                    }
+
+                    message.MessageId = messageItem.Id;
+                    message.RawRepresentation = messageItem;
+                    message.Role = ToChatRole(messageItem.Role);
+                    ((List<AIContent>)message.Contents).AddRange(ToAIContents(messageItem.Content));
+                    break;
+
+                case ReasoningResponseItem reasoningItem when reasoningItem.GetSummaryText() is string summary:
+                    message.Contents.Add(new TextReasoningContent(summary) { RawRepresentation = reasoningItem });
+                    break;
+
+                case FunctionCallResponseItem functionCall:
+                    var fcc = OpenAIClientExtensions.ParseCallContent(functionCall.FunctionArguments, functionCall.CallId, functionCall.FunctionName);
+                    fcc.RawRepresentation = outputItem;
+                    message.Contents.Add(fcc);
+                    break;
+
+                case FunctionCallOutputResponseItem functionCallOutputItem:
+                    message.Contents.Add(new FunctionResultContent(functionCallOutputItem.CallId, functionCallOutputItem.FunctionOutput) { RawRepresentation = functionCallOutputItem });
+                    break;
+
+                default:
+                    message.Contents.Add(new() { RawRepresentation = outputItem });
+                    break;
+            }
+        }
+
+        if (message is not null)
+        {
+            yield return message;
+        }
     }
 
     /// <inheritdoc />
@@ -266,15 +269,14 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     {
                         _ = functionCallInfos.Remove(functionCallOutputDoneUpdate.OutputIndex);
 
-                        var fci = FunctionCallContent.CreateFromParsedArguments(
+                        var fcc = OpenAIClientExtensions.ParseCallContent(
                             callInfo.Arguments?.ToString() ?? string.Empty,
                             callInfo.ResponseItem.CallId,
-                            callInfo.ResponseItem.FunctionName,
-                            static json => JsonSerializer.Deserialize(json, OpenAIJsonContext.Default.IDictionaryStringObject)!);
+                            callInfo.ResponseItem.FunctionName);
 
                         lastMessageId = callInfo.ResponseItem.Id;
                         lastRole = ChatRole.Assistant;
-                        yield return new ChatResponseUpdate(lastRole, [fci])
+                        yield return new ChatResponseUpdate(lastRole, [fcc])
                         {
                             ConversationId = conversationId,
                             CreatedAt = createdAt,
@@ -513,6 +515,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 {
                     switch (item)
                     {
+                        case AIContent when item.RawRepresentation is ResponseItem rawRep:
+                            yield return rawRep;
+                            break;
+
                         case FunctionResultContent resultContent:
                             string? result = resultContent.Result as string;
                             if (result is null && resultContent.Result is not null)
@@ -541,6 +547,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 {
                     switch (item)
                     {
+                        case AIContent when item.RawRepresentation is ResponseItem rawRep:
+                            yield return rawRep;
+                            break;
+
                         case TextContent textContent:
                             yield return ResponseItem.CreateAssistantMessageItem(textContent.Text);
                             break;
@@ -556,10 +566,6 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                                 BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(
                                     callContent.Arguments,
                                     AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object?>)))));
-                            break;
-
-                        case AIContent when item.RawRepresentation is ResponseItem rawRep:
-                            yield return rawRep;
                             break;
                     }
                 }
@@ -659,6 +665,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         {
             switch (content)
             {
+                case AIContent when content.RawRepresentation is ResponseContentPart rawRep:
+                    parts.Add(rawRep);
+                    break;
+
                 case TextContent textContent:
                     parts.Add(ResponseContentPart.CreateInputTextPart(textContent.Text));
                     break;
@@ -677,10 +687,6 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
                 case ErrorContent errorContent when errorContent.ErrorCode == nameof(ResponseContentPartKind.Refusal):
                     parts.Add(ResponseContentPart.CreateRefusalPart(errorContent.Message));
-                    break;
-
-                case AIContent when content.RawRepresentation is ResponseContentPart rawRep:
-                    parts.Add(rawRep);
                     break;
             }
         }
