@@ -39,6 +39,7 @@ public class FunctionInvokingChatClientTests
         Assert.Equal(40, client.MaximumIterationsPerRequest);
         Assert.Equal(3, client.MaximumConsecutiveErrorsPerRequest);
         Assert.Null(client.FunctionInvoker);
+        Assert.Null(client.AdditionalTools);
     }
 
     [Fact]
@@ -67,6 +68,11 @@ public class FunctionInvokingChatClientTests
         Func<FunctionInvocationContext, CancellationToken, ValueTask<object?>> invoker = (ctx, ct) => new ValueTask<object?>("test");
         client.FunctionInvoker = invoker;
         Assert.Same(invoker, client.FunctionInvoker);
+
+        Assert.Null(client.AdditionalTools);
+        IList<AITool> additionalTools = [AIFunctionFactory.Create(() => "Additional Tool")];
+        client.AdditionalTools = additionalTools;
+        Assert.Same(additionalTools, client.AdditionalTools);
     }
 
     [Fact]
@@ -97,6 +103,73 @@ public class FunctionInvokingChatClientTests
         await InvokeAndAssertAsync(options, plan);
 
         await InvokeAndAssertStreamingAsync(options, plan);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SupportsToolsProvidedByAdditionalTools(bool provideOptions)
+    {
+        ChatOptions? options = provideOptions ?
+            new() { Tools = [AIFunctionFactory.Create(() => "Shouldn't be invoked", "ChatOptionsFunc")] } :
+            null;
+
+        Func<ChatClientBuilder, ChatClientBuilder> configure = builder =>
+            builder.UseFunctionInvocation(configure: c => c.AdditionalTools =
+            [
+                AIFunctionFactory.Create(() => "Result 1", "Func1"),
+                AIFunctionFactory.Create((int i) => $"Result 2: {i}", "Func2"),
+                AIFunctionFactory.Create((int i) => { }, "VoidReturn"),
+            ]);
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", result: "Result 2: 42")]),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId3", "VoidReturn", arguments: new Dictionary<string, object?> { { "i", 43 } })]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId3", result: "Success: Function completed.")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
+
+        await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configure);
+    }
+
+    [Fact]
+    public async Task PrefersToolsProvidedByChatOptions()
+    {
+        ChatOptions options = new()
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result 1", "Func1")]
+        };
+
+        Func<ChatClientBuilder, ChatClientBuilder> configure = builder =>
+            builder.UseFunctionInvocation(configure: c => c.AdditionalTools =
+            [
+                AIFunctionFactory.Create(() => "Should never be invoked", "Func1"),
+                AIFunctionFactory.Create((int i) => $"Result 2: {i}", "Func2"),
+                AIFunctionFactory.Create((int i) => { }, "VoidReturn"),
+            ]);
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId2", result: "Result 2: 42")]),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId3", "VoidReturn", arguments: new Dictionary<string, object?> { { "i", 43 } })]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId3", result: "Success: Function completed.")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
+
+        await InvokeAndAssertStreamingAsync(options, plan, configurePipeline: configure);
     }
 
     [Theory]
@@ -1002,7 +1075,7 @@ public class FunctionInvokingChatClientTests
     }
 
     private static async Task<List<ChatMessage>> InvokeAndAssertAsync(
-        ChatOptions options,
+        ChatOptions? options,
         List<ChatMessage> plan,
         List<ChatMessage>? expected = null,
         Func<ChatClientBuilder, ChatClientBuilder>? configurePipeline = null,
@@ -1102,7 +1175,7 @@ public class FunctionInvokingChatClientTests
     }
 
     private static async Task<List<ChatMessage>> InvokeAndAssertStreamingAsync(
-        ChatOptions options,
+        ChatOptions? options,
         List<ChatMessage> plan,
         List<ChatMessage>? expected = null,
         Func<ChatClientBuilder, ChatClientBuilder>? configurePipeline = null,
