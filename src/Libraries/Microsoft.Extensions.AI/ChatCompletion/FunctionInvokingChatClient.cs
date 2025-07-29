@@ -205,7 +205,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         set => _maximumConsecutiveErrorsPerRequest = Throw.IfLessThan(value, 0);
     }
 
-    /// <summary>Gets or sets a collection of additional tool the client is able to invoke.</summary>
+    /// <summary>Gets or sets a collection of additional tools the client is able to invoke.</summary>
     /// <remarks>
     /// These will not impact the requests sent by the <see cref="FunctionInvokingChatClient"/>, which will pass through the
     /// <see cref="ChatOptions.Tools" /> unmodified. However, if the inner client requests the invocation of a tool
