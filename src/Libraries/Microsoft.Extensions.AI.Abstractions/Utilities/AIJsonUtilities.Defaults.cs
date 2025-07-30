@@ -70,6 +70,8 @@ public static partial class AIJsonUtilities
     [JsonSerializable(typeof(SpeechToTextResponse))]
     [JsonSerializable(typeof(SpeechToTextResponseUpdate))]
     [JsonSerializable(typeof(IReadOnlyList<SpeechToTextResponseUpdate>))]
+    [JsonSerializable(typeof(TextToImageOptions))]
+    [JsonSerializable(typeof(TextToImageResponse))]
     [JsonSerializable(typeof(IList<ChatMessage>))]
     [JsonSerializable(typeof(IEnumerable<ChatMessage>))]
     [JsonSerializable(typeof(ChatMessage[]))]

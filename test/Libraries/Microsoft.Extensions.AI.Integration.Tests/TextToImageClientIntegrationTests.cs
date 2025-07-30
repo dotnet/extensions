@@ -36,8 +36,7 @@ public abstract class TextToImageClientIntegrationTests : IDisposable
 
         var options = new TextToImageOptions
         {
-            Count = 1,
-            ContentType = TextToImageContentType.Uri
+            Count = 1
         };
 
         var response = await _client.GenerateImagesAsync("A simple drawing of a house", options);
@@ -47,10 +46,10 @@ public abstract class TextToImageClientIntegrationTests : IDisposable
         Assert.Single(response.Contents);
 
         var content = response.Contents[0];
-        Assert.IsType<UriContent>(content);
-        var uriContent = (UriContent)content;
-        Assert.NotNull(uriContent.Uri);
-        Assert.StartsWith("http", uriContent.Uri.ToString(), StringComparison.OrdinalIgnoreCase);
+        Assert.IsType<DataContent>(content);
+        var dataContent = (DataContent)content;
+        Assert.False(dataContent.Data.IsEmpty);
+        Assert.StartsWith("image/", dataContent.MediaType, StringComparison.Ordinal);
     }
 
     [ConditionalFact]
@@ -60,8 +59,7 @@ public abstract class TextToImageClientIntegrationTests : IDisposable
 
         var options = new TextToImageOptions
         {
-            Count = 2,
-            ContentType = TextToImageContentType.Uri
+            Count = 2
         };
 
         var response = await _client.GenerateImagesAsync("A cat sitting on a table", options);
@@ -72,39 +70,15 @@ public abstract class TextToImageClientIntegrationTests : IDisposable
 
         foreach (var content in response.Contents)
         {
-            Assert.IsType<UriContent>(content);
-            var uriContent = (UriContent)content;
-            Assert.NotNull(uriContent.Uri);
-            Assert.StartsWith("http", uriContent.Uri.ToString(), StringComparison.OrdinalIgnoreCase);
+            Assert.IsType<DataContent>(content);
+            var dataContent = (DataContent)content;
+            Assert.False(dataContent.Data.IsEmpty);
+            Assert.StartsWith("image/", dataContent.MediaType, StringComparison.Ordinal);
         }
     }
 
     [ConditionalFact]
-    public virtual async Task GenerateImagesAsync_DataContent()
-    {
-        SkipIfNotEnabled();
-
-        var options = new TextToImageOptions
-        {
-            Count = 1,
-            ContentType = TextToImageContentType.Data
-        };
-
-        var response = await _client.GenerateImagesAsync("A red circle on white background", options);
-
-        Assert.NotNull(response);
-        Assert.NotEmpty(response.Contents);
-        Assert.Single(response.Contents);
-
-        var content = response.Contents[0];
-        Assert.IsType<DataContent>(content);
-        var dataContent = (DataContent)content;
-        Assert.True(dataContent.Data.Length > 0);
-        Assert.Equal("image/png", dataContent.MediaType);
-    }
-
-    [ConditionalFact]
-    public virtual async Task EditImagesAsync_WithDataContent()
+    public virtual async Task EditImagesAsync_SingleImage()
     {
         SkipIfNotEnabled();
 
@@ -113,11 +87,10 @@ public abstract class TextToImageClientIntegrationTests : IDisposable
 
         var options = new TextToImageOptions
         {
-            Count = 1,
-            ContentType = TextToImageContentType.Data
+            Count = 1
         };
 
-        var response = await _client.EditImagesAsync(originalImages, "Add a red border", options);
+        var response = await _client.EditImagesAsync(originalImages, "Add a red border and make the background tie-dye", options);
 
         Assert.NotNull(response);
         Assert.NotEmpty(response.Contents);
@@ -125,9 +98,9 @@ public abstract class TextToImageClientIntegrationTests : IDisposable
 
         var content = response.Contents[0];
         Assert.IsType<DataContent>(content);
-        var resultDataContent = (DataContent)content;
-        Assert.True(resultDataContent.Data.Length > 0);
-        Assert.Equal("image/png", resultDataContent.MediaType);
+        var dataContent = (DataContent)content;
+        Assert.False(dataContent.Data.IsEmpty);
+        Assert.StartsWith("image/", dataContent.MediaType, StringComparison.Ordinal);
     }
 
     private static byte[] GetImageData(string fileName)

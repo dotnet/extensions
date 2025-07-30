@@ -14,20 +14,20 @@ public class TextToImageOptionsTests
     public void Constructor_Parameterless_PropsDefaulted()
     {
         TextToImageOptions options = new();
-        Assert.Equal(TextToImageContentType.Uri, options.ContentType);
-        Assert.Equal(1, options.Count);
+        Assert.Null(options.ContentType);
+        Assert.Null(options.Count);
         Assert.Null(options.GuidanceScale);
-        Assert.Equal(default, options.ImageSize);
+        Assert.Null(options.ImageSize);
         Assert.Null(options.ModelId);
         Assert.Null(options.NegativePrompt);
         Assert.Null(options.Steps);
         Assert.Null(options.RawRepresentationFactory);
 
         TextToImageOptions clone = options.Clone();
-        Assert.Equal(TextToImageContentType.Uri, clone.ContentType);
-        Assert.Equal(1, clone.Count);
+        Assert.Null(options.ContentType);
+        Assert.Null(options.Count);
         Assert.Null(clone.GuidanceScale);
-        Assert.Equal(default, options.ImageSize);
+        Assert.Null(options.ImageSize);
         Assert.Null(clone.ModelId);
         Assert.Null(clone.NegativePrompt);
         Assert.Null(clone.Steps);

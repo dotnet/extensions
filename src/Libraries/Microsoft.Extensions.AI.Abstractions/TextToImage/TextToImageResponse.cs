@@ -11,7 +11,7 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Represents the result of an speech to text request.</summary>
+/// <summary>Represents the result of an image generation request.</summary>
 [Experimental("MEAI001")]
 public class TextToImageResponse
 {

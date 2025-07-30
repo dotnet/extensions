@@ -48,7 +48,7 @@ public class TextToImageOptions
     public int? Steps { get; set; }
 
     /// <summary>
-    /// Gets or sets a callback responsible for creating the raw representation of the embedding generation options from an underlying implementation.
+    /// Gets or sets a callback responsible for creating the raw representation of the image generation options from an underlying implementation.
     /// </summary>
     /// <remarks>
     /// The underlying <see cref="ITextToImageClient" /> implementation may have its own representation of options.

@@ -52,11 +52,10 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
     public async Task<TextToImageResponse> GenerateImagesAsync(string prompt, TextToImageOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(prompt);
-        _ = Throw.IfNull(options);
 
         ImageGenerationOptions openAIOptions = ToOpenAIImageGenerationOptions(options);
 
-        GeneratedImageCollection result = await _imageClient.GenerateImagesAsync(prompt, options.Count ?? 1, openAIOptions, cancellationToken).ConfigureAwait(false);
+        GeneratedImageCollection result = await _imageClient.GenerateImagesAsync(prompt, options?.Count ?? 1, openAIOptions, cancellationToken).ConfigureAwait(false);
 
         return ToTextToImageResponse(result);
     }
@@ -67,7 +66,6 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
     {
         _ = Throw.IfNull(originalImages);
         _ = Throw.IfNull(prompt);
-        _ = Throw.IfNull(options);
 
         ImageEditOptions openAIOptions = ToOpenAIImageEditOptions(options);
         string? fileName = null;
@@ -83,7 +81,7 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
                     nameof(originalImages));
             }
 
-            if (originalImages is DataContent dataContent)
+            if (originalImage is DataContent dataContent)
             {
                 imageStream = MemoryMarshal.TryGetArray(dataContent.Data, out var array) ?
                     new MemoryStream(array.Array!, array.Offset, array.Count) :
@@ -101,7 +99,7 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
         }
 
         GeneratedImageCollection result = await _imageClient.GenerateImageEditsAsync(
-            imageStream, fileName, prompt, options.Count ?? 1, openAIOptions, cancellationToken).ConfigureAwait(false);
+            imageStream, fileName, prompt, options?.Count ?? 1, openAIOptions, cancellationToken).ConfigureAwait(false);
 
         return ToTextToImageResponse(result);
     }
@@ -174,13 +172,13 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
     }
 
     /// <summary>Converts a <see cref="TextToImageOptions"/> to a <see cref="ImageGenerationOptions"/>.</summary>
-    private ImageGenerationOptions ToOpenAIImageGenerationOptions(TextToImageOptions options)
+    private ImageGenerationOptions ToOpenAIImageGenerationOptions(TextToImageOptions? options)
     {
-        ImageGenerationOptions result = options.RawRepresentationFactory?.Invoke(this) as ImageGenerationOptions ?? new();
+        ImageGenerationOptions result = options?.RawRepresentationFactory?.Invoke(this) as ImageGenerationOptions ?? new();
 
-        result.Size = ToOpenAIImageSize(options.ImageSize);
+        result.Size = ToOpenAIImageSize(options?.ImageSize);
 
-        if (options.ContentType is not null)
+        if (options?.ContentType is not null)
         {
             result.ResponseFormat = options.ContentType == TextToImageContentType.Uri
                 ? GeneratedImageFormat.Uri
@@ -191,13 +189,13 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
     }
 
     /// <summary>Converts a <see cref="TextToImageOptions"/> to a <see cref="ImageEditOptions"/>.</summary>
-    private ImageEditOptions ToOpenAIImageEditOptions(TextToImageOptions options)
+    private ImageEditOptions ToOpenAIImageEditOptions(TextToImageOptions? options)
     {
-        ImageEditOptions result = options.RawRepresentationFactory?.Invoke(this) as ImageEditOptions ?? new();
+        ImageEditOptions result = options?.RawRepresentationFactory?.Invoke(this) as ImageEditOptions ?? new();
 
-        result.Size = ToOpenAIImageSize(options.ImageSize);
+        result.Size = ToOpenAIImageSize(options?.ImageSize);
 
-        if (options.ContentType is not null)
+        if (options?.ContentType is not null)
         {
             result.ResponseFormat = options.ContentType == TextToImageContentType.Uri
                 ? GeneratedImageFormat.Uri

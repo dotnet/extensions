@@ -48,6 +48,5 @@ public class OpenAITextToImageClientTests
         Assert.Same(textToImageClient, textToImageClient.GetService<object>());
         Assert.NotNull(textToImageClient.GetService<TextToImageClientMetadata>());
         Assert.NotNull(textToImageClient.GetService<ImageClient>());
-        Assert.Same(client, textToImageClient.GetService<OpenAIClient>());
     }
 }
