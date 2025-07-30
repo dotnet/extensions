@@ -8,13 +8,13 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using Microsoft.Shared.Diagnostics;
 using OpenAI;
 using OpenAI.Assistants;
 using OpenAI.Audio;
 using OpenAI.Chat;
 using OpenAI.Embeddings;
 using OpenAI.Images;
-using OpenAI.Realtime;
 using OpenAI.Responses;
 
 #pragma warning disable S103 // Lines should not be too long
