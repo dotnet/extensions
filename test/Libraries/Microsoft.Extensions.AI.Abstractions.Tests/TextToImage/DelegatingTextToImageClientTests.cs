@@ -49,10 +49,10 @@ public class DelegatingTextToImageClientTests
     }
 
     [Fact]
-    public async Task EditImageAsyncDefaultsToInnerClientAsync()
+    public async Task EditImagesAsyncDefaultsToInnerClientAsync()
     {
         // Arrange
-        var expectedImage = new DataContent(Array.Empty<byte>(), "image/png");
+        AIContent[] expectedImages = [new DataContent(Array.Empty<byte>(), "image/png")];
         var expectedPrompt = "edit prompt";
         var expectedOptions = new TextToImageOptions();
         var expectedCancellationToken = CancellationToken.None;
@@ -60,9 +60,9 @@ public class DelegatingTextToImageClientTests
         var expectedResponse = new TextToImageResponse();
         using var inner = new TestTextToImageClient
         {
-            EditImageAsyncCallback = (originalImage, prompt, options, cancellationToken) =>
+            EditImagesAsyncCallback = (originalImages, prompt, options, cancellationToken) =>
             {
-                Assert.Same(expectedImage, originalImage);
+                Assert.Same(expectedImages, originalImages);
                 Assert.Same(expectedPrompt, prompt);
                 Assert.Same(expectedOptions, options);
                 Assert.Equal(expectedCancellationToken, cancellationToken);
@@ -73,7 +73,7 @@ public class DelegatingTextToImageClientTests
         using var delegating = new NoOpDelegatingTextToImageClient(inner);
 
         // Act
-        var resultTask = delegating.EditImageAsync(expectedImage, expectedPrompt, expectedOptions, expectedCancellationToken);
+        var resultTask = delegating.EditImagesAsync(expectedImages, expectedPrompt, expectedOptions, expectedCancellationToken);
 
         // Assert
         Assert.False(resultTask.IsCompleted);

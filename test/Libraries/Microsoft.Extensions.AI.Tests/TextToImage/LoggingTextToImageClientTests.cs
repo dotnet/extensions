@@ -95,14 +95,14 @@ public class LoggingTextToImageClientTests
     [InlineData(LogLevel.Trace)]
     [InlineData(LogLevel.Debug)]
     [InlineData(LogLevel.Information)]
-    public async Task EditImageAsync_LogsInvocationAndCompletion(LogLevel level)
+    public async Task EditImagesAsync_LogsInvocationAndCompletion(LogLevel level)
     {
         var collector = new FakeLogCollector();
         using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(level));
 
         using ITextToImageClient innerClient = new TestTextToImageClient
         {
-            EditImageAsyncCallback = (originalImage, prompt, options, cancellationToken) =>
+            EditImagesAsyncCallback = (originalImages, prompt, options, cancellationToken) =>
             {
                 return Task.FromResult(new TextToImageResponse());
             }
@@ -113,9 +113,9 @@ public class LoggingTextToImageClientTests
             .UseLogging(loggerFactory)
             .Build();
 
-        var dataContent = new DataContent((byte[])[1, 2, 3, 4], "image/png");
-        await client.EditImageAsync(
-            dataContent,
+        AIContent[] originalImages = [new DataContent((byte[])[1, 2, 3, 4], "image/png")];
+        await client.EditImagesAsync(
+            originalImages,
             "Make it more colorful",
             new TextToImageOptions { ModelId = "dall-e-3" });
 
@@ -124,16 +124,16 @@ public class LoggingTextToImageClientTests
         {
             Assert.Collection(logs,
                 entry => Assert.True(
-                    entry.Message.Contains($"{nameof(ITextToImageClient.EditImageAsync)} invoked:") &&
+                    entry.Message.Contains($"{nameof(ITextToImageClient.EditImagesAsync)} invoked:") &&
                     entry.Message.Contains("Make it more colorful") &&
                     entry.Message.Contains("dall-e-3")),
-                entry => Assert.Contains($"{nameof(ITextToImageClient.EditImageAsync)} completed:", entry.Message));
+                entry => Assert.Contains($"{nameof(ITextToImageClient.EditImagesAsync)} completed:", entry.Message));
         }
         else if (level is LogLevel.Debug)
         {
             Assert.Collection(logs,
-                entry => Assert.True(entry.Message.Contains($"{nameof(ITextToImageClient.EditImageAsync)} invoked.") && !entry.Message.Contains("Make it more colorful")),
-                entry => Assert.True(entry.Message.Contains($"{nameof(ITextToImageClient.EditImageAsync)} completed.") && !entry.Message.Contains("dall-e-3")));
+                entry => Assert.True(entry.Message.Contains($"{nameof(ITextToImageClient.EditImagesAsync)} invoked.") && !entry.Message.Contains("Make it more colorful")),
+                entry => Assert.True(entry.Message.Contains($"{nameof(ITextToImageClient.EditImagesAsync)} completed.") && !entry.Message.Contains("dall-e-3")));
         }
         else
         {

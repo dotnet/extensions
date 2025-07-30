@@ -44,7 +44,7 @@ public class ConfigureOptionsTextToImageClientTests
                 return Task.FromResult(expectedResponse);
             },
 
-            EditImageAsyncCallback = (originalImage, prompt, options, cancellationToken) =>
+            EditImagesAsyncCallback = (originalImages, prompt, options, cancellationToken) =>
             {
                 Assert.Same(returnedOptions, options);
                 Assert.Equal(cts.Token, cancellationToken);
@@ -73,8 +73,8 @@ public class ConfigureOptionsTextToImageClientTests
         var response1 = await client.GenerateImagesAsync("test prompt", providedOptions, cts.Token);
         Assert.Same(expectedResponse, response1);
 
-        var dataContent = new DataContent((byte[])[1, 2, 3, 4], "image/png");
-        var response2 = await client.EditImageAsync(dataContent, "edit prompt", providedOptions, cts.Token);
+        AIContent[] images = [new DataContent((byte[])[1, 2, 3, 4], "image/png")];
+        var response2 = await client.EditImagesAsync(images, "edit prompt", providedOptions, cts.Token);
         Assert.Same(expectedResponse, response2);
     }
 }

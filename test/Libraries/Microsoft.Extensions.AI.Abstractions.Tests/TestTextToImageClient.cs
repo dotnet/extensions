@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,7 +19,7 @@ public sealed class TestTextToImageClient : ITextToImageClient
 
     public Func<string, TextToImageOptions?, CancellationToken, Task<TextToImageResponse>>? GenerateImagesAsyncCallback { get; set; }
 
-    public Func<AIContent, string, TextToImageOptions?, CancellationToken, Task<TextToImageResponse>>? EditImageAsyncCallback { get; set; }
+    public Func<IEnumerable<AIContent>, string, TextToImageOptions?, CancellationToken, Task<TextToImageResponse>>? EditImagesAsyncCallback { get; set; }
 
     public Func<Type, object?, object?> GetServiceCallback { get; set; }
 
@@ -33,10 +34,10 @@ public sealed class TestTextToImageClient : ITextToImageClient
             Task.FromResult(new TextToImageResponse());
     }
 
-    public Task<TextToImageResponse> EditImageAsync(
-        AIContent originalImage, string prompt, TextToImageOptions? options = null, CancellationToken cancellationToken = default)
+    public Task<TextToImageResponse> EditImagesAsync(
+        IEnumerable<AIContent> originalImages, string prompt, TextToImageOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return EditImageAsyncCallback?.Invoke(originalImage, prompt, options, cancellationToken) ??
+        return EditImagesAsyncCallback?.Invoke(originalImages, prompt, options, cancellationToken) ??
             Task.FromResult(new TextToImageResponse());
     }
 

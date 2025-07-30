@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
@@ -47,10 +48,10 @@ public class DelegatingTextToImageClient : ITextToImageClient
     }
 
     /// <inheritdoc />
-    public virtual Task<TextToImageResponse> EditImageAsync(
-        AIContent originalImage, string prompt, TextToImageOptions? options = null, CancellationToken cancellationToken = default)
+    public virtual Task<TextToImageResponse> EditImagesAsync(
+        IEnumerable<AIContent> originalImages, string prompt, TextToImageOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return InnerClient.EditImageAsync(originalImage, prompt, options, cancellationToken);
+        return InnerClient.EditImagesAsync(originalImages, prompt, options, cancellationToken);
     }
 
     /// <inheritdoc />

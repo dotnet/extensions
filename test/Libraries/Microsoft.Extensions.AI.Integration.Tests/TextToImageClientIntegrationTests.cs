@@ -104,12 +104,12 @@ public abstract class TextToImageClientIntegrationTests : IDisposable
     }
 
     [ConditionalFact]
-    public virtual async Task EditImageAsync_WithDataContent()
+    public virtual async Task EditImagesAsync_WithDataContent()
     {
         SkipIfNotEnabled();
 
         var imageData = GetImageData("dotnet.png");
-        var dataContent = new DataContent(imageData, "image/png");
+        AIContent[] originalImages = [new DataContent(imageData, "image/png")];
 
         var options = new TextToImageOptions
         {
@@ -117,7 +117,7 @@ public abstract class TextToImageClientIntegrationTests : IDisposable
             ContentType = TextToImageContentType.Data
         };
 
-        var response = await _client.EditImageAsync(dataContent, "Add a red border", options);
+        var response = await _client.EditImagesAsync(originalImages, "Add a red border", options);
 
         Assert.NotNull(response);
         Assert.NotEmpty(response.Contents);

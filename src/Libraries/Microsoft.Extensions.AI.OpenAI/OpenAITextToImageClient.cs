@@ -62,10 +62,10 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
     }
 
     /// <inheritdoc />
-    public async Task<TextToImageResponse> EditImageAsync(
-        AIContent originalImage, string prompt, TextToImageOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<TextToImageResponse> EditImagesAsync(
+        IEnumerable<AIContent> originalImages, string prompt, TextToImageOptions? options = null, CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(originalImage);
+        _ = Throw.IfNull(originalImages);
         _ = Throw.IfNull(prompt);
         _ = Throw.IfNull(options);
 
@@ -73,20 +73,31 @@ internal sealed class OpenAITextToImageClient : ITextToImageClient
         string? fileName = null;
         Stream? imageStream = null;
 
-        if (originalImage is DataContent dataContent)
+        foreach (AIContent originalImage in originalImages)
         {
-            imageStream = MemoryMarshal.TryGetArray(dataContent.Data, out var array) ?
-                new MemoryStream(array.Array!, array.Offset, array.Count) :
-                new MemoryStream(dataContent.Data.ToArray());
-            fileName = "image.png"; // Default file name for image data
-        }
-        else
-        {
-            // We might be able to handle UriContent by downloading the image, but need to plumb an HttpClient for that.
-            // For now, we only support DataContent for image editing as OpenAI's API expects image data in a stream.
-            Throw.ArgumentException(
-                "The original image must be a DataContent instance containing image data.",
-                nameof(originalImage));
+            if (imageStream is not null)
+            {
+                // We only support a single image for editing.
+                Throw.ArgumentException(
+                    "Only a single image can be provided for editing.",
+                    nameof(originalImages));
+            }
+
+            if (originalImages is DataContent dataContent)
+            {
+                imageStream = MemoryMarshal.TryGetArray(dataContent.Data, out var array) ?
+                    new MemoryStream(array.Array!, array.Offset, array.Count) :
+                    new MemoryStream(dataContent.Data.ToArray());
+                fileName = "image.png"; // Default file name for image data
+            }
+            else
+            {
+                // We might be able to handle UriContent by downloading the image, but need to plumb an HttpClient for that.
+                // For now, we only support DataContent for image editing as OpenAI's API expects image data in a stream.
+                Throw.ArgumentException(
+                    "The original image must be a DataContent instance containing image data.",
+                    nameof(originalImages));
+            }
         }
 
         GeneratedImageCollection result = await _imageClient.GenerateImageEditsAsync(

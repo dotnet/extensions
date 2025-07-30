@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,10 +43,10 @@ public sealed class ConfigureOptionsTextToImageClient : DelegatingTextToImageCli
     }
 
     /// <inheritdoc/>
-    public override async Task<TextToImageResponse> EditImageAsync(
-        AIContent originalImage, string prompt, TextToImageOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<TextToImageResponse> EditImagesAsync(
+        IEnumerable<AIContent> originalImages, string prompt, TextToImageOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await base.EditImageAsync(originalImage, prompt, Configure(options), cancellationToken);
+        return await base.EditImagesAsync(originalImages, prompt, Configure(options), cancellationToken);
     }
 
     /// <summary>Creates and configures the <see cref="TextToImageOptions"/> to pass along to the inner client.</summary>

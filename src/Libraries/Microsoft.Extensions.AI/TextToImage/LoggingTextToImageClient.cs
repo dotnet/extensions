@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
@@ -100,34 +101,34 @@ public partial class LoggingTextToImageClient : DelegatingTextToImageClient
     }
 
     /// <inheritdoc/>
-    public override async Task<TextToImageResponse> EditImageAsync(
-        AIContent originalImage, string prompt, TextToImageOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<TextToImageResponse> EditImagesAsync(
+        IEnumerable<AIContent> originalImages, string prompt, TextToImageOptions? options = null, CancellationToken cancellationToken = default)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
         {
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokedSensitive(nameof(EditImageAsync), prompt, AsJson(options), AsJson(this.GetService<TextToImageClientMetadata>()));
+                LogInvokedSensitive(nameof(EditImagesAsync), prompt, AsJson(options), AsJson(this.GetService<TextToImageClientMetadata>()));
             }
             else
             {
-                LogInvoked(nameof(EditImageAsync));
+                LogInvoked(nameof(EditImagesAsync));
             }
         }
 
         try
         {
-            var response = await base.EditImageAsync(originalImage, prompt, options, cancellationToken);
+            var response = await base.EditImagesAsync(originalImages, prompt, options, cancellationToken);
 
             if (_logger.IsEnabled(LogLevel.Debug))
             {
                 if (_logger.IsEnabled(LogLevel.Trace) && response.Contents.All(c => c is not DataContent))
                 {
-                    LogCompletedSensitive(nameof(EditImageAsync), AsJson(response));
+                    LogCompletedSensitive(nameof(EditImagesAsync), AsJson(response));
                 }
                 else
                 {
-                    LogCompleted(nameof(EditImageAsync));
+                    LogCompleted(nameof(EditImagesAsync));
                 }
             }
 
@@ -135,12 +136,12 @@ public partial class LoggingTextToImageClient : DelegatingTextToImageClient
         }
         catch (OperationCanceledException)
         {
-            LogInvocationCanceled(nameof(EditImageAsync));
+            LogInvocationCanceled(nameof(EditImagesAsync));
             throw;
         }
         catch (Exception ex)
         {
-            LogInvocationFailed(nameof(EditImageAsync), ex);
+            LogInvocationFailed(nameof(EditImagesAsync), ex);
             throw;
         }
     }

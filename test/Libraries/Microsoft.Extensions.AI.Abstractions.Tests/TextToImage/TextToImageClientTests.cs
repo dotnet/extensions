@@ -74,18 +74,18 @@ public class TextToImageClientTests
     }
 
     [Fact]
-    public async Task EditImageAsync_CallsCallback()
+    public async Task EditImagesAsync_CallsCallback()
     {
         var expectedResponse = new TextToImageResponse();
         var expectedOptions = new TextToImageOptions();
         using var cts = new CancellationTokenSource();
-        var dataContent = new DataContent((byte[])[1, 2, 3, 4], "image/png");
+        AIContent[] expectedImages = [new DataContent((byte[])[1, 2, 3, 4], "image/png")];
 
         using var client = new TestTextToImageClient
         {
-            EditImageAsyncCallback = (originalImage, prompt, options, cancellationToken) =>
+            EditImagesAsyncCallback = (originalImages, prompt, options, cancellationToken) =>
             {
-                Assert.Same(dataContent, originalImage);
+                Assert.Same(expectedImages, originalImages);
                 Assert.Equal("edit prompt", prompt);
                 Assert.Same(expectedOptions, options);
                 Assert.Equal(cts.Token, cancellationToken);
@@ -93,17 +93,17 @@ public class TextToImageClientTests
             }
         };
 
-        var result = await client.EditImageAsync(dataContent, "edit prompt", expectedOptions, cts.Token);
+        var result = await client.EditImagesAsync(expectedImages, "edit prompt", expectedOptions, cts.Token);
         Assert.Same(expectedResponse, result);
     }
 
     [Fact]
-    public async Task EditImageAsync_NoCallback_ReturnsEmptyResponse()
+    public async Task EditImagesAsync_NoCallback_ReturnsEmptyResponse()
     {
         using var client = new TestTextToImageClient();
-        var dataContent = new DataContent((byte[])[1, 2, 3, 4], "image/png");
+        AIContent[] originalImages = [new DataContent((byte[])[1, 2, 3, 4], "image/png")];
 
-        var result = await client.EditImageAsync(dataContent, "edit prompt", null);
+        var result = await client.EditImagesAsync(originalImages, "edit prompt", null);
         Assert.NotNull(result);
         Assert.Empty(result.Contents);
     }
@@ -160,7 +160,7 @@ public class TextToImageClientTests
     }
 
     [Fact]
-    public async Task EditImageAsync_WithOptions_PassesThroughCorrectly()
+    public async Task EditImagesAsync_WithOptions_PassesThroughCorrectly()
     {
         var options = new TextToImageOptions
         {
@@ -169,17 +169,17 @@ public class TextToImageClientTests
             ModelId = "edit-model"
         };
 
-        var dataContent = new DataContent((byte[])[1, 2, 3, 4], "image/png");
+        AIContent[] originalImages = [new DataContent((byte[])[1, 2, 3, 4], "image/png")];
 
         using var client = new TestTextToImageClient
         {
-            EditImageAsyncCallback = (dataContent, prompt, receivedOptions, cancellationToken) =>
+            EditImagesAsyncCallback = (dataContent, prompt, receivedOptions, cancellationToken) =>
             {
                 Assert.Same(options, receivedOptions);
                 return Task.FromResult(new TextToImageResponse());
             }
         };
 
-        await client.EditImageAsync(dataContent, "edit prompt", options);
+        await client.EditImagesAsync(originalImages, "edit prompt", options);
     }
 }
