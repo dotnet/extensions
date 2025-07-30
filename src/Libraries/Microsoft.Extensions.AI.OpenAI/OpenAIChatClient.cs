@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -438,6 +439,7 @@ internal sealed class OpenAIChatClient : IChatClient
         // Create the return message.
         ChatMessage returnMessage = new()
         {
+            CreatedAt = openAICompletion.CreatedAt,
             MessageId = openAICompletion.Id, // There's no per-message ID, so we use the same value as the response ID
             RawRepresentation = openAICompletion,
             Role = FromOpenAIChatRole(openAICompletion.Role),
@@ -477,6 +479,30 @@ internal sealed class OpenAIChatClient : IChatClient
         if (openAICompletion.Refusal is string refusal)
         {
             returnMessage.Contents.Add(new ErrorContent(refusal) { ErrorCode = nameof(openAICompletion.Refusal) });
+        }
+
+        // And add annotations. OpenAI chat completion specifies annotations at the message level (and as such they can't be
+        // roundtripped back); we store them either on the first text content, assuming there is one, or on a dedicated content
+        // instance if not.
+        if (openAICompletion.Annotations is { Count: > 0 })
+        {
+            TextContent? annotationContent = returnMessage.Contents.OfType<TextContent>().FirstOrDefault();
+            if (annotationContent is null)
+            {
+                annotationContent = new(null);
+                returnMessage.Contents.Add(annotationContent);
+            }
+
+            foreach (var annotation in openAICompletion.Annotations)
+            {
+                (annotationContent.Annotations ??= []).Add(new CitationAnnotation
+                {
+                    RawRepresentation = annotation,
+                    AnnotatedRegions = [new TextSpanAnnotatedRegion { StartIndex = annotation.StartIndex, EndIndex = annotation.EndIndex }],
+                    Title = annotation.WebResourceTitle,
+                    Url = annotation.WebResourceUri,
+                });
+            }
         }
 
         // Wrap the content in a ChatResponse to return.

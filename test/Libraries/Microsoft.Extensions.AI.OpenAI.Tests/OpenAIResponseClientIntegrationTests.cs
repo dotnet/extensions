@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.TestUtilities;
 using OpenAI;
 using OpenAI.Responses;
 using Xunit;
@@ -24,7 +25,36 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
     // Test structure doesn't make sense with Responses.
     public override Task Caching_AfterFunctionInvocation_FunctionOutputUnchangedAsync() => Task.CompletedTask;
 
-    [Fact]
+    [ConditionalFact]
+    public async Task UseWebSearch_AnnotationsReflectResults()
+    {
+        SkipIfNotEnabled();
+
+        var response = await ChatClient.GetResponseAsync(
+            "Write a paragraph about the three most recent blog posts on the .NET blog. Cite your sources.",
+            new() { Tools = [new HostedWebSearchTool()] });
+
+        ChatMessage m = Assert.Single(response.Messages);
+        TextContent tc = m.Contents.OfType<TextContent>().First();
+        Assert.NotNull(tc.Annotations);
+        Assert.NotEmpty(tc.Annotations);
+        Assert.All(tc.Annotations, a =>
+        {
+            CitationAnnotation ca = Assert.IsType<CitationAnnotation>(a);
+            var regions = Assert.IsType<List<AnnotatedRegion>>(ca.AnnotatedRegions);
+            Assert.NotNull(regions);
+            Assert.Single(regions);
+            var region = Assert.IsType<TextSpanAnnotatedRegion>(regions[0]);
+            Assert.NotNull(region);
+            Assert.NotNull(region.StartIndex);
+            Assert.NotNull(region.EndIndex);
+            Assert.NotNull(ca.Url);
+            Assert.NotNull(ca.Title);
+            Assert.NotEmpty(ca.Title);
+        });
+    }
+
+    [ConditionalFact]
     public async Task RemoteMCP_ListTools()
     {
         SkipIfNotEnabled();
@@ -48,7 +78,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         Assert.Contains("ask_question", response.Text);
     }
 
-    [Fact]
+    [ConditionalFact]
     public async Task RemoteMCP_CallTool()
     {
         SkipIfNotEnabled();

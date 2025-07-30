@@ -516,6 +516,10 @@
       ],
       "Properties": [
         {
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AITool>? Microsoft.Extensions.AI.FunctionInvokingChatClient.AdditionalTools { get; set; }",
+          "Stage": "Stable"
+        },
+        {
           "Member": "bool Microsoft.Extensions.AI.FunctionInvokingChatClient.AllowConcurrentInvocation { get; set; }",
           "Stage": "Stable"
         },

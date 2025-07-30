@@ -205,6 +205,16 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         set => _maximumConsecutiveErrorsPerRequest = Throw.IfLessThan(value, 0);
     }
 
+    /// <summary>Gets or sets a collection of additional tools the client is able to invoke.</summary>
+    /// <remarks>
+    /// These will not impact the requests sent by the <see cref="FunctionInvokingChatClient"/>, which will pass through the
+    /// <see cref="ChatOptions.Tools" /> unmodified. However, if the inner client requests the invocation of a tool
+    /// that was not in <see cref="ChatOptions.Tools" />, this <see cref="AdditionalTools"/> collection will also be consulted
+    /// to look for a corresponding tool to invoke. This is useful when the service may have been pre-configured to be aware
+    /// of certain tools that aren't also sent on each individual request.
+    /// </remarks>
+    public IList<AITool>? AdditionalTools { get; set; }
+
     /// <summary>Gets or sets a delegate used to invoke <see cref="AIFunction"/> instances.</summary>
     /// <remarks>
     /// By default, the protected <see cref="InvokeFunctionAsync"/> method is called for each <see cref="AIFunction"/> to be invoked,
@@ -250,7 +260,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
             // Any function call work to do? If yes, ensure we're tracking that work in functionCallContents.
             bool requiresFunctionInvocation =
-                options?.Tools is { Count: > 0 } &&
+                (options?.Tools is { Count: > 0 } || AdditionalTools is { Count: > 0 }) &&
                 iteration < MaximumIterationsPerRequest &&
                 CopyFunctionCalls(response.Messages, ref functionCallContents);
 
@@ -288,7 +298,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
             // Add the responses from the function calls into the augmented history and also into the tracked
             // list of response messages.
-            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options!, functionCallContents!, iteration, consecutiveErrorCount, isStreaming: false, cancellationToken);
+            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options, functionCallContents!, iteration, consecutiveErrorCount, isStreaming: false, cancellationToken);
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
             consecutiveErrorCount = modeAndMessages.NewConsecutiveErrorCount;
 
@@ -297,7 +307,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
                 break;
             }
 
-            UpdateOptionsForNextIteration(ref options!, response.ConversationId);
+            UpdateOptionsForNextIteration(ref options, response.ConversationId);
         }
 
         Debug.Assert(responseMessages is not null, "Expected to only be here if we have response messages.");
@@ -367,7 +377,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
 
             // If there are no tools to call, or for any other reason we should stop, return the response.
             if (functionCallContents is not { Count: > 0 } ||
-                options?.Tools is not { Count: > 0 } ||
+                (options?.Tools is not { Count: > 0 } && AdditionalTools is not { Count: > 0 }) ||
                 iteration >= _maximumIterationsPerRequest)
             {
                 break;
@@ -535,9 +545,16 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
         return any;
     }
 
-    private static void UpdateOptionsForNextIteration(ref ChatOptions options, string? conversationId)
+    private static void UpdateOptionsForNextIteration(ref ChatOptions? options, string? conversationId)
     {
-        if (options.ToolMode is RequiredChatToolMode)
+        if (options is null)
+        {
+            if (conversationId is not null)
+            {
+                options = new() { ConversationId = conversationId };
+            }
+        }
+        else if (options.ToolMode is RequiredChatToolMode)
         {
             // We have to reset the tool mode to be non-required after the first iteration,
             // as otherwise we'll be in an infinite loop.
@@ -566,7 +583,7 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>A value indicating how the caller should proceed.</returns>
     private async Task<(bool ShouldTerminate, int NewConsecutiveErrorCount, IList<ChatMessage> MessagesAdded)> ProcessFunctionCallsAsync(
-        List<ChatMessage> messages, ChatOptions options, List<FunctionCallContent> functionCallContents, int iteration, int consecutiveErrorCount,
+        List<ChatMessage> messages, ChatOptions? options, List<FunctionCallContent> functionCallContents, int iteration, int consecutiveErrorCount,
         bool isStreaming, CancellationToken cancellationToken)
     {
         // We must add a response for every tool call, regardless of whether we successfully executed it or not.
@@ -695,13 +712,13 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>A value indicating how the caller should proceed.</returns>
     private async Task<FunctionInvocationResult> ProcessFunctionCallAsync(
-        List<ChatMessage> messages, ChatOptions options, List<FunctionCallContent> callContents,
+        List<ChatMessage> messages, ChatOptions? options, List<FunctionCallContent> callContents,
         int iteration, int functionCallIndex, bool captureExceptions, bool isStreaming, CancellationToken cancellationToken)
     {
         var callContent = callContents[functionCallIndex];
 
         // Look up the AIFunction for the function call. If the requested function isn't available, send back an error.
-        AIFunction? aiFunction = options.Tools!.OfType<AIFunction>().FirstOrDefault(t => t.Name == callContent.Name);
+        AIFunction? aiFunction = FindAIFunction(options?.Tools, callContent.Name) ?? FindAIFunction(AdditionalTools, callContent.Name);
         if (aiFunction is null)
         {
             return new(terminate: false, FunctionInvocationStatus.NotFound, callContent, result: null, exception: null);
@@ -746,6 +763,23 @@ public partial class FunctionInvokingChatClient : DelegatingChatClient
             callContent,
             result,
             exception: null);
+
+        static AIFunction? FindAIFunction(IList<AITool>? tools, string functionName)
+        {
+            if (tools is not null)
+            {
+                int count = tools.Count;
+                for (int i = 0; i < count; i++)
+                {
+                    if (tools[i] is AIFunction function && function.Name == functionName)
+                    {
+                        return function;
+                    }
+                }
+            }
+
+            return null;
+        }
     }
 
     /// <summary>Creates one or more response messages for function invocation results.</summary>
