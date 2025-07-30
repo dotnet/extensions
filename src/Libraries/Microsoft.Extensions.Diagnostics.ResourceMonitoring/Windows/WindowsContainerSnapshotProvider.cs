@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.Threading;
-using Microsoft.Extensions.ClusterMetadata.Kubernetes;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -54,10 +53,9 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
     public WindowsContainerSnapshotProvider(
         ILogger<WindowsContainerSnapshotProvider>? logger,
         IMeterFactory meterFactory,
-        IOptions<ResourceMonitoringOptions> options,
-        KubernetesClusterMetadata kubernetesClusterMetadataOptions)
+        IOptions<ResourceMonitoringOptions> options)
         : this(new MemoryInfo(), new SystemInfo(), new ProcessInfo(), logger, meterFactory,
-              static () => new JobHandleWrapper(), TimeProvider.System, options.Value, kubernetesClusterMetadataOptions)
+              static () => new JobHandleWrapper(), TimeProvider.System, options.Value)
     {
     }
 
@@ -74,8 +72,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         IMeterFactory meterFactory,
         Func<IJobHandle> createJobHandleObject,
         TimeProvider timeProvider,
-        ResourceMonitoringOptions options,
-        KubernetesClusterMetadata kubernetesClusterMetadataOptions)
+        ResourceMonitoringOptions options)
     {
         _logger = logger ?? NullLogger<WindowsContainerSnapshotProvider>.Instance;
         _logger.RunningInsideJobObject();
@@ -92,26 +89,16 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 
         using IJobHandle jobHandle = _createJobHandleObject();
 
-        if (kubernetesClusterMetadataOptions != null)
-        {
-            _cpuRequest = ConvertMillicoreToUnit(kubernetesClusterMetadataOptions.RequestsCpu);
-            _cpuLimit = ConvertMillicoreToUnit(kubernetesClusterMetadataOptions.LimitsCpu);
-            _memoryRequest = kubernetesClusterMetadataOptions.RequestsMemory;
-            _memoryLimit = kubernetesClusterMetadataOptions.LimitsMemory;
-        }
-        else
-        {
-            ulong memoryLimitLong = GetMemoryLimit(jobHandle);
-            _memoryLimit = memoryLimitLong;
-            _cpuLimit = GetCpuLimit(jobHandle, systemInfo);
+        ulong memoryLimitLong = GetMemoryLimit(jobHandle);
+        _memoryLimit = memoryLimitLong;
+        _cpuLimit = GetCpuLimit(jobHandle, systemInfo);
 
-            // CPU request (aka guaranteed CPU units) is not supported on Windows, so we set it to the same value as CPU limit (aka maximum CPU units).
-            // Memory request (aka guaranteed memory) is not supported on Windows, so we set it to the same value as memory limit (aka maximum memory).
-            double cpuRequest = _cpuLimit;
-            ulong memoryRequest = memoryLimitLong;
-            Resources = new SystemResources(cpuRequest, _cpuLimit, memoryRequest, memoryLimitLong);
-            _logger.SystemResourcesInfo(_cpuLimit, cpuRequest, memoryLimitLong, memoryRequest);
-        }
+        // CPU request (aka guaranteed CPU units) is not supported on Windows, so we set it to the same value as CPU limit (aka maximum CPU units).
+        // Memory request (aka guaranteed memory) is not supported on Windows, so we set it to the same value as memory limit (aka maximum memory).
+        double cpuRequest = _cpuLimit;
+        ulong memoryRequest = memoryLimitLong;
+        Resources = new SystemResources(cpuRequest, _cpuLimit, memoryRequest, memoryLimitLong);
+        _logger.SystemResourcesInfo(_cpuLimit, cpuRequest, memoryLimitLong, memoryRequest);
 
         var basicAccountingInfo = jobHandle.GetBasicAccountingInfo();
         _oldCpuUsageTicks = basicAccountingInfo.TotalKernelTime + basicAccountingInfo.TotalUserTime;

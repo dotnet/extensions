@@ -14,11 +14,6 @@ internal class KubernetesClusterMetadataSource : IConfigurationSource
     private KubernetesClusterMetadata KubernetesClusterMetadata { get; }
     private readonly string _environmentVariablePrefix;
 
-    public KubernetesClusterMetadataSource(Func<KubernetesClusterMetadata> configure)
-    {
-
-    }
-
     public KubernetesClusterMetadataSource(string sectionName, string environmentVariablePrefix = "")
     {
         SectionName = Throw.IfNullOrWhitespace(sectionName);

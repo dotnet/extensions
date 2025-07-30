@@ -95,30 +95,6 @@ public class KubernetesClusterMetadata
     public string? StatefulSet { get; set; }
 
     /// <summary>
-    /// Gets or sets the name of an Azure cloud.
-    /// </summary>
-    /// <value>
-    /// Default value is <see langword="null" />.
-    /// </value>
-    public string? AzureCloud { get; set; }
-
-    /// <summary>
-    /// Gets or sets the name of an Azure region.
-    /// </summary>
-    /// <value>
-    /// Default value is <see langword="null" />.
-    /// </value>
-    public string? AzureRegion { get; set; }
-
-    /// <summary>
-    /// Gets or sets the name of an Azure geography.
-    /// </summary>
-    /// <value>
-    /// Default value is <see langword="null" />.
-    /// </value>
-    public string? AzureGeography { get; set; }
-
-    /// <summary>
     /// Gets or sets the resource memory limit the container is allowed to use.
     /// </summary>
     public ulong LimitsMemory { get; set; }

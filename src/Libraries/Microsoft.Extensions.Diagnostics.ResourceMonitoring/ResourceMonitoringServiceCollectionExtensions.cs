@@ -6,6 +6,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring;
+//using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Kubernetes;
+
 #if !NETFRAMEWORK
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Disk;
