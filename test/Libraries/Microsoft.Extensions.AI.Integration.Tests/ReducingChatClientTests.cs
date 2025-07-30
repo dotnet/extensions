@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ML.Tokenizers;
@@ -54,64 +53,6 @@ public class ReducingChatClientTests
         await client.GetResponseAsync(messages);
 
         Assert.Equal(5, messages.Count);
-    }
-}
-
-/// <summary>Provides an example of a chat client for reducing the size of a message list.</summary>
-public sealed class ReducingChatClient : DelegatingChatClient
-{
-    private readonly IChatReducer _reducer;
-
-    /// <summary>Initializes a new instance of the <see cref="ReducingChatClient"/> class.</summary>
-    /// <param name="innerClient">The inner client.</param>
-    /// <param name="reducer">The reducer to be used by this instance.</param>
-    public ReducingChatClient(IChatClient innerClient, IChatReducer reducer)
-        : base(innerClient)
-    {
-        _reducer = Throw.IfNull(reducer);
-    }
-
-    /// <inheritdoc />
-    public override async Task<ChatResponse> GetResponseAsync(
-        IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
-    {
-        messages = await _reducer.ReduceAsync(messages, cancellationToken).ConfigureAwait(false);
-
-        return await base.GetResponseAsync(messages, options, cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <inheritdoc />
-    public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-        IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        messages = await _reducer.ReduceAsync(messages, cancellationToken).ConfigureAwait(false);
-
-        await foreach (var update in base.GetStreamingResponseAsync(messages, options, cancellationToken).ConfigureAwait(false))
-        {
-            yield return update;
-        }
-    }
-}
-
-/// <summary>Represents a reducer capable of shrinking the size of a list of chat messages.</summary>
-public interface IChatReducer
-{
-    /// <summary>Reduces the size of a list of chat messages.</summary>
-    /// <param name="messages">The messages.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The new list of messages, or <see langword="null"/> if no reduction need be performed or <paramref name="inPlace"/> was true.</returns>
-    Task<IList<ChatMessage>> ReduceAsync(IEnumerable<ChatMessage> messages, CancellationToken cancellationToken);
-}
-
-/// <summary>Provides extensions for configuring <see cref="ReducingChatClientExtensions"/> instances.</summary>
-public static class ReducingChatClientExtensions
-{
-    public static ChatClientBuilder UseChatReducer(this ChatClientBuilder builder, IChatReducer reducer)
-    {
-        _ = Throw.IfNull(builder);
-        _ = Throw.IfNull(reducer);
-
-        return builder.Use(innerClient => new ReducingChatClient(innerClient, reducer));
     }
 }
 
