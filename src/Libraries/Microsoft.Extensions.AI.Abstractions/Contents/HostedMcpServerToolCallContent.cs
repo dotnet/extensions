@@ -44,7 +44,7 @@ public class HostedMcpServerToolCallContent : AIContent
     public string ServerName { get; }
 
     /// <summary>
-    /// Gets the arguments requested to be provided to the tool.
+    /// Gets the arguments used for the tool call.
     /// </summary>
     public IReadOnlyDictionary<string, object?>? Arguments { get; }
 }

@@ -47,7 +47,7 @@ public class HostedMcpServerTool : AITool
     public override string Description => _description;
 
     /// <summary>
-    /// Gets or sets the list tools allowed to be used by the AI service.
+    /// Gets or sets the list of tools allowed to be used by the AI service.
     /// </summary>
     public IList<string>? AllowedTools { get; set; }
 
